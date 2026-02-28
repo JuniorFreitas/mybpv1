@@ -239,10 +239,18 @@
 
 
                     <td class="text-center">
-                        <button class="btn btn-sm btn-primary" title="Visuzalizar"
+                        <button class="btn btn-sm btn-primary" title="Visualizar"
                                 @click.prevent="formVisualizar(item)"
                                 data-toggle="modal"
                                 data-target="#janelaVisualizar"><i class="fa fa-search-plus"></i>
+                        </button>
+                        <button v-if="assinaturaDigitalHabilitada && item.status === 'Pendente Anexo' && temDocumentoAssinatura(item)" class="btn btn-sm btn-info ml-1" title="Gerenciar assinatura digital"
+                                @click.prevent="abrirGerenciamentoAssinaturaCartaOferta(item)">
+                            <i class="fas fa-cog"></i> Assinatura
+                        </button>
+                        <button v-else-if="assinaturaDigitalHabilitada && item.status === 'Pendente Anexo'" class="btn btn-sm btn-success ml-1" title="Enviar para assinatura digital"
+                                @click.prevent="abrirEnvioAssinaturaCartaOferta(item)">
+                            <i class="fas fa-pen-fancy"></i> Assinatura
                         </button>
                     </td>
 
@@ -250,6 +258,16 @@
                 </tbody>
             </table>
         </div>
+
+        <acao-assinatura-documento
+            ref="acaoAssinaturaCartaOferta"
+            :id-prefix="`carta_oferta_${hash}`"
+            :titulo-enviar="'Enviar para assinatura digital'"
+            :get-nome-documento="getNomeDocumentoAssinaturaCartaOferta"
+            :get-signatarios-iniciais="getSignatariosIniciaisAssinaturaCartaOferta"
+            :enviar-handler="enviarAssinaturaCartaOferta"
+            :atualizar-handler="atualizar">
+        </acao-assinatura-documento>
 
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
                             :url="urlPaginacao"

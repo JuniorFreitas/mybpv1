@@ -90,6 +90,10 @@ const app = new Vue({
                 vencimento_aso: '',
                 modelo_cih: '',
                 supervisor_etiqueta_bloqueio: true,
+                assinatura_digital_habilitada: false,
+                limite_assinaturas_mensal: '',
+                assinatura_alerta_user_ids: [],
+                assinatura_alerta_grupo_ids: [],
             },
             segmentos_treinamento_ids: [],
 
@@ -116,6 +120,10 @@ const app = new Vue({
         lista: [],
         listaServicos: [],
         listaAreas: [],
+        usuariosAlertaAssinatura: [],
+        gruposAlertaAssinatura: [],
+        buscaAlertaUsuario: '',
+        buscaAlertaGrupo: '',
 
         controle: {
             carregando: false,
@@ -205,6 +213,10 @@ const app = new Vue({
 
             this.form = _.cloneDeep(this.formDefault) //copia
             this.leitura = false;
+            this.usuariosAlertaAssinatura = [];
+            this.gruposAlertaAssinatura = [];
+            this.buscaAlertaUsuario = '';
+            this.buscaAlertaGrupo = '';
 
         },
         cadastrar() {
@@ -269,9 +281,24 @@ const app = new Vue({
                             'verifica_mes_vencimento': '',
                             'envia_whatsapp': '',
                             'vencimento_aso': '',
-                            'modelo_cih': ''
+                            'modelo_cih': '',
+                            'supervisor_etiqueta_bloqueio': true,
+                            'assinatura_digital_habilitada': false,
+                            'limite_assinaturas_mensal': '',
+                            'assinatura_alerta_user_ids': [],
+                            'assinatura_alerta_grupo_ids': []
                         }
+                    } else {
+                        this.form.cliente_config.assinatura_digital_habilitada = !!this.form.cliente_config.assinatura_digital_habilitada;
+                        this.form.cliente_config.limite_assinaturas_mensal = this.form.cliente_config.limite_assinaturas_mensal ?? '';
+                        this.form.cliente_config.assinatura_alerta_user_ids = (this.form.cliente_config.assinatura_alerta_user_ids || []).map((id) => Number(id));
+                        this.form.cliente_config.assinatura_alerta_grupo_ids = (this.form.cliente_config.assinatura_alerta_grupo_ids || []).map((id) => Number(id));
                     }
+
+                    this.usuariosAlertaAssinatura = response.data.usuariosAlertaAssinatura || [];
+                    this.gruposAlertaAssinatura = response.data.gruposAlertaAssinatura || [];
+                    this.buscaAlertaUsuario = '';
+                    this.buscaAlertaGrupo = '';
                     this.listaModeloCih = response.data.listaModeloCih;
                     this.form.como_conheceu = !this.form.como_conheceu ? '' : this.form.como_conheceu;
 
@@ -391,6 +418,63 @@ const app = new Vue({
                     .then(response => {
                     });
             }
+        },
+        filtrarUsuariosAlertaDisponiveis() {
+            const idsSelecionados = this.form.cliente_config.assinatura_alerta_user_ids || [];
+            const termo = (this.buscaAlertaUsuario || '').trim().toLowerCase();
+            return (this.usuariosAlertaAssinatura || [])
+                .filter((u) => !idsSelecionados.includes(Number(u.id)))
+                .filter((u) => {
+                    if (!termo) {
+                        return true;
+                    }
+                    const nome = (u.nome || '').toLowerCase();
+                    const email = (u.email || '').toLowerCase();
+                    return nome.includes(termo) || email.includes(termo);
+                })
+                .slice(0, 20);
+        },
+        filtrarGruposAlertaDisponiveis() {
+            const idsSelecionados = this.form.cliente_config.assinatura_alerta_grupo_ids || [];
+            const termo = (this.buscaAlertaGrupo || '').trim().toLowerCase();
+            return (this.gruposAlertaAssinatura || [])
+                .filter((g) => !idsSelecionados.includes(Number(g.id)))
+                .filter((g) => {
+                    if (!termo) {
+                        return true;
+                    }
+                    const nome = (g.nome || '').toLowerCase();
+                    return nome.includes(termo);
+                })
+                .slice(0, 20);
+        },
+        adicionarUsuarioAlerta(usuario) {
+            if (!usuario || !usuario.id) return;
+            const id = Number(usuario.id);
+            const lista = this.form.cliente_config.assinatura_alerta_user_ids || [];
+            if (lista.includes(id)) return;
+            this.form.cliente_config.assinatura_alerta_user_ids.push(id);
+            this.buscaAlertaUsuario = '';
+        },
+        removerUsuarioAlerta(index) {
+            this.form.cliente_config.assinatura_alerta_user_ids.splice(index, 1);
+        },
+        adicionarGrupoAlerta(grupo) {
+            if (!grupo || !grupo.id) return;
+            const id = Number(grupo.id);
+            const lista = this.form.cliente_config.assinatura_alerta_grupo_ids || [];
+            if (lista.includes(id)) return;
+            this.form.cliente_config.assinatura_alerta_grupo_ids.push(id);
+            this.buscaAlertaGrupo = '';
+        },
+        removerGrupoAlerta(index) {
+            this.form.cliente_config.assinatura_alerta_grupo_ids.splice(index, 1);
+        },
+        getUsuarioAlerta(id) {
+            return (this.usuariosAlertaAssinatura || []).find((u) => Number(u.id) === Number(id)) || null;
+        },
+        getGrupoAlerta(id) {
+            return (this.gruposAlertaAssinatura || []).find((g) => Number(g.id) === Number(id)) || null;
         }
     }
 });

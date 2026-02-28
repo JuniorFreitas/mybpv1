@@ -668,6 +668,122 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="col-12 col-sm-6 col-lg-4">
+                                        <div class="form-group">
+                                            <label>Limite mensal de assinaturas digitais</label>
+                                            <input type="number"
+                                                   min="0"
+                                                   class="form-control"
+                                                   v-model.number="form.cliente_config.limite_assinaturas_mensal"
+                                                   placeholder="Ex: 100">
+                                            <small class="text-muted">Deixe em branco para ilimitado.</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-6 col-lg-4">
+                                        <div class="form-group">
+                                            <label>Assinatura Digital de Documentos</label>
+                                            <select v-model="form.cliente_config.assinatura_digital_habilitada" class="form-control">
+                                                <option :value="true">Sim</option>
+                                                <option :value="false">Não</option>
+                                            </select>
+                                            <small class="text-muted">Quando desabilitado, menu e botões de assinatura ficam ocultos.</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-lg-6" v-if="editando && form.cliente_config.assinatura_digital_habilitada">
+                                        <div class="form-group">
+                                            <label>Alertas de cota por usuário</label>
+                                            <div class="alert alert-info py-2 mb-2">
+                                                Selecione usuários individuais para receber e-mails de cota (80%, 90% e 100%).
+                                            </div>
+                                            <input type="text"
+                                                   class="form-control form-control-sm mb-2"
+                                                   placeholder="Buscar usuário por nome ou login..."
+                                                   v-model="buscaAlertaUsuario">
+
+                                            <div class="border rounded p-2 mb-2 bg-white" style="max-height: 180px; overflow-y: auto;">
+                                                <div v-for="u in filtrarUsuariosAlertaDisponiveis()" :key="'opt-user-'+u.id" class="d-flex align-items-center justify-content-between py-1 border-bottom">
+                                                    <div>
+                                                        <strong>@{{ u.nome }}</strong>
+                                                        <div class="small text-muted">@{{ u.email || 'sem login' }}</div>
+                                                    </div>
+                                                    <button type="button" class="btn btn-sm btn-primary" @click="adicionarUsuarioAlerta(u)">
+                                                        <i class="fa fa-plus"></i> Adicionar
+                                                    </button>
+                                                </div>
+                                                <div class="text-muted small" v-if="filtrarUsuariosAlertaDisponiveis().length === 0">
+                                                    Nenhum usuário disponível para adicionar.
+                                                </div>
+                                            </div>
+
+                                            <div class="table-responsive" v-if="(form.cliente_config.assinatura_alerta_user_ids || []).length > 0">
+                                                <table class="table table-bordered table-sm bg-white">
+                                                    <thead>
+                                                    <tr class="bg-light">
+                                                        <th class="text-center">Nome</th>
+                                                        <th class="text-center">Login</th>
+                                                        <th class="text-center">Remover</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    <tr v-for="(userId, index) in form.cliente_config.assinatura_alerta_user_ids" :key="'sel-user-'+userId">
+                                                        <td class="text-center">@{{ getUsuarioAlerta(userId) ? getUsuarioAlerta(userId).nome : ('ID ' + userId) }}</td>
+                                                        <td class="text-center">@{{ getUsuarioAlerta(userId) ? (getUsuarioAlerta(userId).email || 'sem login') : '-' }}</td>
+                                                        <td class="text-center">
+                                                            <button type="button" class="btn btn-sm btn-danger" @click="removerUsuarioAlerta(index)">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-lg-6" v-if="editando && form.cliente_config.assinatura_digital_habilitada">
+                                        <div class="form-group">
+                                            <label>Alertas de cota por grupo</label>
+                                            <div class="alert alert-info py-2 mb-2">
+                                                Selecione grupos para que todos os usuários ativos do grupo recebam os alertas.
+                                            </div>
+                                            <input type="text"
+                                                   class="form-control form-control-sm mb-2"
+                                                   placeholder="Buscar grupo..."
+                                                   v-model="buscaAlertaGrupo">
+
+                                            <div class="border rounded p-2 mb-2 bg-white" style="max-height: 180px; overflow-y: auto;">
+                                                <div v-for="g in filtrarGruposAlertaDisponiveis()" :key="'opt-grupo-'+g.id" class="d-flex align-items-center justify-content-between py-1 border-bottom">
+                                                    <strong>@{{ g.nome }}</strong>
+                                                    <button type="button" class="btn btn-sm btn-primary" @click="adicionarGrupoAlerta(g)">
+                                                        <i class="fa fa-plus"></i> Adicionar
+                                                    </button>
+                                                </div>
+                                                <div class="text-muted small" v-if="filtrarGruposAlertaDisponiveis().length === 0">
+                                                    Nenhum grupo disponível para adicionar.
+                                                </div>
+                                            </div>
+
+                                            <div class="table-responsive" v-if="(form.cliente_config.assinatura_alerta_grupo_ids || []).length > 0">
+                                                <table class="table table-bordered table-sm bg-white">
+                                                    <thead>
+                                                    <tr class="bg-light">
+                                                        <th class="text-center">Grupo</th>
+                                                        <th class="text-center">Remover</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    <tr v-for="(grupoId, index) in form.cliente_config.assinatura_alerta_grupo_ids" :key="'sel-grupo-'+grupoId">
+                                                        <td class="text-center">@{{ getGrupoAlerta(grupoId) ? getGrupoAlerta(grupoId).nome : ('ID ' + grupoId) }}</td>
+                                                        <td class="text-center">
+                                                            <button type="button" class="btn btn-sm btn-danger" @click="removerGrupoAlerta(index)">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </fieldset>
                             <fieldset>

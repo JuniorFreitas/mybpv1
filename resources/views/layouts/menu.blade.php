@@ -99,6 +99,14 @@
                                     Formas Contratos
                                 </a>
                             </li>
+                            @if(\App\Models\Sistema::assinaturaDigitalHabilitada())
+                                <li>
+                                    <a href="{{route('g.administracao.documento-assinatura.index')}}"
+                                       subparent="documentos_legais" parent="administracao" key="documento-assinatura">
+                                        Documentos para Assinatura
+                                    </a>
+                                </li>
+                            @endif
                         </ul>
                     </li>
                 @endcan

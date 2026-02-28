@@ -17,6 +17,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $modelo_cih
  * @property bool $supervisor_etiqueta_bloqueio
  * @property bool $schedule_avaliacao_experiencia Habilitar (true) ou desabilitar (false) o schedule de Avaliação de Experiência para esta empresa
+ * @property bool $assinatura_digital_habilitada Habilita a funcionalidade de assinatura digital para a empresa
+ * @property int|null $limite_assinaturas_mensal Limite de documentos de assinatura digital por mês (null = sem limite)
+ * @property array|null $assinatura_alerta_user_ids IDs de usuários que recebem alerta de cota
+ * @property array|null $assinatura_alerta_grupo_ids IDs de grupos (papeis) que recebem alerta de cota
  * @property-read \App\Models\Cliente|null $Cliente
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig newQuery()
@@ -42,7 +46,11 @@ class ClienteConfig extends Model
         'vencimento_aso',
         'modelo_cih',
         'supervisor_etiqueta_bloqueio',
-        'schedule_avaliacao_experiencia'
+        'schedule_avaliacao_experiencia',
+        'assinatura_digital_habilitada',
+        'limite_assinaturas_mensal',
+        'assinatura_alerta_user_ids',
+        'assinatura_alerta_grupo_ids',
     ];
 
     protected $casts = [
@@ -52,7 +60,11 @@ class ClienteConfig extends Model
         'vencimento_aso' => 'int',
         'modelo_cih' => 'string',
         'supervisor_etiqueta_bloqueio' => 'boolean',
-        'schedule_avaliacao_experiencia' => 'boolean'
+        'schedule_avaliacao_experiencia' => 'boolean',
+        'assinatura_digital_habilitada' => 'boolean',
+        'limite_assinaturas_mensal' => 'int',
+        'assinatura_alerta_user_ids' => 'array',
+        'assinatura_alerta_grupo_ids' => 'array',
     ];
 
     public $timestamps = false;

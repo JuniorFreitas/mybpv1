@@ -15,8 +15,10 @@ use App\Models\Papel;
 use App\Models\Servico;
 use App\Models\Sistema;
 use App\Models\User;
+use App\Services\AssinaturaDigital\AssinaturaCotaService;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Mail;
@@ -225,6 +227,7 @@ class ClientesController extends Controller
                         'cliente_id' => $cliente->id,
                         'supervisor_etiqueta_bloqueio' => $dados['cliente_config']['supervisor_etiqueta_bloqueio'],
                     ];
+                    $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigAssinatura($dados['cliente_config']));
                     ClienteConfig::create($dadosClienteConfig);
 
                 }
@@ -315,12 +318,15 @@ class ClientesController extends Controller
         });
 
         $todosMenu = array_unique(array_column($listaDeHabilidades->toArray(), 'menu'));
+        $dadosAssinatura = (new AssinaturaCotaService())->listarUsuariosEGrupos((int) $cliente->id);
 
         return response()->json([
             'cliente' => $cliente,
             'listaDeHabilidades' => $listaDeHabilidades,
             'listaModeloCih' => ClienteConfig::MODELO_CIH,
-            'todosMenu' => $todosMenu
+            'todosMenu' => $todosMenu,
+            'usuariosAlertaAssinatura' => $dadosAssinatura['usuarios'],
+            'gruposAlertaAssinatura' => $dadosAssinatura['grupos'],
         ]);
     }
 
@@ -580,13 +586,15 @@ class ClientesController extends Controller
             }
             if (isset($dados['cliente_config']) && !empty($dados['cliente_config']['id'])) {
                 $config = ClienteConfig::find($dados['cliente_config']['id']);
-                $config->update([
+                $dadosClienteConfig = [
                     'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
                     'envia_whatsapp' => $dados['cliente_config']['envia_whatsapp'],
                     'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
                     'modelo_cih' => $dados['cliente_config']['modelo_cih'],
                     'supervisor_etiqueta_bloqueio' => $dados['cliente_config']['supervisor_etiqueta_bloqueio'],
-                ]);
+                ];
+                $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigAssinatura($dados['cliente_config']));
+                $config->update($dadosClienteConfig);
             } else {
                 $dadosClienteConfig = [
                     'verifica_mes_vencimento' => $dados['cliente_config']['verifica_mes_vencimento'],
@@ -596,6 +604,7 @@ class ClientesController extends Controller
                     'supervisor_etiqueta_bloqueio' => $dados['cliente_config']['supervisor_etiqueta_bloqueio'],
                     'cliente_id' => $cliente->id
                 ];
+                $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigAssinatura($dados['cliente_config']));
                 ClienteConfig::create($dadosClienteConfig);
             }
 
@@ -639,6 +648,56 @@ class ClientesController extends Controller
             ], 400);
         }
 
+    }
+
+    private function parseLimiteAssinaturasMensal($valor): ?int
+    {
+        if ($valor === null || $valor === '') {
+            return null;
+        }
+
+        $limite = (int) $valor;
+        if ($limite < 0) {
+            return 0;
+        }
+
+        return $limite;
+    }
+
+    private function parseListaInteiros($lista): array
+    {
+        if (!is_array($lista)) {
+            return [];
+        }
+
+        return collect($lista)
+            ->map(fn ($v) => (int) $v)
+            ->filter(fn ($v) => $v > 0)
+            ->values()
+            ->all();
+    }
+
+    private function dadosConfigAssinatura(array $dadosConfig): array
+    {
+        $dados = [];
+
+        if (Schema::hasColumn('cliente_configs', 'assinatura_digital_habilitada')) {
+            $dados['assinatura_digital_habilitada'] = filter_var(($dadosConfig['assinatura_digital_habilitada'] ?? false), FILTER_VALIDATE_BOOLEAN);
+        }
+
+        if (Schema::hasColumn('cliente_configs', 'limite_assinaturas_mensal')) {
+            $dados['limite_assinaturas_mensal'] = $this->parseLimiteAssinaturasMensal($dadosConfig['limite_assinaturas_mensal'] ?? null);
+        }
+
+        if (Schema::hasColumn('cliente_configs', 'assinatura_alerta_user_ids')) {
+            $dados['assinatura_alerta_user_ids'] = $this->parseListaInteiros($dadosConfig['assinatura_alerta_user_ids'] ?? []);
+        }
+
+        if (Schema::hasColumn('cliente_configs', 'assinatura_alerta_grupo_ids')) {
+            $dados['assinatura_alerta_grupo_ids'] = $this->parseListaInteiros($dadosConfig['assinatura_alerta_grupo_ids'] ?? []);
+        }
+
+        return $dados;
     }
 
     private function criaOuAtualizaGrupoAdm($empresa_id)
