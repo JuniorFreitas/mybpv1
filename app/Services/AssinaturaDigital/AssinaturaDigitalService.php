@@ -57,6 +57,8 @@ class AssinaturaDigitalService
         string $nomeArquivo = 'documento.pdf',
         ?\DateTimeInterface $dataExpiracao = null
     ): DocumentoParaAssinatura {
+        app(AssinaturaCotaService::class)->validarDisponibilidadeOrFail($empresaId);
+
         $disco = Arquivo::DISCO_DOCUMENTO_ASSINATURA;
         Log::info('AssinaturaDigitalService::criarEnvio iniciado', ['tipo' => $tipoDocumento, 'empresa_id' => $empresaId]);
 
@@ -162,6 +164,7 @@ class AssinaturaDigitalService
         // Envia e-mail de forma assíncrona (background / queue worker).
         Log::info('AssinaturaDigital: criando envio e enfileirando e-mail', ['documento_id' => $doc->id, 'tipo' => $tipoDocumento, 'signatarios' => $doc->signatarios->pluck('email')->toArray()]);
         JobEnvioEmailAssinatura::dispatch($doc->id);
+        app(AssinaturaCotaService::class)->verificarAlertas($empresaId);
 
         return $doc;
     }

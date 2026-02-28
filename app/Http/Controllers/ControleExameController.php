@@ -533,6 +533,11 @@ class ControleExameController extends Controller
         $empresaId = auth()->user()->empresa_id;
         $cliente = Cliente::withoutGlobalScopes()->find($empresaId);
         $apelido = $cliente && $cliente->apelido ? $cliente->apelido : 'empresa';
+        try {
+            app(\App\Services\AssinaturaDigital\AssinaturaCotaService::class)->validarDisponibilidadeOrFail($empresaId);
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
 
         $doc = $service->criarEnvio(
             $empresaId,

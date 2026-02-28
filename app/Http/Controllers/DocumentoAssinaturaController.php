@@ -3,19 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\AssinaturaDigital\JobEnvioEmailAssinatura;
+use App\Jobs\JobExportaExcel;
+use App\Jobs\JobExportaPdf;
 use App\Models\Arquivo;
 use App\Models\DocumentoAssinaturaEvento;
 use App\Models\DocumentoParaAssinatura;
+use App\Services\AssinaturaDigital\AssinaturaCotaService;
 use App\Services\AssinaturaDigital\AssinaturaDigitalService;
 use Illuminate\Http\Request;
+use MasterTag\DataHora;
 
 class DocumentoAssinaturaController extends Controller
 {
     protected AssinaturaDigitalService $service;
+    protected AssinaturaCotaService $cotaService;
 
-    public function __construct(AssinaturaDigitalService $service)
+    public function __construct(AssinaturaDigitalService $service, AssinaturaCotaService $cotaService)
     {
         $this->service = $service;
+        $this->cotaService = $cotaService;
     }
 
     /**
@@ -35,12 +41,96 @@ class DocumentoAssinaturaController extends Controller
         $filtros = $request->only(['status', 'tipo_documento', 'solicitante_id', 'signatario', 'data_inicio', 'data_fim', 'id', 'per_page', 'page']);
         $filtros['per_page'] = $filtros['per_page'] ?? $request->get('porPagina', 15);
         $lista = $this->service->listar($empresaId, $filtros);
+        $resumoAssinaturas = $this->cotaService->obterResumoMensal($empresaId, $request->get('referencia'));
 
         return response()->json([
             'atual' => $lista->currentPage(),
             'ultima' => $lista->lastPage(),
             'total' => $lista->total(),
-            'dados' => ['itens' => $lista->items()],
+            'dados' => [
+                'itens' => $lista->items(),
+                'resumo_assinaturas' => $resumoAssinaturas,
+            ],
+        ]);
+    }
+
+    public function config()
+    {
+        $empresaId = auth()->user()->empresa_id;
+        $resumo = $this->cotaService->obterResumoMensal($empresaId);
+        $opcoes = $this->cotaService->listarUsuariosEGrupos($empresaId);
+        $config = \App\Models\ClienteConfig::whereClienteId($empresaId)->first();
+
+        return response()->json([
+            'limite_assinaturas_mensal' => $config ? $config->limite_assinaturas_mensal : null,
+            'assinatura_alerta_user_ids' => $config && is_array($config->assinatura_alerta_user_ids) ? $config->assinatura_alerta_user_ids : [],
+            'assinatura_alerta_grupo_ids' => $config && is_array($config->assinatura_alerta_grupo_ids) ? $config->assinatura_alerta_grupo_ids : [],
+            'usuarios' => $opcoes['usuarios'],
+            'grupos' => $opcoes['grupos'],
+            'resumo_assinaturas' => $resumo,
+        ]);
+    }
+
+    public function salvarConfig(Request $request)
+    {
+        $empresaId = auth()->user()->empresa_id;
+        $dados = $request->validate([
+            'limite_assinaturas_mensal' => 'nullable|integer|min:0',
+            'assinatura_alerta_user_ids' => 'nullable|array',
+            'assinatura_alerta_user_ids.*' => 'integer|exists:users,id',
+            'assinatura_alerta_grupo_ids' => 'nullable|array',
+            'assinatura_alerta_grupo_ids.*' => 'integer|exists:papeis,id',
+        ]);
+
+        $this->cotaService->salvarConfig($empresaId, [
+            'limite_assinaturas_mensal' => array_key_exists('limite_assinaturas_mensal', $dados) ? $dados['limite_assinaturas_mensal'] : null,
+            'assinatura_alerta_user_ids' => $dados['assinatura_alerta_user_ids'] ?? [],
+            'assinatura_alerta_grupo_ids' => $dados['assinatura_alerta_grupo_ids'] ?? [],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Configurações de cota de assinatura salvas com sucesso.',
+        ]);
+    }
+
+    public function exportarExtrato(Request $request)
+    {
+        $empresaId = auth()->user()->empresa_id;
+        $userId = auth()->id();
+        $dados = $request->validate([
+            'formato' => 'required|in:xlsx,pdf',
+            'referencia' => 'nullable|string|regex:/^\d{4}-\d{2}$/',
+        ]);
+
+        $resumo = $this->cotaService->obterResumoMensal($empresaId, $dados['referencia'] ?? null);
+        $competencia = str_replace('-', '_', $resumo['competencia']);
+
+        if ($dados['formato'] === 'xlsx') {
+            $head = ['Competência', 'Tipo Documento', 'Quantidade'];
+            $rows = [];
+            foreach ($resumo['extrato_por_tipo'] as $item) {
+                $rows[] = [$resumo['competencia'], $item['label'], $item['total']];
+            }
+            if (empty($rows)) {
+                $rows[] = [$resumo['competencia'], 'Sem registros', 0];
+            }
+
+            $nomeArquivo = "assinatura_extrato_{$competencia}_" . rand(1000, 9999) . '_' . date('YmdHis') . '.xlsx';
+            JobExportaExcel::dispatch($userId, 'Assinatura Digital - Extrato Mensal', $head, $rows, $nomeArquivo);
+        } else {
+            $nomeArquivo = "assinatura_extrato_{$competencia}_" . rand(1000, 9999) . '_' . date('YmdHis') . '.pdf';
+            $view = 'pdf.administracao.documentoassinatura.extrato-mensal';
+            $model = [
+                'resumo' => $resumo,
+                'gerado_em' => (new DataHora())->dataHoraInsert(),
+            ];
+            JobExportaPdf::dispatch(auth()->user()->toArray(), 'Assinatura Digital - Extrato Mensal', $model, $nomeArquivo, $view);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Estamos gerando o extrato. Você será notificado ao concluir.',
         ]);
     }
 
@@ -153,4 +243,5 @@ class DocumentoAssinaturaController extends Controller
 
         return response()->json(['success' => true, 'message' => 'E-mail de assinatura reenviado para os signatários.']);
     }
+
 }

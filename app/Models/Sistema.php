@@ -8,6 +8,7 @@ use DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use MasterTag\DataHora;
@@ -601,6 +602,21 @@ class Sistema
             ->pluck('cliente_id')
             ->toArray();
         return array_values(array_diff($todas, $desabilitadas));
+    }
+
+    public static function assinaturaDigitalHabilitada(?int $empresaId = null): bool
+    {
+        $empresaId = $empresaId ?: (auth()->check() ? auth()->user()->empresa_id : null);
+        if (!$empresaId) {
+            return false;
+        }
+
+        if (!Schema::hasColumn('cliente_configs', 'assinatura_digital_habilitada')) {
+            return false;
+        }
+
+        return (bool) ClienteConfig::whereClienteId($empresaId)
+            ->value('assinatura_digital_habilitada');
     }
 
     public static function syncFuncionarios()

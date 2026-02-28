@@ -466,6 +466,7 @@ class DocumentosLegaisContratoController extends Controller
 
             $empresaId = auth()->user()->empresa_id;
             DocumentoContratos::where('empresa_id', $empresaId)->findOrFail($request->contrato_id);
+            app(\App\Services\AssinaturaDigital\AssinaturaCotaService::class)->validarDisponibilidadeOrFail($empresaId);
 
             JobProcessarEnvioAssinatura::dispatch(
                 JobProcessarEnvioAssinatura::TIPO_CONTRATO,
@@ -486,6 +487,11 @@ class DocumentosLegaisContratoController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::warning('AssinaturaDigital [contrato]: validação falhou', ['errors' => $e->errors()]);
             throw $e;
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
         } catch (\Throwable $e) {
             \Log::error('AssinaturaDigital [contrato]: erro ao enviar', [
                 'message' => $e->getMessage(),

@@ -115,6 +115,9 @@
 <script src="{{ mix('js/app.js') }}"></script>
 <script src="{{ asset('js/funcoes.js') }}"></script>
 <script>
+    window.MYBP_ASSINATURA_DIGITAL_HABILITADA = {{ \App\Models\Sistema::assinaturaDigitalHabilitada() ? 'true' : 'false' }};
+</script>
+<script>
     (function ($) {
         "use strict";
 

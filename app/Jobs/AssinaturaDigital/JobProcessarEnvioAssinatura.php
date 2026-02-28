@@ -75,6 +75,17 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
                 default:
                     Log::warning('JobProcessarEnvioAssinatura: tipo inválido', ['tipo' => $this->tipo]);
             }
+        } catch (\RuntimeException $e) {
+            if (str_contains($e->getMessage(), 'Cota mensal de assinatura digital')) {
+                Log::warning('JobProcessarEnvioAssinatura: bloqueado por cota', [
+                    'tipo' => $this->tipo,
+                    'empresa_id' => $this->empresaId,
+                    'payload' => $this->payload,
+                    'message' => $e->getMessage(),
+                ]);
+                return;
+            }
+            throw $e;
         } catch (\Throwable $e) {
             Log::error('JobProcessarEnvioAssinatura: erro', [
                 'tipo' => $this->tipo,

@@ -23,6 +23,7 @@ const app = new Vue({
 
         todos_municipios: `autocomplete/todos-municipios`,
         preloadbotoes: true,
+        assinaturaDigitalHabilitada: typeof window !== 'undefined' ? !!window.MYBP_ASSINATURA_DIGITAL_HABILITADA : true,
 
         URL_ADMIN,
         objopen: null,

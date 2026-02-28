@@ -244,11 +244,11 @@
                                 data-toggle="modal"
                                 data-target="#janelaVisualizar"><i class="fa fa-search-plus"></i>
                         </button>
-                        <button v-if="item.status === 'Pendente Anexo' && temDocumentoAssinatura(item)" class="btn btn-sm btn-info ml-1" title="Gerenciar assinatura digital"
+                        <button v-if="assinaturaDigitalHabilitada && item.status === 'Pendente Anexo' && temDocumentoAssinatura(item)" class="btn btn-sm btn-info ml-1" title="Gerenciar assinatura digital"
                                 @click.prevent="abrirGerenciamentoAssinaturaCartaOferta(item)">
                             <i class="fas fa-cog"></i> Assinatura
                         </button>
-                        <button v-else-if="item.status === 'Pendente Anexo'" class="btn btn-sm btn-success ml-1" title="Enviar para assinatura digital"
+                        <button v-else-if="assinaturaDigitalHabilitada && item.status === 'Pendente Anexo'" class="btn btn-sm btn-success ml-1" title="Enviar para assinatura digital"
                                 @click.prevent="abrirEnvioAssinaturaCartaOferta(item)">
                             <i class="fas fa-pen-fancy"></i> Assinatura
                         </button>

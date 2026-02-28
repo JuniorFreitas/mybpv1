@@ -454,12 +454,12 @@
                                target="_blank">
                                 <i class="fa fa-file-pdf"></i>
                             </a>
-                            <button type="button" class="btn btn-sm btn-info mb-1" v-if="permissoes.pdf && temDocumentoAssinatura(item)"
+                            <button type="button" class="btn btn-sm btn-info mb-1" v-if="assinaturaDigitalHabilitada && permissoes.pdf && temDocumentoAssinatura(item)"
                                     v-tippy content="Gerenciar assinatura digital"
                                     @click.prevent="abrirModalGerenciarAssinatura(item)">
                                 <i class="fa fa-cog"></i>
                             </button>
-                            <button type="button" class="btn btn-sm btn-success mb-1" v-else-if="permissoes.pdf"
+                            <button type="button" class="btn btn-sm btn-success mb-1" v-else-if="assinaturaDigitalHabilitada && permissoes.pdf"
                                     v-tippy content="Enviar para assinatura digital"
                                     @click.prevent="abrirModalAssinatura(item)">
                                 <i class="fa fa-pen-fancy"></i>
@@ -521,6 +521,7 @@ export default {
             preloadAjax: false,
             editando: false,
             apagado: false,
+            assinaturaDigitalHabilitada: typeof window !== 'undefined' ? !!window.MYBP_ASSINATURA_DIGITAL_HABILITADA : true,
 
             form: {
                 dados_cadastrais: {

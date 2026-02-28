@@ -59,6 +59,82 @@
             </form>
         </fieldset>
 
+        <div class="assinatura-uso-card" v-if="resumoAssinaturas">
+            <div class="uso-header">
+                <div>
+                    <div class="uso-titulo">Consumo mensal de assinaturas</div>
+                    <div class="uso-subtitulo">Competência: {{ formatarCompetencia(resumoAssinaturas.competencia) }}</div>
+                </div>
+            </div>
+            <div class="uso-metricas">
+                <div class="uso-metrica">
+                    <span class="uso-label">Limite mensal</span>
+                    <strong class="uso-valor">{{ resumoAssinaturas.limite_mensal === null ? 'Sem limite' : resumoAssinaturas.limite_mensal }}</strong>
+                </div>
+                <div class="uso-metrica">
+                    <span class="uso-label">Usadas</span>
+                    <strong class="uso-valor">{{ resumoAssinaturas.usadas || 0 }}</strong>
+                </div>
+                <div class="uso-metrica">
+                    <span class="uso-label">Restantes</span>
+                    <strong class="uso-valor">{{ resumoAssinaturas.restantes === null ? 'Ilimitado' : resumoAssinaturas.restantes }}</strong>
+                </div>
+            </div>
+            <div class="uso-progress-wrap" v-if="resumoAssinaturas.limite_mensal !== null">
+                <div class="uso-progress">
+                    <div class="uso-progress-bar" :style="{ width: percentualUsoBar + '%' }"></div>
+                </div>
+                <span class="uso-progress-text">{{ percentualUsoBar }}% utilizado</span>
+            </div>
+            <div class="uso-extrato" v-if="resumoAssinaturas.extrato_por_tipo && resumoAssinaturas.extrato_por_tipo.length">
+                <span class="uso-extrato-label">Extrato do mês por tipo:</span>
+                <span class="uso-chip" v-for="item in resumoAssinaturas.extrato_por_tipo" :key="item.tipo_documento">
+                    {{ item.label }}: {{ item.total }}
+                </span>
+            </div>
+            <div class="uso-acoes">
+                <button type="button" class="btn btn-sm btn-outline-primary mr-2" :disabled="exportandoXlsx" @click="exportarExtrato('xlsx')">
+                    <i :class="exportandoXlsx ? 'fa fa-spinner fa-spin' : 'fa fa-file-excel'"></i> Extrato XLSX
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger" :disabled="exportandoPdf" @click="exportarExtrato('pdf')">
+                    <i :class="exportandoPdf ? 'fa fa-spinner fa-spin' : 'fa fa-file-pdf'"></i> Extrato PDF
+                </button>
+            </div>
+        </div>
+
+        <div class="assinatura-uso-card" v-if="configCota">
+            <div class="uso-header">
+                <div>
+                    <div class="uso-titulo">Configuração de cota e alertas</div>
+                    <div class="uso-subtitulo">Defina limite mensal e destinatários dos alertas de 80%, 90% e 100%</div>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-12 col-md-3 mb-2">
+                    <label class="mb-1">Limite mensal</label>
+                    <input type="number" min="0" class="form-control form-control-sm" v-model.number="configCota.limite_assinaturas_mensal" placeholder="Ex: 100" />
+                    <small class="text-muted">Vazio = sem limite</small>
+                </div>
+                <div class="col-12 col-md-4 mb-2">
+                    <label class="mb-1">Usuários para alerta</label>
+                    <select class="form-control form-control-sm" multiple v-model="configCota.assinatura_alerta_user_ids">
+                        <option v-for="u in (configCota.usuarios || [])" :key="u.id" :value="u.id">{{ u.nome }} ({{ u.email || 'sem e-mail' }})</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-2">
+                    <label class="mb-1">Grupos para alerta</label>
+                    <select class="form-control form-control-sm" multiple v-model="configCota.assinatura_alerta_grupo_ids">
+                        <option v-for="g in (configCota.grupos || [])" :key="g.id" :value="g.id">{{ g.nome }}</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-1 mb-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-sm btn-success w-100" :disabled="salvandoConfigCota" @click="salvarConfigCota">
+                        <i :class="salvandoConfigCota ? 'fa fa-spinner fa-spin' : 'fa fa-save'"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <preload class="mt-2 text-center" v-if="controle.carregando"></preload>
 
         <div class="empty-state" v-show="!controle.carregando && lista.length === 0">
@@ -259,6 +335,11 @@ export default {
             porPagina: 15,
             urlPaginacao: `${typeof URL_ADMIN !== 'undefined' ? URL_ADMIN : ''}/administracao/documento-assinatura/atualizar`,
             listaSolicitantes: [],
+            resumoAssinaturas: null,
+            configCota: null,
+            salvandoConfigCota: false,
+            exportandoXlsx: false,
+            exportandoPdf: false,
             controle: {
                 carregando: false,
                 dados: {
@@ -292,6 +373,7 @@ export default {
     mounted() {
         this.urlParamGet();
         this.carregarSolicitantes();
+        this.carregarConfigCota();
         this.$nextTick(() => {
             if (this.$refs.componente) {
                 const p = parseInt(this.controle.dados.page, 10);
@@ -317,6 +399,12 @@ export default {
         },
     },
     methods: {
+        formatarCompetencia(competencia) {
+            if (!competencia) return '—';
+            const [ano, mes] = String(competencia).split('-');
+            const data = new Date(Number(ano), Number(mes) - 1, 1);
+            return data.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+        },
         urlParamGet() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('status')) this.controle.dados.status = urlParams.get('status');
@@ -350,6 +438,7 @@ export default {
         },
         carregou(dados) {
             this.lista = (dados && dados.itens) ? dados.itens : [];
+            this.resumoAssinaturas = (dados && dados.resumo_assinaturas) ? dados.resumo_assinaturas : null;
             this.controle.carregando = false;
             this.$nextTick(() => this.syncUrlFiltros());
         },
@@ -380,6 +469,57 @@ export default {
             axios.get(url).then(res => {
                 this.listaSolicitantes = Array.isArray(res.data) ? res.data : [];
             }).catch(() => { this.listaSolicitantes = []; });
+        },
+        carregarConfigCota() {
+            axios.get(`${URL_ADMIN}/administracao/documento-assinatura/config`).then((res) => {
+                const data = res.data || {};
+                this.configCota = {
+                    limite_assinaturas_mensal: data.limite_assinaturas_mensal,
+                    assinatura_alerta_user_ids: (data.assinatura_alerta_user_ids || []).map((id) => Number(id)),
+                    assinatura_alerta_grupo_ids: (data.assinatura_alerta_grupo_ids || []).map((id) => Number(id)),
+                    usuarios: data.usuarios || [],
+                    grupos: data.grupos || [],
+                };
+                if (!this.resumoAssinaturas && data.resumo_assinaturas) {
+                    this.resumoAssinaturas = data.resumo_assinaturas;
+                }
+            }).catch(() => {
+                this.configCota = null;
+            });
+        },
+        salvarConfigCota() {
+            if (!this.configCota) return;
+            this.salvandoConfigCota = true;
+            axios.post(`${URL_ADMIN}/administracao/documento-assinatura/config`, {
+                limite_assinaturas_mensal: this.configCota.limite_assinaturas_mensal === '' ? null : this.configCota.limite_assinaturas_mensal,
+                assinatura_alerta_user_ids: this.configCota.assinatura_alerta_user_ids || [],
+                assinatura_alerta_grupo_ids: this.configCota.assinatura_alerta_grupo_ids || [],
+            }).then((res) => {
+                if (typeof mostraSucesso !== 'undefined') mostraSucesso((res.data && res.data.message) ? res.data.message : 'Configuração salva.');
+                this.salvandoConfigCota = false;
+                this.carregarConfigCota();
+                this.atualizar();
+            }).catch((err) => {
+                this.salvandoConfigCota = false;
+                const msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao salvar configuração.';
+                if (typeof mostraErro !== 'undefined') mostraErro(msg);
+            });
+        },
+        exportarExtrato(formato) {
+            if (formato === 'xlsx') this.exportandoXlsx = true;
+            if (formato === 'pdf') this.exportandoPdf = true;
+            axios.post(`${URL_ADMIN}/administracao/documento-assinatura/extrato/exportar`, {
+                formato,
+                referencia: this.resumoAssinaturas ? this.resumoAssinaturas.competencia : null,
+            }).then((res) => {
+                if (typeof mostraSucesso !== 'undefined') mostraSucesso((res.data && res.data.message) ? res.data.message : 'Exportação solicitada.');
+            }).catch((err) => {
+                const msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao solicitar exportação.';
+                if (typeof mostraErro !== 'undefined') mostraErro(msg);
+            }).finally(() => {
+                if (formato === 'xlsx') this.exportandoXlsx = false;
+                if (formato === 'pdf') this.exportandoPdf = false;
+            });
         },
         labelTipo(tipo) {
             return this.tiposDocumento[tipo] || tipo || '—';
@@ -576,10 +716,104 @@ export default {
             return linhas;
         },
     },
+    computed: {
+        percentualUsoBar() {
+            if (!this.resumoAssinaturas || this.resumoAssinaturas.percentual_uso === null || this.resumoAssinaturas.percentual_uso === undefined) {
+                return 0;
+            }
+            const v = Number(this.resumoAssinaturas.percentual_uso);
+            if (isNaN(v)) return 0;
+            return Math.max(0, Math.min(100, Math.round(v)));
+        },
+    },
 };
 </script>
 
 <style scoped>
+.documento-assinatura-grid .assinatura-uso-card {
+    background: linear-gradient(145deg, #f8fbff 0%, #ffffff 100%);
+    border: 1px solid #dbe7f3;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+}
+.documento-assinatura-grid .uso-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.documento-assinatura-grid .uso-titulo {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #174257;
+}
+.documento-assinatura-grid .uso-subtitulo {
+    font-size: 0.813rem;
+    color: #6c757d;
+}
+.documento-assinatura-grid .uso-metricas {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+}
+.documento-assinatura-grid .uso-metrica {
+    min-width: 120px;
+}
+.documento-assinatura-grid .uso-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+.documento-assinatura-grid .uso-valor {
+    font-size: 1.1rem;
+    color: #212529;
+}
+.documento-assinatura-grid .uso-progress-wrap {
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.documento-assinatura-grid .uso-progress {
+    flex: 1;
+    height: 8px;
+    border-radius: 999px;
+    background: #e9ecef;
+    overflow: hidden;
+}
+.documento-assinatura-grid .uso-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #17a2b8 0%, #174257 100%);
+}
+.documento-assinatura-grid .uso-progress-text {
+    font-size: 0.75rem;
+    color: #495057;
+    font-weight: 600;
+}
+.documento-assinatura-grid .uso-extrato {
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+.documento-assinatura-grid .uso-extrato-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+.documento-assinatura-grid .uso-chip {
+    border-radius: 999px;
+    border: 1px solid #dbe7f3;
+    background: #fff;
+    color: #174257;
+    font-size: 0.75rem;
+    padding: 0.22rem 0.55rem;
+}
+.documento-assinatura-grid .uso-acoes {
+    margin-top: 0.75rem;
+}
+
 /* Filtros */
 .filtros-documento-assinatura label { font-size: 0.875rem; font-weight: 500; }
 .filtros-documento-assinatura .form-control-sm { height: calc(1.5em + 0.5rem); }

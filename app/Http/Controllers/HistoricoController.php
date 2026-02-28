@@ -413,6 +413,11 @@ class HistoricoController extends Controller
         }
 
         $empresaId = auth()->user()->empresa_id;
+        try {
+            app(\App\Services\AssinaturaDigital\AssinaturaCotaService::class)->validarDisponibilidadeOrFail($empresaId);
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
         JobProcessarEnvioAssinatura::dispatch(
             JobProcessarEnvioAssinatura::TIPO_MEDIDA,
             $empresaId,

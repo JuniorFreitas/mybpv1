@@ -100,12 +100,12 @@
                         <button class="btn btn-sm btn-outline-primary" @click="gerarPdf(obj)" v-show="!obj.novo"><i
                             class="fas fa-file-pdf"></i> GERAR PDF
                         </button>
-                        <template v-if="temDocumentoAssinatura(obj)">
+                        <template v-if="assinaturaDigitalHabilitada && temDocumentoAssinatura(obj)">
                             <button type="button" class="btn btn-sm ml-2 btn-info" @click="abrirGerenciamentoAssinaturaMedida(obj)">
                                 <span class="fas fa-cog"></span> Gerenciar assinatura
                             </button>
                         </template>
-                        <template v-else>
+                        <template v-else-if="assinaturaDigitalHabilitada">
                             <button type="button" class="btn btn-sm ml-2 btn-success" @click="abrirEnvioAssinaturaMedida(obj)">
                                 <span class="fas fa-pen-fancy"></span> Enviar para assinatura
                             </button>
@@ -255,6 +255,7 @@ export default {
             tipos: [],
             definicao: [],
             privilegio_gestao_rh: false,
+            assinaturaDigitalHabilitada: typeof window !== 'undefined' ? !!window.MYBP_ASSINATURA_DIGITAL_HABILITADA : true,
             
             // Modal remover medida
             medidaSelecionada: null,

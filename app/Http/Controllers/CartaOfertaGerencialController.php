@@ -64,6 +64,11 @@ class CartaOfertaGerencialController extends Controller
         if (empty($cartaOferta->Curriculo->email)) {
             return response()->json(['success' => false, 'message' => 'O candidato não possui e-mail cadastrado.'], 422);
         }
+        try {
+            app(\App\Services\AssinaturaDigital\AssinaturaCotaService::class)->validarDisponibilidadeOrFail($empresaId);
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
 
         JobProcessarEnvioAssinatura::dispatch(
             JobProcessarEnvioAssinatura::TIPO_CARTA_OFERTA,

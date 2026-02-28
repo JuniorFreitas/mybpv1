@@ -512,37 +512,45 @@ class DemissaoPrevistaController extends Controller
      */
     public function enviarParaAssinatura(Request $request)
     {
-        $request->validate([
-            'demissao_prevista_id' => 'required|integer',
-            'signatarios' => 'required|array|min:1',
-            'signatarios.*.email' => 'required|email',
-            'signatarios.*.nome' => 'required|string|max:255',
-            'signatarios.*.cpf' => 'nullable|string|max:14',
-            'signatarios.*.user_id' => 'nullable|exists:users,id',
-        ]);
+        try {
+            $request->validate([
+                'demissao_prevista_id' => 'required|integer',
+                'signatarios' => 'required|array|min:1',
+                'signatarios.*.email' => 'required|email',
+                'signatarios.*.nome' => 'required|string|max:255',
+                'signatarios.*.cpf' => 'nullable|string|max:14',
+                'signatarios.*.user_id' => 'nullable|exists:users,id',
+            ]);
 
-        $demissaoPrevista = DemissaoPrevista::whereId($request->demissao_prevista_id)
-            ->where('empresa_id', auth()->user()->empresa_id)
-            ->with('Colaborador')
-            ->first();
-        if (!$demissaoPrevista || !$demissaoPrevista->Colaborador) {
-            return response()->json(['success' => false, 'message' => 'Demissão não encontrada.'], 404);
+            $demissaoPrevista = DemissaoPrevista::whereId($request->demissao_prevista_id)
+                ->where('empresa_id', auth()->user()->empresa_id)
+                ->with('Colaborador')
+                ->first();
+            if (!$demissaoPrevista || !$demissaoPrevista->Colaborador) {
+                return response()->json(['success' => false, 'message' => 'Demissão não encontrada.'], 404);
+            }
+
+            $empresaId = auth()->user()->empresa_id;
+            app(\App\Services\AssinaturaDigital\AssinaturaCotaService::class)->validarDisponibilidadeOrFail($empresaId);
+
+            JobProcessarEnvioAssinatura::dispatch(
+                JobProcessarEnvioAssinatura::TIPO_DEMISSAO,
+                $empresaId,
+                auth()->id(),
+                ['demissao_prevista_id' => (int) $request->demissao_prevista_id],
+                $request->signatarios
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitação recebida. O documento será processado e enviado para assinatura.',
+            ], 202);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
         }
-
-        $empresaId = auth()->user()->empresa_id;
-
-        JobProcessarEnvioAssinatura::dispatch(
-            JobProcessarEnvioAssinatura::TIPO_DEMISSAO,
-            $empresaId,
-            auth()->id(),
-            ['demissao_prevista_id' => (int) $request->demissao_prevista_id],
-            $request->signatarios
-        );
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Solicitação recebida. O documento será processado e enviado para assinatura.',
-        ], 202);
     }
 
     /**

@@ -543,13 +543,13 @@
                                     <a class="dropdown-item" :href="`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/${item.id}/pdf`" target="_blank" title="Aviso Prévio (PDF)">
                                         <i class="fas fa-file-pdf"></i> Aviso Prévio (PDF)
                                     </a>
-                                    <template v-if="temDocumentoAssinaturaDemissao(item)">
+                                    <template v-if="assinaturaDigitalHabilitada && temDocumentoAssinaturaDemissao(item)">
                                         <a class="dropdown-item" href="javascript://" title="Gerenciar assinatura digital"
                                            @click.prevent="abrirGerenciamentoAssinaturaDemissao(item)">
                                             <i class="fas fa-cog"></i> Gerenciar assinatura
                                         </a>
                                     </template>
-                                    <template v-else>
+                                    <template v-else-if="assinaturaDigitalHabilitada">
                                         <a class="dropdown-item" href="javascript://" title="Enviar para assinatura digital"
                                            @click.prevent="abrirEnvioAssinaturaDemissao(item)">
                                             <i class="fas fa-pen-fancy"></i> Enviar para assinatura
@@ -747,6 +747,7 @@ export default {
             nomeAprovacaoExtra: '',
             URL_ADMIN,
             preloadExportacao: false,
+            assinaturaDigitalHabilitada: typeof window !== 'undefined' ? !!window.MYBP_ASSINATURA_DIGITAL_HABILITADA : true,
 
             urlExportacao: `${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/export`,
 

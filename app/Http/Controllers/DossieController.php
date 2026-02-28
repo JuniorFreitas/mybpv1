@@ -307,6 +307,11 @@ class DossieController extends Controller
         }
 
         $empresaId = $colaborador->empresa_id;
+        try {
+            app(\App\Services\AssinaturaDigital\AssinaturaCotaService::class)->validarDisponibilidadeOrFail($empresaId);
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
         $tipo_modelo = $request->tipo_modelo;
         JobProcessarEnvioAssinatura::dispatch(
             JobProcessarEnvioAssinatura::TIPO_DOSSIE,
