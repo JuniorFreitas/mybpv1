@@ -80,6 +80,16 @@
                 <button class="btn btn-sm ml-2 btn-primary" @click="modelo('contratotrabalhoassinado')">
                     <span class="fas fa-file-pdf"></span> Baixar Modelo
                 </button>
+                <template v-if="temDocumentoAssinaturaTipo('contratotrabalhoassinado')">
+                    <button type="button" class="btn btn-sm ml-2 btn-info" @click="abrirModalGerenciarAssinatura('contratotrabalhoassinado')">
+                        <span class="fas fa-cog"></span> Gerenciar assinatura
+                    </button>
+                </template>
+                <template v-else>
+                    <button type="button" class="btn btn-sm ml-2 btn-success" @click="abrirModalAssinatura('contratotrabalhoassinado')">
+                        <span class="fas fa-pen-fancy"></span> Enviar para assinatura
+                    </button>
+                </template>
             </fieldset>
 
             <fieldset>
@@ -97,6 +107,16 @@
                 <button class="btn btn-sm ml-2 btn-primary" @click="modelo('termoconfiabilidade')">
                     <span class="fas fa-file-pdf"></span> Baixar Modelo
                 </button>
+                <template v-if="temDocumentoAssinaturaTipo('termoconfiabilidade')">
+                    <button type="button" class="btn btn-sm ml-2 btn-info" @click="abrirModalGerenciarAssinatura('termoconfiabilidade')">
+                        <span class="fas fa-cog"></span> Gerenciar assinatura
+                    </button>
+                </template>
+                <template v-else>
+                    <button type="button" class="btn btn-sm ml-2 btn-success" @click="abrirModalAssinatura('termoconfiabilidade')">
+                        <span class="fas fa-pen-fancy"></span> Enviar para assinatura
+                    </button>
+                </template>
             </fieldset>
 
             <fieldset>
@@ -114,6 +134,16 @@
                 <button class="btn btn-sm ml-2 btn-primary" @click="modelo('valetransporte')">
                     <span class="fas fa-file-pdf"></span> Baixar Modelo
                 </button>
+                <template v-if="temDocumentoAssinaturaTipo('valetransporte')">
+                    <button type="button" class="btn btn-sm ml-2 btn-info" @click="abrirModalGerenciarAssinatura('valetransporte')">
+                        <span class="fas fa-cog"></span> Gerenciar assinatura
+                    </button>
+                </template>
+                <template v-else>
+                    <button type="button" class="btn btn-sm ml-2 btn-success" @click="abrirModalAssinatura('valetransporte')">
+                        <span class="fas fa-pen-fancy"></span> Enviar para assinatura
+                    </button>
+                </template>
             </fieldset>
 
             <fieldset>
@@ -131,6 +161,16 @@
                 <button class="btn btn-sm ml-2 btn-primary" @click="modelo('acordocompensacaohoras')">
                     <span class="fas fa-file-pdf"></span> Baixar Modelo
                 </button>
+                <template v-if="temDocumentoAssinaturaTipo('acordocompensacaohoras')">
+                    <button type="button" class="btn btn-sm ml-2 btn-info" @click="abrirModalGerenciarAssinatura('acordocompensacaohoras')">
+                        <span class="fas fa-cog"></span> Gerenciar assinatura
+                    </button>
+                </template>
+                <template v-else>
+                    <button type="button" class="btn btn-sm ml-2 btn-success" @click="abrirModalAssinatura('acordocompensacaohoras')">
+                        <span class="fas fa-pen-fancy"></span> Enviar para assinatura
+                    </button>
+                </template>
             </fieldset>
 
             <fieldset>
@@ -148,6 +188,16 @@
                 <button class="btn btn-sm ml-2 btn-primary" @click="modelo('termosalariofamilia')">
                     <span class="fas fa-file-pdf"></span> Baixar Modelo
                 </button>
+                <template v-if="temDocumentoAssinaturaTipo('termosalariofamilia')">
+                    <button type="button" class="btn btn-sm ml-2 btn-info" @click="abrirModalGerenciarAssinatura('termosalariofamilia')">
+                        <span class="fas fa-cog"></span> Gerenciar assinatura
+                    </button>
+                </template>
+                <template v-else>
+                    <button type="button" class="btn btn-sm ml-2 btn-success" @click="abrirModalAssinatura('termosalariofamilia')">
+                        <span class="fas fa-pen-fancy"></span> Enviar para assinatura
+                    </button>
+                </template>
             </fieldset>
 
             <fieldset>
@@ -165,6 +215,16 @@
                 <button class="btn btn-sm ml-2 btn-primary" @click="modelo('declaracaodependentesimposto')">
                     <span class="fas fa-file-pdf"></span> Baixar Modelo
                 </button>
+                <template v-if="temDocumentoAssinaturaTipo('declaracaodependentesimposto')">
+                    <button type="button" class="btn btn-sm ml-2 btn-info" @click="abrirModalGerenciarAssinatura('declaracaodependentesimposto')">
+                        <span class="fas fa-cog"></span> Gerenciar assinatura
+                    </button>
+                </template>
+                <template v-else>
+                    <button type="button" class="btn btn-sm ml-2 btn-success" @click="abrirModalAssinatura('declaracaodependentesimposto')">
+                        <span class="fas fa-pen-fancy"></span> Enviar para assinatura
+                    </button>
+                </template>
             </fieldset>
 
             <fieldset>
@@ -450,12 +510,22 @@
                 <i class="fa fa-save"></i> Salvar
             </button>
 
+            <acao-assinatura-documento
+                ref="acaoAssinaturaDossie"
+                :id-prefix="`dossie_${hash}`"
+                :titulo-enviar="'Enviar para assinatura digital'"
+                :get-nome-documento="getNomeDocumentoAssinaturaDossie"
+                :get-signatarios-iniciais="getSignatariosIniciaisAssinaturaDossie"
+                :enviar-handler="enviarAssinaturaDossie"
+                :atualizar-handler="atualizar">
+            </acao-assinatura-documento>
         </div>
     </div>
 </template>
 
 <script>
 import Upload from "../../Upload";
+import AcaoAssinaturaDocumento from "../../administracao/documentoassinatura/AcaoAssinaturaDocumento.vue";
 
 export default {
     name: "Dossie",
@@ -473,7 +543,8 @@ export default {
         }
     },
     components: {
-        Upload
+        Upload,
+        AcaoAssinaturaDocumento
     },
     data() {
         return {
@@ -490,9 +561,22 @@ export default {
                 foto_tresDel: [],
 
             },
-            formDefault: null
+            formDefault: null,
 
+            documentosAssinaturaPorTipo: {},
         };
+    },
+    computed: {
+        labelsTipoModeloDossie() {
+            return {
+                contratotrabalhoassinado: 'Contrato de Trabalho Assinado',
+                termoconfiabilidade: 'Termo de Confidencialidade',
+                valetransporte: 'Opção Vale Transporte',
+                acordocompensacaohoras: 'Acordo de Compensação de Horas',
+                termosalariofamilia: 'Termo Salário Família',
+                declaracaodependentesimposto: 'Declaração Dependentes Imposto de Renda'
+            };
+        }
     },
     mounted() {
         // const dynamicKeys = ['doc_selecao', 'doc_checklist', 'ficha_registrada', 'contrato_trabalho_assinado'];
@@ -510,6 +594,41 @@ export default {
         removeDynamicKey(key) {
             this.$delete(this.form, key);
             this.$delete(this.form, `${key}Del`);
+        },
+        getDocumentoAssinaturaPorTipo(tipoModelo) {
+            return (this.documentosAssinaturaPorTipo && this.documentosAssinaturaPorTipo[tipoModelo]) || null;
+        },
+        temDocumentoAssinaturaTipo(tipoModelo) {
+            const doc = this.getDocumentoAssinaturaPorTipo(tipoModelo);
+            return !!(doc && doc.id);
+        },
+        abrirModalGerenciarAssinatura(tipoModelo) {
+            const doc = this.getDocumentoAssinaturaPorTipo(tipoModelo);
+            if (!doc || !doc.id) return;
+            this.$refs.acaoAssinaturaDossie.abrirGerenciar(doc, { tipo_modelo: tipoModelo });
+        },
+        getNomeDocumentoAssinaturaDossie(contexto) {
+            const tipo = contexto && contexto.tipo_modelo ? contexto.tipo_modelo : '';
+            return `${this.labelsTipoModeloDossie[tipo] || tipo || 'Documento'} (Dossiê)`;
+        },
+        getSignatariosIniciaisAssinaturaDossie() {
+            const curriculo = this.form.curriculo || {};
+            const nome = curriculo.nome || '';
+            const email = curriculo.email || (curriculo.user && curriculo.user.login ? curriculo.user.login : '');
+            const cpf = curriculo.cpf || '';
+            if (!nome && !email && !cpf) return [{ nome: '', email: '', cpf: '' }];
+            return [{ nome: nome || '', email: email || '', cpf: cpf || '' }];
+        },
+        enviarAssinaturaDossie({ contexto, signatarios }) {
+            const signatariosValidos = signatarios
+                .filter((s) => s.email && s.nome)
+                .map((s) => ({ nome: s.nome, email: s.email, cpf: s.cpf || null }));
+            return axios.post(`${URL_ADMIN}/historico/dossie/enviar-para-assinatura`, {
+                tipo_modelo: contexto.tipo_modelo,
+                curriculo_id: this.form.curriculo_id,
+                feedback_id: this.feedback_id,
+                signatarios: signatariosValidos,
+            });
         },
         salvar() {
             formReset();
@@ -539,6 +658,7 @@ export default {
                     this.addDynamicKey(key);
                 });
                 Object.assign(this.form, res.data.dossie);
+                this.documentosAssinaturaPorTipo = res.data.documentos_para_assinatura || {};
                 // this.form = data;
                 this.preload = false;
             });
@@ -546,7 +666,10 @@ export default {
         modelo(tipo_modelo) {
             let link = `${URL_ADMIN}/historico/dossie/${tipo_modelo}/${this.form.curriculo_id}/${this.form.id}`;
             open(link, "blank");
-        }
+        },
+        abrirModalAssinatura(tipo_modelo) {
+            this.$refs.acaoAssinaturaDossie.abrirEnvio({ tipo_modelo });
+        },
     }
 };
 </script>

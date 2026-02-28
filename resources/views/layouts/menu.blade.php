@@ -99,6 +99,12 @@
                                     Formas Contratos
                                 </a>
                             </li>
+                            <li>
+                                <a href="{{route('g.administracao.documento-assinatura.index')}}"
+                                   subparent="documentos_legais" parent="administracao" key="documento-assinatura">
+                                    Documentos para Assinatura
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 @endcan

@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Classes\ZapNotificacao;
 use App\Http\Controllers\Api\IntegraSgiMybpController;
+use App\Jobs\AssinaturaDigital\JobProcessarEnvioAssinatura;
 use App\Jobs\Entrevista\JobEnvioDocumento;
 use App\Models\CartaOferta;
+use App\Models\DocumentoParaAssinatura;
 use App\Models\Projeto;
 use App\Models\Sistema;
 use App\Models\TelefoneCurriculo;
@@ -20,6 +22,61 @@ class CartaOfertaGerencialController extends Controller
     public function index()
     {
         return view('g.admissao.documentos.cartaoferta.index');
+    }
+
+    /**
+     * Envia Carta Oferta para assinatura digital (signatário = candidato).
+     */
+    public function enviarParaAssinatura(Request $request)
+    {
+        $request->validate([
+            'carta_oferta_id' => 'required|integer',
+        ]);
+
+        $cartaOferta = CartaOferta::where('id', $request->carta_oferta_id)
+            ->where('empresa_id', auth()->user()->empresa_id)
+            ->with([
+                'Curriculo:id,nome,email,cpf',
+                'empresa:id,razao_social,nome_fantasia',
+                'vagaAberta:id,vaga_id',
+                'vagaAberta.Vaga:id,nome',
+                'vagaProjeto:id,vaga_aberta_id',
+                'vagaProjeto.VagaAberta:id,vaga_id',
+                'vagaProjeto.VagaAberta.Vaga:id,nome',
+            ])
+            ->first();
+
+        if (!$cartaOferta || !$cartaOferta->Curriculo) {
+            return response()->json(['success' => false, 'message' => 'Carta oferta não encontrada.'], 404);
+        }
+        if ($cartaOferta->status !== CartaOferta::STATUS_PENDENTE_ANEXO) {
+            return response()->json(['success' => false, 'message' => 'Esta carta oferta já foi enviada ou não está pendente de anexo.'], 422);
+        }
+
+        $nomeCargo = 'Cargo';
+        if ($cartaOferta->vagaAberta && $cartaOferta->vagaAberta->Vaga) {
+            $nomeCargo = $cartaOferta->vagaAberta->Vaga->nome;
+        } elseif ($cartaOferta->vagaProjeto && $cartaOferta->vagaProjeto->VagaAberta && $cartaOferta->vagaProjeto->VagaAberta->Vaga) {
+            $nomeCargo = $cartaOferta->vagaProjeto->VagaAberta->Vaga->nome;
+        }
+
+        $empresaId = auth()->user()->empresa_id;
+        if (empty($cartaOferta->Curriculo->email)) {
+            return response()->json(['success' => false, 'message' => 'O candidato não possui e-mail cadastrado.'], 422);
+        }
+
+        JobProcessarEnvioAssinatura::dispatch(
+            JobProcessarEnvioAssinatura::TIPO_CARTA_OFERTA,
+            $empresaId,
+            auth()->id(),
+            ['carta_oferta_id' => (int) $cartaOferta->id],
+            []
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Solicitação recebida. A carta oferta será processada e enviada para assinatura em background.',
+        ], 202);
     }
 
     public function filtro(Request $request)
@@ -173,6 +230,35 @@ class CartaOfertaGerencialController extends Controller
     public function atualizar(Request $request)
     {
         $resultado = $this->filtro($request)->paginate($request['pages']);
+        $itens = $resultado->getCollection();
+        $cartaIds = $itens->pluck('id')->filter()->values()->all();
+        $docsByCartaId = [];
+        if (!empty($cartaIds)) {
+            $docs = DocumentoParaAssinatura::withoutGlobalScopes()
+                ->select(['id', 'token', 'status', 'arquivo_assinado_id', 'tipo_documento', 'documentable_id'])
+                ->where('empresa_id', auth()->user()->empresa_id)
+                ->where('documentable_type', CartaOferta::class)
+                ->whereIn('documentable_id', $cartaIds)
+                ->orderBy('id', 'desc')
+                ->get();
+
+            foreach ($docs as $doc) {
+                if (!isset($docsByCartaId[$doc->documentable_id])) {
+                    $docsByCartaId[$doc->documentable_id] = [
+                        'id' => $doc->id,
+                        'token' => $doc->token,
+                        'status' => $doc->status,
+                        'arquivo_assinado_id' => $doc->arquivo_assinado_id,
+                        'tipo_documento' => $doc->tipo_documento,
+                    ];
+                }
+            }
+        }
+
+        $itens = $itens->map(function ($item) use ($docsByCartaId) {
+            $item->documento_para_assinatura = $docsByCartaId[$item->id] ?? null;
+            return $item;
+        })->values();
 
         $vagasProjeto = Projeto::
         select(['id', 'nome', 'preenchidas', 'empresa_id', 'qnt_total', 'preenchidas'])->with(
@@ -185,7 +271,7 @@ class CartaOfertaGerencialController extends Controller
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'itens' => $resultado->items(),
+                'itens' => $itens,
                 'lista_status' => CartaOferta::STATUS,
                 'lista_projetos' => $vagasProjeto,
             ]

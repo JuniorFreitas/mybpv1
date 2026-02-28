@@ -2,19 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\AssinaturaDigital\JobProcessarEnvioAssinatura;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\Cliente;
 use App\Models\Curriculo;
+use App\Models\DocumentoParaAssinatura;
 use App\Models\EmpresaTemporaria;
 use App\Models\FeedbackCurriculo;
 use App\Models\LogHistorico;
 use App\Models\Sistema;
 use App\Models\User;
-use Barryvdh\DomPDF\PDF;
 use DB;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
+use PDF;
+use Illuminate\Support\Str;
 
 class DossieController extends Controller
 {
@@ -62,7 +65,10 @@ class DossieController extends Controller
     {
         $feedback_id = $feedback;
         $feedback = FeedbackCurriculo::select('id', 'curriculo_id')->whereId($feedback_id)->with(
-            $this->listaDeRelacionamentos()
+            array_merge(
+                $this->listaDeRelacionamentos(),
+                ['Curriculo:id,nome,email,cpf', 'Curriculo.User:id,login']
+            )
         )->first();
 
         // Remove o prefixo 'get_documento_relacionado_' das chaves do objeto $feedback
@@ -72,9 +78,42 @@ class DossieController extends Controller
             $formattedFeedback[$formattedKey] = $value;
         }
 
+        $tipoModelosAssinatura = [
+            'contratotrabalhoassinado',
+            'termoconfiabilidade',
+            'valetransporte',
+            'acordocompensacaohoras',
+            'termosalariofamilia',
+            'declaracaodependentesimposto',
+        ];
+        $tiposDocumento = array_map(fn ($tipoModelo) => self::tipoModeloParaTipoDocumento($tipoModelo), $tipoModelosAssinatura);
+        $docs = DocumentoParaAssinatura::withoutGlobalScopes()
+            ->select(['id', 'token', 'status', 'arquivo_assinado_id', 'tipo_documento', 'documentable_id'])
+            ->where('empresa_id', auth()->user()->empresa_id)
+            ->where('documentable_type', FeedbackCurriculo::class)
+            ->where('documentable_id', $feedback_id)
+            ->whereIn('tipo_documento', $tiposDocumento)
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $documentosParaAssinatura = [];
+        foreach ($docs as $doc) {
+            $tipoModelo = self::tipoDocumentoParaTipoModelo($doc->tipo_documento);
+            if (!isset($documentosParaAssinatura[$tipoModelo])) {
+                $documentosParaAssinatura[$tipoModelo] = [
+                    'id' => $doc->id,
+                    'token' => $doc->token,
+                    'status' => $doc->status,
+                    'arquivo_assinado_id' => $doc->arquivo_assinado_id,
+                    'tipo_documento' => $doc->tipo_documento,
+                ];
+            }
+        }
+
         return [
             'dossie' => $formattedFeedback,
             'relacionamentos' => $this->listaRelacionamentoFormatada(),
+            'documentos_para_assinatura' => $documentosParaAssinatura,
         ];
     }
 
@@ -213,5 +252,79 @@ class DossieController extends Controller
         return $pdf->stream($tipo_modelo . (new DataHora())->nomeUnico() . ".pdf");
     }
 
+    private static function tipoModeloParaTipoDocumento(string $tipo_modelo): string
+    {
+        $map = [
+            'contratotrabalhoassinado' => 'contrato_trabalho',
+            'termoconfiabilidade' => 'termo_confidencialidade',
+            'valetransporte' => 'opcao_vale_transporte',
+            'acordocompensacaohoras' => 'acordo_compensacao_horas',
+            'termosalariofamilia' => 'termo_salario_familia',
+            'declaracaodependentesimposto' => 'declaracao_dependentes_ir',
+        ];
+        return $map[$tipo_modelo] ?? $tipo_modelo;
+    }
 
+    private static function tipoDocumentoParaTipoModelo(string $tipo_documento): string
+    {
+        $map = [
+            'contrato_trabalho' => 'contratotrabalhoassinado',
+            'termo_confidencialidade' => 'termoconfiabilidade',
+            'opcao_vale_transporte' => 'valetransporte',
+            'acordo_compensacao_horas' => 'acordocompensacaohoras',
+            'termo_salario_familia' => 'termosalariofamilia',
+            'declaracao_dependentes_ir' => 'declaracaodependentesimposto',
+        ];
+        return $map[$tipo_documento] ?? $tipo_documento;
+    }
+
+    /**
+     * Envia documento do dossiê para assinatura digital.
+     * Fluxo assíncrono: valida e enfileira job para gerar PDF/criar envio em background.
+     */
+    public function enviarParaAssinatura(Request $request)
+    {
+        $request->validate([
+            'tipo_modelo' => 'required|string|in:contratotrabalhoassinado,termoconfiabilidade,valetransporte,acordocompensacaohoras,termosalariofamilia,declaracaodependentesimposto',
+            'curriculo_id' => 'required|integer',
+            'feedback_id' => 'required|integer',
+            'signatarios' => 'required|array|min:1',
+            'signatarios.*.email' => 'required|email',
+            'signatarios.*.nome' => 'required|string|max:255',
+            'signatarios.*.cpf' => 'nullable|string|max:14',
+            'signatarios.*.user_id' => 'nullable|exists:users,id',
+        ]);
+
+        $colaborador = FeedbackCurriculo::with(['Curriculo', 'Admissao'])->whereCurriculoId($request->curriculo_id)->whereId($request->feedback_id)->first();
+        if (!$colaborador || $colaborador->empresa_id != auth()->user()->empresa_id) {
+            return response()->json(['success' => false, 'message' => 'Registro não encontrado.'], 404);
+        }
+        if (!$colaborador->Admissao) {
+            return response()->json(['success' => false, 'message' => 'É necessário existir admissão vinculada ao colaborador para enviar documento para assinatura.'], 400);
+        }
+        if (!$colaborador->Curriculo) {
+            return response()->json(['success' => false, 'message' => 'Dados do currículo não encontrados.'], 400);
+        }
+
+        $empresaId = $colaborador->empresa_id;
+        $tipo_modelo = $request->tipo_modelo;
+        JobProcessarEnvioAssinatura::dispatch(
+            JobProcessarEnvioAssinatura::TIPO_DOSSIE,
+            $empresaId,
+            auth()->id(),
+            [
+                'tipo_modelo' => $tipo_modelo,
+                'curriculo_id' => (int) $request->curriculo_id,
+                'feedback_id' => (int) $request->feedback_id,
+            ],
+            $request->signatarios
+        );
+
+        \Log::info('AssinaturaDigital [dossie]: envio enfileirado', ['feedback_id' => $request->feedback_id, 'tipo' => $tipo_modelo]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Solicitação recebida. O documento será processado e enviado para assinatura.',
+        ], 202);
+    }
 }

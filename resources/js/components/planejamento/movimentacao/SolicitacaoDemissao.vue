@@ -304,6 +304,16 @@
             </template>
         </modal>
 
+        <acao-assinatura-documento
+            ref="acaoAssinaturaDemissao"
+            :id-prefix="`demissao_${hash}`"
+            :titulo-enviar="'Enviar Aviso Prévio para assinatura digital'"
+            :get-nome-documento="getNomeDocumentoAssinaturaDemissao"
+            :get-signatarios-iniciais="getSignatariosIniciaisAssinaturaDemissao"
+            :enviar-handler="enviarAssinaturaDemissao"
+            :atualizar-handler="atualizar">
+        </acao-assinatura-documento>
+
         <fieldset>
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="$refs.componente.buscar()">
@@ -530,6 +540,21 @@
                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = false; podeanexar = false">
                                         Visualizar
                                     </a>
+                                    <a class="dropdown-item" :href="`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/${item.id}/pdf`" target="_blank" title="Aviso Prévio (PDF)">
+                                        <i class="fas fa-file-pdf"></i> Aviso Prévio (PDF)
+                                    </a>
+                                    <template v-if="temDocumentoAssinaturaDemissao(item)">
+                                        <a class="dropdown-item" href="javascript://" title="Gerenciar assinatura digital"
+                                           @click.prevent="abrirGerenciamentoAssinaturaDemissao(item)">
+                                            <i class="fas fa-cog"></i> Gerenciar assinatura
+                                        </a>
+                                    </template>
+                                    <template v-else>
+                                        <a class="dropdown-item" href="javascript://" title="Enviar para assinatura digital"
+                                           @click.prevent="abrirEnvioAssinaturaDemissao(item)">
+                                            <i class="fas fa-pen-fancy"></i> Enviar para assinatura
+                                        </a>
+                                    </template>
                                 </div>
                             </div>
                         </div>
@@ -688,6 +713,7 @@ import Upload from '../../Upload'
 import Utils from '../../../mixins/Utils'
 import configuracoes from '../../../mixins/Configuracoes'
 import DateRangeFilter from '../../DateRangeFilter.vue'
+import AcaoAssinaturaDocumento from '../../administracao/documentoassinatura/AcaoAssinaturaDocumento.vue'
 
 export default {
     mixins: [ExportacaoMixin, Utils, configuracoes],
@@ -697,7 +723,8 @@ export default {
     components: {
         gestoraprovacao,
         Upload,
-        DateRangeFilter
+        DateRangeFilter,
+        AcaoAssinaturaDocumento
     },
     data() {
         return {
@@ -784,6 +811,13 @@ export default {
             lista: [],
             centro_custos: [],
 
+            demissaoAssinaturaSelecionada: null,
+            signatariosAssinaturaDemissao: [],
+            preloadAssinaturaDemissao: false,
+            documentoAssinaturaDetalheDemissao: null,
+            preloadGerenciarAssinaturaDemissao: false,
+            demissaoParaReenvio: null,
+
             urlPaginacao: `${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/atualizar`,
             controle: {
                 carregando: false,
@@ -866,6 +900,31 @@ export default {
         }
     },
     methods: {
+        abrirEnvioAssinaturaDemissao(item) {
+            this.$refs.acaoAssinaturaDemissao.abrirEnvio(item);
+        },
+        abrirGerenciamentoAssinaturaDemissao(item) {
+            const doc = item && item.documento_para_assinatura;
+            if (!doc || !doc.id) return;
+            this.$refs.acaoAssinaturaDemissao.abrirGerenciar(doc, item);
+        },
+        getNomeDocumentoAssinaturaDemissao(item) {
+            const nome = item && item.colaborador_nome ? item.colaborador_nome : '';
+            return nome ? `Aviso Prévio - ${nome}` : 'Aviso Prévio';
+        },
+        getSignatariosIniciaisAssinaturaDemissao(item) {
+            return [{
+                nome: (item && item.colaborador_nome) || '',
+                email: (item && item.colaborador_email) || '',
+                cpf: (item && item.colaborador_cpf) || '',
+            }];
+        },
+        enviarAssinaturaDemissao({ contexto, signatarios }) {
+            return axios.post(`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/enviar-para-assinatura`, {
+                demissao_prevista_id: contexto.id,
+                signatarios: signatarios.map((s) => ({ nome: s.nome, email: s.email, cpf: s.cpf || null })),
+            });
+        },
         urlParamGet() {
             const urlParams = new URLSearchParams(window.location.search)
             const token = urlParams.get('token')
@@ -1043,6 +1102,137 @@ export default {
                 .catch((error) => {
                     this.preload = false
                 })
+        },
+
+        abrirModalAssinaturaDemissao(item) {
+            this.demissaoAssinaturaSelecionada = item;
+            this.signatariosAssinaturaDemissao = [{ nome: item.colaborador_nome || '', email: '', cpf: '' }];
+            this.preloadAssinaturaDemissao = false;
+            this.$nextTick(() => $(`#modalAssinaturaDemissao_${this.hash}`).modal('show'));
+        },
+        temDocumentoAssinaturaDemissao(item) {
+            const doc = item && item.documento_para_assinatura;
+            return !!(doc && doc.id);
+        },
+        abrirModalGerenciarAssinaturaDemissao(item) {
+            const doc = item && item.documento_para_assinatura;
+            if (!doc || !doc.id) return;
+            this.demissaoParaReenvio = item;
+            this.documentoAssinaturaDetalheDemissao = null;
+            this.preloadGerenciarAssinaturaDemissao = true;
+            $(`#modalGerenciarAssinaturaDemissao_${this.hash}`).modal('show');
+            const idOrToken = doc.token || doc.id;
+            axios.get(`${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}`).then(res => {
+                this.documentoAssinaturaDetalheDemissao = res.data;
+                this.preloadGerenciarAssinaturaDemissao = false;
+            }).catch(() => {
+                this.preloadGerenciarAssinaturaDemissao = false;
+                mostraErro('', 'Erro ao carregar detalhe do documento.');
+            });
+        },
+        documentoExpiradoOuCanceladoDocDemissao(doc) {
+            return doc && (doc.status === 'expirado' || doc.status === 'cancelado');
+        },
+        enviarNovamenteNoModalDemissao() {
+            if (!this.demissaoParaReenvio) return;
+            $(`#modalGerenciarAssinaturaDemissao_${this.hash}`).modal('hide');
+            this.$nextTick(() => this.abrirModalAssinaturaDemissao(this.demissaoParaReenvio));
+        },
+        labelTipoDocDemissao(tipo) {
+            const map = { contrato_legal: 'Contrato (Documentos Legais)', contrato_trabalho: 'Contrato de Trabalho', carta_oferta: 'Carta Oferta', termo_demissao: 'Termo de Demissão', ficha_encaminhamento: 'Ficha de Encaminhamento', termo_confidencialidade: 'Termo de Confidencialidade', opcao_vale_transporte: 'Opção Vale Transporte', acordo_compensacao_horas: 'Acordo de Compensação de Horas', termo_salario_familia: 'Termo Salário Família', declaracao_dependentes_ir: 'Declaração Dependentes IR', medida_administrativa: 'Medida Administrativa', documento_demissao: 'Documento de Demissão (Aviso Prévio)' };
+            return map[tipo] || tipo || '—';
+        },
+        labelStatusDocDemissao(status) {
+            const map = { rascunho: 'Rascunho', enviado: 'Enviado', em_assinatura: 'Em assinatura', concluido: 'Concluído', expirado: 'Expirado', cancelado: 'Cancelado' };
+            return map[status] || status || '—';
+        },
+        badgeStatusDocDemissao(status) {
+            const map = { em_assinatura: 'badge-warning', concluido: 'badge-success', cancelado: 'badge-danger', expirado: 'badge-secondary', rascunho: 'badge-secondary', enviado: 'badge-info' };
+            return map[status] || 'badge-secondary';
+        },
+        formatarDataDocDemissao(val) {
+            if (!val) return '—';
+            const d = typeof val === 'string' ? new Date(val) : val;
+            return d.toLocaleDateString('pt-BR') + ' ' + (d.toLocaleTimeString ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '');
+        },
+        labelEventoDocDemissao(evento) {
+            const map = { enviado: 'Documento enviado', reenviado: 'E-mail reenviado', visualizado: 'Visualizado pelo signatário', assinado: 'Assinado', recusado: 'Recusado', expirado: 'Documento expirado', cancelado: 'Documento cancelado' };
+            return map[evento] || evento;
+        },
+        podeCancelarDocDemissao(item) {
+            return item && ['rascunho', 'em_assinatura'].indexOf(item.status) !== -1;
+        },
+        podeReenviarDocDemissao(item) {
+            return item && item.status === 'em_assinatura';
+        },
+        podeBaixarAssinadoDocDemissao(item) {
+            return item && item.status === 'concluido' && item.arquivo_assinado_id;
+        },
+        urlDownloadAssinadoDocDemissao(doc) {
+            const idOrToken = (doc && doc.token) ? doc.token : (doc && doc.id) ? doc.id : '';
+            return `${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}/download-assinado`;
+        },
+        cancelarDocNoModalDemissao() {
+            if (!this.documentoAssinaturaDetalheDemissao) return;
+            const confirmar = () => this.executarCancelarDocDemissao(this.documentoAssinaturaDetalheDemissao);
+            if (!this.$swal) {
+                if (confirm('Cancelar este documento? Os signatários não poderão mais assinar.')) confirmar();
+                return;
+            }
+            this.$swal.fire({ title: 'Cancelar documento?', text: 'Os signatários não poderão mais assinar. Esta ação não pode ser desfeita.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonText: 'Não', confirmButtonText: 'Sim, cancelar' }).then((result) => {
+                if (result.isConfirmed) confirmar();
+            });
+        },
+        executarCancelarDocDemissao(doc) {
+            const idOrToken = (doc && doc.token) ? doc.token : (doc && doc.id) ? doc.id : '';
+            axios.post(`${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}/cancelar`).then(res => {
+                mostraSucesso(res.data.message || 'Documento cancelado.');
+                this.documentoAssinaturaDetalheDemissao = null;
+                this.atualizar();
+                $(`#modalGerenciarAssinaturaDemissao_${this.hash}`).modal('hide');
+            }).catch(err => {
+                const msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao cancelar.';
+                mostraErro(msg);
+            });
+        },
+        reenviarDocNoModalDemissao() {
+            if (!this.documentoAssinaturaDetalheDemissao || this.documentoAssinaturaDetalheDemissao.status !== 'em_assinatura') return;
+            const idOrToken = this.documentoAssinaturaDetalheDemissao.token || this.documentoAssinaturaDetalheDemissao.id;
+            axios.post(`${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}/reenviar-email`).then(res => {
+                mostraSucesso(res.data.message || 'E-mail reenviado.');
+            }).catch(err => {
+                const msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao reenviar e-mail.';
+                mostraErro(msg);
+            });
+        },
+        adicionarSignatarioAssinaturaDemissao() {
+            this.signatariosAssinaturaDemissao.push({ nome: '', email: '', cpf: '' });
+        },
+        removerSignatarioAssinaturaDemissao(index) {
+            this.signatariosAssinaturaDemissao.splice(index, 1);
+        },
+        enviarParaAssinaturaDemissao() {
+            const payload = {
+                demissao_prevista_id: this.demissaoAssinaturaSelecionada.id,
+                signatarios: this.signatariosAssinaturaDemissao.map(s => ({ nome: s.nome, email: s.email, cpf: s.cpf || null }))
+            };
+            this.preloadAssinaturaDemissao = true;
+            axios.post(`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/enviar-para-assinatura`, payload)
+                .then(res => {
+                    this.preloadAssinaturaDemissao = false;
+                    $(`#modalAssinaturaDemissao_${this.hash}`).modal('hide');
+                    mostraSucesso(res.data.message || 'Documento enviado para assinatura.');
+                    this.atualizar();
+                    if (res.data.links && res.data.links.length && this.$swal) {
+                        const msg = res.data.links.map(l => `${l.email}: ${l.link}`).join('\n');
+                        this.$swal.fire({ title: 'Links enviados', text: msg, icon: 'info' });
+                    }
+                })
+                .catch(err => {
+                    this.preloadAssinaturaDemissao = false;
+                    const msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao enviar para assinatura.';
+                    mostraErro(msg);
+                });
         },
 
         alterar() {

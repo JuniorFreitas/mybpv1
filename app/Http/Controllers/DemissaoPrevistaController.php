@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Jobs\Movimentacao\DemissaoPrevista\JobDemissaoPrevistaExportaExcel;
 use App\Jobs\Movimentacao\DemissaoPrevista\JobNotificacaoRecursiva;
+use App\Jobs\AssinaturaDigital\JobProcessarEnvioAssinatura;
 use App\Models\AprovacaoExtraConfig;
 use App\Models\Arquivo;
 use App\Models\DemissaoPrevista;
+use App\Models\DocumentoParaAssinatura;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -164,6 +166,36 @@ class DemissaoPrevistaController extends Controller
     public function atualizar(Request $request)
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
+        $itens = collect($resultado->items());
+
+        $demissoesIds = $itens->pluck('id')->filter()->values()->all();
+        $docsByDemissaoId = [];
+        if (!empty($demissoesIds)) {
+            $docs = DocumentoParaAssinatura::withoutGlobalScopes()
+                ->select(['id', 'token', 'status', 'arquivo_assinado_id', 'tipo_documento', 'documentable_id'])
+                ->where('empresa_id', auth()->user()->empresa_id)
+                ->where('documentable_type', DemissaoPrevista::class)
+                ->whereIn('documentable_id', $demissoesIds)
+                ->orderBy('id', 'desc')
+                ->get();
+
+            foreach ($docs as $doc) {
+                if (!isset($docsByDemissaoId[$doc->documentable_id])) {
+                    $docsByDemissaoId[$doc->documentable_id] = [
+                        'id' => $doc->id,
+                        'token' => $doc->token,
+                        'status' => $doc->status,
+                        'arquivo_assinado_id' => $doc->arquivo_assinado_id,
+                        'tipo_documento' => $doc->tipo_documento,
+                    ];
+                }
+            }
+        }
+
+        $itens = $itens->map(function ($item) use ($docsByDemissaoId) {
+            $item->documento_para_assinatura = $docsByDemissaoId[$item->id] ?? null;
+            return $item;
+        })->values();
 
         // Busca configuração de aprovação extra ativa
         $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'demissao');
@@ -180,7 +212,7 @@ class DemissaoPrevistaController extends Controller
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'itens' => $resultado->items(),
+                'itens' => $itens,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
                 'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
                 'pode_aprovar_extra' => $podeAprovarExtra,
@@ -200,6 +232,8 @@ class DemissaoPrevistaController extends Controller
                 'dp.empresa_id',
                 'dp.colaborador_id',
                 'c.nome as colaborador_nome',
+                'c.email as colaborador_email',
+                'c.cpf as colaborador_cpf',
                 'dp.centro_custo_id',
                 'cc.label as centro_custo',
                 'dp.filial',
@@ -473,6 +507,43 @@ class DemissaoPrevistaController extends Controller
         return $pdf->stream("pdf_" . Str::slug($demissaoPrevista->Colaborador->nome) . (new DataHora())->nomeUnico() . ".pdf");
     }
 
+    /**
+     * Envia documento de demissão (Aviso Prévio) para assinatura digital.
+     */
+    public function enviarParaAssinatura(Request $request)
+    {
+        $request->validate([
+            'demissao_prevista_id' => 'required|integer',
+            'signatarios' => 'required|array|min:1',
+            'signatarios.*.email' => 'required|email',
+            'signatarios.*.nome' => 'required|string|max:255',
+            'signatarios.*.cpf' => 'nullable|string|max:14',
+            'signatarios.*.user_id' => 'nullable|exists:users,id',
+        ]);
+
+        $demissaoPrevista = DemissaoPrevista::whereId($request->demissao_prevista_id)
+            ->where('empresa_id', auth()->user()->empresa_id)
+            ->with('Colaborador')
+            ->first();
+        if (!$demissaoPrevista || !$demissaoPrevista->Colaborador) {
+            return response()->json(['success' => false, 'message' => 'Demissão não encontrada.'], 404);
+        }
+
+        $empresaId = auth()->user()->empresa_id;
+
+        JobProcessarEnvioAssinatura::dispatch(
+            JobProcessarEnvioAssinatura::TIPO_DEMISSAO,
+            $empresaId,
+            auth()->id(),
+            ['demissao_prevista_id' => (int) $request->demissao_prevista_id],
+            $request->signatarios
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Solicitação recebida. O documento será processado e enviado para assinatura.',
+        ], 202);
+    }
 
     /**
      * Atualização de status em massa

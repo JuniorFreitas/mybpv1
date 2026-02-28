@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Exports\ClientesExport;
 use App\Mail\Movimentacao\FeriasPrevista\SaidaMail;
 use App\Mail\Movimentacao\FeriasPrevista\VencimentoMail;
+use App\Jobs\AssinaturaDigital\JobProcessarEnvioAssinatura;
 use App\Models\Area;
 use App\Models\Arquivo;
 use App\Models\Cliente;
 use App\Models\ClienteConfig;
 use App\Models\DocumentoEmpresa;
 use App\Models\DocumentoContratos;
+use App\Models\DocumentoParaAssinatura;
 use App\Models\DocumentoSsma;
 use App\Models\FeriasPrevista;
 use App\Models\FormaContrato;
@@ -296,6 +298,35 @@ class DocumentosLegaisContratoController extends Controller
     public function atualizar(Request $request)
     {
         $resultado = $this->filtro($request)->paginate($request->porPag ?: 20);
+        $itens = $resultado->getCollection();
+        $contratoIds = $itens->pluck('id')->filter()->values()->all();
+        $docsByContratoId = [];
+        if (!empty($contratoIds)) {
+            $docs = DocumentoParaAssinatura::withoutGlobalScopes()
+                ->select(['id', 'token', 'status', 'arquivo_assinado_id', 'tipo_documento', 'documentable_id'])
+                ->where('empresa_id', auth()->user()->empresa_id)
+                ->where('documentable_type', DocumentoContratos::class)
+                ->whereIn('documentable_id', $contratoIds)
+                ->orderBy('id', 'desc')
+                ->get();
+
+            foreach ($docs as $doc) {
+                if (!isset($docsByContratoId[$doc->documentable_id])) {
+                    $docsByContratoId[$doc->documentable_id] = [
+                        'id' => $doc->id,
+                        'token' => $doc->token,
+                        'status' => $doc->status,
+                        'arquivo_assinado_id' => $doc->arquivo_assinado_id,
+                        'tipo_documento' => $doc->tipo_documento,
+                    ];
+                }
+            }
+        }
+
+        $itens = $itens->map(function ($item) use ($docsByContratoId) {
+            $item->documento_para_assinatura = $docsByContratoId[$item->id] ?? null;
+            return $item;
+        })->values();
         $areas = Area::get();
         $tiposDocumentos = TipoDocumento::whereTipo('empresa')->orderBy('nome')->get();
         $tiposServicos = Servico::orderBy('titulo')->get();
@@ -312,7 +343,7 @@ class DocumentosLegaisContratoController extends Controller
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'itens' => $resultado->items(),
+                'itens' => $itens,
                 'tipos_documentos' => $tiposDocumentos,
                 'tipos_servicos' => $tiposServicos,
                 'formas_contrato' => $formasContrato,
@@ -411,7 +442,62 @@ class DocumentosLegaisContratoController extends Controller
         $dados = $contrato;
         $pdf = PDF::loadView('pdf/administracao/documentoslegais/contrato/contratopdf', compact('dados'));
         $pdf->setPaper('A4', 'portrait');
-        return $pdf->stream("contrato" . STR::slug($dados->tipo == 'Pessoa Jurídica' ? $dados->razao_social : $dados->nome) . ".pdf");
+        return $pdf->stream("contrato" . STR::slug($dados->dados_cadastrais->tipo == 'Pessoa Jurídica' ? $dados->dados_cadastrais->razao_social : $dados->dados_cadastrais->nome) . ".pdf");
+    }
+
+    /**
+     * Envia contrato para assinatura digital. Gera PDF, persiste e cria fluxo de signatários.
+     */
+    public function enviarParaAssinatura(Request $request)
+    {
+        try {
+            $this->authorize('administracao_documentos_legais');
+            \Log::info('AssinaturaDigital [contrato]: requisição recebida', ['contrato_id' => $request->contrato_id]);
+
+            $request->validate([
+                'contrato_id' => 'required|exists:documento_contratos,id',
+                'signatarios' => 'required|array|min:1',
+                'signatarios.*.email' => 'required|email',
+                'signatarios.*.nome' => 'required|string|max:255',
+                'signatarios.*.cpf' => 'nullable|string|max:14',
+                'signatarios.*.user_id' => 'nullable|exists:users,id',
+                'ordem_assinatura' => 'nullable|in:sequencial,paralelo',
+            ]);
+
+            $empresaId = auth()->user()->empresa_id;
+            DocumentoContratos::where('empresa_id', $empresaId)->findOrFail($request->contrato_id);
+
+            JobProcessarEnvioAssinatura::dispatch(
+                JobProcessarEnvioAssinatura::TIPO_CONTRATO,
+                $empresaId,
+                auth()->id(),
+                ['contrato_id' => (int) $request->contrato_id],
+                $request->signatarios
+            );
+
+            \Log::info('AssinaturaDigital [contrato]: envio enfileirado', ['contrato_id' => $request->contrato_id]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitação recebida. O documento será processado e enviado para assinatura.',
+            ], 202);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            \Log::warning('AssinaturaDigital [contrato]: não autorizado');
+            return response()->json(['success' => false, 'message' => 'Sem permissão para esta ação.'], 403);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::warning('AssinaturaDigital [contrato]: validação falhou', ['errors' => $e->errors()]);
+            throw $e;
+        } catch (\Throwable $e) {
+            \Log::error('AssinaturaDigital [contrato]: erro ao enviar', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao enviar para assinatura: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function export()

@@ -454,6 +454,16 @@
                                target="_blank">
                                 <i class="fa fa-file-pdf"></i>
                             </a>
+                            <button type="button" class="btn btn-sm btn-info mb-1" v-if="permissoes.pdf && temDocumentoAssinatura(item)"
+                                    v-tippy content="Gerenciar assinatura digital"
+                                    @click.prevent="abrirModalGerenciarAssinatura(item)">
+                                <i class="fa fa-cog"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-success mb-1" v-else-if="permissoes.pdf"
+                                    v-tippy content="Enviar para assinatura digital"
+                                    @click.prevent="abrirModalAssinatura(item)">
+                                <i class="fa fa-pen-fancy"></i>
+                            </button>
 
                             <a href="javascript://" class="btn btn-sm btn-primary mb-1" v-tippy content="Editar" v-if="permissoes.update"
                                @click.prevent="formAlterar(item.id)"
@@ -472,6 +482,15 @@
                                 v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
         </div>
 
+        <acao-assinatura-documento
+            ref="acaoAssinaturaContrato"
+            :id-prefix="'contrato_documentos_legais'"
+            :titulo-enviar="'Enviar para assinatura digital'"
+            :get-nome-documento="getNomeDocumentoAssinaturaContrato"
+            :get-signatarios-iniciais="getSignatariosIniciaisAssinaturaContrato"
+            :enviar-handler="enviarAssinaturaContrato"
+            :atualizar-handler="atualizar">
+        </acao-assinatura-documento>
     </div>
 </template>
 
@@ -483,6 +502,7 @@ import upload from "../../../Upload";
 import ControlePaginacao from "../../../ControlePaginacao";
 import ExportacaoMixin from "../../../../mixins/Exportacoes";
 import Validacoes from "../../../../mixins/Validacoes";
+import AcaoAssinaturaDocumento from "../../documentoassinatura/AcaoAssinaturaDocumento.vue";
 
 export default {
     name: "contrato",
@@ -492,7 +512,8 @@ export default {
         endereco,
         datepicker,
         upload,
-        ControlePaginacao
+        ControlePaginacao,
+        AcaoAssinaturaDocumento
     },
     data() {
         return {
@@ -570,6 +591,7 @@ export default {
                     pages: 50
                 },
             },
+
         }
     },
 
@@ -580,6 +602,39 @@ export default {
     },
 
     methods: {
+        temDocumentoAssinatura(item) {
+            const doc = item && item.documento_para_assinatura;
+            return !!(doc && doc.id);
+        },
+        abrirModalAssinatura(item) {
+            this.$refs.acaoAssinaturaContrato.abrirEnvio(item);
+        },
+        abrirModalGerenciarAssinatura(item) {
+            const doc = item && item.documento_para_assinatura;
+            if (!doc || !doc.id) return;
+            this.$refs.acaoAssinaturaContrato.abrirGerenciar(doc, item);
+        },
+        getNomeDocumentoAssinaturaContrato(item) {
+            if (!item || !item.dados_cadastrais) return 'Contrato (Documentos Legais)';
+            const dc = item.dados_cadastrais;
+            const nome = dc.tipo === 'Pessoa Jurídica' ? dc.razao_social : dc.nome;
+            return `Contrato (Documentos Legais) - ${nome || dc.responsavel || 'Cliente'}`;
+        },
+        getSignatariosIniciaisAssinaturaContrato(item) {
+            if (!item || !item.dados_cadastrais) return [{ nome: '', email: '', cpf: '' }];
+            const dc = item.dados_cadastrais;
+            const nome = (dc.tipo === 'Pessoa Jurídica' ? dc.razao_social : dc.nome) || dc.responsavel || '';
+            const email = dc.email || '';
+            const cpf = dc.cpf || '';
+            return [{ nome, email, cpf }];
+        },
+        enviarAssinaturaContrato({ contexto, signatarios }) {
+            return axios.post(`${URL_ADMIN}/administracao/documentoslegais/contrato/enviar-para-assinatura`, {
+                contrato_id: contexto.id,
+                signatarios: signatarios.filter(s => s.email && s.nome),
+                ordem_assinatura: 'sequencial',
+            });
+        },
 
         addLIServicoContrato() {
             const obj = {};

@@ -100,6 +100,16 @@
                         <button class="btn btn-sm btn-outline-primary" @click="gerarPdf(obj)" v-show="!obj.novo"><i
                             class="fas fa-file-pdf"></i> GERAR PDF
                         </button>
+                        <template v-if="temDocumentoAssinatura(obj)">
+                            <button type="button" class="btn btn-sm ml-2 btn-info" @click="abrirGerenciamentoAssinaturaMedida(obj)">
+                                <span class="fas fa-cog"></span> Gerenciar assinatura
+                            </button>
+                        </template>
+                        <template v-else>
+                            <button type="button" class="btn btn-sm ml-2 btn-success" @click="abrirEnvioAssinaturaMedida(obj)">
+                                <span class="fas fa-pen-fancy"></span> Enviar para assinatura
+                            </button>
+                        </template>
                     </div>
 
                     <div class="col-12 mt-3" v-show="!obj.novo && privilegio_gestao_rh">
@@ -115,6 +125,17 @@
                 <i class="fa fa-save"></i> Salvar
             </button>
         </div>
+
+        <acao-assinatura-documento
+            ref="acaoAssinaturaMedida"
+            :id-prefix="`medida_${hash}`"
+            :titulo-enviar="'Enviar para assinatura digital'"
+            :get-nome-documento="getNomeDocumentoAssinaturaMedida"
+            :get-signatarios-iniciais="getSignatariosIniciaisAssinaturaMedida"
+            :validar-signatarios="validarSignatariosAssinaturaMedida"
+            :enviar-handler="enviarAssinaturaMedida"
+            :atualizar-handler="atualizar">
+        </acao-assinatura-documento>
 
         <!-- Modal para Remover Medida Administrativa -->
         <modal :id="`janelaRemoverMedida_${hash}`" :titulo="tituloModalRemover" :fechar="!preloadRemover" :size="75">
@@ -175,6 +196,7 @@
 import DatePicker from "../DatePicker";
 import Upload from "../Upload";
 import Modal from "../Modal";
+import AcaoAssinaturaDocumento from "../administracao/documentoassinatura/AcaoAssinaturaDocumento.vue";
 
 export default {
     props: {
@@ -193,7 +215,8 @@ export default {
     components: {
         DatePicker,
         Upload,
-        Modal
+        Modal,
+        AcaoAssinaturaDocumento
     },
     data() {
         return {
@@ -242,10 +265,25 @@ export default {
                 descricao: '',
                 medida_id: null,
                 feedback_id: null
-            }
+            },
+            // Modal assinatura digital
+            medidaAssinaturaSelecionada: null,
+            signatariosAssinatura: [],
+            preloadAssinatura: false,
+            // Modal gerenciar assinatura (detalhe do documento)
+            documentoAssinaturaDetalhe: null,
+            preloadGerenciarAssinatura: false,
+            medidaParaReenvio: null
         }
     },
     computed: {
+        signatariosValidos() {
+            if (!this.signatariosAssinatura.length) return false;
+            return this.signatariosAssinatura.every(s => {
+                const cpfNumeros = (s.cpf || '').replace(/\D/g, '');
+                return s.nome && s.nome.trim() && s.email && s.email.trim() && cpfNumeros.length >= 11;
+            });
+        },
         textoTermoResponsabilidade() {
             const nomeColaborador = this.feedbackInfo && this.feedbackInfo.curriculo ? this.feedbackInfo.curriculo.nome : '';
             const nomeUsuario = (typeof AUTENTICADO !== 'undefined' && AUTENTICADO) ? AUTENTICADO.nome : '';
@@ -280,6 +318,43 @@ export default {
     },
 
     methods: {
+        abrirEnvioAssinaturaMedida(obj) {
+            this.$refs.acaoAssinaturaMedida.abrirEnvio(obj);
+        },
+        abrirGerenciamentoAssinaturaMedida(obj) {
+            const doc = obj && obj.documento_para_assinatura;
+            if (!doc || !doc.id) return;
+            this.$refs.acaoAssinaturaMedida.abrirGerenciar(doc, obj);
+        },
+        getNomeDocumentoAssinaturaMedida(contexto) {
+            return `${(contexto && contexto.tipo) || 'Documento'} (Medida Administrativa)`;
+        },
+        getSignatariosIniciaisAssinaturaMedida() {
+            const curriculo = this.feedbackInfo && this.feedbackInfo.curriculo ? this.feedbackInfo.curriculo : null;
+            const nome = curriculo ? (curriculo.nome || '') : '';
+            const email = curriculo && curriculo.email ? curriculo.email : '';
+            const cpf = curriculo && curriculo.cpf ? this.formatarCpf(String(curriculo.cpf).replace(/\D/g, '').slice(0, 11)) : '';
+            if (!nome && !email && !cpf) return [{ nome: '', email: '', cpf: '' }];
+            return [{ nome, email, cpf }];
+        },
+        validarSignatariosAssinaturaMedida(signatarios) {
+            if (!signatarios.length) return false;
+            return signatarios.every((s) => {
+                const cpfNumeros = (s.cpf || '').replace(/\D/g, '');
+                return s.nome && s.nome.trim() && s.email && s.email.trim() && cpfNumeros.length >= 11;
+            });
+        },
+        enviarAssinaturaMedida({ contexto, signatarios }) {
+            const payload = {
+                medida_id: contexto.id,
+                signatarios: signatarios.map((s) => ({
+                    nome: s.nome,
+                    email: s.email,
+                    cpf: (s.cpf || '').replace(/\D/g, '') || null
+                }))
+            };
+            return axios.post(`${URL_ADMIN}/historico/medidas-administrativas/enviar-para-assinatura`, payload);
+        },
         addLIMedida() {
             const obj = {};
             obj.novo = true;
@@ -305,6 +380,153 @@ export default {
         gerarPdf(obj) {
             let link = `${URL_ADMIN}/historico/medidas-administrativas/${obj.id}/${obj.feedback_id}/pdf`;
             open(link, 'blank');
+        },
+        /** Existe documento para assinatura vinculado → mostrar "Gerenciar assinatura" (qualquer status). */
+        temDocumentoAssinatura(obj) {
+            const doc = obj.documento_para_assinatura;
+            return !!(doc && doc.id);
+        },
+        /** Documento expirado ou cancelado → mostrar "Enviar novamente" junto com Gerenciar. */
+        documentoExpiradoOuCancelado(obj) {
+            const doc = obj.documento_para_assinatura;
+            return doc && doc.id && (doc.status === 'expirado' || doc.status === 'cancelado');
+        },
+        abrirModalGerenciarAssinatura(obj) {
+            const doc = obj.documento_para_assinatura;
+            if (!doc || !doc.id) return;
+            this.medidaParaReenvio = obj;
+            this.documentoAssinaturaDetalhe = null;
+            this.preloadGerenciarAssinatura = false;
+            $(`#modalGerenciarAssinatura_${this.hash}`).modal('show');
+            const idOrToken = doc.token || doc.id;
+            const url = `${typeof URL_ADMIN !== 'undefined' ? URL_ADMIN : ''}/administracao/documento-assinatura/${idOrToken}`;
+            axios.get(url).then(res => {
+                this.documentoAssinaturaDetalhe = res.data;
+                this.preloadGerenciarAssinatura = false;
+            }).catch(() => {
+                this.preloadGerenciarAssinatura = false;
+                if (typeof mostraErro !== 'undefined') mostraErro('', 'Erro ao carregar detalhe do documento.');
+            });
+        },
+        documentoExpiradoOuCanceladoDoc(doc) {
+            return doc && (doc.status === 'expirado' || doc.status === 'cancelado');
+        },
+        enviarNovamenteNoModal() {
+            if (!this.medidaParaReenvio) return;
+            $(`#modalGerenciarAssinatura_${this.hash}`).modal('hide');
+            this.$nextTick(() => this.abrirModalAssinatura(this.medidaParaReenvio));
+        },
+        labelTipoDoc(tipo) {
+            const map = { contrato_legal: 'Contrato (Documentos Legais)', contrato_trabalho: 'Contrato de Trabalho', carta_oferta: 'Carta Oferta', termo_demissao: 'Termo de Demissão', ficha_encaminhamento: 'Ficha de Encaminhamento', termo_confidencialidade: 'Termo de Confidencialidade', opcao_vale_transporte: 'Opção Vale Transporte', acordo_compensacao_horas: 'Acordo de Compensação de Horas', termo_salario_familia: 'Termo Salário Família', declaracao_dependentes_ir: 'Declaração Dependentes IR', medida_administrativa: 'Medida Administrativa', documento_demissao: 'Documento de Demissão (Aviso Prévio)' };
+            return map[tipo] || tipo || '—';
+        },
+        labelStatusDoc(status) {
+            const map = { rascunho: 'Rascunho', enviado: 'Enviado', em_assinatura: 'Em assinatura', concluido: 'Concluído', expirado: 'Expirado', cancelado: 'Cancelado' };
+            return map[status] || status || '—';
+        },
+        badgeStatusDoc(status) {
+            const map = { em_assinatura: 'badge-warning', concluido: 'badge-success', cancelado: 'badge-danger', expirado: 'badge-secondary', rascunho: 'badge-secondary', enviado: 'badge-info' };
+            return map[status] || 'badge-secondary';
+        },
+        formatarDataDoc(val) {
+            if (!val) return '—';
+            const d = typeof val === 'string' ? new Date(val) : val;
+            return d.toLocaleDateString('pt-BR') + ' ' + (d.toLocaleTimeString ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '');
+        },
+        podeCancelarDoc(item) {
+            return item && ['rascunho', 'em_assinatura'].indexOf(item.status) !== -1;
+        },
+        podeReenviarDoc(item) {
+            return item && item.status === 'em_assinatura';
+        },
+        podeBaixarAssinadoDoc(item) {
+            return item && item.status === 'concluido' && item.arquivo_assinado_id;
+        },
+        urlDownloadAssinadoDoc(doc) {
+            const idOrToken = (doc && doc.token) ? doc.token : (doc && doc.id) ? doc.id : '';
+            return `${typeof URL_ADMIN !== 'undefined' ? URL_ADMIN : ''}/administracao/documento-assinatura/${idOrToken}/download-assinado`;
+        },
+        cancelarDocNoModal() {
+            if (!this.documentoAssinaturaDetalhe) return;
+            if (!this.$swal) {
+                if (confirm('Cancelar este documento? Os signatários não poderão mais assinar.')) this.executarCancelarDoc(this.documentoAssinaturaDetalhe);
+                return;
+            }
+            this.$swal.fire({ title: 'Cancelar documento?', text: 'Os signatários não poderão mais assinar. Esta ação não pode ser desfeita.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonText: 'Não', confirmButtonText: 'Sim, cancelar' }).then((result) => {
+                if (result.isConfirmed) this.executarCancelarDoc(this.documentoAssinaturaDetalhe);
+            });
+        },
+        executarCancelarDoc(doc) {
+            const idOrToken = (doc && doc.token) ? doc.token : (doc && doc.id) ? doc.id : '';
+            axios.post(`${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}/cancelar`).then(res => {
+                if (res.data.success && typeof mostraSucesso !== 'undefined') mostraSucesso(res.data.message || 'Documento cancelado.');
+                this.documentoAssinaturaDetalhe = null;
+                this.atualizar();
+                $(`#modalGerenciarAssinatura_${this.hash}`).modal('hide');
+            }).catch(err => {
+                const msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao cancelar.';
+                if (typeof mostraErro !== 'undefined') mostraErro(msg); else alert(msg);
+            });
+        },
+        reenviarDocNoModal() {
+            if (!this.documentoAssinaturaDetalhe || this.documentoAssinaturaDetalhe.status !== 'em_assinatura') return;
+            const idOrToken = this.documentoAssinaturaDetalhe.token || this.documentoAssinaturaDetalhe.id;
+            axios.post(`${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}/reenviar-email`).then(res => {
+                if (res.data.success && typeof mostraSucesso !== 'undefined') mostraSucesso(res.data.message || 'E-mail reenviado.');
+            }).catch(err => {
+                const msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao reenviar e-mail.';
+                if (typeof mostraErro !== 'undefined') mostraErro(msg); else alert(msg);
+            });
+        },
+        getSignatarioByIdDoc(signatarioId) {
+            const list = (this.documentoAssinaturaDetalhe && this.documentoAssinaturaDetalhe.signatarios) ? this.documentoAssinaturaDetalhe.signatarios : [];
+            const s = list.find(x => x.id === signatarioId);
+            return s ? (s.nome || s.email || `#${signatarioId}`) : null;
+        },
+        iconeEventoDoc(evento) {
+            const map = { enviado: 'fas fa-paper-plane text-info', reenviado: 'fas fa-paper-plane text-warning', visualizado: 'fas fa-eye text-primary', assinado: 'fas fa-pen-fancy text-success', recusado: 'fas fa-times-circle text-danger', expirado: 'fas fa-clock text-secondary', cancelado: 'fas fa-ban text-danger' };
+            return map[evento] || 'fas fa-circle text-muted';
+        },
+        labelEventoDoc(evento) {
+            const map = { enviado: 'Documento enviado', reenviado: 'E-mail reenviado', visualizado: 'Visualizado pelo signatário', assinado: 'Assinado', recusado: 'Recusado', expirado: 'Documento expirado', cancelado: 'Documento cancelado' };
+            return map[evento] || evento;
+        },
+        detalhesEventoDoc(ev) {
+            const p = ev.payload || {};
+            const linhas = [];
+            const signatarioNome = p.signatario_id ? this.getSignatarioByIdDoc(p.signatario_id) : null;
+            switch (ev.evento) {
+                case 'enviado':
+                    if (p.nome) linhas.push({ label: 'Enviado por', value: p.nome });
+                    if (p.signatarios_count !== undefined) linhas.push({ label: 'Signatários', value: `${p.signatarios_count} signatário(s)` });
+                    break;
+                case 'reenviado':
+                    if (p.nome) linhas.push({ label: 'Reenviado por', value: p.nome });
+                    if (p.user_id && !p.nome) linhas.push({ label: 'Usuário', value: `ID ${p.user_id}` });
+                    break;
+                case 'visualizado':
+                    if (signatarioNome) linhas.push({ label: 'Signatário', value: signatarioNome });
+                    if (p.ip) linhas.push({ label: 'IP', value: p.ip });
+                    break;
+                case 'assinado':
+                    if (signatarioNome) linhas.push({ label: 'Signatário', value: signatarioNome });
+                    if (p.email) linhas.push({ label: 'E-mail', value: p.email });
+                    if (p.data_utc) linhas.push({ label: 'Data/hora (UTC)', value: this.formatarDataDoc(p.data_utc) });
+                    if (p.ip) linhas.push({ label: 'IP', value: p.ip });
+                    break;
+                case 'recusado':
+                    if (signatarioNome) linhas.push({ label: 'Signatário', value: signatarioNome });
+                    if (p.email) linhas.push({ label: 'E-mail', value: p.email });
+                    if (p.motivo) linhas.push({ label: 'Motivo', value: p.motivo });
+                    break;
+                case 'cancelado':
+                    if (p.user_id) linhas.push({ label: 'Usuário', value: `ID ${p.user_id}` });
+                    break;
+                default:
+                    if (p.email) linhas.push({ label: 'E-mail', value: p.email });
+                    if (p.motivo) linhas.push({ label: 'Motivo', value: p.motivo });
+            }
+            return linhas;
         },
         salvar() {
             formReset();
@@ -355,6 +577,63 @@ export default {
                 this.preload = false;
             })
         },
+        formatarCpf(numeros) {
+            const d = (numeros || '').replace(/\D/g, '').slice(0, 11);
+            if (d.length <= 3) return d;
+            if (d.length <= 6) return d.replace(/(\d{3})(\d+)/, '$1.$2');
+            return d.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4').replace(/-$/, '');
+        },
+        atualizarCpf(idx, value) {
+            const numeros = (value || '').replace(/\D/g, '').slice(0, 11);
+            this.signatariosAssinatura[idx].cpf = this.formatarCpf(numeros);
+        },
+        abrirModalAssinatura(obj) {
+            this.medidaAssinaturaSelecionada = obj;
+            const curriculo = this.feedbackInfo && this.feedbackInfo.curriculo ? this.feedbackInfo.curriculo : null;
+            const nome = curriculo ? (curriculo.nome || '') : '';
+            const email = curriculo && curriculo.email ? curriculo.email : '';
+            const cpfNumeros = curriculo && curriculo.cpf ? String(curriculo.cpf).replace(/\D/g, '').slice(0, 11) : '';
+            const cpf = this.formatarCpf(cpfNumeros);
+            const fromBase = !!(nome || email || cpfNumeros);
+            this.signatariosAssinatura = [{ nome, email, cpf, fromBase }];
+            if (!nome && !email && !cpfNumeros) {
+                this.signatariosAssinatura = [{ nome: '', email: '', cpf: '', fromBase: false }];
+            }
+            this.preloadAssinatura = false;
+            $(`#modalAssinaturaMedida_${this.hash}`).modal('show');
+        },
+        adicionarSignatarioAssinatura() {
+            this.signatariosAssinatura.push({ nome: '', email: '', cpf: '', fromBase: false });
+        },
+        removerSignatarioAssinatura(index) {
+            this.signatariosAssinatura.splice(index, 1);
+        },
+        enviarParaAssinatura() {
+            const payload = {
+                medida_id: this.medidaAssinaturaSelecionada.id,
+                signatarios: this.signatariosAssinatura.map(s => ({
+                    nome: s.nome,
+                    email: s.email,
+                    cpf: (s.cpf || '').replace(/\D/g, '') || null
+                }))
+            };
+            this.preloadAssinatura = true;
+            axios.post(`${URL_ADMIN}/historico/medidas-administrativas/enviar-para-assinatura`, payload)
+                .then(res => {
+                    this.preloadAssinatura = false;
+                    $(`#modalAssinaturaMedida_${this.hash}`).modal('hide');
+                    mostraSucesso(res.data.message || 'Documento enviado para assinatura.');
+                    if (res.data.links && res.data.links.length) {
+                        const msg = res.data.links.map(l => `${l.email}: ${l.link}`).join('\n');
+                        this.$swal && this.$swal.fire({ title: 'Links enviados', text: msg, icon: 'info' });
+                    }
+                })
+                .catch(err => {
+                    this.preloadAssinatura = false;
+                    const msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao enviar para assinatura.';
+                    mostraErro(msg);
+                });
+        },
         abrirModalRemover(obj) {
             this.medidaSelecionada = obj;
             this.auditoriaForm = {
@@ -402,5 +681,37 @@ export default {
 </script>
 
 <style scoped>
-
+.eventos-auditoria {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.evento-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    border-left: 4px solid #6c757d;
+}
+.evento-item.evento-enviado { border-left-color: #17a2b8; }
+.evento-item.evento-reenviado { border-left-color: #ffc107; }
+.evento-item.evento-visualizado { border-left-color: #007bff; }
+.evento-item.evento-assinado { border-left-color: #28a745; }
+.evento-item.evento-recusado { border-left-color: #dc3545; }
+.evento-item.evento-expirado { border-left-color: #6c757d; }
+.evento-item.evento-cancelado { border-left-color: #dc3545; }
+.evento-cabecalho {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.35rem;
+}
+.evento-icone { font-size: 1rem; width: 1.25rem; text-align: center; flex-shrink: 0; }
+.evento-titulo { font-weight: 600; color: #212529; font-size: 0.938rem; }
+.evento-data { margin-left: auto; font-size: 0.813rem; color: #6c757d; }
+.evento-detalhes { padding-left: 1.9rem; font-size: 0.813rem; }
+.evento-detalhe { display: flex; gap: 0.35rem; margin-top: 0.2rem; }
+.evento-detalhe-label { color: #6c757d; font-weight: 500; flex-shrink: 0; }
+.evento-detalhe-value { color: #212529; word-break: break-word; }
 </style>

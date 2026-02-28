@@ -202,6 +202,7 @@ class Arquivo extends Model
     const DISCO_MOVIMENTACAO = 'disco-movimentacao';
     const DISCO_ASSINATURA = 'disco-assinatura';
     const DISCO_EXPORTACAO = 'disco-exportacao';
+    const DISCO_DOCUMENTO_ASSINATURA = 'disco-documento-assinatura';
 
     const LISTAGEM_DISCOS = [
         self::DISCO_CLOUD,
@@ -232,6 +233,7 @@ class Arquivo extends Model
         self::DISCO_MOVIMENTACAO,
         self::DISCO_ASSINATURA,
         self::DISCO_EXPORTACAO,
+        self::DISCO_DOCUMENTO_ASSINATURA,
     ];
 
     /**

@@ -194,4 +194,10 @@ class MedidaAdministrativa extends Model
         return $this->hasOne(User::class, 'id', 'quem_deletou_id');
     }
 
+    /** Documento para assinatura digital vinculado a esta medida (carta advertência, etc.). */
+    public function documentoParaAssinatura()
+    {
+        return $this->morphOne(DocumentoParaAssinatura::class, 'documentable');
+    }
+
 }

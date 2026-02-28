@@ -16,7 +16,9 @@ use App\Models\FeedbackCurriculo;
 use App\Models\Pcmso;
 use App\Models\RespostaAlternativas;
 use App\Models\Sistema;
+use App\Models\Cliente;
 use App\Models\User;
+use App\Services\AssinaturaDigital\AssinaturaDigitalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use MasterTag\DataHora;
@@ -489,6 +491,71 @@ class ControleExameController extends Controller
         $pdf = PDF::loadView('pdf.controle-exames.ficha', compact('ExameFuncionario'));
         $pdf->setPaper('A4', 'portrait');
         return $pdf->stream("Exame {$tipoexame} " . Str::slug($ExameFuncionario->Feedback->Curriculo->nome) . ".pdf");
+    }
+
+    /**
+     * Envia ficha de encaminhamento para assinatura digital.
+     */
+    public function enviarFichaParaAssinatura(Request $request, AssinaturaDigitalService $service)
+    {
+        $request->validate([
+            'exame_id' => 'required|integer',
+            'signatarios' => 'required|array|min:1',
+            'signatarios.*.email' => 'required|email',
+            'signatarios.*.nome' => 'required|string|max:255',
+            'signatarios.*.cpf' => 'nullable|string|max:14',
+            'signatarios.*.user_id' => 'nullable|exists:users,id',
+        ]);
+
+        $ExameFuncionario = ExameFuncionario::with(['PcmsoDados' => fn ($q) => $q->withoutGlobalScopes()])
+            ->with(['Formulario' => fn ($q) => $q->withoutGlobalScopes()])
+            ->with(['EmpresaExame' => fn ($q) => $q->withoutGlobalScopes()])
+            ->with(['Feedback' => fn ($q) => $q->withoutGlobalScopes()->with(['Curriculo' => fn ($q) => $q->withoutGlobalScopes()])])
+            ->whereId($request->exame_id)
+            ->whereHas('Feedback', fn ($q) => $q->where('empresa_id', auth()->user()->empresa_id))
+            ->first();
+
+        if (!$ExameFuncionario) {
+            return response()->json(['success' => false, 'message' => 'Exame não encontrado.'], 404);
+        }
+
+        $ExameFuncionario->dados_empresa = Sistema::getEmpresaFilialMatriz($ExameFuncionario->Feedback->centro_custo_filial_id, $ExameFuncionario->Feedback->empresa_id);
+        $tipoexame = $request->input('tipo_exame', 'Exame');
+        if ($ExameFuncionario->exame_tipo_id) {
+            $tipoexame = ExameTipo::find($ExameFuncionario->exame_tipo_id)->label ?? $tipoexame;
+        }
+
+        $pdf = PDF::loadView('pdf.controle-exames.ficha', compact('ExameFuncionario'));
+        $pdf->setPaper('A4', 'portrait');
+        $pdfContent = $pdf->output();
+
+        $nomeArquivo = 'ficha_encaminhamento_' . Str::slug($ExameFuncionario->Feedback->Curriculo->nome ?? 'documento') . '.pdf';
+        $empresaId = auth()->user()->empresa_id;
+        $cliente = Cliente::withoutGlobalScopes()->find($empresaId);
+        $apelido = $cliente && $cliente->apelido ? $cliente->apelido : 'empresa';
+
+        $doc = $service->criarEnvio(
+            $empresaId,
+            'ficha_encaminhamento',
+            ExameFuncionario::class,
+            $ExameFuncionario->id,
+            auth()->id(),
+            $request->signatarios,
+            'sequencial',
+            $pdfContent,
+            $nomeArquivo,
+            null
+        );
+
+        $baseUrl = rtrim(config('app.url'), '/') . '/' . $apelido . '/assinatura/';
+        $links = $doc->signatarios->map(fn ($s) => ['email' => $s->email, 'link' => $baseUrl . $s->token]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ficha enviada para assinatura.',
+            'documento_id' => $doc->id,
+            'links' => $links,
+        ]);
     }
 
     // Anexos-------------------------------------------------

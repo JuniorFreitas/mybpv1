@@ -15,11 +15,11 @@
             privado, inscrita no CNPJ/MF sob o nº <strong>{{$dados['dados_empresa']['cnpj']}}</strong>, estabelecida
             no(a) {{$dados['dados_empresa']['endereco_completo']}}, doravante denominada <strong>EMPREGADOR(A)</strong>,
             e,
-            de outro, {{$dados['dados_colaborador']->nome}}, inscrito(a) no CPF sob o nº {{$dados['dados_colaborador']->cpf}}, doravante, ,denominado(a)
+            de outro, {{$dados['dados_colaborador']->Curriculo->nome}}, inscrito(a) no CPF sob o nº {{$dados['dados_colaborador']->Curriculo->cpf}}, doravante, ,denominado(a)
             <strong>EMPREGADO(A)</strong>, firmam o Contrato de Trabalho na Modalidade Intermitente, nos termos da Lei
             n°
             13.467/2017, com vigência, a partir
-            do {{ (new \MasterTag\DataHora($dados['dados_colaborador']->FeedBack->Admissao->data_admissao))->dataCompletaExt() }},
+            do {{ (new \MasterTag\DataHora($dados['dados_colaborador']->Admissao->data_admissao))->dataCompletaExt() }},
             fundamentado em todo o teor da Consolidação das Leis do Trabalho, nos termos seguintes.
         </p><br>
 
@@ -40,14 +40,14 @@
         <p class="f12 text-justify">
             Cláusula 2ª - O(A) EMPREGADO(A) obriga-se a prestar seus serviços no quadro de funcionários do
             EMPREGADOR(A),
-            para exercer as funções de {{  mb_strtoupper($dados['dados_colaborador']->FeedBack->Admissao->funcao) }} A com todas as
+            para exercer as funções de {{  mb_strtoupper($dados['dados_colaborador']->Admissao->funcao) }} A com todas as
             atribuições
             que lhe são peculiares.
         </p><br>
 
         <p class="f12 text-justify">
-            Cláusula 3ª - O(A) EMPREGADO(A) receberá o salário de {{ $dados['dados_colaborador']->FeedBack->Admissao->salario }}
-            ({{\App\Models\Sistema::valorPorExtenso($dados['dados_colaborador']->FeedBack->Admissao->salario)}}) por hora
+            Cláusula 3ª - O(A) EMPREGADO(A) receberá o salário de {{ $dados['dados_colaborador']->Admissao->salario }}
+            ({{\App\Models\Sistema::valorPorExtenso($dados['dados_colaborador']->Admissao->salario)}}) por hora
             trabalhada, nos horários estabelecidos na convocação e o pagamento dar-se-á de forma mensal, devendo ser
             pago
             até o quinto dia útil do mês seguinte ao trabalhado, de acordo com o previsto no § 1 do artigo 459 da CLT.
@@ -306,7 +306,7 @@
 
         <br><br>
         <div class="f12" style="line-height: 26pt">
-            São Luís/MA, {{ (new \MasterTag\DataHora($dados['dados_colaborador']->FeedBack->Admissao->data_admissao))->dataCompletaExt() }}.
+            São Luís/MA, {{ (new \MasterTag\DataHora($dados['dados_colaborador']->Admissao->data_admissao))->dataCompletaExt() }}.
             <br>
             <br>
             <br>
@@ -318,7 +318,7 @@
             <br>
             <br>
             <hr style="width: 10cm; margin-top: 5px;  margin-left: 24%;  border:none; border-top: 1px solid #333">
-            {{$dados['dados_colaborador']->nome}}
+            {{$dados['dados_colaborador']->Curriculo->nome}}
         </div>
 
         <div class="f12" style="line-height: 15pt;text-align: left">
