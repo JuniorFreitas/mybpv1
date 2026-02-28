@@ -654,6 +654,20 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="col-12 col-sm-12">
+                                        <div class="form-group">
+                                            <label>Padrões de treinamento habilitados (segmentos)</label>
+                                            <div class="row">
+                                                <div class="col-12 col-md-4" v-for="s in listaSegmentosTreinamento" :key="s.id">
+                                                    <div class="custom-control custom-checkbox">
+                                                        <input type="checkbox" class="custom-control-input" :id="'seg_' + s.id"
+                                                               :value="s.id" v-model="form.segmentos_treinamento_ids">
+                                                        <label class="custom-control-label" :for="'seg_' + s.id">@{{ s.nome }}</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </fieldset>
                             <fieldset>

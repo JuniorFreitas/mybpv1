@@ -24,6 +24,7 @@ class CarteiraAssinaturaController extends Controller
             [
                 'nome' => 'required',
                 'tipo' => 'required',
+                'segmento_treinamento_id' => 'nullable|exists:segmentos_treinamento,id',
             ]
         );
         if ($dadosValidados->fails()) {
@@ -34,6 +35,7 @@ class CarteiraAssinaturaController extends Controller
         } else {
             try {
                 DB::beginTransaction();
+                $dados['segmento_treinamento_id'] = !empty($dados['segmento_treinamento_id']) ? $dados['segmento_treinamento_id'] : null;
                 $resposta = CarteiraAssinatura::create($dados);
 
                 if (isset($dados['anexos'])) {
@@ -67,7 +69,7 @@ class CarteiraAssinaturaController extends Controller
      */
     public function edit($id)
     {
-        $assinatura = CarteiraAssinatura::with('Anexos')->find($id);
+        $assinatura = CarteiraAssinatura::with(['Anexos', 'SegmentoTreinamento:id,nome'])->find($id);
         $assinatura->anexosDel = [];
         return $assinatura;
     }
@@ -87,6 +89,7 @@ class CarteiraAssinaturaController extends Controller
             [
                 'nome' => 'required',
                 'tipo' => 'required',
+                'segmento_treinamento_id' => 'nullable|exists:segmentos_treinamento,id',
             ]
         );
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
@@ -97,6 +100,7 @@ class CarteiraAssinaturaController extends Controller
         } else {
             try {
                 DB::beginTransaction();
+                $dados['segmento_treinamento_id'] = !empty($dados['segmento_treinamento_id']) ? $dados['segmento_treinamento_id'] : null;
 
                 $assinatura = CarteiraAssinatura::where('id', $id)->first();
                 $assinatura->update($dados);
@@ -120,7 +124,7 @@ class CarteiraAssinaturaController extends Controller
                                 $arquivo->temporario = false;
                                 $arquivo->chave = '';
                                 $arquivo->save();
-                                $assinatura->Anexos()->attach($arquivo->id);
+                                $assinatura->Anexos()->attach($arquivo->id, ['ordem' => $index]);
                             }
                         }
                     }
@@ -140,7 +144,7 @@ class CarteiraAssinaturaController extends Controller
     {
         $this->authorize('cadastro_carteira_assinatura');
         $porPagina = $request->get('porPagina');
-        $resultado = CarteiraAssinatura::orderBy('id');
+        $resultado = CarteiraAssinatura::with('SegmentoTreinamento:id,nome')->orderBy('id');
 
         $resultado = $resultado->paginate($porPagina);
         return response()->json([

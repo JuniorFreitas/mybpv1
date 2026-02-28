@@ -215,6 +215,14 @@
                             Treinamentos Indústria
                         </a>
                     </li>
+                    @if(Route::has('g.segmentostreinamento.segmentostreinamento.index') && (int) auth()->user()->empresa_id === \App\Http\Controllers\SegmentoTreinamentoController::EMPRESA_ID_CADASTRO_SEGMENTOS)
+                    <li>
+                        <a href="{{ route('g.segmentostreinamento.segmentostreinamento.index') }}" parent="cadastro"
+                           key="segmentostreinamento">
+                            Segmentos de Treinamento
+                        </a>
+                    </li>
+                    @endif
                 @endcan
                 @can('cadastro_treinamento_sgi')
                     <li>

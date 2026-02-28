@@ -20,6 +20,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $ordem
  * @property bool $ativo
  * @property int|null $empresa_id
+ * @property int|null $segmento_treinamento_id
  * @property string|null $label_reduzida
  * @property bool|null $exibir_na_carteira
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
@@ -69,7 +70,8 @@ class Vencimento extends Model
         'prazo_fixo',
         'ativo',
         'ordem',
-        'empresa_id'
+        'empresa_id',
+        'segmento_treinamento_id',
     ];
 
     protected $casts = [
@@ -82,8 +84,14 @@ class Vencimento extends Model
         'prazo_fixo' => 'int',
         'ativo' => 'boolean',
         'ordem' => 'int',
-        'empresa_id' => 'int'
+        'empresa_id' => 'int',
+        'segmento_treinamento_id' => 'int',
     ];
+
+    public function SegmentoTreinamento()
+    {
+        return $this->belongsTo(SegmentoTreinamento::class, 'segmento_treinamento_id', 'id');
+    }
 
     public function arquivosVencimentos()
     {

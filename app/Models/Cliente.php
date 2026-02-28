@@ -399,6 +399,11 @@ class Cliente extends Model
         return $this->hasOne(ClienteConfig::class, 'cliente_id', 'id');
     }
 
+    public function SegmentosTreinamento()
+    {
+        return $this->belongsToMany(SegmentoTreinamento::class, 'cliente_segmento_treinamento', 'cliente_id', 'segmento_treinamento_id');
+    }
+
     public function EmpresaFuncionarios()
     {
         return $this->belongsToMany(User::class, 'empresa_funcionarios', 'empresa_id', 'funcionario_id');
@@ -419,14 +424,16 @@ class Cliente extends Model
         return $this->hasOne(CarteiraAssinatura::class, 'empresa_id', 'id');
     }
 
+    /** Assinatura padrão Gestor/RH (segmento_treinamento_id nulo = uso em qualquer segmento quando não houver assinatura específica). */
     public function CarteiraAssinaturaGestorRh()
     {
-        return $this->CarteiraAssinatura()->whereAtivo(true)->whereTipo(CarteiraAssinatura::TIPO_GERENTE_OU_RH)->with('Anexos')->first();
+        return $this->CarteiraAssinatura()->whereAtivo(true)->whereTipo(CarteiraAssinatura::TIPO_GERENTE_OU_RH)->whereNull('segmento_treinamento_id')->with('Anexos')->first();
     }
 
+    /** Assinatura padrão SESMT (segmento_treinamento_id nulo = uso em qualquer segmento quando não houver assinatura específica). */
     public function CarteiraAssinaturaSesmt()
     {
-        return $this->CarteiraAssinatura()->whereAtivo(true)->whereTipo(CarteiraAssinatura::TIPO_SESMT)->with('Anexos')->first();
+        return $this->CarteiraAssinatura()->whereAtivo(true)->whereTipo(CarteiraAssinatura::TIPO_SESMT)->whereNull('segmento_treinamento_id')->with('Anexos')->first();
     }
 
     public function Papel()
