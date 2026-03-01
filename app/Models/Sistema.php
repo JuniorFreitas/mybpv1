@@ -604,6 +604,25 @@ class Sistema
         return array_values(array_diff($todas, $desabilitadas));
     }
 
+    /**
+     * Lista empresa_id que estão habilitadas para o schedule de Treinamento Vencimento.
+     * Respeita cliente_configs.schedule_treinamento_vencimento: false = desabilitado, true ou sem registro = habilitado.
+     * Alterável sem deploy (atualizar direto na tabela ou por tela de configuração).
+     */
+    public static function listaEmpresasParaScheduleTreinamentoVencimento(): array
+    {
+        $todas = self::listaEmpresas();
+        $empresasAtivas = Cliente::withoutGlobalScopes()
+            ->where('ativo', true)
+            ->pluck('id')
+            ->toArray();
+        $todas = array_intersect($todas, $empresasAtivas);
+        $desabilitadas = ClienteConfig::where('schedule_treinamento_vencimento', false)
+            ->pluck('cliente_id')
+            ->toArray();
+        return array_values(array_diff($todas, $desabilitadas));
+    }
+
     public static function assinaturaDigitalHabilitada(?int $empresaId = null): bool
     {
         $empresaId = $empresaId ?: (auth()->check() ? auth()->user()->empresa_id : null);

@@ -6,6 +6,7 @@ use App\Models\Pivot\TreinamentoVencimento;
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -87,6 +88,23 @@ class Vencimento extends Model
         'empresa_id' => 'int',
         'segmento_treinamento_id' => 'int',
     ];
+
+    public static function cacheKey($empresaId): string
+    {
+        $empresaId = $empresaId ?: 'global';
+        return "vencimentos_ativos_empresa_{$empresaId}";
+    }
+
+    protected static function booted()
+    {
+        static::saved(function ($model) {
+            Cache::forget(self::cacheKey($model->empresa_id));
+        });
+
+        static::deleted(function ($model) {
+            Cache::forget(self::cacheKey($model->empresa_id));
+        });
+    }
 
     public function SegmentoTreinamento()
     {

@@ -14,7 +14,7 @@ yarn-error.log
 clear.sh
 .DS_Store
 .vscode/
-
+.opencode
 /public/css
 /public/js
 /public/mix-manifest.json

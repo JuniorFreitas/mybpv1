@@ -28,6 +28,7 @@ class FeedbackCurriculoFilter
             'Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
             'Curriculo.FotoTres:id',
             'Admissao.AreaEtiqueta',
+            'Admissao.SegmentoTreinamento:id,nome,slug',
             'VagaSelecionada:id,nome',
             'Treinamento:id,cadastrou,feedback_id,tipo,created_at,updated_at',
             'Treinamento.Vencimentos',
@@ -76,7 +77,10 @@ class FeedbackCurriculoFilter
      */
     public function get()
     {
-        return $this->query->orderByDesc('created_at')->get();
+        return $this->query
+            ->orderByRaw("CASE WHEN EXISTS (SELECT 1 FROM admissoes a WHERE a.feedback_id = feedback_curriculos.id AND a.status = 'ADMITIDO') THEN 0 ELSE 1 END")
+            ->orderByDesc('created_at')
+            ->get();
     }
 
     /**
@@ -84,7 +88,10 @@ class FeedbackCurriculoFilter
      */
     public function paginate($perPage = 15)
     {
-        return $this->query->orderByDesc('created_at')->paginate($perPage);
+        return $this->query
+            ->orderByRaw("CASE WHEN EXISTS (SELECT 1 FROM admissoes a WHERE a.feedback_id = feedback_curriculos.id AND a.status = 'ADMITIDO') THEN 0 ELSE 1 END")
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
     }
 
     /**

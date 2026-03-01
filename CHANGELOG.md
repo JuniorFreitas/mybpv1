@@ -9,6 +9,18 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ### Adicionado
 
+-   **Treinamento – Segmento e Padrão de Treinamento**
+
+    -   Filtro por segmento no relatório de vencimento (frontend + backend)
+    -   Campo "Padrão de treinamento" no formulário de Treinamentos (seleção de segmento)
+    -   Endpoint `POST /g/treinamento/vencimentos-por-segmento` para atualizar lista de vencimentos por segmento
+    -   Segmento exibido no relatório e nas notificações de vencimento
+
+-   **Configuração por Empresa (Clientes)**
+
+    -   Campo `schedule_treinamento_vencimento` em `cliente_configs` para habilitar/desabilitar o schedule
+    -   Controle no cadastro de clientes para o schedule de Treinamento Vencimento
+
 -   **Sistema de Assinatura Digital**
 
     -   Tabelas: `documento_para_assinatura`, `documento_assinatura_signatarios`, `documento_assinatura_eventos`
@@ -22,7 +34,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
     -   Campos em `cliente_configs`: `assinaturas_digital_habilitada`, `assinaturas_mensal`, `alertas_assinatura`
     -   Service `App\Services\AssinaturaDigital\AssinaturaCotaService`: controle de uso de cotas
-    -   Job `JobEnviarAlertaCotaAssinatura`: verificação e envio de alertas quando 接近 limite
+    -   Job `JobEnviarAlertaCotaAssinatura`: verificação e envio de alertas quando X limite
     -   Extrato mensal de assinaturas: nova view `extrato-mensal.blade.php`
     -   Middleware `VerificaAssinaturaDigitalHabilitada`: verifica se empresa tem assinatura digital ativada
 
@@ -53,6 +65,28 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ### Modificado
 
+-   **Schedule Treinamento Vencimento**
+
+    -   Execução passa a respeitar `cliente_configs.schedule_treinamento_vencimento`
+    -   Comando agora usa lista de empresas habilitadas (com opção de executar em todas)
+
+-   **Relatórios e Exportações de Treinamento**
+
+    -   Inclusão da coluna "Padrão de Treinamento" nas planilhas
+    -   Relatório de vencimento filtra treinamentos por segmento do colaborador
+    -   E-mails de vencimento passam a exibir o segmento do colaborador
+
+-   **Treinamento – Performance e Payload**
+
+    -   Cache dos vencimentos ativos por empresa (com invalidação automática)
+    -   Eager loads reduzidos e payload da admissão enxugado na listagem
+    -   Ordenação priorizando admitidos (FeedbackCurriculoFilter)
+
+-   **Interfaces (Admin)**
+
+    -   Tela de Clientes reorganizada em cards e seções (incluindo bloco de Rotinas)
+    -   Tela de Treinamentos com seleção de padrão/segmento e ajustes no layout dos cards
+
 -   **Carteira de Treinamento – Estrutura de Arquivos**
 
     -   Componente `AssinaturaCarteira.vue` movido para `resources/js/components/cadastros/treinamentoindustria/`
@@ -71,6 +105,12 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 -   **Admissão Prevista – Tipos de Contrato**
     -   Validação de `tipo_contrato` expandida para incluir tipos específicos de admissão
 
+### Corrigido
+
+-   **Treinamento (Segurança e Consistência)**
+
+    -   `edit()` valida empresa do feedback e retorna 404 se não encontrado
+    -   Atualização de vencimentos passa a remover apenas os itens do segmento corrente
 ---
 
 ## [1.2.2] - 2026-02-24

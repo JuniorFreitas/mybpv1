@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $modelo_cih
  * @property bool $supervisor_etiqueta_bloqueio
  * @property bool $schedule_avaliacao_experiencia Habilitar (true) ou desabilitar (false) o schedule de Avaliação de Experiência para esta empresa
+ * @property bool $schedule_treinamento_vencimento Habilitar (true) ou desabilitar (false) o schedule de Treinamento Vencimento para esta empresa
  * @property bool $assinatura_digital_habilitada Habilita a funcionalidade de assinatura digital para a empresa
  * @property int|null $limite_assinaturas_mensal Limite de documentos de assinatura digital por mês (null = sem limite)
  * @property array|null $assinatura_alerta_user_ids IDs de usuários que recebem alerta de cota
@@ -32,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereSupervisorEtiquetaBloqueio($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereVencimentoAso($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereScheduleAvaliacaoExperiencia($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereScheduleTreinamentoVencimento($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereVerificaMesVencimento($value)
  * @mixin \Eloquent
  */
@@ -47,6 +49,7 @@ class ClienteConfig extends Model
         'modelo_cih',
         'supervisor_etiqueta_bloqueio',
         'schedule_avaliacao_experiencia',
+        'schedule_treinamento_vencimento',
         'assinatura_digital_habilitada',
         'limite_assinaturas_mensal',
         'assinatura_alerta_user_ids',
@@ -61,6 +64,7 @@ class ClienteConfig extends Model
         'modelo_cih' => 'string',
         'supervisor_etiqueta_bloqueio' => 'boolean',
         'schedule_avaliacao_experiencia' => 'boolean',
+        'schedule_treinamento_vencimento' => 'boolean',
         'assinatura_digital_habilitada' => 'boolean',
         'limite_assinaturas_mensal' => 'int',
         'assinatura_alerta_user_ids' => 'array',

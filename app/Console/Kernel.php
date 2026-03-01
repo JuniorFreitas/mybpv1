@@ -12,8 +12,6 @@ use App\Jobs\Rotinas\JobCalculoAvos;
 use App\Jobs\Rotinas\JobConvocacaoIntermitente;
 use App\Jobs\Rotinas\JobCorrigePonto;
 use App\Jobs\Rotinas\JobFerias;
-use App\Jobs\Rotinas\JobAsosVencidos;
-use App\Jobs\Weekly_report\LembreteTarefaJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -40,7 +38,6 @@ class Kernel extends ConsoleKernel
         //$schedule->command('inspire')->everyMinute();
 
         // Jobs com execução em apenas um servidor
-        $schedule->call(new LembreteTarefaJob)->everyMinute()->name('LembreteTarefaJob')->onOneServer();
         $schedule->call(new VerificaJornadasJob)->daily()->name('VerificaJornadasJob')->onOneServer();
         $schedule->call(new VerificaVencimentoFeriasJob)->monthly()->name('VerificaVencimentoFeriasJob')->onOneServer();
         $schedule->call(new VerificaSaidaFeriasJob)->monthly()->name('VerificaSaidaFeriasJob')->onOneServer();
@@ -56,11 +53,12 @@ class Kernel extends ConsoleKernel
         $schedule->command('horizon:snapshot')->everyFiveMinutes()->name('horizon_snapshot')->onOneServer();
         $schedule->command('mybp:vencimentoAso')->daily()->name('mybp_vencimentoAso')->onOneServer();
         $schedule->command('mybp:ferias')->daily()->name('mybp_ferias')->onOneServer();
-        $schedule->command('mybp:treinamento-vencimento --chunk-size=2000 --lote-size=100 --id=78862')
+        $schedule->command('mybp:treinamento-vencimento --chunk-size=2000 --lote-size=100')
             ->fridays()
             ->at('00:00')
             ->name('mybp_treinamento_vencimento')
             ->onOneServer();
+
         $schedule->command('mybp:avaliacao-experiencia')
         ->mondays()
         ->at('00:00')

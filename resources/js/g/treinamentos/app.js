@@ -72,6 +72,7 @@ const app = new Vue({
 
             nr_trinta_tres: true,
             nr_trinta_cinco: true,
+            segmento_treinamento_id: null,
             exame: {
                 feedback_id: '',
                 exame_realizado: '',
@@ -135,6 +136,7 @@ const app = new Vue({
         lista: [],
         vagas: [],
         listaAreas: [],
+        segmentosTreinamento: [],
 
         controle: {
             carregando: false,
@@ -194,6 +196,7 @@ const app = new Vue({
         }
         this.listaVagas()
         this.listaAreasGeral()
+        this.carregarSegmentosTreinamento()
         this.atualizar()
 
         let intervalId = setInterval(() => {
@@ -319,6 +322,37 @@ const app = new Vue({
         }
     },
     methods: {
+        carregarSegmentosTreinamento() {
+            axios
+                .get(`${URL_ADMIN}/cadastro/segmentostreinamento/habilitados-empresa`)
+                .then((res) => {
+                    this.segmentosTreinamento = res.data || []
+                })
+                .catch(() => {
+                    this.segmentosTreinamento = []
+                })
+        },
+        trocarSegmentoTreinamento() {
+            if (!this.form.feedback_id) {
+                return
+            }
+
+            this.preload = true
+            axios
+                .post(`${URL_ADMIN}/treinamento/vencimentos-por-segmento`, {
+                    feedback_id: this.form.feedback_id,
+                    segmento_treinamento_id: this.form.segmento_treinamento_id
+                })
+                .then((response) => {
+                    this.form.listaVencimentos = response.data.listaVencimentos || []
+                    this.openPanels = []
+                    this.expandAll = false
+                    this.preload = false
+                })
+                .catch(() => {
+                    this.preload = false
+                })
+        },
         marcarDesmarcarTodosTreinamentosColuna(valor) {
             this.listaColunasTreinamentos.map((item) => {
                 item.checked = valor
@@ -434,6 +468,7 @@ const app = new Vue({
                 .then((response) => {
                     let data = response.data
                     this.form.dadosFuncionario = data.dadosFuncionario
+                    this.form.segmento_treinamento_id = data.segmento_treinamento_id || null
 
                     if (data.treinamento) {
                         this.editando = true
@@ -711,8 +746,6 @@ const app = new Vue({
             }
             this.atualizar()
         },
-
-        // Novos métodos para dar suporte ao UI aprimorado
 
         // Acorde panel controls
         togglePanel(index) {

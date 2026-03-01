@@ -15,7 +15,9 @@ class AddOrdemToCarteiraAssinaturasAnexosTable extends Migration
     public function up()
     {
         Schema::table('carteira_assinaturas_anexos', function (Blueprint $table) {
-            $table->unsignedInteger('ordem')->default(0)->after('arquivo_id');
+            if (!Schema::hasColumn('carteira_assinaturas_anexos', 'ordem')) {
+                $table->unsignedInteger('ordem')->default(0)->after('arquivo_id');
+            }
         });
     }
 
@@ -27,7 +29,9 @@ class AddOrdemToCarteiraAssinaturasAnexosTable extends Migration
     public function down()
     {
         Schema::table('carteira_assinaturas_anexos', function (Blueprint $table) {
-            $table->dropColumn('ordem');
+            if (Schema::hasColumn('carteira_assinaturas_anexos', 'ordem')) {
+                $table->dropColumn('ordem');
+            }
         });
     }
 }

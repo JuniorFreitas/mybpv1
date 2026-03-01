@@ -19,9 +19,9 @@ Em Atenção (60 dias): {{ $dados['total_atencao'] }}
     ========================================
 
     @foreach($dados['categorias']['VENCIDO'] as $funcionario)
-        {{ $funcionario['funcionario']['nome'] }} - {{ $funcionario['funcionario']['cargo'] }}
+        {{ $funcionario['funcionario']['nome'] }} - {{ $funcionario['funcionario']['cargo'] }} - Segmento: {{ $funcionario['funcionario']['segmento'] ?? 'N/A' }}
         @foreach($funcionario['treinamentos'] as $treinamento)
-            • {{ $treinamento['vencimento_nome'] }}: {{ date('d/m/Y', strtotime($treinamento['data_vencimento'])) }} ({{ $treinamento['status_texto'] }})
+            • {{ $treinamento['vencimento_nome'] }} (Segmento: {{ $treinamento['segmento'] ?? ($funcionario['funcionario']['segmento'] ?? 'N/A') }}): {{ date('d/m/Y', strtotime($treinamento['data_vencimento'])) }} ({{ $treinamento['status_texto'] }})
         @endforeach
 
     @endforeach
@@ -33,9 +33,9 @@ Em Atenção (60 dias): {{ $dados['total_atencao'] }}
     ========================================
 
     @foreach($dados['categorias']['PROXIMO'] as $funcionario)
-        {{ $funcionario['funcionario']['nome'] }} - {{ $funcionario['funcionario']['cargo'] }}
+        {{ $funcionario['funcionario']['nome'] }} - {{ $funcionario['funcionario']['cargo'] }} - Segmento: {{ $funcionario['funcionario']['segmento'] ?? 'N/A' }}
         @foreach($funcionario['treinamentos'] as $treinamento)
-            • {{ $treinamento['vencimento_nome'] }}: {{ date('d/m/Y', strtotime($treinamento['data_vencimento'])) }} ({{ $treinamento['status_texto'] }})
+            • {{ $treinamento['vencimento_nome'] }} (Segmento: {{ $treinamento['segmento'] ?? ($funcionario['funcionario']['segmento'] ?? 'N/A') }}): {{ date('d/m/Y', strtotime($treinamento['data_vencimento'])) }} ({{ $treinamento['status_texto'] }})
         @endforeach
 
     @endforeach
@@ -47,9 +47,9 @@ Em Atenção (60 dias): {{ $dados['total_atencao'] }}
     ========================================
 
     @foreach($dados['categorias']['ATENCAO'] as $funcionario)
-        {{ $funcionario['funcionario']['nome'] }} - {{ $funcionario['funcionario']['cargo'] }}
+        {{ $funcionario['funcionario']['nome'] }} - {{ $funcionario['funcionario']['cargo'] }} - Segmento: {{ $funcionario['funcionario']['segmento'] ?? 'N/A' }}
         @foreach($funcionario['treinamentos'] as $treinamento)
-            • {{ $treinamento['vencimento_nome'] }}: {{ date('d/m/Y', strtotime($treinamento['data_vencimento'])) }} ({{ $treinamento['status_texto'] }})
+            • {{ $treinamento['vencimento_nome'] }} (Segmento: {{ $treinamento['segmento'] ?? ($funcionario['funcionario']['segmento'] ?? 'N/A') }}): {{ date('d/m/Y', strtotime($treinamento['data_vencimento'])) }} ({{ $treinamento['status_texto'] }})
         @endforeach
 
     @endforeach

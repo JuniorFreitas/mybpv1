@@ -115,15 +115,38 @@ class TreinamentoVencimento extends Command
 
     private function buscarEmpresas(): \Illuminate\Database\Eloquent\Collection
     {
+        if ($this->option('id')) {
+            return Cliente::withoutGlobalScopes()
+                ->whereAtivo(true)
+                ->whereId($this->option('id'))
+                ->select(['id', 'razao_social', 'cnpj', 'apelido',
+                    'logradouro', 'bairro', 'cep', 'numero', 'complemento', 'municipio', 'uf'
+                ])
+                ->with(['Filiais', 'ClienteConfig'])
+                ->get();
+        }
+
+        if (!$this->option('all')) {
+            $empresasIds = Sistema::listaEmpresasParaScheduleTreinamentoVencimento();
+            if (empty($empresasIds)) {
+                return collect();
+            }
+            return Cliente::withoutGlobalScopes()
+                ->whereAtivo(true)
+                ->whereIn('id', $empresasIds)
+                ->select(['id', 'razao_social', 'cnpj', 'apelido',
+                    'logradouro', 'bairro', 'cep', 'numero', 'complemento', 'municipio', 'uf'
+                ])
+                ->with(['Filiais', 'ClienteConfig'])
+                ->get();
+        }
+
         return Cliente::withoutGlobalScopes()
             ->whereAtivo(true)
             ->select(['id', 'razao_social', 'cnpj', 'apelido',
                 'logradouro', 'bairro', 'cep', 'numero', 'complemento', 'municipio', 'uf'
             ])
             ->with(['Filiais', 'ClienteConfig'])
-            ->when($this->option('id'), function ($query) {
-                return $query->whereId($this->option('id'));
-            })
             ->get();
     }
 
@@ -201,7 +224,8 @@ class TreinamentoVencimento extends Command
                     'Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
                     'Admissao' => function($query) {
                         $query->where('status', \App\Models\Admissao::STATUS_ADMISSAO_ADMITIDO)
-                              ->with('CentroCusto:id,label');
+                              ->with('CentroCusto:id,label')
+                              ->with('SegmentoTreinamento:id,nome,slug');
                     },
                     'Treinamento:id,cadastrou,feedback_id,tipo,created_at,updated_at',
                     'Treinamento.Vencimentos',
@@ -241,6 +265,9 @@ class TreinamentoVencimento extends Command
                     }
 
                     $segmentoId = $feedback->Admissao->segmento_treinamento_id ?? SegmentoTreinamento::getIdAlumar();
+                    $segmentoNome = $feedback->Admissao && $feedback->Admissao->SegmentoTreinamento
+                        ? $feedback->Admissao->SegmentoTreinamento->nome
+                        : '--';
                     // Processar cada vencimento do treinamento
                     foreach ($feedback->Treinamento->Vencimentos as $vencimento) {
                         if ($segmentoId && $vencimento->segmento_treinamento_id !== null && (int) $vencimento->segmento_treinamento_id !== (int) $segmentoId) {
@@ -265,6 +292,7 @@ class TreinamentoVencimento extends Command
                             'data_treinamento' => $treinamentoVencimento->data_treinamento,
                             'data_vencimento' => $treinamentoVencimento->data_vencimento,
                             'numero_fat' => $treinamentoVencimento->numero_fat ?? null,
+                            'segmento_nome' => $segmentoNome,
                         ];
 
                         // Classificar o treinamento
@@ -347,6 +375,10 @@ class TreinamentoVencimento extends Command
         $centroCusto = \App\Models\CentroCusto::find($admissao->centro_custo_id);
         $centroCustoLabel = $centroCusto ? $centroCusto->label : 'N/A';
 
+        $segmentoNome = $admissao && $admissao->SegmentoTreinamento
+            ? $admissao->SegmentoTreinamento->nome
+            : '--';
+
         return [
             'funcionario' => [
                 'nome' => $curriculo->nome,
@@ -365,6 +397,8 @@ class TreinamentoVencimento extends Command
                 'empresa_id' => $feedback->empresa_id,
                 'feedback_id' => $feedback->id,
                 'cnpj_lotacao' => Sistema::getEmpresaFilialMatriz($admissao->centro_custo_filial_id, $feedback->empresa_id) ?? null,
+                'segmento' => $segmentoNome,
+                'segmento_id' => $admissao->segmento_treinamento_id,
             ],
             'treinamentos' => []
         ];
@@ -441,6 +475,7 @@ class TreinamentoVencimento extends Command
             'id' => $treinamento->id,
             'vencimento_id' => $treinamento->vencimento_id,
             'vencimento_nome' => $treinamento->vencimento_nome,
+            'segmento' => $treinamento->segmento_nome ?? '--',
             'data_treinamento' => $treinamento->data_treinamento,
             'data_vencimento' => $treinamento->data_vencimento,
             'dias_vencer' => $treinamento->dias_vencer,
@@ -867,14 +902,15 @@ class TreinamentoVencimento extends Command
             'C' => 'Função',
             'D' => 'Data de Admissão',
             'E' => 'Centro de Custo',
-            'F' => 'Número do Crachá',
-            'G' => 'Matrícula',
-            'H' => 'Treinamento',
-            'I' => 'Data do Treinamento',
-            'J' => 'Data de Vencimento',
-            'K' => 'Dias para Vencer',
-            'L' => 'Status',
-            'M' => 'Status com dias'
+            'F' => 'Padrão de Treinamento',
+            'G' => 'Número do Crachá',
+            'H' => 'Matrícula',
+            'I' => 'Treinamento',
+            'J' => 'Data do Treinamento',
+            'K' => 'Data de Vencimento',
+            'L' => 'Dias para Vencer',
+            'M' => 'Status',
+            'N' => 'Status com dias'
         ];
 
         foreach ($cabecalhos as $coluna => $titulo) {
@@ -910,7 +946,7 @@ class TreinamentoVencimento extends Command
         $this->aplicarEstilosFinais($sheet, $linha - 1);
 
         // Auto-ajustar largura das colunas (somente para colunas principais)
-        foreach (range('A', 'M') as $coluna) {
+        foreach (range('A', 'N') as $coluna) {
             try {
                 $sheet->getColumnDimension($coluna)->setAutoSize(true);
             } catch (\Exception $e) {
@@ -928,36 +964,36 @@ class TreinamentoVencimento extends Command
     {
         // Título principal
         $sheet->setCellValue('A1', 'RELATÓRIO DE VENCIMENTOS DE TREINAMENTOS');
-        $sheet->mergeCells('A1:L1');
+        $sheet->mergeCells('A1:N1');
 
         // Informações da empresa
         $sheet->setCellValue('A2', "Empresa: {$empresa->razao_social}");
-        $sheet->mergeCells('A2:L2');
+        $sheet->mergeCells('A2:N2');
 
         $sheet->setCellValue('A3', "CNPJ: {$empresa->cnpj}");
-        $sheet->mergeCells('A3:L3');
+        $sheet->mergeCells('A3:N3');
 
         $sheet->setCellValue('A4', "Data de Geração: " . date('d/m/Y H:i:s'));
-        $sheet->mergeCells('A4:L4');
+        $sheet->mergeCells('A4:N4');
 
         // Linha em branco
         $sheet->setCellValue('A5', '');
 
         // Estilizar cabeçalho da empresa
         try {
-            $sheet->getStyle('A1:L1')->applyFromArray([
+            $sheet->getStyle('A1:N1')->applyFromArray([
                 'font' => ['bold' => true, 'size' => 16],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
             ]);
 
-            $sheet->getStyle('A2:L4')->applyFromArray([
+            $sheet->getStyle('A2:N4')->applyFromArray([
                 'font' => ['bold' => true, 'size' => 12]
             ]);
         } catch (\Exception $e) {
             $this->info("Aviso: Não foi possível aplicar estilo ao cabeçalho da empresa: {$e->getMessage()}");
             // Aplicar estilo básico como fallback
-            $sheet->getStyle('A1:L1')->getFont()->setBold(true)->setSize(16);
-            $sheet->getStyle('A2:L4')->getFont()->setBold(true)->setSize(12);
+            $sheet->getStyle('A1:N1')->getFont()->setBold(true)->setSize(16);
+            $sheet->getStyle('A2:N4')->getFont()->setBold(true)->setSize(12);
         }
     }
 
@@ -973,14 +1009,15 @@ class TreinamentoVencimento extends Command
             'C' => $funcionarioData['funcao'],
             'D' => $dataAdmissao,
             'E' => $funcionarioData['centro_custo_label'],
-            'F' => $funcionarioData['numero_cracha'] ?? '',
-            'G' => $funcionarioData['matricula'] ?? '',
-            'H' => $treinamento['vencimento_nome'],
-            'I' => $datatreinamento,
-            'J' => $dataVencimento,
-            'K' => $treinamento['dias_vencer'],
-            'L' => $treinamento['status_label'],
-            'M' => $treinamento['status_texto']
+            'F' => $funcionarioData['segmento'] ?? '--',
+            'G' => $funcionarioData['numero_cracha'] ?? '',
+            'H' => $funcionarioData['matricula'] ?? '',
+            'I' => $treinamento['vencimento_nome'],
+            'J' => $datatreinamento,
+            'K' => $dataVencimento,
+            'L' => $treinamento['dias_vencer'],
+            'M' => $treinamento['status_label'],
+            'N' => $treinamento['status_texto']
         ];
 
         foreach ($dados as $coluna => $valor) {
@@ -994,7 +1031,7 @@ class TreinamentoVencimento extends Command
     private function aplicarEstiloCabecalho($sheet, $linha): void
     {
         try {
-            $sheet->getStyle("A{$linha}:M{$linha}")->applyFromArray([
+            $sheet->getStyle("A{$linha}:N{$linha}")->applyFromArray([
                 'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
@@ -1008,7 +1045,7 @@ class TreinamentoVencimento extends Command
         } catch (\Exception $e) {
             $this->info("Aviso: Não foi possível aplicar estilo ao cabeçalho: {$e->getMessage()}");
             // Aplicar estilo básico como fallback
-            $sheet->getStyle("A{$linha}:L{$linha}")->getFont()->setBold(true);
+            $sheet->getStyle("A{$linha}:N{$linha}")->getFont()->setBold(true);
         }
     }
 
@@ -1029,7 +1066,7 @@ class TreinamentoVencimento extends Command
 
         if ($cor) {
             try {
-                $sheet->getStyle("A{$linha}:M{$linha}")->applyFromArray([
+                $sheet->getStyle("A{$linha}:N{$linha}")->applyFromArray([
                     'fill' => [
                         'fillType' => Fill::FILL_SOLID,
                         'startColor' => ['rgb' => $cor]
@@ -1045,7 +1082,7 @@ class TreinamentoVencimento extends Command
     {
         try {
             // Bordas para toda a tabela
-            $sheet->getStyle("A6:M{$ultimaLinha}")->applyFromArray([
+            $sheet->getStyle("A6:N{$ultimaLinha}")->applyFromArray([
                 'borders' => [
                     'allBorders' => ['borderStyle' => Border::BORDER_THIN]
                 ]

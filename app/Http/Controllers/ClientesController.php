@@ -592,6 +592,8 @@ class ClientesController extends Controller
                     'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
                     'modelo_cih' => $dados['cliente_config']['modelo_cih'],
                     'supervisor_etiqueta_bloqueio' => $dados['cliente_config']['supervisor_etiqueta_bloqueio'],
+                    'schedule_avaliacao_experiencia' => $dados['cliente_config']['schedule_avaliacao_experiencia'] ?? true,
+                    'schedule_treinamento_vencimento' => $dados['cliente_config']['schedule_treinamento_vencimento'] ?? true,
                 ];
                 $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigAssinatura($dados['cliente_config']));
                 $config->update($dadosClienteConfig);
@@ -602,6 +604,8 @@ class ClientesController extends Controller
                     'vencimento_aso' => $dados['cliente_config']['vencimento_aso'],
                     'modelo_cih' => $dados['cliente_config']['modelo_cih'],
                     'supervisor_etiqueta_bloqueio' => $dados['cliente_config']['supervisor_etiqueta_bloqueio'],
+                    'schedule_avaliacao_experiencia' => $dados['cliente_config']['schedule_avaliacao_experiencia'] ?? true,
+                    'schedule_treinamento_vencimento' => $dados['cliente_config']['schedule_treinamento_vencimento'] ?? true,
                     'cliente_id' => $cliente->id
                 ];
                 $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigAssinatura($dados['cliente_config']));
