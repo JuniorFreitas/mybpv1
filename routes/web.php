@@ -1519,6 +1519,7 @@ Route::group(['as' => 'documentospreadmissao.'], function () {
         Route::post('carta-oferta/{token}/salvar', [\App\Http\Controllers\CartaOfertaController::class, 'salvarCartaOferta'])->name('carta-oferta.salvarCartaOferta');
 
         Route::get('assinatura/{token}', [\App\Http\Controllers\AssinaturaPublicaController::class, 'index'])->name('assinatura.publica.index');
+        Route::get('assinatura/verificacao', [\App\Http\Controllers\VerificacaoAssinaturaController::class, 'index'])->name('assinatura.verificacao');
         Route::post('assinatura/{token}/validar-cpf', [\App\Http\Controllers\AssinaturaPublicaController::class, 'validarCpf'])->name('assinatura.publica.validar-cpf');
         Route::get('assinatura/{token}/codigo', [\App\Http\Controllers\AssinaturaPublicaController::class, 'codigo'])->name('assinatura.publica.codigo');
         Route::post('assinatura/{token}/validar-codigo', [\App\Http\Controllers\AssinaturaPublicaController::class, 'validarCodigo'])->name('assinatura.publica.validar-codigo');

@@ -549,9 +549,11 @@ class AssinaturaDigitalService
 
             $tz = 'America/Sao_Paulo';
             $baseUrl = rtrim(config('app.url'), '/');
+            $apelido = $empresa && $empresa->apelido ? $empresa->apelido : null;
+            $baseVerificacao = $apelido ? $baseUrl . '/' . $apelido . '/assinatura/verificacao' : $baseUrl . '/verificacao-assinatura';
             $signatariosParaPdf = $doc->signatarios
                 ->where('status', DocumentoAssinaturaSignatario::STATUS_ASSINADO)
-                ->map(function ($s) use ($tz, $baseUrl, $doc) {
+                ->map(function ($s) use ($tz, $baseVerificacao, $doc) {
                     $cpf = $s->cpf ?: '';
                     if ($cpf && strlen(preg_replace('/\D/', '', $cpf)) === 11) {
                         $n = preg_replace('/\D/', '', $cpf);
@@ -562,7 +564,7 @@ class AssinaturaDigitalService
                     $dataBrasilia = $raw ? \Carbon\Carbon::parse($raw, 'UTC')->setTimezone($tz) : null;
                     $timestampBrasiliaIso = $dataBrasilia ? $dataBrasilia->format('Y-m-d\TH:i:sP') : '';
                     $localBr = $dataBrasilia ? $dataBrasilia->format('Y.m.d H:i:s') . " -03'00' (Brasilia)" : '—';
-                    $qrPayload = $baseUrl . '/verificacao-assinatura?d=' . $doc->id . '&s=' . $s->id . '&h=' . ($s->hash_evidencia ?? '');
+                    $qrPayload = $baseVerificacao . '?d=' . $doc->id . '&s=' . $s->id . '&h=' . ($s->hash_evidencia ?? '');
                     $geo = is_array($s->geolocalizacao) ? $s->geolocalizacao : [];
                     $localTexto = $this->formatarLocalGeolocalizacao($geo);
                     return [
@@ -587,7 +589,7 @@ class AssinaturaDigitalService
 
             $identificador = $doc->hash_sha256 ?: substr(md5((string) $doc->id), 0, 40);
             $primeiroSignatario = $signatariosParaPdf[0] ?? null;
-            $urlVerificacao = $primeiroSignatario['qr_payload'] ?? $baseUrl . '/verificacao-assinatura?d=' . $doc->id;
+            $urlVerificacao = $primeiroSignatario['qr_payload'] ?? $baseVerificacao . '?d=' . $doc->id;
             $dadosPagina = [
                 'documento_id' => $doc->id,
                 'identificador' => $identificador,

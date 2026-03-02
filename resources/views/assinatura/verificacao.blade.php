@@ -3,35 +3,31 @@
 @section('title', 'Verificação de assinatura digital')
 
 @section('content')
-    <div class="text-center mb-4">
-        <img src="https://sistema.mybp.com.br/images/bpin_mybp_color.svg" alt="MyBP" class="img-fluid" style="max-height: 80px;">
+<div class="card assin-card">
+    <div class="card-header">
+        <h5 class="mb-0">Verificação de assinatura</h5>
+        <p class="assin-subtitle">Consulta pública de autenticidade do documento</p>
     </div>
-
-    <div class="card shadow">
-        <div class="card-header {{ $valido ? 'bg-success' : 'bg-danger' }} text-white">
-            <h5 class="mb-0">
-                @if($valido)
-                    Assinatura verificada
-                @else
-                    Verificação da assinatura
-                @endif
-            </h5>
+    <div class="card-body">
+        <div class="text-center mb-3">
+            <div class="assin-status-icon {{ $valido ? 'assin-status-ok' : 'assin-status-warn' }}">
+                {{ $valido ? 'OK' : '!' }}
+            </div>
+            <p class="lead {{ $valido ? 'text-success' : 'text-danger' }} mb-2">{{ $mensagem }}</p>
         </div>
-        <div class="card-body py-4">
-            <p class="lead {{ $valido ? 'text-success' : 'text-danger' }}">{{ $mensagem }}</p>
 
-            @if($valido && $documento && $signatario)
-                <hr>
-                <h6 class="text-muted">Detalhes do documento</h6>
-                <ul class="list-unstyled mb-0">
-                    <li><strong>Tipo:</strong> {{ \App\Models\DocumentoParaAssinatura::labelTipoDocumento($documento->tipo_documento) }}</li>
-                    <li><strong>Status:</strong> {{ $documento->status }}</li>
-                    @if($empresa)
-                        <li><strong>Empresa:</strong> {{ $empresa->razao_social ?? $empresa->nome_fantasia ?? $empresa->apelido }}</li>
-                    @endif
-                </ul>
-                <hr>
-                <h6 class="text-muted">Signatário</h6>
+        @if($valido && $documento && $signatario)
+            <div class="assin-origin mb-3">
+                Documento validado com evidências registradas para a empresa <strong>{{ $empresa->razao_social ?? $empresa->nome_fantasia ?? $empresa->apelido }}</strong>.
+            </div>
+
+            <div class="mb-2">
+                <span class="assin-chip">{{ \App\Models\DocumentoParaAssinatura::labelTipoDocumento($documento->tipo_documento) }}</span>
+                <span class="assin-chip">Status: {{ $documento->status }}</span>
+            </div>
+
+            <div class="assin-section mb-3">
+                <div class="assin-section-title">Signatário</div>
                 <ul class="list-unstyled mb-0">
                     <li><strong>Nome:</strong> {{ $signatario->nome }}</li>
                     <li><strong>E-mail:</strong> {{ $signatario->email }}</li>
@@ -58,14 +54,15 @@
                             $dataBrasilia = $raw ? \Carbon\Carbon::parse($raw, 'UTC')->setTimezone(config('app.timezone', 'America/Sao_Paulo')) : null;
                         @endphp
                         @if($dataBrasilia)
-                        <li><strong>Data da assinatura (Horário de Brasília):</strong> {{ $dataBrasilia->format('d/m/Y H:i:s') }}</li>
+                            <li><strong>Data da assinatura (Horário de Brasília):</strong> {{ $dataBrasilia->format('d/m/Y H:i:s') }}</li>
                         @endif
                     @endif
                 </ul>
+            </div>
 
-                @if(!empty($historico))
-                    <hr>
-                    <h6 class="text-muted">Histórico</h6>
+            @if(!empty($historico))
+                <div class="assin-section">
+                    <div class="assin-section-title">Histórico</div>
                     <p class="small text-muted mb-2">Data e horários em Horário de Brasília (GMT-3).</p>
                     <div class="table-responsive">
                         <table class="table table-sm table-bordered">
@@ -88,8 +85,9 @@
                         </table>
                     </div>
                     <p class="small text-muted mt-2">Documento gerado eletronicamente. Validade jurídica conforme Lei 14.063/2020 e MP 2.200-2/2001.</p>
-                @endif
+                </div>
             @endif
-        </div>
+        @endif
     </div>
+</div>
 @endsection

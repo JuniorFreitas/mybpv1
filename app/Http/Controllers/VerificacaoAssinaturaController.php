@@ -15,7 +15,7 @@ use Illuminate\View\View;
  */
 class VerificacaoAssinaturaController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, string $apelido = null): View
     {
         $documentoId = (int) $request->query('d');
         $signatarioId = (int) $request->query('s');
@@ -41,10 +41,14 @@ class VerificacaoAssinaturaController extends Controller
                 if ($signatario) {
                     $hashOk = $hashInformado === '' || hash_equals((string) $signatario->hash_evidencia, $hashInformado);
                     if ($hashOk) {
-                        $valido = true;
-                        $mensagem = 'Assinatura verificada com sucesso. Este documento foi assinado digitalmente conforme a legislacao brasileira.';
                         $empresa = Cliente::withoutGlobalScopes()->find($documento->empresa_id);
-                        $historico = $this->montarHistorico($documento);
+                        if ($apelido && $empresa && $empresa->apelido && $empresa->apelido !== $apelido) {
+                            $mensagem = 'Empresa informada nao confere com o documento.';
+                        } else {
+                            $valido = true;
+                            $mensagem = 'Assinatura verificada com sucesso. Este documento foi assinado digitalmente conforme a legislacao brasileira.';
+                            $historico = $this->montarHistorico($documento);
+                        }
                     } else {
                         $mensagem = 'O identificador da assinatura (hash) nao confere. A assinatura pode ter sido alterada.';
                     }
