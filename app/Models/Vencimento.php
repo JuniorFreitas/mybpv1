@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\Vencimento
@@ -43,8 +44,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Vencimento extends Model
 {
-    use HasFactory, LogsActivity;
-    use TenantTrait;
+    use HasFactory, LogsActivity, HasActivitylogOptions, TenantTrait;
+
 
     protected static $logFillable = true;
     protected static $logName = 'vencimento';

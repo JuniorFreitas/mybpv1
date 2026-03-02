@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\GestorRh
@@ -43,7 +44,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class GestorRh extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, HasActivitylogOptions;
 
     protected static $logFillable = true;
     protected static $logName = 'gestor_rh';

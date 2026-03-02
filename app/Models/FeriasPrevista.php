@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Scopes\ScopeClientesEmpresa;
 use App\Models\User;
@@ -97,7 +100,19 @@ use MasterTag\DataHora;
  */
 class FeriasPrevista extends Model
 {
-    use HasFactory, TenantTrait;
+    use LogsActivity, HasActivitylogOptions, HasFactory, TenantTrait;
+
+    protected static $logName = 'FeriasPrevista';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $fillable = [
         'cliente_id',

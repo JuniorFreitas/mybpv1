@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Scopes\ScopeClientesEmpresa;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,10 +25,24 @@ use Illuminate\Database\Eloquent\Model;
  */
 class PesquisaClimaCliente extends Model
 {
+
+    use LogsActivity, HasActivitylogOptions;
+
+    protected static $logName = 'PesquisaClimaCliente';
     protected $fillable = [
         'tipo_id',
         'cliente_id'
     ];
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     public $timestamps = false;
 

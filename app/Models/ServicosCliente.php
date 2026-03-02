@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\ServicosCliente
@@ -49,9 +50,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class ServicosCliente extends Model
 {
-    use HasFactory;
-
-    use LogsActivity;
+    use HasFactory, LogsActivity, HasActivitylogOptions;
 
     protected static $logFillable = true;
     protected static $logName = 'servico_cliente';

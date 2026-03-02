@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\AvaliacaoAnualFeedbackQuantidade
@@ -37,7 +38,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class AvaliacaoAnualFeedbackQuantidade extends Model
 {
-    use LogsActivity;
+    use LogsActivity, HasActivitylogOptions;
 
     protected static $logFillable = true;
     protected static $logName = 'area';

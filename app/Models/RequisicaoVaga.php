@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -73,8 +76,20 @@ use MasterTag\DataHora;
  */
 class RequisicaoVaga extends Model
 {
-    use HasFactory;
-    use TenantTrait;
+    use HasFactory, TenantTrait, LogsActivity, HasActivitylogOptions;
+
+
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
+
 
     protected $fillable = [
         'cliente_id',

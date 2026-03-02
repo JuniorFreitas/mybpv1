@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\EmpresaPerimetro
@@ -49,7 +50,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class EmpresaPerimetro extends Model
 {
-    use HasFactory,LogsActivity, TenantTrait,SoftDeletes;
+    use HasFactory,LogsActivity, HasActivitylogOptions, TenantTrait,SoftDeletes;
     protected static $logFillable = true;
     protected static $logName = 'EmpresaPerimetros';
     protected static $logOnlyDirty = true;

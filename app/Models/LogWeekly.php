@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Events\WeeklyReport\ListaEvent;
 use App\Events\WeeklyReport\LogWeeklyEvent;
@@ -35,7 +38,20 @@ use Illuminate\Support\Facades\Event;
  */
 class LogWeekly extends Model
 {
-    use HasFactory;
+    use LogsActivity, HasActivitylogOptions, HasFactory;
+
+    protected static $logName = 'LogWeekly';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
+
     protected $table = 'log_weekly';
     protected $fillable = [
         'quadro_id',

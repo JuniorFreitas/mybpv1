@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\MedidaAdministrativa
@@ -50,7 +51,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class MedidaAdministrativa extends Model
 {
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasFactory, LogsActivity, HasActivitylogOptions, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'MedidaAdministrativa';

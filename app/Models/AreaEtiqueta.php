@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -30,7 +33,19 @@ use Illuminate\Database\Eloquent\Model;
  */
 class AreaEtiqueta extends Model
 {
-    use TenantTrait;
+    use LogsActivity, HasActivitylogOptions, TenantTrait;
+
+    protected static $logName = 'AreaEtiqueta';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $fillable = ['label', 'ativo', 'empresa_id', 'gestor_id', 'centro_custo_id'];
     protected $casts = ['id' => 'int', 'label' => 'string', 'ativo' => 'boolean', 'empresa_id' => 'int', 'gestor_id' => 'int', 'centro_custo_id' => 'int'];

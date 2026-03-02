@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -43,6 +46,10 @@ use MasterTag\DataHora;
  */
 class Etapas extends Model
 {
+
+    use LogsActivity, HasActivitylogOptions;
+
+    protected static $logName = 'Etapas';
     protected $fillable = [
         'feedback_id',
         'curriculo_id',
@@ -55,6 +62,16 @@ class Etapas extends Model
         'preenchido_por',
         'status',
     ];
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $casts = [
         'feedback_id' => 'int',

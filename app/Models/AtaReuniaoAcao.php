@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
@@ -34,6 +37,10 @@ use MasterTag\DataHora;
  */
 class AtaReuniaoAcao extends Model
 {
+
+    use LogsActivity, HasActivitylogOptions;
+
+    protected static $logName = 'AtaReuniaoAcao';
     protected $fillable = [
         'ata_reuniao_id',
         'responsavel',
@@ -44,6 +51,16 @@ class AtaReuniaoAcao extends Model
         'observacao',
         'status',
     ];
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     //Acessor ->prazo
     public function getPrazoAttribute($value)

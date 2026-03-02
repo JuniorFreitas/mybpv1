@@ -1444,7 +1444,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}', [\App\Http\Controllers\ListaTarefaController::class, 'update'])->name('update')->middleware('can:weekly_report_quadro_lista_update');
         Route::put('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'atualizarOrdem'])->name('atualizarOrdem');
         Route::post('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'store'])->name('store')->middleware('can:weekly_report_quadro_lista_insert');
-        Route::get('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'index'])->name('index');
+        Route::get('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'index'])->name('listas.index');
 
         //Quadros
         Route::delete('weekly-report/{empresa}/quadros/{quadro}', [\App\Http\Controllers\QuadroController::class, 'destroy'])->name('delete')->middleware('can:weekly_report_quadro_delete');

@@ -7,6 +7,7 @@ use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\Treinamento
@@ -52,7 +53,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Treinamento extends Model
 {
-    use LogsActivity;
+    use LogsActivity, HasActivitylogOptions;
 
     protected static $logFillable = true;
     protected static $logName = 'treinamento';

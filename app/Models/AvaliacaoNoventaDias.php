@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\AvaliacaoNoventaDias
@@ -26,7 +27,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class AvaliacaoNoventaDias extends Model
 {
-    use LogsActivity;
+    use LogsActivity, HasActivitylogOptions;
 
     protected static $logFillable = true;
     protected static $logName = 'area';

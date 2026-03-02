@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Builder;
@@ -45,7 +48,19 @@ use Psr\Container\NotFoundExceptionInterface;
  */
 class CentroCusto extends Model
 {
-    use TenantTrait;
+    use LogsActivity, HasActivitylogOptions, TenantTrait;
+
+    protected static $logName = 'CentroCusto';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $fillable = ['gestor_id', 'label', 'empresa_id', 'ativo'];
     protected $casts = ['id' => 'int', 'gestor_id' => 'int', 'label' => 'string', 'empresa_id' => 'int', 'ativo' => 'boolean'];

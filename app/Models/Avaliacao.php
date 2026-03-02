@@ -12,6 +12,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\Avaliacao
@@ -52,7 +53,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Avaliacao extends Model
 {
-    use TenantTrait, LogsActivity;
+    use TenantTrait, LogsActivity, HasActivitylogOptions;
 
     protected static bool $logFillable = true;
     protected static string $logName = 'avaliacoes';

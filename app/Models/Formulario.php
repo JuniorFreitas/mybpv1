@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Scopes\ScopeEmpresa;
 use App\Tenant\Traits\TenantTrait;
@@ -27,7 +30,19 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Formulario extends Model
 {
-    use HasFactory, TenantTrait;
+    use LogsActivity, HasActivitylogOptions, HasFactory, TenantTrait;
+
+    protected static $logName = 'Formulario';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     const TABELA = 'formularios';
     protected $table = self::TABELA;

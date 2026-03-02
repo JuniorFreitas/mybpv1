@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
@@ -36,7 +39,19 @@ use Illuminate\Database\Eloquent\Model;
  */
 class AuditoriaInterna extends Model
 {
-    use TenantTrait;
+    use LogsActivity, HasActivitylogOptions, TenantTrait;
+
+    protected static $logName = 'AuditoriaInterna';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $table = 'auditoria_internas';
     protected $fillable = [

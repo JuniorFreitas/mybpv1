@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\Ocorrencia
@@ -66,7 +67,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Ocorrencia extends Model
 {
-    use LogsActivity, TenantTrait;
+    use LogsActivity, HasActivitylogOptions, TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'ocorrencias';
