@@ -321,6 +321,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::get('config', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'config'])->name('config')->middleware('can:administracao_documentos_legais');
             Route::post('config', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'salvarConfig'])->name('config-salvar')->middleware('can:administracao_documentos_legais');
             Route::post('extrato/exportar', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'exportarExtrato'])->name('extrato-exportar')->middleware('can:administracao_documentos_legais');
+            Route::post('criar-arquivo-existente', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'criarComArquivoExistente'])->name('criar-arquivo-existente')->middleware('can:administracao_documentos_legais');
             Route::get('solicitantes', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'solicitantes'])->name('solicitantes')->middleware('can:administracao_documentos_legais');
             Route::get('{id}/evidencias', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'exportarEvidencias'])->name('evidencias')->middleware('can:administracao_documentos_legais');
             Route::get('{id}/download-assinado', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'downloadAssinado'])->name('download-assinado')->middleware('can:administracao_documentos_legais');

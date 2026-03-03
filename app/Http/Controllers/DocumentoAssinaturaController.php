@@ -267,6 +267,49 @@ class DocumentoAssinaturaController extends Controller
         return response()->json($payload);
     }
 
+    /**
+     * Cria documento de assinatura a partir de um PDF já existente (arquivo_id).
+     */
+    public function criarComArquivoExistente(Request $request)
+    {
+        $empresaId = auth()->user()->empresa_id;
+        $payload = $request->validate([
+            'arquivo_id' => 'required|integer',
+            'tipo_documento' => 'required|string|max:80',
+            'documentable_type' => 'required|string|max:180',
+            'documentable_id' => 'required|integer',
+            'signatarios' => 'required|array|min:1',
+            'signatarios.*.email' => 'required|email',
+            'signatarios.*.nome' => 'required|string|max:120',
+            'signatarios.*.cpf' => 'nullable|string|max:20',
+            'ordem_assinatura' => 'nullable|string|max:20',
+            'data_expiracao' => 'nullable|date',
+            'solicitante_id' => 'nullable|integer',
+        ]);
+
+        $ordem = $payload['ordem_assinatura'] ?? DocumentoParaAssinatura::ORDEM_SEQUENCIAL;
+        $solicitanteId = $payload['solicitante_id'] ?? auth()->id();
+        $dataExpiracao = !empty($payload['data_expiracao']) ? new \DateTime($payload['data_expiracao']) : null;
+
+        $doc = $this->service->criarEnvioComArquivoExistente(
+            $empresaId,
+            (int) $payload['arquivo_id'],
+            $payload['tipo_documento'],
+            $payload['documentable_type'],
+            (int) $payload['documentable_id'],
+            $solicitanteId,
+            $payload['signatarios'],
+            $ordem,
+            $dataExpiracao
+        );
+
+        return response()->json([
+            'success' => true,
+            'documento_id' => $doc->id,
+            'token' => $doc->token,
+        ], 201);
+    }
+
     private function flagExibirCompleto(?bool $valor): bool
     {
         return $valor === null ? true : (bool) $valor;

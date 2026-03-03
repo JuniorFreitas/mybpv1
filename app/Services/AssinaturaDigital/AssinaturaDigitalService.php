@@ -170,6 +170,124 @@ class AssinaturaDigitalService
     }
 
     /**
+     * Cria um envio para assinatura a partir de um PDF já existente (arquivo_id).
+     * O arquivo deve estar disponível no storage configurado e ser PDF.
+     */
+    public function criarEnvioComArquivoExistente(
+        int $empresaId,
+        int $arquivoId,
+        string $tipoDocumento,
+        string $documentableType,
+        int $documentableId,
+        ?int $solicitanteId,
+        array $signatarios,
+        string $ordemAssinatura,
+        ?\DateTimeInterface $dataExpiracao = null
+    ): DocumentoParaAssinatura {
+        app(AssinaturaCotaService::class)->validarDisponibilidadeOrFail($empresaId);
+
+        $arquivo = Arquivo::find($arquivoId);
+        if (!$arquivo || !$arquivo->disco || !$arquivo->file) {
+            throw new \RuntimeException('Arquivo não encontrado ou inválido.');
+        }
+        $ext = strtolower(ltrim((string) $arquivo->extensao, '.'));
+        if ($ext !== 'pdf') {
+            throw new \RuntimeException('Apenas arquivos PDF podem ser enviados para assinatura.');
+        }
+
+        try {
+            $conteudo = Storage::disk($arquivo->disco)->get($arquivo->file);
+        } catch (\Throwable $e) {
+            Log::error('AssinaturaDigitalService: falha ao ler PDF existente', ['arquivo_id' => $arquivoId, 'erro' => $e->getMessage()]);
+            throw $e;
+        }
+        if ($conteudo === null || $conteudo === '') {
+            throw new \RuntimeException('Conteúdo do PDF não encontrado.');
+        }
+        $hashSha256 = hash('sha256', $conteudo);
+
+        $doc = DB::transaction(function () use (
+            $empresaId,
+            $arquivo,
+            $tipoDocumento,
+            $documentableType,
+            $documentableId,
+            $solicitanteId,
+            $signatarios,
+            $ordemAssinatura,
+            $hashSha256,
+            $dataExpiracao
+        ) {
+            $doc = DocumentoParaAssinatura::create([
+                'empresa_id' => $empresaId,
+                'tipo_documento' => $tipoDocumento,
+                'documentable_type' => $documentableType,
+                'documentable_id' => $documentableId,
+                'arquivo_id' => $arquivo->id,
+                'hash_sha256' => $hashSha256,
+                'status' => DocumentoParaAssinatura::STATUS_EM_ASSINATURA,
+                'data_expiracao' => $dataExpiracao,
+                'solicitante_id' => $solicitanteId,
+                'ordem_assinatura' => $ordemAssinatura,
+            ]);
+
+            $ordem = 0;
+            foreach ($signatarios as $s) {
+                $ordem++;
+                $email = $s['email'] ?? null;
+                $nome = $s['nome'] ?? '';
+                $userId = $s['user_id'] ?? null;
+                $cpf = $s['cpf'] ?? null;
+                if ($userId && !$email) {
+                    $user = User::find($userId);
+                    if ($user) {
+                        $email = $user->login ?? $user->email ?? $email;
+                        $nome = $nome ?: $user->nome;
+                        if ($cpf === null && !empty($user->cpf)) {
+                            $cpf = $user->cpf;
+                        }
+                    }
+                }
+                if (!$email) {
+                    Log::warning('AssinaturaDigitalService: signatário sem e-mail ignorado', ['nome' => $nome, 'ordem' => $ordem]);
+                    continue;
+                }
+                DocumentoAssinaturaSignatario::create([
+                    'documento_para_assinatura_id' => $doc->id,
+                    'user_id' => $userId,
+                    'email' => $email,
+                    'nome' => $nome,
+                    'cpf' => $cpf,
+                    'ordem' => $ordem,
+                    'token' => DocumentoAssinaturaSignatario::gerarToken(),
+                    'status' => DocumentoAssinaturaSignatario::STATUS_PENDENTE,
+                ]);
+            }
+
+            $doc->load('signatarios');
+            if ($doc->signatarios->isEmpty()) {
+                Log::error('AssinaturaDigitalService: nenhum signatário criado (todos sem e-mail?)');
+                throw new \InvalidArgumentException('Nenhum signatário com e-mail válido. Verifique a lista de signatários.');
+            }
+            $solicitante = User::find($solicitanteId);
+            $this->registrarEvento($doc->id, DocumentoAssinaturaEvento::EVENTO_ENVIADO, [
+                'solicitante_id' => $solicitanteId,
+                'nome' => $solicitante ? ($solicitante->nome ?? $solicitante->name ?? 'Sistema') : 'Sistema',
+                'email' => $solicitante && $solicitante->email ? $solicitante->email : null,
+                'signatarios_count' => $doc->signatarios->count(),
+            ]);
+
+            return $doc->fresh(['signatarios', 'arquivo']);
+        });
+
+        Log::info('AssinaturaDigital: criando envio com arquivo existente e enfileirando e-mail', ['documento_id' => $doc->id, 'tipo' => $tipoDocumento, 'signatarios' => $doc->signatarios->pluck('email')->toArray()]);
+        JobEnvioEmailAssinatura::dispatch($doc->id);
+        app(AssinaturaCotaService::class)->verificarAlertas($empresaId);
+
+        return $doc;
+    }
+
+    /**
      * Resolve a empresa (Cliente) pelo apelido da URL. Usa withoutGlobalScopes para funcionar sem login.
      */
     public function buscarEmpresaPorApelido(string $apelido): ?Cliente

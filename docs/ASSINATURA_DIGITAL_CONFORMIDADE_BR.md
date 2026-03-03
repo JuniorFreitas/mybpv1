@@ -104,6 +104,20 @@ Configuracao de mascaramento (tabela `cliente_configs`):
 -   `assinatura_exibir_ip_completo` (true = exibe completo; false = mascara)
 -   `assinatura_exibir_cpf_completo` (true = exibe completo; false = mascara)
 
+## Assinar PDF existente
+
+Endpoint (admin):
+
+-   `POST /g/documento-assinatura/criar-arquivo-existente`
+
+Payload:
+
+-   `arquivo_id`, `tipo_documento`, `documentable_type`, `documentable_id`, `signatarios[]`
+
+Comando:
+
+-   `php artisan assinatura:criar-existente {empresa_id} {arquivo_id} {tipo_documento} {documentable_type} {documentable_id} --signatario=email:nome:cpf`
+
 ## Observacao final
 
 Esta avaliacao e tecnica. Para validar juridicamente o uso em cada tipo de documento, recomenda-se revisao juridica conforme o risco e a exigencia regulatoria do processo.
