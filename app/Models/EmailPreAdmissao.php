@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\EmailPreAdmissao
@@ -38,7 +39,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class EmailPreAdmissao extends Model
 {
-    use HasFactory, TenantTrait, LogsActivity;
+    use HasFactory, TenantTrait, LogsActivity, HasActivitylogOptions;
 
     protected static $logFillable = true;
     protected static $logName = 'curriculo';

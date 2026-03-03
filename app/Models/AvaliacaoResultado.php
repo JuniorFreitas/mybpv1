@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\AvaliacaoResultado
@@ -46,7 +47,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class AvaliacaoResultado extends Model
 {
-    use HasFactory, TenantTrait, LogsActivity;
+    use HasFactory, TenantTrait, LogsActivity, HasActivitylogOptions;
 
     protected static $logFillable = true;
     protected static $logName = 'avaliacoes_resultados';

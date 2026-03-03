@@ -6,6 +6,7 @@ use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\Fornecedor
@@ -71,7 +72,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Fornecedor extends Model
 {
-    use  LogsActivity, TenantTrait;
+    use  LogsActivity, HasActivitylogOptions, TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'fornecedores';

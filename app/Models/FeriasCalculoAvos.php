@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 use function Symfony\Component\String\s;
 
 /**
@@ -42,7 +43,7 @@ use function Symfony\Component\String\s;
  */
 class FeriasCalculoAvos extends Model
 {
-    use HasFactory, LogsActivity, TenantTrait;
+    use HasFactory, LogsActivity, HasActivitylogOptions, TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'ferias_calculo_avos';

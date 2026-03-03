@@ -8,6 +8,7 @@ use Illuminate\Support\Carbon;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\Demissao
@@ -49,7 +50,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Demissao extends Model
 {
-    use LogsActivity;
+    use LogsActivity, HasActivitylogOptions;
 
     protected static bool $logFillable = true;
     protected static string $logName = 'demissão';

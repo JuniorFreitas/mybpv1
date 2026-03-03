@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\Models\PontoEletronico
@@ -64,7 +65,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class PontoEletronico extends Model
 {
-    use HasFactory,LogsActivity;
+    use HasFactory,LogsActivity, HasActivitylogOptions;
     protected static $logFillable = true;
     protected static $logName = 'ponto_eletronico';
     protected static $logOnlyDirty = true;

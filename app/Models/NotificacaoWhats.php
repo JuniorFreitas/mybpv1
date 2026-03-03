@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -32,6 +35,10 @@ use Illuminate\Database\Eloquent\Model;
  */
 class NotificacaoWhats extends Model
 {
+
+    use LogsActivity, HasActivitylogOptions;
+
+    protected static $logName = 'NotificacaoWhats';
     protected $fillable = [
         'curriculo_id',
         'feedback_id',
@@ -41,6 +48,16 @@ class NotificacaoWhats extends Model
         'mensagem',
         'user_id',
     ];
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $casts = [
         'curriculo_id' => 'int',

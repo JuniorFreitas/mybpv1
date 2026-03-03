@@ -6,8 +6,10 @@ use App\Models\Pivot\TreinamentoVencimento;
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\Vencimento
@@ -20,6 +22,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int|null $ordem
  * @property bool $ativo
  * @property int|null $empresa_id
+ * @property int|null $segmento_treinamento_id
  * @property string|null $label_reduzida
  * @property bool|null $exibir_na_carteira
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
@@ -41,8 +44,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Vencimento extends Model
 {
-    use HasFactory, LogsActivity;
-    use TenantTrait;
+    use HasFactory, LogsActivity, HasActivitylogOptions, TenantTrait;
+
 
     protected static $logFillable = true;
     protected static $logName = 'vencimento';
@@ -69,7 +72,8 @@ class Vencimento extends Model
         'prazo_fixo',
         'ativo',
         'ordem',
-        'empresa_id'
+        'empresa_id',
+        'segmento_treinamento_id',
     ];
 
     protected $casts = [
@@ -82,8 +86,31 @@ class Vencimento extends Model
         'prazo_fixo' => 'int',
         'ativo' => 'boolean',
         'ordem' => 'int',
-        'empresa_id' => 'int'
+        'empresa_id' => 'int',
+        'segmento_treinamento_id' => 'int',
     ];
+
+    public static function cacheKey($empresaId): string
+    {
+        $empresaId = $empresaId ?: 'global';
+        return "vencimentos_ativos_empresa_{$empresaId}";
+    }
+
+    protected static function booted()
+    {
+        static::saved(function ($model) {
+            Cache::forget(self::cacheKey($model->empresa_id));
+        });
+
+        static::deleted(function ($model) {
+            Cache::forget(self::cacheKey($model->empresa_id));
+        });
+    }
+
+    public function SegmentoTreinamento()
+    {
+        return $this->belongsTo(SegmentoTreinamento::class, 'segmento_treinamento_id', 'id');
+    }
 
     public function arquivosVencimentos()
     {

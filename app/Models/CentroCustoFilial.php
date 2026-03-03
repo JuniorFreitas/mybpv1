@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\CentroCustoFilial
@@ -43,7 +44,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class CentroCustoFilial extends Model
 {
-    use HasFactory, SoftDeletes, TenantTrait, LogsActivity;
+    use HasFactory, SoftDeletes, TenantTrait, LogsActivity, HasActivitylogOptions;
 
     protected static $logFillable = true;
     protected static $logName = 'CentroCustoFilial';

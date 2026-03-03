@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,6 +20,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $modelo_cih
  * @property bool $supervisor_etiqueta_bloqueio
  * @property bool $schedule_avaliacao_experiencia Habilitar (true) ou desabilitar (false) o schedule de Avaliação de Experiência para esta empresa
+ * @property bool $schedule_treinamento_vencimento Habilitar (true) ou desabilitar (false) o schedule de Treinamento Vencimento para esta empresa
+ * @property bool $assinatura_digital_habilitada Habilita a funcionalidade de assinatura digital para a empresa
+ * @property int|null $limite_assinaturas_mensal Limite de documentos de assinatura digital por mês (null = sem limite)
+ * @property array|null $assinatura_alerta_user_ids IDs de usuários que recebem alerta de cota
+ * @property array|null $assinatura_alerta_grupo_ids IDs de grupos (papeis) que recebem alerta de cota
  * @property-read \App\Models\Cliente|null $Cliente
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig newQuery()
@@ -28,12 +36,25 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereSupervisorEtiquetaBloqueio($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereVencimentoAso($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereScheduleAvaliacaoExperiencia($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereScheduleTreinamentoVencimento($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereVerificaMesVencimento($value)
  * @mixin \Eloquent
  */
 class ClienteConfig extends Model
 {
-    use HasFactory;
+    use LogsActivity, HasActivitylogOptions, HasFactory;
+
+    protected static $logName = 'ClienteConfig';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $fillable = [
         'envia_whatsapp',
@@ -42,7 +63,14 @@ class ClienteConfig extends Model
         'vencimento_aso',
         'modelo_cih',
         'supervisor_etiqueta_bloqueio',
-        'schedule_avaliacao_experiencia'
+        'schedule_avaliacao_experiencia',
+        'schedule_treinamento_vencimento',
+        'assinatura_digital_habilitada',
+        'limite_assinaturas_mensal',
+        'assinatura_alerta_user_ids',
+        'assinatura_alerta_grupo_ids',
+        'assinatura_exibir_ip_completo',
+        'assinatura_exibir_cpf_completo',
     ];
 
     protected $casts = [
@@ -52,7 +80,14 @@ class ClienteConfig extends Model
         'vencimento_aso' => 'int',
         'modelo_cih' => 'string',
         'supervisor_etiqueta_bloqueio' => 'boolean',
-        'schedule_avaliacao_experiencia' => 'boolean'
+        'schedule_avaliacao_experiencia' => 'boolean',
+        'schedule_treinamento_vencimento' => 'boolean',
+        'assinatura_digital_habilitada' => 'boolean',
+        'limite_assinaturas_mensal' => 'int',
+        'assinatura_alerta_user_ids' => 'array',
+        'assinatura_alerta_grupo_ids' => 'array',
+        'assinatura_exibir_ip_completo' => 'boolean',
+        'assinatura_exibir_cpf_completo' => 'boolean',
     ];
 
     public $timestamps = false;

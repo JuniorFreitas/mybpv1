@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\FormaContrato
@@ -28,7 +29,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class FormaContrato extends Model
 {
-    use HasFactory, LogsActivity, TenantTrait;
+    use HasFactory, LogsActivity, HasActivitylogOptions, TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'documentos_legais_forma_contrato';

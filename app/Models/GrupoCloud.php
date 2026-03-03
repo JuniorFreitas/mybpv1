@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\GrupoCloud
@@ -36,8 +37,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class GrupoCloud extends Model
 {
-    use HasFactory, LogsActivity;
-    use TenantTrait;
+    use HasFactory, LogsActivity, HasActivitylogOptions, TenantTrait;
+
 
     protected static $logFillable = true;
     protected static $logName = 'grupo_cloud';

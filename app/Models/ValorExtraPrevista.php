@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Scopes\ScopeClientesEmpresa;
 use App\Tenant\Traits\TenantTrait;
@@ -81,7 +84,19 @@ use MasterTag\DataHora;
  */
 class ValorExtraPrevista extends Model
 {
-    use TenantTrait;
+    use LogsActivity, HasActivitylogOptions, TenantTrait;
+
+    protected static $logName = 'ValorExtraPrevista';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $fillable = [
         'colaborador_id',

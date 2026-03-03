@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\Simulado
@@ -42,9 +43,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Simulado extends Model
 {
-    use LogsActivity;
-    use HasApiTokens;
-    use TenantTrait;
+    use LogsActivity, HasActivitylogOptions, HasApiTokens, TenantTrait;
+
+
 
     protected static $logFillable = true;
     protected static $logName = 'Simulado';

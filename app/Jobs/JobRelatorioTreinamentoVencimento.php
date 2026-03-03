@@ -162,11 +162,20 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
             $filter->apply($filtros);
             
             // Obter dados filtrados com relationships - igual ao TreinamentoController
-            $baseQuery = $filter->getQuery()->with([
+            $baseQuery = $filter->getQuery();
+
+            if (!empty($this->requestData['segmento_treinamento_id'])) {
+                $segmentoId = $this->requestData['segmento_treinamento_id'];
+                $baseQuery->whereHas('Admissao', function ($q) use ($segmentoId) {
+                    $q->where('segmento_treinamento_id', $segmentoId);
+                });
+            }
+
+            $baseQuery = $baseQuery->with([
                 'Treinamento.Vencimentos' => function($q) use ($dataInicio, $dataFim) {
                     $q->whereBetween('treinamento_vencimento.data_vencimento', [$dataInicio->dataInsert(), $dataFim->dataInsert()]);
                 },
-                'Admissao',
+                'Admissao.SegmentoTreinamento:id,nome,slug',
                 'VagaSelecionada',
                 'Curriculo'
             ]);
@@ -201,17 +210,18 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
         $linhaCabecalho = 6;
         $cabecalhos = [
             'A' => 'Nome',
-            'B' => 'Cargo', 
+            'B' => 'Cargo',
             'C' => 'CNPJ da Empresa',
             'D' => 'Empresa',
             'E' => 'Centro de Custo',
-            'F' => 'Tipo',
-            'G' => 'Treinamento',
-            'H' => 'Descrição',
-            'I' => 'Data Treinamento',
-            'J' => 'Data Vencimento',
-            'K' => 'Dias para Vencer',
-            'L' => 'Status'
+            'F' => 'Padrão de Treinamento',
+            'G' => 'Tipo',
+            'H' => 'Treinamento',
+            'I' => 'Descrição',
+            'J' => 'Data Treinamento',
+            'K' => 'Data Vencimento',
+            'L' => 'Dias para Vencer',
+            'M' => 'Status'
         ];
 
         foreach ($cabecalhos as $coluna => $titulo) {
@@ -235,9 +245,15 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
                         continue;
                     }
 
+                    $segmentoId = $feedback->Admissao
+                        ? ($feedback->Admissao->segmento_treinamento_id ?? \App\Models\SegmentoTreinamento::getIdAlumar())
+                        : \App\Models\SegmentoTreinamento::getIdAlumar();
                     $vencimentos = collect();
 
                     foreach ($feedback->Treinamento->Vencimentos as $vencimento) {
+                        if ($segmentoId && $vencimento->segmento_treinamento_id !== null && (int) $vencimento->segmento_treinamento_id !== (int) $segmentoId) {
+                            continue;
+                        }
                         $diasVencer = DataHora::diferencaDias((new DataHora())->dataInsert(), $vencimento->pivot->data_vencimento);
                         
                         $vencimentos->push([
@@ -258,6 +274,10 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
                                 ->where('id', $feedback->Admissao->centro_custo_id)->first();
                         }
 
+                        $segmentoNome = $feedback->Admissao && $feedback->Admissao->SegmentoTreinamento
+                            ? $feedback->Admissao->SegmentoTreinamento->nome
+                            : '--';
+
                         $baseData = [
                             'nome' => $feedback->Curriculo->nome ?? 'Nome não encontrado',
                             'cargo' => $feedback->VagaSelecionada->nome ?? ($feedback->Admissao->cargo ?? 'NÃO ENCONTRADO'),
@@ -265,6 +285,7 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
                             'emp_nome_fantasia' => $cc_colaborador['nome_fantasia'] ?? '--',
                             'emp_centro_custo' => $cc_colaborador['label'] ?? '--',
                             'emp_tipo' => ($cc_colaborador['matriz'] ?? false) ? 'Matriz' : 'Filial',
+                            'segmento' => $segmentoNome,
                             'tipo' => $feedback->tipo ?? 'N/A'
                         ];
 
@@ -282,6 +303,7 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
                                 $baseData['emp_cnpj'],
                                 $baseData['emp_nome_fantasia'],
                                 $baseData['emp_centro_custo'],
+                                $baseData['segmento'],
                                 $baseData['tipo'],
                                 $treinamento['label'],
                                 $treinamento['descricao'],
@@ -487,36 +509,36 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
         
         // Título principal
         $sheet->setCellValue('A1', 'RELATÓRIO DE VENCIMENTOS DE TREINAMENTOS');
-        $sheet->mergeCells('A1:L1');
+        $sheet->mergeCells('A1:M1');
 
         // Informações da empresa
         $sheet->setCellValue('A2', "Empresa: {$empresaNome}");
-        $sheet->mergeCells('A2:L2');
+        $sheet->mergeCells('A2:M2');
 
         $sheet->setCellValue('A3', "CNPJ: {$empresaCnpj}");
-        $sheet->mergeCells('A3:L3');
+        $sheet->mergeCells('A3:M3');
 
         $sheet->setCellValue('A4', "Data de Geração: " . date('d/m/Y H:i:s'));
-        $sheet->mergeCells('A4:L4');
+        $sheet->mergeCells('A4:M4');
 
         // Linha em branco
         $sheet->setCellValue('A5', '');
 
         // Estilizar cabeçalho da empresa
         try {
-            $sheet->getStyle('A1:L1')->applyFromArray([
+            $sheet->getStyle('A1:M1')->applyFromArray([
                 'font' => ['bold' => true, 'size' => 16],
                 'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
             ]);
 
-            $sheet->getStyle('A2:L4')->applyFromArray([
+            $sheet->getStyle('A2:M4')->applyFromArray([
                 'font' => ['bold' => true, 'size' => 12]
             ]);
         } catch (\Exception $e) {
             \Log::warning("Não foi possível aplicar estilo ao cabeçalho da empresa: {$e->getMessage()}");
             // Aplicar estilo básico como fallback
-            $sheet->getStyle('A1:L1')->getFont()->setBold(true)->setSize(16);
-            $sheet->getStyle('A2:L4')->getFont()->setBold(true)->setSize(12);
+            $sheet->getStyle('A1:M1')->getFont()->setBold(true)->setSize(16);
+            $sheet->getStyle('A2:M4')->getFont()->setBold(true)->setSize(12);
         }
     }
 
@@ -526,7 +548,7 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
     private function aplicarEstiloCabecalho($sheet, int $linha): void
     {
         try {
-            $sheet->getStyle("A{$linha}:L{$linha}")->applyFromArray([
+            $sheet->getStyle("A{$linha}:M{$linha}")->applyFromArray([
                 'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
@@ -540,7 +562,7 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
         } catch (\Exception $e) {
             \Log::warning("Não foi possível aplicar estilo ao cabeçalho: {$e->getMessage()}");
             // Aplicar estilo básico como fallback
-            $sheet->getStyle("A{$linha}:L{$linha}")->getFont()->setBold(true);
+            $sheet->getStyle("A{$linha}:M{$linha}")->getFont()->setBold(true);
         }
     }
 
@@ -581,7 +603,7 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
 
         if ($cor) {
             try {
-                $sheet->getStyle("A{$linha}:L{$linha}")->applyFromArray([
+                $sheet->getStyle("A{$linha}:M{$linha}")->applyFromArray([
                     'fill' => [
                         'fillType' => Fill::FILL_SOLID,
                         'startColor' => ['rgb' => $cor]
@@ -599,7 +621,7 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
     private function aplicarBordasLinha($sheet, int $linha): void
     {
         try {
-            $sheet->getStyle("A{$linha}:L{$linha}")->applyFromArray([
+            $sheet->getStyle("A{$linha}:M{$linha}")->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,

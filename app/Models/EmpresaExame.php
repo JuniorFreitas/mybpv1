@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Jobs\JobBoasVindasClinica;
 use App\Scopes\ScopeEmpresa;
@@ -37,7 +40,19 @@ use Illuminate\Support\Str;
  */
 class EmpresaExame extends Model
 {
-    use HasFactory, TenantTrait;
+    use LogsActivity, HasActivitylogOptions, HasFactory, TenantTrait;
+
+    protected static $logName = 'EmpresaExame';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     const TABELA = 'empresa_exames';
     protected $table = self::TABELA;

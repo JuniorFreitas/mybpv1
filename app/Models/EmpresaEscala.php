@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\EmpresaEscala
@@ -41,7 +42,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class EmpresaEscala extends Model
 {
-    use HasFactory, LogsActivity, TenantTrait, SoftDeletes;
+    use HasFactory, LogsActivity, HasActivitylogOptions, TenantTrait, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'EmpresaEscala';

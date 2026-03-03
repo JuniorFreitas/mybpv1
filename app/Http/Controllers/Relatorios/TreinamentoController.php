@@ -9,6 +9,7 @@ use App\Jobs\JobRelatorioTreinamentoVencimento;
 use App\Models\CentroCusto;
 use App\Models\Cliente;
 use App\Models\FeedbackCurriculo;
+use App\Models\SegmentoTreinamento;
 use App\Models\Treinamento;
 use App\Services\Treinamento\FeedbackCurriculoFilter;
 use Illuminate\Http\Request;
@@ -39,6 +40,7 @@ class TreinamentoController extends Controller
         // Usar FeedbackCurriculoFilter corrigido - agora funciona igual ao AdmissaoController
         try {
             $filter = FeedbackCurriculoFilter::make();
+            $segmentoId = $request->input('segmento_treinamento_id');
             
             // Preparar filtros para o período de vencimento
             $filtros = [
@@ -61,11 +63,19 @@ class TreinamentoController extends Controller
             $filter->apply($filtros);
             
             // Obter dados filtrados
-            $dados = $filter->getQuery()->with([
+            $dados = $filter->getQuery();
+
+            if (!empty($segmentoId)) {
+                $dados->whereHas('Admissao', function ($q) use ($segmentoId) {
+                    $q->where('segmento_treinamento_id', $segmentoId);
+                });
+            }
+
+            $dados = $dados->with([
                 'Treinamento.Vencimentos' => function($q) use ($dataInicio, $dataFim) {
                     $q->whereBetween('treinamento_vencimento.data_vencimento', [$dataInicio->dataInsert(), $dataFim->dataInsert()]);
                 },
-                'Admissao',
+                'Admissao.SegmentoTreinamento:id,nome,slug',
                 'VagaSelecionada',
                 'Curriculo'
             ])->get();
@@ -88,11 +98,17 @@ class TreinamentoController extends Controller
                   })
                   ->where('empresa_id', $empresa_id);
 
+            if (!empty($request->segmento_treinamento_id)) {
+                $query->whereHas('Admissao', function ($q) use ($request) {
+                    $q->where('segmento_treinamento_id', $request->segmento_treinamento_id);
+                });
+            }
+
             $dados = $query->with([
                 'Treinamento.Vencimentos' => function($q) use ($dataInicio, $dataFim) {
                     $q->whereBetween('treinamento_vencimento.data_vencimento', [$dataInicio->dataInsert(), $dataFim->dataInsert()]);
                 },
-                'Admissao',
+                'Admissao.SegmentoTreinamento:id,nome,slug',
                 'VagaSelecionada',
                 'Curriculo'
             ])->get();
@@ -112,8 +128,14 @@ class TreinamentoController extends Controller
             }
 
             $vencimentos = collect();
+            $segmentoId = $feedback->Admissao
+                ? ($feedback->Admissao->segmento_treinamento_id ?? SegmentoTreinamento::getIdAlumar())
+                : SegmentoTreinamento::getIdAlumar();
 
             foreach ($feedback->Treinamento->Vencimentos as $vencimento) {
+                if ($segmentoId && $vencimento->segmento_treinamento_id !== null && (int) $vencimento->segmento_treinamento_id !== (int) $segmentoId) {
+                    continue;
+                }
                 $diasVencer = DataHora::diferencaDias((new DataHora())->dataInsert(), $vencimento->pivot->data_vencimento);
                 
                 $vencimentos->push([
@@ -134,6 +156,10 @@ class TreinamentoController extends Controller
                         ->where('id', $feedback->Admissao->centro_custo_id)->first();
                 }
 
+                $segmentoNome = $feedback->Admissao && $feedback->Admissao->SegmentoTreinamento
+                    ? $feedback->Admissao->SegmentoTreinamento->nome
+                    : '--';
+
                 $resultado->push([
                     'nome' => $feedback->Curriculo->nome ?? 'Nome não encontrado',
                     'cargo' => $feedback->VagaSelecionada->nome ?? ($feedback->Admissao->cargo ?? 'NÃO ENCONTRADO'),
@@ -141,6 +167,7 @@ class TreinamentoController extends Controller
                     'emp_nome_fantasia' => $cc_colaborador['nome_fantasia'] ?? '--',
                     'emp_centro_custo' => $cc_colaborador['label'] ?? '--',
                     'emp_tipo' => ($cc_colaborador['matriz'] ?? false) ? 'Matriz' : 'Filial',
+                    'segmento' => $segmentoNome,
                     'tipo' => $feedback->tipo ?? 'N/A',
                     'treinamentos' => $vencimentos->sortBy('dias_vencer')->values(),
                 ]);

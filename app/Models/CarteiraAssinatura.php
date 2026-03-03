@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -36,13 +39,26 @@ use Illuminate\Database\Eloquent\Model;
  */
 class CarteiraAssinatura extends Model
 {
-    use HasFactory, TenantTrait;
+    use LogsActivity, HasActivitylogOptions, HasFactory, TenantTrait;
+
+    protected static $logName = 'CarteiraAssinatura';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $fillable = [
         'empresa_id',
         'arquivo_id',
         'nome',
         'tipo',
+        'segmento_treinamento_id',
         'ativo',
     ];
 
@@ -52,6 +68,7 @@ class CarteiraAssinatura extends Model
         'arquivo_id' => 'int',
         'nome' => 'string',
         'tipo' => 'string',
+        'segmento_treinamento_id' => 'int',
         'ativo' => 'boolean',
     ];
 
@@ -71,6 +88,11 @@ class CarteiraAssinatura extends Model
     public function Empresa()
     {
         return $this->belongsTo(Cliente::class, 'empresa_id');
+    }
+
+    public function SegmentoTreinamento()
+    {
+        return $this->belongsTo(SegmentoTreinamento::class, 'segmento_treinamento_id');
     }
 
     public function Anexos()

@@ -99,6 +99,14 @@
                                     Formas Contratos
                                 </a>
                             </li>
+                            @if(\App\Models\Sistema::assinaturaDigitalHabilitada())
+                                <li>
+                                    <a href="{{route('g.administracao.documento-assinatura.index')}}"
+                                       subparent="documentos_legais" parent="administracao" key="documento-assinatura">
+                                        Documentos para Assinatura
+                                    </a>
+                                </li>
+                            @endif
                         </ul>
                     </li>
                 @endcan
@@ -215,6 +223,14 @@
                             Treinamentos Indústria
                         </a>
                     </li>
+                    @if(Route::has('g.segmentostreinamento.segmentostreinamento.index') && (int) auth()->user()->empresa_id === \App\Http\Controllers\SegmentoTreinamentoController::EMPRESA_ID_CADASTRO_SEGMENTOS)
+                    <li>
+                        <a href="{{ route('g.segmentostreinamento.segmentostreinamento.index') }}" parent="cadastro"
+                           key="segmentostreinamento">
+                            Segmentos de Treinamento
+                        </a>
+                    </li>
+                    @endif
                 @endcan
                 @can('cadastro_treinamento_sgi')
                     <li>

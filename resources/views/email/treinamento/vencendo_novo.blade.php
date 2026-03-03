@@ -101,6 +101,10 @@
                         N/A
                     @endif
                 </div>
+                <div style="flex: 1; min-width: 250px; margin-bottom: 10px;">
+                    <strong>Segmento:</strong>
+                    {{ $funcionario['funcionario']['segmento'] ?? 'N/A' }}
+                </div>
             </div>
 
             <!-- Tabela de Treinamentos -->
@@ -109,6 +113,9 @@
                 <tr>
                     <th style="background-color: #e9ecef; text-align: left; padding: 12px; border: 1px solid #ddd;">
                         Treinamento
+                    </th>
+                    <th style="background-color: #e9ecef; text-align: left; padding: 12px; border: 1px solid #ddd;">
+                        Segmento
                     </th>
                     <th style="background-color: #e9ecef; text-align: left; padding: 12px; border: 1px solid #ddd;">Data
                         Treinamento
@@ -126,8 +133,13 @@
                 </thead>
                 <tbody>
                 @foreach($funcionario['treinamentos'] as $treinamento)
-                    <tr style="background-color: {{ $loop->even ? '#f9f9f9' : '#ffffff' }};">
+                    @if($loop->even)
+                        <tr style="background-color: #f9f9f9;">
+                    @else
+                        <tr style="background-color: #ffffff;">
+                    @endif
                         <td style="padding: 12px; border: 1px solid #ddd; vertical-align: middle;">{{ $treinamento['vencimento_nome'] }}</td>
+                        <td style="padding: 12px; border: 1px solid #ddd; vertical-align: middle;">{{ $treinamento['segmento'] ?? ($funcionario['funcionario']['segmento'] ?? 'N/A') }}</td>
                         <td style="padding: 12px; border: 1px solid #ddd; vertical-align: middle;">{{ date('d/m/Y', strtotime($treinamento['data_treinamento'])) }}</td>
                         <td style="padding: 12px; border: 1px solid #ddd; vertical-align: middle;">{{ date('d/m/Y', strtotime($treinamento['data_vencimento'])) }}</td>
                         <td style="padding: 12px; border: 1px solid #ddd; vertical-align: middle;">

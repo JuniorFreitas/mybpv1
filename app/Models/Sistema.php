@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Events\Notificacoes\NotificacaoEvent;
 use App\Models\Exportacao;
@@ -8,6 +11,7 @@ use DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use MasterTag\DataHora;
@@ -16,6 +20,20 @@ use RuntimeException;
 
 class Sistema
 {
+
+    use LogsActivity, HasActivitylogOptions;
+
+    protected static $logName = 'Sistema';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     public const EMAILPADRAO = 'sistema@mybp.com.br';
 
@@ -601,6 +619,40 @@ class Sistema
             ->pluck('cliente_id')
             ->toArray();
         return array_values(array_diff($todas, $desabilitadas));
+    }
+
+    /**
+     * Lista empresa_id que estão habilitadas para o schedule de Treinamento Vencimento.
+     * Respeita cliente_configs.schedule_treinamento_vencimento: false = desabilitado, true ou sem registro = habilitado.
+     * Alterável sem deploy (atualizar direto na tabela ou por tela de configuração).
+     */
+    public static function listaEmpresasParaScheduleTreinamentoVencimento(): array
+    {
+        $todas = self::listaEmpresas();
+        $empresasAtivas = Cliente::withoutGlobalScopes()
+            ->where('ativo', true)
+            ->pluck('id')
+            ->toArray();
+        $todas = array_intersect($todas, $empresasAtivas);
+        $desabilitadas = ClienteConfig::where('schedule_treinamento_vencimento', false)
+            ->pluck('cliente_id')
+            ->toArray();
+        return array_values(array_diff($todas, $desabilitadas));
+    }
+
+    public static function assinaturaDigitalHabilitada(?int $empresaId = null): bool
+    {
+        $empresaId = $empresaId ?: (auth()->check() ? auth()->user()->empresa_id : null);
+        if (!$empresaId) {
+            return false;
+        }
+
+        if (!Schema::hasColumn('cliente_configs', 'assinatura_digital_habilitada')) {
+            return false;
+        }
+
+        return (bool) ClienteConfig::whereClienteId($empresaId)
+            ->value('assinatura_digital_habilitada');
     }
 
     public static function syncFuncionarios()

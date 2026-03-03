@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\MedidaAdministrativa
@@ -50,7 +51,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class MedidaAdministrativa extends Model
 {
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasFactory, LogsActivity, HasActivitylogOptions, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'MedidaAdministrativa';
@@ -192,6 +193,12 @@ class MedidaAdministrativa extends Model
     public function QuemDeletou()
     {
         return $this->hasOne(User::class, 'id', 'quem_deletou_id');
+    }
+
+    /** Documento para assinatura digital vinculado a esta medida (carta advertência, etc.). */
+    public function documentoParaAssinatura()
+    {
+        return $this->morphOne(DocumentoParaAssinatura::class, 'documentable');
     }
 
 }

@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\Cih
@@ -102,7 +103,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Cih extends Model
 {
-    use HasFactory, LogsActivity, TenantTrait, SoftDeletes;
+    use HasFactory, LogsActivity, HasActivitylogOptions, TenantTrait, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'cih';

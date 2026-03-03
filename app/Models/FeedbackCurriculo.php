@@ -13,6 +13,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 
 /**
@@ -207,7 +208,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class FeedbackCurriculo extends Model
 {
-    use LogsActivity, TenantTrait, SoftDeletes;
+    use LogsActivity, HasActivitylogOptions, TenantTrait, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'Feedback';
