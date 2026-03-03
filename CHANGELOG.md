@@ -5,7 +5,7 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
-## [1.3.0] - 2026-02-28
+## [1.3.0] - 2026-03-02
 
 ### Adicionado
 
@@ -25,8 +25,12 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
     -   Tabelas: `documento_para_assinatura`, `documento_assinatura_signatarios`, `documento_assinatura_eventos`
     -   Controllers: `DocumentoAssinaturaController`, `AssinaturaPublicaController`, `VerificacaoAssinaturaController`
-    -   Jobs: `JobEnvioCodigoVerificacaoAssinatura`, `JobEnvioDocumentoAssinado`, `JobProcessarEnvioAssinatura`, `JobFinalizarDocumentoAssinado`
+    -   Jobs: `JobEnvioCodigoVerificacaoAssinatura`, `JobEnvioDocumentoAssinado`, `JobProcessarEnvioAssinatura`,
+        `JobFinalizarDocumentoAssinado`
     -   Mails: `CodigoVerificacaoAssinaturaMail`, `DocumentoAssinadoConcluidoMail`, `DocumentoParaAssinaturaMail`
+    -   Criação de documento de assinatura a partir de PDF existente
+    -   Campos de consentimento em assinaturas e documentos (migrations)
+    -   Suporte a apelido na verificação de assinatura digital e rotas atualizadas
     -   Views para o fluxo de assinatura: validar CPF, validar código, assinar, concluído, expirado
     -   Componentes Vue: `DocumentoAssinatura.vue`, `AcaoAssinaturaDocumento.vue`
 
@@ -87,6 +91,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
     -   Tela de Clientes reorganizada em cards e seções (incluindo bloco de Rotinas)
     -   Tela de Treinamentos com seleção de padrão/segmento e ajustes no layout dos cards
 
+-   **Plataforma**
+
+    -   Upgrade para Laravel 12 com suporte a broadcasting via Reverb e Pusher
+
 -   **Carteira de Treinamento – Estrutura de Arquivos**
 
     -   Componente `AssinaturaCarteira.vue` movido para `resources/js/components/cadastros/treinamentoindustria/`
@@ -94,7 +102,8 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 -   **Assinatura de Carteira – Resolução por Segmento**
 
-    -   `Cliente::CarteiraAssinaturaSesmt()` e `CarteiraAssinaturaGestorRh()` consideram apenas assinaturas padrão (`whereNull('segmento_treinamento_id')`)
+    -   `Cliente::CarteiraAssinaturaSesmt()` e `CarteiraAssinaturaGestorRh()` consideram apenas assinaturas padrão (
+        `whereNull('segmento_treinamento_id')`)
     -   `TreinamentoController::resolverAssinaturaCarteira()` busca primeiro assinatura do segmento, depois a padrão
 
 -   **PDF Carteira – Cache de Imagens**
@@ -111,6 +120,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
     -   `edit()` valida empresa do feedback e retorna 404 se não encontrado
     -   Atualização de vencimentos passa a remover apenas os itens do segmento corrente
+
 ---
 
 ## [1.2.2] - 2026-02-24
@@ -119,34 +129,49 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 -   **Carteira de Treinamento – Assinaturas por segmento**
 
-    -   Campo `segmento_treinamento_id` na tabela `carteira_assinaturas`: assinaturas podem ser **padrão** (null, todos os segmentos) ou **específicas** de um segmento (ALUMAR, VALE, etc.).
-    -   No PDF da carteira, cada treinamento usa a assinatura do segmento quando existir; caso contrário, a assinatura padrão da empresa (SESMT e Gestor/RH).
-    -   Cadastro de Assinatura Carteira (em Treinamento Indústria): novo campo **Segmento de treinamento** (opcional). Listagem exibe coluna Segmento (Padrão ou nome do segmento).
-    -   Serviço `App\Services\Treinamento\CarteiraImagemCache`: cache de imagens da carteira em base64 (cabeçalho, verso, assinaturas) com TTL 30 dias; chaves incluem `filemtime` / `updated_at` para invalidação automática ao atualizar arquivos ou anexos.
-    -   PDF da carteira passa a usar imagens em base64 a partir do cache quando disponível, reduzindo I/O e melhorando performance na geração do PDF.
+    -   Campo `segmento_treinamento_id` na tabela `carteira_assinaturas`: assinaturas podem ser **padrão** (null, todos os
+        segmentos) ou **específicas** de um segmento (ALUMAR, VALE, etc.).
+    -   No PDF da carteira, cada treinamento usa a assinatura do segmento quando existir; caso contrário, a assinatura
+        padrão da empresa (SESMT e Gestor/RH).
+    -   Cadastro de Assinatura Carteira (em Treinamento Indústria): novo campo **Segmento de treinamento** (opcional).
+        Listagem exibe coluna Segmento (Padrão ou nome do segmento).
+    -   Serviço `App\Services\Treinamento\CarteiraImagemCache`: cache de imagens da carteira em base64 (cabeçalho, verso,
+        assinaturas) com TTL 30 dias; chaves incluem `filemtime` / `updated_at` para invalidação automática ao atualizar
+        arquivos ou anexos.
+    -   PDF da carteira passa a usar imagens em base64 a partir do cache quando disponível, reduzindo I/O e melhorando
+        performance na geração do PDF.
 
 -   **Migrations**
-    -   `add_segmento_treinamento_id_to_carteira_assinaturas_table`: coluna `segmento_treinamento_id` (nullable, FK para `segmentos_treinamento`).
-    -   `add_ordem_to_carteira_assinaturas_anexos_table`: coluna `ordem` na pivot para compatibilidade com `updateExistingPivot` no cadastro de assinaturas.
+    -   `add_segmento_treinamento_id_to_carteira_assinaturas_table`: coluna `segmento_treinamento_id` (nullable, FK para
+        `segmentos_treinamento`).
+    -   `add_ordem_to_carteira_assinaturas_anexos_table`: coluna `ordem` na pivot para compatibilidade com
+        `updateExistingPivot` no cadastro de assinaturas.
 
 ### Modificado
 
 -   **Assinatura Carteira – Local no menu**
 
-    -   Cadastro de **Assinatura Carteira** deixou de ficar em **Treinamento SGI** e passou a ficar em **Treinamento Indústria**: botão e modal no componente `TreinamentoIndustria.vue`; componente `AssinaturaCarteira.vue` movido para `resources/js/components/cadastros/treinamentoindustria/`.
+    -   Cadastro de **Assinatura Carteira** deixou de ficar em **Treinamento SGI** e passou a ficar em **Treinamento
+        Indústria**: botão e modal no componente `TreinamentoIndustria.vue`; componente `AssinaturaCarteira.vue` movido
+        para `resources/js/components/cadastros/treinamentoindustria/`.
 
 -   **Carteira de Treinamento – Resolução de assinaturas**
 
-    -   `Cliente::CarteiraAssinaturaSesmt()` e `CarteiraAssinaturaGestorRh()` passam a considerar apenas assinaturas **padrão** (`whereNull('segmento_treinamento_id')`).
-    -   `TreinamentoController::resolverAssinaturaCarteira()` passa a buscar primeiro assinatura do segmento e depois a padrão da empresa; uso de `CarteiraImagemCache::assinaturaParaArray()` para retorno com base64 em cache.
+    -   `Cliente::CarteiraAssinaturaSesmt()` e `CarteiraAssinaturaGestorRh()` passam a considerar apenas assinaturas \*
+        \*padrão\*\* (`whereNull('segmento_treinamento_id')`).
+    -   `TreinamentoController::resolverAssinaturaCarteira()` passa a buscar primeiro assinatura do segmento e depois a
+        padrão da empresa; uso de `CarteiraImagemCache::assinaturaParaArray()` para retorno com base64 em cache.
 
 -   **PDF Carteira – Imagens em base64 com cache**
-    -   Cabeçalho e verso do segmento: preenchimento de `cabecalho_img_base64` e `verso_img_base64` no payload (via `CarteiraImagemCache::imagemPublicaParaBase64()`); view `cart_treinamento.blade.php` usa base64 quando presente, com fallback para `asset()`.
+    -   Cabeçalho e verso do segmento: preenchimento de `cabecalho_img_base64` e `verso_img_base64` no payload (via
+        `CarteiraImagemCache::imagemPublicaParaBase64()`); view `cart_treinamento.blade.php` usa base64 quando presente,
+        com fallback para `asset()`.
 
 ### Corrigido
 
 -   **Cadastro de Assinatura Carteira**
-    -   Erro _Unknown column 'ordem' in 'field list'_ ao atualizar assinatura: adicionada coluna `ordem` na tabela pivot `carteira_assinaturas_anexos` e uso de `ordem` no `attach` de novos anexos.
+    -   Erro _Unknown column 'ordem' in 'field list'_ ao atualizar assinatura: adicionada coluna `ordem` na tabela pivot
+        `carteira_assinaturas_anexos` e uso de `ordem` no `attach` de novos anexos.
 
 ---
 
@@ -156,11 +181,17 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 -   **Demissão Prevista (SolicitacaoDemissao.vue)**
 
-    -   Filtro e botões alinhados ao padrão do sistema: fieldset "Filtro" sem `mt-0`, grid com Período (col-3), Pesquisar (col-6), Status (col-3), Ordenar (col-3), Exibir (col-2); botões Atualizar (btn-success), Solicitar, EXPORTAR EXCEL e Atualizar Status no mesmo padrão de Aprovação Extra Config e Requisição de Vagas.
+    -   Filtro e botões alinhados ao padrão do sistema: fieldset "Filtro" sem `mt-0`, grid com Período (col-3),
+        Pesquisar (col-6), Status (col-3), Ordenar (col-3), Exibir (col-2); botões Atualizar (btn-success), Solicitar,
+        EXPORTAR EXCEL e Atualizar Status no mesmo padrão de Aprovação Extra Config e Requisição de Vagas.
 
 -   **Requisição de Vagas (RequisicaoVaga.vue)**
-    -   Filtro e botões no mesmo layout da Demissão Prevista: date-range, Pesquisar, Status, Ordenar por em linha única; botões Atualizar, Solicitar e EXPORTAR EXCEL com mesma estrutura e estilos.
-    -   Grid de listagem (cards) no mesmo padrão da Demissão Prevista: card com badge-id, data-info (data da solicitação), status-badge (REPROVADO, APROVADO RH, APROVADO [Extra], APROVADO GESTOR, EM ABERTO), botão de ações circular (btn-actions-compact), detalhes em detail-item e fluxo de aprovação (Solicitante → Gestor → [Extra] → RH) com fluxo-info em coluna e estilos unificados (incl. responsividade).
+    -   Filtro e botões no mesmo layout da Demissão Prevista: date-range, Pesquisar, Status, Ordenar por em linha única;
+        botões Atualizar, Solicitar e EXPORTAR EXCEL com mesma estrutura e estilos.
+    -   Grid de listagem (cards) no mesmo padrão da Demissão Prevista: card com badge-id, data-info (data da solicitação),
+        status-badge (REPROVADO, APROVADO RH, APROVADO [Extra], APROVADO GESTOR, EM ABERTO), botão de ações circular (
+        btn-actions-compact), detalhes em detail-item e fluxo de aprovação (Solicitante → Gestor → [Extra] → RH) com
+        fluxo-info em coluna e estilos unificados (incl. responsividade).
 
 ## [1.2.0] - 2026-02-20
 
@@ -212,8 +243,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 -   **Mudança de Cargo – Aprovação**
 
-    -   Retorno de "aprovado por" com dados mínimos (id, nome) e query otimizada no `edit()` e `atualizar()`, alinhado ao padrão da Requisição de Vaga.
-    -   `MudancaCargoController`: eager load restrito no `edit()` (apenas id,nome para GestorAprovacao, RhAprovacao, AprovacaoExtra, etc.); `atualizar()` mapeia itens e retorna `toArray()` com `aprovacao_extra_nome`.
+    -   Retorno de "aprovado por" com dados mínimos (id, nome) e query otimizada no `edit()` e `atualizar()`, alinhado ao
+        padrão da Requisição de Vaga.
+    -   `MudancaCargoController`: eager load restrito no `edit()` (apenas id,nome para GestorAprovacao, RhAprovacao,
+        AprovacaoExtra, etc.); `atualizar()` mapeia itens e retorna `toArray()` com `aprovacao_extra_nome`.
     -   Frontend (SolicitacaoMudaCargo.vue) exibe `gestor_aprovacao.nome` e `rh_aprovacao.nome` no modal e na listagem.
 
 -   **Solicitação de Demissão**
@@ -225,7 +258,8 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
     -   Filtro de período passou a usar o componente `DateRangeFilter` no lugar do checkbox + datepicker range.
     -   Período inicia desligado; ao ativar, preenche automaticamente com primeiro e último dia do mês atual.
     -   Busca automática ao ativar o período e ao alterar as datas (com debounce de 150 ms).
-    -   Sincronização de `periodo` (formato DD/MM/YYYY até DD/MM/YYYY) a partir de `dataInicio`/`dataFim` para compatibilidade com o backend.
+    -   Sincronização de `periodo` (formato DD/MM/YYYY até DD/MM/YYYY) a partir de `dataInicio`/`dataFim` para
+        compatibilidade com o backend.
 
 -   Melhorias no sistema de treinamento
 
