@@ -32,11 +32,10 @@
                     <li><strong>Nome:</strong> {{ $signatario->nome }}</li>
                     <li><strong>E-mail:</strong> {{ $signatario->email }}</li>
                     @if($signatario->cpf)
-                        @php
-                            $cpf = preg_replace('/\D/', '', $signatario->cpf);
-                            $cpfFormatado = strlen($cpf) === 11 ? substr($cpf, 0, 3) . '.' . substr($cpf, 3, 3) . '.' . substr($cpf, 6, 3) . '-' . substr($cpf, 9, 2) : $signatario->cpf;
-                        @endphp
-                        <li><strong>CPF:</strong> {{ $cpfFormatado }}</li>
+                        <li><strong>CPF:</strong> {{ $cpfExibicao }}</li>
+                    @endif
+                    @if($signatario->ip)
+                        <li><strong>IP:</strong> {{ $ipExibicao }}</li>
                     @endif
                     @if($signatario->geolocalizacao && is_array($signatario->geolocalizacao))
                         @php
@@ -53,9 +52,32 @@
                             $raw = $signatario->getRawOriginal('data_assinatura_utc');
                             $dataBrasilia = $raw ? \Carbon\Carbon::parse($raw, 'UTC')->setTimezone(config('app.timezone', 'America/Sao_Paulo')) : null;
                         @endphp
+                        <li><strong>Data da assinatura (UTC):</strong> {{ $signatario->data_assinatura_utc }}</li>
                         @if($dataBrasilia)
                             <li><strong>Data da assinatura (Horário de Brasília):</strong> {{ $dataBrasilia->format('d/m/Y H:i:s') }}</li>
                         @endif
+                    @endif
+                    @if($signatario->consentimento_em)
+                        @php
+                            $consentRaw = $signatario->getRawOriginal('consentimento_em');
+                            $consentBrasilia = $consentRaw ? \Carbon\Carbon::parse($consentRaw, 'UTC')->setTimezone(config('app.timezone', 'America/Sao_Paulo')) : null;
+                        @endphp
+                        <li><strong>Consentimento registrado (UTC):</strong> {{ $signatario->consentimento_em }}</li>
+                        @if($consentBrasilia)
+                            <li><strong>Consentimento registrado (Horário de Brasília):</strong> {{ $consentBrasilia->format('d/m/Y H:i:s') }}</li>
+                        @endif
+                    @endif
+                </ul>
+            </div>
+
+            <div class="assin-section mb-3">
+                <div class="assin-section-title">Evidências técnicas</div>
+                <ul class="list-unstyled mb-0">
+                    @if($documento->hash_sha256)
+                        <li><strong>Hash do documento (SHA-256):</strong> {{ $documento->hash_sha256 }}</li>
+                    @endif
+                    @if($signatario->hash_evidencia)
+                        <li><strong>Hash de evidências (SHA-256):</strong> {{ $signatario->hash_evidencia }}</li>
                     @endif
                 </ul>
             </div>

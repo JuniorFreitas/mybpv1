@@ -42,6 +42,8 @@ class DocumentoAssinaturaSignatario extends Model
         'geolocalizacao',
         'hash_evidencia',
         'recusa_motivo',
+        'consentimento_assinatura',
+        'consentimento_em',
     ];
 
     protected $casts = [
@@ -51,6 +53,8 @@ class DocumentoAssinaturaSignatario extends Model
         'ordem' => 'int',
         'geolocalizacao' => 'array',
         'data_assinatura_utc' => 'datetime',
+        'consentimento_assinatura' => 'boolean',
+        'consentimento_em' => 'datetime',
     ];
 
     const STATUS_PENDENTE = 'pendente';

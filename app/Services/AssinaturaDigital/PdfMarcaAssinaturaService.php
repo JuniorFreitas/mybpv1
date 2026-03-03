@@ -164,8 +164,7 @@ class PdfMarcaAssinaturaService
             $pdf->SetTextColor(0, 0, 0);
             $pdf->SetXY($xTexto, $yInicio);
             $nome = $this->paraPdf(mb_strtoupper($s['nome'] ?? '-', 'UTF-8'));
-            $idSig = $s['id'] ?? 0;
-            $linha1 = $this->paraPdf('Assinado digitalmente por: ') . $idSig . '-' . $nome . '-' . $docId;
+            $linha1 = $this->paraPdf('Assinado digitalmente por: ') . $nome;
             $pdf->MultiCell($larguraTexto, 4, $this->truncar($linha1, 85), 0, 'L');
             $pdf->SetX($xTexto);
             $cpfPdf = $this->paraPdf((string) ($s['cpf'] ?? '-'));
@@ -213,10 +212,19 @@ class PdfMarcaAssinaturaService
             $dataFormatada = $this->paraPdf((string) ($ev['data_formatada'] ?? ''));
             $hora = $this->paraPdf((string) ($ev['hora'] ?? ''));
             $descricao = $this->paraPdf((string) ($ev['descricao'] ?? ''));
-            $pdf->Cell(44, 6, $dataFormatada, 0, 0, 'L');
-            $pdf->Cell(12, 6, $hora, 0, 0, 'L');
-            $pdf->MultiCell(0, 6, $descricao, 0, 'L');
-            $pdf->Ln(2);
+            $yLinha = $pdf->GetY();
+            $colData = 48;
+            $colDesc = $w - $colData;
+
+            $pdf->SetXY($margin, $yLinha);
+            $pdf->MultiCell($colData, 5, $dataFormatada . "\n" . $hora, 0, 'L');
+            $yData = $pdf->GetY();
+
+            $pdf->SetXY($margin + $colData, $yLinha);
+            $pdf->MultiCell($colDesc, 5, $descricao, 0, 'L');
+            $yDesc = $pdf->GetY();
+
+            $pdf->SetY(max($yData, $yDesc) + 2);
         }
 
         $pdf->Ln(4);

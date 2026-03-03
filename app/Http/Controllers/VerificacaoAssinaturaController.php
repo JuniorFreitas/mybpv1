@@ -6,6 +6,7 @@ use App\Models\Cliente;
 use App\Models\DocumentoAssinaturaEvento;
 use App\Models\DocumentoAssinaturaSignatario;
 use App\Models\DocumentoParaAssinatura;
+use App\Models\ClienteConfig;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -27,6 +28,8 @@ class VerificacaoAssinaturaController extends Controller
         $empresa = null;
         $historico = [];
         $mensagem = 'Link de verificacao invalido ou expirado.';
+        $exibirIpCompleto = true;
+        $exibirCpfCompleto = true;
 
         if ($documentoId && $signatarioId) {
             $documento = DocumentoParaAssinatura::withoutGlobalScopes()
@@ -45,9 +48,12 @@ class VerificacaoAssinaturaController extends Controller
                         if ($apelido && $empresa && $empresa->apelido && $empresa->apelido !== $apelido) {
                             $mensagem = 'Empresa informada nao confere com o documento.';
                         } else {
+                            $config = $empresa ? ClienteConfig::withoutGlobalScopes()->whereClienteId($empresa->id)->first() : null;
+                            $exibirIpCompleto = $this->flagExibirCompleto($config ? $config->assinatura_exibir_ip_completo : null);
+                            $exibirCpfCompleto = $this->flagExibirCompleto($config ? $config->assinatura_exibir_cpf_completo : null);
                             $valido = true;
                             $mensagem = 'Assinatura verificada com sucesso. Este documento foi assinado digitalmente conforme a legislacao brasileira.';
-                            $historico = $this->montarHistorico($documento);
+                            $historico = $this->montarHistorico($documento, $exibirCpfCompleto, $exibirIpCompleto);
                         }
                     } else {
                         $mensagem = 'O identificador da assinatura (hash) nao confere. A assinatura pode ter sido alterada.';
@@ -60,6 +66,9 @@ class VerificacaoAssinaturaController extends Controller
             }
         }
 
+        $cpfExibicao = $this->formatarCpf($signatario ? $signatario->cpf : null, $exibirCpfCompleto);
+        $ipExibicao = $this->formatarIp($signatario ? $signatario->ip : null, $exibirIpCompleto);
+
         return view('assinatura.verificacao', [
             'valido' => $valido,
             'mensagem' => $mensagem,
@@ -67,7 +76,53 @@ class VerificacaoAssinaturaController extends Controller
             'signatario' => $signatario,
             'empresa' => $empresa,
             'historico' => $historico,
+            'cpfExibicao' => $cpfExibicao,
+            'ipExibicao' => $ipExibicao,
+            'exibirIpCompleto' => $exibirIpCompleto,
+            'exibirCpfCompleto' => $exibirCpfCompleto,
         ]);
+    }
+
+    private function flagExibirCompleto(?bool $valor): bool
+    {
+        return $valor === null ? true : (bool) $valor;
+    }
+
+    private function formatarCpf(?string $cpf, bool $exibirCompleto): ?string
+    {
+        if (!$cpf) {
+            return null;
+        }
+        if ($exibirCompleto) {
+            return $cpf;
+        }
+        return '***.***.***-**';
+    }
+
+    private function formatarIp(?string $ip, bool $exibirCompleto): ?string
+    {
+        if (!$ip) {
+            return null;
+        }
+        if ($exibirCompleto) {
+            return $ip;
+        }
+        if (strpos($ip, '.') !== false) {
+            $parts = explode('.', $ip);
+            if (count($parts) === 4) {
+                $parts[3] = '***';
+                return implode('.', $parts);
+            }
+        }
+        if (strpos($ip, ':') !== false) {
+            $parts = explode(':', $ip);
+            $count = count($parts);
+            for ($i = max(0, $count - 4); $i < $count; $i++) {
+                $parts[$i] = '****';
+            }
+            return implode(':', $parts);
+        }
+        return $ip;
     }
 
     /**
@@ -75,7 +130,7 @@ class VerificacaoAssinaturaController extends Controller
      *
      * @return array<int, array{data_formatada: string, hora: string, descricao: string}>
      */
-    private function montarHistorico(DocumentoParaAssinatura $doc): array
+    private function montarHistorico(DocumentoParaAssinatura $doc, bool $exibirCpfCompleto, bool $exibirIpCompleto): array
     {
         $tz = 'America/Sao_Paulo';
         $lista = [];
@@ -100,9 +155,14 @@ class VerificacaoAssinaturaController extends Controller
                     }
                 }
             }
-            if ($cpf && strlen(preg_replace('/\D/', '', $cpf)) === 11) {
+            if ($cpf && !$exibirCpfCompleto) {
+                $cpf = '***.***.***-**';
+            } elseif ($cpf && strlen(preg_replace('/\D/', '', $cpf)) === 11) {
                 $n = preg_replace('/\D/', '', $cpf);
                 $cpf = substr($n, 0, 3) . '.' . substr($n, 3, 3) . '.' . substr($n, 6, 3) . '-' . substr($n, 9, 2);
+            }
+            if ($ip && !$exibirIpCompleto) {
+                $ip = $this->formatarIp($ip, false) ?? $ip;
             }
             $nome = $nome ?: 'Sistema';
 

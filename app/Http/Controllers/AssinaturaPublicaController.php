@@ -60,6 +60,8 @@ class AssinaturaPublicaController extends Controller
         $this->service->registrarEvento($doc->id, DocumentoAssinaturaEvento::EVENTO_VISUALIZADO, [
             'signatario_id' => $signatario->id,
             'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'data_utc' => now('UTC')->toIso8601String(),
         ]);
 
         return view('assinatura.assinar', [

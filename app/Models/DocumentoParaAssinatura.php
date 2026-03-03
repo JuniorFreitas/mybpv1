@@ -40,6 +40,8 @@ class DocumentoParaAssinatura extends Model
         'data_expiracao',
         'solicitante_id',
         'ordem_assinatura',
+        'consentimento_ultimo_em',
+        'consentimento_ultimo_signatario_id',
     ];
 
     protected $casts = [
@@ -50,6 +52,8 @@ class DocumentoParaAssinatura extends Model
         'solicitante_id' => 'int',
         'documentable_id' => 'int',
         'data_expiracao' => 'datetime',
+        'consentimento_ultimo_em' => 'datetime',
+        'consentimento_ultimo_signatario_id' => 'int',
     ];
 
     const STATUS_RASCUNHO = 'rascunho';

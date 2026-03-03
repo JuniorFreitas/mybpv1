@@ -48,6 +48,7 @@ class DocumentoAssinaturaEvento extends Model
     const EVENTO_EXPIRADO = 'expirado';
     const EVENTO_CANCELADO = 'cancelado';
     const EVENTO_DOWNLOAD = 'download';
+    const EVENTO_EXPORTADO = 'exportado';
 
     public function documentoParaAssinatura()
     {

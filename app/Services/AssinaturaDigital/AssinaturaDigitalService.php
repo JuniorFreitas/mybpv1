@@ -425,6 +425,7 @@ class AssinaturaDigitalService
         $userAgent = $request->userAgent();
         $dataAssinaturaUtc = now('UTC');
         $geolocalizacao = $this->obterGeolocalizacaoPorIp($ip);
+        $consentimentoEm = $dataAssinaturaUtc;
 
         $payloadEvidencia = [
             'documento_id' => $doc->id,
@@ -432,14 +433,16 @@ class AssinaturaDigitalService
             'email' => $signatario->email,
             'nome' => $signatario->nome,
             'cpf' => $cpfInformado ?? $signatario->cpf,
-            'consentimento' => true,
+            'consentimento_assinatura' => true,
+            'consentimento_em' => $consentimentoEm->toIso8601String(),
             'data_utc' => $dataAssinaturaUtc->toIso8601String(),
             'ip' => $ip,
             'user_agent' => $userAgent,
+            'geolocalizacao' => $geolocalizacao,
         ];
         $hashEvidencia = hash('sha256', json_encode($payloadEvidencia));
 
-        DB::transaction(function () use ($signatario, $doc, $ip, $userAgent, $dataAssinaturaUtc, $hashEvidencia, $cpfInformado, $geolocalizacao) {
+        DB::transaction(function () use ($signatario, $doc, $ip, $userAgent, $dataAssinaturaUtc, $hashEvidencia, $cpfInformado, $geolocalizacao, $consentimentoEm, $payloadEvidencia) {
             $signatario->update([
                 'status' => DocumentoAssinaturaSignatario::STATUS_ASSINADO,
                 'ip' => $ip,
@@ -448,13 +451,26 @@ class AssinaturaDigitalService
                 'hash_evidencia' => $hashEvidencia,
                 'cpf' => $cpfInformado ?? $signatario->cpf,
                 'geolocalizacao' => $geolocalizacao,
+                'consentimento_assinatura' => true,
+                'consentimento_em' => $consentimentoEm,
+            ]);
+
+            $doc->update([
+                'consentimento_ultimo_em' => $consentimentoEm,
+                'consentimento_ultimo_signatario_id' => $signatario->id,
             ]);
 
             $this->registrarEvento($doc->id, DocumentoAssinaturaEvento::EVENTO_ASSINADO, [
                 'signatario_id' => $signatario->id,
                 'email' => $signatario->email,
+                'nome' => $signatario->nome,
+                'cpf' => $cpfInformado ?? $signatario->cpf,
                 'ip' => $ip,
+                'user_agent' => $userAgent,
                 'data_utc' => $dataAssinaturaUtc->toIso8601String(),
+                'geolocalizacao' => $geolocalizacao,
+                'consentimento_assinatura' => true,
+                'consentimento_em' => $consentimentoEm->toIso8601String(),
                 'hash_evidencia' => $hashEvidencia,
             ]);
 
@@ -478,20 +494,31 @@ class AssinaturaDigitalService
         }
 
         $doc = $signatario->documentoParaAssinatura;
+        $ip = $request->ip();
+        $userAgent = $request->userAgent();
+        $dataRecusaUtc = now('UTC');
+        $geolocalizacao = $this->obterGeolocalizacaoPorIp($ip);
 
-        DB::transaction(function () use ($signatario, $doc, $request, $motivo) {
+        DB::transaction(function () use ($signatario, $doc, $motivo, $ip, $userAgent, $dataRecusaUtc, $geolocalizacao) {
             $signatario->update([
                 'status' => DocumentoAssinaturaSignatario::STATUS_RECUSADO,
                 'recusa_motivo' => $motivo,
-                'ip' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-                'data_assinatura_utc' => now('UTC'),
+                'ip' => $ip,
+                'user_agent' => $userAgent,
+                'data_assinatura_utc' => $dataRecusaUtc,
+                'geolocalizacao' => $geolocalizacao,
             ]);
 
             $this->registrarEvento($doc->id, DocumentoAssinaturaEvento::EVENTO_RECUSADO, [
                 'signatario_id' => $signatario->id,
                 'email' => $signatario->email,
+                'nome' => $signatario->nome,
+                'cpf' => $signatario->cpf,
                 'motivo' => $motivo,
+                'ip' => $ip,
+                'user_agent' => $userAgent,
+                'data_utc' => $dataRecusaUtc->toIso8601String(),
+                'geolocalizacao' => $geolocalizacao,
             ]);
         });
 
@@ -794,7 +821,7 @@ class AssinaturaDigitalService
                 case DocumentoAssinaturaEvento::EVENTO_ENVIADO:
                     $solicitante = $doc->solicitante;
                     $nomeSol = $solicitante ? $solicitante->nome : 'Sistema';
-                    $emailSol = $solicitante && $solicitante->email ? $solicitante->email : '—';
+                    $emailSol = $solicitante && $solicitante->email ? $solicitante->email : ($payload['email'] ?? '—');
                     $cpfSol = ($solicitante && !empty($solicitante->cpf)) ? $solicitante->cpf : '';
                     if ($cpfSol && strlen(preg_replace('/\D/', '', $cpfSol)) === 11) {
                         $n = preg_replace('/\D/', '', $cpfSol);
