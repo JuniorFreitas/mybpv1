@@ -5,14 +5,17 @@ namespace App\Http\Controllers;
 use App\Jobs\JobExportaTreinamentos;
 use App\Models\Admissao;
 use App\Models\Arquivo;
+use App\Models\CarteiraAssinatura;
 use App\Models\CentroCusto;
 use App\Models\ClienteConfig;
 use App\Models\Pivot\TreinamentoVencimento;
 use App\Models\ResultadoIntegrado;
+use App\Models\SegmentoTreinamento;
 use App\Models\Sistema;
 use App\Models\Treinamento;
 use App\Models\TreinamentoVencimentoHistorico;
 use App\Models\Vencimento;
+use App\Services\Treinamento\CarteiraImagemCache;
 use App\Services\Treinamento\FeedbackCurriculoFilter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -56,6 +59,9 @@ class TreinamentoController extends Controller
         try {
             DB::beginTransaction();
 
+            $segmentoId = $this->resolverSegmentoTreinamentoId($dados);
+            $this->atualizarSegmentoAdmissao($dados, $segmentoId);
+
             // Usar referência para Collection grande
             $listaVencimentos = collect($dados['listaVencimentos'])->filter(function ($item) {
                 return $item['fez_treinamento'];
@@ -70,15 +76,18 @@ class TreinamentoController extends Controller
                 unset($dados['enviado_email'], $dados['email_aberto'], $dados['data_email_aberto'], $dados['data_envio']);
                 $treinamento->update($dados);
 
-                // Usar sync([]) é mais eficiente que detach() + attach()
-                $treinamento->Vencimentos()->sync([]);
+                // Remove apenas vencimentos do segmento atual
+                $idsSegmento = $this->getVencimentosIdsPorSegmento($segmentoId);
+                if ($idsSegmento->isNotEmpty()) {
+                    $treinamento->Vencimentos()->detach($idsSegmento->all());
+                }
             } else {
                 $this->authorize('treinamento_carteira-etiquetas_insert');
                 $treinamento = Treinamento::create($dados);
             }
 
             // Passa Collection por referência para evitar cópia
-            $this->processarVencimentos($treinamento, $listaVencimentos, $dados['tipo']);
+            $this->processarVencimentos($treinamento, $listaVencimentos);
             $this->salvarHistorico($dados['feedback_id'], $treinamento->id);
 
             DB::commit();
@@ -98,10 +107,9 @@ class TreinamentoController extends Controller
      * Usar referência para Collection evita cópia desnecessária
      * @param Treinamento $treinamento
      * @param Collection &$listaVencimentos - REFERÊNCIA
-     * @param string $tipo
      * @return void
      */
-    private function processarVencimentos(Treinamento $treinamento, \Illuminate\Support\Collection &$listaVencimentos, string $tipo): void
+    private function processarVencimentos(Treinamento $treinamento, \Illuminate\Support\Collection &$listaVencimentos): void
     {
         // Preparar dados em lote para insert mais eficiente
         $dadosParaAnexar = [];
@@ -110,15 +118,10 @@ class TreinamentoController extends Controller
             $dataHora = new DataHora($lista['data_treinamento']);
             $dataTreinamento = $dataHora->dataInsert();
 
+            // Usar somente prazo_fixo para vencimento (não há mais fixo/parada)
             $dataVencimento = $lista['prazo_fixo']
                 ? $dataHora->addDia($lista['prazo_fixo'])
                 : $lista['data_vencimento'];
-
-            if ($tipo === 'Parada') {
-                $dataVencimento = $lista['prazo_parada']
-                    ? $dataHora->addDia($lista['prazo_parada'])
-                    : $lista['data_vencimento'];
-            }
 
             $this->processarArquivosDeletar($lista);
             $arquivoId = $this->processarArquivoPrincipal($lista);
@@ -247,11 +250,8 @@ class TreinamentoController extends Controller
                     $dataHora = new DataHora($lista['data_treinamento']);
                     $dataTreinamento = $dataHora->dataInsert();
 
-                    if ($dados['tipo'] == 'Parada') {
-                        $dataVencimento = $lista['prazo_parada'] ? $dataHora->addDia($lista['prazo_parada']) : $lista['data_vencimento'];
-                    } else {
-                        $dataVencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
-                    }
+                    // Usar somente prazo_fixo para vencimento (não há mais fixo/parada)
+                    $dataVencimento = $lista['prazo_fixo'] ? $dataHora->addDia($lista['prazo_fixo']) : $lista['data_vencimento'];
 
                     $treinamento->Vencimentos()->attach($lista['id'], [
                         'data_treinamento' => $dataTreinamento,
@@ -292,9 +292,17 @@ class TreinamentoController extends Controller
      * @param \App\Models\Treinamento $treinamento
      * @return \Illuminate\Http\JsonResponse
      */
-    public function edit($treinamento)
+    public function edit(Request $request, $treinamento)
     {
-        $treinamento = ResultadoIntegrado::whereFeedbackId($treinamento)->first();
+        $treinamento = ResultadoIntegrado::whereFeedbackId($treinamento)
+            ->whereHas('Feedback', function ($q) {
+                $q->where('empresa_id', auth()->user()->empresa_id);
+            })
+            ->first();
+
+        if (!$treinamento) {
+            return response()->json(['msg' => 'Treinamento não encontrado'], 404);
+        }
 
         $treinamento = $treinamento->load(
             'Treinamento',
@@ -332,50 +340,12 @@ class TreinamentoController extends Controller
             }
         }
 
-        $treinamento->listaVencimentos = Vencimento::whereAtivo(true)
-            ->orderBy('ordem')
-            ->get()
-            ->transform(function ($item) use ($treinamento, $treinamentoVencimentos) {
-                if ($treinamento->Treinamento) {
-                    $pivo = $treinamento->Treinamento->Vencimentos()->whereId($item->id);
-                    $item->data_treinamento = $pivo->count() > 0 ? $pivo->first()->pivot->data_treinamento : null;
-                    $item->data_vencimento = $pivo->count() > 0 ? $pivo->first()->pivot->data_vencimento : null;
-                    $item->numero_fat = $pivo->count() > 0 ? $pivo->first()->pivot->numero_fat : null;
-                    $item->fez_treinamento = $pivo->count() > 0 ? true : false;
-                    $item->arquivo = [];
-                    $item->arquivoDel = [];
+        $segmentoId = $request->filled('segmento_treinamento_id')
+            ? (int) $request->input('segmento_treinamento_id')
+            : (optional($treinamento->Admissao)->segmento_treinamento_id ?? SegmentoTreinamento::getIdAlumar());
 
-                    // Adicionar cálculo de dias_vencer para cada item
-                    if ($item->data_vencimento) {
-                        $item->dias_vencer = DataHora::diferencaDias(
-                            (new DataHora())->dataInsert() . ' 00:00:00',
-                            (new DataHora($item->data_vencimento))->dataInsert() . ' 23:59:59'
-                        );
-                    } else {
-                        $item->dias_vencer = PHP_INT_MAX; // Valor alto para itens sem data de vencimento
-                    }
-
-                    // Resto do código para arquivos
-                    if ($treinamentoVencimentos) {
-                        $pivotData = $treinamentoVencimentos->where('vencimento_id', $item->id)->first();
-                        if ($pivotData) {
-                            $item->arquivo = $pivotData->arquivo ? [$pivotData->arquivo] : [];
-                        }
-                    }
-                } else {
-                    $item->data_treinamento = null;
-                    $item->data_vencimento = null;
-                    $item->fez_treinamento = false;
-                    $item->numero_fat = null;
-                    $item->arquivo = [];
-                    $item->arquivoDel = [];
-                    $item->dias_vencer = PHP_INT_MAX; // Valor alto para itens sem treinamento
-                }
-
-                return $item;
-            })
-            ->sortBy('dias_vencer') // Ordenar pelo dias_vencer do menor para o maior
-            ->values(); // Reindexar a coleção para garantir índices sequenciais
+        $treinamento->segmento_treinamento_id = $segmentoId;
+        $treinamento->listaVencimentos = $this->montarListaVencimentos($treinamento, $treinamentoVencimentos, $segmentoId);
 
         /*  $treinamento->listaVencimentos = Vencimento::whereAtivo(true)->orderBy('ordem')->get()->transform(function ($item) use ($treinamento, $treinamentoVencimentos) {
               if ($treinamento->Treinamento) {
@@ -441,6 +411,42 @@ class TreinamentoController extends Controller
         return response()->json($treinamento);
     }
 
+    public function vencimentosPorSegmento(Request $request): JsonResponse
+    {
+        $request->validate([
+            'feedback_id' => 'required|integer',
+            'segmento_treinamento_id' => 'nullable|integer',
+        ]);
+
+        $treinamento = ResultadoIntegrado::whereFeedbackId($request->input('feedback_id'))
+            ->whereHas('Feedback', function ($q) {
+                $q->where('empresa_id', auth()->user()->empresa_id);
+            })
+            ->first();
+        if (!$treinamento) {
+            return response()->json(['msg' => 'Treinamento não encontrado'], 404);
+        }
+
+        $treinamento = $treinamento->load('Treinamento', 'Treinamento.Vencimentos');
+        $treinamentoVencimentos = null;
+        if ($treinamento->Treinamento) {
+            $treinamentoVencimentos = TreinamentoVencimento::with('arquivo')
+                ->where('treinamento_id', $treinamento->Treinamento->id)
+                ->get();
+        }
+
+        $segmentoId = $request->filled('segmento_treinamento_id')
+            ? (int) $request->input('segmento_treinamento_id')
+            : (optional($treinamento->Admissao)->segmento_treinamento_id ?? SegmentoTreinamento::getIdAlumar());
+
+        $lista = $this->montarListaVencimentos($treinamento, $treinamentoVencimentos, $segmentoId);
+
+        return response()->json([
+            'segmento_treinamento_id' => $segmentoId,
+            'listaVencimentos' => $lista,
+        ]);
+    }
+
     /**
      * Update the specified resource in storage.
      *
@@ -480,18 +486,148 @@ class TreinamentoController extends Controller
         return response()->json($vencimentos, 200);
     }
 
+    private function montarListaVencimentos(ResultadoIntegrado $treinamento, $treinamentoVencimentos, ?int $segmentoId)
+    {
+        $vencimentosQuery = Vencimento::whereAtivo(true)->orderBy('ordem');
+        if ($segmentoId) {
+            $vencimentosQuery->where(function ($q) use ($segmentoId) {
+                $q->where('segmento_treinamento_id', $segmentoId)->orWhereNull('segmento_treinamento_id');
+            });
+        }
+
+        return $vencimentosQuery->get()
+            ->transform(function ($item) use ($treinamento, $treinamentoVencimentos) {
+                if ($treinamento->Treinamento) {
+                    $pivo = $treinamento->Treinamento->Vencimentos()->whereId($item->id);
+                    $item->data_treinamento = $pivo->count() > 0 ? $pivo->first()->pivot->data_treinamento : null;
+                    $item->data_vencimento = $pivo->count() > 0 ? $pivo->first()->pivot->data_vencimento : null;
+                    $item->numero_fat = $pivo->count() > 0 ? $pivo->first()->pivot->numero_fat : null;
+                    $item->fez_treinamento = $pivo->count() > 0 ? true : false;
+                    $item->arquivo = [];
+                    $item->arquivoDel = [];
+
+                    if ($item->data_vencimento) {
+                        $item->dias_vencer = DataHora::diferencaDias(
+                            (new DataHora())->dataInsert() . ' 00:00:00',
+                            (new DataHora($item->data_vencimento))->dataInsert() . ' 23:59:59'
+                        );
+                    } else {
+                        $item->dias_vencer = PHP_INT_MAX;
+                    }
+
+                    if ($treinamentoVencimentos) {
+                        $pivotData = $treinamentoVencimentos->where('vencimento_id', $item->id)->first();
+                        if ($pivotData) {
+                            $item->arquivo = $pivotData->arquivo ? [$pivotData->arquivo] : [];
+                        }
+                    }
+                } else {
+                    $item->data_treinamento = null;
+                    $item->data_vencimento = null;
+                    $item->fez_treinamento = false;
+                    $item->numero_fat = null;
+                    $item->arquivo = [];
+                    $item->arquivoDel = [];
+                    $item->dias_vencer = PHP_INT_MAX;
+                }
+
+                return $item;
+            })
+            ->sortBy('dias_vencer')
+            ->values();
+    }
+
+    private function resolverSegmentoTreinamentoId(array $dados): ?int
+    {
+        if (array_key_exists('segmento_treinamento_id', $dados)) {
+            return $dados['segmento_treinamento_id'] ? (int) $dados['segmento_treinamento_id'] : SegmentoTreinamento::getIdAlumar();
+        }
+
+        $admissao = $this->buscarAdmissaoPorFeedbackEmpresa($dados['feedback_id'] ?? null);
+
+        return $admissao && $admissao->segmento_treinamento_id
+            ? (int) $admissao->segmento_treinamento_id
+            : SegmentoTreinamento::getIdAlumar();
+    }
+
+    private function atualizarSegmentoAdmissao(array $dados, ?int $segmentoId): void
+    {
+        if (!array_key_exists('segmento_treinamento_id', $dados)) {
+            return;
+        }
+
+        $admissao = $this->buscarAdmissaoPorFeedbackEmpresa($dados['feedback_id'] ?? null);
+
+        if ($admissao) {
+            $admissao->segmento_treinamento_id = $segmentoId;
+            $admissao->save();
+        }
+    }
+
+    private function getVencimentosIdsPorSegmento(?int $segmentoId)
+    {
+        $query = Vencimento::whereAtivo(true);
+        if ($segmentoId) {
+            $query->where(function ($q) use ($segmentoId) {
+                $q->where('segmento_treinamento_id', $segmentoId)->orWhereNull('segmento_treinamento_id');
+            });
+        }
+
+        return $query->pluck('id');
+    }
+
+    private function buscarAdmissaoPorFeedbackEmpresa($feedbackId): ?Admissao
+    {
+        if (!$feedbackId) {
+            return null;
+        }
+
+        $resultado = ResultadoIntegrado::whereFeedbackId($feedbackId)
+            ->whereHas('Feedback', function ($q) {
+                $q->where('empresa_id', auth()->user()->empresa_id);
+            })
+            ->with('Admissao')
+            ->first();
+
+        return $resultado ? $resultado->Admissao : null;
+    }
+
     public function atualizar(Request $request)
     {
 //        $resultado = $this->filtro($request)->paginate();
 
-        $resultado = FeedbackCurriculoFilter::make()
-            ->apply($request)
-            ->paginate(50);
+        $filter = FeedbackCurriculoFilter::make()->apply($request);
+        $query = $filter->getQuery();
+        $query->setEagerLoads([
+            'Curriculo' => function ($q) {
+                $q->select('id', 'nome', 'cpf');
+            },
+            'Admissao' => function ($q) {
+                $q->select('id', 'feedback_id', 'status', 'tipo_admissao', 'segmento_treinamento_id', 'centro_custo_id');
+            },
+            'Admissao.SegmentoTreinamento' => function ($q) {
+                $q->select('id', 'nome');
+            },
+            'Treinamento' => function ($q) {
+                $q->select('id', 'feedback_id');
+            },
+            'Treinamento.Vencimentos' => function ($q) {
+                $q->select('vencimentos.id', 'label', 'label_reduzida', 'segmento_treinamento_id', 'exibir_na_carteira');
+            },
+            'VagaAberta' => function ($q) {
+                $q->select('id', 'vaga_id');
+            },
+            'VagaAberta.Vaga' => function ($q) {
+                $q->select('id', 'nome');
+            }
+        ]);
+
+        $resultado = $filter->paginate(50);
 
         $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
 
         $itens = collect($resultado->items());
-        $vencimentos = Vencimento::whereAtivo(true)->orderBy('ordem')->get();
+        $vencimentos = $this->vencimentosAtivosCache();
 
         $vencimentos->transform(function ($i) {
             $i->fez_treinamento = false;
@@ -499,6 +635,10 @@ class TreinamentoController extends Controller
         });
 
         $itens->transform(function ($item) use ($cc) {
+            // Evita appends desnecessários (e possíveis acessos a relações não carregadas)
+            $item->setAppends([]);
+            $item->makeHidden(['vaga_aberta_municipio', 'fc_token']);
+
             if ($item->Treinamento) {
                 $item->nr_33 = $item->Treinamento->Vencimentos()->where(function ($q) {
                     $q->where('label', 'like', '%NR33%')->orWhere('label', 'like', '%NR-33%');
@@ -519,7 +659,20 @@ class TreinamentoController extends Controller
                     return $i;
                 });
 
-                $item->treinamento->vencimentos = $item->Treinamento->Vencimentos->sortBy('dias_vencer')->values()->all();
+                $segmentoId = $item->admissao && $item->admissao->segmento_treinamento_id
+                    ? (int) $item->admissao->segmento_treinamento_id
+                    : SegmentoTreinamento::getIdAlumar();
+                $vencimentosFiltrados = $item->Treinamento->Vencimentos->filter(function ($v) use ($segmentoId) {
+                    return $v->segmento_treinamento_id === null || (int) $v->segmento_treinamento_id === (int) $segmentoId;
+                });
+                if ($vencimentosFiltrados->isEmpty()) {
+                    $alumarId = SegmentoTreinamento::getIdAlumar();
+                    $vencimentosFiltrados = $item->Treinamento->Vencimentos->filter(function ($v) use ($alumarId) {
+                        return $v->segmento_treinamento_id === null || (int) $v->segmento_treinamento_id === (int) $alumarId;
+                    });
+                }
+
+                $item->treinamento->vencimentos = $vencimentosFiltrados->sortBy('dias_vencer')->values()->all();
 
 
             } else {
@@ -534,6 +687,7 @@ class TreinamentoController extends Controller
                 $item->admissao->emp_nome_fantasia = null;
                 $item->admissao->emp_centro_custo = null;
                 $item->admissao->emp_tipo = null;
+                $item->admissao->segmento_treinamento_nome = null;
 
                 if ($cc_colaborador) {
                     $item->admissao->emp_cnpj = $cc_colaborador['cnpj_format'];
@@ -541,6 +695,24 @@ class TreinamentoController extends Controller
                     $item->admissao->emp_centro_custo = $cc_colaborador['label'];
                     $item->admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
                 }
+
+                if ($item->admissao->SegmentoTreinamento) {
+                    $item->admissao->segmento_treinamento_nome = $item->admissao->SegmentoTreinamento->nome;
+                }
+
+                // Enxuga payload da admissão para somente o essencial
+                $item->admissao->setVisible([
+                    'status',
+                    'tipo_admissao',
+                    'centro_custo_id',
+                    'segmento_treinamento_id',
+                    'emp_cnpj',
+                    'emp_nome_fantasia',
+                    'emp_centro_custo',
+                    'emp_tipo',
+                    'segmento_treinamento_nome'
+                ]);
+                $item->admissao->unsetRelation('SegmentoTreinamento');
             }
 
             return $item;
@@ -557,6 +729,19 @@ class TreinamentoController extends Controller
                 'cc' => $cc
             ]
         ]);
+    }
+
+    private function vencimentosAtivosCache()
+    {
+        $empresaId = auth()->user()->empresa_id ?? 'global';
+        $cacheKey = \App\Models\Vencimento::cacheKey($empresaId);
+
+        return Cache::remember($cacheKey, now()->addDays(30), function () {
+            return Vencimento::whereAtivo(true)
+                ->select('id', 'label', 'label_reduzida', 'segmento_treinamento_id', 'exibir_na_carteira', 'ordem')
+                ->orderBy('ordem')
+                ->get();
+        });
     }
 
     private function StatusTreinamento($dataVencimento)
@@ -704,7 +889,8 @@ class TreinamentoController extends Controller
                 'FeedbackCurriculo.Empresa.Logo:id,nome,file,disco',
                 'FeedbackCurriculo.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
                 'FeedbackCurriculo.Curriculo.FotoTres:id,nome,file,disco',
-                'FeedbackCurriculo.Admissao:id,feedback_id,numero_cracha,cargo,usa_lentes_corretivas,area_etiqueta_id',
+                'FeedbackCurriculo.Admissao:id,feedback_id,numero_cracha,cargo,usa_lentes_corretivas,area_etiqueta_id,segmento_treinamento_id',
+                'FeedbackCurriculo.Admissao.SegmentoTreinamento:id,nome,slug,config_carteira',
                 'Vencimentos'
             ])
             ->get()
@@ -713,15 +899,81 @@ class TreinamentoController extends Controller
                 if ($item->FeedbackCurriculo->Admissao) {
                     $telefone = $telefone_supervisor ? Admissao::getNumeroSupervisor($item->FeedbackCurriculo->empresa_id, $item->FeedbackCurriculo->Admissao->area_etiqueta_id) : \App\Models\Curriculo::getTelPrincipal($item->FeedbackCurriculo->curriculo_id, false);
                 }
-
-                $item->telefone = $telefone;
+                // Segmento da Admissão: define config da carteira e da etiqueta de bloqueio (cabecalho_img, verso_img, ramal_emergencia, exibir_etiqueta_bloqueio, etc.)
+                $segmento = optional($item->FeedbackCurriculo->Admissao)->SegmentoTreinamento;
+                if (!$segmento) {
+                    $segmento = SegmentoTreinamento::where('slug', SegmentoTreinamento::SLUG_ALUMAR)->first(['id', 'nome', 'slug', 'config_carteira']);
+                }
+                $segmentoId = $segmento ? $segmento->id : null;
+                $segmentoConfig = ($segmento && is_array($segmento->config_carteira ?? null)) ? $segmento->config_carteira : [];
+                $segmentoSlug = $segmento ? $segmento->slug : 'alumar';
+                // Imagens do segmento em base64 com cache (path + filemtime na chave = invalida ao atualizar arquivo)
+                $pathCabecalho = !empty($segmentoConfig['cabecalho_img']) ? $segmentoConfig['cabecalho_img'] : 'images/carteira/cabecalho_carteira_alumar.webp';
+                $pathVerso = !empty($segmentoConfig['verso_img']) ? $segmentoConfig['verso_img'] : 'images/carteira/verso_carteira_alumar.webp';
+                $segmentoConfig['cabecalho_img_base64'] = CarteiraImagemCache::imagemPublicaParaBase64($pathCabecalho);
+                $segmentoConfig['verso_img_base64'] = CarteiraImagemCache::imagemPublicaParaBase64($pathVerso);
+                // setAttribute para que toArray() inclua na view (carteira e bloqueio usam essas configs)
+                $item->setAttribute('segmento_config', $segmentoConfig);
+                $item->setAttribute('segmento_slug', $segmentoSlug);
+                $item->setAttribute('telefone', $telefone);
+                // Assinaturas por segmento: busca na carteira_assinaturas por empresa + tipo + segmento (ou padrão com segmento null)
+                $empresaId = auth()->user()->empresa_id;
+                $assinaturaSesmt = $this->resolverAssinaturaCarteira($empresaId, $segmentoId, CarteiraAssinatura::TIPO_SESMT);
+                $assinaturaGestorRh = $this->resolverAssinaturaCarteira($empresaId, $segmentoId, CarteiraAssinatura::TIPO_GERENTE_OU_RH);
+                $item->setAttribute('assinatura_sesmt', $assinaturaSesmt);
+                $item->setAttribute('assinatura_gestor_rh', $assinaturaGestorRh);
+                // Carteira: vencimentos do segmento da Admissão (ou sem segmento). Se ficar vazio, fallback para ALUMAR/null para sempre gerar carteira.
+                $vencimentosFiltrados = $item->vencimentos->filter(function ($v) use ($segmentoId) {
+                    return $v->segmento_treinamento_id === $segmentoId || $v->segmento_treinamento_id === null;
+                });
+                if ($vencimentosFiltrados->isEmpty()) {
+                    $alumarId = SegmentoTreinamento::getIdAlumar();
+                    $vencimentosFiltrados = $item->vencimentos->filter(function ($v) use ($alumarId) {
+                        return $v->segmento_treinamento_id === $alumarId || $v->segmento_treinamento_id === null;
+                    });
+                }
+                $item->setRelation('vencimentos', $vencimentosFiltrados);
                 return $item;
             })->toArray();
 
         $empresa = Sistema::getEmpresa(auth()->user()->empresa_id);
 
-//        return $treinamentos->toArray();
+        // Bloqueio: apenas itens cujo segmento permite exibir etiqueta de bloqueio
+        if (in_array($tipo, ['bloqueio', 'treinamento_bloqueio'], true)) {
+            $treinamentos = array_values(array_filter($treinamentos, function ($item) {
+                $exibir = $item['segmento_config']['exibir_etiqueta_bloqueio'] ?? true;
+                return $exibir !== false;
+            }));
+        }
+
         return view('pdf.treinamento.carteira.pdf', compact('treinamentos', 'tipo', 'empresa'));
+    }
+
+    /**
+     * Resolve assinatura da carteira: primeiro tenta assinatura do segmento (carteira_assinaturas.segmento_treinamento_id),
+     * senão usa a padrão da empresa (segmento_treinamento_id null).
+     *
+     * @param int $empresaId
+     * @param int|null $segmentoId ID do segmento do treinamento
+     * @param string $tipo CarteiraAssinatura::TIPO_SESMT ou TIPO_GERENTE_OU_RH
+     * @return array|null ['nome' => string, 'tipo' => string, 'url_thumb' => string|null]
+     */
+    private function resolverAssinaturaCarteira(int $empresaId, ?int $segmentoId, string $tipo): ?array
+    {
+        // Preferir assinatura específica do segmento; senão, a padrão (segmento null)
+        $a = null;
+        if ($segmentoId) {
+            $a = CarteiraAssinatura::where('empresa_id', $empresaId)->where('ativo', true)->where('tipo', $tipo)
+                ->where('segmento_treinamento_id', $segmentoId)->with('Anexos')->first();
+        }
+        if (!$a) {
+            $a = CarteiraAssinatura::where('empresa_id', $empresaId)->where('ativo', true)->where('tipo', $tipo)
+                ->whereNull('segmento_treinamento_id')->with('Anexos')->first();
+        }
+        if (!$a) {
+            return null;
+        }
+        return CarteiraImagemCache::assinaturaParaArray($a);
     }
 
     public function enviarCarteiraEmail(Request $request)
@@ -768,16 +1020,33 @@ class TreinamentoController extends Controller
         $hoje = new DataHora();
         $trintaDias = new DataHora($hoje->addDia(60));
 
-        $treinamentos = Treinamento::whereHas('Curriculo.Feedback', function ($q) {
+        $treinamentos = Treinamento::whereHas('FeedbackCurriculo', function ($q) {
             $q->whereClienteId(1);
         })->whereHas('Vencimentos', function ($q) use ($trintaDias) {
             $q->where('data_vencimento', '<=', $trintaDias->dataInsert());
-        })->with('Curriculo', 'Vencimentos');
+        })->with('Curriculo', 'Vencimentos', 'FeedbackCurriculo.Admissao.SegmentoTreinamento');
 
 
         if ($treinamentos->count() >= 1) {
             $data = $request->input();
-            $dados = ['dados' => $treinamentos->get()];
+            $dados = ['dados' => $treinamentos->get()->map(function ($treinamento) {
+                $segmentoId = optional(optional($treinamento->FeedbackCurriculo)->Admissao)->segmento_treinamento_id
+                    ?? SegmentoTreinamento::getIdAlumar();
+
+                $vencimentosFiltrados = $treinamento->Vencimentos->filter(function ($v) use ($segmentoId) {
+                    return $v->segmento_treinamento_id === null || (int) $v->segmento_treinamento_id === (int) $segmentoId;
+                });
+
+                if ($vencimentosFiltrados->isEmpty()) {
+                    $alumarId = SegmentoTreinamento::getIdAlumar();
+                    $vencimentosFiltrados = $treinamento->Vencimentos->filter(function ($v) use ($alumarId) {
+                        return $v->segmento_treinamento_id === null || (int) $v->segmento_treinamento_id === (int) $alumarId;
+                    });
+                }
+
+                $treinamento->setRelation('Vencimentos', $vencimentosFiltrados->values());
+                return $treinamento;
+            })];
             try {
                 Mail::send('email.treinamento.vencendo', $dados, function ($m) use ($dados, $data) {
                     $m->from('naoresponda@mybp.com.br', 'MyBP - E-mail Automatico');

@@ -1,5 +1,11 @@
 <template>
     <div id="componenteTreinamentoIndustria">
+        <modal :modal-pai="modal" :titulo="titulo_janela_assinatura" :size="90" id="janelaAssinatura">
+            <template slot="conteudo">
+                <assinatura-carteira></assinatura-carteira>
+            </template>
+        </modal>
+
         <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
             <template slot="conteudo">
                 <preload v-show="preload"></preload>
@@ -34,22 +40,25 @@
                                            onblur="valida_campo_vazio(this,1)">
                                 </div>
                             </div>
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-6">
                                 <div class="form-group">
-                                    <label>Prazo de Parada</label>
-                                    <input v-model="form.prazo_parada" class="form-control form-control-sm" type="number">
+                                    <label>Prazo fixo (dias para vencimento)</label>
+                                    <input v-model="form.prazo_fixo" class="form-control form-control-sm" type="number" placeholder="Ex: 365" min="1">
                                 </div>
                             </div>
-                            <div class="col-12 col-md-4">
-                                <div class="form-group">
-                                    <label>Prazo Fixo</label>
-                                    <input v-model="form.prazo_fixo" class="form-control form-control-sm" type="number">
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-6">
                                 <div class="form-group">
                                     <label>Ordem</label>
                                     <input v-model="form.ordem" class="form-control form-control-sm" type="number">
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-12">
+                                <div class="form-group">
+                                    <label>Segmento / Padrão de treinamento</label>
+                                    <select v-model="form.segmento_treinamento_id" class="form-control form-control-sm">
+                                        <option :value="null">Selecione o segmento</option>
+                                        <option v-for="s in segmentos" :key="s.id" :value="s.id">{{ s.nome }}</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="col-12 mt-2">
@@ -104,6 +113,15 @@
                         </select>
                     </div>
                 </div>
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label>Segmento</label>
+                        <select class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.segmento_treinamento_id" @change="atualizar()">
+                            <option value="">Todos os segmentos</option>
+                            <option v-for="s in segmentos" :key="s.id" :value="s.id">{{ s.nome }}</option>
+                        </select>
+                    </div>
+                </div>
 
                 <div class="col-12 col-md-12">
                     <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
@@ -117,6 +135,12 @@
                             data-toggle="modal"
                             data-target="#janelaCadastrar">
                         <i class="fa fa-plus"></i> Treinamento Indústria
+                    </button>
+
+                    <button type="button" class="btn btn-sm btn-secondary"
+                            data-toggle="modal"
+                            data-target="#janelaAssinatura">
+                        <i class="fa fa-plus"></i> Assinatura Carteira
                     </button>
                 </div>
             </form>
@@ -138,9 +162,9 @@
                     <tr class="bg-default">
                         <td class="text-center">Nº</td>
                         <td class="text-center">Nome</td>
+                        <td class="text-center">Segmento</td>
                         <td class="text-center">A Quem se destina</td>
-                        <td class="text-center">Prazo de Parada</td>
-                        <td class="text-center">Prazo Fixo</td>
+                        <td class="text-center">Prazo fixo (dias)</td>
                         <td class="text-center">Ordem</td>
                         <td class="text-center">Ativo</td>
                         <td class="text-center">Ação</td>
@@ -150,8 +174,8 @@
                     <tr v-for="item in lista">
                         <td class="text-center">{{ item.id }}</td>
                         <td class="text-center">{{ item.label }}</td>
+                        <td class="text-center">{{ item.segmento_treinamento ? item.segmento_treinamento.nome : '-' }}</td>
                         <td class="text-center">{{ item.descricao }}</td>
-                        <td class="text-center">{{ item.prazo_parada }}</td>
                         <td class="text-center">{{ item.prazo_fixo }}</td>
                         <td class="text-center">{{ item.ordem }}</td>
                         <td class="text-center">
@@ -182,11 +206,13 @@
 <script>
 import controlePaginacao from '../../ControlePaginacao';
 import modal from '../../Modal';
+import AssinaturaCarteira from './AssinaturaCarteira.vue';
 
 export default {
     components: {
         modal,
         controlePaginacao,
+        AssinaturaCarteira,
     },
     props: {
         qntPag: {
@@ -206,6 +232,7 @@ export default {
         },
     },
     mounted() {
+        this.carregarSegmentos();
         this.atualizar();
         this.formDefault = _.cloneDeep(this.form);
     },
@@ -213,6 +240,7 @@ export default {
         return {
             hash: String(Math.random()).substr(2),
             titulo_janela: '',
+            titulo_janela_assinatura: 'Assinatura Carteira',
 
             preload: false,
             editando: false,
@@ -223,13 +251,14 @@ export default {
                 label_reduzida: '',
                 exibir_na_carteira: false,
                 descricao: '',
-                prazo_parada: 30,
-                prazo_fixo: 30,
+                prazo_fixo: 365,
                 ordem: 1,
                 ativo: true,
+                segmento_treinamento_id: null,
             },
 
             formDefault: null,
+            segmentos: [],
 
             lista: [],
 
@@ -238,12 +267,18 @@ export default {
                 carregando: false,
                 dados: {
                     campoBusca: '',
-                    campoStatus: ''
+                    campoStatus: '',
+                    segmento_treinamento_id: ''
                 },
             },
         }
     },
     methods: {
+        carregarSegmentos() {
+            axios.get(`${URL_ADMIN}/cadastro/segmentostreinamento/lista`).then(res => {
+                this.segmentos = res.data || [];
+            }).catch(() => { this.segmentos = []; });
+        },
         formNovo() {
             this.form = _.cloneDeep(this.formDefault) //copia
             this.titulo_janela = 'Treinamento Indústria';
@@ -261,7 +296,8 @@ export default {
                 return false;
             }
             this.preload = true;
-            axios.post(`${URL_ADMIN}/cadastro/treinamentoindustria`, this.form)
+            const payload = { ...this.form, prazo_parada: null };
+            axios.post(`${URL_ADMIN}/cadastro/treinamentoindustria`, payload)
                 .then(res => {
                     if (res.status === 201) {
                         $('#janelaCadastrar').modal('hide');
@@ -304,8 +340,8 @@ export default {
             }
 
             this.preload = true;
-
-            axios.put(`${URL_ADMIN}/cadastro/treinamentoindustria/${this.form.id}`, this.form).then(response => {
+            const payload = { ...this.form, prazo_parada: null };
+            axios.put(`${URL_ADMIN}/cadastro/treinamentoindustria/${this.form.id}`, payload).then(response => {
                 $('#janelaCadastrar').modal('hide');
                 mostraSucesso('', 'Treinamento Indústria atualizado com sucesso');
                 this.preload = false;

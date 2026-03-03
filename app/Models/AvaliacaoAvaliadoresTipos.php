@@ -6,6 +6,7 @@ use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\AvaliacaoAvaliadoresTipos
@@ -31,7 +32,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class AvaliacaoAvaliadoresTipos extends Model
 {
-    use TenantTrait, LogsActivity;
+    use TenantTrait, LogsActivity, HasActivitylogOptions;
 
     protected static bool $logFillable = true;
     protected static string $logName = 'avaliacao_avaliadores_tipos';

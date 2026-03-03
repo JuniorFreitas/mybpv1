@@ -6,17 +6,24 @@
                 <td style="width: 50%; height: 8.30cm; vertical-align: top;">
                     <table>
                         <tr>
+                            @php
+                                $segmento_config = $treinamento['segmento_config'] ?? [];
+                                $cabecalho_img = $segmento_config['cabecalho_img_base64'] ?? null;
+                                if (!$cabecalho_img) {
+                                    $cabecalho_img = !empty($segmento_config['cabecalho_img']) ? asset($segmento_config['cabecalho_img']) : asset('images/carteira/cabecalho_carteira_alumar.webp');
+                                }
+                            @endphp
                             @if($empresa['empresa_id'] !== 78862)
                                 <td style="text-align: center;">
-                                    <img src="{{asset('images/carteira/cabecalho_carteira_alumar.webp')}}"
+                                    <img src="{{ $cabecalho_img }}"
                                          style="width: 5.7cm; margin-bottom: -1mm;">
                                 </td>
                             @else
                                 <td style="text-align: center;">
-                                    <img
-                                        src="{{$empresa['logo']}}"
-                                        alt="Logo" title="Logo" style="width: 1.6cm">
-                                    <img src="{{asset('images/carteira/cabecalho_carteira_alumar.webp')}}"
+                                    @if(!empty($empresa['logo']))
+                                        <img src="{{ $empresa['logo'] }}" alt="Logo" title="Logo" style="width: 1.6cm">
+                                    @endif
+                                    <img src="{{ $cabecalho_img }}"
                                          style="width: 5cm; margin-bottom: -1mm;">
                                 </td>
                             @endif
@@ -79,22 +86,25 @@
                         <tr>
                             <td style="padding-bottom: 1mm;
                                                    padding-top: 1mm;">
+                                @php
+                                    $assinatura_sesmt = $treinamento['assinatura_sesmt'] ?? null;
+                                    $assinatura_gestor_rh = $treinamento['assinatura_gestor_rh'] ?? null;
+                                @endphp
                                 <div style="width: 50%; font-size: 5.5pt; text-align: right; float: left;">
-                                    @if(auth()->user()->Empresa->CarteiraAssinaturaSesmt() && count(auth()->user()->Empresa->CarteiraAssinaturaSesmt()->Anexos) > 0)
+                                    @if($assinatura_sesmt && !empty($assinatura_sesmt['url_thumb']))
                                         <img
-                                            src="{{ \App\Models\Sistema::convertBase3(auth()->user()->Empresa->CarteiraAssinaturaSesmt()->Anexos[0]->urlThumb,true) }}"
+                                            src="{{ $assinatura_sesmt['url_thumb'] }}"
                                             alt="" style="width: 63%; margin-right: 0.5cm">
-                                    @else
+                                    @elseif($assinatura_sesmt)
                                         <table style="width: 100%; padding: 2mm">
                                             <tr>
                                                 <td style="text-align: center">
-                                                        <span
-                                                            style="color: blue; text-align: center; font-family: 'Sacramento', cursive; font-size: 6pt; position: relative; top: 5px">{{ auth()->user()->Empresa->CarteiraAssinaturaSesmt()->nome ?? 'Não informado' }}</span>
+                                                    <span style="color: blue; text-align: center; font-family: 'Sacramento', cursive; font-size: 6pt; position: relative; top: 5px">{{ $assinatura_sesmt['nome'] ?? 'Não informado' }}</span>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td style="text-align: center; border-top: 0.3mm solid; padding-bottom: -50px !important;">
-                                                    {{ auth()->user()->Empresa->CarteiraAssinaturaSesmt()->tipo ?? 'Não informado' }}
+                                                    {{ $assinatura_sesmt['tipo'] ?? 'Não informado' }}
                                                 </td>
                                             </tr>
                                         </table>
@@ -102,20 +112,19 @@
                                 </div>
 
                                 <div style="width: 50%; font-size: 5.5pt; text-align: left; float: left;">
-                                    @if(auth()->user()->Empresa->CarteiraAssinaturaGestorRh() && count(auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->Anexos) > 0)
+                                    @if($assinatura_gestor_rh && !empty($assinatura_gestor_rh['url_thumb']))
                                         <img
-                                            src="{{ \App\Models\Sistema::convertBase3(auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->Anexos[0]->urlThumb,true) }}"
+                                            src="{{ $assinatura_gestor_rh['url_thumb'] }}"
                                             alt="" style="width: 55%; margin-left: 0.5cm">
-                                    @else
+                                    @elseif($assinatura_gestor_rh)
                                         <table style="width: 100%; padding: 2mm">
                                             <tr>
                                                 <td style="text-align: center">
-                                                        <span
-                                                            style="color: blue; text-align: center; font-family: 'Sacramento', cursive; font-size: 6pt; position: relative; top: 5px">{{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->nome ?? 'Não informado' }}</span>
+                                                    <span style="color: blue; text-align: center; font-family: 'Sacramento', cursive; font-size: 6pt; position: relative; top: 5px">{{ $assinatura_gestor_rh['nome'] ?? 'Não informado' }}</span>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td style="text-align: center; border-top: 0.3mm solid;">{{ auth()->user()->Empresa->CarteiraAssinaturaGestorRh()->tipo ?? 'Não informado' }}</td>
+                                                <td style="text-align: center; border-top: 0.3mm solid;">{{ $assinatura_gestor_rh['tipo'] ?? 'Não informado' }}</td>
                                             </tr>
                                         </table>
                                     @endif
@@ -125,7 +134,13 @@
                     </table>
                 </td>
                 <td style="width: 50%; min-height: 8.30cm; text-align: center; border-left: 0.1mm dashed #cccccc;">
-                    <img src="{{asset('images/carteira/verso_carteira_alumar.webp')}}" style="width: 4.4cm">
+                    @php
+                        $verso_img = $segmento_config['verso_img_base64'] ?? null;
+                        if (!$verso_img) {
+                            $verso_img = !empty($segmento_config['verso_img']) ? asset($segmento_config['verso_img']) : asset('images/carteira/verso_carteira_alumar.webp');
+                        }
+                    @endphp
+                    <img src="{{ $verso_img }}" style="width: 6.8cm">
                 </td>
             </tr>
         </table>

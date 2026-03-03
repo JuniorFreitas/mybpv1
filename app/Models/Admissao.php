@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\Admissao
@@ -41,6 +42,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $data_aso
  * @property bool|null $foto_escaneada
  * @property string|null $status_carteira_treinamento
+ * @property int|null $segmento_treinamento_id
  * @property int|null $usuario_id
  * @property int|null $editado_usuario_id
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -177,7 +179,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Admissao extends Model
 {
-    use LogsActivity, SoftDeletes;
+    use LogsActivity, HasActivitylogOptions, SoftDeletes;
 
     protected static $logFillable = true;
     protected static $logName = 'admissao';
@@ -228,6 +230,7 @@ class Admissao extends Model
         'data_aso',
         'foto_escaneada',
         'status_carteira_treinamento',
+        'segmento_treinamento_id',
         'usuario_id',
         'editado_usuario_id',
         'data_admissao',
@@ -290,6 +293,7 @@ class Admissao extends Model
         'data_aso' => 'string',
         'foto_escaneada' => 'boolean',
         'status_carteira_treinamento' => 'string',
+        'segmento_treinamento_id' => 'int',
         'usuario_id' => 'int',
         'editado_usuario_id' => 'int',
         'data_admissao' => 'string',
@@ -811,6 +815,11 @@ class Admissao extends Model
     public function AreaEtiqueta()
     {
         return $this->hasOne(AreaEtiqueta::class, 'id', 'area_etiqueta_id');
+    }
+
+    public function SegmentoTreinamento()
+    {
+        return $this->belongsTo(SegmentoTreinamento::class, 'segmento_treinamento_id', 'id');
     }
 
     public function DadosAdmissoes()

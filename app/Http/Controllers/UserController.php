@@ -203,6 +203,7 @@ class UserController extends Controller
                 'cliente_id' => auth()->user()->empresa_id,
                 'area_id' => 0,
                 'config_empresa' => auth()->user()->EmpresaPontoConfiguracoes,
+                'empresa_configuracoes' => auth()->user()->EmpresaConfiguracoes,
                 'empresa_id' => auth()->user()->empresa_id,
                 'user_id' => auth()->id(),
                 'nome' => auth()->user()->nome,
@@ -231,7 +232,7 @@ class UserController extends Controller
     {
 
         $this->authorize('usuario_usuarios_update');
-        $user = User::select('id', 'ativo')->find($request->id);
+        $user = User::select('id', 'ativo', 'empresa_id')->find($request->id);
         $user->ativo = !$user->ativo;
         $user->save();
         $user->refresh();

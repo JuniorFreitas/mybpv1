@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\EntrevistaRh
@@ -41,7 +42,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class EntrevistaRh extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, HasActivitylogOptions;
 
     protected static $logFillable = true;
     protected static $logName = 'entrevista_rh';

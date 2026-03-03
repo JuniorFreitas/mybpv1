@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -27,7 +29,9 @@ use Spatie\Activitylog\Models\Activity;
  */
 class TipoDocumento extends Model
 {
-    use HasFactory, TenantTrait;
+    use LogsActivity, HasActivitylogOptions, HasFactory, TenantTrait;
+
+    protected static $logName = 'TipoDocumento';
 
     public function getDescriptionForEvent(string $eventName): string
     {

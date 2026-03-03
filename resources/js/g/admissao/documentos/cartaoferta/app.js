@@ -1,13 +1,15 @@
 import upload from '../../../../components/Upload';
 import validacoes from "../../../../mixins/Validacoes";
 import visualizadorPdf from "../../../../components/visualizadorPdf.vue";
+import AcaoAssinaturaDocumento from "../../../../components/administracao/documentoassinatura/AcaoAssinaturaDocumento.vue";
 
 const app = new Vue({
     el: '#app',
     mixins: [validacoes],
     components: {
         upload,
-        visualizadorPdf
+        visualizadorPdf,
+        AcaoAssinaturaDocumento
     },
     data: {
         tituloJanela: 'Carta Oferta',
@@ -21,6 +23,7 @@ const app = new Vue({
 
         todos_municipios: `autocomplete/todos-municipios`,
         preloadbotoes: true,
+        assinaturaDigitalHabilitada: typeof window !== 'undefined' ? !!window.MYBP_ASSINATURA_DIGITAL_HABILITADA : true,
 
         URL_ADMIN,
         objopen: null,
@@ -72,6 +75,31 @@ const app = new Vue({
         this.listaVagas();
     },
     methods: {
+        temDocumentoAssinatura(item) {
+            const doc = item && item.documento_para_assinatura;
+            return !!(doc && doc.id);
+        },
+        abrirEnvioAssinaturaCartaOferta(item) {
+            this.$refs.acaoAssinaturaCartaOferta.abrirEnvio(item);
+        },
+        abrirGerenciamentoAssinaturaCartaOferta(item) {
+            const doc = item && item.documento_para_assinatura;
+            if (!doc || !doc.id) return;
+            this.$refs.acaoAssinaturaCartaOferta.abrirGerenciar(doc, item);
+        },
+        getNomeDocumentoAssinaturaCartaOferta(item) {
+            const nome = item && item.curriculo && item.curriculo.nome ? item.curriculo.nome : '';
+            return nome ? `Carta Oferta - ${nome}` : 'Carta Oferta';
+        },
+        getSignatariosIniciaisAssinaturaCartaOferta(item) {
+            const nome = item && item.curriculo && item.curriculo.nome ? item.curriculo.nome : '';
+            const email = item && item.curriculo && item.curriculo.email ? item.curriculo.email : '';
+            const cpf = item && item.curriculo && item.curriculo.cpf ? item.curriculo.cpf : '';
+            return [{ nome, email, cpf }];
+        },
+        enviarAssinaturaCartaOferta({ contexto }) {
+            return axios.post(`${this.urlDefault}/enviar-para-assinatura`, { carta_oferta_id: contexto.id });
+        },
 
         //GERAL
         resetaCampoVaga() {

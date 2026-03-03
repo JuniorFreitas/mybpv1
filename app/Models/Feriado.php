@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\Feriado
@@ -29,7 +30,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @mixin \Eloquent
  */
 class Feriado extends Model {
-    use LogsActivity;
+    use LogsActivity, HasActivitylogOptions;
     protected static $logFillable = true;
     protected static $logName = 'controle_ponto.feriado';
     protected static $logOnlyDirty = true;

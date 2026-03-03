@@ -49,14 +49,24 @@
                             </select>
                         </div>
                     </div>
+
+                    <div class="col-12 col-sm-4 col-md-3">
+                        <div class="form-group">
+                            <label for="">Segmento</label>
+                            <select class="form-control form-control-sm" @change="buscarDados()" :disabled="preload" v-model="segmentoTreinamentoId">
+                                <option value="">Todos</option>
+                                <option v-for="s in segmentosTreinamento" :key="s.id" :value="s.id">{{ s.nome }}</option>
+                            </select>
+                        </div>
+                    </div>
                 </form>
             </fieldset>
             <preload v-if="preload" />
             <template v-if="!preload">
                 <div class="alert alert-warning" v-show="!dados.length"><i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado</div>
 
-                <div v-for="(item, index) in dados" :key="index" class="mb-3" v-if="dados.length">
-                    <div class="row">
+                <div v-for="(item, index) in dados" :key="index" class="mb-3">
+                    <div class="row" v-if="dados.length">
                         <div class="col-md-12"></div>
                         <table class="mt-4 table bg-white table-bordered">
                             <thead>
@@ -70,6 +80,7 @@
                                     </th>
                                     <th colspan="6">
                                         {{ item.nome }} ({{ item.cargo }}) <br />(Centro de Custo: {{ item.emp_centro_custo }}) - {{ item.emp_nome_fantasia }}
+                                        <span v-if="item.segmento"> - Segmento: {{ item.segmento }}</span>
                                     </th>
                                 </tr>
                                 <tr>
@@ -78,7 +89,7 @@
                                     <th style="text-align: center">Data de vencimento</th>
                                     <th style="text-align: center">Vence em</th>
                                 </tr>
-                                <tr v-for="(tr, ind) in item.treinamentos">
+                                <tr v-for="(tr, ind) in item.treinamentos" :key="ind">
                                     <th style="text-align: center; vertical-align: middle">
                                         {{ tr.label }}
                                     </th>
@@ -114,6 +125,8 @@ export default {
             periodo: '',
             campoCnpj: '',
             campoCentroCusto: '',
+            segmentoTreinamentoId: '',
+            segmentosTreinamento: [],
 
             urlExportacao: `${URL_ADMIN}/relatorios/vencimento-treinamento/export-excel`
         }
@@ -122,6 +135,7 @@ export default {
         let inicio_de_mes = moment().startOf('month').format('DD/MM/YYYY')
         let fim_de_mes = moment().add(1, 'M').endOf('month').format('DD/MM/YYYY')
         this.periodo = `${inicio_de_mes} até ${fim_de_mes}`
+        await this.carregarSegmentos()
         await this.buscarDados()
     },
 
@@ -130,7 +144,8 @@ export default {
             return {
                 periodo: this.periodo,
                 campoCnpj: this.campoCnpj,
-                campoCentroCusto: this.campoCentroCusto
+                campoCentroCusto: this.campoCentroCusto,
+                segmento_treinamento_id: this.segmentoTreinamentoId
             }
         },
         filtroListaCentroCustoCnpj() {
@@ -207,13 +222,24 @@ export default {
             this.campoCentroCusto = ''
             await this.buscarDados()
         },
+        async carregarSegmentos() {
+            await axios
+                .get(`${URL_ADMIN}/cadastro/segmentostreinamento/habilitados-empresa`)
+                .then((res) => {
+                    this.segmentosTreinamento = res.data || []
+                })
+                .catch(() => {
+                    this.segmentosTreinamento = []
+                })
+        },
         async buscarDados() {
             this.preload = true
             await axios
                 .post(`${URL_ADMIN}/relatorios/vencimento-treinamento`, {
                     periodo: this.periodo,
                     campoCnpj: this.campoCnpj,
-                    campoCentroCusto: this.campoCentroCusto
+                    campoCentroCusto: this.campoCentroCusto,
+                    segmento_treinamento_id: this.segmentoTreinamentoId
                 })
                 .then((res) => {
                     this.dados = res.data.itens

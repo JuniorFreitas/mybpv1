@@ -561,12 +561,14 @@ const app = new Vue({
                 data_realizacao: ''
             },
             status_carteira_treinamento: '',
+            segmento_treinamento_id: null,
             status: '',
             data_admissao: '',
             data_entrega_area: '',
             biometria: ''
         },
         form_massaDefault: null,
+        segmentos_treinamento: [],
 
         formResultadoIntegrado: {
             curriculo_id: null
@@ -1234,6 +1236,7 @@ const app = new Vue({
             this.editando = dados.admissao_processo_dados_editar
             this.lista_sexos = dados.lista_sexos
             this.lista_estados_civis = dados.lista_estados_civis
+            this.segmentos_treinamento = dados.segmentos_treinamento || []
             this.selecionaTudo = this.tudoMarcado
             this.permissoes = dados.permissoes
             this.lista_ccs = dados.cc

@@ -91,9 +91,10 @@
 <body style="margin: 20px;padding: 0;background: #f5f5f5;">
 <div>
     @php
+        $empresa = null;
         if (isset($dados['empresa_id']) && !empty($dados['empresa_id'])){
             $empresa = \App\Models\Cliente::withoutGlobalScopes()->find($dados['empresa_id']);
-        }else{
+        } elseif (auth()->check() && auth()->user() && isset(auth()->user()->empresa_id)){
             $empresa = \App\Models\Cliente::withoutGlobalScopes()->find(auth()->user()->empresa_id);
         }
     @endphp

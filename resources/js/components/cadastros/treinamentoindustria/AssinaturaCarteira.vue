@@ -16,7 +16,7 @@
                             </div>
                             <div class="col-12 col-md-12">
                                 <div class="form-group">
-                                    <label>Centro de Custo</label>
+                                    <label>Tipo de assinatura</label>
                                     <select v-model="form.tipo" class="form-control form-control-sm"
                                             onchange="valida_campo_vazio(this,1)"
                                             onblur="valida_campo_vazio(this,1)">
@@ -25,6 +25,16 @@
                                             {{ item }}
                                         </option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-12">
+                                <div class="form-group">
+                                    <label>Segmento de treinamento</label>
+                                    <select v-model="form.segmento_treinamento_id" class="form-control form-control-sm">
+                                        <option :value="null">Padrão (todos os segmentos)</option>
+                                        <option v-for="s in listaSegmentos" :key="s.id" :value="s.id">{{ s.nome }}</option>
+                                    </select>
+                                    <small class="text-muted">Opcional. Se não escolher, esta assinatura será usada quando não houver assinatura específica do segmento na carteira.</small>
                                 </div>
                             </div>
                             <div class="col-12 mt-2">
@@ -98,6 +108,7 @@
                         <td class="text-center">Nº</td>
                         <td class="text-center">Nome</td>
                         <td class="text-center">Tipo</td>
+                        <td class="text-center">Segmento</td>
                         <td class="text-center">Ativo</td>
                         <td class="text-center">Ação</td>
                     </tr>
@@ -107,6 +118,7 @@
                         <td class="text-center">{{ item.id }}</td>
                         <td class="text-center">{{ item.nome }}</td>
                         <td class="text-center">{{ item.tipo }}</td>
+                        <td class="text-center">{{ item.segmento_treinamento ? item.segmento_treinamento.nome : 'Padrão' }}</td>
                         <td class="text-center">{{ item.ativo === true ? 'Ativo' : 'Inativo' }}</td>
                         <td class="text-center">
                             <button type="button" class="btn btn-sm btn-primary mb-1" data-toggle="modal"
@@ -156,6 +168,7 @@ export default {
     mounted() {
         this.atualizar();
         this.formDefault = _.cloneDeep(this.form);
+        this.carregarSegmentos();
     },
     data() {
         return {
@@ -173,6 +186,7 @@ export default {
             form: {
                 nome: '',
                 tipo: '',
+                segmento_treinamento_id: null,
                 anexos: [],
                 anexosDel: [],
                 ativo: true,
@@ -182,6 +196,7 @@ export default {
 
             lista: [],
             listaTiposAssinatura: [],
+            listaSegmentos: [],
 
             urlPaginacao: `${URL_ADMIN}/cadastro/assinaturacarteira/atualizar`,
             controle: {
@@ -225,6 +240,13 @@ export default {
                     this.cadastrado = false;
                     this.preload = false;
                 });
+        },
+        carregarSegmentos() {
+            axios.get(`${URL_ADMIN}/cadastro/segmentostreinamento/lista`)
+                .then(res => {
+                    this.listaSegmentos = Array.isArray(res.data) ? res.data : [];
+                })
+                .catch(() => { this.listaSegmentos = []; });
         },
         alterarAssinatura(assinatura) {
             this.cadastrado = false;

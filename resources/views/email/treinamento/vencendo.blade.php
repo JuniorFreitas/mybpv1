@@ -66,7 +66,9 @@
                 @foreach($dados as $linha)
                     <div
                         style="border: 1px solid #666666; padding: 10px; margin-bottom: 10px;font-size: 13.5px; line-height: 20px; font-family: 'Arial'; color: #555555">
-                        Funcionário: <strong>{{$linha->Curriculo->nome}}</strong> <br><br>
+                        Funcionário: <strong>{{$linha->Curriculo->nome}}</strong> <br>
+                        Segmento: <strong>{{ optional(optional(optional($linha->FeedbackCurriculo)->Admissao)->SegmentoTreinamento)->nome ?? '-' }}</strong>
+                        <br><br>
 
                         @foreach($linha->Vencimentos as $item)
                             Treinamento: <strong>{{ $item->label}}</strong> <br>

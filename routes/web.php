@@ -11,6 +11,8 @@ Route::get('/health', function () {
     ]);
 })->name('health');
 
+Route::get('/verificacao-assinatura', [\App\Http\Controllers\VerificacaoAssinaturaController::class, 'index'])->name('verificacao-assinatura');
+
 Route::get('/recupera-senha/{token}', [\App\Http\Controllers\UserController::class, 'recuperaSenha'])->name('recuperaSenhanew');
 Route::post('/envia-recupera-senha', [\App\Http\Controllers\UserController::class, 'recuperaSenhaPost'])->name('recuperaSenhaPost');
 
@@ -261,6 +263,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                 Route::get('contrato/buscar-cpf', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'buscaCPF'])->name('verifica-cpf')->middleware('can:administracao_documentos_legais');
 
                 Route::get('contrato/{contrato}/pdf', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'getContratoPdf'])->name('getContratoPdf');
+                Route::post('contrato/enviar-para-assinatura', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'enviarParaAssinatura'])->name('enviarParaAssinatura')->middleware('assinatura.digital.habilitada');
                 Route::put('contrato/{contrato}/ativa-desativa', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:administracao_documentos_legais');
                 Route::post('contrato/search', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'searchCliente'])->name('search')->middleware('can:administracao_documentos_legais');
                 Route::post('contrato/atualizar', [\App\Http\Controllers\DocumentosLegaisContratoController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_documentos_legais');
@@ -309,6 +312,22 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                 Route::post('formacontrato/atualizar', [\App\Http\Controllers\FormaContratoDocumentoLegalController::class, 'atualizar'])->name('atualizar')->middleware('can:administracao_documentos_legais');
                 Route::resource('formacontrato', \App\Http\Controllers\FormaContratoDocumentoLegalController::class)->middleware('can:administracao_documentos_legais');
             });
+        });
+
+        // Documentos para assinatura digital (gerenciamento)
+        Route::group(['as' => 'documento-assinatura.', 'prefix' => 'documento-assinatura', 'middleware' => ['assinatura.digital.habilitada']], function () {
+            Route::get('/', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'indexView'])->name('index')->middleware('can:administracao_documentos_legais');
+            Route::post('atualizar', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'index'])->name('atualizar');
+            Route::get('config', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'config'])->name('config')->middleware('can:administracao_documentos_legais');
+            Route::post('config', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'salvarConfig'])->name('config-salvar')->middleware('can:administracao_documentos_legais');
+            Route::post('extrato/exportar', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'exportarExtrato'])->name('extrato-exportar')->middleware('can:administracao_documentos_legais');
+            Route::post('criar-arquivo-existente', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'criarComArquivoExistente'])->name('criar-arquivo-existente')->middleware('can:administracao_documentos_legais');
+            Route::get('solicitantes', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'solicitantes'])->name('solicitantes')->middleware('can:administracao_documentos_legais');
+            Route::get('{id}/evidencias', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'exportarEvidencias'])->name('evidencias')->middleware('can:administracao_documentos_legais');
+            Route::get('{id}/download-assinado', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'downloadAssinado'])->name('download-assinado')->middleware('can:administracao_documentos_legais');
+            Route::get('{id}', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'show'])->name('show');
+            Route::post('{id}/cancelar', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'cancelar'])->name('cancelar');
+            Route::post('{id}/reenviar-email', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'reenviarEmail'])->name('reenviar-email');
         });
 
         // Fornecedores
@@ -399,6 +418,13 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::post('treinamentoindustria/atualizar', [\App\Http\Controllers\TreinamentoIndustriaController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_treinamento_industria');
             Route::put('treinamentoindustria/{treinamentoindustria}/ativa-desativa', [\App\Http\Controllers\TreinamentoIndustriaController::class, 'ativaDesativa'])->name('treinamento_industria.ativaDesativa')->middleware('can:cadastro_treinamento_industria');
             Route::resource('treinamentoindustria', \App\Http\Controllers\TreinamentoIndustriaController::class)->middleware('can:cadastro_treinamento_industria');
+        });
+
+        Route::group(['as' => 'segmentostreinamento.'], function () {
+            Route::get('segmentostreinamento/lista', [\App\Http\Controllers\SegmentoTreinamentoController::class, 'listar'])->name('lista');
+            Route::get('segmentostreinamento/habilitados-empresa', [\App\Http\Controllers\SegmentoTreinamentoController::class, 'habilitadosEmpresa'])->name('habilitados-empresa');
+            Route::post('segmentostreinamento/atualizar', [\App\Http\Controllers\SegmentoTreinamentoController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_treinamento_industria');
+            Route::resource('segmentostreinamento', \App\Http\Controllers\SegmentoTreinamentoController::class)->only(['index', 'store', 'update'])->middleware('can:cadastro_treinamento_industria');
         });
 
         Route::group(['as' => 'treinamentosgi.'], function () {
@@ -618,6 +644,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::group(['as' => 'solicitacao_demissao.'], function () {
                 Route::post('demissao-prevista/atualizacao-status', [\App\Http\Controllers\DemissaoPrevistaController::class, 'atualizacaoStatus'])->name('demissao-prevista.atualizacaoStatus');
                 Route::get('demissao-prevista/{demissaoPrevista}/pdf', [\App\Http\Controllers\DemissaoPrevistaController::class, 'pdf'])->name('pdf');
+                Route::post('demissao-prevista/enviar-para-assinatura', [\App\Http\Controllers\DemissaoPrevistaController::class, 'enviarParaAssinatura'])->name('enviarParaAssinatura')->middleware('assinatura.digital.habilitada');
                 Route::post('demissao-prevista/atualizar', [\App\Http\Controllers\DemissaoPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('demissao-prevista/{demissaoPrevista}/aprovar', [\App\Http\Controllers\DemissaoPrevistaController::class, 'aprovar'])->name('aprovar');
                 Route::put('demissao-prevista/{demissaoPrevista}/aprovarextra', [\App\Http\Controllers\DemissaoPrevistaController::class, 'aprovarExtra'])->name('aprovarExtra');
@@ -794,6 +821,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::post('controle-exames-resultado/uploadAnexos', [\App\Http\Controllers\ControleExameController::class, 'uploadAnexos'])->name('.upload-anexos');
 
         Route::get('controle-exames/ficha-encaminhamento/{exame}/{token}', [\App\Http\Controllers\ControleExameController::class, 'getFichaPdf'])->name('pdf');
+        Route::post('controle-exames/enviar-ficha-para-assinatura', [\App\Http\Controllers\ControleExameController::class, 'enviarFichaParaAssinatura'])->name('enviarFichaParaAssinatura')->middleware('assinatura.digital.habilitada');
         Route::get('controle-exames/carregaResposta', [\App\Http\Controllers\ControleExameController::class, 'carregaResposta'])->name('carregaResposta');
         Route::get('controle-exames/resultado/{exame}', [\App\Http\Controllers\ControleExameController::class, 'getResultado'])->name('getResultado');
         Route::post('controle-exames/salvaResultado', [\App\Http\Controllers\ControleExameController::class, 'salvaResultado'])->name('salvaResultado');
@@ -882,6 +910,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                     Route::post('atualizar', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'atualizar'])->name('atualizar'); // manter essa rota antes do resource
                     Route::put('responder', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'responder'])->name('responder');
                     Route::post('/enviar-email', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'enviarEmail'])->name('enviarEmail');
+                    Route::post('/enviar-para-assinatura', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'enviarParaAssinatura'])->name('enviarParaAssinatura')->middleware('assinatura.digital.habilitada');
                     Route::get('/', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'index'])->name('index');
                 });
             });
@@ -915,6 +944,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'anexoDelete'])->name('anexo-delete');
             Route::post('/uploadAnexos', [\App\Http\Controllers\HistoricoController::class, 'uploadAnexos'])->name('.upload-anexos');
             Route::get('/{medida}/{feedback_id}/pdf', [\App\Http\Controllers\HistoricoController::class, 'medidasAdministrativasPDF'])->name('pdfMedidasAdministrativas');
+            Route::post('/enviar-para-assinatura', [\App\Http\Controllers\HistoricoController::class, 'enviarMedidaParaAssinatura'])->name('enviarParaAssinatura')->middleware('assinatura.digital.habilitada');
         });
 
         //Rotas Afastamento Historico
@@ -938,13 +968,13 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::get('/{quantidade_avaliacao}/{feedback_id}/pdf', [\App\Http\Controllers\HistoricoController::class, 'formularioNoventaDiasPDF'])->name('formularioNoventaDiasPDF');
         });
 
-        //Rotas DOSSIE
+        //Rotas DOSSIE (rotas específicas antes das com parâmetro, igual medidas-administrativas)
         Route::group(['as' => 'dossie.', 'prefix' => 'dossie'], function () {
             Route::post('/uploadAnexos', [\App\Http\Controllers\DossieController::class, 'uploadAnexos'])->name('upload-anexos');
             Route::get('/anexo/{arquivo}', [\App\Http\Controllers\DossieController::class, 'anexoShow'])->name('anexo-show');
             Route::get('/anexoDownload/{arquivo}', [\App\Http\Controllers\DossieController::class, 'download'])->name('anexo-download');
             Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\DossieController::class, 'anexoDelete'])->name('anexo-delete');
-            //        Route::get('/{feedback_id}/pdf', [\App\Http\Controllers\DossieController::class,'medidasAdministrativasPDF'])->name('pdfDossie');
+            Route::post('enviar-para-assinatura', [\App\Http\Controllers\DossieController::class, 'enviarParaAssinatura'])->name('enviarParaAssinatura')->middleware('assinatura.digital.habilitada');
             Route::post('/{feedback}', [\App\Http\Controllers\DossieController::class, 'store'])->name('store');
             Route::get('/{feedback}', [\App\Http\Controllers\DossieController::class, 'show'])->name('show');
             Route::get('/{tipo_modelo}/{curriculo_id}/{feedback_id}', [\App\Http\Controllers\DossieController::class, 'downloadModelo'])->name('downloadModelo');
@@ -1029,6 +1059,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::post('treinamento/carteiras', [\App\Http\Controllers\TreinamentoController::class, 'carteiraPdf'])->name('carteiraPdf');
         Route::post('treinamento/export', [\App\Http\Controllers\TreinamentoController::class, 'export'])->name('excel');
         Route::post('treinamento/atualizar', [\App\Http\Controllers\TreinamentoController::class, 'atualizar'])->name('atualizar');
+        Route::post('treinamento/vencimentos-por-segmento', [\App\Http\Controllers\TreinamentoController::class, 'vencimentosPorSegmento'])->name('vencimentos-por-segmento');
 
         Route::get('treinamento/vencimentos', [\App\Http\Controllers\TreinamentoController::class, 'vencimentos'])->name('vencimentos');
 
@@ -1415,7 +1446,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}', [\App\Http\Controllers\ListaTarefaController::class, 'update'])->name('update')->middleware('can:weekly_report_quadro_lista_update');
         Route::put('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'atualizarOrdem'])->name('atualizarOrdem');
         Route::post('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'store'])->name('store')->middleware('can:weekly_report_quadro_lista_insert');
-        Route::get('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'index'])->name('index');
+        Route::get('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'index'])->name('listas.index');
 
         //Quadros
         Route::delete('weekly-report/{empresa}/quadros/{quadro}', [\App\Http\Controllers\QuadroController::class, 'destroy'])->name('delete')->middleware('can:weekly_report_quadro_delete');
@@ -1488,6 +1519,15 @@ Route::group(['as' => 'documentospreadmissao.'], function () {
 
         Route::get('carta-oferta/{token}', [\App\Http\Controllers\CartaOfertaController::class, 'index'])->name('carta-oferta.index');
         Route::post('carta-oferta/{token}/salvar', [\App\Http\Controllers\CartaOfertaController::class, 'salvarCartaOferta'])->name('carta-oferta.salvarCartaOferta');
+
+        Route::get('assinatura/{token}', [\App\Http\Controllers\AssinaturaPublicaController::class, 'index'])->name('assinatura.publica.index');
+        Route::get('assinatura/verificacao', [\App\Http\Controllers\VerificacaoAssinaturaController::class, 'index'])->name('assinatura.verificacao');
+        Route::post('assinatura/{token}/validar-cpf', [\App\Http\Controllers\AssinaturaPublicaController::class, 'validarCpf'])->name('assinatura.publica.validar-cpf');
+        Route::get('assinatura/{token}/codigo', [\App\Http\Controllers\AssinaturaPublicaController::class, 'codigo'])->name('assinatura.publica.codigo');
+        Route::post('assinatura/{token}/validar-codigo', [\App\Http\Controllers\AssinaturaPublicaController::class, 'validarCodigo'])->name('assinatura.publica.validar-codigo');
+        Route::get('assinatura/{token}/pdf', [\App\Http\Controllers\AssinaturaPublicaController::class, 'pdf'])->name('assinatura.publica.pdf');
+        Route::post('assinatura/{token}/assinar', [\App\Http\Controllers\AssinaturaPublicaController::class, 'assinar'])->name('assinatura.publica.assinar');
+        Route::post('assinatura/{token}/recusar', [\App\Http\Controllers\AssinaturaPublicaController::class, 'recusar'])->name('assinatura.publica.recusar');
     });
 
     Route::post('documentos/uploadAnexos', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'uploadAnexos'])->name('documentos.upload-anexos');

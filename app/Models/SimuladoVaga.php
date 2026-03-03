@@ -8,6 +8,7 @@ use Laravel\Sanctum\HasApiTokens;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\SimuladoVaga
@@ -51,9 +52,9 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class SimuladoVaga extends Model
 {
-    use LogsActivity;
-    use HasApiTokens;
-    use TenantTrait;
+    use LogsActivity, HasActivitylogOptions, HasApiTokens, TenantTrait;
+
+
 
     protected static $logFillable = true;
     protected static $logName = 'SimuladoVaga';

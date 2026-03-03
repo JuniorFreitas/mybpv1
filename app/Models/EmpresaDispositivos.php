@@ -1,11 +1,13 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Models\Activity;
 
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\EmpresaDispositivos
@@ -42,7 +44,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class EmpresaDispositivos extends Model
 {
-    use HasFactory,LogsActivity;
+    use HasFactory,LogsActivity, HasActivitylogOptions;
     protected static $logFillable = true;
     protected static $logName = 'EmpresaDispositivos';
     protected static $logOnlyDirty = true;
@@ -68,6 +70,16 @@ class EmpresaDispositivos extends Model
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s',
     ];
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected function serializeDate(DateTimeInterface $date) {
         return $date->format('Y-m-d H:i:s');

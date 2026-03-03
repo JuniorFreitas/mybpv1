@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models\Pivot;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Models\Arquivo;
 use DateTimeInterface;
@@ -30,6 +33,20 @@ use MasterTag\DataHora;
  */
 class TreinamentoVencimento extends Pivot
 {
+
+    use LogsActivity, HasActivitylogOptions;
+
+    protected static $logName = 'TreinamentoVencimento';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
 //    protected $dates = [
 //        'data_vencimento',

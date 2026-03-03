@@ -236,7 +236,7 @@ class JobExportaTreinamentos implements ShouldQueue
     {
         $head = [
             "Nome", "Cargo", "Status", "Data Admissão", "PCD", "Área",
-            "Foto 3x4", "Treinamento", "Data do treinamento", "Data do vencimento",
+            "Padrão de Treinamento", "Foto 3x4", "Treinamento", "Data do treinamento", "Data do vencimento",
             "Status Vencimento", "Dias para Vencer/Vencido", "Ultima Atualização"
         ];
 
@@ -255,7 +255,7 @@ class JobExportaTreinamentos implements ShouldQueue
             ]
         ];
 
-        $sheet->getStyle('A1:M1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:N1')->applyFromArray($headerStyle);
 
         $currentRow = 2;
         $chunkCount = 0;
@@ -289,7 +289,7 @@ class JobExportaTreinamentos implements ShouldQueue
                             $rows[] = $rowData;
 
                             // Armazena informação do status para formatação
-                            $statusVencimento = $rowData[10]; // Coluna K (Status Vencimento)
+                            $statusVencimento = $rowData[11]; // Coluna L (Status Vencimento)
                             $rowsWithStatus[$currentRow + count($rows) - 1] = $statusVencimento;
                         }
                     }
@@ -336,7 +336,7 @@ class JobExportaTreinamentos implements ShouldQueue
         $this->applyConditionalFormatting($sheet, $rowsWithStatus);
 
         // Auto-ajusta largura das colunas
-        foreach (range('A', 'M') as $column) {
+        foreach (range('A', 'N') as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 
@@ -408,6 +408,10 @@ class JobExportaTreinamentos implements ShouldQueue
             }
         }
 
+        $padraoTreinamento = $itemArray['admissao']['segmento_treinamento']['nome']
+            ?? $itemArray['admissao']['segmento_treinamento_nome']
+            ?? '';
+
         return [
             $itemArray['curriculo']['nome'] ?? '',
             $itemArray['admissao']['cargo'] ?? '',
@@ -415,6 +419,7 @@ class JobExportaTreinamentos implements ShouldQueue
             $itemArray['admissao']['data_admissao'] ?? '',
             ($itemArray['curriculo']['pcd'] ?? false) ? 'Sim' : 'Não',
             $itemArray['admissao']['area_etiqueta']['label'] ?? 'Não informado',
+            $padraoTreinamento,
             ($itemArray['curriculo']['foto_tres'] ?? false) ? 'Sim' : 'Não',
             $vencimento['label'] ?? '',
             $vencimento['pivot']['data_treinamento'] ?? '',
@@ -516,7 +521,7 @@ class JobExportaTreinamentos implements ShouldQueue
     private function applyConditionalFormatting($sheet, $rowsWithStatus): void
     {
         foreach ($rowsWithStatus as $row => $status) {
-            $cellRange = "K{$row}:L{$row}"; // Colunas K e L (Status e Dias)
+            $cellRange = "L{$row}:M{$row}"; // Colunas L e M (Status e Dias)
 
             switch ($status) {
                 case 'VENCIDO':

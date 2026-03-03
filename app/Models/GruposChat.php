@@ -1,10 +1,12 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Models\Activity;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\GruposChat
@@ -30,7 +32,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class GruposChat extends Model
 {
-    use HasFactory,LogsActivity;
+    use HasFactory,LogsActivity, HasActivitylogOptions;
     protected static $logFillable = true;
     protected static $logName = 'GrupoChat';
     protected static $logOnlyDirty = true;
@@ -55,5 +57,15 @@ class GruposChat extends Model
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s',
     ];
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
 }

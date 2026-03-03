@@ -30,7 +30,11 @@ class UserRHCacheObserver
         if (!empty($atributosAlterados)) {
             // Invalida cache se for usuário RH OU se mudou status/tipo
             if ($this->deveInvalidarCache($user)) {
-                RHHelper::invalidarCache($user->empresa_id);
+                if ($user->empresa_id) {
+                    RHHelper::invalidarCache($user->empresa_id);
+                } else {
+                    \Log::warning("Cache RH nao invalidado - empresa_id ausente para user #{$user->id}");
+                }
 
                 \Log::info("Cache RH invalidado - User #{$user->id} alterou: " . implode(', ', $atributosAlterados));
             }
@@ -47,7 +51,11 @@ class UserRHCacheObserver
     public function deleted(User $user)
     {
         if (RHHelper::ehUsuarioRH($user)) {
-            RHHelper::invalidarCache($user->empresa_id);
+            if ($user->empresa_id) {
+                RHHelper::invalidarCache($user->empresa_id);
+            } else {
+                \Log::warning("Cache RH nao invalidado - empresa_id ausente para user #{$user->id}");
+            }
 
             \Log::info("Cache RH invalidado - User RH #{$user->id} deletado");
         }

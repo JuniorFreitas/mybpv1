@@ -19,7 +19,7 @@
             <br>
             RG: {{$dados['dados_colaborador']->rg ?? ''}}
             <br>
-            CTPS: {{isset($dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes) ? $dados['dados_colaborador']->FeedBack->Admissao->DadosAdmissoes->ctps_numero : ''}}
+            CTPS: {{isset($dados['dados_colaborador']->Admissao->DadosAdmissoes) ? $dados['dados_colaborador']->Admissao->DadosAdmissoes->ctps_numero : ''}}
             <br>
             <br>
             NOME DO FILHO:

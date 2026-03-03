@@ -2,6 +2,7 @@ import datepicker from '../../components/DatePicker'
 import ExportacaoMixin from '../../mixins/Exportacoes'
 import { Estados } from '../../mixins/Utils'
 import Upload from '../../components/Upload.vue'
+import DateRangeFilter from '../../components/DateRangeFilter.vue'
 
 const app = new Vue({
     mixins: [ExportacaoMixin],
@@ -9,7 +10,8 @@ const app = new Vue({
     el: '#app',
     components: {
         datepicker,
-        Upload
+        Upload,
+        DateRangeFilter
     },
     data: {
         tituloJanela: 'Treinamentos',
@@ -70,6 +72,7 @@ const app = new Vue({
 
             nr_trinta_tres: true,
             nr_trinta_cinco: true,
+            segmento_treinamento_id: null,
             exame: {
                 feedback_id: '',
                 exame_realizado: '',
@@ -133,6 +136,7 @@ const app = new Vue({
         lista: [],
         vagas: [],
         listaAreas: [],
+        segmentosTreinamento: [],
 
         controle: {
             carregando: false,
@@ -162,11 +166,15 @@ const app = new Vue({
                 campoFoto: '',
                 campo_dataInicio: '',
                 campo_dataFim: '',
-                campoVencimento: '',
+                campoVencimento: false,
+                dataInicioVencimento: '',
+                dataFimVencimento: '',
                 vencimento: '',
                 treinamentos: '',
                 treinamentos_selecionados: [],
                 campoPeriodoTreinado: false,
+                dataInicioPeriodoTreinado: '',
+                dataFimPeriodoTreinado: '',
                 periodoTreinado: '',
                 campoCnpj: '',
                 campoCentroCusto: ''
@@ -188,6 +196,7 @@ const app = new Vue({
         }
         this.listaVagas()
         this.listaAreasGeral()
+        this.carregarSegmentosTreinamento()
         this.atualizar()
 
         let intervalId = setInterval(() => {
@@ -313,6 +322,37 @@ const app = new Vue({
         }
     },
     methods: {
+        carregarSegmentosTreinamento() {
+            axios
+                .get(`${URL_ADMIN}/cadastro/segmentostreinamento/habilitados-empresa`)
+                .then((res) => {
+                    this.segmentosTreinamento = res.data || []
+                })
+                .catch(() => {
+                    this.segmentosTreinamento = []
+                })
+        },
+        trocarSegmentoTreinamento() {
+            if (!this.form.feedback_id) {
+                return
+            }
+
+            this.preload = true
+            axios
+                .post(`${URL_ADMIN}/treinamento/vencimentos-por-segmento`, {
+                    feedback_id: this.form.feedback_id,
+                    segmento_treinamento_id: this.form.segmento_treinamento_id
+                })
+                .then((response) => {
+                    this.form.listaVencimentos = response.data.listaVencimentos || []
+                    this.openPanels = []
+                    this.expandAll = false
+                    this.preload = false
+                })
+                .catch(() => {
+                    this.preload = false
+                })
+        },
         marcarDesmarcarTodosTreinamentosColuna(valor) {
             this.listaColunasTreinamentos.map((item) => {
                 item.checked = valor
@@ -428,6 +468,7 @@ const app = new Vue({
                 .then((response) => {
                     let data = response.data
                     this.form.dadosFuncionario = data.dadosFuncionario
+                    this.form.segmento_treinamento_id = data.segmento_treinamento_id || null
 
                     if (data.treinamento) {
                         this.editando = true
@@ -524,6 +565,7 @@ const app = new Vue({
 
             this.preload = true
             this.formMassa.selecionadosMassa = this.selecionadosMassa
+            this.formMassa.tipo = 'Fixo' // vencimento usa somente prazo_fixo
 
             axios
                 .post(`${URL_ADMIN}/treinamento/salvar-massa`, this.formMassa)
@@ -685,7 +727,25 @@ const app = new Vue({
             this.$refs.componente.buscar()
         },
 
-        // Novos métodos para dar suporte ao UI aprimorado
+        atualizarVencimentoString() {
+            const d = this.controle.dados
+            if (d.campoVencimento && d.dataInicioVencimento && d.dataFimVencimento) {
+                d.vencimento = d.dataInicioVencimento + ' até ' + d.dataFimVencimento
+            } else {
+                d.vencimento = ''
+            }
+            this.atualizar()
+        },
+
+        atualizarPeriodoTreinadoString() {
+            const d = this.controle.dados
+            if (d.campoPeriodoTreinado && d.dataInicioPeriodoTreinado && d.dataFimPeriodoTreinado) {
+                d.periodoTreinado = d.dataInicioPeriodoTreinado + ' até ' + d.dataFimPeriodoTreinado
+            } else {
+                d.periodoTreinado = ''
+            }
+            this.atualizar()
+        },
 
         // Acorde panel controls
         togglePanel(index) {
@@ -773,9 +833,8 @@ const app = new Vue({
 
             let expiryDate = new Date(trainingDate)
 
-            if (this.form.tipo === 'Parada' && treinamento.prazo_parada) {
-                expiryDate.setDate(expiryDate.getDate() + parseInt(treinamento.prazo_parada))
-            } else if (this.form.tipo === 'Fixo' && treinamento.prazo_fixo) {
+            // Usar somente prazo_fixo para vencimento (não há mais fixo/parada)
+            if (treinamento.prazo_fixo) {
                 expiryDate.setDate(expiryDate.getDate() + parseInt(treinamento.prazo_fixo))
             } else {
                 return

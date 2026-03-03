@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -20,7 +23,21 @@ use Illuminate\Database\Eloquent\Model;
  */
 class NpsResposta extends Model
 {
+
+    use LogsActivity, HasActivitylogOptions;
+
+    protected static $logName = 'NpsResposta';
     protected $table = 'nps_respostas';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $fillable = [
         'user_id',

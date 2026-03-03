@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\GerarTokenAvaliacaoNoventaDiasJob;
+use App\Jobs\AssinaturaDigital\JobProcessarEnvioAssinatura;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\AvaliacaoNoventaDias;
@@ -45,7 +46,8 @@ class HistoricoController extends Controller
         $feedback = FeedbackCurriculo::whereId($feedback_id)
             ->with([
                 'MedidasAdministrativas.Anexos',
-                'Curriculo:id,nome,cpf',
+                'MedidasAdministrativas.documentoParaAssinatura',
+                'Curriculo:id,nome,cpf,email',
                 'Empresa:id,nome,nome_fantasia',
                 'VagaAberta.Vaga:id,nome'
             ])
@@ -390,6 +392,46 @@ class HistoricoController extends Controller
         return $pdf->stream("carta_" . Str::slug($medida->tipo) . (new DataHora())->nomeUnico() . ".pdf");
     }
 
+    /**
+     * Envia medida administrativa (carta advertência) para assinatura digital.
+     */
+    public function enviarMedidaParaAssinatura(Request $request)
+    {
+        $request->validate([
+            'medida_id' => 'required|integer',
+            'signatarios' => 'required|array|min:1',
+            'signatarios.*.email' => 'required|email',
+            'signatarios.*.nome' => 'required|string|max:255',
+            'signatarios.*.cpf' => 'required|string|min:11|max:14',
+            'signatarios.*.user_id' => 'nullable|exists:users,id',
+        ]);
+
+        $medidaService = new MedidaAdministrativaService();
+        $medida = $medidaService->buscarParaPDF($request->medida_id);
+        if (!$medida || $medida->Feedback->empresa_id != auth()->user()->empresa_id) {
+            return response()->json(['success' => false, 'message' => 'Medida não encontrada.'], 404);
+        }
+
+        $empresaId = auth()->user()->empresa_id;
+        try {
+            app(\App\Services\AssinaturaDigital\AssinaturaCotaService::class)->validarDisponibilidadeOrFail($empresaId);
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
+        JobProcessarEnvioAssinatura::dispatch(
+            JobProcessarEnvioAssinatura::TIPO_MEDIDA,
+            $empresaId,
+            auth()->id(),
+            ['medida_id' => (int) $request->medida_id],
+            $request->signatarios
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Solicitação recebida. O documento será processado e enviado para assinatura.',
+        ], 202);
+    }
+
     // Anexos-------------------------------------------------
     public function uploadAnexos(Request $request)
     {
@@ -477,14 +519,14 @@ class HistoricoController extends Controller
     {
         $this->authorize('privilegio_gestao_rh');
         $dados = $request->input();
-        
+
         try {
             $service = new MedidaAdministrativaService();
             $medidaId = $dados['medida_id'] ?? $dados['id'];
             $motivo = $dados['motivo'] ?? null;
-            
+
             $service->removerMedidaAdministrativa($medidaId, $motivo);
-            
+
             return response()->json([], 201);
         } catch (\Exception $e) {
             $msg = "error HISTÓRICO - REMOVER MEDIDA ADMINISTRATIVA: {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;

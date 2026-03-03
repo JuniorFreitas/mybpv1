@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\AtaReuniao
@@ -54,8 +55,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class AtaReuniao extends Model
 {
-    use LogsActivity;
-    use TenantTrait;
+    use LogsActivity, HasActivitylogOptions, TenantTrait;
+
 
     protected static $logFillable = true;
     protected static $logName = 'atareuniao';

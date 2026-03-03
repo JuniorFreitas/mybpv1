@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Scopes\ScopeEmpresa;
 use DateTimeInterface;
@@ -52,6 +55,20 @@ use MasterTag\DataHora;
  */
 class ExameFuncionario extends Model
 {
+
+    use LogsActivity, HasActivitylogOptions;
+
+    protected static $logName = 'ExameFuncionario';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     const TABELA = 'exame_funcionarios';
 

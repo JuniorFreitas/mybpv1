@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Scopes\ScopeEmpresa;
 use App\Tenant\Traits\TenantTrait;
@@ -37,7 +40,19 @@ use MasterTag\DataHora;
  */
 class PlanejamentoDiario extends Model
 {
-    use TenantTrait;
+    use LogsActivity, HasActivitylogOptions, TenantTrait;
+
+    protected static $logName = 'PlanejamentoDiario';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $fillable = [
         'data',

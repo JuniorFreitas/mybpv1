@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -25,7 +28,21 @@ use Illuminate\Database\Eloquent\Model;
  */
 class LogoCliente extends Model
 {
+
+    use LogsActivity, HasActivitylogOptions;
+
+    protected static $logName = 'LogoCliente';
     protected $table = 'cliente_logo_sites';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     public function Fotos() {
         return $this->belongsToMany(Arquivo::class, 'cliente_logo_foto', 'cliente_id', 'arquivo_id')->withPivot(['ordem'])->orderBy('ordem');
