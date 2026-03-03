@@ -5,6 +5,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\RespostaOcorrencia
@@ -33,7 +34,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @mixin \Eloquent
  */
 class RespostaOcorrencia extends Model {
-    use LogsActivity;
+    use LogsActivity, HasActivitylogOptions;
     protected static $logFillable = true;
     protected static $logName = 'ocorrencias';
     protected static $logOnlyDirty = true;

@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,7 +12,19 @@ use MasterTag\DataHora;
 
 class RecrutamentoHistorico extends Model
 {
-    use HasFactory;
+    use LogsActivity, HasActivitylogOptions, HasFactory;
+
+    protected static $logName = 'RecrutamentoHistorico';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $table = 'recrutamento_historicos';
 

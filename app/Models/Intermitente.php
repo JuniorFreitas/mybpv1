@@ -9,6 +9,7 @@ use Illuminate\Support\Carbon;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\Intermitente
@@ -83,7 +84,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Intermitente extends Model
 {
-    use LogsActivity, TenantTrait;
+    use LogsActivity, HasActivitylogOptions, TenantTrait;
 
     protected static $logFillable = true;
     protected static $logName = 'intermitente';

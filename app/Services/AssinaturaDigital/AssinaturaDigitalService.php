@@ -170,6 +170,124 @@ class AssinaturaDigitalService
     }
 
     /**
+     * Cria um envio para assinatura a partir de um PDF já existente (arquivo_id).
+     * O arquivo deve estar disponível no storage configurado e ser PDF.
+     */
+    public function criarEnvioComArquivoExistente(
+        int $empresaId,
+        int $arquivoId,
+        string $tipoDocumento,
+        string $documentableType,
+        int $documentableId,
+        ?int $solicitanteId,
+        array $signatarios,
+        string $ordemAssinatura,
+        ?\DateTimeInterface $dataExpiracao = null
+    ): DocumentoParaAssinatura {
+        app(AssinaturaCotaService::class)->validarDisponibilidadeOrFail($empresaId);
+
+        $arquivo = Arquivo::find($arquivoId);
+        if (!$arquivo || !$arquivo->disco || !$arquivo->file) {
+            throw new \RuntimeException('Arquivo não encontrado ou inválido.');
+        }
+        $ext = strtolower(ltrim((string) $arquivo->extensao, '.'));
+        if ($ext !== 'pdf') {
+            throw new \RuntimeException('Apenas arquivos PDF podem ser enviados para assinatura.');
+        }
+
+        try {
+            $conteudo = Storage::disk($arquivo->disco)->get($arquivo->file);
+        } catch (\Throwable $e) {
+            Log::error('AssinaturaDigitalService: falha ao ler PDF existente', ['arquivo_id' => $arquivoId, 'erro' => $e->getMessage()]);
+            throw $e;
+        }
+        if ($conteudo === null || $conteudo === '') {
+            throw new \RuntimeException('Conteúdo do PDF não encontrado.');
+        }
+        $hashSha256 = hash('sha256', $conteudo);
+
+        $doc = DB::transaction(function () use (
+            $empresaId,
+            $arquivo,
+            $tipoDocumento,
+            $documentableType,
+            $documentableId,
+            $solicitanteId,
+            $signatarios,
+            $ordemAssinatura,
+            $hashSha256,
+            $dataExpiracao
+        ) {
+            $doc = DocumentoParaAssinatura::create([
+                'empresa_id' => $empresaId,
+                'tipo_documento' => $tipoDocumento,
+                'documentable_type' => $documentableType,
+                'documentable_id' => $documentableId,
+                'arquivo_id' => $arquivo->id,
+                'hash_sha256' => $hashSha256,
+                'status' => DocumentoParaAssinatura::STATUS_EM_ASSINATURA,
+                'data_expiracao' => $dataExpiracao,
+                'solicitante_id' => $solicitanteId,
+                'ordem_assinatura' => $ordemAssinatura,
+            ]);
+
+            $ordem = 0;
+            foreach ($signatarios as $s) {
+                $ordem++;
+                $email = $s['email'] ?? null;
+                $nome = $s['nome'] ?? '';
+                $userId = $s['user_id'] ?? null;
+                $cpf = $s['cpf'] ?? null;
+                if ($userId && !$email) {
+                    $user = User::find($userId);
+                    if ($user) {
+                        $email = $user->login ?? $user->email ?? $email;
+                        $nome = $nome ?: $user->nome;
+                        if ($cpf === null && !empty($user->cpf)) {
+                            $cpf = $user->cpf;
+                        }
+                    }
+                }
+                if (!$email) {
+                    Log::warning('AssinaturaDigitalService: signatário sem e-mail ignorado', ['nome' => $nome, 'ordem' => $ordem]);
+                    continue;
+                }
+                DocumentoAssinaturaSignatario::create([
+                    'documento_para_assinatura_id' => $doc->id,
+                    'user_id' => $userId,
+                    'email' => $email,
+                    'nome' => $nome,
+                    'cpf' => $cpf,
+                    'ordem' => $ordem,
+                    'token' => DocumentoAssinaturaSignatario::gerarToken(),
+                    'status' => DocumentoAssinaturaSignatario::STATUS_PENDENTE,
+                ]);
+            }
+
+            $doc->load('signatarios');
+            if ($doc->signatarios->isEmpty()) {
+                Log::error('AssinaturaDigitalService: nenhum signatário criado (todos sem e-mail?)');
+                throw new \InvalidArgumentException('Nenhum signatário com e-mail válido. Verifique a lista de signatários.');
+            }
+            $solicitante = User::find($solicitanteId);
+            $this->registrarEvento($doc->id, DocumentoAssinaturaEvento::EVENTO_ENVIADO, [
+                'solicitante_id' => $solicitanteId,
+                'nome' => $solicitante ? ($solicitante->nome ?? $solicitante->name ?? 'Sistema') : 'Sistema',
+                'email' => $solicitante && $solicitante->email ? $solicitante->email : null,
+                'signatarios_count' => $doc->signatarios->count(),
+            ]);
+
+            return $doc->fresh(['signatarios', 'arquivo']);
+        });
+
+        Log::info('AssinaturaDigital: criando envio com arquivo existente e enfileirando e-mail', ['documento_id' => $doc->id, 'tipo' => $tipoDocumento, 'signatarios' => $doc->signatarios->pluck('email')->toArray()]);
+        JobEnvioEmailAssinatura::dispatch($doc->id);
+        app(AssinaturaCotaService::class)->verificarAlertas($empresaId);
+
+        return $doc;
+    }
+
+    /**
      * Resolve a empresa (Cliente) pelo apelido da URL. Usa withoutGlobalScopes para funcionar sem login.
      */
     public function buscarEmpresaPorApelido(string $apelido): ?Cliente
@@ -425,6 +543,7 @@ class AssinaturaDigitalService
         $userAgent = $request->userAgent();
         $dataAssinaturaUtc = now('UTC');
         $geolocalizacao = $this->obterGeolocalizacaoPorIp($ip);
+        $consentimentoEm = $dataAssinaturaUtc;
 
         $payloadEvidencia = [
             'documento_id' => $doc->id,
@@ -432,14 +551,16 @@ class AssinaturaDigitalService
             'email' => $signatario->email,
             'nome' => $signatario->nome,
             'cpf' => $cpfInformado ?? $signatario->cpf,
-            'consentimento' => true,
+            'consentimento_assinatura' => true,
+            'consentimento_em' => $consentimentoEm->toIso8601String(),
             'data_utc' => $dataAssinaturaUtc->toIso8601String(),
             'ip' => $ip,
             'user_agent' => $userAgent,
+            'geolocalizacao' => $geolocalizacao,
         ];
         $hashEvidencia = hash('sha256', json_encode($payloadEvidencia));
 
-        DB::transaction(function () use ($signatario, $doc, $ip, $userAgent, $dataAssinaturaUtc, $hashEvidencia, $cpfInformado, $geolocalizacao) {
+        DB::transaction(function () use ($signatario, $doc, $ip, $userAgent, $dataAssinaturaUtc, $hashEvidencia, $cpfInformado, $geolocalizacao, $consentimentoEm, $payloadEvidencia) {
             $signatario->update([
                 'status' => DocumentoAssinaturaSignatario::STATUS_ASSINADO,
                 'ip' => $ip,
@@ -448,13 +569,26 @@ class AssinaturaDigitalService
                 'hash_evidencia' => $hashEvidencia,
                 'cpf' => $cpfInformado ?? $signatario->cpf,
                 'geolocalizacao' => $geolocalizacao,
+                'consentimento_assinatura' => true,
+                'consentimento_em' => $consentimentoEm,
+            ]);
+
+            $doc->update([
+                'consentimento_ultimo_em' => $consentimentoEm,
+                'consentimento_ultimo_signatario_id' => $signatario->id,
             ]);
 
             $this->registrarEvento($doc->id, DocumentoAssinaturaEvento::EVENTO_ASSINADO, [
                 'signatario_id' => $signatario->id,
                 'email' => $signatario->email,
+                'nome' => $signatario->nome,
+                'cpf' => $cpfInformado ?? $signatario->cpf,
                 'ip' => $ip,
+                'user_agent' => $userAgent,
                 'data_utc' => $dataAssinaturaUtc->toIso8601String(),
+                'geolocalizacao' => $geolocalizacao,
+                'consentimento_assinatura' => true,
+                'consentimento_em' => $consentimentoEm->toIso8601String(),
                 'hash_evidencia' => $hashEvidencia,
             ]);
 
@@ -478,20 +612,31 @@ class AssinaturaDigitalService
         }
 
         $doc = $signatario->documentoParaAssinatura;
+        $ip = $request->ip();
+        $userAgent = $request->userAgent();
+        $dataRecusaUtc = now('UTC');
+        $geolocalizacao = $this->obterGeolocalizacaoPorIp($ip);
 
-        DB::transaction(function () use ($signatario, $doc, $request, $motivo) {
+        DB::transaction(function () use ($signatario, $doc, $motivo, $ip, $userAgent, $dataRecusaUtc, $geolocalizacao) {
             $signatario->update([
                 'status' => DocumentoAssinaturaSignatario::STATUS_RECUSADO,
                 'recusa_motivo' => $motivo,
-                'ip' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-                'data_assinatura_utc' => now('UTC'),
+                'ip' => $ip,
+                'user_agent' => $userAgent,
+                'data_assinatura_utc' => $dataRecusaUtc,
+                'geolocalizacao' => $geolocalizacao,
             ]);
 
             $this->registrarEvento($doc->id, DocumentoAssinaturaEvento::EVENTO_RECUSADO, [
                 'signatario_id' => $signatario->id,
                 'email' => $signatario->email,
+                'nome' => $signatario->nome,
+                'cpf' => $signatario->cpf,
                 'motivo' => $motivo,
+                'ip' => $ip,
+                'user_agent' => $userAgent,
+                'data_utc' => $dataRecusaUtc->toIso8601String(),
+                'geolocalizacao' => $geolocalizacao,
             ]);
         });
 
@@ -549,9 +694,11 @@ class AssinaturaDigitalService
 
             $tz = 'America/Sao_Paulo';
             $baseUrl = rtrim(config('app.url'), '/');
+            $apelido = $empresa && $empresa->apelido ? $empresa->apelido : null;
+            $baseVerificacao = $apelido ? $baseUrl . '/' . $apelido . '/assinatura/verificacao' : $baseUrl . '/verificacao-assinatura';
             $signatariosParaPdf = $doc->signatarios
                 ->where('status', DocumentoAssinaturaSignatario::STATUS_ASSINADO)
-                ->map(function ($s) use ($tz, $baseUrl, $doc) {
+                ->map(function ($s) use ($tz, $baseVerificacao, $doc) {
                     $cpf = $s->cpf ?: '';
                     if ($cpf && strlen(preg_replace('/\D/', '', $cpf)) === 11) {
                         $n = preg_replace('/\D/', '', $cpf);
@@ -562,7 +709,7 @@ class AssinaturaDigitalService
                     $dataBrasilia = $raw ? \Carbon\Carbon::parse($raw, 'UTC')->setTimezone($tz) : null;
                     $timestampBrasiliaIso = $dataBrasilia ? $dataBrasilia->format('Y-m-d\TH:i:sP') : '';
                     $localBr = $dataBrasilia ? $dataBrasilia->format('Y.m.d H:i:s') . " -03'00' (Brasilia)" : '—';
-                    $qrPayload = $baseUrl . '/verificacao-assinatura?d=' . $doc->id . '&s=' . $s->id . '&h=' . ($s->hash_evidencia ?? '');
+                    $qrPayload = $baseVerificacao . '?d=' . $doc->id . '&s=' . $s->id . '&h=' . ($s->hash_evidencia ?? '');
                     $geo = is_array($s->geolocalizacao) ? $s->geolocalizacao : [];
                     $localTexto = $this->formatarLocalGeolocalizacao($geo);
                     return [
@@ -587,7 +734,7 @@ class AssinaturaDigitalService
 
             $identificador = $doc->hash_sha256 ?: substr(md5((string) $doc->id), 0, 40);
             $primeiroSignatario = $signatariosParaPdf[0] ?? null;
-            $urlVerificacao = $primeiroSignatario['qr_payload'] ?? $baseUrl . '/verificacao-assinatura?d=' . $doc->id;
+            $urlVerificacao = $primeiroSignatario['qr_payload'] ?? $baseVerificacao . '?d=' . $doc->id;
             $dadosPagina = [
                 'documento_id' => $doc->id,
                 'identificador' => $identificador,
@@ -792,7 +939,7 @@ class AssinaturaDigitalService
                 case DocumentoAssinaturaEvento::EVENTO_ENVIADO:
                     $solicitante = $doc->solicitante;
                     $nomeSol = $solicitante ? $solicitante->nome : 'Sistema';
-                    $emailSol = $solicitante && $solicitante->email ? $solicitante->email : '—';
+                    $emailSol = $solicitante && $solicitante->email ? $solicitante->email : ($payload['email'] ?? '—');
                     $cpfSol = ($solicitante && !empty($solicitante->cpf)) ? $solicitante->cpf : '';
                     if ($cpfSol && strlen(preg_replace('/\D/', '', $cpfSol)) === 11) {
                         $n = preg_replace('/\D/', '', $cpfSol);

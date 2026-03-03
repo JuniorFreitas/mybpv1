@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
@@ -32,6 +35,10 @@ use MasterTag\DataHora;
  */
 class MetasFeedback extends Model
 {
+
+    use LogsActivity, HasActivitylogOptions;
+
+    protected static $logName = 'MetasFeedback';
     protected $fillable = [
         'feedback_id',
         'nome',
@@ -46,6 +53,16 @@ class MetasFeedback extends Model
         'data_inicio' => 'date:d/m/Y',
         'data_fim' => 'date:d/m/Y',
     ];
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $table = 'metas_feedbacks';
 

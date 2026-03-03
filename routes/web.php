@@ -321,7 +321,9 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::get('config', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'config'])->name('config')->middleware('can:administracao_documentos_legais');
             Route::post('config', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'salvarConfig'])->name('config-salvar')->middleware('can:administracao_documentos_legais');
             Route::post('extrato/exportar', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'exportarExtrato'])->name('extrato-exportar')->middleware('can:administracao_documentos_legais');
+            Route::post('criar-arquivo-existente', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'criarComArquivoExistente'])->name('criar-arquivo-existente')->middleware('can:administracao_documentos_legais');
             Route::get('solicitantes', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'solicitantes'])->name('solicitantes')->middleware('can:administracao_documentos_legais');
+            Route::get('{id}/evidencias', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'exportarEvidencias'])->name('evidencias')->middleware('can:administracao_documentos_legais');
             Route::get('{id}/download-assinado', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'downloadAssinado'])->name('download-assinado')->middleware('can:administracao_documentos_legais');
             Route::get('{id}', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'show'])->name('show');
             Route::post('{id}/cancelar', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'cancelar'])->name('cancelar');
@@ -1444,7 +1446,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}', [\App\Http\Controllers\ListaTarefaController::class, 'update'])->name('update')->middleware('can:weekly_report_quadro_lista_update');
         Route::put('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'atualizarOrdem'])->name('atualizarOrdem');
         Route::post('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'store'])->name('store')->middleware('can:weekly_report_quadro_lista_insert');
-        Route::get('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'index'])->name('index');
+        Route::get('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'index'])->name('listas.index');
 
         //Quadros
         Route::delete('weekly-report/{empresa}/quadros/{quadro}', [\App\Http\Controllers\QuadroController::class, 'destroy'])->name('delete')->middleware('can:weekly_report_quadro_delete');
@@ -1519,6 +1521,7 @@ Route::group(['as' => 'documentospreadmissao.'], function () {
         Route::post('carta-oferta/{token}/salvar', [\App\Http\Controllers\CartaOfertaController::class, 'salvarCartaOferta'])->name('carta-oferta.salvarCartaOferta');
 
         Route::get('assinatura/{token}', [\App\Http\Controllers\AssinaturaPublicaController::class, 'index'])->name('assinatura.publica.index');
+        Route::get('assinatura/verificacao', [\App\Http\Controllers\VerificacaoAssinaturaController::class, 'index'])->name('assinatura.verificacao');
         Route::post('assinatura/{token}/validar-cpf', [\App\Http\Controllers\AssinaturaPublicaController::class, 'validarCpf'])->name('assinatura.publica.validar-cpf');
         Route::get('assinatura/{token}/codigo', [\App\Http\Controllers\AssinaturaPublicaController::class, 'codigo'])->name('assinatura.publica.codigo');
         Route::post('assinatura/{token}/validar-codigo', [\App\Http\Controllers\AssinaturaPublicaController::class, 'validarCodigo'])->name('assinatura.publica.validar-codigo');

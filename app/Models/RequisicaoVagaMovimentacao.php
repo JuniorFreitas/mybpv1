@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -48,9 +51,21 @@ use MasterTag\DataHora;
  */
 class RequisicaoVagaMovimentacao extends Model
 {
-    use HasFactory;
-    use TenantTrait;
-    use SoftDeletes;
+    use HasFactory, TenantTrait, LogsActivity, HasActivitylogOptions, SoftDeletes;
+
+
+
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
+
 
     protected $table = 'requisicao_vagas_movimentacao';
 

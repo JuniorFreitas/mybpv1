@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -8,7 +11,19 @@ use Illuminate\Support\Str;
 
 class DocumentoAssinaturaSignatario extends Model
 {
-    use HasFactory;
+    use LogsActivity, HasActivitylogOptions, HasFactory;
+
+    protected static $logName = 'DocumentoAssinaturaSignatario';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $table = 'documento_assinatura_signatarios';
 
@@ -27,6 +42,8 @@ class DocumentoAssinaturaSignatario extends Model
         'geolocalizacao',
         'hash_evidencia',
         'recusa_motivo',
+        'consentimento_assinatura',
+        'consentimento_em',
     ];
 
     protected $casts = [
@@ -36,6 +53,8 @@ class DocumentoAssinaturaSignatario extends Model
         'ordem' => 'int',
         'geolocalizacao' => 'array',
         'data_assinatura_utc' => 'datetime',
+        'consentimento_assinatura' => 'boolean',
+        'consentimento_em' => 'datetime',
     ];
 
     const STATUS_PENDENTE = 'pendente';

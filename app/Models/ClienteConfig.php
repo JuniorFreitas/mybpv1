@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -39,7 +42,19 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ClienteConfig extends Model
 {
-    use HasFactory;
+    use LogsActivity, HasActivitylogOptions, HasFactory;
+
+    protected static $logName = 'ClienteConfig';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $fillable = [
         'envia_whatsapp',
@@ -54,6 +69,8 @@ class ClienteConfig extends Model
         'limite_assinaturas_mensal',
         'assinatura_alerta_user_ids',
         'assinatura_alerta_grupo_ids',
+        'assinatura_exibir_ip_completo',
+        'assinatura_exibir_cpf_completo',
     ];
 
     protected $casts = [
@@ -69,6 +86,8 @@ class ClienteConfig extends Model
         'limite_assinaturas_mensal' => 'int',
         'assinatura_alerta_user_ids' => 'array',
         'assinatura_alerta_grupo_ids' => 'array',
+        'assinatura_exibir_ip_completo' => 'boolean',
+        'assinatura_exibir_cpf_completo' => 'boolean',
     ];
 
     public $timestamps = false;

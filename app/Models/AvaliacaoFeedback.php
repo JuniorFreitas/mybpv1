@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\AvaliacaoFeedback
@@ -61,7 +62,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class AvaliacaoFeedback extends Model
 {
-    use TenantTrait, LogsActivity;
+    use TenantTrait, LogsActivity, HasActivitylogOptions;
 
     protected static $logFillable = true;
     protected static $logName = 'avaliacoes_feedbacks';

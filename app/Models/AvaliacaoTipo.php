@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\AvaliacaoTipo
@@ -33,7 +34,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class AvaliacaoTipo extends Model
 {
-    use TenantTrait, LogsActivity;
+    use TenantTrait, LogsActivity, HasActivitylogOptions;
 
     protected static $logFillable = true;
     protected static $logName = 'avaliacoes_tipos';

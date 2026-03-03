@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -8,7 +11,19 @@ use Illuminate\Database\Eloquent\Model;
 
 class DocumentoParaAssinatura extends Model
 {
-    use HasFactory, TenantTrait;
+    use LogsActivity, HasActivitylogOptions, HasFactory, TenantTrait;
+
+    protected static $logName = 'DocumentoParaAssinatura';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $table = 'documento_para_assinatura';
 
@@ -25,6 +40,8 @@ class DocumentoParaAssinatura extends Model
         'data_expiracao',
         'solicitante_id',
         'ordem_assinatura',
+        'consentimento_ultimo_em',
+        'consentimento_ultimo_signatario_id',
     ];
 
     protected $casts = [
@@ -35,6 +52,8 @@ class DocumentoParaAssinatura extends Model
         'solicitante_id' => 'int',
         'documentable_id' => 'int',
         'data_expiracao' => 'datetime',
+        'consentimento_ultimo_em' => 'datetime',
+        'consentimento_ultimo_signatario_id' => 'int',
     ];
 
     const STATUS_RASCUNHO = 'rascunho';

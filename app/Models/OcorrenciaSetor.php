@@ -7,6 +7,7 @@ use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\OcorrenciaSetor
@@ -25,7 +26,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @mixin \Eloquent
  */
 class OcorrenciaSetor extends Model {
-    use LogsActivity;
+    use LogsActivity, HasActivitylogOptions;
     use TenantTrait;
 
     protected static $logFillable = true;

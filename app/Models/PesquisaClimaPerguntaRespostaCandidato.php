@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -34,6 +37,10 @@ use Illuminate\Database\Eloquent\Model;
  */
 class PesquisaClimaPerguntaRespostaCandidato extends Model
 {
+
+    use LogsActivity, HasActivitylogOptions;
+
+    protected static $logName = 'PesquisaClimaPerguntaRespostaCandidato';
     protected $fillable = [
         'feedback_id',
         'cliente_id',
@@ -41,6 +48,16 @@ class PesquisaClimaPerguntaRespostaCandidato extends Model
         'resposta_id',
         'respostadigitada',
     ];
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     protected $casts = [
         'feedback_id' => 'int',

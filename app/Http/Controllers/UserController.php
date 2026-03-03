@@ -232,7 +232,7 @@ class UserController extends Controller
     {
 
         $this->authorize('usuario_usuarios_update');
-        $user = User::select('id', 'ativo')->find($request->id);
+        $user = User::select('id', 'ativo', 'empresa_id')->find($request->id);
         $user->ativo = !$user->ativo;
         $user->save();
         $user->refresh();

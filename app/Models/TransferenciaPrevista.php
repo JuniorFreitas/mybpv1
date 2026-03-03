@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Models\User;
 use App\Tenant\Traits\TenantTrait;
@@ -61,7 +64,19 @@ use MasterTag\DataHora;
 class TransferenciaPrevista extends Model
 {
 
-    use TenantTrait, HasFactory;
+    use TenantTrait, HasFactory, LogsActivity, HasActivitylogOptions;
+
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
+
 
     protected $fillable = [
         'colaborador_id',

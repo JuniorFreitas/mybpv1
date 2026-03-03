@@ -87,7 +87,7 @@ class TreinamentoController extends Controller
             }
 
             // Passa Collection por referência para evitar cópia
-            $this->processarVencimentos($treinamento, $listaVencimentos, $dados['tipo']);
+            $this->processarVencimentos($treinamento, $listaVencimentos);
             $this->salvarHistorico($dados['feedback_id'], $treinamento->id);
 
             DB::commit();
@@ -107,10 +107,9 @@ class TreinamentoController extends Controller
      * Usar referência para Collection evita cópia desnecessária
      * @param Treinamento $treinamento
      * @param Collection &$listaVencimentos - REFERÊNCIA
-     * @param string $tipo
      * @return void
      */
-    private function processarVencimentos(Treinamento $treinamento, \Illuminate\Support\Collection &$listaVencimentos, string $tipo): void
+    private function processarVencimentos(Treinamento $treinamento, \Illuminate\Support\Collection &$listaVencimentos): void
     {
         // Preparar dados em lote para insert mais eficiente
         $dadosParaAnexar = [];

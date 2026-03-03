@@ -8,6 +8,7 @@ use MasterTag\DataHora;
 use phpDocumentor\Reflection\Types\Self_;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\NotificacaoWhatsapp
@@ -39,7 +40,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class NotificacaoWhatsapp extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, HasActivitylogOptions;
 
     protected static $logFillable = true;
     protected static $logName = 'NotificacaoWhatsapp';

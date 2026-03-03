@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use Spatie\Activitylog\Traits\LogsActivity;
+use App\Models\Concerns\HasActivitylogOptions;
+use Spatie\Activitylog\Models\Activity;
 
 use App\Events\Notificacoes\NotificacaoEvent;
 use App\Models\Exportacao;
@@ -17,6 +20,20 @@ use RuntimeException;
 
 class Sistema
 {
+
+    use LogsActivity, HasActivitylogOptions;
+
+    protected static $logName = 'Sistema';
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return $eventName;
+    }
+
+    public function tapActivity(Activity $activity, string $eventName)
+    {
+        $activity->descricao = '';
+    }
 
     public const EMAILPADRAO = 'sistema@mybp.com.br';
 
