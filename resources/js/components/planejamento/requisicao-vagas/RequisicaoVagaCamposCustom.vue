@@ -1,10 +1,7 @@
 <template>
     <div class="container-fluid requisicao-vaga-campos-custom">
-        <modal id="janelaCadastrar"
-               :titulo="tituloJanela"
-               :size="90"
-               :mostrar-botao-fechar-no-rodape="false">
-            <template slot="conteudo">
+        <modal id="janelaCadastrar" :titulo="tituloJanela" :size="90" :mostrar-botao-fechar-no-rodape="false">
+            <template #conteudo>
                 <preload v-show="salvando" class="text-center"></preload>
                 <form v-if="!salvando" id="form-campo-custom" @submit.prevent>
                     <fieldset>
@@ -13,10 +10,7 @@
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Nome do campo (label) <span class="text-danger">*</span></label>
-                                    <input type="text"
-                                           class="form-control"
-                                           v-model="form.label"
-                                           placeholder="Ex: E-mail institucional">
+                                    <input type="text" class="form-control" v-model="form.label" placeholder="Ex: E-mail institucional" />
                                 </div>
                             </div>
                             <div class="col-12 col-md-4">
@@ -34,11 +28,13 @@
                             <div class="col-12" v-if="form.tipo === 'select'">
                                 <div class="form-group">
                                     <label>Opções (uma por linha) <span class="text-danger">*</span></label>
-                                    <textarea class="form-control"
-                                              v-model="opcoesTexto"
-                                              rows="5"
-                                              placeholder="Opção 1&#10;Opção 2&#10;Opção 3"
-                                              style="white-space: pre-wrap; word-wrap: break-word;"></textarea>
+                                    <textarea
+                                        class="form-control"
+                                        v-model="opcoesTexto"
+                                        rows="5"
+                                        placeholder="Opção 1&#10;Opção 2&#10;Opção 3"
+                                        style="white-space: pre-wrap; word-wrap: break-word"
+                                    ></textarea>
                                     <small class="text-muted">Digite cada opção em uma linha.</small>
                                 </div>
                             </div>
@@ -46,10 +42,7 @@
                                 <div class="form-group">
                                     <label class="d-block">&nbsp;</label>
                                     <div class="custom-control custom-checkbox">
-                                        <input type="checkbox"
-                                               class="custom-control-input"
-                                               id="obrigatorio"
-                                               v-model="form.obrigatorio">
+                                        <input type="checkbox" class="custom-control-input" id="obrigatorio" v-model="form.obrigatorio" />
                                         <label class="custom-control-label" for="obrigatorio">Campo obrigatório</label>
                                     </div>
                                 </div>
@@ -58,7 +51,7 @@
                     </fieldset>
                 </form>
             </template>
-            <template slot="rodape">
+            <template #rodape>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-primary" @click="salvar" :disabled="salvando">
                     <i :class="salvando ? 'fa fa-spinner fa-spin' : 'fa fa-save'"></i> Salvar
@@ -71,23 +64,22 @@
             <form class="row" @submit.prevent="listar">
                 <div class="col-12">
                     <p class="text-muted mb-2">
-                        Configure os campos extras que aparecem no formulário de Requisição de Vaga para sua empresa.
-                        Ex.: E-mail institucional (Sim/Não), Notebooks (Sim/Não), Acesso a sistemas (texto).
+                        Configure os campos extras que aparecem no formulário de Requisição de Vaga para sua empresa. Ex.: E-mail institucional (Sim/Não),
+                        Notebooks (Sim/Não), Acesso a sistemas (texto).
                     </p>
                 </div>
                 <div class="col-12 col-md-9">
-                    <button type="button"
-                            class="btn btn-sm btn-success"
-                            :disabled="carregando"
-                            @click="listar">
+                    <button type="button" class="btn btn-sm btn-success" :disabled="carregando" @click="listar">
                         <i :class="carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i> Atualizar
                     </button>
-                    <button type="button"
-                            class="btn btn-sm btn-primary"
-                            data-toggle="modal"
-                            data-target="#janelaCadastrar"
-                            :disabled="carregando"
-                            @click.prevent="abrirModal()">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-primary"
+                        data-toggle="modal"
+                        data-target="#janelaCadastrar"
+                        :disabled="carregando"
+                        @click.prevent="abrirModal()"
+                    >
                         <i class="fa fa-plus"></i> Novo campo
                     </button>
                 </div>
@@ -101,92 +93,92 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <draggable v-show="!carregando && campos.length > 0"
-                      v-model="campos"
-                      class="cards-lista"
-                      handle=".drag-handle"
-                      :animation="200"
-                      :disabled="salvandoOrdem"
-                      @end="aoReordenar">
-                <div class="solicitacao-card" v-for="(c, index) in campos" :key="c.id">
-                    <div class="card-header-row">
-                        <div class="card-left">
-                            <span class="drag-handle" title="Arrastar para reordenar">
-                                <i class="fas fa-grip-vertical text-muted"></i>
-                            </span>
-                            <span class="badge-id">#{{ c.id }}</span>
-                            <div class="colaborador-principal">
-                                <span class="badge-tipo">{{ tipoLabel(c.tipo) }}</span>
-                                <strong>{{ c.label }}</strong>
+            <draggable
+                v-show="!carregando && campos.length > 0"
+                :model-value="campos"
+                item-key="id"
+                class="cards-lista"
+                handle=".drag-handle"
+                :animation="200"
+                :disabled="salvandoOrdem"
+                @update:model-value="campos = $event"
+                @end="aoReordenar"
+            >
+                <template #item="{ element: c, index }">
+                    <div class="solicitacao-card">
+                        <div class="card-header-row">
+                            <div class="card-left">
+                                <span class="drag-handle" title="Arrastar para reordenar">
+                                    <i class="fas fa-grip-vertical text-muted"></i>
+                                </span>
+                                <span class="badge-id">#{{ c.id }}</span>
+                                <div class="colaborador-principal">
+                                    <span class="badge-tipo">{{ tipoLabel(c.tipo) }}</span>
+                                    <strong>{{ c.label }}</strong>
+                                </div>
+                                <div class="data-info ml-3">
+                                    <i class="fas fa-sort-numeric-down text-muted" style="font-size: 0.75rem"></i>
+                                    <small class="text-muted">Ordem {{ index + 1 }}</small>
+                                </div>
                             </div>
-                            <div class="data-info ml-3">
-                                <i class="fas fa-sort-numeric-down text-muted" style="font-size: 0.75rem;"></i>
-                                <small class="text-muted">Ordem {{ index + 1 }}</small>
-                            </div>
-                        </div>
-                        <div class="card-right">
-                            <div class="dropdown show">
-                                <a class="btn-actions-compact"
-                                   href="#"
-                                   role="button"
-                                   data-toggle="dropdown"
-                                   aria-haspopup="true"
-                                   aria-expanded="false">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right">
-                                    <a class="dropdown-item"
-                                       href="javascript://"
-                                       title="Editar"
-                                       data-toggle="modal"
-                                       data-target="#janelaCadastrar"
-                                       @click.prevent="abrirModal(c)">
-                                        <i class="fa fa-edit mr-1"></i> Editar
+                            <div class="card-right">
+                                <div class="dropdown show">
+                                    <a class="btn-actions-compact" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
                                     </a>
-                                    <a class="dropdown-item text-danger"
-                                       href="javascript://"
-                                       title="Excluir"
-                                       @click.prevent="excluir(c)">
-                                        <i class="fa fa-trash mr-1"></i> Excluir
-                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right">
+                                        <a
+                                            class="dropdown-item"
+                                            href="javascript://"
+                                            title="Editar"
+                                            data-toggle="modal"
+                                            data-target="#janelaCadastrar"
+                                            @click.prevent="abrirModal(c)"
+                                        >
+                                            <i class="fa fa-edit mr-1"></i> Editar
+                                        </a>
+                                        <a class="dropdown-item text-danger" href="javascript://" title="Excluir" @click.prevent="excluir(c)">
+                                            <i class="fa fa-trash mr-1"></i> Excluir
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        <div class="card-details-row">
+                            <div class="detail-item">
+                                <i class="fas fa-tag text-muted"></i>
+                                <span class="detail-label">Tipo:</span>
+                                <span class="detail-value">{{ tipoLabel(c.tipo) }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-asterisk text-muted"></i>
+                                <span class="detail-label">Obrigatório:</span>
+                                <span class="detail-value">{{ c.obrigatorio ? 'Sim' : 'Não' }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-sort-numeric-down text-muted"></i>
+                                <span class="detail-label">Ordem exibição:</span>
+                                <span class="detail-value">{{ index + 1 }}</span>
+                            </div>
+                        </div>
+                        <div class="card-details-row" v-if="c.tipo === 'select' && c.opcoes && c.opcoes.length">
+                            <div class="detail-item detail-item-full">
+                                <i class="fas fa-list text-muted"></i>
+                                <span class="detail-label">Opções (select):</span>
+                                <span class="detail-value">{{ (c.opcoes || []).join(', ') }}</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-details-row">
-                        <div class="detail-item">
-                            <i class="fas fa-tag text-muted"></i>
-                            <span class="detail-label">Tipo:</span>
-                            <span class="detail-value">{{ tipoLabel(c.tipo) }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-asterisk text-muted"></i>
-                            <span class="detail-label">Obrigatório:</span>
-                            <span class="detail-value">{{ c.obrigatorio ? 'Sim' : 'Não' }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-sort-numeric-down text-muted"></i>
-                            <span class="detail-label">Ordem exibição:</span>
-                            <span class="detail-value">{{ index + 1 }}</span>
-                        </div>
-                    </div>
-                    <div class="card-details-row" v-if="c.tipo === 'select' && c.opcoes && c.opcoes.length">
-                        <div class="detail-item detail-item-full">
-                            <i class="fas fa-list text-muted"></i>
-                            <span class="detail-label">Opções (select):</span>
-                            <span class="detail-value">{{ (c.opcoes || []).join(', ') }}</span>
-                        </div>
-                    </div>
-                </div>
+                </template>
             </draggable>
         </div>
     </div>
 </template>
 
 <script>
-import draggable from 'vuedraggable';
+import draggable from 'vuedraggable'
 
-const API_BASE = '/g/planejamento/requisicao-vaga/campos-custom';
+const API_BASE = '/g/planejamento/requisicao-vaga/campos-custom'
 
 export default {
     name: 'RequisicaoVagaCamposCustom',
@@ -212,11 +204,11 @@ export default {
                 obrigatorio: false,
                 ordem: 0
             }
-        };
+        }
     },
 
     mounted() {
-        this.listar();
+        this.listar()
     },
 
     methods: {
@@ -226,27 +218,28 @@ export default {
                 texto: 'Texto simples',
                 textarea: 'Caixa de texto',
                 select: 'Select'
-            };
-            return map[tipo] || tipo;
+            }
+            return map[tipo] || tipo
         },
 
         listar() {
-            this.carregando = true;
-            axios.get(API_BASE)
+            this.carregando = true
+            axios
+                .get(API_BASE)
                 .then((r) => {
-                    this.campos = r.data || [];
+                    this.campos = r.data || []
                 })
                 .catch(() => {
-                    this.campos = [];
+                    this.campos = []
                 })
                 .finally(() => {
-                    this.carregando = false;
-                });
+                    this.carregando = false
+                })
         },
 
         abrirModal(campo = null) {
-            this.editando = !!campo;
-            this.tituloJanela = campo ? 'Editar campo' : 'Novo campo';
+            this.editando = !!campo
+            this.tituloJanela = campo ? 'Editar campo' : 'Novo campo'
             this.form = {
                 id: campo ? campo.id : null,
                 label: campo ? campo.label : '',
@@ -254,87 +247,85 @@ export default {
                 opcoes: campo && campo.opcoes ? [...(campo.opcoes || [])] : null,
                 obrigatorio: campo ? !!campo.obrigatorio : false,
                 ordem: campo != null && campo.ordem !== undefined ? campo.ordem : this.campos.length
-            };
-            this.opcoesTexto = (this.form.opcoes && Array.isArray(this.form.opcoes))
-                ? this.form.opcoes.join('\n')
-                : '';
+            }
+            this.opcoesTexto = this.form.opcoes && Array.isArray(this.form.opcoes) ? this.form.opcoes.join('\n') : ''
             if (!campo) {
                 this.$nextTick(() => {
-                    $('#janelaCadastrar').modal('show');
-                });
+                    $('#janelaCadastrar').modal('show')
+                })
             }
         },
 
         opcoesParaArray() {
-            const lines = (this.opcoesTexto || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-            return lines.length ? lines : null;
+            const lines = (this.opcoesTexto || '')
+                .split(/\r?\n/)
+                .map((s) => s.trim())
+                .filter(Boolean)
+            return lines.length ? lines : null
         },
 
         salvar() {
             if (!this.form.label.trim()) {
                 if (typeof toastr !== 'undefined') {
-                    toastr.warning('Informe o nome do campo.');
+                    toastr.warning('Informe o nome do campo.')
                 } else {
-                    alert('Informe o nome do campo.');
+                    alert('Informe o nome do campo.')
                 }
-                return;
+                return
             }
             if (!this.form.tipo) {
                 if (typeof toastr !== 'undefined') {
-                    toastr.warning('Selecione o tipo do campo.');
+                    toastr.warning('Selecione o tipo do campo.')
                 } else {
-                    alert('Selecione o tipo do campo.');
+                    alert('Selecione o tipo do campo.')
                 }
-                return;
+                return
             }
-            const opcoesArray = this.form.tipo === 'select' ? this.opcoesParaArray() : null;
+            const opcoesArray = this.form.tipo === 'select' ? this.opcoesParaArray() : null
             if (this.form.tipo === 'select' && (!opcoesArray || !opcoesArray.length)) {
                 if (typeof toastr !== 'undefined') {
-                    toastr.warning('Para tipo Select, informe ao menos uma opção.');
+                    toastr.warning('Para tipo Select, informe ao menos uma opção.')
                 } else {
-                    alert('Para tipo Select, informe ao menos uma opção.');
+                    alert('Para tipo Select, informe ao menos uma opção.')
                 }
-                return;
+                return
             }
 
-            this.salvando = true;
+            this.salvando = true
             const payload = {
                 label: this.form.label.trim(),
                 tipo: this.form.tipo,
                 opcoes: opcoesArray,
                 obrigatorio: this.form.obrigatorio,
                 ordem: parseInt(this.form.ordem, 10) || 0
-            };
+            }
 
-            const req = this.editando
-                ? axios.put(`${API_BASE}/${this.form.id}`, payload)
-                : axios.post(API_BASE, payload);
+            const req = this.editando ? axios.put(`${API_BASE}/${this.form.id}`, payload) : axios.post(API_BASE, payload)
 
-            req
-                .then(() => {
-                    if (typeof toastr !== 'undefined') {
-                        toastr.success('Salvo com sucesso.');
-                    } else {
-                        alert('Salvo com sucesso.');
-                    }
-                    $('#janelaCadastrar').modal('hide');
-                    this.listar();
-                })
+            req.then(() => {
+                if (typeof toastr !== 'undefined') {
+                    toastr.success('Salvo com sucesso.')
+                } else {
+                    alert('Salvo com sucesso.')
+                }
+                $('#janelaCadastrar').modal('hide')
+                this.listar()
+            })
                 .catch((err) => {
-                    const msg = (err.response && err.response.data && err.response.data.msg) || 'Erro ao salvar.';
+                    const msg = (err.response && err.response.data && err.response.data.msg) || 'Erro ao salvar.'
                     if (typeof toastr !== 'undefined') {
-                        toastr.error(msg);
+                        toastr.error(msg)
                     } else {
-                        alert(msg);
+                        alert(msg)
                     }
                 })
                 .finally(() => {
-                    this.salvando = false;
-                });
+                    this.salvando = false
+                })
         },
 
         excluir(campo) {
-            const self = this;
+            const self = this
             if (typeof $swal !== 'undefined') {
                 $swal({
                     title: 'Excluir?',
@@ -343,69 +334,70 @@ export default {
                     showCancelButton: true,
                     confirmButtonText: 'Sim, excluir'
                 }).then((result) => {
-                    if (result && result.value) self.executarExcluir(campo.id);
-                });
+                    if (result && result.value) self.executarExcluir(campo.id)
+                })
             } else if (confirm(`Excluir o campo "${campo.label}"?`)) {
-                this.executarExcluir(campo.id);
+                this.executarExcluir(campo.id)
             }
         },
 
         executarExcluir(id) {
-            axios.delete(`${API_BASE}/${id}`)
+            axios
+                .delete(`${API_BASE}/${id}`)
                 .then(() => {
                     if (typeof toastr !== 'undefined') {
-                        toastr.success('Campo excluído.');
+                        toastr.success('Campo excluído.')
                     } else {
-                        alert('Campo excluído.');
+                        alert('Campo excluído.')
                     }
-                    this.listar();
+                    this.listar()
                 })
                 .catch(() => {
                     if (typeof toastr !== 'undefined') {
-                        toastr.error('Erro ao excluir.');
+                        toastr.error('Erro ao excluir.')
                     } else {
-                        alert('Erro ao excluir.');
+                        alert('Erro ao excluir.')
                     }
-                });
+                })
         },
 
         aoReordenar() {
-            const promises = [];
+            const promises = []
             this.campos.forEach((c, index) => {
-                if (c.ordem === index) return;
+                if (c.ordem === index) return
                 const payload = {
                     label: c.label,
                     tipo: c.tipo,
                     opcoes: c.opcoes || null,
                     obrigatorio: !!c.obrigatorio,
                     ordem: index
-                };
+                }
                 promises.push(
                     axios.put(`${API_BASE}/${c.id}`, payload).then(() => {
-                        c.ordem = index;
+                        c.ordem = index
                     })
-                );
-            });
-            if (promises.length === 0) return;
-            this.salvandoOrdem = true;
+                )
+            })
+            if (promises.length === 0) return
+            this.salvandoOrdem = true
             Promise.all(promises)
                 .then(() => {
                     if (typeof toastr !== 'undefined') {
-                        toastr.success('Ordem atualizada.');
+                        toastr.success('Ordem atualizada.')
                     }
                 })
                 .catch(() => {
                     if (typeof toastr !== 'undefined') {
-                        toastr.error('Erro ao salvar ordem. Recarregue a página.');
+                        toastr.error('Erro ao salvar ordem. Recarregue a página.')
                     }
-                    this.listar();
+                    this.listar()
                 })
                 .finally(() => {
-                    this.salvandoOrdem = false;
-                });
+                    this.salvandoOrdem = false
+                })
         }
     }
-};
+}
 </script>
 
 <style scoped>

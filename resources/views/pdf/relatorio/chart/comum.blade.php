@@ -13,7 +13,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
     <script src="https://unpkg.com/vue-chartjs@3.4.0/dist/vue-chartjs.js"></script>
     <script>
-        Vue.component('donutchart', {
+        const app = Vue.createApp({})
+
+        app.component('donutchart', {
             extends: VueChartJs.Doughnut,
             data() {
                 return {
@@ -84,8 +86,10 @@
             }
 
         })
-        const app = new Vue({
-            el: '#app',
-        });
+
+        if (window.registerGlobals) {
+            window.registerGlobals(app)
+        }
+        app.mount('#app')
     </script>
 @endpush

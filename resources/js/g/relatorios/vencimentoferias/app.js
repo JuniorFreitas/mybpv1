@@ -1,9 +1,15 @@
-import VencimentoFerias from "../../../components/relatorios/vencimentoferias";
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import VencimentoFerias from '../../../components/relatorios/vencimentoferias'
 
-const app = new Vue({
-    el: '#app',
-    data: {},
+const app = createApp({
+    data() {
+        return {}
+    },
     components: {
         VencimentoFerias
-    },
-});
+    }
+})
+
+registerGlobals(app)
+app.mount('#app')

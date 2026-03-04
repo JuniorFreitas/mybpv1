@@ -4,7 +4,7 @@
 @section('content')
 
     <modal id="janelaCadastrar" :titulo="tituloJanela" :fechar="!preloadAjax" :size="90">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-show="preloadAjax" :label="editando ? 'Salvando ...' : 'Carregando ...'"></preload>
             <form v-show="!preloadAjax && (!cadastrado && !atualizado)" id="form" onsubmit="return false;">
                 <fieldset>
@@ -359,12 +359,12 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-md-4" v-if="_.find(this.form.telefones, {'principal': true})">
+                        <div class="col-12 col-md-4" v-if="telefonePrincipal">
                             <div class="form-group">
                                 <label for="">Contato Principal</label>
                                 <select class="form-control">
                                     <option selected disabled="disabled" readonly="readonly">
-                                        @{{ _.find(this.form.telefones, {'principal': true}).numero }}
+                                        @{{ telefonePrincipalNumero }}
                                     </option>
                                 </select>
                             </div>
@@ -461,7 +461,7 @@
 
             </form>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && !preloadAjax"
                     @click="alterar"
             >
@@ -472,14 +472,14 @@
     </modal>
 
     <modal id="janelaConfirmar" titulo="Apagar Curriculo">
-        <template slot="conteudo">
+        <template #conteudo>
             <span v-show="preloadAjax"><preload></preload></span>
             <div class="alert alert-success alert-dismissible" v-show="apagado">
                 <h4><i class="icon fa fa-check"></i>Curriculo apagado com sucesso!</h4>
             </div>
             <h4 v-show="!apagado">Tem certeza que deseja apagar este curriculo?</h4>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
         </template>
     </modal>

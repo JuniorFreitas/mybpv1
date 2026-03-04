@@ -2,7 +2,7 @@
     <div id="componenteAniversariante">
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="$refs.componente.buscar()">
+            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label>Aniversariantes do Mês</label>

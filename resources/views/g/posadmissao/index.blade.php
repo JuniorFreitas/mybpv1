@@ -7,7 +7,7 @@
 
 @section('content')
     <modal id="janelaRetornarStatus" ref="janelaRetornarStatus" :titulo="tituloJanela" :fechar="!preload" :size="75">
-        <template slot="conteudo">
+        <template #conteudo>
             <div v-if="!preload && revertendo_status">
                 <fieldset>
                     <legend>Informações do Colaborador</legend>
@@ -43,7 +43,7 @@
 
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button class="btn btn-sm btn-primary" v-if="!preload && auditoria_form.descricao.length"
                     @click="reverterDemissao">
                 Reverter
@@ -52,7 +52,7 @@
     </modal>
 
     <modal id="janelaAvaliar" :titulo="tituloJanela" :fechar="!preload" :size="75">
-        <template slot="conteudo">
+        <template #conteudo>
             <div class="alert alert-success text-center" v-show="atualizado">
                 <h4><i class="icon fa fa-check"></i> <span v-show="avaliacao">Demissão</span> <span
                         v-show="desmobilizacao">Desmobilização</span> Concluida!</h4>
@@ -182,8 +182,9 @@
                             </select>
                         </div>
 
-                        <div v-if="form.tipo_form === setor.id" v-for="(setor, setorIndex) in formulariosAtivos">
-                            <fieldset>
+                        <template v-if="form.tipo_form === setor.id">
+                            <div v-for="(setor, setorIndex) in formulariosAtivos">
+                                <fieldset>
                                 <legend>Checklist - @{{ setor.nome }}</legend>
                                 <div class="custom-control custom-switch"
                                      v-for="(alternativa, key) in setor.alternativas">
@@ -262,7 +263,8 @@
                                     </div>
                                 </div>
                             </fieldset>
-                        </div>
+                            </div>
+                        </template>
 
                     </fieldset>
 
@@ -504,7 +506,7 @@
             </div>
         </template>
 
-        <template slot="rodape">
+        <template #rodape>
             <button class="btn btn-sm btn-primary" v-show="!preload && !atualizado && !demitido" v-if="avaliacao"
                     @click="demitir">
                 Demitir

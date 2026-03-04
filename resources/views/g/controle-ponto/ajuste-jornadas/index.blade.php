@@ -5,7 +5,7 @@
 
     <!--Janela de detalhes-->
     <modal id="janelaFormDetalhes"  titulo="Detalhes da jornada"  :size="90" :fechar="!formPonto.preload" @fechou="atualizarComponentePaginacao();">
-        <template slot="conteudo">
+        <template #conteudo>
             <p class="text-center">
                 <preload v-if="formPonto.preload" label="Aguarde..."></preload>
             </p>
@@ -32,7 +32,7 @@
                             <div class="col-4 col-sm-1">
                                 <div class="avatar-md align-self-center mr-3">
                             <span class="avatar-title rounded-circle bg-soft-primary text-primary">
-                                @{{ formPonto.funcionario.nome.toUpperCase() | formataNome }}
+                                @{{ formatNome(formPonto.funcionario.nome.toUpperCase()) }}
                             </span>
                                 </div>
                             </div>
@@ -139,7 +139,7 @@
             </div>
 
         </template>
-        <template slot="rodape" v-if="!formPonto.preload && !formPonto.save && paginacaoRef">
+        <template #rodape v-if="!formPonto.preload && !formPonto.save && paginacaoRef">
             <button type="button" class="btn btn-sm btn-success" @click="salvar">Ajustar</button>
             <div class="form-group form-check" v-if="(!formPonto.preload && !formPonto.save) && (paginacaoRef.atual < paginacaoRef.total)">
                 <input type="checkbox" class="form-check-input" id="checkBoxProximo" v-model="irParaProximaJornada">
@@ -224,19 +224,22 @@
                                     <h5><span :class="{'badge badge-success':ponto.ocorrencia.trabalhado,'badge badge-warning':!ponto.ocorrencia.trabalhado}">@{{ ponto.ocorrencia.descricao }}</span></h5>
                                 </td>
                                 <td class="text-center">
-                                    <template v-for="periodo in ponto.periodos" v-if="ponto.ocorrencia.trabalhado">
-                                        <span >@{{ periodo.entrada }}</span><br>
+                                    <template v-if="ponto.ocorrencia.trabalhado">
+                                        <template v-for="periodo in ponto.periodos">
+                                            <span>@{{ periodo.entrada }}</span><br>
+                                        </template>
                                     </template>
                                     <br>
 
                                 </td>
                                 <td class="text-center">
-                                    <template v-for="periodo in ponto.periodos" v-if="ponto.ocorrencia.trabalhado">
-                                        <template v-if="periodo.saida">
-                                            <span>@{{ periodo.saida }}</span><br>
+                                    <template v-if="ponto.ocorrencia.trabalhado">
+                                        <template v-for="periodo in ponto.periodos">
+                                            <template v-if="periodo.saida">
+                                                <span>@{{ periodo.saida }}</span><br>
+                                            </template>
+                                            <span v-else><h5><span class="badge badge-warning">Trabalhando</span></h5></span>
                                         </template>
-                                        <span v-else><h5><span
-                                                    class="badge badge-warning">Trabalhando</span></h5></span>
                                     </template>
                                     <br>
 
@@ -313,19 +316,22 @@
                                     <h5><span :class="{'badge badge-success':ponto.ocorrencia.trabalhado,'badge badge-warning':!ponto.ocorrencia.trabalhado}">@{{ ponto.ocorrencia.descricao }}</span></h5>
                                 </td>
                                 <td class="text-center">
-                                    <template v-for="periodo in ponto.periodos" v-if="ponto.ocorrencia.trabalhado">
-                                        <span >@{{ periodo.entrada }}</span><br>
+                                    <template v-if="ponto.ocorrencia.trabalhado">
+                                        <template v-for="periodo in ponto.periodos">
+                                            <span>@{{ periodo.entrada }}</span><br>
+                                        </template>
                                     </template>
                                     <br>
 
                                 </td>
                                 <td class="text-center">
-                                    <template v-for="periodo in ponto.periodos" v-if="ponto.ocorrencia.trabalhado">
-                                        <template v-if="periodo.saida">
-                                            <span>@{{ periodo.saida }}</span><br>
+                                    <template v-if="ponto.ocorrencia.trabalhado">
+                                        <template v-for="periodo in ponto.periodos">
+                                            <template v-if="periodo.saida">
+                                                <span>@{{ periodo.saida }}</span><br>
+                                            </template>
+                                            <span v-else><h5><span class="badge badge-warning">Trabalhando</span></h5></span>
                                         </template>
-                                        <span v-else><h5><span
-                                                    class="badge badge-warning">Trabalhando</span></h5></span>
                                     </template>
                                     <br>
 
@@ -404,18 +410,22 @@
                                     <h5><span :class="{'badge badge-success':ponto.ocorrencia.trabalhado,'badge badge-warning':!ponto.ocorrencia.trabalhado}">@{{ ponto.ocorrencia.descricao }}</span></h5>
                                 </td>
                                 <td class="text-center">
-                                    <template v-for="periodo in ponto.periodos" v-if="ponto.ocorrencia.trabalhado">
-                                        <span >@{{ periodo.entrada }}</span><br>
+                                    <template v-if="ponto.ocorrencia.trabalhado">
+                                        <template v-for="periodo in ponto.periodos">
+                                            <span>@{{ periodo.entrada }}</span><br>
+                                        </template>
                                     </template>
                                     <br>
 
                                 </td>
                                 <td class="text-center">
-                                    <template v-for="periodo in ponto.periodos" v-if="ponto.ocorrencia.trabalhado">
-                                        <template v-if="periodo.saida">
-                                            <span>@{{ periodo.saida }}</span><br>
+                                    <template v-if="ponto.ocorrencia.trabalhado">
+                                        <template v-for="periodo in ponto.periodos">
+                                            <template v-if="periodo.saida">
+                                                <span>@{{ periodo.saida }}</span><br>
+                                            </template>
+                                            <span v-else><h5><span class="badge badge-warning">Trabalhando</span></h5></span>
                                         </template>
-                                        <span v-else><h5><span class="badge badge-warning">Trabalhando</span></h5></span>
                                     </template>
                                     <br>
 

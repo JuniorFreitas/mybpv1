@@ -1,9 +1,15 @@
-import TreinamentoIndustria from "../../../components/cadastros/treinamentoindustria/TreinamentoIndustria";
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import TreinamentoIndustria from '../../../components/cadastros/treinamentoindustria/TreinamentoIndustria'
 
-const app = new Vue({
-    el: '#app',
-    data: {},
+const app = createApp({
+    data() {
+        return {}
+    },
     components: {
         TreinamentoIndustria
-    },
-});
+    }
+})
+
+registerGlobals(app)
+app.mount('#app')

@@ -6,7 +6,7 @@
 @stop
 @section('content')
     <modal id="janelaAnexos" :titulo="form.nome +' #'+ form.id" :size="90">
-        <template slot="conteudo">
+        <template #conteudo>
             <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</span>
             <fieldset v-show="!preloadAjax && form.fotos.length>0">
                 <legend style="text-transform: uppercase">Foto 3x4</legend>
@@ -43,7 +43,7 @@
 
 
     <modal id="janelaCadastrar" :titulo="tituloJanela" :size="90">
-        <template slot="conteudo">
+        <template #conteudo>
             <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</span>
             <div class="alert alert-success alert-dismissible" v-show="cadastrado">
                 <h4><i class="icon fa fa-check"></i>Funcionário cadastrado com sucesso!</h4>
@@ -1803,7 +1803,7 @@
 
             </form>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-primary" v-show="editando && !atualizado" @click="alterar()">
                 Alterar
             </button>

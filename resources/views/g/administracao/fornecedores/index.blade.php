@@ -6,20 +6,20 @@
 @stop
 @section('content')
     <modal id="janelaConfirmar" titulo="Apagar">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-show="preloadAjax"></preload>
             <div class="alert alert-success alert-dismissible" v-show="apagado">
                 <h4><i class="icon fa fa-check"></i>Registro apagado com sucesso!</h4>
             </div>
             <h4 v-show="!apagado">Tem certeza que deseja apagar este registro?</h4>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-danger" @click="apagar" v-show="!apagado">Apagar</button>
         </template>
     </modal>
 
     <modal id="janelaCadastrar" :titulo="tituloJanela" :size="90">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-show="preloadAjax"></preload>
             <div class="alert alert-success alert-dismissible" v-show="cadastrado">
                 <h4><i class="icon fa fa-check"></i>@{{form.tipo}} cadastrado com sucesso!</h4>
@@ -389,7 +389,7 @@
 
             </form>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && !preloadAjax"
                     @click="alterar()">
                 Alterar

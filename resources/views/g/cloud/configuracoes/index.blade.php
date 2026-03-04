@@ -7,7 +7,7 @@
 @section('content')
 
     <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
             <span v-show="preloadAjax">
                 <i class="fa fa-spinner fa-pulse"></i> Carregando...
             </span>
@@ -186,7 +186,7 @@
             </form>
 
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div v-show="!preloadAjax">
                 <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado"
                         @click="alterar">Alterar

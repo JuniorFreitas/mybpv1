@@ -1,19 +1,19 @@
-import weekly_report from "../../components/Weekly-report"
+import { createApp } from 'vue'
+import { registerGlobals } from '../../registerGlobals'
+import weekly_report from '../../components/Weekly-report'
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     components: {
-        'weekly-report': weekly_report,
+        'weekly-report': weekly_report
     },
-    data: {
-        preload: false,
+    data() {
+        return {
+            preload: false
+        }
     },
-    mounted() {
+    mounted() {},
+    methods: {}
+})
 
-    },
-    methods: {
-    }
-
-
-});
-
+registerGlobals(app)
+app.mount('#app')

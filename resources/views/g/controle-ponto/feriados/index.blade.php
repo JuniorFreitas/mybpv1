@@ -7,7 +7,7 @@
 @section('content')
 
     <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
 
             <span v-show="form.preload"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</span>
             <div class="alert alert-success alert-dismissible" v-show="form.cadastrado">
@@ -34,7 +34,7 @@
                 </div>
             </form>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-primary" v-show="!form.preload && form.editando && !form.atualizado" @click="alterar()">
                 Alterar
             </button>
@@ -45,14 +45,14 @@
     </modal>
 
     <modal id="janelaConfirmar" titulo="Apagar feriados">
-        <template slot="conteudo">
+        <template #conteudo>
             <span v-show="form.preload"><i class="fa fa-spinner fa-pulse"></i>Aguarde...</span>
             <div class="alert alert-success alert-dismissible" v-show="form.apagado">
                 <h4> <i class="icon fa fa-check"></i>Feriado apagado com sucesso!</h4>
             </div>
             <h4 v-show="!form.apagado">Tem certeza que deseja apagar este feriado?</h4>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!form.apagado">Apagar</button>
         </template>
     </modal>

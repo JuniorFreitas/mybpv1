@@ -1,7 +1,7 @@
 <template>
     <div>
         <modal :id="hash" :titulo="tituloJanela" :size="90">
-            <template slot="conteudo">
+            <template #conteudo>
                 <preload v-show="preload" class="text-center"></preload>
                 <div class="alert alert-success alert-dismissible" v-show="cadastrado">
                     <h4><i class="icon fa fa-check"></i>Solicitação cadastrada com sucesso!</h4>
@@ -9,7 +9,7 @@
                 <div class="alert alert-success alert-dismissible" v-show="atualizado">
                     <h4><i class="icon fa fa-check"></i>Solicitação alterada com sucesso!</h4>
                 </div>
-                <form v-if="!preload && !cadastrado && !atualizado" :id="`form_${hash}`" onsubmit="return false;">
+                <form v-if="!preload && !cadastrado && !atualizado" :id="`form_${hash}`" onsubmit="return false">
                     <div class="card shadow-sm mb-4">
                         <div class="card-header bg-primary text-white">
                             <h5 class="mb-0"><i class="fas fa-info-circle"></i> Informações da Solicitação</h5>
@@ -37,8 +37,7 @@
                                 <div class="col-12 col-md-6">
                                     <div class="form-group">
                                         <label class="font-weight-bold"><i class="fas fa-building"></i> Centro de Custo Atual</label>
-                                        <select v-model="form.centro_custo_id" class="form-control form-control-sm"
-                                                disabled>
+                                        <select v-model="form.centro_custo_id" class="form-control form-control-sm" disabled>
                                             <option value="">Selecione</option>
                                             <option v-for="item in centro_custos" :value="item.id">
                                                 {{ item.label }}
@@ -49,8 +48,7 @@
                                 <div class="col-12 col-md-2" v-if="centroCustoTemFilial">
                                     <div class="form-group">
                                         <label class="font-weight-bold"><i class="fas fa-file-alt"></i> CNPJ Atual</label>
-                                        <select v-model="form.filial" class="form-control form-control-sm"
-                                                @change.p.prevent="changeCnpj()" disabled>
+                                        <select v-model="form.filial" class="form-control form-control-sm" @change.p.prevent="changeCnpj()" disabled>
                                             <option :value="false">Matriz</option>
                                             <option :value="true">Filial</option>
                                         </select>
@@ -70,9 +68,16 @@
                             </div>
                             <div class="row">
                                 <div class="col-12 col-md-6">
-                                    <label class="font-weight-bold"><i class="fas fa-calendar-alt"></i> Data da Demissão <span class="text-danger">*</span></label>
-                                    <datepicker label="" class="corrigiDatepicker" formsm v-model="form.data_demissao"
-                                                :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"></datepicker>
+                                    <label class="font-weight-bold"
+                                        ><i class="fas fa-calendar-alt"></i> Data da Demissão <span class="text-danger">*</span></label
+                                    >
+                                    <datepicker
+                                        label=""
+                                        class="corrigiDatepicker"
+                                        formsm
+                                        v-model="form.data_demissao"
+                                        :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
+                                    ></datepicker>
                                 </div>
 
                                 <div class="col-12 col-md-6">
@@ -82,8 +87,8 @@
                                             v-model="form.tipo_aviso"
                                             class="form-control form-control-sm"
                                             :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
-                                            onchange="valida_campo_vazio(this,1)"
-                                            onblur="valida_campo_vazio(this,1)"
+                                            onchange="valida_campo_vazio(this, 1)"
+                                            onblur="valida_campo_vazio(this, 1)"
                                         >
                                             <option value="">Selecione</option>
                                             <option value="Trabalhado">Trabalhado</option>
@@ -93,13 +98,24 @@
                                     </div>
                                 </div>
 
-                                <gestoraprovacao label="Gestor Aprovação *" :model="form" :verifica="visualizar || aprovando || aprovandoExtra || aprovandoRh" :hash="hash"></gestoraprovacao>
+                                <gestoraprovacao
+                                    label="Gestor Aprovação *"
+                                    :model="form"
+                                    :verifica="visualizar || aprovando || aprovandoExtra || aprovandoRh"
+                                    :hash="hash"
+                                ></gestoraprovacao>
 
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label class="font-weight-bold"><i class="fas fa-comment-alt"></i> Observação</label>
-                                        <textarea class="form-control" v-model="form.obs" cols="5" rows="5" placeholder="Adicione informações relevantes sobre a demissão..."
-                                                  :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"></textarea>
+                                        <textarea
+                                            class="form-control"
+                                            v-model="form.obs"
+                                            cols="5"
+                                            rows="5"
+                                            placeholder="Adicione informações relevantes sobre a demissão..."
+                                            :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
+                                        ></textarea>
                                     </div>
                                 </div>
 
@@ -133,9 +149,7 @@
                         <legend>Aprovação Gestor</legend>
                         <div class="row">
                             <div v-if="!aprovando && form.user_aprovacao" class="col-12">
-                                <legend>{{ form.status_aprovacao }}
-                                    por: {{ form.user_aprovacao.nome }} em {{ form.data_aprovacao }}
-                                </legend>
+                                <legend>{{ form.status_aprovacao }} por: {{ form.user_aprovacao.nome }} em {{ form.data_aprovacao }}</legend>
                             </div>
 
                             <div class="col-12">
@@ -182,9 +196,7 @@
                         <legend v-if="temAprovacaoExtra">{{ nomeAprovacaoExtra }}</legend>
                         <div class="row" v-if="temAprovacaoExtra">
                             <div v-if="!aprovandoExtra && form.aprovacao_extra" class="col-12">
-                                <legend>{{ form.status_aprovacao_extra }}
-                                    por: {{ form.aprovacao_extra.nome }} em {{ form.data_aprovacao_extra }}
-                                </legend>
+                                <legend>{{ form.status_aprovacao_extra }} por: {{ form.aprovacao_extra.nome }} em {{ form.data_aprovacao_extra }}</legend>
                             </div>
 
                             <div class="col-12">
@@ -219,9 +231,7 @@
                         </div>
                     </fieldset>
 
-                    <div class="alert alert-warning" v-if="aprovandoRh">
-                        Esta solicitação ainda não foi aprovada ou reprovada!
-                    </div>
+                    <div class="alert alert-warning" v-if="aprovandoRh">Esta solicitação ainda não foi aprovada ou reprovada!</div>
 
                     <fieldset v-if="visualizar || aprovandoRh">
                         <legend>Aprovação RH</legend>
@@ -233,13 +243,7 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label>Observação</label>
-                                    <textarea
-                                        class="form-control form-control-sm"
-                                        :disabled="!aprovandoRh"
-                                        v-model="form.obs_rh"
-                                        cols="5"
-                                        rows="5"
-                                    ></textarea>
+                                    <textarea class="form-control form-control-sm" :disabled="!aprovandoRh" v-model="form.obs_rh" cols="5" rows="5"></textarea>
                                 </div>
                             </div>
 
@@ -263,43 +267,33 @@
                     </fieldset>
                 </form>
             </template>
-            <template slot="rodape">
-                <button type="button" class="btn btn-sm btn-primary" v-show="cadastrando && !preload"
-                        @click.prevent="cadastrar">
+            <template #rodape>
+                <button type="button" class="btn btn-sm btn-primary" v-show="cadastrando && !preload" @click.prevent="cadastrar">
                     <i class="fa fa-save"></i> Cadastrar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="aprovando && !preload"
-                        @click.prevent="aprovarGestor">
+                <button type="button" class="btn btn-sm btn-primary" v-show="aprovando && !preload" @click.prevent="aprovarGestor">
                     <i class="fa fa-save"></i> Salvar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="aprovandoExtra && !preload"
-                        @click.prevent="aprovarExtra">
+                <button type="button" class="btn btn-sm btn-primary" v-show="aprovandoExtra && !preload" @click.prevent="aprovarExtra">
                     <i class="fa fa-save"></i> Salvar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="aprovandoRh && !preload"
-                        @click.prevent="aprovarRh">
+                <button type="button" class="btn btn-sm btn-primary" v-show="aprovandoRh && !preload" @click.prevent="aprovarRh">
                     <i class="fa fa-save"></i> Salvar
                 </button>
             </template>
         </modal>
 
-        <modal id="janelaAtualizaStatus" titulo="Deseja APROVAR ou REPROVAR todos os colaboradores selecionados?"
-               :centralizada="true" label-fechar="Fechar">
-            <template slot="conteudo">
+        <modal id="janelaAtualizaStatus" titulo="Deseja APROVAR ou REPROVAR todos os colaboradores selecionados?" :centralizada="true" label-fechar="Fechar">
+            <template #conteudo>
                 <div class="col-12">
                     <div class="form-group">
                         <label>Observação</label>
-                        <textarea class="form-control" v-model="formConfirmacao.obs_aprovacao" cols="5"
-                                  rows="5"></textarea>
+                        <textarea class="form-control" v-model="formConfirmacao.obs_aprovacao" cols="5" rows="5"></textarea>
                     </div>
                 </div>
                 <div class="col-12">
-                    <button type="button" class="btn btn-sm btn-success" @click="confirmaAtualizacaoStatus('aprovado')">
-                        APROVAR
-                    </button>
-                    <button type="button" class="btn btn-sm btn-danger" @click="confirmaAtualizacaoStatus('reprovado')">
-                        REPROVAR
-                    </button>
+                    <button type="button" class="btn btn-sm btn-success" @click="confirmaAtualizacaoStatus('aprovado')">APROVAR</button>
+                    <button type="button" class="btn btn-sm btn-danger" @click="confirmaAtualizacaoStatus('reprovado')">REPROVAR</button>
                 </div>
             </template>
         </modal>
@@ -311,40 +305,46 @@
             :get-nome-documento="getNomeDocumentoAssinaturaDemissao"
             :get-signatarios-iniciais="getSignatariosIniciaisAssinaturaDemissao"
             :enviar-handler="enviarAssinaturaDemissao"
-            :atualizar-handler="atualizar">
+            :atualizar-handler="atualizar"
+        >
         </acao-assinatura-documento>
 
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="$refs.componente.buscar()">
+            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <date-range-filter
-                    :enabled.sync="controle.dados.filtroPeriodo"
-                    :start-date.sync="controle.dados.dataInicio"
-                    :end-date.sync="controle.dados.dataFim"
+                    v-model:enabled="controle.dados.filtroPeriodo"
+                    v-model:start-date="controle.dados.dataInicio"
+                    v-model:end-date="controle.dados.dataFim"
                     :disabled="controle.carregando"
                     :id-suffix="hash"
-                    wrapper-class="col-12 col-md-3">
+                    wrapper-class="col-12 col-md-3"
+                >
                 </date-range-filter>
 
                 <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label>Pesquisar</label>
-                        <input type="text"
-                               placeholder="Buscar por colaborador"
-                               autocomplete="off"
-                               class="form-control form-control-sm"
-                               :disabled="controle.carregando"
-                               v-model="controle.dados.campoBusca">
+                        <input
+                            type="text"
+                            placeholder="Buscar por colaborador"
+                            autocomplete="off"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoBusca"
+                        />
                     </div>
                 </div>
 
                 <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label>Status</label>
-                        <select class="form-control form-control-sm"
-                                v-model="controle.dados.campoStatusAprovacao"
-                                :disabled="controle.carregando"
-                                @change="atualizar()">
+                        <select
+                            class="form-control form-control-sm"
+                            v-model="controle.dados.campoStatusAprovacao"
+                            :disabled="controle.carregando"
+                            @change="atualizar()"
+                        >
                             <option value="">Todos os Status</option>
                             <option value="aberto">Em aberto</option>
                             <option value="aprovado_gestor">Aprovado Gestor</option>
@@ -358,10 +358,7 @@
                 <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label>Ordenar por</label>
-                        <select class="form-control form-control-sm"
-                                v-model="controle.dados.ordenacao"
-                                :disabled="controle.carregando"
-                                @change="atualizar()">
+                        <select class="form-control form-control-sm" v-model="controle.dados.ordenacao" :disabled="controle.carregando" @change="atualizar()">
                             <option value="created_at_desc">Mais Recentes</option>
                             <option value="created_at_asc">Mais Antigos</option>
                             <option value="updated_at_desc">Última Modificação</option>
@@ -372,10 +369,7 @@
                 <div class="col-12 col-md-2">
                     <div class="form-group">
                         <label>Exibir</label>
-                        <select class="form-control form-control-sm"
-                                v-model="controle.dados.pages"
-                                :disabled="controle.carregando"
-                                @change="atualizar()">
+                        <select class="form-control form-control-sm" v-model="controle.dados.pages" :disabled="controle.carregando" @change="atualizar()">
                             <option v-for="item in por_pagina" :key="item" :value="item">{{ item }}</option>
                         </select>
                     </div>
@@ -384,38 +378,40 @@
                 <div class="col-12"></div>
 
                 <div class="col-12 col-md-9">
-                    <button type="button"
-                            class="btn btn-sm btn-success"
-                            :disabled="controle.carregando"
-                            @click="atualizar">
+                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i> Atualizar
                     </button>
-                    <button type="button"
-                            class="btn btn-sm btn-primary"
-                            data-toggle="modal"
-                            :data-target="`#${hash}`"
-                            :disabled="controle.carregando"
-                            @click.prevent="formNovo">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-primary"
+                        data-toggle="modal"
+                        :data-target="`#${hash}`"
+                        :disabled="controle.carregando"
+                        @click.prevent="formNovo"
+                    >
                         Solicitar
                     </button>
-                    <button type="button"
-                            class="btn btn-sm btn-primary mr-1"
-                            @click.prevent="exportaExcel()"
-                            :disabled="controle.carregando || preloadExportacao || (!controle.carregando && !lista.length)">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-primary mr-1"
+                        @click.prevent="exportaExcel()"
+                        :disabled="controle.carregando || preloadExportacao || (!controle.carregando && !lista.length)"
+                    >
                         <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
                     </button>
-                    <button type="button"
-                            class="btn btn-sm btn-primary mr-1"
-                            v-show="selecionados.length > 0"
-                            :disabled="selecionados.length === 0"
-                            data-toggle="modal"
-                            data-target="#janelaAtualizaStatus">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-primary mr-1"
+                        v-show="selecionados.length > 0"
+                        :disabled="selecionados.length === 0"
+                        data-toggle="modal"
+                        data-target="#janelaAtualizaStatus"
+                    >
                         Atualizar Status <span class="badge badge-light">{{ selecionados.length }}</span>
                     </button>
                 </div>
             </form>
         </fieldset>
-
 
         <preload class="text-center" v-if="controle.carregando"></preload>
 
@@ -441,11 +437,7 @@
 
             <!-- Cards Compactos -->
             <div class="cards-lista" v-show="!controle.carregando && lista.length > 0">
-                <div
-                    class="solicitacao-card"
-                    v-for="item in lista"
-                    :key="item.id"
-                >
+                <div class="solicitacao-card" v-for="item in lista" :key="item.id">
                     <!-- Cabeçalho do Card -->
                     <div class="card-header-row">
                         <div class="card-left">
@@ -468,90 +460,145 @@
                                 <strong>{{ item.colaborador_nome }}</strong>
                             </div>
                             <div class="data-info ml-3">
-                                <i class="fas fa-calendar-plus text-muted" style="font-size: 0.75rem;"></i>
+                                <i class="fas fa-calendar-plus text-muted" style="font-size: 0.75rem"></i>
                                 <small class="text-muted">{{ item.data_solicitacao }}</small>
                                 <span v-if="item.updated_at && item.updated_at !== item.data_solicitacao" class="mx-2 text-muted">|</span>
                                 <template v-if="item.updated_at && item.updated_at !== item.data_solicitacao">
-                                    <i class="fas fa-calendar-check text-info" style="font-size: 0.75rem;"></i>
+                                    <i class="fas fa-calendar-check text-info" style="font-size: 0.75rem"></i>
                                     <small class="text-info">{{ item.updated_at }}</small>
                                 </template>
                             </div>
                         </div>
                         <div class="card-right">
-                            <span class="status-badge" :class="{
-                                'status-reprovado': item.status_aprovacao === 'reprovado' || item.status_aprovacao_extra === 'reprovado' || item.status_aprovacao_rh === 'reprovado',
-                                'status-aprovado': item.status_aprovacao_rh === 'aprovado',
-                                'status-aprovado-extra': temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado' && !item.status_aprovacao_rh,
-                                'status-aprovado-gestor': item.status_aprovacao === 'aprovado' && (!temAprovacaoExtra || !item.status_aprovacao_extra) && !item.status_aprovacao_rh,
-                                'status-pendente': !item.status_aprovacao,
-                            }">
-                                <span v-if="item.status_aprovacao === 'reprovado' || item.status_aprovacao_extra === 'reprovado' || item.status_aprovacao_rh === 'reprovado'">
+                            <span
+                                class="status-badge"
+                                :class="{
+                                    'status-reprovado':
+                                        item.status_aprovacao === 'reprovado' ||
+                                        item.status_aprovacao_extra === 'reprovado' ||
+                                        item.status_aprovacao_rh === 'reprovado',
+                                    'status-aprovado': item.status_aprovacao_rh === 'aprovado',
+                                    'status-aprovado-extra': temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado' && !item.status_aprovacao_rh,
+                                    'status-aprovado-gestor':
+                                        item.status_aprovacao === 'aprovado' &&
+                                        (!temAprovacaoExtra || !item.status_aprovacao_extra) &&
+                                        !item.status_aprovacao_rh,
+                                    'status-pendente': !item.status_aprovacao
+                                }"
+                            >
+                                <span
+                                    v-if="
+                                        item.status_aprovacao === 'reprovado' ||
+                                        item.status_aprovacao_extra === 'reprovado' ||
+                                        item.status_aprovacao_rh === 'reprovado'
+                                    "
+                                >
                                     <i class="fas fa-times-circle"></i> REPROVADO
                                 </span>
-                                <span v-else-if="item.status_aprovacao_rh === 'aprovado'">
-                                    <i class="fas fa-check-circle"></i> APROVADO RH
-                                </span>
+                                <span v-else-if="item.status_aprovacao_rh === 'aprovado'"> <i class="fas fa-check-circle"></i> APROVADO RH </span>
                                 <span v-else-if="temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado'">
                                     <i class="fas fa-check-circle"></i> APROVADO {{ nomeAprovacaoExtra.toUpperCase() }}
                                 </span>
-                                <span v-else-if="item.status_aprovacao === 'aprovado'">
-                                    <i class="fas fa-check-circle"></i> APROVADO GESTOR
-                                </span>
-                                <span v-else>
-                                    <i class="fas fa-clock"></i> EM ABERTO
-                                </span>
+                                <span v-else-if="item.status_aprovacao === 'aprovado'"> <i class="fas fa-check-circle"></i> APROVADO GESTOR </span>
+                                <span v-else> <i class="fas fa-clock"></i> EM ABERTO </span>
                             </span>
                             <div class="dropdown show">
-                                <a class="btn-actions-compact" href="#" role="button"
-                                   id="dropdownMenuLink"
-                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <a
+                                    class="btn-actions-compact"
+                                    href="#"
+                                    role="button"
+                                    id="dropdownMenuLink"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false"
+                                >
                                     <i class="fas fa-ellipsis-v"></i>
                                 </a>
 
-                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
-                                     aria-labelledby="dropdownMenuLink">
-                                    <a class="dropdown-item" href="javascript://" title="Aprovação Gestor"
-                                       data-toggle="modal"
-                                       :data-target="`#${hash}`"
-                                       @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = true; aprovandoExtra = false; aprovandoRh = false; podeanexar = false"
-                                       v-if="!item.user_aprovacao_nome && !item.rh_aprovacao_nome && !item.aprovado_via_script && aprovaGestor">
+                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Aprovação Gestor"
+                                        data-toggle="modal"
+                                        :data-target="`#${hash}`"
+                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = true; aprovandoExtra = false; aprovandoRh = false; podeanexar = false"
+                                        v-if="!item.user_aprovacao_nome && !item.rh_aprovacao_nome && !item.aprovado_via_script && aprovaGestor"
+                                    >
                                         Aprovação Gestor
                                     </a>
 
-                                    <a class="dropdown-item" href="javascript://" :title="nomeAprovacaoExtra || 'Aprovação Extra'"
-                                       data-toggle="modal"
-                                       :data-target="`#${hash}`"
-                                       @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = false; aprovandoExtra = true; aprovandoRh = false; podeanexar = false"
-                                       v-if="temAprovacaoExtra && podeAprovarExtra && item.status_aprovacao === 'aprovado' && !item.aprovacao_extra_nome && !item.aprovado_via_script && !item.rh_aprovacao_nome">
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        :title="nomeAprovacaoExtra || 'Aprovação Extra'"
+                                        data-toggle="modal"
+                                        :data-target="`#${hash}`"
+                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = false; aprovandoExtra = true; aprovandoRh = false; podeanexar = false"
+                                        v-if="
+                                            temAprovacaoExtra &&
+                                            podeAprovarExtra &&
+                                            item.status_aprovacao === 'aprovado' &&
+                                            !item.aprovacao_extra_nome &&
+                                            !item.aprovado_via_script &&
+                                            !item.rh_aprovacao_nome
+                                        "
+                                    >
                                         {{ nomeAprovacaoExtra || 'Aprovação Extra' }}
                                     </a>
 
-                                    <a class="dropdown-item" href="javascript://" title="Aprovação RH"
-                                       data-toggle="modal"
-                                       :data-target="`#${hash}`"
-                                       @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = true; podeanexar = false"
-                                       v-if="((item.status_aprovacao === 'aprovado' && !temAprovacaoExtra) || (item.status_aprovacao_extra === 'aprovado')) && !item.aprovado_via_script && item.rh_aprovacao_nome === null && aprovaRh">
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Aprovação RH"
+                                        data-toggle="modal"
+                                        :data-target="`#${hash}`"
+                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = true; podeanexar = false"
+                                        v-if="
+                                            ((item.status_aprovacao === 'aprovado' && !temAprovacaoExtra) || item.status_aprovacao_extra === 'aprovado') &&
+                                            !item.aprovado_via_script &&
+                                            item.rh_aprovacao_nome === null &&
+                                            aprovaRh
+                                        "
+                                    >
                                         Aprovação Rh
                                     </a>
 
-                                    <a class="dropdown-item" href="javascript://" title="Visualizar"
-                                       data-toggle="modal"
-                                       :data-target="`#${hash}`"
-                                       @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = false; podeanexar = false">
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Visualizar"
+                                        data-toggle="modal"
+                                        :data-target="`#${hash}`"
+                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = false; podeanexar = false"
+                                    >
                                         Visualizar
                                     </a>
-                                    <a class="dropdown-item" :href="`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/${item.id}/pdf`" target="_blank" title="Aviso Prévio (PDF)">
+                                    <a
+                                        class="dropdown-item"
+                                        :href="`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/${item.id}/pdf`"
+                                        target="_blank"
+                                        title="Aviso Prévio (PDF)"
+                                    >
                                         <i class="fas fa-file-pdf"></i> Aviso Prévio (PDF)
                                     </a>
                                     <template v-if="assinaturaDigitalHabilitada && temDocumentoAssinaturaDemissao(item)">
-                                        <a class="dropdown-item" href="javascript://" title="Gerenciar assinatura digital"
-                                           @click.prevent="abrirGerenciamentoAssinaturaDemissao(item)">
+                                        <a
+                                            class="dropdown-item"
+                                            href="javascript://"
+                                            title="Gerenciar assinatura digital"
+                                            @click.prevent="abrirGerenciamentoAssinaturaDemissao(item)"
+                                        >
                                             <i class="fas fa-cog"></i> Gerenciar assinatura
                                         </a>
                                     </template>
                                     <template v-else-if="assinaturaDigitalHabilitada">
-                                        <a class="dropdown-item" href="javascript://" title="Enviar para assinatura digital"
-                                           @click.prevent="abrirEnvioAssinaturaDemissao(item)">
+                                        <a
+                                            class="dropdown-item"
+                                            href="javascript://"
+                                            title="Enviar para assinatura digital"
+                                            @click.prevent="abrirEnvioAssinaturaDemissao(item)"
+                                        >
                                             <i class="fas fa-pen-fancy"></i> Enviar para assinatura
                                         </a>
                                     </template>
@@ -588,7 +635,6 @@
 
                     <!-- Fluxo de Aprovação -->
                     <div class="card-aprovacao-row">
-
                         <div class="fluxo-icons">
                             <div class="fluxo-step">
                                 <i class="fas fa-check-circle text-success"></i>
@@ -603,12 +649,9 @@
                             <i class="fas fa-chevron-right text-muted mx-2"></i>
                             <!-- Gestor -->
                             <div class="fluxo-step">
-                                <i v-if="item.status_aprovacao === 'aprovado'"
-                                   class="fas fa-check-circle text-success"></i>
-                                <i v-else-if="item.status_aprovacao === 'reprovado'"
-                                   class="fas fa-times-circle text-danger"></i>
-                                <i v-else
-                                   class="fas fa-clock text-muted"></i>
+                                <i v-if="item.status_aprovacao === 'aprovado'" class="fas fa-check-circle text-success"></i>
+                                <i v-else-if="item.status_aprovacao === 'reprovado'" class="fas fa-times-circle text-danger"></i>
+                                <i v-else class="fas fa-clock text-muted"></i>
                                 <div class="fluxo-info">
                                     <small class="fluxo-etapa">Gestor</small>
                                     <small v-if="item.status_aprovacao === 'aprovado'" class="fluxo-aprovador text-success">
@@ -626,30 +669,21 @@
 
                             <!-- Aprovação Extra (se configurada) -->
                             <div class="fluxo-step" v-if="temAprovacaoExtra">
-                                <i v-if="item.status_aprovacao === 'reprovado'"
-                                   class="fas fa-ban text-secondary"></i>
-                                <i v-else-if="item.status_aprovacao_extra === 'aprovado'"
-                                   class="fas fa-check-circle text-success"></i>
-                                <i v-else-if="item.status_aprovacao_extra === 'reprovado'"
-                                   class="fas fa-times-circle text-danger"></i>
-                                <i v-else-if="item.status_aprovacao === 'aprovado' && !item.status_aprovacao_extra"
-                                   class="fas fa-clock text-warning"></i>
-                                <i v-else
-                                   class="fas fa-circle text-muted"></i>
+                                <i v-if="item.status_aprovacao === 'reprovado'" class="fas fa-ban text-secondary"></i>
+                                <i v-else-if="item.status_aprovacao_extra === 'aprovado'" class="fas fa-check-circle text-success"></i>
+                                <i v-else-if="item.status_aprovacao_extra === 'reprovado'" class="fas fa-times-circle text-danger"></i>
+                                <i v-else-if="item.status_aprovacao === 'aprovado' && !item.status_aprovacao_extra" class="fas fa-clock text-warning"></i>
+                                <i v-else class="fas fa-circle text-muted"></i>
                                 <div class="fluxo-info">
                                     <small class="fluxo-etapa">{{ nomeAprovacaoExtra }}</small>
-                                    <small v-if="item.status_aprovacao === 'reprovado'" class="fluxo-status text-secondary">
-                                        Cancelada por reprovação
-                                    </small>
+                                    <small v-if="item.status_aprovacao === 'reprovado'" class="fluxo-status text-secondary"> Cancelada por reprovação </small>
                                     <small v-else-if="item.status_aprovacao_extra === 'aprovado'" class="fluxo-aprovador text-success">
                                         {{ item.aprovacao_extra_nome }}
                                     </small>
                                     <small v-else-if="item.status_aprovacao_extra === 'reprovado'" class="fluxo-aprovador text-danger">
                                         {{ item.aprovacao_extra_nome }}
                                     </small>
-                                    <small v-else-if="item.status_aprovacao === 'aprovado'" class="fluxo-status text-warning">
-                                        Aguardando
-                                    </small>
+                                    <small v-else-if="item.status_aprovacao === 'aprovado'" class="fluxo-status text-warning"> Aguardando </small>
                                     <small v-else class="fluxo-status">Pendente</small>
                                     <small v-if="item.data_aprovacao_extra" class="fluxo-data">{{ item.data_aprovacao_extra }}</small>
                                 </div>
@@ -659,19 +693,26 @@
 
                             <!-- RH -->
                             <div class="fluxo-step">
-                                <i v-if="item.status_aprovacao === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')"
-                                   class="fas fa-ban text-secondary"></i>
-                                <i v-else-if="item.status_aprovacao_rh === 'aprovado'"
-                                   class="fas fa-check-circle text-success"></i>
-                                <i v-else-if="item.status_aprovacao_rh === 'reprovado'"
-                                   class="fas fa-times-circle text-danger"></i>
-                                <i v-else-if="(temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') || (!temAprovacaoExtra && item.status_aprovacao === 'aprovado')"
-                                   class="fas fa-clock text-warning"></i>
-                                <i v-else
-                                   class="fas fa-circle text-muted"></i>
+                                <i
+                                    v-if="item.status_aprovacao === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')"
+                                    class="fas fa-ban text-secondary"
+                                ></i>
+                                <i v-else-if="item.status_aprovacao_rh === 'aprovado'" class="fas fa-check-circle text-success"></i>
+                                <i v-else-if="item.status_aprovacao_rh === 'reprovado'" class="fas fa-times-circle text-danger"></i>
+                                <i
+                                    v-else-if="
+                                        (temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') ||
+                                        (!temAprovacaoExtra && item.status_aprovacao === 'aprovado')
+                                    "
+                                    class="fas fa-clock text-warning"
+                                ></i>
+                                <i v-else class="fas fa-circle text-muted"></i>
                                 <div class="fluxo-info">
                                     <small class="fluxo-etapa">RH</small>
-                                    <small v-if="item.status_aprovacao === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')" class="fluxo-status text-secondary">
+                                    <small
+                                        v-if="item.status_aprovacao === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')"
+                                        class="fluxo-status text-secondary"
+                                    >
                                         Cancelada por reprovação
                                     </small>
                                     <small v-else-if="item.status_aprovacao_rh === 'aprovado'" class="fluxo-aprovador text-success">
@@ -680,7 +721,13 @@
                                     <small v-else-if="item.status_aprovacao_rh === 'reprovado'" class="fluxo-aprovador text-danger">
                                         {{ item.rh_aprovacao_nome }}
                                     </small>
-                                    <small v-else-if="(temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') || (!temAprovacaoExtra && item.status_aprovacao === 'aprovado')" class="fluxo-status text-warning">
+                                    <small
+                                        v-else-if="
+                                            (temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') ||
+                                            (!temAprovacaoExtra && item.status_aprovacao === 'aprovado')
+                                        "
+                                        class="fluxo-status text-warning"
+                                    >
                                         Aguardando
                                     </small>
                                     <small v-else class="fluxo-status">Pendente</small>
@@ -830,7 +877,7 @@ export default {
                     dataInicio: '',
                     dataFim: '',
                     token: '',
-                    ordenacao: 'created_at_desc',
+                    ordenacao: 'created_at_desc'
                 }
             }
         }
@@ -890,7 +937,7 @@ export default {
             if ([undefined, null, ''].includes(this.form.centro_custo_id)) {
                 return []
             }
-            let centroSelecionado = _.find(this.centro_custos, {id: this.form.centro_custo_id})
+            let centroSelecionado = _.find(this.centro_custos, { id: this.form.centro_custo_id })
             if (centroSelecionado && centroSelecionado.filiais && centroSelecionado.filiais.length) {
                 return centroSelecionado.filiais
             }
@@ -902,29 +949,31 @@ export default {
     },
     methods: {
         abrirEnvioAssinaturaDemissao(item) {
-            this.$refs.acaoAssinaturaDemissao.abrirEnvio(item);
+            this.$refs.acaoAssinaturaDemissao.abrirEnvio(item)
         },
         abrirGerenciamentoAssinaturaDemissao(item) {
-            const doc = item && item.documento_para_assinatura;
-            if (!doc || !doc.id) return;
-            this.$refs.acaoAssinaturaDemissao.abrirGerenciar(doc, item);
+            const doc = item && item.documento_para_assinatura
+            if (!doc || !doc.id) return
+            this.$refs.acaoAssinaturaDemissao.abrirGerenciar(doc, item)
         },
         getNomeDocumentoAssinaturaDemissao(item) {
-            const nome = item && item.colaborador_nome ? item.colaborador_nome : '';
-            return nome ? `Aviso Prévio - ${nome}` : 'Aviso Prévio';
+            const nome = item && item.colaborador_nome ? item.colaborador_nome : ''
+            return nome ? `Aviso Prévio - ${nome}` : 'Aviso Prévio'
         },
         getSignatariosIniciaisAssinaturaDemissao(item) {
-            return [{
-                nome: (item && item.colaborador_nome) || '',
-                email: (item && item.colaborador_email) || '',
-                cpf: (item && item.colaborador_cpf) || '',
-            }];
+            return [
+                {
+                    nome: (item && item.colaborador_nome) || '',
+                    email: (item && item.colaborador_email) || '',
+                    cpf: (item && item.colaborador_cpf) || ''
+                }
+            ]
         },
         enviarAssinaturaDemissao({ contexto, signatarios }) {
             return axios.post(`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/enviar-para-assinatura`, {
                 demissao_prevista_id: contexto.id,
-                signatarios: signatarios.map((s) => ({ nome: s.nome, email: s.email, cpf: s.cpf || null })),
-            });
+                signatarios: signatarios.map((s) => ({ nome: s.nome, email: s.email, cpf: s.cpf || null }))
+            })
         },
         urlParamGet() {
             const urlParams = new URLSearchParams(window.location.search)
@@ -991,7 +1040,7 @@ export default {
                     mostraSucesso('Status atualizados com sucesso!')
                     this.selecionados = []
                     this.formConfirmacao = _.cloneDeep(this.formConfirmacaoDefault) //copia
-                    this.$refs.componente.buscar()
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                 })
                 .catch((error) => {
                     this.preloadAtualizacao = false
@@ -1057,7 +1106,7 @@ export default {
                     $(`#${this.hash} `).modal('hide')
                     let data = response.data
                     mostraSucesso('', 'Solicitação registrada com sucesso!')
-                    this.$refs.componente.buscar()
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -1106,134 +1155,189 @@ export default {
         },
 
         abrirModalAssinaturaDemissao(item) {
-            this.demissaoAssinaturaSelecionada = item;
-            this.signatariosAssinaturaDemissao = [{ nome: item.colaborador_nome || '', email: '', cpf: '' }];
-            this.preloadAssinaturaDemissao = false;
-            this.$nextTick(() => $(`#modalAssinaturaDemissao_${this.hash}`).modal('show'));
+            this.demissaoAssinaturaSelecionada = item
+            this.signatariosAssinaturaDemissao = [{ nome: item.colaborador_nome || '', email: '', cpf: '' }]
+            this.preloadAssinaturaDemissao = false
+            this.$nextTick(() => $(`#modalAssinaturaDemissao_${this.hash}`).modal('show'))
         },
         temDocumentoAssinaturaDemissao(item) {
-            const doc = item && item.documento_para_assinatura;
-            return !!(doc && doc.id);
+            const doc = item && item.documento_para_assinatura
+            return !!(doc && doc.id)
         },
         abrirModalGerenciarAssinaturaDemissao(item) {
-            const doc = item && item.documento_para_assinatura;
-            if (!doc || !doc.id) return;
-            this.demissaoParaReenvio = item;
-            this.documentoAssinaturaDetalheDemissao = null;
-            this.preloadGerenciarAssinaturaDemissao = true;
-            $(`#modalGerenciarAssinaturaDemissao_${this.hash}`).modal('show');
-            const idOrToken = doc.token || doc.id;
-            axios.get(`${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}`).then(res => {
-                this.documentoAssinaturaDetalheDemissao = res.data;
-                this.preloadGerenciarAssinaturaDemissao = false;
-            }).catch(() => {
-                this.preloadGerenciarAssinaturaDemissao = false;
-                mostraErro('', 'Erro ao carregar detalhe do documento.');
-            });
+            const doc = item && item.documento_para_assinatura
+            if (!doc || !doc.id) return
+            this.demissaoParaReenvio = item
+            this.documentoAssinaturaDetalheDemissao = null
+            this.preloadGerenciarAssinaturaDemissao = true
+            $(`#modalGerenciarAssinaturaDemissao_${this.hash}`).modal('show')
+            const idOrToken = doc.token || doc.id
+            axios
+                .get(`${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}`)
+                .then((res) => {
+                    this.documentoAssinaturaDetalheDemissao = res.data
+                    this.preloadGerenciarAssinaturaDemissao = false
+                })
+                .catch(() => {
+                    this.preloadGerenciarAssinaturaDemissao = false
+                    mostraErro('', 'Erro ao carregar detalhe do documento.')
+                })
         },
         documentoExpiradoOuCanceladoDocDemissao(doc) {
-            return doc && (doc.status === 'expirado' || doc.status === 'cancelado');
+            return doc && (doc.status === 'expirado' || doc.status === 'cancelado')
         },
         enviarNovamenteNoModalDemissao() {
-            if (!this.demissaoParaReenvio) return;
-            $(`#modalGerenciarAssinaturaDemissao_${this.hash}`).modal('hide');
-            this.$nextTick(() => this.abrirModalAssinaturaDemissao(this.demissaoParaReenvio));
+            if (!this.demissaoParaReenvio) return
+            $(`#modalGerenciarAssinaturaDemissao_${this.hash}`).modal('hide')
+            this.$nextTick(() => this.abrirModalAssinaturaDemissao(this.demissaoParaReenvio))
         },
         labelTipoDocDemissao(tipo) {
-            const map = { contrato_legal: 'Contrato (Documentos Legais)', contrato_trabalho: 'Contrato de Trabalho', carta_oferta: 'Carta Oferta', termo_demissao: 'Termo de Demissão', ficha_encaminhamento: 'Ficha de Encaminhamento', termo_confidencialidade: 'Termo de Confidencialidade', opcao_vale_transporte: 'Opção Vale Transporte', acordo_compensacao_horas: 'Acordo de Compensação de Horas', termo_salario_familia: 'Termo Salário Família', declaracao_dependentes_ir: 'Declaração Dependentes IR', medida_administrativa: 'Medida Administrativa', documento_demissao: 'Documento de Demissão (Aviso Prévio)' };
-            return map[tipo] || tipo || '—';
+            const map = {
+                contrato_legal: 'Contrato (Documentos Legais)',
+                contrato_trabalho: 'Contrato de Trabalho',
+                carta_oferta: 'Carta Oferta',
+                termo_demissao: 'Termo de Demissão',
+                ficha_encaminhamento: 'Ficha de Encaminhamento',
+                termo_confidencialidade: 'Termo de Confidencialidade',
+                opcao_vale_transporte: 'Opção Vale Transporte',
+                acordo_compensacao_horas: 'Acordo de Compensação de Horas',
+                termo_salario_familia: 'Termo Salário Família',
+                declaracao_dependentes_ir: 'Declaração Dependentes IR',
+                medida_administrativa: 'Medida Administrativa',
+                documento_demissao: 'Documento de Demissão (Aviso Prévio)'
+            }
+            return map[tipo] || tipo || '—'
         },
         labelStatusDocDemissao(status) {
-            const map = { rascunho: 'Rascunho', enviado: 'Enviado', em_assinatura: 'Em assinatura', concluido: 'Concluído', expirado: 'Expirado', cancelado: 'Cancelado' };
-            return map[status] || status || '—';
+            const map = {
+                rascunho: 'Rascunho',
+                enviado: 'Enviado',
+                em_assinatura: 'Em assinatura',
+                concluido: 'Concluído',
+                expirado: 'Expirado',
+                cancelado: 'Cancelado'
+            }
+            return map[status] || status || '—'
         },
         badgeStatusDocDemissao(status) {
-            const map = { em_assinatura: 'badge-warning', concluido: 'badge-success', cancelado: 'badge-danger', expirado: 'badge-secondary', rascunho: 'badge-secondary', enviado: 'badge-info' };
-            return map[status] || 'badge-secondary';
+            const map = {
+                em_assinatura: 'badge-warning',
+                concluido: 'badge-success',
+                cancelado: 'badge-danger',
+                expirado: 'badge-secondary',
+                rascunho: 'badge-secondary',
+                enviado: 'badge-info'
+            }
+            return map[status] || 'badge-secondary'
         },
         formatarDataDocDemissao(val) {
-            if (!val) return '—';
-            const d = typeof val === 'string' ? new Date(val) : val;
-            return d.toLocaleDateString('pt-BR') + ' ' + (d.toLocaleTimeString ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '');
+            if (!val) return '—'
+            const d = typeof val === 'string' ? new Date(val) : val
+            return d.toLocaleDateString('pt-BR') + ' ' + (d.toLocaleTimeString ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '')
         },
         labelEventoDocDemissao(evento) {
-            const map = { enviado: 'Documento enviado', reenviado: 'E-mail reenviado', visualizado: 'Visualizado pelo signatário', assinado: 'Assinado', recusado: 'Recusado', expirado: 'Documento expirado', cancelado: 'Documento cancelado' };
-            return map[evento] || evento;
+            const map = {
+                enviado: 'Documento enviado',
+                reenviado: 'E-mail reenviado',
+                visualizado: 'Visualizado pelo signatário',
+                assinado: 'Assinado',
+                recusado: 'Recusado',
+                expirado: 'Documento expirado',
+                cancelado: 'Documento cancelado'
+            }
+            return map[evento] || evento
         },
         podeCancelarDocDemissao(item) {
-            return item && ['rascunho', 'em_assinatura'].indexOf(item.status) !== -1;
+            return item && ['rascunho', 'em_assinatura'].indexOf(item.status) !== -1
         },
         podeReenviarDocDemissao(item) {
-            return item && item.status === 'em_assinatura';
+            return item && item.status === 'em_assinatura'
         },
         podeBaixarAssinadoDocDemissao(item) {
-            return item && item.status === 'concluido' && item.arquivo_assinado_id;
+            return item && item.status === 'concluido' && item.arquivo_assinado_id
         },
         urlDownloadAssinadoDocDemissao(doc) {
-            const idOrToken = (doc && doc.token) ? doc.token : (doc && doc.id) ? doc.id : '';
-            return `${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}/download-assinado`;
+            const idOrToken = doc && doc.token ? doc.token : doc && doc.id ? doc.id : ''
+            return `${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}/download-assinado`
         },
         cancelarDocNoModalDemissao() {
-            if (!this.documentoAssinaturaDetalheDemissao) return;
-            const confirmar = () => this.executarCancelarDocDemissao(this.documentoAssinaturaDetalheDemissao);
+            if (!this.documentoAssinaturaDetalheDemissao) return
+            const confirmar = () => this.executarCancelarDocDemissao(this.documentoAssinaturaDetalheDemissao)
             if (!this.$swal) {
-                if (confirm('Cancelar este documento? Os signatários não poderão mais assinar.')) confirmar();
-                return;
+                if (confirm('Cancelar este documento? Os signatários não poderão mais assinar.')) confirmar()
+                return
             }
-            this.$swal.fire({ title: 'Cancelar documento?', text: 'Os signatários não poderão mais assinar. Esta ação não pode ser desfeita.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonText: 'Não', confirmButtonText: 'Sim, cancelar' }).then((result) => {
-                if (result.isConfirmed) confirmar();
-            });
+            this.$swal
+                .fire({
+                    title: 'Cancelar documento?',
+                    text: 'Os signatários não poderão mais assinar. Esta ação não pode ser desfeita.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonText: 'Não',
+                    confirmButtonText: 'Sim, cancelar'
+                })
+                .then((result) => {
+                    if (result.isConfirmed) confirmar()
+                })
         },
         executarCancelarDocDemissao(doc) {
-            const idOrToken = (doc && doc.token) ? doc.token : (doc && doc.id) ? doc.id : '';
-            axios.post(`${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}/cancelar`).then(res => {
-                mostraSucesso(res.data.message || 'Documento cancelado.');
-                this.documentoAssinaturaDetalheDemissao = null;
-                this.atualizar();
-                $(`#modalGerenciarAssinaturaDemissao_${this.hash}`).modal('hide');
-            }).catch(err => {
-                const msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao cancelar.';
-                mostraErro(msg);
-            });
+            const idOrToken = doc && doc.token ? doc.token : doc && doc.id ? doc.id : ''
+            axios
+                .post(`${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}/cancelar`)
+                .then((res) => {
+                    mostraSucesso(res.data.message || 'Documento cancelado.')
+                    this.documentoAssinaturaDetalheDemissao = null
+                    this.atualizar()
+                    $(`#modalGerenciarAssinaturaDemissao_${this.hash}`).modal('hide')
+                })
+                .catch((err) => {
+                    const msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao cancelar.'
+                    mostraErro(msg)
+                })
         },
         reenviarDocNoModalDemissao() {
-            if (!this.documentoAssinaturaDetalheDemissao || this.documentoAssinaturaDetalheDemissao.status !== 'em_assinatura') return;
-            const idOrToken = this.documentoAssinaturaDetalheDemissao.token || this.documentoAssinaturaDetalheDemissao.id;
-            axios.post(`${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}/reenviar-email`).then(res => {
-                mostraSucesso(res.data.message || 'E-mail reenviado.');
-            }).catch(err => {
-                const msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao reenviar e-mail.';
-                mostraErro(msg);
-            });
+            if (!this.documentoAssinaturaDetalheDemissao || this.documentoAssinaturaDetalheDemissao.status !== 'em_assinatura') return
+            const idOrToken = this.documentoAssinaturaDetalheDemissao.token || this.documentoAssinaturaDetalheDemissao.id
+            axios
+                .post(`${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}/reenviar-email`)
+                .then((res) => {
+                    mostraSucesso(res.data.message || 'E-mail reenviado.')
+                })
+                .catch((err) => {
+                    const msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao reenviar e-mail.'
+                    mostraErro(msg)
+                })
         },
         adicionarSignatarioAssinaturaDemissao() {
-            this.signatariosAssinaturaDemissao.push({ nome: '', email: '', cpf: '' });
+            this.signatariosAssinaturaDemissao.push({ nome: '', email: '', cpf: '' })
         },
         removerSignatarioAssinaturaDemissao(index) {
-            this.signatariosAssinaturaDemissao.splice(index, 1);
+            this.signatariosAssinaturaDemissao.splice(index, 1)
         },
         enviarParaAssinaturaDemissao() {
             const payload = {
                 demissao_prevista_id: this.demissaoAssinaturaSelecionada.id,
-                signatarios: this.signatariosAssinaturaDemissao.map(s => ({ nome: s.nome, email: s.email, cpf: s.cpf || null }))
-            };
-            this.preloadAssinaturaDemissao = true;
-            axios.post(`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/enviar-para-assinatura`, payload)
-                .then(res => {
-                    this.preloadAssinaturaDemissao = false;
-                    $(`#modalAssinaturaDemissao_${this.hash}`).modal('hide');
-                    mostraSucesso(res.data.message || 'Documento enviado para assinatura.');
-                    this.atualizar();
+                signatarios: this.signatariosAssinaturaDemissao.map((s) => ({ nome: s.nome, email: s.email, cpf: s.cpf || null }))
+            }
+            this.preloadAssinaturaDemissao = true
+            axios
+                .post(`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/enviar-para-assinatura`, payload)
+                .then((res) => {
+                    this.preloadAssinaturaDemissao = false
+                    $(`#modalAssinaturaDemissao_${this.hash}`).modal('hide')
+                    mostraSucesso(res.data.message || 'Documento enviado para assinatura.')
+                    this.atualizar()
                     if (res.data.links && res.data.links.length && this.$swal) {
-                        const msg = res.data.links.map(l => `${l.email}: ${l.link}`).join('\n');
-                        this.$swal.fire({ title: 'Links enviados', text: msg, icon: 'info' });
+                        const msg = res.data.links.map((l) => `${l.email}: ${l.link}`).join('\n')
+                        this.$swal.fire({ title: 'Links enviados', text: msg, icon: 'info' })
                     }
                 })
-                .catch(err => {
-                    this.preloadAssinaturaDemissao = false;
-                    const msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao enviar para assinatura.';
-                    mostraErro(msg);
-                });
+                .catch((err) => {
+                    this.preloadAssinaturaDemissao = false
+                    const msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao enviar para assinatura.'
+                    mostraErro(msg)
+                })
         },
 
         alterar() {
@@ -1266,7 +1370,7 @@ export default {
                     $(`#${this.hash} `).modal('hide')
                     let data = response.data
                     mostraSucesso('', 'Solicitação alterada com sucesso!')
-                    this.$refs.componente.buscar()
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -1289,7 +1393,7 @@ export default {
                     let data = response.data
                     mostraSucesso('', 'Registro salvo com sucesso!')
                     $(`#${this.hash} `).modal('hide')
-                    this.$refs.componente.buscar()
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -1310,7 +1414,7 @@ export default {
                     let data = response.data
                     mostraSucesso('', 'Registro salvo com sucesso!')
                     $(`#${this.hash} `).modal('hide')
-                    this.$refs.componente.buscar()
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -1331,7 +1435,7 @@ export default {
                     let data = response.data
                     mostraSucesso('', 'Registro salvo com sucesso!')
                     $(`#${this.hash} `).modal('hide')
-                    this.$refs.componente.buscar()
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -1379,8 +1483,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs.componente.atual = 1
-            this.$refs.componente.buscar()
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }
@@ -1834,7 +1938,8 @@ select.form-control-sm {
 }
 
 /* Ícones com animação */
-.fas, .far {
+.fas,
+.far {
     transition: transform 0.2s ease;
 }
 
@@ -1865,13 +1970,19 @@ select.form-control-sm {
 }
 
 /* Setas do fluxo com animação */
-.fa-arrow-right, .fa-chevron-right {
+.fa-arrow-right,
+.fa-chevron-right {
     animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
+    0%,
+    100% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
 }
 
 /* Cards do fluxo com hover */
@@ -1994,8 +2105,6 @@ legend {
     cursor: not-allowed;
     opacity: 0.7;
 }
-
-
 
 /* Card body com padding consistente */
 .card-body {

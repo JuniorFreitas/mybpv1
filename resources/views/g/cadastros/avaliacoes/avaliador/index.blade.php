@@ -5,7 +5,7 @@
 
     <modal id="janelaAssociarAvaliador" titulo="Associar avaliadores" :fechar="!preload"
            :size="80">
-        <template slot="conteudo">
+        <template #conteudo>
             <fieldset v-if="editando">
                 <legend>Avaliadores</legend>
 
@@ -49,7 +49,7 @@
                 </div>
             </fieldset>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button :disabled="listaFuncionarios.length === 0" v-if="!preload && !update" class="btn btn-sm btn-success"
                     type="button" @click="assosicarAvaliadores">
                 <i class="fas fa-link"></i> Associar

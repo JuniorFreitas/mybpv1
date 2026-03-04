@@ -1,7 +1,7 @@
 <template>
     <div id="componenteEmpresaTreinamento">
         <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
-            <template slot="conteudo">
+            <template #conteudo>
                 <preload v-show="preload"></preload>
                 <div v-if="!preload && !cadastrado">
                     <fieldset>
@@ -10,49 +10,44 @@
                             <div class="col-12 col-md-12">
                                 <div class="form-group">
                                     <label>Nome</label>
-                                    <input v-model="form.nome" class="form-control" type="text"
-                                           onblur="valida_campo_vazio(this,1)">
+                                    <input v-model="form.nome" class="form-control" type="text" onblur="valida_campo_vazio(this, 1)" />
                                 </div>
                             </div>
                             <div class="col-12 col-md-12">
                                 <div class="form-group">
                                     <label>Endereço</label>
-                                    <input v-model="form.endereco" class="form-control" type="text"
-                                           onblur="valida_campo_vazio(this,1)">
+                                    <input v-model="form.endereco" class="form-control" type="text" onblur="valida_campo_vazio(this, 1)" />
                                 </div>
                             </div>
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Ativo</label>
-                                    <select class="form-control form-control-sm" onblur="valida_campo_vazio(this,1)"
-                                            onchange="valida_campo_vazio(this,1)" v-model="form.ativo">
+                                    <select
+                                        class="form-control form-control-sm"
+                                        onblur="valida_campo_vazio(this, 1)"
+                                        onchange="valida_campo_vazio(this, 1)"
+                                        v-model="form.ativo"
+                                    >
                                         <option :value="''">Selecione</option>
                                         <option :value="true">Sim</option>
                                         <option :value="false">Não</option>
                                     </select>
                                 </div>
                             </div>
-
                         </div>
                     </fieldset>
                 </div>
             </template>
-            <template slot="rodape">
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando"
-                        @click="alterarformEmpresaTreinamento()">
-                    Salvar
-                </button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando"
-                        @click="cadastrar()">
-                    Cadastrar
-                </button>
+            <template #rodape>
+                <button type="button" class="btn btn-sm btn-primary" v-show="editando" @click="alterarformEmpresaTreinamento()">Salvar</button>
+                <button type="button" class="btn btn-sm btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
             </template>
         </modal>
 
         <!-- Filtro -->
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="$refs.componente.buscar()">
+            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-5">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -68,16 +63,19 @@
                 </div>
 
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
-                            @click="atualizar"><i
-                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
+                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                        <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
-                    <button type="button" class="btn btn-sm btn-primary" :disabled="controle.carregando"
-                            @click="formNovo"
-                            data-toggle="modal"
-                            data-target="#janelaCadastrar">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-primary"
+                        :disabled="controle.carregando"
+                        @click="formNovo"
+                        data-toggle="modal"
+                        data-target="#janelaCadastrar"
+                    >
                         <i class="fa fa-plus"></i> Empresa Treinamento
                     </button>
                 </div>
@@ -85,8 +83,7 @@
         </fieldset>
 
         <div id="conteudo">
-
-            <p class=" mt-2 text-center" v-if="controle.carregando">
+            <p class="mt-2 text-center" v-if="controle.carregando">
                 <preload></preload>
             </p>
 
@@ -97,49 +94,60 @@
             <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
                 <table class="tabela">
                     <thead>
-                    <tr class="bg-default">
-                        <td class="text-center">Nº</td>
-                        <td class="text-center">Nome</td>
-                        <td class="text-center">Endereco</td>
-                        <td class="text-center">Ativo</td>
-                        <td class="text-center">Ação</td>
-                    </tr>
+                        <tr class="bg-default">
+                            <td class="text-center">Nº</td>
+                            <td class="text-center">Nome</td>
+                            <td class="text-center">Endereco</td>
+                            <td class="text-center">Ativo</td>
+                            <td class="text-center">Ação</td>
+                        </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="item in lista">
-                        <td class="text-center">{{ item.id }}</td>
-                        <td class="text-center">{{ item.nome }}</td>
-                        <td class="text-center">{{ item.endereco }}</td>
-                        <td class="text-center">
-                            <bt-ativo :rota="`cadastro/empresatreinamento/${item.id}/ativa-desativa`" :model="item"></bt-ativo>
-                        </td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-sm btn-primary mb-1" data-toggle="modal"
-                                    data-target="#janelaCadastrar" @click="alterarEmpresaTreinamento(item.id)">
-                                <i class="fa fa-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
+                        <tr v-for="item in lista">
+                            <td class="text-center">{{ item.id }}</td>
+                            <td class="text-center">{{ item.nome }}</td>
+                            <td class="text-center">{{ item.endereco }}</td>
+                            <td class="text-center">
+                                <bt-ativo :rota="`cadastro/empresatreinamento/${item.id}/ativa-desativa`" :model="item"></bt-ativo>
+                            </td>
+                            <td class="text-center">
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-primary mb-1"
+                                    data-toggle="modal"
+                                    data-target="#janelaCadastrar"
+                                    @click="alterarEmpresaTreinamento(item.id)"
+                                >
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
 
-            <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
-                                :url="urlPaginacao" :por-pagina="qntPag"
-                                :dados="controle.dados"
-                                v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
+            <controle-paginacao
+                class="d-flex justify-content-center"
+                id="controle"
+                ref="componente"
+                :url="urlPaginacao"
+                :por-pagina="qntPag"
+                :dados="controle.dados"
+                v-on:carregou="carregou"
+                v-on:carregando="carregando"
+            ></controle-paginacao>
         </div>
     </div>
 </template>
 
 <script>
-import controlePaginacao from '../../ControlePaginacao';
-import modal from '../../Modal';
+import controlePaginacao from '../../ControlePaginacao'
+import modal from '../../Modal'
 
 export default {
     components: {
         modal,
-        controlePaginacao,
+        controlePaginacao
     },
     props: {
         qntPag: {
@@ -152,15 +160,16 @@ export default {
             required: false,
             default: true
         },
-        modal: { // modal Pai
+        modal: {
+            // modal Pai
             type: String,
             required: false,
             default: ''
-        },
+        }
     },
     mounted() {
-        this.atualizar();
-        this.formDefault = _.cloneDeep(this.form);
+        this.atualizar()
+        this.formDefault = _.cloneDeep(this.form)
     },
     data() {
         return {
@@ -174,7 +183,7 @@ export default {
             form: {
                 nome: '',
                 endereco: '',
-                ativo: '',
+                ativo: ''
             },
 
             formDefault: null,
@@ -186,95 +195,96 @@ export default {
             controle: {
                 carregando: false,
                 dados: {
-                    campoBusca: '',
-                },
-            },
+                    campoBusca: ''
+                }
+            }
         }
     },
     methods: {
         formNovo() {
             this.form = _.cloneDeep(this.formDefault) //copia
-            this.titulo_janela = 'Empresa Treinamento';
-            this.editando = false;
-            this.cadastrado = false;
-            this.preload = false;
-            formReset();
-            setupCampo();
+            this.titulo_janela = 'Empresa Treinamento'
+            this.editando = false
+            this.cadastrado = false
+            this.preload = false
+            formReset()
+            setupCampo()
         },
 
         cadastrar() {
-            $('#janelaCadastrar :input:visible').trigger('blur');
+            $('#janelaCadastrar :input:visible').trigger('blur')
             if ($('#janelaCadastrar :input:visible.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
-                return false;
+                mostraErro('', 'Verificar os erros')
+                return false
             }
-            this.preload = true;
-            axios.post(`${URL_ADMIN}/cadastro/empresatreinamento`, this.form)
-                .then(res => {
+            this.preload = true
+            axios
+                .post(`${URL_ADMIN}/cadastro/empresatreinamento`, this.form)
+                .then((res) => {
                     if (res.status === 201) {
-                        $('#janelaCadastrar').modal('hide');
-                        mostraSucesso('', 'Empresa Treinamento cadastrado com sucesso');
-                        this.cadastrado = true;
-                        this.preload = false;
-                        this.atualizar();
+                        $('#janelaCadastrar').modal('hide')
+                        mostraSucesso('', 'Empresa Treinamento cadastrado com sucesso')
+                        this.cadastrado = true
+                        this.preload = false
+                        this.atualizar()
                     }
                 })
-                .catch(error => {
-                    this.cadastrado = false;
-                    this.preload = false;
-                });
+                .catch((error) => {
+                    this.cadastrado = false
+                    this.preload = false
+                })
         },
         alterarEmpresaTreinamento(empresatreinamento) {
-            this.cadastrado = false;
-            this.editando = true;
-            this.titulo_janela = "Alterando EmpresaTreinamento";
-            formReset();
+            this.cadastrado = false
+            this.editando = true
+            this.titulo_janela = 'Alterando EmpresaTreinamento'
+            formReset()
 
             this.form = _.cloneDeep(this.formDefault) //copia
 
-            axios.get(`${URL_ADMIN}/cadastro/empresatreinamento/${empresatreinamento}/editar`)
-                .then(response => {
-                    Object.assign(this.form, response.data);
-                    this.editando = true;
-                    setupCampo();
-                }).catch(
-                error => (this.preloadAjax = false)
-            );
-
+            axios
+                .get(`${URL_ADMIN}/cadastro/empresatreinamento/${empresatreinamento}/editar`)
+                .then((response) => {
+                    Object.assign(this.form, response.data)
+                    this.editando = true
+                    setupCampo()
+                })
+                .catch((error) => (this.preloadAjax = false))
         },
         alterarformEmpresaTreinamento() {
-            formReset();
-            $('#janelaCadastrar :input:enabled').trigger('blur');
+            formReset()
+            $('#janelaCadastrar :input:enabled').trigger('blur')
 
             if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
-                return false;
+                mostraErro('', 'Verificar os erros')
+                return false
             }
 
-            this.preload = true;
+            this.preload = true
 
-            axios.put(`${URL_ADMIN}/cadastro/empresatreinamento/${this.form.id}`, this.form).then(response => {
-                $('#janelaCadastrar').modal('hide');
-                mostraSucesso('', 'Empresa Treinamento atualizado com sucesso');
-                this.preload = false;
-                this.atualizado = true;
-                this.atualizar();
-            }).catch(error => (this.preload = false));
-
+            axios
+                .put(`${URL_ADMIN}/cadastro/empresatreinamento/${this.form.id}`, this.form)
+                .then((response) => {
+                    $('#janelaCadastrar').modal('hide')
+                    mostraSucesso('', 'Empresa Treinamento atualizado com sucesso')
+                    this.preload = false
+                    this.atualizado = true
+                    this.atualizar()
+                })
+                .catch((error) => (this.preload = false))
         },
         carregou(dados) {
-            this.lista = dados.items;
-            this.controle.carregando = false;
+            this.lista = dados.items
+            this.controle.carregando = false
         },
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
-        },
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+        }
     }
-
 }
 </script>
 
@@ -319,8 +329,8 @@ ul.timeline > li:before {
 }
 
 .trackind {
-    padding: .5rem .8rem;
+    padding: 0.5rem 0.8rem;
     background-color: #f4f4f4;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
 }
 </style>

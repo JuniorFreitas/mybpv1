@@ -5,7 +5,7 @@
 
     <!--Janela de detalhes-->
     <modal id="janelaFormDetalhes" titulo="Detalhes" size="g" :fechar="!formRegistro.preload">
-        <template slot="conteudo">
+        <template #conteudo>
             <p class="text-center">
                 <preload v-if="formRegistro.preload" label="Aguarde..."></preload>
             </p>
@@ -45,12 +45,12 @@
                 </table>
             </div>
         </template>
-        <template slot="rodape"></template>
+        <template #rodape></template>
     </modal>
 
     <!--Janela de registro-->
     <modal id="janelaFormPonto" :titulo="formPonto.titulo" :fechar="!formPonto.preload" size="g" @fechou="stopGPS">
-        <template slot="conteudo">
+        <template #conteudo>
             <h4 class="text-success text-center" v-if="!formPonto.preload && formPonto.save">
                 <i class="fas fa-check fa-2x"></i> Ponto registrado
             </h4>
@@ -79,7 +79,7 @@
                 </div>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button :disabled="!formPonto.dentro"
                     v-if="!formPonto.preload && !formPonto.save && formPonto.telaGPS"
                     class="btn btn-sm btn-success"
@@ -124,14 +124,16 @@
                                         <h5 class="text-center">@{{ hoje }}</h5>
                                     </div>
                                     <ul class="list-group list-group-flush">
-                                        <template v-if="registros.length > 0" v-for="reg in registros">
-                                            <template v-for="per in reg.periodos">
-                                                <li class="list-group-item text-center" v-if="per.entrada">
-                                                    ENTRADA: <strong>@{{ per.horaEntrada }}</strong>
-                                                </li>
-                                                <li class="list-group-item text-center" v-if="per.saida!=null">
-                                                    SAÍDA: <strong>@{{ per.horaSaida }}</strong>
-                                                </li>
+                                        <template v-if="registros.length > 0">
+                                            <template v-for="reg in registros">
+                                                <template v-for="per in reg.periodos">
+                                                    <li class="list-group-item text-center" v-if="per.entrada">
+                                                        ENTRADA: <strong>@{{ per.horaEntrada }}</strong>
+                                                    </li>
+                                                    <li class="list-group-item text-center" v-if="per.saida!=null">
+                                                        SAÍDA: <strong>@{{ per.horaSaida }}</strong>
+                                                    </li>
+                                                </template>
                                             </template>
                                         </template>
                                         <li v-if="registros.length === 0" class="list-group-item text-center">

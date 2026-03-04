@@ -1,7 +1,7 @@
 <template>
     <div :id="hash">
         <modal id="janelaAvaliacaoFinal" :titulo="titulo_janela_final" :size="90">
-            <template slot="conteudo">
+            <template #conteudo>
                 <preload v-show="preloadAvalFinal"></preload>
                 <div v-if="!preloadAvalFinal">
                     <fieldset>
@@ -221,7 +221,7 @@
                     </fieldset>
                 </div>
             </template>
-            <template slot="rodape">
+            <template #rodape>
                 <button
                     type="button"
                     class="btn btn-sm btn-primary"
@@ -234,7 +234,7 @@
         </modal>
 
         <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
-            <template slot="conteudo">
+            <template #conteudo>
                 <preload v-show="preload"></preload>
                 <div v-if="!preload">
                     <fieldset>
@@ -333,7 +333,7 @@
                     </fieldset>
                 </div>
             </template>
-            <template slot="rodape">
+            <template #rodape>
                 <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preload && !visualizando" @click="salvar()">
                     <i class="fa fa-save"></i> Salvar
                 </button>
@@ -343,7 +343,7 @@
         <div id="conteudo">
             <fieldset>
                 <legend>Filtro</legend>
-                <form class="row" @submit.prevent="$refs.componente.buscar()">
+                <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                     <div class="col-12 col-md-4">
                         <div class="form-group">
                             <label>Avaliações</label>
@@ -351,7 +351,7 @@
                                 class="form-control form-control-sm"
                                 v-model="controle.dados.campoAvaliacao"
                                 :disabled="controle.carregando"
-                                @change="$refs.componente.buscar()"
+                                @change="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null"
                             >
                                 <option :value="item.id" v-for="item in lista_avaliacoes" :key="item.id">{{ item.titulo }} - ({{ item.status }})</option>
                             </select>
@@ -365,7 +365,7 @@
                                 class="form-control form-control-sm"
                                 v-model="controle.dados.campoStatus"
                                 :disabled="controle.carregando"
-                                @change="$refs.componente.buscar()"
+                                @change="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null"
                             >
                                 <option value="">Todos os Status</option>
                                 <option v-for="item in statusAvaliacaoSelecionada" :value="item.value" :key="item.value">
@@ -1099,8 +1099,8 @@ export default {
             this.controle.carregando = true
         },
         async atualizar() {
-            this.$refs.componente.atual = 1
-            await this.$refs.componente.buscar()
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            await this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

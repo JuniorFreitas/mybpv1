@@ -1,34 +1,37 @@
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
 
-const app = new Vue({
-    el: '#app',
-    data: {
-        tituloJanela: 'Cadastrando habilidade',
-        preloadAjax: false,
-        editando: false,
-        id: 0,//id_curso
+const app = createApp({
+    data() {
+        return {
+            tituloJanela: 'Cadastrando habilidade',
+            preloadAjax: false,
+            editando: false,
+            id: 0, //id_curso
 
-        cadastrado: false,
-        atualizado: false,
-        urlAjax: '',
-        apagado: false,
+            cadastrado: false,
+            atualizado: false,
+            urlAjax: '',
+            apagado: false,
 
-        erros: [],
+            erros: [],
 
-        lista: [],
-        dados: {},
-        controle: {
-            carregando: false,
+            lista: [],
             dados: {},
+            controle: {
+                carregando: false,
+                dados: {}
+            }
         }
     },
     methods: {
         formNovo: function () {
-            $('#form')[0].reset();
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.editando = false;
-            this.tituloJanela = "Cadastrando habilidade";
-            formReset();
+            $('#form')[0].reset()
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
+            this.tituloJanela = 'Cadastrando habilidade'
+            formReset()
         },
         cadastrar: function () {
             //var erro=false;
@@ -42,141 +45,130 @@ const app = new Vue({
                 alert('Verificar os erros');
                 return false;
             }*/
-            $('#janelaCadastrar :input:visible').trigger('blur');
-            if($('#janelaCadastrar :input:visible.is-invalid').length){
-                alert('Verificar os erros');
-                return false;
+            $('#janelaCadastrar :input:visible').trigger('blur')
+            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
+                alert('Verificar os erros')
+                return false
             }
-            this.erros = [];
-            var dados = {};
-            dados.nome = $('#nome').val();
-            dados.descricao = $('#descricao').val();
+            this.erros = []
+            var dados = {}
+            dados.nome = $('#nome').val()
+            dados.descricao = $('#descricao').val()
 
-            this.preloadAjax = true;
-            $.post(URL_ADMIN+'/habilidades', dados, function (data) {
-                app.preloadAjax = false;
+            this.preloadAjax = true
+            $.post(URL_ADMIN + '/habilidades', dados, function (data) {
+                app.preloadAjax = false
                 if (data.erro == 's') {
-                    app.erros = data.erros;
-                    alert(data.msg);
+                    app.erros = data.erros
+                    alert(data.msg)
                 } else {
-                    app.cadastrado = true;
-                    $('#controle button:eq(0)').click();
+                    app.cadastrado = true
+                    $('#controle button:eq(0)').click()
                 }
-            });
+            })
         },
         formAlterar: function (id) {
-            app.id = id;
+            app.id = id
 
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.editando = false;
-            this.tituloJanela = "Alterando habilidade";
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
+            this.tituloJanela = 'Alterando habilidade'
 
-            this.erros = [];
-            this.preloadAjax = true;
-            formReset();
+            this.erros = []
+            this.preloadAjax = true
+            formReset()
 
-            $.get(URL_ADMIN+'/habilidades/' + id + "/editar", null, function (data) {
-
-                app.preloadAjax = false;
+            $.get(URL_ADMIN + '/habilidades/' + id + '/editar', null, function (data) {
+                app.preloadAjax = false
                 if (data.erro == 's') {
-                    app.erros = data.erros;
-                    alert(data.msg);
+                    app.erros = data.erros
+                    alert(data.msg)
                 } else {
-                    $('#nome').val(data.nome);
-                    $('#descricao').val(data.descricao);
-                    app.editando = true;
+                    $('#nome').val(data.nome)
+                    $('#descricao').val(data.descricao)
+                    app.editando = true
                 }
-            });
-
-
+            })
         },
         alterar: function () {
-
-            $('#janelaCadastrar :input:visible').trigger('blur');
-            if($('#janelaCadastrar :input:visible.is-invalid').length){
-                alert('Verificar os erros');
-                return false;
+            $('#janelaCadastrar :input:visible').trigger('blur')
+            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
+                alert('Verificar os erros')
+                return false
             }
 
-            this.erros = [];
-            var dados = {};
-            dados.nome = $('#nome').val();
-            dados.descricao = $('#descricao').val();
-            dados._method = 'PUT';
-            this.preloadAjax = true;
+            this.erros = []
+            var dados = {}
+            dados.nome = $('#nome').val()
+            dados.descricao = $('#descricao').val()
+            dados._method = 'PUT'
+            this.preloadAjax = true
 
-            $.post(URL_ADMIN+'/habilidades/' + this.id, dados, function (data) {
-
-                app.preloadAjax = false;
+            $.post(URL_ADMIN + '/habilidades/' + this.id, dados, function (data) {
+                app.preloadAjax = false
                 if (data.erro == 's') {
-                    app.erros = data.erros;
-                    alert(data.msg);
+                    app.erros = data.erros
+                    alert(data.msg)
                 } else {
-                    app.atualizado = true;
-                    $('#controle button:eq(0)').click();
+                    app.atualizado = true
+                    $('#controle button:eq(0)').click()
                 }
-            });
+            })
         },
         janelaConfirmar: function (id) {
-            app.id = id;
-            this.apagado = false;
+            app.id = id
+            this.apagado = false
 
-            this.erros = [];
-            this.preloadAjax = false;
+            this.erros = []
+            this.preloadAjax = false
         },
         apagar: function () {
-            this.erros = [];
-            var dados = {};
-            dados._method = 'DELETE';
-            this.preloadAjax = true;
+            this.erros = []
+            var dados = {}
+            dados._method = 'DELETE'
+            this.preloadAjax = true
 
-            $.post(URL_ADMIN+'/habilidades/' + this.id, dados, function (data) {
-
-                app.preloadAjax = false;
+            $.post(URL_ADMIN + '/habilidades/' + this.id, dados, function (data) {
+                app.preloadAjax = false
                 if (data.erro == 's') {
-                    app.erros = data.erros;
-                    alert(data.msg);
+                    app.erros = data.erros
+                    alert(data.msg)
                 } else {
-                    app.apagado = true;
-                    $('#controle button:eq(0)').click();
+                    app.apagado = true
+                    $('#controle button:eq(0)').click()
                 }
-            });
+            })
         },
 
         carregou: function (dados) {
-
-            this.lista = dados;
-            this.controle.carregando = false;
-
+            this.lista = dados
+            this.controle.carregando = false
         },
         carregando: function () {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         }
-
     }
-});
+})
 
+registerGlobals(app)
+app.mount('#app')
 
 $().ready(function () {
-
     $('#janelaCadastrar').on('shown.bs.modal', function () {
-        $('#nome').focus(); // ja foca no nome quando a janela abrir
-    });
-    $('#btnAtualizar').on('click', atualizar);
-    atualizar();
+        $('#nome').focus() // ja foca no nome quando a janela abrir
+    })
+    $('#btnAtualizar').on('click', atualizar)
+    atualizar()
 
     $('#formBusca').on('submit', function (e) {
-        e.preventDefault();
-        app.controle.dados.campoBusca = $('#campoBusca').val();
-        atualizar();
-    });
-
-
-});
+        e.preventDefault()
+        app.controle.dados.campoBusca = $('#campoBusca').val()
+        atualizar()
+    })
+})
 
 function atualizar() {
-    app.$refs.componente.atual = 1;
-    app.$refs.componente.buscar();
-
+    app.$refs.componente.atual = 1
+    app.this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
 }

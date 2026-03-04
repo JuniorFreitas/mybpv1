@@ -2,7 +2,7 @@
 @section('content_header','Início')
 @section('content')
     <modal id="termosdeuso" titulo="TERMO DE USO E RESPONSABILIDADE" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
             <div class="col-12 termos">
                 <h4 class="text-center"><strong>TERMO DE USO E RESPONSABILIDADE</strong></h4>
                 <br>
@@ -309,7 +309,7 @@
         </template>
     </modal>
     <modal id="termosdeuso_popup" titulo="TERMO DE USO E RESPONSABILIDADE" :fechar="false">
-        <template slot="conteudo">
+        <template #conteudo>
             <div class="row">
                 <div class="col-12">
                     <p class="text-justify">Os Termos de Uso e Política de Privacidade do MyBP foram atualizados em
@@ -323,7 +323,7 @@
                 </div>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button class="btn btn-primary btn-block" :disabled="!check" @click="concordar" style="font-size: 0.9rem">
                 CONFIRMAR
             </button>
@@ -331,7 +331,7 @@
     </modal>
 
     <modal id="celebration" titulo="Atualização de Segurança: Troca Obrigatória de Senha" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
             {{--            <div class="row">--}}
             {{--                <div class="col-12">--}}
             {{--                    <img src="https://mybp-prod.s3.amazonaws.com/public/cert_mensao_honrosa.png" class="img-fluid">--}}
@@ -500,12 +500,13 @@
 @push('js')
 
     <script type="text/javascript">
-        const app = new Vue({
-            el: '#app',
-            data: {
-                check: false,
+        const app = Vue.createApp({
+            data() {
+                return {
+                    check: false
+                }
             },
-            mounted: function () {
+            mounted() {
                 @if(!auth()->user()->termos)
                 $('#termosdeuso_popup').modal('show')
                 @endif
@@ -525,6 +526,11 @@
                 }
             }
         })
+
+        if (window.registerGlobals) {
+            window.registerGlobals(app)
+        }
+        app.mount('#app')
 
     </script>
 @endpush

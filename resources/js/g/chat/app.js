@@ -1,19 +1,19 @@
-import chat from "../../components/Chat"
+import { createApp } from 'vue'
+import { registerGlobals } from '../../registerGlobals'
+import chat from '../../components/Chat'
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     components: {
-        chat,
+        chat
     },
-    data: {
-        preload: false,
+    data() {
+        return {
+            preload: false
+        }
     },
-    mounted() {
+    mounted() {},
+    methods: {}
+})
 
-    },
-    methods: {
-    }
-
-
-});
-
+registerGlobals(app)
+app.mount('#app')

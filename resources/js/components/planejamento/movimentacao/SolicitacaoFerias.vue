@@ -1,76 +1,82 @@
 <template>
     <div>
         <!--Janela de Apagar Férias-->
-        <modal id="janelaApagarFerias" :fechar="!formApagar.preload"
-               :titulo="this.formApagar.titulo">
-            <template slot="conteudo">
-                        <span v-show="formApagar.preload">
-                            <i class="fa fa-spinner fa-pulse"></i> Apagando Solicitação de Férias...
-                        </span>
-                <div v-show="!formApagar.preload && !formApagar.delete && !formApagar.erro" class="alert alert-warning"
-                     role="alert">
+        <modal id="janelaApagarFerias" :fechar="!formApagar.preload" :titulo="this.formApagar.titulo">
+            <template #conteudo>
+                <span v-show="formApagar.preload"> <i class="fa fa-spinner fa-pulse"></i> Apagando Solicitação de Férias... </span>
+                <div v-show="!formApagar.preload && !formApagar.delete && !formApagar.erro" class="alert alert-warning" role="alert">
                     <h4 class="text-center">
-                        <i class="fas fa-exclamation-triangle"></i><br>
+                        <i class="fas fa-exclamation-triangle"></i><br />
                         Atenção! Deseja excluir essa Solicitação de Férias?
                     </h4>
                 </div>
 
-                <div v-show="!formApagar.preload && formApagar.delete && !formApagar.erro" class="alert alert-success"
-                     role="alert">
+                <div v-show="!formApagar.preload && formApagar.delete && !formApagar.erro" class="alert alert-success" role="alert">
                     <h4 class="text-center">
-                        <i class="fas fa-check"></i><br>
+                        <i class="fas fa-check"></i><br />
                         A Solicitação de Férias foi apagada
                     </h4>
                 </div>
 
-                <div v-show="!formApagar.preload && !formApagar.delete && formApagar.erro" class="alert alert-danger"
-                     role="alert">
+                <div v-show="!formApagar.preload && !formApagar.delete && formApagar.erro" class="alert alert-danger" role="alert">
                     <h4 class="text-center">
-                        <i class="fas fa-times-circle"></i><br>
+                        <i class="fas fa-times-circle"></i><br />
                         {{ formApagar.msg }}
                     </h4>
                 </div>
-
-
             </template>
-            <template slot="rodape">
-                <button v-show="!formApagar.preload && !formApagar.delete && !formApagar.erro"
-                        class="btn btn-sm btn-danger"
-                        type="button"
-                        @click="apagarFerias()">
+            <template #rodape>
+                <button
+                    v-show="!formApagar.preload && !formApagar.delete && !formApagar.erro"
+                    class="btn btn-sm btn-danger"
+                    type="button"
+                    @click="apagarFerias()"
+                >
                     <i class="fas fa-trash-alt"></i> Apagar Solicitação de Férias
                 </button>
             </template>
         </modal>
 
         <modal :id="hash" :titulo="tituloJanela" :size="90">
-            <template slot="conteudo">
+            <template #conteudo>
                 <preload v-show="preload" class="text-center"></preload>
-                <form v-if="!preload" :id="`${hash}`" onsubmit="return false;">
+                <form v-if="!preload" :id="`${hash}`" onsubmit="return false">
                     <fieldset>
                         <legend>Informações</legend>
                         <div class="row">
-
-                            <colaborador label="Colaborador *" tipo="ferias" @evtseleciona="dataAdmissao" @evtreseta="dataAdmissao"
-                                         :model="form" :verifica="visualizar || aprovando || aprovandoRh || editando"
-                                         :hash="hash"></colaborador>
+                            <colaborador
+                                label="Colaborador *"
+                                tipo="ferias"
+                                @evtseleciona="dataAdmissao"
+                                @evtreseta="dataAdmissao"
+                                :model="form"
+                                :verifica="visualizar || aprovando || aprovandoRh || editando"
+                                :hash="hash"
+                            ></colaborador>
 
                             <div class="col-12 col-md-4" v-if="form.colaborador_id !== ''">
                                 <div class="form-group">
                                     <label>Data de Admissão</label>
-                                    <input type="text" class="form-control form-control-sm" v-model="form.data_admissao"
-                                           readonly="readonly"
-                                           disabled="disabled">
+                                    <input
+                                        type="text"
+                                        class="form-control form-control-sm"
+                                        v-model="form.data_admissao"
+                                        readonly="readonly"
+                                        disabled="disabled"
+                                    />
                                 </div>
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Centro de Custo <span class="text-danger">*</span></label>
-                                    <select v-model="form.centro_custo_id" class="form-control form-control-sm"
-                                            :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
-                                            onchange="valida_campo_vazio(this,1)"
-                                            onblur="valida_campo_vazio(this,1)">
+                                    <select
+                                        v-model="form.centro_custo_id"
+                                        class="form-control form-control-sm"
+                                        :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
+                                        onchange="valida_campo_vazio(this, 1)"
+                                        onblur="valida_campo_vazio(this, 1)"
+                                    >
                                         <option value="">Selecione</option>
                                         <option v-for="item in centro_custos" :value="item.id">
                                             {{ item.label }}
@@ -85,13 +91,15 @@
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Período Aquisitivo <span class="text-danger">*</span></label>
-                                    <select v-model="form.periodo_aquisitivo_id" class="form-control form-control-sm"
-                                            :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
-                                            onchange="valida_campo_vazio(this,1)"
-                                            onblur="valida_campo_vazio(this,1)">
+                                    <select
+                                        v-model="form.periodo_aquisitivo_id"
+                                        class="form-control form-control-sm"
+                                        :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
+                                        onchange="valida_campo_vazio(this, 1)"
+                                        onblur="valida_campo_vazio(this, 1)"
+                                    >
                                         <option value="">Selecione</option>
-                                        <option v-for="periodo in periodos" :value="periodo.id">{{ periodo.label }}
-                                        </option>
+                                        <option v-for="periodo in periodos" :value="periodo.id">{{ periodo.label }}</option>
                                     </select>
                                 </div>
                             </div>
@@ -99,17 +107,19 @@
                             <div class="col-12 col-md-4" v-if="ultimaData !== ''">
                                 <div class="form-group">
                                     <label>Última Data</label>
-                                    <input type="text" class="form-control form-control-sm" v-model="ultimaData"
-                                           readonly="readonly"
-                                           disabled="disabled">
+                                    <input type="text" class="form-control form-control-sm" v-model="ultimaData" readonly="readonly" disabled="disabled" />
                                 </div>
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <label>Tem Falta?</label>
-                                <select type="text" class="form-control form-control-sm" v-model="form.tem_faltas"
-                                        :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
-                                        @change.prevent="verificaFaltas()">
+                                <select
+                                    type="text"
+                                    class="form-control form-control-sm"
+                                    v-model="form.tem_faltas"
+                                    :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
+                                    @change.prevent="verificaFaltas()"
+                                >
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
                                 </select>
@@ -117,24 +127,28 @@
 
                             <div class="col-12 col-md-4" v-if="form.tem_faltas === true">
                                 <label>Quantidade de faltas</label>
-                                <select class="form-control form-control-sm" v-model="form.qnt_faltas"
-                                        :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
-                                        @change.prevent="form.qnt_dias=5">
+                                <select
+                                    class="form-control form-control-sm"
+                                    v-model="form.qnt_faltas"
+                                    :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
+                                    @change.prevent="form.qnt_dias = 5"
+                                >
                                     <option v-for="cont in 32" :value="cont" v-show="cont >= 1">{{ cont }}</option>
                                 </select>
                             </div>
 
                             <div class="col-12 col-md-4" v-if="!aprovando">
                                 <label>Quantidade de dias disponíveis</label>
-                                <input type="text" class="form-control form-control-sm" v-model="qntDias"
-                                       readonly="readonly"
-                                       disabled="disabled">
+                                <input type="text" class="form-control form-control-sm" v-model="qntDias" readonly="readonly" disabled="disabled" />
                             </div>
 
                             <div class="col-12 col-md-4 mb-3">
                                 <label>Dias de férias: <span class="text-danger">*</span></label>
-                                <select class="form-control form-control-sm" v-model="form.qnt_dias"
-                                        :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando">
+                                <select
+                                    class="form-control form-control-sm"
+                                    v-model="form.qnt_dias"
+                                    :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
+                                >
                                     <option v-for="cont in qntDias" :value="cont" v-show="cont >= 5">
                                         {{ cont }}
                                     </option>
@@ -143,28 +157,33 @@
 
                             <div class="col-12 col-md-4">
                                 <label>Data da saída <span class="text-danger">*</span></label>
-                                <datepicker label="" formsm class="corrigiDatepicker" v-model="form.data_saida"
-                                            :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"></datepicker>
+                                <datepicker
+                                    label=""
+                                    formsm
+                                    class="corrigiDatepicker"
+                                    v-model="form.data_saida"
+                                    :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
+                                ></datepicker>
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <label>Data do retorno</label>
-                                <input type="text" class="form-control form-control-sm" v-model="dataRetorno"
-                                       readonly="readonly"
-                                       disabled="disabled">
+                                <input type="text" class="form-control form-control-sm" v-model="dataRetorno" readonly="readonly" disabled="disabled" />
                             </div>
 
                             <div class="col-12 col-md-4 mb-3" v-if="!aprovando">
                                 <label>Dias de saldo</label>
-                                <input type="text" class="form-control form-control-sm" v-model="qntSaldo"
-                                       readonly="readonly"
-                                       disabled="disabled">
+                                <input type="text" class="form-control form-control-sm" v-model="qntSaldo" readonly="readonly" disabled="disabled" />
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <label>Abono Pecuniário</label>
-                                <select type="text" class="form-control form-control-sm" v-model="form.abono_pecuniario"
-                                        :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando">
+                                <select
+                                    type="text"
+                                    class="form-control form-control-sm"
+                                    v-model="form.abono_pecuniario"
+                                    :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
+                                >
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
                                 </select>
@@ -172,30 +191,33 @@
 
                             <div class="col-12 col-md-4 mb-3">
                                 <label>Adiantamento Décimo Terceiros</label>
-                                <select type="text" class="form-control form-control-sm"
-                                        v-model="form.adiantamento_decimo_terceiro"
-                                        :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando">
+                                <select
+                                    type="text"
+                                    class="form-control form-control-sm"
+                                    v-model="form.adiantamento_decimo_terceiro"
+                                    :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
+                                >
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
                                 </select>
                             </div>
 
-                            <gestoraprovacao label="Gestor Aprovação *" formsm :model="form" :verifica="visualizar || aprovando"
-                                             :hash="hash"></gestoraprovacao>
+                            <gestoraprovacao label="Gestor Aprovação *" formsm :model="form" :verifica="visualizar || aprovando" :hash="hash"></gestoraprovacao>
 
                             <div class="col-12">
                                 <div class="form-group">
                                     <label>Observação</label>
-                                    <textarea class="form-control form-control-sm" v-model="form.obs_solicitante"
-                                              cols="5" rows="5"
-                                              :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"></textarea>
+                                    <textarea
+                                        class="form-control form-control-sm"
+                                        v-model="form.obs_solicitante"
+                                        cols="5"
+                                        rows="5"
+                                        :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
+                                    ></textarea>
                                 </div>
                             </div>
                             <div class="col-12 col-md-4 mt-4 mb-4" v-if="visualizar">
-                                <legend>Solicitação feita por: {{
-                                        form.solicitante !== null ? form.solicitante.nome : ''
-                                    }} {{ form.data_solicitacao }}
-                                </legend>
+                                <legend>Solicitação feita por: {{ form.solicitante !== null ? form.solicitante.nome : '' }} {{ form.data_solicitacao }}</legend>
                             </div>
                         </div>
 
@@ -207,8 +229,8 @@
                             <legend>Aprovação Gestor</legend>
                             <div class="row">
                                 <div v-if="!aprovando && form.gestor_aprovacao" class="col-12">
-                                    <legend>{{ form.status_aprovacao_gestor }}
-                                        por: {{ form.gestor_aprovacao.nome }} em {{ form.data_aprovacao_gestor }}
+                                    <legend>
+                                        {{ form.status_aprovacao_gestor }} por: {{ form.gestor_aprovacao.nome }} em {{ form.data_aprovacao_gestor }}
                                     </legend>
                                 </div>
 
@@ -256,9 +278,7 @@
                             <legend v-if="temAprovacaoExtra">{{ nomeAprovacaoExtra }}</legend>
                             <div class="row" v-if="temAprovacaoExtra">
                                 <div v-if="!aprovandoExtra && form.aprovacao_extra" class="col-12">
-                                    <legend>{{ form.status_aprovacao_extra }}
-                                        por: {{ form.aprovacao_extra.nome }} em {{ form.data_aprovacao_extra }}
-                                    </legend>
+                                    <legend>{{ form.status_aprovacao_extra }} por: {{ form.aprovacao_extra.nome }} em {{ form.data_aprovacao_extra }}</legend>
                                 </div>
 
                                 <div class="col-12">
@@ -293,9 +313,7 @@
                             </div>
                         </fieldset>
 
-                        <div class="alert alert-warning" v-if="aprovandoRh">
-                            Esta solicitação ainda não foi aprovada ou reprovada!
-                        </div>
+                        <div class="alert alert-warning" v-if="aprovandoRh">Esta solicitação ainda não foi aprovada ou reprovada!</div>
 
                         <fieldset v-if="visualizar || aprovandoRh">
                             <legend>Aprovação RH</legend>
@@ -338,87 +356,77 @@
 
                         <fieldset>
                             <legend>Anexos</legend>
-                            <upload :model="form.anexos"
-                                    :model-delete="form.anexosDel"
-                                    :url="url_anexo"
-                                    :tipos="mimes"
-                                    label="Selecionar"
-                                    :leitura="!podeanexar"
-                                    @onProgresso="anexoUploadAndamento=true"
-                                    @onFinalizado="anexoUploadAndamento=false"></upload>
+                            <upload
+                                :model="form.anexos"
+                                :model-delete="form.anexosDel"
+                                :url="url_anexo"
+                                :tipos="mimes"
+                                label="Selecionar"
+                                :leitura="!podeanexar"
+                                @onProgresso="anexoUploadAndamento = true"
+                                @onFinalizado="anexoUploadAndamento = false"
+                            ></upload>
                         </fieldset>
-
-
                     </fieldset>
                 </form>
             </template>
-            <template slot="rodape">
+            <template #rodape>
                 <div v-show="cadastrando">
-                    <button type="button" class="btn btn-sm btn-primary"
-                            v-show="!preload"
-                            @click.prevent="cadastrar">
+                    <button type="button" class="btn btn-sm btn-primary" v-show="!preload" @click.prevent="cadastrar">
                         <i class="fa fa-save"></i> Cadastrar
                     </button>
                 </div>
-                <button type="button" class="btn btn-sm btn-primary"
-                        v-show="aprovando && !preload" @click.prevent="aprovarGestor">
+                <button type="button" class="btn btn-sm btn-primary" v-show="aprovando && !preload" @click.prevent="aprovarGestor">
                     <i class="fa fa-save"></i> Salvar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary"
-                        v-show="aprovandoExtra && !preload" @click.prevent="aprovarExtra">
+                <button type="button" class="btn btn-sm btn-primary" v-show="aprovandoExtra && !preload" @click.prevent="aprovarExtra">
                     <i class="fa fa-save"></i> Salvar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary"
-                        v-show="editando && !preload" @click.prevent="editar">
+                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preload" @click.prevent="editar">
                     <i class="fa fa-save"></i> Salvar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary"
-                        v-show="aprovandoRh && !preload" @click.prevent="aprovarRh">
+                <button type="button" class="btn btn-sm btn-primary" v-show="aprovandoRh && !preload" @click.prevent="aprovarRh">
                     <i class="fa fa-save"></i> Salvar
                 </button>
             </template>
         </modal>
 
-        <modal id="janelaAtualizaStatus" titulo="Deseja APROVAR ou REPROVAR todos os colaboradores selecionados?"
-               :centralizada="true" label-fechar="Fechar">
-            <template slot="conteudo">
+        <modal id="janelaAtualizaStatus" titulo="Deseja APROVAR ou REPROVAR todos os colaboradores selecionados?" :centralizada="true" label-fechar="Fechar">
+            <template #conteudo>
                 <div class="col-12">
                     <div class="form-group">
                         <label>Observação</label>
-                        <textarea class="form-control form-control-sm"
-                                  v-model="formConfirmacao.obs_aprovacao"
-                                  cols="5" rows="5"></textarea>
+                        <textarea class="form-control form-control-sm" v-model="formConfirmacao.obs_aprovacao" cols="5" rows="5"></textarea>
                     </div>
                 </div>
                 <div class="col-12">
-                    <button type="button" class="btn btn-sm btn-success" @click="confirmaAtualizacaoStatus('aprovado')">
-                        APROVAR
-                    </button>
-                    <button type="button" class="btn btn-sm btn-danger" @click="confirmaAtualizacaoStatus('reprovado')">
-                        REPROVAR
-                    </button>
+                    <button type="button" class="btn btn-sm btn-success" @click="confirmaAtualizacaoStatus('aprovado')">APROVAR</button>
+                    <button type="button" class="btn btn-sm btn-danger" @click="confirmaAtualizacaoStatus('reprovado')">REPROVAR</button>
                 </div>
             </template>
         </modal>
 
         <fieldset class="mt-0">
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="$refs.componente.buscar()">
+            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label>Período Aquisitivo</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.filtroPeriodoAquisitivo"
-                                :disabled="controle.carregando" @change="atualizar()">
+                        <select
+                            class="form-control form-control-sm"
+                            v-model="controle.dados.filtroPeriodoAquisitivo"
+                            :disabled="controle.carregando"
+                            @change="atualizar()"
+                        >
                             <option value="">Últimos 3 períodos</option>
-                            <option v-for="item in periodos" :value="item.id" :key="item.id"
-                                    v-text="item.label"></option>
+                            <option v-for="item in periodos" :value="item.id" :key="item.id" v-text="item.label"></option>
                         </select>
                     </div>
                 </div>
                 <date-range-filter
-                    :enabled.sync="controle.dados.filtroPeriodo"
-                    :start-date.sync="controle.dados.dataInicio"
-                    :end-date.sync="controle.dados.dataFim"
+                    v-model:enabled="controle.dados.filtroPeriodo"
+                    v-model:start-date="controle.dados.dataInicio"
+                    v-model:end-date="controle.dados.dataFim"
                     :disabled="controle.carregando || controle.dados.filtroVencimento || controle.dados.filtroInicioFerias"
                     :id-suffix="`cadastrado_${hash}`"
                     label="Por período cadastrado"
@@ -427,9 +435,9 @@
                 />
 
                 <date-range-filter
-                    :enabled.sync="controle.dados.filtroVencimento"
-                    :start-date.sync="controle.dados.dataInicioVencimento"
-                    :end-date.sync="controle.dados.dataFimVencimento"
+                    v-model:enabled="controle.dados.filtroVencimento"
+                    v-model:start-date="controle.dados.dataInicioVencimento"
+                    v-model:end-date="controle.dados.dataFimVencimento"
                     :disabled="controle.carregando || controle.dados.filtroPeriodo || controle.dados.filtroInicioFerias"
                     :id-suffix="`vencimento_${hash}`"
                     label="Por período de vencimento"
@@ -438,9 +446,9 @@
                 />
 
                 <date-range-filter
-                    :enabled.sync="controle.dados.filtroInicioFerias"
-                    :start-date.sync="controle.dados.dataInicioFerias"
-                    :end-date.sync="controle.dados.dataFimFerias"
+                    v-model:enabled="controle.dados.filtroInicioFerias"
+                    v-model:start-date="controle.dados.dataInicioFerias"
+                    v-model:end-date="controle.dados.dataFimFerias"
                     :disabled="controle.carregando || controle.dados.filtroVencimento || controle.dados.filtroPeriodo"
                     :id-suffix="`inicioferias_${hash}`"
                     label="Por período de início das férias"
@@ -451,19 +459,26 @@
                 <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label>Pesquisar</label>
-                        <input type="text"
-                               placeholder="Buscar por colaborador"
-                               autocomplete="off"
-                               class="form-control form-control-sm" :disabled="controle.carregando"
-                               v-model="controle.dados.campoBusca">
+                        <input
+                            type="text"
+                            placeholder="Buscar por colaborador"
+                            autocomplete="off"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoBusca"
+                        />
                     </div>
                 </div>
 
                 <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label>Status</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.campoStatusAprovacao"
-                                :disabled="controle.carregando" @change="atualizar()">
+                        <select
+                            class="form-control form-control-sm"
+                            v-model="controle.dados.campoStatusAprovacao"
+                            :disabled="controle.carregando"
+                            @change="atualizar()"
+                        >
                             <option value="">Todos os Status</option>
                             <option value="aberto">Em aberto</option>
                             <option value="aprovado_gestor">Aprovado Gestor</option>
@@ -476,8 +491,7 @@
                 <div class="col-12 col-md-2">
                     <div class="form-group">
                         <label>Ordenar por</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.ordenacao"
-                                :disabled="controle.carregando" @change="atualizar()">
+                        <select class="form-control form-control-sm" v-model="controle.dados.ordenacao" :disabled="controle.carregando" @change="atualizar()">
                             <option value="created_at_desc">Mais recente</option>
                             <option value="created_at_asc">Mais antigo</option>
                             <option value="updated_at_desc">Última modificação</option>
@@ -488,9 +502,7 @@
                 <div class="col-12 col-md-2">
                     <div class="form-group">
                         <label for="">Exibir</label>
-                        <select class="form-control form-control-sm" @change="atualizar()"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.pages">
+                        <select class="form-control form-control-sm" @change="atualizar()" :disabled="controle.carregando" v-model="controle.dados.pages">
                             <option v-for="item in por_pagina" :value="item">{{ item }}</option>
                         </select>
                     </div>
@@ -500,30 +512,40 @@
             </form>
 
             <div class="d-flex">
-                <button type="button" class="btn btn-sm btn-success mr-1" :disabled="controle.carregando"
-                        @click="atualizar">
+                <button type="button" class="btn btn-sm btn-success mr-1" :disabled="controle.carregando" @click="atualizar">
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
 
-                <button type="button" class="btn btn-sm btn-primary mr-1" data-toggle="modal"
-                        :disabled="controle.carregando"
-                        :data-target="`#${hash}`"
-                        @click.prevent="formNovo">
+                <button
+                    type="button"
+                    class="btn btn-sm btn-primary mr-1"
+                    data-toggle="modal"
+                    :disabled="controle.carregando"
+                    :data-target="`#${hash}`"
+                    @click.prevent="formNovo"
+                >
                     Solicitar
                 </button>
 
-                <button type="button" class="btn btn-sm btn-primary  mr-1"
-                        @click.prevent="exportaExcel()"
-                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && !lista.length) ">
+                <button
+                    type="button"
+                    class="btn btn-sm btn-primary mr-1"
+                    @click.prevent="exportaExcel()"
+                    :disabled="controle.carregando || preloadExportacao || (!controle.carregando && !lista.length)"
+                >
                     <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
                 </button>
 
-                <button type="submit" class="btn btn-sm btn-primary mr-1" v-show="selecionados.length > 0"
-                        :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                        :disabled="selecionados.length === 0"
-                        data-toggle="modal"
-                        data-target="#janelaAtualizaStatus">
+                <button
+                    type="submit"
+                    class="btn btn-sm btn-primary mr-1"
+                    v-show="selecionados.length > 0"
+                    :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
+                    :disabled="selecionados.length === 0"
+                    data-toggle="modal"
+                    data-target="#janelaAtualizaStatus"
+                >
                     Atualizar Status <span class="badge badge-light">{{ selecionados.length }}</span>
                 </button>
             </div>
@@ -532,7 +554,7 @@
         <preload class="text-center" v-if="controle.carregando"></preload>
 
         <div id="conteudo">
-            <div class="alert alert-warning" v-show="!controle.carregando && lista.length===0">
+            <div class="alert alert-warning" v-show="!controle.carregando && lista.length === 0">
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
@@ -553,11 +575,7 @@
 
             <!-- Cards Compactos -->
             <div class="cards-lista" v-show="!controle.carregando && lista.length > 0">
-                <div
-                    class="solicitacao-card"
-                    v-for="item in lista"
-                    :key="item.id"
-                >
+                <div class="solicitacao-card" v-for="item in lista" :key="item.id">
                     <!-- Cabeçalho do Card -->
                     <div class="card-header-row">
                         <div class="card-left">
@@ -580,92 +598,143 @@
                                 <strong>{{ item.admissao.feedback.curriculo.nome }}</strong>
                             </div>
                             <div class="data-info ml-3">
-                                <i class="fas fa-calendar-plus text-muted" style="font-size: 0.75rem;"></i>
+                                <i class="fas fa-calendar-plus text-muted" style="font-size: 0.75rem"></i>
                                 <small class="text-muted">{{ item.data_solicitacao }}</small>
                                 <span v-if="item.updated_at && item.updated_at !== item.data_solicitacao" class="mx-2 text-muted">|</span>
                                 <template v-if="item.updated_at && item.updated_at !== item.data_solicitacao">
-                                    <i class="fas fa-calendar-check text-info" style="font-size: 0.75rem;"></i>
+                                    <i class="fas fa-calendar-check text-info" style="font-size: 0.75rem"></i>
                                     <small class="text-info">{{ item.updated_at }}</small>
                                 </template>
                             </div>
                         </div>
                         <div class="card-right">
-                            <span class="status-badge" :class="{
-                                'status-reprovado': item.status_aprovacao_gestor === 'reprovado' || item.status_aprovacao_extra === 'reprovado' || item.status_aprovacao_rh === 'reprovado',
-                                'status-aprovado': item.status_aprovacao_rh === 'aprovado',
-                                'status-aprovado-extra': temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado' && !item.status_aprovacao_rh,
-                                'status-aprovado-gestor': item.status_aprovacao_gestor === 'aprovado' && (!temAprovacaoExtra || !item.status_aprovacao_extra) && !item.status_aprovacao_rh,
-                                'status-pendente': !item.status_aprovacao_gestor,
-                            }">
-                                <span v-if="item.status_aprovacao_gestor === 'reprovado' || item.status_aprovacao_extra === 'reprovado' || item.status_aprovacao_rh === 'reprovado'">
+                            <span
+                                class="status-badge"
+                                :class="{
+                                    'status-reprovado':
+                                        item.status_aprovacao_gestor === 'reprovado' ||
+                                        item.status_aprovacao_extra === 'reprovado' ||
+                                        item.status_aprovacao_rh === 'reprovado',
+                                    'status-aprovado': item.status_aprovacao_rh === 'aprovado',
+                                    'status-aprovado-extra': temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado' && !item.status_aprovacao_rh,
+                                    'status-aprovado-gestor':
+                                        item.status_aprovacao_gestor === 'aprovado' &&
+                                        (!temAprovacaoExtra || !item.status_aprovacao_extra) &&
+                                        !item.status_aprovacao_rh,
+                                    'status-pendente': !item.status_aprovacao_gestor
+                                }"
+                            >
+                                <span
+                                    v-if="
+                                        item.status_aprovacao_gestor === 'reprovado' ||
+                                        item.status_aprovacao_extra === 'reprovado' ||
+                                        item.status_aprovacao_rh === 'reprovado'
+                                    "
+                                >
                                     <i class="fas fa-times-circle"></i> REPROVADO
                                 </span>
-                                <span v-else-if="item.status_aprovacao_rh === 'aprovado'">
-                                    <i class="fas fa-check-circle"></i> APROVADO RH
-                                </span>
+                                <span v-else-if="item.status_aprovacao_rh === 'aprovado'"> <i class="fas fa-check-circle"></i> APROVADO RH </span>
                                 <span v-else-if="temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado'">
                                     <i class="fas fa-check-circle"></i> APROVADO {{ nomeAprovacaoExtra.toUpperCase() }}
                                 </span>
-                                <span v-else-if="item.status_aprovacao_gestor === 'aprovado'">
-                                    <i class="fas fa-check-circle"></i> APROVADO GESTOR
-                                </span>
-                                <span v-else>
-                                    <i class="fas fa-clock"></i> EM ABERTO
-                                </span>
+                                <span v-else-if="item.status_aprovacao_gestor === 'aprovado'"> <i class="fas fa-check-circle"></i> APROVADO GESTOR </span>
+                                <span v-else> <i class="fas fa-clock"></i> EM ABERTO </span>
                             </span>
                             <div class="dropdown show">
-                                <a class="btn-actions-compact" href="#" role="button"
-                                   id="dropdownMenuLink"
-                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <a
+                                    class="btn-actions-compact"
+                                    href="#"
+                                    role="button"
+                                    id="dropdownMenuLink"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false"
+                                >
                                     <i class="fas fa-ellipsis-v"></i>
                                 </a>
 
-                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
-                                     aria-labelledby="dropdownMenuLink">
-                                    <a class="dropdown-item" href="javascript://" title="Aprovação Gestor"
-                                       data-toggle="modal"
-                                       :data-target="`#${hash}`"
-                                       @click.prevent="formOpen(item.id); visualizar = false; aprovando = true; aprovandoExtra = false; aprovandoRh = false; podeanexar = false; editando = false;"
-                                       v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor">
+                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Aprovação Gestor"
+                                        data-toggle="modal"
+                                        :data-target="`#${hash}`"
+                                        @click.prevent="formOpen(item.id); visualizar = false; aprovando = true; aprovandoExtra = false; aprovandoRh = false; podeanexar = false; editando = false"
+                                        v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor"
+                                    >
                                         Aprovação Gestor
                                     </a>
 
-                                    <a class="dropdown-item" href="javascript://" :title="nomeAprovacaoExtra || 'Aprovação Extra'"
-                                       data-toggle="modal"
-                                       :data-target="`#${hash}`"
-                                       @click.prevent="formOpen(item.id); visualizar = false; aprovando = false; aprovandoExtra = true; aprovandoRh = false; podeanexar = false; editando = false;"
-                                       v-if="temAprovacaoExtra && podeAprovarExtra && item.status_aprovacao_gestor === 'aprovado' && !item.aprovacao_extra_nome && !item.aprovado_via_script && !item.rh_aprovacao_id">
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        :title="nomeAprovacaoExtra || 'Aprovação Extra'"
+                                        data-toggle="modal"
+                                        :data-target="`#${hash}`"
+                                        @click.prevent="formOpen(item.id); visualizar = false; aprovando = false; aprovandoExtra = true; aprovandoRh = false; podeanexar = false; editando = false"
+                                        v-if="
+                                            temAprovacaoExtra &&
+                                            podeAprovarExtra &&
+                                            item.status_aprovacao_gestor === 'aprovado' &&
+                                            !item.aprovacao_extra_nome &&
+                                            !item.aprovado_via_script &&
+                                            !item.rh_aprovacao_id
+                                        "
+                                    >
                                         {{ nomeAprovacaoExtra || 'Aprovação Extra' }}
                                     </a>
 
-                                    <a class="dropdown-item" href="javascript://" title="Aprovação RH"
-                                       data-toggle="modal"
-                                       :data-target="`#${hash}`"
-                                       @click.prevent="formOpen(item.id); visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = true; editando = false; podeanexar = false"
-                                       v-if="((item.status_aprovacao_gestor === 'aprovado' && !temAprovacaoExtra) || (item.status_aprovacao_extra === 'aprovado')) && !item.aprovado_via_script && item.rh_aprovacao_id === null && aprovaRh">
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Aprovação RH"
+                                        data-toggle="modal"
+                                        :data-target="`#${hash}`"
+                                        @click.prevent="formOpen(item.id); visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = true; editando = false; podeanexar = false"
+                                        v-if="
+                                            ((item.status_aprovacao_gestor === 'aprovado' && !temAprovacaoExtra) ||
+                                                item.status_aprovacao_extra === 'aprovado') &&
+                                            !item.aprovado_via_script &&
+                                            item.rh_aprovacao_id === null &&
+                                            aprovaRh
+                                        "
+                                    >
                                         Aprovação Rh
                                     </a>
 
-                                    <a class="dropdown-item" href="javascript://" title="Editar"
-                                       data-toggle="modal"
-                                       :data-target="`#${hash}`"
-                                       @click.prevent="formOpen(item.id); visualizar = false; aprovando = false; aprovandoExtra = false; aprovandoRh = false; editando = true; podeanexar = true"
-                                       v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor && permissoes.update">
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Editar"
+                                        data-toggle="modal"
+                                        :data-target="`#${hash}`"
+                                        @click.prevent="formOpen(item.id); visualizar = false; aprovando = false; aprovandoExtra = false; aprovandoRh = false; editando = true; podeanexar = true"
+                                        v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor && permissoes.update"
+                                    >
                                         Editar
                                     </a>
 
-                                    <a class="dropdown-item" href="javascript://" title="Apagar"
-                                       data-target="#janelaApagarFerias"
-                                       data-toggle="modal"
-                                       @click.prevent="formApagarFerias(item.id)"
-                                       v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor && permissoes.delete">
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Apagar"
+                                        data-target="#janelaApagarFerias"
+                                        data-toggle="modal"
+                                        @click.prevent="formApagarFerias(item.id)"
+                                        v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor && permissoes.delete"
+                                    >
                                         Apagar
                                     </a>
 
-                                    <a class="dropdown-item" href="javascript://" title="Visualizar"
-                                       data-toggle="modal"
-                                       :data-target="`#${hash}`"
-                                       @click.prevent="formOpen(item.id); visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = false; editando = false; podeanexar = false">
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Visualizar"
+                                        data-toggle="modal"
+                                        :data-target="`#${hash}`"
+                                        @click.prevent="formOpen(item.id); visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = false; editando = false; podeanexar = false"
+                                    >
                                         Visualizar
                                     </a>
                                 </div>
@@ -722,12 +791,9 @@
                             <i class="fas fa-chevron-right text-muted mx-2"></i>
                             <!-- Gestor -->
                             <div class="fluxo-step">
-                                <i v-if="item.status_aprovacao_gestor === 'aprovado'"
-                                   class="fas fa-check-circle text-success"></i>
-                                <i v-else-if="item.status_aprovacao_gestor === 'reprovado'"
-                                   class="fas fa-times-circle text-danger"></i>
-                                <i v-else
-                                   class="fas fa-clock text-muted"></i>
+                                <i v-if="item.status_aprovacao_gestor === 'aprovado'" class="fas fa-check-circle text-success"></i>
+                                <i v-else-if="item.status_aprovacao_gestor === 'reprovado'" class="fas fa-times-circle text-danger"></i>
+                                <i v-else class="fas fa-clock text-muted"></i>
                                 <div class="fluxo-info">
                                     <small class="fluxo-etapa">Gestor</small>
                                     <small v-if="item.status_aprovacao_gestor === 'aprovado'" class="fluxo-aprovador text-success">
@@ -745,16 +811,14 @@
 
                             <!-- Aprovação Extra (se configurada) -->
                             <div class="fluxo-step" v-if="temAprovacaoExtra">
-                                <i v-if="item.status_aprovacao_gestor === 'reprovado'"
-                                   class="fas fa-ban text-secondary"></i>
-                                <i v-else-if="item.status_aprovacao_extra === 'aprovado'"
-                                   class="fas fa-check-circle text-success"></i>
-                                <i v-else-if="item.status_aprovacao_extra === 'reprovado'"
-                                   class="fas fa-times-circle text-danger"></i>
-                                <i v-else-if="item.status_aprovacao_gestor === 'aprovado' && !item.status_aprovacao_extra"
-                                   class="fas fa-clock text-warning"></i>
-                                <i v-else
-                                   class="fas fa-circle text-muted"></i>
+                                <i v-if="item.status_aprovacao_gestor === 'reprovado'" class="fas fa-ban text-secondary"></i>
+                                <i v-else-if="item.status_aprovacao_extra === 'aprovado'" class="fas fa-check-circle text-success"></i>
+                                <i v-else-if="item.status_aprovacao_extra === 'reprovado'" class="fas fa-times-circle text-danger"></i>
+                                <i
+                                    v-else-if="item.status_aprovacao_gestor === 'aprovado' && !item.status_aprovacao_extra"
+                                    class="fas fa-clock text-warning"
+                                ></i>
+                                <i v-else class="fas fa-circle text-muted"></i>
                                 <div class="fluxo-info">
                                     <small class="fluxo-etapa">{{ nomeAprovacaoExtra }}</small>
                                     <small v-if="item.status_aprovacao_gestor === 'reprovado'" class="fluxo-status text-secondary">
@@ -766,9 +830,7 @@
                                     <small v-else-if="item.status_aprovacao_extra === 'reprovado'" class="fluxo-aprovador text-danger">
                                         {{ item.aprovacao_extra_nome }}
                                     </small>
-                                    <small v-else-if="item.status_aprovacao_gestor === 'aprovado'" class="fluxo-status text-warning">
-                                        Aguardando
-                                    </small>
+                                    <small v-else-if="item.status_aprovacao_gestor === 'aprovado'" class="fluxo-status text-warning"> Aguardando </small>
                                     <small v-else class="fluxo-status">Pendente</small>
                                     <small v-if="item.data_aprovacao_extra" class="fluxo-data">{{ item.data_aprovacao_extra }}</small>
                                 </div>
@@ -778,19 +840,28 @@
 
                             <!-- RH -->
                             <div class="fluxo-step">
-                                <i v-if="item.status_aprovacao_gestor === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')"
-                                   class="fas fa-ban text-secondary"></i>
-                                <i v-else-if="item.status_aprovacao_rh === 'aprovado'"
-                                   class="fas fa-check-circle text-success"></i>
-                                <i v-else-if="item.status_aprovacao_rh === 'reprovado'"
-                                   class="fas fa-times-circle text-danger"></i>
-                                <i v-else-if="(temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') || (!temAprovacaoExtra && item.status_aprovacao_gestor === 'aprovado')"
-                                   class="fas fa-clock text-warning"></i>
-                                <i v-else
-                                   class="fas fa-circle text-muted"></i>
+                                <i
+                                    v-if="item.status_aprovacao_gestor === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')"
+                                    class="fas fa-ban text-secondary"
+                                ></i>
+                                <i v-else-if="item.status_aprovacao_rh === 'aprovado'" class="fas fa-check-circle text-success"></i>
+                                <i v-else-if="item.status_aprovacao_rh === 'reprovado'" class="fas fa-times-circle text-danger"></i>
+                                <i
+                                    v-else-if="
+                                        (temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') ||
+                                        (!temAprovacaoExtra && item.status_aprovacao_gestor === 'aprovado')
+                                    "
+                                    class="fas fa-clock text-warning"
+                                ></i>
+                                <i v-else class="fas fa-circle text-muted"></i>
                                 <div class="fluxo-info">
                                     <small class="fluxo-etapa">RH</small>
-                                    <small v-if="item.status_aprovacao_gestor === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')" class="fluxo-status text-secondary">
+                                    <small
+                                        v-if="
+                                            item.status_aprovacao_gestor === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')
+                                        "
+                                        class="fluxo-status text-secondary"
+                                    >
                                         Cancelada por reprovação
                                     </small>
                                     <small v-else-if="item.status_aprovacao_rh === 'aprovado'" class="fluxo-aprovador text-success">
@@ -799,7 +870,13 @@
                                     <small v-else-if="item.status_aprovacao_rh === 'reprovado'" class="fluxo-aprovador text-danger">
                                         {{ item.rh_aprovacao ? item.rh_aprovacao.nome : '' }}
                                     </small>
-                                    <small v-else-if="(temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') || (!temAprovacaoExtra && item.status_aprovacao_gestor === 'aprovado')" class="fluxo-status text-warning">
+                                    <small
+                                        v-else-if="
+                                            (temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') ||
+                                            (!temAprovacaoExtra && item.status_aprovacao_gestor === 'aprovado')
+                                        "
+                                        class="fluxo-status text-warning"
+                                    >
                                         Aguardando
                                     </small>
                                     <small v-else class="fluxo-status">Pendente</small>
@@ -812,23 +889,29 @@
             </div>
         </div>
 
-        <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
-                            :url="urlPaginacao" :por-pagina="controle.dados.pages"
-                            :dados="controle.dados"
-                            v-on:carregou="carregou" v-on:carregando="carregando"/>
+        <controle-paginacao
+            class="d-flex justify-content-center"
+            id="controle"
+            ref="componente"
+            :url="urlPaginacao"
+            :por-pagina="controle.dados.pages"
+            :dados="controle.dados"
+            v-on:carregou="carregou"
+            v-on:carregando="carregando"
+        />
     </div>
 </template>
 
 <script>
-import colaborador from "../../Colaborador";
-import gestoraprovacao from "../../GestorAprovacao";
-import configselect2 from "../../../components/Select2/mixSelec2";
-import Select2 from "../../../components/Select2/Select2";
-import ExportacaoMixin from "../../../mixins/Exportacoes";
-import Utils from "../../../mixins/Utils";
-import Upload from "../../Upload";
-import Validacoes from "../../../mixins/Validacoes";
-import DateRangeFilter from "../../DateRangeFilter.vue";
+import colaborador from '../../Colaborador'
+import gestoraprovacao from '../../GestorAprovacao'
+import configselect2 from '../../../components/Select2/mixSelec2'
+import Select2 from '../../../components/Select2/Select2'
+import ExportacaoMixin from '../../../mixins/Exportacoes'
+import Utils from '../../../mixins/Utils'
+import Upload from '../../Upload'
+import Validacoes from '../../../mixins/Validacoes'
+import DateRangeFilter from '../../DateRangeFilter.vue'
 
 export default {
     mixins: [configselect2, ExportacaoMixin, Utils, Validacoes],
@@ -837,7 +920,7 @@ export default {
     },
     data() {
         return {
-            tituloJanela: "Solicitacao de férias",
+            tituloJanela: 'Solicitacao de férias',
             preload: false,
             cadastrando: false,
             editando: false,
@@ -852,7 +935,7 @@ export default {
             nomeAprovacaoExtra: '',
             preloadExportacao: false,
 
-            hash: `mastertag_${parseInt((Math.random() * 999999))}`,
+            hash: `mastertag_${parseInt(Math.random() * 999999)}`,
             caminho_gestor: `autocomplete/todos-gestores-ativos`,
             urlExportacao: `${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/export`,
 
@@ -867,8 +950,8 @@ export default {
 
             formConfirmacao: {
                 selecionados: [],
-                obs_aprovacao: "",
-                status_aprovacao: ""
+                obs_aprovacao: '',
+                status_aprovacao: ''
             },
             formConfirmacaoDefault: null,
 
@@ -878,45 +961,45 @@ export default {
                 preload: false,
                 delete: false,
                 erro: false,
-                msg: '',
+                msg: ''
             },
 
             form: {
-                id: "",
-                colaborador_id: "",
-                autocomplete_label_colaborador: "",
-                autocomplete_label_colaborador_anterior: "",
+                id: '',
+                colaborador_id: '',
+                autocomplete_label_colaborador: '',
+                autocomplete_label_colaborador_anterior: '',
 
-                admissao_id: "",
-                periodo_aquisitivo_id: "",
-                data_saida: "",
-                data_retorno: "",
-                ultima_data: "",
+                admissao_id: '',
+                periodo_aquisitivo_id: '',
+                data_saida: '',
+                data_retorno: '',
+                ultima_data: '',
                 qnt_dias: 5,
-                dias_saldo: "",
+                dias_saldo: '',
                 tem_faltas: false,
                 qnt_faltas: 0,
                 solicitante: null,
-                obs_solicitante: "",
-                data_solicitacao: "",
+                obs_solicitante: '',
+                data_solicitacao: '',
                 gestor_aprovacao: null,
-                obs_gestor: "",
-                status_aprovacao_gestor: "",
-                data_aprovacao_gestor: "",
+                obs_gestor: '',
+                status_aprovacao_gestor: '',
+                data_aprovacao_gestor: '',
                 aprovacao_extra: null,
-                obs_aprovacao_extra: "",
-                status_aprovacao_extra: "",
-                data_aprovacao_extra: "",
-                data_aprovacao_rh: "",
+                obs_aprovacao_extra: '',
+                status_aprovacao_extra: '',
+                data_aprovacao_extra: '',
+                data_aprovacao_rh: '',
                 rh_aprovacao: null,
-                obs_rh: "",
-                status_aprovacao_rh: "",
+                obs_rh: '',
+                status_aprovacao_rh: '',
                 aprovado_via_script: false,
                 abono_pecuniario: false,
                 adiantamento_decimo_terceiro: false,
-                gestor_id: "",
-                autocomplete_label_gestor_modal: "",
-                autocomplete_label_gestor_modal_anterior: "",
+                gestor_id: '',
+                autocomplete_label_gestor_modal: '',
+                autocomplete_label_gestor_modal_anterior: '',
                 centro_custo: null,
                 anexos: [],
                 anexosDel: []
@@ -925,8 +1008,8 @@ export default {
             formDefault: null,
             lista: [],
             periodos: [],
-            ultimaData: "",
-            periodo_label: "",
+            ultimaData: '',
+            periodo_label: '',
             centro_custos: [],
 
             /**
@@ -942,23 +1025,23 @@ export default {
                 carregando: false,
                 dados: {
                     filtroPeriodo: false,
-                    filtroPeriodoAquisitivo: "",
-                    dataInicio: "",
-                    dataFim: "",
-                    campoBusca: "",
-                    campoStatusAprovacao: "",
+                    filtroPeriodoAquisitivo: '',
+                    dataInicio: '',
+                    dataFim: '',
+                    campoBusca: '',
+                    campoStatusAprovacao: '',
                     pages: 50,
                     filtroVencimento: false,
-                    dataInicioVencimento: "",
-                    dataFimVencimento: "",
+                    dataInicioVencimento: '',
+                    dataFimVencimento: '',
                     filtroInicioFerias: false,
-                    dataInicioFerias: "",
-                    dataFimFerias: "",
-                    token: "",
-                    ordenacao: 'created_at_desc',
+                    dataInicioFerias: '',
+                    dataFimFerias: '',
+                    token: '',
+                    ordenacao: 'created_at_desc'
                 }
             }
-        };
+        }
     },
     components: {
         colaborador,
@@ -968,459 +1051,467 @@ export default {
         DateRangeFilter
     },
     mounted() {
-        this.urlParamGet();
-        this.formDefault = _.cloneDeep(this.form); //copia
-        this.formConfirmacaoDefault = _.cloneDeep(this.formConfirmacao); //copia
+        this.urlParamGet()
+        this.formDefault = _.cloneDeep(this.form) //copia
+        this.formConfirmacaoDefault = _.cloneDeep(this.formConfirmacao) //copia
         this.$nextTick(() => {
-            this.atualizar();
-            this.periodosAquisitivos();
-        });
+            this.atualizar()
+            this.periodosAquisitivos()
+        })
     },
     watch: {
         'controle.dados': {
             handler() {
-                if (this._syncUrlTimer) clearTimeout(this._syncUrlTimer);
-                this._syncUrlTimer = setTimeout(() => this.syncUrlFiltros(), 400);
+                if (this._syncUrlTimer) clearTimeout(this._syncUrlTimer)
+                this._syncUrlTimer = setTimeout(() => this.syncUrlFiltros(), 400)
             },
             deep: true
         }
     },
     computed: {
         naoAprovados() {
-            return this.lista.filter(item => {
+            return this.lista.filter((item) => {
                 if (item.status_aprovacao === null) {
-                    return item.id;
+                    return item.id
                 }
-            });
+            })
         },
         tudoMarcado() {
-            let totalAprovado = this.naoAprovados.length;
-            let totalEncontrado = 0;
+            let totalAprovado = this.naoAprovados.length
+            let totalEncontrado = 0
 
             if (totalAprovado === 0) {
-                return false;
+                return false
             }
 
-            this.naoAprovados.forEach(item => {
-                let id = item.id;
+            this.naoAprovados.forEach((item) => {
+                let id = item.id
                 if (this.selecionados.indexOf(id) >= 0) {
-                    totalEncontrado++;
+                    totalEncontrado++
                 } else {
-                    return false;
+                    return false
                 }
-            });
-            let resultado = totalAprovado === totalEncontrado;
-            this.selecionaTudo = resultado;
-            return resultado;
+            })
+            let resultado = totalAprovado === totalEncontrado
+            this.selecionaTudo = resultado
+            return resultado
         },
         qntDias() {
             if (this.form.qnt_faltas <= 5) {
-                return 30;
+                return 30
             }
             if (this.form.qnt_faltas >= 6 && this.form.qnt_faltas <= 14) {
-                return 24;
+                return 24
             }
             if (this.form.qnt_faltas >= 15 && this.form.qnt_faltas <= 23) {
-                return 18;
+                return 18
             }
             if (this.form.qnt_faltas >= 24 && this.form.qnt_faltas <= 32) {
-                return 12;
+                return 12
             }
             if (this.form.qnt_faltas >= 33) {
-                return 0;
+                return 0
             }
         },
         qntSaldo() {
-            this.form.dias_saldo = this.qntDias - this.form.qnt_dias;
+            this.form.dias_saldo = this.qntDias - this.form.qnt_dias
 
-            return this.form.dias_saldo;
+            return this.form.dias_saldo
         },
         dataRetorno() {
-            let dias_ferias = this.form.qnt_dias;
-            let data_saida = this.form.data_saida.split("/");
-            let data_saida_convert = data_saida[2] + "-" + data_saida[1] + "-" + data_saida[0];
+            let dias_ferias = this.form.qnt_dias
+            let data_saida = this.form.data_saida.split('/')
+            let data_saida_convert = data_saida[2] + '-' + data_saida[1] + '-' + data_saida[0]
 
-            let data_retorno = new Date(data_saida_convert);
-            data_retorno.setDate(data_retorno.getDate() + dias_ferias);
-            let data_retorno_ptbr = this.padTo2Digits(data_retorno.getDate()) + "/" + this.padTo2Digits((data_retorno.getMonth() + 1)) + "/" + data_retorno.getFullYear();
-            this.form.data_retorno = data_retorno_ptbr;
+            let data_retorno = new Date(data_saida_convert)
+            data_retorno.setDate(data_retorno.getDate() + dias_ferias)
+            let data_retorno_ptbr =
+                this.padTo2Digits(data_retorno.getDate()) + '/' + this.padTo2Digits(data_retorno.getMonth() + 1) + '/' + data_retorno.getFullYear()
+            this.form.data_retorno = data_retorno_ptbr
 
-            return data_retorno_ptbr;
+            return data_retorno_ptbr
         },
         por_pagina() {
-            return [20, 50, 100, 150];
+            return [20, 50, 100, 150]
         },
         paramsExport() {
-            return this.controle.dados;
+            return this.controle.dados
         }
     },
     methods: {
         urlParamGet() {
-            const urlParams = new URLSearchParams(window.location.search);
-            this.controle.dados.token = urlParams.get('token') || '';
-            if (urlParams.get('pages')) this.controle.dados.pages = parseInt(urlParams.get('pages'), 10) || 50;
-            if (urlParams.get('ordenacao')) this.controle.dados.ordenacao = urlParams.get('ordenacao');
-            if (urlParams.get('campoBusca')) this.controle.dados.campoBusca = urlParams.get('campoBusca');
-            if (urlParams.get('campoStatusAprovacao')) this.controle.dados.campoStatusAprovacao = urlParams.get('campoStatusAprovacao');
-            if (urlParams.get('filtroPeriodoAquisitivo')) this.controle.dados.filtroPeriodoAquisitivo = urlParams.get('filtroPeriodoAquisitivo');
-            if (urlParams.get('dataInicio')) this.controle.dados.dataInicio = urlParams.get('dataInicio');
-            if (urlParams.get('dataFim')) this.controle.dados.dataFim = urlParams.get('dataFim');
-            if (urlParams.get('dataInicio') || urlParams.get('dataFim')) this.controle.dados.filtroPeriodo = true;
-            const filtroPeriodoUrl = urlParams.get('filtroPeriodo');
-            if (filtroPeriodoUrl === '1' || filtroPeriodoUrl === 'true') this.controle.dados.filtroPeriodo = true;
-            if (urlParams.get('dataInicioVencimento')) this.controle.dados.dataInicioVencimento = urlParams.get('dataInicioVencimento');
-            if (urlParams.get('dataFimVencimento')) this.controle.dados.dataFimVencimento = urlParams.get('dataFimVencimento');
-            const filtroVencimentoUrl = urlParams.get('filtroVencimento');
-            if (filtroVencimentoUrl === '1' || filtroVencimentoUrl === 'true' || urlParams.get('dataInicioVencimento') || urlParams.get('dataFimVencimento')) this.controle.dados.filtroVencimento = true;
-            if (urlParams.get('dataInicioFerias')) this.controle.dados.dataInicioFerias = urlParams.get('dataInicioFerias');
-            if (urlParams.get('dataFimFerias')) this.controle.dados.dataFimFerias = urlParams.get('dataFimFerias');
-            const filtroInicioFeriasUrl = urlParams.get('filtroInicioFerias');
-            if (filtroInicioFeriasUrl === '1' || filtroInicioFeriasUrl === 'true' || urlParams.get('dataInicioFerias') || urlParams.get('dataFimFerias')) this.controle.dados.filtroInicioFerias = true;
+            const urlParams = new URLSearchParams(window.location.search)
+            this.controle.dados.token = urlParams.get('token') || ''
+            if (urlParams.get('pages')) this.controle.dados.pages = parseInt(urlParams.get('pages'), 10) || 50
+            if (urlParams.get('ordenacao')) this.controle.dados.ordenacao = urlParams.get('ordenacao')
+            if (urlParams.get('campoBusca')) this.controle.dados.campoBusca = urlParams.get('campoBusca')
+            if (urlParams.get('campoStatusAprovacao')) this.controle.dados.campoStatusAprovacao = urlParams.get('campoStatusAprovacao')
+            if (urlParams.get('filtroPeriodoAquisitivo')) this.controle.dados.filtroPeriodoAquisitivo = urlParams.get('filtroPeriodoAquisitivo')
+            if (urlParams.get('dataInicio')) this.controle.dados.dataInicio = urlParams.get('dataInicio')
+            if (urlParams.get('dataFim')) this.controle.dados.dataFim = urlParams.get('dataFim')
+            if (urlParams.get('dataInicio') || urlParams.get('dataFim')) this.controle.dados.filtroPeriodo = true
+            const filtroPeriodoUrl = urlParams.get('filtroPeriodo')
+            if (filtroPeriodoUrl === '1' || filtroPeriodoUrl === 'true') this.controle.dados.filtroPeriodo = true
+            if (urlParams.get('dataInicioVencimento')) this.controle.dados.dataInicioVencimento = urlParams.get('dataInicioVencimento')
+            if (urlParams.get('dataFimVencimento')) this.controle.dados.dataFimVencimento = urlParams.get('dataFimVencimento')
+            const filtroVencimentoUrl = urlParams.get('filtroVencimento')
+            if (filtroVencimentoUrl === '1' || filtroVencimentoUrl === 'true' || urlParams.get('dataInicioVencimento') || urlParams.get('dataFimVencimento'))
+                this.controle.dados.filtroVencimento = true
+            if (urlParams.get('dataInicioFerias')) this.controle.dados.dataInicioFerias = urlParams.get('dataInicioFerias')
+            if (urlParams.get('dataFimFerias')) this.controle.dados.dataFimFerias = urlParams.get('dataFimFerias')
+            const filtroInicioFeriasUrl = urlParams.get('filtroInicioFerias')
+            if (filtroInicioFeriasUrl === '1' || filtroInicioFeriasUrl === 'true' || urlParams.get('dataInicioFerias') || urlParams.get('dataFimFerias'))
+                this.controle.dados.filtroInicioFerias = true
         },
         syncUrlFiltros() {
-            if (typeof this.atualizarUrlMovimentacao !== 'function') return;
-            const d = this.controle.dados;
-            const params = { pages: d.pages || 50, ordenacao: d.ordenacao || 'created_at_desc' };
-            if (d.campoBusca) params.campoBusca = d.campoBusca;
-            if (d.campoStatusAprovacao) params.campoStatusAprovacao = d.campoStatusAprovacao;
-            if (d.filtroPeriodoAquisitivo) params.filtroPeriodoAquisitivo = d.filtroPeriodoAquisitivo;
-            if (d.filtroPeriodo) params.filtroPeriodo = 1;
-            if (d.filtroPeriodo && d.dataInicio) params.dataInicio = d.dataInicio;
-            if (d.filtroPeriodo && d.dataFim) params.dataFim = d.dataFim;
-            if (d.filtroVencimento) params.filtroVencimento = 1;
-            if (d.filtroVencimento && d.dataInicioVencimento) params.dataInicioVencimento = d.dataInicioVencimento;
-            if (d.filtroVencimento && d.dataFimVencimento) params.dataFimVencimento = d.dataFimVencimento;
-            if (d.filtroInicioFerias) params.filtroInicioFerias = 1;
-            if (d.filtroInicioFerias && d.dataInicioFerias) params.dataInicioFerias = d.dataInicioFerias;
-            if (d.filtroInicioFerias && d.dataFimFerias) params.dataFimFerias = d.dataFimFerias;
-            if (d.token) params.token = d.token;
-            this.atualizarUrlMovimentacao(params);
+            if (typeof this.atualizarUrlMovimentacao !== 'function') return
+            const d = this.controle.dados
+            const params = { pages: d.pages || 50, ordenacao: d.ordenacao || 'created_at_desc' }
+            if (d.campoBusca) params.campoBusca = d.campoBusca
+            if (d.campoStatusAprovacao) params.campoStatusAprovacao = d.campoStatusAprovacao
+            if (d.filtroPeriodoAquisitivo) params.filtroPeriodoAquisitivo = d.filtroPeriodoAquisitivo
+            if (d.filtroPeriodo) params.filtroPeriodo = 1
+            if (d.filtroPeriodo && d.dataInicio) params.dataInicio = d.dataInicio
+            if (d.filtroPeriodo && d.dataFim) params.dataFim = d.dataFim
+            if (d.filtroVencimento) params.filtroVencimento = 1
+            if (d.filtroVencimento && d.dataInicioVencimento) params.dataInicioVencimento = d.dataInicioVencimento
+            if (d.filtroVencimento && d.dataFimVencimento) params.dataFimVencimento = d.dataFimVencimento
+            if (d.filtroInicioFerias) params.filtroInicioFerias = 1
+            if (d.filtroInicioFerias && d.dataInicioFerias) params.dataInicioFerias = d.dataInicioFerias
+            if (d.filtroInicioFerias && d.dataFimFerias) params.dataFimFerias = d.dataFimFerias
+            if (d.token) params.token = d.token
+            this.atualizarUrlMovimentacao(params)
         },
         //apagar férias
         formApagarFerias(id) {
-            this.formApagar.id = id;
-            this.formApagar.titulo = this.tituloJanela = `${id} - Apagar Solicitação de férias`;
-            this.formApagar.preload = false;
-            this.formApagar.delete = false;
-            this.formApagar.erro = false;
-            this.formApagar.msg = '';
-
+            this.formApagar.id = id
+            this.formApagar.titulo = this.tituloJanela = `${id} - Apagar Solicitação de férias`
+            this.formApagar.preload = false
+            this.formApagar.delete = false
+            this.formApagar.erro = false
+            this.formApagar.msg = ''
         },
         apagarFerias() {
-            this.formApagar.preload = true;
-            axios.delete(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.formApagar.id}`)
+            this.formApagar.preload = true
+            axios
+                .delete(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.formApagar.id}`)
                 .then((response) => {
-                    this.formApagar.preload = false;
-                    this.formApagar.delete = true;
-                    this.$refs.componente.buscar();
+                    this.formApagar.preload = false
+                    this.formApagar.delete = true
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                 })
                 .catch((response) => {
-                    this.formApagar.msg = response.data.msg;
-                    this.formApagar.preload = false;
-                    this.formApagar.erro = true;
-                });
+                    this.formApagar.msg = response.data.msg
+                    this.formApagar.preload = false
+                    this.formApagar.erro = true
+                })
         },
 
         dataAdmissao() {
-            if (this.form.colaborador_id !== "") {
-                axios.post(`${URL_ADMIN}/busca-data-admissao`, {
-                    ferias_id: this.form.id,
-                    colaborador_id: this.form.colaborador_id,
-                    visualizar: this.visualizar
-                }).then(response => {
-                    if (!response.data.data_admissao) {
-                        mostraErro("", "Atualize a data de admissão no cadastro do colaborador");
-                        return false;
-                    }
+            if (this.form.colaborador_id !== '') {
+                axios
+                    .post(`${URL_ADMIN}/busca-data-admissao`, {
+                        ferias_id: this.form.id,
+                        colaborador_id: this.form.colaborador_id,
+                        visualizar: this.visualizar
+                    })
+                    .then((response) => {
+                        if (!response.data.data_admissao) {
+                            mostraErro('', 'Atualize a data de admissão no cadastro do colaborador')
+                            return false
+                        }
 
-                    this.form.data_admissao = response.data.data_admissao;
-                    this.ultimaData = response.data.ultimaData;
+                        this.form.data_admissao = response.data.data_admissao
+                        this.ultimaData = response.data.ultimaData
 
-                    if (response.data.periodo.length > 1) {
-                        this.periodos = response.data.periodo;
-                    } else {
-                        this.form.periodo_aquisitivo_id = response.data.periodo.id;
-                        this.periodo_label = response.data.periodo.label;
-                    }
+                        if (response.data.periodo.length > 1) {
+                            this.periodos = response.data.periodo
+                        } else {
+                            this.form.periodo_aquisitivo_id = response.data.periodo.id
+                            this.periodo_label = response.data.periodo.label
+                        }
 
-                    if (response.data.ultimaData === "") {
-                        let dataAtual = new Date();
-                        let dia = dataAtual.getDate();
-                        let mes = dataAtual.getMonth();
-                        let ano = dataAtual.getFullYear();
-                        let dataHoje = this.padTo2Digits(dia) + "/" + this.padTo2Digits((mes + 1)) + "/" + ano;
-                        this.form.ultima_data = dataHoje;
-                        this.form.data_saida = dataHoje;
-                        this.form.data_retorno = dataHoje;
-                    } else {
-                        this.form.ultima_data = response.data.ultimaData;
-                        this.form.data_saida = response.data.data_saida;
-                        this.form.data_retorno = response.data.data_retorno;
-                    }
-                });
-                return this.form.data_admissao;
+                        if (response.data.ultimaData === '') {
+                            let dataAtual = new Date()
+                            let dia = dataAtual.getDate()
+                            let mes = dataAtual.getMonth()
+                            let ano = dataAtual.getFullYear()
+                            let dataHoje = this.padTo2Digits(dia) + '/' + this.padTo2Digits(mes + 1) + '/' + ano
+                            this.form.ultima_data = dataHoje
+                            this.form.data_saida = dataHoje
+                            this.form.data_retorno = dataHoje
+                        } else {
+                            this.form.ultima_data = response.data.ultimaData
+                            this.form.data_saida = response.data.data_saida
+                            this.form.data_retorno = response.data.data_retorno
+                        }
+                    })
+                return this.form.data_admissao
             }
         },
         padTo2Digits(num) {
-            return num.toString().padStart(2, "0");
+            return num.toString().padStart(2, '0')
         },
         verificaFaltas() {
-            this.form.qnt_faltas = 1;
+            this.form.qnt_faltas = 1
             if (!this.form.tem_faltas) {
-                this.form.qnt_faltas = 0;
+                this.form.qnt_faltas = 0
             }
         },
         selecionaTodos() {
-            this.selecionaTudo = !this.selecionaTudo;
+            this.selecionaTudo = !this.selecionaTudo
             if (this.selecionaTudo) {
-                this.naoAprovados.map(item => {
-                    let id = item.id;
+                this.naoAprovados.map((item) => {
+                    let id = item.id
                     if (this.selecionados.indexOf(id) === -1) {
-                        this.selecionados.push(id);
+                        this.selecionados.push(id)
                     }
-                });
+                })
             } else {
-                this.naoAprovados.map(item => {
-                    let id = item.id;
-                    let index = this.selecionados.indexOf(id);
+                this.naoAprovados.map((item) => {
+                    let id = item.id
+                    let index = this.selecionados.indexOf(id)
                     if (index >= 0) {
-                        this.selecionados.splice(index, 1);
+                        this.selecionados.splice(index, 1)
                     }
-                });
+                })
             }
         },
         confirmaAtualizacaoStatus(confirmacao) {
+            this.preloadAtualizacao = true
+            this.formConfirmacao.status_aprovacao = confirmacao
+            this.formConfirmacao.selecionados.push(this.selecionados)
 
-            this.preloadAtualizacao = true;
-            this.formConfirmacao.status_aprovacao = confirmacao;
-            this.formConfirmacao.selecionados.push(this.selecionados);
-
-            axios.post(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/atualizacao-status`, this.formConfirmacao)
-                .then(res => {
-                    this.preloadAtualizacao = false;
-                    $("#janelaAtualizaStatus").modal("hide");
-                    mostraSucesso("Status das Férias atualizado com sucesso!");
-                    this.selecionados = [];
-                    this.formConfirmacao = _.cloneDeep(this.formConfirmacaoDefault); //copia
-                    this.$refs.componente.buscar();
+            axios
+                .post(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/atualizacao-status`, this.formConfirmacao)
+                .then((res) => {
+                    this.preloadAtualizacao = false
+                    $('#janelaAtualizaStatus').modal('hide')
+                    mostraSucesso('Status das Férias atualizado com sucesso!')
+                    this.selecionados = []
+                    this.formConfirmacao = _.cloneDeep(this.formConfirmacaoDefault) //copia
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                 })
-                .catch(error => {
-                    this.preloadAtualizacao = false;
-                });
+                .catch((error) => {
+                    this.preloadAtualizacao = false
+                })
         },
         listaCentroCusto() {
-            axios.post(`${URL_PUBLICO}/centro-custos/`)
-                .then(res => {
-                    this.centro_custos = res.data.centro_custos;
+            axios
+                .post(`${URL_PUBLICO}/centro-custos/`)
+                .then((res) => {
+                    this.centro_custos = res.data.centro_custos
                 })
-                .catch(error => {
-                    this.preload = false;
-                });
+                .catch((error) => {
+                    this.preload = false
+                })
         },
 
         periodosAquisitivos() {
-            axios.get(`${URL_ADMIN}/periodos-aquisitivos`).then(response => {
-                this.periodos = response.data.periodos;
-            });
+            axios.get(`${URL_ADMIN}/periodos-aquisitivos`).then((response) => {
+                this.periodos = response.data.periodos
+            })
         },
 
         formNovo() {
-            this.cadastrando = true;
-            this.aprovando = false;
-            this.aprovandoExtra = false;
-            this.aprovandoRh = false;
-            this.visualizar = false;
-            this.editando = false;
-            this.podeanexar = true;
-            this.tituloJanela = "Solicitação de férias";
+            this.cadastrando = true
+            this.aprovando = false
+            this.aprovandoExtra = false
+            this.aprovandoRh = false
+            this.visualizar = false
+            this.editando = false
+            this.podeanexar = true
+            this.tituloJanela = 'Solicitação de férias'
 
-            formReset();
-            this.form = _.cloneDeep(this.formDefault); //copia
-            this.form.centro_custo_id = "";
-            this.listaCentroCusto();
+            formReset()
+            this.form = _.cloneDeep(this.formDefault) //copia
+            this.form.centro_custo_id = ''
+            this.listaCentroCusto()
         },
 
         cadastrar() {
-            $(`#${this.hash} :input:visible`).trigger("blur");
+            $(`#${this.hash} :input:visible`).trigger('blur')
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro("", "Verifique os campos marcados");
-                return false;
+                mostraErro('', 'Verifique os campos marcados')
+                return false
             }
 
-            this.preload = true;
+            this.preload = true
 
-            axios.post(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista`, this.form)
-                .then(response => {
+            axios
+                .post(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista`, this.form)
+                .then((response) => {
                     if (response.status === 201) {
-                        $(`#${this.hash} `).modal("hide");
-                        let data = response.data;
-                        mostraSucesso("", "Solicitação registrada com sucesso!");
-                        this.$refs.componente.buscar();
-                        this.preload = false;
+                        $(`#${this.hash} `).modal('hide')
+                        let data = response.data
+                        mostraSucesso('', 'Solicitação registrada com sucesso!')
+                        this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                        this.preload = false
                     }
                 })
-                .catch(error => {
-                    this.preload = false;
-                });
+                .catch((error) => {
+                    this.preload = false
+                })
         },
 
         editar() {
-            $(`#${this.hash} :input:visible`).trigger("blur");
+            $(`#${this.hash} :input:visible`).trigger('blur')
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro("", "Verifique os campos marcados");
-                return false;
+                mostraErro('', 'Verifique os campos marcados')
+                return false
             }
 
-            this.preload = true;
+            this.preload = true
 
-            axios.put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}`, this.form)
-                .then(response => {
+            axios
+                .put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}`, this.form)
+                .then((response) => {
                     if (response.status === 201) {
-                        $(`#${this.hash} `).modal("hide");
-                        let data = response.data;
-                        mostraSucesso("", "Solicitação alterada com sucesso!");
-                        this.$refs.componente.buscar();
-                        this.preload = false;
+                        $(`#${this.hash} `).modal('hide')
+                        let data = response.data
+                        mostraSucesso('', 'Solicitação alterada com sucesso!')
+                        this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                        this.preload = false
                     }
                 })
-                .catch(error => {
-                    this.preload = false;
-                });
+                .catch((error) => {
+                    this.preload = false
+                })
         },
 
         formOpen(id) {
-            Object.assign(this.form, this.formDefault);
-            this.cadastrando = false;
-            this.aprovando = false;
-            this.aprovandoExtra = false;
-            this.aprovandoRh = false;
-            this.editando = false;
-            this.visualizar = false;
-            this.form.id = id;
+            Object.assign(this.form, this.formDefault)
+            this.cadastrando = false
+            this.aprovando = false
+            this.aprovandoExtra = false
+            this.aprovandoRh = false
+            this.editando = false
+            this.visualizar = false
+            this.form.id = id
 
-            this.tituloJanela = `#${id}`;
+            this.tituloJanela = `#${id}`
 
-            formReset();
-            this.preload = true;
-            this.form.data_admissao = "";
+            formReset()
+            this.preload = true
+            this.form.data_admissao = ''
 
-            axios.get(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${id}/editar`)
-                .then(response => {
-                    let data = response.data;
-                    this.form.centro_custo_id = data.centro_custo_id;
-                    this.form.colaborador_id = data.colaborador_id;
-                    Object.assign(this.form, data);
-                    this.listaCentroCusto();
+            axios
+                .get(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${id}/editar`)
+                .then((response) => {
+                    let data = response.data
+                    this.form.centro_custo_id = data.centro_custo_id
+                    this.form.colaborador_id = data.colaborador_id
+                    Object.assign(this.form, data)
+                    this.listaCentroCusto()
 
-                    this.tituloJanela = `#${id} Solicitação de férias`;
+                    this.tituloJanela = `#${id} Solicitação de férias`
 
-                    this.form.status_aprovacao_gestor = data.status_aprovacao_gestor === null ? "" : data.status_aprovacao_gestor;
-                    this.form.status_aprovacao_extra = data.status_aprovacao_extra === null ? "" : data.status_aprovacao_extra;
-                    this.form.status_aprovacao_rh = data.status_aprovacao_rh === null ? "" : data.status_aprovacao_rh;
-                    this.form.obs_gestor = data.status_aprovacao_gestor === null ? "" : data.obs_gestor;
-                    this.form.obs_aprovacao_extra = data.status_aprovacao_extra === null ? "" : data.obs_aprovacao_extra;
-                    this.form.obs_rh = data.status_aprovacao_rh === null ? "" : data.obs_rh;
-                    this.periodo_label = data.periodo_label;
+                    this.form.status_aprovacao_gestor = data.status_aprovacao_gestor === null ? '' : data.status_aprovacao_gestor
+                    this.form.status_aprovacao_extra = data.status_aprovacao_extra === null ? '' : data.status_aprovacao_extra
+                    this.form.status_aprovacao_rh = data.status_aprovacao_rh === null ? '' : data.status_aprovacao_rh
+                    this.form.obs_gestor = data.status_aprovacao_gestor === null ? '' : data.obs_gestor
+                    this.form.obs_aprovacao_extra = data.status_aprovacao_extra === null ? '' : data.obs_aprovacao_extra
+                    this.form.obs_rh = data.status_aprovacao_rh === null ? '' : data.obs_rh
+                    this.periodo_label = data.periodo_label
 
-                    this.preload = false;
+                    this.preload = false
                 })
-                .catch(error => {
-                    this.preload = false;
-                });
+                .catch((error) => {
+                    this.preload = false
+                })
         },
 
         aprovarGestor() {
-
-            $(`#${this.hash} :input:visible`).trigger("blur");
+            $(`#${this.hash} :input:visible`).trigger('blur')
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro("", "Verifique os campos marcados");
-                return false;
+                mostraErro('', 'Verifique os campos marcados')
+                return false
             }
 
-            this.preload = true;
+            this.preload = true
 
-            axios.put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}/aprovargestor`, this.form)
-                .then(response => {
-                    let data = response.data;
-                    mostraSucesso("", "Registro salvo com sucesso!");
-                    $(`#${this.hash} `).modal("hide");
-                    this.$refs.componente.buscar();
-                    this.preload = false;
+            axios
+                .put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}/aprovargestor`, this.form)
+                .then((response) => {
+                    let data = response.data
+                    mostraSucesso('', 'Registro salvo com sucesso!')
+                    $(`#${this.hash} `).modal('hide')
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.preload = false
                 })
-                .catch(error => {
-                    this.preload = false;
-                });
+                .catch((error) => {
+                    this.preload = false
+                })
         },
 
         aprovarExtra() {
-
-            $(`#${this.hash} :input:visible`).trigger("blur");
+            $(`#${this.hash} :input:visible`).trigger('blur')
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro("", "Verifique os campos marcados");
-                return false;
+                mostraErro('', 'Verifique os campos marcados')
+                return false
             }
 
-            this.preload = true;
+            this.preload = true
 
-            axios.put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}/aprovarextra`, this.form)
-                .then(response => {
-                    let data = response.data;
-                    mostraSucesso("", data.msg || "Aprovação extra registrada com sucesso!");
-                    $(`#${this.hash}`).modal("hide");
-                    this.$refs.componente.buscar();
-                    this.preload = false;
+            axios
+                .put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}/aprovarextra`, this.form)
+                .then((response) => {
+                    let data = response.data
+                    mostraSucesso('', data.msg || 'Aprovação extra registrada com sucesso!')
+                    $(`#${this.hash}`).modal('hide')
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.preload = false
                 })
-                .catch(error => {
-                    console.error('Erro ao aprovar extra:', error);
-                    let msg = error.response?.data?.msg || "Erro ao processar aprovação";
-                    mostraErro("", msg);
-                    this.preload = false;
-                });
+                .catch((error) => {
+                    console.error('Erro ao aprovar extra:', error)
+                    let msg = error.response?.data?.msg || 'Erro ao processar aprovação'
+                    mostraErro('', msg)
+                    this.preload = false
+                })
         },
 
         aprovarRh() {
-
-            $(`#${this.hash} :input:visible`).trigger("blur");
+            $(`#${this.hash} :input:visible`).trigger('blur')
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro("", "Verifique os campos marcados");
-                return false;
+                mostraErro('', 'Verifique os campos marcados')
+                return false
             }
-            this.preload = true;
+            this.preload = true
 
-            axios.put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}/aprovarrh`, this.form)
-                .then(response => {
-                    let data = response.data;
-                    mostraSucesso("", "Registro salvo com sucesso!");
-                    $(`#${this.hash} `).modal("hide");
-                    this.$refs.componente.buscar();
-                    this.preload = false;
+            axios
+                .put(`${URL_ADMIN}/planejamento/movimentacao/ferias-prevista/${this.form.id}/aprovarrh`, this.form)
+                .then((response) => {
+                    let data = response.data
+                    mostraSucesso('', 'Registro salvo com sucesso!')
+                    $(`#${this.hash} `).modal('hide')
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.preload = false
                 })
-                .catch(error => {
-                    this.preload = false;
-                });
+                .catch((error) => {
+                    this.preload = false
+                })
         },
-
 
         carregou(dados) {
-            this.lista = dados.itens;
-            this.periodos = dados.periodo;
-            this.aprovaGestor = dados.aprovar_por_gestor;
-            this.aprovaRh = dados.aprovar_por_rh;
-            this.podeAprovarExtra = dados.pode_aprovar_extra || false;
-            this.temAprovacaoExtra = dados.tem_aprovacao_extra || false;
-            this.nomeAprovacaoExtra = dados.nome_aprovacao_extra || '';
-            this.controle.carregando = false;
-            this.permissoes = dados.permissoes;
+            this.lista = dados.itens
+            this.periodos = dados.periodo
+            this.aprovaGestor = dados.aprovar_por_gestor
+            this.aprovaRh = dados.aprovar_por_rh
+            this.podeAprovarExtra = dados.pode_aprovar_extra || false
+            this.temAprovacaoExtra = dados.tem_aprovacao_extra || false
+            this.nomeAprovacaoExtra = dados.nome_aprovacao_extra || ''
+            this.controle.carregando = false
+            this.permissoes = dados.permissoes
         },
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
-};
+}
 </script>
 
 <style scoped>

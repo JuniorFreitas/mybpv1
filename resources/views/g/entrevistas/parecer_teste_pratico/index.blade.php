@@ -3,7 +3,7 @@
 @section('content_header','Entrevista - Teste Prático')
 @section('content')
     <modal id="filtroColunas" titulo="Mostrar e Ocultar colunas">
-        <template slot="conteudo">
+        <template #conteudo>
 
             <div class="custom-control custom-switch mb-2">
                 <input type="checkbox" v-model="colunasTabela.pcd" @click="colunasTabela.pcd = !colunasTabela.pcd"
@@ -39,7 +39,7 @@
     </modal>
 
     <modal id="janelaParecerEntrevista" :titulo="tituloJanela" :size="80" :fechar="!preload">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-if="preload"></preload>
             <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''">
                 <dados-pessoais :form="form"></dados-pessoais>
@@ -156,7 +156,7 @@
                 </fieldset>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div v-show="!visualizar">
                 <button type="button" class="btn btn-sm btn-primary"
                         v-show="editando && !atualizado  && !preload"

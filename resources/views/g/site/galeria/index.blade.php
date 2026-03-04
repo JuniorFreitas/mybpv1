@@ -5,7 +5,7 @@
 
     <!-- Modal formulario -->
     <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
             <span v-show="preloadAjax">
                 <preload></preload>
             </span>
@@ -53,7 +53,7 @@
 
             </form>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div v-show="!preloadAjax">
                 <button type="button" class="btn btn-sm btn-primary" v-if="editando && !atualizado"
                         @click="alterar()">Alterar
@@ -67,7 +67,7 @@
 
     <!-- Modal confirmar -->
     <modal id="janelaConfirmar" titulo="Apagar galeria">
-        <template slot="conteudo">
+        <template #conteudo>
             <span v-show="preloadAjax">
                 <preload></preload>
             </span>
@@ -81,7 +81,7 @@
                 Tem certeza que deseja apagar esta galeria?
             </h4>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div v-show="!preloadAjax">
                 <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
             </div>

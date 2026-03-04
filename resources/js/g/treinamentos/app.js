@@ -1,188 +1,190 @@
+import { createApp } from 'vue'
+import { registerGlobals } from '../../registerGlobals'
 import datepicker from '../../components/DatePicker'
 import ExportacaoMixin from '../../mixins/Exportacoes'
 import { Estados } from '../../mixins/Utils'
 import Upload from '../../components/Upload.vue'
 import DateRangeFilter from '../../components/DateRangeFilter.vue'
 
-const app = new Vue({
+const app = createApp({
     mixins: [ExportacaoMixin],
-
-    el: '#app',
     components: {
         datepicker,
         Upload,
         DateRangeFilter
     },
-    data: {
-        tituloJanela: 'Treinamentos',
-        preload: false,
-        editando: false,
-        apagado: false,
-        cadastrado: false,
-        cadastrando: false,
-        atualizado: false,
-        visualizar: false,
-        disabled: true,
-        preloadExportacao: false,
+    data() {
+        return {
+            tituloJanela: 'Treinamentos',
+            preload: false,
+            editando: false,
+            apagado: false,
+            cadastrado: false,
+            cadastrando: false,
+            atualizado: false,
+            visualizar: false,
+            disabled: true,
+            preloadExportacao: false,
 
-        URL_ADMIN,
-        AUTENTICADO,
+            URL_ADMIN,
+            AUTENTICADO,
 
-        urlExportacao: `${URL_ADMIN}/treinamento/export`,
-        hash: `mybp_${parseInt(Math.random() * 999999)}`,
+            urlExportacao: `${URL_ADMIN}/treinamento/export`,
+            hash: `mybp_${parseInt(Math.random() * 999999)}`,
 
-        cliente_id: '',
+            cliente_id: '',
 
-        todos_municipios: `autocomplete/todos-municipios`,
+            todos_municipios: `autocomplete/todos-municipios`,
 
-        selecionados: [],
-        selecionaTudo: false,
+            selecionados: [],
+            selecionaTudo: false,
 
-        selecionadosMassa: [],
-        selecionaTudoMassa: false,
+            selecionadosMassa: [],
+            selecionaTudoMassa: false,
 
-        // Gerenciamento do estado do accordion
-        openPanels: [],
-        expandAll: false,
+            // Gerenciamento do estado do accordion
+            openPanels: [],
+            expandAll: false,
 
-        // Filtro e pesquisa de treinamentos
-        trainingSearchQuery: '',
-        trainingStatusFilter: 'all',
+            // Filtro e pesquisa de treinamentos
+            trainingSearchQuery: '',
+            trainingStatusFilter: 'all',
 
-        form: {
-            //_method: "post",
-            dadosFuncionario: {
+            form: {
+                //_method: "post",
+                dadosFuncionario: {
+                    nome: '',
+                    idade: '',
+                    cargo: '',
+                    email: ''
+                },
+
+                feedback_id: '',
+                curriculo_id: '',
+                tipo: '',
+                gerou_id: '',
+                data_envio: '',
+                enviado_email: '',
+                enviou_id: '',
+                email_envio: '',
+                email_aberto: '',
+                data_email_aberto: '',
+                listaVencimentos: [],
+
+                nr_trinta_tres: true,
+                nr_trinta_cinco: true,
+                segmento_treinamento_id: null,
+                exame: {
+                    feedback_id: '',
+                    exame_realizado: '',
+                    data_realizado: '',
+                    tipo_exame: '',
+                    trabalho_altura: '',
+                    espaco_confinado: ''
+                }
+            },
+            formDefault: null,
+
+            formMassa: {
+                tipo: '',
+                gerou_id: '',
+                data_envio: '',
+                enviado_email: '',
+                enviou_id: '',
+                email_envio: '',
+                email_aberto: '',
+                data_email_aberto: '',
+                listaVencimentos: [],
+                nr_trinta_tres: true,
+                nr_trinta_cinco: true,
+                selecionadosMassa: '',
+                exame: {
+                    feedback_id: '',
+                    exame_realizado: '',
+                    data_realizado: '',
+                    tipo_exame: '',
+                    trabalho_altura: '',
+                    espaco_confinado: ''
+                }
+            },
+            formMassaDefault: null,
+
+            vencimentos: [],
+            listaTodosTreinamentos: [],
+
+            listaColunasTreinamentos: null,
+
+            lista_ccs: null,
+
+            formEnviar: {
+                enviado: false,
+                preload: false,
+                titulo: 'Enviar Carteira e Etiqueta',
                 nome: '',
-                idade: '',
-                cargo: '',
+                email: '',
+                token: ''
+            },
+            formEnviarDefault: null,
+
+            formEnviarAviso: {
+                enviado: false,
+                preload: false,
                 email: ''
             },
 
-            feedback_id: '',
-            curriculo_id: '',
-            tipo: '',
-            gerou_id: '',
-            data_envio: '',
-            enviado_email: '',
-            enviou_id: '',
-            email_envio: '',
-            email_aberto: '',
-            data_email_aberto: '',
-            listaVencimentos: [],
+            formEnviarAvisoDefault: null,
 
-            nr_trinta_tres: true,
-            nr_trinta_cinco: true,
-            segmento_treinamento_id: null,
-            exame: {
-                feedback_id: '',
-                exame_realizado: '',
-                data_realizado: '',
-                tipo_exame: '',
-                trabalho_altura: '',
-                espaco_confinado: ''
-            }
-        },
-        formDefault: null,
+            lista: [],
+            vagas: [],
+            listaAreas: [],
+            segmentosTreinamento: [],
 
-        formMassa: {
-            tipo: '',
-            gerou_id: '',
-            data_envio: '',
-            enviado_email: '',
-            enviou_id: '',
-            email_envio: '',
-            email_aberto: '',
-            data_email_aberto: '',
-            listaVencimentos: [],
-            nr_trinta_tres: true,
-            nr_trinta_cinco: true,
-            selecionadosMassa: '',
-            exame: {
-                feedback_id: '',
-                exame_realizado: '',
-                data_realizado: '',
-                tipo_exame: '',
-                trabalho_altura: '',
-                espaco_confinado: ''
-            }
-        },
-        formMassaDefault: null,
+            controle: {
+                carregando: false,
+                dados: {
+                    caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
+                    autocomplete_label_anterior: '',
+                    autocomplete_label: '',
+                    autocomplete_label_cliente_anterior: '',
+                    autocomplete_label_cliente: '',
+                    pages: 50,
+                    cliente_custom: '',
+                    campoBusca: '',
+                    campoVaga: '',
+                    campoLido: '',
+                    campoFiltro: '',
+                    campoPcd: '',
+                    campoUf: '',
+                    campoArea: '',
+                    campoCargo: '',
+                    campo_treinados: '',
+                    campoNr_trinta_tres: '',
+                    campoNr_trinta_cinco: '',
+                    campoNr_ebtv: '',
+                    campoAdmitido: '',
+                    campoDemitido: false,
+                    campoCracha: '',
+                    campoFoto: '',
+                    campo_dataInicio: '',
+                    campo_dataFim: '',
+                    campoVencimento: false,
+                    dataInicioVencimento: '',
+                    dataFimVencimento: '',
+                    vencimento: '',
+                    treinamentos: '',
+                    treinamentos_selecionados: [],
+                    campoPeriodoTreinado: false,
+                    dataInicioPeriodoTreinado: '',
+                    dataFimPeriodoTreinado: '',
+                    periodoTreinado: '',
+                    campoCnpj: '',
+                    campoCentroCusto: ''
+                }
+            },
 
-        vencimentos: [],
-        listaTodosTreinamentos: [],
-
-        listaColunasTreinamentos: null,
-
-        lista_ccs: null,
-
-        formEnviar: {
-            enviado: false,
-            preload: false,
-            titulo: 'Enviar Carteira e Etiqueta',
-            nome: '',
-            email: '',
-            token: ''
-        },
-        formEnviarDefault: null,
-
-        formEnviarAviso: {
-            enviado: false,
-            preload: false,
-            email: ''
-        },
-
-        formEnviarAvisoDefault: null,
-
-        lista: [],
-        vagas: [],
-        listaAreas: [],
-        segmentosTreinamento: [],
-
-        controle: {
-            carregando: false,
-            dados: {
-                caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
-                autocomplete_label_anterior: '',
-                autocomplete_label: '',
-                autocomplete_label_cliente_anterior: '',
-                autocomplete_label_cliente: '',
-                pages: 50,
-                cliente_custom: '',
-                campoBusca: '',
-                campoVaga: '',
-                campoLido: '',
-                campoFiltro: '',
-                campoPcd: '',
-                campoUf: '',
-                campoArea: '',
-                campoCargo: '',
-                campo_treinados: '',
-                campoNr_trinta_tres: '',
-                campoNr_trinta_cinco: '',
-                campoNr_ebtv: '',
-                campoAdmitido: '',
-                campoDemitido: false,
-                campoCracha: '',
-                campoFoto: '',
-                campo_dataInicio: '',
-                campo_dataFim: '',
-                campoVencimento: false,
-                dataInicioVencimento: '',
-                dataFimVencimento: '',
-                vencimento: '',
-                treinamentos: '',
-                treinamentos_selecionados: [],
-                campoPeriodoTreinado: false,
-                dataInicioPeriodoTreinado: '',
-                dataFimPeriodoTreinado: '',
-                periodoTreinado: '',
-                campoCnpj: '',
-                campoCentroCusto: ''
-            }
-        },
-
-        url_anexo: `${URL_ADMIN}/treinamento/uploadAnexos`,
-        anexoUploadAndamento: false
+            url_anexo: `${URL_ADMIN}/treinamento/uploadAnexos`,
+            anexoUploadAndamento: false
+        }
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
@@ -723,8 +725,8 @@ const app = new Vue({
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs.componente.atual = 1
-            this.$refs.componente.buscar()
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         },
 
         atualizarVencimentoString() {
@@ -849,3 +851,6 @@ const app = new Vue({
         }
     }
 })
+
+registerGlobals(app)
+app.mount('#app')

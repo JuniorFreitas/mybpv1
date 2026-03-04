@@ -1,9 +1,15 @@
-import tipodocumento from "../../../../components/administracao/documentoslegais/tipodocumento";
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../../registerGlobals'
+import tipodocumento from '../../../../components/administracao/documentoslegais/tipodocumento'
 
-const app = new Vue({
-    el: '#app',
-    data: {},
-    components: {
-        tipodocumento,
+const app = createApp({
+    data() {
+        return {}
     },
+    components: {
+        tipodocumento
+    }
 })
+
+registerGlobals(app)
+app.mount('#app')

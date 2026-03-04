@@ -1,14 +1,7 @@
 <template>
     <div v-if="mostrarModal">
-        <modal
-            id="modalNps"
-            :titulo="mensagens.titulo"
-            size="g"
-            :fechar="!loading"
-            :mostrar-botao-fechar-no-rodape="false"
-            @fechou="onFechou"
-        >
-            <template slot="conteudo">
+        <modal id="modalNps" :titulo="mensagens.titulo" size="g" :fechar="!loading" :mostrar-botao-fechar-no-rodape="false" @fechou="onFechou">
+            <template #conteudo>
                 <div v-if="loading" class="nps-loading">
                     <div class="nps-spinner"></div>
                     <p class="nps-loading-text">Carregando...</p>
@@ -24,20 +17,11 @@
                         </div>
                         <span class="nps-progress-text">{{ quantidadeRespondidas }} de {{ perguntas.length }} respondidas</span>
                     </div>
-                    <div
-                        v-for="(pergunta, index) in perguntas"
-                        :key="pergunta.id"
-                        class="nps-card"
-                        :style="{ animationDelay: (index * 0.06) + 's' }"
-                    >
+                    <div v-for="(pergunta, index) in perguntas" :key="pergunta.id" class="nps-card" :style="{ animationDelay: index * 0.06 + 's' }">
                         <span class="nps-card-badge">Pergunta {{ index + 1 }}</span>
                         <span class="nps-card-label">{{ pergunta.texto }}</span>
                         <div class="nps-scale">
-                            <div
-                                v-for="n in 5"
-                                :key="n"
-                                class="nps-scale-item"
-                            >
+                            <div v-for="n in 5" :key="n" class="nps-scale-item">
                                 <button
                                     type="button"
                                     class="nps-scale-btn"
@@ -54,14 +38,10 @@
                     </div>
                 </div>
             </template>
-            <template slot="rodape">
+            <template #rodape>
                 <template v-if="!loading">
                     <div class="nps-footer">
-                        <button
-                            type="button"
-                            class="nps-btn nps-btn--ghost"
-                            @click="fecharResponderDepois"
-                        >
+                        <button type="button" class="nps-btn nps-btn--ghost" @click="fecharResponderDepois">
                             {{ mensagens.botao_responder_depois }}
                         </button>
                         <button
@@ -96,109 +76,102 @@ export default {
             mensagens: {
                 titulo: '',
                 botao_enviar: 'Enviar',
-                botao_responder_depois: 'Responder depois',
+                botao_responder_depois: 'Responder depois'
             },
             perguntas: [],
             respostas: {},
-            labelsEscala: [
-                'Muito insatisfeito',
-                'Insatisfeito',
-                'Neutro',
-                'Satisfeito',
-                'Muito satisfeito',
-            ],
-        };
+            labelsEscala: ['Muito insatisfeito', 'Insatisfeito', 'Neutro', 'Satisfeito', 'Muito satisfeito']
+        }
     },
 
     computed: {
         todasRespondidas() {
-            if (this.perguntas.length === 0) return false;
+            if (this.perguntas.length === 0) return false
             return this.perguntas.every((p) => {
-                const nota = this.respostas[p.id];
-                return typeof nota === 'number' && nota >= 1 && nota <= 5;
-            });
+                const nota = this.respostas[p.id]
+                return typeof nota === 'number' && nota >= 1 && nota <= 5
+            })
         },
         quantidadeRespondidas() {
             return this.perguntas.filter((p) => {
-                const nota = this.respostas[p.id];
-                return typeof nota === 'number' && nota >= 1 && nota <= 5;
-            }).length;
+                const nota = this.respostas[p.id]
+                return typeof nota === 'number' && nota >= 1 && nota <= 5
+            }).length
         },
         progressoPercentual() {
-            if (this.perguntas.length === 0) return 0;
-            return Math.round((this.quantidadeRespondidas / this.perguntas.length) * 100);
-        },
+            if (this.perguntas.length === 0) return 0
+            return Math.round((this.quantidadeRespondidas / this.perguntas.length) * 100)
+        }
     },
 
     mounted() {
-        this.carregar();
+        this.carregar()
     },
 
     methods: {
         carregar() {
-            this.loading = true;
+            this.loading = true
             axios
                 .get(`${window.URL_ADMIN}/nps/deve-exibir`)
                 .then((res) => {
-                    const data = res.data;
+                    const data = res.data
                     if (!data.mostrar || !data.perguntas || data.perguntas.length === 0) {
-                        return;
+                        return
                     }
-                    this.mensagens = data.mensagens || this.mensagens;
-                    this.perguntas = data.perguntas;
-                    this.respostas = {};
+                    this.mensagens = data.mensagens || this.mensagens
+                    this.perguntas = data.perguntas
+                    this.respostas = {}
                     this.perguntas.forEach((p) => {
-                        this.$set(this.respostas, p.id, null);
-                    });
-                    this.mostrarModal = true;
-                    this.loading = false;
+                        this.respostas[p.id] = null
+                    })
+                    this.mostrarModal = true
+                    this.loading = false
                     this.$nextTick(() => {
-                        $('#modalNps').modal('show');
-                    });
+                        $('#modalNps').modal('show')
+                    })
                 })
                 .catch(() => {})
                 .finally(() => {
-                    this.loading = false;
-                });
+                    this.loading = false
+                })
         },
 
         fecharResponderDepois() {
-            $('#modalNps').modal('hide');
+            $('#modalNps').modal('hide')
         },
 
         onFechou() {
-            this.mostrarModal = false;
+            this.mostrarModal = false
         },
 
         enviar() {
-            if (!this.todasRespondidas || this.enviando) return;
+            if (!this.todasRespondidas || this.enviando) return
             const respostas = this.perguntas.map((p) => ({
                 nps_pergunta_id: p.id,
-                nota: this.respostas[p.id],
-            }));
-            this.enviando = true;
+                nota: this.respostas[p.id]
+            }))
+            this.enviando = true
             axios
                 .post(`${window.URL_ADMIN}/nps`, { respostas })
                 .then(() => {
-                    $('#modalNps').modal('hide');
+                    $('#modalNps').modal('hide')
                     if (typeof mostraSucesso === 'function') {
-                        mostraSucesso('Obrigado pela sua avaliação!');
+                        mostraSucesso('Obrigado pela sua avaliação!')
                     }
                 })
                 .catch((err) => {
-                    const msg = err.response && err.response.data && err.response.data.mensagem
-                        ? err.response.data.mensagem
-                        : 'Erro ao enviar. Tente novamente.';
+                    const msg =
+                        err.response && err.response.data && err.response.data.mensagem ? err.response.data.mensagem : 'Erro ao enviar. Tente novamente.'
                     if (typeof mostraErro === 'function') {
-                        mostraErro('', msg);
+                        mostraErro('', msg)
                     }
                 })
                 .finally(() => {
-                    this.enviando = false;
-                });
-        },
-    },
-};
+                    this.enviando = false
+                })
+        }
+    }
+}
 </script>
 
 <style scoped>
@@ -221,7 +194,9 @@ export default {
 }
 
 @keyframes nps-spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .nps-loading-text {
@@ -291,7 +266,10 @@ export default {
     margin-bottom: 1rem;
     border: 1px solid #e9ecef;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+    transition:
+        box-shadow 0.25s ease,
+        border-color 0.25s ease,
+        transform 0.2s ease;
     animation: nps-card-in 0.4s ease both;
 }
 
@@ -403,7 +381,6 @@ export default {
     color: #fff;
     transform: scale(1.06);
 }
-
 
 .nps-footer {
     display: flex;

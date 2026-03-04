@@ -1,25 +1,29 @@
-import cloud from '../../components/Cloud';
+import { createApp } from 'vue'
+import { registerGlobals } from '../../registerGlobals'
+import cloud from '../../components/Cloud'
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     components: {
-        cloud,
+        cloud
     },
-    data: {
-        itemAtual: ''
+    data() {
+        return {
+            itemAtual: ''
+        }
     },
 
     methods: {
         atualizar(item) {
-            this.itemAtual = item;
+            this.itemAtual = item
             // setTimeout(()=>{
             //     this.$refs.cloud.atualizar();
             // },10)
-
         },
-        openFolder(itemAtual){
+        openFolder(itemAtual) {
             this.atualizar(itemAtual)
         }
     }
+})
 
-});
+registerGlobals(app)
+app.mount('#app')

@@ -4,53 +4,16 @@
  * building robust, powerful web applications using Vue and Laravel.
  */
 
-require("./bootstrap");
-//Componentes Globais
-require("./Globals");
+require('./bootstrap')
+require('./Globals')
+require('./registerGlobals')
 
-window.toastr = require("toastr");
-toastr.options.closeButton = true;
-window.moment = require("moment");
-moment.locale("pt-BR");
+window.toastr = require('toastr')
+toastr.options.closeButton = true
+window.moment = require('moment')
+moment.locale('pt-BR')
 
-require("bootstrap-daterangepicker");
+require('bootstrap-daterangepicker')
 
-window.Vue = require("vue");
-
-// window.ChartJs =require("chart.js");
-
-import VueTippy, { TippyComponent } from "vue-tippy";
-// import configuracoes from './mixins/Configuracoes';
-
-// Vue.mixin(configuracoes);
-
-
-Vue.use(VueTippy);
-// or
-Vue.use(VueTippy, {
-    directive: "tippy", // => v-tippy
-    flipDuration: 0,
-    popperOptions: {
-        modifiers: {
-            preventOverflow: {
-                enabled: false
-            }
-        }
-    }
-});
-
-Vue.component("tippy", TippyComponent).default;
-Vue.component("preload", require("./components/preload").default);
-Vue.component("btn-atualiza", require("./components/btnAtualiza").default);
-Vue.component("controle-paginacao", require("./components/ControlePaginacao").default);
-Vue.component("datepicker", require("./components/DatePicker").default);
-Vue.component("modal", require("./components/Modal").default);
-Vue.component("autocomplete", require("./components/AutoComplete").default);
-Vue.component("bt-ativo", require("./components/AtivoInativo").default);
-Vue.component("barra-top", require("./components/layout/BarraTop").default);
-Vue.component("nps-modal", require("./components/NpsModal").default);
-//
-//
-// //Diretivas globais
-require("./diretivas/mascaras");
-require("./diretivas/popover");
+const Vue = require('vue')
+window.Vue = Vue

@@ -7,7 +7,7 @@
 @section('content')
 
     <modal id="janelaTreinamento" titulo="Treinamentos" :size="95">
-        <template slot="conteudo">
+        <template #conteudo>
             <div class="alert alert-success text-center" v-show="cadastrado">
                 <h4><i class="icon fa fa-check"></i> Treinamento atualizado com sucesso</h4>
             </div>
@@ -40,15 +40,15 @@
                             </select>
                         </div>
 
-                        <div class="col-12 mt-3" v-if="form.treinamento_sgi_id">
+                        <div class="col-12 mt-3" v-if="treinamentoSelecionado">
                             <fieldset>
                                 <legend>DETALHES</legend>
                                 <strong>Conteúdo programatico:</strong> <br>
-                                @{{ _.find(listaTreinamentos,{id:form.treinamento_sgi_id}).conteudo_programatico }}
+                                @{{ treinamentoSelecionado.conteudo_programatico || '' }}
                                 <hr>
 
                                 <strong>Carga horária:</strong> @{{
-                                _.find(listaTreinamentos,{id:form.treinamento_sgi_id}).carga_horaria }} horas
+                                treinamentoSelecionado.carga_horaria || '' }} horas
                                 <hr>
                             </fieldset>
                         </div>
@@ -182,7 +182,7 @@
 
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button class="btn btn-default" @click.prevent="salvar"><i class="fa fa-save"></i> Salvar</button>
         </template>
     </modal>

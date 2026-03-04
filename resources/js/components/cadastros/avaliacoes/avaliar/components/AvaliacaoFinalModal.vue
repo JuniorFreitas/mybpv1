@@ -1,20 +1,16 @@
 <template>
     <modal id="janelaAvaliacaoFinal" :titulo="titulo_janela_final" :size="90">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-show="preloadAvalFinal"></preload>
             <div v-if="!preloadAvalFinal">
                 <!-- Dados do Funcionário -->
                 <FuncionarioDados :dados="formAvaliarFinal.dados_do_funcionario" />
 
                 <!-- Tabelas de Resultados -->
-                <TabelaResultados
-                    :resultado-agrupado="formAvaliarFinal.result_topico_pai_agrupado"
-                />
+                <TabelaResultados :resultado-agrupado="formAvaliarFinal.result_topico_pai_agrupado" />
 
                 <!-- Considerações dos Avaliadores -->
-                <TabelaConsideracoes
-                    :resultado-agrupado="formAvaliarFinal.result_topico_pai_agrupado"
-                />
+                <TabelaConsideracoes :resultado-agrupado="formAvaliarFinal.result_topico_pai_agrupado" />
 
                 <!-- Charts de Radar -->
                 <ChartsRadar
@@ -33,7 +29,7 @@
                 />
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button
                 type="button"
                 class="btn btn-sm btn-primary"
@@ -117,9 +113,7 @@ export default {
             this.resetForm()
 
             try {
-                const response = await axios.get(
-                    `${URL_ADMIN}/cadastro/avaliacoes/avaliar/${avaliacaoFeedback.id}/final`
-                )
+                const response = await axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${avaliacaoFeedback.id}/final`)
 
                 this.carregarDados(response.data)
 
@@ -175,9 +169,7 @@ export default {
         },
 
         removerPlanoAcao(index) {
-            if (!this.formAvaliarFinal.planos_acoes ||
-                index < 0 ||
-                index >= this.formAvaliarFinal.planos_acoes.length) {
+            if (!this.formAvaliarFinal.planos_acoes || index < 0 || index >= this.formAvaliarFinal.planos_acoes.length) {
                 return
             }
 
@@ -201,10 +193,7 @@ export default {
             this.salvando = true
 
             try {
-                await axios.put(
-                    `${URL_ADMIN}/cadastro/avaliacoes/avaliar/${this.formAvaliarFinal.avaliacao_feedback_id}/final`,
-                    this.formAvaliarFinal
-                )
+                await axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${this.formAvaliarFinal.avaliacao_feedback_id}/final`, this.formAvaliarFinal)
 
                 $('#janelaAvaliacaoFinal').modal('hide')
                 mostraSucesso('', 'Avaliação Final salva com sucesso')

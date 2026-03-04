@@ -4,7 +4,7 @@
 @section('content')
     <modal id="validaSesmt" :titulo="abasesmt.tituloJanela" modal-pai='janelaParecerEntrevista' :size="80"
            :fechar="!abasesmt.preload">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-if="abasesmt.preload" label="Aguarde ...."></preload>
             <fieldset v-if="!abasesmt.preload">
                 <legend>Exame</legend>
@@ -146,7 +146,7 @@
                 </div>
             </fieldset>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             {{--            <div v-show="!visualizar">--}}
             <button type="button" class="btn btn-sm btn-primary"
                     v-if="!abasesmt.preload"
@@ -160,7 +160,7 @@
     </modal>
 
     <modal id="janelaParecerEntrevista" :titulo="tituloJanela" :size="80" :fechar="!preload">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-if="preload"></preload>
             <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''">
 {{--                <fieldset>--}}
@@ -221,7 +221,7 @@
                 </div>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div v-show="!visualizar">
                 <button type="button" class="btn btn-sm btn-primary"
                         v-show="!cadastrado & nav === 'encaminhar'  && !preload"

@@ -1,132 +1,135 @@
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
 import datepicker from '../../../components/DatePicker'
 import DateRangeFilter from '../../../components/DateRangeFilter.vue'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     components: {
         datepicker,
         DateRangeFilter
     },
     mixins: [ExportacaoMixin],
-    data: {
-        tituloJanela: 'Planejamento - Requisição de Vaga',
-        preload: false,
-        editando: false,
-        apagado: false,
-        cadastrado: false,
-        cadastrando: false,
-        atualizado: false,
-        visualizar: false,
-        aprovando: false,
-        aprovandoExtra: false,
-        aprovaGestor: false,
-        aprovaExtra: false,
-        temAprovacaoExtra: false,
-        nomeAprovacaoExtra: 'Aprovação Extra',
-        aprovandoRh: false,
-        aprovaRh: false,
-        preloadExportacao: false,
+    data() {
+        return {
+            tituloJanela: 'Planejamento - Requisição de Vaga',
+            preload: false,
+            editando: false,
+            apagado: false,
+            cadastrado: false,
+            cadastrando: false,
+            atualizado: false,
+            visualizar: false,
+            aprovando: false,
+            aprovandoExtra: false,
+            aprovaGestor: false,
+            aprovaExtra: false,
+            temAprovacaoExtra: false,
+            nomeAprovacaoExtra: 'Aprovação Extra',
+            aprovandoRh: false,
+            aprovaRh: false,
+            preloadExportacao: false,
 
-        urlExportacao: `${URL_ADMIN}/planejamento/requisicao-vaga/export`,
+            urlExportacao: `${URL_ADMIN}/planejamento/requisicao-vaga/export`,
 
-        hash: `mastertag_${parseInt(Math.random() * 999999)}`,
+            hash: `mastertag_${parseInt(Math.random() * 999999)}`,
 
-        todos_municipios: `autocomplete/todos-municipios`,
+            todos_municipios: `autocomplete/todos-municipios`,
 
-        cliente_id: '',
+            cliente_id: '',
 
-        preloadForm: true,
+            preloadForm: true,
 
-        colunasTabela: {
-            cliente: false
-        },
-
-        URL_ADMIN,
-        selecionados: [],
-        selecionaTudo: false,
-
-        form: {
-            id: '',
-            centro_custo_id: '',
-
-            empresa_id: '',
-
-            cargo_id: '',
-            autocomplete_label_cargo_modal: '',
-            autocomplete_label_cargo_modal_anterior: '',
-
-            area_id: '',
-            quantidade: '',
-            tipo_contratacao: '',
-            prioridade: '',
-            imediata: false,
-            previsao_inicio: '',
-            solicitante: '',
-            observacao: '',
-            status_aprovacao: '',
-
-            aprovacao_extra_id: '',
-            aprovacao_extra_nome: '',
-            obs_aprovacao_extra: '',
-            status_aprovacao_extra: '',
-            data_aprovacao_extra: '',
-
-            rh_aprovacao_id: '',
-            rh_aprovacao: '',
-            obs_rh: '',
-            status_aprovacao_rh: '',
-            data_aprovacao_rh: '',
-
-            outras_informacoes: {
-                posicao: '',
-                processo: '',
-                contrato: '',
-                local_trabalho: '',
-                horario: '',
-                gestor: '',
-                gestor_id: '',
-                autocomplete_label_gestor: '',
-                autocomplete_label_gestor_anterior: '',
-                ppra: '',
-
-                salario: '',
-                salario_valor: '',
-                salario_valor_format: '',
-                beneficio: '',
-                beneficio_excecao: '',
-                treinamento: '',
-                treinamento_excecao: ''
+            colunasTabela: {
+                cliente: false
             },
-            custom_values: {}
-        },
 
-        camposCustom: [],
-        formDefault: null,
+            URL_ADMIN,
+            selecionados: [],
+            selecionaTudo: false,
 
-        lista: [],
-        vagas: [],
-        opened: [],
-        areas_etiquetas: [],
-        centro_custos: [],
+            form: {
+                id: '',
+                centro_custo_id: '',
 
-        controle: {
-            carregando: false,
-            dados: {
-                caminho_autocomplete: `autocomplete/cargos_ativos`,
-                autocomplete_label_anterior: '',
-                autocomplete_label: '',
-                pages: 20,
-                campoBusca: '',
-                campoVaga: '',
-                campoFiltro: '',
-                campoStatus: '',
+                empresa_id: '',
 
-                cliente_custom: '',
-                filtroPeriodo: false,
-                dataInicio: '',
-                dataFim: '',
-                ordenacao: 'created_at_desc'
+                cargo_id: '',
+                autocomplete_label_cargo_modal: '',
+                autocomplete_label_cargo_modal_anterior: '',
+
+                area_id: '',
+                quantidade: '',
+                tipo_contratacao: '',
+                prioridade: '',
+                imediata: false,
+                previsao_inicio: '',
+                solicitante: '',
+                observacao: '',
+                status_aprovacao: '',
+
+                aprovacao_extra_id: '',
+                aprovacao_extra_nome: '',
+                obs_aprovacao_extra: '',
+                status_aprovacao_extra: '',
+                data_aprovacao_extra: '',
+
+                rh_aprovacao_id: '',
+                rh_aprovacao: '',
+                obs_rh: '',
+                status_aprovacao_rh: '',
+                data_aprovacao_rh: '',
+
+                outras_informacoes: {
+                    posicao: '',
+                    processo: '',
+                    contrato: '',
+                    local_trabalho: '',
+                    horario: '',
+                    gestor: '',
+                    gestor_id: '',
+                    autocomplete_label_gestor: '',
+                    autocomplete_label_gestor_anterior: '',
+                    ppra: '',
+
+                    salario: '',
+                    salario_valor: '',
+                    salario_valor_format: '',
+                    beneficio: '',
+                    beneficio_excecao: '',
+                    treinamento: '',
+                    treinamento_excecao: ''
+                },
+                custom_values: {}
+            },
+
+            camposCustom: [],
+            formDefault: null,
+
+            lista: [],
+            vagas: [],
+            opened: [],
+            areas_etiquetas: [],
+            centro_custos: [],
+
+            controle: {
+                carregando: false,
+                dados: {
+                    caminho_autocomplete: `autocomplete/cargos_ativos`,
+                    autocomplete_label_anterior: '',
+                    autocomplete_label: '',
+                    pages: 20,
+                    campoBusca: '',
+                    campoVaga: '',
+                    campoFiltro: '',
+                    campoStatus: '',
+
+                    cliente_custom: '',
+                    filtroPeriodo: false,
+                    dataInicio: '',
+                    dataFim: '',
+                    ordenacao: 'created_at_desc'
+                }
             }
         }
     },
@@ -173,7 +176,8 @@ const app = new Vue({
 
     methods: {
         carregarCamposCustom() {
-            axios.get(`${URL_ADMIN}/planejamento/requisicao-vaga/campos-custom`)
+            axios
+                .get(`${URL_ADMIN}/planejamento/requisicao-vaga/campos-custom`)
                 .then((r) => {
                     this.camposCustom = r.data || []
                 })
@@ -196,7 +200,7 @@ const app = new Vue({
                 this.controle.dados.autocomplete_label_anterior = ''
                 this.controle.dados.autocomplete_label = ''
                 this.controle.dados.campoVaga = ''
-                this.$refs.componente.buscar()
+                this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             }
         },
         selecionaVaga(obj) {
@@ -205,7 +209,7 @@ const app = new Vue({
             this.controle.dados.autocomplete_label_anterior = obj.label
             this.controle.carregando = true
             setTimeout(() => {
-                this.$refs.componente.buscar()
+                this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             }, 600)
         },
 
@@ -358,7 +362,7 @@ const app = new Vue({
                     let data = response.data
                     mostraSucesso('', 'Solicitação registrada com sucesso!')
                     $('#janelaCadastrar').modal('hide')
-                    this.$refs.componente.buscar()
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -393,7 +397,7 @@ const app = new Vue({
                     let data = response.data
                     mostraSucesso('', 'Solicitação alterada com sucesso!')
                     $('#janelaCadastrar').modal('hide')
-                    this.$refs.componente.buscar()
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -417,7 +421,7 @@ const app = new Vue({
                     let data = response.data
                     mostraSucesso('', 'Registro salvo com sucesso!')
                     $('#janelaCadastrar').modal('hide')
-                    this.$refs.componente.buscar()
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -441,7 +445,7 @@ const app = new Vue({
                     let data = response.data
                     mostraSucesso('', 'Registro salvo com sucesso!')
                     $('#janelaCadastrar').modal('hide')
-                    this.$refs.componente.buscar()
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -470,13 +474,16 @@ const app = new Vue({
                     mostraSucesso('', 'Registro salvo com sucesso!')
                     $('#janelaCadastrar').modal('hide')
                     if (this.$refs.componente && typeof this.$refs.componente.buscar === 'function') {
-                        this.$refs.componente.buscar()
+                        this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     }
                     this.preload = false
                 })
                 .catch((error) => {
                     this.preload = false
-                    const msg = (error.response && error.response.data && error.response.data.msg) ? error.response.data.msg : 'Houve um erro ao aprovar. Tente novamente.'
+                    const msg =
+                        error.response && error.response.data && error.response.data.msg
+                            ? error.response.data.msg
+                            : 'Houve um erro ao aprovar. Tente novamente.'
                     mostraErro('', msg)
                 })
         },
@@ -540,8 +547,8 @@ const app = new Vue({
         },
         atualizar() {
             this.syncUrlFiltros()
-            this.$refs.componente.atual = 1
-            this.$refs.componente.buscar()
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         },
         urlParamGet() {
             const urlParams = new URLSearchParams(window.location.search)
@@ -560,7 +567,7 @@ const app = new Vue({
         },
         syncUrlFiltros() {
             const d = this.controle.dados
-            const atual = (this.$refs.componente && this.$refs.componente.atual) ? this.$refs.componente.atual : 1
+            const atual = this.$refs.componente && this.$refs.componente.atual ? this.$refs.componente.atual : 1
             const params = {}
             if (atual > 1) params.page = atual
             if (d.ordenacao && d.ordenacao !== 'created_at_desc') params.ordenacao = d.ordenacao
@@ -582,3 +589,6 @@ const app = new Vue({
         }
     }
 })
+
+registerGlobals(app)
+app.mount('#app')

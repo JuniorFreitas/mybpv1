@@ -1,29 +1,21 @@
 <template>
     <div>
         <modal id="janelaMensagemFinalizar" :fechar="false" titulo="ATENÇÃO!">
-            <template slot="conteudo">
-                <p v-if="finalizando">
-                    <i class="fa fa-spinner fa-pulse"></i> Finalizando Aguarde...
-                </p>
+            <template #conteudo>
+                <p v-if="finalizando"><i class="fa fa-spinner fa-pulse"></i> Finalizando Aguarde...</p>
                 <div class="text-center" v-if="!finalizando">
                     <h5 class="text-danger">Você realmente deseja finalizar a prova?</h5>
-                    <img :src="`${URL_SITE}/imagens/bepinhas/branca_2.png`" class="img-fluid mx-auto d-flex" alt="bepinha">
+                    <img :src="`${URL_SITE}/imagens/bepinhas/branca_2.png`" class="img-fluid mx-auto d-flex" alt="bepinha" />
                 </div>
             </template>
-            <template slot="rodape">
-                <button type="button" v-show="!finalizando" class="btn btn-primary" @click="finalizarSimulado">
-                    Sim
-                </button>
-                <button type="button" v-show="!finalizando" class="btn btn-primary" data-dismiss="modal">
-                    Revisar
-                </button>
+            <template #rodape>
+                <button type="button" v-show="!finalizando" class="btn btn-primary" @click="finalizarSimulado">Sim</button>
+                <button type="button" v-show="!finalizando" class="btn btn-primary" data-dismiss="modal">Revisar</button>
             </template>
         </modal>
 
         <div class="row">
-            <p class="col-12" v-show="carregando">
-                <i class="fa fa-spinner fa-pulse"></i> Carregando...
-            </p>
+            <p class="col-12" v-show="carregando"><i class="fa fa-spinner fa-pulse"></i> Carregando...</p>
         </div>
 
         <div class="row" v-if="finalizado">
@@ -42,27 +34,27 @@
                     <div class="paginacao">
                         <h6>Questão {{ atual + 1 }}</h6>
 
-                        <button @click="voltar" class="btn btn-outline-primary btn-circle"
-                                :disabled="atual === 0 && atual < 4 || respondendo">
+                        <button @click="voltar" class="btn btn-outline-primary btn-circle" :disabled="(atual === 0 && atual < 4) || respondendo">
                             <i class="fas fa-chevron-left"></i>
                         </button>
 
-                        <button v-for="(botao, index) in lista.simulado.perguntas"
-                                v-show="(index+3 > atual) && (index < atual+3)"
-                                @click="abrir(index)"
-                                :disabled="respondendo"
-                                class="btn btn-circle" :class="btnClass(index,atual)">
+                        <button
+                            v-for="(botao, index) in lista.simulado.perguntas"
+                            v-show="index + 3 > atual && index < atual + 3"
+                            @click="abrir(index)"
+                            :disabled="respondendo"
+                            class="btn btn-circle"
+                            :class="btnClass(index, atual)"
+                        >
                             {{ index + 1 }}
                         </button>
 
-                        <button @click="avancar" class="btn btn-outline-primary btn-circle"
-                                :disabled="atual+1 > fim  || respondendo">
-                            <i
-                                class="fas fa-chevron-right"></i>
+                        <button @click="avancar" class="btn btn-outline-primary btn-circle" :disabled="atual + 1 > fim || respondendo">
+                            <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
 
-                    <hr style="width: 98%;">
+                    <hr style="width: 98%" />
 
                     <!-- Enunciado  -->
                     <div class="text-justify col-12 py-3 defaultText">
@@ -71,22 +63,27 @@
 
                     <!-- Alternativas  -->
                     <div class="col-12 text-left py-1">
-                        <div class="form-check mb-2" v-for="(resp, index) in lista.simulado.perguntas[atual].respostas"
-                             :id="alts[index]"
-                             style=" padding-top: 14px;"
-                             :class="objClass(lista.simulado.perguntas[atual],resp)"
+                        <div
+                            class="form-check mb-2"
+                            v-for="(resp, index) in lista.simulado.perguntas[atual].respostas"
+                            :id="alts[index]"
+                            style="padding-top: 14px"
+                            :class="objClass(lista.simulado.perguntas[atual], resp)"
                         >
-
                             <label class="form-check-label" :style="finalizado ? 'no-drop' : 'cursor: pointer'">
-
-                                <input type="radio" class="form-check-input" style="display: none"
-                                       :disabled="finalizado"
-                                       :value="resp.id" :letraescolhida="alts[index]"
-                                       v-model="lista.simulado.perguntas[atual].simulado_resposta_id"
-                                       name="resposta">
+                                <input
+                                    type="radio"
+                                    class="form-check-input"
+                                    style="display: none"
+                                    :disabled="finalizado"
+                                    :value="resp.id"
+                                    :letraescolhida="alts[index]"
+                                    v-model="lista.simulado.perguntas[atual].simulado_resposta_id"
+                                    name="resposta"
+                                />
 
                                 <div class="row">
-                                    <div style="margin-top: -10px;">
+                                    <div style="margin-top: -10px">
                                         <svg width="46" height="51">
                                             <circle></circle>
                                             <text fill="#000000" font-size="25" font-family="Arial" x="15" y="31">
@@ -95,77 +92,70 @@
                                         </svg>
                                     </div>
 
-                                    <input type="radio" style="display: none" name="letracorreta"
-                                           :checked="resp.correto"
-                                           :value="alts[index]">
+                                    <input type="radio" style="display: none" name="letracorreta" :checked="resp.correto" :value="alts[index]" />
 
                                     <div class="col">
                                         <span v-html="resp.resposta" v-if="!finalizado"></span>
                                         <span v-html="resp.resposta" v-if="finalizado"></span>
                                     </div>
                                 </div>
-
                             </label>
                         </div>
 
-
                         <div class="py-2">
-                            <hr style="width: 98%;">
+                            <hr style="width: 98%" />
                             <div v-if="finalizado">
-
-                                <button @click="voltar" class="btn btn-outline-primary btn-circle"
-                                        :disabled="atual === 0 && atual < 4 ">
+                                <button @click="voltar" class="btn btn-outline-primary btn-circle" :disabled="atual === 0 && atual < 4">
                                     <i class="fas fa-chevron-left"></i>
                                 </button>
 
-
-                                <button @click="avancar" class="btn btn-outline-primary btn-circle"
-                                        :disabled="atual+1 > fim "><i
-                                    class="fas fa-chevron-right"></i>
+                                <button @click="avancar" class="btn btn-outline-primary btn-circle" :disabled="atual + 1 > fim">
+                                    <i class="fas fa-chevron-right"></i>
                                 </button>
                             </div>
 
                             <div v-show="!finalizado">
-                                <p v-show="respondendo">
-                                    <i class="fa fa-spinner fa-pulse"></i> Salvando resposta...
-                                </p>
+                                <p v-show="respondendo"><i class="fa fa-spinner fa-pulse"></i> Salvando resposta...</p>
 
-                                <button class="btn btn-primary" style="font-size: 1rem;" v-show="!respondeu"
-                                        :disabled="lista.simulado.perguntas[atual].simulado_resposta_id == null || respondendo"
-                                        @click="Responder(lista.simulado.perguntas[atual])">Responder
+                                <button
+                                    class="btn btn-primary"
+                                    style="font-size: 1rem"
+                                    v-show="!respondeu"
+                                    :disabled="lista.simulado.perguntas[atual].simulado_resposta_id == null || respondendo"
+                                    @click="Responder(lista.simulado.perguntas[atual])"
+                                >
+                                    Responder
                                 </button>
 
-                                <button class="btn btn-primary" style="font-size: 1rem;" v-show="completa"
-                                        data-toggle="modal"
-                                        data-target="#janelaMensagemFinalizar">
+                                <button
+                                    class="btn btn-primary"
+                                    style="font-size: 1rem"
+                                    v-show="completa"
+                                    data-toggle="modal"
+                                    data-target="#janelaMensagemFinalizar"
+                                >
                                     Finalizar
                                 </button>
                             </div>
                         </div>
-
                     </div>
                 </div>
-
             </div>
 
             <!-- Tempo  -->
-            <div class="col-md-3 py-5 rounded d-flex justify-content-center bg-primary col-12"
-                 style="max-height: 348px" v-if="!finalizado">
+            <div class="col-md-3 py-5 rounded d-flex justify-content-center bg-primary col-12" style="max-height: 348px" v-if="!finalizado">
                 <div class="circle bg-primary">
                     <div>
                         <div class="count">{{ tempo }}</div>
-                        <p class="minuto">Minutos<br>Restantes</p>
+                        <p class="minuto">Minutos<br />Restantes</p>
                         <div class="l-half"></div>
                         <div class="r-half"></div>
                     </div>
                 </div>
             </div>
 
-
-            <div class="col-md-3 py-5 rounded bg-primary col-12"
-                 v-if="finalizado" style="max-height: 372px">
+            <div class="col-md-3 py-5 rounded bg-primary col-12" v-if="finalizado" style="max-height: 372px">
                 <h5 class="text-center text-white">PROVA FINALIZADA</h5>
-
 
                 <!--<h5 class="text-center text-white">RESULTADO</h5>
                 <div class="d-flex justify-content-center">
@@ -175,20 +165,14 @@
 
                     </div>
                 </div>-->
-
-
             </div>
-
         </div>
-
     </div>
 </template>
 
 <script>
-
 export default {
     props: {
-
         simulado_id: {
             type: Number,
             required: true,
@@ -223,7 +207,7 @@ export default {
             type: Number,
             required: true,
             default: () => ''
-        },
+        }
     },
     data() {
         return {
@@ -262,7 +246,7 @@ export default {
                 22: 'X',
                 23: 'Y',
                 24: 'W',
-                25: 'Z',
+                25: 'Z'
             },
 
             // alternativa: '',
@@ -282,15 +266,14 @@ export default {
             inicio: 0,
             fim: 0,
 
-            lista: [],
+            lista: []
 
             // resultado: [],
-
         }
     },
     mounted() {
-        this.getSimulado();
-        this.gravaTempo();
+        this.getSimulado()
+        this.gravaTempo()
         // setTimeout(() => {
         //     let respostasBranco = this.lista.simulado.perguntas.filter((pergunta) => {
         //         console.log(pergunta)
@@ -306,113 +289,115 @@ export default {
             let qntAcerto = this.lista.simulado.perguntas.filter((pergunta) => {
                 let correta = _.find(pergunta.respostas, {
                     correto: true
-                });
+                })
 
                 if (pergunta.simulado_resposta_id === correta.id) {
-                    return pergunta;
+                    return pergunta
                 }
-            });
+            })
 
-            return qntAcerto.length;
+            return qntAcerto.length
         }
     },
     methods: {
         avancar() {
-            this.atual++;
+            this.atual++
         },
         voltar() {
-            this.atual--;
+            this.atual--
         },
         abrir(index) {
-            this.atual = index;
+            this.atual = index
         },
         btnClass(index, atual) {
-            let classe = {};
+            let classe = {}
             if (!this.finalizado) {
                 if (index === atual) {
-                    classe['btn btn-default text-white'] = true;
+                    classe['btn btn-default text-white'] = true
                 }
                 if (this.lista.simulado.perguntas[index].simulado_resposta_id != null) {
-                    classe['btn bg-primary text-white round-1 text-white'] = true;
+                    classe['btn bg-primary text-white round-1 text-white'] = true
                 }
             } else {
                 let correta = _.find(this.lista.simulado.perguntas[index].respostas, {
                     correto: true
-                });
+                })
                 if (this.lista.simulado.perguntas[index].simulado_resposta_id === correta.id) {
-                    classe['btn btn-success text-white'] = true;
+                    classe['btn btn-success text-white'] = true
                 } else {
-                    classe['btn btn-danger text-white'] = true;
+                    classe['btn btn-danger text-white'] = true
                 }
             }
-            return classe;
+            return classe
         },
 
         objClass(pergunta, alternativa) {
-            let classe = {};
+            let classe = {}
             if (!this.finalizado) {
                 if (pergunta.simulado_resposta_id === alternativa.id) {
-                    classe['bg-primary text-white round-1'] = true;
+                    classe['bg-primary text-white round-1'] = true
                 }
             } else {
                 let correta = _.find(pergunta.respostas, {
-                    'correto': true
-                });
+                    correto: true
+                })
                 if (pergunta.simulado_resposta_id === alternativa.id) {
                     if (pergunta.simulado_resposta_id === correta.id) {
-                        classe['bg-success text-white'] = true;
-                        return classe;
+                        classe['bg-success text-white'] = true
+                        return classe
                     } else {
-                        classe['bg-danger text-white'] = true;
+                        classe['bg-danger text-white'] = true
                     }
                 } else {
                     if (correta.id === alternativa.id) {
-                        classe['bg-success text-white'] = true;
+                        classe['bg-success text-white'] = true
                     }
                 }
-
             }
-            return classe;
+            return classe
         },
         Responder(obj) {
-            this.respondendo = true;
-            axios.post(`${URL_SITE}/prova/responder`, {
-                simulado_vaga_id: this.simulado_vaga_id,
-                curriculo_id: this.curriculo_id,
-                feedback_id: this.feedback_id,
-                vagas_abertas_id: this.vagas_abertas_id,
-                empresa_id: this.empresa_id,
-                simulado_pergunta_id: obj.id,
-                simulado_resposta_id: obj.simulado_resposta_id,
-            }).then(response => {
-                let data = response.data;
-                let respostasBranco = this.lista.simulado.perguntas.filter((pergunta) => {
-                    return pergunta.simulado_resposta_id == null;
-                });
-                if (this.atual < this.fim) {
-                    setTimeout(() => {
-                        this.avancar();
-                        this.respondendo = false;
-                    }, 300)
-                    if (respostasBranco.length === 0) {
-                        this.completa = true;
-                    }
-                } else {
-                    if (respostasBranco.length === 0) {
-                        this.respondendo = false;
-                        this.completa = true;
-                    } else {
-                        if (respostasBranco.length === 1) {
-                            mostraErro('', 'Ops! Existe ' + respostasBranco.length + ' questão em branco.');
-                        } else {
-                            mostraErro('', 'Ops! Existem ' + respostasBranco.length + ' questões em branco.');
+            this.respondendo = true
+            axios
+                .post(`${URL_SITE}/prova/responder`, {
+                    simulado_vaga_id: this.simulado_vaga_id,
+                    curriculo_id: this.curriculo_id,
+                    feedback_id: this.feedback_id,
+                    vagas_abertas_id: this.vagas_abertas_id,
+                    empresa_id: this.empresa_id,
+                    simulado_pergunta_id: obj.id,
+                    simulado_resposta_id: obj.simulado_resposta_id
+                })
+                .then((response) => {
+                    let data = response.data
+                    let respostasBranco = this.lista.simulado.perguntas.filter((pergunta) => {
+                        return pergunta.simulado_resposta_id == null
+                    })
+                    if (this.atual < this.fim) {
+                        setTimeout(() => {
+                            this.avancar()
+                            this.respondendo = false
+                        }, 300)
+                        if (respostasBranco.length === 0) {
+                            this.completa = true
                         }
-                        this.respondendo = false;
+                    } else {
+                        if (respostasBranco.length === 0) {
+                            this.respondendo = false
+                            this.completa = true
+                        } else {
+                            if (respostasBranco.length === 1) {
+                                mostraErro('', 'Ops! Existe ' + respostasBranco.length + ' questão em branco.')
+                            } else {
+                                mostraErro('', 'Ops! Existem ' + respostasBranco.length + ' questões em branco.')
+                            }
+                            this.respondendo = false
+                        }
                     }
-                }
-            }).catch(error => {
-                this.respondendo = false;
-            });
+                })
+                .catch((error) => {
+                    this.respondendo = false
+                })
         },
 
         gravaTempo() {
@@ -425,73 +410,75 @@ export default {
                     empresa_id: this.empresa_id,
                     feedback_id: this.feedback_id,
                     tempo: this.tempo
-                });
+                })
             }
             if (this.tempo <= 0) {
-                this.finalizarSimulado();
+                this.finalizarSimulado()
             }
         },
 
         finalizarSimulado() {
-            this.finalizando = true;
-            axios.post(`${URL_SITE}/prova/finalizar`, {
-                simulado_vaga_id: this.simulado_vaga_id,
-                simulado_id: this.simulado_id,
-                curriculo_id: this.curriculo_id,
-                feedback_id: this.feedback_id,
-                vagas_abertas_id: this.vagas_abertas_id,
-                empresa_id: this.empresa_id,
-                tempo: this.tempo
-            }).then(response => {
-                this.finalizando = false;
-                this.finalizado = true;
-                this.data_finalizacao = response.data.data_finalizacao;
-                mostraSucesso('', 'Sua prova foi finalizada!');
-                $('#janelaMensagemFinalizar').modal('hide');
-            }).catch(error => {
-                this.finalizando = false;
-            });
+            this.finalizando = true
+            axios
+                .post(`${URL_SITE}/prova/finalizar`, {
+                    simulado_vaga_id: this.simulado_vaga_id,
+                    simulado_id: this.simulado_id,
+                    curriculo_id: this.curriculo_id,
+                    feedback_id: this.feedback_id,
+                    vagas_abertas_id: this.vagas_abertas_id,
+                    empresa_id: this.empresa_id,
+                    tempo: this.tempo
+                })
+                .then((response) => {
+                    this.finalizando = false
+                    this.finalizado = true
+                    this.data_finalizacao = response.data.data_finalizacao
+                    mostraSucesso('', 'Sua prova foi finalizada!')
+                    $('#janelaMensagemFinalizar').modal('hide')
+                })
+                .catch((error) => {
+                    this.finalizando = false
+                })
         },
 
         getSimulado() {
-            axios.post(`${URL_SITE}/prova/get-simulado`, {
-                simulado_vaga_id: this.simulado_vaga_id,
-                simulado_id: this.simulado_id,
-                curriculo_id: this.curriculo_id,
-                vagas_abertas_id: this.vagas_abertas_id,
-                empresa_id: this.empresa_id,
-                feedback_id: this.feedback_id,
-            })
-                .then(response => {
-                    let data = response.data;
-                    this.lista = data.simulado_vaga;
-                    this.fim = data.simulado_vaga.simulado.perguntas.length - 1;
-                    this.finalizado = data.finalizado;
-                    this.data_finalizacao = data.data_finalizacao;
-                    this.tempo = data.duracao_segundos;
+            axios
+                .post(`${URL_SITE}/prova/get-simulado`, {
+                    simulado_vaga_id: this.simulado_vaga_id,
+                    simulado_id: this.simulado_id,
+                    curriculo_id: this.curriculo_id,
+                    vagas_abertas_id: this.vagas_abertas_id,
+                    empresa_id: this.empresa_id,
+                    feedback_id: this.feedback_id
+                })
+                .then((response) => {
+                    let data = response.data
+                    this.lista = data.simulado_vaga
+                    this.fim = data.simulado_vaga.simulado.perguntas.length - 1
+                    this.finalizado = data.finalizado
+                    this.data_finalizacao = data.data_finalizacao
+                    this.tempo = data.duracao_segundos
 
-                    this.carregando = false;
+                    this.carregando = false
 
                     if (!this.finalizado) {
                         setInterval(() => {
                             if (this.tempo >= 1) {
-                                this.tempo--;
+                                this.tempo--
                             }
                             if (this.tempo <= 0) {
-                                this.tempo = 0;
-                                this.gravaTempo();
+                                this.tempo = 0
+                                this.gravaTempo()
                                 setTimeout(() => {
                                     // document.location.reload();
-                                    this.finalizado = true;
+                                    this.finalizado = true
                                 }, 100)
                             }
-                            this.gravaTempo();
-                        }, 60000);
+                            this.gravaTempo()
+                        }, 60000)
                     }
                 })
-                .catch(error => {
-
-                })
+                .catch((error) => {})
         }
     }
 }
@@ -587,7 +574,6 @@ export default {
     font-size: 1.3rem;
 }
 
-
 /* -- CIRCLE -- */
 .circle {
     width: 252px;
@@ -607,7 +593,7 @@ export default {
 
 .l-half:before,
 .r-half:before {
-    content: "";
+    content: '';
     display: block;
     width: 100%;
     height: 100%;
@@ -702,6 +688,4 @@ text {
 }
 
 /*    Circle Progresso*/
-
-
 </style>

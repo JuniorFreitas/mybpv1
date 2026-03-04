@@ -1,10 +1,16 @@
-import EmpresaTemporaria from "../../../components/cadastros/empresatemporaria/EmpresaTemporaria";
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import EmpresaTemporaria from '../../../components/cadastros/empresatemporaria/EmpresaTemporaria'
 
-const app = new Vue({
-    el: '#app',
-    name: "EmpresaTemporaria",
-    data: {},
+const app = createApp({
+    name: 'EmpresaTemporaria',
+    data() {
+        return {}
+    },
     components: {
         EmpresaTemporaria
-    },
-});
+    }
+})
+
+registerGlobals(app)
+app.mount('#app')

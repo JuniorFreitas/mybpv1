@@ -7,7 +7,7 @@
 @endsection
 @section('content')
     <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
 
             <preload v-show="preloadAjax" label="Aguarde..."></preload>
             <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -66,7 +66,7 @@
 
             </form>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado" @click="alterar()">
                 Alterar
             </button>
@@ -77,7 +77,7 @@
     </modal>
 
     <modal id="janelaConfirmar" titulo="Apagar plano de contas">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-show="preloadAjax" label="Aguarde..."></preload>
             <div class="alert alert-success alert-dismissible" v-show="apagado">
                 <h4><i class="icon fa fa-check"></i>Plano de conta apagado com sucesso!</h4>
@@ -85,7 +85,7 @@
             <h4 v-show="!apagado && !preloadAjax">Atenção! Deseja realmente apagar este plano de conta:</h4>
 
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado && !preloadAjax">Apagar</button>
         </template>
     </modal>

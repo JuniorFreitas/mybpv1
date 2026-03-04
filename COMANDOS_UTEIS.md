@@ -48,6 +48,8 @@ docker compose exec mybpdp php artisan migrate:rollback --step=4
 
 ## Assets (JavaScript/CSS)
 
+Requer Node 24 para compilar assets (use o .nvmrc).
+
 ### Compilar para desenvolvimento
 
 ```bash
@@ -268,9 +270,9 @@ docker compose exec mybpdp chown -R www-data:www-data storage bootstrap/cache
 
 ## URLs Úteis
 
--   **Aplicação**: http://localhost:8000
--   **PhpMyAdmin** (se configurado): http://localhost:8080
--   **Tela de Configuração**: http://localhost:8000/g/administracao/aprovacao-extra-config
+- **Aplicação**: http://localhost:8000
+- **PhpMyAdmin** (se configurado): http://localhost:8080
+- **Tela de Configuração**: http://localhost:8000/g/administracao/aprovacao-extra-config
 
 ## Estrutura de Arquivos
 

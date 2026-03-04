@@ -4,7 +4,7 @@
 @section('content')
     <modal id="validaSesmt" :titulo="abasesmt.tituloJanela" modal-pai='janelaParecerEntrevista' :size="80"
            :fechar="!abasesmt.preload">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-if="abasesmt.preload" label="Aguarde ...."></preload>
             <fieldset v-if="!abasesmt.preload">
                 <legend class="text-uppercase">Colaborador(a)</legend>
@@ -167,7 +167,7 @@
                 </div>
             </fieldset>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             {{--            <div v-show="!visualizar">--}}
             <button type="button" class="btn btn-sm btn-primary"
                     v-if="!abasesmt.preload"
@@ -181,7 +181,7 @@
     </modal>
 
     <modal id="janelaParecerEntrevista" :titulo="tituloJanela" :size="80" :fechar="!preload">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-if="preload"></preload>
             <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''">
                 <div class="alert alert-danger" v-if="semtelefone">
@@ -682,7 +682,7 @@
                 </div>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div v-show="!visualizar">
                 <button type="button" class="btn btn-sm btn-primary"
                         v-show="!cadastrado & nav === 'encaminhar'  && !preload && !semtelefone"
@@ -696,7 +696,7 @@
     </modal>
 
     <modal id="filtroColunas" titulo="Mostrar e Ocultar colunas">
-        <template slot="conteudo">
+        <template #conteudo>
             <div class="custom-control custom-switch mb-2" v-if="AUTENTICADO.cliente_id === 0">
                 <input type="checkbox" v-model="colunasTabela.cliente"
                        @click="colunasTabela.cliente = !colunasTabela.cliente" class="custom-control-input"

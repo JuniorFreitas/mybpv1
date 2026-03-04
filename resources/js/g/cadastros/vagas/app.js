@@ -1,128 +1,137 @@
-const app = new Vue({
-    el: '#app',
-    data: {
-        tituloJanela: 'Cadastrando Vaga',
-        preloadAjax: false,
-        editando: false,
-        apagado: false,
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
 
-        pages: 10,
+const app = createApp({
+    data() {
+        return {
+            tituloJanela: 'Cadastrando Vaga',
+            preloadAjax: false,
+            editando: false,
+            apagado: false,
 
-        form: {
-            nome: '',
-            ativo: true
-        },
+            pages: 10,
 
-        formDefault: null,
-        campoNome: null,
-
-        cadastrado: false,
-        atualizado: false,
-
-        lista: [],
-
-        controle: {
-            carregando: false,
-            dados: {
-                campoBusca: "",
-                campoStatus: "",
+            form: {
+                nome: '',
+                ativo: true
             },
+
+            formDefault: null,
+            campoNome: null,
+
+            cadastrado: false,
+            atualizado: false,
+
+            lista: [],
+
+            controle: {
+                carregando: false,
+                dados: {
+                    campoBusca: '',
+                    campoStatus: ''
+                }
+            }
         }
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
-        this.atualizar();
+        this.atualizar()
     },
     methods: {
         formNovo() {
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.editando = false;
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
 
-            this.tituloJanela = "Cadastrando Vaga";
+            this.tituloJanela = 'Cadastrando Vaga'
 
-            formReset();
-            setupCampo();
+            formReset()
+            setupCampo()
 
             this.form = _.cloneDeep(this.formDefault) //copia
-            this.leitura = false;
-
+            this.leitura = false
         },
         cadastrar() {
-            formReset();
+            formReset()
 
-            $('#janelaCadastrar :input:enabled').trigger('blur');
+            $('#janelaCadastrar :input:enabled').trigger('blur')
 
             if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
-                return false;
+                mostraErro('', 'Verificar os erros')
+                return false
             }
 
-            this.preloadAjax = true;
-            axios.post(`${URL_ADMIN}/cadastro/vagas`, this.form)
-                .then(response => {
+            this.preloadAjax = true
+            axios
+                .post(`${URL_ADMIN}/cadastro/vagas`, this.form)
+                .then((response) => {
                     if (response.status === 201) {
-                        this.preloadAjax = false;
-                        this.cadastrado = true;
-                        this.atualizar();
+                        this.preloadAjax = false
+                        this.cadastrado = true
+                        this.atualizar()
                     }
-                }).catch(error => (this.preloadAjax = false));
+                })
+                .catch((error) => (this.preloadAjax = false))
         },
         formAlterar(id) {
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.editando = false;
-            this.tituloJanela = "Alterando Vaga";
-            this.preloadAjax = true;
-            formReset();
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
+            this.tituloJanela = 'Alterando Vaga'
+            this.preloadAjax = true
+            formReset()
 
             this.form = _.cloneDeep(this.formDefault) //copia
-            this.leitura = true;
+            this.leitura = true
 
-            axios.get(`${URL_ADMIN}/cadastro/vagas/${id}/editar`)
-                .then(response => {
-                    Object.assign(this.form, response.data);
-                    this.editando = true;
-                    this.preloadAjax = false;
-                    setupCampo();
-                }).catch(
-                error => (this.preloadAjax = false)
-            );
-
+            axios
+                .get(`${URL_ADMIN}/cadastro/vagas/${id}/editar`)
+                .then((response) => {
+                    Object.assign(this.form, response.data)
+                    this.editando = true
+                    this.preloadAjax = false
+                    setupCampo()
+                })
+                .catch((error) => (this.preloadAjax = false))
         },
 
         alterar() {
-            formReset();
-            $('#janelaCadastrar :input:enabled').trigger('blur');
+            formReset()
+            $('#janelaCadastrar :input:enabled').trigger('blur')
 
             if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
-                return false;
+                mostraErro('', 'Verificar os erros')
+                return false
             }
 
-            this.form._method = 'PUT';
-            this.preloadAjax = true;
+            this.form._method = 'PUT'
+            this.preloadAjax = true
 
-            axios.put(`${URL_ADMIN}/cadastro/vagas/${this.form.id}`, this.form).then(response => {
-                this.preloadAjax = false;
-                this.atualizado = true;
-                this.atualizar();
-            }).catch(error => (this.preloadAjax = false));
-
+            axios
+                .put(`${URL_ADMIN}/cadastro/vagas/${this.form.id}`, this.form)
+                .then((response) => {
+                    this.preloadAjax = false
+                    this.atualizado = true
+                    this.atualizar()
+                })
+                .catch((error) => (this.preloadAjax = false))
         },
 
         carregou(dados) {
-            this.lista = dados;
-            this.controle.carregando = false;
+            this.lista = dados
+            this.controle.carregando = false
         },
 
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
 
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
-        },
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+        }
     }
-});
+})
+
+registerGlobals(app)
+app.mount('#app')

@@ -1,9 +1,15 @@
-import Perfil from "../../components/perfil/Perfil";
+import { createApp } from 'vue'
+import { registerGlobals } from '../../registerGlobals'
+import Perfil from '../../components/perfil/Perfil'
 
-const app = new Vue({
-    el: '#app',
-    data: {},
+const app = createApp({
+    data() {
+        return {}
+    },
     components: {
         Perfil
-    },
-});
+    }
+})
+
+registerGlobals(app)
+app.mount('#app')

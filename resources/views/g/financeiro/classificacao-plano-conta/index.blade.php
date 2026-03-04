@@ -10,7 +10,7 @@
 @section('content')
 
     <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
 
             <preload v-show="preloadAjax" label="Aguarde..."></preload>
             <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -35,7 +35,7 @@
                 </div>
             </form>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado" @click="alterar()">
                 Alterar
             </button>
@@ -46,14 +46,14 @@
     </modal>
 
     <modal id="janelaConfirmar" titulo="Apagar classificação">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-show="preloadAjax" label="Aguarde..."></preload>
             <div class="alert alert-success alert-dismissible" v-show="apagado">
                 <h4><i class="icon fa fa-check"></i> Classificação apagada com sucesso!</h4>
             </div>
             <h4 v-show="!apagado">Tem certeza que deseja apagar esta Classificação?</h4>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado && !preloadAjax">Apagar</button>
         </template>
     </modal>

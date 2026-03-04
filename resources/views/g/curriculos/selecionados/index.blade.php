@@ -6,7 +6,7 @@
 @stop
 @section('content')
     <modal id="janelaCadastrar" :titulo="tituloJanela" :fechar="!preloadAjax" :size="90">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-show="preloadAjax"></preload>
             <div v-if="!preloadAjax && (!cadastrado && !atualizado) && form.id !== ''">
                 <fieldset>
@@ -109,7 +109,7 @@
     </modal>
 
     <modal id="janelaWhatsApp" titulo="Enviar Notificação WhatsApp" :fechar="!preloadAjax">
-        <template slot="conteudo">
+        <template #conteudo>
             <div v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</div>
             <fieldset v-if="!preloadAjax">
                 <legend>Dados Pessoais</legend>
@@ -122,7 +122,7 @@
 
             </fieldset>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button class="btn btn-primary"
                     @click.prevent="enviarNotificacao(form.feed_back.tel_principal.sonumero, form.nome, form.id, form.feed_back.vaga_selecionada.id, form.etapa_status[0].id)"
                     v-if="!preloadAjax">Enviar Notificação

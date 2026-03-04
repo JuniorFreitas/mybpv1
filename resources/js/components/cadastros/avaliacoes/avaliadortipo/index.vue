@@ -40,7 +40,7 @@
         </modal>
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="$refs.componente.buscar()">
+            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -219,7 +219,7 @@ export default {
                 .then((res) => {
                     $('#janelaForm').modal('hide')
                     mostraSucesso('', 'Tipo de avaliador cadastrado com sucesso')
-                    this.$refs.componente.buscar()
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -254,7 +254,7 @@ export default {
                 .then((res) => {
                     $('#janelaForm').modal('hide')
                     mostraSucesso('', 'Tipo de avaliador alterado com sucesso')
-                    this.$refs.componente.buscar()
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -269,8 +269,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs.componente.atual = 1
-            this.$refs.componente.buscar()
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

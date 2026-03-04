@@ -7,7 +7,7 @@
 @section('content')
 
 <modal id="filtroColunas" size="g" titulo="Mostrar e Ocultar Treinamentos">
-    <template slot="conteudo">
+    <template #conteudo>
         <div class="row">
             <div class="col-sm-6" v-for="item in listaColunasTreinamentos">
                 <div class="custom-control custom-switch mb-2">
@@ -20,7 +20,7 @@
             </div>
         </div>
     </template>
-    <template slot="rodape">
+    <template #rodape>
         <div v-if="listaColunasTreinamentos && listaColunasTreinamentos.length">
             <button class="btn btn-sm btn-primary"
                 :disabled="listaColunasTreinamentos.length === listaColunasTreinamentos.filter(item => item.checked).length"
@@ -37,7 +37,7 @@
 </modal>
 
 <modal id="janelaTreinamento" titulo="Treinamentos" :size="95">
-    <template slot="conteudo">
+    <template #conteudo>
         <div class="alert alert-success text-center" v-show="cadastrado">
             <h4><i class="icon fa fa-check"></i> Treinamento atualizado com sucesso</h4>
         </div>
@@ -453,7 +453,7 @@
     </div>
     </div>
     </template>
-    <template slot="rodape">
+    <template #rodape>
         <button type="button" class="btn btn-sm btn-primary" @click="salvar"
             v-if="!preload && (!cadastrado && !atualizado)">
             <i class="fa fa-save"></i> Salvar
@@ -462,7 +462,7 @@
 </modal>
 
 <modal id="janelaTreinamentoMassa" titulo="Treinamentos" :size="95">
-    <template slot="conteudo">
+    <template #conteudo>
         <div class="alert alert-success text-center" v-show="cadastrado">
             <h4><i class="icon fa fa-check"></i> Treinamento atualizado com sucesso</h4>
         </div>
@@ -520,7 +520,7 @@
         </div>
 
     </template>
-    <template slot="rodape">
+    <template #rodape>
         <button type="button" class="btn btn-sm btn-primary" @click="salvarMassa"
             v-if="!preload && formMassa.listaVencimentos && formMassa.listaVencimentos.length > 0 && (!cadastrado && !atualizado)">
             <i class="fa fa-save"></i> Salvar
@@ -529,7 +529,7 @@
 </modal>
 
 <modal id="janelaEnviar" :fechar="!formEnviar.preload" :titulo="formEnviar.titulo">
-    <template slot="conteudo">
+    <template #conteudo>
         <span v-show="formEnviar.preload">
             <i class="fa fa-spinner fa-pulse"></i> Enviando...
         </span>
@@ -557,7 +557,7 @@
             </div>
         </fieldset>
     </template>
-    <template slot="rodape">
+    <template #rodape>
         <div v-show="!formEnviar.preload">
             <button type="button" class="btn btn-sm btn-primary"
                 @click="enviar"
@@ -570,7 +570,7 @@
 
 <modal id="janelaEnviarAviso" :fechar="!formEnviarAviso.preload"
     titulo="Notificação de treinamento próximo ao vencimento">
-    <template slot="conteudo">
+    <template #conteudo>
         <span v-show="formEnviarAviso.preload">
             <i class="fa fa-spinner fa-pulse"></i> Enviando...
         </span>
@@ -597,7 +597,7 @@
             </div>
         </fieldset>
     </template>
-    <template slot="rodape">
+    <template #rodape>
         <div v-show="!formEnviarAviso.preload">
             <button type="button" class="btn btn-sm btn-primary"
                 @click="enviarAviso"
@@ -612,9 +612,9 @@
     <legend class="text-uppercase">Filtro</legend>
     <div class="row">
         <date-range-filter
-            :enabled.sync="controle.dados.campoVencimento"
-            :start-date.sync="controle.dados.dataInicioVencimento"
-            :end-date.sync="controle.dados.dataFimVencimento"
+            v-model:enabled="controle.dados.campoVencimento"
+            v-model:start-date="controle.dados.dataInicioVencimento"
+            v-model:end-date="controle.dados.dataFimVencimento"
             :disabled="controle.carregando"
             :id-suffix="'vencimento-' + hash"
             label="Por período de vencimento"
@@ -625,9 +625,9 @@
         </date-range-filter>
 
         <date-range-filter
-            :enabled.sync="controle.dados.campoPeriodoTreinado"
-            :start-date.sync="controle.dados.dataInicioPeriodoTreinado"
-            :end-date.sync="controle.dados.dataFimPeriodoTreinado"
+            v-model:enabled="controle.dados.campoPeriodoTreinado"
+            v-model:start-date="controle.dados.dataInicioPeriodoTreinado"
+            v-model:end-date="controle.dados.dataFimPeriodoTreinado"
             :disabled="controle.carregando"
             :id-suffix="'periodo-treinado-' + hash"
             label="Por período treinado"

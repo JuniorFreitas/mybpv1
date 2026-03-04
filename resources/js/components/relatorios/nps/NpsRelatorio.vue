@@ -4,9 +4,9 @@
             <legend>Filtro</legend>
             <form class="row" @submit.prevent="aplicarFiltros">
                 <date-range-filter
-                    :enabled.sync="controle.dados.filtroPeriodo"
-                    :start-date.sync="controle.dados.dataInicio"
-                    :end-date.sync="controle.dados.dataFim"
+                    v-model:enabled="controle.dados.filtroPeriodo"
+                    v-model:start-date="controle.dados.dataInicio"
+                    v-model:end-date="controle.dados.dataFim"
                     :disabled="controle.carregando"
                     :id-suffix="hash"
                     wrapper-class="col-12 col-md-3">

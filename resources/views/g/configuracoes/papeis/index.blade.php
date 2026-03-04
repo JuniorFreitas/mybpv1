@@ -6,7 +6,7 @@
 @section('content')
     <!-- Modal formulario -->
     <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
             <span v-show="preloadAjax">
                 <i class="fa fa-spinner fa-pulse"></i> Carregando...
             </span>
@@ -374,7 +374,7 @@
                 </div>
             </form>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div v-show="!preloadAjax">
                 <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado"
                         @click="alterar()">Alterar
@@ -389,7 +389,7 @@
 
     <!-- Modal confirmar -->
     <modal id="janelaConfirmar" titulo="Apagar papel">
-        <template slot="conteudo">
+        <template #conteudo>
             <span v-show="preloadAjax">
                <preload></preload>
             </span>
@@ -407,7 +407,7 @@
                 Tem certeza que deseja apagar este papel?
             </h4>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div v-show="!preloadAjax">
                 <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
             </div>

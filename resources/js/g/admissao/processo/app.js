@@ -1,3 +1,5 @@
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
 import endereco from '../../../components/Endereco'
 import DadosBancarios from '../../../components/DadosBancarios'
 import datepicker from '../../../components/DatePicker'
@@ -15,8 +17,7 @@ import ExportacaoMixin from '../../../mixins/Exportacoes'
 import dependentes from '../../../components/admissao/processo/Dependentes'
 import FeriasAdquiridas from '../../../components/admissao/processo/FeriasAdquiridas'
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     mixins: [configselect2, Utils, Validacoes, ExportacaoMixin],
     components: {
         endereco,
@@ -32,157 +33,290 @@ const app = new Vue({
         dependentes,
         FeriasAdquiridas
     },
-    data: {
-        tituloJanela: 'Admissão',
-        preload: false,
-        preloadExportacao: false,
-        editando: false,
-        apagado: false,
-        cadastrado: false,
-        cadastrando: false,
-        atualizado: false,
-        visualizar: false,
-        // disabled: true,
-        disabledInput: false,
-        btnBuscar: false,
-        encontrou: false,
-
-        permissoes: [],
-        filtrarDemitidos: false,
-
-        AUTENTICADO,
-        cliente_id: '',
-        cliente_area_id: 0,
-
-        formulario_open: '',
-
-        colunasTabela: [
-            {
-                label: 'PCD',
-                checked: false,
-                id: 'pcd'
-            },
-            {
-                label: 'ENC. DOCUMENTO',
-                checked: true,
-                id: 'enc_documento'
-            },
-            {
-                label: 'ENC. EXAME',
-                checked: true,
-                id: 'enc_exame'
-            },
-            {
-                label: 'ENC. TREINAMENTO',
-                checked: true,
-                id: 'enc_treinamento'
-            },
-            {
-                label: 'RESP. ECAMINHAMENTO',
-                checked: true,
-                id: 'resp_encaminhamento'
-            },
-            {
-                label: 'CRACHÁ',
-                checked: true,
-                id: 'cracha'
-            },
-            {
-                label: 'FOTO 3x4',
-                checked: true,
-                id: 'foto_3x4'
-            }
-        ],
-
-        exibiFormulario: false,
-        possuiCadastro: false,
-
-        urlAnexoUpload: '',
-        anexoUploadAndamento: false,
-
-        hash: `mastertag_${parseInt((Math.random() * 999999))}`,
-        urlExportacao: `${URL_ADMIN}/admissao/export`,
-
-        todos_municipios: `autocomplete/todos-municipios`,
-
-        URL_ADMIN,
-
-        selecionados: [],
-        selecionaTudo: false,
-
-        lista_sexos: [],
-        lista_estados_civis: [],
-        lista_ccs: null,
-
-        formAvulsa: {
+    data() {
+        return {
+            tituloJanela: 'Admissão',
             preload: false,
+            preloadExportacao: false,
+            editando: false,
+            apagado: false,
             cadastrado: false,
             cadastrando: false,
-            ex_funcionario: false,
-            pos_admissao_verificar: false,
+            atualizado: false,
+            visualizar: false,
+            // disabled: true,
+            disabledInput: false,
+            btnBuscar: false,
+            encontrou: false,
 
-            curriculo: {
-                cpf: '',
-                rg: '',
-                rg_data_emissao: '',
-                naturalidade: '',
-                nome: '',
-                nascimento: '',
-                pcd: '',
-                cid: '',
-                email: '',
-                logradouro: '',
-                complemento: '',
-                bairro: '',
-                municipio: '',
-                uf: '',
-                cep: '',
-                municipio_id: '',
-                cnh: '',
+            permissoes: [],
+            filtrarDemitidos: false,
 
-                sexo: '',
-                estado_civil: '',
+            AUTENTICADO,
+            cliente_id: '',
+            cliente_area_id: 0,
 
-                filiacao_pai: '',
-                filiacao_mae: '',
+            formulario_open: '',
 
-                formacao: 7,
-                formacao_curso: '',
+            colunasTabela: [
+                {
+                    label: 'PCD',
+                    checked: false,
+                    id: 'pcd'
+                },
+                {
+                    label: 'ENC. DOCUMENTO',
+                    checked: true,
+                    id: 'enc_documento'
+                },
+                {
+                    label: 'ENC. EXAME',
+                    checked: true,
+                    id: 'enc_exame'
+                },
+                {
+                    label: 'ENC. TREINAMENTO',
+                    checked: true,
+                    id: 'enc_treinamento'
+                },
+                {
+                    label: 'RESP. ECAMINHAMENTO',
+                    checked: true,
+                    id: 'resp_encaminhamento'
+                },
+                {
+                    label: 'CRACHÁ',
+                    checked: true,
+                    id: 'cracha'
+                },
+                {
+                    label: 'FOTO 3x4',
+                    checked: true,
+                    id: 'foto_3x4'
+                }
+            ],
 
-                autocomplete_label_municipio_modal: '',
-                autocomplete_label_municipio_modal_anterior: '',
+            exibiFormulario: false,
+            possuiCadastro: false,
 
-                foto_tres: [],
-                foto_tres_delete: [],
+            urlAnexoUpload: '',
+            anexoUploadAndamento: false,
 
-                telefones: [
-                    {
-                        detalhe: '',
-                        id: 0,
-                        numero: '',
-                        pais: '55',
-                        principal: true,
-                        ramal: '',
-                        tipo: 'whatsapp'
+            hash: `mastertag_${parseInt(Math.random() * 999999)}`,
+            urlExportacao: `${URL_ADMIN}/admissao/export`,
+
+            todos_municipios: `autocomplete/todos-municipios`,
+
+            URL_ADMIN,
+
+            selecionados: [],
+            selecionaTudo: false,
+
+            lista_sexos: [],
+            lista_estados_civis: [],
+            lista_ccs: null,
+
+            formAvulsa: {
+                preload: false,
+                cadastrado: false,
+                cadastrando: false,
+                ex_funcionario: false,
+                pos_admissao_verificar: false,
+
+                curriculo: {
+                    cpf: '',
+                    rg: '',
+                    rg_data_emissao: '',
+                    naturalidade: '',
+                    nome: '',
+                    nascimento: '',
+                    pcd: '',
+                    cid: '',
+                    email: '',
+                    logradouro: '',
+                    complemento: '',
+                    bairro: '',
+                    municipio: '',
+                    uf: '',
+                    cep: '',
+                    municipio_id: '',
+                    cnh: '',
+
+                    sexo: '',
+                    estado_civil: '',
+
+                    filiacao_pai: '',
+                    filiacao_mae: '',
+
+                    formacao: 7,
+                    formacao_curso: '',
+
+                    autocomplete_label_municipio_modal: '',
+                    autocomplete_label_municipio_modal_anterior: '',
+
+                    foto_tres: [],
+                    foto_tres_delete: [],
+
+                    telefones: [
+                        {
+                            detalhe: '',
+                            id: 0,
+                            numero: '',
+                            pais: '55',
+                            principal: true,
+                            ramal: '',
+                            tipo: 'whatsapp'
+                        }
+                    ],
+                    telefonesDelete: [],
+
+                    dependentes: [],
+                    dependentesDelete: []
+                },
+
+                feedback: {
+                    selecionado: 'sim',
+                    vaga_id: '',
+
+                    interesse: true,
+                    vaga_projeto_id: '',
+                    autocomplete_label_vaga_modal: '',
+                    autocomplete_label_vaga_modal_anterior: '',
+
+                    autocomplete_label_cliente_modal: '',
+                    autocomplete_label_cliente_modal_anterior: '',
+
+                    banco_conta: {
+                        banco: 'Banco do Brasil',
+                        agencia: '',
+                        conta: '',
+                        pix: false,
+                        tipochavepix: '',
+                        chavepix: ''
                     }
-                ],
-                telefonesDelete: [],
+                },
 
-                dependentes: [],
-                dependentesDelete: []
+                parecer_rh: {
+                    ex_funcionario: '',
+                    calca: '',
+                    bota: '',
+                    camisa_protecao: '',
+                    camisa_meia: '',
+                    turnos_seis_por_dois: '',
+                    indicacao: '',
+                    indicado_por: ''
+                },
+
+                parecer_tecnica: {
+                    indicado_area: '',
+                    experiencia_cargas_rigger: 'NÃO SE APLICA',
+                    opera_plat_movel: 'NÃO SE APLICA',
+                    opera_plat_ponte: 'NÃO SE APLICA'
+                },
+
+                parecer_rota: {
+                    bairro_rota: '',
+                    ponto_referencia_rota: '',
+                    ponto_referencia_residencia: ''
+                },
+
+                parecer_teste: {
+                    qual_teste: '',
+                    parecer_final_teste: 'NÃO SE APLICA'
+                },
+
+                resultado_integrado: {
+                    documentos_entregue: '',
+                    documentos_entregue_data: '',
+                    encaminhado_exame: '',
+                    encaminhado_exame_data: '',
+                    encaminhado_treinamento: '',
+                    encaminhado_treinamento_data: '',
+                    excessao: '',
+                    autorizado_por: '',
+                    responsavel_envio: ''
+                },
+
+                admissao: {
+                    filial: false,
+                    centro_custo_filial_id: '',
+                    area_etiqueta_id: '',
+                    centro_custo_id: '',
+                    contrato: '',
+                    funcao: '',
+                    salario: '0,00',
+                    status: '',
+                    documento: '',
+                    documento_portaria: '',
+                    tipo_admissao: '',
+                    tipo_treinamento: '',
+                    treinamento: '',
+                    data_treinamento: '',
+                    carteira_treinamento: '',
+                    nr_trinta_tres: '',
+                    data_nr_trinta_tres: '',
+                    nr_trinta_cinco: '',
+                    data_nr_trinta_cinco: '',
+                    trinta_dois_sessenta: '',
+                    data_trinta_dois_sessenta: '',
+                    numero_cracha: '',
+                    pis: '',
+                    prazo_experiencia: '',
+                    data_encerramento: '',
+                    dados_admissoes: {
+                        ctps_numero: '',
+                        ctps_serie: '',
+                        ctps_data_emissao: '',
+                        titulo_eleitor_numero: '',
+                        titulo_eleitor_sessao: '',
+                        titulo_eleitor_zona: '',
+                        ctps_uf: '',
+                        cert_reservista_num: '',
+                        cert_reservista_categoria: ''
+                    },
+                    // data_aso: "",
+                    ultimo_aso: {
+                        data_realizacao: ''
+                    },
+                    foto_escaneada: '',
+                    status_carteira_treinamento: '',
+                    data_admissao: '',
+                    data_adm_prevista: '',
+
+                    data_entrega_area: '',
+                    biometria: '',
+                    data_biometria: '',
+
+                    indicado_por: '',
+                    indicado_area: '',
+
+                    filiacao_pai: '',
+                    filiacao_mae: '',
+                    nome: '',
+                    calca: '',
+                    bota: '',
+                    camisa_protecao: '',
+                    camisa_meia: '',
+
+                    foto_tres: [],
+                    foto_tresDel: [],
+                    ferias_adquiridas: [],
+                    ferias_adquiridasDelete: []
+                }
             },
 
-            feedback: {
-                selecionado: 'sim',
-                vaga_id: '',
+            formAvulsaDefault: null,
 
-                interesse: true,
-                vaga_projeto_id: '',
+            form: {
+                id: '',
+                vaga_id: '',
                 autocomplete_label_vaga_modal: '',
                 autocomplete_label_vaga_modal_anterior: '',
 
+                cliente_id: '',
                 autocomplete_label_cliente_modal: '',
                 autocomplete_label_cliente_modal_anterior: '',
+                vaga_projeto_id: '',
 
                 banco_conta: {
                     banco: 'Banco do Brasil',
@@ -191,464 +325,332 @@ const app = new Vue({
                     pix: false,
                     tipochavepix: '',
                     chavepix: ''
-                }
-            },
-
-            parecer_rh: {
-                ex_funcionario: '',
-                calca: '',
-                bota: '',
-                camisa_protecao: '',
-                camisa_meia: '',
-                turnos_seis_por_dois: '',
-                indicacao: '',
-                indicado_por: ''
-            },
-
-            parecer_tecnica: {
-                indicado_area: '',
-                experiencia_cargas_rigger: 'NÃO SE APLICA',
-                opera_plat_movel: 'NÃO SE APLICA',
-                opera_plat_ponte: 'NÃO SE APLICA'
-            },
-
-            parecer_rota: {
-                bairro_rota: '',
-                ponto_referencia_rota: '',
-                ponto_referencia_residencia: ''
-            },
-
-            parecer_teste: {
-                qual_teste: '',
-                parecer_final_teste: 'NÃO SE APLICA'
-            },
-
-            resultado_integrado: {
-                documentos_entregue: '',
-                documentos_entregue_data: '',
-                encaminhado_exame: '',
-                encaminhado_exame_data: '',
-                encaminhado_treinamento: '',
-                encaminhado_treinamento_data: '',
-                excessao: '',
-                autorizado_por: '',
-                responsavel_envio: ''
-            },
-
-            admissao: {
-                filial: false,
-                centro_custo_filial_id: '',
-                area_etiqueta_id: '',
-                centro_custo_id: '',
-                contrato: '',
-                funcao: '',
-                salario: '0,00',
-                status: '',
-                documento: '',
-                documento_portaria: '',
-                tipo_admissao: '',
-                tipo_treinamento: '',
-                treinamento: '',
-                data_treinamento: '',
-                carteira_treinamento: '',
-                nr_trinta_tres: '',
-                data_nr_trinta_tres: '',
-                nr_trinta_cinco: '',
-                data_nr_trinta_cinco: '',
-                trinta_dois_sessenta: '',
-                data_trinta_dois_sessenta: '',
-                numero_cracha: '',
-                pis: '',
-                prazo_experiencia: '',
-                data_encerramento: '',
-                dados_admissoes: {
-                    ctps_numero: '',
-                    ctps_serie: '',
-                    ctps_data_emissao: '',
-                    titulo_eleitor_numero: '',
-                    titulo_eleitor_sessao: '',
-                    titulo_eleitor_zona: '',
-                    ctps_uf: '',
-                    cert_reservista_num: '',
-                    cert_reservista_categoria: ''
                 },
-                // data_aso: "",
-                ultimo_aso: {
-                    data_realizacao: ''
+
+                curriculo: {
+                    nome: '',
+                    email: '',
+                    nascimento: '',
+                    municipio_id: '',
+                    rg: '',
+                    pcd: '',
+                    sexo: '',
+                    estado_civil: '',
+                    rg_data_emissao: '',
+                    naturalidade: '',
+                    autocomplete_label_municipio_modal: '',
+                    autocomplete_label_municipio_modal_anterior: '',
+                    foto_tres: [],
+                    foto_tres_delete: [],
+                    formacao: '',
+
+                    telefones: [
+                        {
+                            detalhe: '',
+                            id: 0,
+                            numero: '',
+                            pais: '55',
+                            principal: true,
+                            ramal: '',
+                            tipo: 'whatsapp'
+                        }
+                    ],
+                    telefonesDelete: [],
+
+                    dependentes: [],
+                    dependentesDelete: []
                 },
-                foto_escaneada: '',
-                status_carteira_treinamento: '',
-                data_admissao: '',
-                data_adm_prevista: '',
 
-                data_entrega_area: '',
-                biometria: '',
-                data_biometria: '',
+                certificados_nr: [],
+                certificados_nrDelete: [],
+                cursos_formacoes: [],
+                cursos_formacoesDelete: [],
 
-                indicado_por: '',
-                indicado_area: '',
+                parecer_rh: {
+                    feedback_id: '',
+                    formulario_id: '',
+                    destro: '',
+                    ex_funcionario: '',
+                    cnh: '',
+                    cnh_tipo: '',
+                    mora_com_quem: '',
+                    rota_bairro: '',
+                    calca: '',
+                    bota: '',
+                    camisa_protecao: '',
+                    camisa_meia: '',
+                    casado: '',
+                    tempodeconvivencia: '',
+                    filhos: '',
+                    qnt_filhos: '',
+                    conjuge_trabalha: '',
+                    trabalho_conjuge: '',
+                    religioso: '',
+                    religiao_praticante: '',
+                    fuma: '',
+                    frequencia_fuma: '',
+                    bebe: '',
+                    frequencia_bebe: '',
+                    nr_dez: '',
+                    indicacao: '',
+                    indicado_por: '',
+                    alumar_experiencia: '',
+                    alumar_experiencia_area: '',
+                    outra_industria_experiencia: '',
+                    outra_industria_nome: '',
+                    grau_instrucao: '',
+                    horaextra: '',
+                    turnos_seis_por_dois: '',
+                    noturno: '',
+                    acidente_trabalho: '',
+                    acidente_trabalho_qual: '',
+                    afastamento_inss: '',
+                    afastamento_inss_qual: '',
+                    situacao_saude: '',
+                    comportamento_seguro: '',
+                    energia_para_trabalho: '',
+                    postura: '',
+                    historico_profissional: '',
+                    historico_educacional: '',
+                    objetivos_expectativas: '',
+                    auto_imagem: '',
+                    competencias: '',
+                    comportamento_etico: '',
+                    comprometimento: '',
+                    comunicacao: '',
+                    cultura_qualidade: '',
+                    foco_cliente: '',
+                    iniciativa: '',
+                    orientacao_resultados: '',
+                    trabalho_equipe: '',
+                    parecer_final: '',
+                    parecer_final_um: '',
+                    nota: '',
+                    comentarios: '',
+                    entrevistador: '',
+                    quem_entrevistou: '',
 
-                filiacao_pai: '',
-                filiacao_mae: '',
-                nome: '',
-                calca: '',
-                bota: '',
-                camisa_protecao: '',
-                camisa_meia: '',
+                    nota_digitacao: '',
+                    dinamicadegrupo: '',
+                    obs_dinamicadegrupo: '',
+                    experiencia_callcenter: '',
+                    disponibilidade_horarios: '',
+                    turnos_seis_por_um: '',
+                    horario_preferencial: '',
+                    obs_call: '',
+                    obs_horario: '',
 
-                foto_tres: [],
-                foto_tresDel: [],
-                ferias_adquiridas: [],
-                ferias_adquiridasDelete: []
-            }
-        },
+                    individual_rh: {
+                        parecer: '',
+                        nota: '',
+                        entrevistado_por: '',
+                        comentario: '',
+                        avaliacao_psicologica: ''
+                    },
 
-        formAvulsaDefault: null,
+                    gestor_rh: {
+                        parecer: '',
+                        indicado_para: '',
+                        nota: '',
+                        entrevistado_por: '',
+                        comentario: ''
+                    },
 
-        form: {
-            id: '',
-            vaga_id: '',
-            autocomplete_label_vaga_modal: '',
-            autocomplete_label_vaga_modal_anterior: '',
-
-            cliente_id: '',
-            autocomplete_label_cliente_modal: '',
-            autocomplete_label_cliente_modal_anterior: '',
-            vaga_projeto_id: '',
-
-            banco_conta: {
-                banco: 'Banco do Brasil',
-                agencia: '',
-                conta: '',
-                pix: false,
-                tipochavepix: '',
-                chavepix: ''
-            },
-
-            curriculo: {
-                nome: '',
-                email: '',
-                nascimento: '',
-                municipio_id: '',
-                rg: '',
-                pcd: '',
-                sexo: '',
-                estado_civil: '',
-                rg_data_emissao: '',
-                naturalidade: '',
-                autocomplete_label_municipio_modal: '',
-                autocomplete_label_municipio_modal_anterior: '',
-                foto_tres: [],
-                foto_tres_delete: [],
-                formacao: '',
-
-                telefones: [
-                    {
-                        detalhe: '',
-                        id: 0,
-                        numero: '',
-                        pais: '55',
-                        principal: true,
-                        ramal: '',
-                        tipo: 'whatsapp'
+                    entrevista_rh: {
+                        parecer: '',
+                        indicado_para: '',
+                        nota: '',
+                        entrevistado_por: '',
+                        comentario: ''
                     }
-                ],
-                telefonesDelete: [],
-
-                dependentes: [],
-                dependentesDelete: []
-            },
-
-            certificados_nr: [],
-            certificados_nrDelete: [],
-            cursos_formacoes: [],
-            cursos_formacoesDelete: [],
-
-            parecer_rh: {
-                feedback_id: '',
-                formulario_id: '',
-                destro: '',
-                ex_funcionario: '',
-                cnh: '',
-                cnh_tipo: '',
-                mora_com_quem: '',
-                rota_bairro: '',
-                calca: '',
-                bota: '',
-                camisa_protecao: '',
-                camisa_meia: '',
-                casado: '',
-                tempodeconvivencia: '',
-                filhos: '',
-                qnt_filhos: '',
-                conjuge_trabalha: '',
-                trabalho_conjuge: '',
-                religioso: '',
-                religiao_praticante: '',
-                fuma: '',
-                frequencia_fuma: '',
-                bebe: '',
-                frequencia_bebe: '',
-                nr_dez: '',
-                indicacao: '',
-                indicado_por: '',
-                alumar_experiencia: '',
-                alumar_experiencia_area: '',
-                outra_industria_experiencia: '',
-                outra_industria_nome: '',
-                grau_instrucao: '',
-                horaextra: '',
-                turnos_seis_por_dois: '',
-                noturno: '',
-                acidente_trabalho: '',
-                acidente_trabalho_qual: '',
-                afastamento_inss: '',
-                afastamento_inss_qual: '',
-                situacao_saude: '',
-                comportamento_seguro: '',
-                energia_para_trabalho: '',
-                postura: '',
-                historico_profissional: '',
-                historico_educacional: '',
-                objetivos_expectativas: '',
-                auto_imagem: '',
-                competencias: '',
-                comportamento_etico: '',
-                comprometimento: '',
-                comunicacao: '',
-                cultura_qualidade: '',
-                foco_cliente: '',
-                iniciativa: '',
-                orientacao_resultados: '',
-                trabalho_equipe: '',
-                parecer_final: '',
-                parecer_final_um: '',
-                nota: '',
-                comentarios: '',
-                entrevistador: '',
-                quem_entrevistou: '',
-
-                nota_digitacao: '',
-                dinamicadegrupo: '',
-                obs_dinamicadegrupo: '',
-                experiencia_callcenter: '',
-                disponibilidade_horarios: '',
-                turnos_seis_por_um: '',
-                horario_preferencial: '',
-                obs_call: '',
-                obs_horario: '',
-
-
-                individual_rh: {
-                    parecer: '',
-                    nota: '',
-                    entrevistado_por: '',
-                    comentario: '',
-                    avaliacao_psicologica: ''
                 },
 
-                gestor_rh: {
-                    parecer: '',
-                    indicado_para: '',
-                    nota: '',
-                    entrevistado_por: '',
-                    comentario: ''
+                admissao: {
+                    filial: false,
+                    centro_custo_filial_id: '',
+                    feedback_id: '',
+                    area_etiqueta_id: '',
+                    centro_custo_id: '',
+                    contrato: '',
+                    funcao: '',
+                    salario: '0,00',
+                    status: '',
+                    documento: '',
+                    documento_portaria: '',
+                    tipo_admissao: '',
+                    tipo_treinamento: '',
+                    treinamento: '',
+                    data_treinamento: '',
+                    carteira_treinamento: '',
+                    nr_trinta_tres: '',
+                    data_nr_trinta_tres: '',
+                    nr_trinta_cinco: '',
+                    data_nr_trinta_cinco: '',
+                    trinta_dois_sessenta: '',
+                    data_trinta_dois_sessenta: '',
+                    numero_cracha: '',
+                    pis: '',
+                    prazo_experiencia: '',
+                    data_encerramento: '',
+                    dados_admissoes: {
+                        ctps_numero: '',
+                        ctps_serie: '',
+                        ctps_data_emissao: '',
+                        titulo_eleitor_numero: '',
+                        titulo_eleitor_sessao: '',
+                        titulo_eleitor_zona: '',
+                        ctps_uf: '',
+                        cert_reservista_num: '',
+                        cert_reservista_categoria: ''
+                    },
+                    // data_aso: "",
+                    ultimo_aso: {
+                        data_realizacao: ''
+                    },
+                    foto_escaneada: '',
+                    status_carteira_treinamento: '',
+                    data_admissao: '',
+                    data_adm_prevista: '',
+
+                    data_entrega_area: '',
+                    biometria: '',
+                    data_biometria: '',
+
+                    indicado_por: '',
+                    indicado_area: '',
+
+                    filiacao_pai: '',
+                    filiacao_mae: '',
+                    nome: '',
+                    calca: '',
+                    bota: '',
+                    camisa_protecao: '',
+                    camisa_meia: '',
+
+                    ferias_adquiridas: [],
+                    ferias_adquiridasDelete: [],
+
+                    foto_tres: [],
+                    foto_tresDel: []
                 },
 
-                entrevista_rh: {
-                    parecer: '',
-                    indicado_para: '',
-                    nota: '',
-                    entrevistado_por: '',
-                    comentario: ''
+                resultado_integrado: {
+                    documentos_entregue: '',
+                    documentos_entregue_data: '',
+                    encaminhado_exame: '',
+                    encaminhado_exame_data: '',
+                    encaminhado_treinamento: '',
+                    encaminhado_treinamento_data: '',
+                    excessao: '',
+                    autorizado_por: '',
+                    responsavel_envio: ''
                 }
             },
 
-            admissao: {
-                filial: false,
-                centro_custo_filial_id: '',
-                feedback_id: '',
-                area_etiqueta_id: '',
-                centro_custo_id: '',
-                contrato: '',
-                funcao: '',
-                salario: '0,00',
-                status: '',
-                documento: '',
-                documento_portaria: '',
+            formDefault: null,
+
+            form_massa: {
+                selecionados: null,
+                preload: false,
+                selecionado: 'sim',
                 tipo_admissao: '',
-                tipo_treinamento: '',
-                treinamento: '',
-                data_treinamento: '',
-                carteira_treinamento: '',
-                nr_trinta_tres: '',
-                data_nr_trinta_tres: '',
-                nr_trinta_cinco: '',
-                data_nr_trinta_cinco: '',
-                trinta_dois_sessenta: '',
-                data_trinta_dois_sessenta: '',
-                numero_cracha: '',
-                pis: '',
                 prazo_experiencia: '',
                 data_encerramento: '',
-                dados_admissoes: {
-                    ctps_numero: '',
-                    ctps_serie: '',
-                    ctps_data_emissao: '',
-                    titulo_eleitor_numero: '',
-                    titulo_eleitor_sessao: '',
-                    titulo_eleitor_zona: '',
-                    ctps_uf: '',
-                    cert_reservista_num: '',
-                    cert_reservista_categoria: ''
-                },
+                documento_portaria: '',
                 // data_aso: "",
                 ultimo_aso: {
                     data_realizacao: ''
                 },
-                foto_escaneada: '',
                 status_carteira_treinamento: '',
-                data_admissao: '',
-                data_adm_prevista: '',
-
-                data_entrega_area: '',
-                biometria: '',
-                data_biometria: '',
-
-                indicado_por: '',
-                indicado_area: '',
-
-                filiacao_pai: '',
-                filiacao_mae: '',
-                nome: '',
-                calca: '',
-                bota: '',
-                camisa_protecao: '',
-                camisa_meia: '',
-
-                ferias_adquiridas: [],
-                ferias_adquiridasDelete: [],
-
-                foto_tres: [],
-                foto_tresDel: []
-            },
-
-            resultado_integrado: {
-                documentos_entregue: '',
-                documentos_entregue_data: '',
-                encaminhado_exame: '',
-                encaminhado_exame_data: '',
-                encaminhado_treinamento: '',
-                encaminhado_treinamento_data: '',
-                excessao: '',
-                autorizado_por: '',
-                responsavel_envio: ''
-            }
-        },
-
-        formDefault: null,
-
-        form_massa: {
-            selecionados: null,
-            preload: false,
-            selecionado: 'sim',
-            tipo_admissao: '',
-            prazo_experiencia: '',
-            data_encerramento: '',
-            documento_portaria: '',
-            // data_aso: "",
-            ultimo_aso: {
-                data_realizacao: ''
-            },
-            status_carteira_treinamento: '',
-            segmento_treinamento_id: null,
-            status: '',
-            data_admissao: '',
-            data_entrega_area: '',
-            biometria: ''
-        },
-        form_massaDefault: null,
-        segmentos_treinamento: [],
-
-        formResultadoIntegrado: {
-            curriculo_id: null
-        },
-        formResultadoIntegradoDefault: null,
-
-        lista: [],
-        listaStatusAdmissao: [],
-        listaTipoAdmissao: [],
-        vagas: [],
-        areasEtiquetas: [],
-        listaProjetos: [],
-
-        modeldemissao: {
-            preload: false,
-            form: {
-                admissao_id: '',
-                feedback_id: '',
-                curriculo_id: '',
-                nome: '',
-                cpf: '',
-                cargo: '',
-                funcao: '',
-                data_admissao: '',
+                segmento_treinamento_id: null,
                 status: '',
+                data_admissao: '',
+                data_entrega_area: '',
+                biometria: ''
+            },
+            form_massaDefault: null,
+            segmentos_treinamento: [],
 
-                cipa: 0,
-                data_desmobilizacao: '',
-                motivo_rescisao_id: 1,
-                outro_motivo: 'Demissão avulsa via sistema',
-                tipo_aviso_id: 1,
-                solicitado_por: '',
-                comentario: 'Demissão avulsa via sistema',
-                user_id: ''
-            }
-        },
+            formResultadoIntegrado: {
+                curriculo_id: null
+            },
+            formResultadoIntegradoDefault: null,
 
-        modeldemissaoDefault: null,
+            lista: [],
+            listaStatusAdmissao: [],
+            listaTipoAdmissao: [],
+            vagas: [],
+            areasEtiquetas: [],
+            listaProjetos: [],
 
-        controle: {
-            carregando: false,
-            dados: {
-                caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
-                autocomplete_label_anterior: '',
-                autocomplete_label: '',
-                caminho_cliente_autocomplete: `autocomplete/todos-clientes-ativos`,
-                autocomplete_label_cliente_anterior: '',
-                autocomplete_label_cliente: '',
-                pages: 20,
-                cliente_custom: '',
-                campoBusca: '',
-                campoVaga: '',
-                campoLido: '',
-                campoFiltro: '',
-                campoPcd: '',
-                campoCliente: '',
-                campoStatusAdmissao: '',
-                campoTipoAdmissao: '',
-                campoUf: '',
-                campoAso: '',
-                campoAdmissao: '',
-                campoDemitido: false,
-                campoCnpj: '',
-                campoCentroCusto: '',
-                filtroPeriodo: false,
-                dataInicio: '',
-                dataFim: '',
-                filtroAso: false,
-                dataInicioAso: '',
-                dataFimAso: '',
-                filtroDataAdmissao: false,
-                dataInicioAdmissao: '',
-                dataFimAdmissao: '',
-                campoCPF: ''
+            modeldemissao: {
+                preload: false,
+                form: {
+                    admissao_id: '',
+                    feedback_id: '',
+                    curriculo_id: '',
+                    nome: '',
+                    cpf: '',
+                    cargo: '',
+                    funcao: '',
+                    data_admissao: '',
+                    status: '',
+
+                    cipa: 0,
+                    data_desmobilizacao: '',
+                    motivo_rescisao_id: 1,
+                    outro_motivo: 'Demissão avulsa via sistema',
+                    tipo_aviso_id: 1,
+                    solicitado_por: '',
+                    comentario: 'Demissão avulsa via sistema',
+                    user_id: ''
+                }
+            },
+
+            modeldemissaoDefault: null,
+
+            controle: {
+                carregando: false,
+                dados: {
+                    caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
+                    autocomplete_label_anterior: '',
+                    autocomplete_label: '',
+                    caminho_cliente_autocomplete: `autocomplete/todos-clientes-ativos`,
+                    autocomplete_label_cliente_anterior: '',
+                    autocomplete_label_cliente: '',
+                    pages: 20,
+                    cliente_custom: '',
+                    campoBusca: '',
+                    campoVaga: '',
+                    campoLido: '',
+                    campoFiltro: '',
+                    campoPcd: '',
+                    campoCliente: '',
+                    campoStatusAdmissao: '',
+                    campoTipoAdmissao: '',
+                    campoUf: '',
+                    campoAso: '',
+                    campoAdmissao: '',
+                    campoDemitido: false,
+                    campoCnpj: '',
+                    campoCentroCusto: '',
+                    filtroPeriodo: false,
+                    dataInicio: '',
+                    dataFim: '',
+                    filtroAso: false,
+                    dataInicioAso: '',
+                    dataFimAso: '',
+                    filtroDataAdmissao: false,
+                    dataInicioAdmissao: '',
+                    dataFimAdmissao: '',
+                    campoCPF: ''
+                }
             }
         }
     },
     computed: {
         comAdm() {
-            return this.lista.filter(item => {
+            return this.lista.filter((item) => {
                 return item.admissao
             })
         },
@@ -660,7 +662,7 @@ const app = new Vue({
                 return false
             }
 
-            this.comAdm.forEach(item => {
+            this.comAdm.forEach((item) => {
                 let id = item.id
                 if (this.selecionados.indexOf(id) >= 0) {
                     totalEncontrado++
@@ -694,7 +696,6 @@ const app = new Vue({
             }
             return []
         }
-
     },
     watch: {
         'controle.dados': {
@@ -714,7 +715,8 @@ const app = new Vue({
         this.formResultadoIntegradoDefault = _.cloneDeep(this.formResultadoIntegrado) //copia
         this.modeldemissaoDefault = _.cloneDeep(this.modeldemissao) //copia
         this.cliente_id = $('#cliente_id').val()
-        if (this.cliente_id) { //diferente de BPSE
+        if (this.cliente_id) {
+            //diferente de BPSE
             this.controle.dados.campoCliente = parseInt(this.cliente_id)
             this.controle.dados.cliente_custom = parseInt(this.cliente_id)
         }
@@ -739,10 +741,10 @@ const app = new Vue({
             return null
         },
         getTipoAdmissao(item) {
-            return (item.admissao && item.admissao.tipo_admissao) ? item.admissao.tipo_admissao : null
+            return item.admissao && item.admissao.tipo_admissao ? item.admissao.tipo_admissao : null
         },
         async getColunaTabelas() {
-            await axios.get(`${URL_ADMIN}/admissao/colunas-tabela-processo`).then(response => {
+            await axios.get(`${URL_ADMIN}/admissao/colunas-tabela-processo`).then((response) => {
                 this.colunasTabela = response.data
             })
         },
@@ -773,21 +775,24 @@ const app = new Vue({
 
         async demiteColaborador() {
             this.modeldemissao.preload = true
-            await axios.post(`${URL_ADMIN}/admissao/demitir-via-privilegio`, this.modeldemissao.form).then(response => {
-                $('#janelaDemitir').modal('hide')
-                toastr.success(`Colaborador(a) ${this.modeldemissao.form.nome} foi demitido(a)!`, 'Sucesso!')
-                this.modeldemissao = _.cloneDeep(this.modeldemissaoDefault)
-                this.atualizar()
-            }).catch(error => {
-                this.modeldemissao.preload = false
-            })
+            await axios
+                .post(`${URL_ADMIN}/admissao/demitir-via-privilegio`, this.modeldemissao.form)
+                .then((response) => {
+                    $('#janelaDemitir').modal('hide')
+                    toastr.success(`Colaborador(a) ${this.modeldemissao.form.nome} foi demitido(a)!`, 'Sucesso!')
+                    this.modeldemissao = _.cloneDeep(this.modeldemissaoDefault)
+                    this.atualizar()
+                })
+                .catch((error) => {
+                    this.modeldemissao.preload = false
+                })
         },
         exibiColunaTabela(label) {
-            let coluna = this.colunasTabela.find(item => item.label === label)
+            let coluna = this.colunasTabela.find((item) => item.label === label)
             return coluna.checked
         },
         exibiColunaSingleCheckedTabela(label) {
-            let coluna = this.colunasTabela.find(item => item.label === label)
+            let coluna = this.colunasTabela.find((item) => item.label === label)
             return coluna.checked
         },
         changeCnpj() {
@@ -796,28 +801,34 @@ const app = new Vue({
         },
         buscaProjeto(vaga_aberta_id) {
             this.listaProjetos = []
-            axios.get(`${URL_ADMIN}/busca-projetos/${vaga_aberta_id}`).then(response => {
-                this.listaProjetos = response.data.dados
-            }).catch(error => (this.formAvulsa.preload = false))
+            axios
+                .get(`${URL_ADMIN}/busca-projetos/${vaga_aberta_id}`)
+                .then((response) => {
+                    this.listaProjetos = response.data.dados
+                })
+                .catch((error) => (this.formAvulsa.preload = false))
         },
 
         buscaTodosProjeto() {
-            axios.get(`${URL_ADMIN}/busca-projetos/`).then(response => {
-                this.listaProjetos = response.data.dados
-            }).catch(error => (this.form.preload = false))
+            axios
+                .get(`${URL_ADMIN}/busca-projetos/`)
+                .then((response) => {
+                    this.listaProjetos = response.data.dados
+                })
+                .catch((error) => (this.form.preload = false))
         },
 
         selecionaTodos() {
             this.selecionaTudo = !this.selecionaTudo
             if (this.selecionaTudo) {
-                this.comAdm.map(item => {
+                this.comAdm.map((item) => {
                     let id = item.id
                     if (this.selecionados.indexOf(id) === -1) {
                         this.selecionados.push(id)
                     }
                 })
             } else {
-                this.comAdm.map(item => {
+                this.comAdm.map((item) => {
                     let id = item.id
                     let index = this.selecionados.indexOf(id)
                     if (index >= 0) {
@@ -834,28 +845,30 @@ const app = new Vue({
                     this.exibiFormulario = false
                     this.formAvulsa.preload = true
 
-                    axios.post(`${URL_ADMIN}/admissao/busca-cpf`, {
-                        cpf: this.formAvulsa.curriculo.cpf
-                    }).then(response => {
-                        let data = response.data
-                        if (data.achou) {
-                            Object.assign(this.formAvulsa, response.data)
-                            Object.assign(this.form.admissao, response.data.admissao)
-                            this.exibiFormulario = true
-                            this.formAvulsa.preload = false
-                            this.formAvulsa.ex_funcionario = data.ex_funcionario
-                            this.formAvulsa.pos_admissao_verificar = data.pos_admissao_verificar
-                        }
+                    axios
+                        .post(`${URL_ADMIN}/admissao/busca-cpf`, {
+                            cpf: this.formAvulsa.curriculo.cpf
+                        })
+                        .then((response) => {
+                            let data = response.data
+                            if (data.achou) {
+                                Object.assign(this.formAvulsa, response.data)
+                                Object.assign(this.form.admissao, response.data.admissao)
+                                this.exibiFormulario = true
+                                this.formAvulsa.preload = false
+                                this.formAvulsa.ex_funcionario = data.ex_funcionario
+                                this.formAvulsa.pos_admissao_verificar = data.pos_admissao_verificar
+                            }
 
-                        if (!data.achou) {
-                            let cpf = this.formAvulsa.curriculo.cpf
-                            this.formAvulsa = _.cloneDeep(this.formAvulsaDefault)
-                            this.formAvulsa.curriculo.cpf = cpf
-                            this.exibiFormulario = true
-                            this.formAvulsa.preload = false
-                        }
-                    })
-                        .catch(error => {
+                            if (!data.achou) {
+                                let cpf = this.formAvulsa.curriculo.cpf
+                                this.formAvulsa = _.cloneDeep(this.formAvulsaDefault)
+                                this.formAvulsa.curriculo.cpf = cpf
+                                this.exibiFormulario = true
+                                this.formAvulsa.preload = false
+                            }
+                        })
+                        .catch((error) => {
                             this.formAvulsa.preload = false
                             this.disabledInput = false
                             this.exibiFormulario = false
@@ -866,7 +879,6 @@ const app = new Vue({
                 this.exibiFormulario = false
                 this.formAvulsa.preload = false
             }
-
         },
 
         selecionaMunicipioModal(obj) {
@@ -884,7 +896,9 @@ const app = new Vue({
                 setTimeout(() => {
                     if (this.formAvulsa.curriculo.municipio_id === '') {
                         valida_campo_vazio($('#mun_' + this.hash), 1)
-                        $('#janelaAdmissaoAvulsa #mun_' + this.hash).focus().trigger('blur')
+                        $('#janelaAdmissaoAvulsa #mun_' + this.hash)
+                            .focus()
+                            .trigger('blur')
                         mostraErro('Erro', 'O Campo Município não pode ficar vazio')
                     }
                 }, 100)
@@ -951,7 +965,6 @@ const app = new Vue({
                     }
                 }, 100)
             }
-
         },
 
         formCadastraAvulsa() {
@@ -983,7 +996,9 @@ const app = new Vue({
             if (['ADMITIDO', 'PRONTO PARA ADMISSÃO'].includes(this.form.admissao.status)) {
                 if (this.form.admissao.data_admissao === '') {
                     valida_campo_vazio($('#data_admissao_' + this.hash), 1)
-                    $('#janelaAdmissaoAvulsa #data_admissao_' + this.hash).focus().trigger('blur')
+                    $('#janelaAdmissaoAvulsa #data_admissao_' + this.hash)
+                        .focus()
+                        .trigger('blur')
                     return
                 }
             }
@@ -1004,7 +1019,9 @@ const app = new Vue({
 
             if (this.formAvulsa.feedback.vaga_id === '') {
                 valida_campo_vazio($('#vaga_' + this.hash), 1)
-                $('#janelaAdmissaoAvulsa #vaga_' + this.hash).focus().trigger('blur')
+                $('#janelaAdmissaoAvulsa #vaga_' + this.hash)
+                    .focus()
+                    .trigger('blur')
                 mostraErro('', 'O campo vaga não pode ficar vazio')
                 return false
             }
@@ -1012,16 +1029,17 @@ const app = new Vue({
             this.formAvulsa.admissao = this.form.admissao
             this.formAvulsa.preload = true
 
-            axios.post(`${URL_ADMIN}/admissao/admissao`, this.formAvulsa)
-                .then(response => {
+            axios
+                .post(`${URL_ADMIN}/admissao/admissao`, this.formAvulsa)
+                .then((response) => {
                     if (response.status === 201) {
                         this.formAvulsa.preload = false
                         this.formAvulsa.cadastrado = true
                         this.atualizar()
                     }
-                }).catch(error => (this.formAvulsa.preload = false))
+                })
+                .catch((error) => (this.formAvulsa.preload = false))
         },
-
 
         formCadastraMassa() {
             this.form_massa = _.cloneDeep(this.form_massaDefault) //copia
@@ -1042,16 +1060,17 @@ const app = new Vue({
             this.form_massa.preload = true
             this.form_massa.selecionados = this.selecionados
 
-
-            axios.post(`${URL_ADMIN}/admissao/admissao/cadastra-massa`, this.form_massa)
-                .then(response => {
+            axios
+                .post(`${URL_ADMIN}/admissao/admissao/cadastra-massa`, this.form_massa)
+                .then((response) => {
                     if (response.status === 201) {
                         this.form_massa.preload = false
                         this.form_massa.cadastrado = true
                         $('#janelaAdmissaoMassa').modal('hide')
                         this.atualizar()
                     }
-                }).catch(error => (this.form_massa.preload = false))
+                })
+                .catch((error) => (this.form_massa.preload = false))
         },
 
         //GERAL
@@ -1099,8 +1118,9 @@ const app = new Vue({
             this.tituloJanela = `#${id}`
 
             formReset()
-            axios.get(`${URL_ADMIN}/admissao/admissao/${id}/editar`)
-                .then(response => {
+            axios
+                .get(`${URL_ADMIN}/admissao/admissao/${id}/editar`)
+                .then((response) => {
                     let data = response.data
                     this.buscaProjeto(data.feedback.vagas_abertas_id)
 
@@ -1108,18 +1128,18 @@ const app = new Vue({
 
                     if (!data.feedback.parecer_tecnica) {
                         data.feedback.parecer_tecnica = {
-                            'indicado_area': ''
+                            indicado_area: ''
                         }
                     }
 
                     if (!data.feedback.banco_conta) {
                         data.feedback.banco_conta = {
-                            'banco': 'Banco do Brasil',
-                            'agencia': '',
-                            'conta': '',
-                            'pix': false,
-                            'tipochavepix': '',
-                            'chavepix': ''
+                            banco: 'Banco do Brasil',
+                            agencia: '',
+                            conta: '',
+                            pix: false,
+                            tipochavepix: '',
+                            chavepix: ''
                         }
                     }
 
@@ -1142,18 +1162,18 @@ const app = new Vue({
 
                     if (!admissao.dados_admissoes) {
                         this.form.admissao.dados_admissoes = {
-                            'ctps_numero': '',
-                            'ctps_serie': '',
-                            'ctps_data_emissao': '',
-                            'titulo_eleitor_numero': '',
-                            'titulo_eleitor_sessao': '',
-                            'titulo_eleitor_zona': ''
+                            ctps_numero: '',
+                            ctps_serie: '',
+                            ctps_data_emissao: '',
+                            titulo_eleitor_numero: '',
+                            titulo_eleitor_sessao: '',
+                            titulo_eleitor_zona: ''
                         }
                     }
 
                     if (!admissao.ultimo_aso) {
                         this.form.admissao.ultimo_aso = {
-                            'data_realizacao': ''
+                            data_realizacao: ''
                         }
                     }
 
@@ -1161,11 +1181,10 @@ const app = new Vue({
                     this.cadastrando = true
                     this.preload = false
                 })
-                .catch(error => {
+                .catch((error) => {
                     this.preload = false
                 })
         },
-
 
         alterar() {
             this.validaBlur()
@@ -1183,15 +1202,16 @@ const app = new Vue({
 
             this.preload = true
 
-            axios.put(`${URL_ADMIN}/admissao/admissao/${this.form.id}`, this.form)
-                .then(response => {
+            axios
+                .put(`${URL_ADMIN}/admissao/admissao/${this.form.id}`, this.form)
+                .then((response) => {
                     this.preload = false
                     this.atualizado = true
-                    this.$refs.componente.buscar()
-                }).catch(error => {
-                this.preload = false
-            })
-
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                })
+                .catch((error) => {
+                    this.preload = false
+                })
         },
         apagar() {
             this.erros = []
@@ -1213,12 +1233,13 @@ const app = new Vue({
 
         listaVagas() {
             this.preload = true
-            axios.get(`${URL_PUBLICO}/lista-vagas`)
-                .then(res => {
+            axios
+                .get(`${URL_PUBLICO}/lista-vagas`)
+                .then((res) => {
                     this.preload = false
                     this.vagas = res.data.areas
                 })
-                .catch(err => {
+                .catch((err) => {
                     this.preload = false
                 })
         },
@@ -1250,8 +1271,8 @@ const app = new Vue({
         },
         atualizar() {
             this.syncUrlFiltros()
-            this.$refs.componente.atual = 1
-            this.$refs.componente.buscar()
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         },
         urlParamGet() {
             const urlParams = new URLSearchParams(window.location.search)
@@ -1290,7 +1311,7 @@ const app = new Vue({
         },
         syncUrlFiltros() {
             const d = this.controle.dados
-            const atual = (this.$refs.componente && this.$refs.componente.atual) ? this.$refs.componente.atual : 1
+            const atual = this.$refs.componente && this.$refs.componente.atual ? this.$refs.componente.atual : 1
             const params = {}
             if (atual > 1) params.page = atual
             if (d.pages && d.pages !== 20) params.pages = d.pages
@@ -1319,3 +1340,6 @@ const app = new Vue({
         }
     }
 })
+
+registerGlobals(app)
+app.mount('#app')

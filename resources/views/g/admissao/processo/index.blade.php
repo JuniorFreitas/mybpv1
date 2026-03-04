@@ -6,7 +6,7 @@
 @stop
 @section('content')
     <modal id="filtroColunas" titulo="Mostrar e Ocultar colunas">
-        <template slot="conteudo">
+        <template #conteudo>
             <div class="row">
                 <div class="col-sm-6" v-for="item in colunasTabela">
                     <div class="custom-control custom-switch mb-2">
@@ -22,7 +22,7 @@
     </modal>
 
     <modal id="janelaAdmissaoAvulsa" titulo="Admissão Avulsa" :size="95">
-        <template slot="conteudo">
+        <template #conteudo>
             <div class="alert alert-success text-center" v-show="formAvulsa.cadastrado">
                 <h4><i class="icon fa fa-check"></i> Admissão Concluida!</h4>
             </div>
@@ -577,7 +577,7 @@
                 </div>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-primary" v-show="!formAvulsa.cadastrado && !formAvulsa.preload"
                     @click="CadastraAvulsa">
                 <i class="fa fa-save"></i> Salvar
@@ -586,7 +586,7 @@
     </modal>
 
     <modal id="janelaCadastrar" :titulo="tituloJanela" :size="95">
-        <template slot="conteudo">
+        <template #conteudo>
             <div class="alert alert-success text-center" v-show="cadastrado">
                 <h4><i class="icon fa fa-check"></i> Admissão Concluida!</h4>
             </div>
@@ -1101,7 +1101,7 @@
                     </div>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div v-show="!visualizar">
                 <button type="button" class="btn btn-sm btn-primary"
                         v-show="!atualizado  && !preload"
@@ -1117,7 +1117,7 @@
     </modal>
 
     <modal id="janelaAdmissaoMassa" titulo="Admissão em massa" :size="95">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-if="form_massa.preload"></preload>
             <div v-if="!form_massa.preload">
 
@@ -1270,7 +1270,7 @@
                 </fieldset>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div>
                 <button type="button" class="btn btn-sm btn-primary"
                         v-show="!form_massa.preload"
@@ -1282,7 +1282,7 @@
     </modal>
 
     <modal id="janelaDemitir" titulo="Demissão Avulsa" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-if="modeldemissao.preload"></preload>
             <div v-if="!modeldemissao.preload">
                 <fieldset style="margin-top: 0px">
@@ -1308,7 +1308,7 @@
                 </fieldset>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div v-if="modeldemissao.form.status !== 'DEMITIDO'">
                 <button type="button" class="btn btn-sm btn-primary"
                         v-show="!modeldemissao.preload"
@@ -1324,9 +1324,9 @@
         <form class="row" @submit.prevent="$refs.componente.buscar()">
             <date-range-filter
                 :key="'filtro-periodo'"
-                :enabled.sync="controle.dados.filtroPeriodo"
-                :start-date.sync="controle.dados.dataInicio"
-                :end-date.sync="controle.dados.dataFim"
+                v-model:enabled="controle.dados.filtroPeriodo"
+                v-model:start-date="controle.dados.dataInicio"
+                v-model:end-date="controle.dados.dataFim"
                 :disabled="!!controle.carregando"
                 :id-suffix="'periodo-' + hash"
                 label="Por período"
@@ -1335,9 +1335,9 @@
 
             <date-range-filter
                 :key="'filtro-aso'"
-                :enabled.sync="controle.dados.filtroAso"
-                :start-date.sync="controle.dados.dataInicioAso"
-                :end-date.sync="controle.dados.dataFimAso"
+                v-model:enabled="controle.dados.filtroAso"
+                v-model:start-date="controle.dados.dataInicioAso"
+                v-model:end-date="controle.dados.dataFimAso"
                 :disabled="!!controle.carregando"
                 :id-suffix="'aso-' + hash"
                 label="Data do ASO"
@@ -1346,9 +1346,9 @@
 
             <date-range-filter
                 :key="'filtro-admissao'"
-                :enabled.sync="controle.dados.filtroDataAdmissao"
-                :start-date.sync="controle.dados.dataInicioAdmissao"
-                :end-date.sync="controle.dados.dataFimAdmissao"
+                v-model:enabled="controle.dados.filtroDataAdmissao"
+                v-model:start-date="controle.dados.dataInicioAdmissao"
+                v-model:end-date="controle.dados.dataFimAdmissao"
                 :disabled="!!controle.carregando"
                 :id-suffix="'admissao-' + hash"
                 label="Data da Admissão"

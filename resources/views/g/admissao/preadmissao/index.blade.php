@@ -6,7 +6,7 @@
 @stop
 @section('content')
     <modal id="janelaVisualizar" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload class=" mt-2 text-center" v-if="preload"></preload>
             <div v-if="!preload && form.docs_curriculo_pre_adm.length" id="formDocumentos">
                 <fieldset v-for="item in form.docs_curriculo_pre_adm">
@@ -28,7 +28,7 @@
     </modal>
 
     <modal id="janelaFinalizar" :titulo="tituloJanelaFinalizar" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload class=" mt-2 text-center" v-if="preload"></preload>
             <div v-if="!preloadFinalizar" id="formFinalizar">
                 <fieldset v-if="dadosFinalizar.curriculo">
@@ -112,7 +112,7 @@
                 </fieldset>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button class="btn btn-primary btn-sm" v-if="!preloadFinalizar"
                     @click="finalizarEncaminhar(dadosFinalizar.id)">
                 <i class="fa fa-save"></i> Finalizar e Salvar
@@ -121,7 +121,7 @@
     </modal>
 
     <modal id="janelaEnviarEmail" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload class=" mt-2 text-center" v-if="preload"></preload>
             <div v-if="!preload">
                 <div class="alert alert-warning">Observação: Comunicamos que a troca do e-mail, implicará também na
@@ -161,7 +161,7 @@
                 </fieldset>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button class="btn btn-primary btn-sm" v-if="!preload" @click="enviarEmail">
                 <i class="fa fa-share"></i> Enviar
             </button>

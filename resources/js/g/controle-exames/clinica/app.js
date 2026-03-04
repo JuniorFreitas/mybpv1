@@ -1,332 +1,352 @@
-import Dados from "../../../components/entrevistas/DadosPessoaisTexto";
-import Upload from "../../../components/Upload";
-import validacoes from "../../../mixins/Validacoes";
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import Dados from '../../../components/entrevistas/DadosPessoaisTexto'
+import Upload from '../../../components/Upload'
+import validacoes from '../../../mixins/Validacoes'
 
-const app = new Vue({
-    el: "#app",
+const app = createApp({
     components: {
         Dados,
         Upload
     },
     mixins: [validacoes],
-    data: {
-        tituloJanela: "Controle de Exames",
-        preload: false,
-        editando: false,
-        apagado: false,
-        cadastrado: false,
-        cadastrando: false,
-        atualizado: false,
-        visualizar: false,
-
-        nav: 'encaminhar',
-
-        hash: `mastertag_${parseInt(Math.random() * 999999)}`,
-
-        resposta_id: 0,
-        formulario_id: 2,
-        tipo: "Exames",
-
-        dados: {
-            nome: "",
-            cargo: ""
-        },
-
-        concordo: false,
-        abasesmt: {
-            tituloJanela: "Resultado",
+    data() {
+        return {
+            tituloJanela: 'Controle de Exames',
             preload: false,
-            form: {
-                id: 0,
-                exame_funcionario_id: "",
-                exame_realizado: null,
-                data_realizacao: "",
-                resultado: {
-                    result: null,
-                    pendencias: null,
-                    pendencias_quais: "",
-                    aprovado: null,
-                    trabalho_altura: null,
-                    espacao_confinado: null,
-                    observacoes: ""
-                },
-                tipo: "",
-                anexos: [],
-                anexosDel: [],
-                cadastrando: true
-            },
-            formDefault: null
-        },
+            editando: false,
+            apagado: false,
+            cadastrado: false,
+            cadastrando: false,
+            atualizado: false,
+            visualizar: false,
 
-        form: {
-            formulario: null,
-            respostas: {},
-            feedback_id: 0,
-            empresa_exame_id: "",
-            empresa_id: 0
-        },
+            nav: 'encaminhar',
 
-        formDefault: null,
+            hash: `mastertag_${parseInt(Math.random() * 999999)}`,
 
-        colunasTabela: {
-            cliente: false
-        },
+            resposta_id: 0,
+            formulario_id: 2,
+            tipo: 'Exames',
 
-        URL_ADMIN,
-        AUTENTICADO,
-        estados: ESTADOS,
-        todos_municipios: `autocomplete/todos-municipios`,
-
-        url_anexo: `${URL_ADMIN}/controle-exames-resultado/uploadAnexos`,
-        anexoUploadAndamento: false,
-
-        urlPaginacao: `${URL_ADMIN}/acesso-clinica/atualizar`,
-        exibicao: EXIBICAO,
-
-        lista: [],
-        listaEmpresasExames: [],
-        historico: [],
-
-        controle: {
-            carregando: true,
             dados: {
-                filtroPeriodo: false,
-                periodo: "",
-                campoBusca: "",
-                campoCPF: "",
-                campoUf: "",
-                pages: EXIBICAO[0]
+                nome: '',
+                cargo: ''
+            },
+
+            concordo: false,
+            abasesmt: {
+                tituloJanela: 'Resultado',
+                preload: false,
+                form: {
+                    id: 0,
+                    exame_funcionario_id: '',
+                    exame_realizado: null,
+                    data_realizacao: '',
+                    resultado: {
+                        result: null,
+                        pendencias: null,
+                        pendencias_quais: '',
+                        aprovado: null,
+                        trabalho_altura: null,
+                        espacao_confinado: null,
+                        observacoes: ''
+                    },
+                    tipo: '',
+                    anexos: [],
+                    anexosDel: [],
+                    cadastrando: true
+                },
+                formDefault: null
+            },
+
+            form: {
+                formulario: null,
+                respostas: {},
+                feedback_id: 0,
+                empresa_exame_id: '',
+                empresa_id: 0
+            },
+
+            formDefault: null,
+
+            colunasTabela: {
+                cliente: false
+            },
+
+            URL_ADMIN,
+            AUTENTICADO,
+            estados: ESTADOS,
+            todos_municipios: `autocomplete/todos-municipios`,
+
+            url_anexo: `${URL_ADMIN}/controle-exames-resultado/uploadAnexos`,
+            anexoUploadAndamento: false,
+
+            urlPaginacao: `${URL_ADMIN}/acesso-clinica/atualizar`,
+            exibicao: EXIBICAO,
+
+            lista: [],
+            listaEmpresasExames: [],
+            historico: [],
+
+            controle: {
+                carregando: true,
+                dados: {
+                    filtroPeriodo: false,
+                    periodo: '',
+                    campoBusca: '',
+                    campoCPF: '',
+                    campoUf: '',
+                    pages: EXIBICAO[0]
+                }
             }
         }
     },
     async mounted() {
-        await this.atualizar();
-        await this.initForm();
-        this.usuarioAutenticado();
-        this.formDefault = _.cloneDeep(this.form);
-        this.abasesmt.formDefault = _.cloneDeep(this.abasesmt.form);
+        await this.atualizar()
+        await this.initForm()
+        this.usuarioAutenticado()
+        this.formDefault = _.cloneDeep(this.form)
+        this.abasesmt.formDefault = _.cloneDeep(this.abasesmt.form)
     },
     computed: {
         comResultado() {
-            return this.lista.filter(item => {
-                return item.resultado_integrado;
-            });
+            return this.lista.filter((item) => {
+                return item.resultado_integrado
+            })
         },
         tudoMarcado() {
-            let totalItens = this.comResultado.length;
-            let totalEncontrado = 0;
+            let totalItens = this.comResultado.length
+            let totalEncontrado = 0
 
             if (totalItens === 0) {
-                return false;
+                return false
             }
 
-            this.comResultado.forEach(item => {
-                let id = item.curriculo_id;
+            this.comResultado.forEach((item) => {
+                let id = item.curriculo_id
                 if (this.selecionados.indexOf(id) >= 0) {
-                    totalEncontrado++;
+                    totalEncontrado++
                 } else {
-                    return false;
+                    return false
                 }
-            });
-            let resultado = totalItens === totalEncontrado;
-            this.selecionaTudo = resultado;
-            return resultado;
+            })
+            let resultado = totalItens === totalEncontrado
+            this.selecionaTudo = resultado
+            return resultado
         }
     },
     methods: {
         async carregaFormulario() {
-            await axios.get(`${URL_ADMIN}/formulario/buscaFormulario/${this.tipo}`)
-                .then(response => {
-                    this.form.formulario = response.data;
-                    this.formulario_id = response.data.id;
-                }).catch(error => {
-                });
+            await axios
+                .get(`${URL_ADMIN}/formulario/buscaFormulario/${this.tipo}`)
+                .then((response) => {
+                    this.form.formulario = response.data
+                    this.formulario_id = response.data.id
+                })
+                .catch((error) => {})
         },
 
         async initForm() {
-            await this.carregaFormulario();
-            this.form.respostas = _.cloneDeep(this.form.respostas);
+            await this.carregaFormulario()
+            this.form.respostas = _.cloneDeep(this.form.respostas)
         },
 
         async formEncaminhar(obj) {
-            this.dados.nome = obj.curriculo.nome;
-            this.dados.cargo = obj.vaga_selecionada.nome;
-            this.nav = 'encaminhar';
+            this.dados.nome = obj.curriculo.nome
+            this.dados.cargo = obj.vaga_selecionada.nome
+            this.nav = 'encaminhar'
 
-            this.form = _.cloneDeep(this.formDefault);
-            this.form.feedback_id = obj.id;
-            this.tituloJanela = `#${obj.id} - ${obj.curriculo.nome}`;
-            this.preload = true;
+            this.form = _.cloneDeep(this.formDefault)
+            this.form.feedback_id = obj.id
+            this.tituloJanela = `#${obj.id} - ${obj.curriculo.nome}`
+            this.preload = true
 
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.cadastrando = false;
-            this.visualizar = false;
-            this.editando = false;
-            await this.initForm();
-            formReset();
+            this.cadastrado = false
+            this.atualizado = false
+            this.cadastrando = false
+            this.visualizar = false
+            this.editando = false
+            await this.initForm()
+            formReset()
 
-            await this.carregaFormularioResposta();
+            await this.carregaFormularioResposta()
         },
 
         async carregaFormularioResposta() {
-            await axios.get(`${URL_ADMIN}/controle-exames/carregaResposta`, {
-                params: {
-                    feedback_id: this.form.feedback_id,
-                    formulario: this.formulario_id
-                }
-            }).then(response => {
-                let data = response.data;
-                Object.assign(this.form, data.result);
-                // if (data.tipo === 'cadastrar') {
-                this.cadastrando = true;
-                this.editando = false;
-                this.historico = data.historico;
-                // } else {
-                //     this.editando = true
-                //     this.cadastrando = false
-                // }
-                this.preload = false;
-            }).catch(error => {
-                this.preload = true;
-            });
+            await axios
+                .get(`${URL_ADMIN}/controle-exames/carregaResposta`, {
+                    params: {
+                        feedback_id: this.form.feedback_id,
+                        formulario: this.formulario_id
+                    }
+                })
+                .then((response) => {
+                    let data = response.data
+                    Object.assign(this.form, data.result)
+                    // if (data.tipo === 'cadastrar') {
+                    this.cadastrando = true
+                    this.editando = false
+                    this.historico = data.historico
+                    // } else {
+                    //     this.editando = true
+                    //     this.cadastrando = false
+                    // }
+                    this.preload = false
+                })
+                .catch((error) => {
+                    this.preload = true
+                })
         },
 
         async salvarUpdate() {
-            $("#formdinamico :input:visible").trigger("blur");
-            $("#janelaParecerEntrevista :input:visible").trigger("blur");
-            if ($("#janelaParecerEntrevista :input:visible.is-invalid").length) {
-                mostraErro("", "Verifique os campos marcados");
-                return false;
+            $('#formdinamico :input:visible').trigger('blur')
+            $('#janelaParecerEntrevista :input:visible').trigger('blur')
+            if ($('#janelaParecerEntrevista :input:visible.is-invalid').length) {
+                mostraErro('', 'Verifique os campos marcados')
+                return false
             }
 
-            this.preload = true;
-            const URL = `${URL_ADMIN}/controle-exames/salvaUpdate`;
+            this.preload = true
+            const URL = `${URL_ADMIN}/controle-exames/salvaUpdate`
 
             if (this.cadastrando) {
-                await axios.post(URL, {
-                    formulario_id: this.formulario_id,
-                    feedback_id: this.form.feedback_id,
-                    empresa_exame_id: this.form.empresa_exame_id,
-                    respostas: this.form.respostas,
-                    tipo: "store"
-                }).then(res => {
-                    let data = res.data;
-                    mostraSucesso("", "Exame cadastrado com sucesso!");
-                    $("#janelaParecerEntrevista").modal("hide");
-                    this.$refs.componente.buscar();
-                    this.preload = false;
-                }).catch(error => this.preload = false);
+                await axios
+                    .post(URL, {
+                        formulario_id: this.formulario_id,
+                        feedback_id: this.form.feedback_id,
+                        empresa_exame_id: this.form.empresa_exame_id,
+                        respostas: this.form.respostas,
+                        tipo: 'store'
+                    })
+                    .then((res) => {
+                        let data = res.data
+                        mostraSucesso('', 'Exame cadastrado com sucesso!')
+                        $('#janelaParecerEntrevista').modal('hide')
+                        this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                        this.preload = false
+                    })
+                    .catch((error) => (this.preload = false))
             } else {
-                await axios.put(URL, {
-                    id: this.form.id,
-                    empresa_exame_id: this.form.empresa_exame_id,
-                    respostas: this.form.respostas,
-                    tipo: "update"
-                }).then(res => {
-                    let data = res.data;
-                    mostraSucesso("", "Exame atualizado com sucesso!");
-                    $("#janelaParecerEntrevista").modal("hide");
-                    this.$refs.componente.buscar();
-                    this.preload = false;
-                }).catch(error => this.preload = false);
+                await axios
+                    .put(URL, {
+                        id: this.form.id,
+                        empresa_exame_id: this.form.empresa_exame_id,
+                        respostas: this.form.respostas,
+                        tipo: 'update'
+                    })
+                    .then((res) => {
+                        let data = res.data
+                        mostraSucesso('', 'Exame atualizado com sucesso!')
+                        $('#janelaParecerEntrevista').modal('hide')
+                        this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                        this.preload = false
+                    })
+                    .catch((error) => (this.preload = false))
             }
-
         },
 
         formResultado(id) {
-            this.abasesmt.form = _.cloneDeep(this.abasesmt.formDefault);
-            this.abasesmt.tituloJanela = `Resultado do exame de ${this.dados.nome}`;
-            this.abasesmt.preload = true;
-            axios.get(`${URL_ADMIN}/controle-exames/resultado/${id}`)
-                .then(response => {
-                    let data = response.data;
-                    this.abasesmt.form.cadastrando = false;
-                    this.abasesmt.form = data !== "" ? data : _.cloneDeep(this.abasesmt.formDefault);
-                    this.abasesmt.form.exame_funcionario_id = id;
-                    this.abasesmt.preload = false;
-                    this.abasesmt.form.anexosDel = [];
-                }).catch(error => {
-            });
-
+            this.abasesmt.form = _.cloneDeep(this.abasesmt.formDefault)
+            this.abasesmt.tituloJanela = `Resultado do exame de ${this.dados.nome}`
+            this.abasesmt.preload = true
+            axios
+                .get(`${URL_ADMIN}/controle-exames/resultado/${id}`)
+                .then((response) => {
+                    let data = response.data
+                    this.abasesmt.form.cadastrando = false
+                    this.abasesmt.form = data !== '' ? data : _.cloneDeep(this.abasesmt.formDefault)
+                    this.abasesmt.form.exame_funcionario_id = id
+                    this.abasesmt.preload = false
+                    this.abasesmt.form.anexosDel = []
+                })
+                .catch((error) => {})
         },
 
         limpaformResultado() {
             if (this.abasesmt.form.exame_realizado === false) {
-                let id = this.abasesmt.form.id ? this.abasesmt.form.id : 0;
-                let exame_funcionario_id = this.abasesmt.form.exame_funcionario_id;
+                let id = this.abasesmt.form.id ? this.abasesmt.form.id : 0
+                let exame_funcionario_id = this.abasesmt.form.exame_funcionario_id
                 // let anexos = this.abasesmt.form.anexos;
                 // let anexosDel = this.abasesmt.form.anexosDel;
-                this.abasesmt.form = _.cloneDeep(this.abasesmt.formDefault);
-                this.abasesmt.form.exame_funcionario_id = exame_funcionario_id;
-                this.abasesmt.form.exame_realizado = false;
-                this.abasesmt.form.id = id;
+                this.abasesmt.form = _.cloneDeep(this.abasesmt.formDefault)
+                this.abasesmt.form.exame_funcionario_id = exame_funcionario_id
+                this.abasesmt.form.exame_realizado = false
+                this.abasesmt.form.id = id
                 // this.abasesmt.form.anexosDel = anexos ;
             }
         },
 
         salvarResultado() {
-            this.validaBlur();
+            this.validaBlur()
 
-            $("#validaSesmt :input:visible").trigger("blur");
-            if ($("#validaSesmt :input:visible.is-invalid").length) {
-                mostraErro("", "Verifique os campos marcados");
-                return false;
+            $('#validaSesmt :input:visible').trigger('blur')
+            if ($('#validaSesmt :input:visible.is-invalid').length) {
+                mostraErro('', 'Verifique os campos marcados')
+                return false
             }
 
             this.$nextTick(() => {
-                this.abasesmt.preload = true;
-                const URL = `${URL_ADMIN}/controle-exames/salvaResultado`;
-                this.abasesmt.preload = true;
+                this.abasesmt.preload = true
+                const URL = `${URL_ADMIN}/controle-exames/salvaResultado`
+                this.abasesmt.preload = true
 
                 if (this.abasesmt.form.id === 0) {
-                    axios.post(URL, this.abasesmt.form).then(res => {
-                        let data = res.data;
-                        mostraSucesso("", "Exame cadastrado com sucesso!");
-                        $("#validaSesmt").modal("hide");
-                        this.carregaFormularioResposta();
-                        this.$refs.componente.buscar();
-                        this.preload = false;
-                        this.abasesmt.preload = false;
-                    }).catch(error => {
-                        this.preload = false;
-                        this.abasesmt.preload = false;
-                    });
+                    axios
+                        .post(URL, this.abasesmt.form)
+                        .then((res) => {
+                            let data = res.data
+                            mostraSucesso('', 'Exame cadastrado com sucesso!')
+                            $('#validaSesmt').modal('hide')
+                            this.carregaFormularioResposta()
+                            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                            this.preload = false
+                            this.abasesmt.preload = false
+                        })
+                        .catch((error) => {
+                            this.preload = false
+                            this.abasesmt.preload = false
+                        })
                 } else {
-                    axios.put(`${URL}/${this.abasesmt.form.id}`, this.abasesmt.form)
-                        .then(res => {
-                            mostraSucesso("", "Exame atualizado com sucesso!");
-                            $("#validaSesmt").modal("hide");
-                            this.carregaFormularioResposta();
-                            this.$refs.componente.buscar();
-                            this.preload = false;
-                            this.abasesmt.preload = false;
-                        }).catch(error => {
-                            this.preload = false;
-                            this.abasesmt.preload = false;
-                        });
+                    axios
+                        .put(`${URL}/${this.abasesmt.form.id}`, this.abasesmt.form)
+                        .then((res) => {
+                            mostraSucesso('', 'Exame atualizado com sucesso!')
+                            $('#validaSesmt').modal('hide')
+                            this.carregaFormularioResposta()
+                            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                            this.preload = false
+                            this.abasesmt.preload = false
+                        })
+                        .catch((error) => {
+                            this.preload = false
+                            this.abasesmt.preload = false
+                        })
                 }
-            });
+            })
         },
 
         usuarioAutenticado() {
-            this.form.empresa_id = this.AUTENTICADO.empresa_id;
-            this.colunasTabela.cliente = this.AUTENTICADO.cliente_id === 0;
-            this.controle.dados.campoCliente = this.AUTENTICADO.cliente_id !== 0 ? this.AUTENTICADO.cliente_id : this.controle.dados.campoCliente;
+            this.form.empresa_id = this.AUTENTICADO.empresa_id
+            this.colunasTabela.cliente = this.AUTENTICADO.cliente_id === 0
+            this.controle.dados.campoCliente = this.AUTENTICADO.cliente_id !== 0 ? this.AUTENTICADO.cliente_id : this.controle.dados.campoCliente
         },
 
         carregou(dados) {
-            this.lista = dados.itens;
-            this.listaEmpresasExames = dados.emp_exames;
-            this.selecionaTudo = this.tudoMarcado;
-            this.controle.carregando = false;
+            this.lista = dados.itens
+            this.listaEmpresasExames = dados.emp_exames
+            this.selecionaTudo = this.tudoMarcado
+            this.controle.carregando = false
         },
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
-});
+})
+
+registerGlobals(app)
+app.mount('#app')

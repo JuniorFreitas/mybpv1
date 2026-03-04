@@ -1,41 +1,59 @@
 <template>
     <header class="page-topbar shadow-sm bg-white">
         <modal id="janelaPerfil" titulo="Seu Perfil" size="g">
-            <template slot="conteudo">
+            <template #conteudo>
                 <span v-show="preload">
                     <preload />
                 </span>
                 <template v-if="!preload">
                     <div class="form-group">
                         <label>Nome do usuário</label>
-                        <input type="text" v-model="form.nome" class="form-control form-control-sm"
-                            placeholder="Nome do usuário" autocomplete="off" onblur="valida_campo_vazio(this,3)" />
+                        <input
+                            type="text"
+                            v-model="form.nome"
+                            class="form-control form-control-sm"
+                            placeholder="Nome do usuário"
+                            autocomplete="off"
+                            onblur="valida_campo_vazio(this, 3)"
+                        />
                     </div>
                     <div class="form-group">
                         <label>Login</label>
-                        <input type="text" v-model="form.login" class="form-control form-control-sm" placeholder="Login"
-                            autocomplete="off" onblur="valida_campo_vazio(this,3)" />
+                        <input
+                            type="text"
+                            v-model="form.login"
+                            class="form-control form-control-sm"
+                            placeholder="Login"
+                            autocomplete="off"
+                            onblur="valida_campo_vazio(this, 3)"
+                        />
                     </div>
                     <fieldset>
                         <legend>Foto de Perfil</legend>
                         <!-- <p>DECLARAÇÃO ESCOLAR DO ANO EM CURSO (ORIGINAL)</p> -->
-                        <upload label="Selecionar anexo(s)" :dados-ajax="{ usuario_id: usuario.id }"
-                            :model="form.foto_perfil" :apenas-imagens="true" :quantidade="1"
-                            :model-delete="form.foto_perfilDel" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento = true" @onfinalizado="anexoUploadAndamento = false"
-                            :multi="true">
+                        <upload
+                            label="Selecionar anexo(s)"
+                            :dados-ajax="{ usuario_id: usuario.id }"
+                            :model="form.foto_perfil"
+                            :apenas-imagens="true"
+                            :quantidade="1"
+                            :model-delete="form.foto_perfilDel"
+                            :url="urlAnexoUpload"
+                            @onprogresso="anexoUploadAndamento = true"
+                            @onfinalizado="anexoUploadAndamento = false"
+                            :multi="true"
+                        >
                         </upload>
                     </fieldset>
                 </template>
             </template>
-            <template slot="rodape">
-                <button type="button" class="btn btn-sm btn-primary" v-show="!preload"
-                    @click="alterarFormPerfil()">Salvar</button>
+            <template #rodape>
+                <button type="button" class="btn btn-sm btn-primary" v-show="!preload" @click="alterarFormPerfil()">Salvar</button>
             </template>
         </modal>
 
         <modal id="download" titulo="Meus Downloads" size="g">
-            <template slot="conteudo">
+            <template #conteudo>
                 <preload v-show="preloadDownload" />
                 <template v-if="!preloadDownload">
                     <div class="table-responsive">
@@ -52,8 +70,7 @@
                                     <td>{{ download.local }}</td>
                                     <td>{{ download.data_hora_criacao }}</td>
                                     <td>
-                                        <a :href="URL_ADMIN + '/downloads/exportacao/' + download.arquivo"
-                                            class="btn btn-primary" target="_blank">
+                                        <a :href="URL_ADMIN + '/downloads/exportacao/' + download.arquivo" class="btn btn-primary" target="_blank">
                                             <i class="fa fa-download" />
                                             Download
                                         </a>
@@ -68,22 +85,22 @@
 
         <!-- Janela do chat -->
         <modal id="janelaChat" titulo="Chat" size="g">
-            <template slot="conteudo">
+            <template #conteudo>
                 <chat v-if="usuario.empresa_id" :id="usuario.empresa_id" @notificar="notificacao" />
             </template>
-            <template slot="rodape">
+            <template #rodape>
                 <!-- Rodapé vazio -->
             </template>
         </modal>
 
         <modal id="janelaConfirmarSair" titulo="Sair" :centralizada="true" label-fechar="Não">
-            <template slot="conteudo">
+            <template #conteudo>
                 <div class="text-center text-default">
                     <i class="fa fa-exclamation-triangle" style="font-size: 67px" />
                     <h6 class="text-center mt-2">Você realmente deseja Sair do Sistema?</h6>
                 </div>
             </template>
-            <template slot="rodape">
+            <template #rodape>
                 <button type="button" class="btn btn-sm btn-danger" @click="sair">SIM</button>
             </template>
         </modal>
@@ -96,14 +113,17 @@
                             <img :src="`${URL_SITE}/images/icone.svg`" alt="Mybp logo icone" height="40" />
                         </span>
                         <span class="logo-lg">
-                            <img :src="`${URL_SITE}/images/logo_horizontal.svg`" alt="Mybp logo horizontal" height="65"
-                                style="margin-left: -32px; margin-top: 5px" />
+                            <img
+                                :src="`${URL_SITE}/images/logo_horizontal.svg`"
+                                alt="Mybp logo horizontal"
+                                height="65"
+                                style="margin-left: -32px; margin-top: 5px"
+                            />
                         </span>
                     </a>
                 </div>
 
-                <button type="button" class="btn btn-sm px-3 font-size-16 header-item waves-effect"
-                    @click="verticalMenu">
+                <button type="button" class="btn btn-sm px-3 font-size-16 header-item waves-effect" @click="verticalMenu">
                     <i class="fa fa-fw fa-bars text-white" />
                 </button>
             </div>
@@ -112,8 +132,15 @@
                 <!-- Comentário removido para melhor legibilidade -->
 
                 <div class="dropdown ml-1">
-                    <button type="button" v-tippy class="btn header-item noti-icon waves-effect" content="Downloads"
-                        data-toggle="modal" data-target="#download" @click.prevent="meusDownloads()">
+                    <button
+                        type="button"
+                        v-tippy
+                        class="btn header-item noti-icon waves-effect"
+                        content="Downloads"
+                        data-toggle="modal"
+                        data-target="#download"
+                        @click.prevent="meusDownloads()"
+                    >
                         <i class="bx bx-download text-white" />
                     </button>
                 </div>
@@ -123,8 +150,7 @@
 
                 <!-- CHAT -->
                 <div v-if="usuario.empresa_id" class="dropdown ml-1">
-                    <button type="button" class="btn header-item noti-icon waves-effect" data-toggle="modal"
-                        data-target="#janelaChat">
+                    <button type="button" class="btn header-item noti-icon waves-effect" data-toggle="modal" data-target="#janelaChat">
                         <i class="far fa-comments text-white" />
                         <span v-if="quantidadeMensagensNovas > 0" class="badge badge-pill badge-danger">
                             {{ quantidadeMensagensNovas }}
@@ -141,11 +167,19 @@
 
                 <!-- Usuário -->
                 <div class="dropdown d-inline-block">
-                    <button type="button" id="page-header-user-dropdown" class="btn header-item waves-effect"
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <img class="rounded-circle header-profile-user"
+                    <button
+                        type="button"
+                        id="page-header-user-dropdown"
+                        class="btn header-item waves-effect"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                    >
+                        <img
+                            class="rounded-circle header-profile-user"
                             :src="usuario.foto_perfil.length === 0 ? `${URL_SITE}/images/default_avatar.jpg` : usuario.foto_perfil[0].urlThumb"
-                            alt="Header Avatar" />
+                            alt="Header Avatar"
+                        />
                         <span class="d-none d-xl-inline-block ml-1 text-left text-white">
                             {{ usuario.nome }}
                         </span>
@@ -157,8 +191,13 @@
                             <span class="d-block d-sm-none">{{ usuario.nome }} / </span>
                             {{ usuario.papel && usuario.papel.nome ? usuario.papel.nome : 'Nenhum Grupo' }}
                         </span>
-                        <a class="dropdown-item" data-toggle="modal" @click.prevent="alterarPerfil(usuario.id)"
-                            data-target="#janelaPerfil" href="javascript://">
+                        <a
+                            class="dropdown-item"
+                            data-toggle="modal"
+                            @click.prevent="alterarPerfil(usuario.id)"
+                            data-target="#janelaPerfil"
+                            href="javascript://"
+                        >
                             <i class="bx bx-user font-size-16 align-middle mr-1" />
                             <span>Perfil</span>
                         </a>
@@ -168,8 +207,7 @@
                         </a>
                         <!-- Comentários removidos para melhor legibilidade -->
                         <div class="dropdown-divider" />
-                        <a class="dropdown-item text-danger" href="javascript://" data-toggle="modal"
-                            data-target="#janelaConfirmarSair">
+                        <a class="dropdown-item text-danger" href="javascript://" data-toggle="modal" data-target="#janelaConfirmarSair">
                             <i class="bx bx-power-off font-size-16 align-middle mr-1 text-danger" />
                             <span>Sair</span>
                         </a>
@@ -220,8 +258,15 @@ export default {
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form)
+        this.initDropdowns()
     },
     methods: {
+        initDropdowns() {
+            if (typeof $ === 'undefined' || !$.fn || !$.fn.dropdown) {
+                return
+            }
+            $(this.$el).find('[data-toggle="dropdown"]').dropdown()
+        },
         notificacao(arryMensagensNovas) {
             this.quantidadeMensagensNovas = arryMensagensNovas.length
         },
@@ -373,7 +418,7 @@ export default {
     background-color: rgba(0, 0, 0, 0.5);
 }
 
-.personal-figcaption>img {
+.personal-figcaption > img {
     margin-top: 32.5px;
     width: 50px;
     height: 50px;

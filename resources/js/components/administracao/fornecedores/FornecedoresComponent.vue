@@ -1,37 +1,40 @@
 <template>
     <div>
         <modal id="janelaConfirmar" titulo="Apagar">
-            <template slot="conteudo">
+            <template #conteudo>
                 <preload v-show="preloadAjax"></preload>
                 <div class="alert alert-success alert-dismissible" v-show="apagado">
                     <h4><i class="icon fa fa-check"></i>Registro apagado com sucesso!</h4>
                 </div>
                 <h4 v-show="!apagado">Tem certeza que deseja apagar este registro?</h4>
             </template>
-            <template slot="rodape">
+            <template #rodape>
                 <button type="button" class="btn btn-sm btn-danger" @click="apagar" v-show="!apagado">Apagar</button>
             </template>
         </modal>
 
         <modal id="janelaCadastrar" :titulo="tituloJanela" :size="90">
-            <template slot="conteudo">
+            <template #conteudo>
                 <preload v-show="preloadAjax"></preload>
                 <div class="alert alert-success alert-dismissible" v-show="cadastrado">
-                    <h4><i class="icon fa fa-check"></i>{{form.tipo}} cadastrado com sucesso!</h4>
+                    <h4><i class="icon fa fa-check"></i>{{ form.tipo }} cadastrado com sucesso!</h4>
                 </div>
                 <div class="alert alert-success alert-dismissible" v-show="atualizado">
-                    <h4><i class="icon fa fa-check"></i>{{form.tipo}} alterado com sucesso!</h4>
+                    <h4><i class="icon fa fa-check"></i>{{ form.tipo }} alterado com sucesso!</h4>
                 </div>
-                <form v-if="!preloadAjax && (!cadastrado && !atualizado)" id="form" @submit.prevent>
+                <form v-if="!preloadAjax && !cadastrado && !atualizado" id="form" @submit.prevent>
                     <fieldset>
                         <legend class="text-uppercase">Tipo</legend>
                         <div class="row">
                             <div class="col-12 col-md-6">
                                 <label>Selecione o Tipo</label>
-                                <select class="form-control" v-model="form.tipo"
-                                        :disabled="editando"
-                                        @blur="valida_campo_vazio($event.target,1)" 
-                                        @change="valida_campo_vazio($event.target,1)">
+                                <select
+                                    class="form-control"
+                                    v-model="form.tipo"
+                                    :disabled="editando"
+                                    @blur="valida_campo_vazio($event.target, 1)"
+                                    @change="valida_campo_vazio($event.target, 1)"
+                                >
                                     <option value="">Selecione ...</option>
                                     <option value="fornecedor">Fornecedor</option>
                                     <option value="parceiro">Parceiro</option>
@@ -44,12 +47,12 @@
                     <div v-if="form.tipo !== ''">
                         <ul class="nav nav-tabs bg-light" id="tabslist" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-item nav-link active" id="nav-dados-cadastrais-tab" data-toggle="tab"
-                                   href="#nav-dados-cadastrais" role="tab">DADOS CADASTRAIS</a>
+                                <a class="nav-item nav-link active" id="nav-dados-cadastrais-tab" data-toggle="tab" href="#nav-dados-cadastrais" role="tab"
+                                    >DADOS CADASTRAIS</a
+                                >
                             </li>
                             <li class="nav-item">
-                                <a class="nav-item nav-link" id="nav-servicos-tab" data-toggle="tab" 
-                                   href="#nav-servicos" role="tab">SERVIÇOS</a>
+                                <a class="nav-item nav-link" id="nav-servicos-tab" data-toggle="tab" href="#nav-servicos" role="tab">SERVIÇOS</a>
                             </li>
                         </ul>
 
@@ -57,13 +60,12 @@
                             <!-- Dados Cadastrais -->
                             <div class="tab-pane fade show active" id="nav-dados-cadastrais" role="tabpanel">
                                 <fieldset>
-                                    <legend class="text-uppercase">Dados do {{form.tipo}}</legend>
+                                    <legend class="text-uppercase">Dados do {{ form.tipo }}</legend>
                                     <div class="row">
                                         <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
                                             <div class="form-group">
                                                 <label>Tipo</label>
-                                                <select class="form-control" v-model="form.tipo_pessoa"
-                                                        :disabled="editando">
+                                                <select class="form-control" v-model="form.tipo_pessoa" :disabled="editando">
                                                     <option value="pessoa_jurídica">Pessoa Jurídica</option>
                                                     <option value="pessoa_física">Pessoa Física</option>
                                                 </select>
@@ -73,12 +75,26 @@
                                         <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
                                             <div class="form-group">
                                                 <label for="cnpj">CNPJ</label>
-                                                <input type="text" class="form-control" id="cnpj" v-model="form.cnpj" @blur="validarCnpj" v-if="form.tipo_pessoa === 'pessoa_jurídica'">
+                                                <input
+                                                    type="text"
+                                                    class="form-control"
+                                                    id="cnpj"
+                                                    v-model="form.cnpj"
+                                                    @blur="validarCnpj"
+                                                    v-if="form.tipo_pessoa === 'pessoa_jurídica'"
+                                                />
                                             </div>
 
                                             <div class="form-group">
                                                 <label for="cpf">CPF</label>
-                                                <input type="text" class="form-control" id="cpf" v-model="form.cpf" @blur="validarCpf" v-if="form.tipo_pessoa === 'pessoa_física'">
+                                                <input
+                                                    type="text"
+                                                    class="form-control"
+                                                    id="cpf"
+                                                    v-model="form.cpf"
+                                                    @blur="validarCpf"
+                                                    v-if="form.tipo_pessoa === 'pessoa_física'"
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -87,22 +103,25 @@
                                         <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
                                             <div class="form-group" v-if="form.tipo_pessoa === 'pessoa_jurídica'">
                                                 <label for="nome">Nome</label>
-                                                <input type="text" class="form-control" id="nome" v-model="form.nome" @blur="validarCampo('nome', 3)">
+                                                <input type="text" class="form-control" id="nome" v-model="form.nome" @blur="validarCampo('nome', 3)" />
                                             </div>
 
                                             <div class="form-group" v-if="form.tipo_pessoa === 'pessoa_física'">
                                                 <label for="nome">Nome</label>
-                                                <input type="text" class="form-control" id="nome" v-model="form.nome" @blur="validarCampo('nome', 3)">
+                                                <input type="text" class="form-control" id="nome" v-model="form.nome" @blur="validarCampo('nome', 3)" />
                                             </div>
                                         </div>
 
-                                        <div class="col-12 col-sm-6 col-lg-6 col-xl-6"
-                                             v-if="form.tipo_pessoa === 'pessoa_jurídica'">
+                                        <div class="col-12 col-sm-6 col-lg-6 col-xl-6" v-if="form.tipo_pessoa === 'pessoa_jurídica'">
                                             <div class="form-group">
                                                 <label>Nome Fantasia</label>
-                                                <input type="text" class="form-control" v-model="form.nome_fantasia"
-                                                       placeholder="Nome Fantasia"
-                                                       :disabled="preloadCnpj">
+                                                <input
+                                                    type="text"
+                                                    class="form-control"
+                                                    v-model="form.nome_fantasia"
+                                                    placeholder="Nome Fantasia"
+                                                    :disabled="preloadCnpj"
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -119,14 +138,20 @@
                                         <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
                                             <div class="form-group">
                                                 <label for="telefone">Telefone</label>
-                                                <input type="text" class="form-control telefone" id="telefone" v-model="form.telefones[0].numero" @blur="validarTelefone">
+                                                <input
+                                                    type="text"
+                                                    class="form-control telefone"
+                                                    id="telefone"
+                                                    v-model="form.telefones[0].numero"
+                                                    @blur="validarTelefone"
+                                                />
                                             </div>
                                         </div>
 
                                         <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
                                             <div class="form-group">
                                                 <label for="email">E-mail</label>
-                                                <input type="email" class="form-control" id="email" v-model="form.email" @blur="validarEmail">
+                                                <input type="email" class="form-control" id="email" v-model="form.email" @blur="validarEmail" />
                                             </div>
                                         </div>
                                     </div>
@@ -135,8 +160,7 @@
                                         <div class="col-12">
                                             <fieldset>
                                                 <legend class="text-uppercase">Telefones</legend>
-                                                <telefone :model="form.telefones" :ramal="false" :pais="false"
-                                                          :model-delete="form.telefonesDelete"></telefone>
+                                                <telefone :model="form.telefones" :ramal="false" :pais="false" :model-delete="form.telefonesDelete"></telefone>
                                             </fieldset>
                                         </div>
                                     </div>
@@ -145,19 +169,20 @@
                                 <fieldset>
                                     <legend>ANEXOS</legend>
                                     <small>Anexo de </small>
-                                    <br>
-                                    <upload :model="form.anexos"
-                                            :model-delete="form.anexosDel"
-                                            :url="urlAnexoUpload"
-                                            label="Anexar ..."
-                                            @onProgresso="anexoUploadAndamento=true"
-                                            @onFinalizado="anexoUploadAndamento=false"></upload>
+                                    <br />
+                                    <upload
+                                        :model="form.anexos"
+                                        :model-delete="form.anexosDel"
+                                        :url="urlAnexoUpload"
+                                        label="Anexar ..."
+                                        @onProgresso="anexoUploadAndamento = true"
+                                        @onFinalizado="anexoUploadAndamento = false"
+                                    ></upload>
                                 </fieldset>
 
                                 <div class="custom-control custom-switch">
-                                    <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="ativo">
-                                    <label class="custom-control-label"
-                                           for="ativo">{{form.ativo ? 'Ativo' : 'Inativo'}}</label>
+                                    <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="ativo" />
+                                    <label class="custom-control-label" for="ativo">{{ form.ativo ? 'Ativo' : 'Inativo' }}</label>
                                 </div>
                             </div>
 
@@ -169,15 +194,13 @@
                                     </legend>
                                     <div class="row">
                                         <div class="col-12 col-sm-6 col-md-6 col-lg-6">
-                                            <button class="btn btn-sm btn-secondary mb-2"
-                                                    @click="addLIServicoFornecedor">
+                                            <button class="btn btn-sm btn-secondary mb-2" @click="addLIServicoFornecedor">
                                                 <span class="fas fa-plus" aria-hidden="true"></span>
                                                 Adicionar Serviço
                                             </button>
                                         </div>
 
-                                        <div class="col-12" v-show="form.servicos.length>0"
-                                             v-for="(obj, index) in form.servicos" :key="obj.id">
+                                        <div class="col-12" v-show="form.servicos.length > 0" v-for="(obj, index) in form.servicos" :key="obj.id">
                                             <div class="row py-3">
                                                 <!-- Campos do serviço -->
                                                 <div class="col-12 col-sm-4" v-if="form.tipo === 'fornecedor'">
@@ -214,7 +237,7 @@
                                                         <select v-model="obj.tipo_servico_fornecedor_id" class="form-control">
                                                             <option value="">Selecione ...</option>
                                                             <option v-for="item in listaServicos" :value="item.id">
-                                                                {{item.label}}
+                                                                {{ item.label }}
                                                             </option>
                                                         </select>
                                                     </div>
@@ -285,25 +308,25 @@
                                                     <fieldset>
                                                         <legend>ANEXOS</legend>
                                                         <small>Anexo de Notas Fiscais, Contratos...</small>
-                                                        <br>
-                                                        <upload :model="obj.anexos"
-                                                                :model-delete="obj.anexosDel"
-                                                                :url="urlAnexoServicoUpload"
-                                                                label="Anexar ..."
-                                                                @onProgresso="anexoServicoUploadAndamento=true"
-                                                                @onFinalizado="anexoServicoUploadAndamento=false"></upload>
+                                                        <br />
+                                                        <upload
+                                                            :model="obj.anexos"
+                                                            :model-delete="obj.anexosDel"
+                                                            :url="urlAnexoServicoUpload"
+                                                            label="Anexar ..."
+                                                            @onProgresso="anexoServicoUploadAndamento = true"
+                                                            @onFinalizado="anexoServicoUploadAndamento = false"
+                                                        ></upload>
                                                     </fieldset>
                                                 </div>
 
                                                 <div class="col-12 mb-3">
-                                                    <button class="btn btn-sm btn-danger"
-                                                            @click="removerLIServicoFornecedor(index)"
-                                                            v-show="obj.nova">
+                                                    <button class="btn btn-sm btn-danger" @click="removerLIServicoFornecedor(index)" v-show="obj.nova">
                                                         <i class="fa fa-trash"></i> Remover
                                                     </button>
                                                 </div>
 
-                                                <hr class="w-100">
+                                                <hr class="w-100" />
                                             </div>
                                         </div>
                                     </div>
@@ -313,40 +336,33 @@
                     </div>
                 </form>
             </template>
-            <template slot="rodape">
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && !preloadAjax"
-                        @click="alterar">
-                    Alterar
-                </button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado && !preloadAjax"
-                        @click="cadastrar">
-                    Cadastrar
-                </button>
+            <template #rodape>
+                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && !preloadAjax" @click="alterar">Alterar</button>
+                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado && !preloadAjax" @click="cadastrar">Cadastrar</button>
             </template>
         </modal>
 
         <!-- Filtro -->
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="$refs.componente.buscar()">
+            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label for="">Buscar</label>
-                        <input type="text"
-                               placeholder="Buscar por nome"
-                               class="form-control form-control-sm" 
-                               :disabled="controle.carregando"
-                               v-model="controle.dados.campoBusca">
+                        <input
+                            type="text"
+                            placeholder="Buscar por nome"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoBusca"
+                        />
                     </div>
                 </div>
 
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Tipo</label>
-                        <select class="form-control form-control-sm" 
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.campoTipo"
-                                @change="atualizar">
+                        <select class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoTipo" @change="atualizar">
                             <option value="">Todos os Tipos</option>
                             <option value="fornecedor">Fornecedor</option>
                             <option value="parceiro">Parceiro</option>
@@ -358,10 +374,7 @@
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Status</label>
-                        <select class="form-control form-control-sm" 
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.campoStatus" 
-                                @change="atualizar">
+                        <select class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoStatus" @change="atualizar">
                             <option value="">Todos os Status</option>
                             <option :value="true">Apenas Ativos</option>
                             <option :value="false">Apenas Inativos</option>
@@ -370,18 +383,19 @@
                 </div>
 
                 <div class="col-12 col-md-9">
-                    <button type="button" class="btn btn-sm btn-success" 
-                            :disabled="controle.carregando" 
-                            @click="atualizar">
+                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
-                    <button type="button" class="btn btn-sm btn-primary" 
-                            data-toggle="modal" 
-                            :disabled="controle.carregando"
-                            data-target="#janelaCadastrar"
-                            @click="formNovo">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-primary"
+                        data-toggle="modal"
+                        :disabled="controle.carregando"
+                        data-target="#janelaCadastrar"
+                        @click="formNovo"
+                    >
                         Cadastrar
                     </button>
                 </div>
@@ -393,7 +407,7 @@
             <preload></preload>
         </p>
         <div id="conteudo">
-            <div class="alert alert-warning" v-show="!controle.carregando && lista.length==0">
+            <div class="alert alert-warning" v-show="!controle.carregando && lista.length == 0">
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
             <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
@@ -410,31 +424,38 @@
                     </thead>
                     <tbody>
                         <tr v-for="fornecedor in lista">
-                            <td data-label="ID">{{fornecedor.id}}</td>
+                            <td data-label="ID">{{ fornecedor.id }}</td>
                             <td data-label="Nome">
                                 {{ fornecedor.tipo_pessoa == 'pessoa_física' ? fornecedor.nome : fornecedor.razao_social }}
                             </td>
                             <td data-label="Tipo">{{ fornecedor.tipo }}</td>
                             <td data-label="Contato">
                                 {{ fornecedor.contato }} -
-                                <span v-for="tel in fornecedor.telefones">{{tel.numero}}</span>
+                                <span v-for="tel in fornecedor.telefones">{{ tel.numero }}</span>
                             </td>
                             <td data-label="Status">
-                                <bt-ativo :rota="`administracao/fornecedor/${fornecedor.id}/ativa-desativa`"
-                                          :model="fornecedor"></bt-ativo>
+                                <bt-ativo :rota="`administracao/fornecedor/${fornecedor.id}/ativa-desativa`" :model="fornecedor"></bt-ativo>
                             </td>
                             <td data-label="Ações">
-                                <a href="javascript://" class="btn btn-sm btn-primary" title="Editar"
-                                   @click.prevent="formAlterar(fornecedor.id)"
-                                   data-toggle="modal"
-                                   data-target="#janelaCadastrar">
+                                <a
+                                    href="javascript://"
+                                    class="btn btn-sm btn-primary"
+                                    title="Editar"
+                                    @click.prevent="formAlterar(fornecedor.id)"
+                                    data-toggle="modal"
+                                    data-target="#janelaCadastrar"
+                                >
                                     <i class="fa fa-edit" aria-hidden="true"></i>
                                 </a>
 
-                                <a href="javascript://" class="btn btn-sm btn-danger" title="Excluir"
-                                   @click.prevent="janelaConfirmar(fornecedor.id)"
-                                   data-toggle="modal"
-                                   data-target="#janelaConfirmar">
+                                <a
+                                    href="javascript://"
+                                    class="btn btn-sm btn-danger"
+                                    title="Excluir"
+                                    @click.prevent="janelaConfirmar(fornecedor.id)"
+                                    data-toggle="modal"
+                                    data-target="#janelaConfirmar"
+                                >
                                     <i class="fa fa-trash" aria-hidden="true"></i>
                                 </a>
                             </td>
@@ -443,25 +464,27 @@
                 </table>
             </div>
 
-            <controle-paginacao class="d-flex justify-content-center" 
-                               id="controle" 
-                               ref="componente"
-                               :url="urlAtualizar" 
-                               por-pagina="50"
-                               :dados="controle.dados"
-                               @carregou="carregou" 
-                               @carregando="carregando"></controle-paginacao>
+            <controle-paginacao
+                class="d-flex justify-content-center"
+                id="controle"
+                ref="componente"
+                :url="urlAtualizar"
+                por-pagina="50"
+                :dados="controle.dados"
+                @carregou="carregou"
+                @carregando="carregando"
+            ></controle-paginacao>
         </div>
     </div>
 </template>
 
 <script>
-import telefone from '../../Telefones';
-import endereco from '../../Endereco';
-import datepicker from '../../DatePicker';
-import upload from '../../Upload';
-import moment from 'moment';
-import validacoes from '../../../mixins/Validacoes';
+import telefone from '../../Telefones'
+import endereco from '../../Endereco'
+import datepicker from '../../DatePicker'
+import upload from '../../Upload'
+import moment from 'moment'
+import validacoes from '../../../mixins/Validacoes'
 
 // Constantes
 const API_ENDPOINTS = {
@@ -469,7 +492,7 @@ const API_ENDPOINTS = {
     FORNECEDOR_EDITAR: (id) => `${URL_ADMIN}/administracao/fornecedor/${id}/editar`,
     FORNECEDOR_BUSCAR_CPF: `${URL_ADMIN}/administracao/fornecedor/buscar-cpf`,
     CNPJ_BUSCA: `${URL_PUBLICO}/cnpjbusca`
-};
+}
 
 const TELEFONE_PADRAO = {
     tipo: 'whatsapp',
@@ -477,7 +500,7 @@ const TELEFONE_PADRAO = {
     numero: '',
     ramal: '',
     detalhe: ''
-};
+}
 
 export default {
     name: 'FornecedoresComponent',
@@ -520,15 +543,15 @@ export default {
                 servicosDelete: [],
                 anexos: [],
                 anexosDel: [],
-                telefones: [{...TELEFONE_PADRAO}],
+                telefones: [{ ...TELEFONE_PADRAO }],
                 telefonesDelete: []
             },
             controle: {
                 carregando: false,
                 dados: {
-                    campoBusca: "",
-                    campoTipo: "",
-                    campoStatus: ""
+                    campoBusca: '',
+                    campoTipo: '',
+                    campoStatus: ''
                 }
             },
             lista: [],
@@ -547,241 +570,238 @@ export default {
                 cep: '',
                 data_inicio: ''
             }
-        };
+        }
     },
     mounted() {
-        this.formDefault = _.cloneDeep(this.form);
-        this.atualizar();
+        this.formDefault = _.cloneDeep(this.form)
+        this.atualizar()
     },
     methods: {
         validarCnpj() {
-            const cnpj = this.form.cnpj.replace(/[^\d]/g, '');
+            const cnpj = this.form.cnpj.replace(/[^\d]/g, '')
             if (cnpj.length !== 14) {
-                this.erros.cnpj = 'CNPJ inválido';
-                return false;
+                this.erros.cnpj = 'CNPJ inválido'
+                return false
             }
-            this.erros.cnpj = '';
-            return true;
+            this.erros.cnpj = ''
+            return true
         },
 
         validarCpf() {
-            const cpf = this.form.cpf.replace(/[^\d]/g, '');
+            const cpf = this.form.cpf.replace(/[^\d]/g, '')
             if (cpf.length !== 11) {
-                this.erros.cpf = 'CPF inválido';
-                return false;
+                this.erros.cpf = 'CPF inválido'
+                return false
             }
-            this.erros.cpf = '';
-            return true;
+            this.erros.cpf = ''
+            return true
         },
 
         validarCampo(campo, minLength) {
-            const valor = this.form[campo];
+            const valor = this.form[campo]
             if (!valor || valor.length < minLength) {
-                this.erros[campo] = `Campo deve ter no mínimo ${minLength} caracteres`;
-                return false;
+                this.erros[campo] = `Campo deve ter no mínimo ${minLength} caracteres`
+                return false
             }
-            this.erros[campo] = '';
-            return true;
+            this.erros[campo] = ''
+            return true
         },
 
         validarEmail() {
-            const email = this.form.email;
-            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const email = this.form.email
+            const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
             if (!email || !regex.test(email)) {
-                this.erros.email = 'Email inválido';
-                return false;
+                this.erros.email = 'Email inválido'
+                return false
             }
-            this.erros.email = '';
-            return true;
+            this.erros.email = ''
+            return true
         },
 
         validarTelefone() {
-            const telefone = this.form.telefones[0].numero.replace(/[^\d]/g, '');
+            const telefone = this.form.telefones[0].numero.replace(/[^\d]/g, '')
             if (telefone.length < 10) {
-                this.erros.telefone = 'Telefone inválido';
-                return false;
+                this.erros.telefone = 'Telefone inválido'
+                return false
             }
-            this.erros.telefone = '';
-            return true;
+            this.erros.telefone = ''
+            return true
         },
 
         validarCep() {
-            const cep = this.form.cep.replace(/[^\d]/g, '');
+            const cep = this.form.cep.replace(/[^\d]/g, '')
             if (cep.length !== 8) {
-                this.erros.cep = 'CEP inválido';
-                return false;
+                this.erros.cep = 'CEP inválido'
+                return false
             }
-            this.erros.cep = '';
-            return true;
+            this.erros.cep = ''
+            return true
         },
 
         validarData() {
-            const data = this.form.data_inicio;
+            const data = this.form.data_inicio
             if (!data || !moment(data, 'DD/MM/YYYY').isValid()) {
-                this.erros.data_inicio = 'Data inválida';
-                return false;
+                this.erros.data_inicio = 'Data inválida'
+                return false
             }
-            this.erros.data_inicio = '';
-            return true;
+            this.erros.data_inicio = ''
+            return true
         },
 
         validarFormulario() {
-            let valido = true;
-            
+            let valido = true
+
             if (this.form.tipo_pessoa === 'pessoa_jurídica') {
-                valido = this.validarCnpj() && valido;
+                valido = this.validarCnpj() && valido
             } else {
-                valido = this.validarCpf() && valido;
+                valido = this.validarCpf() && valido
             }
-            
-            valido = this.validarCampo('nome', 3) && valido;
-            valido = this.validarEmail() && valido;
-            valido = this.validarTelefone() && valido;
-            valido = this.validarCep() && valido;
-            valido = this.validarData() && valido;
+
+            valido = this.validarCampo('nome', 3) && valido
+            valido = this.validarEmail() && valido
+            valido = this.validarTelefone() && valido
+            valido = this.validarCep() && valido
+            valido = this.validarData() && valido
 
             if (!valido) {
-                this.mostraErro('', 'Verificar os erros');
-                return false;
+                this.mostraErro('', 'Verificar os erros')
+                return false
             }
 
             if (this.form.telefones.length === 0) {
-                this.mostraErro('', 'Por favor insira um Telefone');
-                return false;
+                this.mostraErro('', 'Por favor insira um Telefone')
+                return false
             }
 
-            return true;
+            return true
         },
 
         async cadastrar() {
             try {
-                if (!this.validarFormulario()) return;
-                
-                this.preloadAjax = true;
-                const response = await axios.post(API_ENDPOINTS.FORNECEDOR, this.form);
-                
+                if (!this.validarFormulario()) return
+
+                this.preloadAjax = true
+                const response = await axios.post(API_ENDPOINTS.FORNECEDOR, this.form)
+
                 if (response.status === 201) {
-                    this.cadastrado = true;
-                    this.atualizar();
-                    this.mostraSucesso('Fornecedor cadastrado com sucesso!', 'Sucesso');
+                    this.cadastrado = true
+                    this.atualizar()
+                    this.mostraSucesso('Fornecedor cadastrado com sucesso!', 'Sucesso')
                 }
             } catch (error) {
-                this.tratarErro(error, 'Erro ao cadastrar fornecedor');
+                this.tratarErro(error, 'Erro ao cadastrar fornecedor')
             } finally {
-                this.preloadAjax = false;
+                this.preloadAjax = false
             }
         },
 
         async alterar() {
             try {
-                if (!this.validarFormulario()) return;
-                
-                this.form._method = 'PUT';
-                this.preloadAjax = true;
-                
-                await axios.put(`${API_ENDPOINTS.FORNECEDOR}/${this.form.id}`, this.form);
-                
-                this.atualizado = true;
-                this.atualizar();
-                this.mostraSucesso('Fornecedor atualizado com sucesso!', 'Sucesso');
+                if (!this.validarFormulario()) return
+
+                this.form._method = 'PUT'
+                this.preloadAjax = true
+
+                await axios.put(`${API_ENDPOINTS.FORNECEDOR}/${this.form.id}`, this.form)
+
+                this.atualizado = true
+                this.atualizar()
+                this.mostraSucesso('Fornecedor atualizado com sucesso!', 'Sucesso')
             } catch (error) {
-                this.tratarErro(error, 'Erro ao alterar fornecedor');
+                this.tratarErro(error, 'Erro ao alterar fornecedor')
             } finally {
-                this.preloadAjax = false;
+                this.preloadAjax = false
             }
         },
 
         async apagar() {
             try {
-                this.form._method = 'DELETE';
-                this.preloadAjax = true;
-                
-                await axios.delete(`${API_ENDPOINTS.FORNECEDOR}/${this.form.id}`, this.form);
-                
-                this.apagado = true;
-                this.atualizar();
-                this.mostraSucesso('Fornecedor excluído com sucesso!', 'Sucesso');
+                this.form._method = 'DELETE'
+                this.preloadAjax = true
+
+                await axios.delete(`${API_ENDPOINTS.FORNECEDOR}/${this.form.id}`, this.form)
+
+                this.apagado = true
+                this.atualizar()
+                this.mostraSucesso('Fornecedor excluído com sucesso!', 'Sucesso')
             } catch (error) {
-                this.tratarErro(error, 'Erro ao apagar fornecedor');
+                this.tratarErro(error, 'Erro ao apagar fornecedor')
             } finally {
-                this.preloadAjax = false;
+                this.preloadAjax = false
             }
         },
 
         formNovo() {
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.editando = false;
-            this.tituloJanela = "Cadastrando Fornecedor";
-            formReset();
-            setupCampo();
-            this.form = _.cloneDeep(this.formDefault);
-            this.leitura = false;
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
+            this.tituloJanela = 'Cadastrando Fornecedor'
+            formReset()
+            setupCampo()
+            this.form = _.cloneDeep(this.formDefault)
+            this.leitura = false
         },
 
         async formAlterar(id) {
             try {
-                this.formNovo();
-                this.preloadAjax = true;
-                
-                const response = await axios.get(API_ENDPOINTS.FORNECEDOR_EDITAR(id));
-                Object.assign(this.form, response.data);
-                
-                this.editando = true;
-                setupCampo();
+                this.formNovo()
+                this.preloadAjax = true
+
+                const response = await axios.get(API_ENDPOINTS.FORNECEDOR_EDITAR(id))
+                Object.assign(this.form, response.data)
+
+                this.editando = true
+                setupCampo()
             } catch (error) {
-                this.tratarErro(error, 'Erro ao carregar dados do fornecedor');
+                this.tratarErro(error, 'Erro ao carregar dados do fornecedor')
             } finally {
-                this.preloadAjax = false;
+                this.preloadAjax = false
             }
         },
 
         async verificaCnpj() {
-            if (this.editando || this.form.cnpj.length !== 18) return;
-            
+            if (this.editando || this.form.cnpj.length !== 18) return
+
             try {
-                const numsStr = this.form.cnpj.replace(/[^0-9]/g, '');
-                const cnpj = parseInt(numsStr);
-                
-                this.preloadCnpj = true;
-                const response = await axios.post(API_ENDPOINTS.CNPJ_BUSCA, { cnpj });
-                
+                const numsStr = this.form.cnpj.replace(/[^0-9]/g, '')
+                const cnpj = parseInt(numsStr)
+
+                this.preloadCnpj = true
+                const response = await axios.post(API_ENDPOINTS.CNPJ_BUSCA, { cnpj })
+
                 if (response.data.status === 'OK') {
-                    this.preencherDadosCnpj(response.data);
+                    this.preencherDadosCnpj(response.data)
                 } else {
-                    this.limparDadosCnpj();
+                    this.limparDadosCnpj()
                 }
             } catch (error) {
-                this.tratarErro(error, 'Erro ao consultar CNPJ');
+                this.tratarErro(error, 'Erro ao consultar CNPJ')
             } finally {
-                this.preloadCnpj = false;
+                this.preloadCnpj = false
             }
         },
 
         preencherDadosCnpj(data) {
-            this.form.razao_social = data.nome;
-            this.form.nome_fantasia = data.fantasia;
-            this.form.cep = replaceAll(data.cep, '.', '');
-            this.form.logradouro = data.logradouro;
-            this.form.end_numero = data.numero;
-            this.form.complemento = data.complemento;
-            this.form.bairro = data.bairro;
-            this.form.municipio = data.municipio;
-            this.form.uf = data.uf;
+            this.form.razao_social = data.nome
+            this.form.nome_fantasia = data.fantasia
+            this.form.cep = replaceAll(data.cep, '.', '')
+            this.form.logradouro = data.logradouro
+            this.form.end_numero = data.numero
+            this.form.complemento = data.complemento
+            this.form.bairro = data.bairro
+            this.form.municipio = data.municipio
+            this.form.uf = data.uf
         },
 
         limparDadosCnpj() {
-            const campos = [
-                'razao_social', 'nome_fantasia', 'cep', 'logradouro',
-                'end_numero', 'complemento', 'bairro', 'municipio', 'uf'
-            ];
-            
-            campos.forEach(campo => this.form[campo] = '');
+            const campos = ['razao_social', 'nome_fantasia', 'cep', 'logradouro', 'end_numero', 'complemento', 'bairro', 'municipio', 'uf']
+
+            campos.forEach((campo) => (this.form[campo] = ''))
         },
 
         tratarErro(error, mensagemPadrao) {
-            console.error(error);
-            this.mostraErro(error.response?.data || { message: mensagemPadrao });
+            console.error(error)
+            this.mostraErro(error.response?.data || { message: mensagemPadrao })
         },
 
         addLIServicoFornecedor() {
@@ -799,42 +819,42 @@ export default {
                 ativo: true,
                 anexos: [],
                 anexosDel: []
-            };
-            this.form.servicos.unshift(obj);
+            }
+            this.form.servicos.unshift(obj)
         },
 
         removerLIServicoFornecedor(index) {
             if (this.editando) {
-                this.form.servicosDelete.push(this.form.servicos[index].id);
+                this.form.servicosDelete.push(this.form.servicos[index].id)
             }
-            this.form.servicos.splice(index, 1);
+            this.form.servicos.splice(index, 1)
         },
 
         carregou(dados) {
-            this.lista = dados.itens;
-            this.listaServicos = dados.servicos;
-            this.listaAreas = dados.areas;
-            this.controle.carregando = false;
+            this.lista = dados.itens
+            this.listaServicos = dados.servicos
+            this.listaAreas = dados.areas
+            this.controle.carregando = false
         },
 
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
 
         atualizar() {
             if (this.$refs.componente) {
-                this.$refs.componente.atual = 1;
-                this.$refs.componente.buscar();
+                this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+                this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             }
         },
 
         janelaConfirmar(id) {
-            this.form.id = id;
-            this.apagado = false;
-            this.preloadAjax = false;
+            this.form.id = id
+            this.apagado = false
+            this.preloadAjax = false
         }
     }
-};
+}
 </script>
 
 <style scoped>
@@ -882,4 +902,4 @@ export default {
     font-size: 80%;
     margin-top: 0.25rem;
 }
-</style> 
+</style>

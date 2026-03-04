@@ -2,7 +2,7 @@
     <div>
         <fieldset class="mt-2">
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="$refs.componente.buscar()">
+            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-6">
                     <div class="form-check" style="margin-bottom: -11px;">
                         <input type="checkbox" class="form-check-input" @change="buscarDados()"

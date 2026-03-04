@@ -6,7 +6,7 @@
 @stop
 @section('content')
     <modal id="janelaPortaria" titulo="Atualizar dados" :size="80">
-        <template slot="conteudo">
+        <template #conteudo>
             <div class="alert alert-success text-center" v-show="form.atualizado">
                 <h4><i class="icon fa fa-check"></i> Dados atualizados com sucesso!</h4>
             </div>
@@ -185,7 +185,7 @@
 
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-primary" v-show="!form.atualizado && !form.preload"
                     @click="salvar">
                 <i class="fa fa-save"></i> Salvar

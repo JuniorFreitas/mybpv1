@@ -9,7 +9,7 @@
            :fechar="!atualizando"
            label-fechar="NÃO"
            id="janelaRecusar">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-if="atualizando"></preload>
             <div v-if="objopen" class="text-center">
                 <h5>Você tem certeza que deseja recusar a carta oferta de <br>
@@ -21,7 +21,7 @@
                 {{--                </div>--}}
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-outline-danger" v-if="!atualizando"
                     @click.prevent="responder(objopen,'Recusado pelo RH')"
             > sim, recusar
@@ -30,7 +30,7 @@
     </modal>
 
     <modal id="janelaVisualizar" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload class=" mt-2 text-center" v-if="preload"></preload>
 
             <div class="row" v-if="objopen">
@@ -63,7 +63,7 @@
                     :urldownload="objopen.anexo.urlDownload" :url="objopen.anexo.url"></visualizador-pdf>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-primary"
                     v-if="objopen?.status === 'Aguardando RH' && !atualizando"
                     @click.prevent="responder(objopen,'Aceito pelo RH')">

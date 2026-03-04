@@ -8,7 +8,7 @@
     <input type="hidden" id="cliente_id" value="{{Request::has('cliente_id') ? Request::query('cliente_id') : null}}">
 
     <modal id="confirmacaoGeracao" titulo="Confirmação de impressão de Certificados">
-        <template slot="conteudo">
+        <template #conteudo>
             <div class="form-check">
                 <input type="checkbox" v-model="nr33" class="form-check-input" id="checknr33">
                 <label class="form-check-label" for="checknr33">NR-33</label>
@@ -18,7 +18,7 @@
                 <label class="form-check-label" for="checknr35">NR-35</label>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <form target="_blank" action="{{ route('g.certificados.certificadoPdf') }}" method="post">
                 @csrf
                 <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
@@ -31,7 +31,7 @@
         </template>
     </modal>
     <modal id="janelaTreinamento" titulo="Certificado" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
             <div class="alert alert-success text-center" v-show="cadastrado">
                 <h4><i class="icon fa fa-check"></i> Dados para o certificado atualizado com sucesso</h4>
             </div>
@@ -105,7 +105,7 @@
             </div>
 
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-primary" @click="salvar"
                     v-if="!preload && (!cadastrado && !atualizado)">
                 <i class="fa fa-save"></i> Salvar

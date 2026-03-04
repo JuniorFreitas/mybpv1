@@ -224,15 +224,15 @@
 <script src="{{ mix('js/app.js')}}"></script>
 <script src="{{mix('js/funcoes.js')}}"></script>
 <script>
-    const app = new Vue({
-        el: '#app',
-        data: {
-            mostraSenha: false,
-            recuperaSenha: false,
-
-            form: {
-                login: '',
-            },
+    const app = Vue.createApp({
+        data() {
+            return {
+                mostraSenha: false,
+                recuperaSenha: false,
+                form: {
+                    login: ''
+                }
+            }
         },
         methods: {
             solicitaSenha() {
@@ -253,8 +253,13 @@
                     });
             },
 
-        },
-    });
+        }
+    })
+
+    if (window.registerGlobals) {
+        window.registerGlobals(app)
+    }
+    app.mount('#app')
 
     function removeEspaco(campo) {
         campo.value = campo.value.replace(/\s/g, '');

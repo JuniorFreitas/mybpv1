@@ -5,7 +5,7 @@
 @endsection
 @section('content')
     <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
 
             <span v-show="preloadAjax"><preload></preload></span>
             <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -110,7 +110,7 @@
                 </fieldset>
             </form>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && !preloadAjax"
                     @click="alterar()">
                 Alterar
@@ -122,14 +122,14 @@
         </template>
     </modal>
     <modal id="janelaConfirmar" titulo="Apagar Usuário">
-        <template slot="conteudo">
+        <template #conteudo>
             <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i>Aguarde...</span>
             <div class="alert alert-success alert-dismissible" v-show="apagado">
                 <h4><i class="icon fa fa-check"></i>Usuário apagado com sucesso!</h4>
             </div>
             <h4 v-show="!apagado">Tem certeza que deseja apagar este usuário?</h4>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
         </template>
     </modal>

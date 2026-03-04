@@ -6,7 +6,7 @@
 @section('content')
 
     <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
 
             <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</span>
             <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -30,7 +30,7 @@
                 </div>
             </form>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado" @click="alterar()">
                 Alterar
             </button>
@@ -41,14 +41,14 @@
     </modal>
 
     <modal id="janelaConfirmar" titulo="Apagar habilidades">
-        <template slot="conteudo">
+        <template #conteudo>
             <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i>Aguarde...</span>
             <div class="alert alert-success alert-dismissible" v-show="apagado">
                 <h4><i class="icon fa fa-check"></i>Habilidade apagada com sucesso!</h4>
             </div>
             <h4 class="text-center" v-show="!apagado">Tem certeza que deseja apagar esta habilidade?</h4>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
         </template>
     </modal>

@@ -4,7 +4,7 @@
 @section('content')
     {{--Janela confirmar pagar--}}
     <modal id="janelaConfirmar" titulo="Apagar escala">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-show="formEscala.preload" label="Aguarde..."></preload>
             <div class="alert alert-success alert-dismissible" v-show="formEscala.save">
                 <h4><i class="icon fa fa-check"></i> Escala apagada com sucesso!</h4>
@@ -13,14 +13,14 @@
                 <span class="text-danger">Funcionários que usam esta escala não poderão registrar ponto.</span></h4>
 
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-sm btn-danger" @click="apagarEscala()" v-show="!formEscala.save && !formEscala.preload">Apagar</button>
         </template>
     </modal>
 
     <!--Janela de Associar Escala-->
     <modal id="janelaAssociarEscala"  titulo="Associar escalas" :fechar="!formEscalaFuncionarios.preload" @fechou="resetFuncionariosSelecionados">
-        <template slot="conteudo">
+        <template #conteudo>
             <h4 class="text-success text-center" v-if="!formEscalaFuncionarios.preload && formEscalaFuncionarios.update">
                 <i class="fas fa-check fa-2x"></i><br>
                 Escala
@@ -49,7 +49,7 @@
             </div>
 
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button :disabled="listaTodasEscalas.length=== 0" v-if="!formEscalaFuncionarios.preload && !formEscalaFuncionarios.update" class="btn btn-sm btn-success" type="button" @click="assosicarEscala">
                 <i class="fas fa-link"></i> Aplicar
             </button>
@@ -58,7 +58,7 @@
 
     <!--Janela Escalas-->
     <modal id="janelaFormEscalas"  :titulo="formEscala.titulo" :fechar="!formEscala.preload" :size="90">
-        <template slot="conteudo">
+        <template #conteudo>
             <h4 class="text-success text-center" v-if="!formEscala.preload && formEscala.save">
                 <i class="fas fa-check fa-2x"></i><br>
                 Escala
@@ -87,7 +87,7 @@
             </div>
 
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button v-if="!formEscala.preload && !formEscala.save" class="btn btn-sm btn-success" type="button" @click="salvarEscala">
                 <span v-if="formEscala.editando">Alterar</span>
                 <span v-else> Cadastrar </span>
@@ -197,9 +197,11 @@
                     <td data-label="nome" >@{{funcionario.nome}}</td>
 {{--                    <td data-label="empresa">@{{funcionario.empresa.nome}}</td>--}}
                     <td data-label="escalametro">
-                        <span class="badge badge-secondary ml-1 p-1" v-if="funcionario.escalas_funcionario.length" v-for="escalas in funcionario.escalas_funcionario">
-                            @{{escalas.descricao}}
-                        </span>
+                        <template v-if="funcionario.escalas_funcionario.length">
+                            <span class="badge badge-secondary ml-1 p-1" v-for="escalas in funcionario.escalas_funcionario">
+                                @{{escalas.descricao}}
+                            </span>
+                        </template>
                     </td>
                 </tr>
                 </tbody>

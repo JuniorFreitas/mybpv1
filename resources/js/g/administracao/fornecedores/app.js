@@ -1,3 +1,5 @@
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
 import telefone from '../../../components/Telefones'
 import endereco from '../../../components/Endereco'
 import datepicker from '../../../components/DatePicker'
@@ -19,85 +21,86 @@ const TELEFONE_PADRAO = {
     detalhe: ''
 }
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     components: {
         telefone,
         endereco,
         datepicker,
         upload
     },
-    data: {
-        tituloJanela: 'Cadastrando Fornecedor',
-        preloadAjax: false,
-        editando: false,
-        apagado: false,
+    data() {
+        return {
+            tituloJanela: 'Cadastrando Fornecedor',
+            preloadAjax: false,
+            editando: false,
+            apagado: false,
 
-        preloadCnpj: false,
+            preloadCnpj: false,
 
-        pages: 10,
+            pages: 10,
 
-        form: {
-            tipo: 'Fornecedor',
-            cnpj: '',
-            cpf: '',
-            nome: '',
-            tipo_pessoa: 'pessoa_jurídica',
-            razao_social: '',
-            nome_fantasia: '',
-            cep: '',
-            logradouro: '',
-            numero: '',
-            complemento: '',
-            bairro: '',
-            municipio: '',
-            uf: '',
-            contato: '',
-            email: '',
-            ativo: true,
+            form: {
+                tipo: 'Fornecedor',
+                cnpj: '',
+                cpf: '',
+                nome: '',
+                tipo_pessoa: 'pessoa_jurídica',
+                razao_social: '',
+                nome_fantasia: '',
+                cep: '',
+                logradouro: '',
+                numero: '',
+                complemento: '',
+                bairro: '',
+                municipio: '',
+                uf: '',
+                contato: '',
+                email: '',
+                ativo: true,
 
-            servicos: [],
-            servicosDelete: [],
+                servicos: [],
+                servicosDelete: [],
 
-            anexos: [],
-            anexosDel: [],
+                anexos: [],
+                anexosDel: [],
 
-            telefones: [
-                {
-                    tipo: 'whatsapp',
-                    pais: 55,
-                    numero: '',
-                    ramal: '',
-                    detalhe: '',
-                    principal: true
+                telefones: [
+                    {
+                        tipo: 'whatsapp',
+                        pais: 55,
+                        numero: '',
+                        ramal: '',
+                        detalhe: '',
+                        principal: true
+                    }
+                ],
+                telefonesDelete: []
+            },
+
+            urlAnexoUpload: `${URL_ADMIN}/administracao/fornecedor/uploadAnexos`,
+            anexoUploadAndamento: false,
+
+            urlAnexoServicoUpload: `${URL_ADMIN}/administracao/fornecedor/uploadAnexos`,
+            anexoServicoUploadAndamento: false,
+
+            formDefault: null,
+            campoNome: null,
+
+            cadastrado: false,
+            atualizado: false,
+            leitura: false,
+
+            lista: [],
+            listaServicos: [],
+            listaAreas: [],
+
+            controle: {
+                carregando: false,
+                dados: {
+                    campoBusca: '',
+                    campoTipo: '',
+                    campoStatus: ''
                 }
-            ],
-            telefonesDelete: []
-        },
-
-        urlAnexoUpload: `${URL_ADMIN}/administracao/fornecedor/uploadAnexos`,
-        anexoUploadAndamento: false,
-
-        urlAnexoServicoUpload: `${URL_ADMIN}/administracao/fornecedor/uploadAnexos`,
-        anexoServicoUploadAndamento: false,
-
-        formDefault: null,
-        campoNome: null,
-
-        cadastrado: false,
-        atualizado: false,
-        leitura: false,
-
-        lista: [],
-        listaServicos: [],
-        listaAreas: [],
-
-        controle: {
-            carregando: false,
-            dados: {
-                campoBusca: '',
-                campoTipo: '',
-                campoStatus: ''
             }
         }
     },
@@ -216,7 +219,7 @@ const app = new Vue({
         },
 
         marcaTelefonePrincial() {
-            if (this.form.telefones.length > 0 && !this.form.telefones.some(t => t.principal)) {
+            if (this.form.telefones.length > 0 && !this.form.telefones.some((t) => t.principal)) {
                 this.form.telefones[0].principal = true
             }
         },
@@ -314,16 +317,17 @@ const app = new Vue({
         },
 
         atualizar() {
-            this.$refs.componente.atual = 1
-            this.$refs.componente.buscar()
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         },
 
         verificaCpf() {
             if (!this.editando) {
-                axios.get(`${URL_ADMIN}/administracao/fornecedor/buscar-cpf?cpf=${this.form.cpf}`)
-                    .then(response => {
-                    })
+                axios.get(`${URL_ADMIN}/administracao/fornecedor/buscar-cpf?cpf=${this.form.cpf}`).then((response) => {})
             }
         }
     }
 })
+
+registerGlobals(app)
+app.mount('#app')

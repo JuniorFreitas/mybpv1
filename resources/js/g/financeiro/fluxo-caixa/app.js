@@ -1,22 +1,21 @@
-import fluxoCaixa from "../../../components/financeiro/FluxoCaixa"
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import fluxoCaixa from '../../../components/financeiro/FluxoCaixa'
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     components: {
-        'fluxo-caixa': fluxoCaixa,
+        'fluxo-caixa': fluxoCaixa
     },
-    data: {
-        preload: false,
-        conta_id:null,
-        numero_conta:''
-
+    data() {
+        return {
+            preload: false,
+            conta_id: null,
+            numero_conta: ''
+        }
     },
-    mounted() {
+    mounted() {},
+    methods: {}
+})
 
-    },
-    methods: {
-    }
-
-
-});
-
+registerGlobals(app)
+app.mount('#app')

@@ -1,132 +1,143 @@
 <template>
     <div>
-        <h5 class='alert alert-warning text-center'>
-            ATENÇÃO! E-mail inválido ou inexistente, desclassificará o candidato.
-            Só altere se necessário, este e-mail será usado para entrar na plataforma.
+        <h5 class="alert alert-warning text-center">
+            ATENÇÃO! E-mail inválido ou inexistente, desclassificará o candidato. Só altere se necessário, este e-mail será usado para entrar na plataforma.
         </h5>
         <fieldset>
             <legend>Dados Pessoais</legend>
-            <div class='row'>
-                <div class='col-12 col-sm-6 col-lg-6 col-xl-6'>
-                    <div class='form-group'>
+            <div class="row">
+                <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
+                    <div class="form-group">
                         <label>Nome</label>
-                        <input type='text' class='form-control' v-model='form.nome'
-                               placeholder='Nome'
-                               autocomplete='mastertag' onblur='valida_campo_vazio(this,3)'>
+                        <input
+                            type="text"
+                            class="form-control"
+                            v-model="form.nome"
+                            placeholder="Nome"
+                            autocomplete="mastertag"
+                            onblur="valida_campo_vazio(this, 3)"
+                        />
                     </div>
                 </div>
 
-                <div class='col-12 col-sm-6 col-lg-6 col-xl-6'>
-                    <div class='form-group'>
+                <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
+                    <div class="form-group">
                         <label>CPF</label>
-                        <input type='text' class='form-control' v-model='form.cpf'
-                               placeholder='CPF'
-                               :disabled='form.cpf.length > 0'
-                               autocomplete='mastertag' v-mascara:cpf onblur='valida_cpf_vazio(this)'>
+                        <input
+                            type="text"
+                            class="form-control"
+                            v-model="form.cpf"
+                            placeholder="CPF"
+                            :disabled="form.cpf.length > 0"
+                            autocomplete="mastertag"
+                            v-mascara:cpf
+                            onblur="valida_cpf_vazio(this)"
+                        />
                     </div>
                 </div>
 
-                <div class='col-12 col-sm-6 col-lg-6 col-xl-6'>
-                    <div class='form-group'>
+                <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
+                    <div class="form-group">
                         <label>RG</label>
-                        <input type='text' class='form-control' v-model='form.rg'
-                               placeholder='RG'
-                               autocomplete='mastertag' v-mascara:numero>
+                        <input type="text" class="form-control" v-model="form.rg" placeholder="RG" autocomplete="mastertag" v-mascara:numero />
                     </div>
                 </div>
 
-                <div class='col-12 col-sm-6 col-lg-6 col-xl-6'>
-                    <div class='form-group'>
+                <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
+                    <div class="form-group">
                         <label>Orgão Expeditor (RG)</label>
-                        <input type='text' class='form-control' v-model='form.orgao_expeditor'
-                               placeholder='Orgão'
-                               autocomplete='mastertag'>
+                        <input type="text" class="form-control" v-model="form.orgao_expeditor" placeholder="Orgão" autocomplete="mastertag" />
                     </div>
                 </div>
 
-                <div class='col-12 col-sm-6 col-lg-6 col-xl-6'>
-                    <div class='form-group'>
+                <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
+                    <div class="form-group">
                         <label>CNH</label>
-                        <input type='text' class='form-control' v-model='form.cnh'
-                               placeholder='Tipo da CNH'
-                               autocomplete='mastertag'>
+                        <input type="text" class="form-control" v-model="form.cnh" placeholder="Tipo da CNH" autocomplete="mastertag" />
                     </div>
                 </div>
 
-                <div class='col-12 col-sm-6 col-lg-6 col-xl-6'>
-                    <div class='form-group'>
+                <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
+                    <div class="form-group">
                         <label>Nascimento</label>
-                        <input type='text' class='form-control' v-model='form.nascimento'
-                               placeholder='Ex: 10/10/2010'
-                               :disabled='possuiCadastro'
-                               v-mascara:data
-                               autocomplete='mastertag' onblur='valida_data_vazio(this)'>
+                        <input
+                            type="text"
+                            class="form-control"
+                            v-model="form.nascimento"
+                            placeholder="Ex: 10/10/2010"
+                            :disabled="possuiCadastro"
+                            v-mascara:data
+                            autocomplete="mastertag"
+                            onblur="valida_data_vazio(this)"
+                        />
                     </div>
                 </div>
 
-                <div class='col-12 col-sm-6 col-lg-6 col-xl-6'>
-                    <div class='form-group'>
+                <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
+                    <div class="form-group">
                         <label>Sexo</label>
-                        <select class='form-control' v-model='form.sexo'
-                                onchange='valida_campo_vazio(this,1)'
-                                onblur='valida_campo_vazio(this,1)'>
-                            <option value=''>Selecione</option>
-                            <option value='Masculino'>Masculino</option>
-                            <option value='Feminino'>Feminino</option>
+                        <select class="form-control" v-model="form.sexo" onchange="valida_campo_vazio(this, 1)" onblur="valida_campo_vazio(this, 1)">
+                            <option value="">Selecione</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Feminino">Feminino</option>
                         </select>
                     </div>
                 </div>
 
-                <div class='col-sm-6 col-lg-6 col-xl-6'>
-                    <div class='form-group'>
+                <div class="col-sm-6 col-lg-6 col-xl-6">
+                    <div class="form-group">
                         <label>Nome do pai</label>
-                        <input type='text' class='form-control' v-model='form.filiacao_pai'
-                               placeholder='Nome'
-                               autocomplete='mastertag'>
+                        <input type="text" class="form-control" v-model="form.filiacao_pai" placeholder="Nome" autocomplete="mastertag" />
                     </div>
                 </div>
 
-                <div class='col-sm-6 col-lg-6 col-xl-6'>
-                    <div class='form-group'>
+                <div class="col-sm-6 col-lg-6 col-xl-6">
+                    <div class="form-group">
                         <label>Nome da mãe</label>
-                        <input type='text' class='form-control' v-model='form.filiacao_mae'
-                               onblur='valida_campo_vazio(this,3)'
-                               placeholder='Nome'
-                               autocomplete='mastertag'>
+                        <input
+                            type="text"
+                            class="form-control"
+                            v-model="form.filiacao_mae"
+                            onblur="valida_campo_vazio(this, 3)"
+                            placeholder="Nome"
+                            autocomplete="mastertag"
+                        />
                     </div>
                 </div>
 
-                <div class='col-12'></div>
+                <div class="col-12"></div>
 
-                <div class='col-12 col-sm-6 col-lg-6 col-xl-6'>
-                    <div class='form-group'>
+                <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
+                    <div class="form-group">
                         <label>E-mail</label>
-                        <input type='text' class='form-control' v-model='form.email'
-                               placeholder='Informe seu melhor e-mail'
-                               autocomplete='mastertag' onblur='validaEmailVazio(this)'>
+                        <input
+                            type="text"
+                            class="form-control"
+                            v-model="form.email"
+                            placeholder="Informe seu melhor e-mail"
+                            autocomplete="mastertag"
+                            onblur="validaEmailVazio(this)"
+                        />
                     </div>
                 </div>
-
             </div>
         </fieldset>
 
         <fieldset>
             <legend>Endereço</legend>
-            <div class='row'>
-                <div class='col-12 col-sm-12 col-lg-12 col-xl-12'>
-                    <endereco :model='form'></endereco>
+            <div class="row">
+                <div class="col-12 col-sm-12 col-lg-12 col-xl-12">
+                    <endereco :model="form"></endereco>
                 </div>
             </div>
         </fieldset>
 
-        <fieldset class='table-warning'>
+        <fieldset class="table-warning">
             <legend>Contato</legend>
-            <label class='text-danger'>Adicionar no minimo DOIS contatos, pelo menos UM sendo
-                WhatsApp</label>
-            <div class='row'>
-                <div class='col-12 col-sm-12 col-lg-12 col-xl-12'>
-                    <telefone :model='form.telefones' :model-delete='form.telefonesDelete' :pais='false'
-                              :ramal='false'></telefone>
+            <label class="text-danger">Adicionar no minimo DOIS contatos, pelo menos UM sendo WhatsApp</label>
+            <div class="row">
+                <div class="col-12 col-sm-12 col-lg-12 col-xl-12">
+                    <telefone :model="form.telefones" :model-delete="form.telefonesDelete" :pais="false" :ramal="false"></telefone>
                 </div>
             </div>
         </fieldset>
@@ -189,25 +200,29 @@ export default {
                 cid: '',
                 viajar: '',
 
-                qualificacoes: [{
-                    nova: '',
-                    nome: '',
-                    instituicao: '',
-                    mes_conclusao: '01',
-                    ano_conclusao: '2019'
-                }],
+                qualificacoes: [
+                    {
+                        nova: '',
+                        nome: '',
+                        instituicao: '',
+                        mes_conclusao: '01',
+                        ano_conclusao: '2019'
+                    }
+                ],
                 qualificacoesDelete: [],
 
-                experiencias: [{
-                    nova: '',
-                    empresa: '',
-                    cargo: '',
-                    principais_atv: '',
-                    data_inicio: '',
-                    data_fim: '',
-                    referencia_nome: '',
-                    referencia_telefone: ''
-                }],
+                experiencias: [
+                    {
+                        nova: '',
+                        empresa: '',
+                        cargo: '',
+                        principais_atv: '',
+                        data_inicio: '',
+                        data_fim: '',
+                        referencia_nome: '',
+                        referencia_telefone: ''
+                    }
+                ],
                 experienciasDelete: [],
 
                 telefones: [
@@ -241,7 +256,7 @@ export default {
     <div id="componenteVagasAbertas">
 
         <modal id="janelaBloqueiaCandidato" titulo="Candidatar a vaga" v-show="bloqueado">
-            <template slot="conteudo">
+            <template #conteudo>
                 <div>
                     <h5>OPS... Você ja está cadastrado nesta vaga.</h5>
                 </div>
@@ -249,7 +264,7 @@ export default {
         </modal>
 
         <modal id="janelaConfirmar" :fechar="false" titulo="Confirmação">
-            <template slot="conteudo">
+            <template #conteudo>
                 <div>
                     <h5>Você tem certeza que deseja cadastrar seu curriculo SEM EXPERIÊNCIA?</h5>
                     <div class="text-center">
@@ -260,9 +275,9 @@ export default {
             </template>
         </modal>
 
-        <modal id="janelaPrimeiro" titulo="Cadastro" v-if="!autenticado" :size="90"
-               :fechar="!autenticado">
-            <fieldset slot="conteudo">
+        <modal id="janelaPrimeiro" titulo="Cadastro" v-if="!autenticado" :size="90" :fechar="!autenticado">
+            <template #conteudo>
+                <fieldset>
                 <legend>Informe</legend>
                 <div class="form-group">
                     <label>Nome Completo</label>
@@ -303,11 +318,13 @@ export default {
                 <button class="btn btn-primary btn-block" :disabled="formAcesso.termos === false"
                         @click="cadastroPrimeiro">Cadastrar
                 </button>
-            </fieldset>
+                </fieldset>
+            </template>
         </modal>
 
         <modal id="janelaEntrar" titulo="Entrar" :size="90" :fechar="!autenticado">
-            <fieldset slot="conteudo">
+            <template #conteudo>
+                <fieldset>
                 <legend>Informe</legend>
                 <div class="form-group">
                     <label>Email</label>
@@ -331,12 +348,13 @@ export default {
                        @click="formPrimeiro"
                        data-target="#janelaPrimeiro">Primeiro Acesso</a>
                 </div>
-            </fieldset>
+                </fieldset>
+            </template>
         </modal>
 
         <modal id="janelaCadastrar" v-show="!bloqueado && id > 0" :titulo="titulo_vaga" :fechar="!preloadAjax"
                :size="90">
-            <template slot="conteudo">
+            <template #conteudo>
 
                 <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</span>
 
@@ -808,7 +826,7 @@ export default {
                     </form>
                 </div>
             </template>
-            <template slot="rodape">
+            <template #rodape>
                 <div v-show="autenticado && !preloadAjax">
                     <button type="button" class="btn btn-primary"
                             @click="cadastrar">
@@ -821,7 +839,7 @@ export default {
         <modal id="janelaBancoTalentos" v-show="autenticado && id > 0" titulo="Monte seu Currículo"
                :fechar="!preloadAjax"
                :size="90">
-            <template slot="conteudo">
+            <template #conteudo>
 
                 <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</span>
 
@@ -1252,7 +1270,7 @@ export default {
                     </form>
                 </div>
             </template>
-            <template slot="rodape">
+            <template #rodape>
                 <div v-show="autenticado && bancoTalento">
                     <button type="button" class="btn btn-primary"
                             @click="cadastrarBancoTalento">
@@ -1270,7 +1288,7 @@ export default {
                 </header>
 
                 <span v-show="preloadVagas"><i class="fa fa-spinner fa-pulse"></i> Carregando...</span>
-                <fieldset slot="conteudo" v-for="vaga in vagas" v-show="!preloadVagas">
+                <fieldset v-for="vaga in vagas" v-show="!preloadVagas">
                     <div class="card mb-3">
                         <div class="card-body">
                             <h5 class="card-title">{{ vaga.vaga.nome }}</h5>

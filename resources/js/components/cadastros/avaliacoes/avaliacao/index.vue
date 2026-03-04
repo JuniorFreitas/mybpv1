@@ -16,27 +16,29 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <label>Título</label>
-                                    <input v-model="form.titulo" class="form-control form-control-sm validacampo"
-                                           type="text"
-                                           placeholder="Informe o titulo da avaliação"
-                                           @keyup.prevent="valida_campo_vazio($event.target, 1);"
-                                           @blur.prevent="valida_campo_vazio($event.target, 1)"
-                                    >
+                                    <input
+                                        v-model="form.titulo"
+                                        class="form-control form-control-sm validacampo"
+                                        type="text"
+                                        placeholder="Informe o titulo da avaliação"
+                                        @keyup.prevent="valida_campo_vazio($event.target, 1)"
+                                        @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                    />
                                 </div>
                             </div>
                             <div class="col-lg-4">
                                 <div class="form-group">
                                     <label>Tipo de avaliação</label>
-                                    <select class="form-control form-control-sm validacampo"
-                                            v-model="form.avaliacao_tipo_id"
-                                            @change.prevent="valida_campo_vazio($event.target, 1);"
-                                            @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                    <select
+                                        class="form-control form-control-sm validacampo"
+                                        v-model="form.avaliacao_tipo_id"
+                                        @change.prevent="valida_campo_vazio($event.target, 1)"
+                                        @blur.prevent="valida_campo_vazio($event.target, 1)"
                                     >
                                         <option value="">Selecione ...</option>
                                         <option v-for="item in lista_avaliacoes_tipos" :value="item.id" :key="item.id">
                                             {{ item.nome }}
                                         </option>
-
                                     </select>
                                 </div>
                             </div>
@@ -49,20 +51,26 @@
                             <div class="col-lg-3">
                                 <div class="form-group">
                                     <label>Status</label>
-                                    <select class="form-control form-control-sm validacampo" v-model="form.status"
-                                            @change.prevent="valida_campo_vazio($event.target, 1);"
-                                            @blur.prevent="valida_campo_vazio($event.target, 1)">
+                                    <select
+                                        class="form-control form-control-sm validacampo"
+                                        v-model="form.status"
+                                        @change.prevent="valida_campo_vazio($event.target, 1)"
+                                        @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                    >
                                         <option value="">Selecione ...</option>
                                         <option v-for="item in lista_status" :value="item">{{ item }}</option>
-
                                     </select>
                                 </div>
                             </div>
                             <div class="col-lg-3">
                                 <div class="form-group">
                                     <label>Auto Avaliação</label>
-                                    <select class="form-control form-control-sm" onblur="valida_campo_vazio(this,1)"
-                                            onchange="valida_campo_vazio(this,1)" v-model="form.auto_avaliacao">
+                                    <select
+                                        class="form-control form-control-sm"
+                                        onblur="valida_campo_vazio(this, 1)"
+                                        onchange="valida_campo_vazio(this, 1)"
+                                        v-model="form.auto_avaliacao"
+                                    >
                                         <option :value="true">Sim</option>
                                         <option :value="false">Não</option>
                                     </select>
@@ -72,8 +80,12 @@
                             <div class="col-lg-3">
                                 <div class="form-group">
                                     <label>Ativo</label>
-                                    <select class="form-control form-control-sm" onblur="valida_campo_vazio(this,1)"
-                                            onchange="valida_campo_vazio(this,1)" v-model="form.ativo">
+                                    <select
+                                        class="form-control form-control-sm"
+                                        onblur="valida_campo_vazio(this, 1)"
+                                        onchange="valida_campo_vazio(this, 1)"
+                                        v-model="form.ativo"
+                                    >
                                         <option value="">Selecione</option>
                                         <option :value="true">Sim</option>
                                         <option :value="false">Não</option>
@@ -84,13 +96,15 @@
                             <div class="col-lg-3">
                                 <div class="form-group">
                                     <label>Ano Avaliação</label>
-                                    <input v-model="form.ano_avaliacao" class="form-control form-control-sm validacampo"
-                                           type="number"
-                                           placeholder="Ano Avaliação"
-                                           v-mascara:ano
-                                           @keyup.prevent="valida_campo_vazio($event.target, 4);"
-                                           @blur.prevent="valida_campo_vazio($event.target, 4)"
-                                    >
+                                    <input
+                                        v-model="form.ano_avaliacao"
+                                        class="form-control form-control-sm validacampo"
+                                        type="number"
+                                        placeholder="Ano Avaliação"
+                                        v-mascara:ano
+                                        @keyup.prevent="valida_campo_vazio($event.target, 4)"
+                                        @blur.prevent="valida_campo_vazio($event.target, 4)"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -98,61 +112,61 @@
 
                     <fieldset>
                         <legend>Fluxo</legend>
-                        <div class="alert alert-info">
-                            Se Auto Avaliação estiver marcado como sim ocupara a primeira ordem do fluxo
-                        </div>
+                        <div class="alert alert-info">Se Auto Avaliação estiver marcado como sim ocupara a primeira ordem do fluxo</div>
 
                         <div class="form-group">
                             <label>Tipo de avaliador</label>
-                            <select class="form-control form-control-sm validacampo"
-                                    v-model="selecionatipoavaliador"
-                                    @change="addTipoAvaliadorFluxo($event.target.value)"
+                            <select
+                                class="form-control form-control-sm validacampo"
+                                v-model="selecionatipoavaliador"
+                                @change="addTipoAvaliadorFluxo($event.target.value)"
                             >
                                 <option value="">Selecione ...</option>
-                                <option v-for="item in lista_tipos_avaliadores" :value="`${item.id}|${item.label}`"
-                                        :key="item.id">
+                                <option v-for="item in lista_tipos_avaliadores" :value="`${item.id}|${item.label}`" :key="item.id">
                                     {{ item.label }}
                                 </option>
-
                             </select>
                         </div>
 
                         <div class="my-custom-list" v-if="form.auto_avaliacao">
-                            <div class="sortable-item" style="cursor:default;">
-                                <div class="handle">
-                                    1 - Auto Avaliação
-                                </div>
+                            <div class="sortable-item" style="cursor: default">
+                                <div class="handle">1 - Auto Avaliação</div>
                             </div>
                         </div>
 
-                        <draggable v-model="form.fluxo" v-bind="getOptions" class="my-custom-list"
-                                   @change="atualizarPrincipal">
-                            <div v-for="(item, key) in form.fluxo" :key="item.id"
-                                 :class="{ 'sortable-item': true, 'dragging': itemIsDragging === item.id }">
-                                <div class="handle">
-                                    <!--                                    <i class="fas fa-grip-vertical"></i> -->
-                                    {{ form.auto_avaliacao ? key + 2 : key + 1 }} - {{ item.label }}
-                                    <span class="badge badge-info" v-if="key === form.fluxo.length - 1">
-                                        <i class="fa fa-user"></i> Avaliador Final
-                                    </span>
+                        <draggable
+                            :model-value="form.fluxo"
+                            item-key="id"
+                            v-bind="getOptions"
+                            class="my-custom-list"
+                            @update:model-value="form.fluxo = $event"
+                            @change="atualizarPrincipal"
+                        >
+                            <template #item="{ element: item, index: key }">
+                                <div :class="{ 'sortable-item': true, dragging: itemIsDragging === item.id }">
+                                    <div class="handle">
+                                        <!--                                    <i class="fas fa-grip-vertical"></i> -->
+                                        {{ form.auto_avaliacao ? key + 2 : key + 1 }} - {{ item.label }}
+                                        <span class="badge badge-info" v-if="key === form.fluxo.length - 1"> <i class="fa fa-user"></i> Avaliador Final </span>
+                                    </div>
+                                    <div class="delete-icon">
+                                        <i class="fa fa-trash" @click.prevent="rmTipoAvaliadorFluxo(item)"></i>
+                                    </div>
                                 </div>
-                                <div class="delete-icon">
-                                    <i class="fa fa-trash" @click.prevent="rmTipoAvaliadorFluxo(item)"></i>
-                                </div>
-                            </div>
+                            </template>
                         </draggable>
-
                     </fieldset>
                 </div>
             </template>
             <template v-slot:rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preload"
-                        @click="alterar()">
-                    Alterar
-                </button>
-                <button type="button" class="btn btn-sm btn-primary" v-if="lista_avaliacoes_tipos.length > 0"
-                        v-show="!editando && !preload"
-                        @click="cadastrar()">
+                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preload" @click="alterar()">Alterar</button>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-primary"
+                    v-if="lista_avaliacoes_tipos.length > 0"
+                    v-show="!editando && !preload"
+                    @click="cadastrar()"
+                >
                     Cadastrar
                 </button>
             </template>
@@ -161,27 +175,31 @@
         <!-- Filtro -->
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="$refs.componente.buscar()">
+            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Buscar</label>
-                        <input type="text"
-                               placeholder="Buscar por título"
-                               autocomplete="off"
-                               class="form-control form-control-sm" :disabled="controle.carregando"
-                               v-model="controle.dados.campoBusca">
+                        <input
+                            type="text"
+                            placeholder="Buscar por título"
+                            autocomplete="off"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoBusca"
+                        />
                     </div>
                 </div>
 
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Ano Avaliação</label>
-                        <select class="form-control form-control-sm"
-                                @change.prevent="atualizar();controle.dados.tipo_avaliacao = '';controle.dados.status = '';"
-                                v-model="controle.dados.ano_avaliacao"
+                        <select
+                            class="form-control form-control-sm"
+                            @change.prevent="atualizar(); controle.dados.tipo_avaliacao = ''; controle.dados.status = ''"
+                            v-model="controle.dados.ano_avaliacao"
                         >
                             <option value="">Sem filtro</option>
-                            <option v-for="(item,key) in listaKeysAvaliacaoPorAnoOrdenado" :value="item">
+                            <option v-for="(item, key) in listaKeysAvaliacaoPorAnoOrdenado" :value="item">
                                 {{ item }}
                             </option>
                         </select>
@@ -191,13 +209,13 @@
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Tipo Avaliação</label>
-                        <select class="form-control form-control-sm"
-                                @change.prevent="atualizar();controle.dados.status = '';"
-                                v-model="controle.dados.tipo_avaliacao"
+                        <select
+                            class="form-control form-control-sm"
+                            @change.prevent="atualizar(); controle.dados.status = ''"
+                            v-model="controle.dados.tipo_avaliacao"
                         >
                             <option value="">Sem filtro</option>
-                            <option v-for="(item,key) in groupAvaliacaoAno"
-                                    :value="item.avaliacao_tipo_id">
+                            <option v-for="(item, key) in groupAvaliacaoAno" :value="item.avaliacao_tipo_id">
                                 {{ item.avaliacao_tipo }}
                             </option>
                         </select>
@@ -207,13 +225,9 @@
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Status</label>
-                        <select class="form-control form-control-sm"
-                                @change.prevent="atualizar()"
-                                v-model="controle.dados.status"
-                        >
+                        <select class="form-control form-control-sm" @change.prevent="atualizar()" v-model="controle.dados.status">
                             <option value="">Sem filtro</option>
-                            <option v-for="(item,key) in lista_status"
-                                    :value="item">
+                            <option v-for="(item, key) in lista_status" :value="item">
                                 {{ item }}
                             </option>
                         </select>
@@ -221,21 +235,23 @@
                 </div>
 
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
-                            @click="atualizar"><i
-                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
+                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                        <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
-                    <button type="button" class="btn btn-sm btn-primary" :disabled="controle.carregando"
-                            @click="formNovo"
-                            data-toggle="modal"
-                            data-target="#janelaCadastrar">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-primary"
+                        :disabled="controle.carregando"
+                        @click="formNovo"
+                        data-toggle="modal"
+                        data-target="#janelaCadastrar"
+                    >
                         <i class="fa fa-plus"></i> Cadastrar
                     </button>
 
-                    <button type="button" class="btn btn-sm btn-info" :disabled="controle.carregando || exportando"
-                            @click="exportar">
+                    <button type="button" class="btn btn-sm btn-info" :disabled="controle.carregando || exportando" @click="exportar">
                         <i :class="exportando ? 'fa fa-sync fa-spin' : 'fa fa-file-excel'"></i>
                         {{ exportando ? 'Exportando...' : 'Exportar Excel' }}
                     </button>
@@ -244,8 +260,7 @@
         </fieldset>
 
         <div id="conteudo">
-
-            <p class=" mt-2 text-center" v-if="controle.carregando">
+            <p class="mt-2 text-center" v-if="controle.carregando">
                 <preload></preload>
             </p>
 
@@ -256,65 +271,82 @@
             <div v-show="!controle.carregando && lista.length > 0" class="table-responsive">
                 <table class="table table-bordered bg-white">
                     <thead>
-                    <tr class="bg-default">
-                        <td class="text-center">Ano</td>
-                        <td class="text-center">Título</td>
-                        <td class="text-center">Tipo Avaliação</td>
-                        <td class="text-center">Data Início</td>
-                        <td class="text-center">Data Fim</td>
-                        <td class="text-center">Status</td>
-                        <td class="text-center">Ativo</td>
-                        <td class="text-center">Ação</td>
-                    </tr>
+                        <tr class="bg-default">
+                            <td class="text-center">Ano</td>
+                            <td class="text-center">Título</td>
+                            <td class="text-center">Tipo Avaliação</td>
+                            <td class="text-center">Data Início</td>
+                            <td class="text-center">Data Fim</td>
+                            <td class="text-center">Status</td>
+                            <td class="text-center">Ativo</td>
+                            <td class="text-center">Ação</td>
+                        </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="item in lista">
-                        <td class="text-center">{{ item.ano_avaliacao }}</td>
-                        <td class="text-center">{{ item.titulo }}</td>
-                        <td class="text-center">{{ item.avaliacao_tipo.nome }}</td>
-                        <td class="text-center">{{ item.data_inicio_prazo }}</td>
-                        <td class="text-center">{{ item.data_fim_prazo }}</td>
-                        <td class="text-center">{{ item.status }}</td>
-                        <td class="text-center">
-                            <bt-ativo :rota="`cadastro/avaliacoes/avaliacao/${item.id}/ativa-desativa`"
-                                      :model="item"></bt-ativo>
-                        </td>
-                        <td class="text-center">
-
-                            <div class="dropdown show">
-                                <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
-                                   id="dropdownMenuLink"
-                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </a>
-
-                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
-                                     aria-labelledby="dropdownMenuLink">
-                                    <a class="dropdown-item" href="javascript://" title="Editar"
-                                       data-toggle="modal" data-target="#janelaCadastrar" @click="alterarForm(item)">
-                                        Editar
-                                    </a>
-
-                                    <a class="dropdown-item" href="javascript://" title="Associar avaliadores"
-                                       data-toggle="modal"
-                                       data-target="#janelaAssociar"
-                                       @click="associar(item)"
+                        <tr v-for="item in lista">
+                            <td class="text-center">{{ item.ano_avaliacao }}</td>
+                            <td class="text-center">{{ item.titulo }}</td>
+                            <td class="text-center">{{ item.avaliacao_tipo.nome }}</td>
+                            <td class="text-center">{{ item.data_inicio_prazo }}</td>
+                            <td class="text-center">{{ item.data_fim_prazo }}</td>
+                            <td class="text-center">{{ item.status }}</td>
+                            <td class="text-center">
+                                <bt-ativo :rota="`cadastro/avaliacoes/avaliacao/${item.id}/ativa-desativa`" :model="item"></bt-ativo>
+                            </td>
+                            <td class="text-center">
+                                <div class="dropdown show">
+                                    <a
+                                        class="btn btn-secondary dropdown-toggle"
+                                        href="#"
+                                        role="button"
+                                        id="dropdownMenuLink"
+                                        data-toggle="dropdown"
+                                        aria-haspopup="true"
+                                        aria-expanded="false"
                                     >
-                                        Associar avaliadores
+                                        <i class="fas fa-ellipsis-v"></i>
                                     </a>
-                                </div>
 
-                            </div>
-                        </td>
-                    </tr>
+                                    <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                        <a
+                                            class="dropdown-item"
+                                            href="javascript://"
+                                            title="Editar"
+                                            data-toggle="modal"
+                                            data-target="#janelaCadastrar"
+                                            @click="alterarForm(item)"
+                                        >
+                                            Editar
+                                        </a>
+
+                                        <a
+                                            class="dropdown-item"
+                                            href="javascript://"
+                                            title="Associar avaliadores"
+                                            data-toggle="modal"
+                                            data-target="#janelaAssociar"
+                                            @click="associar(item)"
+                                        >
+                                            Associar avaliadores
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
 
-            <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
-                                :url="urlPaginacao" :por-pagina="qntPag"
-                                :dados="controle.dados"
-                                v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
+            <controle-paginacao
+                class="d-flex justify-content-center"
+                id="controle"
+                ref="componente"
+                :url="urlPaginacao"
+                :por-pagina="qntPag"
+                :dados="controle.dados"
+                v-on:carregou="carregou"
+                v-on:carregando="carregando"
+            ></controle-paginacao>
         </div>
     </div>
 </template>
@@ -326,7 +358,6 @@ import DatePicker from '../../../DatePicker'
 import vinculaAvaliador from './vinculaAvaliador'
 import validacoes from '../../../../mixins/Validacoes'
 import vuedraggable from 'vuedraggable'
-
 
 export default {
     components: {
@@ -460,7 +491,6 @@ export default {
             setTimeout(() => {
                 this.abrirAssociar = true
             }, 300)
-
         },
         formNovo() {
             this.form = _.cloneDeep(this.formDefault) //copia
@@ -481,8 +511,9 @@ export default {
                 return false
             }
             this.preload = true
-            axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao`, this.form)
-                .then(res => {
+            axios
+                .post(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao`, this.form)
+                .then((res) => {
                     if (res.status === 201) {
                         $('#janelaCadastrar').modal('hide')
                         mostraSucesso('', 'Avaliação cadastrada com sucesso')
@@ -491,7 +522,7 @@ export default {
                         this.atualizar()
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     this.cadastrado = false
                     this.preload = false
                 })
@@ -506,16 +537,15 @@ export default {
             this.form = _.cloneDeep(this.formDefault) //copia
             formReset()
 
-            axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao/${avaliacao.id}/editar`)
-                .then(response => {
+            axios
+                .get(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao/${avaliacao.id}/editar`)
+                .then((response) => {
                     Object.assign(this.form, response.data)
                     this.editando = true
                     setupCampo()
                     this.preload = false
-                }).catch(
-                error => (this.preloadAjax = false)
-            )
-
+                })
+                .catch((error) => (this.preloadAjax = false))
         },
 
         alterar() {
@@ -532,14 +562,16 @@ export default {
             }
             this.preload = true
 
-            axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao/${this.form.id}`, this.form).then(response => {
-                $('#janelaCadastrar').modal('hide')
-                mostraSucesso('', 'Avaliação alterada com sucesso')
-                this.preload = false
-                this.atualizado = true
-                this.atualizar()
-            }).catch(error => (this.preload = false))
-
+            axios
+                .put(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao/${this.form.id}`, this.form)
+                .then((response) => {
+                    $('#janelaCadastrar').modal('hide')
+                    mostraSucesso('', 'Avaliação alterada com sucesso')
+                    this.preload = false
+                    this.atualizado = true
+                    this.atualizar()
+                })
+                .catch((error) => (this.preload = false))
         },
 
         addTipoAvaliadorFluxo(obj) {
@@ -552,7 +584,7 @@ export default {
                     principal: false
                 }
 
-                const existingIndex = this.form.fluxo.findIndex(item => item.id === objFluxo.id)
+                const existingIndex = this.form.fluxo.findIndex((item) => item.id === objFluxo.id)
 
                 if (existingIndex === -1) {
                     this.form.fluxo.push(objFluxo)
@@ -574,7 +606,7 @@ export default {
 
         atualizarPrincipal() {
             // Primeiro, definir todos os itens como 'principal: false'
-            this.form.fluxo.forEach(item => {
+            this.form.fluxo.forEach((item) => {
                 item.principal = false
             })
 
@@ -598,22 +630,22 @@ export default {
         },
         exportar() {
             this.exportando = true
-            axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao/export`, this.controle.dados)
-                .then(response => {
+            axios
+                .post(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao/export`, this.controle.dados)
+                .then((response) => {
                     mostraSucesso('', response.data.msg)
                     this.exportando = false
                 })
-                .catch(error => {
+                .catch((error) => {
                     mostraErro('', 'Erro ao exportar avaliações')
                     this.exportando = false
                 })
         },
         atualizar() {
-            this.$refs.componente.atual = 1
-            this.$refs.componente.buscar()
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
-
 }
 </script>
 
@@ -672,5 +704,4 @@ export default {
 .dragging {
     background-color: red; /* Cor de fundo quando o item está sendo arrastado */
 }
-
 </style>
