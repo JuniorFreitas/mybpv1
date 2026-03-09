@@ -1,15 +1,15 @@
 <template>
     <div id="componenteBeneficio">
-        <modal :modal-pai="modal" :titulo="titulo_janela_tipo_beneficio" :fechar="!preloadTipoBeneficio" id="janelaFormTipoBeneficio">
+        <modal :modal-pai="modal" :titulo="titulo_janela_tipo_beneficio" :fechar="!preloadTipoBeneficio" id="janelaFormTipoBeneficio" ref="modal_janelaFormTipoBeneficio">
             <template #conteudo>
                 <div class="row">
                     <div class="col-12 col-md-12">
-                        <button type="button" class="btn btn-sm btn-success" @click="atualizar">
+                        <button type="button" class="btn btn-sm mr-1 btn-success" @click="atualizar">
                             <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                             Atualizar
                         </button>
 
-                        <button type="button" class="btn btn-sm btn-secondary" @click="formNovoTipo" data-toggle="modal" data-target="#janelaFormTipo">
+                        <button type="button" class="btn btn-sm mr-1 btn-secondary" @click="formNovoTipo; $refs.modal_janelaFormTipo && $refs.modal_janelaFormTipo.abrirModal()">
                             <i class="fa fa-plus"></i> Cadastrar Tipo de Beneficio
                         </button>
                     </div>
@@ -27,7 +27,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="item in tipos">
+                            <tr v-for="(item, index) in tipos" :key="item.id || index">
                                 <td class="text-center">{{ item.nome }}</td>
                                 <td class="text-center">
                                     <bt-ativo :rota="`cadastro/beneficios/${item.id}/ativa-desativa`" :model="item"></bt-ativo>
@@ -35,10 +35,8 @@
                                 <td class="text-center">
                                     <button
                                         type="button"
-                                        class="btn btn-sm btn-primary"
-                                        @click="alterarTipo(item.id)"
-                                        data-toggle="modal"
-                                        data-target="#janelaFormTipo"
+                                        class="btn btn-sm mr-1 btn-primary"
+                                        @click="alterarTipo(item.id); $refs.modal_janelaFormTipo && $refs.modal_janelaFormTipo.abrirModal()"
                                     >
                                         <i class="fa fa-edit"></i>
                                     </button>
@@ -50,7 +48,7 @@
             </template>
         </modal>
 
-        <modal :modal-pai="modal" :titulo="titulo_janela_form_tipo" :fechar="!preloadTipo" id="janelaFormTipo">
+        <modal :modal-pai="modal" :titulo="titulo_janela_form_tipo" :fechar="!preloadTipo" id="janelaFormTipo" ref="modal_janelaFormTipo">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preloadTipo"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <fieldset v-if="!preloadTipo">
@@ -71,15 +69,15 @@
                 </fieldset>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!cadastrado && !preloadTipo" @click="cadastraTipo">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!cadastrado && !preloadTipo" @click="cadastraTipo">
                     <i class="fa fa-save"></i>Cadastrar
                 </button>
 
-                <button v-show="cadastrado" type="button" class="btn btn-sm btn-primary" @click="alterarformTipo"><i class="fa fa-save"></i> Alterar</button>
+                <button v-show="cadastrado" type="button" class="btn btn-sm mr-1 btn-primary" @click="alterarformTipo"><i class="fa fa-save"></i> Alterar</button>
             </template>
         </modal>
 
-        <modal :modal-pai="modal" :titulo="titulo_janela_form_beneficio" id="janelaFormBeneficio" :size="65">
+        <modal :modal-pai="modal" :titulo="titulo_janela_form_beneficio" id="janelaFormBeneficio" :size="65" ref="modal_janelaFormBeneficio">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -102,7 +100,7 @@
                                     class="custom-select"
                                 >
                                     <option value="">Selecione</option>
-                                    <option v-for="item in tiposAtivos" :value="item.id">{{ item.nome }}</option>
+                                    <option v-for="(item, index) in tiposAtivos" :value="item.id" :key="item.id || index">{{ item.nome }}</option>
                                 </select>
                             </div>
                             <div class="col-6">
@@ -168,15 +166,15 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando" @click="alterarformBeneficio()">Alterar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando" @click="alterarformBeneficio()">Alterar</button>
             </template>
         </modal>
 
         <!-- Filtro -->
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-5">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -192,23 +190,21 @@
                 </div>
 
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary"
+                        class="btn btn-sm mr-1 btn-primary"
                         :disabled="controle.carregando"
-                        @click="formNovo"
-                        data-toggle="modal"
-                        data-target="#janelaFormBeneficio"
+                        @click="formNovo(); $refs.modal_janelaFormBeneficio && $refs.modal_janelaFormBeneficio.abrirModal()"
                     >
                         <i class="fa fa-plus"></i> Cadastrar Benefício
                     </button>
 
-                    <button type="button" class="btn btn-sm btn-secondary" data-toggle="modal" data-target="#janelaFormTipoBeneficio">
+                    <button type="button" class="btn btn-sm mr-1 btn-secondary" @click="$refs.modal_janelaFormTipoBeneficio && $refs.modal_janelaFormTipoBeneficio.abrirModal()">
                         <i class="fa fa-plus"></i> Tipo de Benefício
                     </button>
                 </div>
@@ -237,7 +233,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="beneficio in lista">
+                        <tr v-for="(beneficio, index) in lista" :key="beneficio.id || index">
                             <td class="text-center">{{ beneficio.id }}</td>
                             <td class="text-center">{{ beneficio.nome }}</td>
                             <td class="text-center">{{ beneficio.tipo_beneficio.nome }}</td>
@@ -248,10 +244,8 @@
                             <td class="text-center">
                                 <button
                                     type="button"
-                                    class="btn btn-sm btn-primary"
-                                    @click="alterarBeneficio(beneficio.id)"
-                                    data-toggle="modal"
-                                    data-target="#janelaFormBeneficio"
+                                    class="btn btn-sm mr-1 btn-primary"
+                                    @click="alterarBeneficio(beneficio.id); $refs.modal_janelaFormBeneficio && $refs.modal_janelaFormBeneficio.abrirModal()"
                                 >
                                     <i class="fa fa-edit"></i>
                                 </button>
@@ -395,7 +389,7 @@ export default {
                 .post(`${URL_ADMIN}/cadastro/beneficios`, this.form)
                 .then((res) => {
                     if (res.status === 201) {
-                        $('#janelaFormBeneficio').modal('hide')
+                        this.$refs.modal_janelaFormBeneficio && this.$refs.modal_janelaFormBeneficio.fecharModal()
                         mostraSucesso('', 'Benefício Cadastrado com sucesso')
                         this.preloadTipo = false
                         this.cadastrado = true
@@ -430,10 +424,10 @@ export default {
             axios
                 .post(`${URL_ADMIN}/cadastro/beneficios/cadastro-tipo`, this.formTipo)
                 .then((res) => {
-                    $('#janelaFormTipo').modal('hide')
+                    this.$refs.modal_janelaFormTipo && this.$refs.modal_janelaFormTipo.fecharModal()
                     mostraSucesso('', 'Tipo cadastrado com sucesso')
                     this.cadastrado = true
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preloadTipo = false
                 })
                 .catch((error) => {
@@ -475,7 +469,7 @@ export default {
             axios
                 .put(`${URL_ADMIN}/cadastro/beneficios/${this.form.id}`, this.form)
                 .then((response) => {
-                    $('#janelaFormBeneficio').modal('hide')
+                    this.$refs.modal_janelaFormBeneficio && this.$refs.modal_janelaFormBeneficio.fecharModal()
                     mostraSucesso('', 'Benefício Editado com sucesso')
                     this.preloadAjax = false
                     this.controle.carregando = true
@@ -519,7 +513,7 @@ export default {
             axios
                 .put(`${URL_ADMIN}/cadastro/beneficios/updateTipos/${this.formTipo.id}`, this.formTipo)
                 .then((response) => {
-                    $('#janelaFormTipo').modal('hide')
+                    this.$refs.modal_janelaFormTipo && this.$refs.modal_janelaFormTipo.fecharModal()
                     this.preloadAjax = false
                     this.controle.carregando = true
                     this.atualizado = true
@@ -554,8 +548,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

@@ -261,7 +261,7 @@
 
         <div class="row mt-2">
             <div class="col-12">
-                <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando"
                         @click="atualizar"><i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
@@ -322,18 +322,18 @@
                         <span v-if="resultado.finalizado">Finalizado por @{{ resultado.quem_finalizou }}<br>em @{{ resultado.data_finalizacao }}</span>
                     </td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-primary" title="Visuzalizar"
+                        <button class="btn btn-sm mr-1 btn-primary" title="Visuzalizar"
                                 @click.prevent="formVisualizar(resultado.id)"
                                 data-toggle="modal"
                                 data-target="#janelaVisualizar"><i class="fa fa-search-plus"></i></button>
                         @can('privilegio_admissao_pre_admissao_reencaminhar_email')
-                            <button class="btn btn-sm btn-primary" title="Reenviar Email"
+                            <button class="btn btn-sm mr-1 btn-primary" title="Reenviar Email"
                                     @click.prevent="formEnviarEmail(resultado.id)"
                                     data-toggle="modal"
                                     data-target="#janelaEnviarEmail"><i class="fa fa-share-square"></i></button>
                         @endcan
                         {{--                        @can('privilegio_admissao_pre_admissao_reencaminhar_email')--}}
-                        <button class="btn btn-sm btn-primary" title="Finalizar"
+                        <button class="btn btn-sm mr-1 btn-primary" title="Finalizar"
                                 @click.prevent="abrirFormFinalizar(resultado.id)"
                                 data-toggle="modal"
                                 v-if="!resultado.finalizado"

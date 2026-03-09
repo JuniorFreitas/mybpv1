@@ -1,6 +1,6 @@
 <template>
     <div>
-        <modal :id="modalEnviarId" :titulo="tituloEnviar" :fechar="!preloadEnvio" :size="75">
+        <modal ref="modalEnviar" :id="modalEnviarId" :titulo="tituloEnviar" :fechar="!preloadEnvio" :size="75">
             <template #conteudo>
                 <div v-if="contextoEnvio">
                     <p class="mb-2">
@@ -8,7 +8,7 @@
                     </p>
                     <fieldset>
                         <legend>Signatários</legend>
-                        <div class="row mb-2" v-for="(s, idx) in signatarios" :key="idx">
+                        <div class="row mb-2" v-for="(s, idx) in signatarios" :key="s.id || idx">
                             <div class="col-md-4">
                                 <input
                                     type="text"
@@ -37,26 +37,26 @@
                                 />
                             </div>
                             <div class="col-md-2" v-if="!camposSignatarioBloqueados">
-                                <button type="button" class="btn btn-sm btn-outline-danger" @click="removerSignatario(idx)">
+                                <button type="button" class="btn btn-sm mr-1 btn-outline-danger" @click="removerSignatario(idx)">
                                     <i class="fa fa-times"></i>
                                 </button>
                             </div>
                         </div>
-                        <button v-if="!camposSignatarioBloqueados" type="button" class="btn btn-sm btn-primary" @click="adicionarSignatario">
+                        <button v-if="!camposSignatarioBloqueados" type="button" class="btn btn-sm mr-1 btn-primary" @click="adicionarSignatario">
                             <i class="fa fa-plus"></i> Adicionar signatário
                         </button>
                     </fieldset>
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-success" :disabled="preloadEnvio || !signatariosValidos" @click="enviar">
+                <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="preloadEnvio || !signatariosValidos" @click="enviar">
                     <span v-if="preloadEnvio"><i class="fa fa-spinner fa-pulse"></i> Enviando...</span>
                     <span v-else>Enviar para assinatura</span>
                 </button>
             </template>
         </modal>
 
-        <modal :id="modalGerenciarId" titulo="Gerenciar assinatura" :fechar="!preloadGerenciar" :size="75">
+        <modal ref="modalGerenciar" :id="modalGerenciarId" titulo="Gerenciar assinatura" :fechar="!preloadGerenciar" :size="75">
             <template #conteudo>
                 <div v-if="documentoDetalhe" class="container-fluid">
                     <p>
@@ -72,7 +72,7 @@
                         <i class="fas fa-hourglass-half"></i> Documento pendente de assinatura
                     </p>
                     <p v-else-if="podeBaixarAssinadoDoc(documentoDetalhe)" class="mb-2">
-                        <a :href="urlDownloadAssinadoDoc(documentoDetalhe)" target="_blank" rel="noopener" class="btn btn-sm btn-success"
+                        <a :href="urlDownloadAssinadoDoc(documentoDetalhe)" target="_blank" rel="noopener" class="btn btn-sm mr-1 btn-success"
                             ><i class="fa fa-download"></i> Baixar documento assinado</a
                         >
                     </p>
@@ -111,7 +111,7 @@
                                     <span class="evento-data">{{ formatarDataDoc(ev.created_at) }}</span>
                                 </div>
                                 <div class="evento-detalhes" v-if="detalhesEventoDoc(ev).length">
-                                    <div class="evento-detalhe" v-for="(linha, idx) in detalhesEventoDoc(ev)" :key="idx">
+                                    <div class="evento-detalhe" v-for="(linha, idx) in detalhesEventoDoc(ev)" :key="linha.id || idx">
                                         <span class="evento-detalhe-label">{{ linha.label }}:</span>
                                         <span class="evento-detalhe-value">{{ linha.value }}</span>
                                     </div>
@@ -126,7 +126,7 @@
                 <button
                     v-if="documentoDetalhe && podeCancelarDoc(documentoDetalhe)"
                     type="button"
-                    class="btn btn-sm btn-danger mr-1"
+                    class="btn btn-sm mr-1 btn-danger mr-1"
                     @click="cancelarDocNoModal"
                 >
                     Cancelar documento
@@ -134,7 +134,7 @@
                 <button
                     v-if="documentoDetalhe && podeReenviarDoc(documentoDetalhe)"
                     type="button"
-                    class="btn btn-sm btn-warning mr-1"
+                    class="btn btn-sm mr-1 btn-warning mr-1"
                     @click="reenviarDocNoModal"
                 >
                     Reenviar e-mail
@@ -142,7 +142,7 @@
                 <button
                     v-if="documentoDetalhe && documentoExpiradoOuCanceladoDoc(documentoDetalhe)"
                     type="button"
-                    class="btn btn-sm btn-success mr-1"
+                    class="btn btn-sm mr-1 btn-success mr-1"
                     @click="enviarNovamenteNoModal"
                 >
                     <span class="fas fa-redo"></span> Enviar novamente
@@ -197,14 +197,20 @@ export default {
             this.contextoEnvio = contexto
             this.signatarios = this.getSignatariosIniciais(contexto) || [{ nome: '', email: '', cpf: '' }]
             this.preloadEnvio = false
-            this.$nextTick(() => $(`#${this.modalEnviarId}`).modal('show'))
+            this.$nextTick(() => {
+                if (this.$refs && this.$refs.modalEnviar && typeof this.$refs.modalEnviar.abrirModal === 'function') {
+                    this.$refs.modalEnviar.abrirModal()
+                }
+            })
         },
         abrirGerenciar(documento, contexto = null) {
             if (!documento || !documento.id) return
             this.contextoGerenciar = contexto
             this.documentoDetalhe = null
             this.preloadGerenciar = true
-            $(`#${this.modalGerenciarId}`).modal('show')
+            if (this.$refs && this.$refs.modalGerenciar && typeof this.$refs.modalGerenciar.abrirModal === 'function') {
+                this.$refs.modalGerenciar.abrirModal()
+            }
             const idOrToken = documento.token || documento.id
             axios
                 .get(`${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}`)
@@ -229,7 +235,9 @@ export default {
             Promise.resolve(this.enviarHandler({ contexto: this.contextoEnvio, signatarios: this.signatarios }))
                 .then((res) => {
                     this.preloadEnvio = false
-                    $(`#${this.modalEnviarId}`).modal('hide')
+                    if (this.$refs && this.$refs.modalEnviar && typeof this.$refs.modalEnviar.fecharModal === 'function') {
+                        this.$refs.modalEnviar.fecharModal()
+                    }
                     if (res && res.data) {
                         mostraSucesso(res.data.message || 'Documento enviado para assinatura.')
                         if (res.data.links && res.data.links.length && this.$swal) {
@@ -252,7 +260,9 @@ export default {
             return doc && (doc.status === 'expirado' || doc.status === 'cancelado')
         },
         enviarNovamenteNoModal() {
-            $(`#${this.modalGerenciarId}`).modal('hide')
+            if (this.$refs && this.$refs.modalGerenciar && typeof this.$refs.modalGerenciar.fecharModal === 'function') {
+                this.$refs.modalGerenciar.fecharModal()
+            }
             this.$nextTick(() => this.abrirEnvio(this.contextoGerenciar))
         },
         labelTipoDoc(tipo) {
@@ -418,7 +428,9 @@ export default {
                 .then((res) => {
                     mostraSucesso(res.data.message || 'Documento cancelado.')
                     this.documentoDetalhe = null
-                    $(`#${this.modalGerenciarId}`).modal('hide')
+                    if (this.$refs && this.$refs.modalGerenciar && typeof this.$refs.modalGerenciar.fecharModal === 'function') {
+                        this.$refs.modalGerenciar.fecharModal()
+                    }
                     if (this.atualizarHandler) this.atualizarHandler()
                 })
                 .catch((err) => {

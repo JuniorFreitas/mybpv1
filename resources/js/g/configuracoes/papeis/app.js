@@ -1,5 +1,16 @@
 import { createApp } from 'vue'
 import { registerGlobals } from '../../../registerGlobals'
+const abrirModal = (selector) => {
+    if (typeof $ === 'undefined') return
+    $(selector).modal('show')
+}
+
+const fecharModal = (selector) => {
+    if (typeof $ === 'undefined') return
+    $(selector).modal('hide')
+}
+
+
 
 // Constantes da aplicação
 const CONSTANTS = {

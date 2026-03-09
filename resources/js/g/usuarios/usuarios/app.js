@@ -184,34 +184,35 @@ const app = createApp({
                 })
         },
 
-        selecionaEmpresa(id) {
+        async selecionaEmpresa(id) {
             this.grupoempresa = false
             this.listaPapeis = []
             this.form.grupo_id = ''
             if (id != '' && id != 100) {
-                axios.get(`${URL_ADMIN}/usuario/busca-grupo-empresa/${id}`).then((response) => {
+                try {
+                    const response = await axios.get(`${URL_ADMIN}/usuario/busca-grupo-empresa/${id}`)
                     if (response.status === 200) {
-                        let data = response.data
+                        const data = response.data
                         this.listaPapeis = data.papeis
                         this.listaCloud = data.cloud
                         this.grupoempresa = true
                     }
-                })
+                } catch (err) {}
             }
         },
 
-        buscarGruposEmpresa(id) {
+        async buscarGruposEmpresa(id) {
             this.controle.showCampoGrupo = false
             this.controle.dados.listaPapeis = []
             this.controle.dados.campoGrupo = ''
             if (id != '') {
-                axios.get(`${URL_ADMIN}/usuario/busca-grupo-empresa/${id}`).then((response) => {
+                try {
+                    const response = await axios.get(`${URL_ADMIN}/usuario/busca-grupo-empresa/${id}`)
                     if (response.status === 200) {
-                        let data = response.data
                         this.controle.dados.listaPapeis = response.data.papeis
                         this.controle.showCampoGrupo = true
                     }
-                })
+                } catch (err) {}
             }
         },
 

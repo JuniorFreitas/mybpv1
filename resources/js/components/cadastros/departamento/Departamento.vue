@@ -1,6 +1,6 @@
 <template>
     <div id="componenteDepartamento">
-        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload">
+        <modal ref="modalDepartamento" id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload">
             <template #conteudo>
                 <preload v-show="preload"></preload>
                 <div v-if="!preload && !cadastrado">
@@ -24,15 +24,15 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando" @click="alterarformDepartamento()">Salvar</button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando" @click="alterarformDepartamento()">Salvar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
             </template>
         </modal>
 
         <!-- Filtro -->
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="$refs.componente && $refs.componente.buscar ? $refs.componente.buscar() : null">
                 <div class="col-12 col-md-5">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -59,19 +59,12 @@
                 </div>
 
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-primary"
-                        :disabled="controle.carregando"
-                        @click="formNovo"
-                        data-toggle="modal"
-                        data-target="#janelaCadastrar"
-                    >
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="controle.carregando" @click="formNovo">
                         <i class="fa fa-plus"></i> Departamento
                     </button>
                 </div>
@@ -98,18 +91,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in lista">
+                        <tr v-for="(item, index) in lista" :key="item.id || index">
                             <td class="text-center">{{ item.id }}</td>
                             <td class="text-center">{{ item.label }}</td>
                             <td class="text-center">{{ item.ativo === true ? 'Ativo' : 'Inativo' }}</td>
                             <td class="text-center">
-                                <button
-                                    type="button"
-                                    class="btn btn-sm btn-primary mb-1"
-                                    data-toggle="modal"
-                                    data-target="#janelaCadastrar"
-                                    @click="alterarDepartamento(item.id)"
-                                >
+                                <button type="button" class="btn btn-sm mr-1 btn-primary mb-1" @click="alterarDepartamento(item.id)">
                                     <i class="fa fa-edit"></i>
                                 </button>
                             </td>
@@ -164,7 +151,7 @@ export default {
     data() {
         return {
             hash: String(Math.random()).substr(2),
-            titulo_janela: '',
+            titulo_janela: 'Departamento',
 
             preload: false,
             editando: false,
@@ -192,6 +179,16 @@ export default {
         }
     },
     methods: {
+        abrirModalDepartamento() {
+            if (this.$refs && this.$refs.modalDepartamento && typeof this.$refs.modalDepartamento.abrirModal === 'function') {
+                this.$refs.modalDepartamento.abrirModal()
+            }
+        },
+        fecharModalDepartamento() {
+            if (this.$refs && this.$refs.modalDepartamento && typeof this.$refs.modalDepartamento.fecharModal === 'function') {
+                this.$refs.modalDepartamento.fecharModal()
+            }
+        },
         formNovo() {
             this.form = _.cloneDeep(this.formDefault) //copia
             this.titulo_janela = 'Departamento'
@@ -200,6 +197,7 @@ export default {
             this.preload = false
             formReset()
             setupCampo()
+            this.abrirModalDepartamento()
         },
 
         cadastrar() {
@@ -213,7 +211,7 @@ export default {
                 .post(`${URL_ADMIN}/cadastro/departamento`, this.form)
                 .then((res) => {
                     if (res.status === 201) {
-                        $('#janelaCadastrar').modal('hide')
+                        this.fecharModalDepartamento()
                         mostraSucesso('', 'Departamento cadastrado com sucesso')
                         this.cadastrado = true
                         this.preload = false
@@ -232,6 +230,7 @@ export default {
             formReset()
 
             this.form = _.cloneDeep(this.formDefault) //copia
+            this.abrirModalDepartamento()
 
             axios
                 .get(`${URL_ADMIN}/cadastro/departamento/${departamento}/editar`)
@@ -256,7 +255,7 @@ export default {
             axios
                 .put(`${URL_ADMIN}/cadastro/departamento/${this.form.id}`, this.form)
                 .then((response) => {
-                    $('#janelaCadastrar').modal('hide')
+                    this.fecharModalDepartamento()
                     mostraSucesso('', 'Departamento atualizado com sucesso')
                     this.preload = false
                     this.atualizado = true
@@ -273,8 +272,12 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            if (this.$refs && this.$refs.componente) {
+                this.$refs.componente.atual = 1
+                if (this.$refs.componente.buscar) {
+                    this.$refs.componente.buscar()
+                }
+            }
         }
     }
 }

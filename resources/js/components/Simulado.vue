@@ -1,6 +1,6 @@
 <template>
     <div>
-        <modal id="janelaMensagemFinalizar" :fechar="false" titulo="ATENÇÃO!">
+        <modal id="janelaMensagemFinalizar" :fechar="false" titulo="ATENÇÃO!" ref="modal_janelaMensagemFinalizar">
             <template #conteudo>
                 <p v-if="finalizando"><i class="fa fa-spinner fa-pulse"></i> Finalizando Aguarde...</p>
                 <div class="text-center" v-if="!finalizando">
@@ -40,6 +40,7 @@
 
                         <button
                             v-for="(botao, index) in lista.simulado.perguntas"
+                            :key="botao.id || index"
                             v-show="index + 3 > atual && index < atual + 3"
                             @click="abrir(index)"
                             :disabled="respondendo"
@@ -66,6 +67,7 @@
                         <div
                             class="form-check mb-2"
                             v-for="(resp, index) in lista.simulado.perguntas[atual].respostas"
+                            :key="resp.id || index"
                             :id="alts[index]"
                             style="padding-top: 14px"
                             :class="objClass(lista.simulado.perguntas[atual], resp)"
@@ -131,9 +133,7 @@
                                     class="btn btn-primary"
                                     style="font-size: 1rem"
                                     v-show="completa"
-                                    data-toggle="modal"
-                                    data-target="#janelaMensagemFinalizar"
-                                >
+                                 @click="$refs.modal_janelaMensagemFinalizar && $refs.modal_janelaMensagemFinalizar.abrirModal()">
                                     Finalizar
                                 </button>
                             </div>
@@ -434,7 +434,7 @@ export default {
                     this.finalizado = true
                     this.data_finalizacao = response.data.data_finalizacao
                     mostraSucesso('', 'Sua prova foi finalizada!')
-                    $('#janelaMensagemFinalizar').modal('hide')
+                    this.$refs.modal_janelaMensagemFinalizar && this.$refs.modal_janelaMensagemFinalizar.fecharModal()
                 })
                 .catch((error) => {
                     this.finalizando = false

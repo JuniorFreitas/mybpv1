@@ -1,6 +1,6 @@
 <template>
     <div id="componenteOcorrencia">
-        <modal :fechar="!preload" id="janelaMudaSetor" modal-pai="janelaOcorrencia" titulo="Mudar Setor">
+        <modal :fechar="!preload" id="janelaMudaSetor" modal-pai="janelaOcorrencia" titulo="Mudar Setor" ref="modal_janelaMudaSetor">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preload">
                     <preload></preload>
@@ -18,7 +18,7 @@
                                         onblur="valida_campo_vazio(this, 1)"
                                         class="form-control form-control-sm"
                                     >
-                                        <option v-for="item in setores" :value="item.id">{{ item.nome }}</option>
+                                        <option v-for="item in setores" :value="item.id" :key="item.id">{{ item.nome }}</option>
                                     </select>
                                 </div>
                             </div>
@@ -29,18 +29,16 @@
             <template #rodape>
                 <button
                     type="button"
-                    class="btn btn-sm btn-primary"
+                    class="btn btn-sm mr-1 btn-primary"
                     v-show="!editando && !cadastrado"
-                    @click="janelaConfirmar"
-                    data-toggle="modal"
-                    data-target="#janelaConfirmarMudaSetor"
+                    @click="janelaConfirmar; $refs.modal_janelaConfirmarMudaSetor && $refs.modal_janelaConfirmarMudaSetor.abrirModal()"
                 >
                     Mudar Setor
                 </button>
             </template>
         </modal>
 
-        <modal :fechar="!preload" id="janelaConfirmarMudaSetor" modal-pai="janelaMudaSetor" titulo="Confirmar Mudança de Setor">
+        <modal :fechar="!preload" id="janelaConfirmarMudaSetor" modal-pai="janelaMudaSetor" titulo="Confirmar Mudança de Setor" ref="modal_janelaConfirmarMudaSetor">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preload">
                     <preload label="Mudando setor aguarde ..."></preload>
@@ -51,11 +49,11 @@
                 <h6 class="text-center" v-show="!mudado && !preload">Você tem certeza que deseja mudar de setor?</h6>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-success" @click="mudarSetor()" v-show="!mudado">Sim</button>
+                <button type="button" class="btn btn-sm mr-1 btn-success" @click="mudarSetor()" v-show="!mudado">Sim</button>
             </template>
         </modal>
 
-        <modal :fechar="!preload" id="janelaConfirmarFinalizar" modal-pai="janelaOcorrencia" titulo="Confirmar Mudança de Setor">
+        <modal :fechar="!preload" id="janelaConfirmarFinalizar" modal-pai="janelaOcorrencia" titulo="Confirmar Mudança de Setor" ref="modal_janelaConfirmarFinalizar">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preload">
                     <preload label="Finalizando a ocorrência aguarde ..."></preload>
@@ -66,11 +64,11 @@
                 <h6 class="text-center" v-show="!finalizado && !preload">Você tem certeza que deseja Finalizar essa Ocorrência?</h6>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-success" @click="finalizarOcorrencia" v-show="!finalizado">Sim</button>
+                <button type="button" class="btn btn-sm mr-1 btn-success" @click="finalizarOcorrencia" v-show="!finalizado">Sim</button>
             </template>
         </modal>
 
-        <modal :modal-pai="modal" :titulo="titulo_janela_form_ocorrencia" id="janelaFormOcorrencia" :size="65">
+        <modal :modal-pai="modal" :titulo="titulo_janela_form_ocorrencia" id="janelaFormOcorrencia" :size="65" ref="modal_janelaFormOcorrencia">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preload">
                     <preload></preload>
@@ -143,7 +141,7 @@
                                         class="form-control form-control-sm"
                                     >
                                         <option value="">Selecione</option>
-                                        <option v-for="item in setores" :value="item.id">
+                                        <option v-for="item in setores" :value="item.id" :key="item.id">
                                             {{ item.nome }}
                                         </option>
                                     </select>
@@ -169,7 +167,7 @@
                                     <label>Tag</label>
                                     <select v-model="form.tag_id" class="form-control form-control-sm">
                                         <option value="">Selecione</option>
-                                        <option v-for="tag in tags" :value="tag.id">{{ tag.nome }}</option>
+                                        <option v-for="tag in tags" :value="tag.id" :key="tag.id">{{ tag.nome }}</option>
                                     </select>
                                 </div>
                             </div>
@@ -198,14 +196,14 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="nova_mensagem && !cadastrado" @click="cadastrarNovaMensagem()">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="nova_mensagem && !cadastrado" @click="cadastrarNovaMensagem()">
                     Cadastrar Mensagem
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!nova_mensagem && !cadastrado" @click="cadastrar()">Cadastrar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!nova_mensagem && !cadastrado" @click="cadastrar()">Cadastrar</button>
             </template>
         </modal>
 
-        <modal :fechar="!preload" :modal-pai="modal" :size="68" :titulo="titulo_janela" id="janelaOcorrencia">
+        <modal :fechar="!preload" :modal-pai="modal" :size="68" :titulo="titulo_janela" id="janelaOcorrencia" ref="modal_janelaOcorrencia">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preload">
                     <preload></preload>
@@ -276,16 +274,14 @@
                             <div class="col-12 mt-2" v-show="ocorrencia.status !== 'finalizado'">
                                 <button
                                     type="button"
-                                    class="btn btn-sm btn-primary"
+                                    class="btn btn-sm mr-1 btn-primary"
                                     :disabled="preloadMsg"
-                                    @click="formNovaMensagem"
-                                    data-toggle="modal"
-                                    data-target="#janelaFormOcorrencia"
+                                    @click="formNovaMensagem; $refs.modal_janelaFormOcorrencia && $refs.modal_janelaFormOcorrencia.abrirModal()"
                                 >
                                     Nova Mensagem
                                 </button>
 
-                                <button type="button" class="btn btn-sm btn-success" :disabled="preloadMsg" @click="getMsg(ocorrencia.id)">
+                                <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="preloadMsg" @click="getMsg(ocorrencia.id)">
                                     <i :class="preloadMsg ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                                     Atualizar
                                 </button>
@@ -297,7 +293,7 @@
 
                             <div class="col-12 mt-2" v-show="!preloadMsg">
                                 <ul class="timeline">
-                                    <li v-for="item in ocorrencia.respostas">
+                                    <li v-for="(item, index) in ocorrencia.respostas" :key="item.id || index">
                                         <div class="trackind">
                                             <span
                                                 ><strong class="text-default">{{ item.usuario.nome }}</strong> diz:</span
@@ -308,7 +304,7 @@
                                             <fieldset v-show="item.anexos.length > 0">
                                                 <legend>ANEXO(S)</legend>
                                                 <ul>
-                                                    <li v-for="anexo in item.anexos">
+                                                    <li v-for="(anexo, index) in item.anexos" :key="anexo.id || index">
                                                         <a :href="anexo.urlDownload" class="float-left">
                                                             <i class="fa fa-paperclip"></i>
                                                             {{ anexo.nome }}{{ anexo.extensao }}
@@ -326,22 +322,18 @@
                     <div class="col-12 mt-2" v-show="ocorrencia.status != 'finalizado'">
                         <button
                             type="button"
-                            class="btn btn-sm btn-secondary"
+                            class="btn btn-sm mr-1 btn-secondary"
                             :disabled="finalizado"
-                            @click="formMudarSetor"
-                            data-toggle="modal"
-                            data-target="#janelaMudaSetor"
+                            @click="formMudarSetor; $refs.modal_janelaMudaSetor && $refs.modal_janelaMudaSetor.abrirModal()"
                         >
                             Mudar Setor
                         </button>
 
                         <button
                             type="button"
-                            class="btn btn-sm btn-secondary"
+                            class="btn btn-sm mr-1 btn-secondary"
                             :disabled="finalizado"
-                            @click="janelaConfirmarFinalizar"
-                            data-toggle="modal"
-                            data-target="#janelaConfirmarFinalizar"
+                            @click="janelaConfirmarFinalizar; $refs.modal_janelaConfirmarFinalizar && $refs.modal_janelaConfirmarFinalizar.abrirModal()"
                         >
                             Finalizar Ocorrência
                         </button>
@@ -351,7 +343,7 @@
             <template #rodape> </template>
         </modal>
 
-        <modal :modal-pai="modal" :titulo="titulo_janela_form_tag" :fechar="!preloadTag" id="janelaFormTag">
+        <modal :modal-pai="modal" :titulo="titulo_janela_form_tag" :fechar="!preloadTag" id="janelaFormTag" ref="modal_janelaFormTag">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preloadTag">
                     <preload></preload>
@@ -371,13 +363,13 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!cadastrado && !preloadTag" @click="cadastraTag">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!cadastrado && !preloadTag" @click="cadastraTag">
                     <i class="fa fa-save"></i>Cadastrar
                 </button>
             </template>
         </modal>
 
-        <modal :modal-pai="modal" :titulo="titulo_janela_form_setor" :fechar="!preloadSetor" id="janelaFormSetor">
+        <modal :modal-pai="modal" :titulo="titulo_janela_form_setor" :fechar="!preloadSetor" id="janelaFormSetor" ref="modal_janelaFormSetor">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preloadSetor">
                     <preload></preload>
@@ -397,7 +389,7 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!cadastrado && !preloadSetor" @click="cadastraSetor">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!cadastrado && !preloadSetor" @click="cadastraSetor">
                     <i class="fa fa-save"></i> Cadastrar
                 </button>
             </template>
@@ -406,7 +398,7 @@
         <!-- Filtro -->
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -426,7 +418,7 @@
                         <label>Setor</label>
                         <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoSetor">
                             <option value="">Todos os setores</option>
-                            <option v-for="item in setores" :value="item.id">{{ item.nome }}</option>
+                            <option v-for="item in setores" :value="item.id" :key="item.id">{{ item.nome }}</option>
                         </select>
                     </div>
                 </div>
@@ -436,7 +428,7 @@
                         <label>Tag</label>
                         <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoTag">
                             <option value="">Todas as tags</option>
-                            <option v-for="item in tags" :value="item.id">{{ item.nome }}</option>
+                            <option v-for="item in tags" :value="item.id" :key="item.id">{{ item.nome }}</option>
                         </select>
                     </div>
                 </div>
@@ -470,42 +462,36 @@
                 </div>
 
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary"
+                        class="btn btn-sm mr-1 btn-primary"
                         :disabled="controle.carregando"
-                        @click="formNovo"
-                        data-toggle="modal"
-                        data-target="#janelaFormOcorrencia"
+                        @click="formNovo(); $refs.modal_janelaFormOcorrencia && $refs.modal_janelaFormOcorrencia.abrirModal()"
                     >
                         <i class="fa fa-plus"></i> Nova Ocorrência
                     </button>
 
                     <button
                         type="button"
-                        class="btn btn-sm btn-secondary"
+                        class="btn btn-sm mr-1 btn-secondary"
                         :disabled="controle.carregando"
                         v-if="permissaoTag"
-                        @click="formNovoTag"
-                        data-toggle="modal"
-                        data-target="#janelaFormTag"
+                        @click="formNovoTag; $refs.modal_janelaFormTag && $refs.modal_janelaFormTag.abrirModal()"
                     >
                         <i class="fa fa-plus"></i> Cadastrar Tag
                     </button>
 
                     <button
                         type="button"
-                        class="btn btn-sm btn-secondary"
+                        class="btn btn-sm mr-1 btn-secondary"
                         :disabled="controle.carregando"
                         v-if="permissaoSetor"
-                        @click="formNovoSetor"
-                        data-toggle="modal"
-                        data-target="#janelaFormSetor"
+                        @click="formNovoSetor; $refs.modal_janelaFormSetor && $refs.modal_janelaFormSetor.abrirModal()"
                     >
                         <i class="fa fa-plus"></i> Cadastrar Setor
                     </button>
@@ -545,7 +531,8 @@
                     </thead>
                     <tbody>
                         <tr
-                            v-for="item in lista"
+                            v-for="(item, index) in lista"
+                            :key="item.id || index"
                             :class="{
                                 'table-danger': item.status === 'novo',
                                 'table-warning': item.status === 'andamento',
@@ -561,10 +548,8 @@
                             <td class="text-center">
                                 <button
                                     type="button"
-                                    class="btn btn-sm btn-primary mb-1"
-                                    data-toggle="modal"
-                                    data-target="#janelaOcorrencia"
-                                    @click="formExibir(item.id)"
+                                    class="btn btn-sm mr-1 btn-primary mb-1"
+                                    @click="formExibir(item.id); $refs.modal_janelaOcorrencia && $refs.modal_janelaOcorrencia.abrirModal()"
                                 >
                                     <i class="fa fa-search-plus"></i> Exibir
                                 </button>
@@ -670,7 +655,7 @@ export default {
         return {
             hash: String(Math.random()).substr(2),
             config: configTinyMCE,
-            titulo_janela: '',
+            titulo_janela: 'Ocorrência',
             titulo_janela_form_ocorrencia: '',
             titulo_janela_form_tag: '',
             titulo_janela_form_setor: '',
@@ -892,11 +877,11 @@ export default {
             axios
                 .post(`${URL_ADMIN}/ocorrencia/cadastro-tag`, this.formTag)
                 .then((res) => {
-                    $('#janelaFormTag').modal('hide')
+                    this.$refs.modal_janelaFormTag && this.$refs.modal_janelaFormTag.fecharModal()
                     mostraSucesso('', 'Tag cadastrada com sucesso')
                     this.cadastrado = true
                     this.listaSetoresTags()
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preloadTag = false
                 })
                 .catch((error) => {
@@ -923,11 +908,11 @@ export default {
                 .post(`${URL_ADMIN}/ocorrencia/cadastro-setor`, this.formSetor)
                 .then((res) => {
                     if (res.status === 201) {
-                        $('#janelaFormSetor').modal('hide')
+                        this.$refs.modal_janelaFormSetor && this.$refs.modal_janelaFormSetor.fecharModal()
                         mostraSucesso('', 'Setor cadastrado com sucesso')
                         this.cadastrado = true
                         this.listaSetoresTags()
-                        this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                        this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                         this.preloadSetor = false
                     } else {
                         this.cadastrado = false
@@ -1009,7 +994,7 @@ export default {
                     if (res.status === 201) {
                         this.getMsg(this.ocorrencia.id)
                         // this.atualizar();
-                        $('#janelaMudaSetor').modal('hide')
+                        this.$refs.modal_janelaMudaSetor && this.$refs.modal_janelaMudaSetor.fecharModal()
                         this.preload = false
                         this.mudado = true
                     } else {
@@ -1042,7 +1027,7 @@ export default {
                         this.atualizar()
                         this.preload = false
                         this.finalizado = true
-                        $('#janelaMudaSetor').modal('hide')
+                        this.$refs.modal_janelaMudaSetor && this.$refs.modal_janelaMudaSetor.fecharModal()
                     } else {
                         this.finalizado = false
                         this.preload = false
@@ -1063,8 +1048,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         },
         mudaTipo() {
             if (this.controle.dados.campoStatus !== '') {

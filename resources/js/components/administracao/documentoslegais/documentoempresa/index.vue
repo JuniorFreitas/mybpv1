@@ -1,6 +1,6 @@
 <template>
     <div>
-        <modal id="janelaCadastrar" :titulo="tituloJanela" :size="90">
+        <modal ref="modalCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :size="90">
             <template #conteudo>
                 <div v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</div>
                 <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -53,23 +53,23 @@
                                     <a
                                         class="nav-item nav-link active"
                                         id="nav-documentoempresa-tab"
-                                        data-toggle="tab"
                                         href="#nav-documentoempresa"
                                         role="tab"
                                         aria-controls="nav-documentoempresa"
                                         aria-selected="false"
-                                        >DOCUMENTO LEGAIS</a
-                                    >
+                                        data-toggle="tab"
+                                        >DOCUMENTO LEGAIS
+                                    </a>
                                 </li>
                                 <li class="nav-item">
                                     <a
                                         class="nav-item nav-link"
                                         id="nav-config-empresa-tab"
-                                        data-toggle="tab"
                                         href="#nav-config-empresa"
                                         role="tab"
                                         aria-controls="nav-config-empresa"
                                         aria-selected="false"
+                                        data-toggle="tab"
                                         >CONFIGURAÇÕES</a
                                     >
                                 </li>
@@ -116,7 +116,12 @@
                                                                 onblur="valida_campo_vazio(this, 1)"
                                                             >
                                                                 <option value="">Selecione ...</option>
-                                                                <option v-for="item in listaDocumentosFiltrados" :value="item.id" v-text="item.nome"></option>
+                                                                <option
+                                                                    v-for="(item, index) in listaDocumentosFiltrados"
+                                                                    :key="item.id || index"
+                                                                    :value="item.id"
+                                                                    v-text="item.nome"
+                                                                ></option>
                                                             </select>
                                                         </div>
                                                     </div>
@@ -234,13 +239,13 @@
                 </form>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && !preloadAjax" @click="alterar()">Alterar</button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado && !preloadAjax" @click="cadastrar()">Cadastrar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado && !preloadAjax" @click="alterar()">Alterar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado && !preloadAjax" @click="cadastrar()">Cadastrar</button>
             </template>
         </modal>
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -262,7 +267,7 @@
                             class="form-control form-control-sm"
                             v-model="controle.dados.campoStatus"
                             :disabled="controle.carregando"
-                            @change="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null"
+                            @change="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null"
                         >
                             <option value="">Todos os Status</option>
                             <option :value="true">Apenas Ativos</option>
@@ -272,20 +277,12 @@
                 </div>
 
                 <div class="col-12 col-md-9">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-primary"
-                        data-toggle="modal"
-                        v-if="permissoes.insert"
-                        :disabled="controle.carregando"
-                        data-target="#janelaCadastrar"
-                        @click="formNovo()"
-                    >
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" v-if="permissoes.insert" :disabled="controle.carregando" @click="formNovo()">
                         Cadastrar
                     </button>
                 </div>
@@ -312,7 +309,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in lista">
+                        <tr v-for="(item, index) in lista" :key="item.id || index">
                             <td data-label="ID">
                                 {{ item.id }}
                             </td>
@@ -350,7 +347,7 @@
                                 <a
                                     :href="`empresa/${item.id}/pdf`"
                                     v-if="permissoes.pdf"
-                                    class="btn btn-sm btn-primary mb-1"
+                                    class="btn btn-sm mr-1 btn-primary mb-1"
                                     v-tippy
                                     content="PDF"
                                     target="_blank"
@@ -360,13 +357,11 @@
 
                                 <a
                                     href="javascript://"
-                                    class="btn btn-sm btn-primary mb-1"
+                                    class="btn btn-sm mr-1 btn-primary mb-1"
                                     v-tippy
                                     content="Editar"
                                     v-if="permissoes.update"
                                     @click.prevent="formAlterar(item.id)"
-                                    data-toggle="modal"
-                                    data-target="#janelaCadastrar"
                                 >
                                     <i class="fa fa-edit" aria-hidden="true"></i>
                                 </a>
@@ -473,6 +468,16 @@ export default {
     },
 
     methods: {
+        abrirModalCadastrar() {
+            if (this.$refs && this.$refs.modalCadastrar && typeof this.$refs.modalCadastrar.abrirModal === 'function') {
+                this.$refs.modalCadastrar.abrirModal()
+            }
+        },
+        fecharModalCadastrar() {
+            if (this.$refs && this.$refs.modalCadastrar && typeof this.$refs.modalCadastrar.fecharModal === 'function') {
+                this.$refs.modalCadastrar.fecharModal()
+            }
+        },
         filtraTipo() {},
 
         formNovo() {
@@ -487,6 +492,7 @@ export default {
             setupCampo()
 
             this.form = _.cloneDeep(this.formDefault) //copia
+            this.abrirModalCadastrar()
         },
 
         cadastrar() {
@@ -531,6 +537,7 @@ export default {
 
             this.form = _.cloneDeep(this.formDefault) //copia
             this.leitura = false
+            this.abrirModalCadastrar()
 
             axios
                 .get(`${URL_ADMIN}/administracao/documentoslegais/empresa/${id}/editar`)
@@ -585,8 +592,8 @@ export default {
         },
 
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

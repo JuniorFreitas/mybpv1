@@ -111,11 +111,11 @@
             </form>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && !preloadAjax"
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado && !preloadAjax"
                     @click="alterar()">
                 Alterar
             </button>
-            <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado && !preloadAjax"
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado && !preloadAjax"
                     @click="cadastrar()">
                 Cadastrar
             </button>
@@ -130,7 +130,7 @@
             <h4 v-show="!apagado">Tem certeza que deseja apagar este usuário?</h4>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
+            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
         </template>
     </modal>
     <fieldset>
@@ -228,13 +228,13 @@
             </div>
         </form>
 
-        <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar"><i
+        <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar"><i
                 :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
             Atualizar
         </button>
 
         @can('usuario_usuarios_insert')
-            <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#janelaCadastrar"
+            <button type="button" class="btn btn-sm mr-1 btn-primary" data-toggle="modal" data-target="#janelaCadastrar"
                     @click="formNovo()">
                 Criar novo usuário
             </button>
@@ -286,7 +286,7 @@
                     </td>
                     <td>
                         @can('usuario_usuarios_update')
-                            <a href="javascript://" class="btn btn-sm btn-success btnFormAlterar"
+                            <a href="javascript://" class="btn btn-sm mr-1 btn-success btnFormAlterar"
                                @click.prevent="formAlterar(usuario.id)"
                                data-toggle="modal"
                                data-target="#janelaCadastrar">
@@ -295,7 +295,7 @@
                         @endcan
 
                         @if(auth()->user()->grupo_id == 1)
-                            <a href="javascript://" class="btn btn-sm btn-success btnFormAlterar"
+                            <a href="javascript://" class="btn btn-sm mr-1 btn-success btnFormAlterar"
                                @click.prevent="simularUsuario(usuario.id)">
                                 <i class="fa fa-user"></i>
                             </a>

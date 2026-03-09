@@ -8,12 +8,13 @@ require('./bootstrap')
 require('./Globals')
 require('./registerGlobals')
 
+// Vue 3 exposto globalmente para blades que usam Vue.createApp() em script inline (ex.: dashboard, login)
+import * as Vue from 'vue'
+window.Vue = Vue
+
 window.toastr = require('toastr')
 toastr.options.closeButton = true
 window.moment = require('moment')
 moment.locale('pt-BR')
 
 require('bootstrap-daterangepicker')
-
-const Vue = require('vue')
-window.Vue = Vue

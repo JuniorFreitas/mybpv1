@@ -2,7 +2,7 @@
     <div>
         <preload class="mt-2" v-if="preload"></preload>
 
-        <modal :id="hash" :titulo="tituloJanela" :fechar="!preloadAjax" size="g">
+        <modal :id="hash" :titulo="tituloJanela" :fechar="!preloadAjax" size="g" :ref="hash" :modal-pai="modalPai">
             <template #conteudo>
                 <preload class="mt-2" v-if="preloadAjax"></preload>
                 <div v-else>
@@ -52,6 +52,7 @@
                         <tbody>
                             <tr
                                 v-for="item in lista"
+                                :key="item.id"
                                 :class="{
                                     'table-warning': item.status.includes('aberto'),
                                     'table-danger': item.status.includes('reprovado'),
@@ -82,11 +83,9 @@
                                     <a
                                         v-show="item.status === 'aprovado' || item.status === 'reprovado'"
                                         href="javascript://"
-                                        class="btn btn-sm btn-primary"
+                                        class="btn btn-sm mr-1 btn-primary"
                                         title="Visualizar"
-                                        @click.prevent="formAprovar(item.id)"
-                                        data-toggle="modal"
-                                        :data-target="`#${hash}`"
+                                        @click.prevent="formAprovar(item.id); $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
                                     >
                                         <i class="fa fa-search"></i> Visualizar
                                     </a>
@@ -117,6 +116,10 @@ export default {
         hash: {
             type: String,
             default: `mastertag_${parseInt(Math.random() * 999999)}`
+        },
+        modalPai: {
+            type: String,
+            default: ''
         }
     },
     data() {
@@ -195,13 +198,15 @@ export default {
                 .catch((error) => (this.preloadAjax = false))
         },
 
-        atualizar() {
+        async atualizar() {
             this.preload = true
-            axios.get(`${URL_ADMIN}/historico/cih/${this.fc_token}`).then((res) => {
-                let data = res.data
+            try {
+                const res = await axios.get(`${URL_ADMIN}/historico/cih/${this.fc_token}`)
+                const data = res.data
                 this.lista = data.cih
+            } finally {
                 this.preload = false
-            })
+            }
         }
     }
 }

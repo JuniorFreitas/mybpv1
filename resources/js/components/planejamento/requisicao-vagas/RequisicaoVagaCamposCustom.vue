@@ -1,6 +1,6 @@
 <template>
     <div class="container-fluid requisicao-vaga-campos-custom">
-        <modal id="janelaCadastrar" :titulo="tituloJanela" :size="90" :mostrar-botao-fechar-no-rodape="false">
+        <modal id="janelaCadastrar" :titulo="tituloJanela" :size="90" :mostrar-botao-fechar-no-rodape="false" ref="modal_janelaCadastrar">
             <template #conteudo>
                 <preload v-show="salvando" class="text-center"></preload>
                 <form v-if="!salvando" id="form-campo-custom" @submit.prevent>
@@ -69,16 +69,14 @@
                     </p>
                 </div>
                 <div class="col-12 col-md-9">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="carregando" @click="listar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="carregando" @click="listar">
                         <i :class="carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i> Atualizar
                     </button>
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary"
-                        data-toggle="modal"
-                        data-target="#janelaCadastrar"
+                        class="btn btn-sm mr-1 btn-primary"
                         :disabled="carregando"
-                        @click.prevent="abrirModal()"
+                        @click.prevent="abrirModal(); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                     >
                         <i class="fa fa-plus"></i> Novo campo
                     </button>
@@ -131,9 +129,7 @@
                                             class="dropdown-item"
                                             href="javascript://"
                                             title="Editar"
-                                            data-toggle="modal"
-                                            data-target="#janelaCadastrar"
-                                            @click.prevent="abrirModal(c)"
+                                            @click.prevent="abrirModal(c); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                                         >
                                             <i class="fa fa-edit mr-1"></i> Editar
                                         </a>
@@ -251,7 +247,7 @@ export default {
             this.opcoesTexto = this.form.opcoes && Array.isArray(this.form.opcoes) ? this.form.opcoes.join('\n') : ''
             if (!campo) {
                 this.$nextTick(() => {
-                    $('#janelaCadastrar').modal('show')
+                    this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.abrirModal()
                 })
             }
         },
@@ -308,7 +304,7 @@ export default {
                 } else {
                     alert('Salvo com sucesso.')
                 }
-                $('#janelaCadastrar').modal('hide')
+                this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
                 this.listar()
             })
                 .catch((err) => {

@@ -21,11 +21,11 @@ class AssinaturaPublicaControllerTest extends TestCase
 
     public function testIndexRegistraEventoVisualizadoComEvidencias(): void
     {
-        $doc = new FakeDocumentoParaAssinatura();
+        $doc = new FakeDocumentoParaAssinaturaPublica();
         $doc->id = 55;
         $doc->status = DocumentoParaAssinatura::STATUS_EM_ASSINATURA;
 
-        $signatario = new FakeDocumentoAssinaturaSignatario();
+        $signatario = new FakeDocumentoAssinaturaSignatarioPublica();
         $signatario->id = 77;
         $signatario->status = DocumentoAssinaturaSignatario::STATUS_PENDENTE;
         $signatario->setRelation('documentoParaAssinatura', $doc);
@@ -65,10 +65,10 @@ class AssinaturaPublicaControllerTest extends TestCase
     }
 }
 
-class FakeDocumentoAssinaturaSignatario extends DocumentoAssinaturaSignatario
+class FakeDocumentoAssinaturaSignatarioPublica extends DocumentoAssinaturaSignatario
 {
 }
 
-class FakeDocumentoParaAssinatura extends DocumentoParaAssinatura
+class FakeDocumentoParaAssinaturaPublica extends DocumentoParaAssinatura
 {
 }

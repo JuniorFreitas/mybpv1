@@ -42,7 +42,7 @@
                        v-if="dados.vagas_projeto.length">
                         <i class="fas fa-file-pdf"></i> GERAR PDF
                     </a>
-                    <button type="button" class="btn btn-sm btn-primary" v-if="dados.vagas_projeto.length"
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" v-if="dados.vagas_projeto.length"
                             @click.prevent="exportaExcel()"
                             :disabled="preloadExportacao">
                         <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
@@ -55,7 +55,7 @@
             </div>
 
             <template v-if="dados.vagas_projeto.length">
-                <div class="col-12 p-3" v-for="(item, index) in dados.vagas_projeto">
+                <div class="col-12 p-3" v-for="(item, index) in dados.vagas_projeto" :key="item.id || index">
                     <div class="text-center">
                         <h5>{{ item.vaga_aberta.titulo }}<br>
                             <pre>({{ item.vaga_aberta.vaga.nome }})</pre>
@@ -258,12 +258,14 @@ export default {
     },
     async mounted() {
         this.preload = true;
-        await axios.get(`${this.urlBase}/get-projetos`).then(response => {
+        try {
+            const response = await axios.get(`${this.urlBase}/get-projetos`);
             this.listProjetos = response.data;
+        } catch (error) {
+            this.listProjetos = [];
+        } finally {
             this.preload = false;
-        }).catch(error => {
-            this.preload = false;
-        });
+        }
     },
     computed: {
         urlBase() {
@@ -292,25 +294,28 @@ export default {
                 this.showRelatorio = false;
                 return false;
             }
-            await axios.get(`${this.urlBase}/seleciona-projeto/${this.projeto_id}`).then(({ data }) => {
+            try {
+                const { data } = await axios.get(`${this.urlBase}/seleciona-projeto/${this.projeto_id}`);
                 this.dados = data;
                 this.showRelatorio = true;
+            } catch (error) {
+                this.dados = [];
+            } finally {
                 this.preload = false;
-            }).catch(error => {
-                this.preload = false;
-            });
+            }
         },
-        exportaExcel() {
+        async exportaExcel() {
             this.preloadExportacao = true;
-            axios.post(`${this.urlBase}/export-excel`, {
-                projeto: this.projeto_id
-            }).then(({ data }) => {
+            try {
+                const { data } = await axios.post(`${this.urlBase}/export-excel`, {
+                    projeto: this.projeto_id
+                });
                 mostraSucesso(data.msg);
-                this.preloadExportacao = false;
-            }).catch(erro => {
+            } catch (erro) {
                 mostraErro(erro);
+            } finally {
                 this.preloadExportacao = false;
-            });
+            }
         }
     }
 };

@@ -64,7 +64,7 @@
                 <div class="tab-content py-4">
                     <div class="tab-pane show active" id="abaChat">
                         <ul class="list-unstyled chat-list" style="max-height: 410px">
-                            <li v-for="(usuario, index) in contatosRecentes">
+                            <li v-for="(usuario, index) in contatosRecentes" :key="usuario.id || index">
                                 <a href="#" @click.prevent="selecionarContato(usuario)">
                                     <div class="media">
                                         <div class="align-self-center mr-3">
@@ -208,7 +208,7 @@
                             Nenhum contato com o nome <strong>{{ termoBuscaContato }}</strong> foi encontrado
                         </div>
                         <div data-simplebar style="max-height: 410px; overflow-y: scroll" class="mt-3" v-if="!preloadContato && listaContatos.length > 0">
-                            <div v-for="(grupo, letra) in grupoDeContatos">
+                            <div v-for="(grupo, letra) in grupoDeContatos" :key="letra">
                                 <div class="avatar-xs mb-3">
                                     <span class="avatar-title rounded-circle bg-soft-primary text-primary">
                                         {{ letra }}
@@ -216,7 +216,7 @@
                                 </div>
 
                                 <ul class="list-unstyled chat-list">
-                                    <li v-for="(usuario, index) in grupo">
+                                    <li v-for="(usuario, index) in grupo" :key="usuario.id || index">
                                         <a href="#" @click.prevent="selecionarContato(usuario)">
                                             <h5 class="font-size-14 mb-0">
                                                 <i
@@ -320,6 +320,7 @@
                         </div>
                         <ul class="list-unstyled mb-0">
                             <template v-for="(gurpoDeMensagens, dataDasMensagens) in grupoMensagensChat">
+                            :key="dataDasMensagens"
                                 <li>
                                     <div class="chat-day-title">
                                         <span class="title">{{ formatInfoData(dataDasMensagens) }}</span>
@@ -329,6 +330,7 @@
                                 <!--  Fulano falando comigo-->
                                 <li
                                     v-for="(mensagem, index) in gurpoDeMensagens"
+                                    :key="mensagem.id || index"
                                     :class="{ 'text-right right': mensagem.de.id === EU.id }"
                                     class="caixa_mensagem mb-3"
                                     :ref="`mensagem_id_${mensagem.id}`"

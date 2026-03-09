@@ -2,7 +2,7 @@
     <div v-if="hasValidData">
         <table
             v-for="(item, index) in resultadoAgrupado"
-            :key="index"
+            :key="item.id || index"
             class="table"
         >
             <thead>

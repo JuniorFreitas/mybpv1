@@ -1,5 +1,5 @@
 <template>
-    <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
+    <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90" ref="modal_janelaCadastrar">
         <template #conteudo>
             <preload v-show="preload"></preload>
             <div v-if="!preload">
@@ -28,7 +28,7 @@
             </div>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preload && !visualizando" :disabled="salvando" @click="salvar">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !preload && !visualizando" :disabled="salvando" @click="salvar">
                 <i class="fa fa-save"></i>
                 {{ salvando ? 'Salvando...' : 'Salvar' }}
             </button>
@@ -56,7 +56,7 @@ export default {
     mixins: [validacoes],
     data() {
         return {
-            titulo_janela: '',
+            titulo_janela: 'Avaliação',
             preload: false,
             salvando: false,
             editando: false,
@@ -102,7 +102,7 @@ export default {
                 this.carregarDados(response.data)
 
                 this.$nextTick(() => {
-                    $('#janelaCadastrar').modal('show')
+                    this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.abrirModal()
                     setupCampo()
                 })
             } catch (error) {
@@ -144,7 +144,7 @@ export default {
             try {
                 await axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${this.formAvaliar.avaliacao_feedback_id}`, this.formAvaliar)
 
-                $('#janelaCadastrar').modal('hide')
+                this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
                 mostraSucesso('', 'Avaliação enviada com sucesso')
                 this.$emit('salvar')
             } catch (error) {

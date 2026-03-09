@@ -139,6 +139,8 @@ const app = createApp({
             listaAreas: [],
             segmentosTreinamento: [],
 
+            dropdownAbertoKey: null,
+
             controle: {
                 carregando: false,
                 dados: {
@@ -201,6 +203,8 @@ const app = createApp({
         this.carregarSegmentosTreinamento()
         this.atualizar()
 
+        document.addEventListener('click', this.onClickOutside)
+
         let intervalId = setInterval(() => {
             if (this.listaTodosTreinamentos.length > 0) {
                 // Realiza o mapeamento
@@ -217,10 +221,16 @@ const app = createApp({
             }
         }, 200)
     },
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
+    },
     computed: {
         isColunaTreinamentoSelecionada() {
-            return (v) => {
-                return this.listaColunasTreinamentos && this.listaColunasTreinamentos.some((col) => col.id === v.id && col.checked)
+            return (treinamento) => {
+                if (!treinamento || !this.listaColunasTreinamentos) {
+                    return false
+                }
+                return this.listaColunasTreinamentos.some((col) => col.id === treinamento.id && col.checked)
             }
         },
         emTreinamentos() {
@@ -324,6 +334,24 @@ const app = createApp({
         }
     },
     methods: {
+        toggleDropdown(key) {
+            if (!key) {
+                return
+            }
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(key) {
+            return this.dropdownAbertoKey === key
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+        onClickOutside(event) {
+            if (event && event.target && event.target.closest && event.target.closest('.dropdown')) {
+                return
+            }
+            this.dropdownAbertoKey = null
+        },
         carregarSegmentosTreinamento() {
             axios
                 .get(`${URL_ADMIN}/cadastro/segmentostreinamento/habilitados-empresa`)

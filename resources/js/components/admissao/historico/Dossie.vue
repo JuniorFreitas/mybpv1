@@ -33,7 +33,7 @@
                     @onprogresso="anexoUploadAndamento = true"
                     @onfinalizado="anexoUploadAndamento = false"
                 ></upload>
-                <button class="btn btn-sm ml-2 btn-primary" @click="modelo('docchecklist')"><span class="fas fa-file-pdf"></span> Baixar Modelo</button>
+                <button class="btn btn-sm mr-1 ml-2 btn-primary" @click="modelo('docchecklist')"><span class="fas fa-file-pdf"></span> Baixar Modelo</button>
             </fieldset>
 
             <fieldset>
@@ -68,7 +68,7 @@
                     @onprogresso="anexoUploadAndamento = true"
                     @onfinalizado="anexoUploadAndamento = false"
                 ></upload>
-                <button class="btn btn-sm ml-2 btn-primary" @click="modelo('autodeclaracao_etnico_racial')">
+                <button class="btn btn-sm mr-1 ml-2 btn-primary" @click="modelo('autodeclaracao_etnico_racial')">
                     <span class="fas fa-file-pdf"></span> Baixar Modelo
                 </button>
             </fieldset>
@@ -88,16 +88,16 @@
                     @onprogresso="anexoUploadAndamento = true"
                     @onfinalizado="anexoUploadAndamento = false"
                 ></upload>
-                <button class="btn btn-sm ml-2 btn-primary" @click="modelo('contratotrabalhoassinado')">
+                <button class="btn btn-sm mr-1 ml-2 btn-primary" @click="modelo('contratotrabalhoassinado')">
                     <span class="fas fa-file-pdf"></span> Baixar Modelo
                 </button>
                 <template v-if="assinaturaDigitalHabilitada && temDocumentoAssinaturaTipo('contratotrabalhoassinado')">
-                    <button type="button" class="btn btn-sm ml-2 btn-info" @click="abrirModalGerenciarAssinatura('contratotrabalhoassinado')">
+                    <button type="button" class="btn btn-sm mr-1 ml-2 btn-info" @click="abrirModalGerenciarAssinatura('contratotrabalhoassinado')">
                         <span class="fas fa-cog"></span> Gerenciar assinatura
                     </button>
                 </template>
                 <template v-else-if="assinaturaDigitalHabilitada">
-                    <button type="button" class="btn btn-sm ml-2 btn-success" @click="abrirModalAssinatura('contratotrabalhoassinado')">
+                    <button type="button" class="btn btn-sm mr-1 ml-2 btn-success" @click="abrirModalAssinatura('contratotrabalhoassinado')">
                         <span class="fas fa-pen-fancy"></span> Enviar para assinatura
                     </button>
                 </template>
@@ -118,14 +118,14 @@
                     @onprogresso="anexoUploadAndamento = true"
                     @onfinalizado="anexoUploadAndamento = false"
                 ></upload>
-                <button class="btn btn-sm ml-2 btn-primary" @click="modelo('termoconfiabilidade')"><span class="fas fa-file-pdf"></span> Baixar Modelo</button>
+                <button class="btn btn-sm mr-1 ml-2 btn-primary" @click="modelo('termoconfiabilidade')"><span class="fas fa-file-pdf"></span> Baixar Modelo</button>
                 <template v-if="assinaturaDigitalHabilitada && temDocumentoAssinaturaTipo('termoconfiabilidade')">
-                    <button type="button" class="btn btn-sm ml-2 btn-info" @click="abrirModalGerenciarAssinatura('termoconfiabilidade')">
+                    <button type="button" class="btn btn-sm mr-1 ml-2 btn-info" @click="abrirModalGerenciarAssinatura('termoconfiabilidade')">
                         <span class="fas fa-cog"></span> Gerenciar assinatura
                     </button>
                 </template>
                 <template v-else-if="assinaturaDigitalHabilitada">
-                    <button type="button" class="btn btn-sm ml-2 btn-success" @click="abrirModalAssinatura('termoconfiabilidade')">
+                    <button type="button" class="btn btn-sm mr-1 ml-2 btn-success" @click="abrirModalAssinatura('termoconfiabilidade')">
                         <span class="fas fa-pen-fancy"></span> Enviar para assinatura
                     </button>
                 </template>
@@ -146,14 +146,14 @@
                     @onprogresso="anexoUploadAndamento = true"
                     @onfinalizado="anexoUploadAndamento = false"
                 ></upload>
-                <button class="btn btn-sm ml-2 btn-primary" @click="modelo('valetransporte')"><span class="fas fa-file-pdf"></span> Baixar Modelo</button>
+                <button class="btn btn-sm mr-1 ml-2 btn-primary" @click="modelo('valetransporte')"><span class="fas fa-file-pdf"></span> Baixar Modelo</button>
                 <template v-if="assinaturaDigitalHabilitada && temDocumentoAssinaturaTipo('valetransporte')">
-                    <button type="button" class="btn btn-sm ml-2 btn-info" @click="abrirModalGerenciarAssinatura('valetransporte')">
+                    <button type="button" class="btn btn-sm mr-1 ml-2 btn-info" @click="abrirModalGerenciarAssinatura('valetransporte')">
                         <span class="fas fa-cog"></span> Gerenciar assinatura
                     </button>
                 </template>
                 <template v-else-if="assinaturaDigitalHabilitada">
-                    <button type="button" class="btn btn-sm ml-2 btn-success" @click="abrirModalAssinatura('valetransporte')">
+                    <button type="button" class="btn btn-sm mr-1 ml-2 btn-success" @click="abrirModalAssinatura('valetransporte')">
                         <span class="fas fa-pen-fancy"></span> Enviar para assinatura
                     </button>
                 </template>
@@ -174,16 +174,16 @@
                     @onprogresso="anexoUploadAndamento = true"
                     @onfinalizado="anexoUploadAndamento = false"
                 ></upload>
-                <button class="btn btn-sm ml-2 btn-primary" @click="modelo('acordocompensacaohoras')">
+                <button class="btn btn-sm mr-1 ml-2 btn-primary" @click="modelo('acordocompensacaohoras')">
                     <span class="fas fa-file-pdf"></span> Baixar Modelo
                 </button>
                 <template v-if="assinaturaDigitalHabilitada && temDocumentoAssinaturaTipo('acordocompensacaohoras')">
-                    <button type="button" class="btn btn-sm ml-2 btn-info" @click="abrirModalGerenciarAssinatura('acordocompensacaohoras')">
+                    <button type="button" class="btn btn-sm mr-1 ml-2 btn-info" @click="abrirModalGerenciarAssinatura('acordocompensacaohoras')">
                         <span class="fas fa-cog"></span> Gerenciar assinatura
                     </button>
                 </template>
                 <template v-else-if="assinaturaDigitalHabilitada">
-                    <button type="button" class="btn btn-sm ml-2 btn-success" @click="abrirModalAssinatura('acordocompensacaohoras')">
+                    <button type="button" class="btn btn-sm mr-1 ml-2 btn-success" @click="abrirModalAssinatura('acordocompensacaohoras')">
                         <span class="fas fa-pen-fancy"></span> Enviar para assinatura
                     </button>
                 </template>
@@ -204,14 +204,14 @@
                     @onprogresso="anexoUploadAndamento = true"
                     @onfinalizado="anexoUploadAndamento = false"
                 ></upload>
-                <button class="btn btn-sm ml-2 btn-primary" @click="modelo('termosalariofamilia')"><span class="fas fa-file-pdf"></span> Baixar Modelo</button>
+                <button class="btn btn-sm mr-1 ml-2 btn-primary" @click="modelo('termosalariofamilia')"><span class="fas fa-file-pdf"></span> Baixar Modelo</button>
                 <template v-if="assinaturaDigitalHabilitada && temDocumentoAssinaturaTipo('termosalariofamilia')">
-                    <button type="button" class="btn btn-sm ml-2 btn-info" @click="abrirModalGerenciarAssinatura('termosalariofamilia')">
+                    <button type="button" class="btn btn-sm mr-1 ml-2 btn-info" @click="abrirModalGerenciarAssinatura('termosalariofamilia')">
                         <span class="fas fa-cog"></span> Gerenciar assinatura
                     </button>
                 </template>
                 <template v-else-if="assinaturaDigitalHabilitada">
-                    <button type="button" class="btn btn-sm ml-2 btn-success" @click="abrirModalAssinatura('termosalariofamilia')">
+                    <button type="button" class="btn btn-sm mr-1 ml-2 btn-success" @click="abrirModalAssinatura('termosalariofamilia')">
                         <span class="fas fa-pen-fancy"></span> Enviar para assinatura
                     </button>
                 </template>
@@ -232,16 +232,16 @@
                     @onprogresso="anexoUploadAndamento = true"
                     @onfinalizado="anexoUploadAndamento = false"
                 ></upload>
-                <button class="btn btn-sm ml-2 btn-primary" @click="modelo('declaracaodependentesimposto')">
+                <button class="btn btn-sm mr-1 ml-2 btn-primary" @click="modelo('declaracaodependentesimposto')">
                     <span class="fas fa-file-pdf"></span> Baixar Modelo
                 </button>
                 <template v-if="assinaturaDigitalHabilitada && temDocumentoAssinaturaTipo('declaracaodependentesimposto')">
-                    <button type="button" class="btn btn-sm ml-2 btn-info" @click="abrirModalGerenciarAssinatura('declaracaodependentesimposto')">
+                    <button type="button" class="btn btn-sm mr-1 ml-2 btn-info" @click="abrirModalGerenciarAssinatura('declaracaodependentesimposto')">
                         <span class="fas fa-cog"></span> Gerenciar assinatura
                     </button>
                 </template>
                 <template v-else-if="assinaturaDigitalHabilitada">
-                    <button type="button" class="btn btn-sm ml-2 btn-success" @click="abrirModalAssinatura('declaracaodependentesimposto')">
+                    <button type="button" class="btn btn-sm mr-1 ml-2 btn-success" @click="abrirModalAssinatura('declaracaodependentesimposto')">
                         <span class="fas fa-pen-fancy"></span> Enviar para assinatura
                     </button>
                 </template>
@@ -586,7 +586,7 @@
                 ></upload>
             </fieldset>
 
-            <button class="btn btn-sm btn-primary mb-3" @click="salvar"><i class="fa fa-save"></i> Salvar</button>
+            <button class="btn btn-sm mr-1 btn-primary mb-3" @click="salvar"><i class="fa fa-save"></i> Salvar</button>
 
             <acao-assinatura-documento
                 ref="acaoAssinaturaDossie"
@@ -728,19 +728,20 @@ export default {
                 })
                 .catch((error) => (this.preload = false))
         },
-        atualizar() {
+        async atualizar() {
             this.preload = true
             this.form = _.cloneDeep(this.formDefault)
-            axios.get(`${URL_ADMIN}/historico/dossie/${this.feedback_id}`).then((res) => {
+            try {
+                const res = await axios.get(`${URL_ADMIN}/historico/dossie/${this.feedback_id}`)
                 const dynamicKeysComum = res.data.relacionamentos.map((relacionamento) => relacionamento.comum)
                 dynamicKeysComum.forEach((key) => {
                     this.addDynamicKey(key)
                 })
                 Object.assign(this.form, res.data.dossie)
                 this.documentosAssinaturaPorTipo = res.data.documentos_para_assinatura || {}
-                // this.form = data;
+            } finally {
                 this.preload = false
-            })
+            }
         },
         modelo(tipo_modelo) {
             let link = `${URL_ADMIN}/historico/dossie/${tipo_modelo}/${this.form.curriculo_id}/${this.form.id}`

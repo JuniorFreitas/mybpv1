@@ -36,10 +36,10 @@
             </form>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado" @click="alterar()">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado" @click="alterar()">
                 Alterar
             </button>
-            <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado" @click="cadastrar()">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado" @click="cadastrar()">
                 Cadastrar
             </button>
         </template>
@@ -54,7 +54,7 @@
             <h4 v-show="!apagado">Tem certeza que deseja apagar esta Classificação?</h4>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado && !preloadAjax">Apagar</button>
+            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar()" v-show="!apagado && !preloadAjax">Apagar</button>
         </template>
     </modal>
 
@@ -77,9 +77,9 @@
     </div>
 
 
-    <button type="button" class="btn btn-sm btn-success" id="guide-menu" @click="atualizar">Atualizar</button>
+    <button type="button" class="btn btn-sm mr-1 btn-success" id="guide-menu" @click="atualizar">Atualizar</button>
     @can('classificacao-plano-conta_insert')
-    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" id="btCadastrar" data-target="#janelaCadastrar"
+    <button type="button" class="btn btn-sm mr-1 btn-primary" data-toggle="modal" id="btCadastrar" data-target="#janelaCadastrar"
             @click="formNovo()">
         Cadastrar
     </button>
@@ -104,7 +104,7 @@
                     <td data-label="descrição">@{{categorias.descricao}}</td>
                     <td>
                         @can('classificacao-plano-conta_update')
-                        <a href="javascript://" class="btn btn-sm btn-success btnFormAlterar"
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-success btnFormAlterar"
                            @click.prevent="formAlterar(categorias.id)"
                            data-toggle="modal"
                            data-target="#janelaCadastrar">
@@ -112,7 +112,7 @@
                         </a>
                         @endcan
                         @can('classificacao-plano-conta_delete')
-                        <a href="javascript://" class="btn btn-sm btn-danger btnFormExcluir"
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-danger btnFormExcluir"
                            @click.prevent="janelaConfirmar(categorias.id)"
                            data-toggle="modal"
                            data-target="#janelaConfirmar">

@@ -1,6 +1,6 @@
 <template>
     <div class="row justify-content-center mt-5" v-if="hasCharts">
-        <div v-for="(chart, index) in charts" :key="index" class="col-md-4">
+        <div v-for="(chart, index) in charts" :key="chart.id || index" class="col-md-4">
             <h4 class="text-center">{{ chart.name }}</h4>
             <RadarChart :id="chart.name" :chart-data="chart.data" />
             <h4 class="text-center">

@@ -255,7 +255,7 @@ export default {
 <template>
     <div id="componenteVagasAbertas">
 
-        <modal id="janelaBloqueiaCandidato" titulo="Candidatar a vaga" v-show="bloqueado">
+        <modal id="janelaBloqueiaCandidato" titulo="Candidatar a vaga" v-show="bloqueado" ref="modal_janelaBloqueiaCandidato">
             <template #conteudo>
                 <div>
                     <h5>OPS... Você ja está cadastrado nesta vaga.</h5>
@@ -263,7 +263,7 @@ export default {
             </template>
         </modal>
 
-        <modal id="janelaConfirmar" :fechar="false" titulo="Confirmação">
+        <modal id="janelaConfirmar" :fechar="false" titulo="Confirmação" ref="modal_janelaConfirmar">
             <template #conteudo>
                 <div>
                     <h5>Você tem certeza que deseja cadastrar seu curriculo SEM EXPERIÊNCIA?</h5>
@@ -275,7 +275,7 @@ export default {
             </template>
         </modal>
 
-        <modal id="janelaPrimeiro" titulo="Cadastro" v-if="!autenticado" :size="90" :fechar="!autenticado">
+        <modal id="janelaPrimeiro" titulo="Cadastro" v-if="!autenticado" :size="90" :fechar="!autenticado" ref="modal_janelaPrimeiro">
             <template #conteudo>
                 <fieldset>
                 <legend>Informe</legend>
@@ -322,7 +322,7 @@ export default {
             </template>
         </modal>
 
-        <modal id="janelaEntrar" titulo="Entrar" :size="90" :fechar="!autenticado">
+        <modal id="janelaEntrar" titulo="Entrar" :size="90" :fechar="!autenticado" ref="modal_janelaEntrar">
             <template #conteudo>
                 <fieldset>
                 <legend>Informe</legend>
@@ -344,15 +344,14 @@ export default {
                 <button class="btn btn-primary btn-block" @click="autenticar">Entrar</button>
                 <br>
                 <div class="form-group text-left">
-                    <a href="javascript://" data-toggle="modal"
-                       @click="formPrimeiro"
-                       data-target="#janelaPrimeiro">Primeiro Acesso</a>
+                    <a href="javascript://"
+                       @click="formPrimeiro; $refs.modal_janelaPrimeiro && $refs.modal_janelaPrimeiro.abrirModal()">Primeiro Acesso</a>
                 </div>
                 </fieldset>
             </template>
         </modal>
 
-        <modal id="janelaCadastrar" v-show="!bloqueado && id > 0" :titulo="titulo_vaga" :fechar="!preloadAjax"
+        <modal id="janelaCadastrar" v-show="!bloqueado && id  ref="modal_janelaCadastrar"> 0" :titulo="titulo_vaga" :fechar="!preloadAjax"
                :size="90">
             <template #conteudo>
 
@@ -532,7 +531,8 @@ export default {
                                                 onchange="valida_campo_vazio(this,1)"
                                                 onblur="valida_campo_vazio(this,1)">
                                             <option :value="null">Selecione</option>
-                                            <option v-for="item in escolaridades" :value="item.id">{{item.tipo}}
+                                            <option v-for="(item, index) in escolaridades" :value="item.id">{{item.tipo}}
+                                            :key="item.id || index"
                                             </option>
                                         </select>
                                     </div>
@@ -802,7 +802,8 @@ export default {
                                                 onblur="valida_campo_vazio(this,1)"
                                                 onchange="valida_campo_vazio(this,1)" :disabled="true">
                                             <option value="">Selecione ...</option>
-                                            <option v-for="vaga in vagas" :value="vaga.vaga_id">{{vaga.vaga.nome}}
+                                            <option v-for="(vaga, index) in vagas" :value="vaga.vaga_id">{{vaga.vaga.nome}}
+                                            :key="vaga.id || index"
                                             </option>
                                         </select>
                                     </div>
@@ -836,7 +837,7 @@ export default {
             </template>
         </modal>
 
-        <modal id="janelaBancoTalentos" v-show="autenticado && id > 0" titulo="Monte seu Currículo"
+        <modal id="janelaBancoTalentos" v-show="autenticado && id  ref="modal_janelaBancoTalentos"> 0" titulo="Monte seu Currículo"
                :fechar="!preloadAjax"
                :size="90">
             <template #conteudo>
@@ -998,7 +999,8 @@ export default {
                                                 onchange="valida_campo_vazio(this,1)"
                                                 onblur="valida_campo_vazio(this,1)">
                                             <option value="">Selecione</option>
-                                            <option v-for="item in escolaridades" :value="item.id">{{item.tipo}}
+                                            <option v-for="(item, index) in escolaridades" :value="item.id">{{item.tipo}}
+                                            :key="item.id || index"
                                             </option>
                                         </select>
                                     </div>
@@ -1288,7 +1290,8 @@ export default {
                 </header>
 
                 <span v-show="preloadVagas"><i class="fa fa-spinner fa-pulse"></i> Carregando...</span>
-                <fieldset v-for="vaga in vagas" v-show="!preloadVagas">
+                <fieldset v-for="(vaga, index) in vagas" v-show="!preloadVagas">
+                :key="vaga.id || index"
                     <div class="card mb-3">
                         <div class="card-body">
                             <h5 class="card-title">{{ vaga.vaga.nome }}</h5>
@@ -1299,17 +1302,13 @@ export default {
 
                             <div class="float-md-left" v-if="id !== 0">
                                 <button type="button" class="btn mr-1 mb-2 btn-primary"
-                                        @click="selecionaVaga(vaga)"
-                                        data-toggle="modal"
-                                        data-target="#janelaCadastrar">CANDIDATAR-SE
+                                        @click="selecionaVaga(vaga); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()">CANDIDATAR-SE
                                 </button>
                             </div>
 
                             <div class="float-md-left" v-if="id === 0">
                                 <button type="button" class="btn mr-1 mb-2 btn-primary"
-                                        @click="formEntrar()"
-                                        data-toggle="modal"
-                                        data-target="#janelaEntrar">CANDIDATAR-SE
+                                        @click="formEntrar(); $refs.modal_janelaEntrar && $refs.modal_janelaEntrar.abrirModal()">CANDIDATAR-SE
                                 </button>
                             </div>
                             <div class="float-md-right">
@@ -1344,9 +1343,7 @@ export default {
                         <h2 class="text-center">NÃO ENCONTROU A SUA VAGA?</h2>
                         <h4 class="text-center">Então envie o seu CV para nosso Banco de Talentos!</h4>
                         <a class="btn btn-outline-primary py-2 px-3" style="font-size: 1.2rem;"
-                           data-toggle="modal"
-                           data-target="#janelaEntrar"
-                           @click="formEntrar">
+                           @click="formEntrar; $refs.modal_janelaEntrar && $refs.modal_janelaEntrar.abrirModal()">
                             ENVIAR AGORA
                         </a>
                     </div>
@@ -1354,9 +1351,7 @@ export default {
                         <h2 class="text-center">NÃO ENCONTROU A SUA VAGA?</h2>
                         <h4 class="text-center">Então envie o seu CV para nosso Banco de Talentos!</h4>
                         <a class="btn btn-outline-primary py-2 px-3" style="font-size: 1.2rem;"
-                           data-toggle="modal"
-                           data-target="#janelaBancoTalentos"
-                           @click="formBancoTalentos">
+                           @click="formBancoTalentos; $refs.modal_janelaBancoTalentos && $refs.modal_janelaBancoTalentos.abrirModal()">
                             ENVIAR AGORA
                         </a>
                     </div>
@@ -1567,7 +1562,7 @@ export default {
                 let data = response.data.curriculo;
                 if (response.status === 200) {
                     Object.assign(this.form, data);
-                    $('#janelaEntrar').modal('hide');
+                    this.$refs.modal_janelaEntrar && this.$refs.modal_janelaEntrar.fecharModal();
                     mostraSucesso('Seja Bem Vindo(a) ' + this.form.nome);
                     setTimeout(function () {
                         window.location.reload();
@@ -1609,8 +1604,8 @@ export default {
 
         bloqueiaCandidato() {
             this.bloqueado = true;
-            $('#janelaCadastrar').modal('hide');
-            $('#janelaBloqueiaCandidato').modal('show');
+            this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal();
+            this.$refs.modal_janelaBloqueiaCandidato && this.$refs.modal_janelaBloqueiaCandidato.abrirModal();
         },
 
         selecionaMunicipioModal(obj) {
@@ -1771,7 +1766,7 @@ export default {
 
         semexperienciaSim() {
             this.semexperiencia = true;
-            $('#janelaConfirmar').modal('hide');
+            this.$refs.modal_janelaConfirmar && this.$refs.modal_janelaConfirmar.fecharModal();
             this.cadastrar();
         },
 
@@ -1790,7 +1785,7 @@ export default {
             }
 
             if (this.form.experiencias.length === 0 && !this.semexperiencia) {
-                $('#janelaConfirmar').modal('show');
+                this.$refs.modal_janelaConfirmar && this.$refs.modal_janelaConfirmar.abrirModal();
                 return false;
             }
 
@@ -1799,7 +1794,7 @@ export default {
             this.form.slug = this.slug;
             axios.post(`${URL_SITE}/cadastro-curriculo`, this.form)
                 .then(response => {
-                    $('#janelaCadastrar').modal('hide');
+                    this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal();
                     mostraSucesso('Você se candidatou a VAGA! Aguarde uns instantes que iremos lhe enviar um email de confirmação.');
                     this.form = _.cloneDeep(this.formDefault)
                     setTimeout(function () {
@@ -1821,8 +1816,8 @@ export default {
             this.formAcesso.slug = this.slug;
             axios.post(`${URL_SITE}/primeiro-acesso`, this.formAcesso)
                 .then(response => {
-                    $('#janelaEntrar').modal('hide');
-                    $('#janelaPrimeiro').modal('hide');
+                    this.$refs.modal_janelaEntrar && this.$refs.modal_janelaEntrar.fecharModal();
+                    this.$refs.modal_janelaPrimeiro && this.$refs.modal_janelaPrimeiro.fecharModal();
                     mostraSucesso('Cadastro feito com sucesso! Seja Bem Vindo(a).');
                     setTimeout(function () {
                         window.location.reload();
@@ -1842,7 +1837,7 @@ export default {
             }
 
             if (this.form.experiencias.length === 0 && !this.semexperiencia) {
-                $('#janelaConfirmar').modal('show');
+                this.$refs.modal_janelaConfirmar && this.$refs.modal_janelaConfirmar.abrirModal();
                 return false;
             }
 
@@ -1854,7 +1849,7 @@ export default {
                 axios.post(`${URL_SITE}/cadastro-banco-de-talentos`, this.form)
                     .then(response => {
                         if (response.status === 201) {
-                            $('#janelaBancoTalentos').modal('hide');
+                            this.$refs.modal_janelaBancoTalentos && this.$refs.modal_janelaBancoTalentos.fecharModal();
                             mostraSucesso('Você cadastrou um currículo!');
                             setTimeout(function () {
                                 window.location.reload();
@@ -1906,18 +1901,19 @@ export default {
                 })
         },
 
-        logout() {
-            axios.get(`${URL_SITE}/sair/${this.slug}`,).then(response => {
+        async logout() {
+            try {
+                const response = await axios.get(`${URL_SITE}/sair/${this.slug}`);
                 if (response.status === 200) {
                     window.location.href = `${URL_SITE}/vagas-abertas-busca/` + response.data.slug;
                     mostraSucesso('Você acabou de sair do sistema!', 200);
-                    this.preloadAjax = false;
                 }
-            }).catch(error => {
+            } catch (error) {
                 mostraErro('Há algo de errado!', error);
-                this.preloadAjax = false;
                 this.abriVagasAbertas();
-            });
+            } finally {
+                this.preloadAjax = false;
+            }
         },
     }
 }

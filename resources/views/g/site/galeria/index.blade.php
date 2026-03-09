@@ -55,10 +55,10 @@
         </template>
         <template #rodape>
             <div v-show="!preloadAjax">
-                <button type="button" class="btn btn-sm btn-primary" v-if="editando && !atualizado"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-if="editando && !atualizado"
                         @click="alterar()">Alterar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-if="!editando && !cadastrado"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-if="!editando && !cadastrado"
                         @click="cadastrar()">Cadastrar
                 </button>
             </div>
@@ -83,7 +83,7 @@
         </template>
         <template #rodape>
             <div v-show="!preloadAjax">
-                <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
             </div>
         </template>
     </modal>
@@ -108,12 +108,12 @@
             </div>
         </div>
 
-        <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar"><i
+        <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar"><i
                 :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
             Atualizar
         </button>
         @can('galeria_site_insert')
-            <button type="button" class="btn btn-sm btn-primary" id="btnFormCadastrar" data-toggle="modal"
+            <button type="button" class="btn btn-sm mr-1 btn-primary" id="btnFormCadastrar" data-toggle="modal"
                     data-target="#janelaCadastrar" @click="formNovo()">Cadastrar
             </button>
         @endcan
@@ -147,14 +147,14 @@
                     </td>
                     <td data-label="Ações">
                         @can('galeria_site_update')
-                            <a class="btn btn-sm btn-success btnFormAlterar" href="javascript://"
+                            <a class="btn btn-sm mr-1 btn-success btnFormAlterar" href="javascript://"
                                @click.prevent="formAlterar(galeria.id)" data-toggle="modal"
                                data-target="#janelaCadastrar">
                                 <i class="fa fa-edit"></i> Alterar
                             </a>
                         @endcan
                         @can('galeria_site_delete')
-                            <a class="btn btn-sm btn-danger btnFormExcluir" href="javascript://"
+                            <a class="btn btn-sm mr-1 btn-danger btnFormExcluir" href="javascript://"
                                @click.prevent="janelaConfirmar(galeria.id)" data-toggle="modal"
                                data-target="#janelaConfirmar">
                                 <i class="fa fa-trash" aria-hidden="true"></i> Excluir

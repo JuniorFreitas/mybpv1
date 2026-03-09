@@ -15,8 +15,8 @@
                             <i class="fas fa-map-marker-alt"></i> {{ dados_vaga.municipio.nome }} - {{ dados_vaga.municipio.uf }}
                         </p>
                         <div class="float-md-left">
-                            <a href="javascript://" data-toggle="modal" data-target="#janelaCadastrar" class="btn mr-1 mb-2 btn-primary" target="_blank"
-                                >CANDIDATAR-SE</a
+                            <a href="javascript://" class="btn mr-1 mb-2 btn-primary" target="_blank"
+                                 @click="$refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()">CANDIDATAR-SE</a
                             >
                         </div>
 
@@ -32,7 +32,7 @@
                 </div>
             </div>
 
-            <modal id="janelaConfirmar" modal-pai="janelaCadastrar" :fechar="false" titulo="Confirmação">
+            <modal id="janelaConfirmar" modal-pai="janelaCadastrar" :fechar="false" titulo="Confirmação" ref="modal_janelaConfirmar">
                 <template #conteudo>
                     <div>
                         <h5>Você tem certeza que deseja cadastrar seu curriculo SEM EXPERIÊNCIA?</h5>
@@ -44,7 +44,7 @@
                 </template>
             </modal>
 
-            <modal id="janelaCadastrar" modal-pai="janelaVagas" titulo="Cadastro" :fechar="!preload" :size="90">
+            <modal id="janelaCadastrar" modal-pai="janelaVagas" titulo="Cadastro" :fechar="!preload" :size="90" ref="modal_janelaCadastrar">
                 <template #conteudo>
                     <fieldset v-if="!exibiFormulario && !preload">
                         <legend>Informe</legend>
@@ -311,7 +311,7 @@
                                             <label>Formação</label>
                                             <select name="formacao" class="form-control" v-model="form.formacao">
                                                 <option value="">Selecione</option>
-                                                <option v-for="item in escolaridades" :value="item.id">{{ item.tipo }}</option>
+                                                <option v-for="(item, index) in escolaridades" :value="item.id" :key="item.id || index">{{ item.tipo }}</option>
                                             </select>
                                         </div>
                                     </div>
@@ -830,15 +830,18 @@ export default {
     },
 
     methods: {
-        atualizar() {
-            axios.post(`${URL_SITE}/api/${this.empresa_id}/vaga-aberta/${this.vaga_aberta_id}`).then((response) => {
+        async atualizar() {
+            this.preload = true
+            try {
+                const response = await axios.post(`${URL_SITE}/api/${this.empresa_id}/vaga-aberta/${this.vaga_aberta_id}`)
                 if (response.status === 200) {
                     this.dados_vaga = response.data.dados
                     this.form.empresa_id = this.empresa_id
                     this.form.vaga_aberta_id = this.vaga_aberta_id
-                    this.preload = false
                 }
-            })
+            } finally {
+                this.preload = false
+            }
         },
         buscaCurriculo() {
             $('#janelaCadastrar :input:visible').trigger('blur')
@@ -913,7 +916,7 @@ export default {
         },
         semexperienciaSim() {
             this.semexperiencia = true
-            $('#janelaConfirmar').modal('hide')
+            this.$refs.modal_janelaConfirmar && this.$refs.modal_janelaConfirmar.fecharModal()
             this.cadastrar()
         },
         cadastrar() {
@@ -931,7 +934,7 @@ export default {
             }
 
             if (this.form.experiencias.length === 0 && !this.semexperiencia) {
-                $('#janelaConfirmar').modal('show')
+                this.$refs.modal_janelaConfirmar && this.$refs.modal_janelaConfirmar.abrirModal()
                 return false
             }
             this.preloadAjax = true

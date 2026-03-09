@@ -3,7 +3,8 @@
         <div class="form-inline py-2 d-flex justify-content-center">
             <label class="my-1 mr-2">Total encontrado(s): {{ total }} | Página</label>
             <select class="custom-select my-1 mr-sm-2" ref="pgAtual" style="text-align-last: center" @change="irPagina">
-                <option v-for="pag in ultima" :selected="pag == atual" :value="pag">{{ pag }}</option>
+                <option v-for="(pag, index) in ultima" :selected="pag == atual" :value="pag">{{ pag }}</option>
+                :key="pag.id || index"
             </select>
 
             <button type="button" class="btn btn-primary rounded mr-2 ml-2" v-show="refresh" v-tippy content="Atualizar" :disabled="carregando" @click="buscar">
@@ -137,31 +138,28 @@ export default {
             //post._method='GET';
             post.porPagina = ref.porPagina
 
-            await axios.post(ref.url, post).then((response) => {
-                let data = response.data
-                //var data = $.parseJSON(data);
-                //console.log(data);
+            try {
+                const response = await axios.post(ref.url, post)
+                const data = response.data
                 ref.total = data.total
-                //ref.ultima = Math.ceil(parseInt(data.total) / parseInt(ref.porPagina));
                 ref.ultima = data.ultima
                 if (ref.ultima === 0) {
                     ref.ultima = 1
                 }
                 if (ref.atual >= ref.ultima) {
                     ref.atual = ref.ultima
-                    //ref.$emit('update:atual', ref.atual);
                 }
-                ref.carregando = false
-
                 if (data.dados) {
                     ref.$emit('carregou', data.dados)
-                    //$('#conteudo').fadeIn();
                 } else {
                     ref.atual = 1
-                    //ref.$emit('update:atual', ref.atual);
                     ref.$emit('carregou', [])
                 }
-            })
+            } catch (err) {
+                ref.$emit('carregou', [])
+            } finally {
+                ref.carregando = false
+            }
         }
     }
 }

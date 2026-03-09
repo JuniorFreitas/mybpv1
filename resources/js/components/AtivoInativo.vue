@@ -1,12 +1,12 @@
 <!--<bt-ativo :rota="`tipo-imoveis/${tipo.id}/ativa-desativa`" :model="tipo"></bt-ativo>-->
 <template>
     <div>
-        <button class="btn btn-sm btnFormAlterar btn-success" @click.prevent="ativaDesativa()" v-if="model.ativo" :disabled="model.preload">
+        <button class="btn btn-sm mr-1 btnFormAlterar btn-success" @click.prevent="ativaDesativa()" v-if="model.ativo" :disabled="model.preload">
             <span class="fas fa-check" aria-hidden="true" v-if="!model.preload"></span>
             <span class="fas fa-redo fa-spin" aria-hidden="true" v-if="model.preload"></span>
             {{ ativoLabel }}
         </button>
-        <button class="btn btn-sm btnFormAlterar btn-danger" @click.prevent="ativaDesativa()" v-if="!model.ativo" :disabled="model.preload">
+        <button class="btn btn-sm mr-1 btnFormAlterar btn-danger" @click.prevent="ativaDesativa()" v-if="!model.ativo" :disabled="model.preload">
             <span class="fas fa-times" aria-hidden="true" v-if="!model.preload"></span>
             <span class="fas fa-redo fa-spin" aria-hidden="true" v-if="model.preload"></span>
             {{ inativoLabel }}

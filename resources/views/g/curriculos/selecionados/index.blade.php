@@ -316,7 +316,7 @@
             </div>
 
             <div class="col-12 col-md-9">
-                <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                     <i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
@@ -377,14 +377,14 @@
                         @{{feedback.etapa_status.length > 0 ? feedback.etapa_status[0].status : ""}}
                     </td>
                     <td class="text-center">
-                        <a href="javascript://" class="btn btn-sm btn-primary" content="Exibir" v-tippy
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-primary" content="Exibir" v-tippy
                            @click.prevent="formAlterar(feedback.id)"
                            data-toggle="modal"
                            data-target="#janelaCadastrar">
                             <i class="fa fa-eye" aria-hidden="true"></i>
                         </a>
 
-                        <button v-show="feedback.simulados.length > 0" class="btn btn-sm btn-primary"
+                        <button v-show="feedback.simulados.length > 0" class="btn btn-sm mr-1 btn-primary"
                                 @click="toggle(index); formAlterar(feedback.id)"
                                 :content="!opened.includes(index) ? 'Mostrar' : 'Ocultar'" v-tippy
                                 style="cursor: pointer">
@@ -392,7 +392,7 @@
                         </button>
 
                         <span v-if="feedback.tel_principal">
-                        <button class="btn btn-sm btn-success"
+                        <button class="btn btn-sm mr-1 btn-success"
                                 content="enviar Notificação" v-tippy
                                 v-if="feedback.etapa_status.length > 0 && feedback.curriculo.tel_principal.tipo === 'whatsapp' && feedback.etapa_status[0].etapa === 'Apto para Admissao'"
                                 {{--                        <button class="btn btn-primary" title="Editar" v-if="curriculo.feed_back.tel_principal.tipo === 'whatsapp'"--}}

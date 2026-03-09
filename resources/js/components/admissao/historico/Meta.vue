@@ -1,7 +1,7 @@
 <template>
     <div>
         <p class="mt-2" v-if="preload"><i class="fa fa-spinner fa-pulse"></i> Aguarde ...</p>
-        <modal :fechar="!preloadSalvar" id="janelaMeta" size="g" modal-pai="janelaHistorico" titulo="Meta">
+        <modal :fechar="!preloadSalvar" id="janelaMeta" size="g" modal-pai="janelaHistorico" titulo="Meta" ref="modal_janelaMeta">
             <template #conteudo>
                 <p class="mt-2" v-if="preloadSalvar"><i class="fa fa-spinner fa-pulse"></i> Salvando aguarde ...</p>
                 <fieldset v-show="!preloadSalvar">
@@ -25,12 +25,12 @@
                 </fieldset>
             </template>
             <template #rodape>
-                <button class="btn btn-sm btn-primary" v-if="!preloadSalvar" @click="salvar"><i class="fa fa-save"></i> Salvar</button>
+                <button class="btn btn-sm mr-1 btn-primary" v-if="!preloadSalvar" @click="salvar"><i class="fa fa-save"></i> Salvar</button>
             </template>
         </modal>
 
         <div v-if="!preload" :id="`form_${hash}`">
-            <button class="btn btn-sm btn-primary mb-3" data-toggle="modal" data-target="#janelaMeta" @click="addMeta">
+            <button class="btn btn-sm mr-1 btn-primary mb-3" @click="addMeta; $refs.modal_janelaMeta && $refs.modal_janelaMeta.abrirModal()">
                 <i class="fa fa-plus"></i> Adicionar Meta
             </button>
 
@@ -47,7 +47,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="item in meta">
+                            <tr v-for="item in meta" :key="item.id || item.nome">
                                 <td class="text-center">{{ item.nome }}</td>
                                 <td class="text-center">{{ item.descricao }}</td>
                                 <td class="text-center">{{ item.data_inicio }}</td>
@@ -126,7 +126,7 @@ export default {
                     if (response.status === 201) {
                         this.preloadSalvar = false
                         mostraSucesso('Meta adicionada com sucesso.')
-                        $('#janelaMeta').modal('hide')
+                        this.$refs.modal_janelaMeta && this.$refs.modal_janelaMeta.fecharModal()
                         this.form = _.cloneDeep(this.formDefault)
                         // this.cadastrado = true;
                         this.atualizar()
@@ -134,15 +134,17 @@ export default {
                 })
                 .catch((error) => (this.preloadSalvar = false))
         },
-        atualizar() {
+        async atualizar() {
             this.preload = true
-            axios.get(`${URL_ADMIN}/historico/meta/atualizar/${this.feedback_id}`).then((res) => {
-                let data = res.data
+            try {
+                const res = await axios.get(`${URL_ADMIN}/historico/meta/atualizar/${this.feedback_id}`)
+                const data = res.data
                 this.form.feedback_id = data.feedback
                 this.meta = data.metas
                 this.formDefault = _.cloneDeep(this.form)
+            } finally {
                 this.preload = false
-            })
+            }
         }
     }
 }

@@ -55,7 +55,7 @@
 {{--                <fieldset>--}}
 {{--                    <legend>Projetos</legend>--}}
 
-{{--                    <button class="btn btn-sm btn-primary mb-3" @click="addLIProjeto">--}}
+{{--                    <button class="btn btn-sm mr-1 btn-primary mb-3" @click="addLIProjeto">--}}
 {{--                        <i class="fa fa-plus"></i> Adicionar--}}
 {{--                    </button>--}}
 
@@ -97,11 +97,11 @@
 {{--                            </div>--}}
 
 {{--                            <div class="col-12 mt-3">--}}
-{{--                                <button class="btn btn-sm btn-danger" @click="removerLIProjeto(index)"><i--}}
+{{--                                <button class="btn btn-sm mr-1 btn-danger" @click="removerLIProjeto(index)"><i--}}
 {{--                                        class="fa fa-times"></i> Remover--}}
 {{--                                </button>--}}
 
-{{--                                <button class="btn btn-sm btn-primary mt" @click="addLIProjeto" v-show="index >=1">--}}
+{{--                                <button class="btn btn-sm mr-1 btn-primary mt" @click="addLIProjeto" v-show="index >=1">--}}
 {{--                                    <i class="fa fa-plus"></i> Adicionar--}}
 {{--                                </button>--}}
 {{--                            </div>--}}
@@ -112,7 +112,7 @@
                 <fieldset>
                     <legend>Provas</legend>
 
-                    <button class="btn btn-sm btn-primary mb-3" @click="addLISimulado">
+                    <button class="btn btn-sm mr-1 btn-primary mb-3" @click="addLISimulado">
                         <i class="fa fa-plus"></i> Adicionar
                     </button>
 
@@ -162,17 +162,17 @@
 
                             <div class="col-md-4 mt-4" v-if="obj.tipo_prova === 'subjetiva'">
                                 <label>Imprimir Prova:</label>
-                                <button class="btn btn-sm btn-primary" @click="imprimeProva(obj.simulado_id, form.id)">
+                                <button class="btn btn-sm mr-1 btn-primary" @click="imprimeProva(obj.simulado_id, form.id)">
                                     <i class="fa fa-files-pdf"></i> Gerar PDF
                                 </button>
                             </div>
 
                             <div class="col-12 mt-3">
-                                <button class="btn btn-sm btn-danger" @click="removerLISimulado(index)"><i
+                                <button class="btn btn-sm mr-1 btn-danger" @click="removerLISimulado(index)"><i
                                         class="fa fa-times"></i> Remover
                                 </button>
 
-                                <button class="btn btn-sm btn-primary mt" @click="addLISimulado" v-show="index >=1">
+                                <button class="btn btn-sm mr-1 btn-primary mt" @click="addLISimulado" v-show="index >=1">
                                     <i class="fa fa-plus"></i> Adicionar
                                 </button>
                             </div>
@@ -201,11 +201,11 @@
             </form>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && !preloadAjax"
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado && !preloadAjax"
                     @click="alterar()">
                 Alterar
             </button>
-            <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado && !preloadAjax"
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado && !preloadAjax"
                     @click="cadastrar()">
                 Cadastrar
             </button>
@@ -240,10 +240,10 @@
             </div>
 
             <div class="col-12 col-md-9">
-                <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>Atualizar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" data-toggle="modal" :disabled="controle.carregando"
                         data-target="#janelaCadastrar"
                         @click="formNovo()">
                     Cadastrar
@@ -301,7 +301,7 @@
                     </td>
 
                     <td class="text-center">
-                        <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-primary mb-1" title="Editar"
                            @click.prevent="formAlterar(vaga.id)"
                            data-toggle="modal"
                            data-target="#janelaCadastrar">

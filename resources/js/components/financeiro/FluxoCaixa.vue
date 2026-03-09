@@ -24,7 +24,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(obj, index) in abaMovimentacoes.listaPlanosFiltro" :key="obj.id">
+                            <tr v-for="obj in abaMovimentacoes.listaPlanosFiltro" :key="obj.id">
                                 <td class="text-center">
                                     <div class="form-group form-check">
                                         <input
@@ -53,7 +53,7 @@
             <template #rodape>
                 <button
                     :disabled="abaMovimentacoes.listaPlanosFiltro.length === 0"
-                    class="btn btn-sm btn-success"
+                    class="btn btn-sm mr-1 btn-success"
                     type="button"
                     @click="atualizaContaCorrente(); $refs.janelaFiltrarLancamentos.fecharModal()"
                 >
@@ -63,7 +63,7 @@
         </modal>
 
         <!--Janela de Apagar lançamento-->
-        <modal id="janelaApagarLancamento" :fechar="!formApagar.preload" :modal-pai="modalPai" titulo="Excluir lançamento">
+        <modal id="janelaApagarLancamento" :fechar="!formApagar.preload" :modal-pai="modalPai" titulo="Excluir lançamento" ref="modal_janelaApagarLancamento">
             <template #conteudo>
                 <span v-show="formApagar.preload"> <i class="fa fa-spinner fa-pulse"></i> Apagando lançamento... </span>
 
@@ -91,7 +91,7 @@
             <template #rodape>
                 <button
                     v-show="!formApagar.preload && !formApagar.delete && !formApagar.erro"
-                    class="btn btn-sm btn-danger"
+                    class="btn btn-sm mr-1 btn-danger"
                     type="button"
                     @click="apagarLancamento"
                 >
@@ -101,7 +101,14 @@
         </modal>
 
         <!--Janela de Inserir/Alterar lançamento-->
-        <modal id="janelaLancamento" :fechar="!formLancamento.preload" :modal-pai="modalPai" :size="90" :titulo="formLancamento.titulo">
+        <modal
+            id="janelaLancamento"
+            :fechar="!formLancamento.preload"
+            :modal-pai="modalPai"
+            :size="90"
+            :titulo="formLancamento.titulo"
+            ref="modal_janelaLancamento"
+        >
             <template #conteudo>
                 <span v-show="formLancamento.preload">
                     <span v-show="formLancamento.editando"> <i class="fa fa-spinner fa-pulse"></i> Alterando lançamento... </span>
@@ -211,11 +218,16 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="(obj, index) in formLancamento.formas">
+                                    <tr v-for="(obj, index) in formLancamento.formas" :key="obj.id || index">
                                         <td>
                                             <select v-model="obj.forma_pagamento_id" class="form-control">
                                                 <option :value="0">Selecione...</option>
-                                                <option v-for="forma in cliente.formas_pagamento" :disabled="!forma.ativo" :value="forma.id">
+                                                <option
+                                                    v-for="(forma, index) in cliente.formas_pagamento"
+                                                    :disabled="!forma.ativo"
+                                                    :value="forma.id"
+                                                    :key="index"
+                                                >
                                                     {{ forma.descricao }}
                                                 </option>
                                             </select>
@@ -293,7 +305,7 @@
                     v-show="
                         !formLancamento.preload && !formLancamento.erro && !formLancamento.cadastrado && !formLancamento.atualizado && !formLancamento.editando
                     "
-                    class="btn btn-sm btn-primary"
+                    class="btn btn-sm mr-1 btn-primary"
                     type="button"
                     @click="salvarLancamento"
                 >
@@ -303,7 +315,7 @@
                     v-if="
                         !formLancamento.preload && !formLancamento.erro && !formLancamento.cadastrado && !formLancamento.atualizado && formLancamento.editando
                     "
-                    class="btn btn-sm btn-primary"
+                    class="btn btn-sm mr-1 btn-primary"
                     type="button"
                     @click="salvarLancamento"
                 >
@@ -389,17 +401,15 @@
                     </div>
 
                     <div class="col mt-2 mb-2">
-                        <button :disabled="abaMovimentacoes.preload" class="btn btn-sm btn-success" type="button" @click="atualizaContaCorrente">
+                        <button :disabled="abaMovimentacoes.preload" class="btn btn-sm mr-1 btn-success" type="button" @click="atualizaContaCorrente">
                             <i class="fas fa-sync"></i> Atualizar
                         </button>
                         <button
                             v-if="pode_insert"
                             :disabled="abaMovimentacoes.preload"
-                            class="btn btn-sm btn-primary"
-                            data-target="#janelaLancamento"
-                            data-toggle="modal"
+                            class="btn btn-sm mr-1 btn-primary"
                             type="button"
-                            @click="formNovoLancamento"
+                            @click="formNovoLancamento(); $refs.modal_janelaLancamento && $refs.modal_janelaLancamento.abrirModal()"
                         >
                             <i class="fas fa-plus"></i> Novo lançamento
                         </button>
@@ -410,9 +420,8 @@
                             }"
                             :disabled="abaMovimentacoes.preload"
                             class="btn btn-sm"
-                            data-target="#janelaFiltrarLancamentos"
-                            data-toggle="modal"
                             type="button"
+                            @click="$refs.janelaFiltrarLancamentos && $refs.janelaFiltrarLancamentos.abrirModal()"
                         >
                             <i class="fas fa-filter"></i>
                             Filtrar <span v-show="abaMovimentacoes.filtrarPor.length > 0" class="badge badge-success">ativo</span>
@@ -459,7 +468,7 @@
                                     </td>
                                     <td colspan="4"></td>
                                 </tr>
-                                <tr v-for="(lan, index) in abaMovimentacoes.lista" :key="lan.id">
+                                <tr v-for="lan in abaMovimentacoes.lista" :key="lan.id">
                                     <td>{{ lan.data_hora }}</td>
                                     <td>
                                         {{ lan.plano_conta.descricao }}<br />
@@ -548,20 +557,16 @@
                                                 <a
                                                     v-if="pode_update"
                                                     class="dropdown-item text-primary"
-                                                    data-target="#janelaLancamento"
-                                                    data-toggle="modal"
                                                     href="#"
-                                                    @click="formEditarLancamento(lan)"
+                                                    @click="formEditarLancamento(lan); $refs.modal_janelaLancamento && $refs.modal_janelaLancamento.abrirModal()"
                                                 >
                                                     <i class="far fa-edit"></i> Editar
                                                 </a>
                                                 <a
                                                     v-if="pode_delete"
                                                     class="dropdown-item text-danger"
-                                                    data-target="#janelaApagarLancamento"
-                                                    data-toggle="modal"
                                                     href="#"
-                                                    @click="formApagarLancamento(lan)"
+                                                    @click="formApagarLancamento(lan); $refs.modal_janelaApagarLancamento && $refs.modal_janelaApagarLancamento.abrirModal()"
                                                 >
                                                     <i class="far fa-trash-alt"></i> Apagar
                                                 </a>

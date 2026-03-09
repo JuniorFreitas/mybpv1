@@ -1,4 +1,4 @@
-const XLSX = require("xlsx");
+const XLSX = require("@e965/xlsx");
 const ExportExcel = {
     methods: {
         gerarNomeArquivo(dataHoraFormatada) {

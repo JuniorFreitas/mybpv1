@@ -1,7 +1,7 @@
 <template>
     <div>
         <p class="mt-2" v-if="preload"><i class="fa fa-spinner fa-pulse"></i> Aguarde ...</p>
-        <modal :fechar="!preload" id="janelaBeneficio" size="g" modal-pai="janelaHistorico" titulo="Benefício">
+        <modal ref="modalBeneficio" :fechar="!preload" id="janelaBeneficio" size="g" modal-pai="janelaHistorico" titulo="Benefício">
             <template #conteudo>
                 <p class="mt-2" v-if="preload"><i class="fa fa-spinner fa-pulse"></i> Salvando aguarde ...</p>
                 <fieldset v-show="!preload">
@@ -16,7 +16,7 @@
                                 onblur="valida_campo_vazio(this, 1)"
                             >
                                 <option value="">Selecione</option>
-                                <option v-for="item in beneficio" :value="item.id">{{ item.nome }}</option>
+                                <option v-for="item in beneficio" :key="item.id" :value="item.id">{{ item.nome }}</option>
                             </select>
                         </div>
                     </div>
@@ -28,9 +28,7 @@
         </modal>
 
         <div v-if="!preload" :id="`form_${hash}`">
-            <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#janelaBeneficio" @click="addBeneficio">
-                <i class="fa fa-plus"></i> Adicionar Benefício
-            </button>
+            <button class="btn btn-primary mb-3" @click="addBeneficio"><i class="fa fa-plus"></i> Adicionar Benefício</button>
 
             <fieldset v-if="listaBeneficio.length > 0">
                 <legend>Benefício</legend>
@@ -46,7 +44,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="item in listaBeneficio">
+                            <tr v-for="item in listaBeneficio" :key="item.id || item.created_at">
                                 <td class="text-center">{{ item.created_at }}</td>
                                 <td class="text-center">{{ item.beneficio.nome }}</td>
                                 <td class="text-center">R$ {{ item.beneficio.valor_format }}</td>
@@ -114,6 +112,9 @@ export default {
             this.preload = false
             formReset()
             setupCampo()
+            if (this.$refs && this.$refs.modalBeneficio && typeof this.$refs.modalBeneficio.abrirModal === 'function') {
+                this.$refs.modalBeneficio.abrirModal()
+            }
         },
         salvar() {
             $(`#janelaBeneficio :input:visible`).trigger('blur')
@@ -130,7 +131,9 @@ export default {
                     if (response.status === 201) {
                         this.preload = false
                         mostraSucesso('Benefício adicionado com sucesso.')
-                        $('#janelaBeneficio').modal('hide')
+                        if (this.$refs && this.$refs.modalBeneficio && typeof this.$refs.modalBeneficio.fecharModal === 'function') {
+                            this.$refs.modalBeneficio.fecharModal()
+                        }
                         this.form = _.cloneDeep(this.formDefault)
                         // this.cadastrado = true;
                         this.atualizar()
@@ -142,16 +145,18 @@ export default {
         //     let link = `${URL_ADMIN}/historico/ferias/${item.id}/${item.feedback_id}/pdf`;
         //     open(link, 'blank');
         // },
-        atualizar() {
+        async atualizar() {
             this.preload = true
-            axios.get(`${URL_ADMIN}/historico/beneficio/${this.feedback_id}`).then((res) => {
-                let data = res.data
+            try {
+                const res = await axios.get(`${URL_ADMIN}/historico/beneficio/${this.feedback_id}`)
+                const data = res.data
                 this.form.feedback_id = data.feedback_id
                 this.beneficio = data.beneficio
                 this.listaBeneficio = data.listaBeneficio
                 this.formDefault = _.cloneDeep(this.form)
+            } finally {
                 this.preload = false
-            })
+            }
         }
     }
 }

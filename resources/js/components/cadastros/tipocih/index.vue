@@ -1,6 +1,6 @@
 <template>
     <div id="componente">
-        <modal :modal-pai="modal" :titulo="titulo_janela_form" :fechar="!preload" id="janelaForm">
+        <modal :modal-pai="modal" :titulo="titulo_janela_form" :fechar="!preload" id="janelaForm" ref="modal_janelaForm">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <fieldset v-if="!preload">
@@ -27,18 +27,18 @@
                 </fieldset>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !preload" @click="cadastra">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !preload" @click="cadastra">
                     <i class="fa fa-save"></i> Cadastrar
                 </button>
 
-                <button v-show="editando && !preload" type="button" class="btn btn-sm btn-primary" @click="alterarForm">
+                <button v-show="editando && !preload" type="button" class="btn btn-sm mr-1 btn-primary" @click="alterarForm">
                     <i class="fa fa-save"></i> Alterar
                 </button>
             </template>
         </modal>
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -53,11 +53,11 @@
                     </div>
                 </div>
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
-                    <button type="button" class="btn btn-sm btn-secondary" @click="formNovo" data-toggle="modal" data-target="#janelaForm">
+                    <button type="button" class="btn btn-sm mr-1 btn-secondary" @click="formNovo(); $refs.modal_janelaForm && $refs.modal_janelaForm.abrirModal()">
                         <i class="fa fa-plus"></i> Cadastrar Tipo CIH
                     </button>
                 </div>
@@ -82,14 +82,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="tipocih in lista">
+                        <tr v-for="(tipocih, index) in lista" :key="tipocih.id || index">
                             <td class="text-center">{{ tipocih.label }}</td>
                             <td class="text-center">{{ tipocih.anexo_obrigatorio ? 'Sim' : 'Não' }}</td>
                             <td class="text-center">
                                 <bt-ativo :rota="`cadastro/tipocih/${tipocih.id}/ativa-desativa`" :model="tipocih"></bt-ativo>
                             </td>
                             <td class="text-center">
-                                <button type="button" class="btn btn-sm btn-primary" @click="alterar(tipocih.id)" data-toggle="modal" data-target="#janelaForm">
+                                <button type="button" class="btn btn-sm mr-1 btn-primary" @click="alterar(tipocih.id); $refs.modal_janelaForm && $refs.modal_janelaForm.abrirModal()">
                                     <i class="fa fa-edit"></i>
                                 </button>
                             </td>
@@ -200,9 +200,9 @@ export default {
             axios
                 .post(`${URL_ADMIN}/cadastro/tipocih`, this.form)
                 .then((res) => {
-                    $('#janelaForm').modal('hide')
+                    this.$refs.modal_janelaForm && this.$refs.modal_janelaForm.fecharModal()
                     mostraSucesso('', 'Centro de Custo cadastrado com sucesso')
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -235,9 +235,9 @@ export default {
             axios
                 .put(`${URL_ADMIN}/cadastro/tipocih/${this.form.id}`, this.form)
                 .then((res) => {
-                    $('#janelaForm').modal('hide')
+                    this.$refs.modal_janelaForm && this.$refs.modal_janelaForm.fecharModal()
                     mostraSucesso('', 'Centro de Custo Alterado com sucesso')
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -252,8 +252,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

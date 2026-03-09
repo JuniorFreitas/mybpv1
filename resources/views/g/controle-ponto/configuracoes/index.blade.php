@@ -12,7 +12,7 @@
             <h4 v-show="!formPerimetro.save && !formPerimetro.preload">Atenção! Deseja realmente apagar perímetro:</h4>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-danger" @click="apagarPerimetro()"
+            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagarPerimetro()"
                     v-show="!formPerimetro.save && !formPerimetro.preload">Apagar
             </button>
         </template>
@@ -119,7 +119,7 @@
             </div>
         </template>
         <template #rodape>
-            <button v-if="!formPerimetro.preload && !formPerimetro.save" class="btn btn-sm btn-success" type="button"
+            <button v-if="!formPerimetro.preload && !formPerimetro.save" class="btn btn-sm mr-1 btn-success" type="button"
                     @click="salvarPerimetro">
                 <span v-if="formPerimetro.editando">Alterar</span>
                 <span v-else>Cadastrar</span>
@@ -165,7 +165,7 @@
         <template #rodape>
             <button :disabled="listaPerimetros.length === 0"
                     v-if="!formPerimetroFuncionarios.preload && !formPerimetroFuncionarios.update"
-                    class="btn btn-sm btn-success" type="button" @click="assosicarPerimetros">
+                    class="btn btn-sm mr-1 btn-success" type="button" @click="assosicarPerimetros">
                 <i class="fas fa-link"></i> Aplicar
             </button>
         </template>
@@ -279,14 +279,14 @@
                             <td data-label="descrição">@{{peri.descricao}}</td>
                             <td data-label="editar">
                                 <a v-if="perimetros_update" href="javascript://" data-toggle="modal"
-                                   data-target="#janelaFormPerimetro" class="btn btn-sm btn-success"
+                                   data-target="#janelaFormPerimetro" class="btn btn-sm mr-1 btn-success"
                                    @click="formEditarPerimetro(peri)"><i aria-hidden="true" class="fa fa-edit"></i>
                                     Editar
                                 </a>
                             </td>
                             <td data-label="excluir">
                                 <a v-if="perimetros_delete" href="javascript://" data-toggle="modal"
-                                   data-target="#janelaConfirmar" class="btn btn-sm btn-danger"
+                                   data-target="#janelaConfirmar" class="btn btn-sm mr-1 btn-danger"
                                    @click="formApagarPerimetro(peri.id)"><i aria-hidden="true" class="fa fa-trash"></i>
                                     Excluir
                                 </a>

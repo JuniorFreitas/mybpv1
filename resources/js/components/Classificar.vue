@@ -1,6 +1,6 @@
 <template>
     <div>
-        <modal :id="`janelaProximaEtapa_${hash}`" titulo="Proxima etapa" :modal-pai="`${janelapai}`" :fechar="!formClassificar.preload" size="g">
+        <modal :id="`janelaProximaEtapa_${hash}`" titulo="Proxima etapa" :modal-pai="`${janelapai}`" :fechar="!formClassificar.preload" size="g" ref="modal_`janelaProximaEtapa_${hash}`">
             <template #conteudo>
                 <preload
                     v-show="formClassificar.preload"
@@ -66,7 +66,7 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!formClassificar.preload" @click="classificar">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!formClassificar.preload" @click="classificar">
                     <i class="fa fa-save"></i> Salvar e enviar mensagem
                 </button>
             </template>
@@ -77,7 +77,7 @@
             :fechar="!formDesclassificar.preload"
             label-fechar="Não"
             :modal-pai="`${janelapai}`"
-        >
+         ref="modal_`janelaDesclassificar_${hash}`">
             <template #conteudo>
                 <span v-show="formDesclassificar.preload"
                     ><i class="fa fa-spinner fa-pulse"></i> Registrando<span v-show="formDesclassificar.enviarEmail"> e enviando o e-mail</span>...</span
@@ -128,12 +128,12 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!formDesclassificar.preload" @click="desclassificar">Sim</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!formDesclassificar.preload" @click="desclassificar">Sim</button>
             </template>
         </modal>
 
-        <button class="btn btn-primary" data-toggle="modal" :data-target="`#janelaProximaEtapa_${hash}`">Classificar</button>
-        <button class="btn btn-danger" data-toggle="modal" :data-target="`#janelaDesclassificar_${hash}`">Desclassificar</button>
+        <button class="btn btn-primary" @click="$refs[`janelaProximaEtapa_${hash}`] && $refs[`janelaProximaEtapa_${hash}`].abrirModal()">Classificar</button>
+        <button class="btn btn-danger" @click="$refs[`janelaDesclassificar_${hash}`] && $refs[`janelaDesclassificar_${hash}`].abrirModal()">Desclassificar</button>
     </div>
 </template>
 
@@ -220,7 +220,7 @@ export default {
             axios
                 .post(`${URL_ADMIN}/etapa/${this.model.id}/desclassificar`, this.formDesclassificar)
                 .then((response) => {
-                    $(`#janelaDesclassificar_${this.hash}`).modal('hide')
+                    this.$refs[`janelaDesclassificar_${this.hash}`] && this.$refs[`janelaDesclassificar_${this.hash}`].fecharModal()
                     mostraSucesso('', 'Registro salvo com sucesso!')
                     let resposta = {
                         id: this.model.id,
@@ -250,7 +250,7 @@ export default {
             axios
                 .post(`${URL_ADMIN}/etapa/${this.model.id}/classificar`, this.formClassificar)
                 .then((response) => {
-                    $(`#janelaProximaEtapa_${this.hash}`).modal('hide')
+                    this.$refs[`janelaProximaEtapa_${this.hash}`] && this.$refs[`janelaProximaEtapa_${this.hash}`].fecharModal()
                     mostraSucesso('', 'Registro salvo com sucesso!')
                     let resposta = {
                         id: this.model.id,

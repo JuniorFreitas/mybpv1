@@ -16,6 +16,17 @@ import Validacoes from '../../../mixins/Validacoes'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 import dependentes from '../../../components/admissao/processo/Dependentes'
 import FeriasAdquiridas from '../../../components/admissao/processo/FeriasAdquiridas'
+const abrirModal = (selector) => {
+    if (typeof $ === 'undefined') return
+    $(selector).modal('show')
+}
+
+const fecharModal = (selector) => {
+    if (typeof $ === 'undefined') return
+    $(selector).modal('hide')
+}
+
+
 
 const app = createApp({
     mixins: [configselect2, Utils, Validacoes, ExportacaoMixin],
@@ -111,6 +122,8 @@ const app = createApp({
 
             selecionados: [],
             selecionaTudo: false,
+
+            dropdownAbertoKey: null,
 
             lista_sexos: [],
             lista_estados_civis: [],
@@ -729,8 +742,31 @@ const app = createApp({
         })
         this.atualizar()
         this.listaVagas()
+        document.addEventListener('click', this.onClickOutside)
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
     },
     methods: {
+        toggleDropdown(itemId) {
+            if (!itemId) {
+                return
+            }
+            const key = `processo:${itemId}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(itemId) {
+            return this.dropdownAbertoKey === `processo:${itemId}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+        onClickOutside(event) {
+            if (event && event.target && event.target.closest && event.target.closest('.dropdown')) {
+                return
+            }
+            this.dropdownAbertoKey = null
+        },
         getDataAso(item) {
             if (item.admissao && item.admissao.ultimo_aso && item.admissao.ultimo_aso.data_realizacao) return item.admissao.ultimo_aso.data_realizacao
             if (item.ultimo_aso && item.ultimo_aso.data_realizacao) return item.ultimo_aso.data_realizacao
@@ -744,14 +780,19 @@ const app = createApp({
             return item.admissao && item.admissao.tipo_admissao ? item.admissao.tipo_admissao : null
         },
         async getColunaTabelas() {
-            await axios.get(`${URL_ADMIN}/admissao/colunas-tabela-processo`).then((response) => {
+            try {
+                const response = await axios.get(`${URL_ADMIN}/admissao/colunas-tabela-processo`)
                 this.colunasTabela = response.data
-            })
+            } catch (err) {
+                this.colunasTabela = []
+            }
         },
         async atualizaColunaTabelas() {
-            await axios.put(`${URL_ADMIN}/admissao/colunas-tabela-processo`, {
-                colunasTabela: this.colunasTabela
-            })
+            try {
+                await axios.put(`${URL_ADMIN}/admissao/colunas-tabela-processo`, {
+                    colunasTabela: this.colunasTabela
+                })
+            } catch (err) {}
         },
         formDemitir(item) {
             this.modeldemissao = _.cloneDeep(this.modeldemissaoDefault)
@@ -778,7 +819,7 @@ const app = createApp({
             await axios
                 .post(`${URL_ADMIN}/admissao/demitir-via-privilegio`, this.modeldemissao.form)
                 .then((response) => {
-                    $('#janelaDemitir').modal('hide')
+                    fecharModal('#janelaDemitir')
                     toastr.success(`Colaborador(a) ${this.modeldemissao.form.nome} foi demitido(a)!`, 'Sucesso!')
                     this.modeldemissao = _.cloneDeep(this.modeldemissaoDefault)
                     this.atualizar()
@@ -1066,7 +1107,7 @@ const app = createApp({
                     if (response.status === 201) {
                         this.form_massa.preload = false
                         this.form_massa.cadastrado = true
-                        $('#janelaAdmissaoMassa').modal('hide')
+                        fecharModal('#janelaAdmissaoMassa')
                         this.atualizar()
                     }
                 })

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <modal id="janelaFilialCadastrar" :titulo="titulo_janela" :size="80" :fechar="!preload">
+        <modal ref="modalFilial" id="janelaFilialCadastrar" :titulo="titulo_janela" :size="80" :fechar="!preload" :modal-pai="modal">
             <template #conteudo>
                 <preload v-if="preload"></preload>
                 <div v-if="form.dados && !preload">
@@ -51,7 +51,7 @@
                                     <label>Área de Atuação</label>
                                     <select v-model="form.dados.area_id" class="form-control" onblur="valida_campo_vazio(this, 1)">
                                         <option value="">Selecione</option>
-                                        <option v-for="item in listaAreas" :value="item.id">{{ item.label }}</option>
+                                        <option v-for="(item, index) in listaAreas" :key="item.id || index" :value="item.id">{{ item.label }}</option>
                                     </select>
                                 </div>
                             </div>
@@ -120,26 +120,19 @@
             </template>
 
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando" @click="alterarform()">Salvar</button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando" @click="alterarform()">Salvar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
             </template>
         </modal>
 
         <div class="row">
             <div class="col-12 col-md-12">
-                <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar()">
+                <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar()">
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
 
-                <button
-                    type="button"
-                    class="btn btn-sm btn-primary"
-                    :disabled="controle.carregando"
-                    @click="formNovo()"
-                    data-toggle="modal"
-                    data-target="#janelaFilialCadastrar"
-                >
+                <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="controle.carregando" @click="formNovo()">
                     <i class="fa fa-plus"></i> Cadastrar
                 </button>
             </div>
@@ -164,7 +157,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in lista">
+                        <tr v-for="(item, index) in lista" :key="item.id || index">
                             <td class="text-center">{{ item.id }}</td>
                             <td class="text-center">{{ item.dados.cnpj }}</td>
                             <td class="text-center">{{ item.dados.razao_social }}</td>
@@ -172,13 +165,7 @@
                                 <bt-ativo :rota="`administracao/clientes/filial/${item.id}/ativa-desativa`" :model="item"></bt-ativo>
                             </td>
                             <td class="text-center">
-                                <button
-                                    type="button"
-                                    class="btn btn-sm btn-primary mb-1"
-                                    data-toggle="modal"
-                                    data-target="#janelaFilialCadastrar"
-                                    @click="alterarFilial(item.id)"
-                                >
+                                <button type="button" class="btn btn-sm mr-1 btn-primary mb-1" @click="alterarFilial(item.id)">
                                     <i class="fa fa-edit"></i>
                                 </button>
                             </td>
@@ -242,7 +229,7 @@ export default {
     data() {
         return {
             hash: String(Math.random()).substr(2),
-            titulo_janela: '',
+            titulo_janela: 'Nova Filial',
 
             preload: false,
             editando: false,
@@ -273,6 +260,16 @@ export default {
         }
     },
     methods: {
+        abrirModalFilial() {
+            if (this.$refs && this.$refs.modalFilial && typeof this.$refs.modalFilial.abrirModal === 'function') {
+                this.$refs.modalFilial.abrirModal()
+            }
+        },
+        fecharModalFilial() {
+            if (this.$refs && this.$refs.modalFilial && typeof this.$refs.modalFilial.fecharModal === 'function') {
+                this.$refs.modalFilial.fecharModal()
+            }
+        },
         formNovo() {
             this.form = _.cloneDeep(this.formDefault) //copia
             this.titulo_janela = 'Nova Filial'
@@ -281,6 +278,7 @@ export default {
             this.preload = false
             formReset()
             setupCampo()
+            this.abrirModalFilial()
         },
 
         cadastrar() {
@@ -293,7 +291,7 @@ export default {
             axios
                 .post(`${URL_ADMIN}/administracao/clientes/filial`, this.form)
                 .then((res) => {
-                    $('#janelaFilialCadastrar').modal('hide')
+                    this.fecharModalFilial()
                     mostraSucesso('', 'Filial cadastrada com sucesso')
                     this.cadastrado = true
                     this.atualizar()
@@ -312,6 +310,7 @@ export default {
 
             this.form = _.cloneDeep(this.formDefault) //copia
             this.preload = true
+            this.abrirModalFilial()
             axios
                 .get(`${URL_ADMIN}/administracao/clientes/filial/${filial}/editar`)
                 .then((response) => {
@@ -336,7 +335,7 @@ export default {
             axios
                 .put(`${URL_ADMIN}/administracao/clientes/filial/${this.form.id}`, this.form)
                 .then((response) => {
-                    $('#janelaFilialCadastrar').modal('hide')
+                    this.fecharModalFilial()
                     mostraSucesso('', 'Filial atualizada com sucesso')
                     this.atualizado = true
                     this.atualizar()
@@ -356,8 +355,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

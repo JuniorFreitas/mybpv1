@@ -1,6 +1,6 @@
 <template>
     <div id="componentePcmso">
-        <modal id="janelaPcmsoCadastrar" :titulo="titulo_janela" :fechar="!preload">
+        <modal id="janelaPcmsoCadastrar" :titulo="titulo_janela" :fechar="!preload" :modal-pai="modal" ref="modal_janelaPcmsoCadastrar">
             <template #conteudo>
                 <preload v-show="preload"></preload>
                 <div v-if="!preload && !cadastrado">
@@ -24,15 +24,15 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando" @click="alterarformPcmso()">Salvar</button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando" @click="alterarformPcmso()">Salvar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
             </template>
         </modal>
 
         <!-- Filtro -->
         <fieldset style="margin: 0px">
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-5">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -59,18 +59,16 @@
                 </div>
 
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary"
+                        class="btn btn-sm mr-1 btn-primary"
                         :disabled="controle.carregando"
-                        @click="formNovo"
-                        data-toggle="modal"
-                        data-target="#janelaPcmsoCadastrar"
+                        @click="formNovo(); $refs.modal_janelaPcmsoCadastrar && $refs.modal_janelaPcmsoCadastrar.abrirModal()"
                     >
                         <i class="fa fa-plus"></i> Cadastrar
                     </button>
@@ -98,17 +96,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in lista">
+                        <tr v-for="(item, index) in lista" :key="item.id || index">
                             <td class="text-center">{{ item.id }}</td>
                             <td class="text-center">{{ item.label }}</td>
                             <td class="text-center">{{ item.ativo === true ? 'Ativo' : 'Inativo' }}</td>
                             <td class="text-center">
                                 <button
                                     type="button"
-                                    class="btn btn-sm btn-primary mb-1"
-                                    data-toggle="modal"
-                                    data-target="#janelaPcmsoCadastrar"
-                                    @click="alterarPcmso(item.id)"
+                                    class="btn btn-sm mr-1 btn-primary mb-1"
+                                    @click="alterarPcmso(item.id); $refs.modal_janelaPcmsoCadastrar && $refs.modal_janelaPcmsoCadastrar.abrirModal()"
                                 >
                                     <i class="fa fa-edit"></i>
                                 </button>
@@ -164,7 +160,7 @@ export default {
     data() {
         return {
             hash: String(Math.random()).substr(2),
-            titulo_janela: '',
+            titulo_janela: 'Pcmso',
 
             preload: false,
             editando: false,
@@ -213,7 +209,7 @@ export default {
                 .post(`${URL_ADMIN}/cadastro/pcmso`, this.form)
                 .then((res) => {
                     if (res.status === 201) {
-                        $('#janelaPcmsoCadastrar').modal('hide')
+                        this.$refs.modal_janelaPcmsoCadastrar && this.$refs.modal_janelaPcmsoCadastrar.fecharModal()
                         mostraSucesso('', 'Pcmso cadastrado com sucesso')
                         this.cadastrado = true
                         this.preload = false
@@ -257,7 +253,7 @@ export default {
             axios
                 .put(`${URL_ADMIN}/cadastro/pcmso/${this.form.id}`, this.form)
                 .then((response) => {
-                    $('#janelaPcmsoCadastrar').modal('hide')
+                    this.$refs.modal_janelaPcmsoCadastrar && this.$refs.modal_janelaPcmsoCadastrar.fecharModal()
                     mostraSucesso('', 'Pcmso atualizado com sucesso')
                     this.preload = false
                     this.atualizado = true
@@ -274,8 +270,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

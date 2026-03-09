@@ -31,10 +31,10 @@
             </form>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado" @click="alterar()">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado" @click="alterar()">
                 Alterar
             </button>
-            <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado" @click="cadastrar()">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado" @click="cadastrar()">
                 Cadastrar
             </button>
         </template>
@@ -49,7 +49,7 @@
             <h4 class="text-center" v-show="!apagado">Tem certeza que deseja apagar esta habilidade?</h4>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
+            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
         </template>
     </modal>
 
@@ -74,9 +74,9 @@
         </div>
 
 
-        <button type="button" class="btn btn-sm btn-success" id="btnAtualizar">Atualizar</button>
+        <button type="button" class="btn btn-sm mr-1 btn-success" id="btnAtualizar">Atualizar</button>
 
-        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#janelaCadastrar"
+        <button type="button" class="btn btn-sm mr-1 btn-primary" data-toggle="modal" data-target="#janelaCadastrar"
                 @click="formNovo()">
             Cadastrar
         </button>
@@ -105,13 +105,13 @@
                     <td data-label="Nome" class="text-center">@{{ab.nome}}</td>
                     <td data-label="Descrição" class="text-center">@{{ab.descricao}}</td>
                     <td class="text-center">
-                        <a href="javascript://" class="btn btn-sm btn-success btnFormAlterar"
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-success btnFormAlterar"
                            @click.prevent="formAlterar(ab.id)"
                            data-toggle="modal"
                            data-target="#janelaCadastrar">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <a href="javascript://" class="btn btn-sm btn-danger btnFormExcluir"
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-danger btnFormExcluir"
                            @click.prevent="janelaConfirmar(ab.id)"
                            data-toggle="modal"
                            data-target="#janelaConfirmar">

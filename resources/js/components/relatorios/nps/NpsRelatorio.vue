@@ -38,16 +38,16 @@
                     <div class="form-group">
                         <label>&nbsp;</label>
                         <div>
-                            <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                            <button type="submit" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando">
                                 <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i> Filtrar
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary ml-1" @click="limparFiltros">
+                            <button type="button" class="btn btn-sm mr-1 btn-outline-secondary ml-1" @click="limparFiltros">
                                 Limpar
                             </button>
-                            <button type="button" class="btn btn-sm btn-primary ml-1" @click="abrirModalCiclo">
+                            <button type="button" class="btn btn-sm mr-1 btn-primary ml-1" @click="abrirModalCiclo">
                                 <i class="fa fa-plus"></i> Novo ciclo
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-success ml-1" @click="exportarExcel" :disabled="controle.exportando">
+                            <button type="button" class="btn btn-sm mr-1 btn-outline-success ml-1" @click="exportarExcel" :disabled="controle.exportando">
                                 <i :class="controle.exportando ? 'fa fa-spinner fa-spin' : 'fa fa-file-excel-o'"></i> Exportar Excel
                             </button>
                         </div>
@@ -94,7 +94,7 @@
                 </form>
             </template>
             <template #rodape>
-                <button type="submit" form="form-nps-ciclo" class="btn btn-sm btn-success" :disabled="formCiclo.salvando">
+                <button type="submit" form="form-nps-ciclo" class="btn btn-sm mr-1 btn-success" :disabled="formCiclo.salvando">
                     <i v-if="formCiclo.salvando" class="fa fa-spinner fa-spin"></i>
                     <i v-else class="fa fa-check"></i> Salvar
                 </button>
@@ -181,7 +181,7 @@
                                     <td>{{ r.ciclo_nome || '—' }}</td>
                                     <td>{{ r.data }}</td>
                                     <td>
-                                        <span v-for="(item, i) in r.itens" :key="i" class="badge badge-secondary mr-1" :title="item.texto">
+                                        <span v-for="(item, i) in r.itens" :key="item.id || i" class="badge badge-secondary mr-1" :title="item.texto">
                                             {{ item.nota }}
                                         </span>
                                     </td>
@@ -273,7 +273,7 @@ export default {
             if (val == null) return '—';
             return Number(val).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
         },
-        buscarDados() {
+        async buscarDados() {
             this.preload = true;
             const params = {};
             if (this.controle.dados.filtroPeriodo && this.controle.dados.dataInicio && this.controle.dados.dataFim) {
@@ -286,10 +286,11 @@ export default {
             if (this.controle.dados.ciclo_id) {
                 params.ciclo_id = this.controle.dados.ciclo_id;
             }
-            axios.get(`${URL_ADMIN}/relatorios/nps`, {
-                params,
-                headers: { Accept: 'application/json' },
-            }).then(res => {
+            try {
+                const res = await axios.get(`${URL_ADMIN}/relatorios/nps`, {
+                    params,
+                    headers: { Accept: 'application/json' },
+                });
                 this.empresas = res.data.empresasParaSelect || [];
                 this.ciclos = res.data.ciclosParaSelect || [];
                 this.resumoGeral = res.data.resumoGeral || { total_respostas: 0, por_pergunta: [] };
@@ -301,10 +302,10 @@ export default {
                     this.controle.dados.empresa_id = res.data.filtros.empresa_id !== undefined && res.data.filtros.empresa_id !== null ? String(res.data.filtros.empresa_id) : '';
                     this.controle.dados.ciclo_id = res.data.filtros.ciclo_id !== undefined && res.data.filtros.ciclo_id !== null ? String(res.data.filtros.ciclo_id) : '';
                 }
-            }).finally(() => {
+            } finally {
                 this.preload = false;
                 this.controle.carregando = false;
-            });
+            }
         },
         aplicarFiltros() {
             this.controle.carregando = true;
@@ -326,7 +327,7 @@ export default {
         limparFiltros() {
             window.location = `${window.location.origin}${window.location.pathname}`;
         },
-        exportarExcel() {
+        async exportarExcel() {
             this.controle.exportando = true;
             const params = {};
             if (this.controle.dados.filtroPeriodo && this.controle.dados.dataInicio && this.controle.dados.dataFim) {
@@ -339,18 +340,16 @@ export default {
             if (this.controle.dados.ciclo_id) {
                 params.ciclo_id = this.controle.dados.ciclo_id;
             }
-            axios.post(`${URL_ADMIN}/relatorios/nps/export`, params)
-                .then(res => {
-                    const msg = (res.data && res.data.msg) ? res.data.msg : 'Exportação solicitada. Você será notificado quando o arquivo estiver pronto.';
-                    this.$swal && this.$swal.fire({ icon: 'success', title: msg });
-                })
-                .catch(err => {
-                    const msg = (err.response && err.response.data && err.response.data.message) ? err.response.data.message : 'Erro ao solicitar exportação.';
-                    this.$swal && this.$swal.fire({ icon: 'error', title: msg });
-                })
-                .finally(() => {
-                    this.controle.exportando = false;
-                });
+            try {
+                const res = await axios.post(`${URL_ADMIN}/relatorios/nps/export`, params);
+                const msg = (res.data && res.data.msg) ? res.data.msg : 'Exportação solicitada. Você será notificado quando o arquivo estiver pronto.';
+                this.$swal && this.$swal.fire({ icon: 'success', title: msg });
+            } catch (err) {
+                const msg = (err.response && err.response.data && err.response.data.message) ? err.response.data.message : 'Erro ao solicitar exportação.';
+                this.$swal && this.$swal.fire({ icon: 'error', title: msg });
+            } finally {
+                this.controle.exportando = false;
+            }
         },
         abrirModalCiclo() {
             this.limparFormCiclo();
@@ -365,7 +364,7 @@ export default {
             this.formCiclo.ativo = true;
             this.formCiclo.salvando = false;
         },
-        salvarCiclo() {
+        async salvarCiclo() {
             if (!this.formCiclo.nome || !this.formCiclo.data_inicio || !this.formCiclo.data_fim) {
                 this.$swal && this.$swal.fire({ icon: 'warning', title: 'Preencha nome, data início e data fim.' });
                 return;
@@ -375,23 +374,24 @@ export default {
                 return;
             }
             this.formCiclo.salvando = true;
-            axios.post(`${URL_ADMIN}/relatorios/nps/ciclos`, {
-                nome: this.formCiclo.nome,
-                data_inicio: this.formCiclo.data_inicio,
-                data_fim: this.formCiclo.data_fim,
-                ativo: this.formCiclo.ativo,
-            }).then(res => {
+            try {
+                const res = await axios.post(`${URL_ADMIN}/relatorios/nps/ciclos`, {
+                    nome: this.formCiclo.nome,
+                    data_inicio: this.formCiclo.data_inicio,
+                    data_fim: this.formCiclo.data_fim,
+                    ativo: this.formCiclo.ativo,
+                });
                 if (res.data.sucesso && res.data.ciclo) {
                     this.ciclos.push({ id: res.data.ciclo.id, nome: res.data.ciclo.nome });
                     this.$refs.modalCiclo.fecharModal();
                     this.$swal && this.$swal.fire({ icon: 'success', title: 'Ciclo criado com sucesso.' });
                 }
-            }).catch(err => {
+            } catch (err) {
                 const msg = (err.response && err.response.data && err.response.data.mensagem) ? err.response.data.mensagem : 'Erro ao salvar ciclo.';
                 this.$swal && this.$swal.fire({ icon: 'error', title: msg });
-            }).finally(() => {
+            } finally {
                 this.formCiclo.salvando = false;
-            });
+            }
         },
     },
 };

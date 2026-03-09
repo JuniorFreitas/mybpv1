@@ -1,6 +1,6 @@
 <template>
     <div>
-        <modal id="janelaCadastrar" :titulo="tituloJanela" :fechar="!preloadAjax" :size="90">
+        <modal id="janelaCadastrar" :titulo="tituloJanela" :fechar="!preloadAjax" :size="90" ref="modal_janelaCadastrar">
             <template #conteudo>
                 <preload label="Aguarde..." v-show="preloadAjax"></preload>
                 <div class="alert alert-success alert-dismissible" v-show="cadastrado || atualizado">
@@ -134,7 +134,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr v-for="(colaborador, index) in form.colaboradores">
+                                            <tr v-for="(colaborador, index) in form.colaboradores" :key="colaborador.id || index">
                                                 <!--                                            <td class="text-center">{{ colaborador.curriculo.nome }}</td>
                                                                                         <td class="text-center">{{ colaborador.vaga_aberta.vaga.nome }}</td> -->
                                                 <td class="text-center">
@@ -144,7 +144,7 @@
                                                     {{ !editando ? colaborador.cargo : colaborador.vaga_aberta.vaga.nome }}
                                                 </td>
                                                 <td class="text-center" v-if="!editando">
-                                                    <a href="javascript://" class="btn btn-sm btn-danger" @click.prevent="removerLIColaborador(index)">
+                                                    <a href="javascript://" class="btn btn-sm mr-1 btn-danger" @click.prevent="removerLIColaborador(index)">
                                                         <i class="fa fa-times" aria-hidden="true"></i>
                                                     </a>
                                                 </td>
@@ -298,12 +298,12 @@
                 </form>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="(aprovando || aprovandoRh) && !preloadAjax" @click="aprovar">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="(aprovando || aprovandoRh) && !preloadAjax" @click="aprovar">
                     <i class="fa fa-save"></i> Salvar
                 </button>
                 <button
                     type="button"
-                    class="btn btn-sm btn-primary"
+                    class="btn btn-sm mr-1 btn-primary"
                     v-show="!aprovando && !aprovandoRh && !cadastrado && !atualizado && !visualizar && !preloadAjax"
                     @click="cadastrar"
                 >
@@ -314,7 +314,10 @@
 
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form
+                class="row"
+                @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null"
+            >
                 <date-range-filter
                     v-model:enabled="controle.dados.filtroPeriodo"
                     v-model:start-date="controle.dados.dataInicio"
@@ -409,18 +412,16 @@
                 </div>
 
                 <div class="col-12 col-md-9">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar()">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar()">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
                         <span>{{ controle.carregando ? 'Buscando...' : 'Buscar' }}</span>
                     </button>
 
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary"
-                        data-toggle="modal"
+                        class="btn btn-sm mr-1 btn-primary"
                         :disabled="controle.carregando"
-                        data-target="#janelaCadastrar"
-                        @click.prevent="formNovo(); cadastrando = true; aprovandoRh = false; aprovando = false; visualizar = false"
+                        @click.prevent="formNovo(); cadastrando = true; aprovandoRh = false; aprovando = false; visualizar = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                         v-if="permissoes.admissao_cih_lancar"
                     >
                         <i class="fa fa-plus"></i> Cadastrar
@@ -428,7 +429,7 @@
 
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary"
+                        class="btn btn-sm mr-1 btn-primary"
                         @click.prevent="exportaPdf()"
                         :disabled="controle.carregando || preloadExportacao || (!controle.carregando && lista.length === 0)"
                     >
@@ -437,7 +438,7 @@
 
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary"
+                        class="btn btn-sm mr-1 btn-primary"
                         @click.prevent="exportaExcel()"
                         :disabled="controle.carregando || preloadExportacao || (!controle.carregando && !lista.length && !selecionados.length)"
                     >
@@ -517,27 +518,30 @@
                                 <span class="text-capitalize" v-else> EM ABERTO </span>
                             </td>
                             <td class="text-center vertical-align-middle">
-                                <div class="dropdown show">
+                                <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
                                     <a
                                         class="btn btn-secondary dropdown-toggle"
                                         href="#"
                                         role="button"
-                                        id="dropdownMenuLink"
-                                        data-toggle="dropdown"
+                                        :id="`dropdownMenuLink_${item.id}`"
                                         aria-haspopup="true"
-                                        aria-expanded="false"
+                                        :aria-expanded="isDropdownOpen(item.id) ? 'true' : 'false'"
+                                        @click.prevent.stop="toggleDropdown(item.id)"
                                     >
                                         <i class="fas fa-ellipsis-v"></i>
                                     </a>
 
-                                    <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                    <div
+                                        class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                        :class="{ show: isDropdownOpen(item.id) }"
+                                        :aria-labelledby="`dropdownMenuLink_${item.id}`"
+                                        @click="fecharDropdown"
+                                    >
                                         <a
                                             class="dropdown-item"
                                             href="javascript://"
                                             title="Aprovação Gestor"
-                                            data-toggle="modal"
-                                            data-target="#janelaCadastrar"
-                                            @click.prevent="formAprovar(item.id); visualizar = false; aprovando = true; aprovandoRh = false; cadastrando = false"
+                                            @click.prevent="formAprovar(item.id); visualizar = false; aprovando = true; aprovandoRh = false; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                                             v-if="item.user_aprovacao_id === null && item.status === 'aberto' && aprovaGestor"
                                         >
                                             Aprovação Gestor
@@ -547,9 +551,7 @@
                                             class="dropdown-item"
                                             href="javascript://"
                                             title="Aprovação RH"
-                                            data-toggle="modal"
-                                            data-target="#janelaCadastrar"
-                                            @click.prevent="formAprovar(item.id); visualizar = false; aprovando = false; aprovandoRh = true; cadastrando = false"
+                                            @click.prevent="formAprovar(item.id); visualizar = false; aprovando = false; aprovandoRh = true; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                                             v-if="item.status === 'aprovado' && item.user_rh_id === null && aprovaRh"
                                         >
                                             Aprovação Rh
@@ -559,9 +561,7 @@
                                             class="dropdown-item"
                                             href="javascript://"
                                             title="Visualizar"
-                                            data-toggle="modal"
-                                            data-target="#janelaCadastrar"
-                                            @click.prevent="formAprovar(item.id); visualizar = true; aprovando = false; aprovandoRh = false; cadastrando = false"
+                                            @click.prevent="formAprovar(item.id); visualizar = true; aprovando = false; aprovandoRh = false; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                                         >
                                             Visualizar
                                         </a>
@@ -572,12 +572,12 @@
                                 <!--                                v-if="permissoes.admissao_cih_aprovar"-->
                                 <!--                                v-show="item.status.includes('aberto')"-->
                                 <!--                                href="javascript://"-->
-                                <!--                                class="btn btn-sm btn-primary"-->
+                                <!--                                class="btn btn-sm mr-1 btn-primary"-->
                                 <!--                                content="Aprovar/Reprovar"-->
                                 <!--                                v-tippy-->
                                 <!--                                @click.prevent="formAprovar(item.id); leitura = false"-->
                                 <!--                                data-toggle="modal"-->
-                                <!--                                data-target="#janelaCadastrar"-->
+                                <!---- @click="$refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()">
                                 <!--                            >-->
                                 <!--                                <i class="fa fa-check"></i>-->
                                 <!--                            </a>-->
@@ -585,12 +585,12 @@
                                 <!--                            <a-->
                                 <!--                                v-show="item.status.includes('aprovado') || item.status.includes('reprovado')"-->
                                 <!--                                href="javascript://"-->
-                                <!--                                class="btn btn-sm btn-primary"-->
+                                <!--                                class="btn btn-sm mr-1 btn-primary"-->
                                 <!--                                content="Visualizar"-->
                                 <!--                                v-tippy-->
                                 <!--                                @click.prevent="formAprovar(item.id); leitura = true"-->
                                 <!--                                data-toggle="modal"-->
-                                <!--                                data-target="#janelaCadastrar"-->
+                                <!---- @click="$refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()">
                                 <!--                            >-->
                                 <!--                                <i class="fa fa-search"></i>-->
                                 <!--                            </a>-->
@@ -730,6 +730,8 @@ export default {
             listaAreas: [],
             listaClientes: [],
 
+            dropdownAbertoKey: null,
+
             controle: {
                 carregando: false,
                 dados: {
@@ -751,6 +753,10 @@ export default {
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
         this.atualizar()
+        document.addEventListener('click', this.onClickOutside)
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
     },
     watch: {
         'controle.dados.dataInicio'() {
@@ -810,6 +816,25 @@ export default {
         }
     },
     methods: {
+        toggleDropdown(itemId) {
+            if (!itemId) {
+                return
+            }
+            const key = `cih:${itemId}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(itemId) {
+            return this.dropdownAbertoKey === `cih:${itemId}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+        onClickOutside(event) {
+            if (event && event.target && event.target.closest && event.target.closest('.dropdown')) {
+                return
+            }
+            this.dropdownAbertoKey = null
+        },
         syncPeriodoFromDates() {
             const d = this.controle.dados
             if (!d.filtroPeriodo || !d.dataInicio || !d.dataFim) {
@@ -977,7 +1002,7 @@ export default {
                     .post(`${URL_ADMIN}/apontamento/cih`, this.form)
                     .then((response) => {
                         if (response.status === 201) {
-                            $('#janelaCadastrar').modal('hide')
+                            this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
                             this.mostraSucesso('', 'Ocorrência cadastrada com sucesso')
                             this.preloadAjax = false
                             this.cadastrado = true
@@ -1024,7 +1049,7 @@ export default {
             axios
                 .put(`${URL_ADMIN}/apontamento/cih/${this.form.id}`, this.form)
                 .then((response) => {
-                    $('#janelaCadastrar').modal('hide')
+                    this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
                     mostraSucesso('', 'Ocorrência alterada com sucesso!')
                     this.preloadAjax = false
                     this.atualizado = true
@@ -1070,7 +1095,7 @@ export default {
             axios
                 .put(`${URL_ADMIN}/apontamento/cih/aprovar/${this.form.id}`, this.form)
                 .then((response) => {
-                    $('#janelaCadastrar').modal('hide')
+                    this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
                     mostraSucesso('', 'Ocorrência alterada com sucesso!')
                     this.preloadAjax = false
                     this.atualizado = true
@@ -1108,8 +1133,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

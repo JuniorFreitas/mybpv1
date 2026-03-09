@@ -49,10 +49,10 @@
                         </date-range-filter>
                     </div>
                     <div class="col-12 col-md-6 col-lg-4 d-flex align-items-center flex-wrap">
-                        <button type="submit" class="btn btn-sm btn-success mr-2 mb-1" :disabled="controle.carregando">
+                        <button type="submit" class="btn btn-sm mr-1 btn-success mr-2 mb-1" :disabled="controle.carregando">
                             <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i> Atualizar
                         </button>
-                        <button type="button" class="btn btn-sm btn-secondary mb-1" @click="limparFiltros"><i class="fa fa-eraser"></i> Limpar</button>
+                        <button type="button" class="btn btn-sm mr-1 btn-secondary mb-1" @click="limparFiltros"><i class="fa fa-eraser"></i> Limpar</button>
                     </div>
                 </div>
             </form>
@@ -90,10 +90,10 @@
                 <span class="uso-chip" v-for="item in resumoAssinaturas.extrato_por_tipo" :key="item.tipo_documento"> {{ item.label }}: {{ item.total }} </span>
             </div>
             <div class="uso-acoes">
-                <button type="button" class="btn btn-sm btn-outline-primary mr-2" :disabled="exportandoXlsx" @click="exportarExtrato('xlsx')">
+                <button type="button" class="btn btn-sm mr-1 btn-outline-primary mr-2" :disabled="exportandoXlsx" @click="exportarExtrato('xlsx')">
                     <i :class="exportandoXlsx ? 'fa fa-spinner fa-spin' : 'fa fa-file-excel'"></i> Extrato XLSX
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-danger" :disabled="exportandoPdf" @click="exportarExtrato('pdf')">
+                <button type="button" class="btn btn-sm mr-1 btn-outline-danger" :disabled="exportandoPdf" @click="exportarExtrato('pdf')">
                     <i :class="exportandoPdf ? 'fa fa-spinner fa-spin' : 'fa fa-file-pdf'"></i> Extrato PDF
                 </button>
             </div>
@@ -131,7 +131,7 @@
                     </select>
                 </div>
                 <div class="col-12 col-md-1 mb-2 d-flex align-items-end">
-                    <button type="button" class="btn btn-sm btn-success w-100" :disabled="salvandoConfigCota" @click="salvarConfigCota">
+                    <button type="button" class="btn btn-sm mr-1 btn-success w-100" :disabled="salvandoConfigCota" @click="salvarConfigCota">
                         <i :class="salvandoConfigCota ? 'fa fa-spinner fa-spin' : 'fa fa-save'"></i>
                     </button>
                 </div>
@@ -166,7 +166,6 @@
                                 href="#"
                                 role="button"
                                 :id="'dropdownDoc_' + item.id"
-                                data-toggle="dropdown"
                                 aria-haspopup="true"
                                 aria-expanded="false"
                                 title="Opções"
@@ -258,7 +257,7 @@
         ></controle-paginacao>
 
         <!-- Modal detalhe: eventos e signatários -->
-        <modal :id="'modalDetalheDoc_' + hash" titulo="Documento para assinatura" :size="75">
+        <modal ref="modalDetalheDoc" :id="'modalDetalheDoc_' + hash" titulo="Documento para assinatura" :size="75">
             <template #conteudo>
                 <div v-if="detalhe" class="container-fluid">
                     <p>
@@ -273,7 +272,7 @@
                         <i class="fas fa-hourglass-half"></i> Documento pendente de assinatura
                     </p>
                     <p v-else-if="podeBaixarAssinado(detalhe)" class="mb-2">
-                        <a :href="urlDownloadAssinado(detalhe.id)" target="_blank" rel="noopener" class="btn btn-sm btn-success"
+                        <a :href="urlDownloadAssinado(detalhe.id)" target="_blank" rel="noopener" class="btn btn-sm mr-1 btn-success"
                             ><i class="fa fa-download"></i> Baixar documento assinado</a
                         >
                     </p>
@@ -314,7 +313,7 @@
                                     <span class="evento-data">{{ formatarData(ev.created_at) }}</span>
                                 </div>
                                 <div class="evento-detalhes" v-if="detalhesEvento(ev).length">
-                                    <div class="evento-detalhe" v-for="(linha, idx) in detalhesEvento(ev)" :key="idx">
+                                    <div class="evento-detalhe" v-for="(linha, idx) in detalhesEvento(ev)" :key="linha.id || idx">
                                         <span class="evento-detalhe-label">{{ linha.label }}:</span>
                                         <span class="evento-detalhe-value">{{ linha.value }}</span>
                                     </div>
@@ -326,10 +325,10 @@
                 <p v-else class="text-center"><i class="fa fa-spinner fa-pulse"></i> Carregando...</p>
             </template>
             <template #rodape>
-                <button v-if="detalhe && podeCancelar(detalhe)" type="button" class="btn btn-sm btn-danger mr-1" @click="cancelarNoModal">
+                <button v-if="detalhe && podeCancelar(detalhe)" type="button" class="btn btn-sm mr-1 btn-danger mr-1" @click="cancelarNoModal">
                     Cancelar documento
                 </button>
-                <button v-if="detalhe && podeReenviar(detalhe)" type="button" class="btn btn-sm btn-warning mr-1" @click="reenviarNoModal">
+                <button v-if="detalhe && podeReenviar(detalhe)" type="button" class="btn btn-sm mr-1 btn-warning mr-1" @click="reenviarNoModal">
                     Reenviar e-mail
                 </button>
             </template>
@@ -408,7 +407,7 @@ export default {
             if (this.$refs.componente) {
                 const p = parseInt(this.controle.dados.page, 10)
                 if (p >= 1) this.$refs.componente.atual = p
-                this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             } else {
                 this.atualizar()
             }
@@ -477,8 +476,8 @@ export default {
         },
         atualizar() {
             if (this.$refs.componente) {
-                this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-                this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+                this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             }
         },
         limparFiltros() {
@@ -634,7 +633,9 @@ export default {
                 .then((res) => {
                     this.detalhe = res.data
                     this.$nextTick(() => {
-                        $(`#modalDetalheDoc_${this.hash}`).modal('show')
+                        if (this.$refs && this.$refs.modalDetalheDoc && typeof this.$refs.modalDetalheDoc.abrirModal === 'function') {
+                            this.$refs.modalDetalheDoc.abrirModal()
+                        }
                     })
                 })
                 .catch(() => {
@@ -642,7 +643,9 @@ export default {
                 })
         },
         fecharDetalhe() {
-            $(`#modalDetalheDoc_${this.hash}`).modal('hide')
+            if (this.$refs && this.$refs.modalDetalheDoc && typeof this.$refs.modalDetalheDoc.fecharModal === 'function') {
+                this.$refs.modalDetalheDoc.fecharModal()
+            }
         },
         confirmarCancelar(item) {
             if (!this.$swal) {

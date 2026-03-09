@@ -1,6 +1,6 @@
 <template>
     <div>
-        <modal :id="hash" :titulo="tituloJanela" :size="90">
+        <modal :id="hash" :titulo="tituloJanela" :size="90" :ref="hash">
             <template #conteudo>
                 <preload v-show="preload" class="text-center"></preload>
                 <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -39,7 +39,7 @@
                                         <label class="font-weight-bold"><i class="fas fa-building"></i> Centro de Custo Atual</label>
                                         <select v-model="form.centro_custo_id" class="form-control form-control-sm" disabled>
                                             <option value="">Selecione</option>
-                                            <option v-for="item in centro_custos" :value="item.id">
+                                            <option v-for="item in centro_custos" :value="item.id" :key="item.id">
                                                 {{ item.label }}
                                             </option>
                                         </select>
@@ -268,22 +268,22 @@
                 </form>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="cadastrando && !preload" @click.prevent="cadastrar">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="cadastrando && !preload" @click.prevent="cadastrar">
                     <i class="fa fa-save"></i> Cadastrar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="aprovando && !preload" @click.prevent="aprovarGestor">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="aprovando && !preload" @click.prevent="aprovarGestor">
                     <i class="fa fa-save"></i> Salvar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="aprovandoExtra && !preload" @click.prevent="aprovarExtra">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="aprovandoExtra && !preload" @click.prevent="aprovarExtra">
                     <i class="fa fa-save"></i> Salvar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="aprovandoRh && !preload" @click.prevent="aprovarRh">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="aprovandoRh && !preload" @click.prevent="aprovarRh">
                     <i class="fa fa-save"></i> Salvar
                 </button>
             </template>
         </modal>
 
-        <modal id="janelaAtualizaStatus" titulo="Deseja APROVAR ou REPROVAR todos os colaboradores selecionados?" :centralizada="true" label-fechar="Fechar">
+        <modal id="janelaAtualizaStatus" titulo="Deseja APROVAR ou REPROVAR todos os colaboradores selecionados?" :centralizada="true" label-fechar="Fechar" ref="modal_janelaAtualizaStatus">
             <template #conteudo>
                 <div class="col-12">
                     <div class="form-group">
@@ -292,8 +292,8 @@
                     </div>
                 </div>
                 <div class="col-12">
-                    <button type="button" class="btn btn-sm btn-success" @click="confirmaAtualizacaoStatus('aprovado')">APROVAR</button>
-                    <button type="button" class="btn btn-sm btn-danger" @click="confirmaAtualizacaoStatus('reprovado')">REPROVAR</button>
+                    <button type="button" class="btn btn-sm mr-1 btn-success" @click="confirmaAtualizacaoStatus('aprovado')">APROVAR</button>
+                    <button type="button" class="btn btn-sm mr-1 btn-danger" @click="confirmaAtualizacaoStatus('reprovado')">REPROVAR</button>
                 </div>
             </template>
         </modal>
@@ -311,7 +311,10 @@
 
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form
+                class="row"
+                @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null"
+            >
                 <date-range-filter
                     v-model:enabled="controle.dados.filtroPeriodo"
                     v-model:start-date="controle.dados.dataInicio"
@@ -378,22 +381,20 @@
                 <div class="col-12"></div>
 
                 <div class="col-12 col-md-9">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i> Atualizar
                     </button>
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary"
-                        data-toggle="modal"
-                        :data-target="`#${hash}`"
+                        class="btn btn-sm mr-1 btn-primary"
                         :disabled="controle.carregando"
-                        @click.prevent="formNovo"
+                        @click.prevent="formNovo(); $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
                     >
                         Solicitar
                     </button>
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary mr-1"
+                        class="btn btn-sm mr-1 btn-primary mr-1"
                         @click.prevent="exportaExcel()"
                         :disabled="controle.carregando || preloadExportacao || (!controle.carregando && !lista.length)"
                     >
@@ -401,11 +402,10 @@
                     </button>
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary mr-1"
+                        class="btn btn-sm mr-1 btn-primary mr-1"
                         v-show="selecionados.length > 0"
                         :disabled="selecionados.length === 0"
-                        data-toggle="modal"
-                        data-target="#janelaAtualizaStatus"
+                        @click.prevent="$refs.modal_janelaAtualizaStatus && $refs.modal_janelaAtualizaStatus.abrirModal()"
                     >
                         Atualizar Status <span class="badge badge-light">{{ selecionados.length }}</span>
                     </button>
@@ -502,27 +502,30 @@
                                 <span v-else-if="item.status_aprovacao === 'aprovado'"> <i class="fas fa-check-circle"></i> APROVADO GESTOR </span>
                                 <span v-else> <i class="fas fa-clock"></i> EM ABERTO </span>
                             </span>
-                            <div class="dropdown show">
+                            <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
                                 <a
                                     class="btn-actions-compact"
                                     href="#"
                                     role="button"
-                                    id="dropdownMenuLink"
-                                    data-toggle="dropdown"
+                                    :id="`dropdownMenuLink_${item.id}`"
                                     aria-haspopup="true"
-                                    aria-expanded="false"
+                                    :aria-expanded="isDropdownOpen(item.id) ? 'true' : 'false'"
+                                    @click.prevent.stop="toggleDropdown(item.id)"
                                 >
                                     <i class="fas fa-ellipsis-v"></i>
                                 </a>
 
-                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                                <div
+                                    class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                    :class="{ show: isDropdownOpen(item.id) }"
+                                    :aria-labelledby="`dropdownMenuLink_${item.id}`"
+                                    @click="fecharDropdown"
+                                >
                                     <a
                                         class="dropdown-item"
                                         href="javascript://"
                                         title="Aprovação Gestor"
-                                        data-toggle="modal"
-                                        :data-target="`#${hash}`"
-                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = true; aprovandoExtra = false; aprovandoRh = false; podeanexar = false"
+                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = true; aprovandoExtra = false; aprovandoRh = false; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
                                         v-if="!item.user_aprovacao_nome && !item.rh_aprovacao_nome && !item.aprovado_via_script && aprovaGestor"
                                     >
                                         Aprovação Gestor
@@ -532,9 +535,7 @@
                                         class="dropdown-item"
                                         href="javascript://"
                                         :title="nomeAprovacaoExtra || 'Aprovação Extra'"
-                                        data-toggle="modal"
-                                        :data-target="`#${hash}`"
-                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = false; aprovandoExtra = true; aprovandoRh = false; podeanexar = false"
+                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = false; aprovandoExtra = true; aprovandoRh = false; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
                                         v-if="
                                             temAprovacaoExtra &&
                                             podeAprovarExtra &&
@@ -551,9 +552,7 @@
                                         class="dropdown-item"
                                         href="javascript://"
                                         title="Aprovação RH"
-                                        data-toggle="modal"
-                                        :data-target="`#${hash}`"
-                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = true; podeanexar = false"
+                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = true; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
                                         v-if="
                                             ((item.status_aprovacao === 'aprovado' && !temAprovacaoExtra) || item.status_aprovacao_extra === 'aprovado') &&
                                             !item.aprovado_via_script &&
@@ -568,9 +567,7 @@
                                         class="dropdown-item"
                                         href="javascript://"
                                         title="Visualizar"
-                                        data-toggle="modal"
-                                        :data-target="`#${hash}`"
-                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = false; podeanexar = false"
+                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = false; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
                                     >
                                         Visualizar
                                     </a>
@@ -808,6 +805,8 @@ export default {
             selecionados: [],
             selecionaTudo: false,
 
+            dropdownAbertoKey: null,
+
             formConfirmacao: {
                 selecionados: [],
                 obs_aprovacao: '',
@@ -889,6 +888,10 @@ export default {
         this.$nextTick(() => {
             this.atualizar()
         })
+        document.addEventListener('click', this.onClickOutside)
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
     },
     watch: {
         'controle.dados': {
@@ -948,6 +951,25 @@ export default {
         }
     },
     methods: {
+        toggleDropdown(itemId) {
+            if (!itemId) {
+                return
+            }
+            const key = `mov_demissao:${itemId}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(itemId) {
+            return this.dropdownAbertoKey === `mov_demissao:${itemId}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+        onClickOutside(event) {
+            if (event && event.target && event.target.closest && event.target.closest('.dropdown')) {
+                return
+            }
+            this.dropdownAbertoKey = null
+        },
         abrirEnvioAssinaturaDemissao(item) {
             this.$refs.acaoAssinaturaDemissao.abrirEnvio(item)
         },
@@ -1036,11 +1058,11 @@ export default {
                 .post(`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/atualizacao-status`, this.formConfirmacao)
                 .then((res) => {
                     this.preloadAtualizacao = false
-                    $('#janelaAtualizaStatus').modal('hide')
+                    this.$refs.modal_janelaAtualizaStatus && this.$refs.modal_janelaAtualizaStatus.fecharModal()
                     mostraSucesso('Status atualizados com sucesso!')
                     this.selecionados = []
                     this.formConfirmacao = _.cloneDeep(this.formConfirmacaoDefault) //copia
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                 })
                 .catch((error) => {
                     this.preloadAtualizacao = false
@@ -1103,10 +1125,10 @@ export default {
             axios
                 .post(`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista`, this.form)
                 .then((response) => {
-                    $(`#${this.hash} `).modal('hide')
+                    this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
                     let data = response.data
                     mostraSucesso('', 'Solicitação registrada com sucesso!')
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -1158,7 +1180,7 @@ export default {
             this.demissaoAssinaturaSelecionada = item
             this.signatariosAssinaturaDemissao = [{ nome: item.colaborador_nome || '', email: '', cpf: '' }]
             this.preloadAssinaturaDemissao = false
-            this.$nextTick(() => $(`#modalAssinaturaDemissao_${this.hash}`).modal('show'))
+            this.$nextTick(() => this.$refs[`modalAssinaturaDemissao_${this.hash}`] && this.$refs[`modalAssinaturaDemissao_${this.hash}`].abrirModal())
         },
         temDocumentoAssinaturaDemissao(item) {
             const doc = item && item.documento_para_assinatura
@@ -1170,7 +1192,7 @@ export default {
             this.demissaoParaReenvio = item
             this.documentoAssinaturaDetalheDemissao = null
             this.preloadGerenciarAssinaturaDemissao = true
-            $(`#modalGerenciarAssinaturaDemissao_${this.hash}`).modal('show')
+            this.$refs[`modalGerenciarAssinaturaDemissao_${this.hash}`] && this.$refs[`modalGerenciarAssinaturaDemissao_${this.hash}`].abrirModal()
             const idOrToken = doc.token || doc.id
             axios
                 .get(`${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}`)
@@ -1188,7 +1210,7 @@ export default {
         },
         enviarNovamenteNoModalDemissao() {
             if (!this.demissaoParaReenvio) return
-            $(`#modalGerenciarAssinaturaDemissao_${this.hash}`).modal('hide')
+            this.$refs[`modalGerenciarAssinaturaDemissao_${this.hash}`] && this.$refs[`modalGerenciarAssinaturaDemissao_${this.hash}`].fecharModal()
             this.$nextTick(() => this.abrirModalAssinaturaDemissao(this.demissaoParaReenvio))
         },
         labelTipoDocDemissao(tipo) {
@@ -1289,7 +1311,7 @@ export default {
                     mostraSucesso(res.data.message || 'Documento cancelado.')
                     this.documentoAssinaturaDetalheDemissao = null
                     this.atualizar()
-                    $(`#modalGerenciarAssinaturaDemissao_${this.hash}`).modal('hide')
+                    this.$refs[`modalGerenciarAssinaturaDemissao_${this.hash}`] && this.$refs[`modalGerenciarAssinaturaDemissao_${this.hash}`].fecharModal()
                 })
                 .catch((err) => {
                     const msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao cancelar.'
@@ -1325,7 +1347,7 @@ export default {
                 .post(`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/enviar-para-assinatura`, payload)
                 .then((res) => {
                     this.preloadAssinaturaDemissao = false
-                    $(`#modalAssinaturaDemissao_${this.hash}`).modal('hide')
+                    this.$refs[`modalAssinaturaDemissao_${this.hash}`] && this.$refs[`modalAssinaturaDemissao_${this.hash}`].fecharModal()
                     mostraSucesso(res.data.message || 'Documento enviado para assinatura.')
                     this.atualizar()
                     if (res.data.links && res.data.links.length && this.$swal) {
@@ -1367,10 +1389,10 @@ export default {
             axios
                 .put(`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/${this.form.id}`, this.form)
                 .then((response) => {
-                    $(`#${this.hash} `).modal('hide')
+                    this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
                     let data = response.data
                     mostraSucesso('', 'Solicitação alterada com sucesso!')
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -1392,8 +1414,8 @@ export default {
                 .then((response) => {
                     let data = response.data
                     mostraSucesso('', 'Registro salvo com sucesso!')
-                    $(`#${this.hash} `).modal('hide')
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -1413,8 +1435,8 @@ export default {
                 .then((response) => {
                     let data = response.data
                     mostraSucesso('', 'Registro salvo com sucesso!')
-                    $(`#${this.hash} `).modal('hide')
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -1434,8 +1456,8 @@ export default {
                 .then((response) => {
                     let data = response.data
                     mostraSucesso('', 'Registro salvo com sucesso!')
-                    $(`#${this.hash} `).modal('hide')
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -1483,8 +1505,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

@@ -1,6 +1,6 @@
 <template>
     <header class="page-topbar shadow-sm bg-white">
-        <modal id="janelaPerfil" titulo="Seu Perfil" size="g">
+        <modal id="janelaPerfil" titulo="Seu Perfil" size="g" ref="modal_janelaPerfil">
             <template #conteudo>
                 <span v-show="preload">
                     <preload />
@@ -48,11 +48,11 @@
                 </template>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!preload" @click="alterarFormPerfil()">Salvar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!preload" @click="alterarFormPerfil()">Salvar</button>
             </template>
         </modal>
 
-        <modal id="download" titulo="Meus Downloads" size="g">
+        <modal id="download" titulo="Meus Downloads" size="g" ref="modal_download">
             <template #conteudo>
                 <preload v-show="preloadDownload" />
                 <template v-if="!preloadDownload">
@@ -62,16 +62,16 @@
                                 <tr class="bg-default">
                                     <th class="text-center">Local</th>
                                     <th class="text-center">Data</th>
-                                    <th class="text-center" />
+                                    <th class="text-center"></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="download in downloads">
+                                <tr v-for="download in downloads" :key="download.arquivo || download.id">
                                     <td>{{ download.local }}</td>
                                     <td>{{ download.data_hora_criacao }}</td>
                                     <td>
                                         <a :href="URL_ADMIN + '/downloads/exportacao/' + download.arquivo" class="btn btn-primary" target="_blank">
-                                            <i class="fa fa-download" />
+                                            <i class="fa fa-download"></i>
                                             Download
                                         </a>
                                     </td>
@@ -84,7 +84,7 @@
         </modal>
 
         <!-- Janela do chat -->
-        <modal id="janelaChat" titulo="Chat" size="g">
+        <modal id="janelaChat" titulo="Chat" size="g" ref="modal_janelaChat">
             <template #conteudo>
                 <chat v-if="usuario.empresa_id" :id="usuario.empresa_id" @notificar="notificacao" />
             </template>
@@ -93,7 +93,7 @@
             </template>
         </modal>
 
-        <modal id="janelaConfirmarSair" titulo="Sair" :centralizada="true" label-fechar="Não">
+        <modal id="janelaConfirmarSair" titulo="Sair" :centralizada="true" label-fechar="Não" ref="modal_janelaConfirmarSair">
             <template #conteudo>
                 <div class="text-center text-default">
                     <i class="fa fa-exclamation-triangle" style="font-size: 67px" />
@@ -101,7 +101,7 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-danger" @click="sair">SIM</button>
+                <button type="button" class="btn btn-sm mr-1 btn-danger" @click="sair">SIM</button>
             </template>
         </modal>
 
@@ -123,7 +123,7 @@
                     </a>
                 </div>
 
-                <button type="button" class="btn btn-sm px-3 font-size-16 header-item waves-effect" @click="verticalMenu">
+                <button type="button" class="btn btn-sm mr-1 px-3 font-size-16 header-item waves-effect" @click="verticalMenu">
                     <i class="fa fa-fw fa-bars text-white" />
                 </button>
             </div>
@@ -137,9 +137,7 @@
                         v-tippy
                         class="btn header-item noti-icon waves-effect"
                         content="Downloads"
-                        data-toggle="modal"
-                        data-target="#download"
-                        @click.prevent="meusDownloads()"
+                        @click.prevent="meusDownloads(); $refs.modal_download && $refs.modal_download.abrirModal()"
                     >
                         <i class="bx bx-download text-white" />
                     </button>
@@ -150,7 +148,7 @@
 
                 <!-- CHAT -->
                 <div v-if="usuario.empresa_id" class="dropdown ml-1">
-                    <button type="button" class="btn header-item noti-icon waves-effect" data-toggle="modal" data-target="#janelaChat">
+                    <button type="button" class="btn header-item noti-icon waves-effect" @click="$refs.modal_janelaChat && $refs.modal_janelaChat.abrirModal()">
                         <i class="far fa-comments text-white" />
                         <span v-if="quantidadeMensagensNovas > 0" class="badge badge-pill badge-danger">
                             {{ quantidadeMensagensNovas }}
@@ -193,9 +191,7 @@
                         </span>
                         <a
                             class="dropdown-item"
-                            data-toggle="modal"
-                            @click.prevent="alterarPerfil(usuario.id)"
-                            data-target="#janelaPerfil"
+                            @click.prevent="alterarPerfil(usuario.id); $refs.modal_janelaPerfil && $refs.modal_janelaPerfil.abrirModal()"
                             href="javascript://"
                         >
                             <i class="bx bx-user font-size-16 align-middle mr-1" />
@@ -207,7 +203,7 @@
                         </a>
                         <!-- Comentários removidos para melhor legibilidade -->
                         <div class="dropdown-divider" />
-                        <a class="dropdown-item text-danger" href="javascript://" data-toggle="modal" data-target="#janelaConfirmarSair">
+                        <a class="dropdown-item text-danger" href="javascript://" @click="$refs.modal_janelaConfirmarSair && $refs.modal_janelaConfirmarSair.abrirModal()">
                             <i class="bx bx-power-off font-size-16 align-middle mr-1 text-danger" />
                             <span>Sair</span>
                         </a>
@@ -354,7 +350,7 @@ export default {
             axios
                 .put(URL_ADMIN + '/perfil/' + this.form.id, this.form)
                 .then((response) => {
-                    $('#janelaPerfil').modal('hide')
+                    this.$refs.modal_janelaPerfil && this.$refs.modal_janelaPerfil.fecharModal()
                     mostraSucesso('', 'Perfil Atualizado com sucesso!')
                     this.preload = false
                     setTimeout(function () {

@@ -4,6 +4,17 @@ import endereco from '../../../components/Endereco'
 import telefone from '../../../components/Telefones'
 import datepicker from '../../../components/DatePicker'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
+const abrirModal = (selector) => {
+    if (typeof $ === 'undefined') return
+    $(selector).modal('show')
+}
+
+const fecharModal = (selector) => {
+    if (typeof $ === 'undefined') return
+    $(selector).modal('hide')
+}
+
+
 
 // ===== CONSTANTES E CONFIGURAÇÕES =====
 const SELECOES = {
@@ -486,7 +497,7 @@ const app = createApp({
         },
 
         fecharModal() {
-            $('#janelaCadastrar').modal('hide')
+            fecharModal('#janelaCadastrar')
         },
 
         mostrarSucesso() {

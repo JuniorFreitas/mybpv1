@@ -15,7 +15,7 @@
                     <div class="col-12 col-md-3" v-if="filtrar.tipo === 'aquisitivo'">
                         <label for="">Escolha o período:</label>
                         <select class="form-control form-control-sm" :disabled="preload" v-model="filtrar.periodo" @change="buscarDados()">
-                            <option v-for="(item, key) in filtro.periodo_aquisitivo" :value="item.id">{{ item.label }}</option>
+                            <option v-for="(item, key) in filtro.periodo_aquisitivo" :value="item.id" :key="key">{{ item.label }}</option>
                         </select>
                     </div>
 
@@ -34,17 +34,17 @@
                         <label for="">Por status:</label>
                         <select class="form-control form-control-sm" :disabled="preload" @change="buscarDados()" v-model="filtrar.status_ferias">
                             <option value="">Todos</option>
-                            <option v-for="item in filtro.status_ferias" :value="item">{{ letterCase(item) }}</option>
+                            <option v-for="(item, index) in filtro.status_ferias" :value="item" :key="item.id || index">{{ letterCase(item) }}</option>
                         </select>
                     </div>
 
                     <div class="clearfix"></div>
 
                     <div class="col-12">
-                        <button class="btn btn-sm btn-primary" :disabled="preload" @click.prevent="buscarDados()" type="button">
+                        <button class="btn btn-sm mr-1 btn-primary" :disabled="preload" @click.prevent="buscarDados()" type="button">
                             <i class="fa fa-search"></i> Buscar
                         </button>
-                        <button type="button" class="btn btn-sm btn-primary" :disabled="preload || !dados.length" @click.prevent="exportaExcel()">
+                        <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="preload || !dados.length" @click.prevent="exportaExcel()">
                             <i class="fas fa-file-excel"></i> Exportar Excel
                         </button>
                     </div>
@@ -54,7 +54,7 @@
             <template v-if="!preload">
                 <div class="alert alert-warning" v-show="!dados.length"><i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado</div>
 
-                <div v-for="(item, index) in dados" :key="index" class="mb-3" v-show="dados.length">
+                <div v-for="(item, index) in dados" :key="item.id || index" class="mb-3" v-show="dados.length">
                     <div class="row">
                         <div class="col-md-12">
                             <table class="mt-4 table table-bordered table-striped">
@@ -152,16 +152,23 @@ export default {
             return value.charAt(0).toUpperCase() + value.slice(1)
         },
         async periodosAquisitivosList() {
-            await axios.post(`${URL_ADMIN}/relatorios/ferias/listaperiodos`).then(({ data }) => {
+            try {
+                const { data } = await axios.post(`${URL_ADMIN}/relatorios/ferias/listaperiodos`)
                 this.filtro = data.filtro
-            })
+            } catch (err) {
+                this.filtro = []
+            }
         },
         async buscarDados() {
             this.preload = true
-            await axios.post(`${URL_ADMIN}/relatorios/ferias`, this.filtrar).then(({ data }) => {
+            try {
+                const { data } = await axios.post(`${URL_ADMIN}/relatorios/ferias`, this.filtrar)
                 this.dados = data.dados
+            } catch (err) {
+                this.dados = []
+            } finally {
                 this.preload = false
-            })
+            }
         }
     }
 }

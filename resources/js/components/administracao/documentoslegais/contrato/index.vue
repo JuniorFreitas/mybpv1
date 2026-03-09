@@ -1,6 +1,6 @@
 <template>
     <div>
-        <modal id="janelaCadastrar" :titulo="tituloJanela" :size="90">
+        <modal ref="modalCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :size="90">
             <template #conteudo>
                 <div v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</div>
                 <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -16,11 +16,11 @@
                                 <a
                                     class="nav-item nav-link active"
                                     id="nav-dados-cadastrais-tab"
-                                    data-toggle="tab"
                                     href="#nav-dados-cadastrais"
                                     role="tab"
                                     aria-controls="nav-dados-cadastrais"
                                     aria-selected="true"
+                                    data-toggle="tab"
                                     >DADOS CADASTRAIS</a
                                 >
                             </li>
@@ -28,11 +28,11 @@
                                 <a
                                     class="nav-item nav-link"
                                     id="nav-service-tab"
-                                    data-toggle="tab"
                                     href="#nav-service"
                                     role="tab"
                                     aria-controls="nav-service"
                                     aria-selected="false"
+                                    data-toggle="tab"
                                     >SERVIÇOS</a
                                 >
                             </li>
@@ -141,7 +141,9 @@
                                                     onblur="valida_campo_vazio(this, 1)"
                                                 >
                                                     <option value="">Selecione</option>
-                                                    <option v-for="item in listaAreas" :value="item.id">{{ item.label }}</option>
+                                                    <option v-for="(item, index) in listaAreas" :value="item.id" :key="item.id || index">
+                                                        {{ item.label }}
+                                                    </option>
                                                 </select>
                                             </div>
                                         </div>
@@ -257,7 +259,7 @@
                                     </legend>
                                     <div class="row">
                                         <div class="col-12 col-sm-6 col-md-6 col-lg-6">
-                                            <button class="btn btn-sm btn-secondary mb-2" @click="addLIServicoContrato($event.target)">
+                                            <button class="btn btn-sm mr-1 btn-secondary mb-2" @click="addLIServicoContrato($event.target)">
                                                 <span class="fas fa-plus" aria-hidden="true"></span>
                                                 Adicionar Serviço
                                             </button>
@@ -266,10 +268,10 @@
                                         <div
                                             class="col-12"
                                             v-if="form.dados_cadastrais.servicos_contrato.length > 0"
-                                            v-for="(obj, index) in form.dados_cadastrais.servicos_contrato"
-                                            :key="obj.id"
+
                                         >
-                                            <div class="row py-3">
+                                            <div class="row py-3"   v-for="(obj, index) in form.dados_cadastrais.servicos_contrato"
+                                            :key="obj.id">
                                                 <div class="col-12 col-sm-4">
                                                     <div class="form-group">
                                                         <datepicker label="Data Início" posicao="up" v-model="obj.data_inicio"></datepicker>
@@ -293,7 +295,9 @@
                                                         onblur="valida_campo_vazio(this, 1)"
                                                     >
                                                         <option value="">Selecione ...</option>
-                                                        <option v-for="item in listaServicos" :value="item.id">{{ item.titulo }}</option>
+                                                        <option v-for="(item, index) in listaServicos" :value="item.id" :key="item.id || index">
+                                                            {{ item.titulo }}
+                                                        </option>
                                                     </select>
                                                 </div>
 
@@ -372,7 +376,9 @@
                                                         onblur="valida_campo_vazio(this, 1)"
                                                     >
                                                         <option value="">Selecione ...</option>
-                                                        <option v-for="item in listaFormasContrato" :value="item.id">{{ item.titulo }}</option>
+                                                        <option v-for="(item, index) in listaFormasContrato" :value="item.id" :key="item.id || index">
+                                                            {{ item.titulo }}
+                                                        </option>
                                                     </select>
                                                 </div>
 
@@ -387,7 +393,7 @@
                                                 </div>
 
                                                 <div class="col-12 mb-3">
-                                                    <button class="btn btn-sm btn-danger" @click="removerLIServicoContrato(index)" v-show="obj.nova">
+                                                    <button class="btn btn-sm mr-1 btn-danger" @click="removerLIServicoContrato(index)" v-show="obj.nova">
                                                         <i class="fa fa-trash"></i> Remover
                                                     </button>
                                                 </div>
@@ -403,13 +409,13 @@
                 </form>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && !preloadAjax" @click="alterar()">Alterar</button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado && !preloadAjax" @click="cadastrar()">Cadastrar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado && !preloadAjax" @click="alterar()">Alterar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado && !preloadAjax" @click="cadastrar()">Cadastrar</button>
             </template>
         </modal>
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -431,7 +437,7 @@
                             class="form-control form-control-sm"
                             v-model="controle.dados.campoStatus"
                             :disabled="controle.carregando"
-                            @change="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null"
+                            @change="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null"
                         >
                             <option value="">Todos os Status</option>
                             <option :value="true">Apenas Ativos</option>
@@ -441,20 +447,12 @@
                 </div>
 
                 <div class="col-12 col-md-9">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-primary"
-                        data-toggle="modal"
-                        v-if="permissoes.insert"
-                        :disabled="controle.carregando"
-                        data-target="#janelaCadastrar"
-                        @click="formNovo()"
-                    >
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" v-if="permissoes.insert" :disabled="controle.carregando" @click="formNovo()">
                         Cadastrar
                     </button>
                 </div>
@@ -480,7 +478,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in lista">
+                        <tr v-for="(item, index) in lista" :key="item.id || index">
                             <td data-label="ID">
                                 {{ item.id }}
                             </td>
@@ -495,7 +493,7 @@
 
                             <td data-label="Contato">
                                 {{ item.dados_cadastrais.responsavel }} -
-                                <span v-for="tel in item.dados_cadastrais.telefones">{{ tel.numero }}</span>
+                                <span v-for="(tel, index) in item.dados_cadastrais.telefones" :key="tel.id || index">{{ tel.numero }}</span>
                             </td>
 
                             <td data-label="Status">
@@ -506,7 +504,7 @@
                                 <a
                                     :href="`contrato/${item.id}/pdf`"
                                     v-if="permissoes.pdf"
-                                    class="btn btn-sm btn-primary mb-1"
+                                    class="btn btn-sm mr-1 btn-primary mb-1"
                                     v-tippy
                                     content="PDF"
                                     target="_blank"
@@ -515,7 +513,7 @@
                                 </a>
                                 <button
                                     type="button"
-                                    class="btn btn-sm btn-info mb-1"
+                                    class="btn btn-sm mr-1 btn-info mb-1"
                                     v-if="assinaturaDigitalHabilitada && permissoes.pdf && temDocumentoAssinatura(item)"
                                     v-tippy
                                     content="Gerenciar assinatura digital"
@@ -525,7 +523,7 @@
                                 </button>
                                 <button
                                     type="button"
-                                    class="btn btn-sm btn-success mb-1"
+                                    class="btn btn-sm mr-1 btn-success mb-1"
                                     v-else-if="assinaturaDigitalHabilitada && permissoes.pdf"
                                     v-tippy
                                     content="Enviar para assinatura digital"
@@ -536,13 +534,11 @@
 
                                 <a
                                     href="javascript://"
-                                    class="btn btn-sm btn-primary mb-1"
+                                    class="btn btn-sm mr-1 btn-primary mb-1"
                                     v-tippy
                                     content="Editar"
                                     v-if="permissoes.update"
                                     @click.prevent="formAlterar(item.id)"
-                                    data-toggle="modal"
-                                    data-target="#janelaCadastrar"
                                 >
                                     <i class="fa fa-edit" aria-hidden="true"></i>
                                 </a>
@@ -682,6 +678,11 @@ export default {
     },
 
     methods: {
+        abrirModalCadastrar() {
+            if (this.$refs && this.$refs.modalCadastrar && typeof this.$refs.modalCadastrar.abrirModal === 'function') {
+                this.$refs.modalCadastrar.abrirModal()
+            }
+        },
         temDocumentoAssinatura(item) {
             const doc = item && item.documento_para_assinatura
             return !!(doc && doc.id)
@@ -757,6 +758,7 @@ export default {
             setupCampo()
 
             this.form = _.cloneDeep(this.formDefault) //copia
+            this.abrirModalCadastrar()
         },
 
         cadastrar() {
@@ -807,6 +809,7 @@ export default {
 
             this.form = _.cloneDeep(this.formDefault) //copia
             this.leitura = false
+            this.abrirModalCadastrar()
 
             axios
                 .get(`${URL_ADMIN}/administracao/documentoslegais/contrato/${id}/editar`)
@@ -857,14 +860,18 @@ export default {
             })
         },
 
-        verificaCpf() {
+        async verificaCpf() {
             if (!this.editando) {
-                axios.get(`${URL_ADMIN}/administracao/documentoslegais/contrato/buscar-cpf?cpf=${this.form.dados_cadastrais.cpf}`).then((response) => {})
+                try {
+                    await axios.get(`${URL_ADMIN}/administracao/documentoslegais/contrato/buscar-cpf?cpf=${this.form.dados_cadastrais.cpf}`)
+                } catch (err) {}
             }
         },
-        verificaCnpj() {
+        async verificaCnpj() {
             if (!this.editando) {
-                axios.get(`${URL_ADMIN}/administracao/documentoslegais/contrato/buscar-cnpj?cnpj=${this.form.dados_cadastrais.cnpj}`).then((response) => {})
+                try {
+                    await axios.get(`${URL_ADMIN}/administracao/documentoslegais/contrato/buscar-cnpj?cnpj=${this.form.dados_cadastrais.cnpj}`)
+                } catch (err) {}
             }
         },
 
@@ -881,8 +888,8 @@ export default {
         },
 
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

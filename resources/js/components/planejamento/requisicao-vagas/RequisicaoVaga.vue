@@ -1,6 +1,6 @@
 <template>
     <div class="container-fluid requisicao-vaga-page">
-        <modal id="janelaCadastrar" :titulo="tituloJanela" :size="90">
+        <modal id="janelaCadastrar" :titulo="tituloJanela" :size="90" ref="modal_janelaCadastrar">
             <template #conteudo>
                 <preload v-show="preload" class="text-center"></preload>
                 <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -518,24 +518,24 @@
             </template>
             <template #rodape>
                 <div>
-                    <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preload && !cadastrando && !aprovando" @click.prevent="alterar">
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !preload && !cadastrando && !aprovando" @click.prevent="alterar">
                         <i class="fa fa-edit"></i> Alterar
                     </button>
-                    <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !preload && cadastrando && !aprovando" @click.prevent="cadastrar">
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !preload && cadastrando && !aprovando" @click.prevent="cadastrar">
                         <i class="fa fa-save"></i> Cadastrar
                     </button>
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary"
+                        class="btn btn-sm mr-1 btn-primary"
                         v-show="aprovando && !editando && !form.data_aprovacao && !cadastrando"
                         @click.prevent="aprovar"
                     >
                         <i class="fa fa-save"></i> Aprovar
                     </button>
-                    <button type="button" class="btn btn-sm btn-primary" v-show="aprovandoExtra && !preload && !cadastrando" @click.prevent="aprovarExtra">
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="aprovandoExtra && !preload && !cadastrando" @click.prevent="aprovarExtra">
                         <i class="fa fa-save"></i> Salvar
                     </button>
-                    <button type="button" class="btn btn-sm btn-primary" v-show="aprovandoRh && !preload && !cadastrando" @click.prevent="aprovarRh">
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="aprovandoRh && !preload && !cadastrando" @click.prevent="aprovarRh">
                         <i class="fa fa-save"></i> Salvar
                     </button>
                 </div>
@@ -543,7 +543,10 @@
         </modal>
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="$refs.componente && this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form
+                class="row"
+                @submit.prevent="$refs.componente && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null"
+            >
                 <date-range-filter
                     v-model:enabled="controle.dados.filtroPeriodo"
                     v-model:start-date="controle.dados.dataInicio"
@@ -594,22 +597,20 @@
                 <div class="col-12"></div>
 
                 <div class="col-12 col-md-9">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i> Atualizar
                     </button>
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary"
-                        data-toggle="modal"
-                        data-target="#janelaCadastrar"
+                        class="btn btn-sm mr-1 btn-primary"
                         :disabled="controle.carregando"
-                        @click.prevent="formNovo"
+                        @click.prevent="formNovo(); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                     >
                         Solicitar
                     </button>
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary mr-1"
+                        class="btn btn-sm mr-1 btn-primary mr-1"
                         @click.prevent="exportaExcel()"
                         :disabled="controle.carregando || preloadExportacao || (!controle.carregando && !lista.length)"
                     >
@@ -670,26 +671,29 @@
                                 <span v-else-if="item.status_aprovacao === 'aprovado'"> <i class="fas fa-check-circle"></i> APROVADO GESTOR </span>
                                 <span v-else><i class="fas fa-clock"></i> EM ABERTO</span>
                             </span>
-                            <div class="dropdown show">
+                            <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
                                 <a
                                     class="btn-actions-compact"
                                     href="#"
                                     role="button"
                                     :id="`dropdownMenuLink_${item.id}`"
-                                    data-toggle="dropdown"
                                     aria-haspopup="true"
-                                    aria-expanded="false"
+                                    :aria-expanded="isDropdownOpen(item.id) ? 'true' : 'false'"
+                                    @click.prevent.stop="toggleDropdown(item.id)"
                                 >
                                     <i class="fas fa-ellipsis-v"></i>
                                 </a>
-                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right" :aria-labelledby="`dropdownMenuLink_${item.id}`">
+                                <div
+                                    class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                    :class="{ show: isDropdownOpen(item.id) }"
+                                    :aria-labelledby="`dropdownMenuLink_${item.id}`"
+                                    @click="fecharDropdown"
+                                >
                                     <a
                                         class="dropdown-item"
                                         href="javascript://"
                                         title="Aprovação Gestor"
-                                        data-toggle="modal"
-                                        data-target="#janelaCadastrar"
-                                        @click.prevent="formOpen(item.id); visualizar = true; aprovando = true; aprovandoExtra = false; aprovandoRh = false; editando = false; cadastrando = false"
+                                        @click.prevent="formOpen(item.id); visualizar = true; aprovando = true; aprovandoExtra = false; aprovandoRh = false; editando = false; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                                         v-if="!item.data_aprovacao && aprovaGestor"
                                         >Aprovação Gestor</a
                                     >
@@ -697,9 +701,7 @@
                                         class="dropdown-item"
                                         href="javascript://"
                                         :title="nomeAprovacaoExtra"
-                                        data-toggle="modal"
-                                        data-target="#janelaCadastrar"
-                                        @click.prevent="formOpen(item.id); visualizar = false; aprovando = false; aprovandoExtra = true; aprovandoRh = false; editando = false; cadastrando = false"
+                                        @click.prevent="formOpen(item.id); visualizar = false; aprovando = false; aprovandoExtra = true; aprovandoRh = false; editando = false; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                                         v-if="temAprovacaoExtra && item.status_aprovacao === 'aprovado' && !item.status_aprovacao_extra && aprovaExtra"
                                         >{{ nomeAprovacaoExtra }}</a
                                     >
@@ -707,9 +709,7 @@
                                         class="dropdown-item"
                                         href="javascript://"
                                         title="Aprovação RH"
-                                        data-toggle="modal"
-                                        data-target="#janelaCadastrar"
-                                        @click.prevent="formOpen(item.id); visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = true; editando = false; cadastrando = false"
+                                        @click.prevent="formOpen(item.id); visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = true; editando = false; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                                         v-if="
                                             ((item.status_aprovacao === 'aprovado' && !temAprovacaoExtra) || item.status_aprovacao_extra === 'aprovado') &&
                                             !item.rh_aprovacao_id &&
@@ -721,9 +721,7 @@
                                         class="dropdown-item"
                                         href="javascript://"
                                         title="Visualizar"
-                                        data-toggle="modal"
-                                        data-target="#janelaCadastrar"
-                                        @click.prevent="formOpen(item.id); visualizar = true; editando = false; aprovando = false; aprovandoExtra = false; aprovandoRh = false; cadastrando = false"
+                                        @click.prevent="formOpen(item.id); visualizar = true; editando = false; aprovando = false; aprovandoExtra = false; aprovandoRh = false; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                                         >Visualizar</a
                                     >
                                 </div>
@@ -936,6 +934,7 @@ export default {
             colunasTabela: { cliente: false },
             selecionados: [],
             selecionaTudo: false,
+            dropdownAbertoKey: null,
             form: {
                 id: '',
                 centro_custo_id: '',
@@ -1043,8 +1042,31 @@ export default {
             if (this.$refs.componente && page >= 1) this.$refs.componente.atual = page
         })
         setTimeout(() => this.atualizar(), 200)
+        document.addEventListener('click', this.onClickOutside)
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
     },
     methods: {
+        toggleDropdown(itemId) {
+            if (!itemId) {
+                return
+            }
+            const key = `req:${itemId}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(itemId) {
+            return this.dropdownAbertoKey === `req:${itemId}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+        onClickOutside(event) {
+            if (event && event.target && event.target.closest && event.target.closest('.dropdown')) {
+                return
+            }
+            this.dropdownAbertoKey = null
+        },
         carregarCamposCustom() {
             const base = typeof URL_ADMIN !== 'undefined' ? URL_ADMIN : ''
             axios
@@ -1174,8 +1196,8 @@ export default {
                 .post(`${base}/planejamento/requisicao-vaga/`, this.form)
                 .then(() => {
                     if (typeof mostraSucesso === 'function') mostraSucesso('', 'Solicitação registrada com sucesso!')
-                    $('#janelaCadastrar').modal('hide')
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch(() => {
@@ -1200,8 +1222,8 @@ export default {
                 .put(`${base}/planejamento/requisicao-vaga/${this.form.id}`, this.form)
                 .then(() => {
                     if (typeof mostraSucesso === 'function') mostraSucesso('', 'Solicitação alterada com sucesso!')
-                    $('#janelaCadastrar').modal('hide')
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch(() => {
@@ -1221,8 +1243,8 @@ export default {
                 .put(`${base}/planejamento/requisicao-vaga/${this.form.id}/aprovar`, this.form)
                 .then(() => {
                     if (typeof mostraSucesso === 'function') mostraSucesso('', 'Registro salvo com sucesso!')
-                    $('#janelaCadastrar').modal('hide')
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch(() => {
@@ -1242,8 +1264,8 @@ export default {
                 .put(`${base}/planejamento/requisicao-vaga/${this.form.id}/aprovarextra`, this.form)
                 .then(() => {
                     if (typeof mostraSucesso === 'function') mostraSucesso('', 'Registro salvo com sucesso!')
-                    $('#janelaCadastrar').modal('hide')
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch(() => {
@@ -1267,8 +1289,9 @@ export default {
                 })
                 .then(() => {
                     if (typeof mostraSucesso === 'function') mostraSucesso('', 'Registro salvo com sucesso!')
-                    $('#janelaCadastrar').modal('hide')
-                    if (this.$refs.componente && typeof this.$refs.componente.buscar === 'function') this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
+                    if (this.$refs.componente && typeof this.$refs.componente.buscar === 'function')
+                        this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -1330,8 +1353,8 @@ export default {
         atualizar() {
             this.syncUrlFiltros()
             if (this.$refs.componente) {
-                this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-                this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+                this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             }
         },
         urlParamGet() {

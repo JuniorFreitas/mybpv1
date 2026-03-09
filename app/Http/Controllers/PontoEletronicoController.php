@@ -86,7 +86,7 @@ class PontoEletronicoController extends Controller {
                         'extensao' => ".$image_type",
                         'file' => $nome,
                         'thumb' => $nome,
-                        'bytes' => \Storage::disk(Arquivo::DISCO_PONTO_ELETRONICO)->getSize($nome),
+                        'bytes' => \Storage::disk(Arquivo::DISCO_PONTO_ELETRONICO)->size($nome),
                         'temporario' => false,
                         'chave' => null,
                     ]);
@@ -142,7 +142,7 @@ class PontoEletronicoController extends Controller {
                         'extensao' => ".$image_type",
                         'file' => $nome,
                         'thumb' => $nome,
-                        'bytes' => \Storage::disk(Arquivo::DISCO_PONTO_ELETRONICO)->getSize($nome),
+                        'bytes' => \Storage::disk(Arquivo::DISCO_PONTO_ELETRONICO)->size($nome),
                         'temporario' => false,
                         'chave' => null,
                     ]);

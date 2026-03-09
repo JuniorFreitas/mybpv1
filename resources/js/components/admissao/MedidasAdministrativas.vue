@@ -2,124 +2,125 @@
     <div>
         <p class="mt-2" v-if="preload"><i class="fa fa-spinner fa-pulse"></i> Aguarde ...</p>
         <div v-if="!preload" :id="`form_${hash}`">
-            <button class="btn btn-sm btn-primary mb-3" @click="addLIMedida"><i class="fa fa-plus"></i> Adicionar Medida</button>
+            <button class="btn btn-sm mr-1 btn-primary mb-3" @click="addLIMedida"><i class="fa fa-plus"></i> Adicionar Medida</button>
 
-            <fieldset class="mb-2" v-if="form.medidas_administrativas.length > 0" v-for="(obj, index) in form.medidas_administrativas" :key="index">
-                <legend>#{{ index + 1 }}</legend>
-                <div class="row">
-                    <div class="col-md-4">
-                        <label>Tipo</label>
-                        <select
-                            class="form-control"
-                            v-model="obj.tipo"
-                            :disabled="!obj.novo"
-                            onchange="valida_campo_vazio(this, 1)"
-                            onblur="valida_campo_vazio(this, 1)"
-                        >
-                            <option value="">Selecione ...</option>
-                            <option v-for="item in tipos" :value="item">
-                                {{ item }}
-                            </option>
-                        </select>
-                    </div>
+            <template v-if="form.medidas_administrativas.length > 0">
+                <fieldset class="mb-2" v-for="(obj, index) in form.medidas_administrativas" :key="obj.id || index">
+                    <legend>#{{ index + 1 }}</legend>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>Tipo</label>
+                            <select
+                                class="form-control"
+                                v-model="obj.tipo"
+                                :disabled="!obj.novo"
+                                onchange="valida_campo_vazio(this, 1)"
+                                onblur="valida_campo_vazio(this, 1)"
+                            >
+                                <option value="">Selecione ...</option>
+                                <option v-for="item in tipos" :key="item" :value="item">
+                                    {{ item }}
+                                </option>
+                            </select>
+                        </div>
 
-                    <!--                    <div class="col-md-4">-->
-                    <!--                        <label>Definição</label>-->
-                    <!--                        <select class="form-control" v-model="obj.definicao" :disabled="!obj.novo"-->
-                    <!--                                onchange="valida_campo_vazio(this,1)"-->
-                    <!--                                onblur="valida_campo_vazio(this,1)">-->
-                    <!--                            <option value="">Selecione ...</option>-->
-                    <!--                            <option v-for="item in definicao" :value="item">-->
-                    <!--                                {{ item }}-->
-                    <!--                            </option>-->
-                    <!--                        </select>-->
-                    <!--                    </div>-->
+                        <!--                    <div class="col-md-4">-->
+                        <!--                        <label>Definição</label>-->
+                        <!--                        <select class="form-control" v-model="obj.definicao" :disabled="!obj.novo"-->
+                        <!--                                onchange="valida_campo_vazio(this,1)"-->
+                        <!--                                onblur="valida_campo_vazio(this,1)">-->
+                        <!--                            <option value="">Selecione ...</option>-->
+                        <!--                            <option v-for="(item, index) in definicao" :value="item">-->
+                        :key="item.id || index"
+                        <!--                                {{ item }}-->
+                        <!--                            </option>-->
+                        <!--                        </select>-->
+                        <!--                    </div>-->
 
-                    <div class="col-md-8">
-                        <label>Causa</label>
-                        <select
-                            class="form-control"
-                            v-model="obj.causa"
-                            :disabled="!obj.novo"
-                            onchange="valida_campo_vazio(this, 1)"
-                            onblur="valida_campo_vazio(this, 1)"
-                        >
-                            <option value="">Selecione ...</option>
-                            <option v-for="item in causas" :value="item">
-                                {{ item }}
-                            </option>
-                        </select>
-                    </div>
+                        <div class="col-md-8">
+                            <label>Causa</label>
+                            <select
+                                class="form-control"
+                                v-model="obj.causa"
+                                :disabled="!obj.novo"
+                                onchange="valida_campo_vazio(this, 1)"
+                                onblur="valida_campo_vazio(this, 1)"
+                            >
+                                <option value="">Selecione ...</option>
+                                <option v-for="item in causas" :key="item" :value="item">
+                                    {{ item }}
+                                </option>
+                            </select>
+                        </div>
 
-                    <div class="col-md-6">
-                        <label>Motivo</label>
-                        <input type="text" class="form-control" v-model="obj.motivo" :disabled="!obj.novo" onblur="valida_campo_vazio(this, 1)" />
-                    </div>
+                        <div class="col-md-6">
+                            <label>Motivo</label>
+                            <input type="text" class="form-control" v-model="obj.motivo" :disabled="!obj.novo" onblur="valida_campo_vazio(this, 1)" />
+                        </div>
 
-                    <div class="col-md-4">
-                        <label>Solicitante</label>
-                        <input type="text" class="form-control" v-model="obj.solicitante" :disabled="!obj.novo" onblur="valida_campo_vazio(this, 1)" />
-                    </div>
+                        <div class="col-md-4">
+                            <label>Solicitante</label>
+                            <input type="text" class="form-control" v-model="obj.solicitante" :disabled="!obj.novo" onblur="valida_campo_vazio(this, 1)" />
+                        </div>
 
-                    <div class="col-md-2">
-                        <date-picker label="Data Solicitação" v-model="obj.data_solicitacao" :max="restricao" :disabled="!obj.novo"></date-picker>
-                    </div>
+                        <div class="col-md-2">
+                            <date-picker label="Data Solicitação" v-model="obj.data_solicitacao" :max="restricao" :disabled="!obj.novo"></date-picker>
+                        </div>
 
-                    <div class="col-md-2">
-                        <date-picker
-                            v-if="!naoExibiRetorno.includes(obj.tipo)"
-                            label="Data Retorno"
-                            v-model="obj.data_retorno"
-                            :min="hoje"
-                            :disabled="!obj.novo"
-                        ></date-picker>
-                    </div>
+                        <div class="col-md-2">
+                            <date-picker
+                                v-if="!naoExibiRetorno.includes(obj.tipo)"
+                                label="Data Retorno"
+                                v-model="obj.data_retorno"
+                                :min="hoje"
+                                :disabled="!obj.novo"
+                            ></date-picker>
+                        </div>
 
-                    <div class="col-12">
-                        <fieldset>
-                            <legend>Anexo</legend>
-                            <upload
-                                :model="obj.anexos"
-                                :model-delete="obj.anexosDel"
-                                :url="url_anexo"
-                                label="Selecionar"
-                                @onProgresso="anexoUploadAndamento = true"
-                                @onFinalizado="anexoUploadAndamento = false"
-                            ></upload>
-                        </fieldset>
-                    </div>
+                        <div class="col-12">
+                            <fieldset>
+                                <legend>Anexo</legend>
+                                <upload
+                                    :model="obj.anexos"
+                                    :model-delete="obj.anexosDel"
+                                    :url="url_anexo"
+                                    label="Selecionar"
+                                    @onProgresso="anexoUploadAndamento = true"
+                                    @onFinalizado="anexoUploadAndamento = false"
+                                ></upload>
+                            </fieldset>
+                        </div>
 
-                    <div class="col-12 mt-3" v-show="obj.novo">
-                        <button class="btn btn-sm btn-danger" @click="removerLIMedida(index)"><i class="fa fa-times"></i> Remover</button>
+                        <div class="col-12 mt-3" v-show="obj.novo">
+                            <button class="btn btn-sm mr-1 btn-danger" @click="removerLIMedida(index)"><i class="fa fa-times"></i> Remover</button>
 
-                        <button class="btn btn-sm btn-primary mt" @click="addLIMedida" v-show="index >= 1"><i class="fa fa-plus"></i> Adicionar</button>
-                    </div>
+                            <button class="btn btn-sm mr-1 btn-primary mt" @click="addLIMedida" v-show="index >= 1"><i class="fa fa-plus"></i> Adicionar</button>
+                        </div>
 
-                    <div class="col-12 mt-3" v-show="!obj.novo && validTypes.includes(obj.tipo)">
-                        <button class="btn btn-sm btn-outline-primary" @click="gerarPdf(obj)" v-show="!obj.novo">
-                            <i class="fas fa-file-pdf"></i> GERAR PDF
-                        </button>
-                        <template v-if="assinaturaDigitalHabilitada && temDocumentoAssinatura(obj)">
-                            <button type="button" class="btn btn-sm ml-2 btn-info" @click="abrirGerenciamentoAssinaturaMedida(obj)">
-                                <span class="fas fa-cog"></span> Gerenciar assinatura
+                        <div class="col-12 mt-3" v-show="!obj.novo && validTypes.includes(obj.tipo)">
+                            <button class="btn btn-sm mr-1 btn-outline-primary" @click="gerarPdf(obj)" v-show="!obj.novo">
+                                <i class="fas fa-file-pdf"></i> GERAR PDF
                             </button>
-                        </template>
-                        <template v-else-if="assinaturaDigitalHabilitada">
-                            <button type="button" class="btn btn-sm ml-2 btn-success" @click="abrirEnvioAssinaturaMedida(obj)">
-                                <span class="fas fa-pen-fancy"></span> Enviar para assinatura
-                            </button>
-                        </template>
-                    </div>
+                            <template v-if="assinaturaDigitalHabilitada && temDocumentoAssinatura(obj)">
+                                <button type="button" class="btn btn-sm mr-1 ml-2 btn-info" @click="abrirGerenciamentoAssinaturaMedida(obj)">
+                                    <span class="fas fa-cog"></span> Gerenciar assinatura
+                                </button>
+                            </template>
+                            <template v-else-if="assinaturaDigitalHabilitada">
+                                <button type="button" class="btn btn-sm mr-1 ml-2 btn-success" @click="abrirEnvioAssinaturaMedida(obj)">
+                                    <span class="fas fa-pen-fancy"></span> Enviar para assinatura
+                                </button>
+                            </template>
+                        </div>
 
-                    <div class="col-12 mt-3" v-show="!obj.novo && privilegio_gestao_rh">
-                        <button class="btn btn-sm btn-danger" @click="abrirModalRemover(obj)" data-toggle="modal" :data-target="`#janelaRemoverMedida_${hash}`">
-                            <i class="fa fa-trash"></i> Remover Medida
-                        </button>
+                        <div class="col-12 mt-3" v-show="!obj.novo && privilegio_gestao_rh">
+                            <button class="btn btn-sm mr-1 btn-danger" @click="abrirModalRemover(obj)"><i class="fa fa-trash"></i> Remover Medida</button>
+                        </div>
                     </div>
-                </div>
-            </fieldset>
+                </fieldset>
+            </template>
 
-            <button class="btn btn-sm btn-primary mb-3" v-if="form.medidas_administrativas.length > 0" @click="salvar">
+            <button class="btn btn-sm mr-1 btn-primary mb-3" v-if="form.medidas_administrativas.length > 0" @click="salvar">
                 <i class="fa fa-save"></i> Salvar
             </button>
         </div>
@@ -137,7 +138,7 @@
         </acao-assinatura-documento>
 
         <!-- Modal para Remover Medida Administrativa -->
-        <modal :id="`janelaRemoverMedida_${hash}`" :titulo="tituloModalRemover" :fechar="!preloadRemover" :size="75">
+        <modal ref="modalRemoverMedida" :id="`janelaRemoverMedida_${hash}`" :titulo="tituloModalRemover" :fechar="!preloadRemover" :size="75">
             <template #conteudo>
                 <div v-if="!preloadRemover && medidaSelecionada">
                     <fieldset>
@@ -197,7 +198,7 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-danger" v-if="!preloadRemover && auditoriaForm.descricao.length" @click="removerMedida">
+                <button type="button" class="btn btn-sm mr-1 btn-danger" v-if="!preloadRemover && auditoriaForm.descricao.length" @click="removerMedida">
                     Remover Medida
                 </button>
             </template>
@@ -405,7 +406,7 @@ export default {
             this.medidaParaReenvio = obj
             this.documentoAssinaturaDetalhe = null
             this.preloadGerenciarAssinatura = false
-            $(`#modalGerenciarAssinatura_${this.hash}`).modal('show')
+            this.$refs[`modalGerenciarAssinatura_${this.hash}`] && this.$refs[`modalGerenciarAssinatura_${this.hash}`].abrirModal()
             const idOrToken = doc.token || doc.id
             const url = `${typeof URL_ADMIN !== 'undefined' ? URL_ADMIN : ''}/administracao/documento-assinatura/${idOrToken}`
             axios
@@ -424,7 +425,7 @@ export default {
         },
         enviarNovamenteNoModal() {
             if (!this.medidaParaReenvio) return
-            $(`#modalGerenciarAssinatura_${this.hash}`).modal('hide')
+            this.$refs[`modalGerenciarAssinatura_${this.hash}`] && this.$refs[`modalGerenciarAssinatura_${this.hash}`].fecharModal()
             this.$nextTick(() => this.abrirModalAssinatura(this.medidaParaReenvio))
         },
         labelTipoDoc(tipo) {
@@ -512,7 +513,7 @@ export default {
                     if (res.data.success && typeof mostraSucesso !== 'undefined') mostraSucesso(res.data.message || 'Documento cancelado.')
                     this.documentoAssinaturaDetalhe = null
                     this.atualizar()
-                    $(`#modalGerenciarAssinatura_${this.hash}`).modal('hide')
+                    this.$refs[`modalGerenciarAssinatura_${this.hash}`] && this.$refs[`modalGerenciarAssinatura_${this.hash}`].fecharModal()
                 })
                 .catch((err) => {
                     const msg = err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao cancelar.'
@@ -638,12 +639,13 @@ export default {
                     .catch((error) => (this.preload = false))
             }
         },
-        atualizar() {
+        async atualizar() {
             this.preload = true
             this.form.medidas_administrativas = []
             this.form.medidas_administrativasDelete = []
-            axios.get(`${URL_ADMIN}/historico/${this.feedback_id}`).then((res) => {
-                let data = res.data
+            try {
+                const res = await axios.get(`${URL_ADMIN}/historico/${this.feedback_id}`)
+                const data = res.data
                 this.form.medidas_administrativas = data.feedback.medidas_administrativas
                 this.feedbackInfo = data.feedback
                 this.causas = data.causas
@@ -652,8 +654,9 @@ export default {
                 this.hoje = data.hoje
                 this.restricao = data.restricao
                 this.privilegio_gestao_rh = data.privilegio_gestao_rh || false
+            } finally {
                 this.preload = false
-            })
+            }
         },
         formatarCpf(numeros) {
             const d = (numeros || '').replace(/\D/g, '').slice(0, 11)
@@ -678,7 +681,7 @@ export default {
                 this.signatariosAssinatura = [{ nome: '', email: '', cpf: '', fromBase: false }]
             }
             this.preloadAssinatura = false
-            $(`#modalAssinaturaMedida_${this.hash}`).modal('show')
+            this.$refs[`modalAssinaturaMedida_${this.hash}`] && this.$refs[`modalAssinaturaMedida_${this.hash}`].abrirModal()
         },
         adicionarSignatarioAssinatura() {
             this.signatariosAssinatura.push({ nome: '', email: '', cpf: '', fromBase: false })
@@ -700,7 +703,7 @@ export default {
                 .post(`${URL_ADMIN}/historico/medidas-administrativas/enviar-para-assinatura`, payload)
                 .then((res) => {
                     this.preloadAssinatura = false
-                    $(`#modalAssinaturaMedida_${this.hash}`).modal('hide')
+                    this.$refs[`modalAssinaturaMedida_${this.hash}`] && this.$refs[`modalAssinaturaMedida_${this.hash}`].fecharModal()
                     mostraSucesso(res.data.message || 'Documento enviado para assinatura.')
                     if (res.data.links && res.data.links.length) {
                         const msg = res.data.links.map((l) => `${l.email}: ${l.link}`).join('\n')
@@ -722,6 +725,9 @@ export default {
             }
             this.tituloModalRemover = `Remover Medida Administrativa: ${obj.tipo}`
             this.preloadRemover = false
+            if (this.$refs && this.$refs.modalRemoverMedida && typeof this.$refs.modalRemoverMedida.abrirModal === 'function') {
+                this.$refs.modalRemoverMedida.abrirModal()
+            }
         },
         removerMedida() {
             if (!this.auditoriaForm.descricao || this.auditoriaForm.descricao.length === 0) {
@@ -739,7 +745,9 @@ export default {
                 .then((response) => {
                     if (response.status === 201) {
                         this.preloadRemover = false
-                        $(`#janelaRemoverMedida_${this.hash}`).modal('hide')
+                        if (this.$refs && this.$refs.modalRemoverMedida && typeof this.$refs.modalRemoverMedida.fecharModal === 'function') {
+                            this.$refs.modalRemoverMedida.fecharModal()
+                        }
                         mostraSucesso('Medida administrativa removida com sucesso')
                         this.medidaSelecionada = null
                         this.auditoriaForm = {

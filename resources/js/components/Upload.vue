@@ -3,7 +3,7 @@
         <template v-if="!template">
             <button
                 v-if="!leitura"
-                :class="classBlock ? 'btn btn-sm btn-block btn-outline-primary' : 'btn btn-sm btn-outline-primary'"
+                :class="classBlock ? 'btn btn-sm mr-1 btn-block btn-outline-primary' : 'btn btn-sm mr-1 btn-outline-primary'"
                 :disabled="emAndamento || quantidadeMaxima"
                 @click="selecionar()"
             >
@@ -41,9 +41,9 @@
                     tag="tbody"
                     :handle="{ draggable: '.linha', handle: '.mover' }"
                     @update:model-value="lista = $event"
-                    v-slot:item="{ element: arquivo, index }"
                 >
-                    <tr v-if="arquivo" class="linha" :class="{ 'bg-warning': arquivo.falhou }">
+                    <template #item="{ element: arquivo, index }">
+                        <tr v-if="arquivo" class="linha" :class="{ 'bg-warning': arquivo.falhou }">
                         <td class="text-center">
                             <!-- o !arquivo.chave é para os casos de editar, pois nao tem chave, ja veio do servidor  -->
                             <span v-show="!arquivo.imagem && (!arquivo.chave || (arquivo.enviado && !arquivo.falhou))">
@@ -119,21 +119,21 @@
                             <a
                                 :href="arquivo.url"
                                 target="_blank"
-                                class="btn btn-sm btn-secondary mb-1"
+                                class="btn btn-sm mr-1 btn-secondary mb-1"
                                 v-show="!arquivo.chave || (arquivo.enviado && !arquivo.falhou)"
                             >
                                 <i class="fas fa-search"></i> Visualizar
                             </a>
                             <a
                                 :href="arquivo.urlDownload"
-                                class="btn btn-sm btn-secondary mb-1"
+                                class="btn btn-sm mr-1 btn-secondary mb-1"
                                 target="_blank"
                                 v-show="!arquivo.chave || (arquivo.enviado && !arquivo.falhou)"
                             >
                                 <i class="fas fa-download"></i> Download
                             </a>
                             <button
-                                class="btn btn-sm btn-secondary mover mb-1"
+                                class="btn btn-sm mr-1 btn-secondary mover mb-1"
                                 v-show="(!arquivo.chave && ordenar) || (arquivo.enviado && !arquivo.falhou && ordenar)"
                                 v-if="!leitura"
                             >
@@ -155,14 +155,15 @@
                             <span v-if="arquivo.aguardando"> Preparado para envio </span>
                         </td>
                         <td class="text-center" v-if="!leitura">
-                            <button class="btn btn-sm btn-secondary" @click="cancelar()" v-show="arquivo.enviando">
+                            <button class="btn btn-sm mr-1 btn-secondary" @click="cancelar()" v-show="arquivo.enviando">
                                 <i class="fas fa-window-close"></i> Cancelar
                             </button>
-                            <button class="btn btn-sm btn-danger" @click="remover(index)" v-show="!arquivo.enviando">
+                            <button class="btn btn-sm mr-1 btn-danger" @click="remover(index)" v-show="!arquivo.enviando">
                                 <i class="fas fa-trash-alt"></i> Apagar
                             </button>
                         </td>
-                    </tr>
+                        </tr>
+                    </template>
                 </draggable>
             </table>
         </div>
@@ -414,16 +415,17 @@ export default {
         itemKey(arquivo) {
             return arquivo.id || arquivo.chave || arquivo.url || arquivo.nome || arquivo.urlDownload || arquivo.tempId || arquivo.extensao
         },
-        remover: function (index) {
+        remover: async function (index) {
             this.$emit('ondelete', this.lista[index])
             //if(this.lista[index].id && this.lista[index].enviado && !this.lista[index].falhou){
             if (this.lista[index].id && !this.lista[index].temporario) {
                 this.modelDelete.push(parseInt(this.lista[index].id))
             }
             if (this.lista[index].id && this.lista[index].temporarioe) {
-                var dados = {}
-                dados._method = 'DELETE'
-                axios.post(this.lista[index].urlDelete, dados).then(() => {})
+                const dados = { _method: 'DELETE' }
+                try {
+                    await axios.post(this.lista[index].urlDelete, dados)
+                } catch (err) {}
             }
             this.lista.splice(index, 1)
         },

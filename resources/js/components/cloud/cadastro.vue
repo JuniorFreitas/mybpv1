@@ -3,7 +3,7 @@
         <div v-if="open && !openGroup">
             <h4 class="text-default">{{ upper(tituloJanela) }}</h4>
 
-            <button class="btn btn-sm btn-secondary" @click.prevent="voltar"><i class="fa fa-arrow-left"></i> Voltar</button>
+            <button class="btn btn-sm mr-1 btn-secondary" @click.prevent="voltar"><i class="fa fa-arrow-left"></i> Voltar</button>
 
             <preload class="my-2" v-show="preloadAjax"></preload>
             <form v-show="!preloadAjax && !cadastrado && !atualizado" @submit.prevent="submitForm">
@@ -29,8 +29,8 @@
                         </select>
                     </div>
 
-                    <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preloadAjax" @click="alterar">Alterar</button>
-                    <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !preloadAjax" @click="cadastrar">Cadastrar</button>
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !preloadAjax" @click="alterar">Alterar</button>
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !preloadAjax" @click="cadastrar">Cadastrar</button>
                 </fieldset>
             </form>
 
@@ -59,10 +59,10 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(colaborador, index) in form.usuarios">
+                            <tr v-for="(colaborador, index) in form.usuarios" :key="colaborador.id || index">
                                 <td class="text-center">{{ colaborador.nome }}</td>
                                 <td class="text-center">
-                                    <a href="javascript://" class="btn btn-sm btn-danger" @click.prevent="removerLIColaborador(index)">
+                                    <a href="javascript://" class="btn btn-sm mr-1 btn-danger" @click.prevent="removerLIColaborador(index)">
                                         <i class="fa fa-times" aria-hidden="true"></i>
                                     </a>
                                 </td>
@@ -74,7 +74,7 @@
         </div>
 
         <div v-if="openGroup && !open">
-            <button class="btn btn-sm btn-secondary" @click.prevent="voltar"><i class="fa fa-arrow-left"></i> Voltar</button>
+            <button class="btn btn-sm mr-1 btn-secondary" @click.prevent="voltar"><i class="fa fa-arrow-left"></i> Voltar</button>
             <!--            <grupo></grupo>-->
         </div>
 
@@ -90,11 +90,11 @@
                 </div>
             </div>
 
-            <button type="button" class="btn btn-sm btn-success" @click.prevent="atualizar"><i class="fa fa-sync"></i> Atualizar</button>
+            <button type="button" class="btn btn-sm mr-1 btn-success" @click.prevent="atualizar"><i class="fa fa-sync"></i> Atualizar</button>
 
-            <button type="button" class="btn btn-sm btn-primary" @click="formNovo"><i class="fa fa-upload"></i> Novo Cloud</button>
+            <button type="button" class="btn btn-sm mr-1 btn-primary" @click="formNovo"><i class="fa fa-upload"></i> Novo Cloud</button>
 
-            <!--            <button type="button" class="btn btn-sm btn-primary" @click="openGroup=true">-->
+            <!--            <button type="button" class="btn btn-sm mr-1 btn-primary" @click="openGroup=true">-->
             <!--                <i class="fas fa-users-cog"></i> Grupo-->
             <!--            </button>-->
 
@@ -116,7 +116,7 @@
                         </thead>
 
                         <tbody>
-                            <tr v-for="item in lista">
+                            <tr v-for="item in lista" :key="item.id">
                                 <td class="text-center">{{ item.id }}</td>
                                 <td class="text-center">{{ item.nome }}</td>
                                 <td class="text-center">
@@ -124,17 +124,15 @@
                                 </td>
                                 <td class="text-center">
                                     <a
-                                        class="btn btn-sm btn-success btnFormAlterar"
+                                        class="btn btn-sm mr-1 btn-success btnFormAlterar"
                                         href="javascript://"
-                                        @click.prevent="formAlterar(item.id)"
-                                        data-toggle="modal"
-                                        data-target="#janelaCadastrar"
+                                        @click.prevent="formAlterar(item.id); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                                     >
                                         <i class="fa fa-edit"></i>
                                     </a>
-                                    <!--                                <a class="btn btn-sm btn-danger btnFormExcluir" href="javascript://"-->
+                                    <!--                                <a class="btn btn-sm mr-1 btn-danger btnFormExcluir" href="javascript://"-->
                                     <!--                                   @click.prevent="janelaConfirmar(item.id)" data-toggle="modal"-->
-                                    <!--                                   data-target="#janelaConfirmar">-->
+                                    <!-- @click="$refs.modal_janelaConfirmar && $refs.modal_janelaConfirmar.abrirModal()">-->
                                     <!--                                    <i class="fa fa-trash" aria-hidden="true"></i>-->
                                     <!--                                </a>-->
                                 </td>
@@ -369,8 +367,12 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            if (this.$refs && this.$refs.componente) {
+                this.$refs.componente.atual = 1
+            }
+            if (this.$refs && this.$refs.componente && typeof this.$refs.componente.buscar === 'function') {
+                this.$refs.componente.buscar()
+            }
         }
     }
 }

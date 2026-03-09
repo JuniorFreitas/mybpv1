@@ -1,6 +1,6 @@
 <template>
     <div>
-        <modal id="janelaCadastrarPasta" :titulo="tituloNovaPasta" size="g" :fechar="!preload_pasta">
+        <modal id="janelaCadastrarPasta" :titulo="tituloNovaPasta" size="g" :fechar="!preload_pasta" ref="modal_janelaCadastrarPasta">
             <template #conteudo>
                 <div class="alert alert-success text-center" v-show="cadastrado">
                     <h5><i class="icon fa fa-check"></i> Pasta criada com sucesso!</h5>
@@ -44,7 +44,7 @@
                                                     <th>Descrição</th>
                                                     <th class="text-center">
                                                         <a
-                                                            class="btn btn-sm btn-success"
+                                                            class="btn btn-sm mr-1 btn-success"
                                                             href="javascript://"
                                                             @click.prevent="selecionarTodos"
                                                             v-if="!form.todosGrupos"
@@ -52,7 +52,7 @@
                                                             <span class="fa fa-ok" aria-hidden="true"></span> Todos
                                                         </a>
                                                         <a
-                                                            class="btn btn-sm btn-danger"
+                                                            class="btn btn-sm mr-1 btn-danger"
                                                             href="javascript://"
                                                             @click.prevent="selecionarTodos"
                                                             v-if="form.todosGrupos"
@@ -64,12 +64,13 @@
                                             </thead>
 
                                             <tbody>
-                                                <tr v-for="grupo in grupos">
+                                                <tr v-for="(grupo, index) in grupos">
+                                                :key="grupo.id || index"
                                                     <td>{{ grupo.nome }}</td>
                                                     <td>{{ grupo.descricao }}</td>
                                                     <td class="text-center">
                                                         <a
-                                                            class="btn btn-sm btn-success"
+                                                            class="btn btn-sm mr-1 btn-success"
                                                             href="#"
                                                             @click.prevent="grupo.permitido = !grupo.permitido; removePermissao(grupo)"
                                                             v-if="grupo.permitido"
@@ -77,7 +78,7 @@
                                                             <span class="fa fa-ok" aria-hidden="true"></span> Permitido
                                                         </a>
                                                         <a
-                                                            class="btn btn-sm btn-danger"
+                                                            class="btn btn-sm mr-1 btn-danger"
                                                             href="#"
                                                             @click.prevent="grupo.permitido = !grupo.permitido; adicionaPermissao(grupo)"
                                                             v-if="!grupo.permitido"
@@ -96,13 +97,13 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && !preload_pasta" @click="alterarPasta()">Alterar</button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado && !preload_pasta" @click="criaPasta">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado && !preload_pasta" @click="alterarPasta()">Alterar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado && !preload_pasta" @click="criaPasta">
                     <i class="far fa-save"></i> Salvar
                 </button>
             </template>
         </modal>
-        <modal id="janelaVisualizadora" :size="90" :titulo="titulojanelavisualizar">
+        <modal id="janelaVisualizadora" :size="90" :titulo="titulojanelavisualizar" ref="modal_janelaVisualizadora">
             <template #conteudo>
                 <div class="col-12" v-if="exibindo && exibindo.imagem">
                     <img :src="exibindo.url" class="img-fluid d-flex mx-auto" />
@@ -120,10 +121,10 @@
                 </div>
             </template>
             <template #rodape>
-                <!--                <a :href="urlBase+srcDownload" download class="btn btn-sm btn-outline-default"><i class="fa fa-download"></i> Download</a>-->
+                <!--                <a :href="urlBase+srcDownload" download class="btn btn-sm mr-1 btn-outline-default"><i class="fa fa-download"></i> Download</a>-->
             </template>
         </modal>
-        <modal id="janelaDetalhes" titulo="Detalhes">
+        <modal id="janelaDetalhes" titulo="Detalhes" ref="modal_janelaDetalhes">
             <template #conteudo>
                 <fieldset v-if="detalhes">
                     <legend>Expecificações</legend>
@@ -142,7 +143,7 @@
         </modal>
 
         <!-- Modal encaminhamento de e-mail -->
-        <modal id="janelaEnviarRevisao" :fechar="!formEnviarRevisao.preload" titulo="Enviar para Revisão">
+        <modal id="janelaEnviarRevisao" :fechar="!formEnviarRevisao.preload" titulo="Enviar para Revisão" ref="modal_janelaEnviarRevisao">
             <template #conteudo>
                 <span v-show="formEnviarRevisao.preload">
                     <preload label="Enviando ..."></preload>
@@ -185,14 +186,14 @@
             </template>
             <template #rodape>
                 <div v-show="!formEnviarRevisao.preload">
-                    <button type="button" class="btn btn-sm btn-primary" @click="enviarRevisao" v-show="!formEnviarRevisao.enviado">
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" @click="enviarRevisao" v-show="!formEnviarRevisao.enviado">
                         <i class="fa fa-envelope"></i> Enviar
                     </button>
                 </div>
             </template>
         </modal>
 
-        <modal id="janelaEnviarAprovacao" :fechar="!formEnviarAprovacao.preload" titulo="Enviar para Aprovação">
+        <modal id="janelaEnviarAprovacao" :fechar="!formEnviarAprovacao.preload" titulo="Enviar para Aprovação" ref="modal_janelaEnviarAprovacao">
             <template #conteudo>
                 <span v-show="formEnviarAprovacao.preload">
                     <preload label="Enviando ..."></preload>
@@ -235,7 +236,7 @@
             </template>
             <template #rodape>
                 <div v-show="!formEnviarAprovacao.preload">
-                    <button type="button" class="btn btn-sm btn-primary" @click="enviarAprovacao" v-show="!formEnviarAprovacao.enviado">
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" @click="enviarAprovacao" v-show="!formEnviarAprovacao.enviado">
                         <i class="fa fa-envelope"></i> Enviar
                     </button>
                 </div>
@@ -243,7 +244,7 @@
         </modal>
 
         <!-- Modal confirmar -->
-        <modal id="janelaConfirmarApagar" :titulo="tituloApagar">
+        <modal id="janelaConfirmarApagar" :titulo="tituloApagar" ref="modal_janelaConfirmarApagar">
             <template #conteudo>
                 <span v-show="preloadDel">
                     <preload></preload>
@@ -263,11 +264,11 @@
             </template>
             <template #rodape>
                 <div v-show="!preloadDel">
-                    <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
+                    <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
                 </div>
             </template>
         </modal>
-        <modal id="janelaConfirmarAprovar" :titulo="tituloAprovar">
+        <modal id="janelaConfirmarAprovar" :titulo="tituloAprovar" ref="modal_janelaConfirmarAprovar">
             <template #conteudo>
                 <span v-show="preloadAprovado">
                     <preload></preload>
@@ -286,11 +287,11 @@
             </template>
             <template #rodape>
                 <div v-show="!preloadAprovado">
-                    <button type="button" class="btn btn-sm btn-danger" @click="aprovar()" v-show="!aprovado">Sim</button>
+                    <button type="button" class="btn btn-sm mr-1 btn-danger" @click="aprovar()" v-show="!aprovado">Sim</button>
                 </div>
             </template>
         </modal>
-        <modal id="janelaConfirmarRevisar" :titulo="tituloRevisar">
+        <modal id="janelaConfirmarRevisar" :titulo="tituloRevisar" ref="modal_janelaConfirmarRevisar">
             <template #conteudo>
                 <span v-show="preloadRevisado">
                     <preload></preload>
@@ -309,11 +310,11 @@
             </template>
             <template #rodape>
                 <div v-show="!preloadRevisado">
-                    <button type="button" class="btn btn-sm btn-danger" @click="revisar" v-show="!revisado">SIM</button>
+                    <button type="button" class="btn btn-sm mr-1 btn-danger" @click="revisar" v-show="!revisado">SIM</button>
                 </div>
             </template>
         </modal>
-        <modal id="janelaMover" titulo="Mover Arquivo" @fechou="janelaMover = false" :fechar="!preloadMover">
+        <modal id="janelaMover" titulo="Mover Arquivo" @fechou="janelaMover = false" :fechar="!preloadMover" ref="modal_janelaMover">
             <template #conteudo>
                 <pasta
                     :model="mover"
@@ -328,14 +329,14 @@
             </template>
             <template #rodape>
                 <div v-if="!movido">
-                    <button type="button" class="btn btn-sm btn-default" v-show="removeMover" :disabled="preloadMover || !removeMover" @click="moverArquivo">
+                    <button type="button" class="btn btn-sm mr-1 btn-default" v-show="removeMover" :disabled="preloadMover || !removeMover" @click="moverArquivo">
                         Mover pra cá
                     </button>
                 </div>
             </template>
         </modal>
         <!-- Modal atualizar arquivo-->
-        <modal id="janelaAtualizar" titulo="Atualizando arquivo" :fechar="!emprogressoAtualizar">
+        <modal id="janelaAtualizar" titulo="Atualizando arquivo" :fechar="!emprogressoAtualizar" ref="modal_janelaAtualizar">
             <template #conteudo>
                 <div v-show="atualizadoSucesso" class="col-12 alert alert-success"><i class="fa fa-check"></i> Arquivo atualizado com sucesso!</div>
                 <div v-show="!atualizadoSucesso">
@@ -390,17 +391,15 @@
         </modal>
 
         <button
-            class="btn btn-sm btn-outline-primary"
+            class="btn btn-sm mr-1 btn-outline-primary"
             v-if="!forbidden"
             :disabled="preload"
-            @click.prevent="formNovaPasta"
-            data-toggle="modal"
-            data-target="#janelaCadastrarPasta"
+            @click.prevent="formNovaPasta; $refs.modal_janelaCadastrarPasta && $refs.modal_janelaCadastrarPasta.abrirModal()"
         >
             <i class="fas fa-folder-plus"></i> Nova Pasta
         </button>
 
-        <button class="btn btn-sm btn-outline-primary" :disabled="preload" @click="atualizar"><i class="fas fa-sync"></i> Atualizar</button>
+        <button class="btn btn-sm mr-1 btn-outline-primary" :disabled="preload" @click="atualizar"><i class="fas fa-sync"></i> Atualizar</button>
 
         <upload
             v-show="itemBusca !== '' && !preload"
@@ -445,9 +444,9 @@
             <div class="col-12">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb" style="margin-top: 10px; margin-bottom: 0px; padding: 0.2rem 1rem; font-size: 13.5px">
-                        <li class="breadcrumb-item" :class="index === Number.MAX_VALUE ? 'active' : ''" v-for="(folder, index) in caminho">
+                        <li class="breadcrumb-item" :class="index === Number.MAX_VALUE ? 'active' : ''" v-for="(folder, index) in caminho" :key="folder.id || index">
                             <button
-                                class="btn btn-sm btn-outline-default border-0"
+                                class="btn btn-sm mr-1 btn-outline-default border-0"
                                 :disabled="preload"
                                 @click.prevent="abriPasta(folder.id); caminho.splice(index + 1)"
                             >
@@ -483,7 +482,7 @@
                             <tr v-if="!preload && itemBusca">
                                 <td colspan="6">
                                     <button
-                                        class="btn btn-sm btn-outline-dark border-0"
+                                        class="btn btn-sm mr-1 btn-outline-dark border-0"
                                         :disabled="preload"
                                         @click="abriPasta(anterior); caminho.pop()"
                                     >
@@ -491,7 +490,7 @@
                                     </button>
                                 </td>
                             </tr>
-                            <tr v-for="(item, index) in lista" v-if="!preload && lista.length > 0 && item.TemPermissao">
+                            <tr v-for="(item, index) in lista" :key="item.id || index" v-if="!preload && lista.length > 0 && item.TemPermissao">
                                 <td>
                                     <div v-if="item.tipo === 'pasta'">
                                         <button
@@ -567,7 +566,7 @@
                                                 <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Download')">
                                                     <a
                                                         :href="`${url_publico}/anexoDownload/${item.arquivo.file}`"
-                                                        class="btn btn-sm btn-block btn-outline-primary"
+                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
                                                         target="_blank"
                                                         download
                                                     >
@@ -577,65 +576,53 @@
                                                 <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Visualizar')">
                                                     <a
                                                         href="#"
-                                                        class="btn btn-sm btn-block btn-outline-primary"
-                                                        data-toggle="modal"
-                                                        @click.prevent="visualizar(item.arquivo)"
-                                                        data-target="#janelaVisualizadora"
+                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
+                                                        @click.prevent="visualizar(item.arquivo); $refs.modal_janelaVisualizadora && $refs.modal_janelaVisualizadora.abrirModal()"
                                                     >
                                                         <i class="fas fa-search"></i> Visualizar
                                                     </a>
                                                 </div>
                                                 <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Detalhes')">
                                                     <a
-                                                        class="btn btn-sm btn-block btn-outline-primary"
+                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
                                                         href="#"
-                                                        data-toggle="modal"
-                                                        @click.prevent="exibirDetalhes(item)"
-                                                        data-target="#janelaDetalhes"
+                                                        @click.prevent="exibirDetalhes(item); $refs.modal_janelaDetalhes && $refs.modal_janelaDetalhes.abrirModal()"
                                                     >
                                                         <i class="fas fa-list"></i> Detalhes
                                                     </a>
                                                 </div>
                                                 <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Editar')">
                                                     <a
-                                                        class="btn btn-sm btn-block btn-outline-primary"
+                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
                                                         href="#"
-                                                        @click.prevent="formAlterar(item.id)"
-                                                        data-toggle="modal"
-                                                        data-target="#janelaCadastrarPasta"
+                                                        @click.prevent="formAlterar(item.id); $refs.modal_janelaCadastrarPasta && $refs.modal_janelaCadastrarPasta.abrirModal()"
                                                     >
                                                         <i class="fas fa-edit"></i> Editar
                                                     </a>
                                                 </div>
                                                 <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Mover')">
                                                     <a
-                                                        class="btn btn-sm btn-block btn-outline-primary"
+                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
                                                         href="#"
-                                                        data-toggle="modal"
-                                                        data-target="#janelaMover"
-                                                        @click="pastaMover(item.id)"
+                                                        @click="pastaMover(item.id); $refs.modal_janelaMover && $refs.modal_janelaMover.abrirModal()"
                                                     >
                                                         <i class="fas fa-arrows-alt-v"></i> Mover
                                                     </a>
                                                 </div>
                                                 <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Deletar')">
                                                     <a
-                                                        class="btn btn-sm btn-block btn-outline-primary"
+                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
                                                         href="#"
-                                                        @click.prevent="janelaConfirmar(item)"
-                                                        data-toggle="modal"
-                                                        data-target="#janelaConfirmarApagar"
+                                                        @click.prevent="janelaConfirmar(item); $refs.modal_janelaConfirmarApagar && $refs.modal_janelaConfirmarApagar.abrirModal()"
                                                     >
                                                         <i class="far fa-trash-alt"></i> Deletar
                                                     </a>
                                                 </div>
                                                 <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Atualizar')">
                                                     <a
-                                                        class="btn btn-sm btn-block btn-outline-primary"
+                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
                                                         href="#"
-                                                        @click.prevent="janelaAtualizar(item)"
-                                                        data-toggle="modal"
-                                                        data-target="#janelaAtualizar"
+                                                        @click.prevent="janelaAtualizar(item); $refs.modal_janelaAtualizar && $refs.modal_janelaAtualizar.abrirModal()"
                                                     >
                                                         <i class="fas fa-sync"></i> Atualizar
                                                     </a>
@@ -646,22 +633,18 @@
                                                     v-show="(!item.revisado && !item.aprovado) || !item.revisado"
                                                 >
                                                     <a
-                                                        class="btn btn-sm btn-block btn-outline-primary"
+                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
                                                         href="#"
-                                                        @click.prevent="janelaConfirmarRevisar(item)"
-                                                        data-toggle="modal"
-                                                        data-target="#janelaConfirmarRevisar"
+                                                        @click.prevent="janelaConfirmarRevisar(item); $refs.modal_janelaConfirmarRevisar && $refs.modal_janelaConfirmarRevisar.abrirModal()"
                                                     >
                                                         <i class="fas fa-recycle"></i> Revisar
                                                     </a>
                                                 </div>
                                                 <div class="col-12 py-1" v-show="(!item.revisado && !item.aprovado) || !item.revisado">
                                                     <a
-                                                        class="btn btn-sm btn-block btn-outline-primary"
+                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
                                                         href="#"
-                                                        @click.prevent="janelaEnviarRevisao(item)"
-                                                        data-toggle="modal"
-                                                        data-target="#janelaEnviarRevisao"
+                                                        @click.prevent="janelaEnviarRevisao(item); $refs.modal_janelaEnviarRevisao && $refs.modal_janelaEnviarRevisao.abrirModal()"
                                                     >
                                                         <i class="fas fa-share-square"></i> Enviar para Revisão
                                                     </a>
@@ -672,11 +655,9 @@
                                                     v-show="!item.aprovado || (item.revisado && !item.aprovado)"
                                                 >
                                                     <a
-                                                        class="btn btn-sm btn-block btn-outline-primary"
+                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
                                                         href="#"
-                                                        @click.prevent="janelaConfirmarAprovar(item)"
-                                                        data-toggle="modal"
-                                                        data-target="#janelaConfirmarAprovar"
+                                                        @click.prevent="janelaConfirmarAprovar(item); $refs.modal_janelaConfirmarAprovar && $refs.modal_janelaConfirmarAprovar.abrirModal()"
                                                     >
                                                         <i class="fas fa-tasks"></i> Aprovar
                                                     </a>
@@ -684,11 +665,9 @@
 
                                                 <div class="col-12 py-1" v-show="!item.aprovado || (item.revisado && !item.aprovado)">
                                                     <a
-                                                        class="btn btn-sm btn-block btn-outline-primary"
+                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
                                                         href="#"
-                                                        @click.prevent="janelaEnviarAprovacao(item)"
-                                                        data-toggle="modal"
-                                                        data-target="#janelaEnviarAprovacao"
+                                                        @click.prevent="janelaEnviarAprovacao(item); $refs.modal_janelaEnviarAprovacao && $refs.modal_janelaEnviarAprovacao.abrirModal()"
                                                     >
                                                         <i class="fas fa-share-square"></i> Enviar para Aprovação
                                                     </a>
@@ -713,7 +692,7 @@
                                     <div class="btn-group dropright" v-if="item.tipo === 'pasta'">
                                         <button
                                             type="button"
-                                            class="btn btn-sm btn-default dropdown-toggle"
+                                            class="btn btn-sm mr-1 btn-default dropdown-toggle"
                                             v-if="
                                                 habilidades.find((habilidade) => habilidade.nome === 'Mover') ||
                                                 habilidades.find((habilidade) => habilidade.nome === 'Editar') ||
@@ -728,35 +707,29 @@
                                         <div class="dropdown-menu dropdown-menu-custom">
                                             <div class="col-12 py-1" v-show="item.pertence && habilidades.find((habilidade) => habilidade.nome === 'Mover')">
                                                 <a
-                                                    class="btn btn-sm btn-block btn-outline-primary"
+                                                    class="btn btn-sm mr-1 btn-block btn-outline-primary"
                                                     href="#"
-                                                    data-toggle="modal"
-                                                    data-target="#janelaMover"
-                                                    @click="pastaMover(item.id)"
+                                                    @click="pastaMover(item.id); $refs.modal_janelaMover && $refs.modal_janelaMover.abrirModal()"
                                                 >
                                                     <i class="fas fa-arrows-alt-v"></i> Mover
                                                 </a>
                                             </div>
                                             <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Editar')">
                                                 <a
-                                                    class="btn btn-sm btn-block btn-outline-primary"
+                                                    class="btn btn-sm mr-1 btn-block btn-outline-primary"
                                                     href="javascript://"
                                                     v-if="item.tipo === 'pasta'"
-                                                    @click.prevent="formAlterar(item.id)"
-                                                    data-toggle="modal"
-                                                    data-target="#janelaCadastrarPasta"
+                                                    @click.prevent="formAlterar(item.id); $refs.modal_janelaCadastrarPasta && $refs.modal_janelaCadastrarPasta.abrirModal()"
                                                 >
                                                     <i class="fa fa-edit" aria-hidden="true"></i> Editar
                                                 </a>
                                             </div>
                                             <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Deletar')">
                                                 <a
-                                                    class="btn btn-sm btn-block btn-outline-primary"
+                                                    class="btn btn-sm mr-1 btn-block btn-outline-primary"
                                                     href="javascript://"
                                                     v-if="item.tipo === 'pasta'"
-                                                    @click.prevent="janelaConfirmar(item)"
-                                                    data-toggle="modal"
-                                                    data-target="#janelaConfirmarApagar"
+                                                    @click.prevent="janelaConfirmar(item); $refs.modal_janelaConfirmarApagar && $refs.modal_janelaConfirmarApagar.abrirModal()"
                                                 >
                                                     <i class="fa fa-trash" aria-hidden="true"></i> Deletar
                                                 </a>
@@ -1141,15 +1114,16 @@ export default {
             this.apagado = false
             this.preloadDel = false
         },
-        apagar() {
+        async apagar() {
             this.erros = []
             this.preloadDel = true
-            axios.delete(`${URL_ADMIN}/itenscloud/${this.form.id}`, this.form).then((response) => {
-                let data = response.data
-                this.preloadDel = false
+            try {
+                await axios.delete(`${URL_ADMIN}/itenscloud/${this.form.id}`, this.form)
                 this.apagado = true
                 this.atualizar()
-            })
+            } finally {
+                this.preloadDel = false
+            }
         },
 
         /*--------JANELA ENVIAR PARA APROVACAO--------*/
@@ -1165,7 +1139,7 @@ export default {
 
             this.formEnviarAprovacao.item = obj.label + obj.arquivo.extensao
         },
-        enviarAprovacao() {
+        async enviarAprovacao() {
             $('#janelaEnviarRevisao :input:visible').trigger('blur')
             if ($('#janelaEnviarRevisao :input:visible.is-invalid').length) {
                 alert('Verificar os erros')
@@ -1173,17 +1147,14 @@ export default {
             }
 
             this.formEnviarAprovacao.preload = true
-            axios
-                .post(`${URL_ADMIN}/itenscloud/enviar-para-aprovacao`, this.formEnviarAprovacao)
-                .then((response) => {
-                    let data = response.data
-                    this.formEnviarAprovacao.preload = false
-                    this.formEnviarAprovacao.enviado = data.enviado
-                })
-                .catch((error) => {
-                    this.formEnviarAprovacao.preload = false
-                    this.formEnviarAprovacao.enviado = false
-                })
+            try {
+                const response = await axios.post(`${URL_ADMIN}/itenscloud/enviar-para-aprovacao`, this.formEnviarAprovacao)
+                this.formEnviarAprovacao.enviado = response.data.enviado
+            } catch (error) {
+                this.formEnviarAprovacao.enviado = false
+            } finally {
+                this.formEnviarAprovacao.preload = false
+            }
         },
 
         /*--------JANELA APROVAR--------*/
@@ -1193,15 +1164,16 @@ export default {
             this.aprovado = false
             this.preloadAprovado = false
         },
-        aprovar() {
+        async aprovar() {
             this.erros = []
             this.preloadAprovado = true
-            axios.put(`${URL_ADMIN}/itenscloud/${this.form.id}/aprovar`, this.form).then((response) => {
-                let data = response.data
+            try {
+                await axios.put(`${URL_ADMIN}/itenscloud/${this.form.id}/aprovar`, this.form)
                 this.aprovado = true
-                this.preloadAprovado = false
                 this.atualizar()
-            })
+            } finally {
+                this.preloadAprovado = false
+            }
         },
 
         /*--------JANELA ENVIAR PARA REVISAO--------*/

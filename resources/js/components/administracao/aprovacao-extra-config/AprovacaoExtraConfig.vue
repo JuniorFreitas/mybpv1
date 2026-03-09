@@ -18,12 +18,10 @@
                         </div>
                     </div>
                     <div class="col-12 col-md-12">
-                        <button type="button" class="btn btn-sm btn-success" :disabled="loading" @click="carregarConfigs()">
+                        <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="loading" @click="carregarConfigs()">
                             <i :class="loading ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i> Atualizar
                         </button>
-                        <button type="button" class="btn btn-sm btn-secondary" data-toggle="modal" data-target="#modalConfig" @click="abrirModal()">
-                            <i class="fa fa-plus"></i> Cadastrar
-                        </button>
+                        <button type="button" class="btn btn-sm mr-1 btn-secondary" @click="abrirModal()"><i class="fa fa-plus"></i> Cadastrar</button>
                     </div>
                 </form>
             </fieldset>
@@ -61,19 +59,23 @@
                                 :model="config"
                                 @atualizou="carregarConfigs()"
                             ></bt-ativo>
-                            <div class="dropdown show">
-                                <a class="btn-actions-compact" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <div class="dropdown" :class="{ show: isDropdownOpen(config.id) }">
+                                <a
+                                    class="btn-actions-compact"
+                                    href="#"
+                                    role="button"
+                                    aria-haspopup="true"
+                                    :aria-expanded="isDropdownOpen(config.id) ? 'true' : 'false'"
+                                    @click.prevent.stop="toggleDropdown(config.id)"
+                                >
                                     <i class="fas fa-ellipsis-v"></i>
                                 </a>
-                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right">
-                                    <a
-                                        class="dropdown-item"
-                                        href="javascript://"
-                                        title="Editar"
-                                        data-toggle="modal"
-                                        data-target="#modalConfig"
-                                        @click.prevent="abrirModal(config)"
-                                    >
+                                <div
+                                    class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                    :class="{ show: isDropdownOpen(config.id) }"
+                                    @click="fecharDropdown"
+                                >
+                                    <a class="dropdown-item" href="javascript://" title="Editar" @click.prevent="abrirModal(config)">
                                         <i class="fa fa-edit mr-1"></i> Editar
                                     </a>
                                 </div>
@@ -125,6 +127,7 @@
 
         <!-- Modal de Cadastro/Edição -->
         <modal
+            ref="modalConfig"
             id="modalConfig"
             :fechar="!salvando"
             :mostrar-botao-fechar-no-rodape="false"
@@ -189,7 +192,7 @@
                                         <td class="text-center">{{ colaborador.nome }}</td>
                                         <td class="text-center">{{ colaborador.login }}</td>
                                         <td class="text-center">
-                                            <a href="javascript://" class="btn btn-sm btn-danger" @click.prevent="removerColaborador(index)">
+                                            <a href="javascript://" class="btn btn-sm mr-1 btn-danger" @click.prevent="removerColaborador(index)">
                                                 <i class="fa fa-times" aria-hidden="true"></i>
                                             </a>
                                         </td>
@@ -217,8 +220,8 @@
                 </form>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal"><i class="fa fa-times"></i> Cancelar</button>
-                <button type="button" class="btn btn-sm btn-primary" @click="salvar" :disabled="salvando">
+                <button type="button" class="btn btn-sm mr-1 btn-secondary" @click="fecharModal"><i class="fa fa-times"></i> Cancelar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" @click="salvar" :disabled="salvando">
                     <span v-if="salvando">
                         <span class="spinner-border spinner-border-sm me-1" role="status"></span>
                         Salvando...
@@ -240,6 +243,7 @@ export default {
             todosUsuarios: [],
             tiposProcesso: {},
             autocomplete_colaborador: '',
+            dropdownAbertoKey: null,
             form: {
                 id: null,
                 tipo_processo: '',
@@ -271,6 +275,11 @@ export default {
         this.carregarTiposProcesso()
         this.carregarUsuarios()
         this.carregarConfigs()
+        document.addEventListener('click', this.onClickOutside)
+    },
+
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
     },
 
     methods: {
@@ -342,6 +351,38 @@ export default {
                 }
             }
             this.autocomplete_colaborador = ''
+            if (this.$refs && this.$refs.modalConfig && typeof this.$refs.modalConfig.abrirModal === 'function') {
+                this.$refs.modalConfig.abrirModal()
+            }
+        },
+
+        fecharModal() {
+            if (this.$refs && this.$refs.modalConfig && typeof this.$refs.modalConfig.fecharModal === 'function') {
+                this.$refs.modalConfig.fecharModal()
+            }
+        },
+
+        toggleDropdown(configId) {
+            if (!configId) {
+                return
+            }
+            const key = `cfg:${configId}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+
+        isDropdownOpen(configId) {
+            return this.dropdownAbertoKey === `cfg:${configId}`
+        },
+
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+
+        onClickOutside(event) {
+            if (event && event.target && event.target.closest && event.target.closest('.dropdown')) {
+                return
+            }
+            this.dropdownAbertoKey = null
         },
 
         selecionaColaborador(colaborador) {
@@ -393,7 +434,7 @@ export default {
                 }
 
                 toastr.success(response.data.message)
-                $('#modalConfig').modal('hide')
+                this.fecharModal()
                 this.carregarConfigs()
             } catch (error) {
                 console.error('Erro ao salvar:', error)

@@ -32,10 +32,10 @@
             </form>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado" @click="alterar()">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado" @click="alterar()">
                 Alterar
             </button>
-            <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado" @click="cadastrar()">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado" @click="cadastrar()">
                 Cadastrar
             </button>
         </template>
@@ -50,7 +50,7 @@
             <h4 v-show="!apagado">Tem certeza que deseja apagar esta Forma de pagamento?</h4>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado && !preloadAjax">Apagar</button>
+            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar()" v-show="!apagado && !preloadAjax">Apagar</button>
         </template>
     </modal>
 
@@ -73,9 +73,9 @@
     </div>
 
 
-    <button type="button" class="btn btn-sm btn-success" @click="atualizar">Atualizar</button>
+    <button type="button" class="btn btn-sm mr-1 btn-success" @click="atualizar">Atualizar</button>
 
-    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#janelaCadastrar"
+    <button type="button" class="btn btn-sm mr-1 btn-primary" data-toggle="modal" data-target="#janelaCadastrar"
             @click="formNovo()">
         Cadastrar
     </button>
@@ -99,13 +99,13 @@
                 <tr v-for="categorias in lista">
                     <td data-label="descrição">@{{categorias.descricao}}</td>
                     <td>
-                        <a href="javascript://" class="btn btn-sm btn-success btnFormAlterar"
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-success btnFormAlterar"
                            @click.prevent="formAlterar(categorias.id)"
                            data-toggle="modal"
                            data-target="#janelaCadastrar">
                             <i class="fa fa-edit" aria-hidden="true"></i> Alterar
                         </a>
-                        <a href="javascript://" class="btn btn-sm btn-danger btnFormExcluir"
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-danger btnFormExcluir"
                            @click.prevent="janelaConfirmar(categorias.id)"
                            data-toggle="modal"
                            data-target="#janelaConfirmar">

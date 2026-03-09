@@ -1,7 +1,4 @@
-version: '3'
-
 services:
-
   mybpdp:
     build:
       context: .
@@ -31,9 +28,9 @@ services:
       - ./.deploy/storage/logs:/usr/share/nginx/html/storage/logs
 
     ports:
-      - "8000:80"
-      - "6001:6001"
-      - "9001:9001"
+      - '8000:80'
+      - '6001:6001'
+      - '9001:9001'
     networks:
       - dev
 

@@ -82,13 +82,13 @@
         <template #rodape>
             <button :disabled="!formPonto.dentro"
                     v-if="!formPonto.preload && !formPonto.save && formPonto.telaGPS"
-                    class="btn btn-sm btn-success"
+                    class="btn btn-sm mr-1 btn-success"
                     type="button"
                     @click="continuar">
                 Continuar <i class="fas fa-arrow-right"></i>
             </button>
             <button v-if="!formPonto.preload && !formPonto.save && formPonto.telaCamera"
-                    class="btn btn-sm btn-success"
+                    class="btn btn-sm mr-1 btn-success"
                     type="button"
                     @click="registrarPonto">
                 Registrar

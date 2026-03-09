@@ -1,12 +1,12 @@
 <template>
     <div :id="hash">
-        <modal :modal-pai="modal" :titulo="titulo_janela_pcmso" :size="90" id="janelaPcmso">
+        <modal :modal-pai="modal" :titulo="titulo_janela_pcmso" :size="90" id="janelaPcmso" ref="modal_janelaPcmso">
             <template #conteudo>
-                <pcmso v-if="pcmsoOpen"></pcmso>
+                <pcmso v-if="pcmsoOpen" modal="janelaPcmso"></pcmso>
             </template>
         </modal>
 
-        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
+        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90" :modal-pai="modal" ref="modal_janelaCadastrar">
             <template #conteudo>
                 <preload v-show="preload"></preload>
                 <div v-if="!preload && !cadastrado">
@@ -104,15 +104,15 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preload" @click="alterarformEmpresaExame()">Alterar</button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !preload" @click="cadastrar()">Cadastrar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !preload" @click="alterarformEmpresaExame()">Alterar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !preload" @click="cadastrar()">Cadastrar</button>
             </template>
         </modal>
 
         <!-- Filtro -->
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -128,23 +128,21 @@
                 </div>
 
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary"
+                        class="btn btn-sm mr-1 btn-primary"
                         :disabled="controle.carregando"
-                        @click="formNovo"
-                        data-toggle="modal"
-                        data-target="#janelaCadastrar"
+                        @click="formNovo(); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                     >
                         <i class="fa fa-plus"></i> Cadastrar
                     </button>
 
-                    <button type="button" class="btn btn-sm btn-secondary" data-toggle="modal" v-if="pcmsoOpen" data-target="#janelaPcmso">
+                    <button type="button" class="btn btn-sm mr-1 btn-secondary" v-if="pcmsoOpen" @click="$refs.modal_janelaPcmso && $refs.modal_janelaPcmso.abrirModal()">
                         <i class="fa fa-plus"></i> PCMSO
                     </button>
                 </div>
@@ -172,7 +170,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in lista">
+                        <tr v-for="(item, index) in lista" :key="item.id || index">
                             <td class="text-center">{{ item.id }}</td>
                             <td class="text-center">{{ item.nome }}</td>
                             <td class="text-center">{{ item.dados.endereco.endereco_completo }}</td>
@@ -182,10 +180,8 @@
                             <td class="text-center">
                                 <button
                                     type="button"
-                                    class="btn btn-sm btn-primary mb-1"
-                                    data-toggle="modal"
-                                    data-target="#janelaCadastrar"
-                                    @click="alterarEmpresaExame(item.id)"
+                                    class="btn btn-sm mr-1 btn-primary mb-1"
+                                    @click="alterarEmpresaExame(item.id); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                                 >
                                     <i class="fa fa-edit"></i>
                                 </button>
@@ -247,7 +243,7 @@ export default {
     data() {
         return {
             hash: String(Math.random()).substr(2),
-            titulo_janela: '',
+            titulo_janela: 'Empresa Exame',
             titulo_janela_pcmso: 'PCMSO',
             titulo_janela_form_pcmso: 'PCMSO',
 
@@ -313,7 +309,7 @@ export default {
                 .post(`${URL_ADMIN}/cadastro/empresa-exame`, this.form)
                 .then((res) => {
                     if (res.status === 201) {
-                        $('#janelaCadastrar').modal('hide')
+                        this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
                         mostraSucesso('', 'Empresa cadastrada com sucesso')
                         this.cadastrado = true
                         this.preload = false
@@ -360,7 +356,7 @@ export default {
             axios
                 .put(`${URL_ADMIN}/cadastro/empresa-exame/${this.form.id}`, this.form)
                 .then((response) => {
-                    $('#janelaCadastrar').modal('hide')
+                    this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
                     mostraSucesso('', 'Empresa Exame atualizado com sucesso')
                     this.preload = false
                     this.atualizado = true
@@ -378,8 +374,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

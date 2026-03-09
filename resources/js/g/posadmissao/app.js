@@ -41,6 +41,8 @@ const app = createApp({
             selecionados: [],
             selecionaTudo: false,
 
+            dropdownAbertoKey: null,
+
             lista_motivo_desligamentos: [
                 'Iniciativa do empregado: Mudança de Cidade',
                 'Iniciativa do empregado: Proposta superior de outra empresa',
@@ -278,9 +280,32 @@ const app = createApp({
         this.listaVagas()
         this.listaAreasGeral()
         await this.selectTodosGestoresAtivos()
+        document.addEventListener('click', this.onClickOutside)
         // ?checkcpf=015.020.903-76
     },
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
+    },
     methods: {
+        toggleDropdown(itemId) {
+            if (!itemId) {
+                return
+            }
+            const key = `pos:${itemId}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(itemId) {
+            return this.dropdownAbertoKey === `pos:${itemId}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+        onClickOutside(event) {
+            if (event && event.target && event.target.closest && event.target.closest('.dropdown')) {
+                return
+            }
+            this.dropdownAbertoKey = null
+        },
         async selectTodosGestoresAtivos() {
             const busca = await axios.get(`${URL_ADMIN}/autocomplete/todos-gestores?ativo=sim`)
             this.lista_supervisor_imediato = busca.data.map((item) => {
@@ -294,7 +319,7 @@ const app = createApp({
         },
         async gerarArquivoXls() {
             mostraSucesso('', 'Aguarde estamos gerando o seu excel')
-            const XLSX = require('xlsx')
+            const XLSX = require('@e965/xlsx')
 
             const dataHoraAtual = new Date()
                 .toLocaleString('en-US', {
@@ -309,19 +334,17 @@ const app = createApp({
             const wb = XLSX.utils.book_new()
             const ws = XLSX.utils.json_to_sheet([])
 
-            await axios.post(this.urlExportacao, this.paramsExport).then(({ data }) => {
-                let cabecalho = data.head
-                const jsonDataArray = data.rows
+            const { data } = await axios.post(this.urlExportacao, this.paramsExport)
+            const cabecalho = data.head
+            const jsonDataArray = data.rows
 
-                XLSX.utils.sheet_add_aoa(ws, [cabecalho], { origin: 0 })
+            XLSX.utils.sheet_add_aoa(ws, [cabecalho], { origin: 0 })
 
-                jsonDataArray.forEach(function (jsonData) {
-                    XLSX.utils.sheet_add_aoa(ws, [jsonData], { origin: -1 })
-                })
-                //
-                XLSX.utils.book_append_sheet(wb, ws, 'planilha')
-                XLSX.writeFile(wb, filename)
+            jsonDataArray.forEach(function (jsonData) {
+                XLSX.utils.sheet_add_aoa(ws, [jsonData], { origin: -1 })
             })
+            XLSX.utils.book_append_sheet(wb, ws, 'planilha')
+            XLSX.writeFile(wb, filename)
         },
         changeCnpj() {
             this.controle.dados.campoCentroCusto = ''

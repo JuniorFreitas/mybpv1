@@ -12,7 +12,7 @@
                     <div class="input-group">
                         <input
                             v-for="(digit, index) in token"
-                            :key="index"
+                            :key="digit.id || index"
                             ref="tokenInputs"
                             v-model="token[index]"
                             type="text"
@@ -56,7 +56,7 @@
                         {{ passwordStrength }}
                         <div class="password-level-indicator" :class="'level-' + passwordLevel"></div>
                         <div class="password-hints mt-2" v-if="passwordHints.length > 0">
-                            <div v-for="(hint, index) in passwordHints" :key="index" class="text-danger small">
+                            <div v-for="(hint, index) in passwordHints" :key="hint.id || index" class="text-danger small">
                                 <i class="fa fa-times-circle"></i> {{ hint }}
                             </div>
                         </div>

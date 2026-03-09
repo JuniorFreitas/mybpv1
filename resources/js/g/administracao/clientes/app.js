@@ -414,14 +414,18 @@ const app = createApp({
             this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         },
 
-        verificaCpf() {
+        async verificaCpf() {
             if (!this.editando) {
-                axios.get(`${URL_ADMIN}/administracao/clientes/buscar-cpf?cpf=${this.form.cpf}`).then((response) => {})
+                try {
+                    await axios.get(`${URL_ADMIN}/administracao/clientes/buscar-cpf?cpf=${this.form.cpf}`)
+                } catch (err) {}
             }
         },
-        verificaCnpj() {
+        async verificaCnpj() {
             if (!this.editando) {
-                axios.get(`${URL_ADMIN}/administracao/clientes/buscar-cnpj?cnpj=${this.form.cnpj}`).then((response) => {})
+                try {
+                    await axios.get(`${URL_ADMIN}/administracao/clientes/buscar-cnpj?cnpj=${this.form.cnpj}`)
+                } catch (err) {}
             }
         },
         filtrarUsuariosAlertaDisponiveis() {

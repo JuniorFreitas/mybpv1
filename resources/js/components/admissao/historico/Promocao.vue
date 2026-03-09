@@ -1,7 +1,7 @@
 <template>
     <div>
         <p class="mt-2" v-if="preload"><i class="fa fa-spinner fa-pulse"></i> Aguarde ...</p>
-        <modal :fechar="!preloadSalvar" id="janelaPromocao" size="g" modal-pai="janelaHistorico" titulo="Promoção">
+        <modal :fechar="!preloadSalvar" id="janelaPromocao" size="g" modal-pai="janelaHistorico" titulo="Promoção" ref="modal_janelaPromocao">
             <template #conteudo>
                 <p class="mt-2" v-if="preloadSalvar"><i class="fa fa-spinner fa-pulse"></i> Salvando aguarde ...</p>
                 <fieldset v-show="!preloadSalvar">
@@ -79,12 +79,12 @@
                 </fieldset>
             </template>
             <template #rodape>
-                <button class="btn btn-sm btn-primary" v-if="!preloadSalvar" @click="salvar"><i class="fa fa-save"></i> Salvar</button>
+                <button class="btn btn-sm mr-1 btn-primary" v-if="!preloadSalvar" @click="salvar"><i class="fa fa-save"></i> Salvar</button>
             </template>
         </modal>
 
         <div v-if="!preload" :id="`form_${hash}`">
-            <button class="btn btn-sm btn-primary mb-3" data-toggle="modal" data-target="#janelaPromocao" @click="addPromocao">
+            <button class="btn btn-sm mr-1 btn-primary mb-3" @click="addPromocao; $refs.modal_janelaPromocao && $refs.modal_janelaPromocao.abrirModal()">
                 <i class="fa fa-plus"></i> Adicionar Promoção
             </button>
 
@@ -102,7 +102,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="item in promocao">
+                            <tr v-for="item in promocao" :key="item.id || item.novo_cargo">
                                 <td class="text-center">{{ item.novo_cargo }}</td>
                                 <td class="text-center">{{ item.motivo }}</td>
                                 <td class="text-center">{{ item.percentual }}</td>
@@ -188,7 +188,7 @@ export default {
                         if (response.status === 201) {
                             this.preloadSalvar = false
                             mostraSucesso('Promoção adicionada com sucesso.')
-                            $('#janelaPromocao').modal('hide')
+                            this.$refs.modal_janelaPromocao && this.$refs.modal_janelaPromocao.fecharModal()
                             this.form = _.cloneDeep(this.formDefault)
                             // this.cadastrado = true;
                             this.atualizar()
@@ -197,15 +197,17 @@ export default {
                     .catch((error) => (this.preloadSalvar = false))
             })
         },
-        atualizar() {
+        async atualizar() {
             this.preload = true
-            axios.get(`${URL_ADMIN}/historico/promocao/atualizar/${this.feedback_id}`).then((res) => {
-                let data = res.data
+            try {
+                const res = await axios.get(`${URL_ADMIN}/historico/promocao/atualizar/${this.feedback_id}`)
+                const data = res.data
                 this.form.feedback_id = data.feedback
                 this.promocao = data.promocoes
                 this.formDefault = _.cloneDeep(this.form)
+            } finally {
                 this.preload = false
-            })
+            }
         }
     }
 }

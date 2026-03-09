@@ -410,13 +410,13 @@
         </template>
         <template #rodape>
             <div v-show="!visualizar">
-                <button type="button" class="btn btn-sm btn-primary"
+                <button type="button" class="btn btn-sm mr-1 btn-primary"
                         v-show="editando && !atualizado  && !preload"
                         @click.prevent="alterar"
                 >
                     <i class="fa fa-edit"></i> Alterar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary"
+                <button type="button" class="btn btn-sm mr-1 btn-primary"
                         v-show="!editando && !cadastrado  && !preload"
                         @click.prevent="cadastrar"
                 >
@@ -556,20 +556,20 @@
 
         <div class="col-12">
             <div class="row">
-                <button type="button" class="btn btn-sm btn-success mb-1 mr-1" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm mr-1 btn-success mb-1 mr-1" :disabled="controle.carregando"
                         @click="atualizar"
                 ><i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"
                     ></i>
                     Atualizar
                 </button>
-                <button class="btn btn-sm btn-danger mb-1 mr-1"
+                <button class="btn btn-sm mr-1 btn-danger mb-1 mr-1"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                         :disabled="selecionados.length === 0" @click="selecionados = []"
                 >
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
-                <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"
+                <button type="button" class="btn btn-sm mr-1 btn-primary mb-1 mr-1"
                         @click.prevent="exportaExcel()"
                         :disabled="controle.carregando || preloadExportacao || lista.length===0"
                 >
@@ -609,7 +609,7 @@
                 <th class="text-center" v-show="colunasTabela.tecnica_nota">Entrevista Técnica Nota</th>
                 <th class="text-center" v-show="colunasTabela.teste_pratico_nota">Teste Prático Nota</th>
                 <th>
-                    <button class="btn btn-sm btn-primary mb-2" content="Mostrar e Ocultar Colunas" v-tippy
+                    <button class="btn btn-sm mr-1 btn-primary mb-2" content="Mostrar e Ocultar Colunas" v-tippy
                             data-toggle="modal"
                             data-target="#filtroColunas"
                     >
@@ -669,7 +669,7 @@
                     <form :action="`${URL_ADMIN}/entrevistas/parecer-rota/ficha_pdf`" target="_blank"
                           method="post"
                     >
-                        <button class="btn btn-sm btn-primary mb-2" content="Entrevistar" v-tippy
+                        <button class="btn btn-sm mr-1 btn-primary mb-2" content="Entrevistar" v-tippy
                                 v-show="!entrevista.parecer_rota"
                                 @click.prevent="formEntrevistar(entrevista.id)"
                                 data-toggle="modal"
@@ -679,7 +679,7 @@
                         </button>
 
                         @can('entrevista_parecer_rota_update')
-                            <button class="btn btn-sm btn-primary mb-2" content="Editar" v-tippy
+                            <button class="btn btn-sm mr-1 btn-primary mb-2" content="Editar" v-tippy
                                     v-show="entrevista.parecer_rota"
                                     @click.prevent="formEntrevistar(entrevista.id); editando = true"
                                     data-toggle="modal"
@@ -689,7 +689,7 @@
                             </button>
                         @endcan
 
-                        <button class="btn btn-sm btn-primary mb-2" content="Visualizar" v-tippy
+                        <button class="btn btn-sm mr-1 btn-primary mb-2" content="Visualizar" v-tippy
                                 v-show="entrevista.parecer_rota"
                                 @click.prevent="formEntrevistar(entrevista.id); visualizar = true"
                                 data-toggle="modal"
@@ -703,7 +703,7 @@
                                v-if="entrevista.parecer_rota"
                         >
                         <button type="submit" content="Gerar PDF" v-tippy v-show="entrevista.parecer_rota"
-                                class="btn btn-sm btn-primary mb-2"
+                                class="btn btn-sm mr-1 btn-primary mb-2"
                         >
                             <i class="fa fa-file-pdf" aria-hidden="true"></i>
                         </button>

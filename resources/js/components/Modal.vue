@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="modal fade" tabindex="-1" role="dialog" :id="id" data-backdrop="static" data-keyboard="false">
+        <div class="modal fade" tabindex="-1" role="dialog" :id="id" data-backdrop="static" data-keyboard="false" :key="modalKey">
             <div class="modal-dialog" :class="[tamanho, central]" role="document" :style="styles">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -15,14 +15,14 @@
                         </div>
                     </div>
                     <div class="modal-body">
-                        <i class="fa fa-spinner" v-if="preload"></i> <span v-if="textoPreload != ''">{{ textoPreload }}</span>
+                        <i class="fa fa-spinner" v-if="preload"></i> <span v-if="textoPreload !== ''">{{ textoPreload }}</span>
 
-                        <div v-if="preload == false">
+                        <div v-if="!preload">
                             <slot name="conteudo"></slot>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-sm btn-outline-secondary" v-if="exibirFechar && mostrarBotaoFecharNoRodape" @click="fecharModal">
+                        <button type="button" class="btn btn-sm mr-1 btn-outline-secondary" v-if="exibirFechar && mostrarBotaoFecharNoRodape" @click="fecharModal">
                             {{ labelFechar }}
                         </button>
                         <slot name="rodape"></slot>
@@ -33,8 +33,13 @@
     </div>
 </template>
 <script>
-export default {
-    // declarar as propriedades
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+    name: 'Modal',
+
+    emits: ['fechou', 'abriu'],
+
     props: {
         id: {
             type: String,
@@ -98,96 +103,100 @@ export default {
             textoPreload: '',
             preload: false,
             tela: window.innerWidth,
-            zIndex: 0
+            zIndex: 0,
+            modalKey: 0,  // alterado ao fechar para recriar o DOM da modal e evitar scroll no background
+            _resizeHandler: null
         }
     },
     methods: {
+        /** Fecha esta modal: remove só o backdrop desta (por id), esconde a modal; se ainda houver outras abertas, body continua modal-open. */
         fecharModal() {
-            $('#' + this.id).modal('hide')
-            $(`#modal-backdrop${this.zIndex}`).remove()
-            this.$emit('fechou', {}) // evento disaparado quando fechar janela
+            const active = document.activeElement
+            if (active && this.$el.contains(active)) {
+                active.blur()
+            }
+            const $minhaModal = $('#' + this.id)
+            if (!$minhaModal.length) {
+                this.$emit('fechou', {})
+                return
+            }
+            const backdropId = 'modal-backdrop-' + this.id
+            $(`#${backdropId}`).remove()
+            $minhaModal.removeClass('show').css('display', 'none').attr('aria-hidden', 'true')
+            if ($('.modal.show').length === 0) {
+                $('body').removeClass('modal-open').css('overflow', '')
+            } else {
+                $('body').addClass('modal-open').css('overflow', 'hidden')
+            }
+            this.modalKey += 1
+            this.$emit('fechou', {})
         },
 
         abrirModal() {
             $('#' + this.id).modal('show')
-            this.$emit('abriu', {}) // evento disaparado quando fechar janela
+            this.$emit('abriu', {})
         }
     },
 
     mounted: function () {
         let self = this
-        let modal = $(this.$el).find('div.modal')[0] // elemento  div.modal
+        // Delegação no container para que os eventos funcionem também no novo elemento após recriar a modal (modalKey++)
+        let $container = $(this.$el)
 
-        //drag modal
-        /*
-            $(".modal-header").on("mousedown", function (mousedownEvt) {
-                let $draggable = $(this);
-                let x = mousedownEvt.pageX - $draggable.offset().left,
-                    y = mousedownEvt.pageY - $draggable.offset().top;
-                $("body").on("mousemove.draggable", function (mousemoveEvt) {
-                    $draggable.closest(".modal-dialog").offset({
-                        "left": mousemoveEvt.pageX - x,
-                        "top": mousemoveEvt.pageY - y
-                    });
-                });
-                $("body").one("mouseup", function () {
-                    $("body").off("mousemove.draggable");
-                });
-                $draggable.closest(".modal").one("bs.modal.hide", function () {
-                    $("body").off("mousemove.draggable");
-                });
-            });
-
-            */
-
-        //Modal overlap
-        $(modal).on('show.bs.modal', function (event) {
+        // Garante que o body não role quando a modal estiver aberta (evita scroll no background ao reabrir)
+        $container.on('show.bs.modal', '.modal', function (event) {
+            let modalEl = this
+            $('body').addClass('modal-open').css('overflow', 'hidden')
             var zIndex = 1040 + 10 * $('.modal:visible').length
             self.zIndex = zIndex
-            $(this).css('z-index', zIndex)
+            $(modalEl).css('z-index', zIndex)
             setTimeout(() => {
-                $('.modal-backdrop')
-                    .not('.modal-stack')
-                    .css('z-index', zIndex - 1)
-                    .addClass('modal-stack')
-                    .attr('id', `modal-backdrop${zIndex}`)
+                // Backdrop que o Bootstrap acabou de criar: marca com id pelo id da modal para remover só este ao fechar
+                var $backdrops = $('.modal-backdrop').not('.modal-stack')
+                var $nossoBackdrop = $backdrops.last()
+                var backdropId = 'modal-backdrop-' + modalEl.id
+                $backdrops.css('z-index', zIndex - 1).addClass('modal-stack')
+                $nossoBackdrop.attr('id', backdropId)
 
-                if ($(modal).next(`.modal-backdrop`).length === 0) {
-                    //console.log('Nao foi encontrato backDrop depois de '+ $(modal).attr('id'));
-                    let divBackDrop = $(`#modal-backdrop${zIndex}`)
-                    $(divBackDrop).insertAfter(modal)
+                if ($(modalEl).next('.modal-backdrop').length === 0) {
+                    var $backdropEl = $('#' + backdropId)
+                    if ($backdropEl.length) $backdropEl.insertAfter(modalEl)
                 }
-
-                /* let quantidadeModalAbertas = $('div.modal-backdrop').length;
-                     if (self.modalPai && quantidadeModalAbertas) {
-                         //let divBackDrop = $('.modal-backdrop')[quantidadeModalAbertas - 1];
-                         let divBackDrop = $(`#modal-backdrop${zIndex}`);
-                         let bodyModalAbaixo = $('#' + self.modalPai).find('div.modal-body')[0];
-                         //$(divBackDrop).appendTo(bodyModalAbaixo); // mover para dentro do body
-
-                         //$(divBackDrop).insertAfter(modal_dialog); // mover para dentro do body
-                         $(divBackDrop).insertAfter(modal_dialog); // mover para dentro do body
-                     }*/
             }, 50)
         })
 
-        //Saber quantas modeias estão abertas para colocar a class 'modal-open' no <body/>
-        $(modal).on('hidden.bs.modal', function (event) {
-            let quantidade = $('div.modal-backdrop').length
-            if (quantidade) {
-                $('body').addClass('modal-open')
+        // Ao fechar via Bootstrap (ex.: clique no backdrop, Escape): remove só o backdrop desta modal; mantém body modal-open se ainda houver outras abertas
+        $container.on('hidden.bs.modal', '.modal', function (event) {
+            var modalId = event.target.id
+            if (modalId) {
+                $('#modal-backdrop-' + modalId).remove()
+            }
+            if ($('.modal.show').length > 0) {
+                $('body').addClass('modal-open').css('overflow', 'hidden')
+            } else {
+                $('body').removeClass('modal-open').css('overflow', '')
+            }
+            if (self.id === modalId) {
+                self.modalKey += 1
             }
         })
 
-        window.addEventListener('resize', () => {
-            this.tela = window.innerWidth // atualiza o tamanho de tela
-        })
+        this._resizeHandler = () => {
+            this.tela = window.innerWidth
+        }
+        window.addEventListener('resize', this._resizeHandler)
+    },
+
+    beforeUnmount() {
+        if (this._resizeHandler) {
+            window.removeEventListener('resize', this._resizeHandler)
+        }
     },
 
     computed: {
         styles: function () {
             // caso passe numero, retorna esse objeto de styles
-            if (typeof this.size == 'number' && this.tela >= 710) {
+            if (typeof this.size === 'number' && this.tela >= 710) {
                 // 710 é o tamanho de tablet
                 return {
                     'max-width': this.size + '%'
@@ -195,7 +204,7 @@ export default {
             }
         },
         exibirFechar: function () {
-            return this.fechar != undefined ? this.fechar : true
+            return this.fechar !== undefined ? this.fechar : true
         },
 
         central: function () {
@@ -203,24 +212,19 @@ export default {
         },
 
         tamanho: function () {
-            if (this.size == undefined || typeof this.size == 'number') {
+            if (this.size === undefined || typeof this.size === 'number') {
                 return ''
             }
-
-            let valor = this.size
-            switch (valor.toLowerCase()) {
+            const valor = String(this.size).toLowerCase()
+            switch (valor) {
                 case 'p':
                     return 'modal-sm'
-                    break
                 case 'g':
                     return 'modal-lg'
-                    break
-
                 default:
                     return ''
-                    break
             }
         }
     }
-}
+})
 </script>

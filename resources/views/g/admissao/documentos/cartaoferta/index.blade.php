@@ -22,7 +22,7 @@
             </div>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-outline-danger" v-if="!atualizando"
+            <button type="button" class="btn btn-sm mr-1 btn-outline-danger" v-if="!atualizando"
                     @click.prevent="responder(objopen,'Recusado pelo RH')"
             > sim, recusar
             </button>
@@ -64,12 +64,12 @@
             </div>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-primary"
+            <button type="button" class="btn btn-sm mr-1 btn-primary"
                     v-if="objopen?.status === 'Aguardando RH' && !atualizando"
                     @click.prevent="responder(objopen,'Aceito pelo RH')">
                 <i class="fa fa-save"></i> Aprovar
             </button>
-            <button type="button" class="btn btn-sm btn-danger"
+            <button type="button" class="btn btn-sm mr-1 btn-danger"
                     v-if="objopen?.status === 'Aguardando RH' && !atualizando"
                     data-toggle="modal"
                     data-target="#janelaRecusar"
@@ -167,7 +167,7 @@
 
         <div class="row mt-2">
             <div class="col-12">
-                <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando"
                         @click="atualizar"><i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
@@ -239,16 +239,16 @@
 
 
                     <td class="text-center">
-                        <button class="btn btn-sm btn-primary" title="Visualizar"
+                        <button class="btn btn-sm mr-1 btn-primary" title="Visualizar"
                                 @click.prevent="formVisualizar(item)"
                                 data-toggle="modal"
                                 data-target="#janelaVisualizar"><i class="fa fa-search-plus"></i>
                         </button>
-                        <button v-if="assinaturaDigitalHabilitada && item.status === 'Pendente Anexo' && temDocumentoAssinatura(item)" class="btn btn-sm btn-info ml-1" title="Gerenciar assinatura digital"
+                        <button v-if="assinaturaDigitalHabilitada && item.status === 'Pendente Anexo' && temDocumentoAssinatura(item)" class="btn btn-sm mr-1 btn-info ml-1" title="Gerenciar assinatura digital"
                                 @click.prevent="abrirGerenciamentoAssinaturaCartaOferta(item)">
                             <i class="fas fa-cog"></i> Assinatura
                         </button>
-                        <button v-else-if="assinaturaDigitalHabilitada && item.status === 'Pendente Anexo'" class="btn btn-sm btn-success ml-1" title="Enviar para assinatura digital"
+                        <button v-else-if="assinaturaDigitalHabilitada && item.status === 'Pendente Anexo'" class="btn btn-sm mr-1 btn-success ml-1" title="Enviar para assinatura digital"
                                 @click.prevent="abrirEnvioAssinaturaCartaOferta(item)">
                             <i class="fas fa-pen-fancy"></i> Assinatura
                         </button>

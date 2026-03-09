@@ -1,6 +1,6 @@
 <template>
     <div>
-        <modal id="janelaConfirmar" titulo="Apagar">
+        <modal ref="modalConfirmar" id="janelaConfirmar" titulo="Apagar">
             <template #conteudo>
                 <preload v-show="preloadAjax"></preload>
                 <div class="alert alert-success alert-dismissible" v-show="apagado">
@@ -9,11 +9,11 @@
                 <h4 v-show="!apagado">Tem certeza que deseja apagar este registro?</h4>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-danger" @click="apagar" v-show="!apagado">Apagar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar" v-show="!apagado">Apagar</button>
             </template>
         </modal>
 
-        <modal id="janelaCadastrar" :titulo="tituloJanela" :size="90">
+        <modal ref="modalCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :size="90">
             <template #conteudo>
                 <preload v-show="preloadAjax"></preload>
                 <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -47,12 +47,10 @@
                     <div v-if="form.tipo !== ''">
                         <ul class="nav nav-tabs bg-light" id="tabslist" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-item nav-link active" id="nav-dados-cadastrais-tab" data-toggle="tab" href="#nav-dados-cadastrais" role="tab"
-                                    >DADOS CADASTRAIS</a
-                                >
+                                <a class="nav-item nav-link active" id="nav-dados-cadastrais-tab" href="#nav-dados-cadastrais" role="tab">DADOS CADASTRAIS</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-item nav-link" id="nav-servicos-tab" data-toggle="tab" href="#nav-servicos" role="tab">SERVIÇOS</a>
+                                <a class="nav-item nav-link" id="nav-servicos-tab" href="#nav-servicos" role="tab">SERVIÇOS</a>
                             </li>
                         </ul>
 
@@ -194,7 +192,7 @@
                                     </legend>
                                     <div class="row">
                                         <div class="col-12 col-sm-6 col-md-6 col-lg-6">
-                                            <button class="btn btn-sm btn-secondary mb-2" @click="addLIServicoFornecedor">
+                                            <button class="btn btn-sm mr-1 btn-secondary mb-2" @click="addLIServicoFornecedor">
                                                 <span class="fas fa-plus" aria-hidden="true"></span>
                                                 Adicionar Serviço
                                             </button>
@@ -236,7 +234,7 @@
                                                         <label>Tipo de Serviço</label>
                                                         <select v-model="obj.tipo_servico_fornecedor_id" class="form-control">
                                                             <option value="">Selecione ...</option>
-                                                            <option v-for="item in listaServicos" :value="item.id">
+                                                            <option v-for="(item, index) in listaServicos" :value="item.id" :key="item.id || index">
                                                                 {{ item.label }}
                                                             </option>
                                                         </select>
@@ -321,7 +319,7 @@
                                                 </div>
 
                                                 <div class="col-12 mb-3">
-                                                    <button class="btn btn-sm btn-danger" @click="removerLIServicoFornecedor(index)" v-show="obj.nova">
+                                                    <button class="btn btn-sm mr-1 btn-danger" @click="removerLIServicoFornecedor(index)" v-show="obj.nova">
                                                         <i class="fa fa-trash"></i> Remover
                                                     </button>
                                                 </div>
@@ -337,15 +335,15 @@
                 </form>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && !preloadAjax" @click="alterar">Alterar</button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado && !preloadAjax" @click="cadastrar">Cadastrar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado && !preloadAjax" @click="alterar">Alterar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado && !preloadAjax" @click="cadastrar">Cadastrar</button>
             </template>
         </modal>
 
         <!-- Filtro -->
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label for="">Buscar</label>
@@ -383,21 +381,12 @@
                 </div>
 
                 <div class="col-12 col-md-9">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-primary"
-                        data-toggle="modal"
-                        :disabled="controle.carregando"
-                        data-target="#janelaCadastrar"
-                        @click="formNovo"
-                    >
-                        Cadastrar
-                    </button>
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="controle.carregando" @click="formNovo">Cadastrar</button>
                 </div>
             </form>
         </fieldset>
@@ -423,7 +412,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="fornecedor in lista">
+                        <tr v-for="(fornecedor, index) in lista" :key="fornecedor.id || index">
                             <td data-label="ID">{{ fornecedor.id }}</td>
                             <td data-label="Nome">
                                 {{ fornecedor.tipo_pessoa == 'pessoa_física' ? fornecedor.nome : fornecedor.razao_social }}
@@ -431,31 +420,17 @@
                             <td data-label="Tipo">{{ fornecedor.tipo }}</td>
                             <td data-label="Contato">
                                 {{ fornecedor.contato }} -
-                                <span v-for="tel in fornecedor.telefones">{{ tel.numero }}</span>
+                                <span v-for="(tel, index) in fornecedor.telefones" :key="tel.id || index">{{ tel.numero }}</span>
                             </td>
                             <td data-label="Status">
                                 <bt-ativo :rota="`administracao/fornecedor/${fornecedor.id}/ativa-desativa`" :model="fornecedor"></bt-ativo>
                             </td>
                             <td data-label="Ações">
-                                <a
-                                    href="javascript://"
-                                    class="btn btn-sm btn-primary"
-                                    title="Editar"
-                                    @click.prevent="formAlterar(fornecedor.id)"
-                                    data-toggle="modal"
-                                    data-target="#janelaCadastrar"
-                                >
+                                <a href="javascript://" class="btn btn-sm mr-1 btn-primary" title="Editar" @click.prevent="formAlterar(fornecedor.id)">
                                     <i class="fa fa-edit" aria-hidden="true"></i>
                                 </a>
 
-                                <a
-                                    href="javascript://"
-                                    class="btn btn-sm btn-danger"
-                                    title="Excluir"
-                                    @click.prevent="janelaConfirmar(fornecedor.id)"
-                                    data-toggle="modal"
-                                    data-target="#janelaConfirmar"
-                                >
+                                <a href="javascript://" class="btn btn-sm mr-1 btn-danger" title="Excluir" @click.prevent="janelaConfirmar(fornecedor.id)">
                                     <i class="fa fa-trash" aria-hidden="true"></i>
                                 </a>
                             </td>
@@ -577,6 +552,26 @@ export default {
         this.atualizar()
     },
     methods: {
+        abrirModalCadastrar() {
+            if (this.$refs && this.$refs.modalCadastrar && typeof this.$refs.modalCadastrar.abrirModal === 'function') {
+                this.$refs.modalCadastrar.abrirModal()
+            }
+        },
+        fecharModalCadastrar() {
+            if (this.$refs && this.$refs.modalCadastrar && typeof this.$refs.modalCadastrar.fecharModal === 'function') {
+                this.$refs.modalCadastrar.fecharModal()
+            }
+        },
+        abrirModalConfirmar() {
+            if (this.$refs && this.$refs.modalConfirmar && typeof this.$refs.modalConfirmar.abrirModal === 'function') {
+                this.$refs.modalConfirmar.abrirModal()
+            }
+        },
+        fecharModalConfirmar() {
+            if (this.$refs && this.$refs.modalConfirmar && typeof this.$refs.modalConfirmar.fecharModal === 'function') {
+                this.$refs.modalConfirmar.fecharModal()
+            }
+        },
         validarCnpj() {
             const cnpj = this.form.cnpj.replace(/[^\d]/g, '')
             if (cnpj.length !== 14) {
@@ -724,6 +719,7 @@ export default {
                 this.apagado = true
                 this.atualizar()
                 this.mostraSucesso('Fornecedor excluído com sucesso!', 'Sucesso')
+                this.fecharModalConfirmar()
             } catch (error) {
                 this.tratarErro(error, 'Erro ao apagar fornecedor')
             } finally {
@@ -740,6 +736,7 @@ export default {
             setupCampo()
             this.form = _.cloneDeep(this.formDefault)
             this.leitura = false
+            this.abrirModalCadastrar()
         },
 
         async formAlterar(id) {
@@ -843,8 +840,10 @@ export default {
 
         atualizar() {
             if (this.$refs.componente) {
-                this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-                this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                this.$refs.componente.atual = 1
+                if (this.$refs.componente.buscar) {
+                    this.$refs.componente.buscar()
+                }
             }
         },
 
@@ -852,6 +851,7 @@ export default {
             this.form.id = id
             this.apagado = false
             this.preloadAjax = false
+            this.abrirModalConfirmar()
         }
     }
 }

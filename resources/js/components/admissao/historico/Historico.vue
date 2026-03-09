@@ -1,6 +1,6 @@
 <template>
     <div class="historico-admissao">
-        <modal id="janelaHistorico" :titulo="tituloJanela" :size="95">
+        <modal id="janelaHistorico" :titulo="tituloJanela" :size="95" ref="modal_janelaHistorico">
             <template #conteudo>
                 <div v-if="!openHistorico">
                     <fieldset>
@@ -213,7 +213,7 @@
                             <beneficio v-if="abas.abrirBeneficio && permissoes.beneficio" :feedback_id="form.feedback_id"></beneficio>
                         </div>
                         <div class="tab-pane fade show" id="nav-cih" role="tabpanel" aria-labelledby="nav-cih-tab">
-                            <cih v-if="abas.abrirCih && permissoes.cih" :fc_token="form.fc_token"></cih>
+                            <cih v-if="abas.abrirCih && permissoes.cih" :fc_token="form.fc_token" modal-pai="janelaHistorico"></cih>
                         </div>
                         <div class="tab-pane fade show" id="nav-promocao" role="tabpanel" aria-labelledby="nav-promocao-tab">
                             <promocao v-if="abas.abrirPromocao && permissoes.promocao" :feedback_id="form.feedback_id"></promocao>
@@ -384,7 +384,7 @@
                 <div class="col-12">
                     <button
                         type="button"
-                        class="btn btn-sm btn-success mb-1"
+                        class="btn btn-sm mr-1 btn-success mb-1"
                         :disabled="controle.carregando"
                         :style="controle.carregando ? 'cursor: not-allowed' : 'cursor: pointer'"
                         @click="atualizar"
@@ -392,7 +392,7 @@
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary mb-1 ml-1" :disabled="controle.carregando" @click="limparFiltros">
+                    <button type="button" class="btn btn-sm mr-1 btn-outline-secondary mb-1 ml-1" :disabled="controle.carregando" @click="limparFiltros">
                         <i class="fa fa-eraser"></i>
                         Limpar filtros
                     </button>
@@ -435,26 +435,29 @@
                             </span>
                         </div>
                         <div class="card-right">
-                            <div class="dropdown show">
+                            <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
                                 <a
                                     class="btn-actions-compact"
                                     href="#"
                                     role="button"
                                     :id="'dropdownHistorico_' + item.id"
-                                    data-toggle="dropdown"
                                     aria-haspopup="true"
-                                    aria-expanded="false"
+                                    :aria-expanded="isDropdownOpen(item.id) ? 'true' : 'false'"
+                                    @click.prevent.stop="toggleDropdown(item.id)"
                                 >
                                     <i class="fas fa-ellipsis-v"></i>
                                 </a>
-                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right" :aria-labelledby="'dropdownHistorico_' + item.id">
+                                <div
+                                    class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                    :class="{ show: isDropdownOpen(item.id) }"
+                                    :aria-labelledby="'dropdownHistorico_' + item.id"
+                                    @click="fecharDropdown"
+                                >
                                     <a
                                         class="dropdown-item"
                                         href="javascript://"
                                         title="Abrir histórico"
-                                        @click.prevent="abrirHistorico(item)"
-                                        data-toggle="modal"
-                                        data-target="#janelaHistorico"
+                                        @click.prevent="abrirHistorico(item); $refs.modal_janelaHistorico && $refs.modal_janelaHistorico.abrirModal()"
                                     >
                                         <i class="fas fa-edit mr-2 text-primary"></i> Abrir histórico
                                     </a>
@@ -632,6 +635,7 @@ export default {
             listaCentrosPorCnpj: {},
             tiposAdmissao: [],
             porPagina: [10, 20, 50, 100],
+            dropdownAbertoKey: null,
             controle: {
                 carregando: false,
                 dados: {
@@ -697,15 +701,38 @@ export default {
             this.$nextTick(() => {
                 if (this.$refs.componente) {
                     this.$refs.componente.atual = this.initialPage
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                 }
             })
         } else {
             this.atualizar()
         }
+        document.addEventListener('click', this.onClickOutside)
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
     },
 
     methods: {
+        toggleDropdown(itemId) {
+            if (!itemId) {
+                return
+            }
+            const key = `hist:${itemId}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(itemId) {
+            return this.dropdownAbertoKey === `hist:${itemId}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+        onClickOutside(event) {
+            if (event && event.target && event.target.closest && event.target.closest('.dropdown')) {
+                return
+            }
+            this.dropdownAbertoKey = null
+        },
         urlParamGet() {
             const urlParams = new URLSearchParams(window.location.search)
             if (urlParams.get('pages')) this.controle.dados.pages = parseInt(urlParams.get('pages'), 10) || 20
@@ -777,8 +804,8 @@ export default {
             this.controle.dados.ordenacao = 'created_at_desc'
             this.syncUrlFiltros()
             if (this.$refs.componente) {
-                this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-                this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+                this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             }
         },
 
@@ -823,15 +850,15 @@ export default {
 
         buscar() {
             if (this.$refs.componente) {
-                this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             }
         },
 
         atualizar() {
             this.syncUrlFiltros()
             if (this.$refs.componente) {
-                this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-                this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+                this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             }
         }
     }

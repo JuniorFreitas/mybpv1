@@ -1,5 +1,16 @@
 import { createApp } from 'vue'
 import { registerGlobals } from '../../../registerGlobals'
+const abrirModal = (selector) => {
+    if (typeof $ === 'undefined') return
+    $(selector).modal('show')
+}
+
+const fecharModal = (selector) => {
+    if (typeof $ === 'undefined') return
+    $(selector).modal('hide')
+}
+
+
 
 const app = createApp({
     data() {
@@ -53,7 +64,7 @@ const app = createApp({
             };
             this.opcoesTexto = (this.form.opcoes && Array.isArray(this.form.opcoes)) ? this.form.opcoes.join('\n') : '';
             if (!campo) {
-                $('#janelaCadastrar').modal('show');
+                abrirModal('#janelaCadastrar');
             }
         },
         opcoesParaArray() {
@@ -88,7 +99,7 @@ const app = createApp({
             req
                 .then(() => {
                     mostraSucesso('', 'Salvo com sucesso.');
-                    $('#janelaCadastrar').modal('hide');
+                    fecharModal('#janelaCadastrar');
                     this.listar();
                 })
                 .catch((err) => {

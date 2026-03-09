@@ -79,11 +79,11 @@
             </form>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado" @click="alterar()">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado" @click="alterar()">
                 <i class="fa fa-edit"></i> Alterar
             </button>
 
-            <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado" @click="cadastrar()">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado" @click="cadastrar()">
                 <i class="fas fa-save"></i> Salvar
             </button>
         </template>
@@ -98,7 +98,7 @@
             <h4 v-show="!apagado">Tem certeza que deseja apagar este Depoimento?</h4>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
+            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
         </template>
     </modal>
 
@@ -139,12 +139,12 @@
                     </div>
 
                     <div class="col-12 col-md-12">
-                        <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
+                        <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando"
                                 @click="atualizar">
                             <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                             Atualizar
                         </button>
-                        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" :disabled="controle.carregando" data-target="#janelaCadastrar"
+                        <button type="button" class="btn btn-sm mr-1 btn-primary" data-toggle="modal" :disabled="controle.carregando" data-target="#janelaCadastrar"
                                 @click="formNovo()">
                             Cadastrar
                         </button>
@@ -177,14 +177,14 @@
                         <td data-label="Texto"><span v-html="testemunhal.texto"></span></td>
                         <td data-label="Img"><img :src="testemunhal.anexo[0].urlThumb" alt=""></td>
                         <td data-label="Ação">
-                            <a href="javascript://" class="btn btn-sm btn-success btnFormAlterar"
+                            <a href="javascript://" class="btn btn-sm mr-1 btn-success btnFormAlterar"
                                @click.prevent="formAlterar(testemunhal.id)"
                                data-toggle="modal"
                                data-target="#janelaCadastrar">
                                 <i class="fa fa-edit" aria-hidden="true"></i>
                             </a>
 
-                            <a href="javascript://" class="btn btn-sm btn-danger btnFormExcluir"
+                            <a href="javascript://" class="btn btn-sm mr-1 btn-danger btnFormExcluir"
                                @click.prevent="janelaConfirmar(testemunhal.id)"
                                data-toggle="modal"
                                data-target="#janelaConfirmar">

@@ -1,110 +1,151 @@
-# MyBP - Agent Guide
+# AGENTS.md — MyBP
 
-Purpose: quick, accurate changes in a Laravel 8 + Vue 2 monolith with strict multi-tenancy and approval flows.
+Guia para modelos de IA atuarem com seguranca, qualidade e performance no projeto MyBP.
 
-## Stack Snapshot
+## 1) Visao geral do projeto
 
--   Backend: Laravel 8.12 (PHP 8.2), Sanctum, Horizon, Websockets
--   Frontend: Vue 2.7 + BootstrapVue, Laravel Mix (webpack)
--   Data: MySQL/MariaDB, Redis
--   Storage/Infra: S3, Docker, ECS
--   Notable libs: Maatwebsite Excel, DomPDF, ZapMe WhatsApp, SweetAlert2
+- **Dominio**: Sistema de Gestao de RH (recrutamento, admissoes, treinamentos, avaliacoes, assinatura digital).
+- **Stack**: Laravel 12 (PHP 8.2), Vue 3 + Laravel Mix, Docker, Horizon, Reverb/Pusher.
+- **Objetivo dos agentes**: acelerar entregas mantendo padroes de seguranca, performance e confiabilidade.
 
-## Non-Negotiables
+## 2) Principios obrigatorios
 
--   Multi-tenant: ALWAYS filter by `empresa_id` from `auth()->user()`.
--   Approval flows: gestor -> approval extra (optional) -> RH for Demissao/MudancaCargo/Ferias/ValorExtra.
--   Avoid data leakage: never query without tenant filter.
--   Prefer eager loading for relationships to avoid N+1.
+- **Seguranca primeiro**: nunca expor segredos, nunca incluir `.env` ou credenciais em commits.
+- **Performance como padrao**: evitar N+1, preferir eager-loading (`with`), indices quando necessario.
+- **Confiabilidade**: qualquer mudanca deve preservar fluxos criticos de RH.
+- **Observabilidade**: logs uteis e consistentes (sem dados sensiveis).
 
-## Key Paths
+## 3) SOLID (obrigatorio em mudancas novas)
 
--   Backend: `app/Http/Controllers`, `app/Models`, `app/Services`, `app/Jobs`
--   Frontend: `resources/js/` (Vue components, mixins, app entrypoints)
--   Routes: `routes/web.php`
--   Migrations: `database/migrations`
--   Docs: `docs/`, `COMANDOS_UTEIS.md`, `docs/PADRAO_APROVACAO_EXTRA.md`
+- **S** (Single Responsibility): classes/metodos devem ter um unico proposito.
+- **O** (Open/Closed): prefira extensao via services/strategies sem modificar fluxos estaveis.
+- **L** (Liskov): contratos e retornos devem ser compativeis quando substituir implementacoes.
+- **I** (Interface Segregation): evitar interfaces genericas; dividir por responsabilidade.
+- **D** (Dependency Inversion): usar abstracoes (services, repositories) para reduzir acoplamento.
 
-## Build / Lint / Test Commands
+## 4) DDD (orientacao obrigatoria em modulos novos)
 
-### Docker
+- **Linguagem Ubiqua**: nomes de classes, services e campos devem refletir o vocabulario de RH usado no negocio.
+- **Bounded Contexts**: separar contextos (ex.: Recrutamento, Treinamentos, Assinatura Digital) para evitar acoplamento.
+- **Entidades e Value Objects**: usar entidades para identidade (ex.: Curriculo, ParecerRh) e VOs para regras imutaveis.
+- **Servicos de Dominio**: regras complexas devem ir para services de dominio, nao controller.
+- **Aplicacao vs Dominio**: controllers orquestram; dominio executa regras.
 
--   Start: `docker compose up -d`
--   Shell: `docker compose exec mybpdp bash`
+## 5) Eloquent vs Query Builder (performance primeiro)
 
-### Backend (Laravel)
+- **Use Eloquent** quando precisar de relacoes, mutators, casts e regras de dominio.
+- **Use Query Builder** quando precisar de alto volume, agregacoes pesadas, filtros complexos ou payload enxuto.
+- **Regra pratica**: se a consulta envolve grandes tabelas, filtros combinados e join multiplo, prefira Query Builder.
+- **Sempre** validar se ha indice para filtros (`where`, `whereIn`, `whereBetween`).
+- **Soft delete obrigatorio em Query Builder**:
+    - Se a tabela tiver `deleted_at`, **sempre** aplicar `whereNull('deleted_at')`.
+    - Em **joins**, aplicar `whereNull('deleted_at')` em **todas** as tabelas que possuam soft delete.
 
--   Migrate/cache/horizon: `php artisan migrate && php artisan cache:clear && php artisan horizon`
+## 6) Exportacao Excel (padrao CIH obrigatorio)
 
-### Frontend (Laravel Mix)
+- Toda exportacao deve seguir o **mesmo modelo CIH**:
+    - cabecalho padronizado
+    - estrutura de colunas consistente
+    - sanitizacao de dados sensiveis
+    - fallback para campos vazios como "Nao informado"
+- **Sempre via Job**: exportacao deve rodar em fila (nunca sincrono).
+- **Query padronizada**: a coleta dos dados deve respeitar o padrao CIH.
+- **Protecao contra duplicidade**: usar cache para impedir reprocessamento do mesmo dado.
+- Evitar variacoes de layout entre exportacoes.
 
--   Dev build: `npm run dev` or `npm run development`
--   Watch: `npm run watch`
--   HMR: `npm run hot`
--   Homolog: `npm run homol`
--   Production: `npm run prod`
+## 7) E-mails (padrao obrigatorio + fila)
 
-### Tests
+- Todos os e-mails devem seguir o **template/padrao oficial** do projeto.
+- **Envio sempre via fila** (jobs), nunca envio sincrono direto do controller.
+- Logs de envio **sem dados sensiveis**.
 
--   All tests: `php artisan test`
--   PHPUnit (direct): `./vendor/bin/phpunit`
+## 8) Cache (gestao obrigatoria)
 
-### Single Test (prefer these)
+- Todo cache deve ter **TTL definido** (nunca cache infinito).
+- Ao **criar, alterar ou remover** dados que impactam cache, **invalidar/atualizar** imediatamente.
+- Preferir **chaves versionadas** ou **tags** quando aplicavel.
+- Evitar cache duplicado de mesma fonte sem necessidade.
+- Para exportacoes e jobs, usar cache para impedir reprocessamento de dados ja consumidos.
 
--   File: `php artisan test tests/Feature/CsvExporterTest.php`
--   Filter by class/method: `php artisan test --filter CsvExporterTest`
--   PHPUnit filter: `./vendor/bin/phpunit --filter CsvExporterTest`
+## 9) Frontend (Vue 3 obrigatorio)
 
-### Lint / Format (manual, no npm scripts)
+- Sempre usar **Vue 3** no frontend.
+- Preferir **componentes Vue** ao inves de concentrar logica/layout direto em Blade.
+- **Dividir componentes** da melhor forma possivel para manutencao e codigo mais leve.
+- Em qualquer componente, considerar **performance, seguranca e otimizacao** desde o inicio.
+- O objetivo e manter o frontend modular para permitir **migracao futura** sem reescrever tudo.
 
--   ESLint (Vue/JS): `npx eslint resources/js --ext .js,.vue`
--   Prettier check: `npx prettier --check "resources/js/**/*.{js,vue}"`
--   Prettier write: `npx prettier --write "resources/js/**/*.{js,vue}"`
+## 10) Banco de Dados e Models (padrao obrigatorio)
 
-## Code Style Guidelines
+- **Singular vs plural**: usar plural em nomes de tabela e singular em nomes de model.
+- Tabelas de relacionamento devem usar o **prefixo da tabela principal**, valido para **1-1, 1-N e N-N**.
+    - Exemplo: tabela principal `pessoas` -> relacionamento `pessoas_telefones`.
+- Em **toda model**, definir explicitamente:
+    - `protected $table`
+    - `protected $fillable`
+    - `protected $casts`
+- Campos de data devem ter **mutators** para expor formato brasileiro,
+  usando um atributo com sufixo `_br` (ex.: `data_nascimento_br`).
 
-### PHP / Laravel
+## 11) Estrutura e areas-chave
 
--   Follow PSR-12 conventions; keep classes and methods small and single-purpose.
--   Controllers return JSON with stable keys (`atual`, `dados`, etc.). Keep response shape consistent.
--   Prefer Form Requests for validation (`rules()`), not inline `Validator::make`.
--   Use Eloquent `fillable` and `casts` in models; define relationships explicitly.
--   Always add `->where('empresa_id', auth()->user()->empresa_id)` in queries.
--   Prefer `select()` with needed columns, not `*`.
--   Use `with()` for relations; avoid N+1 loops.
--   Use `DB::transaction()` or explicit begin/commit/rollback for critical writes.
--   Use queues (Horizon) for heavy jobs: `Job::dispatch()`.
+- Backend: `app/`, `routes/`, `database/`
+- Frontend: `resources/js/`, `resources/views/`
+- Documentacao: `docs/`, `README.md`
+- Agents internos: `agents/` (padroes e prompts por papel)
 
-### JS / Vue 2
+## 12) Setup local (referencia rapida)
 
--   ESLint: `eslint:recommended`, Vue rules, and Prettier enforced.
--   Prettier config: single quotes, no semicolons, 160 column width, no trailing commas.
--   Keep Vue components simple: `data()` for state, `mounted()` for initial fetch, `methods` for actions.
--   Use axios for API calls; keep endpoints in `routes/web.php` patterns.
--   Prefer `v-model` + explicit `@input`/`@keyup.enter` for filters.
+- Docker: `docker compose up -d`
+- Migrations: `docker compose exec mybpdp php artisan migrate`
+- Frontend: Node >= 24 (ver `.nvmrc`)
+- Build: `npm run dev` / `npm run prod`
+- Logs: `docker compose exec mybpdp tail -f storage/logs/laravel.log`
 
-### Imports and Naming
+## 13) Boas praticas obrigatorias (dev)
 
--   PHP: namespaces use PSR-4 (`App\...`). One class per file.
--   Vue: PascalCase component names; filenames match component (`MyComponent.vue`).
--   JS: camelCase for variables/functions; PascalCase for classes.
+- **Eloquent**: revisar N+1 e usar `with()` quando listar relacionamentos.
+- **Validacao**: usar Form Request para validacoes complexas.
+- **Transaction**: operacoes criticas devem usar `DB::transaction`.
+- **Erros**: tratar nulls em relacionamentos (nullsafe, defaults).
+- **Uploads/Storage**: usar metodos compativeis com Flysystem v3 (`size()`).
 
-### Error Handling
+## 14) Boas praticas obrigatorias (seguranca)
 
--   Backend: return `response()->json(['erro' => true], 500)` on exceptions.
--   Always catch and rollback DB changes on failures.
--   Frontend: surface errors via SweetAlert2 or toast where appropriate.
+- **Nunca** logar dados sensiveis (documentos, tokens, CPF completo).
+- **Sempre** sanitizar dados exportados (PDF/Excel).
+- **Evitar** hardcoded secrets.
+- **Cuidado** com permissoes e multi-tenant (`empresa_id`).
 
-## Approval Extra Pattern (Critical)
+## 15) Boas praticas obrigatorias (performance)
 
--   Applies to: `DemissaoPrevista`, `MudancaCargo`, `FeriasPrevista`, `ValorExtraPrevista`.
--   Columns: `aprovacao_extra_id`, `status_aprovacao_extra`, `obs_aprovacao_extra`, `data_aprovacao_extra`.
--   Access: `privilegio_gestao_rh` or `privilegio_aprovar_por_rh` or in `usuarios_autorizados`.
--   Full spec: `docs/PADRAO_APROVACAO_EXTRA.md`.
+- **Consultas**: evitar `->get()` sem filtros; use paginacao quando possivel.
+- **Cache**: use cache para relatorios pesados.
+- **Fila**: mover processamento pesado para jobs.
+- **Arquivos**: evitar leituras duplicadas.
 
-## Notes for Agents
+## 16) Fluxo de mudancas recomendado
 
--   Avoid touching unrelated files. The repo is large; keep changes focused.
--   If you add new endpoints, follow the existing `/api/modelo/...` route patterns.
--   If you add new Vue entries, register them in `webpack.mix.js` (build output path).
--   Check existing patterns before inventing new ones.
+1. Entender o contexto no `docs/` e no modulo afetado.
+2. Mapear impacto no fluxo de RH.
+3. Alterar codigo minimamente, com seguranca.
+4. Indicar testes necessarios (ou rodar se solicitado).
+
+## 17) Checklist minimo antes de finalizar
+
+- [ ] Sem segredos expostos
+- [ ] Sem N+1 evidentes
+- [ ] Relacoes null-safe
+- [ ] Exportacao no padrao CIH
+- [ ] E-mails padronizados e enviados por fila
+- [ ] Cache com TTL e invalidacao correta
+- [ ] Testes indicados
+- [ ] Build/Assets nao quebrados
+
+## 18) Referencias rapidas
+
+- Documentacao principal: `docs/README.md`
+- Deploy: `docs/README-DEPLOY.md`
+- Scripts de agents: `agents/scripts/README.md`
+- Padroes internos: `agents/*/README.md`
+- Migracao frontend (Composition API + Services): `docs/PLANO_MIGRACAO_COMPOSITION_API_SERVICES.md`, agente `agents/migracao-frontend/README.md`

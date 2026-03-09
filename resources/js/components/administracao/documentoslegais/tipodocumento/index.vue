@@ -1,6 +1,6 @@
 <template>
     <div id="componente">
-        <modal :modal-pai="modal" :titulo="titulo_janela_form" :fechar="!preload" id="janelaForm">
+        <modal ref="modalForm" :modal-pai="modal" :titulo="titulo_janela_form" :fechar="!preload" id="janelaForm">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <fieldset v-if="!preload">
@@ -19,7 +19,7 @@
                                 @blur.prevent="valida_campo_vazio($event.target, 1)"
                             >
                                 <option value="">Selecione ...</option>
-                                <option v-for="(label, value) in select_tipo_documentos" :value="value">{{ label }}</option>
+                                <option v-for="(label, value) in select_tipo_documentos" :value="value" :key="value">{{ label }}</option>
                             </select>
                         </div>
                         <br /><br />
@@ -33,18 +33,18 @@
                 </fieldset>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !preload" @click="cadastra">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !preload" @click="cadastra">
                     <i class="fa fa-save"></i> Cadastrar
                 </button>
 
-                <button v-show="editando && !preload" type="button" class="btn btn-sm btn-primary" @click="alterarForm">
+                <button v-show="editando && !preload" type="button" class="btn btn-sm mr-1 btn-primary" @click="alterarForm">
                     <i class="fa fa-save"></i> Alterar
                 </button>
             </template>
         </modal>
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="$refs.componente && $refs.componente.buscar ? $refs.componente.buscar() : null">
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -59,18 +59,11 @@
                     </div>
                 </div>
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-secondary"
-                        v-if="permissoes.insert"
-                        @click="formNovo"
-                        data-toggle="modal"
-                        data-target="#janelaForm"
-                    >
+                    <button type="button" class="btn btn-sm mr-1 btn-secondary" v-if="permissoes.insert" @click="formNovo">
                         <i class="fa fa-plus"></i> Cadastrar
                     </button>
                 </div>
@@ -95,7 +88,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="tipodocumento in lista">
+                        <tr v-for="(tipodocumento, index) in lista" :key="tipodocumento.id || index">
                             <td class="text-center">{{ tipodocumento.nome }}</td>
                             <td class="text-center">{{ tipodocumento.tipo }}</td>
                             <td class="text-center">
@@ -105,14 +98,7 @@
                                 ></bt-ativo>
                             </td>
                             <td class="text-center">
-                                <button
-                                    type="button"
-                                    class="btn btn-sm btn-primary"
-                                    v-if="permissoes.update"
-                                    @click="alterar(tipodocumento.id)"
-                                    data-toggle="modal"
-                                    data-target="#janelaForm"
-                                >
+                                <button type="button" class="btn btn-sm mr-1 btn-primary" v-if="permissoes.update" @click="alterar(tipodocumento.id)">
                                     <i class="fa fa-edit"></i>
                                 </button>
                             </td>
@@ -212,6 +198,16 @@ export default {
         }
     },
     methods: {
+        abrirModalForm() {
+            if (this.$refs && this.$refs.modalForm && typeof this.$refs.modalForm.abrirModal === 'function') {
+                this.$refs.modalForm.abrirModal()
+            }
+        },
+        fecharModalForm() {
+            if (this.$refs && this.$refs.modalForm && typeof this.$refs.modalForm.fecharModal === 'function') {
+                this.$refs.modalForm.fecharModal()
+            }
+        },
         formNovo() {
             this.titulo_janela_form = 'Cadastro Tipo Documento'
             this.preload = false
@@ -219,6 +215,7 @@ export default {
             this.atualizado = false
             this.form = _.cloneDeep(this.formDefault) //copia
             formReset()
+            this.abrirModalForm()
         },
         cadastra() {
             this.validaBlur()
@@ -232,9 +229,9 @@ export default {
                 axios
                     .post(`${URL_ADMIN}/administracao/documentoslegais/tipodocumento`, this.form)
                     .then((res) => {
-                        $('#janelaForm').modal('hide')
+                        this.fecharModalForm()
                         mostraSucesso('', 'Tipo de documento cadastrado com sucesso')
-                        this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                        this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                         this.preload = false
                     })
                     .catch((error) => {
@@ -248,6 +245,7 @@ export default {
             formReset()
 
             this.form = _.cloneDeep(this.formDefault) //copia
+            this.abrirModalForm()
 
             axios
                 .get(`${URL_ADMIN}/administracao/documentoslegais/tipodocumento/${tipodocumento}`)
@@ -270,9 +268,9 @@ export default {
                 axios
                     .put(`${URL_ADMIN}/administracao/documentoslegais/tipodocumento/${this.form.id}`, this.form)
                     .then((res) => {
-                        $('#janelaForm').modal('hide')
+                        this.fecharModalForm()
                         mostraSucesso('', 'Tipo de documento Alterado com sucesso')
-                        this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                        this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                         this.preload = false
                     })
                     .catch((error) => {
@@ -290,8 +288,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

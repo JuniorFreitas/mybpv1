@@ -36,7 +36,7 @@
                         <i class="fa fa-exclamation-triangle"></i> Ex-Funcionário
                         <span v-if="formAvulsa.pos_admissao_verificar">
                             <a :href="`${URL_ADMIN}/posadmissao?checkcpf=${formAvulsa.curriculo.cpf}`"
-                               class="btn btn-sm btn-primary"
+                               class="btn btn-sm mr-1 btn-primary"
                                target="_blank"
                                rel="noopener noreferrer">Verificar Pós Admissão</a>
                         </span>
@@ -578,7 +578,7 @@
             </div>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-primary" v-show="!formAvulsa.cadastrado && !formAvulsa.preload"
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!formAvulsa.cadastrado && !formAvulsa.preload"
                     @click="CadastraAvulsa">
                 <i class="fa fa-save"></i> Salvar
             </button>
@@ -1103,14 +1103,14 @@
         </template>
         <template #rodape>
             <div v-show="!visualizar">
-                <button type="button" class="btn btn-sm btn-primary"
+                <button type="button" class="btn btn-sm mr-1 btn-primary"
                         v-show="!atualizado  && !preload"
                         @click.prevent="alterar">
                     <i class="fa fa-edit"></i> Salvar
                 </button>
             </div>
 
-            {{--            <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado" @click="encaminhar()">--}}
+            {{--            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado" @click="encaminhar()">--}}
             {{--                Admitir--}}
             {{--            </button>--}}
         </template>
@@ -1272,7 +1272,7 @@
         </template>
         <template #rodape>
             <div>
-                <button type="button" class="btn btn-sm btn-primary"
+                <button type="button" class="btn btn-sm mr-1 btn-primary"
                         v-show="!form_massa.preload"
                         @click.prevent="CadastraMassa">
                     <i class="fa fa-save"></i> Salvar
@@ -1310,7 +1310,7 @@
         </template>
         <template #rodape>
             <div v-if="modeldemissao.form.status !== 'DEMITIDO'">
-                <button type="button" class="btn btn-sm btn-primary"
+                <button type="button" class="btn btn-sm mr-1 btn-primary"
                         v-show="!modeldemissao.preload"
                         @click.prevent="demiteColaborador">
                     <i class="fa fa-save"></i> Demitir
@@ -1474,13 +1474,13 @@
 
         <div class="col-12">
             <div class="row">
-                <button type="button" class="btn btn-sm btn-success mr-1 mb-2" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm mr-1 btn-success mr-1 mb-2" :disabled="controle.carregando"
                         @click="atualizar"><i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
                 @can('admissao_processo_insert')
-                    <button type="button" class="btn btn-sm btn-primary mr-1 mb-2" :disabled="controle.carregando"
+                    <button type="button" class="btn btn-sm mr-1 btn-primary mr-1 mb-2" :disabled="controle.carregando"
                             data-toggle="modal"
                             data-target="#janelaAdmissaoAvulsa"
                             @click="formCadastraAvulsa"
@@ -1490,13 +1490,13 @@
                     </button>
 
 
-                    <button class="btn btn-sm btn-danger mb-2 mr-1"
+                    <button class="btn btn-sm mr-1 btn-danger mb-2 mr-1"
                             :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                             :disabled="selecionados.length === 0" @click="selecionados = []">
                         <i class="fa fa-times"></i> LIMPAR SELEÇÃO
                     </button>
 
-                    <button type="button" class="btn btn-sm btn-primary mb-2 mr-1"
+                    <button type="button" class="btn btn-sm mr-1 btn-primary mb-2 mr-1"
                             @click.prevent="exportaExcel()"
                             :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
                         <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
@@ -1504,7 +1504,7 @@
                     </button>
 
 
-                    <button class="btn btn-sm btn-primary mb-2 mr-1"
+                    <button class="btn btn-sm mr-1 btn-primary mb-2 mr-1"
                             :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                             :disabled="selecionados.length === 0"
                             data-toggle="modal"
@@ -1539,7 +1539,7 @@
                 <label class="custom-control-label" for="selTodosProcesso" style="width: max-content">Selecionar todos com admissão</label>
             </div>
             <!-- <span class="cards-toolbar-count">@{{ lista.length }} registro(s)</span> -->
-            <button class="btn btn-sm btn-outline-secondary ml-auto" data-toggle="modal" data-target="#filtroColunas" v-tippy content="Mostrar e Ocultar Colunas">
+            <button class="btn btn-sm mr-1 btn-outline-secondary ml-auto" data-toggle="modal" data-target="#filtroColunas" v-tippy content="Mostrar e Ocultar Colunas">
                 <i class="bx bxs-filter-alt"></i> Colunas
             </button>
         </div>
@@ -1568,11 +1568,24 @@
                         </span>
                     </div>
                     <div class="card-right">
-                        <div class="dropdown show">
-                            <a class="btn-actions-compact" href="#" role="button" :id="'dropdownProcesso_' + item.id" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
+                            <a
+                                class="btn-actions-compact"
+                                href="#"
+                                role="button"
+                                :id="`dropdownProcesso_${item.id}`"
+                                aria-haspopup="true"
+                                :aria-expanded="isDropdownOpen(item.id) ? 'true' : 'false'"
+                                @click.prevent.stop="toggleDropdown(item.id)"
+                            >
                                 <i class="fas fa-ellipsis-v"></i>
                             </a>
-                            <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right" :aria-labelledby="'dropdownProcesso_' + item.id">
+                            <div
+                                class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                :class="{ show: isDropdownOpen(item.id) }"
+                                :aria-labelledby="`dropdownProcesso_${item.id}`"
+                                @click="fecharDropdown"
+                            >
                                 <a class="dropdown-item" href="javascript://" title="Admitir" @click.prevent="formEntrevistar(item.id); visualizar = false" v-if="!filtrarDemitidos" data-toggle="modal" data-target="#janelaCadastrar"><i class="fas fa-user-plus mr-2 text-success"></i> Admitir</a>
                                 <a class="dropdown-item" href="javascript://" title="Demitir" @click.prevent="formDemitir(item); visualizar = false" v-if="permissoes.privilegio_processo_demitir && !filtrarDemitidos" data-toggle="modal" data-target="#janelaDemitir"><i class="fas fa-user-minus mr-2 text-danger"></i> Demitir</a>
                                 <a class="dropdown-item" href="javascript://" title="Visualizar" @click.prevent="formEntrevistar(item.id); visualizar = true" data-toggle="modal" data-target="#janelaCadastrar"><i class="fas fa-eye mr-2 text-info"></i> Visualizar</a>

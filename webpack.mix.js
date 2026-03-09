@@ -79,6 +79,7 @@ mix.js('resources/js/app.js', 'public/js')
     .js('resources/js/g/administracao/documentoslegais/tiposervico/app.js', 'public/js/g/documentoslegais/tiposervico')
     .js('resources/js/g/administracao/documentoslegais/formacontrato/app.js', 'public/js/g/documentoslegais/formacontrato')
     .js('resources/js/g/administracao/documento-assinatura/app.js', 'public/js/g/administracao/documento-assinatura/')
+    .js('resources/js/g/administracao/carta-oferta-template/app.js', 'public/js/g/administracao/carta-oferta-template/')
     .js('resources/js/g/administracao/fornecedores/app.js', 'public/js/g/fornecedores/')
     .js('resources/js/g/administracao/atareuniao/app.js', 'public/js/g/atareuniao/')
     .js('resources/js/g/administracao/pesquisaclima/app.js', 'public/js/g/pesquisaclima/')
@@ -259,6 +260,13 @@ mix.webpackConfig({
     resolve: {
         extensions: ['.*', '.wasm', '.mjs', '.js', '.jsx', '.json', '.vue']
     },
+    cache: {
+        type: 'filesystem',
+        cacheDirectory: path.resolve(__dirname, 'node_modules/.cache/webpack'),
+        buildDependencies: {
+            config: [__filename]
+        }
+    },
     plugins: [
         new webpack.DefinePlugin({
             __VUE_OPTIONS_API__: true,
@@ -267,6 +275,10 @@ mix.webpackConfig({
         })
     ]
 })
+
+if (!mix.inProduction()) {
+    mix.webpackConfig({ devtool: 'eval-cheap-module-source-map' })
+}
 
 if (mix.inProduction()) {
     mix.version()

@@ -1,7 +1,7 @@
 <template>
     <div class="mt-4">
         <!--Janela de Apagar quadro-->
-        <modal id="janelaApagarQuadro" :fechar="!formApagarQuadro.preload" :modal-pai="modalPai" titulo="Excluir quadro">
+        <modal id="janelaApagarQuadro" :fechar="!formApagarQuadro.preload" :modal-pai="modalPai" titulo="Excluir quadro" ref="modal_janelaApagarQuadro">
             <template #conteudo>
                 <span v-show="formApagarQuadro.preload"> <i class="fa fa-spinner fa-pulse"></i> Apagando quadro... </span>
 
@@ -29,7 +29,7 @@
             <template #rodape>
                 <button
                     v-show="!formApagarQuadro.preload && !formApagarQuadro.delete && !formApagarQuadro.erro"
-                    class="btn btn-sm btn-danger"
+                    class="btn btn-sm mr-1 btn-danger"
                     type="button"
                     @click="deleteQuadro"
                 >
@@ -39,7 +39,7 @@
         </modal>
 
         <!--Janela de Apagar lista de tarefas-->
-        <modal id="janelaApagarListaTarefa" :fechar="!formApagarLista.preload" :modal-pai="modalPai" titulo="Excluir lista de tarefas">
+        <modal id="janelaApagarListaTarefa" :fechar="!formApagarLista.preload" :modal-pai="modalPai" titulo="Excluir lista de tarefas" ref="modal_janelaApagarListaTarefa">
             <template #conteudo>
                 <span v-show="formApagarLista.preload"> <i class="fa fa-spinner fa-pulse"></i> Apagando lista... </span>
 
@@ -67,7 +67,7 @@
             <template #rodape>
                 <button
                     v-show="!formApagarLista.preload && !formApagarLista.delete && !formApagarLista.erro"
-                    class="btn btn-sm btn-danger"
+                    class="btn btn-sm mr-1 btn-danger"
                     type="button"
                     @click="deleteLista"
                 >
@@ -77,7 +77,7 @@
         </modal>
 
         <!--Janela de Apagar tarefa-->
-        <modal id="janelaApagarTarefa" :fechar="!formApagarTarefa.preload" :modal-pai="modalPai" titulo="Excluir tarefa">
+        <modal id="janelaApagarTarefa" :fechar="!formApagarTarefa.preload" :modal-pai="modalPai" titulo="Excluir tarefa" ref="modal_janelaApagarTarefa">
             <template #conteudo>
                 <span v-show="formApagarTarefa.preload"> <i class="fa fa-spinner fa-pulse"></i> Apagando tarefa... </span>
 
@@ -105,7 +105,7 @@
             <template #rodape>
                 <button
                     v-show="!formApagarTarefa.preload && !formApagarTarefa.delete && !formApagarTarefa.erro"
-                    class="btn btn-sm btn-danger"
+                    class="btn btn-sm mr-1 btn-danger"
                     type="button"
                     @click="deleteTarefa"
                 >
@@ -115,7 +115,7 @@
         </modal>
 
         <!--Janela Tarefa-->
-        <modal v-if="TAREFA" id="janelaTarefa" :fechar="!formTarefa.preload" :modal-pai="modalPai" :titulo="TAREFA.titulo" size="g" topo>
+        <modal v-if="TAREFA" id="janelaTarefa" :fechar="!formTarefa.preload" :modal-pai="modalPai" :titulo="TAREFA.titulo" size="g" topo ref="modal_janelaTarefa">
             <template #topo>
                 <input
                     v-if="tarefaEditandoTitulo"
@@ -145,7 +145,7 @@
                             </div>
                             <div class="col-11">
                                 <h4>Membros</h4>
-                                <span v-for="(membro, index) in TAREFA.membros" class="dropdown mb-1">
+                                <span v-for="(membro, index) in TAREFA.membros" :key="membro.id || index" class="dropdown mb-1">
                                     <a class="btn btn-secondary rounded-circle" data-toggle="dropdown" href="#" role="button" style="width: 30px; height: 30px">
                                         <span class="d-flex justify-content-center align-items-center" style="margin-top: -2px">{{
                                             formatNome(membro.nome.toUpperCase())
@@ -274,7 +274,7 @@
                                             @blur="updateTarefa"
                                             @keydown="handleDescricaoKeydown"
                                         ></textarea>
-                                        <button v-if="TAREFA.descricao != null" class="btn btn-sm btn-success" @click="updateTarefa">Salvar</button>
+                                        <button v-if="TAREFA.descricao != null" class="btn btn-sm mr-1 btn-success" @click="updateTarefa">Salvar</button>
                                     </div>
                                 </div>
                             </div>
@@ -288,7 +288,7 @@
                             <div class="col-11 text-left">
                                 <table class="table table-sm table-hover">
                                     <tbody>
-                                        <tr v-for="(anexo, index) in TAREFA.anexos" v-if="!anexo.falhou">
+                                        <tr v-for="(anexo, index) in TAREFA.anexos" :key="anexo.id || index" v-if="!anexo.falhou">
                                             <td>
                                                 <div class="row no-gutters align-items-center">
                                                     <div v-if="anexo.imagem && !anexo.enviando" class="col-md-4 text-center">
@@ -392,7 +392,7 @@
                                                                                         @keydown.enter="updateAnexo(anexo)"
                                                                                     />
                                                                                 </div>
-                                                                                <button class="btn btn-sm btn-success" @click="updateAnexo(anexo)">
+                                                                                <button class="btn btn-sm mr-1 btn-success" @click="updateAnexo(anexo)">
                                                                                     Atualizar
                                                                                 </button>
                                                                             </div>
@@ -409,7 +409,7 @@
                                                                                 <p class="card-text">
                                                                                     A exclusão de um anexo é permanente. Não é possível desfazer.
                                                                                 </p>
-                                                                                <button class="btn btn-sm btn-block btn-danger" @click="deleteAnexo(anexo)">
+                                                                                <button class="btn btn-sm mr-1 btn-block btn-danger" @click="deleteAnexo(anexo)">
                                                                                     Excluir
                                                                                 </button>
                                                                             </div>
@@ -472,7 +472,7 @@
                                                     <a
                                                         aria-expanded="false"
                                                         aria-haspopup="true"
-                                                        class="btn btn-sm btn-light dropdown-toggle text-left"
+                                                        class="btn btn-sm mr-1 btn-light dropdown-toggle text-left"
                                                         data-toggle="dropdown"
                                                         href="#"
                                                         role="button"
@@ -484,7 +484,7 @@
                                                             <div class="card-header text-center">Excluir Checklist ?</div>
                                                             <div class="card-body">
                                                                 <p class="card-text">A exclusão de uma checklist é permanente e não é possível recuperá-la.</p>
-                                                                <button class="btn btn-sm btn-danger btn-block" @click="removerChecklist(checklist)">
+                                                                <button class="btn btn-sm mr-1 btn-danger btn-block" @click="removerChecklist(checklist)">
                                                                     Excluir checklist
                                                                 </button>
                                                             </div>
@@ -563,7 +563,7 @@
                                                             <a
                                                                 aria-expanded="false"
                                                                 aria-haspopup="true"
-                                                                class="btn btn-sm btn-outline-danger dropdown-toggle border-0"
+                                                                class="btn btn-sm mr-1 btn-outline-danger dropdown-toggle border-0"
                                                                 data-toggle="dropdown"
                                                                 href="#"
                                                                 role="button"
@@ -577,7 +577,7 @@
                                                                         <p class="card-text">
                                                                             A exclusão de um item é permanente e não é possível recuperá-lo.
                                                                         </p>
-                                                                        <button class="btn btn-sm btn-danger btn-block" @click="removerItemChecklist(item)">
+                                                                        <button class="btn btn-sm mr-1 btn-danger btn-block" @click="removerItemChecklist(item)">
                                                                             Excluir item
                                                                         </button>
                                                                     </div>
@@ -605,7 +605,7 @@
                                                         v-if="formItem.id == null && formItem.checklist_id == null"
                                                         aria-expanded="false"
                                                         aria-haspopup="true"
-                                                        class="btn btn-sm btn-light"
+                                                        class="btn btn-sm mr-1 btn-light"
                                                         @click.stop="abriFormNovoItem(checklist)"
                                                     >
                                                         Adicionar um item
@@ -615,7 +615,7 @@
                                                         :disabled="formItem.titulo === ''"
                                                         aria-expanded="false"
                                                         aria-haspopup="true"
-                                                        class="btn btn-sm btn-success"
+                                                        class="btn btn-sm mr-1 btn-success"
                                                         @click="addNovoItemChecklist"
                                                     >
                                                         Adicionar
@@ -624,7 +624,7 @@
                                                         v-if="formItem.id == null && formItem.checklist_id === checklist.id"
                                                         aria-expanded="false"
                                                         aria-haspopup="true"
-                                                        class="btn btn-sm btn-outline-secondary border-0"
+                                                        class="btn btn-sm mr-1 btn-outline-secondary border-0"
                                                         @click="formItem.checklist_id = null"
                                                     >
                                                         <i class="fas fa-times"></i>
@@ -646,7 +646,8 @@
                             </div>
                             <div class="col-12" v-if="TAREFA && TAREFA.logs && TAREFA.logs.length > 0">
                                 <div class="row">
-                                    <div class="media mt-2 ml-2" v-for="atividade in TAREFA.logs">
+                                    <div class="media mt-2 ml-2" v-for="(atividade, index) in TAREFA.logs">
+                                    :key="atividade.id || index"
                                         <div class="avatar-xs mr-3">
                                             <span class="avatar-title bg-primary rounded-circle font-size-16">
                                                 {{ formatNome(atividade.usuario.nome.toUpperCase()) }}
@@ -717,7 +718,7 @@
                                             <label>Título</label>
                                             <input ref="campoTituloCheckList" class="form-control" type="text" value="Checklist" />
                                         </div>
-                                        <button class="btn btn-sm btn-success" @click="addCheckList">Adicionar</button>
+                                        <button class="btn btn-sm mr-1 btn-success" @click="addCheckList">Adicionar</button>
                                     </div>
                                 </div>
                             </div>
@@ -794,7 +795,7 @@
                 </div>
 
                 <div class="row mt-2">
-                    <div v-for="(quadro, index) in listaQuadros" class="col-md-4">
+                    <div v-for="(quadro, index) in listaQuadros" :key="quadro.id || index" class="col-md-4">
                         <div class="card mt-3" style="border: 1px solid #cccccc">
                             <h5
                                 v-if="alterandoQuadro == null || quadro.id !== alterandoQuadro.id"
@@ -815,13 +816,11 @@
                                 @keydown.enter="updateQuadro"
                             />
                             <div class="card-body">
-                                <button class="btn btn-sm btn-primary" @click="verQuadro(quadro)">Abrir quadro</button>
+                                <button class="btn btn-sm mr-1 btn-primary" @click="verQuadro(quadro)">Abrir quadro</button>
                                 <button
                                     v-if="quadro_delete"
-                                    class="btn btn-sm btn-danger"
-                                    data-target="#janelaApagarQuadro"
-                                    data-toggle="modal"
-                                    @click="abrirFormApagarQuadro(quadro)"
+                                    class="btn btn-sm mr-1 btn-danger"
+                                    @click="abrirFormApagarQuadro(quadro); $refs.modal_janelaApagarQuadro && $refs.modal_janelaApagarQuadro.abrirModal()"
                                 >
                                     <span class="fa fa-trash"></span>
                                 </button>
@@ -838,7 +837,7 @@
                 <!-- botao de voltar-->
                 <div class="row mb-3">
                     <div class="col-12">
-                        <a class="btn btn-sm btn-primary" href="#" @click.prevent="voltarParaQuadros">
+                        <a class="btn btn-sm mr-1 btn-primary" href="#" @click.prevent="voltarParaQuadros">
                             <i class="fas fa-arrow-left"></i>
                             Voltar para quadros
                         </a>
@@ -913,10 +912,8 @@
                                                                 <a
                                                                     v-if="lista_delete"
                                                                     class="dropdown-item text-danger"
-                                                                    data-target="#janelaApagarListaTarefa"
-                                                                    data-toggle="modal"
                                                                     href="#"
-                                                                    @click="abrirFormApagarLista(lista)"
+                                                                    @click="abrirFormApagarLista(lista); $refs.modal_janelaApagarListaTarefa && $refs.modal_janelaApagarListaTarefa.abrirModal()"
                                                                 >
                                                                     <i class="far fa-trash-alt"></i> Apagar
                                                                 </a>
@@ -948,10 +945,8 @@
                                                                         'text-white bg-success': tarefa.concluido
                                                                     }"
                                                                     class="card card-body"
-                                                                    data-target="#janelaTarefa"
-                                                                    data-toggle="modal"
                                                                     style="border: 1px solid #cccccc"
-                                                                    @click="verTarefa(tarefa, lista)"
+                                                                    @click="verTarefa(tarefa, lista); $refs.modal_janelaTarefa && $refs.modal_janelaTarefa.abrirModal()"
                                                                 >
                                                                     <div class="row">
                                                                         <div class="col-10">
@@ -1006,14 +1001,14 @@
                                                                         </div>
                                                                         <button
                                                                             :disabled="preload"
-                                                                            class="btn btn-sm btn-success waves-effect waves-light"
+                                                                            class="btn btn-sm mr-1 btn-success waves-effect waves-light"
                                                                             @click="addTarefa"
                                                                         >
                                                                             Adicionar tarefa
                                                                         </button>
                                                                         <button
                                                                             :disabled="preload"
-                                                                            class="btn btn-sm btn-outline-primary border-0"
+                                                                            class="btn btn-sm mr-1 btn-outline-primary border-0"
                                                                             @click.stop="fecharCampos()"
                                                                         >
                                                                             <i class="fas fa-times fa-2x"></i>
@@ -1047,10 +1042,10 @@
                                                     type="text"
                                                     @keydown.enter="addLista"
                                                 />
-                                                <button :disabled="preload" class="btn btn-sm btn-success waves-effect waves-light" @click="addLista">
+                                                <button :disabled="preload" class="btn btn-sm mr-1 btn-success waves-effect waves-light" @click="addLista">
                                                     Adicionar lista
                                                 </button>
-                                                <button :disabled="preload" class="btn btn-sm btn-outline-primary border-0" @click.stop="fecharCampos()">
+                                                <button :disabled="preload" class="btn btn-sm mr-1 btn-outline-primary border-0" @click.stop="fecharCampos()">
                                                     <i class="fas fa-times fa-2x"></i>
                                                 </button>
                                             </div>
@@ -1063,7 +1058,8 @@
                     <div class="col-sm-2 col-12 corpoListaTarefa">
                         <h4 class="mt-3"><i class="fas fa-tasks"></i> Atividades</h4>
                         <h5 class="text-center" v-show="atividadesQuadro.length === 0">Nenhuma atividade recente</h5>
-                        <div class="card" v-for="atividade in atividadesQuadro">
+                        <div class="card" v-for="(atividade, index) in atividadesQuadro">
+                        :key="atividade.id || index"
                             <div class="card-body">
                                 <div class="media">
                                     <div class="avatar-xs mr-3">
@@ -1920,7 +1916,7 @@ export default {
             this.formApagarTarefa.delete = false
             this.formApagarTarefa.erro = false
             this.formApagarTarefa.msg = ''
-            $('#janelaApagarTarefa').modal('show')
+            this.$refs.modal_janelaApagarTarefa && this.$refs.modal_janelaApagarTarefa.abrirModal()
         },
         deleteTarefa() {
             this.formApagarTarefa.preload = true

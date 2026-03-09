@@ -11,6 +11,35 @@ try {
     window.$ = window.jQuery = require('jquery')
 
     require('bootstrap')
+
+    /**
+     * Limpa o backdrop da modal atual e o body quando não houver mais nenhuma modal aberta.
+     * @param {string} [modalId] - id da modal que está fechando (modal atual)
+     * @param {number} [zIndex] - zIndex dessa modal, para remover apenas #modal-backdrop${zIndex}
+     * Com args: remove o backdrop dessa modal. Sem modais visíveis: remove backdrops órfãos e limpa o body.
+     */
+    function limparBackdropModal(modalId, zIndex) {
+        if (typeof $ === 'undefined') return
+        setTimeout(() => {
+            if (modalId != null && zIndex != null) {
+                $(`#modal-backdrop${zIndex}`).remove()
+            }
+            const modaisVisiveis = $('.modal.show').length
+            const backdrops = $('.modal-backdrop').length
+            if (modaisVisiveis === 0) {
+                if (backdrops > 0) {
+                    $('.modal-backdrop').remove()
+                }
+                $('body').removeClass('modal-open').css({ 'padding-right': '', 'overflow': '' })
+            }
+        }, 50)
+    }
+
+    window.limparBackdropModal = limparBackdropModal
+
+    $(document).on('hidden.bs.modal', function () {
+        limparBackdropModal()
+    })
 } catch (e) {}
 
 /**

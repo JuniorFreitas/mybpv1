@@ -4,11 +4,11 @@
         <p class="mt-2" v-if="preloadAvaliacao"><i class="fa fa-spinner fa-pulse"></i> Carregando...</p>
 
         <!-- Modal de Formulário -->
-        <modal v-if="exibirModal" :fechar="!preloadSalvarAvaliacao" :id="modalId" size="g" :modal-pai="modalPai" titulo="Formulário Avaliação de Experiência">
+        <modal v-if="exibirModal" :fechar="!preloadSalvarAvaliacao" :id="modalId" size="g" :modal-pai="modalPai" titulo="Formulário Avaliação de Experiência" ref="modal_modalId">
             <template #conteudo>
                 <p class="mt-2" v-if="preloadSalvarAvaliacao"><i class="fa fa-spinner fa-pulse"></i> Salvando, aguarde...</p>
                 <fieldset class="mb-2" v-show="!preloadSalvarAvaliacao">
-                    <div class="form-group" v-for="(obj, index) in formAvaliacao.perguntas" :key="index">
+                    <div class="form-group" v-for="(obj, index) in formAvaliacao.perguntas" :key="obj.id || index">
                         <label>{{ obj.id }}) {{ obj.pergunta }}</label>
                         <div>
                             <select class="form-control" v-model="obj.nota" onchange="valida_campo_vazio(this, 1)" onblur="valida_campo_vazio(this, 1)">
@@ -68,7 +68,7 @@
                                     <a
                                         :href="itemAvaliacaoExperiencia.link_avaliacao"
                                         target="_blank"
-                                        class="btn btn-sm btn-success"
+                                        class="btn btn-sm mr-1 btn-success"
                                         title="Abrir avaliação em nova aba"
                                     >
                                         <i class="fas fa-external-link-alt"></i> Abrir avaliação
@@ -81,7 +81,7 @@
                                     <button
                                         v-else-if="!ehAvaliacaoCompletaItem(itemAvaliacaoExperiencia) && !preloadGerarLink"
                                         type="button"
-                                        class="btn btn-sm btn-outline-primary btn-gerar-link"
+                                        class="btn btn-sm mr-1 btn-outline-primary btn-gerar-link"
                                         @click="handleGerarLink"
                                     >
                                         <i class="fa fa-link"></i> Gerar link
@@ -230,7 +230,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, index) in tabelaNoventaAvaliacao" :key="index">
+                        <tr v-for="(item, index) in tabelaNoventaAvaliacao" :key="item.id || index">
                             <td class="text-center">{{ item.quantidade_avaliacao }}ª</td>
                             <td class="text-center">{{ item.created_at }}</td>
                             <td class="text-center">

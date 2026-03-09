@@ -1,6 +1,6 @@
 <template>
     <div id="componente">
-        <modal :modal-pai="modal" :titulo="titulo_janela_form" :fechar="!preload" id="janelaForm">
+        <modal ref="modalForm" :modal-pai="modal" :titulo="titulo_janela_form" :fechar="!preload" id="janelaForm">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <fieldset v-if="!preload">
@@ -46,18 +46,18 @@
                 </fieldset>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!cadastrado && !preload" @click="cadastra">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!cadastrado && !preload" @click="cadastra">
                     <i class="fa fa-save"></i>Cadastrar
                 </button>
 
-                <button v-show="cadastrado" type="button" class="btn btn-sm btn-primary" @click="alterarForm"><i class="fa fa-save"></i> Alterar</button>
+                <button v-show="cadastrado" type="button" class="btn btn-sm mr-1 btn-primary" @click="alterarForm"><i class="fa fa-save"></i> Alterar</button>
             </template>
         </modal>
 
         <!-- Filtro -->
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="$refs.componente && $refs.componente.buscar ? $refs.componente.buscar() : null">
                 <div class="col-12 col-md-5">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -84,19 +84,12 @@
                 </div>
 
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-secondary"
-                        :disabled="controle.carregando"
-                        @click="formNovo"
-                        data-toggle="modal"
-                        data-target="#janelaForm"
-                    >
+                    <button type="button" class="btn btn-sm mr-1 btn-secondary" :disabled="controle.carregando" @click="formNovo">
                         <i class="fa fa-plus"></i> Cadastrar Área
                     </button>
                 </div>
@@ -123,7 +116,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="area in lista">
+                        <tr v-for="(area, index) in lista" :key="area.id || index">
                             <td class="text-center">{{ area.id }}</td>
                             <td class="text-center">{{ area.label }}</td>
                             <td class="text-center">{{ area.gestor ? area.gestor.nome : 'Não Informado' }}</td>
@@ -132,7 +125,7 @@
                                 <bt-ativo :rota="`cadastro/areas/${area.id}/ativa-desativa`" :model="area"></bt-ativo>
                             </td>
                             <td class="text-center">
-                                <button type="button" class="btn btn-sm btn-primary" @click="alterar(area.id)" data-toggle="modal" data-target="#janelaForm">
+                                <button type="button" class="btn btn-sm mr-1 btn-primary" @click="alterar(area.id)">
                                     <i class="fa fa-edit"></i>
                                 </button>
                             </td>
@@ -247,6 +240,9 @@ export default {
             this.atualizado = false
             this.form = _.cloneDeep(this.formDefault) //copia
             formReset()
+            if (this.$refs && this.$refs.modalForm && typeof this.$refs.modalForm.abrirModal === 'function') {
+                this.$refs.modalForm.abrirModal()
+            }
         },
         cadastra() {
             $('#janelaForm :input:visible').trigger('blur')
@@ -258,10 +254,12 @@ export default {
             axios
                 .post(`${URL_ADMIN}/cadastro/areas`, this.form)
                 .then((res) => {
-                    $('#janelaForm').modal('hide')
+                    if (this.$refs && this.$refs.modalForm && typeof this.$refs.modalForm.fecharModal === 'function') {
+                        this.$refs.modalForm.fecharModal()
+                    }
                     mostraSucesso('', 'Área cadastrada com sucesso')
                     this.cadastrado = true
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -279,6 +277,10 @@ export default {
             this.form = _.cloneDeep(this.formDefault) //copia
 
             this.preload = true
+
+            if (this.$refs && this.$refs.modalForm && typeof this.$refs.modalForm.abrirModal === 'function') {
+                this.$refs.modalForm.abrirModal()
+            }
 
             axios
                 .get(`${URL_ADMIN}/cadastro/areas/${area}/editar`)
@@ -300,10 +302,12 @@ export default {
             axios
                 .put(`${URL_ADMIN}/cadastro/areas/${this.form.id}`, this.form)
                 .then((res) => {
-                    $('#janelaForm').modal('hide')
+                    if (this.$refs && this.$refs.modalForm && typeof this.$refs.modalForm.fecharModal === 'function') {
+                        this.$refs.modalForm.fecharModal()
+                    }
                     mostraSucesso('', 'Área Alterada com sucesso')
                     this.cadastrado = true
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -327,8 +331,12 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            if (this.$refs && this.$refs.componente) {
+                this.$refs.componente.atual = 1
+            }
+            if (this.$refs && this.$refs.componente && this.$refs.componente.buscar) {
+                this.$refs.componente.buscar()
+            }
         }
     }
 }

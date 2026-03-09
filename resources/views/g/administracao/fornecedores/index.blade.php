@@ -14,7 +14,7 @@
             <h4 v-show="!apagado">Tem certeza que deseja apagar este registro?</h4>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-danger" @click="apagar" v-show="!apagado">Apagar</button>
+            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar" v-show="!apagado">Apagar</button>
         </template>
     </modal>
 
@@ -210,7 +210,7 @@
                                 </legend>
                                 <div class="row">
                                     <div class="col-12 col-sm-6 col-md-6 col-lg-6">
-                                        <button class="btn btn-sm btn-secondary mb-2"
+                                        <button class="btn btn-sm mr-1 btn-secondary mb-2"
                                                 @click="addLIServicoFornecedor($event.target)">
                                             <span class="fas fa-plus" aria-hidden="true"></span>
                                             Adicionar Serviço
@@ -366,7 +366,7 @@
                                             </div>
 
                                             <div class="col-12 mb-3">
-                                                <button class="btn btn-sm btn-danger"
+                                                <button class="btn btn-sm mr-1 btn-danger"
                                                         @click="removerLIServicoFornecedor(index)"
                                                         v-show="obj.nova">
                                                     <i
@@ -390,11 +390,11 @@
             </form>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && !preloadAjax"
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado && !preloadAjax"
                     @click="alterar()">
                 Alterar
             </button>
-            <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado && !preloadAjax"
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado && !preloadAjax"
                     @click="cadastrar()">
                 Cadastrar
             </button>
@@ -447,20 +447,20 @@
             </div>
 
             <div class="col-12 col-md-9">
-                <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                     <i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
 
-                <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" data-toggle="modal" :disabled="controle.carregando"
                         data-target="#janelaCadastrar"
                         @click="formNovo()">
                     Cadastrar
                 </button>
 
                 {{--                <a href="{{ route('fornecedors.excel') }}" v-show="!controle.carregando"--}}
-                {{--                   class="btn btn-sm btn-primary"><i--}}
+                {{--                   class="btn btn-sm mr-1 btn-primary"><i--}}
                 {{--                        class="fas fa-file-excel"></i>--}}
                 {{--                    Exportar Excel</a>--}}
             </div>
@@ -511,14 +511,14 @@
                     </td>
 
                     <td data-label="Ações">
-                        <a href="javascript://" class="btn btn-sm btn-primary" title="Editar"
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-primary" title="Editar"
                            @click.prevent="formAlterar(fornecedor.id)"
                            data-toggle="modal"
                            data-target="#janelaCadastrar">
                             <i class="fa fa-edit" aria-hidden="true"></i>
                         </a>
 
-                        {{--                        <a href="javascript://" class="btn btn-sm btn-danger" title="Excluir"--}}
+                        {{--                        <a href="javascript://" class="btn btn-sm mr-1 btn-danger" title="Excluir"--}}
                         {{--                           @click.prevent="janelaConfirmar(fornecedor.id)"--}}
                         {{--                           data-toggle="modal"--}}
                         {{--                           data-target="#janelaConfirmar">--}}

@@ -1,6 +1,6 @@
 <template>
     <div id="componenteFolhamanual">
-        <modal id="janelaGerarFolha" :fechar="!preload" size="g" :centralizada="true" titulo="Geração de Folha Manual">
+        <modal id="janelaGerarFolha" :fechar="!preload" size="g" :centralizada="true" titulo="Geração de Folha Manual" ref="modal_janelaGerarFolha">
             <template #conteudo>
                 <preload v-if="preloadExportacao" msg="Gerando aguarde..."></preload>
                 <div v-if="!preloadExportacao">
@@ -19,7 +19,7 @@
                             <datepicker label="" class="corrigiDatepicker" formsm v-model="form.data_fim"></datepicker>
                         </div>
                     </div>
-                    <div class="row mb-3 py-2" v-for="(item, dia) in form.dias" style="border: 1px dashed #ccc">
+                    <div class="row mb-3 py-2" v-for="(item, dia) in form.dias" :key="dia" style="border: 1px dashed #ccc" >
                         <div class="col-12 col-md-12">
                             <label>{{ item.label }}</label>
                             <div class="form-check form-switch mb-3">
@@ -52,7 +52,7 @@
                 <div v-show="!preloadExportacao">
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary"
+                        class="btn btn-sm mr-1 btn-primary"
                         @click="exportaPdf(); fecharJanela()"
                     >
                         <i class="fa fa-print"></i> Gerar
@@ -63,7 +63,7 @@
 
         <fieldset class="mt-3">
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Pesquisar</label>
@@ -121,7 +121,7 @@
                     <div class="form-group">
                         <label for="">Exibir</label>
                         <select class="form-control form-control-sm" @change="atualizar()" :disabled="controle.carregando" v-model="controle.dados.pages">
-                            <option v-for="item in por_pagina" :value="item">{{ item }}</option>
+                            <option v-for="(item, index) in por_pagina" :value="item" :key="item.id || index">{{ item }}</option>
                         </select>
                     </div>
                 </div>
@@ -129,13 +129,13 @@
                 <div class="col-12"></div>
 
                 <div class="col-12 col-md-9">
-                    <button type="submit" class="btn btn-sm btn-success mr-1" :disabled="controle.carregando" @click="atualizar">
+                    <button type="submit" class="btn btn-sm mr-1 btn-success mr-1" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
                     <button
-                        class="btn btn-sm btn-danger mr-1"
+                        class="btn btn-sm mr-1 btn-danger mr-1"
                         :style="form.selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                         :disabled="form.selecionados.length === 0 || controle.carregando"
                         @click="form.selecionados = []"
@@ -145,12 +145,10 @@
 
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary mr-1"
+                        class="btn btn-sm mr-1 btn-primary mr-1"
                         :style="form.selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                         :disabled="form.selecionados.length === 0 || controle.carregando"
-                        data-toggle="modal"
-                        data-target="#janelaGerarFolha"
-                    >
+                     @click="$refs.modal_janelaGerarFolha && $refs.modal_janelaGerarFolha.abrirModal()">
                         GERAR FOLHA <span class="badge badge-light">{{ form.selecionados.length }}</span>
                     </button>
                 </div>
@@ -178,22 +176,24 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white">
-                    <tr v-if="listaCheck.length" v-for="item in listaCheck" :key="item.id">
-                        <td class="text-center">
-                            <label :for="item.id">
-                                <input
-                                    type="checkbox"
-                                    v-model="form.selecionados"
-                                    :value="item.id"
-                                    :id="item.id"
-                                    :style="item.id ? 'cursor:pointer' : 'cursor: not-allowed'"
-                                />
-                            </label>
-                        </td>
-                        <td>{{ item.nome }}</td>
-                        <td>{{ item.cargo }}</td>
-                        <td>{{ item.centro_custo_label }}</td>
-                    </tr>
+                    <template v-if="listaCheck.length">
+                        <tr v-for="item in listaCheck" :key="item.id">
+                            <td class="text-center">
+                                <label :for="item.id">
+                                    <input
+                                        type="checkbox"
+                                        v-model="form.selecionados"
+                                        :value="item.id"
+                                        :id="item.id"
+                                        :style="item.id ? 'cursor:pointer' : 'cursor: not-allowed'"
+                                    />
+                                </label>
+                            </td>
+                            <td>{{ item.nome }}</td>
+                            <td>{{ item.cargo }}</td>
+                            <td>{{ item.centro_custo_label }}</td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
         </div>
@@ -386,7 +386,7 @@ export default {
         },
 
         fecharJanela() {
-            $('#janelaGerarFolha').modal('hide')
+            this.$refs.modal_janelaGerarFolha && this.$refs.modal_janelaGerarFolha.fecharModal()
         },
 
         carregou(dados) {
@@ -399,8 +399,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

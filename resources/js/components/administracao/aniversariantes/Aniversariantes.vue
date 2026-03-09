@@ -1,6 +1,6 @@
 <template>
     <div id="componenteAniversariante">
-        <modal id="janelaParabensMassa" :fechar="!preload" titulo="Enviar Parabéns">
+        <modal ref="modalParabensMassa" id="janelaParabensMassa" :fechar="!preload" titulo="Enviar Parabéns">
             <template #conteudo>
                 <div class="row" v-show="!enviado && !preload">
                     <div class="col-12">
@@ -12,14 +12,14 @@
             </template>
             <template #rodape>
                 <div v-show="!preload">
-                    <button type="button" class="btn btn-sm btn-primary" @click="enviar()" v-show="!enviado"><i class="fa fa-envelope"></i> Enviar</button>
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" @click="enviar()" v-show="!enviado"><i class="fa fa-envelope"></i> Enviar</button>
                 </div>
             </template>
         </modal>
 
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="$refs.componente && $refs.componente.buscar ? $refs.componente.buscar() : null">
                 <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -38,7 +38,7 @@
                     <div class="form-group">
                         <label>Aniversariantes do dia</label>
                         <select v-model="niver_dia" @change="aniversariantes_do_dia()" class="custom-select custom-select-sm" :disabled="controle.carregando">
-                            <option value="todos" selected>Todos</option>
+                            <option value="todos">Todos</option>
                             <option :value="true">Sim</option>
                             <option :value="false">Não</option>
                         </select>
@@ -46,17 +46,16 @@
                 </div>
 
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary"
+                        class="btn btn-sm mr-1 btn-primary"
                         :style="!selecionadosMassa.length ? 'cursor: not-allowed' : 'cursor: pointer'"
-                        data-toggle="modal"
-                        data-target="#janelaParabensMassa"
                         :disabled="!selecionadosMassa.length"
+                        @click="abrirModalParabens"
                     >
                         <i class="fa fa-envelope"></i> Enviar Parabéns <span class="badge badge-light">{{ selecionadosMassa.length }}</span>
                     </button>
@@ -86,7 +85,6 @@
                     </thead>
                     <tbody>
                         <tr
-                            v-if="filtrarLista.length"
                             v-for="aniversariantes in filtrarLista"
                             :key="aniversariantes.id"
                             :class="{
@@ -175,12 +173,20 @@ export default {
         }
     },
     methods: {
+        abrirModalParabens() {
+            if (!this.selecionadosMassa.length) return
+            if (this.$refs && this.$refs.modalParabensMassa && typeof this.$refs.modalParabensMassa.abrirModal === 'function') {
+                this.$refs.modalParabensMassa.abrirModal()
+            }
+        },
         enviar() {
             this.preload = true
             axios
                 .post(`${URL_ADMIN}/administracao/aniversariantes/enviaEmail`, { selecionados: this.selecionadosMassa })
                 .then((response) => {
-                    $('#janelaParabensMassa').modal('hide')
+                    if (this.$refs && this.$refs.modalParabensMassa && typeof this.$refs.modalParabensMassa.fecharModal === 'function') {
+                        this.$refs.modalParabensMassa.fecharModal()
+                    }
                     mostraSucesso('', 'Estamos enviando a mensagem de parabéns')
                     this.atualizar()
                     this.selecionadosMassa = []

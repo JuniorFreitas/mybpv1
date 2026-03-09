@@ -3,14 +3,14 @@
         <legend>Oportunidades de Melhoria / Plano de Ação</legend>
 
         <button
-            class="btn btn-sm btn-primary mb-2"
+            class="btn btn-sm mr-1 btn-primary mb-2"
             @click="$emit('adicionar')"
             v-show="!visualizando"
         >
             <i class="fa fa-plus"></i> Adicionar Plano
         </button>
 
-        <fieldset v-for="(item, index) in planos" :key="index">
+        <fieldset v-for="(item, index) in planos" :key="item.id || index">
             <legend>Plano - {{ index + 1 }}</legend>
             <div class="row">
                 <div class="col-lg-12">
@@ -78,7 +78,7 @@
 
                 <div class="col-lg-12" v-show="!visualizando">
                     <button
-                        class="btn btn-sm btn-danger"
+                        class="btn btn-sm mr-1 btn-danger"
                         @click="$emit('remover', index)"
                     >
                         <i class="fa fa-trash"></i> Apagar

@@ -1,6 +1,6 @@
 <template>
     <div v-if="mostrarModal">
-        <modal id="modalNps" :titulo="mensagens.titulo" size="g" :fechar="!loading" :mostrar-botao-fechar-no-rodape="false" @fechou="onFechou">
+        <modal id="modalNps" :titulo="mensagens.titulo" size="g" :fechar="!loading" :mostrar-botao-fechar-no-rodape="false" @fechou="onFechou" ref="modal_modalNps">
             <template #conteudo>
                 <div v-if="loading" class="nps-loading">
                     <div class="nps-spinner"></div>
@@ -127,7 +127,7 @@ export default {
                     this.mostrarModal = true
                     this.loading = false
                     this.$nextTick(() => {
-                        $('#modalNps').modal('show')
+                        this.$refs.modal_modalNps && this.$refs.modal_modalNps.abrirModal()
                     })
                 })
                 .catch(() => {})
@@ -137,7 +137,7 @@ export default {
         },
 
         fecharResponderDepois() {
-            $('#modalNps').modal('hide')
+            this.$refs.modal_modalNps && this.$refs.modal_modalNps.fecharModal()
         },
 
         onFechou() {
@@ -154,7 +154,7 @@ export default {
             axios
                 .post(`${window.URL_ADMIN}/nps`, { respostas })
                 .then(() => {
-                    $('#modalNps').modal('hide')
+                    this.$refs.modal_modalNps && this.$refs.modal_modalNps.fecharModal()
                     if (typeof mostraSucesso === 'function') {
                         mostraSucesso('Obrigado pela sua avaliação!')
                     }

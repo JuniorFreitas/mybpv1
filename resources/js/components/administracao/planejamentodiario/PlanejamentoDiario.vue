@@ -1,6 +1,6 @@
 <template>
     <div id="componentePlanejamentoDiario">
-        <modal :modal-pai="modal" :titulo="titulo_janela_form_planejamentodiario" id="janelaFormPlanejamentoDiario" :size="65">
+        <modal ref="modalPlanejamentoDiario" :modal-pai="modal" :titulo="titulo_janela_form_planejamentodiario" id="janelaFormPlanejamentoDiario" :size="65">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -26,45 +26,47 @@
                         </div>
                     </fieldset>
 
-                    <button class="btn btn-sm btn-primary mb-3" :disabled="editando" @click="addLITarefas"><i class="fa fa-plus"></i> Adicionar Tarefa</button>
+                    <button class="btn btn-sm mr-1 btn-primary mb-3" :disabled="editando" @click="addLITarefas"><i class="fa fa-plus"></i> Adicionar Tarefa</button>
 
-                    <fieldset class="mb-2" v-if="form.tarefas.length > 0" v-for="(obj, index) in form.tarefas" :key="index + 1">
-                        <legend>#Tarefa {{ index + 1 }}</legend>
-                        <div class="row">
-                            <div class="col-12">
-                                <label>Tarefa</label>
-                                <input v-model="obj.tarefa" :disabled="!obj.novo" onblur="valida_campo_vazio(this, 1)" class="form-control" />
-                            </div>
-                            <div class="col-12">
-                                <label>Status</label>
-                                <select class="form-control" onblur="valida_campo_vazio(this, 1)" onchange="valida_campo_vazio(this, 1)" v-model="obj.status">
-                                    <option :value="''">Selecione</option>
-                                    <option :value="'pendente'">Pendente</option>
-                                    <option :value="'cancelado'">Cancelado</option>
-                                    <option :value="'concluido'">Concluído</option>
-                                </select>
-                            </div>
-                            <div class="col-12 mt-3" v-show="obj.novo">
-                                <button class="btn btn-sm btn-danger" @click="removerLITarefas(index)"><i class="fa fa-times"></i> Remover</button>
+                    <template v-if="form.tarefas.length > 0" >
+                        <fieldset class="mb-2" v-for="(obj, index) in form.tarefas" :key="index + 1">
+                            <legend>#Tarefa {{ index + 1 }}</legend>
+                            <div class="row">
+                                <div class="col-12">
+                                    <label>Tarefa</label>
+                                    <input v-model="obj.tarefa" :disabled="!obj.novo" onblur="valida_campo_vazio(this, 1)" class="form-control" />
+                                </div>
+                                <div class="col-12">
+                                    <label>Status</label>
+                                    <select class="form-control" onblur="valida_campo_vazio(this, 1)" onchange="valida_campo_vazio(this, 1)" v-model="obj.status">
+                                        <option :value="''">Selecione</option>
+                                        <option :value="'pendente'">Pendente</option>
+                                        <option :value="'cancelado'">Cancelado</option>
+                                        <option :value="'concluido'">Concluído</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 mt-3" v-show="obj.novo">
+                                    <button class="btn btn-sm mr-1 btn-danger" @click="removerLITarefas(index)"><i class="fa fa-times"></i> Remover</button>
 
-                                <button class="btn btn-sm btn-primary mt" @click="addLITarefas" v-show="index >= 1">
-                                    <i class="fa fa-plus"></i> Adicionar
-                                </button>
+                                    <button class="btn btn-sm mr-1 btn-primary mt" @click="addLITarefas" v-show="index >= 1">
+                                        <i class="fa fa-plus"></i> Adicionar
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </fieldset>
+                        </fieldset>
+                    </template>
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando" @click="alterarformPlanejamentoDiario()">Alterar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando" @click="alterarformPlanejamentoDiario()">Alterar</button>
             </template>
         </modal>
 
         <!-- Filtro -->
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="$refs.componente && $refs.componente.buscar ? $refs.componente.buscar() : null">
                 <div class="col-12 col-md-3">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -80,19 +82,12 @@
                 </div>
 
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-primary mb-1"
-                        :disabled="controle.carregando"
-                        @click="formNovo"
-                        data-toggle="modal"
-                        data-target="#janelaFormPlanejamentoDiario"
-                    >
+                    <button type="button" class="btn btn-sm mr-1 btn-primary mb-1" :disabled="controle.carregando" @click="formNovo">
                         <i class="fa fa-plus"></i> Cadastrar Planejamento Diário
                     </button>
                 </div>
@@ -116,20 +111,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="planejamentodiario in lista">
+                        <tr v-for="(planejamentodiario, index) in lista" :key="planejamentodiario.id || index">
                             <td class="text-center">{{ planejamentodiario.id }}</td>
                             <td class="text-center">{{ planejamentodiario.data }}</td>
                             <td class="text-center">
-                                <button
-                                    type="button"
-                                    class="btn btn-sm btn-primary"
-                                    @click="alterarPlanejamentoDiario(planejamentodiario.id)"
-                                    data-toggle="modal"
-                                    data-target="#janelaFormPlanejamentoDiario"
-                                >
+                                <button type="button" class="btn btn-sm mr-1 btn-primary" @click="alterarPlanejamentoDiario(planejamentodiario.id)">
                                     <i class="fa fa-edit"></i>
                                 </button>
-                                <!--                            <button class="btn btn-sm btn-outline-default" @click="gerarPdf(planejamentodiario.id)"><i-->
+                                <!--                            <button class="btn btn-sm mr-1 btn-outline-default" @click="gerarPdf(planejamentodiario.id)"><i-->
                                 <!--                                class="fas fa-file-pdf"></i> GERAR PDF-->
                                 <!--                            </button>-->
                             </td>
@@ -226,6 +215,16 @@ export default {
         this.formDefault = _.cloneDeep(this.form)
     },
     methods: {
+        abrirModalPlanejamentoDiario() {
+            if (this.$refs && this.$refs.modalPlanejamentoDiario && typeof this.$refs.modalPlanejamentoDiario.abrirModal === 'function') {
+                this.$refs.modalPlanejamentoDiario.abrirModal()
+            }
+        },
+        fecharModalPlanejamentoDiario() {
+            if (this.$refs && this.$refs.modalPlanejamentoDiario && typeof this.$refs.modalPlanejamentoDiario.fecharModal === 'function') {
+                this.$refs.modalPlanejamentoDiario.fecharModal()
+            }
+        },
         addLITarefas() {
             const obj = {}
             obj.novo = true
@@ -250,6 +249,7 @@ export default {
 
             formReset()
             setupCampo()
+            this.abrirModalPlanejamentoDiario()
         },
         cadastrar() {
             $('#janelaFormPlanejamentoDiario :input:visible').trigger('blur')
@@ -262,7 +262,7 @@ export default {
                 .post(`${URL_ADMIN}/administracao/planejamentodiario`, this.form)
                 .then((res) => {
                     if (res.status === 201) {
-                        $('#janelaFormPlanejamentoDiario').modal('hide')
+                        this.fecharModalPlanejamentoDiario()
                         mostraSucesso('', 'Planejamento Diário Cadastrado com sucesso')
                         this.preload = false
                         this.cadastrado = true
@@ -284,6 +284,7 @@ export default {
             formReset()
 
             this.form = _.cloneDeep(this.formDefault) //copia
+            this.abrirModalPlanejamentoDiario()
 
             axios
                 .get(`${URL_ADMIN}/administracao/planejamentodiario/${planejamentodiario}/editar`)
@@ -308,7 +309,7 @@ export default {
             axios
                 .put(`${URL_ADMIN}/administracao/planejamentodiario/${this.form.id}`, this.form)
                 .then((response) => {
-                    $('#janelaFormPlanejamentoDiario').modal('hide')
+                    this.fecharModalPlanejamentoDiario()
                     mostraSucesso('', 'Planejamento Diário Editado com sucesso')
                     this.preloadAjax = false
                     this.controle.carregando = true
@@ -329,8 +330,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

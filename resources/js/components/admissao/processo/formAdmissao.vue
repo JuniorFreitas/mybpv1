@@ -14,7 +14,7 @@
                     <label>Área</label>
                     <select class="form-control" v-model="form.area_etiqueta_id" :disabled="visualizar || disabled">
                         <option value="">Selecione</option>
-                        <option :value="item.id" v-for="item in areasetiquetas">
+                        <option :value="item.id" v-for="item in areasetiquetas" :key="item.id">
                             {{ item.label }}
                         </option>
                     </select>
@@ -42,7 +42,7 @@
                         :disabled="visualizar || disabled || form.status === 'ADMITIDO'"
                         v-model="form.filial"
                         class="form-control"
-                        @change.p.prevent="changeCnpj()"
+                        @change.prevent="changeCnpj()"
                     >
                         <option :value="false">Matriz</option>
                         <option :value="true">Filial</option>
@@ -99,7 +99,7 @@
                         v-model="form.documento"
                     >
                         <option value="">Selecione</option>
-                        <option v-for="item in listSelects.todos_status_documentos" :value="item">{{ item }}</option>
+                        <option v-for="item in listSelects.todos_status_documentos" :key="item" :value="item">{{ item }}</option>
                     </select>
                 </div>
             </div>
@@ -115,7 +115,7 @@
                         v-model="form.documento_portaria"
                     >
                         <option value="">Selecione</option>
-                        <option v-for="item in listSelects.todos_status_documentos_portaria" :value="item">
+                        <option v-for="item in listSelects.todos_status_documentos_portaria" :key="item" :value="item">
                             {{ item }}
                         </option>
                     </select>
@@ -133,7 +133,7 @@
                         v-model="form.tipo_admissao"
                     >
                         <option value="">Selecione</option>
-                        <option v-for="item in listSelects.tipos_admissao" :value="item">{{ item }}</option>
+                        <option v-for="item in listSelects.tipos_admissao" :key="item" :value="item">{{ item }}</option>
                     </select>
                 </div>
             </div>
@@ -149,7 +149,7 @@
                         v-model="form.prazo_experiencia"
                     >
                         <option value="">Selecione</option>
-                        <option v-for="item in listSelects.todos_prazos" :value="item">{{ item }}</option>
+                        <option v-for="item in listSelects.todos_prazos" :key="item" :value="item">{{ item }}</option>
                     </select>
                 </div>
             </div>
@@ -171,7 +171,7 @@
                         v-model="form.treinamento"
                     >
                         <option value="">Selecione</option>
-                        <option v-for="item in listSelects.todos_status_treinamentos" :value="item">{{ item }}</option>
+                        <option v-for="item in listSelects.todos_status_treinamentos" :key="item" :value="item">{{ item }}</option>
                     </select>
                 </div>
             </div>
@@ -201,7 +201,8 @@
             <!--                        onblur="valida_campo(this,1)" :disabled="visualizar || disabled"-->
             <!--                        v-model="form.nr_trinta_tres">-->
             <!--                    <option value="">Selecione</option>-->
-            <!--                    <option v-for="item in listSelects.todos_status_treinamentos" :value="item">{{ item }}</option>-->
+            <!--                    <option v-for="(item, index) in listSelects.todos_status_treinamentos" :value="item">{{ item }}</option>-->
+            :key="item.id || index"
             <!--                </select>-->
             <!--            </div>-->
             <!--        </div>-->
@@ -213,7 +214,8 @@
             <!--                        onblur="valida_campo(this,1)" :disabled="visualizar || disabled"-->
             <!--                        v-model="form.nr_trinta_cinco">-->
             <!--                    <option value="">Selecione</option>-->
-            <!--                    <option v-for="item in listSelects.todos_status_treinamentos" :value="item">{{ item }}</option>-->
+            <!--                    <option v-for="(item, index) in listSelects.todos_status_treinamentos" :value="item">{{ item }}</option>-->
+            :key="item.id || index"
             <!--                </select>-->
             <!--            </div>-->
             <!--        </div>-->
@@ -516,69 +518,71 @@ export default {
         form: {
             type: Object,
             required: true,
-            default: {
-                feedback_id: '',
-                filial: false,
-                centro_custo_filial_id: '',
-                area_etiqueta_id: '',
-                centro_custo_id: '',
-                contrato: '',
-                funcao: '',
-                salario: '0,00',
-                status: '',
-                documento: '',
-                documento_portaria: '',
-                tipo_admissao: '',
-                tipo_treinamento: '',
-                treinamento: '',
-                data_treinamento: '',
-                carteira_treinamento: '',
-                nr_trinta_tres: '',
-                data_nr_trinta_tres: '',
-                nr_trinta_cinco: '',
-                data_nr_trinta_cinco: '',
-                trinta_dois_sessenta: '',
-                data_trinta_dois_sessenta: '',
-                numero_cracha: '',
-                foto_escaneada: '',
-                status_carteira_treinamento: '',
-                segmento_treinamento_id: null,
-                data_admissao: '',
-                data_adm_prevista: '',
+            default() {
+                return {
+                    feedback_id: '',
+                    filial: false,
+                    centro_custo_filial_id: '',
+                    area_etiqueta_id: '',
+                    centro_custo_id: '',
+                    contrato: '',
+                    funcao: '',
+                    salario: '0,00',
+                    status: '',
+                    documento: '',
+                    documento_portaria: '',
+                    tipo_admissao: '',
+                    tipo_treinamento: '',
+                    treinamento: '',
+                    data_treinamento: '',
+                    carteira_treinamento: '',
+                    nr_trinta_tres: '',
+                    data_nr_trinta_tres: '',
+                    nr_trinta_cinco: '',
+                    data_nr_trinta_cinco: '',
+                    trinta_dois_sessenta: '',
+                    data_trinta_dois_sessenta: '',
+                    numero_cracha: '',
+                    foto_escaneada: '',
+                    status_carteira_treinamento: '',
+                    segmento_treinamento_id: null,
+                    data_admissao: '',
+                    data_adm_prevista: '',
 
-                data_entrega_area: '',
-                biometria: '',
-                data_biometria: '',
+                    data_entrega_area: '',
+                    biometria: '',
+                    data_biometria: '',
 
-                indicado_por: '',
-                indicado_area: '',
+                    indicado_por: '',
+                    indicado_area: '',
 
-                filiacao_pai: '',
-                filiacao_mae: '',
-                nome: '',
-                calca: '',
-                bota: '',
-                camisa_protecao: '',
-                camisa_meia: '',
-                pis: '',
-                prazo_experiencia: '',
-                prazo_encerramento: '',
-                dados_admissoes: {
-                    ctps_numero: '',
-                    ctps_serie: '',
-                    ctps_data_emissao: '',
-                    titulo_eleitor_numero: '',
-                    titulo_eleitor_sessao: '',
-                    titulo_eleitor_zona: '',
-                    ctps_uf: '',
-                    cert_reservista_num: '',
-                    cert_reservista_categoria: ''
-                },
-                ultimo_aso: {
-                    data_realizacao: ''
-                },
-                ferias_adquiridas: [],
-                ferias_adquiridasDelete: []
+                    filiacao_pai: '',
+                    filiacao_mae: '',
+                    nome: '',
+                    calca: '',
+                    bota: '',
+                    camisa_protecao: '',
+                    camisa_meia: '',
+                    pis: '',
+                    prazo_experiencia: '',
+                    prazo_encerramento: '',
+                    dados_admissoes: {
+                        ctps_numero: '',
+                        ctps_serie: '',
+                        ctps_data_emissao: '',
+                        titulo_eleitor_numero: '',
+                        titulo_eleitor_sessao: '',
+                        titulo_eleitor_zona: '',
+                        ctps_uf: '',
+                        cert_reservista_num: '',
+                        cert_reservista_categoria: ''
+                    },
+                    ultimo_aso: {
+                        data_realizacao: ''
+                    },
+                    ferias_adquiridas: [],
+                    ferias_adquiridasDelete: []
+                }
             }
         },
         visualizar: {

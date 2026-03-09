@@ -121,20 +121,20 @@
                                                         v-for="categoria in categoriasHabilidades" 
                                                         :key="categoria"
                                                         @click.prevent="selecionarPorCategoria(categoria)"
-                                                        class="btn btn-sm btn-outline-primary"
+                                                        class="btn btn-sm mr-1 btn-outline-primary"
                                                         style="margin-bottom: 4px; white-space: nowrap;">
                                                     <i class="fa fa-check mr-1"></i>@{{ categoria }}
                                                 </button>
                                                 <div class="dropdown-divider mx-2 my-1" style="height: 20px; border-left: 1px solid #dee2e6;"></div>
                                                 <button type="button" 
                                                         @click.prevent="selecionarTodas()" 
-                                                        class="btn btn-sm btn-success"
+                                                        class="btn btn-sm mr-1 btn-success"
                                                         style="margin-bottom: 4px; white-space: nowrap;">
                                                     <i class="fa fa-check-double mr-1"></i>Todas
                                                 </button>
                                                 <button type="button" 
                                                         @click.prevent="desmarcarTodas()" 
-                                                        class="btn btn-sm btn-danger"
+                                                        class="btn btn-sm mr-1 btn-danger"
                                                         style="margin-bottom: 4px; white-space: nowrap;">
                                                     <i class="fa fa-times mr-1"></i>Nenhuma
                                                 </button>
@@ -156,12 +156,12 @@
                                         <i class="fa fa-info-circle mr-2"></i>Descrição
                                     </th>
                                     <th class="py-3 text-center" style="width: 120px;">
-                                        <a class="btn btn-sm btn-outline-success" href="javascript://"
+                                        <a class="btn btn-sm mr-1 btn-outline-success" href="javascript://"
                                            @click.prevent="selecionarTodas()" v-if="!todasHabilidades"
                                            title="Selecionar todas as habilidades">
                                             <span class="fa fa-check" aria-hidden="true"></span> Todas
                                         </a>
-                                        <a class="btn btn-sm btn-outline-danger" href="javascript://"
+                                        <a class="btn btn-sm mr-1 btn-outline-danger" href="javascript://"
                                            @click.prevent="selecionarTodas()" v-if="todasHabilidades"
                                            title="Desmarcar todas as habilidades">
                                             <span class="fa fa-times" aria-hidden="true"></span> Todas
@@ -183,14 +183,14 @@
                                     <td class="py-3 text-center">
                                         <div class="btn-group" role="group">
                                             <button type="button" 
-                                                    class="btn btn-sm btn-success" 
+                                                    class="btn btn-sm mr-1 btn-success" 
                                                     @click.prevent="habilidade.acesso=!habilidade.acesso"
                                                     v-if="habilidade.acesso"
                                                     title="Clique para desmarcar">
                                                 <span class="fa fa-check" aria-hidden="true"></span>
                                             </button>
                                             <button type="button" 
-                                                    class="btn btn-sm btn-outline-secondary" 
+                                                    class="btn btn-sm mr-1 btn-outline-secondary" 
                                                     @click.prevent="habilidade.acesso=!habilidade.acesso"
                                                     v-if="!habilidade.acesso"
                                                     title="Clique para marcar">
@@ -217,25 +217,25 @@
                             <div class="col-md-6">
                                 <div class="btn-group" role="group">
                                     <button type="button" 
-                                            class="btn btn-sm btn-outline-secondary"
+                                            class="btn btn-sm mr-1 btn-outline-secondary"
                                             @click="paginaHabilidades = 1"
                                             :disabled="paginaHabilidades === 1">
                                         <i class="fa fa-angle-double-left"></i>
                                     </button>
                                     <button type="button" 
-                                            class="btn btn-sm btn-outline-secondary"
+                                            class="btn btn-sm mr-1 btn-outline-secondary"
                                             @click="paginaHabilidades--"
                                             :disabled="paginaHabilidades === 1">
                                         <i class="fa fa-angle-left"></i>
                                     </button>
                                     <button type="button" 
-                                            class="btn btn-sm btn-outline-secondary"
+                                            class="btn btn-sm mr-1 btn-outline-secondary"
                                             @click="paginaHabilidades++"
                                             :disabled="paginaHabilidades === totalPaginasHabilidades">
                                         <i class="fa fa-angle-right"></i>
                                     </button>
                                     <button type="button" 
-                                            class="btn btn-sm btn-outline-secondary"
+                                            class="btn btn-sm mr-1 btn-outline-secondary"
                                             @click="paginaHabilidades = totalPaginasHabilidades"
                                             :disabled="paginaHabilidades === totalPaginasHabilidades">
                                         <i class="fa fa-angle-double-right"></i>
@@ -338,25 +338,25 @@
                             <div class="col-md-6">
                                 <div class="btn-group" role="group">
                                     <button type="button" 
-                                            class="btn btn-sm btn-outline-secondary"
+                                            class="btn btn-sm mr-1 btn-outline-secondary"
                                             @click="paginaUsuarios = 1"
                                             :disabled="paginaUsuarios === 1">
                                         <i class="fa fa-angle-double-left"></i>
                                     </button>
                                     <button type="button" 
-                                            class="btn btn-sm btn-outline-secondary"
+                                            class="btn btn-sm mr-1 btn-outline-secondary"
                                             @click="paginaUsuarios--"
                                             :disabled="paginaUsuarios === 1">
                                         <i class="fa fa-angle-left"></i>
                                     </button>
                                     <button type="button" 
-                                            class="btn btn-sm btn-outline-secondary"
+                                            class="btn btn-sm mr-1 btn-outline-secondary"
                                             @click="paginaUsuarios++"
                                             :disabled="paginaUsuarios === totalPaginasUsuarios">
                                         <i class="fa fa-angle-right"></i>
                                     </button>
                                     <button type="button" 
-                                            class="btn btn-sm btn-outline-secondary"
+                                            class="btn btn-sm mr-1 btn-outline-secondary"
                                             @click="paginaUsuarios = totalPaginasUsuarios"
                                             :disabled="paginaUsuarios === totalPaginasUsuarios">
                                         <i class="fa fa-angle-double-right"></i>
@@ -376,10 +376,10 @@
         </template>
         <template #rodape>
             <div v-show="!preloadAjax">
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado"
                         @click="alterar()">Alterar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado"
                         @click="cadastrar()">Cadastrar
                 </button>
             </div>
@@ -409,7 +409,7 @@
         </template>
         <template #rodape>
             <div v-show="!preloadAjax">
-                <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
             </div>
         </template>
     </modal>
@@ -433,9 +433,9 @@
             </div>
         </div>
 
-        <button type="button" class="btn btn-sm btn-success" @click.prevent="atualizar()">Atualizar</button>
+        <button type="button" class="btn btn-sm mr-1 btn-success" @click.prevent="atualizar()">Atualizar</button>
         @can('configuracao_papel_insert')
-            <button type="button" class="btn btn-sm btn-primary" id="btnFormCadastrar" data-toggle="modal"
+            <button type="button" class="btn btn-sm mr-1 btn-primary" id="btnFormCadastrar" data-toggle="modal"
                     data-target="#janelaCadastrar" @click="formNovo()">Cadastrar
             </button>
         @endcan
@@ -474,7 +474,7 @@
                     <td v-else></td>
                     <td class="text-center" v-if="papel.master !== true">
                         @can('configuracao_papel_update')
-                            <a class="btn btn-sm btn-success btnFormAlterar" href="javascript://"
+                            <a class="btn btn-sm mr-1 btn-success btnFormAlterar" href="javascript://"
                                @click.prevent="formAlterar(papel.id)" data-toggle="modal"
                                data-target="#janelaCadastrar">
                                 <i class="fa fa-edit"></i>

@@ -1,5 +1,5 @@
 <template>
-    <modal id="janelaAvaliacaoFinal" :titulo="titulo_janela_final" :size="90">
+    <modal id="janelaAvaliacaoFinal" :titulo="titulo_janela_final" :size="90" ref="modal_janelaAvaliacaoFinal">
         <template #conteudo>
             <preload v-show="preloadAvalFinal"></preload>
             <div v-if="!preloadAvalFinal">
@@ -32,7 +32,7 @@
         <template #rodape>
             <button
                 type="button"
-                class="btn btn-sm btn-primary"
+                class="btn btn-sm mr-1 btn-primary"
                 v-show="editando && !visualizando && !preloadAvalFinal && temPlanosAcao"
                 :disabled="salvando"
                 @click="salvarAvaliacaoFinal"
@@ -118,7 +118,7 @@ export default {
                 this.carregarDados(response.data)
 
                 this.$nextTick(() => {
-                    $('#janelaAvaliacaoFinal').modal('show')
+                    this.$refs.modal_janelaAvaliacaoFinal && this.$refs.modal_janelaAvaliacaoFinal.abrirModal()
                     setupCampo()
                 })
             } catch (error) {
@@ -195,7 +195,7 @@ export default {
             try {
                 await axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${this.formAvaliarFinal.avaliacao_feedback_id}/final`, this.formAvaliarFinal)
 
-                $('#janelaAvaliacaoFinal').modal('hide')
+                this.$refs.modal_janelaAvaliacaoFinal && this.$refs.modal_janelaAvaliacaoFinal.fecharModal()
                 mostraSucesso('', 'Avaliação Final salva com sucesso')
                 this.$emit('salvar')
             } catch (error) {

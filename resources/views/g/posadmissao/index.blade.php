@@ -44,7 +44,7 @@
             </div>
         </template>
         <template #rodape>
-            <button class="btn btn-sm btn-primary" v-if="!preload && auditoria_form.descricao.length"
+            <button class="btn btn-sm mr-1 btn-primary" v-if="!preload && auditoria_form.descricao.length"
                     @click="reverterDemissao">
                 Reverter
             </button>
@@ -507,14 +507,14 @@
         </template>
 
         <template #rodape>
-            <button class="btn btn-sm btn-primary" v-show="!preload && !atualizado && !demitido" v-if="avaliacao"
+            <button class="btn btn-sm mr-1 btn-primary" v-show="!preload && !atualizado && !demitido" v-if="avaliacao"
                     @click="demitir">
                 Demitir
             </button>
-            <button class="btn btn-sm btn-primary" v-show="!preload && !atualizado" v-if="desmobilizacao"
+            <button class="btn btn-sm mr-1 btn-primary" v-show="!preload && !atualizado" v-if="desmobilizacao"
                     @click="desmobilizar">Desmobilizar
             </button>
-            <button class="btn btn-sm btn-primary" v-show="!preload && !atualizado" v-if="entrevista"
+            <button class="btn btn-sm mr-1 btn-primary" v-show="!preload && !atualizado" v-if="entrevista"
                     @click="entrevistar">Salvar entrevista
             </button>
         </template>
@@ -674,17 +674,17 @@
         <br>
         <div class="col-12">
             <div class="row">
-                <button type="button" class="btn btn-sm btn-success mr-1 mb-1" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm mr-1 btn-success mr-1 mb-1" :disabled="controle.carregando"
                         @click="atualizar"><i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
-                <button class="btn btn-sm btn-danger mr-1 mb-1"
+                <button class="btn btn-sm mr-1 btn-danger mr-1 mb-1"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                         :disabled="selecionados.length === 0" @click="selecionados = []">
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
-                <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"
+                <button type="button" class="btn btn-sm mr-1 btn-primary mb-1 mr-1"
                         @click.prevent="gerarArquivoXls()"
                         :disabled="controle.carregando|| preloadExportacao  || (!controle.carregando && lista.length===0 && selecionados.length === 0) || (selecionados.length === 0 && controle.dados.status !== 'demitidos') ">
                     <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
@@ -780,11 +780,11 @@
                             <a target="_blank"
                                v-if="item.demissao.motivo_rescisao && ['demissao_com_justa_causa','pedido_colaborador_imediato', 'pedido_colaborador_trabalhado'].includes(item.demissao.motivo_rescisao.nome_pdf)"
                                :href="`https://mybp-prod.s3.amazonaws.com/public/${item.demissao.motivo_rescisao.nome_pdf + extensaoDocumento}`"
-                               class="btn btn-sm btn-primary" title="Download Documento Demissão"
+                               class="btn btn-sm mr-1 btn-primary" title="Download Documento Demissão"
                                @click="extensao(item.demissao.motivo_rescisao.nome_pdf)" download>
                                 <i class="fa fa-file-download"></i>
                             </a>
-                            <button type="button" v-else class="btn btn-sm btn-primary" title="Gerar Documento Demissão"
+                            <button type="button" v-else class="btn btn-sm mr-1 btn-primary" title="Gerar Documento Demissão"
                                     @click="gerarPdf(item.demissao.id)">
                                 <i class="fa fa-file-pdf"></i>
                             </button>
@@ -792,13 +792,25 @@
                     </td>
                     <td class="text-center">
 
-                        <div class="dropdown show">
-                            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
+                            <a
+                                class="btn btn-secondary dropdown-toggle"
+                                href="#"
+                                role="button"
+                                :id="`dropdownPos_${item.id}`"
+                                aria-haspopup="true"
+                                :aria-expanded="isDropdownOpen(item.id) ? 'true' : 'false'"
+                                @click.prevent.stop="toggleDropdown(item.id)"
+                            >
                                 <i class="fas fa-ellipsis-v"></i>
                             </a>
 
-                            <div class="dropdown-menu dropdown-menu-custom" aria-labelledby="dropdownMenuLink">
+                            <div
+                                class="dropdown-menu dropdown-menu-custom"
+                                :class="{ show: isDropdownOpen(item.id) }"
+                                :aria-labelledby="`dropdownPos_${item.id}`"
+                                @click="fecharDropdown"
+                            >
                                 <a class="dropdown-item" href="javascript://" title="Avaliar"
                                    @click.prevent="formAvaliar(item.id)"
                                    data-toggle="modal"

@@ -4,14 +4,7 @@
             <fieldset>
                 <legend>Ações</legend>
                 <form class="row" @submit.prevent="buscarDados()">
-                    <!--                    <div class="col-12 col-md-3 pb-3">-->
-                    <!--                        <label for="">Escolha o período:</label>-->
-                    <!--                        <select class="form-control form-control-sm" :disabled="preload" v-model="filtrar.periodo"-->
-                    <!--                                @change="buscarDados()">-->
-                    <!--                            <option v-for="(item, key) in filtro.periodo_aquisitivo" :value="item.id">{{ item.label }}-->
-                    <!--                            </option>-->
-                    <!--                        </select>-->
-                    <!--                    </div>-->
+                
                     <div class="col-12 col-sm-6 col-md-6 col-lg-3">
                         <label>Buscar</label>
                         <input
@@ -64,10 +57,10 @@
                     <div class="clearfix"></div>
 
                     <div class="col-12 mt-2">
-                        <button class="btn btn-sm btn-primary" :disabled="preload" @click.prevent="buscarDados()" type="button">
+                        <button class="btn btn-sm mr-1 btn-primary" :disabled="preload" @click.prevent="buscarDados()" type="button">
                             <i class="fa fa-search"></i> Buscar
                         </button>
-                        <button type="button" class="btn btn-sm btn-primary" :disabled="preload || !dados.length" @click.prevent="gerarArquivoXls()">
+                        <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="preload || !dados.length" @click.prevent="gerarArquivoXls()">
                             <i class="fas fa-file-excel"></i> Exportar Excel
                         </button>
                     </div>
@@ -77,7 +70,7 @@
             <template v-if="!preload">
                 <div class="alert alert-warning" v-show="!dados.length"><i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado</div>
 
-                <div v-for="(item, index) in dados" :key="index" class="mb-3" v-show="dados.length">
+                <div v-for="(item, index) in dados" :key="item.id || index" class="mb-3" v-show="dados.length">
                     <div class="row">
                         <div class="col-md-12">
                             <table class="mt-4 table bg-white table-bordered">
@@ -103,7 +96,7 @@
                                         <th style="text-align: center">Última Atualização</th>
                                     </tr>
 
-                                    <tr v-for="(periodo, ind) in item.todos_periodos">
+                                    <tr v-for="(periodo, ind) in item.todos_periodos" :key="ind">
                                         <th style="text-align: center; vertical-align: middle">
                                             {{ periodo.periodo_aquisitivo }}
                                         </th>
@@ -138,6 +131,7 @@
 </template>
 <script>
 import ExportacaoMixin from '../../../mixins/Exportacoes'
+import XLSX from '@e965/xlsx'
 
 export default {
     mixins: [ExportacaoMixin],
@@ -175,8 +169,6 @@ export default {
     },
     methods: {
         async gerarArquivoXls() {
-            const XLSX = require('xlsx')
-
             const dataHoraAtual = new Date()
                 .toLocaleString('en-US', {
                     timeZone: 'America/Sao_Paulo',
@@ -243,19 +235,31 @@ export default {
             XLSX.writeFile(wb, filename)
         },
         async periodosAquisitivosList() {
-            await axios.post(`${URL_ADMIN}/relatorios/ferias/listaperiodos`).then(({ data }) => {
+            try {
+                const { data } = await axios.post(`${URL_ADMIN}/relatorios/ferias/listaperiodos`)
                 this.filtro = data.filtro
-            })
+            } catch (err) {
+                this.filtro = []
+            }
         },
         async buscarDados() {
             this.preload = true
-            await axios.post(`${URL_ADMIN}/relatorios/vencimento-ferias`, this.filtrar).then(({ data }) => {
-                this.dados = data.result
-                this.lista_cargos = data.lista_cargos
-                this.lista_funcao = data.lista_funcao
-                this.lista_centro_custos = data.lista_centro_custos
+            try {
+                const { data } = await axios.post(`${URL_ADMIN}/relatorios/vencimento-ferias`, this.filtrar)
+                this.dados = data.result || []
+                this.lista_cargos = data.lista_cargos || []
+                this.lista_funcao = data.lista_funcao || []
+                this.lista_centro_custos = data.lista_centro_custos || []
+            } catch (err) {
+                this.dados = []
+                this.lista_cargos = []
+                this.lista_funcao = []
+                this.lista_centro_custos = []
+                const msg = err.response?.data?.message || err.message || 'Erro ao carregar relatório.'
+                if (typeof toastr !== 'undefined') toastr.error(msg); else alert(msg)
+            } finally {
                 this.preload = false
-            })
+            }
         }
     }
 }

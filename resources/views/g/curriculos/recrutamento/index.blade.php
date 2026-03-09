@@ -462,7 +462,7 @@
             </form>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && !preloadAjax"
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado && !preloadAjax"
                     @click="alterar"
             >
                 Salvar
@@ -480,7 +480,7 @@
             <h4 v-show="!apagado">Tem certeza que deseja apagar este curriculo?</h4>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
+            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
         </template>
     </modal>
 
@@ -631,13 +631,13 @@
                 </div>
             </div>
             <div class="col-12 col-md-9">
-                <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                     <i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"
                     ></i>
                     Atualizar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary  mr-1"
+                <button type="button" class="btn btn-sm mr-1 btn-primary  mr-1"
                         @click.prevent="exportaExcel()"
                         :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && !lista.length) "
                 >
@@ -715,7 +715,7 @@
                     </td>
 
                     <td data-label="Ação">
-                        <a href="javascript://" class="btn btn-sm mb-2 btn-primary"
+                        <a href="javascript://" class="btn btn-sm mr-1 mb-2 btn-primary"
                            @click.prevent="formAlterar(curriculo.id)"
                            content="Recrutar" v-tippy
                            data-toggle="modal"
@@ -725,14 +725,14 @@
                         </a>
 
                         <a :href="`recrutamentos/${curriculo.ctoken}`" target="_blank"
-                           class="btn btn-sm mb-2 btn-primary"
+                           class="btn btn-sm mr-1 mb-2 btn-primary"
                            content="Gerar PDF" v-tippy
                         >
                             <i class="far fa-file-pdf"></i>
                         </a>
 
                         @can('curriculos_recrutamento_delete')
-                            <a href="javascript://" class="btn btn-sm mb-2 btn-danger" content="Remover" v-tippy
+                            <a href="javascript://" class="btn btn-sm mr-1 mb-2 btn-danger" content="Remover" v-tippy
                                @click.prevent="janelaConfirmar(curriculo.id)"
                                data-toggle="modal"
                                data-target="#janelaConfirmar"

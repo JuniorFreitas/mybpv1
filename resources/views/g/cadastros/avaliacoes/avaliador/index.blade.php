@@ -38,7 +38,7 @@
                         <tr v-for="(avaliador, index) in form.avaliadores">
                             <td class="text-center">@{{ avaliador.nome }}</td>
                             <td class="text-center">
-                                <a href="javascript://" class="btn btn-sm btn-danger"
+                                <a href="javascript://" class="btn btn-sm mr-1 btn-danger"
                                    @click.prevent="removerLIAvaliador(index)">
                                     <i class="fa fa-times" aria-hidden="true"></i>
                                 </a>
@@ -50,7 +50,7 @@
             </fieldset>
         </template>
         <template #rodape>
-            <button :disabled="listaFuncionarios.length === 0" v-if="!preload && !update" class="btn btn-sm btn-success"
+            <button :disabled="listaFuncionarios.length === 0" v-if="!preload && !update" class="btn btn-sm mr-1 btn-success"
                     type="button" @click="assosicarAvaliadores">
                 <i class="fas fa-link"></i> Associar
             </button>

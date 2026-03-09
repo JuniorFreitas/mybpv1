@@ -26,7 +26,7 @@
             </div>
         </form>
         <div class="modal-footer">
-            <button type="button" class="btn btn-sm btn-primary" v-show="!preload" @click="alterar()">Salvar</button>
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!preload" @click="alterar()">Salvar</button>
         </div>
     </div>
 </template>
@@ -93,7 +93,7 @@ export default {
             axios
                 .put(`${URL_ADMIN}/perfil/${this.form.id}`, this.form)
                 .then((response) => {
-                    $('#janelaFormPerfil').modal('hide')
+                    this.$refs.modal_janelaFormPerfil && this.$refs.modal_janelaFormPerfil.fecharModal()
                     mostraSucesso('', 'Perfil Atualizado com sucesso!')
                     this.preloadAjax = false
                     this.controle.carregando = true

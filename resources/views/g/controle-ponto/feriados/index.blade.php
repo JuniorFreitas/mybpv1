@@ -35,10 +35,10 @@
             </form>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-primary" v-show="!form.preload && form.editando && !form.atualizado" @click="alterar()">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!form.preload && form.editando && !form.atualizado" @click="alterar()">
                 Alterar
             </button>
-            <button type="button" class="btn btn-sm btn-primary" v-show="!form.preload && !form.editando && !form.cadastrado" @click="cadastrar()">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!form.preload && !form.editando && !form.cadastrado" @click="cadastrar()">
                 Cadastrar
             </button>
         </template>
@@ -53,7 +53,7 @@
             <h4 v-show="!form.apagado">Tem certeza que deseja apagar este feriado?</h4>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!form.apagado">Apagar</button>
+            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar()" v-show="!form.apagado">Apagar</button>
         </template>
     </modal>
 
@@ -76,9 +76,9 @@
     </div>
 
 
-    <button type="button" class="btn btn-sm btn-success" id="btnAtualizar" @click="atualizar">Atualizar</button>
+    <button type="button" class="btn btn-sm mr-1 btn-success" id="btnAtualizar" @click="atualizar">Atualizar</button>
 
-    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#janelaCadastrar" @click="formNovo()">
+    <button type="button" class="btn btn-sm mr-1 btn-primary" data-toggle="modal" data-target="#janelaCadastrar" @click="formNovo()">
         Cadastrar
     </button>
 
@@ -108,13 +108,13 @@
                         <bt-ativo :rota="`controle-ponto/feriados/${feriado.id}/ativa-desativa`" :model="feriado"></bt-ativo>
                     </td>
                     <td class="text-center">
-                        <a href="javascript://" class="btn btn-sm btn-success btnFormAlterar"
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-success btnFormAlterar"
                            @click.prevent="formAlterar(feriado.id)"
                            data-toggle="modal"
                            data-target="#janelaCadastrar">
                             <i class="fa fa-edit" aria-hidden="true"></i> Alterar
                         </a>
-                        <a href="javascript://" class="btn btn-sm btn-danger btnFormExcluir"
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-danger btnFormExcluir"
                            @click.prevent="janelaConfirmar(feriado.id)"
                            data-toggle="modal"
                            data-target="#janelaConfirmar">

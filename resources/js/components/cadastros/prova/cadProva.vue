@@ -1,6 +1,6 @@
 <template>
     <div :id="hash">
-        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
+        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90" ref="modal_janelaCadastrar">
             <template #conteudo>
                 <preload v-show="preload"></preload>
                 <div v-if="!preload && !cadastrado">
@@ -55,19 +55,18 @@
 
                     <fieldset v-if="form.tipo_prova === 'objetiva'">
                         <legend>Questões Objetivas</legend>
-                        <button class="btn btn-sm btn-primary mb-2" @click="addLiQuestao($event.target)">Adicionar Questão</button>
+                        <button class="btn btn-sm mr-1 btn-primary mb-2" @click="addLiQuestao($event.target)">Adicionar Questão</button>
                         <div class="accordion" id="prova">
-                            <div class="card mb-3 border" v-for="(objperg, ind) in form.perguntas" v-show="form.perguntas.length > 0">
+                            <div class="card mb-3 border" v-for="(objperg, ind) in form.perguntas" :key="objperg.id || ind" v-show="form.perguntas.length > 0">
                                 <div class="card-header" style="background: #072433; color: white" :id="objperg.id">
                                     <h2 class="mb-0">
                                         <a
                                             class="btn btn-link btn-block text-left"
                                             href="javascript://"
                                             data-toggle="collapse"
-                                            :data-target="`#collapse${objperg.id}`"
                                             aria-expanded="true"
                                             :aria-controls="`collapse${objperg.id}`"
-                                        >
+                                         @click="$refs[`collapse${objperg.id}`] && $refs[`collapse${objperg.id}`].abrirModal()">
                                             Questão - {{ ind + 1 }}
                                         </a>
                                     </h2>
@@ -75,7 +74,7 @@
 
                                 <div :id="`collapse${objperg.id}`" class="collapse show" :aria-labelledby="objperg.id" data-parent="#prova">
                                     <div class="card-body">
-                                        <a class="btn btn-sm btn-danger" href="javascript://" @click="removerLIQuestao(ind)">
+                                        <a class="btn btn-sm mr-1 btn-danger" href="javascript://" @click="removerLIQuestao(ind)">
                                             <i class="fa fa-trash"></i> Apagar questão {{ ind + 1 }}
                                         </a>
 
@@ -85,7 +84,7 @@
                                         </div>
 
                                         <div class="col-12 mt-3 mb-3">
-                                            <button class="btn btn-sm btn-primary" @click="addLIResposta(ind, $event.target)">Adicionar opção</button>
+                                            <button class="btn btn-sm mr-1 btn-primary" @click="addLIResposta(ind, $event.target)">Adicionar opção</button>
                                         </div>
 
                                         <div
@@ -113,11 +112,11 @@
                                                     </div>
 
                                                     <div class="form-group col-12 mt-3 mb-2">
-                                                        <button class="btn btn-sm btn-danger mt-2 mb-2" @click="removerLIResposta(ind, index)">
+                                                        <button class="btn btn-sm mr-1 btn-danger mt-2 mb-2" @click="removerLIResposta(ind, index)">
                                                             Remover opção
                                                         </button>
 
-                                                        <button class="btn btn-sm btn-primary mt-2 mb-2 ml-2" @click="addLIResposta(ind, $event.target)">
+                                                        <button class="btn btn-sm mr-1 btn-primary mt-2 mb-2 ml-2" @click="addLIResposta(ind, $event.target)">
                                                             Adicionar outra opção
                                                         </button>
                                                     </div>
@@ -126,7 +125,7 @@
                                         </div>
                                     </div>
 
-                                    <a class="btn btn-sm btn-danger" href="javascript://" @click="removerLIQuestao(ind)">
+                                    <a class="btn btn-sm mr-1 btn-danger" href="javascript://" @click="removerLIQuestao(ind)">
                                         <i class="fa fa-trash"></i> Apagar questão {{ ind + 1 }}
                                     </a>
                                 </div>
@@ -136,19 +135,18 @@
 
                     <fieldset v-if="form.tipo_prova === 'subjetiva'">
                         <legend>Questões Subjetivas</legend>
-                        <button class="btn btn-sm btn-primary mb-2" @click="addLiQuestao($event.target)">Adicionar Questão</button>
+                        <button class="btn btn-sm mr-1 btn-primary mb-2" @click="addLiQuestao($event.target)">Adicionar Questão</button>
                         <div class="accordion" id="provaSub">
-                            <div class="card mb-3 border" v-for="(objperg, ind) in form.perguntas" v-show="form.perguntas.length > 0">
+                            <div class="card mb-3 border" v-for="(objperg, ind) in form.perguntas" :key="objperg.id || ind" v-show="form.perguntas.length > 0">
                                 <div class="card-header" style="background: #072433; color: white" :id="objperg.id">
                                     <h2 class="mb-0">
                                         <a
                                             class="btn btn-link btn-block text-left"
                                             href="javascript://"
                                             data-toggle="collapse"
-                                            :data-target="`#collapse${objperg.id}`"
                                             aria-expanded="true"
                                             :aria-controls="`collapse${objperg.id}`"
-                                        >
+                                         @click="$refs[`collapse${objperg.id}`] && $refs[`collapse${objperg.id}`].abrirModal()">
                                             Questão - {{ ind + 1 }}
                                         </a>
                                     </h2>
@@ -156,7 +154,7 @@
 
                                 <div :id="`collapse${objperg.id}`" class="collapse show" :aria-labelledby="objperg.id" data-parent="#provaSub">
                                     <div class="card-body">
-                                        <a class="btn btn-sm btn-danger" href="javascript://" @click="removerLIQuestao(ind)">
+                                        <a class="btn btn-sm mr-1 btn-danger" href="javascript://" @click="removerLIQuestao(ind)">
                                             <i class="fa fa-trash"></i> Apagar questão {{ ind + 1 }}
                                         </a>
 
@@ -177,7 +175,7 @@
                                         </div>
                                     </div>
 
-                                    <a class="btn btn-sm btn-danger" href="javascript://" @click="removerLIQuestao(ind)">
+                                    <a class="btn btn-sm mr-1 btn-danger" href="javascript://" @click="removerLIQuestao(ind)">
                                         <i class="fa fa-trash"></i> Apagar questão {{ ind + 1 }}
                                     </a>
                                 </div>
@@ -187,15 +185,15 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preload" @click="alterar()">Alterar</button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !preload" @click="cadastrar()">Cadastrar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !preload" @click="alterar()">Alterar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !preload" @click="cadastrar()">Cadastrar</button>
             </template>
         </modal>
 
         <!-- Filtro -->
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -211,18 +209,16 @@
                 </div>
 
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary"
+                        class="btn btn-sm mr-1 btn-primary"
                         :disabled="controle.carregando"
-                        @click="formNovo"
-                        data-toggle="modal"
-                        data-target="#janelaCadastrar"
+                        @click="formNovo(); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                     >
                         <i class="fa fa-plus"></i> Cadastrar
                     </button>
@@ -251,7 +247,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in lista">
+                        <tr v-for="(item, index) in lista" :key="item.id || index">
                             <td class="text-center">{{ item.id }}</td>
                             <td class="text-center">{{ item.titulo }}</td>
                             <td class="text-center">{{ item.qnt_questoes }}</td>
@@ -261,10 +257,8 @@
                             <td class="text-center">
                                 <button
                                     type="button"
-                                    class="btn btn-sm btn-primary mb-1"
-                                    data-toggle="modal"
-                                    data-target="#janelaCadastrar"
-                                    @click="alterarForm(item)"
+                                    class="btn btn-sm mr-1 btn-primary mb-1"
+                                    @click="alterarForm(item); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                                 >
                                     <i class="fa fa-edit"></i>
                                 </button>
@@ -325,7 +319,7 @@ export default {
     data() {
         return {
             hash: String(Math.random()).substr(2),
-            titulo_janela: '',
+            titulo_janela: 'Montagem da Prova',
             tinyProva,
 
             preload: false,
@@ -406,7 +400,7 @@ export default {
                 .post(`${URL_ADMIN}/cadastro/provas`, this.form)
                 .then((res) => {
                     if (res.status === 201) {
-                        $('#janelaCadastrar').modal('hide')
+                        this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
                         mostraSucesso('', 'Prova cadastrada com sucesso')
                         this.cadastrado = true
                         this.preload = false
@@ -453,7 +447,7 @@ export default {
             axios
                 .put(`${URL_ADMIN}/cadastro/provas/${this.form.id}`, this.form)
                 .then((response) => {
-                    $('#janelaCadastrar').modal('hide')
+                    this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
                     mostraSucesso('', 'Prova alterada com sucesso')
                     this.preload = false
                     this.atualizado = true
@@ -469,8 +463,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

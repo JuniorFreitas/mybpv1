@@ -22,12 +22,12 @@
     </template>
     <template #rodape>
         <div v-if="listaColunasTreinamentos && listaColunasTreinamentos.length">
-            <button class="btn btn-sm btn-primary"
+            <button class="btn btn-sm mr-1 btn-primary"
                 :disabled="listaColunasTreinamentos.length === listaColunasTreinamentos.filter(item => item.checked).length"
                 @click.prevent="marcarDesmarcarTodosTreinamentosColuna(true)">
                 Selecionar todos
             </button>
-            <button class="btn btn-sm btn-primary"
+            <button class="btn btn-sm mr-1 btn-primary"
                 :disabled="listaColunasTreinamentos.filter(item => item.checked).length === 0"
                 @click.prevent="marcarDesmarcarTodosTreinamentosColuna(false)">
                 Desmarcar todos
@@ -454,7 +454,7 @@
     </div>
     </template>
     <template #rodape>
-        <button type="button" class="btn btn-sm btn-primary" @click="salvar"
+        <button type="button" class="btn btn-sm mr-1 btn-primary" @click="salvar"
             v-if="!preload && (!cadastrado && !atualizado)">
             <i class="fa fa-save"></i> Salvar
         </button>
@@ -521,7 +521,7 @@
 
     </template>
     <template #rodape>
-        <button type="button" class="btn btn-sm btn-primary" @click="salvarMassa"
+        <button type="button" class="btn btn-sm mr-1 btn-primary" @click="salvarMassa"
             v-if="!preload && formMassa.listaVencimentos && formMassa.listaVencimentos.length > 0 && (!cadastrado && !atualizado)">
             <i class="fa fa-save"></i> Salvar
         </button>
@@ -559,7 +559,7 @@
     </template>
     <template #rodape>
         <div v-show="!formEnviar.preload">
-            <button type="button" class="btn btn-sm btn-primary"
+            <button type="button" class="btn btn-sm mr-1 btn-primary"
                 @click="enviar"
                 v-show="!formEnviar.enviado">
                 <i class="fa fa-envelope"></i> Enviar
@@ -599,7 +599,7 @@
     </template>
     <template #rodape>
         <div v-show="!formEnviarAviso.preload">
-            <button type="button" class="btn btn-sm btn-primary"
+            <button type="button" class="btn btn-sm mr-1 btn-primary"
                 @click="enviarAviso"
                 v-show="!formEnviarAviso.enviado">
                 <i class="fa fa-envelope"></i> Enviar
@@ -1044,7 +1044,7 @@
 
     <div class="col-12">
         <div class="row mt-2">
-            <button type="button" class="btn btn-sm btn-success mb-1 mr-1" :disabled="controle.carregando"
+            <button type="button" class="btn btn-sm mr-1 btn-success mb-1 mr-1" :disabled="controle.carregando"
                 :style="controle.carregando ? 'cursor: not-allowed' : 'cursor: pointer'" @click="atualizar">
                 <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                 Atualizar
@@ -1053,26 +1053,26 @@
             {{-- <form target="_blank" action="{{ route('g.treinamentos.carteiraPdf') }}" method="post">--}}
             {{-- @csrf--}}
             {{-- <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">--}}
-            {{-- <button type="submit" class="btn btn-sm btn-primary mr-1"--}}
+            {{-- <button type="submit" class="btn btn-sm mr-1 btn-primary mr-1"--}}
             {{-- :style="!selecionados.length ? 'cursor: not-allowed' : 'cursor: pointer'"--}}
             {{-- :disabled="!selecionados.length">--}}
             {{-- Gerar Carteira <span class="badge badge-light">@{{ selecionados.length }}</span>--}}
             {{-- </button>--}}
             {{-- </form>--}}
 
-            <div class="dropdown">
-                <button class="btn btn-sm btn-primary dropdown-toggle mr-1"
+            <div class="dropdown" :class="{ show: isDropdownOpen('carteira') }">
+                <button class="btn btn-sm mr-1 btn-primary dropdown-toggle mr-1"
                     type="button"
                     id="dropdownCarteira"
-                    data-toggle="dropdown"
                     aria-haspopup="true"
-                    aria-expanded="false"
+                    :aria-expanded="isDropdownOpen('carteira') ? 'true' : 'false'"
                     :style="!selecionados.length ? 'cursor: not-allowed' : 'cursor: pointer'"
-                    :disabled="!selecionados.length">
+                    :disabled="!selecionados.length"
+                    @click.prevent.stop="toggleDropdown('carteira')">
                     Gerar Carteira <span class="badge badge-light">@{{ selecionados.length }}</span>
                 </button>
 
-                <div class="dropdown-menu" aria-labelledby="dropdownCarteira">
+                <div class="dropdown-menu" :class="{ show: isDropdownOpen('carteira') }" aria-labelledby="dropdownCarteira" @click="fecharDropdown">
                     <form target="_blank" action="{{ route('g.treinamentos.carteiraPdf') }}" method="post"
                         style="display: inline;">
                         @csrf
@@ -1111,13 +1111,13 @@
                 </div>
             </div>
 
-            <button class="btn btn-sm btn-danger mb-1 mr-1"
+            <button class="btn btn-sm mr-1 btn-danger mb-1 mr-1"
                 :style="!selecionados.length ? 'cursor: not-allowed' : 'cursor: pointer'"
                 :disabled="!selecionados.length" @click="selecionados = []">
                 <i class="fa fa-times"></i> Limpar seleção
             </button>
 
-            <button class="btn btn-sm btn-primary mb-1 mr-1" v-if="false"
+            <button class="btn btn-sm mr-1 btn-primary mb-1 mr-1" v-if="false"
                 :style="!selecionadosMassa.length ? 'cursor: not-allowed' : 'cursor: pointer'"
                 @click.pre.prevent="abrirFormMassa()"
                 data-toggle="modal"
@@ -1126,13 +1126,13 @@
                 <i class="fa fa-plus"></i> Atualizar em massa <span class="badge badge-light">@{{ selecionadosMassa.length }}</span>
             </button>
 
-            <button class="btn btn-sm btn-danger mb-1 mr-1" v-if="false"
+            <button class="btn btn-sm mr-1 btn-danger mb-1 mr-1" v-if="false"
                 :style="!selecionadosMassa.length ? 'cursor: not-allowed' : 'cursor: pointer'"
                 :disabled="!selecionadosMassa.length" @click="selecionadosMassa = []">
                 <i class="fa fa-times"></i> Limpar seleção em massa
             </button>
 
-            <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"
+            <button type="button" class="btn btn-sm mr-1 btn-primary mb-1 mr-1"
                 @click.prevent="exportaExcel()"
                 :disabled="controle.carregando || preloadExportacao || lista.length===0">
                 <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
@@ -1140,7 +1140,7 @@
             </button>
 
             {{-- @if (auth()->user()->cliente_id != \App\Models\User::BPSE)--}}
-            {{-- <button class="btn btn-sm btn-primary ml-1" @click.prevent="abriJanelaEnviarAviso"--}}
+            {{-- <button class="btn btn-sm mr-1 btn-primary ml-1" @click.prevent="abriJanelaEnviarAviso"--}}
             {{-- data-toggle="modal"--}}
             {{-- data-target="#janelaEnviarAviso">--}}
             {{-- <i class="fa fa-envelope"></i> Notificação--}}
@@ -1192,7 +1192,7 @@
                     </div>
 
                     <div class="col text-right">
-                        <button class="btn btn-sm btn-primary" content="Mostrar e Ocultar Treinamentos" v-tippy
+                        <button class="btn btn-sm mr-1 btn-primary" content="Mostrar e Ocultar Treinamentos" v-tippy
                             data-toggle="modal" data-target="#filtroColunas">
                             <i class="bx bxs-filter-alt" aria-hidden="true"></i> Filtrar treinamentos
                         </button>
@@ -1249,14 +1249,18 @@
                                 </div>
                             </div>
                             <div class="col-auto">
-                                <div class="dropdown dropleft">
-                                    <button class="btn btn-sm btn-secondary dropdown-toggle"
-                                        id="dropdownMenuLink"
-                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <div class="dropdown dropleft" :class="{ show: isDropdownOpen(`treinamento:${item.id}`) }">
+                                    <button class="btn btn-sm mr-1 btn-secondary dropdown-toggle"
+                                        :id="`dropdownMenuLink_${item.id}`"
+                                        aria-haspopup="true"
+                                        :aria-expanded="isDropdownOpen(`treinamento:${item.id}`) ? 'true' : 'false'"
+                                        @click.prevent.stop="toggleDropdown(`treinamento:${item.id}`)">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-custom"
-                                        aria-labelledby="dropdownMenuLink">
+                                        :class="{ show: isDropdownOpen(`treinamento:${item.id}`) }"
+                                        :aria-labelledby="`dropdownMenuLink_${item.id}`"
+                                        @click="fecharDropdown">
                                         <a class="dropdown-item" href="javascript://" title="Atualizar treinamento"
                                             @click.prevent="formAlterar(item.id)"
                                             data-toggle="modal"
@@ -1344,23 +1348,23 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="v in item.treinamento.vencimentos" :key="v.id"
-                                    :class="v.pivot.status.corBorder"
-                                    v-if="isColunaTreinamentoSelecionada(v)">
-                                    <td>@{{ v.label }}</td>
-                                    <td>@{{ v.pivot.data_treinamento }}</td>
-                                    <td>@{{ v.pivot.data_vencimento }}</td>
-                                    <td>
-                                        <i class="fa fa-paperclip" v-show="v.pivot.arquivo_id"></i>
-                                        <i class="fa fa-minus" v-show="!v.pivot.arquivo_id"></i>
-                                    </td>
-                                    <td>
-                                        <span class="badge" :class="v.pivot.status.badge">
-                                            @{{ v.pivot.status.label }}
-                                        </span>
-                                    </td>
-                                    <td>@{{ v.exibir_na_carteira ? 'Sim' : 'Não' }}</td>
-                                </tr>
+                                <template v-for="v in item.treinamento.vencimentos">
+                                    <tr v-if="isColunaTreinamentoSelecionada(v)" :key="v.id" :class="v.pivot.status.corBorder">
+                                        <td>@{{ v.label }}</td>
+                                        <td>@{{ v.pivot.data_treinamento }}</td>
+                                        <td>@{{ v.pivot.data_vencimento }}</td>
+                                        <td>
+                                            <i class="fa fa-paperclip" v-show="v.pivot.arquivo_id"></i>
+                                            <i class="fa fa-minus" v-show="!v.pivot.arquivo_id"></i>
+                                        </td>
+                                        <td>
+                                            <span class="badge" :class="v.pivot.status.badge">
+                                                @{{ v.pivot.status.label }}
+                                            </span>
+                                        </td>
+                                        <td>@{{ v.exibir_na_carteira ? 'Sim' : 'Não' }}</td>
+                                    </tr>
+                                </template>
                                 <tr v-if="!item.treinamento.vencimentos.some(v => isColunaTreinamentoSelecionada(v))">
                                     <td colspan="5" class="text-center py-3">
                                         <em>Nenhum treinamento visível com os filtros atuais</em>
@@ -1397,7 +1401,7 @@
                     <th class="text-center" v-if="AUTENTICADO.temFilial">CNPJ</th>
                     <th class="text-center">Centro de Custo</th>
                     <th class="text-center">
-                        <button class="btn btn-sm btn-primary mb-2" content="Mostrar e Ocultar Treinamentos" v-tippy
+                        <button class="btn btn-sm mr-1 btn-primary mb-2" content="Mostrar e Ocultar Treinamentos" v-tippy
                                 data-toggle="modal"
                                 data-target="#filtroColunas">
                             <i class="bx bxs-filter-alt" aria-hidden="true"></i>

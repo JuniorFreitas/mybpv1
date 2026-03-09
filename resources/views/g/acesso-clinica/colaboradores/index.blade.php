@@ -148,7 +148,7 @@
         </template>
         <template #rodape>
             {{--            <div v-show="!visualizar">--}}
-            <button type="button" class="btn btn-sm btn-primary"
+            <button type="button" class="btn btn-sm mr-1 btn-primary"
                     v-if="!abasesmt.preload"
                     @click.prevent="salvarResultado">
                 <i class="fa fa-save"></i> Salvar
@@ -208,7 +208,7 @@
                                         </td>
                                         <td>
                                             <button type="button" content="Resultado exame" v-tippy
-                                                    class="btn btn-sm btn-primary mb-2" data-toggle="modal"
+                                                    class="btn btn-sm mr-1 btn-primary mb-2" data-toggle="modal"
                                                     data-target="#validaSesmt" @click='formResultado(item.id)'>
                                                 <i class="fa fa-search-plus" aria-hidden="true"></i>
                                             </button>
@@ -223,7 +223,7 @@
         </template>
         <template #rodape>
             <div v-show="!visualizar">
-                <button type="button" class="btn btn-sm btn-primary"
+                <button type="button" class="btn btn-sm mr-1 btn-primary"
                         v-show="!cadastrado & nav === 'encaminhar'  && !preload"
                         @click.prevent="salvarUpdate">
                     <i class="fa fa-save"></i>
@@ -283,7 +283,7 @@
         </form>
         <div class="col-12">
             <div class="row">
-                <button type="button" class="btn btn-sm btn-success mr-1 mb-1" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm mr-1 btn-success mr-1 mb-1" :disabled="controle.carregando"
                         @click.prevent="atualizar">
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
@@ -319,7 +319,7 @@
                 </td>
                 <td></td>
                 <td class="text-center">
-                    <button class="btn btn-sm btn-primary mb-2" content="Historico" v-tippy
+                    <button class="btn btn-sm mr-1 btn-primary mb-2" content="Historico" v-tippy
                             v-show="!colaborador.resultado_integrado"
                             @click.prevent="formEncaminhar(colaborador)"
                             data-toggle="modal" data-target="#janelaParecerEntrevista">

@@ -14,7 +14,7 @@
 
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm btn-danger" @click="apagarEscala()" v-show="!formEscala.save && !formEscala.preload">Apagar</button>
+            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagarEscala()" v-show="!formEscala.save && !formEscala.preload">Apagar</button>
         </template>
     </modal>
 
@@ -50,7 +50,7 @@
 
         </template>
         <template #rodape>
-            <button :disabled="listaTodasEscalas.length=== 0" v-if="!formEscalaFuncionarios.preload && !formEscalaFuncionarios.update" class="btn btn-sm btn-success" type="button" @click="assosicarEscala">
+            <button :disabled="listaTodasEscalas.length=== 0" v-if="!formEscalaFuncionarios.preload && !formEscalaFuncionarios.update" class="btn btn-sm mr-1 btn-success" type="button" @click="assosicarEscala">
                 <i class="fas fa-link"></i> Aplicar
             </button>
         </template>
@@ -88,7 +88,7 @@
 
         </template>
         <template #rodape>
-            <button v-if="!formEscala.preload && !formEscala.save" class="btn btn-sm btn-success" type="button" @click="salvarEscala">
+            <button v-if="!formEscala.preload && !formEscala.save" class="btn btn-sm mr-1 btn-success" type="button" @click="salvarEscala">
                 <span v-if="formEscala.editando">Alterar</span>
                 <span v-else> Cadastrar </span>
             </button>
@@ -133,11 +133,11 @@
                 <tr class="pointer" v-for="escala in listaEscalas">
                     <td data-label="descrição" >@{{escala.descricao}}</td>
                     <td data-label="editar">
-                        <a v-if="escalas_update" href="javascript://" data-toggle="modal" data-target="#janelaFormEscalas" class="btn btn-sm btn-success" @click="formEditarEscala(escala)"><i aria-hidden="true" class="fa fa-edit"></i> Editar
+                        <a v-if="escalas_update" href="javascript://" data-toggle="modal" data-target="#janelaFormEscalas" class="btn btn-sm mr-1 btn-success" @click="formEditarEscala(escala)"><i aria-hidden="true" class="fa fa-edit"></i> Editar
                         </a>
                     </td>
                     <td data-label="excluir">
-                        <a v-if="escalas_delete" href="javascript://" data-toggle="modal" data-target="#janelaConfirmar" class="btn btn-sm btn-danger" @click="formEscala.id = escala.id"><i aria-hidden="true" class="fa fa-trash"></i> Excluir
+                        <a v-if="escalas_delete" href="javascript://" data-toggle="modal" data-target="#janelaConfirmar" class="btn btn-sm mr-1 btn-danger" @click="formEscala.id = escala.id"><i aria-hidden="true" class="fa fa-trash"></i> Excluir
                         </a>
                     </td>
                 </tr>

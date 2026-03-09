@@ -1,6 +1,6 @@
 <template>
     <div :id="hash">
-        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
+        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90" ref="modal_janelaCadastrar">
             <template v-slot:conteudo>
                 <preload v-show="preload"></preload>
                 <div v-if="!preload && !cadastrado">
@@ -52,19 +52,19 @@
 
                     <fieldset v-if="form.avaliacao_tipo_id > 0">
                         <legend>Indicador</legend>
-                        <button class="btn btn-sm btn-primary mb-2" @click="addLiSubtopico($event.target)">Adicionar
+                        <button class="btn btn-sm mr-1 btn-primary mb-2" @click="addLiSubtopico($event.target)">Adicionar
                             Indicador
                         </button>
                         <div class="accordion" id="topico">
                             <div class="card mb-3 border" v-for="(objsubtopico, ind) in form.subtopicos"
+                            :key="ind"
                                  v-show="form.subtopicos.length> 0">
                                 <div class="card-header" style="background: #072433; color: white"
                                      :id="objsubtopico.id">
                                     <h2 class="mb-0">
                                         <a class="btn btn-link btn-block text-left" href="javascript://"
-                                           data-toggle="collapse"
-                                           :data-target="`#collapse${objsubtopico.id}`" aria-expanded="true"
-                                           :aria-controls="`collapse${objsubtopico.id}`">
+                                           data-toggle="collapse" aria-expanded="true"
+                                           :aria-controls="`collapse${objsubtopico.id}`" @click="$refs[`collapse${objsubtopico.id}`] && $refs[`collapse${objsubtopico.id}`].abrirModal()">
                                             Indicador - {{ ind + 1 }}
                                         </a>
                                     </h2>
@@ -87,7 +87,7 @@
                                                       rows="4"></textarea>
                                         </div>
                                     </div>
-                                    <a class="btn btn-sm btn-danger" href="javascript://"
+                                    <a class="btn btn-sm mr-1 btn-danger" href="javascript://"
                                        @click="removerLISubtopico(ind)">
                                         <i class="fa fa-trash"></i> Apagar subtópico {{ ind + 1 }}
                                     </a>
@@ -99,11 +99,11 @@
                 </div>
             </template>
             <template v-slot:rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preload"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !preload"
                         @click="alterar()">
                     Alterar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-if="lista_avaliacoes_tipos.length > 0"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-if="lista_avaliacoes_tipos.length > 0"
                         v-show="!editando && !preload"
                         @click="cadastrar()">
                     Cadastrar
@@ -114,7 +114,7 @@
         <!-- Filtro -->
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -127,16 +127,14 @@
                 </div>
 
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando"
                             @click="atualizar"><i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
-                    <button type="button" class="btn btn-sm btn-primary" :disabled="controle.carregando"
-                            @click="formNovo"
-                            data-toggle="modal"
-                            data-target="#janelaCadastrar">
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="controle.carregando"
+                            @click="formNovo(); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()">
                         <i class="fa fa-plus"></i> Cadastrar
                     </button>
                 </div>
@@ -165,7 +163,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="item in lista">
+                    <tr v-for="item in lista" :key="item.id">
                         <td class="text-center">{{ item.topico }}</td>
                         <td class="text-center">{{ item.qnt_subtopicos }}</td>
                         <td class="text-center">{{ item.avaliacao_tipo.nome }}</td>
@@ -174,8 +172,7 @@
                                       :model="item"></bt-ativo>
                         </td>
                         <td class="text-center">
-                            <button type="button" class="btn btn-sm btn-primary mb-1" data-toggle="modal"
-                                    data-target="#janelaCadastrar" @click="alterarForm(item)">
+                            <button type="button" class="btn btn-sm mr-1 btn-primary mb-1" @click="alterarForm(item); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()">
                                 <i class="fa fa-edit"></i>
                             </button>
                         </td>
@@ -230,7 +227,7 @@ export default {
     data() {
         return {
             hash: String(Math.random()).substr(2),
-            titulo_janela: '',
+            titulo_janela: 'Montagem de competência',
             preload: false,
             editando: false,
             cadastrado: false,
@@ -297,7 +294,7 @@ export default {
             axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliacaotopico`, this.form)
                 .then(res => {
                     if (res.status === 201) {
-                        $('#janelaCadastrar').modal('hide')
+                        this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
                         mostraSucesso('', 'Competência de Avaliação cadastrado com sucesso')
                         this.cadastrado = true
                         this.preload = false
@@ -310,7 +307,7 @@ export default {
                 })
         },
 
-        alterarForm(avaliacaotopico) {
+        async alterarForm(avaliacaotopico) {
             this.cadastrado = false
             this.editando = true
             this.titulo_janela = `Alterande competência ${avaliacaotopico.id}`
@@ -319,37 +316,37 @@ export default {
             this.form = _.cloneDeep(this.formDefault) //copia
             formReset()
 
-            axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliacaotopico/${avaliacaotopico.id}/editar`)
-                .then(response => {
-                    Object.assign(this.form, response.data)
-                    this.editando = true
-                    setupCampo()
-                    this.preload = false
-                }).catch(
-                error => (this.preloadAjax = false)
-            )
-
+            try {
+                const response = await axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliacaotopico/${avaliacaotopico.id}/editar`)
+                Object.assign(this.form, response.data)
+                this.editando = true
+                setupCampo()
+            } catch (error) {
+                this.preloadAjax = false
+            } finally {
+                this.preload = false
+            }
         },
 
-        alterar() {
+        async alterar() {
             formReset()
             $('#janelaCadastrar :input:enabled').trigger('blur')
-
             if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
                 mostraErro('', 'Verificar os erros')
                 return false
             }
-
             this.preload = true
-
-            axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliacaotopico/${this.form.id}`, this.form).then(response => {
-                $('#janelaCadastrar').modal('hide')
+            try {
+                await axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliacaotopico/${this.form.id}`, this.form)
+                this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
                 mostraSucesso('', 'Competência de avaliação alterado com sucesso')
-                this.preload = false
                 this.atualizado = true
                 this.atualizar()
-            }).catch(error => (this.preload = false))
-
+            } catch (error) {
+                // erro
+            } finally {
+                this.preload = false
+            }
         },
         carregou(dados) {
             this.lista = dados.itens
@@ -360,8 +357,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 

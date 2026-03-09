@@ -314,6 +314,17 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             });
         });
 
+        Route::group(['as' => 'carta-oferta-template.', 'prefix' => 'carta-oferta-template'], function () {
+            Route::get('/', [\App\Http\Controllers\CartaOfertaTemplateController::class, 'index'])
+                ->name('index')->middleware('can:administracao_carta_oferta_template');
+            Route::get('dados', [\App\Http\Controllers\CartaOfertaTemplateController::class, 'dados'])
+                ->name('dados')->middleware('can:administracao_carta_oferta_template');
+            Route::post('salvar', [\App\Http\Controllers\CartaOfertaTemplateController::class, 'salvar'])
+                ->name('salvar')->middleware('can:administracao_carta_oferta_template');
+            Route::post('preview', [\App\Http\Controllers\CartaOfertaTemplateController::class, 'preview'])
+                ->name('preview')->middleware('can:administracao_carta_oferta_template');
+        });
+
         // Documentos para assinatura digital (gerenciamento)
         Route::group(['as' => 'documento-assinatura.', 'prefix' => 'documento-assinatura', 'middleware' => ['assinatura.digital.habilitada']], function () {
             Route::get('/', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'indexView'])->name('index')->middleware('can:administracao_documentos_legais');

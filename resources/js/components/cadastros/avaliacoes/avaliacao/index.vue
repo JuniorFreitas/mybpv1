@@ -1,12 +1,12 @@
 <template>
     <div :id="hash">
-        <modal id="janelaAssociar" :titulo="janelaAssociar" :fechar="!preload" :size="90">
+        <modal ref="modalAssociar" id="janelaAssociar" :titulo="janelaAssociar" :fechar="!preload" :size="90">
             <template v-slot:conteudo>
                 <vincula-avaliador :obj="avaliacaoSelecionada" v-if="abrirAssociar"></vincula-avaliador>
             </template>
         </modal>
 
-        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" size="g">
+        <modal ref="modalCadastrar" id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" size="g">
             <template v-slot:conteudo>
                 <preload v-show="preload"></preload>
                 <div v-if="!preload && !cadastrado">
@@ -58,7 +58,7 @@
                                         @blur.prevent="valida_campo_vazio($event.target, 1)"
                                     >
                                         <option value="">Selecione ...</option>
-                                        <option v-for="item in lista_status" :value="item">{{ item }}</option>
+                                        <option v-for="(item, index) in lista_status" :key="index" :value="item">{{ item }}</option>
                                     </select>
                                 </div>
                             </div>
@@ -67,9 +67,9 @@
                                     <label>Auto Avaliação</label>
                                     <select
                                         class="form-control form-control-sm"
-                                        onblur="valida_campo_vazio(this, 1)"
-                                        onchange="valida_campo_vazio(this, 1)"
                                         v-model="form.auto_avaliacao"
+                                        @change="valida_campo_vazio($event.target, 1)"
+                                        @blur="valida_campo_vazio($event.target, 1)"
                                     >
                                         <option :value="true">Sim</option>
                                         <option :value="false">Não</option>
@@ -82,9 +82,9 @@
                                     <label>Ativo</label>
                                     <select
                                         class="form-control form-control-sm"
-                                        onblur="valida_campo_vazio(this, 1)"
-                                        onchange="valida_campo_vazio(this, 1)"
                                         v-model="form.ativo"
+                                        @change="valida_campo_vazio($event.target, 1)"
+                                        @blur="valida_campo_vazio($event.target, 1)"
                                     >
                                         <option value="">Selecione</option>
                                         <option :value="true">Sim</option>
@@ -159,10 +159,10 @@
                 </div>
             </template>
             <template v-slot:rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preload" @click="alterar()">Alterar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !preload" @click="alterar()">Alterar</button>
                 <button
                     type="button"
-                    class="btn btn-sm btn-primary"
+                    class="btn btn-sm mr-1 btn-primary"
                     v-if="lista_avaliacoes_tipos.length > 0"
                     v-show="!editando && !preload"
                     @click="cadastrar()"
@@ -175,7 +175,7 @@
         <!-- Filtro -->
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="$refs.componente && $refs.componente.buscar ? $refs.componente.buscar() : null">
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -199,7 +199,7 @@
                             v-model="controle.dados.ano_avaliacao"
                         >
                             <option value="">Sem filtro</option>
-                            <option v-for="(item, key) in listaKeysAvaliacaoPorAnoOrdenado" :value="item">
+                            <option v-for="(item, key) in listaKeysAvaliacaoPorAnoOrdenado" :key="item || key" :value="item">
                                 {{ item }}
                             </option>
                         </select>
@@ -215,7 +215,7 @@
                             v-model="controle.dados.tipo_avaliacao"
                         >
                             <option value="">Sem filtro</option>
-                            <option v-for="(item, key) in groupAvaliacaoAno" :value="item.avaliacao_tipo_id">
+                            <option v-for="(item, key) in groupAvaliacaoAno" :key="item.avaliacao_tipo_id || key" :value="item.avaliacao_tipo_id">
                                 {{ item.avaliacao_tipo }}
                             </option>
                         </select>
@@ -227,7 +227,7 @@
                         <label>Status</label>
                         <select class="form-control form-control-sm" @change.prevent="atualizar()" v-model="controle.dados.status">
                             <option value="">Sem filtro</option>
-                            <option v-for="(item, key) in lista_status" :value="item">
+                            <option v-for="(item, key) in lista_status" :key="item || key" :value="item">
                                 {{ item }}
                             </option>
                         </select>
@@ -235,23 +235,16 @@
                 </div>
 
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-primary"
-                        :disabled="controle.carregando"
-                        @click="formNovo"
-                        data-toggle="modal"
-                        data-target="#janelaCadastrar"
-                    >
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="controle.carregando" @click="formNovo">
                         <i class="fa fa-plus"></i> Cadastrar
                     </button>
 
-                    <button type="button" class="btn btn-sm btn-info" :disabled="controle.carregando || exportando" @click="exportar">
+                    <button type="button" class="btn btn-sm mr-1 btn-info" :disabled="controle.carregando || exportando" @click="exportar">
                         <i :class="exportando ? 'fa fa-sync fa-spin' : 'fa fa-file-excel'"></i>
                         {{ exportando ? 'Exportando...' : 'Exportar Excel' }}
                     </button>
@@ -283,7 +276,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in lista">
+                        <tr v-for="(item, index) in lista" :key="item.id || index">
                             <td class="text-center">{{ item.ano_avaliacao }}</td>
                             <td class="text-center">{{ item.titulo }}</td>
                             <td class="text-center">{{ item.avaliacao_tipo.nome }}</td>
@@ -294,39 +287,28 @@
                                 <bt-ativo :rota="`cadastro/avaliacoes/avaliacao/${item.id}/ativa-desativa`" :model="item"></bt-ativo>
                             </td>
                             <td class="text-center">
-                                <div class="dropdown show">
+                                <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
                                     <a
                                         class="btn btn-secondary dropdown-toggle"
                                         href="#"
                                         role="button"
                                         id="dropdownMenuLink"
-                                        data-toggle="dropdown"
                                         aria-haspopup="true"
-                                        aria-expanded="false"
+                                        :aria-expanded="isDropdownOpen(item.id) ? 'true' : 'false'"
+                                        @click.prevent.stop="toggleDropdown(item.id)"
                                     >
                                         <i class="fas fa-ellipsis-v"></i>
                                     </a>
 
-                                    <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right" aria-labelledby="dropdownMenuLink">
-                                        <a
-                                            class="dropdown-item"
-                                            href="javascript://"
-                                            title="Editar"
-                                            data-toggle="modal"
-                                            data-target="#janelaCadastrar"
-                                            @click="alterarForm(item)"
-                                        >
-                                            Editar
-                                        </a>
+                                    <div
+                                        class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                        :class="{ show: isDropdownOpen(item.id) }"
+                                        aria-labelledby="dropdownMenuLink"
+                                        @click="fecharDropdown"
+                                    >
+                                        <a class="dropdown-item" href="javascript://" title="Editar" @click="alterarForm(item)"> Editar </a>
 
-                                        <a
-                                            class="dropdown-item"
-                                            href="javascript://"
-                                            title="Associar avaliadores"
-                                            data-toggle="modal"
-                                            data-target="#janelaAssociar"
-                                            @click="associar(item)"
-                                        >
+                                        <a class="dropdown-item" href="javascript://" title="Associar avaliadores" @click="associar(item)">
                                             Associar avaliadores
                                         </a>
                                     </div>
@@ -365,7 +347,7 @@ export default {
         controlePaginacao,
         DatePicker,
         vinculaAvaliador,
-        vuedraggable
+        draggable: vuedraggable
     },
     mixins: [validacoes],
     props: {
@@ -394,17 +376,23 @@ export default {
         this.atualizar()
         this.formDefault = _.cloneDeep(this.form)
         this.form.ano_avaliacao = new Date().getFullYear()
+        document.addEventListener('click', this.onClickOutside)
+    },
+
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
     },
     data() {
         return {
             hash: String(Math.random()).substr(2),
-            titulo_janela: '',
+            titulo_janela: 'Montagem da Avaliação',
             janelaAssociar: '',
             preload: false,
             editando: false,
             cadastrado: false,
             abrirAssociar: false,
             exportando: false,
+            dropdownAbertoKey: null,
 
             form: {
                 titulo: '',
@@ -484,6 +472,38 @@ export default {
         }
     },
     methods: {
+        abrirModalCadastrar() {
+            if (this.$refs && this.$refs.modalCadastrar && typeof this.$refs.modalCadastrar.abrirModal === 'function') {
+                this.$refs.modalCadastrar.abrirModal()
+            }
+        },
+        abrirModalAssociar() {
+            if (this.$refs && this.$refs.modalAssociar && typeof this.$refs.modalAssociar.abrirModal === 'function') {
+                this.$refs.modalAssociar.abrirModal()
+            }
+        },
+        fecharModalCadastrar() {
+            if (this.$refs && this.$refs.modalCadastrar && typeof this.$refs.modalCadastrar.fecharModal === 'function') {
+                this.$refs.modalCadastrar.fecharModal()
+            }
+        },
+        toggleDropdown(id) {
+            if (!id) return
+            const key = `aval:${id}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(id) {
+            return this.dropdownAbertoKey === `aval:${id}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+        onClickOutside(event) {
+            if (event && event.target && event.target.closest && event.target.closest('.dropdown')) {
+                return
+            }
+            this.dropdownAbertoKey = null
+        },
         associar(obj) {
             this.abrirAssociar = false
             this.janelaAssociar = `Associar avaliadores para avaliação - ${obj.titulo}`
@@ -491,6 +511,7 @@ export default {
             setTimeout(() => {
                 this.abrirAssociar = true
             }, 300)
+            this.abrirModalAssociar()
         },
         formNovo() {
             this.form = _.cloneDeep(this.formDefault) //copia
@@ -501,6 +522,7 @@ export default {
             this.form.ano_avaliacao = new Date().getFullYear()
             formReset()
             setupCampo()
+            this.abrirModalCadastrar()
         },
 
         cadastrar() {
@@ -515,7 +537,7 @@ export default {
                 .post(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao`, this.form)
                 .then((res) => {
                     if (res.status === 201) {
-                        $('#janelaCadastrar').modal('hide')
+                        this.fecharModalCadastrar()
                         mostraSucesso('', 'Avaliação cadastrada com sucesso')
                         this.cadastrado = true
                         this.preload = false
@@ -536,6 +558,8 @@ export default {
 
             this.form = _.cloneDeep(this.formDefault) //copia
             formReset()
+
+            this.abrirModalCadastrar()
 
             axios
                 .get(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao/${avaliacao.id}/editar`)
@@ -565,7 +589,7 @@ export default {
             axios
                 .put(`${URL_ADMIN}/cadastro/avaliacoes/avaliacao/${this.form.id}`, this.form)
                 .then((response) => {
-                    $('#janelaCadastrar').modal('hide')
+                    this.fecharModalCadastrar()
                     mostraSucesso('', 'Avaliação alterada com sucesso')
                     this.preload = false
                     this.atualizado = true
@@ -642,8 +666,12 @@ export default {
                 })
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            if (this.$refs && this.$refs.componente) {
+                this.$refs.componente.atual = 1
+            }
+            if (this.$refs && this.$refs.componente && this.$refs.componente.buscar) {
+                this.$refs.componente.buscar()
+            }
         }
     }
 }

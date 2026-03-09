@@ -1,6 +1,6 @@
 <template>
     <div id="componenteAtaReuniao">
-        <modal :modal-pai="modal" :titulo="titulo_janela_form_atareuniao" id="janelaFormAtaReuniao" :size="65">
+        <modal ref="modalAtaReuniao" :modal-pai="modal" :titulo="titulo_janela_form_atareuniao" id="janelaFormAtaReuniao" :size="65">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -15,7 +15,7 @@
                                     <label>Área</label>
                                     <select class="form-control form-control-sm" v-model="form.area_etiqueta_id">
                                         <option value="">Selecione</option>
-                                        <option :value="item.id" v-for="item in areasetiquetas">
+                                        <option :value="item.id" v-for="(item, index) in areasetiquetas" :key="item.id || index">
                                             {{ item.label }}
                                         </option>
                                     </select>
@@ -44,11 +44,12 @@
                         </div>
                     </fieldset>
 
-                    <button class="btn btn-sm btn-primary mb-3" :disabled="editando" @click="addLIAssuntos">
+                    <button class="btn btn-sm mr-1 btn-primary mb-3" :disabled="editando" @click="addLIAssuntos">
                         <i class="fa fa-plus"></i> Adicionar Assuntos
                     </button>
 
-                    <fieldset class="mb-2" v-if="form.assuntos.length > 0" v-for="(obj, index) in form.assuntos" :key="index + 1">
+                    <template v-if="form.assuntos.length > 0">
+                    <fieldset class="mb-2" v-for="(obj, index) in form.assuntos" :key="index + 1">
                         <legend>#Assuntos {{ index + 1 }}</legend>
                         <div class="row">
                             <div class="col-12">
@@ -62,20 +63,22 @@
                                 ></textarea>
                             </div>
                             <div class="col-12 mt-3" v-show="obj.novo">
-                                <button class="btn btn-sm btn-danger" @click="removerLIAssuntos(index)"><i class="fa fa-times"></i> Remover</button>
+                                <button class="btn btn-sm mr-1 btn-danger" @click="removerLIAssuntos(index)"><i class="fa fa-times"></i> Remover</button>
 
-                                <button class="btn btn-sm btn-primary mt" @click="addLIAssuntos" v-show="index >= 1">
+                                <button class="btn btn-sm mr-1 btn-primary mt" @click="addLIAssuntos" v-show="index >= 1">
                                     <i class="fa fa-plus"></i> Adicionar
                                 </button>
                             </div>
                         </div>
                     </fieldset>
+                    </template>
 
-                    <button class="btn btn-sm btn-primary mb-3" :disabled="editando" @click="addLITipos">
+                    <button class="btn btn-sm mr-1 btn-primary mb-3" :disabled="editando" @click="addLITipos">
                         <i class="fa fa-plus"></i> Adicionar Comentários / Assuntos Pendentes / Próxima Reunião
                     </button>
 
-                    <fieldset class="mb-2" v-if="form.tipos.length > 0" v-for="(obj, index) in form.tipos" :key="index + 100">
+                    <template v-if="form.tipos.length > 0">
+                    <fieldset class="mb-2" v-for="(obj, index) in form.tipos" :key="index + 100">
                         <legend>#Tipos {{ index + 1 }}</legend>
                         <div class="row">
                             <div class="col-12">
@@ -99,71 +102,74 @@
                                 ></textarea>
                             </div>
                             <div class="col-12 mt-3" v-show="obj.novo">
-                                <button class="btn btn-sm btn-danger" @click="removerLITipos(index)"><i class="fa fa-times"></i> Remover</button>
+                                <button class="btn btn-sm mr-1 btn-danger" @click="removerLITipos(index)"><i class="fa fa-times"></i> Remover</button>
 
-                                <button class="btn btn-sm btn-primary mt" @click="addLITipos" v-show="index >= 1"><i class="fa fa-plus"></i> Adicionar</button>
+                                <button class="btn btn-sm mr-1 btn-primary mt" @click="addLITipos" v-show="index >= 1"><i class="fa fa-plus"></i> Adicionar</button>
                             </div>
                         </div>
                     </fieldset>
+                    </template>
 
-                    <button class="btn btn-sm btn-primary mb-3" :disabled="editando" @click="addLIAcoes">
+                    <button class="btn btn-sm mr-1 btn-primary mb-3" :disabled="editando" @click="addLIAcoes">
                         <i class="fa fa-plus"></i> Ações - Próximos passos
                     </button>
 
-                    <fieldset class="mb-2" v-if="form.acoes.length > 0" v-for="(obj, index) in form.acoes" :key="index + 1000">
-                        <legend>#Ações {{ index + 1 }}</legend>
-                        <div class="row">
-                            <div class="col-12">
-                                <label>Responsável</label>
-                                <input class="form-control" :disabled="!obj.novo" onblur="valida_campo_vazio(this, 1)" v-model="obj.responsavel" />
-                            </div>
-                            <div class="col-12">
-                                <label>Email</label>
-                                <input class="form-control" type="email" :disabled="!obj.novo" onblur="valida_campo_vazio(this, 1)" v-model="obj.email" />
-                            </div>
+                    <template v-if="form.acoes.length > 0">
+                        <fieldset class="mb-2" v-for="(obj, index) in form.acoes" :key="index + 1000">
+                            <legend>#Ações {{ index + 1 }}</legend>
+                            <div class="row">
+                                <div class="col-12">
+                                    <label>Responsável</label>
+                                    <input class="form-control" :disabled="!obj.novo" onblur="valida_campo_vazio(this, 1)" v-model="obj.responsavel" />
+                                </div>
+                                <div class="col-12">
+                                    <label>Email</label>
+                                    <input class="form-control" type="email" :disabled="!obj.novo" onblur="valida_campo_vazio(this, 1)" v-model="obj.email" />
+                                </div>
 
-                            <div class="col-12">
-                                <label>Contínuo</label>
-                                <select class="form-control" :disabled="!obj.novo" onblur="valida_campo_vazio(this, 1)" v-model="obj.continuo">
-                                    <option value="">Selecione</option>
-                                    <option :value="true">Sim</option>
-                                    <option :value="false">Não</option>
-                                </select>
+                                <div class="col-12">
+                                    <label>Contínuo</label>
+                                    <select class="form-control" :disabled="!obj.novo" onblur="valida_campo_vazio(this, 1)" v-model="obj.continuo">
+                                        <option value="">Selecione</option>
+                                        <option :value="true">Sim</option>
+                                        <option :value="false">Não</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-12" v-show="obj.continuo == false">
+                                    <date-picker formsm label="Prazo" v-model="obj.prazo" :disabled="!obj.novo"></date-picker>
+                                </div>
+
+                                <div class="col-12" v-show="!obj.novo">
+                                    <label>Status</label>
+                                    <select class="form-control" onblur="valida_campo_vazio(this, 1)" v-model="obj.status">
+                                        <option value="andamento">Andamento</option>
+                                        <option value="concluido">Concluído</option>
+                                        <option value="pendente">Pendente</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-12">
+                                    <label>Ações</label>
+                                    <textarea
+                                        v-model="obj.acao"
+                                        :disabled="!obj.novo"
+                                        onblur="valida_campo_vazio(this, 1)"
+                                        class="form-control"
+                                        rows="3"
+                                    ></textarea>
+                                </div>
+
+                                <div class="col-12 mt-3" v-show="obj.novo">
+                                    <button class="btn btn-sm mr-1 btn-danger" @click="removerLIAcoes(index)"><i class="fa fa-times"></i> Remover</button>
+
+                                    <button class="btn btn-sm mr-1 btn-primary mt" @click="addLIAcoes" v-show="index >= 1"><i class="fa fa-plus"></i> Adicionar</button>
+                                </div>
                             </div>
+                        </fieldset>
+                    </template>
 
-                            <div class="col-12" v-show="obj.continuo == false">
-                                <date-picker formsm label="Prazo" v-model="obj.prazo" :disabled="!obj.novo"></date-picker>
-                            </div>
-
-                            <div class="col-12" v-show="!obj.novo">
-                                <label>Status</label>
-                                <select class="form-control" onblur="valida_campo_vazio(this, 1)" v-model="obj.status">
-                                    <option value="andamento">Andamento</option>
-                                    <option value="concluido">Concluído</option>
-                                    <option value="pendente">Pendente</option>
-                                </select>
-                            </div>
-
-                            <div class="col-12">
-                                <label>Ações</label>
-                                <textarea
-                                    v-model="obj.acao"
-                                    :disabled="!obj.novo"
-                                    onblur="valida_campo_vazio(this, 1)"
-                                    class="form-control"
-                                    rows="3"
-                                ></textarea>
-                            </div>
-
-                            <div class="col-12 mt-3" v-show="obj.novo">
-                                <button class="btn btn-sm btn-danger" @click="removerLIAcoes(index)"><i class="fa fa-times"></i> Remover</button>
-
-                                <button class="btn btn-sm btn-primary mt" @click="addLIAcoes" v-show="index >= 1"><i class="fa fa-plus"></i> Adicionar</button>
-                            </div>
-                        </div>
-                    </fieldset>
-
-                    <button class="btn btn-sm btn-primary mb-3" :disabled="editando" @click="addLIParticipantes">
+                    <button class="btn btn-sm mr-1 btn-primary mb-3" :disabled="editando" @click="addLIParticipantes">
                         <i class="fa fa-plus"></i> Participantes
                     </button>
 
@@ -180,9 +186,9 @@
                             </div>
 
                             <div class="col-12 mt-3" v-show="obj.novo">
-                                <button class="btn btn-sm btn-danger" @click="removerLIParticipantes(index)"><i class="fa fa-times"></i> Remover</button>
+                                <button class="btn btn-sm mr-1 btn-danger" @click="removerLIParticipantes(index)"><i class="fa fa-times"></i> Remover</button>
 
-                                <button class="btn btn-sm btn-primary mt" @click="addLIParticipantes" v-show="index >= 1">
+                                <button class="btn btn-sm mr-1 btn-primary mt" @click="addLIParticipantes" v-show="index >= 1">
                                     <i class="fa fa-plus"></i> Adicionar
                                 </button>
                             </div>
@@ -191,15 +197,15 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando" @click="alterarformAtaReuniao()">Alterar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando" @click="alterarformAtaReuniao()">Alterar</button>
             </template>
         </modal>
 
         <!-- Filtro -->
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-5">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -215,19 +221,12 @@
                 </div>
 
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
-                    <button
-                        type="button"
-                        class="btn btn-sm btn-primary"
-                        :disabled="controle.carregando"
-                        @click="formNovo"
-                        data-toggle="modal"
-                        data-target="#janelaFormAtaReuniao"
-                    >
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="controle.carregando" @click="formNovo">
                         <i class="fa fa-plus"></i> Cadastrar Ata de Reunião
                     </button>
                 </div>
@@ -254,24 +253,17 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(atareuniao, ind) in lista">
+                        <tr v-for="(atareuniao, ind) in lista" :key="ind">
                             <td class="text-center">{{ ind + 1 }}</td>
                             <td class="text-center">{{ atareuniao.quem_cadastrou.nome }}</td>
                             <td class="text-center">{{ atareuniao.local }}</td>
                             <td class="text-center">{{ atareuniao.data_inicio }}</td>
                             <td class="text-center">{{ atareuniao.data_fim }}</td>
                             <td class="text-center">
-                                <button
-                                    type="button"
-                                    class="btn btn-sm btn-primary"
-                                    @click="alterarAtaReuniao(atareuniao.id)"
-                                    data-toggle="modal"
-                                    title="Editar"
-                                    data-target="#janelaFormAtaReuniao"
-                                >
+                                <button type="button" class="btn btn-sm mr-1 btn-primary" @click="alterarAtaReuniao(atareuniao.id)" title="Editar">
                                     <i class="fa fa-edit"></i>
                                 </button>
-                                <button type="button" class="btn btn-sm btn-primary" title="Gerar PDF" @click="gerarPdf(atareuniao.id)">
+                                <button type="button" class="btn btn-sm mr-1 btn-primary" title="Gerar PDF" @click="gerarPdf(atareuniao.id)">
                                     <i class="fa fa-file-pdf"></i>
                                 </button>
                             </td>
@@ -380,6 +372,16 @@ export default {
         this.formDefault = _.cloneDeep(this.form)
     },
     methods: {
+        abrirModalAtaReuniao() {
+            if (this.$refs && this.$refs.modalAtaReuniao && typeof this.$refs.modalAtaReuniao.abrirModal === 'function') {
+                this.$refs.modalAtaReuniao.abrirModal()
+            }
+        },
+        fecharModalAtaReuniao() {
+            if (this.$refs && this.$refs.modalAtaReuniao && typeof this.$refs.modalAtaReuniao.fecharModal === 'function') {
+                this.$refs.modalAtaReuniao.fecharModal()
+            }
+        },
         addLIAssuntos() {
             const obj = {}
             obj.novo = true
@@ -449,6 +451,7 @@ export default {
 
             formReset()
             setupCampo()
+            this.abrirModalAtaReuniao()
         },
         cadastrar() {
             $('#janelaFormAtaReuniao :input:visible').trigger('blur')
@@ -461,7 +464,7 @@ export default {
                 .post(`${URL_ADMIN}/administracao/atareuniao`, this.form)
                 .then((res) => {
                     if (res.status === 201) {
-                        $('#janelaFormAtaReuniao').modal('hide')
+                        this.fecharModalAtaReuniao()
                         mostraSucesso('', 'Ata Reunião Cadastrado com sucesso')
                         this.preload = false
                         this.cadastrado = true
@@ -483,6 +486,7 @@ export default {
             formReset()
 
             this.form = _.cloneDeep(this.formDefault) //copia
+            this.abrirModalAtaReuniao()
 
             axios
                 .get(`${URL_ADMIN}/administracao/atareuniao/${atareuniao}/editar`)
@@ -509,7 +513,7 @@ export default {
             axios
                 .put(`${URL_ADMIN}/administracao/atareuniao/${this.form.id}`, this.form)
                 .then((response) => {
-                    $('#janelaFormAtaReuniao').modal('hide')
+                    this.fecharModalAtaReuniao()
                     mostraSucesso('', 'Ata Reunião Editado com sucesso')
                     this.preloadAjax = false
                     this.controle.carregando = true
@@ -547,8 +551,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

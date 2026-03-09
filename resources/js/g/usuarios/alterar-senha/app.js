@@ -1,5 +1,16 @@
 import { createApp } from 'vue'
 import { registerGlobals } from '../../../registerGlobals'
+const abrirModal = (selector) => {
+    if (typeof $ === 'undefined') return
+    $(selector).modal('show')
+}
+
+const fecharModal = (selector) => {
+    if (typeof $ === 'undefined') return
+    $(selector).modal('hide')
+}
+
+
 
 const app = createApp({
     data() {
@@ -114,7 +125,7 @@ const app = createApp({
                     this.passwordHints = []
 
                     // Fechar a modal (apenas se não for obrigatório)
-                    $('#modalAlterarSenha').modal('hide')
+                    fecharModal('#modalAlterarSenha')
 
                     // Se a senha era obrigatória, recarregar a página para atualizar o estado
                     if (window.location.href.includes('alterar-senha')) {

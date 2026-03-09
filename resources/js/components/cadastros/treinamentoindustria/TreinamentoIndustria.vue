@@ -1,12 +1,12 @@
 <template>
     <div id="componenteTreinamentoIndustria">
-        <modal :modal-pai="modal" :titulo="titulo_janela_assinatura" :size="90" id="janelaAssinatura">
+        <modal :modal-pai="modal" :titulo="titulo_janela_assinatura" :size="90" id="janelaAssinatura" ref="modal_janelaAssinatura">
             <template #conteudo>
-                <assinatura-carteira></assinatura-carteira>
+                <assinatura-carteira modal="janelaAssinatura"></assinatura-carteira>
             </template>
         </modal>
 
-        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
+        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90" ref="modal_janelaCadastrar">
             <template #conteudo>
                 <preload v-show="preload"></preload>
                 <div v-if="!preload && !cadastrado">
@@ -86,15 +86,15 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando" @click="alterarformTreinamentoIndustria()">Salvar</button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando" @click="alterarformTreinamentoIndustria()">Salvar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
             </template>
         </modal>
 
         <!-- Filtro -->
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-5">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -135,23 +135,21 @@
                 </div>
 
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary"
+                        class="btn btn-sm mr-1 btn-primary"
                         :disabled="controle.carregando"
-                        @click="formNovo"
-                        data-toggle="modal"
-                        data-target="#janelaCadastrar"
+                        @click="formNovo(); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                     >
                         <i class="fa fa-plus"></i> Treinamento Indústria
                     </button>
 
-                    <button type="button" class="btn btn-sm btn-secondary" data-toggle="modal" data-target="#janelaAssinatura">
+                    <button type="button" class="btn btn-sm mr-1 btn-secondary" @click="$refs.modal_janelaAssinatura && $refs.modal_janelaAssinatura.abrirModal()">
                         <i class="fa fa-plus"></i> Assinatura Carteira
                     </button>
                 </div>
@@ -182,7 +180,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in lista">
+                        <tr v-for="(item, index) in lista" :key="item.id || index">
                             <td class="text-center">{{ item.id }}</td>
                             <td class="text-center">{{ item.label }}</td>
                             <td class="text-center">{{ item.segmento_treinamento ? item.segmento_treinamento.nome : '-' }}</td>
@@ -195,10 +193,8 @@
                             <td class="text-center">
                                 <button
                                     type="button"
-                                    class="btn btn-sm btn-primary mb-1"
-                                    data-toggle="modal"
-                                    data-target="#janelaCadastrar"
-                                    @click="alterarTreinamentoIndustria(item.id)"
+                                    class="btn btn-sm mr-1 btn-primary mb-1"
+                                    @click="alterarTreinamentoIndustria(item.id); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                                 >
                                     <i class="fa fa-edit"></i>
                                 </button>
@@ -259,7 +255,7 @@ export default {
     data() {
         return {
             hash: String(Math.random()).substr(2),
-            titulo_janela: '',
+            titulo_janela: 'Treinamento Indústria',
             titulo_janela_assinatura: 'Assinatura Carteira',
 
             preload: false,
@@ -326,7 +322,7 @@ export default {
                 .post(`${URL_ADMIN}/cadastro/treinamentoindustria`, payload)
                 .then((res) => {
                     if (res.status === 201) {
-                        $('#janelaCadastrar').modal('hide')
+                        this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
                         mostraSucesso('', 'Treinamento Indústria cadastrado com sucesso')
                         this.cadastrado = true
                         this.preload = false
@@ -369,7 +365,7 @@ export default {
             axios
                 .put(`${URL_ADMIN}/cadastro/treinamentoindustria/${this.form.id}`, payload)
                 .then((response) => {
-                    $('#janelaCadastrar').modal('hide')
+                    this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
                     mostraSucesso('', 'Treinamento Indústria atualizado com sucesso')
                     this.preload = false
                     this.atualizado = true
@@ -385,8 +381,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

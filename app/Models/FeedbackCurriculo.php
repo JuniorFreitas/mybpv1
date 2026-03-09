@@ -791,17 +791,21 @@ class FeedbackCurriculo extends Model
     public function scopeFiltrarPorUltimoAso($query, $dados)
     {
         return $query->whereHas('UltimoAso', function ($q) use ($dados) {
-            $filtroVencimento = $dados['filtroVencimento'] == 'true';
-            if ($filtroVencimento) {
-                $periodo = explode(' até ', $dados['campoVencimento']);
-                $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
-                $dataFim = new DataHora($periodo[1] . ' 23:59:59');
-                $q->whereBetween('data_vencimento', [
-                    $dataInicio->dataHoraInsert(), $dataFim->dataHoraInsert()
-                ]);
+            $filtroVencimento = filter_var($dados['filtroVencimento'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $campoVencimento = $dados['campoVencimento'] ?? '';
+            if ($filtroVencimento && $campoVencimento !== '') {
+                $periodo = explode(' até ', $campoVencimento);
+                if (count($periodo) >= 2 && trim($periodo[0]) !== '' && trim($periodo[1]) !== '') {
+                    $dataInicio = new DataHora(trim($periodo[0]) . ' 00:00:00');
+                    $dataFim = new DataHora(trim($periodo[1]) . ' 23:59:59');
+                    $q->whereBetween('data_vencimento', [
+                        $dataInicio->dataHoraInsert(),
+                        $dataFim->dataHoraInsert(),
+                    ]);
+                }
             }
-            if (!is_null($dados['campoVencido'])) {
-                $q->where('vencido', $dados['campoVencido']);
+            if (isset($dados['campoVencido']) && $dados['campoVencido'] !== '' && $dados['campoVencido'] !== null) {
+                $q->where('vencido', filter_var($dados['campoVencido'], FILTER_VALIDATE_BOOLEAN));
             }
         });
     }

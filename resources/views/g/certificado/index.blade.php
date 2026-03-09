@@ -305,13 +305,13 @@
         </div>
         <div class="col-12">
             <div class="row">
-                <button type="button" class="btn btn-sm btn-success mr-1" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm mr-1 btn-success mr-1" :disabled="controle.carregando"
                         :style="controle.carregando ? 'cursor: not-allowed' : 'cursor: pointer'" @click="atualizar">
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
 
-                <button class="btn btn-sm btn-primary mr-1"
+                <button class="btn btn-sm mr-1 btn-primary mr-1"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                         :disabled="selecionados.length === 0"
                         data-toggle="modal"
@@ -322,7 +322,7 @@
                         class="badge badge-light">@{{ selecionados.length }}</span>
                 </button>
 
-                <button class="btn btn-sm btn-danger"
+                <button class="btn btn-sm mr-1 btn-danger"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                         :disabled="selecionados.length === 0" @click="selecionados = []">
                     <i class="fa fa-times"></i> Limpar seleção
@@ -344,7 +344,7 @@
                     <input type="hidden" name="campoNr_trinta_cinco" :value="controle.dados.campoNr_trinta_cinco">
                     <input type="hidden" name="campoAdmitido" :value="controle.dados.campoAdmitido">
 
-                    <button type="submit" class="btn btn-sm btn-primary ml-1"
+                    <button type="submit" class="btn btn-sm mr-1 btn-primary ml-1"
                             :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
                         <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"
                                                                                v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
@@ -464,7 +464,7 @@
                     </td>
 
                     <td class="text-center">
-                        <button class="btn btn-sm btn-primary mb-1" title="Atualizar"
+                        <button class="btn btn-sm mr-1 btn-primary mb-1" title="Atualizar"
                                 @click.prevent="formAlterar(resultado.feedback_id)"
                                 data-toggle="modal"
                                 data-target="#janelaTreinamento">

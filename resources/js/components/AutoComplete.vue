@@ -26,7 +26,7 @@
             <li
                 v-else
                 v-for="(result, i) in results"
-                :key="i"
+                :key="result.id || i"
                 @mouseup="setResult(result)"
                 class="autocomplete-result"
                 :class="{ 'is-active': i === arrowCounter }"

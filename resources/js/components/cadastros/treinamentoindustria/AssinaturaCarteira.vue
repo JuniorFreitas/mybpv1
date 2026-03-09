@@ -1,6 +1,6 @@
 <template>
     <div id="componenteAssinatura">
-        <modal id="janelaAssinaturaCadastrar" :titulo="titulo_janela" :fechar="!preload" size="g">
+        <modal id="janelaAssinaturaCadastrar" :titulo="titulo_janela" :fechar="!preload" size="g" :modal-pai="modal" ref="modal_janelaAssinaturaCadastrar">
             <template #conteudo>
                 <preload v-show="preload"></preload>
                 <div v-if="!preload && !cadastrado">
@@ -23,7 +23,7 @@
                                         onblur="valida_campo_vazio(this, 1)"
                                     >
                                         <option value="">Selecione</option>
-                                        <option v-for="item in listaTiposAssinatura" :value="item">
+                                        <option v-for="(item, index) in listaTiposAssinatura" :value="item" :key="item.id || index">
                                             {{ item }}
                                         </option>
                                     </select>
@@ -67,28 +67,26 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando" @click="alterarformAssinatura()">Salvar</button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando" @click="alterarformAssinatura()">Salvar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
             </template>
         </modal>
 
         <!-- Filtro -->
         <fieldset style="margin: 0px">
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
 
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary"
+                        class="btn btn-sm mr-1 btn-primary"
                         :disabled="controle.carregando"
-                        @click="formNovo"
-                        data-toggle="modal"
-                        data-target="#janelaAssinaturaCadastrar"
+                        @click="formNovo(); $refs.modal_janelaAssinaturaCadastrar && $refs.modal_janelaAssinaturaCadastrar.abrirModal()"
                     >
                         <i class="fa fa-plus"></i> Cadastrar
                     </button>
@@ -118,7 +116,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in lista">
+                        <tr v-for="(item, index) in lista" :key="item.id || index">
                             <td class="text-center">{{ item.id }}</td>
                             <td class="text-center">{{ item.nome }}</td>
                             <td class="text-center">{{ item.tipo }}</td>
@@ -127,10 +125,8 @@
                             <td class="text-center">
                                 <button
                                     type="button"
-                                    class="btn btn-sm btn-primary mb-1"
-                                    data-toggle="modal"
-                                    data-target="#janelaAssinaturaCadastrar"
-                                    @click="alterarAssinatura(item.id)"
+                                    class="btn btn-sm mr-1 btn-primary mb-1"
+                                    @click="alterarAssinatura(item.id); $refs.modal_janelaAssinaturaCadastrar && $refs.modal_janelaAssinaturaCadastrar.abrirModal()"
                                 >
                                     <i class="fa fa-edit"></i>
                                 </button>
@@ -189,7 +185,7 @@ export default {
     data() {
         return {
             hash: String(Math.random()).substr(2),
-            titulo_janela: '',
+            titulo_janela: 'Assinatura Carteira',
             URL_ADMIN,
 
             preload: false,
@@ -246,7 +242,7 @@ export default {
                 .post(`${URL_ADMIN}/cadastro/assinaturacarteira`, this.form)
                 .then((res) => {
                     if (res.status === 201) {
-                        $('#janelaPcmsoCadastrar').modal('hide')
+                        this.$refs.modal_janelaPcmsoCadastrar && this.$refs.modal_janelaPcmsoCadastrar.fecharModal()
                         mostraSucesso('', 'Assinatura Carteira cadastrada com sucesso')
                         this.cadastrado = true
                         this.preload = false
@@ -301,7 +297,7 @@ export default {
             axios
                 .put(`${URL_ADMIN}/cadastro/assinaturacarteira/${this.form.id}`, this.form)
                 .then((response) => {
-                    $('#janelaPcmsoCadastrar').modal('hide')
+                    this.$refs.modal_janelaPcmsoCadastrar && this.$refs.modal_janelaPcmsoCadastrar.fecharModal()
                     mostraSucesso('', 'Assinatura Carteira atualizada com sucesso')
                     this.preload = false
                     this.atualizado = true
@@ -318,8 +314,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

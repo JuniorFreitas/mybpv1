@@ -81,11 +81,11 @@
         </template>
         <template #rodape>
             <div v-show="!visualizar">
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado  && !preloadForm"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado  && !preloadForm"
                         @click.prevent="alterar">
                     <i class="fa fa-edit"></i> Alterar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado  && !preloadForm"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado  && !preloadForm"
                         @click.prevent="cadastrar">
                     <i class="fa fa-save"></i> Salvar
                 </button>
@@ -270,14 +270,14 @@
 
         <div class="col-12">
             <div class="row">
-                <button type="button" class="btn btn-sm btn-success mr-1 mb-1" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm mr-1 btn-success mr-1 mb-1" :disabled="controle.carregando"
                         @click.prevent="atualizar">
                     <i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
 
-                <button class="btn btn-sm btn-danger mb-1 mr-1"
+                <button class="btn btn-sm mr-1 btn-danger mb-1 mr-1"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                         :disabled="selecionados.length === 0" @click.prevent="selecionados = []">
                     <i class="fa fa-times"></i> Limpar seleção
@@ -300,7 +300,7 @@
 
                     <input type="hidden" name="campoPcd" :value="controle.dados.campoPcd">
 
-{{--                    <button type="submit" class="btn btn-sm btn-primary mb-1"--}}
+{{--                    <button type="submit" class="btn btn-sm mr-1 btn-primary mb-1"--}}
 {{--                            :disabled="(selecionados.length === 0  && controle.dados.campoCliente === '' ||  lista.length===0 ) || controle.carregando">--}}
 {{--                        <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"--}}
 {{--                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>--}}
@@ -340,7 +340,7 @@
                 <th v-show="colunasTabela.parecer_individual">Parecer Individual</th>
                 <th v-show="colunasTabela.nota_individual">Nota Individual</th>
                 <th>
-                    <button class="btn btn-sm btn-primary mb-2" content="Mostrar e Ocultar Colunas" v-tippy
+                    <button class="btn btn-sm mr-1 btn-primary mb-2" content="Mostrar e Ocultar Colunas" v-tippy
                             data-toggle="modal"
                             data-target="#filtroColunas">
                         <i class="bx bxs-filter-alt" aria-hidden="true"></i>
@@ -417,7 +417,7 @@
                 <td class="text-center">
 
                     <form :action="`${URL_ADMIN}/entrevistas/entrevista-rh/curriculo/${entrevista.curriculo_id}`" target="_blank" method="get">
-                        <button class="btn btn-sm btn-primary mb-2" content="Entrevistar" v-tippy
+                        <button class="btn btn-sm mr-1 btn-primary mb-2" content="Entrevistar" v-tippy
                                 v-show="!entrevista.parecer_rh.gestor_rh"
                                 @click.prevent="formEntrevistar(entrevista.id)"
                                 data-toggle="modal"
@@ -426,7 +426,7 @@
                         </button>
 
                         @can('entrevista_parecer_rh_update')
-                            <button class="btn btn-sm btn-primary mb-2" content="Editar" v-tippy
+                            <button class="btn btn-sm mr-1 btn-primary mb-2" content="Editar" v-tippy
                                     v-show="entrevista.parecer_rh.gestor_rh"
                                     @click.prevent="formEntrevistar(entrevista.id); editando = true"
                                     data-toggle="modal"
@@ -435,7 +435,7 @@
                             </button>
                         @endcan
 
-                        <button class="btn btn-sm btn-primary mb-2" content="Visualizar" v-tippy
+                        <button class="btn btn-sm mr-1 btn-primary mb-2" content="Visualizar" v-tippy
                                 v-show="entrevista.parecer_rh.gestor_rh"
                                 @click.prevent="formEntrevistar(entrevista.id); visualizar = true"
                                 data-toggle="modal"
@@ -446,7 +446,7 @@
                         @csrf
                         <input type="hidden" name="id" :value="entrevista.curriculo_id">
                         <button type="submit" content="Currículo" v-tippy
-                                class="btn btn-sm btn-primary mb-2">
+                                class="btn btn-sm mr-1 btn-primary mb-2">
                             <i class="fa fa-file-pdf" aria-hidden="true"></i>
                         </button>
                     </form>

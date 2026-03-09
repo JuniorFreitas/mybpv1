@@ -4,6 +4,17 @@ import upload from '../../../../components/Upload'
 import validacoes from '../../../../mixins/Validacoes'
 import visualizadorPdf from '../../../../components/visualizadorPdf.vue'
 import AcaoAssinaturaDocumento from '../../../../components/administracao/documentoassinatura/AcaoAssinaturaDocumento.vue'
+const abrirModal = (selector) => {
+    if (typeof $ === 'undefined') return
+    $(selector).modal('show')
+}
+
+const fecharModal = (selector) => {
+    if (typeof $ === 'undefined') return
+    $(selector).modal('hide')
+}
+
+
 
 const app = createApp({
     mixins: [validacoes],
@@ -143,9 +154,9 @@ const app = createApp({
                 .put(`${this.urlDefault}/responder`, obj)
                 .then((response) => {
                     if (resposta === 'Recusado pelo RH') {
-                        $('#janelaRecusar').modal('hide')
+                        fecharModal('#janelaRecusar')
                     }
-                    $('#janelaVisualizar').modal('hide')
+                    fecharModal('#janelaVisualizar')
                     mostraSucesso('', 'Resposta computada com sucesso')
                     this.preload = false
                     this.atualizando = false

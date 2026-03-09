@@ -1,6 +1,6 @@
 <template>
     <div>
-        <!--        <modal id="janelaRelatorio" :titulo="tituloJanela" :fechar="!preloadAjax" size="g">-->
+        <!--        <modal id="janelaRelatorio" :titulo="tituloJanela" :fechar="!preloadAjax" size="g" ref="modal_janelaRelatorio">-->
         <!--            <template slot="conteudo">-->
         <!--                <fieldset v-if="cliente_id == 1">-->
         <!--                    <legend>Selecione o Cliente</legend>-->
@@ -8,7 +8,8 @@
         <!--                        <select class="form-control" v-model="cliente_relatorio" onblur="valida_campo_vazio(this,1)"-->
         <!--                                onchange="valida_campo_vazio(this,1)">-->
         <!--                            <option value="">Selecione</option>-->
-        <!--                            <option v-for="item in listaClientes" :value="item.id">@{{ item.razao_social }}</option>-->
+        <!--                            <option v-for="(item, index) in listaClientes" :value="item.id">{{ item.razao_social }}</option>-->
+        :key="item.id || index"
         <!--                        </select>-->
         <!--                    </div>-->
         <!--                </fieldset>-->
@@ -28,7 +29,7 @@
         <!--                    @csrf-->
         <!--                    <input type="hidden" name="cliente_relatorio" :value="cliente_relatorio">-->
         <!--                    <input type="hidden" name="intervalo" :value="datarelatorio">-->
-        <!--                    <button class="btn btn-sm btn-primary">Gerar PDF</button>-->
+        <!--                    <button class="btn btn-sm mr-1 btn-primary">Gerar PDF</button>-->
         <!--                </form>-->
 
         <!--                <form method="post" target="_blank" v-show="tipoRelatorio === 'excel'"-->
@@ -36,12 +37,12 @@
         <!--                    @csrf-->
         <!--                    <input type="hidden" name="cliente_relatorio" :value="cliente_relatorio">-->
         <!--                    <input type="hidden" name="intervalo" :value="datarelatorio">-->
-        <!--                    <button class="btn btn-sm btn-primary">Gerar Excel</button>-->
+        <!--                    <button class="btn btn-sm mr-1 btn-primary">Gerar Excel</button>-->
         <!--                </form>-->
         <!--            </template>-->
         <!--        </modal>-->
         <!--        </modal>-->
-        <modal :titulo="tituloJanelaTreinamentos" size="g" :fechar="!preloadAjax" id="janelaTreinamentos" modal-pai="janelaCadastrar">
+        <modal :titulo="tituloJanelaTreinamentos" size="g" :fechar="!preloadAjax" id="janelaTreinamentos" modal-pai="janelaCadastrar" ref="modal_janelaTreinamentos">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preloadAjax"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <div v-if="!preloadAjax">
@@ -58,7 +59,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="treinamento in treinamentosColaborador">
+                                    <tr v-for="treinamento in treinamentosColaborador" :key="treinamento.id || treinamento.label">
                                         <td class="text-center">{{ treinamento.label }}</td>
                                         <td class="text-center">{{ treinamento.pivot.data_treinamento }}</td>
                                         <td class="text-center">{{ treinamento.pivot.data_vencimento }}</td>
@@ -73,7 +74,7 @@
             <template #rodape> </template>
         </modal>
 
-        <modal :titulo="titulo_janela_form_prorrogacao" :fechar="!preloadProrrogacao" :size="90" id="janelaFormProrrogacao">
+        <modal :titulo="titulo_janela_form_prorrogacao" :fechar="!preloadProrrogacao" :size="90" id="janelaFormProrrogacao" ref="modal_janelaFormProrrogacao">
             <template #conteudo>
                 <fieldset class="mb-2">
                     <div class="table-responsive">
@@ -87,7 +88,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(obj, index) in listaProrrogacao">
+                                <tr v-for="(obj, index) in listaProrrogacao" :key="`lista-prorrogacao-${index}`">
                                     <td class="text-center">{{ index + 1 }}ª Prorrogação</td>
                                     <td class="text-center">{{ obj.data_inicio }}</td>
                                     <td class="text-center">{{ obj.data_fim }}</td>
@@ -98,45 +99,47 @@
                     </div>
                 </fieldset>
 
-                <button class="btn btn-sm btn-primary mb-3" @click="addLIProrrogacao"><i class="fa fa-plus"></i> Adicionar Prorrogação</button>
+                <button class="btn btn-sm mr-1 btn-primary mb-3" @click="addLIProrrogacao"><i class="fa fa-plus"></i> Adicionar Prorrogação</button>
 
                 <p class="mt-2 text-center" v-if="preloadProrrogacao"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <div v-if="!preloadProrrogacao && !cadastrado">
-                    <fieldset class="mb-2" v-if="formProrrogacao.prorrogacao.length > 0" v-for="(obj, index) in formProrrogacao.prorrogacao" :key="index + 100">
-                        <legend>Nova Prorrogação</legend>
-                        <div class="row">
-                            <div class="col-12">
-                                <date-picker formsm label="Data Início" v-model="obj.data_inicio" :disabled="!obj.novo"></date-picker>
-                            </div>
+                    <template  v-if="formProrrogacao.prorrogacao.length > 0">
+                        <fieldset class="mb-2" v-for="(obj, index) in formProrrogacao.prorrogacao" :key="index + 100">
+                            <legend>Nova Prorrogação</legend>
+                            <div class="row">
+                                <div class="col-12">
+                                    <date-picker formsm label="Data Início" v-model="obj.data_inicio" :disabled="!obj.novo"></date-picker>
+                                </div>
 
-                            <div class="col-12">
-                                <date-picker formsm label="Data Fim" v-model="obj.data_fim" :disabled="!obj.novo"></date-picker>
-                            </div>
+                                <div class="col-12">
+                                    <date-picker formsm label="Data Fim" v-model="obj.data_fim" :disabled="!obj.novo"></date-picker>
+                                </div>
 
-                            <div class="col-12">
-                                <label>Solicitante</label>
-                                <input v-model="obj.solicitante" class="form-control" :disabled="!obj.novo" />
-                            </div>
+                                <div class="col-12">
+                                    <label>Solicitante</label>
+                                    <input v-model="obj.solicitante" class="form-control" :disabled="!obj.novo" />
+                                </div>
 
-                            <div class="col-12 mt-3" v-show="obj.novo">
-                                <button class="btn btn-sm btn-danger" @click="removerLIProrrogacao(index)"><i class="fa fa-times"></i> Remover</button>
+                                <div class="col-12 mt-3" v-show="obj.novo">
+                                    <button class="btn btn-sm mr-1 btn-danger" @click="removerLIProrrogacao(index)"><i class="fa fa-times"></i> Remover</button>
 
-                                <button class="btn btn-sm btn-primary mt" @click="addLIProrrogacao" v-show="index >= 1">
-                                    <i class="fa fa-plus"></i> Adicionar
-                                </button>
+                                    <button class="btn btn-sm mr-1 btn-primary mt" @click="addLIProrrogacao" v-show="index >= 1">
+                                        <i class="fa fa-plus"></i> Adicionar
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </fieldset>
+                        </fieldset>
+                    </template>
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!cadastrado && !preloadTipo" @click="cadastrarProrrogacao">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!cadastrado && !preloadTipo" @click="cadastrarProrrogacao">
                     <i class="fa fa-save"></i> Cadastrar
                 </button>
             </template>
         </modal>
 
-        <modal :titulo="titulo_janela_form_editar_tipo" size="g" :fechar="!preloadTipo" modal-pai="janelaFormTipo" id="janelaFormEditarTipo">
+        <modal :titulo="titulo_janela_form_editar_tipo" size="g" :fechar="!preloadTipo" modal-pai="janelaFormTipo" id="janelaFormEditarTipo" ref="modal_janelaFormEditarTipo">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preloadTipo"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <div v-if="!preloadTipo && !cadastrado">
@@ -158,14 +161,14 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!cadastrado && !preloadTipo && !preloadTipoLista">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!cadastrado && !preloadTipo && !preloadTipoLista">
                     <!--                        @click="editaTipo">-->
                     <i class="fa fa-save"></i> Editar
                 </button>
             </template>
         </modal>
 
-        <modal :titulo="titulo_janela_form_tipo" size="g" :fechar="!preloadTipo" id="janelaFormTipo">
+        <modal :titulo="titulo_janela_form_tipo" size="g" :fechar="!preloadTipo" id="janelaFormTipo" ref="modal_janelaFormTipo">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preloadTipo"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <div v-if="!preloadTipo && !cadastrado">
@@ -194,20 +197,20 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="tipo in listaTiposCadastro">
+                                <tr v-for="tipo in listaTiposCadastro" :key="tipo.id || tipo.label">
                                     <td class="text-center">{{ tipo.label }}</td>
                                     <td class="text-center">
                                         <bt-ativo
                                             :rota="`apontamento/intermitente/tipo/ativa-desativa/${tipo.id}`"
                                             :model="tipo"
-                                            @atualizou="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null"
+                                            @atualizou="$refs.componente && $refs.componente.buscar ? $refs.componente.buscar() : null"
                                         ></bt-ativo>
                                     </td>
                                     <!--                                    <td class="text-center">-->
-                                    <!--                                        <button type="button" class="btn btn-sm btn-primary"-->
+                                    <!--                                        <button type="button" class="btn btn-sm mr-1 btn-primary"-->
                                     <!--                                            @click="editarTipo(tipo.id)"-->
                                     <!--                                            data-toggle="modal"-->
-                                    <!--                                            data-target="#janelaFormEditarTipo">-->
+                                    <!-- @click="$refs.modal_janelaFormEditarTipo && $refs.modal_janelaFormEditarTipo.abrirModal()">-->
                                     <!--                                            <i class="fa fa-edit"></i>-->
                                     <!--                                        </button>-->
                                     <!--                                    </td>-->
@@ -218,13 +221,13 @@
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!cadastrado && !preloadTipo && !preloadTipoLista" @click="cadastraTipo">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!cadastrado && !preloadTipo && !preloadTipoLista" @click="cadastraTipo">
                     <i class="fa fa-save"></i> Cadastrar
                 </button>
             </template>
         </modal>
 
-        <modal id="janelaCadastrar" :titulo="tituloJanela" :fechar="!preloadAjax" :size="90">
+        <modal id="janelaCadastrar" :titulo="tituloJanela" :fechar="!preloadAjax" :size="90" ref="modal_janelaCadastrar">
             <template #conteudo>
                 <div v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</div>
                 <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -253,7 +256,7 @@
                                     class="form-control"
                                 >
                                     <option value="">Selecione...</option>
-                                    <option v-for="item in 72" :value="item">{{ item }} hora(s)</option>
+                                    <option v-for="item in 72" :key="item" :value="item">{{ item }} hora(s)</option>
                                 </select>
                             </div>
                         </div>
@@ -269,7 +272,7 @@
                                     class="form-control"
                                 >
                                     <option value="">Selecione...</option>
-                                    <option v-for="item in listaTipos" :value="item.id">{{ item.label }}</option>
+                                    <option v-for="item in listaTipos" :key="item.id" :value="item.id">{{ item.label }}</option>
                                 </select>
                             </div>
                         </div>
@@ -287,7 +290,7 @@
                                     class="form-control"
                                 >
                                     <option value="">Selecione...</option>
-                                    <option v-for="item in listaAreas" :value="item.id">{{ item.label }}</option>
+                                    <option v-for="item in listaAreas" :key="item.id" :value="item.id">{{ item.label }}</option>
                                 </select>
                             </div>
                         </div>
@@ -343,22 +346,20 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="(colaborador, index) in form.colaboradores">
+                                        <tr v-for="(colaborador, index) in form.colaboradores" :key="colaborador.id || index">
                                             <td class="text-center">{{ colaborador.curriculo.nome }}</td>
                                             <td class="text-center">{{ colaborador.vaga_aberta.vaga.nome }}</td>
                                             <td class="text-center" v-if="!editando">
                                                 <a
                                                     href="javascript://"
-                                                    class="btn btn-sm btn-info"
-                                                    data-toggle="modal"
-                                                    data-target="#janelaTreinamentos"
-                                                    @click.prevent="visualizarTreinamentos(colaborador)"
+                                                    class="btn btn-sm mr-1 btn-info"
+                                                    @click.prevent="visualizarTreinamentos(colaborador); $refs.modal_janelaTreinamentos && $refs.modal_janelaTreinamentos.abrirModal()"
                                                 >
                                                     <i class="fa fa-search" aria-hidden="true"></i>
                                                 </a>
                                             </td>
                                             <td class="text-center" v-if="!editando">
-                                                <a href="javascript://" class="btn btn-sm btn-danger" @click.prevent="removerLIColaborador(index)">
+                                                <a href="javascript://" class="btn btn-sm mr-1 btn-danger" @click.prevent="removerLIColaborador(index)">
                                                     <i class="fa fa-times" aria-hidden="true"></i>
                                                 </a>
                                             </td>
@@ -411,7 +412,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr v-for="t in form.treinamentos">
+                                            <tr v-for="t in form.treinamentos" :key="t.id || t.label">
                                                 <td class="text-center">{{ t.label }}</td>
                                                 <td class="text-center">{{ t.pivot.data_treinamento }}</td>
                                                 <td class="text-center">{{ t.pivot.data_vencimento }}</td>
@@ -438,7 +439,8 @@
                         <!--                                        </tr>-->
                         <!--                                        </thead>-->
                         <!--                                        <tbody>-->
-                        <!--                                        <tr v-for="t in form.treinamentos">-->
+                        <!--                                        <tr v-for="(t, index) in form.treinamentos">-->
+                        :key="t.id || index"
                         <!--                                            <td class="text-center">{{t.label}}</td>-->
                         <!--                                            <td class="text-center">{{t.pivot.data_treinamento}}</td>-->
                         <!--                                            <td class="text-center">{{t.pivot.data_vencimento}}</td>-->
@@ -467,7 +469,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="(obj, index) in form.prorrogacao">
+                                    <tr v-for="(obj, index) in form.prorrogacao" :key="`form-prorrogacao-${index}`">
                                         <td class="text-center">{{ index + 1 }}ª Prorrogação</td>
                                         <td class="text-center">{{ obj.data_inicio }}</td>
                                         <td class="text-center">{{ obj.data_fim }}</td>
@@ -515,10 +517,10 @@
             </template>
             <template #rodape>
                 <div>
-                    <button type="button" class="btn btn-sm btn-primary" v-if="form.status === 'Aberto'" v-show="editando" @click="confirmaEncerraConvocacao()">
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" v-if="form.status === 'Aberto'" v-show="editando" @click="confirmaEncerraConvocacao()">
                         <i class="fa fa-save"></i> Encerrar
                     </button>
-                    <button type="button" class="btn btn-sm btn-primary" v-show="!aprovando && !cadastrado && !preloadAjax && !encerrado" @click="cadastrar()">
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!aprovando && !cadastrado && !preloadAjax && !encerrado" @click="cadastrar()">
                         <i class="fa fa-save"></i> Lançar
                     </button>
                 </div>
@@ -527,7 +529,7 @@
 
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="$refs.componente && $refs.componente.buscar ? $refs.componente.buscar() : null">
                 <div class="col-12 col-md-3">
                     <div class="form-check" style="margin-bottom: -11px">
                         <input
@@ -571,7 +573,7 @@
                         <label>Tipos</label>
                         <select class="form-control form-control-sm" v-model="controle.dados.campoTipo" :disabled="controle.carregando" @change="atualizar()">
                             <option value="">Todos os Tipos</option>
-                            <option v-for="item in listaTipos" :value="item.id">{{ item.label }}</option>
+                            <option v-for="item in listaTipos" :key="item.id" :value="item.id">{{ item.label }}</option>
                         </select>
                     </div>
                 </div>
@@ -581,7 +583,7 @@
                         <label>Áreas</label>
                         <select class="form-control form-control-sm" v-model="controle.dados.campoArea" :disabled="controle.carregando" @change="atualizar()">
                             <option value="">Todos os áreas</option>
-                            <option v-for="item in listaAreas" :value="item.id">{{ item.label }}</option>
+                            <option v-for="item in listaAreas" :key="item.id" :value="item.id">{{ item.label }}</option>
                         </select>
                     </div>
                 </div>
@@ -596,7 +598,7 @@
                             @change="atualizar()"
                         >
                             <option value="">Todos os centros de custo</option>
-                            <option v-for="item in centro_custos" :value="item.id">{{ item.label }}</option>
+                            <option v-for="item in centro_custos" :key="item.id" :value="item.id">{{ item.label }}</option>
                         </select>
                     </div>
                 </div>
@@ -606,37 +608,33 @@
                         <label>Status</label>
                         <select class="form-control form-control-sm" v-model="controle.dados.campoStatus" :disabled="controle.carregando" @change="atualizar()">
                             <option value="">Todos os Status</option>
-                            <option v-for="item in listaStatus" :value="item">{{ item }}</option>
+                            <option v-for="item in listaStatus" :key="item" :value="item">{{ item }}</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="col-12 col-md-9">
-                    <button type="button" class="btn btn-sm btn-success mb-1 mr-1" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success mb-1 mr-1" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>Atualizar
                     </button>
                     <button
                         type="button"
-                        class="btn btn-sm btn-primary mb-1 mr-1"
-                        data-toggle="modal"
+                        class="btn btn-sm mr-1 btn-primary mb-1 mr-1"
                         :disabled="controle.carregando"
-                        data-target="#janelaCadastrar"
-                        @click="formNovo()"
+                        @click="formNovo(); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                     >
                         <i class="fa fa-plus"></i> Convocar
                     </button>
 
                     <button
                         type="button"
-                        class="btn btn-sm btn-secondary mb-1 mr-1"
+                        class="btn btn-sm mr-1 btn-secondary mb-1 mr-1"
                         :disabled="controle.carregando"
-                        @click="formNovoTipo"
-                        data-toggle="modal"
-                        data-target="#janelaFormTipo"
+                        @click="formNovoTipo; $refs.modal_janelaFormTipo && $refs.modal_janelaFormTipo.abrirModal()"
                     >
                         <i class="fa fa-plus"></i> Cadastrar Tipo
                     </button>
-                    <!--                    <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"-->
+                    <!--                    <button type="button" class="btn btn-sm mr-1 btn-primary mb-1 mr-1"-->
                     <!--                            @click.prevent="exportaExcel()"-->
                     <!--                            :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0) ">-->
                     <!--                        <i class="fas fa-file-excel"></i> EXPORTAR EXCEL-->
@@ -673,7 +671,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in lista" :class="item.status === 'Aberto' ? 'table-warning' : item.status === 'Encerrado' ? 'table-success' : null">
+                        <tr
+                            v-for="item in lista"
+                            :key="item.id"
+                            :class="item.status === 'Aberto' ? 'table-warning' : item.status === 'Encerrado' ? 'table-success' : null"
+                        >
                             <td class="text-center">
                                 {{ item.id }}
                             </td>
@@ -727,9 +729,7 @@
                                             v-show="item.status === 'Aberto'"
                                             class="dropdown-item"
                                             href="javascript://"
-                                            @click="formNovoProrrogacao(item.id)"
-                                            data-toggle="modal"
-                                            data-target="#janelaFormProrrogacao"
+                                            @click="formNovoProrrogacao(item.id); $refs.modal_janelaFormProrrogacao && $refs.modal_janelaFormProrrogacao.abrirModal()"
                                         >
                                             <i class="fa fa-plus"></i> Prorrogação
                                         </a>
@@ -737,9 +737,7 @@
                                             v-show="item.status === 'Aberto'"
                                             class="dropdown-item"
                                             href="javascript://"
-                                            @click="encerrarConvocacao(item.id)"
-                                            data-toggle="modal"
-                                            data-target="#janelaCadastrar"
+                                            @click="encerrarConvocacao(item.id); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                                         >
                                             <i class="fa fa-times"></i> Encerrar Convocação
                                         </a>
@@ -747,9 +745,7 @@
                                             v-show="item.status === 'Encerrado' || item.status === 'Expirado'"
                                             class="dropdown-item"
                                             href="javascript://"
-                                            @click="visualizar(item.id)"
-                                            data-toggle="modal"
-                                            data-target="#janelaCadastrar"
+                                            @click="visualizar(item.id); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                                         >
                                             <i class="fa fa-search"></i> Visualizar
                                         </a>
@@ -1029,7 +1025,7 @@ export default {
                     if (response.status === 201) {
                         this.preloadAjax = false
                         this.cadastrado = true
-                        $('#janelaFormProrrogacao').modal('hide')
+                        this.$refs.modal_janelaFormProrrogacao && this.$refs.modal_janelaFormProrrogacao.fecharModal()
                         mostraSucesso('', 'Prorrogação cadastrado com sucesso')
                         this.atualizar()
                     }
@@ -1080,7 +1076,7 @@ export default {
                     if (response.status === 201) {
                         this.preloadAjax = false
                         this.cadastrado = true
-                        $('#janelaCadastrar').modal('hide')
+                        this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
                         mostraSucesso('', 'Intermitente cadastrado com sucesso')
                         this.atualizar()
                     }
@@ -1161,7 +1157,7 @@ export default {
                 .then((response) => {
                     this.preloadAjax = false
                     this.atualizado = true
-                    $('#janelaCadastrar').modal('hide')
+                    this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
                     mostraSucesso('', 'Intermitente alterado com sucesso')
                     this.atualizar()
                 })
@@ -1187,7 +1183,9 @@ export default {
                 .then((res) => {
                     this.formTipo = _.cloneDeep(this.formTipoDefault)
                     mostraSucesso('', 'Tipo cadastrado com sucesso')
-                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    if (this.$refs && this.$refs.componente && typeof this.$refs.componente.buscar === 'function') {
+                        this.$refs.componente.buscar()
+                    }
                     this.preloadTipo = false
                 })
                 .catch((error) => {
@@ -1237,8 +1235,12 @@ export default {
             this.preloadTipoLista = true
         },
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            if (this.$refs && this.$refs.componente) {
+                this.$refs.componente.atual = 1
+            }
+            if (this.$refs && this.$refs.componente && typeof this.$refs.componente.buscar === 'function') {
+                this.$refs.componente.buscar()
+            }
         }
     }
 }

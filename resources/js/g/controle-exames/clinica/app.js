@@ -3,6 +3,17 @@ import { registerGlobals } from '../../../registerGlobals'
 import Dados from '../../../components/entrevistas/DadosPessoaisTexto'
 import Upload from '../../../components/Upload'
 import validacoes from '../../../mixins/Validacoes'
+const abrirModal = (selector) => {
+    if (typeof $ === 'undefined') return
+    $(selector).modal('show')
+}
+
+const fecharModal = (selector) => {
+    if (typeof $ === 'undefined') return
+    $(selector).modal('hide')
+}
+
+
 
 const app = createApp({
     components: {
@@ -222,7 +233,7 @@ const app = createApp({
                     .then((res) => {
                         let data = res.data
                         mostraSucesso('', 'Exame cadastrado com sucesso!')
-                        $('#janelaParecerEntrevista').modal('hide')
+                        fecharModal('#janelaParecerEntrevista')
                         this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                         this.preload = false
                     })
@@ -238,7 +249,7 @@ const app = createApp({
                     .then((res) => {
                         let data = res.data
                         mostraSucesso('', 'Exame atualizado com sucesso!')
-                        $('#janelaParecerEntrevista').modal('hide')
+                        fecharModal('#janelaParecerEntrevista')
                         this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                         this.preload = false
                     })
@@ -297,7 +308,7 @@ const app = createApp({
                         .then((res) => {
                             let data = res.data
                             mostraSucesso('', 'Exame cadastrado com sucesso!')
-                            $('#validaSesmt').modal('hide')
+                            fecharModal('#validaSesmt')
                             this.carregaFormularioResposta()
                             this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                             this.preload = false
@@ -312,7 +323,7 @@ const app = createApp({
                         .put(`${URL}/${this.abasesmt.form.id}`, this.abasesmt.form)
                         .then((res) => {
                             mostraSucesso('', 'Exame atualizado com sucesso!')
-                            $('#validaSesmt').modal('hide')
+                            fecharModal('#validaSesmt')
                             this.carregaFormularioResposta()
                             this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                             this.preload = false

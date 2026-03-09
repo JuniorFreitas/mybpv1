@@ -321,9 +321,11 @@ const app = createApp({
             this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         },
 
-        verificaCpf() {
+        async verificaCpf() {
             if (!this.editando) {
-                axios.get(`${URL_ADMIN}/administracao/fornecedor/buscar-cpf?cpf=${this.form.cpf}`).then((response) => {})
+                try {
+                    await axios.get(`${URL_ADMIN}/administracao/fornecedor/buscar-cpf?cpf=${this.form.cpf}`)
+                } catch (err) {}
             }
         }
     }

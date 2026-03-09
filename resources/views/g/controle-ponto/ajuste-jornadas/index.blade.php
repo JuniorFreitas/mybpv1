@@ -38,10 +38,10 @@
                             </div>
                             <div class="col-4 col-sm-6">
                                 <i class="fas fa-calendar-day fa-2x mr-2"></i> <span style="font-size: 20px">@{{ formPonto.dia }}</span>
-                                <button type="button" class="btn btn-sm btn-default btn-outline-primary ml-3 mr-4" @click="jornadaAnterior()" v-show="paginacaoRef.atual > 1">
+                                <button type="button" class="btn btn-sm mr-1 btn-default btn-outline-primary ml-3 mr-4" @click="jornadaAnterior()" v-show="paginacaoRef.atual > 1">
                                     <i class="fas fa-chevron-left fa-2x" ></i>
                                 </button>
-                                <button type="button" class="btn btn-sm btn-default btn-outline-primary ml-3 mr-4" @click="proximaJornada()" v-show="paginacaoRef.atual < paginacaoRef.total">
+                                <button type="button" class="btn btn-sm mr-1 btn-default btn-outline-primary ml-3 mr-4" @click="proximaJornada()" v-show="paginacaoRef.atual < paginacaoRef.total">
                                     <i class="fas fa-chevron-right fa-2x"></i>
                                 </button>
                                 <br>
@@ -140,7 +140,7 @@
 
         </template>
         <template #rodape v-if="!formPonto.preload && !formPonto.save && paginacaoRef">
-            <button type="button" class="btn btn-sm btn-success" @click="salvar">Ajustar</button>
+            <button type="button" class="btn btn-sm mr-1 btn-success" @click="salvar">Ajustar</button>
             <div class="form-group form-check" v-if="(!formPonto.preload && !formPonto.save) && (paginacaoRef.atual < paginacaoRef.total)">
                 <input type="checkbox" class="form-check-input" id="checkBoxProximo" v-model="irParaProximaJornada">
                 <label class="form-check-label" for="checkBoxProximo">
@@ -171,7 +171,7 @@
                                               @onselect="selecionaFuncionario"></autocomplete>
                             </div>
                             <div class="col-12">
-                                <button type="button" class="btn btn-sm btn-success mr-1 mb-2" :disabled="formBusca.preload"
+                                <button type="button" class="btn btn-sm mr-1 btn-success mr-1 mb-2" :disabled="formBusca.preload"
                                         @click="atualizarTudo()"><i
                                         :class="formBusca.preload ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                                     Buscar

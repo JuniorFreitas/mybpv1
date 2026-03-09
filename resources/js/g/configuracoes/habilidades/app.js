@@ -1,151 +1,190 @@
 import { createApp } from 'vue'
 import { registerGlobals } from '../../../registerGlobals'
 
+const BASE_URL = `${URL_ADMIN}/habilidades`
+
+function tratarRespostaApi(data, fallbackMsg) {
+    if (data?.erro === 's') {
+        return { ok: false, erros: data.erros || [], msg: data.msg || fallbackMsg }
+    }
+    return { ok: true }
+}
+
 const app = createApp({
     data() {
         return {
             tituloJanela: 'Cadastrando habilidade',
             preloadAjax: false,
             editando: false,
-            id: 0, //id_curso
-
+            id: 0,
             cadastrado: false,
             atualizado: false,
-            urlAjax: '',
             apagado: false,
-
             erros: [],
-
             lista: [],
-            dados: {},
             controle: {
                 carregando: false,
                 dados: {}
             }
         }
     },
+
+    mounted() {
+        $('#janelaCadastrar').on('shown.bs.modal', () => $('#nome').focus())
+        $('#btnAtualizar').on('click', () => this.atualizar())
+        $('#formBusca').on('submit', (e) => {
+            e.preventDefault()
+            this.controle.dados.campoBusca = $('#campoBusca').val()
+            this.atualizar()
+        })
+        this.atualizar()
+    },
+
     methods: {
-        formNovo: function () {
-            $('#form')[0].reset()
+        atualizar() {
+            const comp = this.$refs?.componente
+            if (!comp) return
+            comp.atual = 1
+            if (typeof comp.buscar === 'function') comp.buscar()
+        },
+
+        formNovo() {
+            $('#form')[0]?.reset()
             this.cadastrado = false
             this.atualizado = false
             this.editando = false
             this.tituloJanela = 'Cadastrando habilidade'
             formReset()
         },
-        cadastrar: function () {
-            //var erro=false;
-            /*$('#janelaCadastrar :input:text').each(function(index){
-                $(this).trigger('blur');
-                if( $(this).hasClass('is-invalid') ){
-                    erro=true;
-                }
-            });*!/
-            /!*if(erro){
-                alert('Verificar os erros');
-                return false;
-            }*/
+
+        validarFormModal() {
             $('#janelaCadastrar :input:visible').trigger('blur')
             if ($('#janelaCadastrar :input:visible.is-invalid').length) {
                 alert('Verificar os erros')
                 return false
             }
-            this.erros = []
-            var dados = {}
-            dados.nome = $('#nome').val()
-            dados.descricao = $('#descricao').val()
-
-            this.preloadAjax = true
-            $.post(URL_ADMIN + '/habilidades', dados, function (data) {
-                app.preloadAjax = false
-                if (data.erro == 's') {
-                    app.erros = data.erros
-                    alert(data.msg)
-                } else {
-                    app.cadastrado = true
-                    $('#controle button:eq(0)').click()
-                }
-            })
+            return true
         },
-        formAlterar: function (id) {
-            app.id = id
 
+        async cadastrar() {
+            if (!this.validarFormModal()) return
+            this.erros = []
+            const dados = {
+                nome: $('#nome').val(),
+                descricao: $('#descricao').val()
+            }
+            this.preloadAjax = true
+            try {
+                const { data } = await axios.post(BASE_URL, dados)
+                const result = tratarRespostaApi(data, 'Erro ao cadastrar.')
+                if (!result.ok) {
+                    this.erros = result.erros
+                    alert(result.msg)
+                    return
+                }
+                this.cadastrado = true
+                this.atualizar()
+            } catch (err) {
+                const res = err.response?.data || {}
+                this.erros = res.erros || []
+                alert(res.msg || 'Erro ao cadastrar.')
+            } finally {
+                this.preloadAjax = false
+            }
+        },
+
+        async formAlterar(id) {
+            this.id = id
             this.cadastrado = false
             this.atualizado = false
             this.editando = false
             this.tituloJanela = 'Alterando habilidade'
-
             this.erros = []
             this.preloadAjax = true
             formReset()
 
-            $.get(URL_ADMIN + '/habilidades/' + id + '/editar', null, function (data) {
-                app.preloadAjax = false
-                if (data.erro == 's') {
-                    app.erros = data.erros
-                    alert(data.msg)
-                } else {
-                    $('#nome').val(data.nome)
-                    $('#descricao').val(data.descricao)
-                    app.editando = true
+            try {
+                const { data } = await axios.get(`${BASE_URL}/${id}/editar`)
+                const result = tratarRespostaApi(data, 'Erro ao carregar.')
+                if (!result.ok) {
+                    this.erros = result.erros
+                    alert(result.msg)
+                    return
                 }
-            })
-        },
-        alterar: function () {
-            $('#janelaCadastrar :input:visible').trigger('blur')
-            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
-                alert('Verificar os erros')
-                return false
+                $('#nome').val(data.nome)
+                $('#descricao').val(data.descricao)
+                this.editando = true
+            } catch (err) {
+                const res = err.response?.data || {}
+                this.erros = res.erros || []
+                alert(res.msg || 'Erro ao carregar.')
+            } finally {
+                this.preloadAjax = false
             }
-
-            this.erros = []
-            var dados = {}
-            dados.nome = $('#nome').val()
-            dados.descricao = $('#descricao').val()
-            dados._method = 'PUT'
-            this.preloadAjax = true
-
-            $.post(URL_ADMIN + '/habilidades/' + this.id, dados, function (data) {
-                app.preloadAjax = false
-                if (data.erro == 's') {
-                    app.erros = data.erros
-                    alert(data.msg)
-                } else {
-                    app.atualizado = true
-                    $('#controle button:eq(0)').click()
-                }
-            })
         },
-        janelaConfirmar: function (id) {
-            app.id = id
-            this.apagado = false
 
+        async alterar() {
+            if (!this.validarFormModal()) return
+            this.erros = []
+            const dados = {
+                nome: $('#nome').val(),
+                descricao: $('#descricao').val()
+            }
+            this.preloadAjax = true
+            try {
+                const { data } = await axios.put(`${BASE_URL}/${this.id}`, dados)
+                const result = tratarRespostaApi(data, 'Erro ao alterar.')
+                if (!result.ok) {
+                    this.erros = result.erros
+                    alert(result.msg)
+                    return
+                }
+                this.atualizado = true
+                this.atualizar()
+            } catch (err) {
+                const res = err.response?.data || {}
+                this.erros = res.erros || []
+                alert(res.msg || 'Erro ao alterar.')
+            } finally {
+                this.preloadAjax = false
+            }
+        },
+
+        janelaConfirmar(id) {
+            this.id = id
+            this.apagado = false
             this.erros = []
             this.preloadAjax = false
         },
-        apagar: function () {
-            this.erros = []
-            var dados = {}
-            dados._method = 'DELETE'
-            this.preloadAjax = true
 
-            $.post(URL_ADMIN + '/habilidades/' + this.id, dados, function (data) {
-                app.preloadAjax = false
-                if (data.erro == 's') {
-                    app.erros = data.erros
-                    alert(data.msg)
-                } else {
-                    app.apagado = true
-                    $('#controle button:eq(0)').click()
+        async apagar() {
+            this.erros = []
+            this.preloadAjax = true
+            try {
+                const { data } = await axios.delete(`${BASE_URL}/${this.id}`)
+                const result = tratarRespostaApi(data, 'Erro ao apagar.')
+                if (!result.ok) {
+                    this.erros = result.erros
+                    alert(result.msg)
+                    return
                 }
-            })
+                this.apagado = true
+                this.atualizar()
+            } catch (err) {
+                const res = err.response?.data || {}
+                this.erros = res.erros || []
+                alert(res.msg || 'Erro ao apagar.')
+            } finally {
+                this.preloadAjax = false
+            }
         },
 
-        carregou: function (dados) {
+        carregou(dados) {
             this.lista = dados
             this.controle.carregando = false
         },
-        carregando: function () {
+
+        carregando() {
             this.controle.carregando = true
         }
     }
@@ -153,22 +192,3 @@ const app = createApp({
 
 registerGlobals(app)
 app.mount('#app')
-
-$().ready(function () {
-    $('#janelaCadastrar').on('shown.bs.modal', function () {
-        $('#nome').focus() // ja foca no nome quando a janela abrir
-    })
-    $('#btnAtualizar').on('click', atualizar)
-    atualizar()
-
-    $('#formBusca').on('submit', function (e) {
-        e.preventDefault()
-        app.controle.dados.campoBusca = $('#campoBusca').val()
-        atualizar()
-    })
-})
-
-function atualizar() {
-    app.$refs.componente.atual = 1
-    app.this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-}
