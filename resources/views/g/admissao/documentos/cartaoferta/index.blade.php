@@ -5,7 +5,7 @@
     <hr class="bg-default" style="margin-top: -5px;">
 @stop
 @section('content')
-    <modal modal-pai="janelaVisualizar" titulo="Recusar Carta Oferta"
+    <modal ref="janelaRecusar" modal-pai="janelaVisualizar" titulo="Recusar Carta Oferta"
            :fechar="!atualizando"
            label-fechar="NÃO"
            id="janelaRecusar">
@@ -29,7 +29,7 @@
         </template>
     </modal>
 
-    <modal id="janelaVisualizar" :titulo="tituloJanela" size="g">
+    <modal ref="janelaVisualizar" id="janelaVisualizar" :titulo="tituloJanela" size="g">
         <template #conteudo>
             <preload class=" mt-2 text-center" v-if="preload"></preload>
 
@@ -71,8 +71,7 @@
             </button>
             <button type="button" class="btn btn-sm mr-1 btn-danger"
                     v-if="objopen?.status === 'Aguardando RH' && !atualizando"
-                    data-toggle="modal"
-                    data-target="#janelaRecusar"
+                    @click="$refs.janelaRecusar?.abrirModal()"
             >
                 <i class="fa fa-save"></i> Recusar
             </button>
@@ -240,9 +239,7 @@
 
                     <td class="text-center">
                         <button class="btn btn-sm mr-1 btn-primary" title="Visualizar"
-                                @click.prevent="formVisualizar(item)"
-                                data-toggle="modal"
-                                data-target="#janelaVisualizar"><i class="fa fa-search-plus"></i>
+                                @click.prevent="formVisualizar(item); $refs.janelaVisualizar?.abrirModal()"><i class="fa fa-search-plus"></i>
                         </button>
                         <button v-if="assinaturaDigitalHabilitada && item.status === 'Pendente Anexo' && temDocumentoAssinatura(item)" class="btn btn-sm mr-1 btn-info ml-1" title="Gerenciar assinatura digital"
                                 @click.prevent="abrirGerenciamentoAssinaturaCartaOferta(item)">

@@ -5,7 +5,7 @@
     <hr class="bg-default" style="margin-top: -5px;">
 @stop
 @section('content')
-    <modal id="filtroColunas" titulo="Mostrar e Ocultar colunas">
+    <modal ref="filtroColunas" id="filtroColunas" titulo="Mostrar e Ocultar colunas">
         <template #conteudo>
             <div class="row">
                 <div class="col-sm-6" v-for="item in colunasTabela">
@@ -21,7 +21,7 @@
         </template>
     </modal>
 
-    <modal id="janelaAdmissaoAvulsa" titulo="Admissão Avulsa" :size="95">
+    <modal ref="janelaAdmissaoAvulsa" id="janelaAdmissaoAvulsa" titulo="Admissão Avulsa" :size="95">
         <template #conteudo>
             <div class="alert alert-success text-center" v-show="formAvulsa.cadastrado">
                 <h4><i class="icon fa fa-check"></i> Admissão Concluida!</h4>
@@ -585,7 +585,7 @@
         </template>
     </modal>
 
-    <modal id="janelaCadastrar" :titulo="tituloJanela" :size="95">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :size="95">
         <template #conteudo>
             <div class="alert alert-success text-center" v-show="cadastrado">
                 <h4><i class="icon fa fa-check"></i> Admissão Concluida!</h4>
@@ -1116,7 +1116,7 @@
         </template>
     </modal>
 
-    <modal id="janelaAdmissaoMassa" titulo="Admissão em massa" :size="95">
+    <modal ref="janelaAdmissaoMassa" id="janelaAdmissaoMassa" titulo="Admissão em massa" :size="95">
         <template #conteudo>
             <preload v-if="form_massa.preload"></preload>
             <div v-if="!form_massa.preload">
@@ -1281,7 +1281,7 @@
         </template>
     </modal>
 
-    <modal id="janelaDemitir" titulo="Demissão Avulsa" size="g">
+    <modal ref="janelaDemitir" id="janelaDemitir" titulo="Demissão Avulsa" size="g">
         <template #conteudo>
             <preload v-if="modeldemissao.preload"></preload>
             <div v-if="!modeldemissao.preload">
@@ -1481,9 +1481,7 @@
                 </button>
                 @can('admissao_processo_insert')
                     <button type="button" class="btn btn-sm mr-1 btn-primary mr-1 mb-2" :disabled="controle.carregando"
-                            data-toggle="modal"
-                            data-target="#janelaAdmissaoAvulsa"
-                            @click="formCadastraAvulsa"
+                            @click="formCadastraAvulsa(); $refs.janelaAdmissaoAvulsa?.abrirModal()"
                     >
                         <i class="fas fa-plus"></i>
                         ADMISSÃO AVULSA
@@ -1507,9 +1505,7 @@
                     <button class="btn btn-sm mr-1 btn-primary mb-2 mr-1"
                             :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                             :disabled="selecionados.length === 0"
-                            data-toggle="modal"
-                            data-target="#janelaAdmissaoMassa"
-                            @click="formCadastraMassa">
+                            @click="formCadastraMassa(); $refs.janelaAdmissaoMassa?.abrirModal()">
                         <i class="fa fa-plus"></i> ATUALIZAR SELECIONADOS <span class="badge badge-light"
                                                                                 v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
                     </button>
@@ -1539,7 +1535,7 @@
                 <label class="custom-control-label" for="selTodosProcesso" style="width: max-content">Selecionar todos com admissão</label>
             </div>
             <!-- <span class="cards-toolbar-count">@{{ lista.length }} registro(s)</span> -->
-            <button class="btn btn-sm mr-1 btn-outline-secondary ml-auto" data-toggle="modal" data-target="#filtroColunas" v-tippy content="Mostrar e Ocultar Colunas">
+            <button class="btn btn-sm mr-1 btn-outline-secondary ml-auto" @click="$refs.filtroColunas?.abrirModal()" v-tippy content="Mostrar e Ocultar Colunas">
                 <i class="bx bxs-filter-alt"></i> Colunas
             </button>
         </div>
@@ -1586,9 +1582,9 @@
                                 :aria-labelledby="`dropdownProcesso_${item.id}`"
                                 @click="fecharDropdown"
                             >
-                                <a class="dropdown-item" href="javascript://" title="Admitir" @click.prevent="formEntrevistar(item.id); visualizar = false" v-if="!filtrarDemitidos" data-toggle="modal" data-target="#janelaCadastrar"><i class="fas fa-user-plus mr-2 text-success"></i> Admitir</a>
-                                <a class="dropdown-item" href="javascript://" title="Demitir" @click.prevent="formDemitir(item); visualizar = false" v-if="permissoes.privilegio_processo_demitir && !filtrarDemitidos" data-toggle="modal" data-target="#janelaDemitir"><i class="fas fa-user-minus mr-2 text-danger"></i> Demitir</a>
-                                <a class="dropdown-item" href="javascript://" title="Visualizar" @click.prevent="formEntrevistar(item.id); visualizar = true" data-toggle="modal" data-target="#janelaCadastrar"><i class="fas fa-eye mr-2 text-info"></i> Visualizar</a>
+                                <a class="dropdown-item" href="javascript://" title="Admitir" @click.prevent="formEntrevistar(item.id); visualizar = false; $refs.janelaCadastrar?.abrirModal()" v-if="!filtrarDemitidos"><i class="fas fa-user-plus mr-2 text-success"></i> Admitir</a>
+                                <a class="dropdown-item" href="javascript://" title="Demitir" @click.prevent="formDemitir(item); visualizar = false; $refs.janelaDemitir?.abrirModal()" v-if="permissoes.privilegio_processo_demitir && !filtrarDemitidos"><i class="fas fa-user-minus mr-2 text-danger"></i> Demitir</a>
+                                <a class="dropdown-item" href="javascript://" title="Visualizar" @click.prevent="formEntrevistar(item.id); visualizar = true; $refs.janelaCadastrar?.abrirModal()"><i class="fas fa-eye mr-2 text-info"></i> Visualizar</a>
                                 <div class="dropdown-divider" v-if="item.admissao"></div>
                                 <a class="dropdown-item" v-if="item.admissao" :href="`${item.fc_token}/pdf`" title="Gerar PDFs" target="_blank"><i class="fas fa-file-pdf mr-2 text-danger"></i> Gerar PDF</a>
                             </div>

@@ -5,7 +5,7 @@
 @endsection
 @section('content')
 
-    <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" size="g">
         <template #conteudo>
 
             <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</span>
@@ -40,7 +40,7 @@
         </template>
     </modal>
 
-    <modal id="janelaConfirmar" titulo="Apagar habilidades">
+    <modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar habilidades">
         <template #conteudo>
             <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i>Aguarde...</span>
             <div class="alert alert-success alert-dismissible" v-show="apagado">
@@ -76,7 +76,7 @@
 
         <button type="button" class="btn btn-sm mr-1 btn-success" id="btnAtualizar">Atualizar</button>
 
-        <button type="button" class="btn btn-sm mr-1 btn-primary" data-toggle="modal" data-target="#janelaCadastrar"
+        <button type="button" class="btn btn-sm mr-1 btn-primary"
                 @click="formNovo()">
             Cadastrar
         </button>
@@ -106,15 +106,11 @@
                     <td data-label="Descrição" class="text-center">@{{ab.descricao}}</td>
                     <td class="text-center">
                         <a href="javascript://" class="btn btn-sm mr-1 btn-success btnFormAlterar"
-                           @click.prevent="formAlterar(ab.id)"
-                           data-toggle="modal"
-                           data-target="#janelaCadastrar">
+                           @click.prevent="formAlterar(ab.id)">
                             <i class="fas fa-edit"></i>
                         </a>
                         <a href="javascript://" class="btn btn-sm mr-1 btn-danger btnFormExcluir"
-                           @click.prevent="janelaConfirmar(ab.id)"
-                           data-toggle="modal"
-                           data-target="#janelaConfirmar">
+                           @click.prevent="janelaConfirmar(ab.id)">
                             <i class="fa fa-trash" aria-hidden="true"></i>
                         </a>
                     </td>

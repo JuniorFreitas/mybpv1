@@ -2,7 +2,7 @@
 @section('title', 'Entrevista - Teste Prático')
 @section('content_header','Entrevista - Teste Prático')
 @section('content')
-    <modal id="filtroColunas" titulo="Mostrar e Ocultar colunas">
+    <modal ref="filtroColunas" id="filtroColunas" titulo="Mostrar e Ocultar colunas">
         <template #conteudo>
 
             <div class="custom-control custom-switch mb-2">
@@ -38,7 +38,7 @@
         </template>
     </modal>
 
-    <modal id="janelaParecerEntrevista" :titulo="tituloJanela" :size="80" :fechar="!preload">
+    <modal ref="janelaParecerEntrevista" id="janelaParecerEntrevista" :titulo="tituloJanela" :size="80" :fechar="!preload">
         <template #conteudo>
             <preload v-if="preload"></preload>
             <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''">
@@ -344,8 +344,7 @@
                 <th class="text-center">Teste Prático Nota</th>
                 <th>
                     <button class="btn btn-sm mr-1 btn-primary mb-2" content="Mostrar e Ocultar Colunas" v-tippy
-                            data-toggle="modal"
-                            data-target="#filtroColunas">
+                            @click="$refs.filtroColunas?.abrirModal()">
                         <i class="bx bxs-filter-alt" aria-hidden="true"></i>
                     </button>
                 </th>
@@ -409,27 +408,21 @@
                           method="post">
                         <button class="btn btn-sm mr-1 btn-primary mb-2" content="Entrevistar" v-tippy
                                 v-show="!entrevista.parecer_teste"
-                                @click.prevent="formEntrevistar(entrevista.id)"
-                                data-toggle="modal"
-                                data-target="#janelaParecerEntrevista">
+                                @click.prevent="formEntrevistar(entrevista.id); $refs.janelaParecerEntrevista?.abrirModal()">
                             <i class="far fa-list-alt"></i>
                         </button>
 
                         @can('entrevista_parecer_entrevista_update')
                             <button class="btn btn-sm mr-1 btn-primary mb-2" content="Editar" v-tippy
                                     v-show="entrevista.parecer_teste"
-                                    @click.prevent="formEntrevistar(entrevista.id); editando = true"
-                                    data-toggle="modal"
-                                    data-target="#janelaParecerEntrevista">
+                                    @click.prevent="formEntrevistar(entrevista.id); editando = true; $refs.janelaParecerEntrevista?.abrirModal()">
                                 <i class="fa fa-edit" aria-hidden="true"></i>
                             </button>
                         @endcan
 
                         <button class="btn btn-sm mr-1 btn-primary mb-2" content="Visualizar" v-tippy
                                 v-show="entrevista.parecer_teste"
-                                @click.prevent="formEntrevistar(entrevista.id); visualizar = true"
-                                data-toggle="modal"
-                                data-target="#janelaParecerEntrevista">
+                                @click.prevent="formEntrevistar(entrevista.id); visualizar = true; $refs.janelaParecerEntrevista?.abrirModal()">
                             <i class="fa fa-search-plus" aria-hidden="true"></i>
                         </button>
 

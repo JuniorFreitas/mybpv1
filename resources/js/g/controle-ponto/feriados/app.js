@@ -51,6 +51,7 @@ const app = createApp({
         formNovo() {
             this.form = _.cloneDeep(this.formDefault)
             this.tituloJanela = 'Cadastrando feriado'
+            this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
         },
         cadastrar() {
             $('#janelaCadastrar :input:visible:enabled').trigger('blur')
@@ -86,6 +87,7 @@ const app = createApp({
                     this.form.editando = true
                     this.form.preload = false
                     this.atualizar()
+                    this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
                 })
                 .catch((error) => {
                     this.form.preload = false
@@ -113,6 +115,7 @@ const app = createApp({
         janelaConfirmar(id) {
             this.form = _.cloneDeep(this.formDefault)
             this.form.id = id
+            this.$nextTick(() => this.$refs.janelaConfirmar?.abrirModal())
         },
         apagar() {
             this.form.preload = true
@@ -150,5 +153,5 @@ $().ready(function () {
 
 function atualizar() {
     app.$refs.componente.atual = 1
-    app.this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+    app.$refs.componente?.buscar?.()
 }

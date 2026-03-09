@@ -4,7 +4,7 @@
 @section('content')
 
     <!--Janela de detalhes-->
-    <modal id="janelaFormDetalhes"  titulo="Detalhes da jornada"  :size="90" :fechar="!formPonto.preload" @fechou="atualizarComponentePaginacao();">
+    <modal ref="janelaFormDetalhes" id="janelaFormDetalhes" titulo="Detalhes da jornada" :size="90" :fechar="!formPonto.preload" @fechou="atualizarComponentePaginacao();">
         <template #conteudo>
             <p class="text-center">
                 <preload v-if="formPonto.preload" label="Aguarde..."></preload>
@@ -267,9 +267,8 @@
                                     </h5>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal"
-                                            data-target="#janelaFormDetalhes"
-                                            @click="verDetalhes(ponto.id,'pag_pendentes')"><i
+                                    <button type="button" class="btn btn-secondary btn-sm"
+                                            @click="verDetalhes(ponto.id,'pag_pendentes'); $refs.janelaFormDetalhes?.abrirModal()"><i
                                             class="fas fa-info-circle"></i> Verificar
                                     </button>
                                 </td>
@@ -359,9 +358,8 @@
                                     </h5>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal"
-                                            data-target="#janelaFormDetalhes"
-                                            @click="verDetalhes(ponto.id,'pag_incompletas')"><i
+                                    <button type="button" class="btn btn-secondary btn-sm"
+                                            @click="verDetalhes(ponto.id,'pag_incompletas'); $refs.janelaFormDetalhes?.abrirModal()"><i
                                             class="fas fa-info-circle"></i> Verificar
                                     </button>
                                 </td>
@@ -446,7 +444,7 @@
                                     <h5><span :class="{'badge badge-success':ponto.verificado,'badge badge-danger':!ponto.verificado}">@{{ ponto.verificado ? 'Sim':'Não' }}</span></h5>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#janelaFormDetalhes" @click="verDetalhes(ponto.id,'pag_verificadas')"> <i class="fas fa-info-circle"></i> Verificar</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" @click="verDetalhes(ponto.id,'pag_verificadas'); $refs.janelaFormDetalhes?.abrirModal()"> <i class="fas fa-info-circle"></i> Verificar</button>
                                 </td>
                             </tr>
 

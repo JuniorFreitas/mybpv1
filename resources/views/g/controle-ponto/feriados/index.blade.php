@@ -6,7 +6,7 @@
 @stop
 @section('content')
 
-    <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" size="g">
         <template #conteudo>
 
             <span v-show="form.preload"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</span>
@@ -44,7 +44,7 @@
         </template>
     </modal>
 
-    <modal id="janelaConfirmar" titulo="Apagar feriados">
+    <modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar feriados">
         <template #conteudo>
             <span v-show="form.preload"><i class="fa fa-spinner fa-pulse"></i>Aguarde...</span>
             <div class="alert alert-success alert-dismissible" v-show="form.apagado">
@@ -78,7 +78,7 @@
 
     <button type="button" class="btn btn-sm mr-1 btn-success" id="btnAtualizar" @click="atualizar">Atualizar</button>
 
-    <button type="button" class="btn btn-sm mr-1 btn-primary" data-toggle="modal" data-target="#janelaCadastrar" @click="formNovo()">
+    <button type="button" class="btn btn-sm mr-1 btn-primary" @click="formNovo()">
         Cadastrar
     </button>
 
@@ -109,15 +109,11 @@
                     </td>
                     <td class="text-center">
                         <a href="javascript://" class="btn btn-sm mr-1 btn-success btnFormAlterar"
-                           @click.prevent="formAlterar(feriado.id)"
-                           data-toggle="modal"
-                           data-target="#janelaCadastrar">
+                           @click.prevent="formAlterar(feriado.id)">
                             <i class="fa fa-edit" aria-hidden="true"></i> Alterar
                         </a>
                         <a href="javascript://" class="btn btn-sm mr-1 btn-danger btnFormExcluir"
-                           @click.prevent="janelaConfirmar(feriado.id)"
-                           data-toggle="modal"
-                           data-target="#janelaConfirmar">
+                           @click.prevent="janelaConfirmar(feriado.id)">
                             <i class="fa fa-trash" aria-hidden="true"></i> Excluir
                         </a>
                     </td>

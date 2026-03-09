@@ -5,7 +5,7 @@
     <hr class="bg-default" style="margin-top: -5px;">
 @stop
 @section('content')
-    <modal id="janelaVisualizar" :titulo="tituloJanela" size="g">
+    <modal ref="janelaVisualizar" id="janelaVisualizar" :titulo="tituloJanela" size="g">
         <template #conteudo>
             <preload class=" mt-2 text-center" v-if="preload"></preload>
             <div v-if="!preload && form.docs_curriculo_pre_adm.length" id="formDocumentos">
@@ -27,7 +27,7 @@
         </template>
     </modal>
 
-    <modal id="janelaFinalizar" :titulo="tituloJanelaFinalizar" size="g">
+    <modal ref="janelaFinalizar" id="janelaFinalizar" :titulo="tituloJanelaFinalizar" size="g">
         <template #conteudo>
             <preload class=" mt-2 text-center" v-if="preload"></preload>
             <div v-if="!preloadFinalizar" id="formFinalizar">
@@ -120,7 +120,7 @@
         </template>
     </modal>
 
-    <modal id="janelaEnviarEmail" :titulo="tituloJanela" size="g">
+    <modal ref="janelaEnviarEmail" id="janelaEnviarEmail" :titulo="tituloJanela" size="g">
         <template #conteudo>
             <preload class=" mt-2 text-center" v-if="preload"></preload>
             <div v-if="!preload">
@@ -323,21 +323,15 @@
                     </td>
                     <td class="text-center">
                         <button class="btn btn-sm mr-1 btn-primary" title="Visuzalizar"
-                                @click.prevent="formVisualizar(resultado.id)"
-                                data-toggle="modal"
-                                data-target="#janelaVisualizar"><i class="fa fa-search-plus"></i></button>
+                                @click.prevent="formVisualizar(resultado.id); $refs.janelaVisualizar?.abrirModal()"><i class="fa fa-search-plus"></i></button>
                         @can('privilegio_admissao_pre_admissao_reencaminhar_email')
                             <button class="btn btn-sm mr-1 btn-primary" title="Reenviar Email"
-                                    @click.prevent="formEnviarEmail(resultado.id)"
-                                    data-toggle="modal"
-                                    data-target="#janelaEnviarEmail"><i class="fa fa-share-square"></i></button>
+                                    @click.prevent="formEnviarEmail(resultado.id); $refs.janelaEnviarEmail?.abrirModal()"><i class="fa fa-share-square"></i></button>
                         @endcan
                         {{--                        @can('privilegio_admissao_pre_admissao_reencaminhar_email')--}}
                         <button class="btn btn-sm mr-1 btn-primary" title="Finalizar"
-                                @click.prevent="abrirFormFinalizar(resultado.id)"
-                                data-toggle="modal"
                                 v-if="!resultado.finalizado"
-                                data-target="#janelaFinalizar"><i class="fa fa-check-circle"></i></button>
+                                @click.prevent="abrirFormFinalizar(resultado.id); $refs.janelaFinalizar?.abrirModal()"><i class="fa fa-check-circle"></i></button>
                         {{--                        @endcan--}}
                     </td>
 

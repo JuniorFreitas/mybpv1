@@ -3,7 +3,7 @@
 @section('content_header','Recrutamento')
 @section('content')
 
-    <modal id="janelaCadastrar" :titulo="tituloJanela" :fechar="!preloadAjax" :size="90">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :fechar="!preloadAjax" :size="90">
         <template #conteudo>
             <preload v-show="preloadAjax" :label="editando ? 'Salvando ...' : 'Carregando ...'"></preload>
             <form v-show="!preloadAjax && (!cadastrado && !atualizado)" id="form" onsubmit="return false;">
@@ -471,7 +471,7 @@
         </template>
     </modal>
 
-    <modal id="janelaConfirmar" titulo="Apagar Curriculo">
+    <modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar Curriculo">
         <template #conteudo>
             <span v-show="preloadAjax"><preload></preload></span>
             <div class="alert alert-success alert-dismissible" v-show="apagado">
@@ -718,8 +718,6 @@
                         <a href="javascript://" class="btn btn-sm mr-1 mb-2 btn-primary"
                            @click.prevent="formAlterar(curriculo.id)"
                            content="Recrutar" v-tippy
-                           data-toggle="modal"
-                           data-target="#janelaCadastrar"
                         >
                             <i class="fa fa-edit" aria-hidden="true"></i>
                         </a>
@@ -733,9 +731,7 @@
 
                         @can('curriculos_recrutamento_delete')
                             <a href="javascript://" class="btn btn-sm mr-1 mb-2 btn-danger" content="Remover" v-tippy
-                               @click.prevent="janelaConfirmar(curriculo.id)"
-                               data-toggle="modal"
-                               data-target="#janelaConfirmar"
+                               @click.prevent="janelaConfirmar(curriculo.id); $refs.janelaConfirmar?.abrirModal()"
                             >
                                 <i class="fa fa-trash" aria-hidden="true"></i>
                             </a>

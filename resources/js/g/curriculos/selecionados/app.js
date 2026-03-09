@@ -4,17 +4,6 @@ import endereco from '../../../components/Endereco'
 import telefone from '../../../components/Telefones'
 import datepicker from '../../../components/DatePicker'
 import classificar from '../../../components/Classificar'
-const abrirModal = (selector) => {
-    if (typeof $ === 'undefined') return
-    $(selector).modal('show')
-}
-
-const fecharModal = (selector) => {
-    if (typeof $ === 'undefined') return
-    $(selector).modal('hide')
-}
-
-
 
 const app = createApp({
     components: {
@@ -179,7 +168,7 @@ const app = createApp({
 
             $.post(`${URL_ADMIN}/enviaNotificacao`, dados)
                 .done((data) => {
-                    fecharModal('#janelaWhatsApp')
+                    this.$refs.janelaWhatsApp?.fecharModal()
                     mostraSucesso('', `Notificação para ${nome} enviada com sucesso!`)
                     this.preloadAjax = false
                     this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null

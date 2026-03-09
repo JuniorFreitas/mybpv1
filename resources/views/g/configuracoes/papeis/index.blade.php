@@ -5,7 +5,7 @@
 @endsection
 @section('content')
     <!-- Modal formulario -->
-    <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" size="g">
         <template #conteudo>
             <span v-show="preloadAjax">
                 <i class="fa fa-spinner fa-pulse"></i> Carregando...
@@ -388,7 +388,7 @@
     </modal>
 
     <!-- Modal confirmar -->
-    <modal id="janelaConfirmar" titulo="Apagar papel">
+    <modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar papel">
         <template #conteudo>
             <span v-show="preloadAjax">
                <preload></preload>
@@ -435,8 +435,8 @@
 
         <button type="button" class="btn btn-sm mr-1 btn-success" @click.prevent="atualizar()">Atualizar</button>
         @can('configuracao_papel_insert')
-            <button type="button" class="btn btn-sm mr-1 btn-primary" id="btnFormCadastrar" data-toggle="modal"
-                    data-target="#janelaCadastrar" @click="formNovo()">Cadastrar
+            <button type="button" class="btn btn-sm mr-1 btn-primary" id="btnFormCadastrar"
+                    @click="formNovo()">Cadastrar
             </button>
         @endcan
     </fieldset>
@@ -475,8 +475,7 @@
                     <td class="text-center" v-if="papel.master !== true">
                         @can('configuracao_papel_update')
                             <a class="btn btn-sm mr-1 btn-success btnFormAlterar" href="javascript://"
-                               @click.prevent="formAlterar(papel.id)" data-toggle="modal"
-                               data-target="#janelaCadastrar">
+                               @click.prevent="formAlterar(papel.id)">
                                 <i class="fa fa-edit"></i>
                             </a>
                         @endcan

@@ -3,18 +3,6 @@ import { registerGlobals } from '../../../registerGlobals'
 import datepicker from '../../../components/DatePicker'
 import DateRangeFilter from '../../../components/DateRangeFilter.vue'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
-const abrirModal = (selector) => {
-    if (typeof $ === 'undefined') return
-    $(selector).modal('show')
-}
-
-const fecharModal = (selector) => {
-    if (typeof $ === 'undefined') return
-    $(selector).modal('hide')
-}
-
-
-
 const app = createApp({
     components: {
         datepicker,
@@ -372,7 +360,7 @@ const app = createApp({
                 .then((response) => {
                     let data = response.data
                     mostraSucesso('', 'Solicitação registrada com sucesso!')
-                    fecharModal('#janelaCadastrar')
+                    this.$refs.janelaCadastrar?.fecharModal()
                     this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
@@ -407,7 +395,7 @@ const app = createApp({
                 .then((response) => {
                     let data = response.data
                     mostraSucesso('', 'Solicitação alterada com sucesso!')
-                    fecharModal('#janelaCadastrar')
+                    this.$refs.janelaCadastrar?.fecharModal()
                     this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
@@ -431,7 +419,7 @@ const app = createApp({
                 .then((response) => {
                     let data = response.data
                     mostraSucesso('', 'Registro salvo com sucesso!')
-                    fecharModal('#janelaCadastrar')
+                    this.$refs.janelaCadastrar?.fecharModal()
                     this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
@@ -455,7 +443,7 @@ const app = createApp({
                 .then((response) => {
                     let data = response.data
                     mostraSucesso('', 'Registro salvo com sucesso!')
-                    fecharModal('#janelaCadastrar')
+                    this.$refs.janelaCadastrar?.fecharModal()
                     this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
@@ -483,7 +471,7 @@ const app = createApp({
                 .put(`${URL_ADMIN}/planejamento/requisicao-vaga/${this.form.id}/aprovarrh`, payload)
                 .then((response) => {
                     mostraSucesso('', 'Registro salvo com sucesso!')
-                    fecharModal('#janelaCadastrar')
+                    this.$refs.janelaCadastrar?.fecharModal()
                     if (this.$refs.componente && typeof this.$refs.componente.buscar === 'function') {
                         this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     }

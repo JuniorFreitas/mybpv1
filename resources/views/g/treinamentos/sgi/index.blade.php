@@ -6,7 +6,7 @@
 @stop
 @section('content')
 
-    <modal id="janelaTreinamento" titulo="Treinamentos" :size="95">
+    <modal ref="janelaTreinamento" id="janelaTreinamento" titulo="Treinamentos" :size="95">
         <template #conteudo>
             <div class="alert alert-success text-center" v-show="cadastrado">
                 <h4><i class="icon fa fa-check"></i> Treinamento atualizado com sucesso</h4>
@@ -233,8 +233,7 @@
 
                 <button type="button" class="btn btn-primary mr-1" :disabled="controle.carregando"
                         @click.prevent="formCadastrar"
-                        data-toggle="modal"
-                        data-target="#janelaTreinamento">
+                        @click="$refs.janelaTreinamento?.abrirModal()">
                     <i class="fa fa-plus"></i> Novo Evento
                 </button>
 
@@ -327,8 +326,7 @@
                     <td class="text-center">
                         <a href="javascript://" class="btn btn-default" title="Editar"
                            @click.prevent="formAlterar(evento.id)"
-                           data-toggle="modal"
-                           data-target="#janelaTreinamento">
+                           @click="$refs.janelaTreinamento?.abrirModal()">
                             <i class="fa fa-edit" aria-hidden="true"></i>
                         </a>
                         <a :href="`treinamento/${evento.id}/listapresenca`"

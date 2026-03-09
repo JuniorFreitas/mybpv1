@@ -251,6 +251,7 @@ const app = createApp({
             formReset()
 
             await this.carregarHabilidades()
+            this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
         },
 
         /**
@@ -375,6 +376,7 @@ const app = createApp({
             this.resetarEstados()
 
             await this.carregarDadosPapel(id)
+            this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
         },
 
         /**

@@ -16,18 +16,6 @@ import Validacoes from '../../../mixins/Validacoes'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 import dependentes from '../../../components/admissao/processo/Dependentes'
 import FeriasAdquiridas from '../../../components/admissao/processo/FeriasAdquiridas'
-const abrirModal = (selector) => {
-    if (typeof $ === 'undefined') return
-    $(selector).modal('show')
-}
-
-const fecharModal = (selector) => {
-    if (typeof $ === 'undefined') return
-    $(selector).modal('hide')
-}
-
-
-
 const app = createApp({
     mixins: [configselect2, Utils, Validacoes, ExportacaoMixin],
     components: {
@@ -819,7 +807,7 @@ const app = createApp({
             await axios
                 .post(`${URL_ADMIN}/admissao/demitir-via-privilegio`, this.modeldemissao.form)
                 .then((response) => {
-                    fecharModal('#janelaDemitir')
+                    this.$refs.janelaDemitir?.fecharModal()
                     toastr.success(`Colaborador(a) ${this.modeldemissao.form.nome} foi demitido(a)!`, 'Sucesso!')
                     this.modeldemissao = _.cloneDeep(this.modeldemissaoDefault)
                     this.atualizar()
@@ -1107,7 +1095,7 @@ const app = createApp({
                     if (response.status === 201) {
                         this.form_massa.preload = false
                         this.form_massa.cadastrado = true
-                        fecharModal('#janelaAdmissaoMassa')
+                        this.$refs.janelaAdmissaoMassa?.fecharModal()
                         this.atualizar()
                     }
                 })

@@ -3,7 +3,7 @@
 @section('content_header', 'Vincular Avaliadores')
 @section('content')
 
-    <modal id="janelaAssociarAvaliador" titulo="Associar avaliadores" :fechar="!preload"
+    <modal ref="janelaAssociarAvaliador" id="janelaAssociarAvaliador" titulo="Associar avaliadores" :fechar="!preload"
            :size="80">
         <template #conteudo>
             <fieldset v-if="editando">
@@ -76,8 +76,7 @@
                     </div>
                     <div class="col-auto mb-2">
                         <button type="button" class="btn btn-secondary" :disabled="funcionariosSelecionados.length===0"
-                                data-toggle="modal" data-target="#janelaAssociarAvaliador"
-                                @click="formAssociarAvaliador">
+                                @click="formAssociarAvaliador(); $refs.janelaAssociarAvaliador?.abrirModal()">
                             <i class="fas fa-link"></i> Associar Avaliadores
                         </button>
                     </div>

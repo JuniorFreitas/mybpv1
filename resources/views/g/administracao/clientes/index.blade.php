@@ -40,7 +40,7 @@
 <hr class="bg-default" style="margin-top: -5px;">
 @stop
 @section('content')
-<modal id="janelaCadastrar" :titulo="tituloJanela" :size="90">
+<modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :size="90">
     <template #conteudo>
         <div v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</div>
         <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -936,7 +936,7 @@
         </button>
     </template>
 </modal>
-<modal id="janelaConfirmar" titulo="Apagar clientes">
+<modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar clientes">
     <template #conteudo>
         <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i>Aguarde...</span>
         <div class="alert alert-success alert-dismissible" v-show="apagado">
@@ -997,9 +997,8 @@
                 Atualizar
             </button>
 
-            <button type="button" class="btn btn-sm mr-1 btn-primary" data-toggle="modal" :disabled="controle.carregando"
-                data-target="#janelaCadastrar"
-                @click="formNovo()">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="controle.carregando"
+                @click="formNovo(); $refs.janelaCadastrar?.abrirModal()">
                 Cadastrar
             </button>
 
@@ -1067,16 +1066,12 @@
                         </a>
 
                         <a href="javascript://" class="btn btn-sm mr-1 btn-primary mb-1" v-tippy content="Editar"
-                            @click.prevent="formAlterar(cliente.id)"
-                            data-toggle="modal"
-                            data-target="#janelaCadastrar">
+                            @click.prevent="formAlterar(cliente.id); $refs.janelaCadastrar?.abrirModal()">
                             <i class="fa fa-edit" aria-hidden="true"></i>
                         </a>
 
                         <a href="javascript://" class="btn btn-sm mr-1 btn-danger mb-1" v-tippy content="Excluir"
-                            @click.prevent="janelaConfirmar(cliente.id)"
-                            data-toggle="modal"
-                            data-target="#janelaConfirmar">
+                            @click.prevent="janelaConfirmar(cliente.id); $refs.janelaConfirmar?.abrirModal()">
                             <i class="fa fa-trash" aria-hidden="true"></i>
                         </a>
                     </td>

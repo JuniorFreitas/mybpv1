@@ -6,7 +6,7 @@
 @stop
 @section('content')
 
-    <modal id="janelaCadastrar" :titulo="tituloJanela" :size="90">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :size="90">
         <template #conteudo>
             <div v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</div>
             <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -243,9 +243,8 @@
                 <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>Atualizar
                 </button>
-                <button type="button" class="btn btn-sm mr-1 btn-primary" data-toggle="modal" :disabled="controle.carregando"
-                        data-target="#janelaCadastrar"
-                        @click="formNovo()">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="controle.carregando"
+                        @click="formNovo(); $refs.janelaCadastrar?.abrirModal()">
                     Cadastrar
                 </button>
             </div>
@@ -302,9 +301,7 @@
 
                     <td class="text-center">
                         <a href="javascript://" class="btn btn-sm mr-1 btn-primary mb-1" title="Editar"
-                           @click.prevent="formAlterar(vaga.id)"
-                           data-toggle="modal"
-                           data-target="#janelaCadastrar">
+                           @click.prevent="formAlterar(vaga.id); $refs.janelaCadastrar?.abrirModal()">
                             <i class="fa fa-edit" aria-hidden="true"></i>
                         </a>
                     </td>

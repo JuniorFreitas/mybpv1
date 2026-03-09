@@ -4,7 +4,7 @@
 @section('content')
 
     <!--Janela de detalhes-->
-    <modal id="janelaFormDetalhes" titulo="Detalhes" size="g" :fechar="!formRegistro.preload">
+    <modal ref="janelaFormDetalhes" id="janelaFormDetalhes" titulo="Detalhes" size="g" :fechar="!formRegistro.preload">
         <template #conteudo>
             <p class="text-center">
                 <preload v-if="formRegistro.preload" label="Aguarde..."></preload>
@@ -49,7 +49,7 @@
     </modal>
 
     <!--Janela de registro-->
-    <modal id="janelaFormPonto" :titulo="formPonto.titulo" :fechar="!formPonto.preload" size="g" @fechou="stopGPS">
+    <modal ref="janelaFormPonto" id="janelaFormPonto" :titulo="formPonto.titulo" :fechar="!formPonto.preload" size="g" @fechou="stopGPS">
         <template #conteudo>
             <h4 class="text-success text-center" v-if="!formPonto.preload && formPonto.save">
                 <i class="fas fa-check fa-2x"></i> Ponto registrado
@@ -145,9 +145,7 @@
                                 <button :disabled="mapLoading"
                                         type="button"
                                         class="btn btn-warning btn-block"
-                                        data-toggle="modal"
-                                        data-target="#janelaFormPonto"
-                                        @click="formNovoRegistro">
+                                        @click="formNovoRegistro(); $refs.janelaFormPonto?.abrirModal()">
                                     <i class="fas fa-user-clock"></i> Registrar ponto
                                 </button>
                             </div>
@@ -201,9 +199,7 @@
                                             <td>
                                                 <button type="button"
                                                         class="btn btn-info"
-                                                        data-toggle="modal"
-                                                        data-target="#janelaFormDetalhes"
-                                                        @click="verDetalhes(reg.id,per.id)">
+                                                        @click="verDetalhes(reg.id,per.id); $refs.janelaFormDetalhes?.abrirModal()">
                                                     <i class="fas fa-info-circle"></i> Detalhes
                                                 </button>
                                             </td>

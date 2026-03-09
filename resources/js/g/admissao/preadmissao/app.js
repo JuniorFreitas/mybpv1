@@ -3,18 +3,6 @@ import { registerGlobals } from '../../../registerGlobals'
 import upload from '../../../components/Upload'
 import validacoes from '../../../mixins/Validacoes'
 import configuracoes from '../../../mixins/Configuracoes'
-const abrirModal = (selector) => {
-    if (typeof $ === 'undefined') return
-    $(selector).modal('show')
-}
-
-const fecharModal = (selector) => {
-    if (typeof $ === 'undefined') return
-    $(selector).modal('hide')
-}
-
-
-
 const app = createApp({
     mixins: [validacoes, configuracoes],
     components: {
@@ -291,7 +279,7 @@ const app = createApp({
                 .post(`${URL_ADMIN}/preadmissao/enviar-email`, this.formEmail)
                 .then((response) => {
                     if (response.status === 201) {
-                        fecharModal('#janelaEnviarEmail')
+                        this.$refs.janelaEnviarEmail?.fecharModal()
                         this.mostraSucesso('Envio do e-mail concluído com sucesso!')
                     }
                     this.preload = false
@@ -318,7 +306,7 @@ const app = createApp({
                 .then((response) => {
                     if (response.status === 201) {
                         this.formFinalizar = _.cloneDeep(this.formFinalizarDefault) //copia
-                        fecharModal('#janelaFinalizar')
+                        this.$refs.janelaFinalizar?.fecharModal()
                         this.mostraSucesso('Finalizado e encaminhado com sucesso!')
                         this.atualizar()
                     }

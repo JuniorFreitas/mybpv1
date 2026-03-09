@@ -9,7 +9,7 @@
 @endsection
 @section('content')
 
-    <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" size="g">
         <template #conteudo>
 
             <preload v-show="preloadAjax" label="Aguarde..."></preload>
@@ -45,7 +45,7 @@
         </template>
     </modal>
 
-    <modal id="janelaConfirmar" titulo="Apagar classificação">
+    <modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar classificação">
         <template #conteudo>
             <preload v-show="preloadAjax" label="Aguarde..."></preload>
             <div class="alert alert-success alert-dismissible" v-show="apagado">
@@ -79,7 +79,7 @@
 
     <button type="button" class="btn btn-sm mr-1 btn-success" id="guide-menu" @click="atualizar">Atualizar</button>
     @can('classificacao-plano-conta_insert')
-    <button type="button" class="btn btn-sm mr-1 btn-primary" data-toggle="modal" id="btCadastrar" data-target="#janelaCadastrar"
+    <button type="button" class="btn btn-sm mr-1 btn-primary" id="btCadastrar"
             @click="formNovo()">
         Cadastrar
     </button>
@@ -105,17 +105,13 @@
                     <td>
                         @can('classificacao-plano-conta_update')
                         <a href="javascript://" class="btn btn-sm mr-1 btn-success btnFormAlterar"
-                           @click.prevent="formAlterar(categorias.id)"
-                           data-toggle="modal"
-                           data-target="#janelaCadastrar">
+                           @click.prevent="formAlterar(categorias.id)">
                             <i class="fa fa-edit" aria-hidden="true"></i> Alterar
                         </a>
                         @endcan
                         @can('classificacao-plano-conta_delete')
                         <a href="javascript://" class="btn btn-sm mr-1 btn-danger btnFormExcluir"
-                           @click.prevent="janelaConfirmar(categorias.id)"
-                           data-toggle="modal"
-                           data-target="#janelaConfirmar">
+                           @click.prevent="janelaConfirmar(categorias.id)">
                             <i class="fa fa-trash" aria-hidden="true"></i> Excluir
                         </a>
                         @endcan

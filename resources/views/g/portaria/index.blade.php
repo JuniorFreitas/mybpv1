@@ -5,7 +5,7 @@
     <hr class="bg-default" style="margin-top: -5px;">
 @stop
 @section('content')
-    <modal id="janelaPortaria" titulo="Atualizar dados" :size="80">
+    <modal ref="janelaPortaria" id="janelaPortaria" titulo="Atualizar dados" :size="80">
         <template #conteudo>
             <div class="alert alert-success text-center" v-show="form.atualizado">
                 <h4><i class="icon fa fa-check"></i> Dados atualizados com sucesso!</h4>

@@ -6,7 +6,7 @@
     <li class="breadcrumb-item active">Financeiro - Planos de conta</li>
 @endsection
 @section('content')
-    <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" size="g">
         <template #conteudo>
 
             <preload v-show="preloadAjax" label="Aguarde..."></preload>
@@ -76,7 +76,7 @@
         </template>
     </modal>
 
-    <modal id="janelaConfirmar" titulo="Apagar plano de contas">
+    <modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar plano de contas">
         <template #conteudo>
             <preload v-show="preloadAjax" label="Aguarde..."></preload>
             <div class="alert alert-success alert-dismissible" v-show="apagado">

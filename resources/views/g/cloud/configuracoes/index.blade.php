@@ -6,7 +6,7 @@
 @stop
 @section('content')
 
-    <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" size="g">
         <template #conteudo>
             <span v-show="preloadAjax">
                 <i class="fa fa-spinner fa-pulse"></i> Carregando...
@@ -214,8 +214,8 @@
         <i class="fa fa-sync"></i> Atualizar
     </button>
 
-    <button type="button" class="btn btn-sm mr-1 btn-primary" id="btnFormCadastrar" data-toggle="modal"
-            data-target="#janelaCadastrar" @click="formNovo()">Cadastrar
+    <button type="button" class="btn btn-sm mr-1 btn-primary" id="btnFormCadastrar"
+            @click="formNovo()">Cadastrar
     </button>
 
     <p class="text-center" v-if="controle.carregando">
@@ -250,13 +250,11 @@
                     </td>
                     <td class="text-center">
                         <a class="btn btn-sm mr-1 btn-success btnFormAlterar" href="javascript://"
-                           @click.prevent="formAlterar(grupo.id)" data-toggle="modal"
-                           data-target="#janelaCadastrar">
+                           @click.prevent="formAlterar(grupo.id)">
                             <i class="fa fa-edit"></i>
                         </a>
                         <a class="btn btn-sm mr-1 btn-danger btnFormExcluir" v-if="grupo.nome !== 'Administradores'" href="javascript://"
-                           @click.prevent="janelaConfirmar(grupo.id)" data-toggle="modal"
-                           data-target="#janelaConfirmar">
+                           @click.prevent="janelaConfirmar(grupo.id)">
                             <i class="fa fa-trash" aria-hidden="true"></i>
                         </a>
                     </td>

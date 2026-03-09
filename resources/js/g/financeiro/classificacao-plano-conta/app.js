@@ -76,6 +76,7 @@ const app = createApp({
             this.tituloJanela = 'Cadastrando'
             formReset()
             setupCampo()
+            this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
         },
         cadastrar: function () {
             $('#janelaCadastrar :input:visible:enabled').trigger('blur')
@@ -117,6 +118,7 @@ const app = createApp({
                     this.editando = true
                     this.preloadAjax = false
                     setupCampo()
+                    this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
                 })
                 .catch((data) => {
                     this.preloadAjax = false
@@ -150,6 +152,7 @@ const app = createApp({
             this.apagado = false
 
             this.preloadAjax = false
+            this.$nextTick(() => this.$refs.janelaConfirmar?.abrirModal())
         },
         apagar: function () {
             this.preloadAjax = true

@@ -116,6 +116,7 @@ const app = createApp({
             formReset()
             this.form = _.cloneDeep(this.formDefault) //copia
             this.form.habilidades = _.cloneDeep(this.listaDeHabilidades)
+            this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
         },
 
         cadastrar() {
@@ -178,6 +179,7 @@ const app = createApp({
                         this.form.todasHabilidades = true
                     }
                     this.preloadAjax = false
+                    this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
                 })
                 .catch((error) => {
                     this.preloadAjax = false
@@ -211,6 +213,7 @@ const app = createApp({
             this.form.id = id
             this.apagado = false
             this.preloadAjax = false
+            this.$nextTick(() => this.$refs.janelaConfirmar?.abrirModal())
         },
 
         apagar() {

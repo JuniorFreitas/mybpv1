@@ -4,18 +4,6 @@ import endereco from '../../../components/Endereco'
 import datepicker from '../../../components/DatePicker'
 import DadosPessoais from '../../../components/entrevistas/DadosPessoaisTexto'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
-const abrirModal = (selector) => {
-    if (typeof $ === 'undefined') return
-    $(selector).modal('show')
-}
-
-const fecharModal = (selector) => {
-    if (typeof $ === 'undefined') return
-    $(selector).modal('hide')
-}
-
-
-
 const app = createApp({
     mixins: [ExportacaoMixin],
     components: {
@@ -260,7 +248,7 @@ const app = createApp({
                 .then((response) => {
                     let data = response.data
                     mostraSucesso('', 'Entrevista salva com sucesso!')
-                    fecharModal('#janelaParecerEntrevista')
+                    this.$refs.janelaParecerEntrevista?.fecharModal()
                     this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
@@ -283,7 +271,7 @@ const app = createApp({
                 .then((response) => {
                     let data = response.data
                     mostraSucesso('', 'Entrevista salva com sucesso!')
-                    fecharModal('#janelaParecerEntrevista')
+                    this.$refs.janelaParecerEntrevista?.fecharModal()
                     this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })

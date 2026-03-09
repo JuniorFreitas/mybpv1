@@ -2,7 +2,7 @@
 @section('title', 'CONTROLE DE EXAMES - COLABORADORES')
 @section('content_header', 'CONTROLE DE EXAMES - COLABORADORES')
 @section('content')
-    <modal id="validaSesmt" :titulo="abasesmt.tituloJanela" modal-pai='janelaParecerEntrevista' :size="80"
+    <modal ref="validaSesmt" id="validaSesmt" :titulo="abasesmt.tituloJanela" modal-pai='janelaParecerEntrevista' :size="80"
            :fechar="!abasesmt.preload">
         <template #conteudo>
             <preload v-if="abasesmt.preload" label="Aguarde ...."></preload>
@@ -159,7 +159,7 @@
         </template>
     </modal>
 
-    <modal id="janelaParecerEntrevista" :titulo="tituloJanela" :size="80" :fechar="!preload">
+    <modal ref="janelaParecerEntrevista" id="janelaParecerEntrevista" :titulo="tituloJanela" :size="80" :fechar="!preload">
         <template #conteudo>
             <preload v-if="preload"></preload>
             <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''">

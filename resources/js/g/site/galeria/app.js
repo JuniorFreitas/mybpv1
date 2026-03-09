@@ -56,6 +56,7 @@ const app = createApp({
             formReset()
             setupCampo()
             this.form = _.cloneDeep(this.formDefault) //copia
+            this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
         },
 
         cadastrar() {
@@ -93,6 +94,7 @@ const app = createApp({
                     this.editando = true
                     this.preloadAjax = false
                     setupCampo()
+                    this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
                 })
                 .fail((data) => {
                     this.preloadAjax = false
@@ -138,6 +140,7 @@ const app = createApp({
             this.apagado = false
 
             this.preloadAjax = false
+            this.$nextTick(() => this.$refs.janelaConfirmar?.abrirModal())
         },
         carregou: function (dados) {
             this.lista = dados

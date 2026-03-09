@@ -51,7 +51,7 @@
         </template>
     </modal>
 
-    <modal id="janelaAvaliar" :titulo="tituloJanela" :fechar="!preload" :size="75">
+    <modal ref="janelaAvaliar" id="janelaAvaliar" :titulo="tituloJanela" :fechar="!preload" :size="75">
         <template #conteudo>
             <div class="alert alert-success text-center" v-show="atualizado">
                 <h4><i class="icon fa fa-check"></i> <span v-show="avaliacao">Demissão</span> <span

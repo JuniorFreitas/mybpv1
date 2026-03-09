@@ -1,7 +1,7 @@
 @extends('layouts.sistema')
 @section('content_header','Início')
 @section('content')
-    <modal id="termosdeuso" titulo="TERMO DE USO E RESPONSABILIDADE" size="g">
+    <modal ref="termosdeuso" id="termosdeuso" titulo="TERMO DE USO E RESPONSABILIDADE" size="g">
         <template #conteudo>
             <div class="col-12 termos">
                 <h4 class="text-center"><strong>TERMO DE USO E RESPONSABILIDADE</strong></h4>
@@ -308,7 +308,7 @@
             </div>
         </template>
     </modal>
-    <modal id="termosdeuso_popup" titulo="TERMO DE USO E RESPONSABILIDADE" :fechar="false">
+    <modal ref="termosdeuso_popup" id="termosdeuso_popup" titulo="TERMO DE USO E RESPONSABILIDADE" :fechar="false">
         <template #conteudo>
             <div class="row">
                 <div class="col-12">
@@ -318,7 +318,7 @@
                     <div class="form-group form-check">
                         <input type="checkbox" class="form-check-input" id="check" v-model="check">
                         <label class="form-check-label" for="check">Declaro que li e aceito os
-                            <a href="javascript://" data-toggle="modal" data-target="#termosdeuso">termos</a></label>
+                            <a href="javascript://" @click="$refs.termosdeuso?.abrirModal()">termos</a></label>
                     </div>
                 </div>
             </div>
@@ -330,7 +330,7 @@
         </template>
     </modal>
 
-    <modal id="celebration" titulo="Atualização de Segurança: Troca Obrigatória de Senha" size="g">
+    <modal ref="celebration" id="celebration" titulo="Atualização de Segurança: Troca Obrigatória de Senha" size="g">
         <template #conteudo>
             {{--            <div class="row">--}}
             {{--                <div class="col-12">--}}

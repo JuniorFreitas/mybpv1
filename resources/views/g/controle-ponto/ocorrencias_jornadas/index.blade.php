@@ -6,7 +6,7 @@
 @endsection
 @section('content')
 
-    <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" size="g">
         <template #conteudo>
 
             <preload v-show="preloadAjax" label="Aguarde..."></preload>
@@ -59,7 +59,7 @@
         </template>
     </modal>
 
-    <modal id="janelaConfirmar" titulo="Apagar ocorrência">
+    <modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar ocorrência">
         <template #conteudo>
             <preload v-show="preloadAjax" label="Aguarde..."></preload>
             <div class="alert alert-success alert-dismissible" v-show="apagado">
@@ -93,7 +93,7 @@
 
     <button type="button" class="btn btn-sm mr-1 btn-success" id="guide-menu" @click="atualizar">Atualizar</button>
     @can('ocorrencias_jornadas_insert')
-    <button type="button" class="btn btn-sm mr-1 btn-primary" data-toggle="modal" id="btCadastrar" data-target="#janelaCadastrar"
+    <button type="button" class="btn btn-sm mr-1 btn-primary" id="btCadastrar"
             @click="formNovo()">
         Cadastrar
     </button>
@@ -129,17 +129,13 @@
                     <td>
                         @can('ocorrencias_jornadas_update')
                         <a href="javascript://" class="btn btn-sm mr-1 btn-success btnFormAlterar"
-                           @click.prevent="formAlterar(ocorrencia.id)"
-                           data-toggle="modal"
-                           data-target="#janelaCadastrar">
+                           @click.prevent="formAlterar(ocorrencia.id)">
                             <i class="fa fa-edit" aria-hidden="true"></i> Alterar
                         </a>
                         @endcan
                         @can('ocorrencias_jornadas_delete')
                         <a href="javascript://" class="btn btn-sm mr-1 btn-danger btnFormExcluir"
-                           @click.prevent="janelaConfirmar(ocorrencia.id)"
-                           data-toggle="modal"
-                           data-target="#janelaConfirmar">
+                           @click.prevent="janelaConfirmar(ocorrencia.id)">
                             <i class="fa fa-trash" aria-hidden="true"></i> Excluir
                         </a>
                         @endcan

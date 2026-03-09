@@ -4,17 +4,6 @@ import endereco from '../../../components/Endereco'
 import telefone from '../../../components/Telefones'
 import datepicker from '../../../components/DatePicker'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
-const abrirModal = (selector) => {
-    if (typeof $ === 'undefined') return
-    $(selector).modal('show')
-}
-
-const fecharModal = (selector) => {
-    if (typeof $ === 'undefined') return
-    $(selector).modal('hide')
-}
-
-
 
 // ===== CONSTANTES E CONFIGURAÇÕES =====
 const SELECOES = {
@@ -392,6 +381,7 @@ const app = createApp({
             this.editando = true
             this.preloadAjax = false
             setupCampo()
+            this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
         },
 
         async marcaLido(dados) {
@@ -497,7 +487,7 @@ const app = createApp({
         },
 
         fecharModal() {
-            fecharModal('#janelaCadastrar')
+            this.$refs.janelaCadastrar?.fecharModal()
         },
 
         mostrarSucesso() {

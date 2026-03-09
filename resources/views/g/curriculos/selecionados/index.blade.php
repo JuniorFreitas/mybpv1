@@ -5,7 +5,7 @@
     <hr class="bg-default" style="margin-top: -5px;">
 @stop
 @section('content')
-    <modal id="janelaCadastrar" :titulo="tituloJanela" :fechar="!preloadAjax" :size="90">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :fechar="!preloadAjax" :size="90">
         <template #conteudo>
             <preload v-show="preloadAjax"></preload>
             <div v-if="!preloadAjax && (!cadastrado && !atualizado) && form.id !== ''">
@@ -108,7 +108,7 @@
         </template>
     </modal>
 
-    <modal id="janelaWhatsApp" titulo="Enviar Notificação WhatsApp" :fechar="!preloadAjax">
+    <modal ref="janelaWhatsApp" id="janelaWhatsApp" titulo="Enviar Notificação WhatsApp" :fechar="!preloadAjax">
         <template #conteudo>
             <div v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</div>
             <fieldset v-if="!preloadAjax">
@@ -378,9 +378,7 @@
                     </td>
                     <td class="text-center">
                         <a href="javascript://" class="btn btn-sm mr-1 btn-primary" content="Exibir" v-tippy
-                           @click.prevent="formAlterar(feedback.id)"
-                           data-toggle="modal"
-                           data-target="#janelaCadastrar">
+                           @click.prevent="formAlterar(feedback.id); $refs.janelaCadastrar?.abrirModal()">
                             <i class="fa fa-eye" aria-hidden="true"></i>
                         </a>
 
@@ -396,10 +394,8 @@
                                 content="enviar Notificação" v-tippy
                                 v-if="feedback.etapa_status.length > 0 && feedback.curriculo.tel_principal.tipo === 'whatsapp' && feedback.etapa_status[0].etapa === 'Apto para Admissao'"
                                 {{--                        <button class="btn btn-primary" title="Editar" v-if="curriculo.feed_back.tel_principal.tipo === 'whatsapp'"--}}
-                                @click.prevent="formAlterar(feedback.id)"
-                                data-toggle="modal"
-                                :disabled="curriculo.whats_app_notificacao"
-                                data-target="#janelaWhatsApp">
+                                @click.prevent="formAlterar(feedback.id); $refs.janelaWhatsApp?.abrirModal()"
+                                :disabled="curriculo.whats_app_notificacao">
                             <i class="fab fa-whatsapp" aria-hidden="true"></i>
                         </button>
                         </span>

@@ -26,8 +26,25 @@ class UserController extends Controller
      */
     public function index()
     {
-        $listaDePapeis = Papel::all();
-        return view('g.usuarios.usuarios.index', compact('listaDePapeis'));
+        $listaEmpresas = Cliente::whereAtivo(true)->get(['id', 'nome_fantasia']);
+        $empresaId = auth()->user()->empresa_id;
+        $isMybpEmpresa = $empresaId === User::MYBP_EMPRESA_ID;
+        $canInsert = auth()->user()->can('usuario_usuarios_insert');
+        $canUpdate = auth()->user()->can('usuario_usuarios_update');
+        $canDelete = auth()->user()->can('usuario_usuarios_delete');
+        $podeSimular = (int) auth()->user()->grupo_id === 1;
+        $urlAtualizar = route('g.usuarios.usuarios.atualizar');
+
+        return view('g.usuarios.usuarios.index', compact(
+            'listaEmpresas',
+            'empresaId',
+            'isMybpEmpresa',
+            'canInsert',
+            'canUpdate',
+            'canDelete',
+            'podeSimular',
+            'urlAtualizar'
+        ));
     }
 
     /**

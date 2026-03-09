@@ -55,6 +55,7 @@ const app = createApp({
             this.editando = false
             this.tituloJanela = 'Cadastrando habilidade'
             formReset()
+            this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
         },
 
         validarFormModal() {
@@ -114,6 +115,7 @@ const app = createApp({
                 $('#nome').val(data.nome)
                 $('#descricao').val(data.descricao)
                 this.editando = true
+                this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
             } catch (err) {
                 const res = err.response?.data || {}
                 this.erros = res.erros || []
@@ -155,6 +157,7 @@ const app = createApp({
             this.apagado = false
             this.erros = []
             this.preloadAjax = false
+            this.$nextTick(() => this.$refs.janelaConfirmar?.abrirModal())
         },
 
         async apagar() {

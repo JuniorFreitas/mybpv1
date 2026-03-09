@@ -4,7 +4,7 @@
 @section('content')
 
     <!-- Modal formulario -->
-    <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" size="g">
         <template #conteudo>
             <span v-show="preloadAjax">
                 <preload></preload>
@@ -66,7 +66,7 @@
     </modal>
 
     <!-- Modal confirmar -->
-    <modal id="janelaConfirmar" titulo="Apagar galeria">
+    <modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar galeria">
         <template #conteudo>
             <span v-show="preloadAjax">
                 <preload></preload>
@@ -113,8 +113,8 @@
             Atualizar
         </button>
         @can('galeria_site_insert')
-            <button type="button" class="btn btn-sm mr-1 btn-primary" id="btnFormCadastrar" data-toggle="modal"
-                    data-target="#janelaCadastrar" @click="formNovo()">Cadastrar
+            <button type="button" class="btn btn-sm mr-1 btn-primary" id="btnFormCadastrar"
+                    @click="formNovo()">Cadastrar
             </button>
         @endcan
     </fieldset>
@@ -148,15 +148,13 @@
                     <td data-label="Ações">
                         @can('galeria_site_update')
                             <a class="btn btn-sm mr-1 btn-success btnFormAlterar" href="javascript://"
-                               @click.prevent="formAlterar(galeria.id)" data-toggle="modal"
-                               data-target="#janelaCadastrar">
+                               @click.prevent="formAlterar(galeria.id)">
                                 <i class="fa fa-edit"></i> Alterar
                             </a>
                         @endcan
                         @can('galeria_site_delete')
                             <a class="btn btn-sm mr-1 btn-danger btnFormExcluir" href="javascript://"
-                               @click.prevent="janelaConfirmar(galeria.id)" data-toggle="modal"
-                               data-target="#janelaConfirmar">
+                               @click.prevent="janelaConfirmar(galeria.id)">
                                 <i class="fa fa-trash" aria-hidden="true"></i> Excluir
                             </a>
                         @endcan

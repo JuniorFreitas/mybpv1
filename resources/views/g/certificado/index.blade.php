@@ -7,7 +7,7 @@
 @section('content')
     <input type="hidden" id="cliente_id" value="{{Request::has('cliente_id') ? Request::query('cliente_id') : null}}">
 
-    <modal id="confirmacaoGeracao" titulo="Confirmação de impressão de Certificados">
+    <modal ref="confirmacaoGeracao" id="confirmacaoGeracao" titulo="Confirmação de impressão de Certificados">
         <template #conteudo>
             <div class="form-check">
                 <input type="checkbox" v-model="nr33" class="form-check-input" id="checknr33">
@@ -30,7 +30,7 @@
             </form>
         </template>
     </modal>
-    <modal id="janelaTreinamento" titulo="Certificado" size="g">
+    <modal ref="janelaTreinamento" id="janelaTreinamento" titulo="Certificado" size="g">
         <template #conteudo>
             <div class="alert alert-success text-center" v-show="cadastrado">
                 <h4><i class="icon fa fa-check"></i> Dados para o certificado atualizado com sucesso</h4>
@@ -314,9 +314,7 @@
                 <button class="btn btn-sm mr-1 btn-primary mr-1"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                         :disabled="selecionados.length === 0"
-                        data-toggle="modal"
-                        @click="nr33 = false; nr35=false"
-                        data-target="#confirmacaoGeracao"
+                        @click="nr33 = false; nr35=false; $refs.confirmacaoGeracao?.abrirModal()"
                 >
                     <i class="fa fa-print"></i> Certificados <span
                         class="badge badge-light">@{{ selecionados.length }}</span>
@@ -465,9 +463,7 @@
 
                     <td class="text-center">
                         <button class="btn btn-sm mr-1 btn-primary mb-1" title="Atualizar"
-                                @click.prevent="formAlterar(resultado.feedback_id)"
-                                data-toggle="modal"
-                                data-target="#janelaTreinamento">
+                                @click.prevent="formAlterar(resultado.feedback_id); $refs.janelaTreinamento?.abrirModal()">
                             <i class="fa fa-edit"></i>
                         </button>
 
