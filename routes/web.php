@@ -895,6 +895,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::get('/{fc_token}/pdf', [\App\Http\Controllers\AdmissaoController::class, 'getFichaPdf'])->name('admissao.getFichapdf');
             // Anexos
             Route::post('/uploadAnexos', [\App\Http\Controllers\AdmissaoController::class, 'uploadAnexos'])->name('admissao.upload-anexos');
+            Route::get('/anexo/{arquivo}/base64', [\App\Http\Controllers\AdmissaoController::class, 'anexoShowBase64'])->name('admissao.anexo-show-base64');
             Route::get('/anexo/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'anexoShow'])->name('admissao.anexo-show');
             Route::get('/anexoDownload/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'download'])->name('admissao.anexo-download');
             Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'anexoDelete'])->name('admissao.anexo-delete');
@@ -1291,6 +1292,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::get('perfil/{id}', [\App\Http\Controllers\UserController::class, 'perfilUsuario'])->name('perfilUsuario');
         Route::put('perfil/{id}', [\App\Http\Controllers\UserController::class, 'atualizaPerfilUsuario'])->name('atualizaPerfilUsuario');
         Route::post('perfil/anexo/uploadAnexos', [\App\Http\Controllers\UserController::class, 'uploadAnexos'])->name('upload-anexos-perfil');
+        Route::get('perfil/anexo/{arquivo}/base64', [\App\Http\Controllers\UserController::class, 'anexoShowBase64'])->name('anexo-show-perfil-base64');
         Route::get('perfil/anexo/{arquivo}', [\App\Http\Controllers\UserController::class, 'anexoShow'])->name('anexo-show-perfil');
         Route::get('perfil/anexoDownload/{arquivo}', [\App\Http\Controllers\UserController::class, 'download'])->name('anexo-download-perfil');
         Route::delete('perfil/anexo/{arquivo}', [\App\Http\Controllers\UserController::class, 'anexoDelete'])->name('anexo-delete-perfil');

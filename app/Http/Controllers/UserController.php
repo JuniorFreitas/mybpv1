@@ -505,6 +505,21 @@ class UserController extends Controller
         return Arquivo::anexoShow(Arquivo::DISCO_PERFIL_USUARIO, $arquivo);
     }
 
+    /**
+     * Retorna anexo de perfil em base64 (JSON). Usa o mesmo cache de anexoShow.
+     */
+    public function anexoShowBase64(Request $request, $arquivo)
+    {
+        $data = Arquivo::getPerfilAnexoContentAndMime($arquivo);
+        if ($data === null) {
+            abort(404);
+        }
+        return response()->json([
+            'base64' => base64_encode($data['content']),
+            'mime' => $data['mime'],
+        ]);
+    }
+
     public function anexoDelete(Request $request, $arquivo)
     {
         return Arquivo::anexoDelete(Arquivo::DISCO_PERFIL_USUARIO, $arquivo);

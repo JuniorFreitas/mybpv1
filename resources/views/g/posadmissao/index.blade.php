@@ -62,19 +62,19 @@
                 <i class="fa fa-spinner fa-pulse"></i> Aguarde ...
             </p>
 
-            <div class="row" v-if="!preload && cadastrando">
+            <div class="row" v-if="!preload && cadastrando && form.feedback">
                 <div class="col-12">
                     <fieldset>
                         <legend>Informações do Colaborador</legend>
                         <div style="text-transform: uppercase">
-                            <p>Nome: <strong>@{{ form.feedback.curriculo.nome }}</strong><br>
-                                CPF: <strong>@{{ form.feedback.curriculo.cpf }}</strong><br>
-                                Empresa: <strong>@{{form.feedback.empresa.nome_fantasia ?
+                            <p>Nome: <strong>@{{ form.feedback.curriculo?.nome }}</strong><br>
+                                CPF: <strong>@{{ form.feedback.curriculo?.cpf }}</strong><br>
+                                Empresa: <strong>@{{ form.feedback.empresa?.nome_fantasia ?
                                     form.feedback.empresa.nome_fantasia :
-                                    form.feedback.empresa.nome}}</strong>
+                                    form.feedback.empresa?.nome }}</strong>
                                 <br>
                                 Vaga: <strong>
-                                    @{{ form.feedback.vaga_aberta.vaga.nome }}
+                                    @{{ form.feedback.vaga_aberta?.vaga?.nome }}
                                 </strong>
                                 <br>
 
@@ -182,8 +182,8 @@
                             </select>
                         </div>
 
-                        <template v-if="form.tipo_form === setor.id">
-                            <div v-for="(setor, setorIndex) in formulariosAtivos">
+                        <template v-if="form.tipo_form">
+                            <div v-for="(setor, setorIndex) in formulariosAtivos" :key="setor.id">
                                 <fieldset>
                                 <legend>Checklist - @{{ setor.nome }}</legend>
                                 <div class="custom-control custom-switch"
@@ -812,33 +812,25 @@
                                 @click="fecharDropdown"
                             >
                                 <a class="dropdown-item" href="javascript://" title="Avaliar"
-                                   @click.prevent="formAvaliar(item.id)"
-                                   data-toggle="modal"
-                                   data-target="#janelaAvaliar">
+                                   @click.prevent="formAvaliar(item.id); $refs.janelaAvaliar?.abrirModal()">
                                     Demitir
                                 </a>
                                 <a class="dropdown-item" href="javascript://" title="Desmobilizar"
                                    v-if="item.demissao && item.demissao.data_desmobilizacao"
-                                   @click.prevent="formDesmobilizar(item.id)"
-                                   data-toggle="modal"
-                                   data-target="#janelaAvaliar">
+                                   @click.prevent="formDesmobilizar(item.id); $refs.janelaAvaliar?.abrirModal()">
                                     Desmobilizar
                                 </a>
                                 @can('posadmissao_entrevista_desligamento')
                                     <a class="dropdown-item" href="javascript://" title="Entrevistar"
                                        v-if="item.demissao && item.demissao.data_desmobilizacao"
-                                       @click.prevent="formEntrevistar(item.id)"
-                                       data-toggle="modal"
-                                       data-target="#janelaAvaliar">
+                                       @click.prevent="formEntrevistar(item.id); $refs.janelaAvaliar?.abrirModal()">
                                         Entrevistar
                                     </a>
                                 @endif
                                 @can('privilegio_gestao_rh')
                                     <a class="dropdown-item" href="javascript://" title="Entrevistar"
                                        v-if="item.demissao && item.demissao.data_desmobilizacao"
-                                       @click.prevent="formRetornarStatus(item.id)"
-                                       data-toggle="modal"
-                                       data-target="#janelaRetornarStatus">
+                                       @click.prevent="formRetornarStatus(item.id); $refs.janelaRetornarStatus?.abrirModal()">
                                         Remover Demissão
                                     </a>
                                 @endif

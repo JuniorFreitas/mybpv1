@@ -1502,7 +1502,7 @@
                     </button>
 
 
-                    <button class="btn btn-sm mr-1 btn-primary mb-2 mr-1"
+                    <button class="btn btn-sm mr-1 btn-primary mb-2 mr-1" v-if="false"
                             :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                             :disabled="selecionados.length === 0"
                             @click="formCadastraMassa(); $refs.janelaAdmissaoMassa?.abrirModal()">

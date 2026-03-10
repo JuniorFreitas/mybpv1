@@ -62,6 +62,76 @@ if (token) {
 }
 
 /**
+ * Tratamento global de erros HTTP do axios: exibe mensagens do backend via toastr.
+ * Opt-out por request: passar config.errorHandle = false.
+ */
+function axiosErrorMessage(data) {
+    const defaultMsg = 'Ocorreu um erro'
+    const defaultTitle = 'Ocorreu um erro'
+    if (data == null || data === undefined) {
+        return { message: defaultMsg, title: defaultTitle }
+    }
+    if (typeof data === 'string') {
+        return { message: data, title: defaultTitle }
+    }
+    if (typeof data !== 'object') {
+        return { message: defaultMsg, title: defaultTitle }
+    }
+    const errors = data.erros || data.errors
+    if (errors && typeof errors === 'object' && Object.keys(errors).length > 0) {
+        const quantidade = 3
+        const list = Object.keys(errors).slice(0, quantidade)
+        let message = '<ul>'
+        list.forEach((key) => {
+            const val = errors[key]
+            const descricao = Array.isArray(val) ? val[0] : val
+            message += `<li><strong>${key}:</strong> ${descricao}</li>`
+        })
+        message += '</ul>'
+        return {
+            message,
+            title: data.msg || defaultTitle
+        }
+    }
+    const message = data.message || data.msg || defaultMsg
+    const title = data.msg && data.message ? data.msg : defaultTitle
+    return { message, title }
+}
+
+window.axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.config && error.config.errorHandle === false) {
+            return Promise.reject(error)
+        }
+        if (!error.response) {
+            if (typeof window.toastr !== 'undefined') {
+                window.toastr.error('Verifique sua conexão com a Internet.', 'Ocorreu um erro')
+            }
+            return Promise.reject(error)
+        }
+        const status = error.response.status
+        if (status === 419) {
+            if (typeof window.toastr !== 'undefined') {
+                window.toastr.error('Recarregue a página novamente.', '419')
+            }
+            return Promise.reject(error)
+        }
+        if (status === 403) {
+            if (typeof window.toastr !== 'undefined') {
+                window.toastr.error('Sem permissão.', '403')
+            }
+            return Promise.reject(error)
+        }
+        const { message, title } = axiosErrorMessage(error.response.data)
+        if (typeof window.toastr !== 'undefined') {
+            window.toastr.error(message, title)
+        }
+        return Promise.reject(error)
+    }
+)
+
+/**
  * Echo exposes an expressive API for subscribing to channels and listening
  * for events that are broadcast by Laravel. Echo and event broadcasting
  * allows your team to easily build robust real-time web applications.

@@ -933,6 +933,13 @@ class TreinamentoController extends Controller
                     });
                 }
                 $item->setRelation('vencimentos', $vencimentosFiltrados);
+                // Foto 3x4 em base64 (cache do disco fotocurriculo) para PDF carteira/bloqueio evitar requisições HTTP
+                $curriculo = $item->FeedbackCurriculo->Curriculo ?? null;
+                if ($curriculo && $curriculo->fotoTres->isNotEmpty()) {
+                    $firstFoto = $curriculo->fotoTres->first();
+                    $dataUrl = CarteiraImagemCache::fotoCurriculo3x4ParaDataUrl($firstFoto->file);
+                    $firstFoto->setAttribute('url_base64', $dataUrl);
+                }
                 return $item;
             })->toArray();
 

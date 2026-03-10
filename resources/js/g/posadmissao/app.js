@@ -657,7 +657,7 @@ const app = createApp({
                 .then((response) => {
                     mostraSucesso('', 'Reversão de demissaão concluida')
                     this.atualizar()
-                    this.$refs.janelaRetornarStatus.fecharModal()
+                    this.$refs.janelaRetornarStatus?.fecharModal()
                     this.revertendo_status = false
                     this.preload = false
                 })

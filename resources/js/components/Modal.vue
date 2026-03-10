@@ -178,6 +178,7 @@ export default defineComponent({
             }
             if (self.id === modalId) {
                 self.modalKey += 1
+                self.$emit('fechou', {})
             }
         })
 

@@ -61,7 +61,11 @@
                          style="object-fit: cover;
                                 background-size: cover;
                                 background-image: url(
-                                {{ count($treinamento['feedback_curriculo']['curriculo']['foto_tres']) > 0 ?$treinamento['feedback_curriculo']['curriculo']['foto_tres'][0]['url']: asset('sem_foto.png')}}
+                                @if(count($treinamento['feedback_curriculo']['curriculo']['foto_tres']) > 0)
+                                    {{ $treinamento['feedback_curriculo']['curriculo']['foto_tres'][0]['url_base64'] ?? $treinamento['feedback_curriculo']['curriculo']['foto_tres'][0]['url'] ?? asset('sem_foto.png') }}
+                                @else
+                                    {{ asset('sem_foto.png') }}
+                                @endif
                                 )">
                     </div>
                 </div>

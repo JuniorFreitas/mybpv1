@@ -333,7 +333,7 @@
 
                 <div class="b-bottom b-right b-left float-right" style="width: 3cm; height: 4cm">
                     <img
-                        src="{{ count($candidato->Curriculo->FotoTres) > 0 ? $candidato->Curriculo->FotoTres[0]->url : asset('sem_foto.png')}}"
+                        src="{{ count($candidato->Curriculo->FotoTres) > 0 ? ($candidato->Curriculo->FotoTres[0]->url_base64 ?? $candidato->Curriculo->FotoTres[0]->url) : asset('sem_foto.png')}}"
                         style="max-height: 4cm; max-width: 3cm;" alt="">
                 </div>
 
