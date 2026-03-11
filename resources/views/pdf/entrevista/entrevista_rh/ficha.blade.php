@@ -23,7 +23,7 @@
         Nome: <span>{{ $curriculo->nome }}</span> <br>
         Data de Nascimento: <span>{{ $curriculo->nascimento }}</span> - <span>{{ $curriculo->idade }} anos</span> <br>
         Escolaridade:
-        <span>{{ $curriculo->Formacao->tipo }} {{$curriculo->formacao_curso ? "($curriculo->formacao_curso)" : null}} </span>
+        <span>{{ $curriculo->Formacao->tipo }}{{ $curriculo->formacao_curso ? ' (' . $curriculo->formacao_curso . ')' : '' }} </span>
         <br>
         Endereço: <span>{{ $curriculo->endereco_completo }}</span><br>
         Contato:
