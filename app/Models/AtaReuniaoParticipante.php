@@ -26,6 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoParticipante whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoParticipante whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoParticipante whereUserId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class AtaReuniaoParticipante extends Model

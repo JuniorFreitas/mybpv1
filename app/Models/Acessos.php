@@ -24,6 +24,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Acessos whereIp($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Acessos whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Acessos whereUserId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class Acessos extends Model

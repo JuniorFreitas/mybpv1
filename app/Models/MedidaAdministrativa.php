@@ -47,6 +47,15 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa whereTipo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MedidaAdministrativa whereUserId($value)
+ * @property int|null $quem_deletou_id
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \App\Models\User|null $QuemDeletou
+ * @property-read \App\Models\DocumentoParaAssinatura|null $documentoParaAssinatura
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MedidaAdministrativa onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MedidaAdministrativa whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MedidaAdministrativa whereQuemDeletouId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MedidaAdministrativa withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MedidaAdministrativa withoutTrashed()
  * @mixin \Eloquent
  */
 class MedidaAdministrativa extends Model

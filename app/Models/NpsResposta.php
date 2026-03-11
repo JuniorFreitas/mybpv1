@@ -19,6 +19,18 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\NpsRespostaItem> $itens
  * @property-read \App\Models\NpsCiclo|null $npsCiclo
  * @property-read \App\Models\User $User
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read int|null $itens_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsResposta newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsResposta newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsResposta query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsResposta whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsResposta whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsResposta whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsResposta whereNpsCicloId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsResposta whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsResposta whereUserId($value)
  * @mixin \Eloquent
  */
 class NpsResposta extends Model

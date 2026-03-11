@@ -9,6 +9,33 @@ use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $empresa_id
+ * @property string $label
+ * @property string $tipo
+ * @property array<array-key, mixed>|null $opcoes
+ * @property bool $obrigatorio
+ * @property int $ordem
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Cliente $Empresa
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaCustomCampo newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaCustomCampo newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaCustomCampo query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaCustomCampo whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaCustomCampo whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaCustomCampo whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaCustomCampo whereLabel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaCustomCampo whereObrigatorio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaCustomCampo whereOpcoes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaCustomCampo whereOrdem($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaCustomCampo whereTipo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaCustomCampo whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class RequisicaoVagaCustomCampo extends Model
 {
     use HasFactory, TenantTrait, LogsActivity, HasActivitylogOptions;

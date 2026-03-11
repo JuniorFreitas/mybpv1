@@ -96,6 +96,12 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevista whereUserRhId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeriasPrevista whereAprovacaoExtraId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeriasPrevista whereDataAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeriasPrevista whereObsAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|FeriasPrevista whereStatusAprovacaoExtra($value)
  * @mixin \Eloquent
  */
 class FeriasPrevista extends Model

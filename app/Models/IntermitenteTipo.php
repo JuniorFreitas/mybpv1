@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteTipo whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteTipo whereLabel($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteTipo whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class IntermitenteTipo extends Model

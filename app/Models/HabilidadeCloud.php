@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|HabilidadeCloud query()
  * @method static \Illuminate\Database\Eloquent\Builder|HabilidadeCloud whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|HabilidadeCloud whereNome($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class HabilidadeCloud extends Model

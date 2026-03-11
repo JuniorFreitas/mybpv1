@@ -34,6 +34,8 @@ use Illuminate\Support\Facades\Event;
  * @method static \Illuminate\Database\Eloquent\Builder|LogWeekly whereTarefaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|LogWeekly whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|LogWeekly whereUserId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class LogWeekly extends Model

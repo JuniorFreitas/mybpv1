@@ -28,6 +28,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Exame whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Exame whereLabel($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Exame whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class Exame extends Model

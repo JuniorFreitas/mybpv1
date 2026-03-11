@@ -37,6 +37,8 @@ use Illuminate\Support\Facades\DB;
  * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa whereOrdem($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa whereTipo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DocumentosCurriculosAdmissaoEmpresa whereUrlArquivo($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class DocumentosCurriculosAdmissaoEmpresa extends Model

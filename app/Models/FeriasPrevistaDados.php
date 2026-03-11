@@ -73,6 +73,8 @@ use DateTimeInterface;
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereUserAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaDados whereUserRhId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class FeriasPrevistaDados extends Model

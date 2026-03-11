@@ -28,6 +28,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|ClassificacaoRescisaoCurriculo wherePreenchidoPor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClassificacaoRescisaoCurriculo whereQuemClassificou($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClassificacaoRescisaoCurriculo whereUserId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class ClassificacaoRescisaoCurriculo extends Model

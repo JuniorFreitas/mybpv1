@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|VagaProjetoFeedback newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|VagaProjetoFeedback newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|VagaProjetoFeedback query()
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class VagaProjetoFeedback extends Model

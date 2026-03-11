@@ -35,6 +35,8 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static \Illuminate\Database\Eloquent\Builder|VagaProjeto whereQntPreenchida($value)
  * @method static \Illuminate\Database\Eloquent\Builder|VagaProjeto whereQntTotal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|VagaProjeto whereVagaAbertaId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class VagaProjeto extends Model

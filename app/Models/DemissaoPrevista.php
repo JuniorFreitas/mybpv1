@@ -91,6 +91,12 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereUserAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DemissaoPrevista whereValor($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DemissaoPrevista whereAprovacaoExtraId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DemissaoPrevista whereDataAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DemissaoPrevista whereObsAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DemissaoPrevista whereStatusAprovacaoExtra($value)
  * @mixin \Eloquent
  */
 class DemissaoPrevista extends Model

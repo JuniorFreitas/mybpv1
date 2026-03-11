@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static Builder|PesquisaClimaCliente query()
  * @method static Builder|PesquisaClimaCliente whereClienteId($value)
  * @method static Builder|PesquisaClimaCliente whereTipoId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class PesquisaClimaCliente extends Model

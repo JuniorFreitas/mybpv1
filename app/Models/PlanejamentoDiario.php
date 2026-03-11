@@ -36,6 +36,8 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario whereTarefasAgendadas($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiario whereUserId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class PlanejamentoDiario extends Model

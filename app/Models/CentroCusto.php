@@ -44,6 +44,8 @@ use Psr\Container\NotFoundExceptionInterface;
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCusto whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCusto whereLabel($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CentroCusto whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class CentroCusto extends Model

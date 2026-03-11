@@ -52,6 +52,8 @@ use Intervention\Image\ImageManagerStatic as Image;
  * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereTemporario($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereThumb($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class Arquivo extends Model

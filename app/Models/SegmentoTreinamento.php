@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Segmento de treinamento (ALUMAR, VALE, Hidro, etc.) para carteira e vencimentos por padrão.
+ *
  * config_carteira: cabecalho_img, verso_img (carteira); exibir_etiqueta_bloqueio, ramal_emergencia,
  * bloqueio_texto_nao_use, bloqueio_texto_demissao, bloqueio_texto_cuidado, bloqueio_texto_homens_trabalhando (etiqueta bloqueio).
  *
@@ -19,6 +20,25 @@ use Illuminate\Database\Eloquent\Model;
  * @property array|null $config_carteira
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Admissao> $Admissoes
+ * @property-read int|null $admissoes_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Cliente> $Clientes
+ * @property-read int|null $clientes_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Vencimento> $Vencimentos
+ * @property-read int|null $vencimentos_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SegmentoTreinamento newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SegmentoTreinamento newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SegmentoTreinamento query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SegmentoTreinamento whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SegmentoTreinamento whereConfigCarteira($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SegmentoTreinamento whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SegmentoTreinamento whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SegmentoTreinamento whereNome($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SegmentoTreinamento whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SegmentoTreinamento whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class SegmentoTreinamento extends Model
 {

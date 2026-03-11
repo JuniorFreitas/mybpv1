@@ -38,6 +38,8 @@ use DateTimeInterface;
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov whereUltimaData($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov whereUltimoPeriodoAquisitivoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FeriasPrevistaMov whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class FeriasPrevistaMov extends Model

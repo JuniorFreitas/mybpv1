@@ -29,6 +29,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Notificacao whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Notificacao whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Notificacao whereVisto($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class Notificacao extends Model

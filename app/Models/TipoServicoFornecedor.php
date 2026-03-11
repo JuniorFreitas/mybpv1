@@ -24,6 +24,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|TipoServicoFornecedor whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoServicoFornecedor whereLabel($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoServicoFornecedor whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class TipoServicoFornecedor extends Model

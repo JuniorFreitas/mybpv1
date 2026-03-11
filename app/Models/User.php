@@ -152,6 +152,9 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @method static Builder|User wherePasswordChangedAt($value)
  * @method static Builder|User wherePasswordResetDays($value)
  * @method static Builder|User whereRequirePasswordReset($value)
+ * @property-read Collection<int, \App\Models\Papel> $UserHabilidades
+ * @property-read int|null $user_habilidades_count
+ * @method static Builder<static>|User usuariosPrivilegioRh()
  * @mixin \Eloquent
  */
 class User extends Authenticatable

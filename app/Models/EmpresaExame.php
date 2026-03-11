@@ -36,6 +36,8 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaExame whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaExame whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaExame whereUserId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class EmpresaExame extends Model

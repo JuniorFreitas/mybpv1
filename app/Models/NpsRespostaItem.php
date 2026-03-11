@@ -18,6 +18,17 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\NpsPergunta $npsPergunta
  * @property-read \App\Models\NpsResposta $npsResposta
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsRespostaItem newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsRespostaItem newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsRespostaItem query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsRespostaItem whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsRespostaItem whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsRespostaItem whereNota($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsRespostaItem whereNpsPerguntaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsRespostaItem whereNpsRespostaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsRespostaItem whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 class NpsRespostaItem extends Model

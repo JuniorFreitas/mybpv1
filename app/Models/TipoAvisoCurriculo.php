@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|TipoAvisoCurriculo query()
  * @method static \Illuminate\Database\Eloquent\Builder|TipoAvisoCurriculo whereFeedbackId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoAvisoCurriculo whereTipoAvisoId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class TipoAvisoCurriculo extends Model
