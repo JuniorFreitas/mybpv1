@@ -111,10 +111,11 @@ class RecrutamentoHistorico extends Model
     }
 
     /**
-     * Registra uma ação no histórico
+     * Registra uma ação no histórico.
+     * curriculoId pode ser null para ações sem currículo específico (ex.: exportação em massa).
      */
     public static function registrar(
-        int $curriculoId,
+        ?int $curriculoId,
         string $acao,
         string $modulo,
         ?int $feedbackId = null,
@@ -214,7 +215,13 @@ class RecrutamentoHistorico extends Model
     public function gerarDescricao(): string
     {
         $usuario = $this->usuario->nome ?? 'Usuário desconhecido';
-        $curriculo = $this->curriculo->nome ?? 'Currículo #' . $this->curriculo_id;
+        $curriculo = $this->curriculo_id !== null
+            ? ($this->curriculo?->nome ?? 'Currículo #' . $this->curriculo_id)
+            : null;
+
+        if ($curriculo === null) {
+            return $this->descricao ?? "Exportação em massa realizada por {$usuario}";
+        }
 
         switch ($this->acao) {
             case self::ACAO_CRIADO:

@@ -812,9 +812,9 @@ class RecrutamentoController extends Controller
 
         $filename = "recrutamento" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
 
-        // Registrar histórico da exportação
+        // Registrar histórico da exportação (curriculo_id null = exportação em massa)
         RecrutamentoHistorico::registrar(
-            0, // ID genérico para exportação
+            null,
             RecrutamentoHistorico::ACAO_EXPORTADO,
             RecrutamentoHistorico::MODULO_EXPORT,
             null,

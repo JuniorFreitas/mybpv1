@@ -1337,18 +1337,16 @@ export default {
                 }, 100)
             }
         },
-        selecionaFilialCentroDeCusto(centro_custo_id, empresa_id) {
-            axios
-                .post(`${URL_ADMIN}/get-filiais/`, {
-                    centro_custo_id: centro_custo_id,
-                    empresa_id: empresa_id
+        async selecionaFilialCentroDeCusto(centro_custo_id, empresa_id) {
+            try {
+                const { data } = await axios.post(`${URL_ADMIN}/get-filiais/`, {
+                    centro_custo_id,
+                    empresa_id
                 })
-                .then((res) => {
-                    this.filiais_centro_de_custo = res.data.filiais_centro_de_custo
-                })
-                .catch((error) => {
-                    this.preload = false
-                })
+                this.filiais_centro_de_custo = data.filiais_centro_de_custo
+            } catch {
+                this.preload = false
+            }
         },
         selecionaNovoCargo(obj) {
             this.form.novo_cargo_id = obj.id
@@ -1381,15 +1379,13 @@ export default {
                 }, 100)
             }
         },
-        listaCentroCusto() {
-            axios
-                .post(`${URL_PUBLICO}/centro-custos/`)
-                .then((res) => {
-                    this.centro_custos = res.data.centro_custos
-                })
-                .catch((error) => {
-                    this.preload = false
-                })
+        async listaCentroCusto() {
+            try {
+                const { data } = await axios.post(`${URL_PUBLICO}/centro-custos/`)
+                this.centro_custos = data.centro_custos
+            } catch {
+                this.preload = false
+            }
         },
         formNovo() {
             this.cadastrado = false
@@ -1451,7 +1447,7 @@ export default {
 
             return true
         },
-        cadastrar() {
+        async cadastrar() {
             if (this.form.colaborador_id === '') {
                 valida_campo_vazio($(`#colaborador_${this.hash}`), 1)
                 $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur')
@@ -1483,22 +1479,18 @@ export default {
             }
 
             this.preload = true
-
-            axios
-                .post(`${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo`, this.form)
-                .then((response) => {
-                    this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
-                    let data = response.data
-                    mostraSucesso('', 'Solicitação registrada com sucesso!')
-                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-                    this.preload = false
-                })
-                .catch((error) => {
-                    this.preload = false
-                })
+            try {
+                await axios.post(`${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo`, this.form)
+                mostraSucesso('', 'Solicitação registrada com sucesso!')
+                this.encerrarModalERecarregar()
+            } catch {
+                // Erro tratado pelo interceptor ou feedback visual
+            } finally {
+                this.preload = false
+            }
         },
 
-        formOpen(id) {
+        async formOpen(id) {
             Object.assign(this.form, this.formDefault)
             this.form.id = id
             this.cadastrando = false
@@ -1512,84 +1504,94 @@ export default {
 
             formReset()
             this.preload = true
+            try {
+                const { data } = await axios.get(
+                    `${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/${id}/editar`
+                )
+                this.form.centro_custo_id = data.centro_custo_id
+                this.form.colaborador_id = data.colaborador_id
+                Object.assign(this.form, data)
+                await this.listaCentroCusto()
 
-            axios
-                .get(`${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/${id}/editar`)
-                .then((response) => {
-                    let data = response.data
-                    this.form.centro_custo_id = data.centro_custo_id
-                    this.form.colaborador_id = data.colaborador_id
-                    Object.assign(this.form, data)
-                    this.listaCentroCusto()
-
-                    this.tituloJanela = `#${id} Solicitação de Mudança de Cargo`
-
-                    this.form.status_aprovacao_gestor = data.status_aprovacao_gestor === null ? '' : data.status_aprovacao_gestor
-                    this.form.status_aprovacao_extra = data.status_aprovacao_extra === null ? '' : data.status_aprovacao_extra
-                    this.form.status_aprovacao_rh = data.status_aprovacao_rh === null ? '' : data.status_aprovacao_rh
-                    this.form.obs_gestor_aprovacao = data.obs_gestor_aprovacao
-                    this.form.obs_aprovacao_extra = data.obs_aprovacao_extra
-                    this.form.obs_rh = data.obs_rh
-
-                    // Dados de aprovação extra
-                    if (data.aprovacao_extra) {
-                        this.form.aprovacao_extra_nome = data.aprovacao_extra.nome || ''
-                    }
-                    this.form.data_aprovacao_extra = data.data_aprovacao_extra || ''
-
-                    this.preload = false
-                })
-                .catch((error) => {
-                    this.preload = false
-                })
+                this.tituloJanela = `#${id} Solicitação de Mudança de Cargo`
+                this.form.status_aprovacao_gestor = data.status_aprovacao_gestor ?? ''
+                this.form.status_aprovacao_extra = data.status_aprovacao_extra ?? ''
+                this.form.status_aprovacao_rh = data.status_aprovacao_rh ?? ''
+                this.form.obs_gestor_aprovacao = data.obs_gestor_aprovacao
+                this.form.obs_aprovacao_extra = data.obs_aprovacao_extra
+                this.form.obs_rh = data.obs_rh
+                this.form.aprovacao_extra_nome = data.aprovacao_extra?.nome ?? ''
+                this.form.data_aprovacao_extra = data.data_aprovacao_extra ?? ''
+            } catch {
+                // Erro tratado pelo interceptor ou feedback visual
+            } finally {
+                this.preload = false
+            }
         },
-        aprovarGestor() {
+        validarFormularioAprovacao() {
             $(`#${this.hash} :input:visible`).trigger('blur')
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
                 mostraErro('', 'Verifique os campos marcados')
                 return false
             }
-
-            // Validações de treinamento
-            if (!this.validarTreinamento()) {
-                return false
-            }
-
-            this.preload = true
-
-            axios
-                .put(`${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/${this.form.id}/aprovarextra`, this.form)
-                .then((response) => {
-                    let data = response.data
-                    mostraSucesso('', 'Registro salvo com sucesso!')
-                    this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
-                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-                    this.preload = false
-                })
-                .catch((error) => {
-                    this.preload = false
-                })
+            return true
         },
-        aprovarRh() {
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
-                return false
-            }
-            this.preload = true
+        encerrarModalERecarregar() {
+            this.$refs[this.hash]?.fecharModal?.()
+            this.$refs?.componente?.buscar?.()
+        },
+        async aprovarGestor() {
+            if (!this.validarFormularioAprovacao() || !this.validarTreinamento()) return
 
-            axios
-                .put(`${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/${this.form.id}/aprovarrh`, this.form)
-                .then((response) => {
-                    let data = response.data
-                    mostraSucesso('', 'Registro salvo com sucesso!')
-                    this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
-                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-                    this.preload = false
-                })
-                .catch((error) => {
-                    this.preload = false
-                })
+            this.preload = true
+            try {
+                await axios.put(
+                    `${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/${this.form.id}/aprovargestor`,
+                    this.form
+                )
+                mostraSucesso('', 'Registro salvo com sucesso!')
+                this.encerrarModalERecarregar()
+            } catch {
+                // Erro tratado pelo interceptor ou feedback visual
+            } finally {
+                this.preload = false
+            }
+        },
+        async aprovarExtra() {
+            if (!this.validarFormularioAprovacao() || !this.validarTreinamento()) return
+
+            this.preload = true
+            try {
+                const { data } = await axios.put(
+                    `${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/${this.form.id}/aprovarextra`,
+                    this.form
+                )
+                mostraSucesso('', data?.msg ?? 'Aprovação extra registrada com sucesso!')
+                this.encerrarModalERecarregar()
+            } catch (error) {
+                const msg =
+                    error.response?.data?.msg ?? 'Houve um erro. Tente novamente.'
+                mostraErro('', msg)
+            } finally {
+                this.preload = false
+            }
+        },
+        async aprovarRh() {
+            if (!this.validarFormularioAprovacao()) return
+
+            this.preload = true
+            try {
+                await axios.put(
+                    `${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/${this.form.id}/aprovarrh`,
+                    this.form
+                )
+                mostraSucesso('', 'Registro salvo com sucesso!')
+                this.encerrarModalERecarregar()
+            } catch {
+                // Erro tratado pelo interceptor ou feedback visual
+            } finally {
+                this.preload = false
+            }
         },
         selecionarTodos(event) {
             if (event.target.checked) {
@@ -1599,27 +1601,12 @@ export default {
             }
         },
         carregou(dados) {
-            console.log('SolicitacaoMudaCargo - Dados recebidos:', {
-                pode_aprovar_extra: dados.pode_aprovar_extra,
-                tem_aprovacao_extra: dados.tem_aprovacao_extra,
-                nome_aprovacao_extra: dados.nome_aprovacao_extra,
-                aprovar_por_gestor: dados.aprovar_por_gestor,
-                aprovar_por_rh: dados.aprovar_por_rh
-            })
-
             this.lista = dados.itens
             this.aprovaGestor = dados.aprovar_por_gestor
             this.aprovaExtra = dados.pode_aprovar_extra || false
             this.aprovaRh = dados.aprovar_por_rh
             this.temAprovacaoExtra = dados.tem_aprovacao_extra || false
             this.nomeAprovacaoExtra = dados.nome_aprovacao_extra || 'Aprovação Extra'
-
-            console.log('SolicitacaoMudaCargo - Variáveis setadas:', {
-                aprovaExtra: this.aprovaExtra,
-                temAprovacaoExtra: this.temAprovacaoExtra,
-                nomeAprovacaoExtra: this.nomeAprovacaoExtra
-            })
-
             this.controle.carregando = false
         },
         carregando() {
