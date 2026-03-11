@@ -1,34 +1,37 @@
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../../registerGlobals'
 import preload from '../../../../components/preload'
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     components: {
         preload
     },
-    data: {
-        URL_ADMIN,
-        preload: true,
-        editando: false,
-        update: false,
-        janelaTitulo: 'Avaliador',
-        hash: `mybp_${parseInt(Math.random() * 999999)}`,
+    data() {
+        return {
+            URL_ADMIN,
+            preload: true,
+            editando: false,
+            update: false,
+            janelaTitulo: 'Avaliador',
+            hash: `mybp_${parseInt(Math.random() * 999999)}`,
 
-        form: {
-            autocomplete_label_avaliador: '',
-            autocomplete_label_avaliador_anterior: '',
-            avaliador_id: '',
-            avaliadores: []
-        },
+            form: {
+                autocomplete_label_avaliador: '',
+                autocomplete_label_avaliador_anterior: '',
+                avaliador_id: '',
+                avaliadores: []
+            },
 
-        funcionariosSelecionados: [],
-        todosFuncionariosSelecionados: false,
-        listaFuncionarios: [],
+            funcionariosSelecionados: [],
+            todosFuncionariosSelecionados: false,
+            listaFuncionarios: [],
 
-        urlPaginacao: `${URL_ADMIN}/cadastro/avaliacoes/avaliadores/atualizar`,
-        controle: {
-            carregando: false,
-            dados: {
-                campoBusca: ''
+            urlPaginacao: `${URL_ADMIN}/cadastro/avaliacoes/avaliadores/atualizar`,
+            controle: {
+                carregando: false,
+                dados: {
+                    campoBusca: ''
+                }
             }
         }
     },
@@ -206,8 +209,8 @@ const app = new Vue({
         },
 
         atualizar() {
-            this.$refs.componente.atual = 1
-            this.$refs.componente.buscar()
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         },
 
         // atualizarListaFuncionarios() {
@@ -329,3 +332,6 @@ const app = new Vue({
         }
     }
 })
+
+registerGlobals(app)
+app.mount('#app')

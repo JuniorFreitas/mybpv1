@@ -2,10 +2,12 @@
     <div class='row' id='formdinamico' v-if='model.formulario'>
         <div class='col-12'>
             <h4 v-show='mostra_titulo'>{{ model.formulario.titulo }}</h4>
-            <fieldset v-for='setor in model.formulario.setores'>
+            <fieldset v-for='(setor, index) in model.formulario.setores'>
+            :key="setor.id || index"
                 <legend>{{ setor.nome }}</legend>
 
-                <div class='col-12 col-sm-6' v-for='alternativa in setor.alternativas'>
+                <div class='col-12 col-sm-6' v-for='(alternativa, index) in setor.alternativas'>
+                :key="alternativa.id || index"
 
                     <div class='form-group' v-if='alternativa.tipo === "checkbox"'>
                         <div class='custom-control custom-switch'>
@@ -28,6 +30,7 @@
                                     :onchange='`valida_campo_vazio(this, ${alternativa.pivot.min})`'
                             >
                                 <option v-for='(opcao,index) in alternativa.opcoes'
+                                :key="opcao.id || index"
                                         :value='opcao.value'>
                                     {{ opcao.label }}
                                 </option>
@@ -36,7 +39,8 @@
 
                         <div v-if='!alternativa.pivot.obrigatorio'>
                             <select class='form-control' v-model='getResposta(alternativa.id).valor'>
-                                <option v-for='opcao in alternativa.opcoes' :value='opcao.id'>
+                                <option v-for='(opcao, index) in alternativa.opcoes' :value='opcao.id'>
+                                :key="opcao.id || index"
                                     {{ opcao.label }}
                                 </option>
                             </select>
@@ -115,7 +119,8 @@
                                   :disabled='visualizar'
                               >
                                   <option value=''>Selecione</option>
-                                  <option v-for='tipoexame in listaTiposExames' :value='tipoexame.id'>{{ tipoexame.label }}</option>
+                                  <option v-for='(tipoexame, index) in listaTiposExames' :value='tipoexame.id'>{{ tipoexame.label }}</option>
+                                  :key="tipoexame.id || index"
                               </select>
                 </div>-->
             </fieldset>
@@ -136,7 +141,7 @@ export default {
         },
         model: {
             type: Object,
-            default: {}
+            default: () => ({})
         },
         mostra_titulo: {
             type: Boolean,

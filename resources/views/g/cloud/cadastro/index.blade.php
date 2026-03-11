@@ -7,7 +7,7 @@
 @section('content')
     <cadastro></cadastro>
   {{--  <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+        <template #conteudo>
             <span v-show="preloadAjax">
                 <i class="fa fa-spinner fa-pulse"></i> Carregando...
             </span>
@@ -46,12 +46,12 @@
             </form>
 
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div v-show="!preloadAjax">
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado"
                         @click="alterar">Alterar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado"
                         @click="cadastrar">Cadastrar
                 </button>
             </div>
@@ -68,11 +68,11 @@
         </div>
     </div>
 
-    <button type="button" class="btn btn-sm btn-success" @click.prevent="atualizar">
+    <button type="button" class="btn btn-sm mr-1 btn-success" @click.prevent="atualizar">
         <i class="fa fa-sync"></i> Atualizar
     </button>
 
-    <button type="button" class="btn btn-sm btn-primary" id="btnFormCadastrar" data-toggle="modal"
+    <button type="button" class="btn btn-sm mr-1 btn-primary" id="btnFormCadastrar" data-toggle="modal"
             data-target="#janelaCadastrar" @click="formNovo()">Cadastrar
     </button>
 
@@ -102,12 +102,12 @@
                         <bt-ativo :rota="`clouds/cadastro/${item.id}/ativa-desativa`" :model="item"></bt-ativo>
                     </td>
                     <td class="text-center">
-                        <a class="btn btn-sm btn-success btnFormAlterar" href="javascript://"
+                        <a class="btn btn-sm mr-1 btn-success btnFormAlterar" href="javascript://"
                            @click.prevent="formAlterar(item.id)" data-toggle="modal"
                            data-target="#janelaCadastrar">
                             <i class="fa fa-edit"></i>
                         </a>
-                        <a class="btn btn-sm btn-danger btnFormExcluir" href="javascript://"
+                        <a class="btn btn-sm mr-1 btn-danger btnFormExcluir" href="javascript://"
                            @click.prevent="janelaConfirmar(item.id)" data-toggle="modal"
                            data-target="#janelaConfirmar">
                             <i class="fa fa-trash" aria-hidden="true"></i>

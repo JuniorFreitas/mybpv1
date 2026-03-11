@@ -52,7 +52,7 @@
                     <!--<select class="form-control" :disabled="preload" v-model="model.bairro_id">-->
                         <!--&lt;!&ndash;<option value="0"> </option>&ndash;&gt;-->
                         <!--<option :value="bairro.id"-->
-                                <!--v-for="(bairro, index) in listaDeBairros">{{bairro.nome}}-->
+                                <!--v-for="(bairro, index) in listaDeBairros" :key="bairro.id || index">{{bairro.nome}}-->
                         <!--</option>-->
                     <!--</select>-->
                 <!--</div>-->
@@ -75,7 +75,7 @@
                     <!--<select class="form-control" :disabled="preload"-->
                             <!--v-model="model.municipio_id" @change="trocaMunicipio()">-->
                         <!--<option :value="municipio.id"-->
-                                <!--v-for="(municipio, index) in listaDeMunicipios">-->
+                                <!--v-for="(municipio, index) in listaDeMunicipios" :key="municipio.id || index">-->
                             <!--{{municipio.nome}}-->
                         <!--</option>-->
                     <!--</select>-->

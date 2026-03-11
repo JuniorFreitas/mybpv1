@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="mb-3 d-flex align-items-center">
-            <button type="button" class="btn btn-sm btn-primary" @click="formNovo" data-toggle="modal" data-target="#modalSegmento">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" @click="formNovo(); $refs.modal_modalSegmento && $refs.modal_modalSegmento.abrirModal()">
                 <i class="fa fa-plus"></i> Novo segmento
             </button>
         </div>
@@ -31,7 +31,7 @@
                         </span>
                     </div>
                     <div class="card-right">
-                        <button type="button" class="btn btn-sm btn-outline-primary" @click="editar(s)" data-toggle="modal" data-target="#modalSegmento" title="Editar">
+                        <button type="button" class="btn btn-sm mr-1 btn-outline-primary" @click="editar(s); $refs.modal_modalSegmento && $refs.modal_modalSegmento.abrirModal()" title="Editar">
                             <i class="fa fa-edit"></i>
                         </button>
                     </div>
@@ -234,7 +234,7 @@ export default {
             if (this.editando) {
                 axios.put(`${URL_ADMIN}/cadastro/segmentostreinamento/${this.form.id}`, payload)
                     .then(() => {
-                        $('#modalSegmento').modal('hide');
+                        this.$refs.modal_modalSegmento && this.$refs.modal_modalSegmento.fecharModal();
                         if (typeof mostraSucesso === 'function') mostraSucesso('', 'Segmento atualizado');
                         this.carregar();
                     })
@@ -244,7 +244,7 @@ export default {
             } else {
                 axios.post(`${URL_ADMIN}/cadastro/segmentostreinamento`, payload)
                     .then(() => {
-                        $('#modalSegmento').modal('hide');
+                        this.$refs.modal_modalSegmento && this.$refs.modal_modalSegmento.fecharModal();
                         if (typeof mostraSucesso === 'function') mostraSucesso('', 'Segmento cadastrado');
                         this.carregar();
                     })

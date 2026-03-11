@@ -214,8 +214,8 @@ export default {
 
         async atualizar() {
             try {
-                this.$refs.componente.atual = 1
-                await this.$refs.componente.buscar()
+                this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+                await this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             } catch (error) {
                 console.error('Erro ao atualizar dados:', error)
                 toastr.error('Erro ao atualizar dados', 'Erro!')

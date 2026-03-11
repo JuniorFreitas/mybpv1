@@ -10,6 +10,7 @@ use finfo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManagerStatic as Image;
 
@@ -51,6 +52,8 @@ use Intervention\Image\ImageManagerStatic as Image;
  * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereTemporario($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereThumb($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Arquivo whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class Arquivo extends Model
@@ -623,6 +626,12 @@ class Arquivo extends Model
                 $disco->delete($this->thumb);
             }
             $disco->delete($this->file);
+            if ($this->disco === self::DISCO_PERFIL_USUARIO) {
+                self::forgetPerfilAnexoCache($this->file, $this->imagem ? $this->thumb : null);
+            }
+            if ($this->disco === self::DISCO_FOTOCURRICULO) {
+                self::forgetFotocurriculoAnexoCache($this->file, $this->imagem ? $this->thumb : null);
+            }
             $this->delete();
             return true;
         }
@@ -662,10 +671,42 @@ class Arquivo extends Model
     /**
      * @param $disco
      * @param $arquivo
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     * @return \Illuminate\Http\Response|\Symfony\Component\HttpFoundation\StreamedResponse
      */
     public static function anexoShow($disco, $arquivo)
     {
+        if ($disco === self::DISCO_PERFIL_USUARIO) {
+            $key = 'perfil_anexo:' . $arquivo;
+            $ttl = (int) config('cache.ttl.perfil_anexo', 86400);
+            $cached = Cache::get($key);
+            if ($cached !== null && isset($cached['content'], $cached['mime'])) {
+                return response($cached['content'])->header('Content-Type', $cached['mime']);
+            }
+            $storage = Storage::disk($disco);
+            if (!$storage->exists($arquivo)) {
+                abort(404);
+            }
+            $content = $storage->get($arquivo);
+            $mime = $storage->mimeType($arquivo) ?: 'application/octet-stream';
+            Cache::put($key, ['content' => $content, 'mime' => $mime], $ttl);
+            return response($content)->header('Content-Type', $mime);
+        }
+        if ($disco === self::DISCO_FOTOCURRICULO) {
+            $key = 'fotocurriculo_anexo:' . $arquivo;
+            $ttl = (int) config('cache.ttl.fotocurriculo_anexo', 86400);
+            $cached = Cache::get($key);
+            if ($cached !== null && isset($cached['content'], $cached['mime'])) {
+                return response($cached['content'])->header('Content-Type', $cached['mime']);
+            }
+            $storage = Storage::disk($disco);
+            if (!$storage->exists($arquivo)) {
+                abort(404);
+            }
+            $content = $storage->get($arquivo);
+            $mime = $storage->mimeType($arquivo) ?: 'application/octet-stream';
+            Cache::put($key, ['content' => $content, 'mime' => $mime], $ttl);
+            return response($content)->header('Content-Type', $mime);
+        }
         if (Storage::disk($disco)->exists($arquivo)) {
             return \Storage::disk($disco)->response($arquivo);
         }
@@ -719,12 +760,98 @@ class Arquivo extends Model
                     $discoStorage->delete($model->thumb);
                 }
                 $discoStorage->delete($model->file);
+                if ($disco === self::DISCO_PERFIL_USUARIO) {
+                    self::forgetPerfilAnexoCache($model->file, $model->imagem ? $model->thumb : null);
+                }
+                if ($disco === self::DISCO_FOTOCURRICULO) {
+                    self::forgetFotocurriculoAnexoCache($model->file, $model->imagem ? $model->thumb : null);
+                }
                 $model->delete();
                 return true;
             }
             return response("", 404);
         }
         return response("", 404);
+    }
+
+    /**
+     * Invalida cache de anexo de perfil (file e thumb quando existir).
+     *
+     * @param string $file
+     * @param string|null $thumb
+     * @return void
+     */
+    public static function forgetPerfilAnexoCache(string $file, ?string $thumb = null): void
+    {
+        Cache::forget('perfil_anexo:' . $file);
+        if ($thumb !== null) {
+            Cache::forget('perfil_anexo:' . $thumb);
+        }
+    }
+
+    /**
+     * Retorna conteúdo e mime do anexo de perfil (usa cache).
+     * Para uso no endpoint base64.
+     *
+     * @param string $arquivo
+     * @return array{content: string, mime: string}|null null se não existir
+     */
+    public static function getPerfilAnexoContentAndMime(string $arquivo): ?array
+    {
+        $key = 'perfil_anexo:' . $arquivo;
+        $ttl = (int) config('cache.ttl.perfil_anexo', 86400);
+        $cached = Cache::get($key);
+        if ($cached !== null && isset($cached['content'], $cached['mime'])) {
+            return $cached;
+        }
+        $storage = Storage::disk(self::DISCO_PERFIL_USUARIO);
+        if (!$storage->exists($arquivo)) {
+            return null;
+        }
+        $content = $storage->get($arquivo);
+        $mime = $storage->mimeType($arquivo) ?: 'application/octet-stream';
+        Cache::put($key, ['content' => $content, 'mime' => $mime], $ttl);
+        return ['content' => $content, 'mime' => $mime];
+    }
+
+    /**
+     * Invalida cache de anexo foto currículo (file e thumb quando existir).
+     *
+     * @param string $file
+     * @param string|null $thumb
+     * @return void
+     */
+    public static function forgetFotocurriculoAnexoCache(string $file, ?string $thumb = null): void
+    {
+        Cache::forget('fotocurriculo_anexo:' . $file);
+        if ($thumb !== null) {
+            Cache::forget('fotocurriculo_anexo:' . $thumb);
+        }
+    }
+
+    /**
+     * Retorna conteúdo e mime do anexo foto currículo 3x4 (usa cache).
+     * Para uso no endpoint base64.
+     *
+     * @param string $arquivo
+     * @return array{content: string, mime: string}|null null se não existir
+     */
+    public static function getFotocurriculoAnexoContentAndMime(string $arquivo): ?array
+    {
+        $key = 'fotocurriculo_anexo:' . $arquivo;
+        $ttl = (int) config('cache.ttl.fotocurriculo_anexo', 86400);
+        $cached = Cache::get($key);
+        if ($cached !== null && isset($cached['content'], $cached['mime'])) {
+            return $cached;
+        }
+        $storage = Storage::disk(self::DISCO_FOTOCURRICULO);
+        if (!$storage->exists($arquivo)) {
+            return null;
+        }
+        $content = $storage->get($arquivo);
+        $mime = $storage->mimeType($arquivo) ?: 'application/octet-stream';
+        Cache::put($key, ['content' => $content, 'mime' => $mime], $ttl);
+        return ['content' => $content, 'mime' => $mime];
     }
 
     public static function apagaAnexo($id_anexo)

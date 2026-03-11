@@ -34,6 +34,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Projeto whereQntTotal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Projeto whereQntTotalRestante($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Projeto whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class Projeto extends Model

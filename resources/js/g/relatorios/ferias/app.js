@@ -1,9 +1,15 @@
-import Ferias from "../../../components/relatorios/ferias";
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import Ferias from '../../../components/relatorios/ferias'
 
-const app = new Vue({
-    el: '#app',
-    data: {},
+const app = createApp({
+    data() {
+        return {}
+    },
     components: {
         Ferias
-    },
-});
+    }
+})
+
+registerGlobals(app)
+app.mount('#app')

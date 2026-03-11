@@ -110,6 +110,23 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|MudancaCargo withoutTrashed()
+ * @property bool $treinamento_funcao
+ * @property string|null $treinamento_data_inicio
+ * @property string|null $treinamento_data_fim
+ * @property int|null $aprovacao_extra_id
+ * @property string|null $status_aprovacao_extra
+ * @property string|null $obs_aprovacao_extra
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_extra
+ * @property-read \App\Models\User|null $AprovacaoExtra
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MudancaCargo whereAprovacaoExtraId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MudancaCargo whereDataAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MudancaCargo whereObsAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MudancaCargo whereStatusAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MudancaCargo whereTreinamentoDataFim($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MudancaCargo whereTreinamentoDataInicio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MudancaCargo whereTreinamentoFuncao($value)
  * @mixin \Eloquent
  */
 class MudancaCargo extends Model

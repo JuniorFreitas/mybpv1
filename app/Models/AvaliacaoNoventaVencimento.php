@@ -34,6 +34,16 @@ use function PHPUnit\Framework\isNull;
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento wherePrazoDezInicial($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento wherePrazoDiaFinal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaVencimento wherePrazoDiaInicial($value)
+ * @property string|null $token_avaliacao Token único para acesso público à avaliação
+ * @property string|null $token_expiracao Data de expiração do token
+ * @property int $avaliacao_realizada Indica se a avaliação já foi realizada via token
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AvaliacaoNoventaFeedbackQuantidade> $qntFeedback
+ * @property-read int|null $qnt_feedback_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AvaliacaoNoventaVencimento whereAvaliacaoRealizada($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AvaliacaoNoventaVencimento whereTokenAvaliacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AvaliacaoNoventaVencimento whereTokenExpiracao($value)
  * @mixin \Eloquent
  */
 class AvaliacaoNoventaVencimento extends Model

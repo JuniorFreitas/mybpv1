@@ -104,6 +104,18 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|IntermitenteFixoPrevista withoutTrashed()
+ * @property int|null $aprovacao_extra_id
+ * @property string|null $status_aprovacao_extra
+ * @property string|null $obs_aprovacao_extra
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_extra
+ * @property-read \App\Models\User|null $UserAprovacaoExtra
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read mixed $aprovacao_extra_nome
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|IntermitenteFixoPrevista whereAprovacaoExtraId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|IntermitenteFixoPrevista whereDataAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|IntermitenteFixoPrevista whereObsAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|IntermitenteFixoPrevista whereStatusAprovacaoExtra($value)
  * @mixin \Eloquent
  */
 class IntermitenteFixoPrevista extends Model

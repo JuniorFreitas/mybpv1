@@ -35,6 +35,11 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura whereTipo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura whereUpdatedAt($value)
+ * @property int|null $segmento_treinamento_id
+ * @property-read \App\Models\SegmentoTreinamento|null $SegmentoTreinamento
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CarteiraAssinatura whereSegmentoTreinamentoId($value)
  * @mixin \Eloquent
  */
 class CarteiraAssinatura extends Model

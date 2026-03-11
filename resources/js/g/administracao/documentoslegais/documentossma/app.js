@@ -1,8 +1,12 @@
-import documentossma from '../../../../components/administracao/documentoslegais/documentossma';
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../../registerGlobals'
+import documentossma from '../../../../components/administracao/documentoslegais/documentossma'
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     components: {
         documentossma
     }
-});
+})
+
+registerGlobals(app)
+app.mount('#app')

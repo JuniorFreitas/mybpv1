@@ -114,6 +114,8 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @method static Builder|Cliente whereUpdatedAt($value)
  * @method static Builder|Cliente whereValores($value)
  * @method static Builder|Cliente whereVisao($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SegmentoTreinamento> $SegmentosTreinamento
+ * @property-read int|null $segmentos_treinamento_count
  * @mixin \Eloquent
  */
 class Cliente extends Model

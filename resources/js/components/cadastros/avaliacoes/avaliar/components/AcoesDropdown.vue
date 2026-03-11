@@ -16,7 +16,7 @@
             class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
             aria-labelledby="dropdownMenuLink"
         >
-            <template v-for="acao in acoes">
+            <template v-for="acao in acoes" :key="acao.tipo">
                 <a
                     v-if="acao.tipo !== 'imprimir'"
                     :key="acao.tipo"

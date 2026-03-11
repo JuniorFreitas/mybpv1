@@ -3,8 +3,8 @@
 @section('content_header','Projetos')
 @section('content')
 
-    <modal id="janelaCadastrar" :titulo="tituloJanela" :size="90">
-        <template slot="conteudo">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :size="90">
+        <template #conteudo>
             <div v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</div>
             <div class="alert alert-success alert-dismissible" v-show="cadastrado">
                 <h4><i class="icon fa fa-check"></i>Projeto cadastrado com sucesso!</h4>
@@ -72,7 +72,7 @@
 
                                 <td class="text-center">@{{ item.qnt_preenchida }}</td>
 {{--                                <td class="text-center">--}}
-{{--                                    <a href="javascript://" class="btn btn-sm btn-danger"--}}
+{{--                                    <a href="javascript://" class="btn btn-sm mr-1 btn-danger"--}}
 {{--                                       @click.prevent="removerLIColaborador(index)">--}}
 {{--                                        <i class="fa fa-times" aria-hidden="true"></i>--}}
 {{--                                    </a>--}}
@@ -85,12 +85,12 @@
 
             </form>
         </template>
-        <template slot="rodape">
-            <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && !preloadAjax"
+        <template #rodape>
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado && !preloadAjax"
                     @click="alterar()">
                 Alterar
             </button>
-            <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado && !preloadAjax"
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado && !preloadAjax"
                     @click="cadastrar()">
                 Cadastrar
             </button>
@@ -112,13 +112,12 @@
             </div>
 
             <div class="col-12 col-md-9">
-                <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                     <i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>Atualizar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" :disabled="controle.carregando"
-                        data-target="#janelaCadastrar"
-                        @click="formNovo()">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="controle.carregando"
+                        @click="formNovo(); $refs.janelaCadastrar?.abrirModal()">
                     Cadastrar
                 </button>
             </div>
@@ -169,10 +168,8 @@
                     </td>
 
                     <td class="text-center">
-                        <a href="javascript://" class="btn btn-sm btn-primary mb-1" title="Editar"
-                           @click.prevent="formAlterar(projeto.id)"
-                           data-toggle="modal"
-                           data-target="#janelaCadastrar">
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-primary mb-1" title="Editar"
+                           @click.prevent="formAlterar(projeto.id); $refs.janelaCadastrar?.abrirModal()">
                             <i class="fa fa-edit"></i>
                         </a>
                     </td>

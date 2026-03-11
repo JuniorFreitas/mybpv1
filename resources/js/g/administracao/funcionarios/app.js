@@ -1,10 +1,12 @@
-Vue.component('endereco', require('../../../components/Endereco.vue'));
-Vue.component('banco', require('../../../components/ContaCorrente.vue'));
-Vue.component('upload', require('../../../components/Upload.vue'));
-Vue.component('telefone', require('../../../components/Telefones.vue'));
-const app = new Vue({
-    el: '#app',
-    data: {
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import Endereco from '../../../components/Endereco.vue'
+import ContaCorrente from '../../../components/ContaCorrente.vue'
+import Upload from '../../../components/Upload.vue'
+import Telefones from '../../../components/Telefones.vue'
+const app = createApp({
+    data() {
+        return {
         tituloJanela: 'Cadastrando Funcionário',
         preloadAjax: false,
         editando: false,
@@ -399,6 +401,14 @@ const app = new Vue({
     }
 });
 
+app.component('endereco', Endereco)
+app.component('banco', ContaCorrente)
+app.component('upload', Upload)
+app.component('telefone', Telefones)
+
+registerGlobals(app)
+app.mount('#app');
+
 $().ready(function () {
 
     $('#janelaCadastrar').on('shown.bs.modal', function () {
@@ -417,5 +427,5 @@ $().ready(function () {
 
 function atualizar() {
     app.$refs.componente.atual = 1;
-    app.$refs.componente.buscar();
+    app.this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null;
 }

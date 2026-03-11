@@ -173,8 +173,7 @@ export default {
          * @returns {boolean}
          */
         canEvaluate(item) {
-            return item?.status === 'Pendente' &&
-                (item.fez_auto_avaliacao || item.avaliador_id === item.funcionario_id)
+            return item?.status === 'Pendente' && (item.fez_auto_avaliacao || item.avaliador_id === item.funcionario_id)
         },
 
         /**
@@ -203,17 +202,7 @@ export default {
         closeModal(modalId) {
             $(`#${modalId}`).modal('hide')
         }
-    },
-
-    /**
-     * Filtros globais para formatação
-     */
-    filters: {
-        casasDecimais(valor, casas = 1) {
-            if (valor === null || valor === undefined || isNaN(valor)) {
-                return '0.' + '0'.repeat(casas)
-            }
-            return Number(valor).toFixed(casas)
-        }
     }
+
+    // Filters removidos para compatibilidade com Vue 3
 }

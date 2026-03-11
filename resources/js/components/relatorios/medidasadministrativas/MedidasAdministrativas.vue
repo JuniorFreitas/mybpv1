@@ -11,11 +11,11 @@
                         <div class="form-group">
                             <datepicker range formsm label="" :disabled="preload"
                                         v-model="periodo"></datepicker>
-                            <button type="button" class="btn btn-sm btn-primary" @click.prevent="buscarDados()"
+                            <button type="button" class="btn btn-sm mr-1 btn-primary" @click.prevent="buscarDados()"
                                     :disabled="preload">
                                 <i class="fa fa-search"></i> Buscar
                             </button>
-                            <button type="button" class="btn btn-sm btn-primary" :disabled="preload"
+                            <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="preload"
                                     @click.prevent="exportaExcel()">
                                 <i class="fas fa-file-excel"></i> Exportar Excel
                             </button>
@@ -40,7 +40,7 @@
                 <div class="alert alert-warning" v-show="!dados.length">
                     <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
                 </div>
-                <div v-for="(medidas, index) in dados" :key="index" v-show="dados.length" class="mb-3">
+                <div v-for="(medidas, index) in dados" :key="medidas.id || index" v-show="dados.length" class="mb-3">
                     <h5 class="text-center">{{ medidas.nome }}</h5>
                     <h6 class="text-center">{{ medidas.cargo }}</h6>
 
@@ -91,15 +91,17 @@ export default {
         }
     },
     methods: {
-        buscarDados() {
+        async buscarDados() {
             this.preload = true;
-            axios.post(`${URL_ADMIN}/relatorios/medidasadministrativas`, {
-                periodo: this.periodo,
-                status: this.status
-            }).then(res => {
+            try {
+                const res = await axios.post(`${URL_ADMIN}/relatorios/medidasadministrativas`, {
+                    periodo: this.periodo,
+                    status: this.status
+                });
                 this.dados = res.data;
+            } finally {
                 this.preload = false;
-            })
+            }
         },
     }
 

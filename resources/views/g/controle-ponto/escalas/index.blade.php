@@ -3,8 +3,8 @@
 @section('content_header', 'Controle de ponto: Escalas')
 @section('content')
     {{--Janela confirmar pagar--}}
-    <modal id="janelaConfirmar" titulo="Apagar escala">
-        <template slot="conteudo">
+    <modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar escala">
+        <template #conteudo>
             <preload v-show="formEscala.preload" label="Aguarde..."></preload>
             <div class="alert alert-success alert-dismissible" v-show="formEscala.save">
                 <h4><i class="icon fa fa-check"></i> Escala apagada com sucesso!</h4>
@@ -13,14 +13,14 @@
                 <span class="text-danger">Funcionários que usam esta escala não poderão registrar ponto.</span></h4>
 
         </template>
-        <template slot="rodape">
-            <button type="button" class="btn btn-sm btn-danger" @click="apagarEscala()" v-show="!formEscala.save && !formEscala.preload">Apagar</button>
+        <template #rodape>
+            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagarEscala()" v-show="!formEscala.save && !formEscala.preload">Apagar</button>
         </template>
     </modal>
 
     <!--Janela de Associar Escala-->
-    <modal id="janelaAssociarEscala"  titulo="Associar escalas" :fechar="!formEscalaFuncionarios.preload" @fechou="resetFuncionariosSelecionados">
-        <template slot="conteudo">
+    <modal ref="janelaAssociarEscala" id="janelaAssociarEscala" titulo="Associar escalas" :fechar="!formEscalaFuncionarios.preload" @fechou="resetFuncionariosSelecionados">
+        <template #conteudo>
             <h4 class="text-success text-center" v-if="!formEscalaFuncionarios.preload && formEscalaFuncionarios.update">
                 <i class="fas fa-check fa-2x"></i><br>
                 Escala
@@ -49,16 +49,16 @@
             </div>
 
         </template>
-        <template slot="rodape">
-            <button :disabled="listaTodasEscalas.length=== 0" v-if="!formEscalaFuncionarios.preload && !formEscalaFuncionarios.update" class="btn btn-sm btn-success" type="button" @click="assosicarEscala">
+        <template #rodape>
+            <button :disabled="listaTodasEscalas.length=== 0" v-if="!formEscalaFuncionarios.preload && !formEscalaFuncionarios.update" class="btn btn-sm mr-1 btn-success" type="button" @click="assosicarEscala">
                 <i class="fas fa-link"></i> Aplicar
             </button>
         </template>
     </modal>
 
     <!--Janela Escalas-->
-    <modal id="janelaFormEscalas"  :titulo="formEscala.titulo" :fechar="!formEscala.preload" :size="90">
-        <template slot="conteudo">
+    <modal ref="janelaFormEscalas" id="janelaFormEscalas" :titulo="formEscala.titulo" :fechar="!formEscala.preload" :size="90">
+        <template #conteudo>
             <h4 class="text-success text-center" v-if="!formEscala.preload && formEscala.save">
                 <i class="fas fa-check fa-2x"></i><br>
                 Escala
@@ -87,8 +87,8 @@
             </div>
 
         </template>
-        <template slot="rodape">
-            <button v-if="!formEscala.preload && !formEscala.save" class="btn btn-sm btn-success" type="button" @click="salvarEscala">
+        <template #rodape>
+            <button v-if="!formEscala.preload && !formEscala.save" class="btn btn-sm mr-1 btn-success" type="button" @click="salvarEscala">
                 <span v-if="formEscala.editando">Alterar</span>
                 <span v-else> Cadastrar </span>
             </button>
@@ -112,7 +112,7 @@
                         </div>
                     </div>
                     <div class="col-sm-3 my-1" v-if="escalas_insert">
-                        <button  type="button" class="btn btn-primary" data-toggle="modal" data-target="#janelaFormEscalas" @click="formNovaEscala"> <i class="fas fa-user-clock"></i> Adicionar escala</button>
+                        <button type="button" class="btn btn-primary" @click="formNovaEscala(); $refs.janelaFormEscalas?.abrirModal()"> <i class="fas fa-user-clock"></i> Adicionar escala</button>
                     </div>
 
                 </div>
@@ -133,11 +133,11 @@
                 <tr class="pointer" v-for="escala in listaEscalas">
                     <td data-label="descrição" >@{{escala.descricao}}</td>
                     <td data-label="editar">
-                        <a v-if="escalas_update" href="javascript://" data-toggle="modal" data-target="#janelaFormEscalas" class="btn btn-sm btn-success" @click="formEditarEscala(escala)"><i aria-hidden="true" class="fa fa-edit"></i> Editar
+                        <a v-if="escalas_update" href="javascript://" class="btn btn-sm mr-1 btn-success" @click="formEditarEscala(escala); $refs.janelaFormEscalas?.abrirModal()"><i aria-hidden="true" class="fa fa-edit"></i> Editar
                         </a>
                     </td>
                     <td data-label="excluir">
-                        <a v-if="escalas_delete" href="javascript://" data-toggle="modal" data-target="#janelaConfirmar" class="btn btn-sm btn-danger" @click="formEscala.id = escala.id"><i aria-hidden="true" class="fa fa-trash"></i> Excluir
+                        <a v-if="escalas_delete" href="javascript://" class="btn btn-sm mr-1 btn-danger" @click="formEscala.id = escala.id; $refs.janelaConfirmar?.abrirModal()"><i aria-hidden="true" class="fa fa-trash"></i> Excluir
                         </a>
                     </td>
                 </tr>
@@ -164,7 +164,7 @@
                         </div>
                     </div>
                     <div class="col-auto mb-2">
-                        <button v-if="escalas_funcionarios" type="button" class="btn btn-secondary" :disabled="formEscalaFuncionarios.funcionariosSelecionados.length===0" data-toggle="modal" data-target="#janelaAssociarEscala" @click="formAssociarEscala" >
+                        <button v-if="escalas_funcionarios" type="button" class="btn btn-secondary" :disabled="formEscalaFuncionarios.funcionariosSelecionados.length===0" @click="formAssociarEscala(); $refs.janelaAssociarEscala?.abrirModal()">
                             <i class="fas fa-link"></i> Associar escala
                         </button>
                     </div>
@@ -197,9 +197,11 @@
                     <td data-label="nome" >@{{funcionario.nome}}</td>
 {{--                    <td data-label="empresa">@{{funcionario.empresa.nome}}</td>--}}
                     <td data-label="escalametro">
-                        <span class="badge badge-secondary ml-1 p-1" v-if="funcionario.escalas_funcionario.length" v-for="escalas in funcionario.escalas_funcionario">
-                            @{{escalas.descricao}}
-                        </span>
+                        <template v-if="funcionario.escalas_funcionario.length">
+                            <span class="badge badge-secondary ml-1 p-1" v-for="escalas in funcionario.escalas_funcionario">
+                                @{{escalas.descricao}}
+                            </span>
+                        </template>
                     </td>
                 </tr>
                 </tbody>

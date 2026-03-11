@@ -1,7 +1,7 @@
 <template>
     <div>
         <modal id="janelaAssociarAvaliador" titulo="Associar avaliadores" :fechar="!preload"
-               size="g">
+               size="g" ref="modal_janelaAssociarAvaliador" modal-pai="janelaAssociar">
             <template v-slot:conteudo>
                 <preload v-if="preload" :label="update ? 'Associando aguarde' : 'Carregando'"></preload>
                 <div v-if="!preload">
@@ -44,7 +44,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr class="table-warning" v-if="fluxo[0].label === 'Auto Avaliação'">
+                                <tr class="table-warning" v-if="fluxo.length && fluxo[0].label === 'Auto Avaliação'">
                                     <td class="text-center bold">Auto Avaliação</td>
                                     <td class="text-center bold">Auto Avaliação</td>
                                     <td class="text-center bold"></td>
@@ -63,7 +63,7 @@
                                                 @change.prevent="changeAvaliaComo(index, $event.target.value)"
                                         >
                                             <option value="">Selecione</option>
-                                            <option v-for="item in obj.fluxo" :value="item.id" :key="item.id">
+                                            <option v-for="item in (obj.fluxo || fluxo || [])" :value="item.id" :key="item.id">
                                                 {{ item.label }} {{ item.principal ? '- (Avaliador Final)' : '' }}
                                             </option>
                                         </select>
@@ -71,7 +71,7 @@
                                         <!--                                        <span class="badge badge-success ml-1 p-1" v-if="index === 0">Principal</span>-->
                                     </td>
                                     <td class="text-center">
-                                        <a href="javascript://" class="btn btn-sm btn-danger"
+                                        <a href="javascript://" class="btn btn-sm mr-1 btn-danger"
                                            @click.prevent="removerLIAvaliador(index)">
                                             <i class="fa fa-times" aria-hidden="true"></i>
                                         </a>
@@ -85,7 +85,7 @@
             </template>
             <template v-slot:rodape>
                 <button :disabled="preload" v-if="!preload && !update"
-                        class="btn btn-sm btn-primary"
+                        class="btn btn-sm mr-1 btn-primary"
                         type="button" @click="associarAvaliadores">
                     <i class="fa fa-save"></i> Salvar
                 </button>
@@ -138,8 +138,7 @@
                         <div class="col-auto mb-2">
                             <button type="button" class="btn btn-primary btn-sm"
                                     :disabled="funcionariosSelecionados.length===0"
-                                    data-toggle="modal" data-target="#janelaAssociarAvaliador"
-                                    @click="formAssociarAvaliador">
+                                    @click="abrirModalAssociarAvaliador">
                                 <i class="fas fa-link"></i> Associar Avaliadores
                             </button>
                         </div>
@@ -168,7 +167,8 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr class="pointer" v-for="funcionario in listaFuncionarios"
+                    <tr class="pointer" v-for="(funcionario, index) in listaFuncionarios"
+                    :key="funcionario.id || index"
                         @click="selecionarFuncionario(funcionario)">
                         <td data-label="id" class="text-center">
                             <div class="form-check" v-if="podeAssociar">
@@ -179,13 +179,13 @@
                         </td>
                         <td data-label="nome" class="text-left">{{ funcionario.nome }}</td>
                         <td data-label="avaliadores" class="text-left">
+                            <span v-if="funcionario.avaliadores.length">
                                 <span class="badge  ml-1 p-1"
                                       :class="avaliadores.tipo_avaliador_principal ? 'badge-success' : 'badge-secondary'"
-                                      v-if="funcionario.avaliadores.length"
-                                      :key="avaliadores.avaliador.id"
-                                      v-for="avaliadores in funcionario.avaliadores">
+                                      v-for="(avaliadores, index) in funcionario.avaliadores" :key="avaliadores.id || index">
                                          {{ avaliadores.avaliador.nome }} - {{ avaliadores.tipo_avaliador_label }}
                                 </span>
+                            </span>
                         </td>
                     </tr>
                     </tbody>
@@ -229,7 +229,7 @@ export default {
     data() {
         return {
             URL_ADMIN,
-            preload: true,
+            preload: false,
             editando: false,
             update: false,
             janelaTitulo: 'Avaliador',
@@ -289,11 +289,13 @@ export default {
             this.form.avaliadores[index].avaliador.tipo_avaliador_principal = false
 
             if (avaliador_id_selecionado !== '') {
-                let fluxoSelecionado = this.obj.fluxo.find(val => val.id === avaliador_id_selecionado)
-
-                this.form.avaliadores[index].avaliador.tipo_avaliador_id = fluxoSelecionado.id
-                this.form.avaliadores[index].avaliador.tipo_avaliador_label = fluxoSelecionado.label
-                this.form.avaliadores[index].avaliador.tipo_avaliador_principal = fluxoSelecionado.principal
+                const fluxoArr = this.obj.fluxo || this.fluxo || []
+                const fluxoSelecionado = fluxoArr.find(val => val.id == avaliador_id_selecionado)
+                if (fluxoSelecionado) {
+                    this.form.avaliadores[index].avaliador.tipo_avaliador_id = fluxoSelecionado.id
+                    this.form.avaliadores[index].avaliador.tipo_avaliador_label = fluxoSelecionado.label
+                    this.form.avaliadores[index].avaliador.tipo_avaliador_principal = fluxoSelecionado.principal
+                }
             }
 
         },
@@ -373,28 +375,41 @@ export default {
             this.todosFuncionariosSelecionados = quantidade === marcados
         },
 
-        formAssociarAvaliador() {
-            this.editando = true
+        async abrirModalAssociarAvaliador() {
             this.preload = false
+            await this.formAssociarAvaliador()
+            this.$nextTick(() => {
+                const modal = this.$refs.modal_janelaAssociarAvaliador
+                if (modal && typeof modal.abrirModal === 'function') {
+                    modal.abrirModal()
+                }
+            })
+        },
+
+        async formAssociarAvaliador() {
+            this.editando = true
             this.form.autocomplete_label_avaliador = ''
             this.form.avaliadores = []
             this.form.avaliadoresDelete = []
             this.form.funcionarios = this.funcionariosSelecionados
             if (this.form.funcionarios.length === 1) {
-                axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliadores/avaliador-associado/`, {
-                    funcionario_id: this.form.funcionarios[0],
-                    avaliacao_id: this.form.avaliacao_id
-                }).then(({ data }) => {
-                    this.form.avaliadores = data.avaliadores
-                    this.fluxo = data.fluxo
-                }).catch((error) => {
-                })
-            }
-
-            if (this.form.funcionarios.length > 1) {
+                try {
+                    const { data } = await axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliadores/avaliador-associado/`, {
+                        funcionario_id: this.form.funcionarios[0],
+                        avaliacao_id: this.form.avaliacao_id
+                    })
+                    this.form.avaliadores = data.avaliadores || []
+                    this.fluxo = data.fluxo || this.obj.fluxo || this.fluxo || []
+                } catch (error) {
+                    this.fluxo = this.obj.fluxo || this.fluxo || []
+                    this.form.avaliadores = []
+                }
+            } else if (this.form.funcionarios.length > 1) {
                 this.form.avaliadores = []
+                if (!this.fluxo.length && this.obj.fluxo && this.obj.fluxo.length) {
+                    this.fluxo = this.obj.fluxo
+                }
             }
-
         },
 
         checkSePossuiSomenteUmAvaliadorPrincipal() {
@@ -429,7 +444,7 @@ export default {
             return false // Se não encontrar, retorna false
         },
 
-        associarAvaliadores() {
+        async associarAvaliadores() {
             this.form.funcionarios = this.funcionariosSelecionados
 
             $('#janelaAssociarAvaliador :input:visible').trigger('blur')
@@ -452,20 +467,21 @@ export default {
                 }
             }
 
+            this.update = true
             this.preload = true
-            axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliadores/associar/`, this.form)
-                .then(({ data }) => {
-                    $(`#janelaAssociarAvaliador`).modal('hide')
-                    this.form = _.cloneDeep(this.formDefault)
-                    this.funcionariosSelecionados = []
-                    mostraSucesso('', 'Avaliadores associados com sucesso.')
-                    this.update = false
-                    this.atualizar()
-                    this.preload = false
-                }).catch((error) => {
-                this.preload = false
+            try {
+                await axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliadores/associar/`, this.form)
+                this.$refs.modal_janelaAssociarAvaliador && this.$refs.modal_janelaAssociarAvaliador.fecharModal()
+                this.form = _.cloneDeep(this.formDefault)
+                this.funcionariosSelecionados = []
+                mostraSucesso('', 'Avaliadores associados com sucesso.')
                 this.update = false
-            })
+                this.atualizar()
+            } catch (error) {
+                this.update = false
+            } finally {
+                this.preload = false
+            }
         },
 
         resetFuncionariosSelecionados() {
@@ -486,8 +502,8 @@ export default {
         },
 
         atualizar() {
-            this.$refs.componente.atual = 1
-            this.$refs.componente.buscar()
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

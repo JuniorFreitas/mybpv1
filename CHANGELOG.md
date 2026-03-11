@@ -5,6 +5,21 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [2.0.0] - 2026-03-10
+
+### Modificado
+
+-   **Frontend Vue 3 e documentação**
+    -   Stack do projeto utiliza Vue 3 + Laravel Mix; documentação de conformidade Vue 3 e plano de migração gradual para Composition API + Services em `docs/` (ex.: `ANALISE_VUE3_CONFORMIDADE.md`, `PLANO_MIGRACAO_COMPOSITION_API_SERVICES.md`, agente `agents/migracao-frontend/README.md`).
+
+### Corrigido
+
+-   **Exportação de recrutamento – erro de foreign key em histórico**
+    -   Ação "exportado" em `recrutamento_historicos` era registrada com `curriculo_id = 0`, violando a FK para `curriculos`.
+    -   Migration `make_curriculo_id_nullable_in_recrutamento_historicos_table`: coluna `curriculo_id` em `recrutamento_historicos` passou a aceitar `NULL`.
+    -   Model `RecrutamentoHistorico`: `registrar()` aceita `?int $curriculoId`; `gerarDescricao()` trata `curriculo_id` nulo (ex.: "Exportação em massa realizada por {usuário}" ou descrição armazenada).
+    -   `RecrutamentoController::export()` passa a chamar `RecrutamentoHistorico::registrar(null, ...)` em vez de `registrar(0, ...)`.
+
 ## [1.3.0] - 2026-03-02
 
 ### Adicionado

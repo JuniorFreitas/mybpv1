@@ -1,9 +1,15 @@
-import RecuperaSenha from "../../js/components/recuperaSenha";
+import { createApp } from 'vue'
+import { registerGlobals } from '../registerGlobals'
+import RecuperaSenha from '../../js/components/recuperaSenha'
 
-const app = new Vue({
-    el: '#app',
-    data: {},
+const app = createApp({
+    data() {
+        return {}
+    },
     components: {
         RecuperaSenha
-    },
-});
+    }
+})
+
+registerGlobals(app)
+app.mount('#app')

@@ -28,6 +28,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|RespostaAlternativas whereOrdem($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RespostaAlternativas whereSelecionado($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RespostaAlternativas whereValue($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class RespostaAlternativas extends Model

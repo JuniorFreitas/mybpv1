@@ -314,6 +314,17 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             });
         });
 
+        Route::group(['as' => 'carta-oferta-template.', 'prefix' => 'carta-oferta-template'], function () {
+            Route::get('/', [\App\Http\Controllers\CartaOfertaTemplateController::class, 'index'])
+                ->name('index')->middleware('can:administracao_carta_oferta_template');
+            Route::get('dados', [\App\Http\Controllers\CartaOfertaTemplateController::class, 'dados'])
+                ->name('dados')->middleware('can:administracao_carta_oferta_template');
+            Route::post('salvar', [\App\Http\Controllers\CartaOfertaTemplateController::class, 'salvar'])
+                ->name('salvar')->middleware('can:administracao_carta_oferta_template');
+            Route::post('preview', [\App\Http\Controllers\CartaOfertaTemplateController::class, 'preview'])
+                ->name('preview')->middleware('can:administracao_carta_oferta_template');
+        });
+
         // Documentos para assinatura digital (gerenciamento)
         Route::group(['as' => 'documento-assinatura.', 'prefix' => 'documento-assinatura', 'middleware' => ['assinatura.digital.habilitada']], function () {
             Route::get('/', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'indexView'])->name('index')->middleware('can:administracao_documentos_legais');
@@ -884,6 +895,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::get('/{fc_token}/pdf', [\App\Http\Controllers\AdmissaoController::class, 'getFichaPdf'])->name('admissao.getFichapdf');
             // Anexos
             Route::post('/uploadAnexos', [\App\Http\Controllers\AdmissaoController::class, 'uploadAnexos'])->name('admissao.upload-anexos');
+            Route::get('/anexo/{arquivo}/base64', [\App\Http\Controllers\AdmissaoController::class, 'anexoShowBase64'])->name('admissao.anexo-show-base64');
             Route::get('/anexo/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'anexoShow'])->name('admissao.anexo-show');
             Route::get('/anexoDownload/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'download'])->name('admissao.anexo-download');
             Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\AdmissaoController::class, 'anexoDelete'])->name('admissao.anexo-delete');
@@ -1280,6 +1292,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::get('perfil/{id}', [\App\Http\Controllers\UserController::class, 'perfilUsuario'])->name('perfilUsuario');
         Route::put('perfil/{id}', [\App\Http\Controllers\UserController::class, 'atualizaPerfilUsuario'])->name('atualizaPerfilUsuario');
         Route::post('perfil/anexo/uploadAnexos', [\App\Http\Controllers\UserController::class, 'uploadAnexos'])->name('upload-anexos-perfil');
+        Route::get('perfil/anexo/{arquivo}/base64', [\App\Http\Controllers\UserController::class, 'anexoShowBase64'])->name('anexo-show-perfil-base64');
         Route::get('perfil/anexo/{arquivo}', [\App\Http\Controllers\UserController::class, 'anexoShow'])->name('anexo-show-perfil');
         Route::get('perfil/anexoDownload/{arquivo}', [\App\Http\Controllers\UserController::class, 'download'])->name('anexo-download-perfil');
         Route::delete('perfil/anexo/{arquivo}', [\App\Http\Controllers\UserController::class, 'anexoDelete'])->name('anexo-delete-perfil');

@@ -2,6 +2,7 @@
 
 namespace App\Services\Treinamento;
 
+use App\Models\Arquivo;
 use App\Models\CarteiraAssinatura;
 use App\Models\Sistema;
 use Illuminate\Support\Facades\Cache;
@@ -78,5 +79,21 @@ class CarteiraImagemCache
     {
         // Laravel cache não suporta forget por prefix; apenas documentar que TTL cuida da renovação
         // Se usar Redis/DynamoDB com tags, poderia: Cache::tags(['carteira_assinatura', $id])->flush();
+    }
+
+    /**
+     * Retorna foto 3x4 do currículo (disco fotocurriculo) em data URL base64 para uso no PDF (carteira/bloqueio).
+     * Usa o mesmo cache de Arquivo::getFotocurriculoAnexoContentAndMime (invalidação em upload/delete).
+     *
+     * @param string $file Nome do arquivo no disco (ex.: retorno de Arquivo->file)
+     * @return string|null data:image/...;base64,... ou null se arquivo não existir
+     */
+    public static function fotoCurriculo3x4ParaDataUrl(string $file): ?string
+    {
+        $data = Arquivo::getFotocurriculoAnexoContentAndMime($file);
+        if ($data === null) {
+            return null;
+        }
+        return 'data:' . $data['mime'] . ';base64,' . base64_encode($data['content']);
     }
 }

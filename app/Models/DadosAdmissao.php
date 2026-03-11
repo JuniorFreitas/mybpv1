@@ -37,6 +37,8 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereTituloEleitorNumero($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereTituloEleitorSessao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DadosAdmissao whereTituloEleitorZona($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class DadosAdmissao extends Model

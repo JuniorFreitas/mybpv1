@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|TipoRecebeEmail query()
  * @method static \Illuminate\Database\Eloquent\Builder|TipoRecebeEmail whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoRecebeEmail whereNome($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class TipoRecebeEmail extends Model

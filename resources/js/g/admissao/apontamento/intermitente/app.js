@@ -1,9 +1,15 @@
-import Intermitente from "../../../../components/admissao/apontamento/Intermitente";
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../../registerGlobals'
+import Intermitente from '../../../../components/admissao/apontamento/Intermitente'
 
-const app = new Vue({
-    el: '#app',
-    data: {},
+const app = createApp({
+    data() {
+        return {}
+    },
     components: {
         Intermitente
-    },
-});
+    }
+})
+
+registerGlobals(app)
+app.mount('#app')

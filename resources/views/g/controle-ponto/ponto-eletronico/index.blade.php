@@ -4,8 +4,8 @@
 @section('content')
 
     <!--Janela de detalhes-->
-    <modal id="janelaFormDetalhes" titulo="Detalhes" size="g" :fechar="!formRegistro.preload">
-        <template slot="conteudo">
+    <modal ref="janelaFormDetalhes" id="janelaFormDetalhes" titulo="Detalhes" size="g" :fechar="!formRegistro.preload">
+        <template #conteudo>
             <p class="text-center">
                 <preload v-if="formRegistro.preload" label="Aguarde..."></preload>
             </p>
@@ -45,12 +45,12 @@
                 </table>
             </div>
         </template>
-        <template slot="rodape"></template>
+        <template #rodape></template>
     </modal>
 
     <!--Janela de registro-->
-    <modal id="janelaFormPonto" :titulo="formPonto.titulo" :fechar="!formPonto.preload" size="g" @fechou="stopGPS">
-        <template slot="conteudo">
+    <modal ref="janelaFormPonto" id="janelaFormPonto" :titulo="formPonto.titulo" :fechar="!formPonto.preload" size="g" @fechou="stopGPS">
+        <template #conteudo>
             <h4 class="text-success text-center" v-if="!formPonto.preload && formPonto.save">
                 <i class="fas fa-check fa-2x"></i> Ponto registrado
             </h4>
@@ -79,16 +79,16 @@
                 </div>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button :disabled="!formPonto.dentro"
                     v-if="!formPonto.preload && !formPonto.save && formPonto.telaGPS"
-                    class="btn btn-sm btn-success"
+                    class="btn btn-sm mr-1 btn-success"
                     type="button"
                     @click="continuar">
                 Continuar <i class="fas fa-arrow-right"></i>
             </button>
             <button v-if="!formPonto.preload && !formPonto.save && formPonto.telaCamera"
-                    class="btn btn-sm btn-success"
+                    class="btn btn-sm mr-1 btn-success"
                     type="button"
                     @click="registrarPonto">
                 Registrar
@@ -124,14 +124,16 @@
                                         <h5 class="text-center">@{{ hoje }}</h5>
                                     </div>
                                     <ul class="list-group list-group-flush">
-                                        <template v-if="registros.length > 0" v-for="reg in registros">
-                                            <template v-for="per in reg.periodos">
-                                                <li class="list-group-item text-center" v-if="per.entrada">
-                                                    ENTRADA: <strong>@{{ per.horaEntrada }}</strong>
-                                                </li>
-                                                <li class="list-group-item text-center" v-if="per.saida!=null">
-                                                    SAÍDA: <strong>@{{ per.horaSaida }}</strong>
-                                                </li>
+                                        <template v-if="registros.length > 0">
+                                            <template v-for="reg in registros">
+                                                <template v-for="per in reg.periodos">
+                                                    <li class="list-group-item text-center" v-if="per.entrada">
+                                                        ENTRADA: <strong>@{{ per.horaEntrada }}</strong>
+                                                    </li>
+                                                    <li class="list-group-item text-center" v-if="per.saida!=null">
+                                                        SAÍDA: <strong>@{{ per.horaSaida }}</strong>
+                                                    </li>
+                                                </template>
                                             </template>
                                         </template>
                                         <li v-if="registros.length === 0" class="list-group-item text-center">
@@ -143,9 +145,7 @@
                                 <button :disabled="mapLoading"
                                         type="button"
                                         class="btn btn-warning btn-block"
-                                        data-toggle="modal"
-                                        data-target="#janelaFormPonto"
-                                        @click="formNovoRegistro">
+                                        @click="formNovoRegistro(); $refs.janelaFormPonto?.abrirModal()">
                                     <i class="fas fa-user-clock"></i> Registrar ponto
                                 </button>
                             </div>
@@ -199,9 +199,7 @@
                                             <td>
                                                 <button type="button"
                                                         class="btn btn-info"
-                                                        data-toggle="modal"
-                                                        data-target="#janelaFormDetalhes"
-                                                        @click="verDetalhes(reg.id,per.id)">
+                                                        @click="verDetalhes(reg.id,per.id); $refs.janelaFormDetalhes?.abrirModal()">
                                                     <i class="fas fa-info-circle"></i> Detalhes
                                                 </button>
                                             </td>

@@ -51,6 +51,8 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameFuncionario whereUserEncaminhouId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class ExameFuncionario extends Model

@@ -1,9 +1,15 @@
-import MedidasAdministrativas from "../../../components/relatorios/medidasadministrativas/MedidasAdministrativas";
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import MedidasAdministrativas from '../../../components/relatorios/medidasadministrativas/MedidasAdministrativas'
 
-const app = new Vue({
-    el: '#app',
-    data: {},
+const app = createApp({
+    data() {
+        return {}
+    },
     components: {
         MedidasAdministrativas
-    },
-});
+    }
+})
+
+registerGlobals(app)
+app.mount('#app')

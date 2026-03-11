@@ -47,6 +47,8 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Examesesmt whereVencido($value)
  * @property-read \App\Models\FeedbackCurriculo|null $Feedback
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class Examesesmt extends Model

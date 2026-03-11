@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAssunto whereAssunto($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAssunto whereAtaReuniaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAssunto whereId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class AtaReuniaoAssunto extends Model

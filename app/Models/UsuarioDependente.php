@@ -31,6 +31,8 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|UsuarioDependente whereOutroTipo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UsuarioDependente whereTipo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UsuarioDependente whereUserId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class UsuarioDependente extends Model

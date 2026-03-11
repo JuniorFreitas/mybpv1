@@ -8,6 +8,27 @@ use Spatie\Activitylog\Models\Activity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $documento_para_assinatura_id
+ * @property string $evento
+ * @property array<array-key, mixed>|null $payload
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read \App\Models\DocumentoParaAssinatura $documentoParaAssinatura
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentoAssinaturaEvento newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentoAssinaturaEvento newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentoAssinaturaEvento query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentoAssinaturaEvento whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentoAssinaturaEvento whereDocumentoParaAssinaturaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentoAssinaturaEvento whereEvento($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentoAssinaturaEvento whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentoAssinaturaEvento wherePayload($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DocumentoAssinaturaEvento whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class DocumentoAssinaturaEvento extends Model
 {
     use LogsActivity, HasActivitylogOptions, HasFactory;

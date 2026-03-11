@@ -23,6 +23,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|ClassificacaoRescisao whereDescricao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClassificacaoRescisao whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClassificacaoRescisao wherePeriodo($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class ClassificacaoRescisao extends Model

@@ -4,8 +4,8 @@
 @section('content')
 
     <!-- Modal formulario -->
-    <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" size="g">
+        <template #conteudo>
             <span v-show="preloadAjax">
                 <preload></preload>
             </span>
@@ -53,12 +53,12 @@
 
             </form>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div v-show="!preloadAjax">
-                <button type="button" class="btn btn-sm btn-primary" v-if="editando && !atualizado"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-if="editando && !atualizado"
                         @click="alterar()">Alterar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-if="!editando && !cadastrado"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-if="!editando && !cadastrado"
                         @click="cadastrar()">Cadastrar
                 </button>
             </div>
@@ -66,8 +66,8 @@
     </modal>
 
     <!-- Modal confirmar -->
-    <modal id="janelaConfirmar" titulo="Apagar galeria">
-        <template slot="conteudo">
+    <modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar galeria">
+        <template #conteudo>
             <span v-show="preloadAjax">
                 <preload></preload>
             </span>
@@ -81,9 +81,9 @@
                 Tem certeza que deseja apagar esta galeria?
             </h4>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div v-show="!preloadAjax">
-                <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
             </div>
         </template>
     </modal>
@@ -108,13 +108,13 @@
             </div>
         </div>
 
-        <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar"><i
+        <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar"><i
                 :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
             Atualizar
         </button>
         @can('galeria_site_insert')
-            <button type="button" class="btn btn-sm btn-primary" id="btnFormCadastrar" data-toggle="modal"
-                    data-target="#janelaCadastrar" @click="formNovo()">Cadastrar
+            <button type="button" class="btn btn-sm mr-1 btn-primary" id="btnFormCadastrar"
+                    @click="formNovo()">Cadastrar
             </button>
         @endcan
     </fieldset>
@@ -147,16 +147,14 @@
                     </td>
                     <td data-label="Ações">
                         @can('galeria_site_update')
-                            <a class="btn btn-sm btn-success btnFormAlterar" href="javascript://"
-                               @click.prevent="formAlterar(galeria.id)" data-toggle="modal"
-                               data-target="#janelaCadastrar">
+                            <a class="btn btn-sm mr-1 btn-success btnFormAlterar" href="javascript://"
+                               @click.prevent="formAlterar(galeria.id)">
                                 <i class="fa fa-edit"></i> Alterar
                             </a>
                         @endcan
                         @can('galeria_site_delete')
-                            <a class="btn btn-sm btn-danger btnFormExcluir" href="javascript://"
-                               @click.prevent="janelaConfirmar(galeria.id)" data-toggle="modal"
-                               data-target="#janelaConfirmar">
+                            <a class="btn btn-sm mr-1 btn-danger btnFormExcluir" href="javascript://"
+                               @click.prevent="janelaConfirmar(galeria.id)">
                                 <i class="fa fa-trash" aria-hidden="true"></i> Excluir
                             </a>
                         @endcan

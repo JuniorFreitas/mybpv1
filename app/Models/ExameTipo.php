@@ -24,6 +24,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|ExameTipo whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameTipo whereLabel($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ExameTipo whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class ExameTipo extends Model

@@ -98,13 +98,13 @@
                     </div>
                 </div>
                 <div class="col-12 d-flex flex-wrap">
-                    <button type="button" class="btn btn-sm btn-success mr-1" :disabled="controle.carregando" @click="atualizar">
+                    <button type="button" class="btn btn-sm mr-1 btn-success mr-1" :disabled="controle.carregando" @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i> Atualizar
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary mr-1" :disabled="controle.carregando" @click="limparFiltros">
+                    <button type="button" class="btn btn-sm mr-1 btn-outline-secondary mr-1" :disabled="controle.carregando" @click="limparFiltros">
                         <i class="fas fa-eraser"></i> Limpar Filtros
                     </button>
-                    <button type="button" class="btn btn-sm btn-primary mr-1"
+                    <button type="button" class="btn btn-sm mr-1 btn-primary mr-1"
                             :disabled="controle.carregando || preloadExportacao"
                             @click.prevent="exportaExcel">
                         <i :class="preloadExportacao ? 'fa fa-spinner fa-spin' : 'fas fa-file-excel'"></i> Exportar Excel
@@ -124,7 +124,7 @@
             <template v-if="lista.length > 0">
             <!-- Toggle Resumo -->
             <div class="mb-3">
-                <button class="btn btn-sm btn-outline-secondary" @click="toggleResumo">
+                <button class="btn btn-sm mr-1 btn-outline-secondary" @click="toggleResumo">
                     <i :class="resumoOculto ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
                     {{ resumoOculto ? 'Mostrar Resumo' : 'Ocultar Resumo' }}
                 </button>
@@ -279,7 +279,7 @@
 
                     <div class="mb-3 d-flex justify-content-end align-items-center">
                         <button v-if="podeGerarLinks"
-                                class="btn btn-sm btn-outline-primary mr-2"
+                                class="btn btn-sm mr-1 btn-outline-primary mr-2"
                                 :disabled="gerandoLote"
                                 @click="gerarLinksLote">
                             <span class="spinner-border spinner-border-sm" v-show="gerandoLote" role="status"></span>
@@ -303,13 +303,13 @@
                                 </div>
                                 <div class="card-right card-link-cell">
                                     <template v-if="v.link_avaliacao">
-                                        <a :href="v.link_avaliacao" target="_blank" class="btn btn-sm btn-success" title="Abrir avaliação em nova aba">
+                                        <a :href="v.link_avaliacao" target="_blank" class="btn btn-sm mr-1 btn-success" title="Abrir avaliação em nova aba">
                                             <i class="fas fa-external-link-alt"></i>
                                         </a>
                                     </template>
                                     <template v-else>
                                         <button v-if="podeGerarLink(v)"
-                                                class="btn btn-sm btn-outline-primary btn-gerar-link"
+                                                class="btn btn-sm mr-1 btn-outline-primary btn-gerar-link"
                                                 :disabled="gerandoLinkId === v.feedback_id"
                                                 @click="gerarLink(v)">
                                             <span class="spinner-border spinner-border-sm" v-show="gerandoLinkId === v.feedback_id"></span>
@@ -561,8 +561,8 @@ export default {
         },
         atualizar() {
             if (!this.$refs.componente) return;
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1);
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null;
         },
 
         statusSlug(s) {

@@ -31,9 +31,6 @@ function errorResponseHandler(error) {
     }
 }
 
-// apply interceptor on response error
-axios.interceptors.response.use((response) => response, errorResponseHandler)
-
 //---------------------------------
 
 $.ajaxSetup({

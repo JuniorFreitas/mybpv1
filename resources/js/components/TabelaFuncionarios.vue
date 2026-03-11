@@ -29,18 +29,11 @@
                     </thead>
                     <tbody>
                     <!-- Loop pelos funcionários -->
-                    <template v-for="(funcionario, indexFunc) in funcionarios">
+                    <template v-for="(funcionario, indexFunc) in funcionarios" :key="indexFunc">
                         <!-- Linha do funcionário -->
-                        <tr class="bg-light" :key="'func-' + funcionario.id">
+                        <tr class="bg-light">
                             <td :colspan="temFilial ? 7 : 6" class="py-2">
                                 <div class="d-flex align-items-center">
-                                    <!--                                    <div class="mr-3">-->
-                                    <!--                                        <div class="avatar-circle">-->
-                                    <!--                                            <span class="avatar-initials">{{-->
-                                    <!--                                                    obterIniciais(funcionario.curriculo.nome)-->
-                                    <!--                                                }}</span>-->
-                                    <!--                                        </div>-->
-                                    <!--                                    </div>-->
                                     <div>
                                         <h6 class="mb-0 font-weight-bold">{{ funcionario.curriculo.nome }}</h6>
                                         <small class="text-muted">
@@ -89,54 +82,56 @@
                                     </thead>
                                     <tbody>
                                     <!-- Loop pelos treinamentos de cada funcionário -->
-                                    <tr v-for="(vencimento, indexTr) in funcionario.treinamento.vencimentos"
-                                        :key="'tr-' + funcionario.id + '-' + vencimento.id"
-                                        :class="obterClasseTreinamento(vencimento)"
-                                        v-if="isColunaTreinamentoSelecionada(vencimento)">
-                                        <td>
-                                            <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input"
-                                                       :id="'checkTr' + funcionario.id + '-' + vencimento.id"
-                                                       v-model="selecionados"
-                                                       :value="funcionario.id"
-                                                       :disabled="!vencimento.pivot.data_treinamento">
-                                                <label class="custom-control-label"
-                                                       :for="'checkTr' + funcionario.id + '-' + vencimento.id"></label>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input"
-                                                       :id="'checkTrMassa' + funcionario.id + '-' + vencimento.id"
-                                                       v-model="selecionadosMassa"
-                                                       :value="funcionario.id">
-                                                <label class="custom-control-label"
-                                                       :for="'checkTrMassa' + funcionario.id + '-' + vencimento.id"></label>
-                                            </div>
-                                        </td>
-                                        <td>{{ vencimento.label }}</td>
-                                        <td>{{ vencimento.pivot.data_treinamento || '-' }}</td>
-                                        <td :class="obterClasseVencimento(vencimento)">
-                                            {{ vencimento.pivot.data_vencimento || '-' }}
-                                        </td>
-                                        <td>
-                          <span class="badge" :class="obterClasseBadge(vencimento)">
-                            {{ obterTextoStatus(vencimento) }}
-                          </span>
-                                        </td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-secondary" title="Visualizar"
-                                                        @click="visualizarTreinamento(funcionario.id)">
-                                                    <i class="far fa-eye"></i>
-                                                </button>
-                                                <button class="btn btn-outline-secondary" title="Editar"
-                                                        @click="editarTreinamento(funcionario.id)">
-                                                    <i class="far fa-edit"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                     <template v-if="isColunaTreinamentoSelecionada(vencimento)">
+                                        <tr v-for="(vencimento, indexTr) in funcionario.treinamento.vencimentos"
+                                            :key="'tr-' + funcionario.id + '-' + indexTr"
+                                            :class="obterClasseTreinamento(vencimento)"
+                                        >
+                                            <td>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        :id="'checkTr' + funcionario.id + '-' + vencimento.id"
+                                                        v-model="selecionados"
+                                                        :value="funcionario.id"
+                                                        :disabled="!vencimento.pivot.data_treinamento">
+                                                    <label class="custom-control-label"
+                                                        :for="'checkTr' + funcionario.id + '-' + vencimento.id"></label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input type="checkbox" class="custom-control-input"
+                                                        :id="'checkTrMassa' + funcionario.id + '-' + vencimento.id"
+                                                        v-model="selecionadosMassa"
+                                                        :value="funcionario.id">
+                                                    <label class="custom-control-label"
+                                                        :for="'checkTrMassa' + funcionario.id + '-' + vencimento.id"></label>
+                                                </div>
+                                            </td>
+                                            <td>{{ vencimento.label }}</td>
+                                            <td>{{ vencimento.pivot.data_treinamento || '-' }}</td>
+                                            <td :class="obterClasseVencimento(vencimento)">
+                                                {{ vencimento.pivot.data_vencimento || '-' }}
+                                            </td>
+                                            <td>
+                            <span class="badge" :class="obterClasseBadge(vencimento)">
+                                {{ obterTextoStatus(vencimento) }}
+                            </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-secondary" title="Visualizar"
+                                                            @click="visualizarTreinamento(funcionario.id)">
+                                                        <i class="far fa-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-secondary" title="Editar"
+                                                            @click="editarTreinamento(funcionario.id)">
+                                                        <i class="far fa-edit"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
                                     </tbody>
                                 </table>
                             </td>

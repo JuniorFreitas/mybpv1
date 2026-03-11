@@ -1,9 +1,15 @@
-import Mobilizacao from "../../../components/planejamento/mobilizacao";
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import Mobilizacao from '../../../components/planejamento/mobilizacao'
 
-const app = new Vue({
-    el: "#app",
-    data: {},
+const app = createApp({
+    data() {
+        return {}
+    },
     components: {
         Mobilizacao
     }
-});
+})
+
+registerGlobals(app)
+app.mount('#app')

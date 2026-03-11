@@ -1,9 +1,15 @@
-import Prova from "../../../components/cadastros/prova/cadProva";
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import Prova from '../../../components/cadastros/prova/cadProva'
 
-const app = new Vue({
-    el: '#app',
-    data: {},
+const app = createApp({
+    data() {
+        return {}
+    },
     components: {
         Prova
-    },
-});
+    }
+})
+
+registerGlobals(app)
+app.mount('#app')

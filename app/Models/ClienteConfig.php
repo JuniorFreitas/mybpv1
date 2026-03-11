@@ -38,6 +38,16 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereScheduleAvaliacaoExperiencia($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereScheduleTreinamentoVencimento($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig whereVerificaMesVencimento($value)
+ * @property bool|null $assinatura_exibir_ip_completo
+ * @property bool|null $assinatura_exibir_cpf_completo
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ClienteConfig whereAssinaturaAlertaGrupoIds($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ClienteConfig whereAssinaturaAlertaUserIds($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ClienteConfig whereAssinaturaDigitalHabilitada($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ClienteConfig whereAssinaturaExibirCpfCompleto($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ClienteConfig whereAssinaturaExibirIpCompleto($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ClienteConfig whereLimiteAssinaturasMensal($value)
  * @mixin \Eloquent
  */
 class ClienteConfig extends Model

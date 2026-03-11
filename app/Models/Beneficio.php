@@ -45,6 +45,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Beneficio whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Beneficio whereValor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Beneficio whereValorDescontado($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class Beneficio extends Model

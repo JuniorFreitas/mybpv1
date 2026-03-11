@@ -14,6 +14,7 @@ namespace MasterTag;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Handler\Curl\Util;
 use Monolog\Logger;
+use Monolog\LogRecord;
 
 
 /**
@@ -71,9 +72,9 @@ class TelegramBotHandler extends AbstractProcessingHandler
     /**
      * @inheritDoc
      */
-    protected function write(array $record): void
+    protected function write(LogRecord $record): void
     {
-        $this->send($record['formatted']);
+        $this->send($record->formatted);
     }
 
     /**

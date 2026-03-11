@@ -4,14 +4,14 @@
         <p class="mt-2" v-if="preloadAvaliacao"><i class="fa fa-spinner fa-pulse"></i> Carregando...</p>
 
         <!-- Modal de Formulário -->
-        <modal v-if="exibirModal" :fechar="!preloadSalvarAvaliacao" :id="modalId" size="g" :modal-pai="modalPai" titulo="Formulário Avaliação de Experiência">
-            <template slot="conteudo">
+        <modal v-if="exibirModal" :fechar="!preloadSalvarAvaliacao" :id="modalId" size="g" :modal-pai="modalPai" titulo="Formulário Avaliação de Experiência" ref="modal_modalId">
+            <template #conteudo>
                 <p class="mt-2" v-if="preloadSalvarAvaliacao"><i class="fa fa-spinner fa-pulse"></i> Salvando, aguarde...</p>
                 <fieldset class="mb-2" v-show="!preloadSalvarAvaliacao">
-                    <div class="form-group" v-for="(obj, index) in formAvaliacao.perguntas" :key="index">
+                    <div class="form-group" v-for="(obj, index) in formAvaliacao.perguntas" :key="obj.id || index">
                         <label>{{ obj.id }}) {{ obj.pergunta }}</label>
                         <div>
-                            <select class="form-control" v-model="obj.nota" onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)">
+                            <select class="form-control" v-model="obj.nota" onchange="valida_campo_vazio(this, 1)" onblur="valida_campo_vazio(this, 1)">
                                 <option value="">Selecione a nota</option>
                                 <option v-for="nota in 5" :key="nota" :value="nota">{{ nota }}</option>
                             </select>
@@ -19,7 +19,7 @@
                     </div>
                     <div class="form-group">
                         <label>Gestor Imediato</label>
-                        <input type="text" class="form-control" onblur="valida_campo_vazio(this,1)" v-model="formAvaliacao.gestor_imediato" />
+                        <input type="text" class="form-control" onblur="valida_campo_vazio(this, 1)" v-model="formAvaliacao.gestor_imediato" />
                     </div>
                     <div class="form-group">
                         <label>Observação</label>
@@ -27,7 +27,7 @@
                     </div>
                 </fieldset>
             </template>
-            <template slot="rodape">
+            <template #rodape>
                 <button class="btn btn-primary" v-if="!preloadSalvarAvaliacao" @click="handleSalvar"><i class="fa fa-save"></i> Salvar</button>
             </template>
         </modal>
@@ -46,7 +46,13 @@
                     </ul>
                 </div>
                 <div class="cards-lista-avaliacao90 mb-4">
-                    <div :class="['avaliacao-card', 'card-status-' + statusSlug(itemAvaliacaoExperiencia.status), definicaoCardClass(itemAvaliacaoExperiencia.definicao_contrato)]">
+                    <div
+                        :class="[
+                            'avaliacao-card',
+                            'card-status-' + statusSlug(itemAvaliacaoExperiencia.status),
+                            definicaoCardClass(itemAvaliacaoExperiencia.definicao_contrato)
+                        ]"
+                    >
                         <div class="card-header-row">
                             <div class="card-left">
                                 <span :class="['status-badge', 'status-' + statusSlug(itemAvaliacaoExperiencia.status)]">
@@ -59,16 +65,25 @@
                             </div>
                             <div class="card-right card-link-cell">
                                 <template v-if="itemAvaliacaoExperiencia.link_avaliacao">
-                                    <a :href="itemAvaliacaoExperiencia.link_avaliacao" target="_blank" class="btn btn-sm btn-success" title="Abrir avaliação em nova aba">
+                                    <a
+                                        :href="itemAvaliacaoExperiencia.link_avaliacao"
+                                        target="_blank"
+                                        class="btn btn-sm mr-1 btn-success"
+                                        title="Abrir avaliação em nova aba"
+                                    >
                                         <i class="fas fa-external-link-alt"></i> Abrir avaliação
                                     </a>
                                 </template>
                                 <template v-else>
-                                    <span v-if="itemAvaliacaoExperiencia.status === 'FORA DO PRAZO'" class="text-muted small"><i class="fas fa-calendar-times"></i> Fora do prazo</span>
-                                    <button v-else-if="!ehAvaliacaoCompletaItem(itemAvaliacaoExperiencia) && !preloadGerarLink"
-                                            type="button"
-                                            class="btn btn-sm btn-outline-primary btn-gerar-link"
-                                            @click="handleGerarLink">
+                                    <span v-if="itemAvaliacaoExperiencia.status === 'FORA DO PRAZO'" class="text-muted small"
+                                        ><i class="fas fa-calendar-times"></i> Fora do prazo</span
+                                    >
+                                    <button
+                                        v-else-if="!ehAvaliacaoCompletaItem(itemAvaliacaoExperiencia) && !preloadGerarLink"
+                                        type="button"
+                                        class="btn btn-sm mr-1 btn-outline-primary btn-gerar-link"
+                                        @click="handleGerarLink"
+                                    >
                                         <i class="fa fa-link"></i> Gerar link
                                     </button>
                                     <span v-else-if="preloadGerarLink" class="text-muted small"><i class="fa fa-spinner fa-pulse"></i> Gerando...</span>
@@ -80,7 +95,12 @@
                             <div class="detail-item">
                                 <i class="fas fa-user-tie"></i>
                                 <span class="detail-label">Gestor</span>
-                                <span class="detail-value">{{ itemAvaliacaoExperiencia.gestor_nome || '—' }}<small v-if="itemAvaliacaoExperiencia.gestor_login" class="text-muted d-block">{{ itemAvaliacaoExperiencia.gestor_login }}</small></span>
+                                <span class="detail-value"
+                                    >{{ itemAvaliacaoExperiencia.gestor_nome || '—'
+                                    }}<small v-if="itemAvaliacaoExperiencia.gestor_login" class="text-muted d-block">{{
+                                        itemAvaliacaoExperiencia.gestor_login
+                                    }}</small></span
+                                >
                             </div>
                             <div class="detail-item">
                                 <i class="fas fa-briefcase"></i>
@@ -109,7 +129,9 @@
                                 <span class="detail-label">Dias</span>
                                 <span class="detail-value">
                                     <span v-if="itemAvaliacaoExperiencia.status === 'FORA DO PRAZO'" class="badge badge-secondary">Fora do prazo</span>
-                                    <span v-else-if="itemAvaliacaoExperiencia.status === 'A VENCER'" class="badge badge-info">{{ itemAvaliacaoExperiencia.dias_para_vencer }} dias</span>
+                                    <span v-else-if="itemAvaliacaoExperiencia.status === 'A VENCER'" class="badge badge-info"
+                                        >{{ itemAvaliacaoExperiencia.dias_para_vencer }} dias</span
+                                    >
                                     <span v-else-if="itemAvaliacaoExperiencia.status === 'VENCE HOJE'" class="badge badge-warning">Hoje</span>
                                     <span v-else-if="itemAvaliacaoExperiencia.status === 'COMPLETA'" class="badge badge-secondary">—</span>
                                     <span v-else class="badge badge-danger">{{ itemAvaliacaoExperiencia.dias_atraso }} dias atrás</span>
@@ -119,17 +141,27 @@
                                 <i class="fas fa-clipboard-check"></i>
                                 <span class="detail-label">Avaliações</span>
                                 <span class="detail-value">
-                                    <span v-if="itemAvaliacaoExperiencia.qnt_avaliacoes === 0" class="badge badge-secondary"><i class="fas fa-times"></i> Nenhuma</span>
-                                    <span v-else-if="itemAvaliacaoExperiencia.qnt_avaliacoes === 1" class="badge badge-primary"><i class="fas fa-check"></i> 1 Avaliação</span>
-                                    <span v-else class="badge badge-success"><i class="fas fa-check-double"></i> {{ itemAvaliacaoExperiencia.qnt_avaliacoes }} Avaliações</span>
+                                    <span v-if="itemAvaliacaoExperiencia.qnt_avaliacoes === 0" class="badge badge-secondary"
+                                        ><i class="fas fa-times"></i> Nenhuma</span
+                                    >
+                                    <span v-else-if="itemAvaliacaoExperiencia.qnt_avaliacoes === 1" class="badge badge-primary"
+                                        ><i class="fas fa-check"></i> 1 Avaliação</span
+                                    >
+                                    <span v-else class="badge badge-success"
+                                        ><i class="fas fa-check-double"></i> {{ itemAvaliacaoExperiencia.qnt_avaliacoes }} Avaliações</span
+                                    >
                                 </span>
                             </div>
                             <div class="detail-item">
                                 <i class="fas fa-gavel"></i>
                                 <span class="detail-label">Definição</span>
                                 <span class="detail-value">
-                                    <span v-if="itemAvaliacaoExperiencia.definicao_contrato === 'prorroga'" class="badge badge-success"><i class="fas fa-check-circle"></i> Prorroga o contrato</span>
-                                    <span v-else-if="itemAvaliacaoExperiencia.definicao_contrato === 'finaliza'" class="badge badge-danger"><i class="fas fa-times-circle"></i> Finaliza o contrato</span>
+                                    <span v-if="itemAvaliacaoExperiencia.definicao_contrato === 'prorroga'" class="badge badge-success"
+                                        ><i class="fas fa-check-circle"></i> Prorroga o contrato</span
+                                    >
+                                    <span v-else-if="itemAvaliacaoExperiencia.definicao_contrato === 'finaliza'" class="badge badge-danger"
+                                        ><i class="fas fa-times-circle"></i> Finaliza o contrato</span
+                                    >
                                     <span v-else class="text-muted">—</span>
                                 </span>
                             </div>
@@ -165,9 +197,24 @@
                         </tbody>
                     </table>
                 </div>
-                <button v-if="urlBaseGerarLink && precisaGerarLink() && !preloadGerarLink" type="button" class="btn btn-outline-primary mb-3 mr-2" @click="handleGerarLink"><i class="fa fa-link"></i> Gerar link</button>
-                <span v-if="urlBaseGerarLink && precisaGerarLink() && preloadGerarLink" class="mb-3 mr-2"><i class="fa fa-spinner fa-pulse"></i> Gerando link...</span>
-                <button v-if="exibirBotaoAdicionar && podeAdicionarAvaliacao() && temTokenValido()" class="btn btn-primary mb-3" @click="handleAdicionarAvaliacao"><i class="fa fa-plus"></i> Adicionar Avaliação de Experiência</button>
+                <button
+                    v-if="urlBaseGerarLink && precisaGerarLink() && !preloadGerarLink"
+                    type="button"
+                    class="btn btn-outline-primary mb-3 mr-2"
+                    @click="handleGerarLink"
+                >
+                    <i class="fa fa-link"></i> Gerar link
+                </button>
+                <span v-if="urlBaseGerarLink && precisaGerarLink() && preloadGerarLink" class="mb-3 mr-2"
+                    ><i class="fa fa-spinner fa-pulse"></i> Gerando link...</span
+                >
+                <button
+                    v-if="exibirBotaoAdicionar && podeAdicionarAvaliacao() && temTokenValido()"
+                    class="btn btn-primary mb-3"
+                    @click="handleAdicionarAvaliacao"
+                >
+                    <i class="fa fa-plus"></i> Adicionar Avaliação de Experiência
+                </button>
                 <div v-if="!podeAdicionarAvaliacao()" class="alert alert-info mb-3"><i class="fa fa-info-circle"></i> {{ getStatusAvaliacao() }}</div>
             </template>
 
@@ -183,7 +230,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, index) in tabelaNoventaAvaliacao" :key="index">
+                        <tr v-for="(item, index) in tabelaNoventaAvaliacao" :key="item.id || index">
                             <td class="text-center">{{ item.quantidade_avaliacao }}ª</td>
                             <td class="text-center">{{ item.created_at }}</td>
                             <td class="text-center">
@@ -310,9 +357,10 @@ export default {
          * Indica se há token válido (não expirado e avaliação não realizada)
          */
         temTokenValido() {
-            const venc = this.avNoventaVencimentoData && this.avNoventaVencimentoData.feedback
-                ? this.avNoventaVencimentoData.feedback.avaliacao_noventa_vencimento
-                : null
+            const venc =
+                this.avNoventaVencimentoData && this.avNoventaVencimentoData.feedback
+                    ? this.avNoventaVencimentoData.feedback.avaliacao_noventa_vencimento
+                    : null
             if (!venc || !venc.token_avaliacao) return false
             if (venc.avaliacao_realizada === true) return false
             const expiracao = venc.token_expiracao ? new Date(venc.token_expiracao) : null
@@ -344,7 +392,7 @@ export default {
             return ''
         },
         ehAvaliacaoCompletaItem(item) {
-            return item && (item.status === 'COMPLETA' || (item.qnt_avaliacoes >= 2))
+            return item && (item.status === 'COMPLETA' || item.qnt_avaliacoes >= 2)
         },
 
         /**
@@ -354,7 +402,8 @@ export default {
             if (!this.urlBaseGerarLink || !this.feedbackId) return
             const url = this.urlBaseGerarLink.replace(/\/$/, '') + '/' + this.feedbackId + '/gerar-link'
             this.preloadGerarLink = true
-            axios.post(url)
+            axios
+                .post(url)
                 .then(() => {
                     this.pollingTokenAvaliacao((ok) => {
                         this.preloadGerarLink = false
@@ -379,20 +428,22 @@ export default {
         pollingTokenAvaliacao(callback, tentativas = 12, intervalo = 1500) {
             let count = 0
             const timer = setInterval(() => {
-                this.carregarDadosAvaliacao(this.feedbackId).then(() => {
-                    if (this.temTokenValido()) {
-                        clearInterval(timer)
-                        callback(true)
-                    } else if (++count >= tentativas) {
-                        clearInterval(timer)
-                        callback(false)
-                    }
-                }).catch(() => {
-                    if (++count >= tentativas) {
-                        clearInterval(timer)
-                        callback(false)
-                    }
-                })
+                this.carregarDadosAvaliacao(this.feedbackId)
+                    .then(() => {
+                        if (this.temTokenValido()) {
+                            clearInterval(timer)
+                            callback(true)
+                        } else if (++count >= tentativas) {
+                            clearInterval(timer)
+                            callback(false)
+                        }
+                    })
+                    .catch(() => {
+                        if (++count >= tentativas) {
+                            clearInterval(timer)
+                            callback(false)
+                        }
+                    })
             }, intervalo)
         },
 
@@ -402,9 +453,10 @@ export default {
         handleAdicionarAvaliacao() {
             // Abre o link de avaliação com token em nova aba
             try {
-                const venc = this.avNoventaVencimentoData && this.avNoventaVencimentoData.feedback
-                    ? this.avNoventaVencimentoData.feedback.avaliacao_noventa_vencimento
-                    : null
+                const venc =
+                    this.avNoventaVencimentoData && this.avNoventaVencimentoData.feedback
+                        ? this.avNoventaVencimentoData.feedback.avaliacao_noventa_vencimento
+                        : null
 
                 const token = venc && venc.token_avaliacao ? venc.token_avaliacao : null
                 const expiracao = venc && venc.token_expiracao ? new Date(venc.token_expiracao) : null
@@ -479,7 +531,11 @@ export default {
 }
 
 /* Card padrão relatório (individual) */
-.cards-lista-avaliacao90 { display: flex; flex-direction: column; gap: 1rem; }
+.cards-lista-avaliacao90 {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
 .avaliacao-card {
     background: #fff;
     border: 1px solid #e9ecef;
@@ -490,10 +546,18 @@ export default {
     border-left: 4px solid #6c757d;
     overflow: hidden;
 }
-.avaliacao-card.card-status-vencido { border-left-color: #dc3545; }
-.avaliacao-card.card-status-vence-hoje { border-left-color: #f6c23e; }
-.avaliacao-card.card-status-completa { border-left-color: #28a745; }
-.avaliacao-card.card-status-a-vencer { border-left-color: #17a2b8; }
+.avaliacao-card.card-status-vencido {
+    border-left-color: #dc3545;
+}
+.avaliacao-card.card-status-vence-hoje {
+    border-left-color: #f6c23e;
+}
+.avaliacao-card.card-status-completa {
+    border-left-color: #28a745;
+}
+.avaliacao-card.card-status-a-vencer {
+    border-left-color: #17a2b8;
+}
 .avaliacao-card .card-header-row {
     display: flex;
     justify-content: space-between;
@@ -502,10 +566,29 @@ export default {
     background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
     border-bottom: 1px solid #f1f3f5;
 }
-.avaliacao-card .card-left { display: flex; align-items: center; gap: 0.75rem; flex: 1; overflow: hidden; min-width: 0; }
-.avaliacao-card .card-right { flex-shrink: 0; }
-.avaliacao-card .colaborador-principal { display: flex; align-items: center; font-size: 1rem; color: #212529; overflow: hidden; min-width: 0; }
-.avaliacao-card .colaborador-principal i { color: #003755; flex-shrink: 0; }
+.avaliacao-card .card-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    overflow: hidden;
+    min-width: 0;
+}
+.avaliacao-card .card-right {
+    flex-shrink: 0;
+}
+.avaliacao-card .colaborador-principal {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    color: #212529;
+    overflow: hidden;
+    min-width: 0;
+}
+.avaliacao-card .colaborador-principal i {
+    color: #003755;
+    flex-shrink: 0;
+}
 .avaliacao-card .status-badge {
     display: inline-flex;
     align-items: center;
@@ -518,18 +601,53 @@ export default {
     white-space: nowrap;
     flex-shrink: 0;
 }
-.avaliacao-card .status-vencido { background: #dc3545; color: white; }
-.avaliacao-card .status-vence-hoje { background: #f6c23e; color: #212529; }
-.avaliacao-card .status-completa { background: #28a745; color: white; }
-.avaliacao-card .status-a-vencer { background: #17a2b8; color: white; }
-.avaliacao-card .status-fora-do-prazo { background: #6c757d; color: white; }
-.avaliacao-card.card-status-fora-do-prazo { border-left-color: #6c757d; }
-.avaliacao-card.card-definicao-prorroga { border-left-color: #28a745 !important; border-color: #b8ddc9; background: linear-gradient(180deg, #f0f9f4 0%, #fff 30%); }
-.avaliacao-card.card-definicao-prorroga .card-header-row { background: linear-gradient(180deg, #d4edda 0%, #e8f5eb 100%); border-bottom-color: #c3e6cb; }
-.avaliacao-card.card-definicao-prorroga .card-details-fixas { background: #e8f5eb; }
-.avaliacao-card.card-definicao-finaliza { border-left-color: #dc3545 !important; border-color: #f5c6cb; background: linear-gradient(180deg, #fdf2f3 0%, #fff 30%); }
-.avaliacao-card.card-definicao-finaliza .card-header-row { background: linear-gradient(180deg, #f8d7da 0%, #fce8ea 100%); border-bottom-color: #f5c6cb; }
-.avaliacao-card.card-definicao-finaliza .card-details-fixas { background: #fce8ea; }
+.avaliacao-card .status-vencido {
+    background: #dc3545;
+    color: white;
+}
+.avaliacao-card .status-vence-hoje {
+    background: #f6c23e;
+    color: #212529;
+}
+.avaliacao-card .status-completa {
+    background: #28a745;
+    color: white;
+}
+.avaliacao-card .status-a-vencer {
+    background: #17a2b8;
+    color: white;
+}
+.avaliacao-card .status-fora-do-prazo {
+    background: #6c757d;
+    color: white;
+}
+.avaliacao-card.card-status-fora-do-prazo {
+    border-left-color: #6c757d;
+}
+.avaliacao-card.card-definicao-prorroga {
+    border-left-color: #28a745 !important;
+    border-color: #b8ddc9;
+    background: linear-gradient(180deg, #f0f9f4 0%, #fff 30%);
+}
+.avaliacao-card.card-definicao-prorroga .card-header-row {
+    background: linear-gradient(180deg, #d4edda 0%, #e8f5eb 100%);
+    border-bottom-color: #c3e6cb;
+}
+.avaliacao-card.card-definicao-prorroga .card-details-fixas {
+    background: #e8f5eb;
+}
+.avaliacao-card.card-definicao-finaliza {
+    border-left-color: #dc3545 !important;
+    border-color: #f5c6cb;
+    background: linear-gradient(180deg, #fdf2f3 0%, #fff 30%);
+}
+.avaliacao-card.card-definicao-finaliza .card-header-row {
+    background: linear-gradient(180deg, #f8d7da 0%, #fce8ea 100%);
+    border-bottom-color: #f5c6cb;
+}
+.avaliacao-card.card-definicao-finaliza .card-details-fixas {
+    background: #fce8ea;
+}
 .avaliacao-card .card-details-row {
     display: flex;
     flex-wrap: wrap;
@@ -537,12 +655,38 @@ export default {
     padding: 1rem 1.25rem;
     border-bottom: 1px solid #f1f3f5;
 }
-.avaliacao-card .card-details-row:last-child { border-bottom: none; }
-.avaliacao-card .card-details-main { padding-top: 0.75rem; }
-.avaliacao-card .card-details-fixas { background: #fafbfc; padding: 0.75rem 1.25rem; }
-.avaliacao-card .detail-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.813rem; min-width: 0; }
-.avaliacao-card .detail-item i:first-child { flex-shrink: 0; font-size: 0.875rem; color: #6c757d; }
-.avaliacao-card .detail-label { font-weight: 500; color: #6c757d; white-space: nowrap; }
-.avaliacao-card .detail-value { color: #212529; font-weight: 400; }
-.avaliacao-card .detail-value .badge { font-size: 0.75rem; }
+.avaliacao-card .card-details-row:last-child {
+    border-bottom: none;
+}
+.avaliacao-card .card-details-main {
+    padding-top: 0.75rem;
+}
+.avaliacao-card .card-details-fixas {
+    background: #fafbfc;
+    padding: 0.75rem 1.25rem;
+}
+.avaliacao-card .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.813rem;
+    min-width: 0;
+}
+.avaliacao-card .detail-item i:first-child {
+    flex-shrink: 0;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+.avaliacao-card .detail-label {
+    font-weight: 500;
+    color: #6c757d;
+    white-space: nowrap;
+}
+.avaliacao-card .detail-value {
+    color: #212529;
+    font-weight: 400;
+}
+.avaliacao-card .detail-value .badge {
+    font-size: 0.75rem;
+}
 </style>

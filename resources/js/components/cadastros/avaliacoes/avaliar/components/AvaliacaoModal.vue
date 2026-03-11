@@ -1,6 +1,6 @@
 <template>
-    <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90">
-        <template slot="conteudo">
+    <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90" ref="modal_janelaCadastrar">
+        <template #conteudo>
             <preload v-show="preload"></preload>
             <div v-if="!preload">
                 <!-- Dados do Funcionário -->
@@ -27,14 +27,8 @@
                 />
             </div>
         </template>
-        <template slot="rodape">
-            <button
-                type="button"
-                class="btn btn-sm btn-primary"
-                v-show="editando && !preload && !visualizando"
-                :disabled="salvando"
-                @click="salvar"
-            >
+        <template #rodape>
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !preload && !visualizando" :disabled="salvando" @click="salvar">
                 <i class="fa fa-save"></i>
                 {{ salvando ? 'Salvando...' : 'Salvar' }}
             </button>
@@ -62,7 +56,7 @@ export default {
     mixins: [validacoes],
     data() {
         return {
-            titulo_janela: '',
+            titulo_janela: 'Avaliação',
             preload: false,
             salvando: false,
             editando: false,
@@ -103,14 +97,12 @@ export default {
             this.resetForm()
 
             try {
-                const response = await axios.get(
-                    `${URL_ADMIN}/cadastro/avaliacoes/avaliar/${avaliacaoFeedback.id}/edit`
-                )
+                const response = await axios.get(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${avaliacaoFeedback.id}/edit`)
 
                 this.carregarDados(response.data)
 
                 this.$nextTick(() => {
-                    $('#janelaCadastrar').modal('show')
+                    this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.abrirModal()
                     setupCampo()
                 })
             } catch (error) {
@@ -150,12 +142,9 @@ export default {
             this.salvando = true
 
             try {
-                await axios.put(
-                    `${URL_ADMIN}/cadastro/avaliacoes/avaliar/${this.formAvaliar.avaliacao_feedback_id}`,
-                    this.formAvaliar
-                )
+                await axios.put(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${this.formAvaliar.avaliacao_feedback_id}`, this.formAvaliar)
 
-                $('#janelaCadastrar').modal('hide')
+                this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
                 mostraSucesso('', 'Avaliação enviada com sucesso')
                 this.$emit('salvar')
             } catch (error) {

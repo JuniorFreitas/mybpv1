@@ -22,6 +22,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoTipo whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoTipo whereObservacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoTipo whereTipo($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class AtaReuniaoTipo extends Model

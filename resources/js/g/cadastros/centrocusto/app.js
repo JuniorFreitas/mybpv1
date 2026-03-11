@@ -1,9 +1,15 @@
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
 import CentroCusto from '../../../components/cadastros/centrocusto/CentroCusto'
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     components: {
         CentroCusto
     },
-    data: {}
+    data() {
+        return {}
+    }
 })
+
+registerGlobals(app)
+app.mount('#app')

@@ -42,6 +42,8 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|Etapas whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Etapas whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Etapas whereVagaId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class Etapas extends Model

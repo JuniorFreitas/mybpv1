@@ -75,8 +75,7 @@
                         v-model="form.pcmso_id"
                     >
                         <option value="">Selecione</option>
-                        <option v-for="item in listaPcmso" :value="item.id">{{ item.label }}</option>
-                        >
+                        <option v-for="(item, index) in listaPcmso" :value="item.id" :key="item.id || index">{{ item.label }}</option>
                     </select>
                 </div>
 
@@ -90,8 +89,7 @@
                         v-model="form.empresa_exame_id"
                     >
                         <option value="">Selecione</option>
-                        <option v-for="item in listaEmpresaExame" :value="item.id">{{ item.nome }}</option>
-                        >
+                        <option v-for="(item, index) in listaEmpresaExame" :value="item.id" :key="item.id || index">{{ item.nome }}</option>
                     </select>
                 </div>
 
@@ -274,14 +272,19 @@ export default {
             empresasSemValidacao: [78862]
         };
     },
-    mounted() {
-        axios.get(`${URL_ADMIN}/get-pcmso`).then(response => {
-            this.listaPcmso = response.data;
-        });
-        axios.get(`${URL_ADMIN}/get-empresa-exames`
-        ).then(response => {
-            this.listaEmpresaExame = response.data;
-        });
+    async mounted() {
+        try {
+            const resPcmso = await axios.get(`${URL_ADMIN}/get-pcmso`);
+            this.listaPcmso = resPcmso.data;
+        } catch (err) {
+            this.listaPcmso = [];
+        }
+        try {
+            const resEmpresa = await axios.get(`${URL_ADMIN}/get-empresa-exames`);
+            this.listaEmpresaExame = resEmpresa.data;
+        } catch (err) {
+            this.listaEmpresaExame = [];
+        }
         this.form.pcmso_id = !this.form.pcmso_id ? "" : this.form.pcmso_id;
         this.form.empresa_exame_id = !this.form.empresa_exame_id ? "" : this.form.empresa_exame_id;
         this.form.envia_email_documentos = false;

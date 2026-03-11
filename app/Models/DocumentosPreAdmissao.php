@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|DocumentosPreAdmissao newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|DocumentosPreAdmissao newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|DocumentosPreAdmissao query()
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class DocumentosPreAdmissao extends Model

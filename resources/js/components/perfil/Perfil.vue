@@ -4,32 +4,38 @@
         <form id="form">
             <div class="form-group">
                 <label>Nome do usuário</label>
-                <input type="text" class="form-control form-control-sm" v-model="form.nome"
-                       placeholder="Nome do usuário"
-                       autocomplete="off"
-                       onblur="valida_campo_vazio(this,3)">
+                <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    v-model="form.nome"
+                    placeholder="Nome do usuário"
+                    autocomplete="off"
+                    onblur="valida_campo_vazio(this, 3)"
+                />
             </div>
             <div class="form-group">
                 <label>Login</label>
-                <input type="text" class="form-control form-control-sm" v-model="form.login" placeholder="Login"
-                       autocomplete="off"
-                       onblur="valida_campo_vazio(this,3)">
+                <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    v-model="form.login"
+                    placeholder="Login"
+                    autocomplete="off"
+                    onblur="valida_campo_vazio(this, 3)"
+                />
             </div>
-
         </form>
-</template>
-<template slot="rodape">
-    <button type="button" class="btn btn-sm btn-primary" v-show="!preload"
-            @click="alterar()">
-        Salvar
-    </button>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!preload" @click="alterar()">Salvar</button>
+        </div>
+    </div>
 </template>
 <script>
-import modal from '../Modal';
+import modal from '../Modal'
 
 export default {
     components: {
-        modal,
+        modal
     },
     props: {
         usuario_id: {
@@ -46,56 +52,57 @@ export default {
 
             form: {
                 nome: '',
-                login: '',
+                login: ''
             },
 
             formDefault: null,
 
-            lista: [],
+            lista: []
         }
     },
     mounted() {
-        this.formDefault = _.cloneDeep(this.form);
+        this.formDefault = _.cloneDeep(this.form)
     },
     methods: {
         alterarPerfil(perfil) {
-            this.editando = true;
-            formReset();
+            this.editando = true
+            formReset()
 
             this.form = _.cloneDeep(this.formDefault) //copia
 
-            axios.get(`${URL_ADMIN}/perfil/${perfil}`)
-                .then(response => {
-                    Object.assign(this.form, response.data);
-                    this.editando = true;
-                    setupCampo();
-                }).catch(
-                error => (this.preloadAjax = false)
-            );
+            axios
+                .get(`${URL_ADMIN}/perfil/${perfil}`)
+                .then((response) => {
+                    Object.assign(this.form, response.data)
+                    this.editando = true
+                    setupCampo()
+                })
+                .catch((error) => (this.preloadAjax = false))
         },
         alterarFormPerfil() {
-            formReset();
-            $('#janelaPerfil :input:enabled').trigger('blur');
+            formReset()
+            $('#janelaPerfil :input:enabled').trigger('blur')
 
             if ($('#janelaPerfil :input:enabled.is-invalid').length) {
-                mostraErro('', 'Verificar os erros');
-                return false;
+                mostraErro('', 'Verificar os erros')
+                return false
             }
 
-            this.preloadAjax = true;
+            this.preloadAjax = true
 
-            axios.put(`${URL_ADMIN}/perfil/${this.form.id}`, this.form).then(response => {
-                $('#janelaFormPerfil').modal('hide');
-                mostraSucesso('', 'Perfil Atualizado com sucesso!');
-                this.preloadAjax = false;
-                this.controle.carregando = true;
-                this.atualizado = true;
-                this.atualizar();
-            }).catch(error => (this.preloadAjax = false));
-
-        },
+            axios
+                .put(`${URL_ADMIN}/perfil/${this.form.id}`, this.form)
+                .then((response) => {
+                    this.$refs.modal_janelaFormPerfil && this.$refs.modal_janelaFormPerfil.fecharModal()
+                    mostraSucesso('', 'Perfil Atualizado com sucesso!')
+                    this.preloadAjax = false
+                    this.controle.carregando = true
+                    this.atualizado = true
+                    this.atualizar()
+                })
+                .catch((error) => (this.preloadAjax = false))
+        }
     }
-
 }
 </script>
 
@@ -140,8 +147,8 @@ ul.timeline > li:before {
 }
 
 .trackind {
-    padding: .5rem .8rem;
+    padding: 0.5rem 0.8rem;
     background-color: #f4f4f4;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
 }
 </style>

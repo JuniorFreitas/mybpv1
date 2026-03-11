@@ -1,176 +1,182 @@
-import Upload from '../../../components/Upload';
-import configTinyMCE from '../../../components/configTinyMCE';
-import Editor from '@tinymce/tinymce-vue';
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import Upload from '../../../components/Upload'
+import configTinyMCE from '../../../components/configTinyMCE'
+import Editor from '@tinymce/tinymce-vue'
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     components: {
         Upload,
         Editor
     },
-    data: {
-        config: configTinyMCE,
-        tituloJanela: 'Cadastrando Depoimento',
-        preloadAjax: false,
-        editando: false,
-        apagado: false,
-        cadastrado: false,
-        atualizado: false,
+    data() {
+        return {
+            config: configTinyMCE,
+            tituloJanela: 'Cadastrando Depoimento',
+            preloadAjax: false,
+            editando: false,
+            apagado: false,
+            cadastrado: false,
+            atualizado: false,
 
-        urlAnexoUpload: `${URL_ADMIN}/testemunhal/uploadAnexos`,
-        anexoUploadAndamento: false,
+            urlAnexoUpload: `${URL_ADMIN}/testemunhal/uploadAnexos`,
+            anexoUploadAndamento: false,
 
-        form: {
-            nome: '',
-            subtitulo: '',
-            texto: '',
-            site: true,
-            ativo: true,
+            form: {
+                nome: '',
+                subtitulo: '',
+                texto: '',
+                site: true,
+                ativo: true,
 
-            anexo: [],
-            anexoDel: []
-        },
-
-        formDefault: null,
-
-        lista: [],
-
-        controle: {
-            carregando: false,
-            dados: {
-                pages: 20,
-                campoBusca: '',
+                anexo: [],
+                anexoDel: []
             },
+
+            formDefault: null,
+
+            lista: [],
+
+            controle: {
+                carregando: false,
+                dados: {
+                    pages: 20,
+                    campoBusca: ''
+                }
+            }
         }
     },
     mounted() {
-        this.formDefault = _.cloneDeep(this.form)//copia
-        this.atualizar();
+        this.formDefault = _.cloneDeep(this.form) //copia
+        this.atualizar()
     },
 
     methods: {
-
         formNovo() {
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.editando = false;
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
 
-            this.tituloJanela = "Cadastrando Depoimento";
+            this.tituloJanela = 'Cadastrando Depoimento'
 
-            formReset();
-            setupCampo();
+            formReset()
+            setupCampo()
             this.form = _.cloneDeep(this.formDefault) //copia
+            this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
         },
 
         cadastrar() {
-            $('#janelaCadastrar :input:visible').trigger('blur');
+            $('#janelaCadastrar :input:visible').trigger('blur')
             if ($('#janelaCadastrar :input:visible.is-invalid').length) {
-                alert('Verificar os erros');
-                return false;
+                alert('Verificar os erros')
+                return false
             }
 
             if (this.form.anexo.length === 0) {
-                alert('faça um anexo de uma imagem');
-                return false;
+                alert('faça um anexo de uma imagem')
+                return false
             }
 
-            this.preloadAjax = true;
+            this.preloadAjax = true
             $.post(`${URL_ADMIN}/testemunhal`, this.form)
                 .done((data) => {
-                    this.preloadAjax = false;
-                    this.cadastrado = true;
-                    this.atualizar();
+                    this.preloadAjax = false
+                    this.cadastrado = true
+                    this.atualizar()
                 })
                 .fail((data) => {
-                    this.preloadAjax = false;
-                });
+                    this.preloadAjax = false
+                })
         },
 
         formAlterar(id) {
-            this.form.id = id;
+            this.form.id = id
 
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.editando = false;
-            this.tituloJanela = "Alterando Depoimento";
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
+            this.tituloJanela = 'Alterando Depoimento'
 
-            this.preloadAjax = true;
+            this.preloadAjax = true
 
-            formReset();
+            formReset()
             $.get(`${URL_ADMIN}/testemunhal/${id}/editar`)
                 .done((data) => {
-                    Object.assign(this.form, data);
-                    this.form.anexoDel = [];
-                    this.editando = true;
-                    this.preloadAjax = false;
-                    setupCampo();
+                    Object.assign(this.form, data)
+                    this.form.anexoDel = []
+                    this.editando = true
+                    this.preloadAjax = false
+                    setupCampo()
+                    this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
                 })
                 .fail((data) => {
-                    this.preloadAjax = false;
-                });
+                    this.preloadAjax = false
+                })
         },
 
         alterar() {
-            $('#janelaCadastrar :input:visible').trigger('blur');
+            $('#janelaCadastrar :input:visible').trigger('blur')
             if ($('#janelaCadastrar :input:visible.is-invalid').length) {
-                alert('Verificar os erros');
-                return false;
+                alert('Verificar os erros')
+                return false
             }
 
             if (this.form.anexo.length === 0) {
-                alert('faça um anexo de uma imagem');
-                return false;
+                alert('faça um anexo de uma imagem')
+                return false
             }
 
-            this.form._method = 'PUT';
-            this.preloadAjax = true;
+            this.form._method = 'PUT'
+            this.preloadAjax = true
 
             $.post(`${URL_ADMIN}/testemunhal/${this.form.id}`, this.form)
                 .done((data) => {
-                    this.preloadAjax = false;
-                    this.atualizado = true;
-                    this.atualizar();
+                    this.preloadAjax = false
+                    this.atualizado = true
+                    this.atualizar()
                 })
                 .fail((data) => {
-                    this.preloadAjax = false;
-                });
-
+                    this.preloadAjax = false
+                })
         },
 
         janelaConfirmar(id) {
-            this.form.id = id;
-            this.apagado = false;
+            this.form.id = id
+            this.apagado = false
 
-            this.preloadAjax = false;
+            this.preloadAjax = false
+            this.$nextTick(() => this.$refs.janelaConfirmar?.abrirModal())
         },
 
         apagar() {
-            this.erros = [];
-            this.form._method = 'DELETE';
-            this.preloadAjax = true;
+            this.erros = []
+            this.form._method = 'DELETE'
+            this.preloadAjax = true
 
             $.post(`${URL_ADMIN}/testemunhal/${this.form.id}`, this.form)
                 .done((data) => {
-                    this.preloadAjax = false;
-                    this.apagado = true;
-                    this.atualizar();
+                    this.preloadAjax = false
+                    this.apagado = true
+                    this.atualizar()
                 })
                 .fail((data) => {
-                    this.preloadAjax = false;
-                });
+                    this.preloadAjax = false
+                })
         },
-
 
         carregou(dados) {
-            this.lista = dados;
-            this.controle.carregando = false;
+            this.lista = dados
+            this.controle.carregando = false
         },
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
-        },
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+        }
     }
-});
+})
+
+registerGlobals(app)
+app.mount('#app')

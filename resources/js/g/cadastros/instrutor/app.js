@@ -1,9 +1,15 @@
-import Instrutor from "../../../components/cadastros/instrutor/Instrutor";
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import Instrutor from '../../../components/cadastros/instrutor/Instrutor'
 
-const app = new Vue({
-    el: '#app',
-    data: {},
+const app = createApp({
+    data() {
+        return {}
+    },
     components: {
         Instrutor
-    },
-});
+    }
+})
+
+registerGlobals(app)
+app.mount('#app')

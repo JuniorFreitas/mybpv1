@@ -7,7 +7,7 @@
 
 @section('content')
     <modal id="janelaRetornarStatus" ref="janelaRetornarStatus" :titulo="tituloJanela" :fechar="!preload" :size="75">
-        <template slot="conteudo">
+        <template #conteudo>
             <div v-if="!preload && revertendo_status">
                 <fieldset>
                     <legend>Informações do Colaborador</legend>
@@ -43,16 +43,16 @@
 
             </div>
         </template>
-        <template slot="rodape">
-            <button class="btn btn-sm btn-primary" v-if="!preload && auditoria_form.descricao.length"
+        <template #rodape>
+            <button class="btn btn-sm mr-1 btn-primary" v-if="!preload && auditoria_form.descricao.length"
                     @click="reverterDemissao">
                 Reverter
             </button>
         </template>
     </modal>
 
-    <modal id="janelaAvaliar" :titulo="tituloJanela" :fechar="!preload" :size="75">
-        <template slot="conteudo">
+    <modal ref="janelaAvaliar" id="janelaAvaliar" :titulo="tituloJanela" :fechar="!preload" :size="75">
+        <template #conteudo>
             <div class="alert alert-success text-center" v-show="atualizado">
                 <h4><i class="icon fa fa-check"></i> <span v-show="avaliacao">Demissão</span> <span
                         v-show="desmobilizacao">Desmobilização</span> Concluida!</h4>
@@ -62,19 +62,19 @@
                 <i class="fa fa-spinner fa-pulse"></i> Aguarde ...
             </p>
 
-            <div class="row" v-if="!preload && cadastrando">
+            <div class="row" v-if="!preload && cadastrando && form.feedback">
                 <div class="col-12">
                     <fieldset>
                         <legend>Informações do Colaborador</legend>
                         <div style="text-transform: uppercase">
-                            <p>Nome: <strong>@{{ form.feedback.curriculo.nome }}</strong><br>
-                                CPF: <strong>@{{ form.feedback.curriculo.cpf }}</strong><br>
-                                Empresa: <strong>@{{form.feedback.empresa.nome_fantasia ?
+                            <p>Nome: <strong>@{{ form.feedback.curriculo?.nome }}</strong><br>
+                                CPF: <strong>@{{ form.feedback.curriculo?.cpf }}</strong><br>
+                                Empresa: <strong>@{{ form.feedback.empresa?.nome_fantasia ?
                                     form.feedback.empresa.nome_fantasia :
-                                    form.feedback.empresa.nome}}</strong>
+                                    form.feedback.empresa?.nome }}</strong>
                                 <br>
                                 Vaga: <strong>
-                                    @{{ form.feedback.vaga_aberta.vaga.nome }}
+                                    @{{ form.feedback.vaga_aberta?.vaga?.nome }}
                                 </strong>
                                 <br>
 
@@ -182,8 +182,9 @@
                             </select>
                         </div>
 
-                        <div v-if="form.tipo_form === setor.id" v-for="(setor, setorIndex) in formulariosAtivos">
-                            <fieldset>
+                        <template v-if="form.tipo_form">
+                            <div v-for="(setor, setorIndex) in formulariosAtivos" :key="setor.id">
+                                <fieldset>
                                 <legend>Checklist - @{{ setor.nome }}</legend>
                                 <div class="custom-control custom-switch"
                                      v-for="(alternativa, key) in setor.alternativas">
@@ -262,7 +263,8 @@
                                     </div>
                                 </div>
                             </fieldset>
-                        </div>
+                            </div>
+                        </template>
 
                     </fieldset>
 
@@ -504,15 +506,15 @@
             </div>
         </template>
 
-        <template slot="rodape">
-            <button class="btn btn-sm btn-primary" v-show="!preload && !atualizado && !demitido" v-if="avaliacao"
+        <template #rodape>
+            <button class="btn btn-sm mr-1 btn-primary" v-show="!preload && !atualizado && !demitido" v-if="avaliacao"
                     @click="demitir">
                 Demitir
             </button>
-            <button class="btn btn-sm btn-primary" v-show="!preload && !atualizado" v-if="desmobilizacao"
+            <button class="btn btn-sm mr-1 btn-primary" v-show="!preload && !atualizado" v-if="desmobilizacao"
                     @click="desmobilizar">Desmobilizar
             </button>
-            <button class="btn btn-sm btn-primary" v-show="!preload && !atualizado" v-if="entrevista"
+            <button class="btn btn-sm mr-1 btn-primary" v-show="!preload && !atualizado" v-if="entrevista"
                     @click="entrevistar">Salvar entrevista
             </button>
         </template>
@@ -672,17 +674,17 @@
         <br>
         <div class="col-12">
             <div class="row">
-                <button type="button" class="btn btn-sm btn-success mr-1 mb-1" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm mr-1 btn-success mr-1 mb-1" :disabled="controle.carregando"
                         @click="atualizar"><i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
-                <button class="btn btn-sm btn-danger mr-1 mb-1"
+                <button class="btn btn-sm mr-1 btn-danger mr-1 mb-1"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                         :disabled="selecionados.length === 0" @click="selecionados = []">
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
-                <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"
+                <button type="button" class="btn btn-sm mr-1 btn-primary mb-1 mr-1"
                         @click.prevent="gerarArquivoXls()"
                         :disabled="controle.carregando|| preloadExportacao  || (!controle.carregando && lista.length===0 && selecionados.length === 0) || (selecionados.length === 0 && controle.dados.status !== 'demitidos') ">
                     <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
@@ -778,11 +780,11 @@
                             <a target="_blank"
                                v-if="item.demissao.motivo_rescisao && ['demissao_com_justa_causa','pedido_colaborador_imediato', 'pedido_colaborador_trabalhado'].includes(item.demissao.motivo_rescisao.nome_pdf)"
                                :href="`https://mybp-prod.s3.amazonaws.com/public/${item.demissao.motivo_rescisao.nome_pdf + extensaoDocumento}`"
-                               class="btn btn-sm btn-primary" title="Download Documento Demissão"
+                               class="btn btn-sm mr-1 btn-primary" title="Download Documento Demissão"
                                @click="extensao(item.demissao.motivo_rescisao.nome_pdf)" download>
                                 <i class="fa fa-file-download"></i>
                             </a>
-                            <button type="button" v-else class="btn btn-sm btn-primary" title="Gerar Documento Demissão"
+                            <button type="button" v-else class="btn btn-sm mr-1 btn-primary" title="Gerar Documento Demissão"
                                     @click="gerarPdf(item.demissao.id)">
                                 <i class="fa fa-file-pdf"></i>
                             </button>
@@ -790,41 +792,45 @@
                     </td>
                     <td class="text-center">
 
-                        <div class="dropdown show">
-                            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
+                            <a
+                                class="btn btn-secondary dropdown-toggle"
+                                href="#"
+                                role="button"
+                                :id="`dropdownPos_${item.id}`"
+                                aria-haspopup="true"
+                                :aria-expanded="isDropdownOpen(item.id) ? 'true' : 'false'"
+                                @click.prevent.stop="toggleDropdown(item.id)"
+                            >
                                 <i class="fas fa-ellipsis-v"></i>
                             </a>
 
-                            <div class="dropdown-menu dropdown-menu-custom" aria-labelledby="dropdownMenuLink">
+                            <div
+                                class="dropdown-menu dropdown-menu-custom"
+                                :class="{ show: isDropdownOpen(item.id) }"
+                                :aria-labelledby="`dropdownPos_${item.id}`"
+                                @click="fecharDropdown"
+                            >
                                 <a class="dropdown-item" href="javascript://" title="Avaliar"
-                                   @click.prevent="formAvaliar(item.id)"
-                                   data-toggle="modal"
-                                   data-target="#janelaAvaliar">
+                                   @click.prevent="formAvaliar(item.id); $refs.janelaAvaliar?.abrirModal()">
                                     Demitir
                                 </a>
                                 <a class="dropdown-item" href="javascript://" title="Desmobilizar"
                                    v-if="item.demissao && item.demissao.data_desmobilizacao"
-                                   @click.prevent="formDesmobilizar(item.id)"
-                                   data-toggle="modal"
-                                   data-target="#janelaAvaliar">
+                                   @click.prevent="formDesmobilizar(item.id); $refs.janelaAvaliar?.abrirModal()">
                                     Desmobilizar
                                 </a>
                                 @can('posadmissao_entrevista_desligamento')
                                     <a class="dropdown-item" href="javascript://" title="Entrevistar"
                                        v-if="item.demissao && item.demissao.data_desmobilizacao"
-                                       @click.prevent="formEntrevistar(item.id)"
-                                       data-toggle="modal"
-                                       data-target="#janelaAvaliar">
+                                       @click.prevent="formEntrevistar(item.id); $refs.janelaAvaliar?.abrirModal()">
                                         Entrevistar
                                     </a>
                                 @endif
                                 @can('privilegio_gestao_rh')
                                     <a class="dropdown-item" href="javascript://" title="Entrevistar"
                                        v-if="item.demissao && item.demissao.data_desmobilizacao"
-                                       @click.prevent="formRetornarStatus(item.id)"
-                                       data-toggle="modal"
-                                       data-target="#janelaRetornarStatus">
+                                       @click.prevent="formRetornarStatus(item.id); $refs.janelaRetornarStatus?.abrirModal()">
                                         Remover Demissão
                                     </a>
                                 @endif

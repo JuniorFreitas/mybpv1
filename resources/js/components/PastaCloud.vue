@@ -19,20 +19,22 @@
                 <tbody>
                 <tr>
                     <td v-if="!preload && model.item">
-                        <button class="btn btn-sm btn-outline-dark border-0" @click="abriPasta(pertence_id)">
+                        <button class="btn btn-sm mr-1 btn-outline-dark border-0" @click="abriPasta(pertence_id)">
                             <i class="fa fa-long-arrow-alt-left"></i> Voltar
                         </button>
                     </td>
                 </tr>
-                <tr v-for="(item, index) in lista" v-if="!preload && lista.length > 0 && item.TemPermissao">
-                    <td>
-                        <button class="btn btn-sm btn-outline-default text-left border-0"
-                                @click="abriPasta(item.id)"
-                        >
-                            <i class="fas fa-folder mr-1" style="color: #EECD6D"></i> {{item.label}}
-                        </button>
-                    </td>
-                </tr>
+                <template  v-if="!preload && lista.length > 0 && item.TemPermissao">
+                    <tr v-for="(item, index) in lista" :key="item.id || index">
+                        <td>
+                            <button class="btn btn-sm mr-1 btn-outline-default text-left border-0"
+                                    @click="abriPasta(item.id)"
+                            >
+                                <i class="fas fa-folder mr-1" style="color: #EECD6D"></i> {{item.label}}
+                            </button>
+                        </td>
+                    </tr>
+                </template>
                 </tbody>
             </table>
         </div>
@@ -65,21 +67,21 @@
             this.atualizar();
         },
         methods: {
-            moverArquivo() {
+            async moverArquivo() {
                 this.preload = true;
                 this.movido = false;
-
-                axios.post(`${URL_ADMIN}/itenscloud/mover/${this.model.arquivo}`, {
-                    'pasta': this.model.item,
-                    'inicial': this.inicial
-                })
-                    .then(response => {
-                        this.preload = false;
-                        this.movido = true;
-                        this.$emit("moveu", {});
-                    }).catch(error => {
+                try {
+                    await axios.post(`${URL_ADMIN}/itenscloud/mover/${this.model.arquivo}`, {
+                        pasta: this.model.item,
+                        inicial: this.inicial
+                    });
+                    this.movido = true;
+                    this.$emit("moveu", {});
+                } catch (error) {
+                    // falha silenciosa
+                } finally {
                     this.preload = false;
-                });
+                }
             },
 
             adicionaCaminho(item) {
@@ -94,28 +96,26 @@
                 }, 50);
             },
 
-            atualizar() {
+            async atualizar() {
                 this.preload = true;
                 this.$emit("carregando", {});
-                axios.get(`${URL_ADMIN}/itenscloud/estrutura-mover/${this.model.cloud}/${this.model.item}`)
-                    .then(response => {
-                        let data = response.data;
-                        this.lista = data.lista;
-                        this.pertence_id = data.anterior;
-                        this.nomePasta = data.nomePasta;
-                        this.preload = false;
-
-                        this.$emit("carregou", {});
-                        this.$emit("pastaAtual", {
-                            atual: this.model.item,
-                            inicial: this.inicial,
-                            arquivo: this.model.arquivo
-                        });
-
-                    }).catch(error => {
+                try {
+                    const response = await axios.get(`${URL_ADMIN}/itenscloud/estrutura-mover/${this.model.cloud}/${this.model.item}`);
+                    const data = response.data;
+                    this.lista = data.lista;
+                    this.pertence_id = data.anterior;
+                    this.nomePasta = data.nomePasta;
+                    this.$emit("carregou", {});
+                    this.$emit("pastaAtual", {
+                        atual: this.model.item,
+                        inicial: this.inicial,
+                        arquivo: this.model.arquivo
+                    });
+                } catch (error) {
+                    this.$emit("carregou", { msg: error.response && error.response.data ? error.response.data : null });
+                } finally {
                     this.preload = false;
-                    this.$emit("carregou", {'msg': error.data});
-                });
+                }
             }
 
         }

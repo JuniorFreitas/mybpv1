@@ -5,8 +5,8 @@
     <hr class="bg-default" style="margin-top: -5px;">
 @stop
 @section('content')
-    <modal id="janelaPortaria" titulo="Atualizar dados" :size="80">
-        <template slot="conteudo">
+    <modal ref="janelaPortaria" id="janelaPortaria" titulo="Atualizar dados" :size="80">
+        <template #conteudo>
             <div class="alert alert-success text-center" v-show="form.atualizado">
                 <h4><i class="icon fa fa-check"></i> Dados atualizados com sucesso!</h4>
             </div>
@@ -185,8 +185,8 @@
 
             </div>
         </template>
-        <template slot="rodape">
-            <button type="button" class="btn btn-sm btn-primary" v-show="!form.atualizado && !form.preload"
+        <template #rodape>
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!form.atualizado && !form.preload"
                     @click="salvar">
                 <i class="fa fa-save"></i> Salvar
             </button>
@@ -276,7 +276,7 @@
         </div>
         <div class="col-12">
             <div class="row mt-2">
-                <button type="button" class="btn btn-sm btn-success mr-1 mb-1" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm mr-1 btn-success mr-1 mb-1" :disabled="controle.carregando"
                         :style="controle.carregando ? 'cursor: not-allowed' : 'cursor: pointer'" @click="atualizar">
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
@@ -285,20 +285,20 @@
                 <form target="_blank" :action="`{{route('g.portaria.pdf')}}`" method="post">
                     @csrf
                     <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
-                    <button type="submit" class="btn btn-sm btn-primary mr-1 mb-1"
+                    <button type="submit" class="btn btn-sm mr-1 btn-primary mr-1 mb-1"
                             :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                             :disabled="selecionados.length === 0">
                         Imprimir <span class="badge badge-light">@{{ selecionados.length }}</span>
                     </button>
                 </form>
 
-                <button class="btn btn-sm btn-danger mr-1 mb-1"
+                <button class="btn btn-sm mr-1 btn-danger mr-1 mb-1"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                         :disabled="selecionados.length === 0" @click="selecionados = []">
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
 
-                <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"
+                <button type="button" class="btn btn-sm mr-1 btn-primary mb-1 mr-1"
                         @click.prevent="exportaExcel()"
                         :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
                     <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
@@ -384,7 +384,7 @@
 
 
                     <td class="text-center">
-                        <button class="btn btn-sm btn-primary" title="Atualizar dados"
+                        <button class="btn btn-sm mr-1 btn-primary" title="Atualizar dados"
                                 @click.prevent="formAlterar(resultado.id)"
                                 data-toggle="modal"
                                 data-target="#janelaPortaria">

@@ -1,9 +1,15 @@
-import tiposervico from "../../../../components/administracao/documentoslegais/tiposervico";
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../../registerGlobals'
+import tiposervico from '../../../../components/administracao/documentoslegais/tiposervico'
 
-const app = new Vue({
-    el: '#app',
-    data: {},
-    components: {
-        tiposervico,
+const app = createApp({
+    data() {
+        return {}
     },
+    components: {
+        tiposervico
+    }
 })
+
+registerGlobals(app)
+app.mount('#app')

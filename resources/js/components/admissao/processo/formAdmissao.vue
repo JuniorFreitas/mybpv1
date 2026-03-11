@@ -5,20 +5,16 @@
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Número do Contrato</label>
-                    <input type="text" class="form-control"
-                           :disabled="visualizar || disabled"
-                           v-model="form.contrato">
+                    <input type="text" class="form-control" :disabled="visualizar || disabled" v-model="form.contrato" />
                 </div>
             </div>
             <div class="col-12"></div>
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Área</label>
-                    <select class="form-control" v-model="form.area_etiqueta_id"
-                            :disabled="visualizar || disabled">
+                    <select class="form-control" v-model="form.area_etiqueta_id" :disabled="visualizar || disabled">
                         <option value="">Selecione</option>
-                        <option :value="item.id"
-                                v-for="item in areasetiquetas">
+                        <option :value="item.id" v-for="item in areasetiquetas" :key="item.id">
                             {{ item.label }}
                         </option>
                     </select>
@@ -28,7 +24,7 @@
                 <div class="form-group">
                     <label>Centro de Custo</label>
                     <select
-                        :disabled="visualizar || disabled || form.status ===  'ADMITIDO'"
+                        :disabled="visualizar || disabled || form.status === 'ADMITIDO'"
                         v-model="form.centro_custo_id"
                         @change.prevent="changeCentroCusto()"
                         class="form-control"
@@ -43,10 +39,10 @@
                 <div class="form-group">
                     <label>CNPJ</label>
                     <select
-                        :disabled="visualizar || disabled || form.status ===  'ADMITIDO'"
+                        :disabled="visualizar || disabled || form.status === 'ADMITIDO'"
                         v-model="form.filial"
                         class="form-control"
-                        @change.p.prevent="changeCnpj()"
+                        @change.prevent="changeCnpj()"
                     >
                         <option :value="false">Matriz</option>
                         <option :value="true">Filial</option>
@@ -57,11 +53,7 @@
             <div class="col-12 col-sm-6" v-if="temFilial && form.filial">
                 <div class="form-group">
                     <label>Filial</label>
-                    <select
-                        :disabled="visualizar || disabled || form.status ===  'ADMITIDO'"
-                        v-model="form.centro_custo_filial_id"
-                        class="form-control"
-                    >
+                    <select :disabled="visualizar || disabled || form.status === 'ADMITIDO'" v-model="form.centro_custo_filial_id" class="form-control">
                         <option value="">Selecione</option>
                         <option v-for="item in centroCustoSelecionado" :value="item.id" :key="item.id">
                             {{ item.filial.razao_social }}
@@ -70,33 +62,44 @@
                 </div>
             </div>
 
-
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Função</label>
-                    <input type="text" class="form-control" onblur="valida_campo_vazio(this,2)"
-                           :disabled="visualizar || disabled || form.status ===  'ADMITIDO'"
-                           v-model="form.funcao">
+                    <input
+                        type="text"
+                        class="form-control"
+                        onblur="valida_campo_vazio(this, 2)"
+                        :disabled="visualizar || disabled || form.status === 'ADMITIDO'"
+                        v-model="form.funcao"
+                    />
                 </div>
             </div>
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Salário R$</label>
-                    <input type="text" class="form-control" v-mascara:dinheiro
-                           :disabled="visualizar || disabled || form.status ===  'ADMITIDO'"
-                           v-model="form.salario">
+                    <input
+                        type="text"
+                        class="form-control"
+                        v-mascara:dinheiro
+                        :disabled="visualizar || disabled || form.status === 'ADMITIDO'"
+                        v-model="form.salario"
+                    />
                 </div>
             </div>
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Documento</label>
-                    <select class="form-control" onchange="valida_campo(this,1)"
-                            onblur="valida_campo(this,1)" :disabled="visualizar || disabled"
-                            v-model="form.documento">
+                    <select
+                        class="form-control"
+                        onchange="valida_campo(this, 1)"
+                        onblur="valida_campo(this, 1)"
+                        :disabled="visualizar || disabled"
+                        v-model="form.documento"
+                    >
                         <option value="">Selecione</option>
-                        <option v-for="item in listSelects.todos_status_documentos" :value="item">{{ item }}</option>
+                        <option v-for="item in listSelects.todos_status_documentos" :key="item" :value="item">{{ item }}</option>
                     </select>
                 </div>
             </div>
@@ -104,11 +107,15 @@
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Documento Portaria</label>
-                    <select class="form-control" onchange="valida_campo(this,1)"
-                            onblur="valida_campo(this,1)" :disabled="visualizar || disabled"
-                            v-model="form.documento_portaria">
+                    <select
+                        class="form-control"
+                        onchange="valida_campo(this, 1)"
+                        onblur="valida_campo(this, 1)"
+                        :disabled="visualizar || disabled"
+                        v-model="form.documento_portaria"
+                    >
                         <option value="">Selecione</option>
-                        <option v-for="item in listSelects.todos_status_documentos_portaria" :value="item">
+                        <option v-for="item in listSelects.todos_status_documentos_portaria" :key="item" :value="item">
                             {{ item }}
                         </option>
                     </select>
@@ -118,11 +125,15 @@
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Tipo de admissão</label>
-                    <select class="form-control" onchange="valida_campo(this,1)"
-                            onblur="valida_campo(this,1)" :disabled="visualizar || disabled"
-                            v-model="form.tipo_admissao">
+                    <select
+                        class="form-control"
+                        onchange="valida_campo(this, 1)"
+                        onblur="valida_campo(this, 1)"
+                        :disabled="visualizar || disabled"
+                        v-model="form.tipo_admissao"
+                    >
                         <option value="">Selecione</option>
-                        <option v-for="item in listSelects.tipos_admissao" :value="item">{{ item }}</option>
+                        <option v-for="item in listSelects.tipos_admissao" :key="item" :value="item">{{ item }}</option>
                     </select>
                 </div>
             </div>
@@ -130,31 +141,37 @@
             <div class="col-12 col-sm-6" v-if="form.tipo_admissao === 'FIXO'">
                 <div class="form-group">
                     <label>Prazo de experiência</label>
-                    <select class="form-control" onchange="valida_campo_vazio(this,1)"
-                            onblur="valida_campo_vazio(this,1)" :disabled="visualizar || disabled"
-                            v-model="form.prazo_experiencia">
+                    <select
+                        class="form-control"
+                        onchange="valida_campo_vazio(this, 1)"
+                        onblur="valida_campo_vazio(this, 1)"
+                        :disabled="visualizar || disabled"
+                        v-model="form.prazo_experiencia"
+                    >
                         <option value="">Selecione</option>
-                        <option v-for="item in listSelects.todos_prazos" :value="item">{{ item }}</option>
+                        <option v-for="item in listSelects.todos_prazos" :key="item" :value="item">{{ item }}</option>
                     </select>
                 </div>
             </div>
 
-            <div class="col-12 col-sm-6"
-                 v-if="['TEMPORARIO','DETERMINADO','INTERMITENTE'].includes(form.tipo_admissao)">
+            <div class="col-12 col-sm-6" v-if="['TEMPORARIO', 'DETERMINADO', 'INTERMITENTE'].includes(form.tipo_admissao)">
                 <div class="form-group">
-                    <datepicker label="Data de encerramento" v-model="form.data_encerramento"
-                                :disabled="visualizar || disabled"></datepicker>
+                    <datepicker label="Data de encerramento" v-model="form.data_encerramento" :disabled="visualizar || disabled"></datepicker>
                 </div>
             </div>
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Treinamento</label>
-                    <select class="form-control" onchange="valida_campo(this,1)"
-                            onblur="valida_campo(this,1)" :disabled="visualizar || disabled"
-                            v-model="form.treinamento">
+                    <select
+                        class="form-control"
+                        onchange="valida_campo(this, 1)"
+                        onblur="valida_campo(this, 1)"
+                        :disabled="visualizar || disabled"
+                        v-model="form.treinamento"
+                    >
                         <option value="">Selecione</option>
-                        <option v-for="item in listSelects.todos_status_treinamentos" :value="item">{{ item }}</option>
+                        <option v-for="item in listSelects.todos_status_treinamentos" :key="item" :value="item">{{ item }}</option>
                     </select>
                 </div>
             </div>
@@ -162,9 +179,13 @@
             <div class="col-12 col-sm-6" v-if="form.treinamento === 'REALIZADO'">
                 <div class="form-group">
                     <label>Tipo de Treinamento</label>
-                    <select class="form-control" onchange="valida_campo(this,1)"
-                            onblur="valida_campo(this,1)" :disabled="visualizar || disabled"
-                            v-model="form.tipo_treinamento">
+                    <select
+                        class="form-control"
+                        onchange="valida_campo(this, 1)"
+                        onblur="valida_campo(this, 1)"
+                        :disabled="visualizar || disabled"
+                        v-model="form.tipo_treinamento"
+                    >
                         <option value="">Selecione</option>
                         <option value="COMPLETO">COMPLETO</option>
                         <option value="PARADA">PARADA</option>
@@ -180,7 +201,8 @@
             <!--                        onblur="valida_campo(this,1)" :disabled="visualizar || disabled"-->
             <!--                        v-model="form.nr_trinta_tres">-->
             <!--                    <option value="">Selecione</option>-->
-            <!--                    <option v-for="item in listSelects.todos_status_treinamentos" :value="item">{{ item }}</option>-->
+            <!--                    <option v-for="(item, index) in listSelects.todos_status_treinamentos" :value="item">{{ item }}</option>-->
+            :key="item.id || index"
             <!--                </select>-->
             <!--            </div>-->
             <!--        </div>-->
@@ -192,7 +214,8 @@
             <!--                        onblur="valida_campo(this,1)" :disabled="visualizar || disabled"-->
             <!--                        v-model="form.nr_trinta_cinco">-->
             <!--                    <option value="">Selecione</option>-->
-            <!--                    <option v-for="item in listSelects.todos_status_treinamentos" :value="item">{{ item }}</option>-->
+            <!--                    <option v-for="(item, index) in listSelects.todos_status_treinamentos" :value="item">{{ item }}</option>-->
+            :key="item.id || index"
             <!--                </select>-->
             <!--            </div>-->
             <!--        </div>-->
@@ -200,18 +223,20 @@
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Número Crachá</label>
-                    <input type="text" class="form-control" onblur="valida_campo(this,2)"
-                           :disabled="visualizar || disabled"
-                           v-model="form.numero_cracha">
+                    <input type="text" class="form-control" onblur="valida_campo(this, 2)" :disabled="visualizar || disabled" v-model="form.numero_cracha" />
                 </div>
             </div>
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Status Carteira de Treinamento e Etiqueta</label>
-                    <select class="form-control" onchange="valida_campo(this,1)" :disabled="visualizar || disabled"
-                            onblur="valida_campo(this,1)"
-                            v-model="form.status_carteira_treinamento">
+                    <select
+                        class="form-control"
+                        onchange="valida_campo(this, 1)"
+                        :disabled="visualizar || disabled"
+                        onblur="valida_campo(this, 1)"
+                        v-model="form.status_carteira_treinamento"
+                    >
                         <option value="">Selecione</option>
                         <option v-for="item in listSelects.status_carteira_treinamento" :key="item" :value="item">
                             {{ item }}
@@ -223,10 +248,9 @@
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Padrão de treinamento</label>
-                    <select class="form-control" :disabled="visualizar || disabled"
-                            v-model="form.segmento_treinamento_id">
+                    <select class="form-control" :disabled="visualizar || disabled" v-model="form.segmento_treinamento_id">
                         <option :value="null">Selecione</option>
-                        <option v-for="s in (listSelects.segmentos_treinamento || [])" :key="s.id" :value="s.id">
+                        <option v-for="s in listSelects.segmentos_treinamento || []" :key="s.id" :value="s.id">
                             {{ s.nome }}
                         </option>
                     </select>
@@ -236,15 +260,15 @@
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Status</label>
-                    <select class="form-control" onchange="valida_campo_vazio(this,1)"
-                            :disabled="visualizar || disabled"
-                            onblur="valida_campo_vazio(this,1)"
-                            v-model="form.status">
+                    <select
+                        class="form-control"
+                        onchange="valida_campo_vazio(this, 1)"
+                        :disabled="visualizar || disabled"
+                        onblur="valida_campo_vazio(this, 1)"
+                        v-model="form.status"
+                    >
                         <option value="">Selecione</option>
-                        <option v-for="item in listSelects.status_admissao" :key="item" :value="item">{{
-                            item
-                            }}
-                        </option>
+                        <option v-for="item in listSelects.status_admissao" :key="item" :value="item">{{ item }}</option>
                     </select>
                 </div>
             </div>
@@ -252,41 +276,54 @@
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Data do ASO</label>
-                    <input type="text" class="form-control" placeholder="dd/mm/aaaa"
-                           :disabled="visualizar || disabled"
-                           v-model="form.ultimo_aso.data_realizacao" v-mascara:data
-                           readonly>
+                    <input
+                        type="text"
+                        class="form-control"
+                        placeholder="dd/mm/aaaa"
+                        :disabled="visualizar || disabled"
+                        v-model="form.ultimo_aso.data_realizacao"
+                        v-mascara:data
+                        readonly
+                    />
                 </div>
             </div>
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Data da Admissão</label>
-                    <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
-                           :disabled="visualizar || disabled"
-                           v-model="form.data_admissao" v-mascara:data
-                           @keyup.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_data_vazio($event.target) :valida_data($event.target)"
-                           @blur.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_data_vazio($event.target) :valida_data($event.target)">
+                    <input
+                        type="text"
+                        class="form-control validacampo"
+                        placeholder="dd/mm/aaaa"
+                        :disabled="visualizar || disabled"
+                        v-model="form.data_admissao"
+                        v-mascara:data
+                        @keyup.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_data_vazio($event.target) : valida_data($event.target)"
+                        @blur.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_data_vazio($event.target) : valida_data($event.target)"
+                    />
                 </div>
             </div>
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Data da Entrega na área</label>
-                    <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
-                           :disabled="visualizar || disabled"
-                           v-model="form.data_entrega_area" v-mascara:data
-                           @keyup.prevent="valida_data($event.target)"
-                           @blur.prevent="valida_data($event.target)">
+                    <input
+                        type="text"
+                        class="form-control validacampo"
+                        placeholder="dd/mm/aaaa"
+                        :disabled="visualizar || disabled"
+                        v-model="form.data_entrega_area"
+                        v-mascara:data
+                        @keyup.prevent="valida_data($event.target)"
+                        @blur.prevent="valida_data($event.target)"
+                    />
                 </div>
             </div>
-
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Biometria</label>
-                    <select class="form-control" :disabled="visualizar || disabled"
-                            v-model="form.biometria">
+                    <select class="form-control" :disabled="visualizar || disabled" v-model="form.biometria">
                         <option value="">Selecione</option>
                         <option :value="true">SIM</option>
                         <option :value="false">NÃO</option>
@@ -297,139 +334,180 @@
             <div class="col-12 col-sm-6" v-if="form.biometria">
                 <div class="form-group">
                     <label>Data Biometria</label>
-                    <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
-                           :disabled="visualizar || disabled"
-                           v-model="form.data_biometria" v-mascara:data
-                           @keyup.prevent="valida_data($event.target)"
-                           @blur.prevent="valida_data($event.target)">
+                    <input
+                        type="text"
+                        class="form-control validacampo"
+                        placeholder="dd/mm/aaaa"
+                        :disabled="visualizar || disabled"
+                        v-model="form.data_biometria"
+                        v-mascara:data
+                        @keyup.prevent="valida_data($event.target)"
+                        @blur.prevent="valida_data($event.target)"
+                    />
                 </div>
             </div>
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>PIS</label>
-                    <input type="text" class="form-control validacampo"
-                           @keyup.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,8) : valida_campo($event.target,8)"
-                           @blur.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,8) : valida_campo($event.target,8)"
-                           :disabled="visualizar || disabled"
-                           v-model="form.pis">
+                    <input
+                        type="text"
+                        class="form-control validacampo"
+                        @keyup.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target, 8) : valida_campo($event.target, 8)"
+                        @blur.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target, 8) : valida_campo($event.target, 8)"
+                        :disabled="visualizar || disabled"
+                        v-model="form.pis"
+                    />
                 </div>
             </div>
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Número CTPS</label>
-                    <input type="text" class="form-control validacampo"
-                           @keyup.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,2) : valida_campo($event.target,2)"
-                           @blur.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,2) : valida_campo($event.target,2)"
-                           :disabled="visualizar || disabled"
-                           v-model="form.dados_admissoes.ctps_numero">
+                    <input
+                        type="text"
+                        class="form-control validacampo"
+                        @keyup.prevent="valida_campo($event.target, 2)"
+                        @blur.prevent="valida_campo($event.target, 2)"
+                        :disabled="visualizar || disabled"
+                        v-model="form.dados_admissoes.ctps_numero"
+                    />
                 </div>
             </div>
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Série CTPS</label>
-                    <input type="text" class="form-control validacampo"
-                           @keyup.prevent="verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.ctps_numero.length ? valida_campo_vazio($event.target,2) : valida_campo($event.target,2)"
-                           @blur.prevent="verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.ctps_numero.length ? valida_campo_vazio($event.target,2) : valida_campo($event.target,2)"
-                           :disabled="visualizar || disabled"
-                           v-model="form.dados_admissoes.ctps_serie">
+                    <input
+                        type="text"
+                        class="form-control validacampo"
+                        @keyup.prevent="
+                            verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.ctps_numero.length
+                                ? valida_campo_vazio($event.target, 2)
+                                : valida_campo($event.target, 2)
+                        "
+                        @blur.prevent="
+                            verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.ctps_numero.length
+                                ? valida_campo_vazio($event.target, 2)
+                                : valida_campo($event.target, 2)
+                        "
+                        :disabled="visualizar || disabled"
+                        v-model="form.dados_admissoes.ctps_serie"
+                    />
                 </div>
             </div>
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>CTPS UF</label>
-                    <input type="text" class="form-control validacampo" maxlength="2"
-                           @keyup.prevent="verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.ctps_numero.length ? valida_campo($event.target,2) : valida_campo($event.target,2)"
-                           @blur.prevent="verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.ctps_numero.length ? valida_campo($event.target,2) : valida_campo($event.target,2)"
-                           :disabled="visualizar || disabled"
-                           v-model="form.dados_admissoes.ctps_uf">
+                    <input
+                        type="text"
+                        class="form-control validacampo"
+                        maxlength="2"
+                        @keyup.prevent="valida_campo($event.target, 2)"
+                        @blur.prevent="valida_campo($event.target, 2)"
+                        :disabled="visualizar || disabled"
+                        v-model="form.dados_admissoes.ctps_uf"
+                    />
                 </div>
             </div>
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Data Emissão CTPS</label>
-                    <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
-                           :disabled="visualizar || disabled"
-                           v-model="form.dados_admissoes.ctps_data_emissao" v-mascara:data
-                           @keyup.prevent="verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.ctps_numero.length ? valida_data($event.target) :valida_data($event.target)"
-                           @blur.prevent="verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.ctps_numero.length ? valida_data($event.target) :valida_data($event.target)"
-                    >
+                    <input
+                        type="text"
+                        class="form-control validacampo"
+                        placeholder="dd/mm/aaaa"
+                        :disabled="visualizar || disabled"
+                        v-model="form.dados_admissoes.ctps_data_emissao"
+                        v-mascara:data
+                        @keyup.prevent="valida_data($event.target)"
+                        @blur.prevent="valida_data($event.target)"
+                    />
                 </div>
             </div>
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Certificado Reservista Numero</label>
-                    <input type="text" class="form-control"
-                           :disabled="visualizar || disabled"
-                           @keyup.prevent="verificaStatusAdmitidoProntoAdmissao && verificaSexoMasculino ? valida_campo($event.target,2) : valida_campo($event.target,2)"
-                           @blur.prevent="verificaStatusAdmitidoProntoAdmissao && verificaSexoMasculino ? valida_campo($event.target,2) : valida_campo($event.target,2)"
-                           v-model="form.dados_admissoes.cert_reservista_num"
-                    >
+                    <input
+                        type="text"
+                        class="form-control"
+                        :disabled="visualizar || disabled"
+                        @keyup.prevent="valida_campo($event.target, 2)"
+                        @blur.prevent="valida_campo($event.target, 2)"
+                        v-model="form.dados_admissoes.cert_reservista_num"
+                    />
                 </div>
             </div>
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Certificado Reservista Categoria</label>
-                    <input type="text" class="form-control validacampo"
-                           @keyup.prevent="verificaStatusAdmitidoProntoAdmissao && verificaSexoMasculino ? valida_campo($event.target,2) : valida_campo($event.target,2)"
-                           @blur.prevent="verificaStatusAdmitidoProntoAdmissao && verificaSexoMasculino ? valida_campo($event.target,2) : valida_campo($event.target,2)"
-                           :disabled="visualizar || disabled"
-                           v-model="form.dados_admissoes.cert_reservista_categoria">
+                    <input
+                        type="text"
+                        class="form-control validacampo"
+                        @keyup.prevent="valida_campo($event.target, 2)"
+                        @blur.prevent="valida_campo($event.target, 2)"
+                        :disabled="visualizar || disabled"
+                        v-model="form.dados_admissoes.cert_reservista_categoria"
+                    />
                 </div>
             </div>
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Titulo de Eleitor</label>
-                    <input type="text" class="form-control validacampo"
-                           @keyup.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,8) : valida_campo($event.target,8)"
-                           @blur.prevent="verificaStatusAdmitidoProntoAdmissao ? valida_campo($event.target,8) : valida_campo($event.target,8)"
-                           :disabled="visualizar || disabled"
-                           v-model="form.dados_admissoes.titulo_eleitor_numero">
+                    <input
+                        type="text"
+                        class="form-control validacampo"
+                        @keyup.prevent="valida_campo($event.target, 8)"
+                        @blur.prevent="valida_campo($event.target, 8)"
+                        :disabled="visualizar || disabled"
+                        v-model="form.dados_admissoes.titulo_eleitor_numero"
+                    />
                 </div>
             </div>
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Titulo de Eleitor Sessão</label>
-                    <input type="text" class="form-control validacampo"
-                           @keyup.prevent="verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.titulo_eleitor_numero.length ? valida_campo($event.target,2) : valida_campo($event.target,2)"
-                           @blur.prevent="verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.titulo_eleitor_numero.length ? valida_campo($event.target,2) : valida_campo($event.target,2)"
-                           :disabled="visualizar || disabled"
-                           v-model="form.dados_admissoes.titulo_eleitor_sessao">
+                    <input
+                        type="text"
+                        class="form-control validacampo"
+                        @keyup.prevent="valida_campo($event.target, 2)"
+                        @blur.prevent="valida_campo($event.target, 2)"
+                        :disabled="visualizar || disabled"
+                        v-model="form.dados_admissoes.titulo_eleitor_sessao"
+                    />
                 </div>
             </div>
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Titulo de Eleitor Zona</label>
-                    <input type="text" class="form-control validacampo"
-                           @keyup.prevent="verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.titulo_eleitor_numero.length ? valida_campo($event.target,2) : valida_campo($event.target,2)"
-                           @blur.prevent="verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.titulo_eleitor_numero.length ? valida_campo($event.target,2) : valida_campo($event.target,2)"
-                           :disabled="visualizar || disabled"
-                           v-model="form.dados_admissoes.titulo_eleitor_zona">
+                    <input
+                        type="text"
+                        class="form-control validacampo"
+                        @keyup.prevent="valida_campo($event.target, 2)"
+                        @blur.prevent="valida_campo($event.target, 2)"
+                        :disabled="visualizar || disabled"
+                        v-model="form.dados_admissoes.titulo_eleitor_zona"
+                    />
                 </div>
             </div>
             <div class="col-12">
-                <ferias-adquiridas :model="form.ferias_adquiridas"
-                                   :model-delete="form.ferias_adquiridasDelete"
-                                   :visualizar="visualizar"
-                ></ferias-adquiridas>
+                <ferias-adquiridas :model="form.ferias_adquiridas" :model-delete="form.ferias_adquiridasDelete" :visualizar="visualizar"></ferias-adquiridas>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-import Validacoes from "../../../mixins/Validacoes";
-import FeriasAdquiridas from "./FeriasAdquiridas";
-import configuracoes from "../../../mixins/Configuracoes";
+import Validacoes from '../../../mixins/Validacoes'
+import FeriasAdquiridas from './FeriasAdquiridas'
+import configuracoes from '../../../mixins/Configuracoes'
 
 export default {
     mixins: [Validacoes, configuracoes],
@@ -440,69 +518,71 @@ export default {
         form: {
             type: Object,
             required: true,
-            default: {
-                feedback_id: "",
-                filial: false,
-                centro_custo_filial_id: "",
-                area_etiqueta_id: "",
-                centro_custo_id: "",
-                contrato: "",
-                funcao: "",
-                salario: "0,00",
-                status: "",
-                documento: "",
-                documento_portaria: "",
-                tipo_admissao: "",
-                tipo_treinamento: "",
-                treinamento: "",
-                data_treinamento: "",
-                carteira_treinamento: "",
-                nr_trinta_tres: "",
-                data_nr_trinta_tres: "",
-                nr_trinta_cinco: "",
-                data_nr_trinta_cinco: "",
-                trinta_dois_sessenta: "",
-                data_trinta_dois_sessenta: "",
-                numero_cracha: "",
-                foto_escaneada: "",
-                status_carteira_treinamento: "",
-                segmento_treinamento_id: null,
-                data_admissao: "",
-                data_adm_prevista: "",
+            default() {
+                return {
+                    feedback_id: '',
+                    filial: false,
+                    centro_custo_filial_id: '',
+                    area_etiqueta_id: '',
+                    centro_custo_id: '',
+                    contrato: '',
+                    funcao: '',
+                    salario: '0,00',
+                    status: '',
+                    documento: '',
+                    documento_portaria: '',
+                    tipo_admissao: '',
+                    tipo_treinamento: '',
+                    treinamento: '',
+                    data_treinamento: '',
+                    carteira_treinamento: '',
+                    nr_trinta_tres: '',
+                    data_nr_trinta_tres: '',
+                    nr_trinta_cinco: '',
+                    data_nr_trinta_cinco: '',
+                    trinta_dois_sessenta: '',
+                    data_trinta_dois_sessenta: '',
+                    numero_cracha: '',
+                    foto_escaneada: '',
+                    status_carteira_treinamento: '',
+                    segmento_treinamento_id: null,
+                    data_admissao: '',
+                    data_adm_prevista: '',
 
-                data_entrega_area: "",
-                biometria: "",
-                data_biometria: "",
+                    data_entrega_area: '',
+                    biometria: '',
+                    data_biometria: '',
 
-                indicado_por: "",
-                indicado_area: "",
+                    indicado_por: '',
+                    indicado_area: '',
 
-                filiacao_pai: "",
-                filiacao_mae: "",
-                nome: "",
-                calca: "",
-                bota: "",
-                camisa_protecao: "",
-                camisa_meia: "",
-                pis: "",
-                prazo_experiencia: "",
-                prazo_encerramento: "",
-                dados_admissoes: {
-                    ctps_numero: "",
-                    ctps_serie: "",
-                    ctps_data_emissao: "",
-                    titulo_eleitor_numero: "",
-                    titulo_eleitor_sessao: "",
-                    titulo_eleitor_zona: "",
-                    ctps_uf: "",
-                    cert_reservista_num: "",
-                    cert_reservista_categoria: "",
-                },
-                ultimo_aso: {
-                    data_realizacao: ""
-                },
-                ferias_adquiridas: [],
-                ferias_adquiridasDelete: [],
+                    filiacao_pai: '',
+                    filiacao_mae: '',
+                    nome: '',
+                    calca: '',
+                    bota: '',
+                    camisa_protecao: '',
+                    camisa_meia: '',
+                    pis: '',
+                    prazo_experiencia: '',
+                    prazo_encerramento: '',
+                    dados_admissoes: {
+                        ctps_numero: '',
+                        ctps_serie: '',
+                        ctps_data_emissao: '',
+                        titulo_eleitor_numero: '',
+                        titulo_eleitor_sessao: '',
+                        titulo_eleitor_zona: '',
+                        ctps_uf: '',
+                        cert_reservista_num: '',
+                        cert_reservista_categoria: ''
+                    },
+                    ultimo_aso: {
+                        data_realizacao: ''
+                    },
+                    ferias_adquiridas: [],
+                    ferias_adquiridasDelete: []
+                }
             }
         },
         visualizar: {
@@ -514,34 +594,29 @@ export default {
             default: false
         }
     },
-    filters: {
-        formataMaiuscula(value) {
-            this.uppercase(value);
-        }
-    },
     computed: {
         verificaStatusAdmitidoProntoAdmissao() {
-            return ['ADMITIDO', 'PRONTO PARA ADMISSÃO'].includes(this.form.status);
+            return ['ADMITIDO', 'PRONTO PARA ADMISSÃO'].includes(this.form.status)
         },
         verificaSexoMasculino() {
             const sexo = this.$root.$data.formulario_open === 'Avulsa' ? this.$root.$data.formAvulsa.curriculo.sexo : this.$root.$data.form.curriculo.sexo
-            return sexo === 'Masculino';
+            return sexo === 'Masculino'
         },
         centroCustoSelecionado() {
             if (this.form.centro_custo_id === undefined || this.form.centro_custo_id === null || this.form.centro_custo_id === '') {
-                return [];
+                return []
             }
 
-            let centroSelecionado = _.find(this.centro_custos, {id: this.form.centro_custo_id});
+            let centroSelecionado = _.find(this.centro_custos, { id: this.form.centro_custo_id })
             if (centroSelecionado.filiais.length) {
-                return centroSelecionado.filiais;
+                return centroSelecionado.filiais
             }
 
-            return [];
+            return []
         },
         centroCustoTemFilial() {
-            return this.temFilial && this.centroCustoSelecionado.length > 0;
-        },
+            return this.temFilial && this.centroCustoSelecionado.length > 0
+        }
     },
     data() {
         return {
@@ -549,34 +624,40 @@ export default {
             preload: true,
             areasetiquetas: [],
             listSelects: [],
-            centro_custos: [],
-        };
+            centro_custos: []
+        }
     },
     async created() {
-        this.preload = true;
-        await axios.get(`${URL_PUBLICO}/lista-areas`)
-            .then(response => {
-                this.areasetiquetas = response.data.areas ?? "";
-            }).catch(e => console.log(e));
+        this.preload = true
+        await axios
+            .get(`${URL_PUBLICO}/lista-areas`)
+            .then((response) => {
+                this.areasetiquetas = response.data.areas ?? ''
+            })
+            .catch((e) => console.log(e))
 
-        await axios.get(`${URL_ADMIN}/admissao/listSelects`)
-            .then(response => {
-                this.listSelects = response.data;
-            }).catch(e => console.log(e));
+        await axios
+            .get(`${URL_ADMIN}/admissao/listSelects`)
+            .then((response) => {
+                this.listSelects = response.data
+            })
+            .catch((e) => console.log(e))
 
-        await axios.post(`${URL_PUBLICO}/centro-custos/`, {'empresa_id': this.form.empresa_id})
-            .then(response => {
-                this.centro_custos = response.data.centro_custos;
-            }).catch(error => {
-                this.preload = false;
-            });
+        await axios
+            .post(`${URL_PUBLICO}/centro-custos/`, { empresa_id: this.form.empresa_id })
+            .then((response) => {
+                this.centro_custos = response.data.centro_custos
+            })
+            .catch((error) => {
+                this.preload = false
+            })
 
-        this.form.centro_custo_id = this.form.centro_custo_id ?? '';
-        this.preload = false;
+        this.form.centro_custo_id = this.form.centro_custo_id ?? ''
+        this.preload = false
     },
     methods: {
         changeCentroCusto() {
-            this.form.filial = false;
+            this.form.filial = false
             this.form.centro_custo_filial_id = ''
         },
         changeCnpj() {
@@ -590,15 +671,15 @@ export default {
 
         validaDataAdmissao() {
             if (this.form.data_admissao.length >= 10) {
-                let dataCorreta = moment(this.form.data_admissao, "DD/MM/YYYY");
+                let dataCorreta = moment(this.form.data_admissao, 'DD/MM/YYYY')
                 if (!dataCorreta.isValid()) {
-                    mostraErro("", "A data da admissao inserida é inválida");
-                    this.form.data_admissao = "";
+                    mostraErro('', 'A data da admissao inserida é inválida')
+                    this.form.data_admissao = ''
                 }
             }
         }
     }
-};
+}
 </script>
 
 <style scoped></style>

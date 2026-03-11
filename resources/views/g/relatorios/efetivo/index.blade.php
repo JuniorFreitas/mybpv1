@@ -24,17 +24,17 @@
 
         <div class="col-12">
             <div class="row">
-                <button type="button" class="btn btn-sm btn-success mr-1 mb-2" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm mr-1 btn-success mr-1 mb-2" :disabled="controle.carregando"
                         @click="atualizar"><i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
-{{--                <button type="button" class="btn btn-sm btn-primary mb-2 mr-1"--}}
+{{--                <button type="button" class="btn btn-sm mr-1 btn-primary mb-2 mr-1"--}}
 {{--                        @click.prevent="exportaPdf()"--}}
 {{--                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0) ">--}}
 {{--                    <i class="fas fa-file-pdf"></i> EXPORTAR PDF--}}
 {{--                </button>--}}
-                <button type="button" class="btn btn-sm btn-primary mb-2 mr-1"
+                <button type="button" class="btn btn-sm mr-1 btn-primary mb-2 mr-1"
                         @click.prevent="exportaExcel()"
                         :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0) ">
                     <i class="fas fa-file-excel"></i> EXPORTAR EXCEL

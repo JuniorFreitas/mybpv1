@@ -35,6 +35,8 @@ use Spatie\Activitylog\Models\Activity;
  * @method static \Illuminate\Database\Eloquent\Builder|DocumentoSsma whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DocumentoSsma whereTipoSsma($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DocumentoSsma whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class DocumentoSsma extends Model

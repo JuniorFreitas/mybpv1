@@ -86,6 +86,20 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereUserAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AdmissoesPrevista whereUserId($value)
+ * @property int|null $aprovacao_extra_id
+ * @property string|null $status_aprovacao_extra
+ * @property string|null $obs_aprovacao_extra
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_extra
+ * @property-read \App\Models\AprovacaoExtraConfig|null $AprovacaoExtra
+ * @property-read \App\Models\User|null $UserAprovacaoExtra
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read mixed $aprovacao_extra_nome
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AdmissoesPrevista whereAprovacaoExtraId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AdmissoesPrevista whereDataAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AdmissoesPrevista whereNomePessoa($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AdmissoesPrevista whereObsAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AdmissoesPrevista whereStatusAprovacaoExtra($value)
  * @mixin \Eloquent
  */
 class AdmissoesPrevista extends Model

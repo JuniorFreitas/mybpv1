@@ -31,6 +31,8 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|MetasFeedback whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MetasFeedback whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MetasFeedback whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class MetasFeedback extends Model

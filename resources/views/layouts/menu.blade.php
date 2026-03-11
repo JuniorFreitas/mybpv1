@@ -35,7 +35,7 @@
     </li>
 @endif--}}
 <div id="system-menu">
-    @if(\App\Models\Sistema::permitirLinks('administracao_clientes','administracao_fornecedores','administracao_atareuniao','administracao_pesquisaclima','administracao_planejamentodiario','administracao_aniversariantes', 'administracao_documentos_legais'))
+    @if(\App\Models\Sistema::permitirLinks('administracao_clientes','administracao_fornecedores','administracao_atareuniao','administracao_pesquisaclima','administracao_planejamentodiario','administracao_aniversariantes', 'administracao_documentos_legais', 'administracao_carta_oferta_template'))
         <li id="administracao">
             <a href="javascript://" class="has-arrow waves-effect" parent="administracao">
                 <i class="bx bxs-book-content"></i>
@@ -108,6 +108,14 @@
                                 </li>
                             @endif
                         </ul>
+                    </li>
+                @endcan
+                @can('administracao_carta_oferta_template')
+                    <li>
+                        <a href="{{route('g.administracao.carta-oferta-template.index')}}" parent="administracao"
+                           key="carta-oferta-template">
+                            Carta Oferta - Template
+                        </a>
                     </li>
                 @endcan
                 @can('administracao_atareuniao')

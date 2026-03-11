@@ -47,6 +47,87 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVagaMovimentacao newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVagaMovimentacao newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVagaMovimentacao query()
+ * @property string|null $posicao
+ * @property string|null $processo
+ * @property string|null $nome_indicacao
+ * @property string|null $contrato
+ * @property string|null $local_trabalho
+ * @property string|null $horario
+ * @property int|null $gestor_id
+ * @property string|null $gestor
+ * @property bool|null $ppra
+ * @property string|null $salario
+ * @property float|null $salario_valor
+ * @property string|null $beneficio
+ * @property string|null $beneficio_excecao
+ * @property string|null $treinamento
+ * @property string|null $treinamento_excecao
+ * @property array<array-key, mixed>|null $custom_values
+ * @property-read \App\Models\User|null $AprovacaoExtra
+ * @property-read \App\Models\User|null $AprovacaoRh
+ * @property-read \App\Models\AreaEtiqueta|null $Area
+ * @property-read \App\Models\Vaga|null $Cargo
+ * @property-read \App\Models\CentroCusto|null $CentroCusto
+ * @property-read \App\Models\Cliente|null $Cliente
+ * @property-read \App\Models\Cliente|null $Empresa
+ * @property-read \App\Models\User|null $GestorContratacao
+ * @property-read \App\Models\User|null $User
+ * @property-read \App\Models\User|null $UserAprovacao
+ * @property-read \App\Models\User|null $UserCadastrou
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read mixed $created_at_formatado
+ * @property-read mixed $data_solicitacao
+ * @property-read mixed $updated_at_formatado
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereAprovacaoExtraId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereAprovadoViaScript($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereAreaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereBeneficio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereBeneficioExcecao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereCargoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereCentroCustoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereClienteId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereContrato($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereCustomValues($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereDataAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereDataAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereDataAprovacaoRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereGestor($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereGestorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereHorario($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereImediata($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereLocalTrabalho($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereNomeIndicacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereObsAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereObsAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereObsRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereObservacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao wherePosicao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao wherePpra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao wherePrevisaoInicio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao wherePrioridade($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereProcesso($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereQuantidade($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereRhAprovacaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereSalario($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereSalarioValor($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereSolicitante($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereStatusAprovacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereStatusAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereStatusAprovacaoRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereTipoContratacao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereTreinamento($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereTreinamentoExcecao($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereUserAprovacaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVagaMovimentacao withoutTrashed()
  * @mixin \Eloquent
  */
 class RequisicaoVagaMovimentacao extends Model

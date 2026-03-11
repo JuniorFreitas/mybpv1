@@ -4,8 +4,8 @@
 @section('content')
 
     <!--Janela de detalhes-->
-    <modal id="janelaFormDetalhes"  titulo="Detalhes da jornada"  :size="90" :fechar="!formPonto.preload" @fechou="atualizarComponentePaginacao();">
-        <template slot="conteudo">
+    <modal ref="janelaFormDetalhes" id="janelaFormDetalhes" titulo="Detalhes da jornada" :size="90" :fechar="!formPonto.preload" @fechou="atualizarComponentePaginacao();">
+        <template #conteudo>
             <p class="text-center">
                 <preload v-if="formPonto.preload" label="Aguarde..."></preload>
             </p>
@@ -32,16 +32,16 @@
                             <div class="col-4 col-sm-1">
                                 <div class="avatar-md align-self-center mr-3">
                             <span class="avatar-title rounded-circle bg-soft-primary text-primary">
-                                @{{ formPonto.funcionario.nome.toUpperCase() | formataNome }}
+                                @{{ formatNome(formPonto.funcionario.nome.toUpperCase()) }}
                             </span>
                                 </div>
                             </div>
                             <div class="col-4 col-sm-6">
                                 <i class="fas fa-calendar-day fa-2x mr-2"></i> <span style="font-size: 20px">@{{ formPonto.dia }}</span>
-                                <button type="button" class="btn btn-sm btn-default btn-outline-primary ml-3 mr-4" @click="jornadaAnterior()" v-show="paginacaoRef.atual > 1">
+                                <button type="button" class="btn btn-sm mr-1 btn-default btn-outline-primary ml-3 mr-4" @click="jornadaAnterior()" v-show="paginacaoRef.atual > 1">
                                     <i class="fas fa-chevron-left fa-2x" ></i>
                                 </button>
-                                <button type="button" class="btn btn-sm btn-default btn-outline-primary ml-3 mr-4" @click="proximaJornada()" v-show="paginacaoRef.atual < paginacaoRef.total">
+                                <button type="button" class="btn btn-sm mr-1 btn-default btn-outline-primary ml-3 mr-4" @click="proximaJornada()" v-show="paginacaoRef.atual < paginacaoRef.total">
                                     <i class="fas fa-chevron-right fa-2x"></i>
                                 </button>
                                 <br>
@@ -139,8 +139,8 @@
             </div>
 
         </template>
-        <template slot="rodape" v-if="!formPonto.preload && !formPonto.save && paginacaoRef">
-            <button type="button" class="btn btn-sm btn-success" @click="salvar">Ajustar</button>
+        <template #rodape v-if="!formPonto.preload && !formPonto.save && paginacaoRef">
+            <button type="button" class="btn btn-sm mr-1 btn-success" @click="salvar">Ajustar</button>
             <div class="form-group form-check" v-if="(!formPonto.preload && !formPonto.save) && (paginacaoRef.atual < paginacaoRef.total)">
                 <input type="checkbox" class="form-check-input" id="checkBoxProximo" v-model="irParaProximaJornada">
                 <label class="form-check-label" for="checkBoxProximo">
@@ -171,7 +171,7 @@
                                               @onselect="selecionaFuncionario"></autocomplete>
                             </div>
                             <div class="col-12">
-                                <button type="button" class="btn btn-sm btn-success mr-1 mb-2" :disabled="formBusca.preload"
+                                <button type="button" class="btn btn-sm mr-1 btn-success mr-1 mb-2" :disabled="formBusca.preload"
                                         @click="atualizarTudo()"><i
                                         :class="formBusca.preload ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                                     Buscar
@@ -224,19 +224,22 @@
                                     <h5><span :class="{'badge badge-success':ponto.ocorrencia.trabalhado,'badge badge-warning':!ponto.ocorrencia.trabalhado}">@{{ ponto.ocorrencia.descricao }}</span></h5>
                                 </td>
                                 <td class="text-center">
-                                    <template v-for="periodo in ponto.periodos" v-if="ponto.ocorrencia.trabalhado">
-                                        <span >@{{ periodo.entrada }}</span><br>
+                                    <template v-if="ponto.ocorrencia.trabalhado">
+                                        <template v-for="periodo in ponto.periodos">
+                                            <span>@{{ periodo.entrada }}</span><br>
+                                        </template>
                                     </template>
                                     <br>
 
                                 </td>
                                 <td class="text-center">
-                                    <template v-for="periodo in ponto.periodos" v-if="ponto.ocorrencia.trabalhado">
-                                        <template v-if="periodo.saida">
-                                            <span>@{{ periodo.saida }}</span><br>
+                                    <template v-if="ponto.ocorrencia.trabalhado">
+                                        <template v-for="periodo in ponto.periodos">
+                                            <template v-if="periodo.saida">
+                                                <span>@{{ periodo.saida }}</span><br>
+                                            </template>
+                                            <span v-else><h5><span class="badge badge-warning">Trabalhando</span></h5></span>
                                         </template>
-                                        <span v-else><h5><span
-                                                    class="badge badge-warning">Trabalhando</span></h5></span>
                                     </template>
                                     <br>
 
@@ -264,9 +267,8 @@
                                     </h5>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal"
-                                            data-target="#janelaFormDetalhes"
-                                            @click="verDetalhes(ponto.id,'pag_pendentes')"><i
+                                    <button type="button" class="btn btn-secondary btn-sm"
+                                            @click="verDetalhes(ponto.id,'pag_pendentes'); $refs.janelaFormDetalhes?.abrirModal()"><i
                                             class="fas fa-info-circle"></i> Verificar
                                     </button>
                                 </td>
@@ -313,19 +315,22 @@
                                     <h5><span :class="{'badge badge-success':ponto.ocorrencia.trabalhado,'badge badge-warning':!ponto.ocorrencia.trabalhado}">@{{ ponto.ocorrencia.descricao }}</span></h5>
                                 </td>
                                 <td class="text-center">
-                                    <template v-for="periodo in ponto.periodos" v-if="ponto.ocorrencia.trabalhado">
-                                        <span >@{{ periodo.entrada }}</span><br>
+                                    <template v-if="ponto.ocorrencia.trabalhado">
+                                        <template v-for="periodo in ponto.periodos">
+                                            <span>@{{ periodo.entrada }}</span><br>
+                                        </template>
                                     </template>
                                     <br>
 
                                 </td>
                                 <td class="text-center">
-                                    <template v-for="periodo in ponto.periodos" v-if="ponto.ocorrencia.trabalhado">
-                                        <template v-if="periodo.saida">
-                                            <span>@{{ periodo.saida }}</span><br>
+                                    <template v-if="ponto.ocorrencia.trabalhado">
+                                        <template v-for="periodo in ponto.periodos">
+                                            <template v-if="periodo.saida">
+                                                <span>@{{ periodo.saida }}</span><br>
+                                            </template>
+                                            <span v-else><h5><span class="badge badge-warning">Trabalhando</span></h5></span>
                                         </template>
-                                        <span v-else><h5><span
-                                                    class="badge badge-warning">Trabalhando</span></h5></span>
                                     </template>
                                     <br>
 
@@ -353,9 +358,8 @@
                                     </h5>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal"
-                                            data-target="#janelaFormDetalhes"
-                                            @click="verDetalhes(ponto.id,'pag_incompletas')"><i
+                                    <button type="button" class="btn btn-secondary btn-sm"
+                                            @click="verDetalhes(ponto.id,'pag_incompletas'); $refs.janelaFormDetalhes?.abrirModal()"><i
                                             class="fas fa-info-circle"></i> Verificar
                                     </button>
                                 </td>
@@ -404,18 +408,22 @@
                                     <h5><span :class="{'badge badge-success':ponto.ocorrencia.trabalhado,'badge badge-warning':!ponto.ocorrencia.trabalhado}">@{{ ponto.ocorrencia.descricao }}</span></h5>
                                 </td>
                                 <td class="text-center">
-                                    <template v-for="periodo in ponto.periodos" v-if="ponto.ocorrencia.trabalhado">
-                                        <span >@{{ periodo.entrada }}</span><br>
+                                    <template v-if="ponto.ocorrencia.trabalhado">
+                                        <template v-for="periodo in ponto.periodos">
+                                            <span>@{{ periodo.entrada }}</span><br>
+                                        </template>
                                     </template>
                                     <br>
 
                                 </td>
                                 <td class="text-center">
-                                    <template v-for="periodo in ponto.periodos" v-if="ponto.ocorrencia.trabalhado">
-                                        <template v-if="periodo.saida">
-                                            <span>@{{ periodo.saida }}</span><br>
+                                    <template v-if="ponto.ocorrencia.trabalhado">
+                                        <template v-for="periodo in ponto.periodos">
+                                            <template v-if="periodo.saida">
+                                                <span>@{{ periodo.saida }}</span><br>
+                                            </template>
+                                            <span v-else><h5><span class="badge badge-warning">Trabalhando</span></h5></span>
                                         </template>
-                                        <span v-else><h5><span class="badge badge-warning">Trabalhando</span></h5></span>
                                     </template>
                                     <br>
 
@@ -436,7 +444,7 @@
                                     <h5><span :class="{'badge badge-success':ponto.verificado,'badge badge-danger':!ponto.verificado}">@{{ ponto.verificado ? 'Sim':'Não' }}</span></h5>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#janelaFormDetalhes" @click="verDetalhes(ponto.id,'pag_verificadas')"> <i class="fas fa-info-circle"></i> Verificar</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" @click="verDetalhes(ponto.id,'pag_verificadas'); $refs.janelaFormDetalhes?.abrirModal()"> <i class="fas fa-info-circle"></i> Verificar</button>
                                 </td>
                             </tr>
 

@@ -5,8 +5,8 @@
     <hr class="bg-default" style="margin-top: -5px;">
 @stop
 @section('content')
-    <modal id="janelaAnexos" :titulo="form.nome +' #'+ form.id" :size="90">
-        <template slot="conteudo">
+    <modal ref="janelaAnexos" id="janelaAnexos" :titulo="form.nome +' #'+ form.id" :size="90">
+        <template #conteudo>
             <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</span>
             <fieldset v-show="!preloadAjax && form.fotos.length>0">
                 <legend style="text-transform: uppercase">Foto 3x4</legend>
@@ -42,8 +42,8 @@
     </modal>
 
 
-    <modal id="janelaCadastrar" :titulo="tituloJanela" :size="90">
-        <template slot="conteudo">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :size="90">
+        <template #conteudo>
             <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</span>
             <div class="alert alert-success alert-dismissible" v-show="cadastrado">
                 <h4><i class="icon fa fa-check"></i>Funcionário cadastrado com sucesso!</h4>
@@ -1803,7 +1803,7 @@
 
             </form>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-primary" v-show="editando && !atualizado" @click="alterar()">
                 Alterar
             </button>
@@ -1885,8 +1885,8 @@
     </form>
 
     <button type="button" class="btn btn-success" id="btnAtualizar">Atualizar</button>
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#janelaCadastrar"
-            @click="formNovo()">
+    <button type="button" class="btn btn-primary"
+            @click="formNovo(); $refs.janelaCadastrar?.abrirModal()">
         Cadastrar
     </button>
     <button type="button" class="btn btn-primary"
@@ -1947,10 +1947,8 @@
                     </td>
 
                     <td class="text-center">
-                        <a href="javascript://" class="text-danger"
-                           @click.prevent="formAlterar(funcionario.id)"
-                           data-toggle="modal" title="Alterar"
-                           data-target="#janelaCadastrar">
+                        <a href="javascript://" class="text-danger" title="Alterar"
+                           @click.prevent="formAlterar(funcionario.id); $refs.janelaCadastrar?.abrirModal()">
                             <i class="fa fa-edit" aria-hidden="true"></i>
                         </a>
 
@@ -1969,8 +1967,8 @@
                     </td>
                     <td class="text-center">
                         <div v-show="funcionario.anexos.length > 0 || funcionario.fotos.length > 0">
-                            <a href="javascript://" data-toggle="modal" data-target="#janelaAnexos"
-                               @click="abrirJanelaAnexo(funcionario.id)" style="cursor: pointer"><i
+                            <a href="javascript://" style="cursor: pointer"
+                               @click="abrirJanelaAnexo(funcionario.id); $refs.janelaAnexos?.abrirModal()"><i
                                     class="fa fa-paperclip text-info"></i></a>
                         </div>
                         <div v-show="funcionario.anexos.length == 0 && funcionario.fotos.length == 0">

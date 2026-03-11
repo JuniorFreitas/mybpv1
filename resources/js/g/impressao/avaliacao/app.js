@@ -1,31 +1,48 @@
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
 import radarchart from '../../../components/Charts/Radar.vue'
 
-const app = new Vue({
-    el: '#app',
-    data: {
-        chartsRadares: [],
-        formAvaliarFinal: {
-            dados_do_funcionario: [],
-            avaliador_principal: '',
-            status_avaliacao: '',
-            total_aval: '',
-            media_aval: '',
-            nota_final: 0,
-            resultado_topico_pai: [],
-            result_topico_pai_agrupado: [],
-            result_topico: [],
-            result_subtopico: [],
-            resultChart: [],
-            planos_acoes: [],
-            planos_acoes_delete: []
+const app = createApp({
+    data() {
+        return {
+            chartsRadares: [],
+            formAvaliarFinal: {
+                dados_do_funcionario: [],
+                avaliador_principal: '',
+                status_avaliacao: '',
+                total_aval: '',
+                media_aval: '',
+                nota_final: 0,
+                resultado_topico_pai: [],
+                result_topico_pai_agrupado: [],
+                result_topico: [],
+                result_subtopico: [],
+                resultChart: [],
+                planos_acoes: [],
+                planos_acoes_delete: []
+            }
         }
     },
     components: {
         radarchart
     },
-    filters: {
+    methods: {
         casasDecimais(valor) {
             return valor.toFixed(1)
+        },
+        print: function () {
+            window.print()
+
+            window.addEventListener(
+                'afterprint',
+                () => {
+                    this.fecharJanela()
+                },
+                { once: true }
+            )
+        },
+        fecharJanela: function () {
+            window.close()
         }
     },
     mounted() {
@@ -43,25 +60,9 @@ const app = new Vue({
         this.formAvaliarFinal.resultChart = dados.resultChart
         this.formAvaliarFinal.planos_acoes = dados.planos_acoes
 
-        // Imprimir automaticamente ao carregar a página
         this.print()
-
-        // REMOVIDO: window.onload que fechava a janela automaticamente
-        // window.onload = () => {
-        //     this.fecharJanela();
-        // };
-    },
-    methods: {
-        print: function() {
-            window.print()
-
-            // Opção: Fechar automaticamente após imprimir ou cancelar impressão
-            window.addEventListener('afterprint', () => {
-                this.fecharJanela()
-            }, { once: true })
-        },
-        fecharJanela: function() {
-            window.close()
-        }
     }
 })
+
+registerGlobals(app)
+app.mount('#app')

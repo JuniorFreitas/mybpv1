@@ -28,6 +28,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|FormularioResposta whereRespostas($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FormularioResposta whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FormularioResposta whereUserId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class FormularioResposta extends Model

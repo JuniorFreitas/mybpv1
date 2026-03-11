@@ -1,8 +1,10 @@
-Vue.component('endereco', require('../../../components/Endereco.vue'));
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import Endereco from '../../../components/Endereco.vue'
 
-const app = new Vue({
-    el: '#app',
-    data: {
+const app = createApp({
+    data() {
+        return {
         tituloJanela: 'Cadastrando Cliente',
         preloadAjax: false,
         editando: false,
@@ -205,6 +207,11 @@ const app = new Vue({
     }
 });
 
+app.component('endereco', Endereco)
+
+registerGlobals(app)
+app.mount('#app');
+
 $().ready(function () {
 
     $('#janelaCadastrar').on('shown.bs.modal', function () {
@@ -224,6 +231,5 @@ $().ready(function () {
 
 function atualizar() {
     app.$refs.componente.atual = 1;
-    app.$refs.componente.buscar();
+    app.this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null;
 }
-

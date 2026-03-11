@@ -39,10 +39,10 @@
                     </div>
                 </div>
                 <div>
-                    <button class="btn btn-sm btn-primary" @click="gerarDados()" type="button">
+                    <button class="btn btn-sm mr-1 btn-primary" @click="gerarDados()" type="button">
                         Buscar
                     </button>
-                    <button class="btn btn-sm btn-primary" v-if="!preload && dados != null"
+                    <button class="btn btn-sm mr-1 btn-primary" v-if="!preload && dados != null"
                             @click="divPdf(usuario_nome, tipo)"
                             type="button">
                         Imprimir
@@ -93,7 +93,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="controle in dados">
+                            <tr v-for="(controle, index) in dados" :key="controle.id || index">
                                 <td class="text-center">{{controle.nome}}</td>
                                 <td class="text-center">{{controle.lido === true ? 'Lido' : 'Erro'}}</td>
                                 <td class="text-center">{{usuario_nome}}</td>
@@ -116,7 +116,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="controle in dados">
+                            <tr v-for="(controle, index) in dados" :key="controle.id || index">
                                 <td class="text-center">{{controle.curriculo.nome}}</td>
                                 <td class="text-center">{{controle.selecionado === 'sim' ? 'Selecionado' :
                                     'Não Selecionado'}}
@@ -141,7 +141,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="controle in dados">
+                            <tr v-for="(controle, index) in dados" :key="controle.id || index">
                                 <td class="text-center">{{controle.feedback === null ? '-' :
                                     controle.feedback.curriculo.nome }}
                                 </td>
@@ -167,7 +167,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="controle in dados">
+                            <tr v-for="(controle, index) in dados" :key="controle.id || index">
                                 <td class="text-center">{{controle.feedback_curriculo === null ? '-' :
                                     controle.feedback_curriculo.curriculo.nome }}
                                 </td>
@@ -192,7 +192,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="controle in dados">
+                            <tr v-for="(controle, index) in dados" :key="controle.id || index">
                                 <td class="text-center">{{controle.feedback_curriculo === null ? '-' :
                                     controle.feedback_curriculo.curriculo.nome }}
                                 </td>
@@ -217,7 +217,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="controle in dados">
+                            <tr v-for="(controle, index) in dados" :key="controle.id || index">
                                 <td class="text-center">{{controle.feedback_curriculo === null ? '-' :
                                     controle.feedback_curriculo.curriculo.nome }}
                                 </td>
@@ -242,7 +242,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="controle in dados">
+                            <tr v-for="(controle, index) in dados" :key="controle.id || index">
                                 <td class="text-center">{{controle.feedback_curriculo === null ? '-' :
                                     controle.feedback_curriculo.curriculo.nome }}
                                 </td>
@@ -267,7 +267,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="controle in dados">
+                            <tr v-for="(controle, index) in dados" :key="controle.id || index">
                                 <td class="text-center">{{controle.feedback === null ? '-' :
                                     controle.feedback.curriculo.nome }}
                                 </td>
@@ -292,7 +292,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr v-for="controle in dados">
+                            <tr v-for="(controle, index) in dados" :key="controle.id || index">
                                 <td class="text-center">{{controle.feedback_curriculo === null ? '-' :
                                     controle.feedback_curriculo.curriculo.nome }}
                                 </td>
@@ -369,16 +369,18 @@
                 }
 
             },
-            gerarDados() {
+            async gerarDados() {
                 this.preload = true;
-                axios.post(`${URL_ADMIN}/relatorios/controleusuarios/dados`, this.form).then(res => {
+                try {
+                    const res = await axios.post(`${URL_ADMIN}/relatorios/controleusuarios/dados`, this.form);
                     this.dados = res.data.data;
                     this.tipo = res.data.tipo;
                     this.usuario_nome = res.data.usuario_nome;
                     this.total = res.data.total;
-                    this.preload = false;
                     this.tabela = false;
-                })
+                } finally {
+                    this.preload = false;
+                }
             },
             gerarPdf() {
                 let link = `${URL_ADMIN}/relatorios/controleusuarios/pdf/${this.form}`;

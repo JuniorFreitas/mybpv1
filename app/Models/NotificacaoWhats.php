@@ -31,6 +31,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhats whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhats whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|NotificacaoWhats whereVagaId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class NotificacaoWhats extends Model

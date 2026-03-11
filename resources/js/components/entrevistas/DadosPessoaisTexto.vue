@@ -4,19 +4,19 @@
         <div class="row">
             <div class="col-12">
                 <p>
-                    Nome: <strong>{{ form.curriculo.nome }}</strong> <br>
+                    Nome: <strong>{{ form.curriculo?.nome ?? 'Não informado' }}</strong> <br>
                     Nascimento:
-                    <strong>{{ form.curriculo.nascimento }}</strong> -
-                    <strong>{{ form.curriculo.idade }} anos </strong><br>
+                    <strong>{{ form.curriculo?.nascimento ?? '—' }}</strong> -
+                    <strong>{{ form.curriculo?.idade ?? '—' }} anos </strong><br>
                     Contato:
                     <strong>{{ form.tel_principal ? form.tel_principal.numero : 'não informado' }}</strong>
                     <br>
                     Vaga: <strong>{{ form.vaga_aberta_municipio }}</strong> - PCD:<strong>
-                    {{ form.curriculo.pcd ? 'Sim' : 'Não' }}</strong><br>
-                    Endereço: <strong>{{ form.curriculo.endereco_completo }}</strong><br>
-                    Escolaridade: <strong>{{ form.curriculo.formacao.tipo }}</strong>
-                    <span v-show="form.curriculo.formacao_curso">
-                                    <strong> ({{ form.curriculo.formacao_curso }})</strong>
+                    {{ form.curriculo?.pcd ? 'Sim' : 'Não' }}</strong><br>
+                    Endereço: <strong>{{ form.curriculo?.endereco_completo ?? 'Não informado' }}</strong><br>
+                    Escolaridade: <strong>{{ form.curriculo?.formacao?.tipo ?? 'Não informado' }}</strong>
+                    <span v-show="form.curriculo?.formacao_curso">
+                                    <strong> ({{ form.curriculo?.formacao_curso }})</strong>
                                 </span>
                     <br>
                 </p>

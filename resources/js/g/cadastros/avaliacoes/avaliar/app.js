@@ -1,9 +1,15 @@
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../../registerGlobals'
 import avaliar from '../../../../components/cadastros/avaliacoes/avaliar'
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     components: {
         avaliar
     },
-    data: {}
+    data() {
+        return {}
+    }
 })
+
+registerGlobals(app)
+app.mount('#app')

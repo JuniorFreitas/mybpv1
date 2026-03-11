@@ -1,6 +1,6 @@
 <template>
     <div id="componente">
-        <modal :modal-pai="modal" :titulo="titulo_janela_form" :fechar="!preload" id="janelaForm">
+        <modal :modal-pai="modal" :titulo="titulo_janela_form" :fechar="!preload" id="janelaForm" ref="modal_janelaForm">
             <template v-slot:conteudo>
                 <p class="mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <fieldset v-if="!preload">
@@ -29,18 +29,18 @@
                 </fieldset>
             </template>
             <template v-slot:rodape>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !preload" @click="cadastra">
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !preload" @click="cadastra">
                     <i class="fa fa-save"></i> Cadastrar
                 </button>
 
-                <button v-show="editando && !preload" type="button" class="btn btn-sm btn-primary" @click="alterarForm">
+                <button v-show="editando && !preload" type="button" class="btn btn-sm mr-1 btn-primary" @click="alterarForm">
                     <i class="fa fa-save"></i> Alterar
                 </button>
             </template>
         </modal>
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="$refs.componente.buscar()">
+            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -55,13 +55,12 @@
                     </div>
                 </div>
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando"
                             @click="atualizar">
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
-                    <button type="button" class="btn btn-sm btn-secondary" @click="formNovo" data-toggle="modal"
-                            data-target="#janelaForm">
+                    <button type="button" class="btn btn-sm mr-1 btn-secondary" @click="formNovo(); $refs.modal_janelaForm && $refs.modal_janelaForm.abrirModal()">
                         <i class="fa fa-plus"></i> Cadastrar Tipo de Avaliadores
                     </button>
                 </div>
@@ -87,7 +86,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="avaliadortipo in lista">
+                    <tr v-for="avaliadortipo in lista" :key="avaliadortipo.id">
                         <td class="text-center">{{ avaliadortipo.label }}</td>
                         <td class="text-center">{{ avaliadortipo.descricao }}</td>
                         <td class="text-center">
@@ -97,10 +96,8 @@
                         <td class="text-center">
                             <button
                                 type="button"
-                                class="btn btn-sm btn-primary"
-                                @click="alterar(avaliadortipo.id)"
-                                data-toggle="modal"
-                                data-target="#janelaForm"
+                                class="btn btn-sm mr-1 btn-primary"
+                                @click="alterar(avaliadortipo.id); $refs.modal_janelaForm && $refs.modal_janelaForm.abrirModal()"
                             >
                                 <i class="fa fa-edit"></i>
                             </button>
@@ -217,9 +214,9 @@ export default {
             axios
                 .post(`${URL_ADMIN}/cadastro/avaliacoes/avaliadortipo`, this.form)
                 .then((res) => {
-                    $('#janelaForm').modal('hide')
+                    this.$refs.modal_janelaForm && this.$refs.modal_janelaForm.fecharModal()
                     mostraSucesso('', 'Tipo de avaliador cadastrado com sucesso')
-                    this.$refs.componente.buscar()
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -252,9 +249,9 @@ export default {
             axios
                 .put(`${URL_ADMIN}/cadastro/avaliacoes/avaliadortipo/${this.form.id}`, this.form)
                 .then((res) => {
-                    $('#janelaForm').modal('hide')
+                    this.$refs.modal_janelaForm && this.$refs.modal_janelaForm.fecharModal()
                     mostraSucesso('', 'Tipo de avaliador alterado com sucesso')
-                    this.$refs.componente.buscar()
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preload = false
                 })
                 .catch((error) => {
@@ -269,8 +266,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs.componente.atual = 1
-            this.$refs.componente.buscar()
+            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
 }

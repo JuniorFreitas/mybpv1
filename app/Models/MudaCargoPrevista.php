@@ -68,6 +68,17 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|MudaCargoPrevista whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MudaCargoPrevista whereUserAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MudaCargoPrevista whereUserId($value)
+ * @property int|null $aprovacao_extra_id
+ * @property string|null $status_aprovacao_extra
+ * @property string|null $obs_aprovacao_extra
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_extra
+ * @property-read \App\Models\User|null $AprovacaoExtra
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MudaCargoPrevista whereAprovacaoExtraId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MudaCargoPrevista whereDataAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MudaCargoPrevista whereObsAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MudaCargoPrevista whereStatusAprovacaoExtra($value)
  * @mixin \Eloquent
  */
 class MudaCargoPrevista extends Model

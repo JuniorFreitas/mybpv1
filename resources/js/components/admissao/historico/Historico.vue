@@ -1,91 +1,182 @@
 <template>
     <div class="historico-admissao">
-        <modal id="janelaHistorico" :titulo="tituloJanela" :size="95">
-            <template slot="conteudo">
+        <modal id="janelaHistorico" :titulo="tituloJanela" :size="95" ref="modal_janelaHistorico">
+            <template #conteudo>
                 <div v-if="!openHistorico">
                     <fieldset>
                         <legend>Informações do Colaborador</legend>
                         <div style="text-transform: uppercase">
-                            <span>Nome: <strong>{{ form.curriculo.nome }}</strong></span><br>
-                            <span>CPF: <strong>{{ form.curriculo.cpf }}</strong></span><br>
+                            <span
+                                >Nome: <strong>{{ form.curriculo.nome }}</strong></span
+                            ><br />
+                            <span
+                                >CPF: <strong>{{ form.curriculo.cpf }}</strong></span
+                            ><br />
                             <span>
-                                Cargo: <strong>{{ form.admissao.cargo }}</strong> | Função: <strong>{{ form.admissao.funcao }}</strong></span><br>
-                            <span>Data de admissão: <strong>{{ form.admissao.data_admissao }}</strong></span><br>
+                                Cargo: <strong>{{ form.admissao.cargo }}</strong> | Função: <strong>{{ form.admissao.funcao }}</strong></span
+                            ><br />
+                            <span
+                                >Data de admissão: <strong>{{ form.admissao.data_admissao }}</strong></span
+                            ><br />
                         </div>
                     </fieldset>
 
                     <ul class="nav nav-tabs bg-light" id="tabslist" role="tablist" style="border-bottom: 1px solid #653232">
                         <li class="nav-item" v-if="permissoes.dossie">
-                            <a class="nav-item nav-link active" id="nav-dossie-tab" data-toggle="tab"
-                               @click.prevent="trocaAba('abrirDossie')"
-                               href="#nav-dossie"
-                               role="tab" aria-controls="nav-dossie" aria-selected="true">DOSSIÊ</a>
+                            <a
+                                class="nav-item nav-link active"
+                                id="nav-dossie-tab"
+                                data-toggle="tab"
+                                @click.prevent="trocaAba('abrirDossie')"
+                                href="#nav-dossie"
+                                role="tab"
+                                aria-controls="nav-dossie"
+                                aria-selected="true"
+                                >DOSSIÊ</a
+                            >
                         </li>
                         <li class="nav-item" v-if="permissoes.feedback">
-                            <a class="nav-item nav-link" id="nav-feedback-historico-tab"
-                               @click.prevent="trocaAba('abrirFeedbackHistorico')" data-toggle="tab"
-                               href="#nav-feedback-historico"
-                               role="tab" aria-controls="nav-feedback-historico" aria-selected="true">FEEDBACK</a>
+                            <a
+                                class="nav-item nav-link"
+                                id="nav-feedback-historico-tab"
+                                @click.prevent="trocaAba('abrirFeedbackHistorico')"
+                                data-toggle="tab"
+                                href="#nav-feedback-historico"
+                                role="tab"
+                                aria-controls="nav-feedback-historico"
+                                aria-selected="true"
+                                >FEEDBACK</a
+                            >
                         </li>
                         <li class="nav-item" v-if="permissoes.medida_administrativa">
-                            <a class="nav-item nav-link" id="nav-medidas-administrativas-tab"
-                               @click.prevent="trocaAba('abrirMedidas')" data-toggle="tab"
-                               href="#nav-medidas-administrativas"
-                               role="tab" aria-controls="nav-medidas-administrativas" aria-selected="true">MEDIDAS ADMINISTRATIVAS</a>
+                            <a
+                                class="nav-item nav-link"
+                                id="nav-medidas-administrativas-tab"
+                                @click.prevent="trocaAba('abrirMedidas')"
+                                data-toggle="tab"
+                                href="#nav-medidas-administrativas"
+                                role="tab"
+                                aria-controls="nav-medidas-administrativas"
+                                aria-selected="true"
+                                >MEDIDAS ADMINISTRATIVAS</a
+                            >
                         </li>
                         <li class="nav-item" v-if="permissoes.avaliacao_noventa_dias">
-                            <a class="nav-item nav-link" id="nav-formulario-noventa-tab" data-toggle="tab"
-                               @click.prevent="trocaAba('abrirFormularioNoventa')"
-                               href="#nav-formulario-noventa"
-                               role="tab" aria-controls="nav-formulario-noventa" aria-selected="false">AVALIAÇÃO DE EXPERIÊNCIA</a>
+                            <a
+                                class="nav-item nav-link"
+                                id="nav-formulario-noventa-tab"
+                                data-toggle="tab"
+                                @click.prevent="trocaAba('abrirFormularioNoventa')"
+                                href="#nav-formulario-noventa"
+                                role="tab"
+                                aria-controls="nav-formulario-noventa"
+                                aria-selected="false"
+                                >AVALIAÇÃO DE EXPERIÊNCIA</a
+                            >
                         </li>
                         <li class="nav-item" v-if="permissoes.avaliacao_anual">
-                            <a class="nav-item nav-link" id="nav-avaliacao-anual-tab" data-toggle="tab"
-                               @click.prevent="trocaAba('abrirAvaliacaoAnual')"
-                               href="#nav-avaliacao-anual"
-                               role="tab" aria-controls="nav-avaliacao-anual" aria-selected="false">AVALIAÇÃO ANUAL</a>
+                            <a
+                                class="nav-item nav-link"
+                                id="nav-avaliacao-anual-tab"
+                                data-toggle="tab"
+                                @click.prevent="trocaAba('abrirAvaliacaoAnual')"
+                                href="#nav-avaliacao-anual"
+                                role="tab"
+                                aria-controls="nav-avaliacao-anual"
+                                aria-selected="false"
+                                >AVALIAÇÃO ANUAL</a
+                            >
                         </li>
                         <li class="nav-item" v-if="permissoes.ferias">
-                            <a class="nav-item nav-link" id="nav-ferias-tab" data-toggle="tab"
-                               @click.prevent="trocaAba('abrirFerias')"
-                               href="#nav-ferias"
-                               role="tab" aria-controls="nav-ferias" aria-selected="false">FÉRIAS</a>
+                            <a
+                                class="nav-item nav-link"
+                                id="nav-ferias-tab"
+                                data-toggle="tab"
+                                @click.prevent="trocaAba('abrirFerias')"
+                                href="#nav-ferias"
+                                role="tab"
+                                aria-controls="nav-ferias"
+                                aria-selected="false"
+                                >FÉRIAS</a
+                            >
                         </li>
                         <li class="nav-item" v-if="permissoes.afastamento">
-                            <a class="nav-item nav-link" id="nav-afastamento-tab" data-toggle="tab"
-                               @click.prevent="trocaAba('abrirAfastamento')"
-                               href="#nav-afastamento"
-                               role="tab" aria-controls="nav-ferias" aria-selected="false">AFASTAMENTO</a>
+                            <a
+                                class="nav-item nav-link"
+                                id="nav-afastamento-tab"
+                                data-toggle="tab"
+                                @click.prevent="trocaAba('abrirAfastamento')"
+                                href="#nav-afastamento"
+                                role="tab"
+                                aria-controls="nav-ferias"
+                                aria-selected="false"
+                                >AFASTAMENTO</a
+                            >
                         </li>
                         <li class="nav-item" v-if="permissoes.beneficio">
-                            <a class="nav-item nav-link" id="nav-beneficio-tab" data-toggle="tab"
-                               @click.prevent="trocaAba('abrirBeneficio')"
-                               href="#nav-beneficio"
-                               role="tab" aria-controls="nav-beneficio" aria-selected="false">BENEFÍCIO</a>
+                            <a
+                                class="nav-item nav-link"
+                                id="nav-beneficio-tab"
+                                data-toggle="tab"
+                                @click.prevent="trocaAba('abrirBeneficio')"
+                                href="#nav-beneficio"
+                                role="tab"
+                                aria-controls="nav-beneficio"
+                                aria-selected="false"
+                                >BENEFÍCIO</a
+                            >
                         </li>
                         <li class="nav-item" v-if="permissoes.cih">
-                            <a class="nav-item nav-link" id="nav-cih-tab" data-toggle="tab"
-                               @click.prevent="trocaAba('abrirCih')"
-                               href="#nav-cih"
-                               role="tab" aria-controls="nav-cih" aria-selected="false">CIH</a>
+                            <a
+                                class="nav-item nav-link"
+                                id="nav-cih-tab"
+                                data-toggle="tab"
+                                @click.prevent="trocaAba('abrirCih')"
+                                href="#nav-cih"
+                                role="tab"
+                                aria-controls="nav-cih"
+                                aria-selected="false"
+                                >CIH</a
+                            >
                         </li>
                         <li class="nav-item" v-if="permissoes.promocao">
-                            <a class="nav-item nav-link" id="nav-promocao-tab" data-toggle="tab"
-                               @click.prevent="trocaAba('abrirPromocao')"
-                               href="#nav-promocao"
-                               role="tab" aria-controls="nav-promocao" aria-selected="false">PROMOÇÃO</a>
+                            <a
+                                class="nav-item nav-link"
+                                id="nav-promocao-tab"
+                                data-toggle="tab"
+                                @click.prevent="trocaAba('abrirPromocao')"
+                                href="#nav-promocao"
+                                role="tab"
+                                aria-controls="nav-promocao"
+                                aria-selected="false"
+                                >PROMOÇÃO</a
+                            >
                         </li>
                         <li class="nav-item" v-if="permissoes.metas">
-                            <a class="nav-item nav-link" id="nav-meta-tab" data-toggle="tab"
-                               @click.prevent="trocaAba('abrirMetas')"
-                               href="#nav-meta"
-                               role="tab" aria-controls="nav-meta" aria-selected="false">METAS</a>
+                            <a
+                                class="nav-item nav-link"
+                                id="nav-meta-tab"
+                                data-toggle="tab"
+                                @click.prevent="trocaAba('abrirMetas')"
+                                href="#nav-meta"
+                                role="tab"
+                                aria-controls="nav-meta"
+                                aria-selected="false"
+                                >METAS</a
+                            >
                         </li>
                         <li class="nav-item" v-if="permissoes.logs">
-                            <a class="nav-item nav-link" id="nav-log-historico-tab"
-                               @click.prevent="trocaAba('abrirLogHistorico')" data-toggle="tab"
-                               href="#nav-log-historico"
-                               role="tab" aria-controls="nav-log-historico" aria-selected="true">LOGS</a>
+                            <a
+                                class="nav-item nav-link"
+                                id="nav-log-historico-tab"
+                                @click.prevent="trocaAba('abrirLogHistorico')"
+                                data-toggle="tab"
+                                href="#nav-log-historico"
+                                role="tab"
+                                aria-controls="nav-log-historico"
+                                aria-selected="true"
+                                >LOGS</a
+                            >
                         </li>
                     </ul>
 
@@ -94,55 +185,49 @@
                             <dossie v-if="abas.abrirDossie && permissoes.dossie" :feedback_id="form.feedback_id"></dossie>
                         </div>
                         <div class="tab-pane fade show" id="nav-feedback-historico" role="tabpanel" aria-labelledby="nav-feedback-historico-tab">
-                            <feedback-historico v-if="abas.abrirFeedbackHistorico && permissoes.feedback"
-                                                :feedback_id="form.feedback_id"></feedback-historico>
+                            <feedback-historico v-if="abas.abrirFeedbackHistorico && permissoes.feedback" :feedback_id="form.feedback_id"></feedback-historico>
                         </div>
                         <div class="tab-pane fade show" id="nav-medidas-administrativas" role="tabpanel" aria-labelledby="nav-medidas-administrativas-tab">
-                            <medidas-administrativas v-if="abas.abrirMedidas && permissoes.medida_administrativa"
-                                                     :feedback_id="form.feedback_id"></medidas-administrativas>
+                            <medidas-administrativas
+                                v-if="abas.abrirMedidas && permissoes.medida_administrativa"
+                                :feedback_id="form.feedback_id"
+                            ></medidas-administrativas>
                         </div>
                         <div class="tab-pane fade show" id="nav-formulario-noventa" role="tabpanel" aria-labelledby="nav-formulario-noventa-tab">
-                            <formulario-noventa-dias v-if="abas.abrirFormularioNoventa && permissoes.avaliacao_noventa_dias"
-                                                     :feedback_id="form.feedback_id"
-                                                     :url-base-gerar-link="urlGerarLinkAvaliacaoExperiencia"></formulario-noventa-dias>
+                            <formulario-noventa-dias
+                                v-if="abas.abrirFormularioNoventa && permissoes.avaliacao_noventa_dias"
+                                :feedback_id="form.feedback_id"
+                                :url-base-gerar-link="urlGerarLinkAvaliacaoExperiencia"
+                            ></formulario-noventa-dias>
                         </div>
                         <div class="tab-pane fade show" id="nav-avaliacao-anual" role="tabpanel" aria-labelledby="nav-avaliacao-anual-tab">
-                            <avaliacao-anual v-if="abas.abrirAvaliacaoAnual && permissoes.avaliacao_anual"
-                                             :feedback_id="form.feedback_id"></avaliacao-anual>
+                            <avaliacao-anual v-if="abas.abrirAvaliacaoAnual && permissoes.avaliacao_anual" :feedback_id="form.feedback_id"></avaliacao-anual>
                         </div>
                         <div class="tab-pane fade show" id="nav-ferias" role="tabpanel" aria-labelledby="nav-ferias-tab">
-                            <ferias v-if="abas.abrirFerias && permissoes.ferias"
-                                    :feedback_id="form.feedback_id" :curriculo_id="form.curriculo_id"></ferias>
+                            <ferias v-if="abas.abrirFerias && permissoes.ferias" :feedback_id="form.feedback_id" :curriculo_id="form.curriculo_id"></ferias>
                         </div>
                         <div class="tab-pane fade show" id="nav-afastamento" role="tabpanel" aria-labelledby="nav-afastamento-tab">
-                            <afastamento v-if="abas.abrirAfastamento && permissoes.afastamento"
-                                         :feedback_id="form.feedback_id"></afastamento>
+                            <afastamento v-if="abas.abrirAfastamento && permissoes.afastamento" :feedback_id="form.feedback_id"></afastamento>
                         </div>
                         <div class="tab-pane fade show" id="nav-beneficio" role="tabpanel" aria-labelledby="nav-beneficio-tab">
-                            <beneficio v-if="abas.abrirBeneficio && permissoes.beneficio"
-                                       :feedback_id="form.feedback_id"></beneficio>
+                            <beneficio v-if="abas.abrirBeneficio && permissoes.beneficio" :feedback_id="form.feedback_id"></beneficio>
                         </div>
                         <div class="tab-pane fade show" id="nav-cih" role="tabpanel" aria-labelledby="nav-cih-tab">
-                            <cih v-if="abas.abrirCih && permissoes.cih"
-                                 :fc_token="form.fc_token"></cih>
+                            <cih v-if="abas.abrirCih && permissoes.cih" :fc_token="form.fc_token" modal-pai="janelaHistorico"></cih>
                         </div>
                         <div class="tab-pane fade show" id="nav-promocao" role="tabpanel" aria-labelledby="nav-promocao-tab">
-                            <promocao v-if="abas.abrirPromocao && permissoes.promocao"
-                                      :feedback_id="form.feedback_id"></promocao>
+                            <promocao v-if="abas.abrirPromocao && permissoes.promocao" :feedback_id="form.feedback_id"></promocao>
                         </div>
                         <div class="tab-pane fade show" id="nav-meta" role="tabpanel" aria-labelledby="nav-meta-tab">
-                            <metas v-if="abas.abrirMetas && permissoes.metas"
-                                   :feedback_id="form.feedback_id"></metas>
+                            <metas v-if="abas.abrirMetas && permissoes.metas" :feedback_id="form.feedback_id"></metas>
                         </div>
                         <div class="tab-pane fade show" id="nav-log-historico" role="tabpanel" aria-labelledby="nav-log-historico-tab">
-                            <logs-historico v-if="abas.abrirLogHistorico && permissoes.logs"
-                                            :feedback_id="form.feedback_id"></logs-historico>
+                            <logs-historico v-if="abas.abrirLogHistorico && permissoes.logs" :feedback_id="form.feedback_id"></logs-historico>
                         </div>
                     </div>
                 </div>
             </template>
-            <template slot="rodape">
-            </template>
+            <template #rodape> </template>
         </modal>
 
         <fieldset>
@@ -151,33 +236,34 @@
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Nome ou ID</label>
-                        <input type="text"
-                               placeholder="Buscar por nome ou ID"
-                               autocomplete="off"
-                               class="form-control form-control-sm"
-                               :disabled="controle.carregando"
-                               v-model="controle.dados.campoBusca">
+                        <input
+                            type="text"
+                            placeholder="Buscar por nome ou ID"
+                            autocomplete="off"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoBusca"
+                        />
                     </div>
                 </div>
                 <div class="col-12 col-sm-3 col-md-2">
                     <div class="form-group">
                         <label>CPF</label>
-                        <input type="text"
-                               placeholder="CPF"
-                               autocomplete="off"
-                               class="form-control form-control-sm"
-                               :disabled="controle.carregando"
-                               v-model="controle.dados.campoCPF"
-                               v-mascara:cpf>
+                        <input
+                            type="text"
+                            placeholder="CPF"
+                            autocomplete="off"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoCPF"
+                            v-mascara:cpf
+                        />
                     </div>
                 </div>
                 <div class="col-12 col-sm-4">
                     <div class="form-group">
                         <label>Cargo</label>
-                        <select class="form-control form-control-sm"
-                                @change="atualizar"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.campoCargo">
+                        <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoCargo">
                             <option value="">Todos os cargos</option>
                             <option v-for="cargo in cargos" :key="cargo.id || cargo.nome" :value="cargo.nome">{{ cargo.nome }}</option>
                         </select>
@@ -186,32 +272,38 @@
                 <div class="col-12 col-sm-3 col-md-2">
                     <div class="form-group">
                         <label>Matrícula</label>
-                        <input type="text"
-                               placeholder="Matrícula"
-                               autocomplete="off"
-                               class="form-control form-control-sm"
-                               :disabled="controle.carregando"
-                               v-model="controle.dados.campoMatricula">
+                        <input
+                            type="text"
+                            placeholder="Matrícula"
+                            autocomplete="off"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoMatricula"
+                        />
                     </div>
                 </div>
                 <div class="col-12 col-sm-3 col-md-2">
                     <div class="form-group">
                         <label>Função</label>
-                        <input type="text"
-                               placeholder="Função"
-                               autocomplete="off"
-                               class="form-control form-control-sm"
-                               :disabled="controle.carregando"
-                               v-model="controle.dados.campoFuncao">
+                        <input
+                            type="text"
+                            placeholder="Função"
+                            autocomplete="off"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoFuncao"
+                        />
                     </div>
                 </div>
                 <div class="col-12 col-sm-3 col-md-2" v-if="tiposAdmissao.length">
                     <div class="form-group">
                         <label>Tipo admissão</label>
-                        <select class="form-control form-control-sm"
-                                @change="atualizar"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.campoTipoAdmissao">
+                        <select
+                            class="form-control form-control-sm"
+                            @change="atualizar"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoTipoAdmissao"
+                        >
                             <option value="">Todos</option>
                             <option v-for="t in tiposAdmissao" :key="t" :value="t">{{ t }}</option>
                         </select>
@@ -220,10 +312,7 @@
                 <div class="col-12 col-sm-2" v-if="permissoes.filtrar_demitido">
                     <div class="form-group">
                         <label>Status</label>
-                        <select class="form-control form-control-sm"
-                                @change="atualizar"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.campoDemitido">
+                        <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoDemitido">
                             <option :value="false">Admitidos</option>
                             <option :value="true">Demitidos</option>
                         </select>
@@ -232,28 +321,33 @@
                 <div class="col-12 col-sm-4 col-md-3" v-if="listaCnpjs && Object.keys(listaCnpjs).length > 0">
                     <div class="form-group">
                         <label>Lotação</label>
-                        <select class="form-control form-control-sm"
-                                @change="onLotacaoChange"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.campoCnpj">
+                        <select
+                            class="form-control form-control-sm"
+                            @change="onLotacaoChange"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoCnpj"
+                        >
                             <option value="">Todos</option>
-                            <option v-for="(item, key) in listaCnpjs" :key="key" :value="key">
-                                {{ item.nome_fantasia }} - {{ item.cnpj }}
-                            </option>
+                            <option v-for="(item, key) in listaCnpjs" :key="key" :value="key">{{ item.nome_fantasia }} - {{ item.cnpj }}</option>
                         </select>
                     </div>
                 </div>
                 <div class="col-12 col-sm-4 col-md-3" v-if="mostrarFiltroCentroCusto">
                     <div class="form-group">
                         <label>Centro de custo</label>
-                        <select class="form-control form-control-sm"
-                                @change="atualizar"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.campoCentroCusto">
+                        <select
+                            class="form-control form-control-sm"
+                            @change="atualizar"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoCentroCusto"
+                        >
                             <option value="">Todos</option>
-                            <option v-for="(item, key) in filtroListaCentroCustoCnpj" :key="(item.matriz ? item.id : item.filial_id) + '-' + key"
-                                    :value="item.matriz ? item.id : item.filial_id"
-                                    :title="item.label">
+                            <option
+                                v-for="(item, key) in filtroListaCentroCustoCnpj"
+                                :key="(item.matriz ? item.id : item.filial_id) + '-' + key"
+                                :value="item.matriz ? item.id : item.filial_id"
+                                :title="item.label"
+                            >
                                 {{ item.label }}
                             </option>
                             <option value="--naoinformado--">— Não informado —</option>
@@ -263,10 +357,7 @@
                 <div class="col-12 col-md-2">
                     <div class="form-group">
                         <label>Ordenar por</label>
-                        <select class="form-control form-control-sm"
-                                v-model="controle.dados.ordenacao"
-                                :disabled="controle.carregando"
-                                @change="atualizar">
+                        <select class="form-control form-control-sm" v-model="controle.dados.ordenacao" :disabled="controle.carregando" @change="atualizar">
                             <option value="created_at_desc">Mais recentes</option>
                             <option value="created_at_asc">Mais antigos</option>
                             <option value="updated_at_desc">Última atualização (mais recente)</option>
@@ -283,10 +374,7 @@
                 <div class="col-12 col-md-2">
                     <div class="form-group">
                         <label>Exibir</label>
-                        <select class="form-control form-control-sm"
-                                @change="atualizar"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.pages">
+                        <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.pages">
                             <option v-for="n in porPagina" :key="n" :value="n">{{ n }}</option>
                         </select>
                     </div>
@@ -294,18 +382,17 @@
             </form>
             <div class="row mt-2">
                 <div class="col-12">
-                    <button type="button"
-                            class="btn btn-sm btn-success mb-1"
-                            :disabled="controle.carregando"
-                            :style="controle.carregando ? 'cursor: not-allowed' : 'cursor: pointer'"
-                            @click="atualizar">
+                    <button
+                        type="button"
+                        class="btn btn-sm mr-1 btn-success mb-1"
+                        :disabled="controle.carregando"
+                        :style="controle.carregando ? 'cursor: not-allowed' : 'cursor: pointer'"
+                        @click="atualizar"
+                    >
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
-                    <button type="button"
-                            class="btn btn-sm btn-outline-secondary mb-1 ml-1"
-                            :disabled="controle.carregando"
-                            @click="limparFiltros">
+                    <button type="button" class="btn btn-sm mr-1 btn-outline-secondary mb-1 ml-1" :disabled="controle.carregando" @click="limparFiltros">
                         <i class="fa fa-eraser"></i>
                         Limpar filtros
                     </button>
@@ -321,11 +408,15 @@
             </div>
 
             <div class="cards-lista" v-show="!controle.carregando && lista.length > 0">
-                <div class="solicitacao-card" v-for="item in lista" :key="item.id"
-                     :class="{
-                         'card-status-admitido': item.admissao && (item.admissao.status === 'ADMITIDO' || item.admissao.status === 'Admitido'),
-                         'card-status-demitido': item.admissao && (item.admissao.status === 'DEMITIDO' || item.admissao.status === 'Demitido')
-                     }">
+                <div
+                    class="solicitacao-card"
+                    v-for="item in lista"
+                    :key="item.id"
+                    :class="{
+                        'card-status-admitido': item.admissao && (item.admissao.status === 'ADMITIDO' || item.admissao.status === 'Admitido'),
+                        'card-status-demitido': item.admissao && (item.admissao.status === 'DEMITIDO' || item.admissao.status === 'Demitido')
+                    }"
+                >
                     <div class="card-header-row">
                         <div class="card-left">
                             <span class="badge-id">#{{ item.id }}</span>
@@ -333,29 +424,41 @@
                                 <i class="fas fa-user-circle mr-1"></i>
                                 <strong>{{ item.curriculo.nome }}</strong>
                             </div>
-                            <span class="status-badge"
-                                  :class="{
-                                      'status-admitido': item.admissao && (item.admissao.status === 'ADMITIDO' || item.admissao.status === 'Admitido'),
-                                      'status-demitido': item.admissao && (item.admissao.status === 'DEMITIDO' || item.admissao.status === 'Demitido')
-                                  }">
+                            <span
+                                class="status-badge"
+                                :class="{
+                                    'status-admitido': item.admissao && (item.admissao.status === 'ADMITIDO' || item.admissao.status === 'Admitido'),
+                                    'status-demitido': item.admissao && (item.admissao.status === 'DEMITIDO' || item.admissao.status === 'Demitido')
+                                }"
+                            >
                                 {{ item.admissao ? item.admissao.status : '—' }}
                             </span>
                         </div>
                         <div class="card-right">
-                            <div class="dropdown show">
-                                <a class="btn-actions-compact" href="#" role="button"
-                                   :id="'dropdownHistorico_' + item.id"
-                                   data-toggle="dropdown"
-                                   aria-haspopup="true"
-                                   aria-expanded="false">
+                            <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
+                                <a
+                                    class="btn-actions-compact"
+                                    href="#"
+                                    role="button"
+                                    :id="'dropdownHistorico_' + item.id"
+                                    aria-haspopup="true"
+                                    :aria-expanded="isDropdownOpen(item.id) ? 'true' : 'false'"
+                                    @click.prevent.stop="toggleDropdown(item.id)"
+                                >
                                     <i class="fas fa-ellipsis-v"></i>
                                 </a>
-                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
-                                     :aria-labelledby="'dropdownHistorico_' + item.id">
-                                    <a class="dropdown-item" href="javascript://" title="Abrir histórico"
-                                       @click.prevent="abrirHistorico(item)"
-                                       data-toggle="modal"
-                                       data-target="#janelaHistorico">
+                                <div
+                                    class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                    :class="{ show: isDropdownOpen(item.id) }"
+                                    :aria-labelledby="'dropdownHistorico_' + item.id"
+                                    @click="fecharDropdown"
+                                >
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Abrir histórico"
+                                        @click.prevent="abrirHistorico(item); $refs.modal_janelaHistorico && $refs.modal_janelaHistorico.abrirModal()"
+                                    >
                                         <i class="fas fa-edit mr-2 text-primary"></i> Abrir histórico
                                     </a>
                                 </div>
@@ -397,7 +500,10 @@
                             <span class="detail-label">Centro de custo</span>
                             <span class="detail-value">{{ item.admissao.emp_centro_custo }}</span>
                         </div>
-                        <div class="detail-item" v-if="item.admissao && (item.admissao.emp_nome_fantasia || item.admissao.emp_tipo || item.admissao.filial !== undefined)">
+                        <div
+                            class="detail-item"
+                            v-if="item.admissao && (item.admissao.emp_nome_fantasia || item.admissao.emp_tipo || item.admissao.filial !== undefined)"
+                        >
                             <i class="fas fa-map-marker-alt"></i>
                             <span class="detail-label">Lotação</span>
                             <span class="detail-value">
@@ -416,7 +522,12 @@
                             <span class="detail-label">Data admissão</span>
                             <span class="detail-value">{{ item.admissao.data_admissao }}</span>
                         </div>
-                        <div class="detail-item" v-if="item.admissao && (item.admissao.status === 'DEMITIDO' || item.admissao.status === 'Demitido') && item.admissao.data_encerramento">
+                        <div
+                            class="detail-item"
+                            v-if="
+                                item.admissao && (item.admissao.status === 'DEMITIDO' || item.admissao.status === 'Demitido') && item.admissao.data_encerramento
+                            "
+                        >
                             <i class="fas fa-calendar-times"></i>
                             <span class="detail-label">Data desligamento</span>
                             <span class="detail-value">{{ item.admissao.data_encerramento }}</span>
@@ -432,31 +543,33 @@
                 </div>
             </div>
 
-            <controle-paginacao class="d-flex justify-content-center"
-                               id="controle"
-                               ref="componente"
-                               :url="urlAtualizar"
-                               :por-pagina="controle.dados.pages"
-                               :dados="controle.dados"
-                               @carregou="carregou"
-                               @carregando="carregando"></controle-paginacao>
+            <controle-paginacao
+                class="d-flex justify-content-center"
+                id="controle"
+                ref="componente"
+                :url="urlAtualizar"
+                :por-pagina="controle.dados.pages"
+                :dados="controle.dados"
+                @carregou="carregou"
+                @carregando="carregando"
+            ></controle-paginacao>
         </div>
     </div>
 </template>
 
 <script>
-import Dossie from './Dossie';
-import MedidasAdministrativas from '../MedidasAdministrativas.vue';
-import FormularioNoventaDias from './FormularioNoventaDias';
-import AvaliacaoAnual from './AvaliacaoAnual';
-import Ferias from './Ferias';
-import Afastamento from './Afastamento';
-import Beneficio from './Beneficio';
-import Cih from './CIH';
-import Promocao from './Promocao';
-import Metas from './Meta';
-import FeedbackHistorico from './FeedbackHistorico';
-import LogsHistorico from './LogsHistorico';
+import Dossie from './Dossie'
+import MedidasAdministrativas from '../MedidasAdministrativas.vue'
+import FormularioNoventaDias from './FormularioNoventaDias'
+import AvaliacaoAnual from './AvaliacaoAnual'
+import Ferias from './Ferias'
+import Afastamento from './Afastamento'
+import Beneficio from './Beneficio'
+import Cih from './CIH'
+import Promocao from './Promocao'
+import Metas from './Meta'
+import FeedbackHistorico from './FeedbackHistorico'
+import LogsHistorico from './LogsHistorico'
 
 export default {
     name: 'Historico',
@@ -501,7 +614,7 @@ export default {
             abrirPromocao: false,
             abrirMetas: false,
             abrirLogHistorico: false
-        };
+        }
         return {
             tituloJanela: 'Histórico',
             openHistorico: true,
@@ -522,6 +635,7 @@ export default {
             listaCentrosPorCnpj: {},
             tiposAdmissao: [],
             porPagina: [10, 20, 50, 100],
+            dropdownAbertoKey: null,
             controle: {
                 carregando: false,
                 dados: {
@@ -540,192 +654,215 @@ export default {
                 }
             },
             initialPage: null
-        };
+        }
     },
 
     computed: {
         /** Lista de centros de custo para o select. Quando há Lotação selecionada, retorna só os centros daquela lotação; senão, todos (empresa só matriz) ou todos flatten (várias lotações). */
         filtroListaCentroCustoCnpj() {
             if (this.listaCentrosCusto && this.listaCentrosCusto.length > 0) {
-                return this.listaCentrosCusto;
+                return this.listaCentrosCusto
             }
             if (!this.listaCentrosPorCnpj || typeof this.listaCentrosPorCnpj !== 'object') {
-                return [];
+                return []
             }
-            const cnpj = this.controle.dados.campoCnpj;
+            const cnpj = this.controle.dados.campoCnpj
             if (cnpj && this.listaCentrosPorCnpj[cnpj] && this.listaCentrosPorCnpj[cnpj].length > 0) {
-                return this.listaCentrosPorCnpj[cnpj];
+                return this.listaCentrosPorCnpj[cnpj]
             }
-            const todas = [];
-            Object.values(this.listaCentrosPorCnpj).forEach(arr => {
-                if (Array.isArray(arr)) todas.push(...arr);
-            });
-            return todas;
+            const todas = []
+            Object.values(this.listaCentrosPorCnpj).forEach((arr) => {
+                if (Array.isArray(arr)) todas.push(...arr)
+            })
+            return todas
         },
         /** Exibe o filtro Centro de custo quando existir lista de centros (matriz ou por lotação). */
         mostrarFiltroCentroCusto() {
-            if (this.listaCentrosCusto && this.listaCentrosCusto.length > 0) return true;
-            if (this.listaCentrosPorCnpj && Object.keys(this.listaCentrosPorCnpj).length > 0) return true;
-            return false;
+            if (this.listaCentrosCusto && this.listaCentrosCusto.length > 0) return true
+            if (this.listaCentrosPorCnpj && Object.keys(this.listaCentrosPorCnpj).length > 0) return true
+            return false
         }
     },
 
     watch: {
         'controle.dados': {
             handler() {
-                if (this._syncUrlTimer) clearTimeout(this._syncUrlTimer);
-                this._syncUrlTimer = setTimeout(() => this.syncUrlFiltros(), 400);
+                if (this._syncUrlTimer) clearTimeout(this._syncUrlTimer)
+                this._syncUrlTimer = setTimeout(() => this.syncUrlFiltros(), 400)
             },
             deep: true
         }
     },
 
     mounted() {
-        this.urlParamGet();
-        this.abasDefault = _.cloneDeep(this.abas);
+        this.urlParamGet()
+        this.abasDefault = _.cloneDeep(this.abas)
         if (this.initialPage != null && this.initialPage >= 1) {
             this.$nextTick(() => {
                 if (this.$refs.componente) {
-                    this.$refs.componente.atual = this.initialPage;
-                    this.$refs.componente.buscar();
+                    this.$refs.componente.atual = this.initialPage
+                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                 }
-            });
+            })
         } else {
-            this.atualizar();
+            this.atualizar()
         }
+        document.addEventListener('click', this.onClickOutside)
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
     },
 
     methods: {
-        urlParamGet() {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('pages')) this.controle.dados.pages = parseInt(urlParams.get('pages'), 10) || 20;
-            if (urlParams.get('campoBusca')) this.controle.dados.campoBusca = urlParams.get('campoBusca');
-            if (urlParams.get('campoCPF')) this.controle.dados.campoCPF = urlParams.get('campoCPF');
-            if (urlParams.get('campoCargo')) this.controle.dados.campoCargo = urlParams.get('campoCargo');
-            if (urlParams.get('campoMatricula')) this.controle.dados.campoMatricula = urlParams.get('campoMatricula');
-            if (urlParams.get('campoFuncao')) this.controle.dados.campoFuncao = urlParams.get('campoFuncao');
-            if (urlParams.get('campoTipoAdmissao')) this.controle.dados.campoTipoAdmissao = urlParams.get('campoTipoAdmissao');
-            if (urlParams.get('campoDemitido') !== null && urlParams.get('campoDemitido') !== '') {
-                this.controle.dados.campoDemitido = urlParams.get('campoDemitido') === 'true';
+        toggleDropdown(itemId) {
+            if (!itemId) {
+                return
             }
-            if (urlParams.get('campoCnpj')) this.controle.dados.campoCnpj = urlParams.get('campoCnpj');
-            if (urlParams.get('campoCentroCusto')) this.controle.dados.campoCentroCusto = urlParams.get('campoCentroCusto');
-            if (urlParams.get('ordenacao')) this.controle.dados.ordenacao = urlParams.get('ordenacao');
+            const key = `hist:${itemId}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(itemId) {
+            return this.dropdownAbertoKey === `hist:${itemId}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+        onClickOutside(event) {
+            if (event && event.target && event.target.closest && event.target.closest('.dropdown')) {
+                return
+            }
+            this.dropdownAbertoKey = null
+        },
+        urlParamGet() {
+            const urlParams = new URLSearchParams(window.location.search)
+            if (urlParams.get('pages')) this.controle.dados.pages = parseInt(urlParams.get('pages'), 10) || 20
+            if (urlParams.get('campoBusca')) this.controle.dados.campoBusca = urlParams.get('campoBusca')
+            if (urlParams.get('campoCPF')) this.controle.dados.campoCPF = urlParams.get('campoCPF')
+            if (urlParams.get('campoCargo')) this.controle.dados.campoCargo = urlParams.get('campoCargo')
+            if (urlParams.get('campoMatricula')) this.controle.dados.campoMatricula = urlParams.get('campoMatricula')
+            if (urlParams.get('campoFuncao')) this.controle.dados.campoFuncao = urlParams.get('campoFuncao')
+            if (urlParams.get('campoTipoAdmissao')) this.controle.dados.campoTipoAdmissao = urlParams.get('campoTipoAdmissao')
+            if (urlParams.get('campoDemitido') !== null && urlParams.get('campoDemitido') !== '') {
+                this.controle.dados.campoDemitido = urlParams.get('campoDemitido') === 'true'
+            }
+            if (urlParams.get('campoCnpj')) this.controle.dados.campoCnpj = urlParams.get('campoCnpj')
+            if (urlParams.get('campoCentroCusto')) this.controle.dados.campoCentroCusto = urlParams.get('campoCentroCusto')
+            if (urlParams.get('ordenacao')) this.controle.dados.ordenacao = urlParams.get('ordenacao')
             if (urlParams.get('page')) {
-                const p = parseInt(urlParams.get('page'), 10);
-                if (p >= 1) this.initialPage = p;
+                const p = parseInt(urlParams.get('page'), 10)
+                if (p >= 1) this.initialPage = p
             }
         },
 
         syncUrlFiltros() {
-            const d = this.controle.dados;
-            const atual = (this.$refs.componente && this.$refs.componente.atual) ? this.$refs.componente.atual : 1;
-            const params = {};
-            if (d.pages && d.pages !== 20) params.pages = d.pages;
-            if (d.ordenacao && d.ordenacao !== 'created_at_desc') params.ordenacao = d.ordenacao;
-            if (d.campoBusca) params.campoBusca = d.campoBusca;
-            if (d.campoCPF) params.campoCPF = d.campoCPF;
-            if (d.campoCargo) params.campoCargo = d.campoCargo;
-            if (d.campoMatricula) params.campoMatricula = d.campoMatricula;
-            if (d.campoFuncao) params.campoFuncao = d.campoFuncao;
-            if (d.campoTipoAdmissao) params.campoTipoAdmissao = d.campoTipoAdmissao;
-            if (d.campoDemitido === true) params.campoDemitido = 'true';
-            if (d.campoCnpj) params.campoCnpj = d.campoCnpj;
-            if (d.campoCentroCusto) params.campoCentroCusto = d.campoCentroCusto;
-            if (atual > 1) params.page = atual;
-            const qs = new URLSearchParams(params).toString();
-            const url = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+            const d = this.controle.dados
+            const atual = this.$refs.componente && this.$refs.componente.atual ? this.$refs.componente.atual : 1
+            const params = {}
+            if (d.pages && d.pages !== 20) params.pages = d.pages
+            if (d.ordenacao && d.ordenacao !== 'created_at_desc') params.ordenacao = d.ordenacao
+            if (d.campoBusca) params.campoBusca = d.campoBusca
+            if (d.campoCPF) params.campoCPF = d.campoCPF
+            if (d.campoCargo) params.campoCargo = d.campoCargo
+            if (d.campoMatricula) params.campoMatricula = d.campoMatricula
+            if (d.campoFuncao) params.campoFuncao = d.campoFuncao
+            if (d.campoTipoAdmissao) params.campoTipoAdmissao = d.campoTipoAdmissao
+            if (d.campoDemitido === true) params.campoDemitido = 'true'
+            if (d.campoCnpj) params.campoCnpj = d.campoCnpj
+            if (d.campoCentroCusto) params.campoCentroCusto = d.campoCentroCusto
+            if (atual > 1) params.page = atual
+            const qs = new URLSearchParams(params).toString()
+            const url = qs ? `${window.location.pathname}?${qs}` : window.location.pathname
             if (window.history && window.history.replaceState) {
-                window.history.replaceState({}, '', url);
+                window.history.replaceState({}, '', url)
             }
         },
 
         nomeCompletoLotacao(admissao) {
-            if (!admissao) return '—';
-            const tipo = admissao.emp_tipo || (admissao.filial ? 'Filial' : 'Matriz');
-            const nome = admissao.emp_nome_fantasia || admissao.emp_razao_social;
-            if (nome) return nome + ' (' + tipo + ')';
-            return tipo;
+            if (!admissao) return '—'
+            const tipo = admissao.emp_tipo || (admissao.filial ? 'Filial' : 'Matriz')
+            const nome = admissao.emp_nome_fantasia || admissao.emp_razao_social
+            if (nome) return nome + ' (' + tipo + ')'
+            return tipo
         },
 
         onLotacaoChange() {
-            this.controle.dados.campoCentroCusto = '';
-            this.atualizar();
+            this.controle.dados.campoCentroCusto = ''
+            this.atualizar()
         },
 
         limparFiltros() {
-            this.controle.dados.campoBusca = '';
-            this.controle.dados.campoCPF = '';
-            this.controle.dados.campoCargo = '';
-            this.controle.dados.campoMatricula = '';
-            this.controle.dados.campoFuncao = '';
-            this.controle.dados.campoTipoAdmissao = '';
-            this.controle.dados.campoDemitido = false;
-            this.controle.dados.campoCnpj = '';
-            this.controle.dados.campoCentroCusto = '';
-            this.controle.dados.pages = 20;
-            this.controle.dados.ordenacao = 'created_at_desc';
-            this.syncUrlFiltros();
+            this.controle.dados.campoBusca = ''
+            this.controle.dados.campoCPF = ''
+            this.controle.dados.campoCargo = ''
+            this.controle.dados.campoMatricula = ''
+            this.controle.dados.campoFuncao = ''
+            this.controle.dados.campoTipoAdmissao = ''
+            this.controle.dados.campoDemitido = false
+            this.controle.dados.campoCnpj = ''
+            this.controle.dados.campoCentroCusto = ''
+            this.controle.dados.pages = 20
+            this.controle.dados.ordenacao = 'created_at_desc'
+            this.syncUrlFiltros()
             if (this.$refs.componente) {
-                this.$refs.componente.atual = 1;
-                this.$refs.componente.buscar();
+                this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+                this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             }
         },
 
         trocaAba(aba) {
-            this.abas = _.cloneDeep(this.abasDefault);
-            this.abas[aba] = true;
+            this.abas = _.cloneDeep(this.abasDefault)
+            this.abas[aba] = true
         },
 
         abrirHistorico(obj) {
-            this.openHistorico = true;
-            this.tituloJanela = `#${obj.id} - Histórico: ${obj.curriculo.nome}`;
-            this.form = _.cloneDeep(obj);
-            this.form.feedback_id = obj.id;
-            this.form.curriculo_id = obj.curriculo_id;
+            this.openHistorico = true
+            this.tituloJanela = `#${obj.id} - Histórico: ${obj.curriculo.nome}`
+            this.form = _.cloneDeep(obj)
+            this.form.feedback_id = obj.id
+            this.form.curriculo_id = obj.curriculo_id
 
             setTimeout(() => {
-                this.trocaAba('abrirDossie');
-                this.openHistorico = false;
-            }, 100);
+                this.trocaAba('abrirDossie')
+                this.openHistorico = false
+            }, 100)
             this.$nextTick(() => {
                 if (typeof $ !== 'undefined' && $('#nav-dossie-tab').length) {
-                    $('#nav-dossie-tab').tab('show');
+                    $('#nav-dossie-tab').tab('show')
                 }
-            });
+            })
         },
 
         carregou(dados) {
-            this.lista = dados.itens || [];
-            this.cargos = dados.cargos || [];
-            this.permissoes = dados.permissoes || {};
-            this.listaCentrosCusto = dados.lista_centros_custo || [];
-            this.listaCnpjs = dados.lista_cnpjs || {};
-            this.listaCentrosPorCnpj = dados.lista_centros_por_cnpj || {};
-            this.tiposAdmissao = dados.tipos_admissao || [];
-            this.controle.carregando = false;
-            this.$nextTick(() => this.syncUrlFiltros());
+            this.lista = dados.itens || []
+            this.cargos = dados.cargos || []
+            this.permissoes = dados.permissoes || {}
+            this.listaCentrosCusto = dados.lista_centros_custo || []
+            this.listaCnpjs = dados.lista_cnpjs || {}
+            this.listaCentrosPorCnpj = dados.lista_centros_por_cnpj || {}
+            this.tiposAdmissao = dados.tipos_admissao || []
+            this.controle.carregando = false
+            this.$nextTick(() => this.syncUrlFiltros())
         },
 
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
 
         buscar() {
             if (this.$refs.componente) {
-                this.$refs.componente.buscar();
+                this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             }
         },
 
         atualizar() {
-            this.syncUrlFiltros();
+            this.syncUrlFiltros()
             if (this.$refs.componente) {
-                this.$refs.componente.atual = 1;
-                this.$refs.componente.buscar();
+                this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+                this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             }
         }
     }
-};
+}
 </script>
 
 <style scoped>
@@ -777,8 +914,12 @@ export default {
     border-left: 4px solid #6c757d;
     overflow: hidden;
 }
-.historico-admissao .solicitacao-card.card-status-admitido { border-left-color: #28a745; }
-.historico-admissao .solicitacao-card.card-status-demitido { border-left-color: #dc3545; }
+.historico-admissao .solicitacao-card.card-status-admitido {
+    border-left-color: #28a745;
+}
+.historico-admissao .solicitacao-card.card-status-demitido {
+    border-left-color: #dc3545;
+}
 .historico-admissao .solicitacao-card:hover {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
     border-color: #ced4da;
@@ -825,7 +966,10 @@ export default {
     overflow: hidden;
     min-width: 0;
 }
-.historico-admissao .colaborador-principal i { color: #174257; flex-shrink: 0; }
+.historico-admissao .colaborador-principal i {
+    color: #174257;
+    flex-shrink: 0;
+}
 .historico-admissao .colaborador-principal strong {
     white-space: nowrap;
     overflow: hidden;
@@ -844,8 +988,14 @@ export default {
     white-space: nowrap;
     flex-shrink: 0;
 }
-.historico-admissao .status-admitido { background: #28a745; color: white; }
-.historico-admissao .status-demitido { background: #dc3545; color: white; }
+.historico-admissao .status-admitido {
+    background: #28a745;
+    color: white;
+}
+.historico-admissao .status-demitido {
+    background: #dc3545;
+    color: white;
+}
 
 .historico-admissao .btn-actions-compact {
     display: flex;
@@ -875,8 +1025,12 @@ export default {
     padding: 1rem 1.25rem;
     border-bottom: 1px solid #f1f3f5;
 }
-.historico-admissao .card-details-row:last-child { border-bottom: none; }
-.historico-admissao .card-details-main { padding-top: 0.75rem; }
+.historico-admissao .card-details-row:last-child {
+    border-bottom: none;
+}
+.historico-admissao .card-details-main {
+    padding-top: 0.75rem;
+}
 .historico-admissao .card-details-fixas {
     background: #fafbfc;
     padding: 0.75rem 1.25rem;
@@ -888,11 +1042,27 @@ export default {
     font-size: 0.813rem;
     min-width: 0;
 }
-.historico-admissao .detail-item i:first-child { flex-shrink: 0; font-size: 0.875rem; color: #6c757d; }
-.historico-admissao .detail-label { font-weight: 500; color: #6c757d; white-space: nowrap; }
-.historico-admissao .detail-value { color: #212529; font-weight: 400; }
-.historico-admissao .detail-value-empty { color: #adb5bd; font-style: italic; }
-.historico-admissao .detail-item-action { margin-left: auto; }
+.historico-admissao .detail-item i:first-child {
+    flex-shrink: 0;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+.historico-admissao .detail-label {
+    font-weight: 500;
+    color: #6c757d;
+    white-space: nowrap;
+}
+.historico-admissao .detail-value {
+    color: #212529;
+    font-weight: 400;
+}
+.historico-admissao .detail-value-empty {
+    color: #adb5bd;
+    font-style: italic;
+}
+.historico-admissao .detail-item-action {
+    margin-left: auto;
+}
 
 .historico-admissao .dropdown-menu-custom {
     min-width: 11rem;
@@ -907,8 +1077,14 @@ export default {
     display: flex;
     align-items: center;
 }
-.historico-admissao .dropdown-menu-custom .dropdown-item i { width: 1.25rem; text-align: center; }
-.historico-admissao .dropdown-menu-custom .dropdown-item:hover { background-color: #f8f9fa; color: #174257; }
+.historico-admissao .dropdown-menu-custom .dropdown-item i {
+    width: 1.25rem;
+    text-align: center;
+}
+.historico-admissao .dropdown-menu-custom .dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #174257;
+}
 
 @media (max-width: 768px) {
     .historico-admissao .card-header-row {
@@ -917,9 +1093,20 @@ export default {
         gap: 0.5rem;
         padding: 0.75rem 1rem;
     }
-    .historico-admissao .card-right { width: 100%; justify-content: flex-end; }
-    .historico-admissao .card-details-row { flex-direction: column; gap: 0.5rem; }
-    .historico-admissao .detail-item-action { margin-left: 0; width: 100%; }
-    .historico-admissao .detail-item-action .btn { width: 100%; }
+    .historico-admissao .card-right {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    .historico-admissao .card-details-row {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .historico-admissao .detail-item-action {
+        margin-left: 0;
+        width: 100%;
+    }
+    .historico-admissao .detail-item-action .btn {
+        width: 100%;
+    }
 }
 </style>

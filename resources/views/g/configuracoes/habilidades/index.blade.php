@@ -5,8 +5,8 @@
 @endsection
 @section('content')
 
-    <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" size="g">
+        <template #conteudo>
 
             <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</span>
             <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -30,26 +30,26 @@
                 </div>
             </form>
         </template>
-        <template slot="rodape">
-            <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado" @click="alterar()">
+        <template #rodape>
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado" @click="alterar()">
                 Alterar
             </button>
-            <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado" @click="cadastrar()">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado" @click="cadastrar()">
                 Cadastrar
             </button>
         </template>
     </modal>
 
-    <modal id="janelaConfirmar" titulo="Apagar habilidades">
-        <template slot="conteudo">
+    <modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar habilidades">
+        <template #conteudo>
             <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i>Aguarde...</span>
             <div class="alert alert-success alert-dismissible" v-show="apagado">
                 <h4><i class="icon fa fa-check"></i>Habilidade apagada com sucesso!</h4>
             </div>
             <h4 class="text-center" v-show="!apagado">Tem certeza que deseja apagar esta habilidade?</h4>
         </template>
-        <template slot="rodape">
-            <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
+        <template #rodape>
+            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
         </template>
     </modal>
 
@@ -74,9 +74,9 @@
         </div>
 
 
-        <button type="button" class="btn btn-sm btn-success" id="btnAtualizar">Atualizar</button>
+        <button type="button" class="btn btn-sm mr-1 btn-success" id="btnAtualizar">Atualizar</button>
 
-        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#janelaCadastrar"
+        <button type="button" class="btn btn-sm mr-1 btn-primary"
                 @click="formNovo()">
             Cadastrar
         </button>
@@ -105,16 +105,12 @@
                     <td data-label="Nome" class="text-center">@{{ab.nome}}</td>
                     <td data-label="Descrição" class="text-center">@{{ab.descricao}}</td>
                     <td class="text-center">
-                        <a href="javascript://" class="btn btn-sm btn-success btnFormAlterar"
-                           @click.prevent="formAlterar(ab.id)"
-                           data-toggle="modal"
-                           data-target="#janelaCadastrar">
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-success btnFormAlterar"
+                           @click.prevent="formAlterar(ab.id)">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <a href="javascript://" class="btn btn-sm btn-danger btnFormExcluir"
-                           @click.prevent="janelaConfirmar(ab.id)"
-                           data-toggle="modal"
-                           data-target="#janelaConfirmar">
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-danger btnFormExcluir"
+                           @click.prevent="janelaConfirmar(ab.id)">
                             <i class="fa fa-trash" aria-hidden="true"></i>
                         </a>
                     </td>

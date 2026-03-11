@@ -35,6 +35,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|AuditoriaInterna whereTipo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AuditoriaInterna whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AuditoriaInterna whereUsuarioId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class AuditoriaInterna extends Model

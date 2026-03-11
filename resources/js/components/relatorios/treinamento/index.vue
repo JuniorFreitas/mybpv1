@@ -10,10 +10,10 @@
                         </div>
                         <div class="form-group">
                             <datepicker range formsm label="" v-model="periodo"></datepicker>
-                            <button class="btn btn-sm btn-primary" @click.prevent="buscarDados()" type="button"><i class="fa fa-search"></i> Buscar</button>
+                            <button class="btn btn-sm mr-1 btn-primary" @click.prevent="buscarDados()" type="button"><i class="fa fa-search"></i> Buscar</button>
                             <button
                                 type="button"
-                                class="btn btn-sm btn-primary"
+                                class="btn btn-sm mr-1 btn-primary"
                                 :disabled="preload || preloadExportacao || !dados.length"
                                 @click.prevent="exportaExcel()"
                             >
@@ -65,7 +65,7 @@
             <template v-if="!preload">
                 <div class="alert alert-warning" v-show="!dados.length"><i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado</div>
 
-                <div v-for="(item, index) in dados" :key="index" class="mb-3">
+                <div v-for="(item, index) in dados" :key="item.id || index" class="mb-3">
                     <div class="row" v-if="dados.length">
                         <div class="col-md-12"></div>
                         <table class="mt-4 table bg-white table-bordered">
