@@ -5,6 +5,16 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+
+
+## [2.0.1] - 2026-03-11
+
+### Corrigido
+
+-   **PDFs de entrevista – variável indefinida e exibição de escolaridade**
+    -   Views de ficha PDF (Parecer RH, Parecer Rota, Entrevista Técnica, Teste Prático): substituído uso de `$item` por `$dados` na linha de Contato (`Curriculo::getTelPrincipal`), pois `$item` só existe dentro de loops e o controller envia apenas `$dados`.
+    -   Escolaridade em todas as fichas de entrevista (parecer_rh, parecer_rota, teste_pratico, entrevista_tecnica, entrevista_rh): corrigida interpolação em PHP que exibia o objeto Curriculo em JSON em vez do curso; passou a usar concatenação para exibir apenas "Tipo (curso)", ex.: "Pós Graduação (GESTÃO DE PESSOAS)".
+
 ## [2.0.0] - 2026-03-10
 
 ### Modificado

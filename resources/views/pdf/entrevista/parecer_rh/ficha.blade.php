@@ -29,11 +29,11 @@
         Disponibilidade para Viajar: <span>{{ $dados->FeedbackCurriculo->Curriculo->viajar ? 'Sim' : 'Não' }}</span>
         <br>
         Escolaridade:
-        <span>{{ $dados->FeedbackCurriculo->Curriculo->Formacao->tipo }} {{$dados->FeedbackCurriculo->Curriculo->formacao_curso ? $dados->FeedbackCurriculo->Curriculo->formacao_curso : null}} </span>
+        <span>{{ $dados->FeedbackCurriculo->Curriculo->Formacao->tipo }}{{ $dados->FeedbackCurriculo->Curriculo->formacao_curso ? ' (' . $dados->FeedbackCurriculo->Curriculo->formacao_curso . ')' : '' }} </span>
         <br>
         Endereço: <span>{{ $dados->FeedbackCurriculo->Curriculo->endereco_completo }}</span><br>
         Contato:
-        <span>{{ \App\Models\Curriculo::getTelPrincipal($item->FeedbackCurriculo->curriculo_id) }}</span>
+        <span>{{ \App\Models\Curriculo::getTelPrincipal($dados->FeedbackCurriculo->curriculo_id) }}</span>
         |
         E-mail: <span>{{ $dados->FeedbackCurriculo->Curriculo->email }}</span>
         <br/>
