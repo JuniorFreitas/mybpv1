@@ -40,8 +40,8 @@
 <hr class="bg-default" style="margin-top: -5px;">
 @stop
 @section('content')
-<modal id="janelaCadastrar" :titulo="tituloJanela" :size="90">
-    <template slot="conteudo">
+<modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :size="90">
+    <template #conteudo>
         <div v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</div>
         <div class="alert alert-success alert-dismissible" v-show="cadastrado">
             <h4><i class="icon fa fa-check"></i>@{{form.tipo_cliente}} cadastrado com sucesso!</h4>
@@ -368,15 +368,15 @@
                             </legend>
                             <div class="row">
                                 <div class="col-12 col-sm-6 col-md-6 col-lg-6">
-                                    <button class="btn btn-sm btn-secondary mb-2"
+                                    <button class="btn btn-sm mr-1 btn-secondary mb-2"
                                         @click="addLIServicoCliente($event.target)">
                                         <span class="fas fa-plus" aria-hidden="true"></span>
                                         Adicionar Serviço
                                     </button>
                                 </div>
 
-                                <div class="col-12" v-if="form.servicos_cliente.length>0"
-                                    v-for="(obj, index) in form.servicos_cliente" :key="obj.id">
+                                <template v-if="form.servicos_cliente.length > 0">
+                                    <div class="col-12" v-for="(obj, index) in form.servicos_cliente" :key="obj.id">
                                     <div class="row py-3">
 
                                         <div class="col-12 col-sm-4">
@@ -489,7 +489,7 @@
                                         </div>
 
                                         <div class="col-12 mb-3">
-                                            <button class="btn btn-sm btn-danger"
+                                            <button class="btn btn-sm mr-1 btn-danger"
                                                 @click="removerLIServicoCliente(index)"
                                                 v-show="obj.nova">
                                                 <i
@@ -501,7 +501,8 @@
 
                                     </div>
 
-                                </div>
+                                    </div>
+                                </template>
                             </div>
                         </fieldset>
 
@@ -516,16 +517,16 @@
 
                             <div class="row">
                                 <div class="col-12 col-sm-6 col-md-6 col-lg-6">
-                                    <button class="btn btn-sm btn-secondary mb-2"
+                                    <button class="btn btn-sm mr-1 btn-secondary mb-2"
                                         @click="addLIServicoProspect($event.target)">
                                         <span class="fas fa-plus" aria-hidden="true"></span>
                                         Adicionar Serviço
                                     </button>
                                 </div>
 
-                                <div class="col-12" v-if="form.servicos_prospect.length>0"
-                                    v-for="(obj, index) in form.servicos_prospect" :key="obj.id">
-                                    <div class="row py-3">
+                                <template v-if="form.servicos_prospect.length > 0">
+                                    <div class="col-12" v-for="(obj, index) in form.servicos_prospect" :key="obj.id">
+                                        <div class="row py-3">
 
                                         <div class="col-12 col-sm-4">
                                             <div class="form-group">
@@ -589,7 +590,7 @@
 
 
                                         <div class="col-12 mb-3">
-                                            <button class="btn btn-sm btn-danger"
+                                            <button class="btn btn-sm mr-1 btn-danger"
                                                 @click="removerLIServicoProspect(index)"
                                                 v-show="obj.nova">
                                                 <i
@@ -601,14 +602,15 @@
 
                                     </div>
 
-                                </div>
+                                    </div>
+                                </template>
                             </div>
                         </fieldset>
                     </div>
 
                     <div class="tab-pane fade" id="nav-dados-filiais" role="tabpanel" v-if="editando"
                         aria-labelledby="nav-dados-filiais-tab">
-                        <filial :empresa_id="form.id"></filial>
+                        <filial :empresa_id="form.id" modal="janelaCadastrar"></filial>
                     </div>
 
                     <div class="tab-pane fade" id="nav-config"
@@ -629,8 +631,8 @@
                                             <option value="3">90 dias</option>
                                             <option value="4">120 dias</option>
                                         </select>
+                                        </div>
                                     </div>
-                                </div>
                                 <div class="col-12 col-sm-6 col-lg-4">
                                     <div class="form-group">
                                         <label>Vencimento de ASO</label>
@@ -765,7 +767,7 @@
                                                     <strong>@{{ u.nome }}</strong>
                                                     <div class="small text-muted">@{{ u.email || 'sem login' }}</div>
                                                 </div>
-                                                <button type="button" class="btn btn-sm btn-primary" @click="adicionarUsuarioAlerta(u)">
+                                                <button type="button" class="btn btn-sm mr-1 btn-primary" @click="adicionarUsuarioAlerta(u)">
                                                     <i class="fa fa-plus"></i> Adicionar
                                                 </button>
                                             </div>
@@ -788,7 +790,7 @@
                                                         <td class="text-center">@{{ getUsuarioAlerta(userId) ? getUsuarioAlerta(userId).nome : ('ID ' + userId) }}</td>
                                                         <td class="text-center">@{{ getUsuarioAlerta(userId) ? (getUsuarioAlerta(userId).email || 'sem login') : '-' }}</td>
                                                         <td class="text-center">
-                                                            <button type="button" class="btn btn-sm btn-danger" @click="removerUsuarioAlerta(index)">
+                                                            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="removerUsuarioAlerta(index)">
                                                                 <i class="fa fa-trash"></i>
                                                             </button>
                                                         </td>
@@ -812,7 +814,7 @@
                                         <div class="border rounded p-2 mb-2 bg-white" style="max-height: 180px; overflow-y: auto;">
                                             <div v-for="g in filtrarGruposAlertaDisponiveis()" :key="'opt-grupo-'+g.id" class="d-flex align-items-center justify-content-between py-1 border-bottom">
                                                 <strong>@{{ g.nome }}</strong>
-                                                <button type="button" class="btn btn-sm btn-primary" @click="adicionarGrupoAlerta(g)">
+                                                <button type="button" class="btn btn-sm mr-1 btn-primary" @click="adicionarGrupoAlerta(g)">
                                                     <i class="fa fa-plus"></i> Adicionar
                                                 </button>
                                             </div>
@@ -833,7 +835,7 @@
                                                     <tr v-for="(grupoId, index) in form.cliente_config.assinatura_alerta_grupo_ids" :key="'sel-grupo-'+grupoId">
                                                         <td class="text-center">@{{ getGrupoAlerta(grupoId) ? getGrupoAlerta(grupoId).nome : ('ID ' + grupoId) }}</td>
                                                         <td class="text-center">
-                                                            <button type="button" class="btn btn-sm btn-danger" @click="removerGrupoAlerta(index)">
+                                                            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="removerGrupoAlerta(index)">
                                                                 <i class="fa fa-trash"></i>
                                                             </button>
                                                         </td>
@@ -851,11 +853,11 @@
                             <div class="container">
                                 <div class="row">
                                     <div class="col-md-12 mb-3">
-                                        <a class="btn btn-sm btn-success float-right" href="javascript://"
+                                        <a class="btn btn-sm mr-1 btn-success float-right" href="javascript://"
                                             @click.prevent="selecionarTodas()" v-if="!todasHabilidades">
                                             <span class="fa fa-ok" aria-hidden="true"></span> Todos os módulos
                                         </a>
-                                        <a class="btn btn-sm btn-danger float-right" href="javascript://"
+                                        <a class="btn btn-sm mr-1 btn-danger float-right" href="javascript://"
                                             @click.prevent="selecionarTodas()" v-if="todasHabilidades">
                                             <span class="fa fa-remove" aria-hidden="true"></span> Todos os módulos
                                         </a>
@@ -877,7 +879,7 @@
                                                         </h5>
                                                     </div>
                                                     <div class="col-4">
-                                                        <a class="btn btn-sm btn-info float-right"
+                                                        <a class="btn btn-sm mr-1 btn-info float-right"
                                                             href="javascript://"
                                                             @click.prevent="selecionarPorModulo(menu)">
                                                             <span class="fa fa-ok" aria-hidden="true"></span> Todos
@@ -890,28 +892,28 @@
                                             <div :id="'collapseOne'+index" class="collapse"
                                                 :aria-labelledby="'headingOne'+index"
                                                 data-parent="#accordion">
-                                                <div class="card-body"
-                                                    v-for="habilidade in listaDeHabilidades"
-                                                    v-if="menu === habilidade.menu">
-                                                    @{{habilidade.nome}}
-                                                    <div class="float-right col-md-1">
-                                                        <a class="btn btn-sm btn-block btn-success"
-                                                            href="javascript://"
-                                                            @click.prevent="habilidade.acesso=!habilidade.acesso"
-                                                            v-if="habilidade.acesso">
-                                                            <span class="fa fa-check"
-                                                                aria-hidden="true"></span>
-                                                        </a>
-                                                        <a class="btn btn-sm btn-block btn-danger"
-                                                            href="javascript://"
-                                                            @click.prevent="habilidade.acesso=!habilidade.acesso"
-                                                            v-if="!habilidade.acesso">
-                                                            <span class="fa fa-times"
-                                                                aria-hidden="true"></span>
-                                                        </a>
+                                                <template v-for="habilidade in listaDeHabilidades" :key="habilidade.id">
+                                                    <div class="card-body" v-if="menu === habilidade.menu">
+                                                        @{{habilidade.nome}}
+                                                        <div class="float-right col-md-1">
+                                                            <a class="btn btn-sm mr-1 btn-block btn-success"
+                                                                href="javascript://"
+                                                                @click.prevent="habilidade.acesso=!habilidade.acesso"
+                                                                v-if="habilidade.acesso">
+                                                                <span class="fa fa-check"
+                                                                    aria-hidden="true"></span>
+                                                            </a>
+                                                            <a class="btn btn-sm mr-1 btn-block btn-danger"
+                                                                href="javascript://"
+                                                                @click.prevent="habilidade.acesso=!habilidade.acesso"
+                                                                v-if="!habilidade.acesso">
+                                                                <span class="fa fa-times"
+                                                                    aria-hidden="true"></span>
+                                                            </a>
+                                                        </div>
+                                                        <hr>
                                                     </div>
-                                                    <hr>
-                                                </div>
+                                                </template>
                                             </div>
                                         </div>
                                     </div>
@@ -923,27 +925,27 @@
             </div>
         </form>
     </template>
-    <template slot="rodape">
-        <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado && !preloadAjax"
+    <template #rodape>
+        <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado && !preloadAjax"
             @click="alterar()">
             Alterar
         </button>
-        <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado && !preloadAjax"
+        <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado && !preloadAjax"
             @click="cadastrar()">
             Cadastrar
         </button>
     </template>
 </modal>
-<modal id="janelaConfirmar" titulo="Apagar clientes">
-    <template slot="conteudo">
+<modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar clientes">
+    <template #conteudo>
         <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i>Aguarde...</span>
         <div class="alert alert-success alert-dismissible" v-show="apagado">
             <h4><i class="icon fa fa-check"></i>Cliente apagado com sucesso!</h4>
         </div>
         <h4 v-show="!apagado">Tem certeza que deseja apagar este cliente?</h4>
     </template>
-    <template slot="rodape">
-        <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
+    <template #rodape>
+        <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
     </template>
 </modal>
 <fieldset>
@@ -989,20 +991,19 @@
         </div>
 
         <div class="col-12 col-md-9">
-            <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+            <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
                 <i
                     :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                 Atualizar
             </button>
 
-            <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" :disabled="controle.carregando"
-                data-target="#janelaCadastrar"
-                @click="formNovo()">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="controle.carregando"
+                @click="formNovo(); $refs.janelaCadastrar?.abrirModal()">
                 Cadastrar
             </button>
 
             {{-- <a href="{{ route('clientes.excel') }}" :disabled="controle.carregando"--}}
-            {{-- class="btn btn-sm btn-primary"><i--}}
+            {{-- class="btn btn-sm mr-1 btn-primary"><i--}}
             {{-- class="fas fa-file-excel"></i>--}}
             {{-- Exportar Excel</a>--}}
         </div>
@@ -1059,22 +1060,18 @@
 
                     <td data-label="Ações">
                         <a :href="`clientes/${cliente.id}/pdf`"
-                            class="btn btn-sm btn-primary mb-1" v-tippy content="Ficha"
+                            class="btn btn-sm mr-1 btn-primary mb-1" v-tippy content="Ficha"
                             target="_blank">
                             <i class="fa fa-file-pdf"></i>
                         </a>
 
-                        <a href="javascript://" class="btn btn-sm btn-primary mb-1" v-tippy content="Editar"
-                            @click.prevent="formAlterar(cliente.id)"
-                            data-toggle="modal"
-                            data-target="#janelaCadastrar">
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-primary mb-1" v-tippy content="Editar"
+                            @click.prevent="formAlterar(cliente.id); $refs.janelaCadastrar?.abrirModal()">
                             <i class="fa fa-edit" aria-hidden="true"></i>
                         </a>
 
-                        <a href="javascript://" class="btn btn-sm btn-danger mb-1" v-tippy content="Excluir"
-                            @click.prevent="janelaConfirmar(cliente.id)"
-                            data-toggle="modal"
-                            data-target="#janelaConfirmar">
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-danger mb-1" v-tippy content="Excluir"
+                            @click.prevent="janelaConfirmar(cliente.id); $refs.janelaConfirmar?.abrirModal()">
                             <i class="fa fa-trash" aria-hidden="true"></i>
                         </a>
                     </td>

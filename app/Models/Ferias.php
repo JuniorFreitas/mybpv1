@@ -98,6 +98,17 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|Ferias withoutTrashed()
+ * @property int|null $aprovacao_extra_id
+ * @property string|null $status_aprovacao_extra
+ * @property string|null $obs_aprovacao_extra
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_extra
+ * @property-read User|null $AprovacaoExtra
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Ferias whereAprovacaoExtraId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Ferias whereDataAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Ferias whereObsAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Ferias whereStatusAprovacaoExtra($value)
  * @mixin \Eloquent
  */
 class Ferias extends Model

@@ -1,15 +1,18 @@
-const app = new Vue({
-    el: '#app',
-    components: {},
-    data: {
-        URL_ADMIN,
-        listaCameras: [],
-        video: null,
-        cameraSelecionada:null,
-        canvas: null,
-        achou:null,
-        precisao:0,
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
 
+const app = createApp({
+    components: {},
+    data() {
+        return {
+            URL_ADMIN,
+            listaCameras: [],
+            video: null,
+            cameraSelecionada: null,
+            canvas: null,
+            achou: null,
+            precisao: 0
+        }
     },
     mounted() {
         Promise.all([
@@ -18,66 +21,60 @@ const app = new Vue({
             faceapi.nets.faceRecognitionNet.loadFromUri(`${URL_ADMIN}/../js/g/controle-ponto/camera/models`),
             //faceapi.nets.faceExpressionNet.loadFromUri(`${URL_ADMIN}/../js/g/controle-ponto/camera/models`),
             //faceapi.nets.ageGenderNet.loadFromUri(`${URL_ADMIN}/../js/g/controle-ponto/camera/models`),
-            faceapi.nets.ssdMobilenetv1.loadFromUri(`${URL_ADMIN}/../js/g/controle-ponto/camera/models`),
-        ]).then(this.startVideo);
-
+            faceapi.nets.ssdMobilenetv1.loadFromUri(`${URL_ADMIN}/../js/g/controle-ponto/camera/models`)
+        ]).then(this.startVideo)
     },
     computed: {},
     methods: {
-        loadLabels(){
+        loadLabels() {
             const labels = ['Felipe Augusto']
-            return Promise.all(labels.map(async label => {
-                const descriptions = []
-                for (let i = 1; i <= 5; i++) {
-                    const img = await faceapi.fetchImage(`${URL_ADMIN}/../js/g/controle-ponto/camera/labels/foto${i}.jpg`)
-                    const detections = await faceapi
-                        .detectSingleFace(img)
-                        .withFaceLandmarks()
-                        .withFaceDescriptor()
-                    descriptions.push(detections.descriptor)
-                }
-                return new faceapi.LabeledFaceDescriptors(label, descriptions)
-            }))
+            return Promise.all(
+                labels.map(async (label) => {
+                    const descriptions = []
+                    for (let i = 1; i <= 5; i++) {
+                        const img = await faceapi.fetchImage(`${URL_ADMIN}/../js/g/controle-ponto/camera/labels/foto${i}.jpg`)
+                        const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
+                        descriptions.push(detections.descriptor)
+                    }
+                    return new faceapi.LabeledFaceDescriptors(label, descriptions)
+                })
+            )
         },
-        mudaCamera(){
-            if(this.cameraSelecionada!=null){
-                navigator.getUserMedia({
-                        video: {deviceId: this.cameraSelecionada.deviceId}
+        mudaCamera() {
+            if (this.cameraSelecionada != null) {
+                navigator.getUserMedia(
+                    {
+                        video: { deviceId: this.cameraSelecionada.deviceId }
                     },
-                    stream => this.video.srcObject = stream,
-                    error => alert(error)
-                );
+                    (stream) => (this.video.srcObject = stream),
+                    (error) => alert(error)
+                )
                 //evento
                 this.video.addEventListener('play', async () => {
-                    const canvas = faceapi.createCanvasFromMedia(this.video);
+                    const canvas = faceapi.createCanvasFromMedia(this.video)
 
-                    const labels = await this.loadLabels();
+                    const labels = await this.loadLabels()
                     const canvasSize = {
                         width: this.video.width,
                         height: this.video.height
-                    };
-                    faceapi.matchDimensions(canvas, canvasSize);
+                    }
+                    faceapi.matchDimensions(canvas, canvasSize)
                     //document.getElementById('areaVideo').prepend(canvas);
                     //canvas.srcObject = this.video.srcObject;
 
                     setInterval(async () => {
                         const detections = await faceapi
-                            .detectAllFaces(
-                                this.video,
-                                new faceapi.TinyFaceDetectorOptions()
-                            )
+                            .detectAllFaces(this.video, new faceapi.TinyFaceDetectorOptions())
                             .withFaceLandmarks()
                             //.withFaceExpressions()
                             //.withAgeAndGender()
-                            .withFaceDescriptors();
+                            .withFaceDescriptors()
 
-                        const resizedDetections = faceapi.resizeResults(detections, canvasSize);
+                        const resizedDetections = faceapi.resizeResults(detections, canvasSize)
                         const faceMatcher = new faceapi.FaceMatcher(labels, 0.6)
-                        const results = resizedDetections.map(d =>
-                            faceMatcher.findBestMatch(d.descriptor)
-                        )
-                        this.achou =!!_.find(results, {'label': 'Felipe Augusto'});
-                        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+                        const results = resizedDetections.map((d) => faceMatcher.findBestMatch(d.descriptor))
+                        this.achou = !!_.find(results, { label: 'Felipe Augusto' })
+                        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
 
                         //faceapi.draw.drawDetections(canvas, resizedDetections);
                         //faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
@@ -97,42 +94,38 @@ const app = new Vue({
                             /*new faceapi.draw.DrawTextField([
                                 `${label} (${parseInt(distance * 100, 10)}%)`
                             ], box.bottomRight).draw(canvas)*/
-                            this.precisao = parseInt(distance * 100, 10);
+                            this.precisao = parseInt(distance * 100, 10)
                         })
-
-
-                    }, 100);
-
+                    }, 100)
                 })
-            }else{
-                this.video.srcObject=null;
+            } else {
+                this.video.srcObject = null
             }
-
         },
         startVideo() {
-            this.video = document.getElementById('video');
-            this.canvas = document.getElementById('canvas_faceapi');
+            this.video = document.getElementById('video')
+            this.canvas = document.getElementById('canvas_faceapi')
 
             function hasGetUserMedia() {
-                return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+                return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
             }
             if (hasGetUserMedia()) {
                 // Good to go!
             } else {
-                alert("getUserMedia() is not supported by your browser");
+                alert('getUserMedia() is not supported by your browser')
             }
 
-
-            navigator.mediaDevices.enumerateDevices()
-                .then(devices => {
-                    if (Array.isArray(devices)) {
-                        this.listaCameras = devices.filter(device => device.kind === 'videoinput');
-                    }
-                    if (this.listaCameras.length === 0) {
-                      alert('Seu dispositivo não tem camera');
-                    }
-                });
-
+            navigator.mediaDevices.enumerateDevices().then((devices) => {
+                if (Array.isArray(devices)) {
+                    this.listaCameras = devices.filter((device) => device.kind === 'videoinput')
+                }
+                if (this.listaCameras.length === 0) {
+                    alert('Seu dispositivo não tem camera')
+                }
+            })
         }
     }
-});
+})
+
+registerGlobals(app)
+app.mount('#app')

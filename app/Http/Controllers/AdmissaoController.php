@@ -1769,6 +1769,26 @@ class AdmissaoController extends Controller
         return Arquivo::anexoShow(Arquivo::DISCO_FOTOCURRICULO, $arquivo);
     }
 
+    /**
+     * Retorna anexo foto currículo 3x4 em base64 (JSON). Usa o mesmo cache de anexoShow.
+     */
+    public function anexoShowBase64(Request $request, $arquivo)
+    {
+        if ($request->query('thumb')) {
+            $extensaoArquivo = substr($arquivo, strrpos($arquivo, '.') + 1);
+            $nomeArquivo = substr($arquivo, 0, strrpos($arquivo, '.'));
+            $arquivo = $nomeArquivo . '_p.' . $extensaoArquivo;
+        }
+        $data = Arquivo::getFotocurriculoAnexoContentAndMime($arquivo);
+        if ($data === null) {
+            abort(404);
+        }
+        return response()->json([
+            'base64' => base64_encode($data['content']),
+            'mime' => $data['mime'],
+        ]);
+    }
+
     public function anexoDelete(Request $request, $arquivo)
     {
         return Arquivo::anexoDelete(Arquivo::DISCO_FOTOCURRICULO, $arquivo);

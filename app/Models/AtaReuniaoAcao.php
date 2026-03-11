@@ -33,6 +33,8 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAcao wherePrazo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAcao whereResponsavel($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AtaReuniaoAcao whereStatus($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class AtaReuniaoAcao extends Model

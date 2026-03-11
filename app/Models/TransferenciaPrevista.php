@@ -59,6 +59,32 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereUserAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TransferenciaPrevista whereUserId($value)
+ * @property int|null $aprovacao_extra_id
+ * @property int|null $user_rh_id
+ * @property string|null $resposta_rh
+ * @property string|null $status_aprovacao_extra
+ * @property string|null $obs_aprovacao_extra
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_extra
+ * @property int|null $rh_aprovacao_id
+ * @property string|null $status_aprovacao_rh
+ * @property string|null $obs_rh
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_rh
+ * @property-read User|null $AprovacaoExtra
+ * @property-read User|null $RhAprovacao
+ * @property-read User|null $Solicitante
+ * @property-read User|null $UserAprovacaoExtra
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferenciaPrevista whereAprovacaoExtraId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferenciaPrevista whereDataAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferenciaPrevista whereDataAprovacaoRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferenciaPrevista whereObsAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferenciaPrevista whereObsRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferenciaPrevista whereRespostaRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferenciaPrevista whereRhAprovacaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferenciaPrevista whereStatusAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferenciaPrevista whereStatusAprovacaoRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TransferenciaPrevista whereUserRhId($value)
  * @mixin \Eloquent
  */
 class TransferenciaPrevista extends Model

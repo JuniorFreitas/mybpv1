@@ -3,8 +3,8 @@
 @section('content_header','DEPOIMENTOS')
 @section('content')
 
-    <modal id="janelaCadastrar" :titulo="tituloJanela" :fechar="!preloadAjax" size="g">
-        <template slot="conteudo">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :fechar="!preloadAjax" size="g">
+        <template #conteudo>
             <span v-show="preloadAjax"><preload></preload></span>
             <div class="alert alert-success alert-dismissible" v-show="cadastrado">
                 <h4><i class="icon fa fa-check"></i>Depoimento cadastrado com sucesso!</h4>
@@ -78,27 +78,27 @@
 
             </form>
         </template>
-        <template slot="rodape">
-            <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado" @click="alterar()">
+        <template #rodape>
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado" @click="alterar()">
                 <i class="fa fa-edit"></i> Alterar
             </button>
 
-            <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado" @click="cadastrar()">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado" @click="cadastrar()">
                 <i class="fas fa-save"></i> Salvar
             </button>
         </template>
     </modal>
 
-    <modal id="janelaConfirmar" titulo="Apagar Depoimento">
-        <template slot="conteudo">
+    <modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar Depoimento">
+        <template #conteudo>
             <span v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i>Aguarde...</span>
             <div class="alert alert-success alert-dismissible" v-show="apagado">
                 <h4><i class="icon fa fa-check"></i>Depoimento apagado com sucesso!</h4>
             </div>
             <h4 v-show="!apagado">Tem certeza que deseja apagar este Depoimento?</h4>
         </template>
-        <template slot="rodape">
-            <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
+        <template #rodape>
+            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar()" v-show="!apagado">Apagar</button>
         </template>
     </modal>
 
@@ -139,12 +139,12 @@
                     </div>
 
                     <div class="col-12 col-md-12">
-                        <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
+                        <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando"
                                 @click="atualizar">
                             <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                             Atualizar
                         </button>
-                        <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" :disabled="controle.carregando" data-target="#janelaCadastrar"
+                        <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="controle.carregando"
                                 @click="formNovo()">
                             Cadastrar
                         </button>
@@ -177,17 +177,13 @@
                         <td data-label="Texto"><span v-html="testemunhal.texto"></span></td>
                         <td data-label="Img"><img :src="testemunhal.anexo[0].urlThumb" alt=""></td>
                         <td data-label="Ação">
-                            <a href="javascript://" class="btn btn-sm btn-success btnFormAlterar"
-                               @click.prevent="formAlterar(testemunhal.id)"
-                               data-toggle="modal"
-                               data-target="#janelaCadastrar">
+                            <a href="javascript://" class="btn btn-sm mr-1 btn-success btnFormAlterar"
+                               @click.prevent="formAlterar(testemunhal.id)">
                                 <i class="fa fa-edit" aria-hidden="true"></i>
                             </a>
 
-                            <a href="javascript://" class="btn btn-sm btn-danger btnFormExcluir"
-                               @click.prevent="janelaConfirmar(testemunhal.id)"
-                               data-toggle="modal"
-                               data-target="#janelaConfirmar">
+                            <a href="javascript://" class="btn btn-sm mr-1 btn-danger btnFormExcluir"
+                               @click.prevent="janelaConfirmar(testemunhal.id)">
                                 <i class="fa fa-trash" aria-hidden="true"></i>
                             </a>
                         </td>

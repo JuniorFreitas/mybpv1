@@ -24,6 +24,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|AlternativaFormulario whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AlternativaFormulario whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AlternativaFormulario whereTipo($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class AlternativaFormulario extends Model

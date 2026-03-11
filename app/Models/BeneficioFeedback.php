@@ -24,6 +24,8 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|BeneficioFeedback whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|BeneficioFeedback whereFeedbackId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|BeneficioFeedback whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class BeneficioFeedback extends Model

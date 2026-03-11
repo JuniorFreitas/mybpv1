@@ -25,7 +25,12 @@ class VencimentoAsosController extends Controller
     public static function filtro($empresa_id, $dados, $request)
     {
         $Empresa = User::find($empresa_id);
-        $periodo_vencimento = (int)preg_replace("/[^0-9]/", "", ClienteConfig::LISTA_VENCIMENTOS[$Empresa->EmpresaConfiguracoes->vencimento_aso]);
+        $config = $Empresa?->EmpresaConfiguracoes;
+        $vencimentoAso = $config->vencimento_aso ?? null;
+        if (!$config || !isset(ClienteConfig::LISTA_VENCIMENTOS[$vencimentoAso])) {
+            return [];
+        }
+        $periodo_vencimento = (int) preg_replace("/[^0-9]/", "", ClienteConfig::LISTA_VENCIMENTOS[$vencimentoAso]);
         $data = (new DataHora())->addDia($periodo_vencimento);
         $cc = (new CentroCusto())->listaCentroCustoPorCnpj($empresa_id);
 
@@ -54,20 +59,24 @@ class VencimentoAsosController extends Controller
 
         $examesFuncionarios = $examesFuncionarios->map(function ($item) use ($cc, $periodo_vencimento) {
             $item = (new self())->prepararAdmissao($item, $cc);
+            $ultimoAso = $item->UltimoAso;
+            $exameFuncionario = $ultimoAso->ExameFuncionario->first();
+            $exameTipoLabel = $exameFuncionario?->ExameTipo?->label ?? '—';
+            $cargo = $item->Admissao?->cargo ?? $item->VagaAberta?->VagaSelecionada?->nome ?? '—';
             return [
-                'emp_cnpj' => $item->Admissao->emp_cnpj ?? null,
-                'emp_nome_fantasia' => $item->Admissao->emp_nome_fantasia ?? null,
-                'emp_centro_custo' => $item->Admissao->emp_centro_custo ?? null,
-                'emp_tipo' => $item->Admissao->emp_tipo ?? null,
+                'emp_cnpj' => $item->Admissao?->emp_cnpj ?? null,
+                'emp_nome_fantasia' => $item->Admissao?->emp_nome_fantasia ?? null,
+                'emp_centro_custo' => $item->Admissao?->emp_centro_custo ?? null,
+                'emp_tipo' => $item->Admissao?->emp_tipo ?? null,
                 'feedback_id' => $item->id,
-                'atual' => $item->UltimoAso->atual,
-                'colaborador' => $item->Curriculo->nome,
-                'cargo' => $item->Admissao ? $item->Admissao->cargo : $item->VagaAberta->VagaSelecionada->nome,
-                'data_admissao' => $item->Admissao->data_admissao ?? 'Não informada',
-                'exame_tipo' => $item->UltimoAso->ExameFuncionario[0]->ExameTipo->label,
-                'data_aso' => $item->UltimoAso->data_realizacao,
-                'data_vencimento' => $item->UltimoAso->data_vencimento,
-                'dias_vencer' => DataHora::diferencaDias((new DataHora())->dataInsert() . ' 00:00:00', (new DataHora($item->UltimoAso->data_vencimento))->dataInsert() . ' 23:59:59'),
+                'atual' => $ultimoAso->atual,
+                'colaborador' => $item->Curriculo?->nome ?? '—',
+                'cargo' => $cargo,
+                'data_admissao' => $item->Admissao?->data_admissao ?? 'Não informada',
+                'exame_tipo' => $exameTipoLabel,
+                'data_aso' => $ultimoAso->data_realizacao,
+                'data_vencimento' => $ultimoAso->data_vencimento,
+                'dias_vencer' => DataHora::diferencaDias((new DataHora())->dataInsert() . ' 00:00:00', (new DataHora($ultimoAso->data_vencimento))->dataInsert() . ' 23:59:59'),
             ];
         });
 
@@ -76,7 +85,7 @@ class VencimentoAsosController extends Controller
 
     private function prepararAdmissao($item, $cc)
     {
-        if ($item->Admissao) {
+        if ($item->Admissao && ! empty($cc['centros_custos'])) {
             $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $item->Admissao->centro_custo_id)->first();
             $item->Admissao->emp_cnpj = null;
             $item->Admissao->emp_nome_fantasia = null;
@@ -95,14 +104,26 @@ class VencimentoAsosController extends Controller
 
     public function show(Request $request)
     {
-        $empresa_id = auth()->user()->empresa_id;
+        $user = auth()->user();
+        $config = $user->EmpresaConfiguracoes;
+        if (!$config || !isset(ClienteConfig::LISTA_VENCIMENTOS[$config->vencimento_aso ?? null])) {
+            return response()->json([
+                'dados' => [],
+                'periodo_vencimento_numero' => 90,
+                'periodo_vencimento_extenso' => '90 dias',
+                'cc' => (new CentroCusto())->listaCentroCustoPorCnpj($user->empresa_id),
+            ]);
+        }
+
+        $empresa_id = $user->empresa_id;
         $cc = (new CentroCusto())->listaCentroCustoPorCnpj($empresa_id);
         $examesFuncionarios = self::filtro($empresa_id, $request->input(), $request);
-        $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[auth()->user()->EmpresaConfiguracoes->vencimento_aso];
-        $periodo_vencimento = (int)preg_replace("/[^0-9]/", "", $periodo_vencimento);
+        $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[$config->vencimento_aso];
+        $periodo_vencimento_num = (int) preg_replace("/[^0-9]/", "", $periodo_vencimento);
 
-        return response()->json(['dados' => $examesFuncionarios,
-            'periodo_vencimento_numero' => (int)preg_replace("/[^0-9]/", "", $periodo_vencimento),
+        return response()->json([
+            'dados' => $examesFuncionarios,
+            'periodo_vencimento_numero' => $periodo_vencimento_num,
             'periodo_vencimento_extenso' => $periodo_vencimento,
             'cc' => $cc,
         ]);

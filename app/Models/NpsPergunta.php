@@ -19,6 +19,19 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\User|null $Empresa
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\NpsRespostaItem> $respostaItens
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read int|null $resposta_itens_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsPergunta newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsPergunta newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsPergunta query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsPergunta whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsPergunta whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsPergunta whereEmpresaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsPergunta whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsPergunta whereOrdem($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsPergunta whereTexto($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsPergunta whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 class NpsPergunta extends Model

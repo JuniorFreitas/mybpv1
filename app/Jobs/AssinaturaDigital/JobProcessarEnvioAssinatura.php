@@ -4,6 +4,7 @@ namespace App\Jobs\AssinaturaDigital;
 
 use App\Models\Admissao;
 use App\Models\CartaOferta;
+use App\Models\CartaOfertaTemplate;
 use App\Models\Cliente;
 use App\Models\DemissaoPrevista;
 use App\Models\DocumentoContratos;
@@ -13,6 +14,7 @@ use App\Models\MedidaAdministrativa;
 use App\Models\Sistema;
 use App\Models\User;
 use App\Services\AssinaturaDigital\AssinaturaDigitalService;
+use App\Services\CartaOferta\CartaOfertaTemplateRenderer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -182,6 +184,7 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
             ->where('empresa_id', $this->empresaId)
             ->with([
                 'Curriculo:id,nome,email,cpf',
+                'empresa:id,razao_social,nome_fantasia,cnpj',
                 'vagaAberta:id,vaga_id',
                 'vagaAberta.Vaga:id,nome',
                 'vagaProjeto:id,vaga_aberta_id',
@@ -202,7 +205,50 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
             $nomeCargo = $cartaOferta->vagaProjeto->VagaAberta->Vaga->nome;
         }
 
-        $pdf = PDF::loadView('pdf.admissao.carta-oferta', compact('cartaOferta', 'nomeCargo'));
+        $template = CartaOfertaTemplate::query()
+            ->where('empresa_id', $this->empresaId)
+            ->publicado()
+            ->orderBy('versao', 'desc')
+            ->first();
+
+        $empresaNome = '';
+        $empresaRazao = '';
+        $empresaCnpj = '';
+        if ($cartaOferta->empresa) {
+            $empresaNome = $cartaOferta->empresa->nome_fantasia ?? $cartaOferta->empresa->razao_social ?? '';
+            $empresaRazao = $cartaOferta->empresa->razao_social ?? '';
+            $empresaCnpj = $cartaOferta->empresa->cnpj ?? '';
+        }
+
+        $html = null;
+        if ($template) {
+            $dados = [
+                'colaborador' => [
+                    'nome' => $cartaOferta->Curriculo->nome ?? '',
+                    'cpf' => $cartaOferta->Curriculo->cpf ?? '',
+                    'email' => $cartaOferta->Curriculo->email ?? '',
+                ],
+                'cargo' => $nomeCargo,
+                'setor' => '',
+                'salario' => '',
+                'data_inicio' => '',
+                'empresa' => [
+                    'nome_fantasia' => $empresaNome,
+                    'razao_social' => $empresaRazao,
+                    'cnpj' => $empresaCnpj,
+                ],
+                'data_emissao' => (new DataHora())->dataCompletaExt(),
+            ];
+
+            $html = app(CartaOfertaTemplateRenderer::class)->render($template->conteudo_html, $dados);
+        }
+
+        if ($html) {
+            $pdf = PDF::loadView('pdf.admissao.carta-oferta-template', ['html' => $html]);
+        } else {
+            $pdf = PDF::loadView('pdf.admissao.carta-oferta', compact('cartaOferta', 'nomeCargo'));
+        }
+
         $pdf->setPaper('A4', 'portrait');
         $pdfContent = $pdf->output();
 

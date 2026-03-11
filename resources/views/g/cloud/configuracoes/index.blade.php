@@ -6,8 +6,8 @@
 @stop
 @section('content')
 
-    <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" size="g">
+        <template #conteudo>
             <span v-show="preloadAjax">
                 <i class="fa fa-spinner fa-pulse"></i> Carregando...
             </span>
@@ -78,11 +78,11 @@
                                         <tr class="bg-default">
                                             <th><span class="ml-1">FUNÇÃO</span></th>
                                             <th class="text-center" v-if="form.nome !== 'Administradores'">
-                                                <a class="btn btn-sm btn-success" href="javascript://"
+                                                <a class="btn btn-sm mr-1 btn-success" href="javascript://"
                                                    @click.prevent="selecionarTodas" v-if="!form.todasHabilidades">
                                                     <span class="fa fa-ok" aria-hidden="true"></span> Permitir todas
                                                 </a>
-                                                <a class="btn btn-sm btn-danger" href="javascript://"
+                                                <a class="btn btn-sm mr-1 btn-danger" href="javascript://"
                                                    @click.prevent="selecionarTodas" v-if="form.todasHabilidades">
                                                     <span class="fa fa-remove" aria-hidden="true"></span> Negar todas
                                                 </a>
@@ -95,12 +95,12 @@
                                         <tr v-for="habilidade in form.habilidades">
                                             <td><span class="ml-1">@{{habilidade.nome}}</span></td>
                                             <td class="text-center" v-if="form.nome !== 'Administradores'">
-                                                <a class="btn btn-sm btn-success" href="javascript://"
+                                                <a class="btn btn-sm mr-1 btn-success" href="javascript://"
                                                    @click="verificaHabilitados(habilidade)"
                                                    v-if="habilidade.acesso">
                                                     <span class="fa fa-ok" aria-hidden="true"></span> Permitir
                                                 </a>
-                                                <a class="btn btn-sm btn-danger" href="javascript://"
+                                                <a class="btn btn-sm mr-1 btn-danger" href="javascript://"
                                                    @click="verificaHabilitados(habilidade)"
                                                    v-if="!habilidade.acesso">
                                                     <span class="fa fa-remove" aria-hidden="true"></span> Negar
@@ -146,7 +146,7 @@
                                             <td class="text-center">@{{index + 1}}</td>
                                             <td class="text-center">@{{colaborador.nome}}</td>
                                             <td class="text-center">
-                                                <a href="javascript://" class="btn btn-sm btn-danger"
+                                                <a href="javascript://" class="btn btn-sm mr-1 btn-danger"
                                                    @click.prevent="removerLIColaborador(index)">
                                                     <i class="fa fa-times" aria-hidden="true"></i>
                                                 </a>
@@ -186,12 +186,12 @@
             </form>
 
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div v-show="!preloadAjax">
-                <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado"
                         @click="alterar">Alterar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado"
                         @click="cadastrar">Cadastrar
                 </button>
             </div>
@@ -210,12 +210,12 @@
         </div>
     </div>
 
-    <button type="button" class="btn btn-sm btn-success" @click.prevent="atualizar">
+    <button type="button" class="btn btn-sm mr-1 btn-success" @click.prevent="atualizar">
         <i class="fa fa-sync"></i> Atualizar
     </button>
 
-    <button type="button" class="btn btn-sm btn-primary" id="btnFormCadastrar" data-toggle="modal"
-            data-target="#janelaCadastrar" @click="formNovo()">Cadastrar
+    <button type="button" class="btn btn-sm mr-1 btn-primary" id="btnFormCadastrar"
+            @click="formNovo()">Cadastrar
     </button>
 
     <p class="text-center" v-if="controle.carregando">
@@ -249,14 +249,12 @@
                         <span class="badge badge-danger" v-if="!grupo.ativo">Inativo</span>
                     </td>
                     <td class="text-center">
-                        <a class="btn btn-sm btn-success btnFormAlterar" href="javascript://"
-                           @click.prevent="formAlterar(grupo.id)" data-toggle="modal"
-                           data-target="#janelaCadastrar">
+                        <a class="btn btn-sm mr-1 btn-success btnFormAlterar" href="javascript://"
+                           @click.prevent="formAlterar(grupo.id)">
                             <i class="fa fa-edit"></i>
                         </a>
-                        <a class="btn btn-sm btn-danger btnFormExcluir" v-if="grupo.nome !== 'Administradores'" href="javascript://"
-                           @click.prevent="janelaConfirmar(grupo.id)" data-toggle="modal"
-                           data-target="#janelaConfirmar">
+                        <a class="btn btn-sm mr-1 btn-danger btnFormExcluir" v-if="grupo.nome !== 'Administradores'" href="javascript://"
+                           @click.prevent="janelaConfirmar(grupo.id)">
                             <i class="fa fa-trash" aria-hidden="true"></i>
                         </a>
                     </td>

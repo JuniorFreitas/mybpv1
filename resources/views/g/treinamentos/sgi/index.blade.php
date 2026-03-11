@@ -6,8 +6,8 @@
 @stop
 @section('content')
 
-    <modal id="janelaTreinamento" titulo="Treinamentos" :size="95">
-        <template slot="conteudo">
+    <modal ref="janelaTreinamento" id="janelaTreinamento" titulo="Treinamentos" :size="95">
+        <template #conteudo>
             <div class="alert alert-success text-center" v-show="cadastrado">
                 <h4><i class="icon fa fa-check"></i> Treinamento atualizado com sucesso</h4>
             </div>
@@ -40,15 +40,15 @@
                             </select>
                         </div>
 
-                        <div class="col-12 mt-3" v-if="form.treinamento_sgi_id">
+                        <div class="col-12 mt-3" v-if="treinamentoSelecionado">
                             <fieldset>
                                 <legend>DETALHES</legend>
                                 <strong>Conteúdo programatico:</strong> <br>
-                                @{{ _.find(listaTreinamentos,{id:form.treinamento_sgi_id}).conteudo_programatico }}
+                                @{{ treinamentoSelecionado.conteudo_programatico || '' }}
                                 <hr>
 
                                 <strong>Carga horária:</strong> @{{
-                                _.find(listaTreinamentos,{id:form.treinamento_sgi_id}).carga_horaria }} horas
+                                treinamentoSelecionado.carga_horaria || '' }} horas
                                 <hr>
                             </fieldset>
                         </div>
@@ -182,7 +182,7 @@
 
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button class="btn btn-default" @click.prevent="salvar"><i class="fa fa-save"></i> Salvar</button>
         </template>
     </modal>
@@ -233,8 +233,7 @@
 
                 <button type="button" class="btn btn-primary mr-1" :disabled="controle.carregando"
                         @click.prevent="formCadastrar"
-                        data-toggle="modal"
-                        data-target="#janelaTreinamento">
+                        @click="$refs.janelaTreinamento?.abrirModal()">
                     <i class="fa fa-plus"></i> Novo Evento
                 </button>
 
@@ -327,8 +326,7 @@
                     <td class="text-center">
                         <a href="javascript://" class="btn btn-default" title="Editar"
                            @click.prevent="formAlterar(evento.id)"
-                           data-toggle="modal"
-                           data-target="#janelaTreinamento">
+                           @click="$refs.janelaTreinamento?.abrirModal()">
                             <i class="fa fa-edit" aria-hidden="true"></i>
                         </a>
                         <a :href="`treinamento/${evento.id}/listapresenca`"

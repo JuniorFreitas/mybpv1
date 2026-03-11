@@ -26,6 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|OpcaoAlternativa whereLabel($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OpcaoAlternativa whereSelecionado($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OpcaoAlternativa whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class OpcaoAlternativa extends Model

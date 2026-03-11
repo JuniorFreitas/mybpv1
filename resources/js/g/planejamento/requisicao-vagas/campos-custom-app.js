@@ -1,9 +1,15 @@
-import RequisicaoVagaCamposCustom from '../../../components/planejamento/requisicao-vagas/RequisicaoVagaCamposCustom.vue';
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import RequisicaoVagaCamposCustom from '../../../components/planejamento/requisicao-vagas/RequisicaoVagaCamposCustom.vue'
 
-const app = new Vue({
-    el: '#app',
-    data: {},
+const app = createApp({
+    data() {
+        return {}
+    },
     components: {
         RequisicaoVagaCamposCustom
     }
-});
+})
+
+registerGlobals(app)
+app.mount('#app')

@@ -1,3 +1,5 @@
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
 import endereco from '../../../components/Endereco'
 import telefone from '../../../components/Telefones'
 import datepicker from '../../../components/DatePicker'
@@ -26,8 +28,7 @@ const MENSAGENS = {
     SUCESSO_FEEDBACK: 'Feedback realizado com sucesso!'
 }
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     components: {
         endereco,
         datepicker,
@@ -94,6 +95,15 @@ const app = new Vue({
 
     mounted() {
         this.inicializar()
+    },
+
+    computed: {
+        telefonePrincipal() {
+            return _.find(this.form.telefones || [], { principal: true }) || null
+        },
+        telefonePrincipalNumero() {
+            return this.telefonePrincipal ? this.telefonePrincipal.numero : ''
+        }
     },
 
     methods: {
@@ -204,7 +214,7 @@ const app = new Vue({
 
         executarBusca() {
             if (this.$refs.componente) {
-                this.$refs.componente.buscar()
+                this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             }
         },
 
@@ -322,7 +332,7 @@ const app = new Vue({
         processarDadosFormulario(data) {
             this.marcaLido(data)
             if (this.$refs.componente) {
-                this.$refs.componente.buscar()
+                this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             }
 
             Object.assign(this.form, data)
@@ -371,6 +381,7 @@ const app = new Vue({
             this.editando = true
             this.preloadAjax = false
             setupCampo()
+            this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
         },
 
         async marcaLido(dados) {
@@ -471,12 +482,12 @@ const app = new Vue({
 
         atualizarLista() {
             if (this.$refs.componente) {
-                this.$refs.componente.buscar()
+                this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             }
         },
 
         fecharModal() {
-            $('#janelaCadastrar').modal('hide')
+            this.$refs.janelaCadastrar?.fecharModal()
         },
 
         mostrarSucesso() {
@@ -579,7 +590,10 @@ const app = new Vue({
         },
 
         resetarPaginacao() {
-            this.$refs.componente.atual = 1
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
         }
     }
 })
+
+registerGlobals(app)
+app.mount('#app')

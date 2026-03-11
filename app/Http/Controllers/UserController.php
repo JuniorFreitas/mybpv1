@@ -26,8 +26,25 @@ class UserController extends Controller
      */
     public function index()
     {
-        $listaDePapeis = Papel::all();
-        return view('g.usuarios.usuarios.index', compact('listaDePapeis'));
+        $listaEmpresas = Cliente::whereAtivo(true)->get(['id', 'nome_fantasia']);
+        $empresaId = auth()->user()->empresa_id;
+        $isMybpEmpresa = $empresaId === User::MYBP_EMPRESA_ID;
+        $canInsert = auth()->user()->can('usuario_usuarios_insert');
+        $canUpdate = auth()->user()->can('usuario_usuarios_update');
+        $canDelete = auth()->user()->can('usuario_usuarios_delete');
+        $podeSimular = (int) auth()->user()->grupo_id === 1;
+        $urlAtualizar = route('g.usuarios.usuarios.atualizar');
+
+        return view('g.usuarios.usuarios.index', compact(
+            'listaEmpresas',
+            'empresaId',
+            'isMybpEmpresa',
+            'canInsert',
+            'canUpdate',
+            'canDelete',
+            'podeSimular',
+            'urlAtualizar'
+        ));
     }
 
     /**
@@ -486,6 +503,21 @@ class UserController extends Controller
     public function anexoShow(Request $request, $arquivo)
     {
         return Arquivo::anexoShow(Arquivo::DISCO_PERFIL_USUARIO, $arquivo);
+    }
+
+    /**
+     * Retorna anexo de perfil em base64 (JSON). Usa o mesmo cache de anexoShow.
+     */
+    public function anexoShowBase64(Request $request, $arquivo)
+    {
+        $data = Arquivo::getPerfilAnexoContentAndMime($arquivo);
+        if ($data === null) {
+            abort(404);
+        }
+        return response()->json([
+            'base64' => base64_encode($data['content']),
+            'mime' => $data['mime'],
+        ]);
     }
 
     public function anexoDelete(Request $request, $arquivo)

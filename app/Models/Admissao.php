@@ -175,6 +175,8 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao naoAfastados()
  * @property bool $usa_lentes_corretivas
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereUsaLentesCorretivas($value)
+ * @property-read \App\Models\SegmentoTreinamento|null $SegmentoTreinamento
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Admissao whereSegmentoTreinamentoId($value)
  * @mixin \Eloquent
  */
 class Admissao extends Model

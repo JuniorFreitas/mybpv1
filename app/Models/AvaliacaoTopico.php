@@ -35,6 +35,8 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico whereTopico($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico whereTopicoExplicacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoTopico whereTopicoPaiId($value)
+ * @property bool $tipo_pj
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AvaliacaoTopico whereTipoPj($value)
  * @mixin \Eloquent
  */
 class AvaliacaoTopico extends Model

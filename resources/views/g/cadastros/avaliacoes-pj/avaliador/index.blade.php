@@ -3,9 +3,9 @@
 @section('content_header', 'Vincular Avaliadores')
 @section('content')
 
-    <modal id="janelaAssociarAvaliador" titulo="Associar avaliadores" :fechar="!preload"
+    <modal ref="janelaAssociarAvaliador" id="janelaAssociarAvaliador" titulo="Associar avaliadores" :fechar="!preload"
            :size="80">
-        <template slot="conteudo">
+        <template #conteudo>
             <fieldset v-if="editando">
                 <legend>Avaliadores</legend>
 
@@ -38,7 +38,7 @@
                         <tr v-for="(avaliador, index) in form.avaliadores">
                             <td class="text-center">@{{ avaliador.nome }}</td>
                             <td class="text-center">
-                                <a href="javascript://" class="btn btn-sm btn-danger"
+                                <a href="javascript://" class="btn btn-sm mr-1 btn-danger"
                                    @click.prevent="removerLIAvaliador(index)">
                                     <i class="fa fa-times" aria-hidden="true"></i>
                                 </a>
@@ -49,8 +49,8 @@
                 </div>
             </fieldset>
         </template>
-        <template slot="rodape">
-            <button :disabled="listaFuncionarios.length === 0" v-if="!preload && !update" class="btn btn-sm btn-success"
+        <template #rodape>
+            <button :disabled="listaFuncionarios.length === 0" v-if="!preload && !update" class="btn btn-sm mr-1 btn-success"
                     type="button" @click="assosicarAvaliadores">
                 <i class="fas fa-link"></i> Associar
             </button>
@@ -76,8 +76,7 @@
                     </div>
                     <div class="col-auto mb-2">
                         <button type="button" class="btn btn-secondary" :disabled="funcionariosSelecionados.length===0"
-                                data-toggle="modal" data-target="#janelaAssociarAvaliador"
-                                @click="formAssociarAvaliador">
+                                @click="formAssociarAvaliador(); $refs.janelaAssociarAvaliador?.abrirModal()">
                             <i class="fas fa-link"></i> Associar Avaliadores
                         </button>
                     </div>

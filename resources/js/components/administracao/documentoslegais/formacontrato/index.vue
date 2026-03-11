@@ -1,64 +1,57 @@
 <template>
     <div id="componente">
-
-        <modal :modal-pai="modal" :titulo="titulo_janela_form" :fechar="!preload" id="janelaForm">
-            <template slot="conteudo">
-                <p class=" mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
+        <modal ref="modalForm" :modal-pai="modal" :titulo="titulo_janela_form" :fechar="!preload" id="janelaForm">
+            <template #conteudo>
+                <p class="mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <fieldset v-if="!preload">
                     <legend>Cadastro Forma de Contrato</legend>
                     <div class="row">
                         <div class="col-12">
                             <label>Nome</label>
-                            <input class="form-control" type="text" placeholder="Informe o nome"
-                                   onblur="valida_campo_vazio(this,1)" v-model="form.titulo">
+                            <input class="form-control" type="text" placeholder="Informe o nome" onblur="valida_campo_vazio(this, 1)" v-model="form.titulo" />
                         </div>
-                        <br><br>
+                        <br /><br />
                         <div class="col-12 mt-3">
                             <div class="custom-control custom-switch">
-                                <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="ativo">
-                                <label class="custom-control-label"
-                                       for="ativo">{{ form.ativo ? 'Ativo' : 'Inativo' }}</label>
+                                <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="ativo" />
+                                <label class="custom-control-label" for="ativo">{{ form.ativo ? 'Ativo' : 'Inativo' }}</label>
                             </div>
                         </div>
-
                     </div>
                 </fieldset>
             </template>
-            <template slot="rodape">
-                <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !preload"
-                        @click="cadastra">
+            <template #rodape>
+                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !preload" @click="cadastra">
                     <i class="fa fa-save"></i> Cadastrar
                 </button>
 
-                <button v-show="editando && !preload" type="button" class="btn btn-sm btn-primary"
-                        @click="alterarForm">
+                <button v-show="editando && !preload" type="button" class="btn btn-sm mr-1 btn-primary" @click="alterarForm">
                     <i class="fa fa-save"></i> Alterar
                 </button>
             </template>
         </modal>
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="$refs.componente.buscar()">
+            <form class="row" @submit.prevent="$refs.componente && $refs.componente.buscar ? $refs.componente.buscar() : null">
                 <div class="col-12 col-md-4">
-                    <div class='form-group'>
+                    <div class="form-group">
                         <label>Buscar</label>
-                        <input type='text'
-                               placeholder='Buscar por nome'
-                               autocomplete='off'
-                               class='form-control form-control-sm' :disabled='controle.carregando'
-                               v-model='controle.dados.campoBusca'>
+                        <input
+                            type="text"
+                            placeholder="Buscar por nome"
+                            autocomplete="off"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoBusca"
+                        />
                     </div>
                 </div>
                 <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando"
-                            @click="atualizar"><i
-                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
+                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
+                        <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
-                    <button type="button" class="btn btn-sm btn-secondary" v-if="permissoes.insert"
-                            @click="formNovo"
-                            data-toggle="modal"
-                            data-target="#janelaForm">
+                    <button type="button" class="btn btn-sm mr-1 btn-secondary" v-if="permissoes.insert" @click="formNovo">
                         <i class="fa fa-plus"></i> Cadastrar
                     </button>
                 </div>
@@ -66,8 +59,7 @@
         </fieldset>
 
         <div id="conteudo">
-
-            <preload class=" mt-2 text-center" v-if="controle.carregando"></preload>
+            <preload class="mt-2 text-center" v-if="controle.carregando"></preload>
 
             <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length === 0">
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
@@ -76,55 +68,58 @@
             <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
                 <table class="tabela">
                     <thead>
-                    <tr class="bg-default">
-                        <td class="text-center">Nome</td>
-                        <td class="text-center">Ativo</td>
-                        <td class="text-center">Opções</td>
-                    </tr>
+                        <tr class="bg-default">
+                            <td class="text-center">Nome</td>
+                            <td class="text-center">Ativo</td>
+                            <td class="text-center">Opções</td>
+                        </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="formacontrato in lista">
-                        <td class="text-center">{{ formacontrato.titulo }}</td>
-                        <td class="text-center">
-                            <bt-ativo
-                                :rota="`administracao/documentoslegais/formacontrato/${formacontrato.id}/ativa-desativa`"
-                                :model="formacontrato"></bt-ativo>
-                        </td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-sm btn-primary" v-if="permissoes.update"
-                                    @click="alterar(formacontrato.id)"
-                                    data-toggle="modal"
-                                    data-target="#janelaForm">
-                                <i class="fa fa-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
+                        <tr v-for="(formacontrato, index) in lista" :key="formacontrato.id || index">
+                            <td class="text-center">{{ formacontrato.titulo }}</td>
+                            <td class="text-center">
+                                <bt-ativo
+                                    :rota="`administracao/documentoslegais/formacontrato/${formacontrato.id}/ativa-desativa`"
+                                    :model="formacontrato"
+                                ></bt-ativo>
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm mr-1 btn-primary" v-if="permissoes.update" @click="alterar(formacontrato.id)">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-            <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
-                                :url="urlPaginacao" :por-pagina="qntPag"
-                                :dados="controle.dados"
-                                v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
+            <controle-paginacao
+                class="d-flex justify-content-center"
+                id="controle"
+                ref="componente"
+                :url="urlPaginacao"
+                :por-pagina="qntPag"
+                :dados="controle.dados"
+                v-on:carregou="carregou"
+                v-on:carregando="carregando"
+            ></controle-paginacao>
         </div>
-
     </div>
 </template>
 
 <script>
-import controlePaginacao from '../../../ControlePaginacao';
-import modal from '../../../Modal';
-import editor from '@tinymce/tinymce-vue';
-import Validacoes from '../../../../mixins/Validacoes';
+import controlePaginacao from '../../../ControlePaginacao'
+import modal from '../../../Modal'
+import editor from '@tinymce/tinymce-vue'
+import Validacoes from '../../../../mixins/Validacoes'
 
 export default {
-    name: "formacontrato",
+    name: 'formacontrato',
     mixins: [Validacoes],
 
     components: {
         modal,
         controlePaginacao,
-        editor,
+        editor
     },
     props: {
         qntPag: {
@@ -144,16 +139,17 @@ export default {
             required: false,
             default: true
         },
-        modal: { // modal Pai
+        modal: {
+            // modal Pai
             type: String,
             required: false,
             default: ''
-        },
+        }
     },
 
     mounted() {
-        this.atualizar();
-        this.formDefault = _.cloneDeep(this.form);
+        this.atualizar()
+        this.formDefault = _.cloneDeep(this.form)
     },
     data() {
         return {
@@ -180,93 +176,109 @@ export default {
             controle: {
                 carregando: false,
                 dados: {
-                    campoBusca: '',
-                },
-            },
+                    campoBusca: ''
+                }
+            }
         }
     },
     methods: {
+        abrirModalForm() {
+            if (this.$refs && this.$refs.modalForm && typeof this.$refs.modalForm.abrirModal === 'function') {
+                this.$refs.modalForm.abrirModal()
+            }
+        },
+        fecharModalForm() {
+            if (this.$refs && this.$refs.modalForm && typeof this.$refs.modalForm.fecharModal === 'function') {
+                this.$refs.modalForm.fecharModal()
+            }
+        },
         formNovo() {
-            this.titulo_janela_form = 'Cadastro Forma Contrato';
-            this.preload = false;
-            this.editando = false;
-            this.atualizado = false;
+            this.titulo_janela_form = 'Cadastro Forma Contrato'
+            this.preload = false
+            this.editando = false
+            this.atualizado = false
             this.form = _.cloneDeep(this.formDefault) //copia
-            formReset();
+            formReset()
+            this.abrirModalForm()
         },
         cadastra() {
-            this.validaBlur();
+            this.validaBlur()
             this.$nextTick(() => {
-                $('#janelaForm :input:visible').trigger('blur');
+                $('#janelaForm :input:visible').trigger('blur')
                 if ($('#janelaForm :input:visible.is-invalid').length) {
-                    mostraErro('', 'Verificar os erros');
-                    return false;
+                    mostraErro('', 'Verificar os erros')
+                    return false
                 }
-                this.preload = true;
-                axios.post(`${URL_ADMIN}/administracao/documentoslegais/formacontrato`, this.form)
+                this.preload = true
+                axios
+                    .post(`${URL_ADMIN}/administracao/documentoslegais/formacontrato`, this.form)
                     .then((res) => {
-                        $('#janelaForm').modal('hide');
-                        mostraSucesso('', 'Forma de contrato cadastrada com sucesso');
-                        this.$refs.componente.buscar();
-                        this.preload = false;
+                        this.fecharModalForm()
+                        mostraSucesso('', 'Forma de contrato cadastrada com sucesso')
+                        this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                        this.preload = false
                     })
-                    .catch(error => {
-                        this.preload = false;
-                    });
-            });
+                    .catch((error) => {
+                        this.preload = false
+                    })
+            })
         },
         alterar(formacontrato) {
-            this.editando = true;
-            this.titulo_janela_form = "Alterando forma de contrato";
-            formReset();
+            this.editando = true
+            this.titulo_janela_form = 'Alterando forma de contrato'
+            formReset()
 
             this.form = _.cloneDeep(this.formDefault) //copia
+            this.abrirModalForm()
 
-            axios.get(`${URL_ADMIN}/administracao/documentoslegais/formacontrato/${formacontrato}`)
-                .then(response => {
-                    Object.assign(this.form, response.data);
-                    this.editando = true;
-                    setupCampo();
-                }).catch(
-                error => (this.preloadAjax = false)
-            );
-
+            axios
+                .get(`${URL_ADMIN}/administracao/documentoslegais/formacontrato/${formacontrato}`)
+                .then((response) => {
+                    Object.assign(this.form, response.data)
+                    this.editando = true
+                    setupCampo()
+                })
+                .catch((error) => (this.preloadAjax = false))
         },
         alterarForm() {
-            this.validaBlur();
+            this.validaBlur()
             this.$nextTick(() => {
-                $('#janelaForm :input:visible').trigger('blur');
+                $('#janelaForm :input:visible').trigger('blur')
                 if ($('#janelaForm :input:visible.is-invalid').length) {
-                    mostraErro('', 'Verificar os erros');
-                    return false;
+                    mostraErro('', 'Verificar os erros')
+                    return false
                 }
-                this.preload = true;
-                axios.put(`${URL_ADMIN}/administracao/documentoslegais/formacontrato/${this.form.id}`, this.form)
+                this.preload = true
+                axios
+                    .put(`${URL_ADMIN}/administracao/documentoslegais/formacontrato/${this.form.id}`, this.form)
                     .then((res) => {
-                        $('#janelaForm').modal('hide');
-                        mostraSucesso('', 'Forma de contrato alterada com sucesso');
-                        this.$refs.componente.buscar();
-                        this.preload = false;
+                        this.fecharModalForm()
+                        mostraSucesso('', 'Forma de contrato alterada com sucesso')
+                        this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                        this.preload = false
                     })
-                    .catch(error => {
-                        this.preload = false;
-                    });
-            });
+                    .catch((error) => {
+                        this.preload = false
+                    })
+            })
         },
         carregou(dados) {
-            this.lista = dados.items;
-            this.permissoes = dados.permissoes;
-            this.controle.carregando = false;
+            this.lista = dados.items
+            this.permissoes = dados.permissoes
+            this.controle.carregando = false
         },
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
-        },
+            if (this.$refs && this.$refs.componente) {
+                this.$refs.componente.atual = 1
+                if (this.$refs.componente.buscar) {
+                    this.$refs.componente.buscar()
+                }
+            }
+        }
     }
-
 }
 </script>
 
@@ -311,8 +323,8 @@ ul.timeline > li:before {
 }
 
 .trackind {
-    padding: .5rem .8rem;
+    padding: 0.5rem 0.8rem;
     background-color: #f4f4f4;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
 }
 </style>

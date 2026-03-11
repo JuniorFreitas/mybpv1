@@ -49,6 +49,9 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @method static \Illuminate\Database\Eloquent\Builder|Treinamento whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Treinamento whereTipo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Treinamento whereUpdatedAt($value)
+ * @property-read TreinamentoVencimento|null $pivot
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $arquivosVencimentos
+ * @property-read int|null $arquivos_vencimentos_count
  * @mixin \Eloquent
  */
 class Treinamento extends Model

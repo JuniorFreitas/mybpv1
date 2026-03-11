@@ -37,6 +37,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereRegistro($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Instrutor whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class Instrutor extends Model

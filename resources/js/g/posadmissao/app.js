@@ -1,192 +1,194 @@
-import datepicker from "../../components/DatePicker";
-import ExportacaoMixin from "../../mixins/Exportacoes";
-import Utils from "../../mixins/Utils";
-import gestoraprovacao from "../../components/GestorAprovacao.vue";
+import { createApp } from 'vue'
+import { registerGlobals } from '../../registerGlobals'
+import datepicker from '../../components/DatePicker'
+import ExportacaoMixin from '../../mixins/Exportacoes'
+import Utils from '../../mixins/Utils'
+import gestoraprovacao from '../../components/GestorAprovacao.vue'
 
-const app = new Vue({
+const app = createApp({
     mixins: [ExportacaoMixin, Utils],
-
-    el: "#app", components: {
+    components: {
         datepicker,
         gestoraprovacao
     },
-    data: {
-        AUTENTICADO,
-        tituloJanela: "Carregando ...",
-        tituloJanelaEntrevista: "Carregando ...",
-        preload: false,
-        editando: false,
-        demitido: false,
-        apagado: false,
-        cadastrado: false,
-        cadastrando: false,
-        atualizado: false,
-        visualizar: false,
-        avaliacao: false,
-        desmobilizacao: false,
-        entrevista: false,
-        revertendo_status: false,
-        extensaoDocumento: null,
-        preloadExportacao: false,
+    data() {
+        return {
+            AUTENTICADO,
+            tituloJanela: 'Carregando ...',
+            tituloJanelaEntrevista: 'Carregando ...',
+            preload: false,
+            editando: false,
+            demitido: false,
+            apagado: false,
+            cadastrado: false,
+            cadastrando: false,
+            atualizado: false,
+            visualizar: false,
+            avaliacao: false,
+            desmobilizacao: false,
+            entrevista: false,
+            revertendo_status: false,
+            extensaoDocumento: null,
+            preloadExportacao: false,
 
-        urlExportacao: `${URL_ADMIN}/posadmissao/export`,
+            urlExportacao: `${URL_ADMIN}/posadmissao/export`,
 
-        hash: `mastertag_${parseInt((Math.random() * 999999))}`,
-        todos_municipios: `autocomplete/todos-municipios`,
+            hash: `mastertag_${parseInt(Math.random() * 999999)}`,
+            todos_municipios: `autocomplete/todos-municipios`,
 
-        URL_ADMIN,
+            URL_ADMIN,
 
-        selecionados: [],
-        selecionaTudo: false,
+            selecionados: [],
+            selecionaTudo: false,
 
-        lista_motivo_desligamentos: [
-            'Iniciativa do empregado: Mudança de Cidade',
-            'Iniciativa do empregado: Proposta superior de outra empresa',
-            'Iniciativa do empregado: Motivos de Saúde',
-            'Iniciativa do empregado: Outros Motivos',
-            'Iniciativa da empresa: Baixa performance',
-            'Iniciativa da empresa: Questões comportamentais',
-            'Iniciativa da empresa: Redução de Quadro',
-            'Iniciativa da empresa: Fim de Contrato de Experiência'
-        ],
+            dropdownAbertoKey: null,
 
-        lista_supervisor_imediato: [],
+            lista_motivo_desligamentos: [
+                'Iniciativa do empregado: Mudança de Cidade',
+                'Iniciativa do empregado: Proposta superior de outra empresa',
+                'Iniciativa do empregado: Motivos de Saúde',
+                'Iniciativa do empregado: Outros Motivos',
+                'Iniciativa da empresa: Baixa performance',
+                'Iniciativa da empresa: Questões comportamentais',
+                'Iniciativa da empresa: Redução de Quadro',
+                'Iniciativa da empresa: Fim de Contrato de Experiência'
+            ],
 
-        form: {
+            lista_supervisor_imediato: [],
 
-            demissao: {
-                cipa: false,
-                data_desmobilizacao: "",
-                motivo_rescisao_id: "",
-                tipo_aviso_id: "",
-                solicitado_por: "",
-                comentario: ""
+            form: {
+                demissao: {
+                    cipa: false,
+                    data_desmobilizacao: '',
+                    motivo_rescisao_id: '',
+                    tipo_aviso_id: '',
+                    solicitado_por: '',
+                    comentario: ''
+                },
+
+                tipo_form: '',
+                data_desmobilizacao: '',
+                avaliacao: '',
+                obs_avaliacao: '',
+                user_avaliacao: '',
+                responsavel_feedback: '',
+                data_avaliacao: '',
+                motivo_rescisao: '',
+                classificacao_rescisao: '',
+                tipo_aviso: '',
+
+                motivo: '',
+                aviso: '',
+                classificacao: '',
+
+                //campos extras
+                outromotivo: '',
+                quem_classificou: '',
+                observacoes: '',
+
+                preenchido_por: '',
+
+                alternativas: null,
+                pendencia: '',
+                pendencias_quais: '',
+                outros: '',
+
+                preenchido_por_rh: '',
+                preenchido_por_adm: '',
+                preenchido_por_ssma: '',
+
+                entrevista_desligamento: {
+                    curriculo_id: '',
+                    superior_imediato: '',
+                    motivo: '',
+                    trabalharia_novamente: '',
+                    contr_melhoria: '',
+                    relacao_interpessoal: '',
+                    recursos_fisicos: '',
+                    valores_normas: '',
+                    planejamento: '',
+                    sob_superior_imediato: '',
+                    direcao_empresa: '',
+                    oportunidades: '',
+                    salario_beneficio: '',
+                    atividade: '',
+                    comentarios: '',
+                    parecer_entrevistador: '',
+                    pode_voltar: '',
+                    porque_pode_voltar: '',
+                    quem_entrevistou: '',
+                    data_entrevista: '',
+                    preenchido_por: ''
+                }
             },
 
-            tipo_form: "",
-            data_desmobilizacao: "",
-            avaliacao: "",
-            obs_avaliacao: "",
-            user_avaliacao: "",
-            responsavel_feedback: "",
-            data_avaliacao: "",
-            motivo_rescisao: "",
-            classificacao_rescisao: "",
-            tipo_aviso: "",
+            formDefault: null,
 
-            motivo: "",
-            aviso: "",
-            classificacao: "",
+            preloadEntrevista: false,
+            atualizadoEntrevista: false,
+            cadastrandoEntrevista: false,
 
-            //campos extras
-            outromotivo: "",
-            quem_classificou: "",
-            observacoes: "",
+            entrevista_desligamentoDefault: null,
 
-            preenchido_por: "",
+            alternativasDefault: null,
 
-            alternativas: null,
-            pendencia: "",
-            pendencias_quais: "",
-            outros: "",
+            lista: [],
+            listaMotivos: [],
+            listaAvisos: [],
+            listaClassificacoes: [],
+            formulario: [],
+            vagas: [],
+            listaAreas: [],
+            lista_ccs: null,
 
-            preenchido_por_rh: "",
-            preenchido_por_adm: "",
-            preenchido_por_ssma: "",
+            posadmissao_form_rh: false,
+            posadmissao_form_adm: false,
+            posadmissao_form_ssma: false,
 
-            entrevista_desligamento: {
-                curriculo_id: "",
-                superior_imediato: "",
-                motivo: "",
-                trabalharia_novamente: "",
-                contr_melhoria: "",
-                relacao_interpessoal: "",
-                recursos_fisicos: "",
-                valores_normas: "",
-                planejamento: "",
-                sob_superior_imediato: "",
-                direcao_empresa: "",
-                oportunidades: "",
-                salario_beneficio: "",
-                atividade: "",
-                comentarios: "",
-                parecer_entrevistador: "",
-                pode_voltar: "",
-                porque_pode_voltar: "",
-                quem_entrevistou: "",
-                data_entrevista: "",
-                preenchido_por: ""
-            }
-
-        },
-
-        formDefault: null,
-
-        preloadEntrevista: false,
-        atualizadoEntrevista: false,
-        cadastrandoEntrevista: false,
-
-
-        entrevista_desligamentoDefault: null,
-
-        alternativasDefault: null,
-
-        lista: [],
-        listaMotivos: [],
-        listaAvisos: [],
-        listaClassificacoes: [],
-        formulario: [],
-        vagas: [],
-        listaAreas: [],
-        lista_ccs: null,
-
-        posadmissao_form_rh: false,
-        posadmissao_form_adm: false,
-        posadmissao_form_ssma: false,
-
-        auditoria_form: {
-            empresa_id: "",
-            usuario_id: "",
-            feedback_id: "",
-            colaborador_id: "",
-            tipo: "remover_demissao",
-            descricao: "",
-            dados: {
-                nome: "",
-                cpf: "",
-                vaga: "",
-                cargo: "",
-                funcao: "",
-                data_admissao: "",
-                data_demissao: "",
-                autenticado_nome: "",
-                termo: "",
-                motivo: "",
-                token: "",
+            auditoria_form: {
+                empresa_id: '',
+                usuario_id: '',
+                feedback_id: '',
+                colaborador_id: '',
+                tipo: 'remover_demissao',
+                descricao: '',
+                dados: {
+                    nome: '',
+                    cpf: '',
+                    vaga: '',
+                    cargo: '',
+                    funcao: '',
+                    data_admissao: '',
+                    data_demissao: '',
+                    autenticado_nome: '',
+                    termo: '',
+                    motivo: '',
+                    token: ''
+                }
             },
-        },
 
-        controle: {
-            carregando: false,
-            dados: {
-                caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
-                autocomplete_label_anterior: "",
-                autocomplete_label: "",
-                pages: 20,
+            controle: {
+                carregando: false,
+                dados: {
+                    caminho_autocomplete: `autocomplete/todas-vagas-ativas`,
+                    autocomplete_label_anterior: '',
+                    autocomplete_label: '',
+                    pages: 20,
 
-                campoBusca: "",
-                campoArea: "",
-                campoVaga: "",
-                campoLido: "",
-                campoFiltro: "",
-                campoPcd: "",
-                campoUf: "",
-                campoFeedback: "",
-                campoCPF: "",
-                status: "",
-                campoCargo: "",
-                campoCnpj: "",
-                campoCentroCusto: "",
+                    campoBusca: '',
+                    campoArea: '',
+                    campoVaga: '',
+                    campoLido: '',
+                    campoFiltro: '',
+                    campoPcd: '',
+                    campoUf: '',
+                    campoFeedback: '',
+                    campoCPF: '',
+                    status: '',
+                    campoCargo: '',
+                    campoCnpj: '',
+                    campoCentroCusto: ''
+                }
             }
         }
     },
@@ -194,8 +196,8 @@ const app = new Vue({
         textoDefaultAuditoria() {
             return `<p>
                         Ao clicar em "Remover Demissão" e reverter o status de demissão para admissão do colaborador
-                        <strong>${this.auditoria_form.dados.nome ?? ""}</strong>, eu,
-                        <strong>${this.auditoria_form.dados.autenticado_nome ?? ""}</strong>, reconheço e aceito que estou assumindo a
+                        <strong>${this.auditoria_form.dados.nome ?? ''}</strong>, eu,
+                        <strong>${this.auditoria_form.dados.autenticado_nome ?? ''}</strong>, reconheço e aceito que estou assumindo a
                         responsabilidade por esta ação.
                         <br>
                         Além disso, declaro que:
@@ -216,385 +218,410 @@ const app = new Vue({
                     </p>`
         },
         comDemissao() {
-            return this.lista.filter(item => {
-                return item.demissao;
-            });
+            return this.lista.filter((item) => {
+                return item.demissao
+            })
         },
         formulariosAtivos() {
             const setoresMap = {
-                posadmissao_form_rh: "Recursos Humanos",
-                posadmissao_form_adm: "ALMOXARIFADO / ADM",
-                posadmissao_form_ssma: "SEGURANÇA DO TRABALHO / SSMA"
-            };
+                posadmissao_form_rh: 'Recursos Humanos',
+                posadmissao_form_adm: 'ALMOXARIFADO / ADM',
+                posadmissao_form_ssma: 'SEGURANÇA DO TRABALHO / SSMA'
+            }
 
             return Object.keys(setoresMap)
-                .filter(key => this[key]) // Filtra as chaves onde o valor booleano é true
-                .map(key => this.formulario.setores.find(item => item.nome === setoresMap[key]))
-                .filter(Boolean); // Remove valores undefined caso algum setor não seja encontrado
+                .filter((key) => this[key]) // Filtra as chaves onde o valor booleano é true
+                .map((key) => this.formulario.setores.find((item) => item.nome === setoresMap[key]))
+                .filter(Boolean) // Remove valores undefined caso algum setor não seja encontrado
         },
         tudoMarcado() {
-            let totalItens = this.comDemissao.length;
-            let totalEncontrado = 0;
+            let totalItens = this.comDemissao.length
+            let totalEncontrado = 0
 
             if (totalItens === 0) {
-                return false;
+                return false
             }
-            this.comDemissao.forEach(item => {
-                let id = item.id;
+            this.comDemissao.forEach((item) => {
+                let id = item.id
                 if (this.selecionados.indexOf(id) >= 0) {
-                    totalEncontrado++;
+                    totalEncontrado++
                 } else {
-                    return false;
+                    return false
                 }
-            });
-            let resultado = totalItens === totalEncontrado;
-            this.selecionaTudo = resultado;
-            return resultado;
+            })
+            let resultado = totalItens === totalEncontrado
+            this.selecionaTudo = resultado
+            return resultado
         },
         filtroListaCentroCustoCnpj() {
-            if (this.controle.dados.campoCnpj !== "" && this.AUTENTICADO.temFilial) {
-                return this.lista_ccs.centros_custos[this.controle.dados.campoCnpj];
+            if (this.controle.dados.campoCnpj !== '' && this.AUTENTICADO.temFilial) {
+                return this.lista_ccs.centros_custos[this.controle.dados.campoCnpj]
             }
             if (!this.AUTENTICADO.temFilial && this.lista_ccs) {
-                return this.lista_ccs.centros_custos[Object.keys(this.lista_ccs.centros_custos)[0]];
+                return this.lista_ccs.centros_custos[Object.keys(this.lista_ccs.centros_custos)[0]]
             }
-            return [];
+            return []
         },
         filtroStatusDemitidoOuAdmitido() {
-            return ['admitidos', 'demitidos'].includes(this.controle.dados.status);
+            return ['admitidos', 'demitidos'].includes(this.controle.dados.status)
         },
         paramsExport() {
             let params = {
-                selecionados: this.selecionados,
+                selecionados: this.selecionados
             }
-            return _.merge(params, this.controle.dados);
-        },
-
+            return _.merge(params, this.controle.dados)
+        }
     },
 
     async mounted() {
-        this.formDefault = _.cloneDeep(this.form); //copia
-        this.queryParamsCpf();
-        this.atualizar();
-        this.listaVagas();
-        this.listaAreasGeral();
-        await this.selectTodosGestoresAtivos();
+        this.formDefault = _.cloneDeep(this.form) //copia
+        this.queryParamsCpf()
+        this.atualizar()
+        this.listaVagas()
+        this.listaAreasGeral()
+        await this.selectTodosGestoresAtivos()
+        document.addEventListener('click', this.onClickOutside)
         // ?checkcpf=015.020.903-76
     },
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
+    },
     methods: {
+        toggleDropdown(itemId) {
+            if (!itemId) {
+                return
+            }
+            const key = `pos:${itemId}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(itemId) {
+            return this.dropdownAbertoKey === `pos:${itemId}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+        onClickOutside(event) {
+            if (event && event.target && event.target.closest && event.target.closest('.dropdown')) {
+                return
+            }
+            this.dropdownAbertoKey = null
+        },
         async selectTodosGestoresAtivos() {
-            const busca = await axios.get(`${URL_ADMIN}/autocomplete/todos-gestores?ativo=sim`);
-            this.lista_supervisor_imediato = busca.data.map(item => {
+            const busca = await axios.get(`${URL_ADMIN}/autocomplete/todos-gestores?ativo=sim`)
+            this.lista_supervisor_imediato = busca.data.map((item) => {
                 return item.nome
-            });
+            })
         },
         queryParamsCpf() {
-            const queryString = window.location.search;
-            const params = new URLSearchParams(queryString);
-            this.controle.dados.campoCPF = params.has('checkcpf') ? params.get('checkcpf') : "";
+            const queryString = window.location.search
+            const params = new URLSearchParams(queryString)
+            this.controle.dados.campoCPF = params.has('checkcpf') ? params.get('checkcpf') : ''
         },
         async gerarArquivoXls() {
-            mostraSucesso("", "Aguarde estamos gerando o seu excel");
-            const XLSX = require("xlsx");
+            mostraSucesso('', 'Aguarde estamos gerando o seu excel')
+            const XLSX = require('@e965/xlsx')
 
-            const dataHoraAtual = new Date().toLocaleString("en-US", {
-                timeZone: "America/Sao_Paulo",
-                hour12: false,
-            }).replace(/\/|,|\s|:/g, "_")
-                .replace(/\//g, "-");
+            const dataHoraAtual = new Date()
+                .toLocaleString('en-US', {
+                    timeZone: 'America/Sao_Paulo',
+                    hour12: false
+                })
+                .replace(/\/|,|\s|:/g, '_')
+                .replace(/\//g, '-')
 
-            const filename = `pos_admissao_${AUTENTICADO.empresa_id}_${AUTENTICADO.user_id}_${dataHoraAtual}.xlsx`;
+            const filename = `pos_admissao_${AUTENTICADO.empresa_id}_${AUTENTICADO.user_id}_${dataHoraAtual}.xlsx`
 
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet([]);
+            const wb = XLSX.utils.book_new()
+            const ws = XLSX.utils.json_to_sheet([])
 
-            await axios.post(this.urlExportacao, this.paramsExport)
-                .then(({data}) => {
-                    let cabecalho = data.head;
-                    const jsonDataArray = data.rows;
+            const { data } = await axios.post(this.urlExportacao, this.paramsExport)
+            const cabecalho = data.head
+            const jsonDataArray = data.rows
 
-                    XLSX.utils.sheet_add_aoa(ws, [
-                        cabecalho
-                    ], {origin: 0});
+            XLSX.utils.sheet_add_aoa(ws, [cabecalho], { origin: 0 })
 
-                    jsonDataArray.forEach(function (jsonData) {
-                        XLSX.utils.sheet_add_aoa(ws, [jsonData], {origin: -1});
-                    });
-                    //
-                    XLSX.utils.book_append_sheet(wb, ws, 'planilha');
-                    XLSX.writeFile(wb, filename);
-                });
+            jsonDataArray.forEach(function (jsonData) {
+                XLSX.utils.sheet_add_aoa(ws, [jsonData], { origin: -1 })
+            })
+            XLSX.utils.book_append_sheet(wb, ws, 'planilha')
+            XLSX.writeFile(wb, filename)
         },
         changeCnpj() {
-            this.controle.dados.campoCentroCusto = "";
-            this.atualizar();
+            this.controle.dados.campoCentroCusto = ''
+            this.atualizar()
         },
         changeStatus() {
-            if (this.controle.dados.status === "") {
-                this.controle.dados.campoCnpj = "";
-                this.controle.dados.campoCentroCusto = "";
+            if (this.controle.dados.status === '') {
+                this.controle.dados.campoCnpj = ''
+                this.controle.dados.campoCentroCusto = ''
             }
-            this.atualizar();
+            this.atualizar()
         },
         extensao(item) {
-            if (item === "demissao_com_justa_causa") {
-                this.extensaoDocumento = ".doc";
+            if (item === 'demissao_com_justa_causa') {
+                this.extensaoDocumento = '.doc'
             } else {
-                this.extensaoDocumento = ".pdf";
+                this.extensaoDocumento = '.pdf'
             }
         },
         selecionaTodos() {
-            this.selecionaTudo = !this.selecionaTudo;
+            this.selecionaTudo = !this.selecionaTudo
             if (this.selecionaTudo) {
-                this.comDemissao.map(item => {
-                    let id = item.id;
+                this.comDemissao.map((item) => {
+                    let id = item.id
                     if (this.selecionados.indexOf(id) === -1) {
-                        this.selecionados.push(id);
+                        this.selecionados.push(id)
                     }
-                });
+                })
             } else {
-                this.comDemissao.map(item => {
-                    let id = item.id;
-                    let index = this.selecionados.indexOf(id);
+                this.comDemissao.map((item) => {
+                    let id = item.id
+                    let index = this.selecionados.indexOf(id)
                     if (index >= 0) {
-                        this.selecionados.splice(index, 1);
+                        this.selecionados.splice(index, 1)
                     }
-                });
+                })
             }
         }, //GERAL
         resetaCampo() {
             if (this.controle.dados.autocomplete_label_anterior !== this.controle.dados.autocomplete_label) {
-                this.controle.dados.autocomplete_label_anterior = "";
-                this.controle.dados.autocomplete_label = "";
-                this.controle.dados.campoVaga = "";
+                this.controle.dados.autocomplete_label_anterior = ''
+                this.controle.dados.autocomplete_label = ''
+                this.controle.dados.campoVaga = ''
             }
         },
         selecionaVaga(obj) {
-            this.controle.dados.campoVaga = obj.id;
-            this.controle.dados.autocomplete_label = obj.label;
-            this.controle.dados.autocomplete_label_anterior = obj.label;
+            this.controle.dados.campoVaga = obj.id
+            this.controle.dados.autocomplete_label = obj.label
+            this.controle.dados.autocomplete_label_anterior = obj.label
         },
 
         formVisualizar(id) {
-            this.form.id = id;
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.editando = false;
-            this.visualizar = true;
+            this.form.id = id
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
+            this.visualizar = true
 
-            this.preload = true;
-            Object.assign(this.form, this.formDefault);
+            this.preload = true
+            Object.assign(this.form, this.formDefault)
 
-            formReset();
-            axios.get(`${URL_ADMIN}/admissao/${id}/editar`)
-                .then(response => {
-                    let data = response.data;
-                    Object.assign(this.form, data);
-                    Object.assign(this.form, data["parecer_teste"]);
-                    this.tituloJanela = `Parecer Teste Prático - ${data.curriculo.nome}`;
-                    this.preload = false;
+            formReset()
+            axios
+                .get(`${URL_ADMIN}/admissao/${id}/editar`)
+                .then((response) => {
+                    let data = response.data
+                    Object.assign(this.form, data)
+                    Object.assign(this.form, data['parecer_teste'])
+                    this.tituloJanela = `Parecer Teste Prático - ${data.curriculo.nome}`
+                    this.preload = false
                 })
-                .catch(error => {
-                    this.preload = false;
-                });
-
+                .catch((error) => {
+                    this.preload = false
+                })
         },
         formAvaliar(curriculo_id) {
-            this.tituloJanela = `Demissão ${curriculo_id}`;
-            this.cadastrando = true;
-            this.atualizado = false;
-            this.preload = true;
+            this.tituloJanela = `Demissão ${curriculo_id}`
+            this.cadastrando = true
+            this.atualizado = false
+            this.preload = true
 
-            this.avaliacao = true;
-            this.desmobilizacao = false;
-            this.entrevista = false;
+            this.avaliacao = true
+            this.desmobilizacao = false
+            this.entrevista = false
 
-            this.form = _.cloneDeep(this.formDefault);
-            this.demitido = false;
+            this.form = _.cloneDeep(this.formDefault)
+            this.demitido = false
 
-            axios.get(`${URL_ADMIN}/posadmissao/${curriculo_id}/editar`)
-                .then(response => {
-                    let data = response.data;
-                    this.demitido = !!data.demissao;
-                    this.tituloJanela = `Demissão: ${data.feedback.curriculo.nome} - ${curriculo_id}`;
-                    Object.assign(this.form, data);
-                    this.form.demissao = data.demissao ? data.demissao : _.cloneDeep(this.formDefault.demissao);
-                    this.preload = false;
+            axios
+                .get(`${URL_ADMIN}/posadmissao/${curriculo_id}/editar`)
+                .then((response) => {
+                    let data = response.data
+                    this.demitido = !!data.demissao
+                    this.tituloJanela = `Demissão: ${data.feedback.curriculo.nome} - ${curriculo_id}`
+                    Object.assign(this.form, data)
+                    this.form.demissao = data.demissao ? data.demissao : _.cloneDeep(this.formDefault.demissao)
+                    this.preload = false
                     // this.form.alternativas = !data.alternativas ? data.alternativas : Object.assign(this.form.alternativas, this.alternativasDefault);
                 })
-                .catch(error => {
-                    this.preload = false;
-                });
+                .catch((error) => {
+                    this.preload = false
+                })
         },
         demitir() {
             if (!this.form.demissao.cipa) {
-                mostraErro("", "Você deve checar estabilidade: CIPA, Acidente Trabalho e Sindicato, Gestante, Aposentadoria (Itens CLT ou CCT)");
-                return false;
+                mostraErro('', 'Você deve checar estabilidade: CIPA, Acidente Trabalho e Sindicato, Gestante, Aposentadoria (Itens CLT ou CCT)')
+                return false
             }
 
-            $("#janelaAvaliar :input:visible").trigger("blur");
-            if ($("#janelaAvaliar :input:visible.is-invalid").length) {
-                mostraErro("", "Verifique os erros");
-                return false;
+            $('#janelaAvaliar :input:visible').trigger('blur')
+            if ($('#janelaAvaliar :input:visible.is-invalid').length) {
+                mostraErro('', 'Verifique os erros')
+                return false
             }
-            this.preload = true;
+            this.preload = true
 
-            axios.post(`${URL_ADMIN}/posadmissao/demitir`, this.form)
-                .then(response => {
-                    let data = response.data;
-                    this.cadastrando = false;
-                    this.atualizado = true;
-                    this.preload = false;
-                    this.atualizar();
+            axios
+                .post(`${URL_ADMIN}/posadmissao/demitir`, this.form)
+                .then((response) => {
+                    let data = response.data
+                    this.cadastrando = false
+                    this.atualizado = true
+                    this.preload = false
+                    this.atualizar()
                 })
-                .catch(error => {
-                    this.preload = false;
-                });
-
+                .catch((error) => {
+                    this.preload = false
+                })
         },
         formDesmobilizar(curriculo_id) {
-            this.tituloJanela = `Desmobilizando ${curriculo_id}`;
-            this.form.curriculo_id = curriculo_id;
-            this.cadastrando = true;
-            this.atualizado = false;
-            this.preload = true;
+            this.tituloJanela = `Desmobilizando ${curriculo_id}`
+            this.form.curriculo_id = curriculo_id
+            this.cadastrando = true
+            this.atualizado = false
+            this.preload = true
 
-            this.avaliacao = false;
-            this.desmobilizacao = true;
-            this.entrevista = false;
+            this.avaliacao = false
+            this.desmobilizacao = true
+            this.entrevista = false
 
-            this.form = _.cloneDeep(this.formDefault);
-            this.form.alternativas = _.cloneDeep(this.alternativasDefault);
+            this.form = _.cloneDeep(this.formDefault)
+            this.form.alternativas = _.cloneDeep(this.alternativasDefault)
 
-            axios.get(`${URL_ADMIN}/posadmissao/${curriculo_id}/editar`)
-                .then(response => {
-                    let data = response.data;
-                    this.tituloJanela = `Desmobilizando: ${data.feedback.curriculo.nome} - ${curriculo_id}`;
-                    Object.assign(this.form, data);
-                    this.form.avaliacao = data.avaliacao ? data.avaliacao : "";
+            axios
+                .get(`${URL_ADMIN}/posadmissao/${curriculo_id}/editar`)
+                .then((response) => {
+                    let data = response.data
+                    this.tituloJanela = `Desmobilizando: ${data.feedback.curriculo.nome} - ${curriculo_id}`
+                    Object.assign(this.form, data)
+                    this.form.avaliacao = data.avaliacao ? data.avaliacao : ''
                     if (data.alternativas) {
-
                     } else {
-                        this.form.alternativas = _.cloneDeep(this.alternativasDefault);
+                        this.form.alternativas = _.cloneDeep(this.alternativasDefault)
                     }
 
-                    this.preload = false;
+                    this.preload = false
                     // this.form.alternativas = !data.alternativas ? data.alternativas : Object.assign(this.form.alternativas, this.alternativasDefault);
                 })
-                .catch(error => {
-                    this.preload = false;
-                });
+                .catch((error) => {
+                    this.preload = false
+                })
         },
         desmobilizar() {
-            $("#janelaAvaliar :input:visible").trigger("blur");
-            if ($("#janelaAvaliar :input:visible.is-invalid").length) {
-                mostraErro("", "Verifique os erros");
-                return false;
+            $('#janelaAvaliar :input:visible').trigger('blur')
+            if ($('#janelaAvaliar :input:visible.is-invalid').length) {
+                mostraErro('', 'Verifique os erros')
+                return false
             }
 
-            this.preload = true;
-            axios.put(`${URL_ADMIN}/posadmissao/desmobilizar`, this.form)
-                .then(response => {
-                    let data = response.data;
-                    this.cadastrando = false;
-                    this.atualizado = true;
-                    this.atualizar();
-                    this.preload = false;
+            this.preload = true
+            axios
+                .put(`${URL_ADMIN}/posadmissao/desmobilizar`, this.form)
+                .then((response) => {
+                    let data = response.data
+                    this.cadastrando = false
+                    this.atualizado = true
+                    this.atualizar()
+                    this.preload = false
                 })
-                .catch(error => {
-                    this.preload = false;
-                });
-
+                .catch((error) => {
+                    this.preload = false
+                })
         },
         formEntrevistar(curriculo_id) {
-            this.tituloJanela = `Entrevista de desligamento ${curriculo_id}`;
-            this.form.curriculo_id = curriculo_id;
-            this.cadastrando = true;
-            this.atualizado = false;
-            this.preload = true;
+            this.tituloJanela = `Entrevista de desligamento ${curriculo_id}`
+            this.form.curriculo_id = curriculo_id
+            this.cadastrando = true
+            this.atualizado = false
+            this.preload = true
 
-            this.avaliacao = false;
-            this.desmobilizacao = false;
-            this.entrevista = true;
+            this.avaliacao = false
+            this.desmobilizacao = false
+            this.entrevista = true
 
             // this.form = _.cloneDeep(this.formDefault)
-            Object.assign(this.form, this.formDefault);
+            Object.assign(this.form, this.formDefault)
 
-            axios.get(`${URL_ADMIN}/posadmissao/${curriculo_id}/editar`)
-                .then(response => {
-                    let data = response.data;
-                    this.tituloJanela = `Entrevista de desligamento: ${data.feedback.curriculo.nome} - ${curriculo_id}`;
-                    Object.assign(this.form, data);
+            axios
+                .get(`${URL_ADMIN}/posadmissao/${curriculo_id}/editar`)
+                .then((response) => {
+                    let data = response.data
+                    this.tituloJanela = `Entrevista de desligamento: ${data.feedback.curriculo.nome} - ${curriculo_id}`
+                    Object.assign(this.form, data)
 
                     if (!this.form.feedback.entrevista_desligamento) {
-                        this.form.entrevista_desligamento = _.cloneDeep(this.formDefault.entrevista_desligamento);
+                        this.form.entrevista_desligamento = _.cloneDeep(this.formDefault.entrevista_desligamento)
                         // Object.assign(this.form.entrevista_desligamento, this.formDefault.entrevista_desligamento);
                     } else {
-                        this.form.entrevista_desligamento = this.form.feedback.entrevista_desligamento;
+                        this.form.entrevista_desligamento = this.form.feedback.entrevista_desligamento
                     }
                     // this.form.entrevista_desligamento = !this.form.entrevista_desligamento ? Object.assign(this.form.entrevista_desligamento, this.formDefault.entrevista_desligamento) : Object.assign(this.form, data);
-                    this.preload = false;
+                    this.preload = false
                 })
-                .catch(error => {
-                    this.preload = false;
-                });
+                .catch((error) => {
+                    this.preload = false
+                })
         },
         entrevistar() {
-            $("#janelaAvaliar :input:visible").trigger("blur");
-            if ($("#janelaAvaliar :input:visible.is-invalid").length) {
-                mostraErro("", "Verifique os erros");
-                return false;
+            $('#janelaAvaliar :input:visible').trigger('blur')
+            if ($('#janelaAvaliar :input:visible.is-invalid').length) {
+                mostraErro('', 'Verifique os erros')
+                return false
             }
             // this.form._method = 'PUT';
-            this.preload = true;
+            this.preload = true
 
             if (!this.form.entrevista_desligamento.id) {
-                axios.post(`${URL_ADMIN}/posadmissao/entrevistar`, this.form).then(response => {
-                    let data = response.data;
-                    this.cadastrando = false;
-                    this.atualizado = true;
-                    this.atualizar();
-                    this.preload = false;
-                })
-                    .catch(error => {
-                        this.preload = false;
-                    });
+                axios
+                    .post(`${URL_ADMIN}/posadmissao/entrevistar`, this.form)
+                    .then((response) => {
+                        let data = response.data
+                        this.cadastrando = false
+                        this.atualizado = true
+                        this.atualizar()
+                        this.preload = false
+                    })
+                    .catch((error) => {
+                        this.preload = false
+                    })
             } else {
                 // this.form.entrevista_desligamento._method = 'PUT';
-                axios.put(`${URL_ADMIN}/posadmissao/entrevistar/${this.form.entrevista_desligamento.id}`, this.form.entrevista_desligamento)
-                    .then(response => {
-                        let data = response.data;
-                        this.cadastrando = false;
-                        this.atualizado = true;
-                        this.atualizar();
-                        this.preload = false;
+                axios
+                    .put(`${URL_ADMIN}/posadmissao/entrevistar/${this.form.entrevista_desligamento.id}`, this.form.entrevista_desligamento)
+                    .then((response) => {
+                        let data = response.data
+                        this.cadastrando = false
+                        this.atualizado = true
+                        this.atualizar()
+                        this.preload = false
                     })
-                    .catch(error => {
-                        this.preload = false;
-                    });
+                    .catch((error) => {
+                        this.preload = false
+                    })
             }
         },
         formRetornarStatus(curriculo_id) {
-            this.tituloJanela = `Remoção de demissão ${curriculo_id}`;
-            this.form.curriculo_id = curriculo_id;
-            this.cadastrando = false;
-            this.atualizado = false;
-            this.atualizado = false;
-            this.preload = true;
-            this.revertendo_status = true;
+            this.tituloJanela = `Remoção de demissão ${curriculo_id}`
+            this.form.curriculo_id = curriculo_id
+            this.cadastrando = false
+            this.atualizado = false
+            this.atualizado = false
+            this.preload = true
+            this.revertendo_status = true
 
-            axios.get(`${URL_ADMIN}/posadmissao/${curriculo_id}/editar`)
-                .then(response => {
-                    let data = response.data;
-                    this.demitido = !!data.demissao;
-                    this.tituloJanela = `Remoção de demissão: ${data.feedback.curriculo.nome} - ${curriculo_id}`;
+            axios
+                .get(`${URL_ADMIN}/posadmissao/${curriculo_id}/editar`)
+                .then((response) => {
+                    let data = response.data
+                    this.demitido = !!data.demissao
+                    this.tituloJanela = `Remoção de demissão: ${data.feedback.curriculo.nome} - ${curriculo_id}`
                     this.auditoria_form = {
                         empresa_id: AUTENTICADO.empresa_id,
                         usuario_id: AUTENTICADO.user_id,
                         feedback_id: data.feedback.id,
                         colaborador_id: data.feedback.curriculo.id,
-                        tipo: "remover_demissao",
-                        descricao: "",
+                        tipo: 'remover_demissao',
+                        descricao: '',
                         dados: {
                             nome: data.feedback.curriculo.nome,
                             cpf: data.feedback.curriculo.cpf,
@@ -605,106 +632,111 @@ const app = new Vue({
                             data_admissao: data.data_admissao,
                             data_demissao: data.demissao.data_desmobilizacao,
                             autenticado_nome: AUTENTICADO.nome,
-                            motivo: "",
-                            token: this.generateUuid(),
-                        },
+                            motivo: '',
+                            token: this.generateUuid()
+                        }
                     }
-                    Object.assign(this.form, data);
-                    this.form.demissao = data.demissao ? data.demissao : _.cloneDeep(this.formDefault.demissao);
-                    this.preload = false;
+                    Object.assign(this.form, data)
+                    this.form.demissao = data.demissao ? data.demissao : _.cloneDeep(this.formDefault.demissao)
+                    this.preload = false
                 })
-                .catch(error => {
-                    this.preload = false;
-                });
+                .catch((error) => {
+                    this.preload = false
+                })
         },
         reverterDemissao() {
             if (this.auditoria_form.descricao.length === 0) {
-                mostraErro("", "Informe o motivo da reversão da demissão");
-                return false;
+                mostraErro('', 'Informe o motivo da reversão da demissão')
+                return false
             }
-            this.auditoria_form.dados.motivo = this.auditoria_form.descricao;
-            this.preload = true;
+            this.auditoria_form.dados.motivo = this.auditoria_form.descricao
+            this.preload = true
 
-            axios.put(`${URL_ADMIN}/posadmissao/remover-demissao`, this.auditoria_form)
-                .then(response => {
-                    mostraSucesso("", "Reversão de demissaão concluida");
-                    this.atualizar();
-                    this.$refs.janelaRetornarStatus.fecharModal();
-                    this.revertendo_status = false;
-                    this.preload = false;
-
+            axios
+                .put(`${URL_ADMIN}/posadmissao/remover-demissao`, this.auditoria_form)
+                .then((response) => {
+                    mostraSucesso('', 'Reversão de demissaão concluida')
+                    this.atualizar()
+                    this.$refs.janelaRetornarStatus?.fecharModal()
+                    this.revertendo_status = false
+                    this.preload = false
                 })
-                .catch(error => {
-                    this.preload = false;
-                });
+                .catch((error) => {
+                    this.preload = false
+                })
         },
         listaVagas() {
-            this.preload = true;
+            this.preload = true
             $.get(`${URL_PUBLICO}/lista-vagas`)
                 .done((data) => {
-                    this.preload = false;
-                    this.vagas = data.vagas;
+                    this.preload = false
+                    this.vagas = data.vagas
                 })
                 .fail((data) => {
-                    this.preload = false;
-                });
+                    this.preload = false
+                })
         },
 
         listaAreasGeral() {
-            this.preload = true;
-            axios.get(`${URL_PUBLICO}/lista-areas`)
+            this.preload = true
+            axios
+                .get(`${URL_PUBLICO}/lista-areas`)
                 .then((response) => {
-                    this.preload = false;
-                    this.listaAreas = response.data.areas;
-                }).catch((error) => {
-                this.preload = false;
-            });
+                    this.preload = false
+                    this.listaAreas = response.data.areas
+                })
+                .catch((error) => {
+                    this.preload = false
+                })
         },
         janelaConfirmar(id) {
-            this.form.id = id;
-            this.apagado = false;
+            this.form.id = id
+            this.apagado = false
 
-            this.preload = false;
+            this.preload = false
         },
         gerarPdf(item) {
-            let link = `${URL_ADMIN}/posadmissao/demitir/pdf/${item}`;
-            open(link, "blank");
+            let link = `${URL_ADMIN}/posadmissao/demitir/pdf/${item}`
+            open(link, 'blank')
         },
         download(item) {
-            var extensao = "";
-            if (item === "demissao_com_justa_causa") {
-                extensao = ".doc";
+            var extensao = ''
+            if (item === 'demissao_com_justa_causa') {
+                extensao = '.doc'
             } else {
-                extensao = ".png";
+                extensao = '.png'
             }
-            open(`https://mybp-prod.s3.amazonaws.com/public/${item}${extensao}`, "blank");
+            open(`https://mybp-prod.s3.amazonaws.com/public/${item}${extensao}`, 'blank')
         },
         carregou(dados) {
-            this.lista = dados.items;
-            this.listaMotivos = dados.motivos_rescisoes;
-            this.listaAvisos = dados.tipos_rescisoes;
-            this.listaClassificacoes = dados.classificacoes_rescisoes;
-            this.formulario = dados.formulario;
-            this.alternativasDefault = dados.form_limpo;
-            this.selecionaTudo = this.tudoMarcado;
-            this.form.alternativas = _.cloneDeep(this.alternativasDefault);
-            this.controle.carregando = false;
+            this.lista = dados.items
+            this.listaMotivos = dados.motivos_rescisoes
+            this.listaAvisos = dados.tipos_rescisoes
+            this.listaClassificacoes = dados.classificacoes_rescisoes
+            this.formulario = dados.formulario
+            this.alternativasDefault = dados.form_limpo
+            this.selecionaTudo = this.tudoMarcado
+            this.form.alternativas = _.cloneDeep(this.alternativasDefault)
+            this.controle.carregando = false
 
-            this.lista_ccs = dados.cc;
+            this.lista_ccs = dados.cc
             if (!this.AUTENTICADO.temFilial) {
-                this.controle.dados.campoCnpj = Object.keys(dados.cc.cnpjs)[0];
+                this.controle.dados.campoCnpj = Object.keys(dados.cc.cnpjs)[0]
             }
 
-            this.posadmissao_form_rh = dados.posadmissao_form_rh;
-            this.posadmissao_form_adm = dados.posadmissao_form_adm;
-            this.posadmissao_form_ssma = dados.posadmissao_form_ssma;
+            this.posadmissao_form_rh = dados.posadmissao_form_rh
+            this.posadmissao_form_adm = dados.posadmissao_form_adm
+            this.posadmissao_form_ssma = dados.posadmissao_form_ssma
         },
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
-});
+})
+
+registerGlobals(app)
+app.mount('#app')

@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|ManutencaoProgramada newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ManutencaoProgramada newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ManutencaoProgramada query()
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class ManutencaoProgramada extends Model

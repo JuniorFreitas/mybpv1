@@ -1,8 +1,12 @@
-import contrato from '../../../../components/administracao/documentoslegais/contrato';
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../../registerGlobals'
+import contrato from '../../../../components/administracao/documentoslegais/contrato'
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     components: {
         contrato
     }
-});
+})
+
+registerGlobals(app)
+app.mount('#app')

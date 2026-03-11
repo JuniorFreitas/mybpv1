@@ -1,6 +1,8 @@
-const app = new Vue({
-    el: '#app',
-    data: {
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+const app = createApp({
+    data() {
+        return {
         tituloJanela: 'Campos personalizados - Requisição de Vaga',
         campos: [],
         carregando: true,
@@ -50,7 +52,7 @@ const app = new Vue({
             };
             this.opcoesTexto = (this.form.opcoes && Array.isArray(this.form.opcoes)) ? this.form.opcoes.join('\n') : '';
             if (!campo) {
-                $('#janelaCadastrar').modal('show');
+                this.$refs.janelaCadastrar?.abrirModal();
             }
         },
         opcoesParaArray() {
@@ -85,7 +87,7 @@ const app = new Vue({
             req
                 .then(() => {
                     mostraSucesso('', 'Salvo com sucesso.');
-                    $('#janelaCadastrar').modal('hide');
+                    this.$refs.janelaCadastrar?.fecharModal();
                     this.listar();
                 })
                 .catch((err) => {
@@ -119,3 +121,6 @@ const app = new Vue({
         }
     }
 });
+
+registerGlobals(app)
+app.mount('#app');

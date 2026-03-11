@@ -49,7 +49,7 @@
                     <div>
                         <button
                             type="button"
-                            class="btn btn-sm btn-success"
+                            class="btn btn-sm mr-1 btn-success"
                             :disabled="loading"
                             @click="$emit('atualizar')"
                         >

@@ -24,6 +24,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Pcmso whereEmpresaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Pcmso whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Pcmso whereLabel($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class Pcmso extends Model

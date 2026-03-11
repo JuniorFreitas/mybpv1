@@ -30,6 +30,12 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|AprovacaoExtraConfig whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AprovacaoExtraConfig whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AprovacaoExtraConfig whereUpdatedAt($value)
+ * @property array<array-key, mixed>|null $usuarios_autorizados Array de user_ids autorizados a aprovar (além de quem tem privilegio_rh)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AprovacaoExtraConfig ativo()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AprovacaoExtraConfig tipoProcesso($tipo)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AprovacaoExtraConfig whereUsuariosAutorizados($value)
  * @mixin \Eloquent
  */
 class AprovacaoExtraConfig extends Model

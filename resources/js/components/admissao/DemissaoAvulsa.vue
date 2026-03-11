@@ -3,12 +3,12 @@
         <fieldset>
             <legend>Informações do Colaborador</legend>
             <div style="text-transform: uppercase">
-                <span>Nome: <strong>@{{ form.curriculo.nome }}</strong></span><br>
-                <span>CPF: <strong>@{{ form.curriculo.cpf }}</strong></span><br>
+                <span>Nome: <strong>{{ form.curriculo.nome }}</strong></span><br>
+                <span>CPF: <strong>{{ form.curriculo.cpf }}</strong></span><br>
                 <span>
-                            Cargo: <strong>@{{ form.admissao.cargo }}</strong> | Função: <strong>
-                                @{{ form.admissao.funcao }}</strong></span><br>
-                <span>Data de admissão: <strong>@{{ form.admissao.data_admissao }}</strong></span><br>
+                            Cargo: <strong>{{ form.admissao.cargo }}</strong> | Função: <strong>
+                                {{ form.admissao.funcao }}</strong></span><br>
+                <span>Data de admissão: <strong>{{ form.admissao.data_admissao }}</strong></span><br>
             </div>
         </fieldset>
     </div>

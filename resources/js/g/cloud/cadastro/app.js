@@ -1,31 +1,32 @@
-import cadastro from '../../../components/cloud/cadastro';
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import cadastro from '../../../components/cloud/cadastro'
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     components: {
         cadastro
-    },
+    }
     // data: {
-        // tituloJanela: 'Cadastrando Cloud',
-        // preloadAjax: false,
-        // editando: false,
-        // cadastrado: false,
-        // atualizado: false,
-        // apagado: false,
-        //
-        // form: {
-        //     nome: '',
-        //     ativo: true,
-        // },
-        //
-        // formDefault: null,
-        //
-        // lista: [],
-        //
-        // controle: {
-        //     carregando: false,
-        //     dados: {},
-        // }
+    // tituloJanela: 'Cadastrando Cloud',
+    // preloadAjax: false,
+    // editando: false,
+    // cadastrado: false,
+    // atualizado: false,
+    // apagado: false,
+    //
+    // form: {
+    //     nome: '',
+    //     ativo: true,
+    // },
+    //
+    // formDefault: null,
+    //
+    // lista: [],
+    //
+    // controle: {
+    //     carregando: false,
+    //     dados: {},
+    // }
     // },
     // mounted() {
     // mounted() {
@@ -136,8 +137,11 @@ const app = new Vue({
     //         this.controle.carregando = true;
     //     },
     //     atualizar() {
-    //         this.$refs.componente.atual = 1;
-    //         this.$refs.componente.buscar();
+    //         this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1);
+    //         this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null;
     //     }
     // }
-});
+})
+
+registerGlobals(app)
+app.mount('#app')

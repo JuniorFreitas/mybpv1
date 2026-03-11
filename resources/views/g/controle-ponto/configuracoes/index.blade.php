@@ -3,24 +3,24 @@
 @section('content_header', 'Controle de ponto: configurações')
 @section('content')
     {{--Janela confirmar pagar--}}
-    <modal id="janelaConfirmar" titulo="Apagar perimetro">
-        <template slot="conteudo">
+    <modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar perimetro">
+        <template #conteudo>
             <preload v-show="formPerimetro.preload" label="Aguarde..."></preload>
             <div class="alert alert-success alert-dismissible" v-show="formPerimetro.save">
                 <h4><i class="icon fa fa-check"></i> Perímetro apagado com sucesso!</h4>
             </div>
             <h4 v-show="!formPerimetro.save && !formPerimetro.preload">Atenção! Deseja realmente apagar perímetro:</h4>
         </template>
-        <template slot="rodape">
-            <button type="button" class="btn btn-sm btn-danger" @click="apagarPerimetro()"
+        <template #rodape>
+            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagarPerimetro()"
                     v-show="!formPerimetro.save && !formPerimetro.preload">Apagar
             </button>
         </template>
     </modal>
 
     <!--Janela de Adicionar/Editar Perimetro-->
-    <modal id="janelaFormPerimetro" :titulo="formPerimetro.titulo" :fechar="!formPerimetro.preload" size="g">
-        <template slot="conteudo">
+    <modal ref="janelaFormPerimetro" id="janelaFormPerimetro" :titulo="formPerimetro.titulo" :fechar="!formPerimetro.preload" size="g">
+        <template #conteudo>
             <h4 class="text-success text-center" v-if="!formPerimetro.preload && formPerimetro.save">
                 <i class="fas fa-check fa-2x"></i><br>
                 Perímetro
@@ -118,8 +118,8 @@
                 </div>
             </div>
         </template>
-        <template slot="rodape">
-            <button v-if="!formPerimetro.preload && !formPerimetro.save" class="btn btn-sm btn-success" type="button"
+        <template #rodape>
+            <button v-if="!formPerimetro.preload && !formPerimetro.save" class="btn btn-sm mr-1 btn-success" type="button"
                     @click="salvarPerimetro">
                 <span v-if="formPerimetro.editando">Alterar</span>
                 <span v-else>Cadastrar</span>
@@ -128,9 +128,9 @@
     </modal>
 
     <!--Janela de Associar Perimetro-->
-    <modal id="janelaAssociarPerimetro" titulo="Associar perímetros" :fechar="!formPerimetroFuncionarios.preload"
+    <modal ref="janelaAssociarPerimetro" id="janelaAssociarPerimetro" titulo="Associar perímetros" :fechar="!formPerimetroFuncionarios.preload"
            @fechou="resetFuncionariosSelecionados">
-        <template slot="conteudo">
+        <template #conteudo>
             <h4 class="text-success text-center"
                 v-if="!formPerimetroFuncionarios.preload && formPerimetroFuncionarios.update">
                 <i class="fas fa-check fa-2x"></i><br>
@@ -162,10 +162,10 @@
                 </div>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button :disabled="listaPerimetros.length === 0"
                     v-if="!formPerimetroFuncionarios.preload && !formPerimetroFuncionarios.update"
-                    class="btn btn-sm btn-success" type="button" @click="assosicarPerimetros">
+                    class="btn btn-sm mr-1 btn-success" type="button" @click="assosicarPerimetros">
                 <i class="fas fa-link"></i> Aplicar
             </button>
         </template>
@@ -244,8 +244,8 @@
                     <h4 v-show="!paginacaoPerimetros.carregando && listaPerimetros.length > 0" class="mt-3"> Perímetros
                         cadastrados </h4>
                     <p class="text-right" v-if="perimetros_insert">
-                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
-                                data-target="#janelaFormPerimetro" @click="formNovoPerimetro">
+                        <button type="button" class="btn btn-primary btn-sm"
+                                @click="formNovoPerimetro(); $refs.janelaFormPerimetro?.abrirModal()">
                             <i class="fas fa-map-marker-alt"></i> Adicionar perímetro
                         </button>
                     </p>
@@ -278,16 +278,14 @@
                         <tr class="pointer" v-for="peri in listaPerimetros">
                             <td data-label="descrição">@{{peri.descricao}}</td>
                             <td data-label="editar">
-                                <a v-if="perimetros_update" href="javascript://" data-toggle="modal"
-                                   data-target="#janelaFormPerimetro" class="btn btn-sm btn-success"
-                                   @click="formEditarPerimetro(peri)"><i aria-hidden="true" class="fa fa-edit"></i>
+                                <a v-if="perimetros_update" href="javascript://" class="btn btn-sm mr-1 btn-success"
+                                   @click="formEditarPerimetro(peri); $refs.janelaFormPerimetro?.abrirModal()"><i aria-hidden="true" class="fa fa-edit"></i>
                                     Editar
                                 </a>
                             </td>
                             <td data-label="excluir">
-                                <a v-if="perimetros_delete" href="javascript://" data-toggle="modal"
-                                   data-target="#janelaConfirmar" class="btn btn-sm btn-danger"
-                                   @click="formApagarPerimetro(peri.id)"><i aria-hidden="true" class="fa fa-trash"></i>
+                                <a v-if="perimetros_delete" href="javascript://" class="btn btn-sm mr-1 btn-danger"
+                                   @click="formApagarPerimetro(peri.id); $refs.janelaConfirmar?.abrirModal()"><i aria-hidden="true" class="fa fa-trash"></i>
                                     Excluir
                                 </a>
                             </td>
@@ -323,8 +321,7 @@
                             <div class="col-auto mb-2">
                                 <button v-if="perimetros_funcionarios" type="button" class="btn btn-secondary"
                                         :disabled="formPerimetroFuncionarios.funcionariosSelecionados.length===0"
-                                        data-toggle="modal" data-target="#janelaAssociarPerimetro"
-                                        @click="formAssociarPerimetro">
+                                        @click="formAssociarPerimetro(); $refs.janelaAssociarPerimetro?.abrirModal()">
                                     <i class="fas fa-link"></i> Associar perímetro
                                 </button>
                             </div>

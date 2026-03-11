@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|TipoAviso whereAtivo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoAviso whereDescricao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoAviso whereId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class TipoAviso extends Model

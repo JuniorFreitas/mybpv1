@@ -1,63 +1,67 @@
-const app = new Vue({
-    el: "#app",
-    data: {
-        tituloJanela: "Cadastrando Projeto",
-        preloadAjax: false,
-        editando: false,
-        apagado: false,
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
 
-        pages: 10,
+const app = createApp({
+    data() {
+        return {
+            tituloJanela: 'Cadastrando Projeto',
+            preloadAjax: false,
+            editando: false,
+            apagado: false,
 
-        form: {
-            nome: "",
-            qnt_total: 1,
-            preenchidas: 0,
-            vagas_projeto: [],
-            vagas_projetoDelete: [],
-            autocomplete_label_vaga_aberta: ""
-        },
+            pages: 10,
 
-        hash: `mastertag_${parseInt((Math.random() * 999999))}`,
+            form: {
+                nome: '',
+                qnt_total: 1,
+                preenchidas: 0,
+                vagas_projeto: [],
+                vagas_projetoDelete: [],
+                autocomplete_label_vaga_aberta: ''
+            },
 
-        formDefault: null,
-        campoNome: null,
+            hash: `mastertag_${parseInt(Math.random() * 999999)}`,
 
-        cadastrado: false,
-        atualizado: false,
+            formDefault: null,
+            campoNome: null,
 
-        lista: [],
+            cadastrado: false,
+            atualizado: false,
 
-        controle: {
-            carregando: false,
-            dados: {
-                campoBusca: "",
-                campoStatus: ""
+            lista: [],
+
+            controle: {
+                carregando: false,
+                dados: {
+                    campoBusca: '',
+                    campoStatus: ''
+                }
             }
         }
     },
     computed: {
         totalRestanteVagas() {
-            let totalProjeto = this.form.qnt_total;
+            let totalProjeto = this.form.qnt_total
             let totalVagas = this.form.vagas_projeto.reduce((total, vaga) => {
-                return total + parseFloat(vaga.qnt_total);
-            }, 0);
+                return total + parseFloat(vaga.qnt_total)
+            }, 0)
 
-            let somatorio = totalProjeto - totalVagas;
+            let somatorio = totalProjeto - totalVagas
 
             if (isNaN(somatorio)) {
-                somatorio = -1;
+                somatorio = -1
             }
 
             if (somatorio < 0) {
-                mostraErro("", "A soma das vagas não pode ser maior que a quantidade total do projeto.");
+                mostraErro('', 'A soma das vagas não pode ser maior que a quantidade total do projeto.')
             }
 
-            return somatorio;
+            return somatorio
         }
     },
     mounted() {
-        this.formDefault = _.cloneDeep(this.form); //copia
-        this.atualizar();
+        this.formDefault = _.cloneDeep(this.form) //copia
+        this.atualizar()
     },
     methods: {
         // removerLIColaborador(index) {
@@ -67,128 +71,134 @@ const app = new Vue({
         //     this.form.vagas_projeto.splice(index, 1);
         // },
         selecionaVaga(obj) {
-            const vagas_projeto = {};
-            vagas_projeto.novo = true;
-            vagas_projeto.vaga_aberta_id = obj.id;
-            vagas_projeto.empresa_id = obj.empresa_id;
-            vagas_projeto.projeto_id = null;
-            vagas_projeto.qnt_total = this.totalRestanteVagas;
-            vagas_projeto.qnt_preenchida = 0;
-            vagas_projeto.vaga_aberta = obj;
+            const vagas_projeto = {}
+            vagas_projeto.novo = true
+            vagas_projeto.vaga_aberta_id = obj.id
+            vagas_projeto.empresa_id = obj.empresa_id
+            vagas_projeto.projeto_id = null
+            vagas_projeto.qnt_total = this.totalRestanteVagas
+            vagas_projeto.qnt_preenchida = 0
+            vagas_projeto.vaga_aberta = obj
 
-            let atual = this.form.vagas_projeto.findIndex(val => val.vaga_aberta_id === vagas_projeto.vaga_aberta_id);
+            let atual = this.form.vagas_projeto.findIndex((val) => val.vaga_aberta_id === vagas_projeto.vaga_aberta_id)
 
-            if (atual < 0) {//Se não existir ainda no array
-                this.form.vagas_projeto.push(vagas_projeto);
+            if (atual < 0) {
+                //Se não existir ainda no array
+                this.form.vagas_projeto.push(vagas_projeto)
             } else {
-                mostraErro("", `A vaga ${vagas_projeto.vaga_aberta.titulo} já está na lista.`);
+                mostraErro('', `A vaga ${vagas_projeto.vaga_aberta.titulo} já está na lista.`)
             }
 
-            this.form.autocomplete_label_vaga_aberta = "";
+            this.form.autocomplete_label_vaga_aberta = ''
         },
 
         formNovo() {
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.editando = false;
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
 
-            this.tituloJanela = "Cadastrando Projeto";
+            this.tituloJanela = 'Cadastrando Projeto'
 
-            formReset();
-            setupCampo();
+            formReset()
+            setupCampo()
 
-            this.form = _.cloneDeep(this.formDefault); //copia
-            this.leitura = false;
-
+            this.form = _.cloneDeep(this.formDefault) //copia
+            this.leitura = false
         },
         cadastrar() {
-            formReset();
+            formReset()
 
-            $("#janelaCadastrar :input:enabled").trigger("blur");
+            $('#janelaCadastrar :input:enabled').trigger('blur')
 
-            if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
-                mostraErro("", "Verificar os erros");
-                return false;
+            if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
+                mostraErro('', 'Verificar os erros')
+                return false
             }
 
             if (this.totalRestanteVagas < 0) {
-                mostraErro("", "A soma das vagas não pode ser maior que a quantidade total do projeto.");
-                return false;
+                mostraErro('', 'A soma das vagas não pode ser maior que a quantidade total do projeto.')
+                return false
             }
 
-            this.preloadAjax = true;
-            this.form.qnt_total_restante = this.totalRestanteVagas;
+            this.preloadAjax = true
+            this.form.qnt_total_restante = this.totalRestanteVagas
 
-            axios.post(`${URL_ADMIN}/cadastro/projetos`, this.form)
-                .then(response => {
+            axios
+                .post(`${URL_ADMIN}/cadastro/projetos`, this.form)
+                .then((response) => {
                     if (response.status === 201) {
-                        this.preloadAjax = false;
-                        this.cadastrado = true;
-                        this.atualizar();
+                        this.preloadAjax = false
+                        this.cadastrado = true
+                        this.atualizar()
                     }
-                }).catch(error => (this.preloadAjax = false));
+                })
+                .catch((error) => (this.preloadAjax = false))
         },
         formAlterar(id) {
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.editando = false;
-            this.tituloJanela = "Alterando Projeto";
-            this.preloadAjax = true;
-            formReset();
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
+            this.tituloJanela = 'Alterando Projeto'
+            this.preloadAjax = true
+            formReset()
 
-            this.form = _.cloneDeep(this.formDefault); //copia
-            this.leitura = true;
+            this.form = _.cloneDeep(this.formDefault) //copia
+            this.leitura = true
 
-            axios.get(`${URL_ADMIN}/cadastro/projetos/${id}/editar`)
-                .then(response => {
-                    Object.assign(this.form, response.data);
-                    this.editando = true;
-                    this.preloadAjax = false;
-                    setupCampo();
-                }).catch(
-                error => (this.preloadAjax = false)
-            );
-
+            axios
+                .get(`${URL_ADMIN}/cadastro/projetos/${id}/editar`)
+                .then((response) => {
+                    Object.assign(this.form, response.data)
+                    this.editando = true
+                    this.preloadAjax = false
+                    setupCampo()
+                })
+                .catch((error) => (this.preloadAjax = false))
         },
 
         alterar() {
-            formReset();
-            $("#janelaCadastrar :input:enabled").trigger("blur");
+            formReset()
+            $('#janelaCadastrar :input:enabled').trigger('blur')
 
-            if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
-                mostraErro("", "Verificar os erros");
-                return false;
+            if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
+                mostraErro('', 'Verificar os erros')
+                return false
             }
 
             if (this.totalRestanteVagas < 0) {
-                mostraErro("", "A soma das vagas não pode ser maior que a quantidade total do projeto.");
-                return false;
+                mostraErro('', 'A soma das vagas não pode ser maior que a quantidade total do projeto.')
+                return false
             }
 
-            this.form._method = "PUT";
-            this.preloadAjax = true;
-            this.form.qnt_total_restante = this.totalRestanteVagas;
+            this.form._method = 'PUT'
+            this.preloadAjax = true
+            this.form.qnt_total_restante = this.totalRestanteVagas
 
-            axios.put(`${URL_ADMIN}/cadastro/projetos/${this.form.id}`, this.form).then(response => {
-                this.preloadAjax = false;
-                this.atualizado = true;
-                this.atualizar();
-            }).catch(error => (this.preloadAjax = false));
-
+            axios
+                .put(`${URL_ADMIN}/cadastro/projetos/${this.form.id}`, this.form)
+                .then((response) => {
+                    this.preloadAjax = false
+                    this.atualizado = true
+                    this.atualizar()
+                })
+                .catch((error) => (this.preloadAjax = false))
         },
 
         carregou(dados) {
-            this.lista = dados.itens;
-            this.controle.carregando = false;
+            this.lista = dados.itens
+            this.controle.carregando = false
         },
 
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
 
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
-});
+})
+
+registerGlobals(app)
+app.mount('#app')

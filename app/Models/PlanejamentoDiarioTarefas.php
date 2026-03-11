@@ -22,6 +22,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiarioTarefas wherePlanejamentoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiarioTarefas whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PlanejamentoDiarioTarefas whereTarefa($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class PlanejamentoDiarioTarefas extends Model

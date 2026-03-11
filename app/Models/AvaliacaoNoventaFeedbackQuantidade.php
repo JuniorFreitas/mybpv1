@@ -28,6 +28,8 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedbackQuantidade whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedbackQuantidade whereQuantidadeAvaliacao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AvaliacaoNoventaFeedbackQuantidade whereUpdatedAt($value)
+ * @property string|null $definicao_contrato prorroga = prorroga contrato, finaliza = finaliza contrato
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AvaliacaoNoventaFeedbackQuantidade whereDefinicaoContrato($value)
  * @mixin \Eloquent
  */
 class AvaliacaoNoventaFeedbackQuantidade extends Model

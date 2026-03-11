@@ -9,6 +9,7 @@ use App\Models\Curriculo;
 use App\Models\FeedbackCurriculo;
 use App\Models\ResultadoIntegrado;
 use App\Models\User;
+use App\Services\Treinamento\CarteiraImagemCache;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -194,7 +195,17 @@ class PortariaController extends Controller
     public function pdf(Request $request)
     {
         $this->authorize('treinamento_portaria');
-        $feedbacks = FeedbackCurriculo::whereIn('id', $request->selecionados)->get();
+        $feedbacks = FeedbackCurriculo::whereIn('id', $request->selecionados)
+            ->with(['Curriculo.FotoTres'])
+            ->get();
+        foreach ($feedbacks as $candidato) {
+            $curriculo = $candidato->Curriculo;
+            if ($curriculo && $curriculo->fotoTres->isNotEmpty()) {
+                $firstFoto = $curriculo->fotoTres->first();
+                $dataUrl = CarteiraImagemCache::fotoCurriculo3x4ParaDataUrl($firstFoto->file);
+                $firstFoto->setAttribute('url_base64', $dataUrl);
+            }
+        }
         return view('pdf.portaria.ficha', compact('feedbacks'));
     }
 

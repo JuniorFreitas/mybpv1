@@ -40,6 +40,10 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereOrdem($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento wherePrazoFixo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento wherePrazoParada($value)
+ * @property-read \App\Models\SegmentoTreinamento|null $SegmentoTreinamento
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $arquivosVencimentos
+ * @property-read int|null $arquivos_vencimentos_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Vencimento whereSegmentoTreinamentoId($value)
  * @mixin \Eloquent
  */
 class Vencimento extends Model

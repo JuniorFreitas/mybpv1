@@ -4,13 +4,13 @@ const configuracoes = {
             authconfiguracao: null
         };
     },
-    mounted() {
-        axios.get(`${URL_ADMIN}/usuario/autenticado/`)
-            .then(({data}) => {
-                this.authconfiguracao = data;
-            })
-            .catch(error => {
-            });
+    async mounted() {
+        try {
+            const { data } = await axios.get(`${URL_ADMIN}/usuario/autenticado/`);
+            this.authconfiguracao = data;
+        } catch (error) {
+            // silencioso
+        }
     },
     computed: {
         whatsappLiberado() {

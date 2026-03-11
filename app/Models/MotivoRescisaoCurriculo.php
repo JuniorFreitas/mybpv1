@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|MotivoRescisaoCurriculo whereFeedbackId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MotivoRescisaoCurriculo whereMotivoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|MotivoRescisaoCurriculo whereOutro($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class MotivoRescisaoCurriculo extends Model

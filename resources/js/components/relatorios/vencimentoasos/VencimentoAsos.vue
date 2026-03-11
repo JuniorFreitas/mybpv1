@@ -2,7 +2,7 @@
     <div>
         <fieldset class="mt-2">
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="$refs.componente.buscar()">
+            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
                 <div class="col-12 col-md-6">
                     <div class="form-check" style="margin-bottom: -11px;">
                         <input type="checkbox" class="form-check-input" @change="buscarDados()"
@@ -67,7 +67,7 @@
                         <select class="form-control form-control-sm" v-model="controle.dados.campoTipoExame"
                                 :disabled="preload" @change="buscarDados()">
                             <option value="">Todos os tipos</option>
-                            <option v-for="item in listaTiposExame" :value="item.id">{{ item.label }}</option>
+                            <option v-for="(item, index) in listaTiposExame" :value="item.id" :key="item.id || index">{{ item.label }}</option>
                         </select>
                     </div>
                 </div>
@@ -88,13 +88,13 @@
             </form>
 
             <div class="d-flex">
-                <button type="button" class="btn btn-sm btn-success mr-1" :disabled="preload"
+                <button type="button" class="btn btn-sm mr-1 btn-success mr-1" :disabled="preload"
                         @click="buscarDados()">
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
 
-                <button type="button" class="btn btn-sm btn-primary" :disabled="preload || !dados.length"
+                <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="preload || !dados.length"
                         @click.prevent="gerarArquivoXls()">
                     <i class="fas fa-file-excel"></i> Exportar Excel
                 </button>
@@ -131,7 +131,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="(vencimento, index) in dados" :key="index"
+                    <tr v-for="(vencimento, index) in dados" :key="vencimento.id || index"
                         :class="vencimento.dias_vencer <= periodo_vencimento_numero ? 'table-danger': ''">
                         <td style="text-align: center">{{ index + 1 }}</td>
                         <td style="text-align: center">{{ vencimento.colaborador }}</td>
@@ -174,7 +174,7 @@ import ExportacaoMixin from "../../../mixins/Exportacoes";
 import Utils from "../../../mixins/Utils";
 import Validacoes from "../../../mixins/Validacoes";
 import Configuracoes from "../../../mixins/Configuracoes.js";
-import XLSX from "xlsx";
+import XLSX from "@e965/xlsx";
 
 export default {
     mixins: [configselect2, ExportacaoMixin, Utils, Validacoes, Configuracoes],
@@ -227,7 +227,7 @@ export default {
     },
     methods: {
         async gerarArquivoXls() {
-            const XLSX = require("xlsx");
+            const XLSX = require("@e965/xlsx");
 
             const dataHoraAtual = new Date().toLocaleString("en-US", {
                 timeZone: "America/Sao_Paulo",
@@ -288,25 +288,29 @@ export default {
             await this.buscarDados();
         },
 
-        buscarDados() {
+        async buscarDados() {
             this.preload = true;
-            axios.post(`${URL_ADMIN}/relatorios/vencimentoasos`, this.controle.dados).then(res => {
+            try {
+                const res = await axios.post(`${URL_ADMIN}/relatorios/vencimentoasos`, this.controle.dados);
                 this.dados = res.data.dados;
                 this.periodo_vencimento_numero = res.data.periodo_vencimento_numero;
                 this.periodo_vencimento_extenso = res.data.periodo_vencimento_extenso;
-                // this.listaTiposExame = this.dados.lista_tipos_exame;
                 this.lista_ccs = res.data.cc;
+            } finally {
                 this.preload = false;
-            })
+            }
         },
         gerarPdf() {
             // let link = `${URL_ADMIN}/relatorios/controleusuarios/pdf/${this.form}`;
             // open(link, '_blank');
         },
-        tiposExames() {
-            axios.get(`${URL_ADMIN}/relatorios/tipos-exames`).then(response => {
+        async tiposExames() {
+            try {
+                const response = await axios.get(`${URL_ADMIN}/relatorios/tipos-exames`);
                 this.listaTiposExame = response.data;
-            });
+            } catch (err) {
+                this.listaTiposExame = [];
+            }
         },
     }
 }

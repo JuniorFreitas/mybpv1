@@ -1,82 +1,84 @@
-import {tinyPadrao} from "../../../utils";
-import autocomplete from "../../../components/AutoComplete";
-import Editor from "@tinymce/tinymce-vue";
-import MixinConfig from '../../../mixins/Configuracoes';
-const app = new Vue({
-    el: "#app",
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import { tinyPadrao } from '../../../utils'
+import autocomplete from '../../../components/AutoComplete'
+import Editor from '@tinymce/tinymce-vue'
+import MixinConfig from '../../../mixins/Configuracoes'
+const app = createApp({
     components: {
         autocomplete,
-        Editor,
+        Editor
     },
     mixins: [MixinConfig],
-    data: {
-        tituloJanela: "Cadastrando Vaga",
-        preloadAjax: false,
-        editando: false,
-        apagado: false,
+    data() {
+        return {
+            tituloJanela: 'Cadastrando Vaga',
+            preloadAjax: false,
+            editando: false,
+            apagado: false,
 
-        pages: 10,
+            pages: 10,
 
-        cargos_ativos: `autocomplete/cargos_ativos`,
-        todos_municipios: `autocomplete/todos-municipios`,
+            cargos_ativos: `autocomplete/cargos_ativos`,
+            todos_municipios: `autocomplete/todos-municipios`,
 
-        hash: `mastertag_${parseInt((Math.random() * 999999))}`,
-        tinyPadrao,
-        URL_SITE,
+            hash: `mastertag_${parseInt(Math.random() * 999999)}`,
+            tinyPadrao,
+            URL_SITE,
 
-        form: {
-            vaga_id: "",
+            form: {
+                vaga_id: '',
 
-            autocomplete_label_vaga_modal: "",
-            autocomplete_label_vaga_modal_anterior: "",
+                autocomplete_label_vaga_modal: '',
+                autocomplete_label_vaga_modal_anterior: '',
 
-            autocomplete_label_municipio_modal: "",
-            autocomplete_label_municipio_modal_anterior: "",
+                autocomplete_label_municipio_modal: '',
+                autocomplete_label_municipio_modal_anterior: '',
 
-            descricao: "",
-            titulo: "",
-            requerimentos: "",
-            municipio_id: "",
+                descricao: '',
+                titulo: '',
+                requerimentos: '',
+                municipio_id: '',
 
-            simulados: [],
-            simuladosDelete: [],
+                simulados: [],
+                simuladosDelete: [],
 
-            // projetos: [],
-            // projetosDelete: [],
+                // projetos: [],
+                // projetosDelete: [],
 
-            ativo: true,
-            ativo_sistema: true
+                ativo: true,
+                ativo_sistema: true
+            },
 
-        },
+            formDefault: null,
+            campoNome: null,
 
-        formDefault: null,
-        campoNome: null,
+            cadastrado: false,
+            atualizado: false,
 
-        cadastrado: false,
-        atualizado: false,
+            lista: [],
+            listaSimulados: [],
+            listaProjetos: [],
+            listaProjetosAdicionais: [],
 
-        lista: [],
-        listaSimulados: [],
-        listaProjetos: [],
-        listaProjetosAdicionais: [],
-
-        controle: {
-            carregando: false,
-            dados: {
-                campoBusca: "",
-                campoStatus: ""
+            controle: {
+                carregando: false,
+                dados: {
+                    campoBusca: '',
+                    campoStatus: ''
+                }
             }
         }
     },
     mounted() {
-        this.formDefault = _.cloneDeep(this.form); //copia
-        this.atualizar();
+        this.formDefault = _.cloneDeep(this.form) //copia
+        this.atualizar()
         // this.listaVagas();
     },
     methods: {
         addLISimulado() {
-            const obj = {};
-            obj.novo = true;
+            const obj = {}
+            obj.novo = true
 
             obj.vaga_id = this.form.vaga_id
             obj.vagas_abertas_id = this.form.id
@@ -86,224 +88,234 @@ const app = new Vue({
             obj.online = true
             obj.ativo = false
 
-            this.form.simulados.push(obj);
+            this.form.simulados.push(obj)
         },
 
         removerLISimulado(index) {
             if (this.editando && !this.form.simulados[index].novo) {
-                this.form.simuladosDelete.push(this.form.simulados[index].id);
+                this.form.simuladosDelete.push(this.form.simulados[index].id)
             }
-            this.form.simulados.splice(index, 1);
+            this.form.simulados.splice(index, 1)
         },
 
         addLIProjeto() {
-            const obj = {};
-            obj.novo = true;
+            const obj = {}
+            obj.novo = true
 
-            obj.projeto_id = '';
-            obj.qnt_disponivel = '';
-            obj.qnt_total = '';
+            obj.projeto_id = ''
+            obj.qnt_disponivel = ''
+            obj.qnt_total = ''
 
-            this.form.projetos.push(obj);
+            this.form.projetos.push(obj)
         },
 
         removerLIProjeto(index) {
             if (this.editando && !this.form.projetos[index].novo) {
-                this.form.projetosDelete.push(this.form.projetos[index].id);
+                this.form.projetosDelete.push(this.form.projetos[index].id)
             }
-            this.form.projetos.splice(index, 1);
+            this.form.projetos.splice(index, 1)
         },
-
 
         selecionaProjeto(projeto_id, index) {
-            let projeto = _.find(this.listaProjetos, {'id': projeto_id});
-            this.form.projetos[index].qnt_disponivel = projeto.qnt_total_restante;
+            let projeto = _.find(this.listaProjetos, { id: projeto_id })
+            this.form.projetos[index].qnt_disponivel = projeto.qnt_total_restante
         },
-
 
         verificaQuantidadeVagas(qnt_disponivel, qnt_informado, projeto_id) {
             if (qnt_informado > qnt_disponivel) {
-                let projeto = _.find(this.listaProjetosAdicionais, {'id': projeto_id});
-                mostraErro('', 'Não há quantidade disponível para o projeto: ' + projeto.nome);
-                return false;
+                let projeto = _.find(this.listaProjetosAdicionais, { id: projeto_id })
+                mostraErro('', 'Não há quantidade disponível para o projeto: ' + projeto.nome)
+                return false
             }
         },
 
         selecionaVagaModal(obj) {
-            this.form.vaga_id = obj.id;
-            this.form.autocomplete_label_vaga_modal = obj.label;
-            this.form.autocomplete_label_vaga_modal_anterior = obj.label;
+            this.form.vaga_id = obj.id
+            this.form.autocomplete_label_vaga_modal = obj.label
+            this.form.autocomplete_label_vaga_modal_anterior = obj.label
         },
         resetaCampoVagaModal() {
             if (this.form.autocomplete_label_vaga_modal_anterior !== this.form.autocomplete_label_vaga_modal) {
-                this.form.autocomplete_label_vaga_modal_anterior = "";
-                this.form.autocomplete_label_vaga_modal = "";
-                this.form.vaga_id = "";
+                this.form.autocomplete_label_vaga_modal_anterior = ''
+                this.form.autocomplete_label_vaga_modal = ''
+                this.form.vaga_id = ''
 
                 setTimeout(() => {
-                    if (this.form.vaga_id === "") {
-                        valida_campo_vazio($("#" + this.hash), 1);
-                        $("#janelaCadastrar #" + this.hash).focus().trigger("blur");
-                        mostraErro("Erro", "O Campo Vaga não pode ficar vazio");
+                    if (this.form.vaga_id === '') {
+                        valida_campo_vazio($('#' + this.hash), 1)
+                        $('#janelaCadastrar #' + this.hash)
+                            .focus()
+                            .trigger('blur')
+                        mostraErro('Erro', 'O Campo Vaga não pode ficar vazio')
                     }
-                }, 100);
+                }, 100)
             }
         },
 
         selecionaMunicipioModal(obj) {
-            this.form.municipio_id = obj.id;
-            this.form.autocomplete_label_municipio_modal = obj.label;
-            this.form.autocomplete_label_municipio_modal_anterior = obj.label;
+            this.form.municipio_id = obj.id
+            this.form.autocomplete_label_municipio_modal = obj.label
+            this.form.autocomplete_label_municipio_modal_anterior = obj.label
         },
         resetaCampoMunicipioModal() {
             if (this.form.autocomplete_label_municipio_modal_anterior !== this.form.autocomplete_label_municipio_modal) {
-                this.form.autocomplete_label_municipio_modal_anterior = "";
-                this.form.autocomplete_label_municipio_modal = "";
-                this.form.municipio_id = "";
+                this.form.autocomplete_label_municipio_modal_anterior = ''
+                this.form.autocomplete_label_municipio_modal = ''
+                this.form.municipio_id = ''
 
                 setTimeout(() => {
-                    if (this.form.municipio_id === "") {
-                        valida_campo_vazio($("#mun_" + this.hash), 1);
-                        $("#janelaCadastrar #mun_" + this.hash).focus().trigger("blur");
-                        mostraErro("Erro", "O Campo Cidade não pode ficar vazio");
+                    if (this.form.municipio_id === '') {
+                        valida_campo_vazio($('#mun_' + this.hash), 1)
+                        $('#janelaCadastrar #mun_' + this.hash)
+                            .focus()
+                            .trigger('blur')
+                        mostraErro('Erro', 'O Campo Cidade não pode ficar vazio')
                     }
-                }, 100);
+                }, 100)
             }
         },
 
         listaVagas() {
-            this.preloadAjax = true;
-            axios.get(`${URL_PUBLICO}/cadastro/lista-vagas`)
-                .then(response => {
-                    let data = response.data;
-                    this.preloadAjax = false;
-                    this.vagas = data.vagas;
-
+            this.preloadAjax = true
+            axios
+                .get(`${URL_PUBLICO}/cadastro/lista-vagas`)
+                .then((response) => {
+                    let data = response.data
+                    this.preloadAjax = false
+                    this.vagas = data.vagas
                 })
-                .catch(error => {
-                    this.preloadAjax = false;
-                });
+                .catch((error) => {
+                    this.preloadAjax = false
+                })
         },
 
         formNovo() {
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.editando = false;
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
 
-            this.tituloJanela = "Cadastrando Vaga";
+            this.tituloJanela = 'Cadastrando Vaga'
 
-            formReset();
-            setupCampo();
+            formReset()
+            setupCampo()
 
-            this.form = _.cloneDeep(this.formDefault); //copia
-            this.leitura = false;
-
+            this.form = _.cloneDeep(this.formDefault) //copia
+            this.leitura = false
         },
         cadastrar() {
-            formReset();
-            if (this.form.vaga_id === "") {
-                valida_campo_vazio($("#" + this.hash), 1);
-                $("#janelaCadastrar #" + this.hash).focus().trigger("blur");
-                mostraErro("Erro", "O campo vaga não pode ficar vazio");
-                return false;
+            formReset()
+            if (this.form.vaga_id === '') {
+                valida_campo_vazio($('#' + this.hash), 1)
+                $('#janelaCadastrar #' + this.hash)
+                    .focus()
+                    .trigger('blur')
+                mostraErro('Erro', 'O campo vaga não pode ficar vazio')
+                return false
             }
-            if (this.form.municipio_id === "") {
-                valida_campo_vazio($("#mun_" + this.hash), 1);
-                $("#janelaCadastrar #mun_" + this.hash).focus().trigger("blur");
-                mostraErro("Erro", "O Campo Cidade não pode ficar vazio");
-                return false;
-            }
-
-            $("#janelaCadastrar :input:enabled").trigger("blur");
-
-            if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
-                mostraErro("", "Verificar os erros");
-                return false;
+            if (this.form.municipio_id === '') {
+                valida_campo_vazio($('#mun_' + this.hash), 1)
+                $('#janelaCadastrar #mun_' + this.hash)
+                    .focus()
+                    .trigger('blur')
+                mostraErro('Erro', 'O Campo Cidade não pode ficar vazio')
+                return false
             }
 
-            this.preloadAjax = true;
-            axios.post(`${URL_ADMIN}/cadastro/vagas-abertas`, this.form)
-                .then(response => {
+            $('#janelaCadastrar :input:enabled').trigger('blur')
+
+            if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
+                mostraErro('', 'Verificar os erros')
+                return false
+            }
+
+            this.preloadAjax = true
+            axios
+                .post(`${URL_ADMIN}/cadastro/vagas-abertas`, this.form)
+                .then((response) => {
                     if (response.status === 201) {
-                        this.preloadAjax = false;
-                        this.cadastrado = true;
-                        this.atualizar();
+                        this.preloadAjax = false
+                        this.cadastrado = true
+                        this.atualizar()
                     }
-                }).catch(error => (this.preloadAjax = false));
+                })
+                .catch((error) => (this.preloadAjax = false))
         },
         formAlterar(id) {
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.editando = false;
-            this.tituloJanela = "Alterando Vaga";
-            this.preloadAjax = true;
-            formReset();
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
+            this.tituloJanela = 'Alterando Vaga'
+            this.preloadAjax = true
+            formReset()
 
-            this.form = _.cloneDeep(this.formDefault); //copia
-            this.leitura = true;
+            this.form = _.cloneDeep(this.formDefault) //copia
+            this.leitura = true
 
-            axios.get(`${URL_ADMIN}/cadastro/vagas-abertas/${id}/editar`)
-                .then(response => {
-                    Object.assign(this.form, response.data);
-                    this.form.autocomplete_label_vaga_modal = response.data.vaga.nome;
-                    this.form.autocomplete_label_vaga_modal_anterior = response.data.vaga.nome;
+            axios
+                .get(`${URL_ADMIN}/cadastro/vagas-abertas/${id}/editar`)
+                .then((response) => {
+                    Object.assign(this.form, response.data)
+                    this.form.autocomplete_label_vaga_modal = response.data.vaga.nome
+                    this.form.autocomplete_label_vaga_modal_anterior = response.data.vaga.nome
 
-                    this.form.autocomplete_label_municipio_modal = response.data.municipio.nome + " - " + response.data.municipio.uf;
-                    this.form.autocomplete_label_municipio_modal_anterior = response.data.municipio.nome + " - " + response.data.municipio.uf;
-                    this.editando = true;
-                    this.preloadAjax = false;
-                    setupCampo();
-                }).catch(
-                error => (this.preloadAjax = false)
-            );
-
+                    this.form.autocomplete_label_municipio_modal = response.data.municipio.nome + ' - ' + response.data.municipio.uf
+                    this.form.autocomplete_label_municipio_modal_anterior = response.data.municipio.nome + ' - ' + response.data.municipio.uf
+                    this.editando = true
+                    this.preloadAjax = false
+                    setupCampo()
+                })
+                .catch((error) => (this.preloadAjax = false))
         },
 
         alterar() {
-            formReset();
-            $("#janelaCadastrar :input:enabled").trigger("blur");
+            formReset()
+            $('#janelaCadastrar :input:enabled').trigger('blur')
 
-            if ($("#janelaCadastrar :input:enabled.is-invalid").length) {
-                mostraErro("", "Verificar os erros");
-                return false;
+            if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
+                mostraErro('', 'Verificar os erros')
+                return false
             }
 
-            this.form._method = "PUT";
-            this.preloadAjax = true;
+            this.form._method = 'PUT'
+            this.preloadAjax = true
 
-            axios.put(`${URL_ADMIN}/cadastro/vagas-abertas/${this.form.id}`, this.form).then(response => {
-                this.preloadAjax = false;
-                this.atualizado = true;
-                this.atualizar();
-            }).catch(error => (this.preloadAjax = false));
-
+            axios
+                .put(`${URL_ADMIN}/cadastro/vagas-abertas/${this.form.id}`, this.form)
+                .then((response) => {
+                    this.preloadAjax = false
+                    this.atualizado = true
+                    this.atualizar()
+                })
+                .catch((error) => (this.preloadAjax = false))
         },
 
         selecionaSimulado(simulado_id, index) {
-            let simulado = _.find(this.listaSimulados, {'id': simulado_id});
-            this.form.simulados[index].tipo_prova = simulado.tipo_prova;
+            let simulado = _.find(this.listaSimulados, { id: simulado_id })
+            this.form.simulados[index].tipo_prova = simulado.tipo_prova
         },
 
-
         imprimeProva(simulado, vaga_aberta) {
-            window.location.href = `${URL_ADMIN}/cadastro/vagas-abertas/prova/${simulado}/${vaga_aberta}`;
+            window.location.href = `${URL_ADMIN}/cadastro/vagas-abertas/prova/${simulado}/${vaga_aberta}`
         },
 
         carregou(dados) {
-            this.lista = dados.itens;
-            this.listaSimulados = dados.simulados;
-            this.listaProjetos = dados.projetos;
-            this.listaProjetosAdicionais = dados.projetos;
-            this.controle.carregando = false;
+            this.lista = dados.itens
+            this.listaSimulados = dados.simulados
+            this.listaProjetos = dados.projetos
+            this.listaProjetosAdicionais = dados.projetos
+            this.controle.carregando = false
         },
 
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
 
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         }
     }
-});
+})
+
+registerGlobals(app)
+app.mount('#app')

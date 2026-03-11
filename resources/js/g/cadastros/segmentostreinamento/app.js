@@ -1,8 +1,12 @@
-import SegmentosTreinamentoCadastro from "../../../components/cadastros/segmentostreinamento/SegmentosTreinamentoCadastro";
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import SegmentosTreinamentoCadastro from '../../../components/cadastros/segmentostreinamento/SegmentosTreinamentoCadastro'
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     components: {
-        SegmentosTreinamentoCadastro,
-    },
-});
+        SegmentosTreinamentoCadastro
+    }
+})
+
+registerGlobals(app)
+app.mount('#app')

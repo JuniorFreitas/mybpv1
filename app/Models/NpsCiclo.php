@@ -17,6 +17,22 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $ativo
  * @property \Carbon\Carbon|null $created_at
  * @property \Carbon\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read string $label
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\NpsResposta> $respostas
+ * @property-read int|null $respostas_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsCiclo newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsCiclo newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsCiclo query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsCiclo whereAtivo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsCiclo whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsCiclo whereDataFim($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsCiclo whereDataInicio($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsCiclo whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsCiclo whereNome($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NpsCiclo whereUpdatedAt($value)
+ * @mixin \Eloquent
  */
 class NpsCiclo extends Model
 {

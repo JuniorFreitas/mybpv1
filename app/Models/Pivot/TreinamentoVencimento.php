@@ -29,6 +29,10 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento whereVencimentoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TreinamentoVencimento whereArquivoId($value)
  * @property-read Arquivo|null $arquivo
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read mixed $data_treinamento_default
+ * @property-read mixed $data_vencimento_default
  * @mixin \Eloquent
  */
 class TreinamentoVencimento extends Pivot

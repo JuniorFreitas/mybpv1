@@ -2,17 +2,17 @@
     <div :model="model" :modelDelete="modelDelete">
         <div class="mb-3">
             <!--<label>Telefone</label><br>-->
-            <button class="btn btn-sm btn-secondary" type="button" @click.prevent="add()"
+            <button class="btn btn-sm mr-1 btn-secondary" type="button" @click.prevent="add()"
                     v-show="model.length < qnt_max">
                 <span class="fas fa-plus" aria-hidden="true"></span>
                 Adicionar
             </button>
         </div>
         <div>
-            <div class="row mb-2" v-for="(tel, index) in lista">
+            <div class="row mb-2" v-for="(tel, index) in lista" :key="tel.id || index">
                 <div class="col-12">
                     <div class="form-inline tels pb-2">
-                        <button class="btn btn-sm btn-danger mb-2 mr-1" type="button" @click.prevent="remove(index)"
+                        <button class="btn btn-sm mr-1 btn-danger mb-2 mr-1" type="button" @click.prevent="remove(index)"
                                 v-show="model.length > qnt_min">
                             <span class="fas fa-times" aria-hidden="true"></span>
 

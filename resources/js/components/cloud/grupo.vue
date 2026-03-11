@@ -1,21 +1,24 @@
 <template>
     <div>
         <div v-if="open">
-            <h4 class="text-default my-2">{{ tituloJanela | upper}}</h4>
+            <h4 class="text-default my-2">{{ upper(tituloJanela) }}</h4>
 
-            <button class="btn btn-sm btn-secondary" @click.prevent="voltar">
-                <i class="fa fa-arrow-left"></i> Voltar a lista de grupos
-            </button>
+            <button class="btn btn-sm mr-1 btn-secondary" @click.prevent="voltar"><i class="fa fa-arrow-left"></i> Voltar a lista de grupos</button>
 
             <preload class="my-2" v-show="preloadAjax"></preload>
-            <form v-show="!preloadAjax && (!cadastrado && !atualizado)" @submit.prevent="submitForm">
+            <form v-show="!preloadAjax && !cadastrado && !atualizado" @submit.prevent="submitForm">
                 <fieldset>
                     <legend>INFORMAÇÕES</legend>
                     <div class="form-group">
                         <label>Nome</label>
-                        <input type="text" class="form-control form-control-sm" v-model="form.nome"
-                               placeholder="Nome do Cloud"
-                               autocomplete="off" onblur="valida_campo_vazio(this,2)">
+                        <input
+                            type="text"
+                            class="form-control form-control-sm"
+                            v-model="form.nome"
+                            placeholder="Nome do Cloud"
+                            autocomplete="off"
+                            onblur="valida_campo_vazio(this, 2)"
+                        />
                     </div>
 
                     <div class="form-group">
@@ -25,15 +28,10 @@
                             <option :value="false">Não</option>
                         </select>
                     </div>
-
                 </fieldset>
             </form>
-            <button type="button" class="btn btn-sm btn-primary" v-show="editando && !preloadAjax"
-                    @click="alterar">Alterar
-            </button>
-            <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !preloadAjax"
-                    @click="cadastrar">Cadastrar
-            </button>
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !preloadAjax" @click="alterar">Alterar</button>
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !preloadAjax" @click="cadastrar">Cadastrar</button>
         </div>
 
         <div v-show="!open" class="mt-2">
@@ -41,72 +39,75 @@
 
             <div class="row">
                 <div class="col-md-4 column mb-2">
-                    <form id="formBusca" onsubmit="return false;">
+                    <form id="formBusca" onsubmit="return false">
                         <label>Buscar:</label>
-                        <input type="text" placeholder="Nome do cloud" autocomplete="off"
-                               class="form-control form-control-sm">
+                        <input type="text" placeholder="Nome do cloud" autocomplete="off" class="form-control form-control-sm" />
                     </form>
                 </div>
             </div>
 
-            <button type="button" class="btn btn-sm btn-success" @click.prevent="atualizar">
-                <i class="fa fa-sync"></i> Atualizar
-            </button>
+            <button type="button" class="btn btn-sm mr-1 btn-success" @click.prevent="atualizar"><i class="fa fa-sync"></i> Atualizar</button>
 
-            <button type="button" class="btn btn-sm btn-primary" id="btnFormCadastrar" data-toggle="modal"
-                    data-target="#janelaCadastrar" @click="formNovo">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" id="btnFormCadastrar" @click="formNovo(); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()">
                 <i class="fa fa-plus"></i> Cadastrar
             </button>
 
             <preload class="mt-2" v-if="controle.carregando"></preload>
 
             <div id="conteudo">
-                <p class="alert alert-warning text-center" v-show="!controle.carregando && lista.length===0">
+                <p class="alert alert-warning text-center" v-show="!controle.carregando && lista.length === 0">
                     <i class="fa fa-exclamation-triangle"></i> Nenhum registro encontrado!
                 </p>
                 <div class="table-responsive">
-                    <table class="tabela"
-                           v-if="!controle.carregando && lista.length > 0">
+                    <table class="tabela" v-if="!controle.carregando && lista.length > 0">
                         <thead>
-                        <tr class="bg-default">
-                            <th class="text-center">ID</th>
-                            <th class="text-center">Nome</th>
-                            <th class="text-center">Ativo</th>
-                            <th></th>
-                        </tr>
+                            <tr class="bg-default">
+                                <th class="text-center">ID</th>
+                                <th class="text-center">Nome</th>
+                                <th class="text-center">Ativo</th>
+                                <th></th>
+                            </tr>
                         </thead>
 
                         <tbody>
-                        <tr v-for="item in lista">
-                            <td class="text-center">{{ item.id }}</td>
-                            <td class="text-center">{{ item.nome }}</td>
-                            <td class="text-center">
-                                <bt-ativo :rota="`clouds/cadastro/${item.id}/ativa-desativa`"
-                                          :model="item"></bt-ativo>
-                            </td>
-                            <td class="text-center">
-                                <a class="btn btn-sm btn-success btnFormAlterar" href="javascript://"
-                                   @click.prevent="formAlterar(item.id)" data-toggle="modal"
-                                   data-target="#janelaCadastrar">
-                                    <i class="fa fa-edit"></i>
-                                </a>
-                                <a class="btn btn-sm btn-danger btnFormExcluir" href="javascript://"
-                                   @click.prevent="janelaConfirmar(item.id)" data-toggle="modal"
-                                   data-target="#janelaConfirmar">
-                                    <i class="fa fa-trash" aria-hidden="true"></i>
-                                </a>
-                            </td>
-                        </tr>
+                            <tr v-for="item in lista" :key="item.id">
+                                <td class="text-center">{{ item.id }}</td>
+                                <td class="text-center">{{ item.nome }}</td>
+                                <td class="text-center">
+                                    <bt-ativo :rota="`clouds/cadastro/${item.id}/ativa-desativa`" :model="item"></bt-ativo>
+                                </td>
+                                <td class="text-center">
+                                    <a
+                                        class="btn btn-sm mr-1 btn-success btnFormAlterar"
+                                        href="javascript://"
+                                        @click.prevent="formAlterar(item.id); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
+                                    >
+                                        <i class="fa fa-edit"></i>
+                                    </a>
+                                    <a
+                                        class="btn btn-sm mr-1 btn-danger btnFormExcluir"
+                                        href="javascript://"
+                                        @click.prevent="janelaConfirmar(item.id); $refs.modal_janelaConfirmar && $refs.modal_janelaConfirmar.abrirModal()"
+                                    >
+                                        <i class="fa fa-trash" aria-hidden="true"></i>
+                                    </a>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
-                                :url="url_paginacao"
-                                :por-pagina="controle.dados.pages"
-                                :dados="controle.dados"
-                                v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
+            <controle-paginacao
+                class="d-flex justify-content-center"
+                id="controle"
+                ref="componente"
+                :url="url_paginacao"
+                :por-pagina="controle.dados.pages"
+                :dados="controle.dados"
+                v-on:carregou="carregou"
+                v-on:carregando="carregando"
+            ></controle-paginacao>
         </div>
     </div>
 </template>
@@ -115,7 +116,7 @@
 export default {
     data() {
         return {
-            tituloJanela: "Cadastrando Grupo",
+            tituloJanela: 'Cadastrando Grupo',
             preloadAjax: false,
             editando: false,
             cadastrado: false,
@@ -124,7 +125,7 @@ export default {
             open: false,
 
             form: {
-                nome: "",
+                nome: '',
                 ativo: true
             },
 
@@ -140,134 +141,142 @@ export default {
                 carregando: false,
                 dados: {}
             }
-        };
-    },
-    filters: {
-        upper(value) {
-            return value.toUpperCase();
         }
     },
     mounted() {
-        this.formDefault = _.cloneDeep(this.form);//copia
-        this.atualizar();
+        this.formDefault = _.cloneDeep(this.form) //copia
+        this.atualizar()
     },
     methods: {
+        upper(value) {
+            if (!value) return ''
+            return value.toUpperCase()
+        },
         voltar() {
-            this.atualizar();
-            this.open = false;
+            this.atualizar()
+            this.open = false
         },
         formNovo() {
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.editando = false;
-            this.open = true;
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
+            this.open = true
 
-            this.tituloJanela = "Cadastrando Grupo";
+            this.tituloJanela = 'Cadastrando Grupo'
 
-            formReset();
-            this.form = _.cloneDeep(this.formDefault); //copia
-            this.form.habilidades = _.cloneDeep(this.listaDeHabilidades);
+            formReset()
+            this.form = _.cloneDeep(this.formDefault) //copia
+            this.form.habilidades = _.cloneDeep(this.listaDeHabilidades)
         },
 
         submitForm() {
-            this.editando ? this.alterar() : this.cadastrar();
+            this.editando ? this.alterar() : this.cadastrar()
         },
 
         cadastrar() {
-            $("#janelaCadastrar :input:visible").trigger("blur");
-            if ($("#janelaCadastrar :input:visible.is-invalid").length) {
-                alert("Verificar os erros");
-                return false;
+            $('#janelaCadastrar :input:visible').trigger('blur')
+            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
+                alert('Verificar os erros')
+                return false
             }
 
-            this.preloadAjax = true;
-            axios.post(`${URL_ADMIN}/clouds/cadastro`, this.form)
-                .then(response => {
-                    mostraSucesso("Cadastro realizado com sucesso!");
-                    this.preloadAjax = false;
-                    this.atualizar();
-                }).catch(error => {
-                this.preloadAjax = false;
-            });
+            this.preloadAjax = true
+            axios
+                .post(`${URL_ADMIN}/clouds/cadastro`, this.form)
+                .then((response) => {
+                    mostraSucesso('Cadastro realizado com sucesso!')
+                    this.preloadAjax = false
+                    this.atualizar()
+                })
+                .catch((error) => {
+                    this.preloadAjax = false
+                })
         },
 
         formAlterar(id) {
-            this.form.id = id;
-            this.open = true;
-            this.cadastrado = false;
-            this.atualizado = false;
-            this.editando = false;
-            this.tituloJanela = "Alterando Grupo";
+            this.form.id = id
+            this.open = true
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
+            this.tituloJanela = 'Alterando Grupo'
 
-            this.preloadAjax = true;
+            this.preloadAjax = true
 
-            formReset();
-            axios.get(`${URL_ADMIN}/clouds/cadastro/${id}/editar`)
+            formReset()
+            axios
+                .get(`${URL_ADMIN}/clouds/cadastro/${id}/editar`)
                 .then(({ data }) => {
-                    this.editando = true;
-                    Object.assign(this.form, data);
-                    this.preloadAjax = false;
-                }).catch(error => {
-                this.preloadAjax = false;
-            });
+                    this.editando = true
+                    Object.assign(this.form, data)
+                    this.preloadAjax = false
+                })
+                .catch((error) => {
+                    this.preloadAjax = false
+                })
         },
 
         alterar() {
-            $("#janelaCadastrar :input:visible").trigger("blur");
-            if ($("#janelaCadastrar :input:visible.is-invalid").length) {
-                alert("Verificar os erros");
-                return false;
+            $('#janelaCadastrar :input:visible').trigger('blur')
+            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
+                alert('Verificar os erros')
+                return false
             }
 
-            this.preloadAjax = true;
+            this.preloadAjax = true
 
-            axios.put(`${URL_ADMIN}/clouds/cadastro/${this.form.id}`, this.form)
+            axios
+                .put(`${URL_ADMIN}/clouds/cadastro/${this.form.id}`, this.form)
                 .then(({ data }) => {
-                    mostraSucesso("Altereção realizada com sucesso!");
-                    this.open = false;
-                    this.preloadAjax = false;
-                    this.atualizar();
-                }).catch(error => {
-                this.preloadAjax = false;
-            });
-
+                    mostraSucesso('Altereção realizada com sucesso!')
+                    this.open = false
+                    this.preloadAjax = false
+                    this.atualizar()
+                })
+                .catch((error) => {
+                    this.preloadAjax = false
+                })
         },
 
         janelaConfirmar(id) {
-            this.form.id = id;
-            this.apagado = false;
-            this.preloadAjax = false;
+            this.form.id = id
+            this.apagado = false
+            this.preloadAjax = false
         },
 
         apagar() {
-            this.preloadAjax = true;
+            this.preloadAjax = true
 
-            axios.delete(`${URL_ADMIN}/clouds/cadastro/${this.form.id}`, this.form)
+            axios
+                .delete(`${URL_ADMIN}/clouds/cadastro/${this.form.id}`, this.form)
                 .then(({ data }) => {
-                    this.preloadAjax = false;
-                    this.apagado = true;
-                    this.atualizar();
-                }).catch(error => {
-                this.preloadAjax = false;
-            });
+                    this.preloadAjax = false
+                    this.apagado = true
+                    this.atualizar()
+                })
+                .catch((error) => {
+                    this.preloadAjax = false
+                })
         },
 
         carregou(dados) {
-            this.lista = dados.lista;
-            this.controle.carregando = false;
+            this.lista = dados.lista
+            this.controle.carregando = false
         },
 
         carregando() {
-            this.controle.carregando = true;
+            this.controle.carregando = true
         },
         atualizar() {
-            this.$refs.componente.atual = 1;
-            this.$refs.componente.buscar();
+            if (this.$refs && this.$refs.componente) {
+                this.$refs.componente.atual = 1
+            }
+            if (this.$refs && this.$refs.componente && typeof this.$refs.componente.buscar === 'function') {
+                this.$refs.componente.buscar()
+            }
         }
     }
-};
+}
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

@@ -30,6 +30,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|UsuarioConta wherePix($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UsuarioConta whereTipochavepix($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UsuarioConta whereUserId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class UsuarioConta extends Model

@@ -2,8 +2,8 @@
 @section('title', 'Entrevista Técnica')
 @section('content_header','Entrevista Técnica')
 @section('content')
-    <modal id="filtroColunas" titulo="Mostrar e Ocultar colunas">
-        <template slot="conteudo">
+    <modal ref="filtroColunas" id="filtroColunas" titulo="Mostrar e Ocultar colunas">
+        <template #conteudo>
 
             <div class="custom-control custom-switch mb-2">
                 <input type="checkbox" v-model="colunasTabela.pcd" @click="colunasTabela.pcd = !colunasTabela.pcd"
@@ -39,8 +39,8 @@
         </template>
     </modal>
 
-    <modal id="janelaParecerEntrevista" :titulo="tituloJanela" :size="80" :fechar="!preload">
-        <template slot="conteudo">
+    <modal ref="janelaParecerEntrevista" id="janelaParecerEntrevista" :titulo="tituloJanela" :size="80" :fechar="!preload">
+        <template #conteudo>
             <preload v-if="preload"></preload>
             <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''">
                 <dados-pessoais :form="form"></dados-pessoais>
@@ -672,14 +672,14 @@
 
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div v-show="!visualizar">
-                <button type="button" class="btn btn-sm btn-primary"
+                <button type="button" class="btn btn-sm mr-1 btn-primary"
                         v-show="editando && !atualizado  && !preload"
                         @click.prevent="alterar">
                     <i class="fa fa-edit"></i> Alterar
                 </button>
-                <button type="button" class="btn btn-sm btn-primary"
+                <button type="button" class="btn btn-sm mr-1 btn-primary"
                         v-show="!editando && !cadastrado  && !preload"
                         @click.prevent="cadastrar">
                     <i class="fa fa-save"></i> Salvar
@@ -809,18 +809,18 @@
 
         <div class="col-12">
             <div class="row">
-                <button type="button" class="btn btn-sm btn-success mb-1 mr-1" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm mr-1 btn-success mb-1 mr-1" :disabled="controle.carregando"
                         @click="atualizar"><i
                         :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
-                <button class="btn btn-sm btn-danger mb-1 mr-1"
+                <button class="btn btn-sm mr-1 btn-danger mb-1 mr-1"
                         :checked="tudoMarcado"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                         :disabled="selecionados.length === 0" @click="selecionados = []">
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
-                <button type="button" class="btn btn-sm btn-primary mb-1 mr-1"
+                <button type="button" class="btn btn-sm mr-1 btn-primary mb-1 mr-1"
                         @click.prevent="exportaExcel()"
                         :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
                     <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
@@ -858,9 +858,8 @@
                 <th class="text-center">Entrevista Técnica Nota</th>
                 <th class="text-center" v-show="colunasTabela.teste_pratico_nota">Teste Prático Nota</th>
                 <th>
-                    <button class="btn btn-sm btn-primary mb-2" content="Mostrar e Ocultar Colunas" v-tippy
-                            data-toggle="modal"
-                            data-target="#filtroColunas">
+                    <button class="btn btn-sm mr-1 btn-primary mb-2" content="Mostrar e Ocultar Colunas" v-tippy
+                            @click="$refs.filtroColunas?.abrirModal()">
                         <i class="bx bxs-filter-alt" aria-hidden="true"></i>
                     </button>
                 </th>
@@ -922,29 +921,23 @@
                 <td class="text-center">
                     <form :action="`${URL_ADMIN}/entrevistas/parecer-entrevista-tecnica/ficha_pdf`" target="_blank"
                           method="post">
-                        <button class="btn btn-sm btn-primary mb-2" content="Entrevistar" v-tippy
+                        <button class="btn btn-sm mr-1 btn-primary mb-2" content="Entrevistar" v-tippy
                                 v-show="!entrevista.parecer_tecnica"
-                                @click.prevent="formEntrevistar(entrevista.id)"
-                                data-toggle="modal"
-                                data-target="#janelaParecerEntrevista">
+                                @click.prevent="formEntrevistar(entrevista.id); $refs.janelaParecerEntrevista?.abrirModal()">
                             <i class="far fa-list-alt"></i>
                         </button>
 
                         @can('entrevista_parecer_entrevista_update')
-                            <button class="btn btn-sm btn-primary mb-2" content="Editar" v-tippy
+                            <button class="btn btn-sm mr-1 btn-primary mb-2" content="Editar" v-tippy
                                     v-show="entrevista.parecer_tecnica"
-                                    @click.prevent="formEntrevistar(entrevista.id); editando = true"
-                                    data-toggle="modal"
-                                    data-target="#janelaParecerEntrevista">
+                                    @click.prevent="formEntrevistar(entrevista.id); editando = true; $refs.janelaParecerEntrevista?.abrirModal()">
                                 <i class="fa fa-edit" aria-hidden="true"></i>
                             </button>
                         @endcan
 
-                        <button class="btn btn-sm btn-primary mb-2" content="Visualizar" v-tippy
+                        <button class="btn btn-sm mr-1 btn-primary mb-2" content="Visualizar" v-tippy
                                 v-show="entrevista.parecer_tecnica"
-                                @click.prevent="formEntrevistar(entrevista.id); visualizar = true"
-                                data-toggle="modal"
-                                data-target="#janelaParecerEntrevista">
+                                @click.prevent="formEntrevistar(entrevista.id); visualizar = true; $refs.janelaParecerEntrevista?.abrirModal()">
                             <i class="fa fa-search-plus" aria-hidden="true"></i>
                         </button>
 
@@ -952,7 +945,7 @@
                         <input type="hidden" name="id" :value="entrevista.parecer_tecnica.id"
                                v-if="entrevista.parecer_tecnica">
                         <button type="submit" content="Gerar PDF" v-tippy v-show="entrevista.parecer_tecnica"
-                                class="btn btn-sm btn-primary mb-2">
+                                class="btn btn-sm mr-1 btn-primary mb-2">
                             <i class="fa fa-file-pdf" aria-hidden="true"></i>
                         </button>
                     </form>

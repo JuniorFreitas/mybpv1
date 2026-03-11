@@ -7,74 +7,87 @@
 
             <input
                 autocomplete="off"
-                v-bind:value="value"
-                v-on:input="$emit('input', $event.target.value)"
+                v-bind:value="currentValue"
+                v-on:input="emitUpdate($event.target.value)"
                 :id="id"
                 :disabled="disabled"
                 :placeholder="placeholder"
                 @input="onChange"
                 @blur="onBlur"
                 :readonly="leitura"
-                type="text" class="form-control"
-                :class="[disabled ? 'disabled':'readonly', formsm ? 'form-control-sm' : '']"
-                v-if="!range">
+                type="text"
+                class="form-control"
+                :class="[disabled ? 'disabled' : 'readonly', formsm ? 'form-control-sm' : '']"
+                v-if="!range"
+            />
 
             <input
                 autocomplete="off"
-                v-bind:value="value"
-                v-on:input="$emit('input', $event.target.value)"
-                :value="value"
+                v-bind:value="currentValue"
+                v-on:input="emitUpdate($event.target.value)"
                 :id="id"
                 :disabled="disabled"
                 :placeholder="placeholder"
                 @input="onChange"
                 @blur="onBlur"
                 :readonly="leitura"
-                type="text" class="form-control"
-                :class="[disabled ? 'disabled':'readonly', formsm ? 'form-control-sm' : '']" v-if="range">
+                type="text"
+                class="form-control"
+                :class="[disabled ? 'disabled' : 'readonly', formsm ? 'form-control-sm' : '']"
+                v-if="range"
+            />
         </div>
 
         <div v-if="!append">
             <label>{{ label }}</label>
             <input
                 autocomplete="off"
-                v-bind:value="value"
-                v-on:input="$emit('input', $event.target.value)"
+                v-bind:value="currentValue"
+                v-on:input="emitUpdate($event.target.value)"
                 :id="id"
                 :disabled="disabled"
                 :placeholder="placeholder"
                 @input="onChange"
                 @blur="onBlur"
                 :readonly="leitura"
-                type="text" class="form-control"
-                :class="[disabled ? 'disabled':'readonly', formsm ? 'form-control-sm' : '']"
-                v-if="!range">
+                type="text"
+                class="form-control"
+                :class="[disabled ? 'disabled' : 'readonly', formsm ? 'form-control-sm' : '']"
+                v-if="!range"
+            />
 
             <input
                 autocomplete="off"
-                v-bind:value="value"
-                v-on:input="$emit('input', $event.target.value)"
-                :value="value"
+                v-bind:value="currentValue"
+                v-on:input="emitUpdate($event.target.value)"
                 :id="id"
                 :disabled="disabled"
                 :placeholder="placeholder"
                 @input="onChange"
                 @blur="onBlur"
                 :readonly="leitura"
-                type="text" class="form-control"
-                :class="[disabled ? 'disabled':'readonly', formsm ? 'form-control-sm' : '']"
-                v-if="range">
+                type="text"
+                class="form-control"
+                :class="[disabled ? 'disabled' : 'readonly', formsm ? 'form-control-sm' : '']"
+                v-if="range"
+            />
         </div>
     </div>
 </template>
 
 <script>
 export default {
+    emits: ['update:modelValue', 'input', 'onblur', 'onselect'],
     props: {
+        modelValue: {
+            type: String,
+            required: false,
+            default: ''
+        },
         value: {
             type: String,
             required: false,
-            default: ""
+            default: ''
         },
         id: {
             type: String,
@@ -110,15 +123,17 @@ export default {
         label: {
             type: String,
             required: false,
-            default: "Data"
+            default: 'Data'
         },
 
-        min: { //Data hora minima, no formato configurado no campo
+        min: {
+            //Data hora minima, no formato configurado no campo
             type: String,
             required: false,
             default: null
         },
-        max: { //Data hora maxima, no formato configurado no campo
+        max: {
+            //Data hora maxima, no formato configurado no campo
             type: String,
             required: false,
             default: null
@@ -136,32 +151,32 @@ export default {
         separador: {
             type: String,
             required: false,
-            default: " até "
+            default: ' até '
         },
         aplicarLabel: {
             type: String,
             required: false,
-            default: "Aplicar"
+            default: 'Aplicar'
         },
         cancelarLabel: {
             type: String,
             required: false,
-            default: "Cancelar"
+            default: 'Cancelar'
         },
         deLabel: {
             type: String,
             required: false,
-            default: "De"
+            default: 'De'
         },
         paraLabel: {
             type: String,
             required: false,
-            default: "Para"
+            default: 'Para'
         },
         posicao: {
             type: String,
             required: false,
-            default: "down"
+            default: 'down'
         }
     },
 
@@ -171,61 +186,63 @@ export default {
             isLoading: false,
             el: null,
             event: null
-        };
+        }
+    },
+    computed: {
+        currentValue() {
+            return this.modelValue !== undefined && this.modelValue !== null ? this.modelValue : this.value
+        }
     },
     methods: {
+        emitUpdate(value) {
+            this.$emit('update:modelValue', value)
+            this.$emit('input', value)
+        },
         onBlur($event) {
-            this.event = $event;
+            this.event = $event
             setTimeout(() => {
-                this.$emit("onblur", $event);
-            }, 100);
-
+                this.$emit('onblur', $event)
+            }, 100)
         },
         onChange() {
             // Let's warn the parent that a change was made
-            //this.$emit("input", this.el.value);
+            //this.emitUpdate(this.el.value);
         }
     },
 
     updated() {
-
-        this.$emit("input", this.el.value);
+        this.emitUpdate(this.el.value)
         if (this.range) {
-            let texto = this.el.value.trim();
-            let datas = texto.replace(this.separador + " ", "#");
-            datas = datas.split("#");
+            let texto = this.el.value.trim()
+            let datas = texto.replace(this.separador + ' ', '#')
+            datas = datas.split('#')
             if (datas.length > 1) {
-                $(this.el).data("daterangepicker").setStartDate(datas[0]);
-                $(this.el).data("daterangepicker").setEndDate(datas[1]);
+                $(this.el).data('daterangepicker').setStartDate(datas[0])
+                $(this.el).data('daterangepicker').setEndDate(datas[1])
             } else {
-                let datas = texto.replace(this.separador, "#");
-                datas = datas.split("#");
-                $(this.el).data("daterangepicker").setStartDate(datas[0]);
-                $(this.el).data("daterangepicker").setEndDate(datas[1]);
+                let datas = texto.replace(this.separador, '#')
+                datas = datas.split('#')
+                $(this.el).data('daterangepicker').setStartDate(datas[0])
+                $(this.el).data('daterangepicker').setEndDate(datas[1])
             }
-
-
         } else {
-            let texto = this.el.value.trim();
-            $(this.el).data("daterangepicker").setStartDate(texto);
-            $(this.el).data("daterangepicker").setEndDate(texto);
+            let texto = this.el.value.trim()
+            $(this.el).data('daterangepicker').setStartDate(texto)
+            $(this.el).data('daterangepicker').setEndDate(texto)
         }
-
-
     },
     mounted() {
         // this.label = this.label ? this.label : 'Data';
 
-        this.el = $(this.$el).find(":input:text:eq(0)")[0];
-        let ref = this;
-        let valueInicial = $(this.el).attr("value");
+        this.el = $(this.$el).find(':input:text:eq(0)')[0]
+        let ref = this
+        let valueInicial = $(this.el).attr('value')
 
         if (valueInicial) {
-            this.el.value = valueInicial;
+            this.el.value = valueInicial
         }
 
         if (this.range) {
-
             $(this.el).daterangepicker({
                 autoApply: true,
                 singleDatePicker: false,
@@ -236,7 +253,7 @@ export default {
                 maxDate: this.max,
                 //autoUpdateInput:false,
                 drops: this.posicao,
-                opens: "center",
+                opens: 'center',
                 locale: {
                     separator: this.separador,
                     applyLabel: this.aplicarLabel,
@@ -245,12 +262,12 @@ export default {
                     toLabel: this.paraLabel,
                     format: this.hora ? `L [às] HH:mm` : `DD/MM/YYYY`
                 }
-            });
+            })
 
-            $(this.el).on("apply.daterangepicker", function(ev, picker) {
+            $(this.el).on('apply.daterangepicker', function (ev, picker) {
                 /*if(ref.hora){
                     $(this).val(picker.startDate.format('L [às] HH:mm') + ref.separador + picker.endDate.format('L [às] HH:mm'));
-                    ref.$emit("input", ref.el.value);
+                    ref.emitUpdate(ref.el.value);
                     ref.$emit('onselect', {
                         data_inicio:picker.startDate.format('DD/MM/YYYY'),
                         hora_inicio:picker.startDate.format('HH:mm'),
@@ -261,40 +278,37 @@ export default {
                     });
                 }else{
                     $(this).val(picker.startDate.format('DD/MM/YYYY') + ref.separador + picker.endDate.format('DD/MM/YYYY'));
-                    ref.$emit("input", ref.el.value);
+                    ref.emitUpdate(ref.el.value);
                     ref.$emit('onselect', {
                         inicio:picker.startDate.format('DD/MM/YYYY'),
                         fim:picker.endDate.format('DD/MM/YYYY'),
                         value:ref.el.value
                     });
                 }*/
+            })
 
-            });
-
-            $(this.el).on("hide.daterangepicker", function(ev, picker) {
+            $(this.el).on('hide.daterangepicker', function (ev, picker) {
                 if (ref.hora) {
-                    $(this).val(picker.startDate.format("L [às] HH:mm") + ref.separador + picker.endDate.format("L [às] HH:mm"));
-                    ref.$emit("input", ref.el.value);
-                    ref.$emit("onselect", {
-                        data_inicio: picker.startDate.format("DD/MM/YYYY"),
-                        hora_inicio: picker.startDate.format("HH:mm"),
+                    $(this).val(picker.startDate.format('L [às] HH:mm') + ref.separador + picker.endDate.format('L [às] HH:mm'))
+                    ref.emitUpdate(ref.el.value)
+                    ref.$emit('onselect', {
+                        data_inicio: picker.startDate.format('DD/MM/YYYY'),
+                        hora_inicio: picker.startDate.format('HH:mm'),
 
-                        data_fim: picker.endDate.format("DD/MM/YYYY"),
-                        hora_fim: picker.endDate.format("HH:mm"),
+                        data_fim: picker.endDate.format('DD/MM/YYYY'),
+                        hora_fim: picker.endDate.format('HH:mm'),
                         value: ref.el.value
-                    });
+                    })
                 } else {
-                    $(this).val(picker.startDate.format("DD/MM/YYYY") + ref.separador + picker.endDate.format("DD/MM/YYYY"));
-                    ref.$emit("input", ref.el.value);
-                    ref.$emit("onselect", {
-                        inicio: picker.startDate.format("DD/MM/YYYY"),
-                        fim: picker.endDate.format("DD/MM/YYYY"),
+                    $(this).val(picker.startDate.format('DD/MM/YYYY') + ref.separador + picker.endDate.format('DD/MM/YYYY'))
+                    ref.emitUpdate(ref.el.value)
+                    ref.$emit('onselect', {
+                        inicio: picker.startDate.format('DD/MM/YYYY'),
+                        fim: picker.endDate.format('DD/MM/YYYY'),
                         value: ref.el.value
-                    });
+                    })
                 }
-            });
-
-
+            })
         } else {
             let comp = $(this.el).daterangepicker({
                 singleDatePicker: true,
@@ -305,46 +319,42 @@ export default {
                 maxDate: this.max,
                 //autoUpdateInput: false,
                 drops: this.posicao,
-                opens: "center",
+                opens: 'center',
                 locale: {
                     applyLabel: this.aplicarLabel,
                     cancelLabel: this.cancelarLabel,
                     fromLabel: this.deLabel,
                     toLabel: this.paraLabel,
-                    format: this.hora ? "L [às] HH:mm" : "DD/MM/YYYY"
+                    format: this.hora ? 'L [às] HH:mm' : 'DD/MM/YYYY'
                 }
-            });
+            })
 
-            $(this.el).on("apply.daterangepicker", function(ev, picker) {
+            $(this.el).on('apply.daterangepicker', function (ev, picker) {
                 /*if(ref.hora){
                     $(this).val(picker.startDate.format('L [às] HH:mm'));
                 }else{
                     $(this).val(picker.startDate.format('DD/MM/YYYY'));
                 }
 
-                ref.$emit("input", ref.el.value);
+                ref.emitUpdate(ref.el.value);
                 ref.$emit('onselect', ref.el.value);*/
+            })
 
-            });
-
-            $(this.el).on("hide.daterangepicker", function(ev, picker) {
+            $(this.el).on('hide.daterangepicker', function (ev, picker) {
                 if (ref.hora) {
-                    $(this).val(picker.startDate.format("L [às] HH:mm"));
+                    $(this).val(picker.startDate.format('L [às] HH:mm'))
                 } else {
-                    $(this).val(picker.startDate.format("DD/MM/YYYY"));
+                    $(this).val(picker.startDate.format('DD/MM/YYYY'))
                 }
 
-                ref.$emit("input", ref.el.value);
-                ref.$emit("onselect", ref.el.value);
-            });
-
+                ref.emitUpdate(ref.el.value)
+                ref.$emit('onselect', ref.el.value)
+            })
         }
 
-        this.$emit("input", this.el.value);
-
-
+        this.emitUpdate(this.el.value)
     }
-};
+}
 </script>
 <style>
 .inLine {

@@ -95,12 +95,12 @@
                             <td class="competencia-desc">@{{ sub.subtopico }}</td>
                             <td class="nota-cell" v-for="avaliador in sub.avaliadores">
                                 <div class="nota-display">
-                                    @{{ avaliador.nota | casasDecimais }}
+                                    @{{ casasDecimais(avaliador.nota) }}
                                 </div>
                             </td>
                             <td class="media-cell">
                                 <div class="media-display">
-                                    @{{ sub.media | casasDecimais }}
+                                    @{{ casasDecimais(sub.media) }}
                                 </div>
                             </td>
                         </tr>
@@ -135,12 +135,12 @@
                         <radarchart :id="chart.name" :chart-data="chart.data"></radarchart>
                     </div>
                     <div class="grafico-media">
-                        Média: @{{ formAvaliarFinal.resultado_topico_pai[chart.name].media | casasDecimais }}
+                        Média: @{{ casasDecimais(formAvaliarFinal.resultado_topico_pai[chart.name].media) }}
                     </div>
                 </div>
 
                 <div class="nota-final-section">
-                    <h1>NOTA FINAL: @{{ formAvaliarFinal.nota_final | casasDecimais }}</h1>
+                    <h1>NOTA FINAL: @{{ casasDecimais(formAvaliarFinal.nota_final) }}</h1>
                 </div>
             </div>
 
@@ -156,7 +156,7 @@
                         <div class="competencia-info">
                             <span class="label-plano">COMPETÊNCIA/DESEMPENHO:</span>
                             <span class="competencia-nome">@{{ formAvaliarFinal.result_topico[item.topico_id].subtopico}}</span>
-                            <span class="media-competencia">(Média: @{{ formAvaliarFinal.result_topico[item.topico_id].media | casasDecimais }})</span>
+                            <span class="media-competencia">(Média: @{{ casasDecimais(formAvaliarFinal.result_topico[item.topico_id].media) }})</span>
                         </div>
 
                         <div class="plano-info">
@@ -665,7 +665,7 @@
 @endpush
 
 @push('script')
-    <script> window.dados = {!! json_encode($dados) !!}</script>
+    <script> window.dados = <?php echo json_encode($dados); ?></script>
     <script src="{{ mix('js/app.js') }}"></script>
     <script src="{{mix('js/g/impressao/avaliacao/app.js')}}"></script>
 @endpush

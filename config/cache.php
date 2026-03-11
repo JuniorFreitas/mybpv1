@@ -101,4 +101,14 @@ return [
 
     'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | TTL for specific cache keys (in seconds)
+    |--------------------------------------------------------------------------
+    */
+    'ttl' => [
+        'perfil_anexo' => (int) env('CACHE_TTL_PERFIL_ANEXO', 86400),
+        'fotocurriculo_anexo' => (int) env('CACHE_TTL_FOTOCURRICULO_ANEXO', 86400),
+    ],
+
 ];

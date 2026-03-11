@@ -25,6 +25,8 @@ use Spatie\Activitylog\Models\Activity;
  * @method static \Illuminate\Database\Eloquent\Builder|TipoDocumento whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoDocumento whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoDocumento whereTipo($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class TipoDocumento extends Model

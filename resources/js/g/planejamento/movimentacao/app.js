@@ -1,3 +1,5 @@
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
 import SolicitacaoDemissao from '../../../components/planejamento/movimentacao/SolicitacaoDemissao'
 import SolicitacaoFerias from '../../../components/planejamento/movimentacao/SolicitacaoFerias'
 import SolicitacaoAdmissao from '../../../components/planejamento/movimentacao/SolicitacaoAdmissao'
@@ -6,8 +8,7 @@ import SolicitacaoMudaCargo from '../../../components/planejamento/movimentacao/
 import SolicitacaoIntermitenteFixo from '../../../components/planejamento/movimentacao/SolicitacaoIntermitenteFixo'
 import SolicitacaoTransferencia from '../../../components/planejamento/movimentacao/SolicitacaoTransferencia'
 
-const app = new Vue({
-    el: '#app',
+const app = createApp({
     provide() {
         const self = this
         return {
@@ -25,22 +26,24 @@ const app = new Vue({
         'solicitacao-intermitente-fixo': SolicitacaoIntermitenteFixo,
         'solicitacao-transferencia': SolicitacaoTransferencia
     },
-    data: {
-        preload: false,
-        cliente_id: '',
+    data() {
+        return {
+            preload: false,
+            cliente_id: '',
 
-        abas: {
-            demissao: false,
-            ferias: false,
-            admissao: false,
-            valorextra: false,
-            mudacargo: false,
-            intermitente: false,
-            transferencia: false
-        },
-        abasDefault: null,
-        permissoes_abas: [],
-        aba_ativa: ''
+            abas: {
+                demissao: false,
+                ferias: false,
+                admissao: false,
+                valorextra: false,
+                mudacargo: false,
+                intermitente: false,
+                transferencia: false
+            },
+            abasDefault: null,
+            permissoes_abas: [],
+            aba_ativa: ''
+        }
     },
     mounted() {
         this.usuarioAutenticado()
@@ -101,3 +104,6 @@ const app = new Vue({
         }
     }
 })
+
+registerGlobals(app)
+app.mount('#app')

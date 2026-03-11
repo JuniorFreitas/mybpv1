@@ -45,6 +45,23 @@ class FeriasController extends Controller
 
     public function showVencimentoFerias(Request $request)
     {
+        try {
+            return $this->showVencimentoFeriasData($request);
+        } catch (\Throwable $e) {
+            report($e);
+            return response()->json([
+                'result' => [],
+                'lista_cargos' => [],
+                'lista_centro_custos' => [],
+                'lista_funcao' => [],
+                'total' => 0,
+                'message' => 'Erro ao carregar relatório. Consulte os logs.',
+            ], 422);
+        }
+    }
+
+    protected function showVencimentoFeriasData(Request $request)
+    {
         $empresa_id = auth()->user()->empresa_id;
 
         $qntUltimosPeriodos = (int)$request->filled('qntUltimosPeriodos') ? $request->qntUltimosPeriodos : 3;
@@ -92,10 +109,8 @@ class FeriasController extends Controller
                 'pa.label as periodo_aquisitivo_label',
                 'pa.ano_inicial as periodo_aquisitivo_ano_inicial',
             ])
-            ->where(function ($query) use ($request) {
-                $query->where('admissoes.deleted_at', null)
-                    ->orWhere('fc.deleted_at', null);
-            })
+            ->whereNull('admissoes.deleted_at')
+            ->whereNull('fc.deleted_at')
             ->whereIn('admissoes.status', [Admissao::STATUS_ADMISSAO_ADMITIDO])
             ->orderBy('admissoes.id', 'asc')
             ->orderBy('pa.ano_inicial', 'desc')
@@ -174,7 +189,13 @@ class FeriasController extends Controller
                         break;
                 }
 
-                $ultimo_dia_avo = collect(json_decode($ll->fca_historico))->sortByDesc('data_mes')->first()->data_mes;
+                $historico = $ll->fca_historico ? json_decode($ll->fca_historico, true) : [];
+                $primeiro = is_array($historico) ? collect($historico)->sortByDesc('data_mes')->first() : null;
+                $ultimo_dia_avo = $primeiro['data_mes'] ?? null;
+
+                if ($ultimo_dia_avo === null) {
+                    continue;
+                }
 
                 $atraso = Carbon::now()->diffInDays((new DataHora($ultimo_dia_avo))->dataInsert());
                 $dias_atraso = 0;
@@ -207,19 +228,19 @@ class FeriasController extends Controller
                     $ll->centro_custo_label ?? null,
                     $ll->periodo_aquisitivo_label ?? null,
                     $ll->periodo_aquisitivo_ano_inicial ?? null,
-                    $ferias->data_saida ?? null,
-                    $ferias->data_retorno ?? null,
+                    $ferias?->data_saida ?? null,
+                    $ferias?->data_retorno ?? null,
                     $status_ferias ?: "Saldo insuficiente",
-                    $ferias->aprovado_via_script ?? null,
-                    $ferias->status_aprovacao_gestor ?? null,
-                    $ferias->gestor_aprovacao_id ?? null,
-                    $ferias->rh_aprovacao_id ?? null,
-                    $ferias->gestor_aprovacao_nome ?? null,
-                    $ferias->rh_aprovacao_nome ?? null,
-                    $ferias->dias_saldo ?? null,
-                    $ferias->qnt_dias ?? null,
-                    $ferias->qnt_faltas ?? null,
-                    $ferias->tem_faltas ?? null,
+                    $ferias?->aprovado_via_script ?? null,
+                    $ferias?->status_aprovacao_gestor ?? null,
+                    $ferias?->gestor_aprovacao_id ?? null,
+                    $ferias?->rh_aprovacao_id ?? null,
+                    $ferias?->gestor_aprovacao_nome ?? null,
+                    $ferias?->rh_aprovacao_nome ?? null,
+                    $ferias?->dias_saldo ?? null,
+                    $ferias?->qnt_dias ?? null,
+                    $ferias?->qnt_faltas ?? null,
+                    $ferias?->tem_faltas ?? null,
                     $colorir ?? null,
                     in_array($status_ferias, ['Disponivel']) && $atraso > 0 ? Carbon::now()->subDays($atraso)->diffForHumans(null, true, false, 2) : 0,
                     $dias_atraso ?? 0,
@@ -233,9 +254,13 @@ class FeriasController extends Controller
         $result = collect($periodos)->groupBy('fca_admissao_id')->values()->map(function ($item) {
 
             $tempo_atrasado = $item->sum('dias_atraso');
-            $atraso = $tempo_atrasado;
-            if ($tempo_atrasado) {
-                $atraso = Carbon::now()->diffInDays((new DataHora($tempo_atrasado))->dataInsert());
+            $atraso = (int) $tempo_atrasado;
+            if ($tempo_atrasado > 0) {
+                try {
+                    $atraso = Carbon::now()->diffInDays((new DataHora($tempo_atrasado))->dataInsert());
+                } catch (\Throwable $e) {
+                    $atraso = (int) $tempo_atrasado;
+                }
             }
 
             // Se for maior que 18meses de atraso
@@ -329,14 +354,14 @@ class FeriasController extends Controller
     }
 
     public function dto(
-        int $fca_id, float $fca_total_avos, $fca_admissao_id, $curriculo_nome,
-            $fca_periodo_aquisitivo_id, $status_avos, $feedback_id, $data_admissao,
-            $cargo, $admissoes_funcao, $centro_custo_id, $centro_custo_label,
-            $periodo_aquisitivo_label, $periodo_aquisitivo_ano_inicial, $data_saida,
-            $data_retorno, $status_ferias, $aprovado_via_script, $status_aprovacao_gestor,
-            $gestor_aprovacao_id, $rh_aprovacao_id, $gestor_aprovacao_nome, $rh_aprovacao_nome,
-            $dias_saldo, $qnt_dias, $qnt_faltas, $tem_faltas, $colorir, $tempo_atrasado, $dias_atraso,
-            $ultima_atualizacao, bool $tem_tb_ferias
+        $fca_id, $fca_total_avos, $fca_admissao_id, $curriculo_nome,
+        $fca_periodo_aquisitivo_id, $status_avos, $feedback_id, $data_admissao,
+        $cargo, $admissoes_funcao, $centro_custo_id, $centro_custo_label,
+        $periodo_aquisitivo_label, $periodo_aquisitivo_ano_inicial, $data_saida,
+        $data_retorno, $status_ferias, $aprovado_via_script, $status_aprovacao_gestor,
+        $gestor_aprovacao_id, $rh_aprovacao_id, $gestor_aprovacao_nome, $rh_aprovacao_nome,
+        $dias_saldo, $qnt_dias, $qnt_faltas, $tem_faltas, $colorir, $tempo_atrasado, $dias_atraso,
+        $ultima_atualizacao, bool $tem_tb_ferias
     )
     {
         return [
@@ -592,14 +617,25 @@ class FeriasController extends Controller
 
     public function show(Request $request)
     {
-        if ($request->filled('periodo_range') && $request->filled('tipo') && $request->tipo == 'data') {
-            $periodo = explode(' até ', $request->periodo_range);
-            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
-            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
+        $user = auth()->user();
+        $config = $user->EmpresaConfiguracoes;
+        $verificaMes = $config->verifica_mes_vencimento ?? null;
+        if (!$config || !isset(ClienteConfig::LISTA_VENCIMENTOS[$verificaMes])) {
+            return ['dados' => []];
         }
 
-        $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[auth()->user()->EmpresaConfiguracoes->verifica_mes_vencimento];
-        $periodo_vencimento = preg_replace("/[^0-9]/", "", $periodo_vencimento);
+        $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[$verificaMes];
+        $periodo_vencimento = (int) preg_replace("/[^0-9]/", "", $periodo_vencimento);
+
+        $dataInicio = null;
+        $dataFim = null;
+        if ($request->filled('periodo_range') && $request->filled('tipo') && $request->tipo === 'data') {
+            $periodo = explode(' até ', $request->periodo_range);
+            if (count($periodo) >= 2 && trim($periodo[0]) !== '' && trim($periodo[1]) !== '') {
+                $dataInicio = new DataHora(trim($periodo[0]) . ' 00:00:00');
+                $dataFim = new DataHora(trim($periodo[1]) . ' 23:59:59');
+            }
+        }
 
         $queryResult = Ferias::with(
             'PeriodoAquisitivo',
@@ -620,9 +656,9 @@ class FeriasController extends Controller
         });
 
         if ($request->filled('tipo')) {
-            if ($request->tipo == 'aquisitivo') {
+            if ($request->tipo === 'aquisitivo' && $request->filled('periodo')) {
                 $queryResult->where('periodo_aquisitivo_id', $request->periodo);
-            } else {
+            } elseif ($request->tipo === 'data' && $dataInicio !== null && $dataFim !== null) {
                 $queryResult->where('data_saida', '>=', $dataInicio->dataHoraInsert())
                     ->where('data_saida', '<=', $dataFim->dataHoraInsert());
             }
@@ -638,11 +674,17 @@ class FeriasController extends Controller
         $resultado = collect();
 
         foreach ($queryResult as $ferias) {
+            $admissao = $ferias['admissao'] ?? null;
+            if (!$admissao) {
+                continue;
+            }
+            $feedback = $admissao['feedback'] ?? null;
+            $curriculo = $feedback['curriculo'] ?? null;
+
             $dias_vencer = DataHora::diferencaDias((new DataHora())->dataInsert(), $ferias['data_saida']);
             $centro_custo = 'NÃO INFORMADO';
-
-            if (!is_null($ferias['admissao']['centro_custo_id'])) {
-                $centro_custo = $ferias['admissao']['centro_custo']['label'];
+            if (!empty($admissao['centro_custo_id']) && !empty($admissao['centro_custo']['label'])) {
+                $centro_custo = $admissao['centro_custo']['label'];
             }
 
             $resultado->push([
@@ -651,10 +693,10 @@ class FeriasController extends Controller
                 'aprovado_via_script' => $ferias['aprovado_via_script'] ? 'Sim' : 'Não',
                 'ferias_id' => $ferias['id'],
                 'status' => $ferias['status_ferias'],
-                'nome' => $ferias['admissao']['feedback']['curriculo']['nome'],
-                'cargo' => $ferias['admissao']['cargo'],
-                'funcao' => $ferias['admissao']['funcao'],
-                'data_admissao' => $ferias['admissao']['data_admissao'],
+                'nome' => $curriculo['nome'] ?? '—',
+                'cargo' => $admissao['cargo'] ?? '—',
+                'funcao' => $admissao['funcao'] ?? '—',
+                'data_admissao' => $admissao['data_admissao'] ?? '—',
                 'gestor' => $ferias['gestor_aprovacao']['nome'] ?? '---',
                 'quem_aprovou' => $ferias['gestor']['nome'] ?? '---',
                 'status_aprovacao' => $ferias['status_aprovacao_gestor'],
@@ -664,14 +706,14 @@ class FeriasController extends Controller
                 'dias_saldo' => $ferias['dias_saldo'],
                 'tem_faltas' => $ferias['tem_faltas'] ? 'Sim' : 'Não',
                 'qnt_faltas' => $ferias['qnt_faltas'],
-                'periodo_aquisitivo' => $ferias['periodo_aquisitivo']['label'],
+                'periodo_aquisitivo' => $ferias['periodo_aquisitivo']['label'] ?? '—',
                 'data_saida' => $ferias['data_saida'],
                 'data_retorno' => $ferias['data_retorno'],
-                'ultima_data' => $ferias['ultima_data'],
-                'usuario_cadastrou' => $ferias['solicitante']['nome'],
-                'resposta_rh' => strlen(trim($ferias['status_aprovacao_rh'])) > 0 ? $ferias['status_aprovacao_rh'] : '---',
+                'ultima_data' => $ferias['ultima_data'] ?? '',
+                'usuario_cadastrou' => $ferias['solicitante']['nome'] ?? '—',
+                'resposta_rh' => strlen(trim($ferias['status_aprovacao_rh'] ?? '')) > 0 ? $ferias['status_aprovacao_rh'] : '---',
                 'data_aprovacao_rh' => !empty($ferias['data_aprovacao_rh']) ? (new DataHora($ferias['data_aprovacao_rh']))->dataCompleta() : '',
-                'rh' => $ferias['aprovado_via_script'] ? 'POR AUTOMAÇÃO' : $ferias['rh_aprovacao']['nome'] ?? '',
+                'rh' => $ferias['aprovado_via_script'] ? 'POR AUTOMAÇÃO' : ($ferias['rh_aprovacao']['nome'] ?? ''),
             ]);
         }
 
@@ -691,9 +733,15 @@ class FeriasController extends Controller
 
     public function exportExcelVencimentoFerias(Request $request)
     {
-        $nameArquivo = "vencimento_ferias_" . \Str::slug('Vencimento Ferias') . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
-        JobExportarExcel::dispatch(auth()->id(), "Vencimento Ferias", $this->showVencimentoFerias($request)['result']->toArray(), $nameArquivo);
-        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+        try {
+            $data = $this->showVencimentoFeriasData($request);
+            $nameArquivo = "vencimento_ferias_" . \Str::slug('Vencimento Ferias') . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
+            JobExportarExcel::dispatch(auth()->id(), "Vencimento Ferias", $data['result']->toArray(), $nameArquivo);
+            return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+        } catch (\Throwable $e) {
+            report($e);
+            return response()->json(['msg' => 'Erro ao gerar exportação. Consulte os logs.'], 422);
+        }
     }
 
     public function nomeRelatorio()

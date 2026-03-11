@@ -56,6 +56,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereTreinamento($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereTreinamentoExcecao($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TipoContratacao whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class TipoContratacao extends Model

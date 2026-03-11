@@ -30,6 +30,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTemporaria whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTemporaria whereRazaoSocial($value)
  * @method static \Illuminate\Database\Eloquent\Builder|EmpresaTemporaria whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class EmpresaTemporaria extends Model

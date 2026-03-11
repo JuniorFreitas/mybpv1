@@ -2,9 +2,9 @@
 @section('title', 'CONTROLE DE EXAMES - COLABORADORES')
 @section('content_header', 'CONTROLE DE EXAMES - COLABORADORES')
 @section('content')
-    <modal id="validaSesmt" :titulo="abasesmt.tituloJanela" modal-pai='janelaParecerEntrevista' :size="80"
+    <modal ref="validaSesmt" id="validaSesmt" :titulo="abasesmt.tituloJanela" modal-pai='janelaParecerEntrevista' :size="80"
            :fechar="!abasesmt.preload">
-        <template slot="conteudo">
+        <template #conteudo>
             <preload v-if="abasesmt.preload" label="Aguarde ...."></preload>
             <fieldset v-if="!abasesmt.preload">
                 <legend>Exame</legend>
@@ -146,9 +146,9 @@
                 </div>
             </fieldset>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             {{--            <div v-show="!visualizar">--}}
-            <button type="button" class="btn btn-sm btn-primary"
+            <button type="button" class="btn btn-sm mr-1 btn-primary"
                     v-if="!abasesmt.preload"
                     @click.prevent="salvarResultado">
                 <i class="fa fa-save"></i> Salvar
@@ -159,8 +159,8 @@
         </template>
     </modal>
 
-    <modal id="janelaParecerEntrevista" :titulo="tituloJanela" :size="80" :fechar="!preload">
-        <template slot="conteudo">
+    <modal ref="janelaParecerEntrevista" id="janelaParecerEntrevista" :titulo="tituloJanela" :size="80" :fechar="!preload">
+        <template #conteudo>
             <preload v-if="preload"></preload>
             <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''">
 {{--                <fieldset>--}}
@@ -208,7 +208,7 @@
                                         </td>
                                         <td>
                                             <button type="button" content="Resultado exame" v-tippy
-                                                    class="btn btn-sm btn-primary mb-2" data-toggle="modal"
+                                                    class="btn btn-sm mr-1 btn-primary mb-2" data-toggle="modal"
                                                     data-target="#validaSesmt" @click='formResultado(item.id)'>
                                                 <i class="fa fa-search-plus" aria-hidden="true"></i>
                                             </button>
@@ -221,9 +221,9 @@
                 </div>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <div v-show="!visualizar">
-                <button type="button" class="btn btn-sm btn-primary"
+                <button type="button" class="btn btn-sm mr-1 btn-primary"
                         v-show="!cadastrado & nav === 'encaminhar'  && !preload"
                         @click.prevent="salvarUpdate">
                     <i class="fa fa-save"></i>
@@ -283,7 +283,7 @@
         </form>
         <div class="col-12">
             <div class="row">
-                <button type="button" class="btn btn-sm btn-success mr-1 mb-1" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm mr-1 btn-success mr-1 mb-1" :disabled="controle.carregando"
                         @click.prevent="atualizar">
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
@@ -319,7 +319,7 @@
                 </td>
                 <td></td>
                 <td class="text-center">
-                    <button class="btn btn-sm btn-primary mb-2" content="Historico" v-tippy
+                    <button class="btn btn-sm mr-1 btn-primary mb-2" content="Historico" v-tippy
                             v-show="!colaborador.resultado_integrado"
                             @click.prevent="formEncaminhar(colaborador)"
                             data-toggle="modal" data-target="#janelaParecerEntrevista">

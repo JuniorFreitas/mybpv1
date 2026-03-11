@@ -6,8 +6,8 @@
 @endsection
 @section('content')
 
-    <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" size="g">
+        <template #conteudo>
 
             <preload v-show="preloadAjax" label="Aguarde..."></preload>
             <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -49,26 +49,26 @@
                 </div>
             </form>
         </template>
-        <template slot="rodape">
-            <button type="button" class="btn btn-sm btn-primary" v-show="editando && !atualizado" @click="alterar()">
+        <template #rodape>
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado" @click="alterar()">
                 Alterar
             </button>
-            <button type="button" class="btn btn-sm btn-primary" v-show="!editando && !cadastrado" @click="cadastrar()">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado" @click="cadastrar()">
                 Cadastrar
             </button>
         </template>
     </modal>
 
-    <modal id="janelaConfirmar" titulo="Apagar ocorrência">
-        <template slot="conteudo">
+    <modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar ocorrência">
+        <template #conteudo>
             <preload v-show="preloadAjax" label="Aguarde..."></preload>
             <div class="alert alert-success alert-dismissible" v-show="apagado">
                 <h4><i class="icon fa fa-check"></i> Ocorrência apagada com sucesso!</h4>
             </div>
             <h4 v-show="!apagado">Tem certeza que deseja apagar esta ocorrência?</h4>
         </template>
-        <template slot="rodape">
-            <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!apagado && !preloadAjax">Apagar</button>
+        <template #rodape>
+            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar()" v-show="!apagado && !preloadAjax">Apagar</button>
         </template>
     </modal>
 
@@ -91,9 +91,9 @@
     </div>
 
 
-    <button type="button" class="btn btn-sm btn-success" id="guide-menu" @click="atualizar">Atualizar</button>
+    <button type="button" class="btn btn-sm mr-1 btn-success" id="guide-menu" @click="atualizar">Atualizar</button>
     @can('ocorrencias_jornadas_insert')
-    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" id="btCadastrar" data-target="#janelaCadastrar"
+    <button type="button" class="btn btn-sm mr-1 btn-primary" id="btCadastrar"
             @click="formNovo()">
         Cadastrar
     </button>
@@ -128,18 +128,14 @@
                     </td>
                     <td>
                         @can('ocorrencias_jornadas_update')
-                        <a href="javascript://" class="btn btn-sm btn-success btnFormAlterar"
-                           @click.prevent="formAlterar(ocorrencia.id)"
-                           data-toggle="modal"
-                           data-target="#janelaCadastrar">
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-success btnFormAlterar"
+                           @click.prevent="formAlterar(ocorrencia.id)">
                             <i class="fa fa-edit" aria-hidden="true"></i> Alterar
                         </a>
                         @endcan
                         @can('ocorrencias_jornadas_delete')
-                        <a href="javascript://" class="btn btn-sm btn-danger btnFormExcluir"
-                           @click.prevent="janelaConfirmar(ocorrencia.id)"
-                           data-toggle="modal"
-                           data-target="#janelaConfirmar">
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-danger btnFormExcluir"
+                           @click.prevent="janelaConfirmar(ocorrencia.id)">
                             <i class="fa fa-trash" aria-hidden="true"></i> Excluir
                         </a>
                         @endcan

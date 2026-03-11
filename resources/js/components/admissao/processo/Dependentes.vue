@@ -4,14 +4,14 @@
             <legend class="text-uppercase">DEPENDENTES</legend>
             <div class="row">
                 <div class="col-12 col-sm-6 col-md-6 col-lg-6">
-                    <button v-if="!visualizar" class="btn btn-sm btn-secondary mb-2"
+                    <button v-if="!visualizar" class="btn btn-sm mr-1 btn-secondary mb-2"
                             @click="add()">
                         <span class="fas fa-plus" aria-hidden="true"></span>
                         ADICIONAR DEPENDENTE(S)
                     </button>
                 </div>
             </div>
-            <div class="row" v-for="(dependente, index) in lista" :key="index">
+            <div class="row" v-for="(dependente, index) in lista" :key="dependente.id || index">
                 <div class="col-12">
                     <div class="row">
                         <div class="col-12 col-sm-6 col-lg-4">
@@ -75,11 +75,11 @@
                     </div>
                     <div class="row" v-show="model.length > 0">
                         <div class="col-12 mb-3">
-                            <button v-if="!visualizar" class="btn btn-sm btn-danger mb-2 mr-1" type="button" @click.prevent="remove(index)">
+                            <button v-if="!visualizar" class="btn btn-sm mr-1 btn-danger mb-2 mr-1" type="button" @click.prevent="remove(index)">
                                 <span class="fas fa-times" aria-hidden="true"></span>
                                 REMOVER
                             </button>
-                            <button v-if="!visualizar" class="btn btn-sm btn-secondary mb-2"
+                            <button v-if="!visualizar" class="btn btn-sm mr-1 btn-secondary mb-2"
                                     @click="add()">
                                 <span class="fas fa-plus" aria-hidden="true"></span>
                                 ADICIONAR DEPENDENTE(S)
@@ -127,11 +127,13 @@ export default {
             return this.modelDelete;
         }
     },
-    mounted() {
-        axios.get(`${URL_ADMIN}/admissao/tipos_dependentes`)
-            .then(response => {
-                this.tipos = response.data;
-            }).catch(e => console.log(e));
+    async mounted() {
+        try {
+            const response = await axios.get(`${URL_ADMIN}/admissao/tipos_dependentes`);
+            this.tipos = response.data;
+        } catch (e) {
+            console.log(e);
+        }
     },
     methods: {
         add() {

@@ -1,3 +1,17 @@
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+const abrirModal = (selector) => {
+    if (typeof $ === 'undefined') return
+    $(selector).modal('show')
+}
+
+const fecharModal = (selector) => {
+    if (typeof $ === 'undefined') return
+    $(selector).modal('hide')
+}
+
+
+
 // Constantes da aplicação
 const CONSTANTS = {
     TITULOS: {
@@ -18,54 +32,55 @@ const CONSTANTS = {
     }
 }
 
-const app = new Vue({
-    el: '#app',
-    data: {
-        tituloJanela: '',
-        empresa_id: '',
-        preloadAjax: false,
-        editando: false,
-
-        cadastrado: false,
-        atualizado: false,
-        urlAjax: '',
-        apagado: false,
-
-        form: {
-            id: '',
-            nome: '',
-            descricao: '',
-            email: '',
-            ativo: true,
+const app = createApp({
+    data() {
+        return {
+            tituloJanela: '',
             empresa_id: '',
-            listaDeHabilidades: ''
-        },
+            preloadAjax: false,
+            editando: false,
 
-        formDefault: null,
+            cadastrado: false,
+            atualizado: false,
+            urlAjax: '',
+            apagado: false,
 
-        lista: [],
-        listaDeHabilidades: [],
-        habilidadesFiltradas: [],
-        filtroHabilidades: '',
-        categoriaFiltro: '',
-        categoriasHabilidades: [],
-        todasHabilidades: true,
-        paginaHabilidades: 1,
-        itensPorPaginaHabilidades: 10,
+            form: {
+                id: '',
+                nome: '',
+                descricao: '',
+                email: '',
+                ativo: true,
+                empresa_id: '',
+                listaDeHabilidades: ''
+            },
 
-        // Variáveis para usuários vinculados
-        listaUsuarios: [],
-        usuariosFiltrados: [],
-        filtroUsuarios: '',
-        paginaUsuarios: 1,
-        itensPorPaginaUsuarios: 10,
+            formDefault: null,
 
-        dados: {},
-        controle: {
-            carregando: false,
-            dados: {
-                pages: 20,
-                campoBusca: ''
+            lista: [],
+            listaDeHabilidades: [],
+            habilidadesFiltradas: [],
+            filtroHabilidades: '',
+            categoriaFiltro: '',
+            categoriasHabilidades: [],
+            todasHabilidades: true,
+            paginaHabilidades: 1,
+            itensPorPaginaHabilidades: 10,
+
+            // Variáveis para usuários vinculados
+            listaUsuarios: [],
+            usuariosFiltrados: [],
+            filtroUsuarios: '',
+            paginaUsuarios: 1,
+            itensPorPaginaUsuarios: 10,
+
+            dados: {},
+            controle: {
+                carregando: false,
+                dados: {
+                    pages: 20,
+                    campoBusca: ''
+                }
             }
         }
     },
@@ -236,6 +251,7 @@ const app = new Vue({
             formReset()
 
             await this.carregarHabilidades()
+            this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
         },
 
         /**
@@ -330,7 +346,7 @@ const app = new Vue({
                 if (response.status === CONSTANTS.STATUS.CRIADO) {
                     mostraSucesso('', mensagemSucesso)
                     $(CONSTANTS.ELEMENTOS.JANELA_CADASTRAR).modal('hide')
-                    this.$refs.componente.buscar()
+                    this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                 }
             } catch (error) {
                 this.tratarErro('Erro ao salvar grupo', error)
@@ -360,6 +376,7 @@ const app = new Vue({
             this.resetarEstados()
 
             await this.carregarDadosPapel(id)
+            this.$nextTick(() => this.$refs.janelaCadastrar?.abrirModal())
         },
 
         /**
@@ -425,8 +442,8 @@ const app = new Vue({
          * Atualiza a lista de papéis
          */
         atualizar() {
-            this.$refs.componente.atual = 1
-            this.$refs.componente.buscar()
+            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
         },
 
         /**
@@ -447,3 +464,6 @@ const app = new Vue({
         }
     }
 })
+
+registerGlobals(app)
+app.mount('#app')

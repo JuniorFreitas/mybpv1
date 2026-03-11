@@ -21,6 +21,10 @@ class DocumentoAssinaturaControllerTest extends TestCase
         parent::tearDown();
     }
 
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testExportarEvidenciasRegistraEventoEAplicaMascara(): void
     {
         $signatario = (object) [

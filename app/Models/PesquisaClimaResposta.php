@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaResposta newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaResposta newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|PesquisaClimaResposta query()
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class PesquisaClimaResposta extends Model

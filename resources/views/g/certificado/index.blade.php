@@ -7,8 +7,8 @@
 @section('content')
     <input type="hidden" id="cliente_id" value="{{Request::has('cliente_id') ? Request::query('cliente_id') : null}}">
 
-    <modal id="confirmacaoGeracao" titulo="Confirmação de impressão de Certificados">
-        <template slot="conteudo">
+    <modal ref="confirmacaoGeracao" id="confirmacaoGeracao" titulo="Confirmação de impressão de Certificados">
+        <template #conteudo>
             <div class="form-check">
                 <input type="checkbox" v-model="nr33" class="form-check-input" id="checknr33">
                 <label class="form-check-label" for="checknr33">NR-33</label>
@@ -18,7 +18,7 @@
                 <label class="form-check-label" for="checknr35">NR-35</label>
             </div>
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <form target="_blank" action="{{ route('g.certificados.certificadoPdf') }}" method="post">
                 @csrf
                 <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
@@ -30,8 +30,8 @@
             </form>
         </template>
     </modal>
-    <modal id="janelaTreinamento" titulo="Certificado" size="g">
-        <template slot="conteudo">
+    <modal ref="janelaTreinamento" id="janelaTreinamento" titulo="Certificado" size="g">
+        <template #conteudo>
             <div class="alert alert-success text-center" v-show="cadastrado">
                 <h4><i class="icon fa fa-check"></i> Dados para o certificado atualizado com sucesso</h4>
             </div>
@@ -105,7 +105,7 @@
             </div>
 
         </template>
-        <template slot="rodape">
+        <template #rodape>
             <button type="button" class="btn btn-primary" @click="salvar"
                     v-if="!preload && (!cadastrado && !atualizado)">
                 <i class="fa fa-save"></i> Salvar
@@ -305,24 +305,22 @@
         </div>
         <div class="col-12">
             <div class="row">
-                <button type="button" class="btn btn-sm btn-success mr-1" :disabled="controle.carregando"
+                <button type="button" class="btn btn-sm mr-1 btn-success mr-1" :disabled="controle.carregando"
                         :style="controle.carregando ? 'cursor: not-allowed' : 'cursor: pointer'" @click="atualizar">
                     <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                     Atualizar
                 </button>
 
-                <button class="btn btn-sm btn-primary mr-1"
+                <button class="btn btn-sm mr-1 btn-primary mr-1"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                         :disabled="selecionados.length === 0"
-                        data-toggle="modal"
-                        @click="nr33 = false; nr35=false"
-                        data-target="#confirmacaoGeracao"
+                        @click="nr33 = false; nr35=false; $refs.confirmacaoGeracao?.abrirModal()"
                 >
                     <i class="fa fa-print"></i> Certificados <span
                         class="badge badge-light">@{{ selecionados.length }}</span>
                 </button>
 
-                <button class="btn btn-sm btn-danger"
+                <button class="btn btn-sm mr-1 btn-danger"
                         :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                         :disabled="selecionados.length === 0" @click="selecionados = []">
                     <i class="fa fa-times"></i> Limpar seleção
@@ -344,7 +342,7 @@
                     <input type="hidden" name="campoNr_trinta_cinco" :value="controle.dados.campoNr_trinta_cinco">
                     <input type="hidden" name="campoAdmitido" :value="controle.dados.campoAdmitido">
 
-                    <button type="submit" class="btn btn-sm btn-primary ml-1"
+                    <button type="submit" class="btn btn-sm mr-1 btn-primary ml-1"
                             :disabled="controle.carregando || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
                         <i class="fas fa-file-excel"></i> Exportar Excel <span class="badge badge-light"
                                                                                v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
@@ -464,10 +462,8 @@
                     </td>
 
                     <td class="text-center">
-                        <button class="btn btn-sm btn-primary mb-1" title="Atualizar"
-                                @click.prevent="formAlterar(resultado.feedback_id)"
-                                data-toggle="modal"
-                                data-target="#janelaTreinamento">
+                        <button class="btn btn-sm mr-1 btn-primary mb-1" title="Atualizar"
+                                @click.prevent="formAlterar(resultado.feedback_id); $refs.janelaTreinamento?.abrirModal()">
                             <i class="fa fa-edit"></i>
                         </button>
 

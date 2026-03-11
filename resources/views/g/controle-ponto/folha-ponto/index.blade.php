@@ -2,8 +2,8 @@
 @section('title', 'Controle de ponto: Folha de ponto')
 @section('content_header', 'Controle de ponto: Folha de ponto')
 @section('content')
-    <modal id="janelaDetalhesFoto" titulo="Detalhes do ponto" modal-pai="janelaFormDetalhes" size="g">
-        <template slot="conteudo">
+    <modal ref="janelaDetalhesFoto" id="janelaDetalhesFoto" titulo="Detalhes do ponto" modal-pai="janelaFormDetalhes" size="g">
+        <template #conteudo>
             <p class="text-center">
                 <preload v-if="preloadDetalheFoto" label="Aguarde..."></preload>
             </p>
@@ -42,12 +42,12 @@
             </div>
 
         </template>
-        <template slot="rodape"></template>
+        <template #rodape></template>
     </modal>
 
     <!--Janela de detalhes-->
-    <modal id="janelaFormDetalhes" titulo="Folha de ponto" :size="95" :fechar="!formPonto.preload">
-        <template slot="conteudo">
+    <modal ref="janelaFormDetalhes" id="janelaFormDetalhes" titulo="Folha de ponto" :size="95" :fechar="!formPonto.preload">
+        <template #conteudo>
             <div v-if="!formPonto.preload && !formPonto.save">
                 <div class="row">
                     <div class="col-12" style="margin-top: -20px">
@@ -136,16 +136,14 @@
                                         <span v-for="(periodo,index) in calend.ponto.periodos"
                                               v-if="calend.ponto.ocorrencia.trabalhado">
                                     <span v-show="index > 0">|</span>
-                                    <a href="javascript://" data-toggle="modal"
-                                       data-target="#janelaDetalhesFoto" v-tippy content="Detalhes"
-                                       @click="mostraDetalheFoto(periodo,'Entrada')">
+                                    <a href="javascript://" v-tippy content="Detalhes"
+                                       @click="mostraDetalheFoto(periodo,'Entrada'); $refs.janelaDetalhesFoto?.abrirModal()">
                                         @{{ periodo.horaEntrada }}
                                     </a>
                                             <span
                                                 v-if="periodo.horaSaida">-
-                                                <a href="javascript://" data-toggle="modal"
-                                                   data-target="#janelaDetalhesFoto" v-tippy content="Detalhes"
-                                                   @click="mostraDetalheFoto(periodo,'Saida')">
+                                                <a href="javascript://" v-tippy content="Detalhes"
+                                                   @click="mostraDetalheFoto(periodo,'Saida'); $refs.janelaDetalhesFoto?.abrirModal()">
                                                     @{{ periodo.horaSaida }}
                                                 </a>
                                             </span>
@@ -227,7 +225,8 @@
 
                             </tr>
 
-                            <tr v-for="ponto in formPonto.pontos" v-if="false">
+                            <template v-if="false">
+                                <tr v-for="ponto in formPonto.pontos">
                                 <td>
                                     @{{ ponto.dia }} <small>@{{ ponto.diaSem }}</small>
                                 </td>
@@ -236,13 +235,13 @@
                                     <i class="fas fa-circle text-success ml-2" v-if="ponto.verificado"></i>
                                     <i class="fas fa-circle text-warning ml-2" v-if="!ponto.verificado"></i>
 
-                                    <span v-for="(periodo,index) in ponto.periodos" v-if="ponto.ocorrencia.trabalhado">
-                                    <span v-show="index > 0">|</span>
-                                    @{{ periodo.horaEntrada }}<span
-                                            v-if="periodo.horaSaida">-@{{ periodo.horaSaida }}</span>
-                                    <span v-if="!periodo.horaSaida">-<span
-                                            class="badge badge-warning">trabalhando</span></span>
-                                </span>
+                                    <template v-if="ponto.ocorrencia.trabalhado">
+                                        <span v-for="(periodo,index) in ponto.periodos">
+                                            <span v-show="index > 0">|</span>
+                                            @{{ periodo.horaEntrada }}<span v-if="periodo.horaSaida">-@{{ periodo.horaSaida }}</span>
+                                            <span v-if="!periodo.horaSaida">-<span class="badge badge-warning">trabalhando</span></span>
+                                        </span>
+                                    </template>
 
                                     <span v-if="!ponto.ocorrencia.trabalhado">@{{ ponto.ocorrencia.descricao }}</span>
                                 </td>
@@ -291,7 +290,8 @@
                                 </span>
                                     <span v-else> -- </span>
                                 </td>
-                            </tr>
+                                </tr>
+                            </template>
 
                             </tbody>
                         </table>
@@ -355,7 +355,7 @@
             </div>
 
         </template>
-        <template slot="rodape">
+        <template #rodape>
         </template>
     </modal>
 
@@ -432,7 +432,7 @@
                                     <div class="media ml-3" style="display: flex; align-items: center;">
                                         <div class="avatar-md mr-3">
                                             <span class="avatar-title rounded-circle bg-soft-primary text-primary">
-                                                @{{ funcionario.nome | formataNome }}
+                                                @{{ formatNome(funcionario.nome) }}
                                             </span>
                                         </div>
                                         <div class="media-body">
@@ -445,8 +445,8 @@
                                 @{{ funcionario.escalas_funcionario[0].descricao }}
                             </td>
                             <td>
-                                <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal"
-                                        data-target="#janelaFormDetalhes" @click="verDetalhes(funcionario.id)"><i
+                                <button type="button" class="btn btn-secondary btn-sm"
+                                        @click="verDetalhes(funcionario.id); $refs.janelaFormDetalhes?.abrirModal()"><i
                                         class="fas fa-clipboard-list"></i> Detalhes
                                 </button>
                             </td>

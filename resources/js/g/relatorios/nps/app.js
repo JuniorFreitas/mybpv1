@@ -1,9 +1,15 @@
-import NpsRelatorio from "../../../components/relatorios/nps/NpsRelatorio.vue";
+import { createApp } from 'vue'
+import { registerGlobals } from '../../../registerGlobals'
+import NpsRelatorio from '../../../components/relatorios/nps/NpsRelatorio.vue'
 
-const app = new Vue({
-    el: '#app',
-    data: {},
+const app = createApp({
+    data() {
+        return {}
+    },
     components: {
         NpsRelatorio
-    },
-});
+    }
+})
+
+registerGlobals(app)
+app.mount('#app')

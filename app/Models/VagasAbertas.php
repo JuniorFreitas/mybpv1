@@ -48,6 +48,8 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereTitulo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|VagasAbertas whereVagaId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class VagasAbertas extends Model

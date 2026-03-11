@@ -35,6 +35,8 @@ use Spatie\Activitylog\Models\Activity;
  * @method static \Illuminate\Database\Eloquent\Builder|DocumentoEmpresa whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DocumentoEmpresa whereTipoEmpresa($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DocumentoEmpresa whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class DocumentoEmpresa extends Model

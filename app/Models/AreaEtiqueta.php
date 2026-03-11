@@ -29,6 +29,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereGestorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|AreaEtiqueta whereLabel($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
  * @mixin \Eloquent
  */
 class AreaEtiqueta extends Model

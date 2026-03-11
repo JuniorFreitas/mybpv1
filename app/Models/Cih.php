@@ -99,6 +99,11 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @method static Builder|Cih whereVariosColaboradores($value)
  * @method static Builder|Cih withTrashed()
  * @method static Builder|Cih withoutTrashed()
+ * @property-read mixed $data_criacao
+ * @property-read mixed $data_iso_aprovacao_gestor
+ * @property-read mixed $data_iso_aprovacao_rh
+ * @property-read mixed $data_iso_criacao
+ * @property-read mixed $data_iso_lancamento
  * @mixin \Eloquent
  */
 class Cih extends Model

@@ -72,6 +72,23 @@ use MasterTag\DataHora;
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereUserAprovacaoId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RequisicaoVaga whereUserId($value)
+ * @property int|null $aprovacao_extra_id
+ * @property string|null $status_aprovacao_extra
+ * @property string|null $obs_aprovacao_extra
+ * @property \Illuminate\Support\Carbon|null $data_aprovacao_extra
+ * @property-read \App\Models\User|null $AprovacaoExtra
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
+ * @property-read int|null $activities_count
+ * @property-read mixed $created_at_formatado
+ * @property-read mixed $updated_at_formatado
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVaga whereAprovacaoExtraId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVaga whereDataAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVaga whereDataAprovacaoRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVaga whereObsAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVaga whereObsRh($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVaga whereRhAprovacaoId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVaga whereStatusAprovacaoExtra($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|RequisicaoVaga whereStatusAprovacaoRh($value)
  * @mixin \Eloquent
  */
 class RequisicaoVaga extends Model

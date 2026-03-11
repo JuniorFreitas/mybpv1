@@ -6,8 +6,8 @@
 @stop
 @section('content')
 
-    <modal id="janelaCadastrar" :titulo="tituloJanela" size="g">
-        <template slot="conteudo">
+    <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" size="g">
+        <template #conteudo>
 
             <span v-show="form.preload"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</span>
             <div class="alert alert-success alert-dismissible" v-show="form.cadastrado">
@@ -34,26 +34,26 @@
                 </div>
             </form>
         </template>
-        <template slot="rodape">
-            <button type="button" class="btn btn-sm btn-primary" v-show="!form.preload && form.editando && !form.atualizado" @click="alterar()">
+        <template #rodape>
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!form.preload && form.editando && !form.atualizado" @click="alterar()">
                 Alterar
             </button>
-            <button type="button" class="btn btn-sm btn-primary" v-show="!form.preload && !form.editando && !form.cadastrado" @click="cadastrar()">
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!form.preload && !form.editando && !form.cadastrado" @click="cadastrar()">
                 Cadastrar
             </button>
         </template>
     </modal>
 
-    <modal id="janelaConfirmar" titulo="Apagar feriados">
-        <template slot="conteudo">
+    <modal ref="janelaConfirmar" id="janelaConfirmar" titulo="Apagar feriados">
+        <template #conteudo>
             <span v-show="form.preload"><i class="fa fa-spinner fa-pulse"></i>Aguarde...</span>
             <div class="alert alert-success alert-dismissible" v-show="form.apagado">
                 <h4> <i class="icon fa fa-check"></i>Feriado apagado com sucesso!</h4>
             </div>
             <h4 v-show="!form.apagado">Tem certeza que deseja apagar este feriado?</h4>
         </template>
-        <template slot="rodape">
-            <button type="button" class="btn btn-sm btn-danger" @click="apagar()" v-show="!form.apagado">Apagar</button>
+        <template #rodape>
+            <button type="button" class="btn btn-sm mr-1 btn-danger" @click="apagar()" v-show="!form.apagado">Apagar</button>
         </template>
     </modal>
 
@@ -76,9 +76,9 @@
     </div>
 
 
-    <button type="button" class="btn btn-sm btn-success" id="btnAtualizar" @click="atualizar">Atualizar</button>
+    <button type="button" class="btn btn-sm mr-1 btn-success" id="btnAtualizar" @click="atualizar">Atualizar</button>
 
-    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#janelaCadastrar" @click="formNovo()">
+    <button type="button" class="btn btn-sm mr-1 btn-primary" @click="formNovo()">
         Cadastrar
     </button>
 
@@ -108,16 +108,12 @@
                         <bt-ativo :rota="`controle-ponto/feriados/${feriado.id}/ativa-desativa`" :model="feriado"></bt-ativo>
                     </td>
                     <td class="text-center">
-                        <a href="javascript://" class="btn btn-sm btn-success btnFormAlterar"
-                           @click.prevent="formAlterar(feriado.id)"
-                           data-toggle="modal"
-                           data-target="#janelaCadastrar">
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-success btnFormAlterar"
+                           @click.prevent="formAlterar(feriado.id)">
                             <i class="fa fa-edit" aria-hidden="true"></i> Alterar
                         </a>
-                        <a href="javascript://" class="btn btn-sm btn-danger btnFormExcluir"
-                           @click.prevent="janelaConfirmar(feriado.id)"
-                           data-toggle="modal"
-                           data-target="#janelaConfirmar">
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-danger btnFormExcluir"
+                           @click.prevent="janelaConfirmar(feriado.id)">
                             <i class="fa fa-trash" aria-hidden="true"></i> Excluir
                         </a>
                     </td>
