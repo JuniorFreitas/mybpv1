@@ -1,6 +1,6 @@
 <template>
     <div>
-        <modal :id="hash" :titulo="tituloJanela" :size="90" :ref="hash">
+        <modal :id="hash" :titulo="tituloJanela" :size="90" ref="modalRef">
             <template #conteudo>
                 <preload v-show="preload" class="text-center"></preload>
                 <div class="alert alert-success alert-dismissible" v-show="cadastrado">
@@ -18,6 +18,7 @@
                                 :model="form"
                                 :verifica="visualizar || aprovando || aprovandoExtra || aprovandoRh"
                                 :hash="hash"
+                                @evtseleciona="onColaboradorSelecionado"
                             ></colaborador>
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
@@ -25,7 +26,7 @@
                                     <select
                                         v-model="form.centro_custo_origem_id"
                                         class="form-control form-control-sm"
-                                        :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
+                                        :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh || centroOrigemDesabilitadoPorColaborador"
                                         onchange="valida_campo_vazio(this, 1)"
                                         onblur="valida_campo_vazio(this, 1)"
                                     >
@@ -266,7 +267,7 @@
                 <button
                     type="button"
                     class="btn btn-sm mr-1 btn-primary"
-                    v-show="aprovandoRh && !atualizado && !preload && !form.resposta_rh"
+                    v-show="aprovandoRh && !atualizado && !preload && !form.user_rh_id"
                     @click.prevent="aprovarRH"
                 >
                     <i class="fa fa-save"></i> Salvar RH
@@ -290,10 +291,7 @@
         </modal>
         <fieldset class="mt-0">
             <legend>Filtro</legend>
-            <form
-                class="row"
-                @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null"
-            >
+            <form class="row" @submit.prevent="buscarFiltro">
                 <!-- <div class="col-12 col-md-3">
                     <div class="form-check" style="margin-bottom: -11px;">
                         <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
@@ -377,7 +375,7 @@
                     type="button"
                     class="btn btn-sm mr-1 btn-primary"
                     :disabled="controle.carregando"
-                    @click.prevent="formNovo(); $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
+                    @click.prevent="abrirModalSolicitar"
                 >
                     Solicitar
                 </button>
@@ -391,12 +389,12 @@
                 </button>
 
                 <button
-                    type="submit"
+                    type="button"
                     class="btn btn-sm mr-1 btn-primary mr-1"
                     v-show="selecionados.length > 0"
                     :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                     :disabled="selecionados.length === 0"
-                        @click.prevent="$refs.modal_janelaAtualizaStatus && $refs.modal_janelaAtualizaStatus.abrirModal()"
+                    @click.prevent="abrirModalAtualizarStatus"
                 >
                     Atualizar Status <span class="badge badge-light">{{ selecionados.length }}</span>
                 </button>
@@ -482,7 +480,7 @@
                                         class="dropdown-item"
                                         href="javascript://"
                                         title="Aprovação Gestor"
-                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = true; aprovandoExtra = false; aprovandoRh = false; podeanexar = true; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
+                                        @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: false, aprovando: true, aprovandoExtra: false, aprovandoRh: false, podeanexar: true })"
                                         v-if="item.user_aprovacao_id === null && aprovar_por_gestor"
                                     >
                                         Aprovação Gestor
@@ -491,7 +489,7 @@
                                         class="dropdown-item"
                                         href="javascript://"
                                         :title="nomeAprovacaoExtra"
-                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = false; aprovandoExtra = true; aprovandoRh = false; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
+                                        @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: false, aprovando: false, aprovandoExtra: true, aprovandoRh: false, podeanexar: false })"
                                         v-if="temAprovacaoExtra && item.status_aprovacao === 'aprovado' && !item.status_aprovacao_extra && podeAprovarExtra"
                                     >
                                         {{ nomeAprovacaoExtra }}
@@ -500,7 +498,7 @@
                                         class="dropdown-item"
                                         href="javascript://"
                                         title="Aprovação RH"
-                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = true; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
+                                        @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: true, aprovando: false, aprovandoExtra: false, aprovandoRh: true, podeanexar: false })"
                                         v-if="
                                             ((temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') ||
                                                 (!temAprovacaoExtra && item.status_aprovacao === 'aprovado')) &&
@@ -514,7 +512,7 @@
                                         class="dropdown-item"
                                         href="javascript://"
                                         title="Visualizar"
-                                        @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = false; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
+                                        @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: true, aprovando: false, aprovandoExtra: false, aprovandoRh: false, podeanexar: false })"
                                     >
                                         Visualizar
                                     </a>
@@ -683,490 +681,589 @@
 </template>
 
 <script>
+import { defineComponent, ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick, getCurrentInstance, inject } from 'vue'
+import axios from 'axios'
+import _ from 'lodash'
 import Upload from '../../Upload'
 import colaborador from '../../Colaborador'
 import gestoraprovacao from '../../GestorAprovacao'
 import DateRangeFilter from '../../DateRangeFilter'
-import ExportacaoMixin from '../../../mixins/Exportacoes'
-import Utils from '../../../mixins/Utils'
+import Validacoes from '../../../mixins/Validacoes'
 
-export default {
-    mixins: [ExportacaoMixin, Utils],
+const BASE_URL = `${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista`
+const POR_PAGINA_OPCOES = [20, 50, 100, 150]
+
+function createFormDefault() {
+    return {
+    colaborador_id: '',
+    autocomplete_label_colaborador: '',
+    autocomplete_label_colaborador_anterior: '',
+    gestor_id: '',
+    autocomplete_label_gestor_modal: '',
+    autocomplete_label_gestor_modal_anterior: '',
+    centro_custo_origem_id: '',
+    centro_custo_destino_id: '',
+    data_transferencia: '',
+    obs: '',
+    obs_aprovacao: '',
+    status_aprovacao: ''
+    }
+}
+
+function createFormConfirmacaoDefault() {
+    return {
+    selecionados: [],
+    obs_aprovacao: '',
+    status_aprovacao: ''
+    }
+}
+
+function createControleDados() {
+    return {
+    filtroPeriodo: false,
+    dataInicio: '',
+    dataFim: '',
+    campoBusca: '',
+    campoStatus: '',
+    pages: 50,
+    token: '',
+    ordenacao: 'created_at_desc'
+    }
+}
+
+export default defineComponent({
+    name: 'SolicitacaoTransferencia',
+    components: { colaborador, gestoraprovacao, DateRangeFilter, Upload },
+    mixins: [Validacoes],
     inject: {
         atualizarUrlMovimentacao: { default: () => () => {} }
     },
-    components: {
-        colaborador,
-        gestoraprovacao,
-        DateRangeFilter,
-        Upload
-    },
-    data() {
-        return {
-            tituloJanela: 'Solicitacao de admissão',
-            preload: false,
-            editando: false,
-            apagado: false,
-            cadastrado: false,
-            cadastrando: false,
-            atualizado: false,
-            visualizar: false,
-            aprovando: false,
-            aprovandoExtra: false,
-            aprovandoRh: false,
-            aprovar_por_gestor: false,
-            aprovar_por_rh: false,
-            temAprovacaoExtra: false,
-            podeAprovarExtra: false,
-            nomeAprovacaoExtra: '',
-            preloadExportacao: false,
+    setup() {
+        const atualizarUrlMovimentacao = inject('atualizarUrlMovimentacao', () => () => {})
+        const modalRef = ref(null)
+        const modalStatusRef = ref(null)
+        const componenteRef = ref(null)
+        const hash = `mybp_${Math.floor(Math.random() * 999999)}`
+        const tituloJanela = ref('Solicitacao de admissão')
+        const preload = ref(false)
+        const editando = ref(false)
+        const cadastrado = ref(false)
+        const cadastrando = ref(false)
+        const atualizado = ref(false)
+        const visualizar = ref(false)
+        const aprovando = ref(false)
+        const aprovandoExtra = ref(false)
+        const aprovandoRh = ref(false)
+        const aprovar_por_gestor = ref(false)
+        const aprovar_por_rh = ref(false)
+        const temAprovacaoExtra = ref(false)
+        const podeAprovarExtra = ref(false)
+        const nomeAprovacaoExtra = ref('')
+        const preloadExportacao = ref(false)
+        const anexoUploadAndamento = ref(false)
+        const podeanexar = ref(false)
+        const selecionados = ref([])
+        const selecionaTudo = ref(false)
+        const dropdownAbertoKey = ref(null)
+        const lista = ref([])
+        const centro_custos = ref([])
+        const preloadAtualizacao = ref(false)
+        /** Inicia true (campo desabilitado). Só habilita quando colaborador não possui centro de custo. */
+        const centroOrigemDesabilitadoPorColaborador = ref(true)
 
-            urlExportacao: `${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista/export`,
+        const urlExportacao = `${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista/export`
+        const url_anexo = `${URL_ADMIN}/planejamento/movimentacao/uploadAnexos`
+        const urlPaginacao = `${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista/atualizar`
+        const mimes = ref([])
 
-            url_anexo: `${URL_ADMIN}/planejamento/movimentacao/uploadAnexos`,
-            anexoUploadAndamento: false,
-            podeanexar: false,
-            mimes: [],
+        const formDefault = createFormDefault()
+        const formConfirmacaoDefault = createFormConfirmacaoDefault()
+        const form = reactive({ ..._.cloneDeep(formDefault) })
+        const formConfirmacao = reactive(_.cloneDeep(formConfirmacaoDefault))
+        const controle = reactive({
+            carregando: false,
+            dados: createControleDados()
+        })
 
-            CSRF_token,
+        let _syncUrlTimer = null
 
-            hash: `mastertag_${parseInt(Math.random() * 999999)}`,
+        const naoAprovados = computed(() =>
+            lista.value.filter((item) => item.status_aprovacao === null).map((item) => item.id)
+        )
+        const por_pagina = computed(() => POR_PAGINA_OPCOES)
+        const paramsExport = computed(() => controle.dados)
+        const tudoMarcado = computed(() => {
+            const total = naoAprovados.value.length
+            if (total === 0) return false
+            const encontrados = naoAprovados.value.filter((id) => selecionados.value.indexOf(id) >= 0).length
+            selecionaTudo.value = total === encontrados
+            return total === encontrados
+        })
 
-            selecionados: [],
-            selecionaTudo: false,
+        function fecharModalPrincipal() {
+            try {
+                if (modalRef.value?.fecharModal) modalRef.value.fecharModal()
+            } catch (_e) {}
+        }
 
-            dropdownAbertoKey: null,
+        function getComponenteRef() {
+            return componenteRef.value
+        }
 
-            formConfirmacao: {
-                selecionados: [],
-                obs_aprovacao: '',
-                status_aprovacao: ''
-            },
+        function recarregarLista() {
+            const comp = getComponenteRef()
+            if (comp?.atual !== undefined) comp.atual = 1
+            if (comp?.buscar) comp.buscar()
+        }
 
-            formConfirmacaoDefault: null,
-            form: {
-                colaborador_id: '',
-                autocomplete_label_colaborador: '',
-                autocomplete_label_colaborador_anterior: '',
-
-                gestor_id: '',
-                autocomplete_label_gestor_modal: '',
-                autocomplete_label_gestor_modal_anterior: '',
-
-                centro_custo_origem_id: '',
-                centro_custo_destino_id: '',
-                data_transferencia: '',
-                obs: '',
-
-                obs_aprovacao: '',
-                status_aprovacao: ''
-            },
-
-            formDefault: null,
-            lista: [],
-            centro_custos: [],
-
-            aprova: false,
-            editar: false,
-
-            // colaborador_ativo: `autocomplete/colaboradores/`,
-            urlPaginacao: `${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista/atualizar`,
-            controle: {
-                carregando: false,
-                dados: {
-                    filtroPeriodo: false,
-                    dataInicio: '',
-                    dataFim: '',
-                    campoBusca: '',
-                    campoStatus: '',
-                    pages: 50,
-                    token: '',
-                    ordenacao: 'created_at_desc'
+        async function listaCentroCusto() {
+            try {
+                const { data } = await axios.post(`${URL_PUBLICO}/centro-custos/`)
+                centro_custos.value = data.centro_custos ?? []
+                if (cadastrando.value) {
+                    form.centro_custo_id = ''
+                    form.autocomplete_label_colaborador_anterior = ''
+                    form.autocomplete_label_colaborador = ''
+                    form.colaborador_id = ''
                 }
+            } catch (_err) {
+                preload.value = false
             }
         }
-    },
-    mounted() {
-        window.validaCampo = (el, tipo) => {
-            this.valida_campo_vazio(el, tipo)
-        }
-        this.urlParamGet()
-        this.formDefault = _.cloneDeep(this.form) //copia
-        this.formConfirmacaoDefault = _.cloneDeep(this.formConfirmacao)
-        this.$nextTick(() => this.atualizar())
-        document.addEventListener('click', this.onClickOutside)
-    },
-    beforeUnmount() {
-        document.removeEventListener('click', this.onClickOutside)
-    },
-    watch: {
-        'controle.dados': {
-            handler() {
-                if (this._syncUrlTimer) clearTimeout(this._syncUrlTimer)
-                this._syncUrlTimer = setTimeout(() => this.syncUrlFiltros(), 400)
-            },
-            deep: true
-        }
-    },
-    computed: {
-        naoAprovados() {
-            return this.lista.filter((item) => {
-                if (item.status_aprovacao === null) {
-                    return item.id
-                }
-            })
-        },
-        tudoMarcado() {
-            let totalAprovado = this.naoAprovados.length
-            let totalEncontrado = 0
 
-            if (totalAprovado === 0) {
+        async function confirmaAtualizacaoStatus(confirmacao) {
+            preloadAtualizacao.value = true
+            formConfirmacao.status_aprovacao = confirmacao
+            formConfirmacao.selecionados = [selecionados.value]
+            try {
+                await axios.post(`${BASE_URL}/atualizacao-status`, formConfirmacao)
+                modalStatusRef.value?.fecharModal?.()
+                if (typeof mostraSucesso === 'function') mostraSucesso('Status atualizados com sucesso!')
+                selecionados.value = []
+                Object.assign(formConfirmacao, _.cloneDeep(formConfirmacaoDefault))
+                recarregarLista()
+            } catch (_err) {
+                if (typeof mostraErro === 'function') mostraErro(_err)
+            } finally {
+                preloadAtualizacao.value = false
+            }
+        }
+
+        function formNovo() {
+            cadastrando.value = true
+            cadastrado.value = false
+            atualizado.value = false
+            editando.value = false
+            aprovando.value = false
+            aprovandoExtra.value = false
+            aprovandoRh.value = false
+            visualizar.value = false
+            podeanexar.value = true
+            tituloJanela.value = 'Solicitação de transferência'
+            if (typeof formReset === 'function') formReset()
+            if (typeof setupCampo === 'function') setupCampo()
+            Object.assign(form, _.cloneDeep(formDefault))
+            form.centro_custo_id = ''
+            centroOrigemDesabilitadoPorColaborador.value = true
+            listaCentroCusto()
+        }
+
+        function validarFormularioVisivel() {
+            if (typeof $ === 'undefined') return true
+            $(`#${hash} :input:visible`).trigger('blur')
+            const invalidos = $(`#${hash} :input:visible.is-invalid`).length
+            if (invalidos > 0) {
+                if (typeof mostraErro === 'function') mostraErro('', 'Verifique os campos marcados')
                 return false
             }
-
-            this.naoAprovados.forEach((item) => {
-                let id = item.id
-                if (this.selecionados.indexOf(id) >= 0) {
-                    totalEncontrado++
-                } else {
-                    return false
-                }
-            })
-            let resultado = totalAprovado === totalEncontrado
-            this.selecionaTudo = resultado
-            return resultado
-        },
-        por_pagina() {
-            return [20, 50, 100, 150]
-        },
-        paramsExport() {
-            return this.controle.dados
+            return true
         }
-    },
-    methods: {
-        toggleDropdown(itemId) {
-            if (!itemId) {
-                return
+
+        function validarColaboradorEGestor() {
+            if (!form.colaborador_id) {
+                if (typeof valida_campo_vazio === 'function') valida_campo_vazio($(`#colaborador_${hash}`), 1)
+                $(`#${hash} #colaborador_${hash}`).focus().trigger('blur')
+                if (typeof mostraErro === 'function') mostraErro('', 'Campo COLABORADOR não pode ficar vazio')
+                resetaCampoColaborador()
+                return false
             }
+            if (!form.gestor_id) {
+                if (typeof valida_campo_vazio === 'function') valida_campo_vazio($(`#gestor_${hash}`), 1)
+                $(`#${hash} #gestor_${hash}`).focus().trigger('blur')
+                if (typeof mostraErro === 'function') mostraErro('', 'Campo GESTOR não pode ficar vazio')
+                resetaCampoGestor()
+                return false
+            }
+            return true
+        }
+
+        function resetaCampoColaborador() {
+            form.autocomplete_label_colaborador = ''
+            form.autocomplete_label_colaborador_anterior = ''
+            form.colaborador_id = ''
+            form.centro_custo_origem_id = ''
+            centroOrigemDesabilitadoPorColaborador.value = true
+        }
+
+        /**
+         * Ao selecionar colaborador na nova solicitação, preenche o Centro de Custo Origem
+         * com o centro de custo atual do colaborador (se possuir). Se possuir, o campo fica desabilitado.
+         */
+        function onColaboradorSelecionado(model) {
+            if (!cadastrando.value) return
+            const centroOrigem = model.centro_custo_id ?? ''
+            form.centro_custo_origem_id = centroOrigem
+            centroOrigemDesabilitadoPorColaborador.value = !!centroOrigem
+        }
+
+        function resetaCampoGestor() {
+            form.autocomplete_label_gestor_modal = ''
+            form.autocomplete_label_gestor_modal_anterior = ''
+            form.gestor_id = ''
+        }
+
+        async function cadastrar() {
+            if (!validarColaboradorEGestor() || !validarFormularioVisivel()) return
+            preload.value = true
+            try {
+                await axios.post(BASE_URL, form)
+                fecharModalPrincipal()
+                if (typeof mostraSucesso === 'function') mostraSucesso('', 'Solicitação registrada com sucesso!')
+                recarregarLista()
+            } catch (err) {
+                if (typeof mostraErro === 'function') mostraErro(err)
+            } finally {
+                preload.value = false
+            }
+        }
+
+        function setModoAprovacao(opt) {
+            cadastrando.value = false
+            cadastrado.value = false
+            atualizado.value = false
+            editando.value = false
+            visualizar.value = opt.visualizar ?? false
+            aprovando.value = opt.aprovando ?? false
+            aprovandoExtra.value = opt.aprovandoExtra ?? false
+            aprovandoRh.value = opt.aprovandoRh ?? false
+            podeanexar.value = opt.podeanexar ?? false
+        }
+
+        async function formOpen(id) {
+            Object.assign(form, formDefault)
+            form.id = id
+            setModoAprovacao({ visualizar: false })
+            tituloJanela.value = `#${id}`
+            if (typeof formReset === 'function') formReset()
+            preload.value = true
+            try {
+                const { data } = await axios.get(`${BASE_URL}/${id}/editar`)
+                Object.assign(form, data)
+                await listaCentroCusto()
+                form.centro_custo_id = data.centro_custo_id ?? ''
+                tituloJanela.value = `#${id} Solicitação de transferência`
+                if (aprovando.value) {
+                    form.status_aprovacao = data.status_aprovacao == null ? '' : data.status_aprovacao
+                    form.obs_aprovacao = data.obs_aprovacao == null ? '' : data.obs_aprovacao
+                }
+                if (aprovandoExtra.value) {
+                    form.status_aprovacao_extra = data.status_aprovacao_extra == null ? '' : data.status_aprovacao_extra
+                    form.obs_aprovacao_extra = data.obs_aprovacao_extra == null ? '' : data.obs_aprovacao_extra
+                }
+                if (aprovandoRh.value) {
+                    form.resposta_rh = data.resposta_rh == null ? '' : data.resposta_rh
+                    form.obs_rh = data.obs_rh == null ? '' : data.obs_rh
+                }
+                temAprovacaoExtra.value = data.tem_aprovacao_extra || false
+                podeAprovarExtra.value = data.pode_aprovar_extra || false
+                nomeAprovacaoExtra.value = data.nome_aprovacao_extra || 'Aprovação Extra'
+                editando.value = true
+            } catch (_err) {
+                if (typeof mostraErro === 'function') mostraErro(_err)
+            } finally {
+                preload.value = false
+            }
+        }
+
+        function abrirModalAposFormOpen(id, modo) {
+            formOpen(id)
+            setModoAprovacao(modo)
+            nextTick(() => {
+                if (modalRef.value?.abrirModal) modalRef.value.abrirModal()
+            })
+        }
+
+        async function alterar() {
+            if (!validarColaboradorEGestor() || !validarFormularioVisivel()) return
+            preload.value = true
+            try {
+                await axios.put(`${BASE_URL}/${form.id}`, form)
+                fecharModalPrincipal()
+                if (typeof mostraSucesso === 'function') mostraSucesso('', 'Solicitação alterada com sucesso!')
+                recarregarLista()
+            } catch (err) {
+                if (typeof mostraErro === 'function') mostraErro(err)
+            } finally {
+                preload.value = false
+            }
+        }
+
+        async function aprovar() {
+            if (!validarFormularioVisivel()) return
+            preload.value = true
+            try {
+                await axios.put(`${BASE_URL}/${form.id}/aprovar`, form)
+                if (typeof mostraSucesso === 'function') mostraSucesso('', 'Registro salvo com sucesso!')
+                fecharModalPrincipal()
+                recarregarLista()
+            } catch (err) {
+                if (typeof mostraErro === 'function') mostraErro(err)
+            } finally {
+                preload.value = false
+            }
+        }
+
+        async function aprovarExtra() {
+            if (!validarFormularioVisivel()) return
+            preload.value = true
+            try {
+                await axios.put(`${BASE_URL}/${form.id}/aprovar-extra`, form)
+                if (typeof mostraSucesso === 'function') mostraSucesso('', 'Aprovação extra salva com sucesso!')
+                fecharModalPrincipal()
+                recarregarLista()
+            } catch (err) {
+                if (typeof mostraErro === 'function') mostraErro(err)
+            } finally {
+                preload.value = false
+            }
+        }
+
+        async function aprovarRH() {
+            if (!validarFormularioVisivel()) return
+            preload.value = true
+            try {
+                await axios.put(`${BASE_URL}/${form.id}/aprovarrh`, form)
+                if (typeof mostraSucesso === 'function') mostraSucesso('', 'Aprovação RH salva com sucesso!')
+                fecharModalPrincipal()
+                recarregarLista()
+            } catch (err) {
+                if (typeof mostraErro === 'function') mostraErro(err)
+            } finally {
+                preload.value = false
+            }
+        }
+
+        async function exportaExcel() {
+            preloadExportacao.value = true
+            if (typeof mostraSucesso === 'function') {
+                mostraSucesso('Estamos gerando seu arquivo excel, assim que finalizado você será notificado.')
+            }
+            try {
+                await axios.post(urlExportacao, controle.dados)
+            } catch (err) {
+                if (typeof mostraErro === 'function') mostraErro(err)
+            } finally {
+                preloadExportacao.value = false
+            }
+        }
+
+        function carregou(dados) {
+            lista.value = dados.itens ?? []
+            aprovar_por_gestor.value = dados.aprovar_por_gestor ?? false
+            aprovar_por_rh.value = dados.aprovar_por_rh ?? false
+            temAprovacaoExtra.value = dados.tem_aprovacao_extra ?? false
+            podeAprovarExtra.value = dados.pode_aprovar_extra ?? false
+            nomeAprovacaoExtra.value = dados.nome_aprovacao_extra ?? 'Aprovação Extra'
+            controle.carregando = false
+        }
+
+        function carregando() {
+            controle.carregando = true
+        }
+
+        function atualizar() {
+            const comp = getComponenteRef()
+            if (comp) comp.atual = 1
+            recarregarLista()
+        }
+
+        function buscarFiltro() {
+            getComponenteRef()?.buscar?.()
+        }
+
+        function abrirModalSolicitar() {
+            formNovo()
+            nextTick(() => {
+                if (modalRef.value?.abrirModal) modalRef.value.abrirModal()
+            })
+        }
+
+        function abrirModalAtualizarStatus() {
+            modalStatusRef.value?.abrirModal?.()
+        }
+
+        function toggleDropdown(itemId) {
+            if (!itemId) return
             const key = `mov_trans:${itemId}`
-            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
-        },
-        isDropdownOpen(itemId) {
-            return this.dropdownAbertoKey === `mov_trans:${itemId}`
-        },
-        fecharDropdown() {
-            this.dropdownAbertoKey = null
-        },
-        onClickOutside(event) {
-            if (event && event.target && event.target.closest && event.target.closest('.dropdown')) {
-                return
-            }
-            this.dropdownAbertoKey = null
-        },
-        urlParamGet() {
+            dropdownAbertoKey.value = dropdownAbertoKey.value === key ? null : key
+        }
+
+        function isDropdownOpen(itemId) {
+            return dropdownAbertoKey.value === `mov_trans:${itemId}`
+        }
+
+        function fecharDropdown() {
+            dropdownAbertoKey.value = null
+        }
+
+        function onClickOutside(event) {
+            if (event?.target?.closest?.('.dropdown')) return
+            dropdownAbertoKey.value = null
+        }
+
+        function urlParamGet() {
             const urlParams = new URLSearchParams(window.location.search)
-            this.controle.dados.token = urlParams.get('token') || ''
-            if (urlParams.get('pages')) this.controle.dados.pages = parseInt(urlParams.get('pages'), 10) || 50
-            if (urlParams.get('ordenacao')) this.controle.dados.ordenacao = urlParams.get('ordenacao')
-            if (urlParams.get('campoBusca')) this.controle.dados.campoBusca = urlParams.get('campoBusca')
-            if (urlParams.get('campoStatus')) this.controle.dados.campoStatus = urlParams.get('campoStatus')
-            if (urlParams.get('dataInicio')) this.controle.dados.dataInicio = urlParams.get('dataInicio')
-            if (urlParams.get('dataFim')) this.controle.dados.dataFim = urlParams.get('dataFim')
-            if (urlParams.get('dataInicio') || urlParams.get('dataFim')) this.controle.dados.filtroPeriodo = true
-        },
-        syncUrlFiltros() {
-            if (typeof this.atualizarUrlMovimentacao !== 'function') return
-            const d = this.controle.dados
+            controle.dados.token = urlParams.get('token') || ''
+            const pages = urlParams.get('pages')
+            if (pages) controle.dados.pages = parseInt(pages, 10) || 50
+            const ordenacao = urlParams.get('ordenacao')
+            if (ordenacao) controle.dados.ordenacao = ordenacao
+            const campoBusca = urlParams.get('campoBusca')
+            if (campoBusca) controle.dados.campoBusca = campoBusca
+            const campoStatus = urlParams.get('campoStatus')
+            if (campoStatus) controle.dados.campoStatus = campoStatus
+            const dataInicio = urlParams.get('dataInicio')
+            if (dataInicio) controle.dados.dataInicio = dataInicio
+            const dataFim = urlParams.get('dataFim')
+            if (dataFim) controle.dados.dataFim = dataFim
+            if (dataInicio || dataFim) controle.dados.filtroPeriodo = true
+        }
+
+        function syncUrlFiltros() {
+            if (typeof atualizarUrlMovimentacao !== 'function') return
+            const d = controle.dados
             const params = { pages: d.pages || 50, ordenacao: d.ordenacao || 'created_at_desc' }
             if (d.campoBusca) params.campoBusca = d.campoBusca
             if (d.campoStatus) params.campoStatus = d.campoStatus
             if (d.filtroPeriodo && d.dataInicio) params.dataInicio = d.dataInicio
             if (d.filtroPeriodo && d.dataFim) params.dataFim = d.dataFim
             if (d.token) params.token = d.token
-            this.atualizarUrlMovimentacao(params)
-        },
-        selecionaTodos() {
-            this.selecionaTudo = !this.selecionaTudo
-            if (this.selecionaTudo) {
-                this.naoAprovados.map((item) => {
-                    let id = item.id
-                    if (this.selecionados.indexOf(id) === -1) {
-                        this.selecionados.push(id)
-                    }
+            atualizarUrlMovimentacao(params)
+        }
+
+        function selecionaTodos() {
+            selecionaTudo.value = !selecionaTudo.value
+            if (selecionaTudo.value) {
+                naoAprovados.value.forEach((id) => {
+                    if (selecionados.value.indexOf(id) === -1) selecionados.value.push(id)
                 })
             } else {
-                this.naoAprovados.map((item) => {
-                    let id = item.id
-                    let index = this.selecionados.indexOf(id)
-                    if (index >= 0) {
-                        this.selecionados.splice(index, 1)
-                    }
+                naoAprovados.value.forEach((id) => {
+                    const idx = selecionados.value.indexOf(id)
+                    if (idx >= 0) selecionados.value.splice(idx, 1)
                 })
             }
-        },
-        confirmaAtualizacaoStatus(confirmacao) {
-            this.preloadAtualizacao = true
-            this.formConfirmacao.status_aprovacao = confirmacao
-            this.formConfirmacao.selecionados.push(this.selecionados)
+        }
 
-            axios
-                .post(`${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista/atualizacao-status`, this.formConfirmacao)
-                .then((res) => {
-                    this.preloadAtualizacao = false
-                    this.$refs.modal_janelaAtualizaStatus && this.$refs.modal_janelaAtualizaStatus.fecharModal()
-                    mostraSucesso('Status atualizados com sucesso!')
-                    this.selecionados = []
-                    this.formConfirmacao = _.cloneDeep(this.formConfirmacaoDefault) //copia
-                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-                })
-                .catch((error) => {
-                    this.preloadAtualizacao = false
-                })
-        },
-        listaCentroCusto() {
-            axios
-                .post(`${URL_PUBLICO}/centro-custos/`)
-                .then((res) => {
-                    if (this.cadastrando) {
-                        this.form.centro_custo_id = ''
-                        this.form.autocomplete_label_colaborador_anterior = ''
-                        this.form.autocomplete_label_colaborador = ''
-                        this.form.colaborador_id = ''
-                    }
-                    this.centro_custos = res.data.centro_custos
-                })
-                .catch((error) => {
-                    this.preload = false
-                })
-        },
+        watch(
+            () => controle.dados,
+            () => {
+                if (_syncUrlTimer) clearTimeout(_syncUrlTimer)
+                _syncUrlTimer = setTimeout(syncUrlFiltros, 400)
+            },
+            { deep: true }
+        )
 
-        formNovo() {
-            this.cadastrando = true
-            this.cadastrado = false
-            this.atualizado = false
-            this.editando = false
-            this.aprovando = false
-            this.aprovandoExtra = false
-            this.aprovandoRh = false
-            this.visualizar = false
-            this.podeanexar = true
-            this.tituloJanela = 'Solicitação de transferência'
-
-            formReset()
-            setupCampo()
-            this.form = _.cloneDeep(this.formDefault) //copia
-            this.form.centro_custo_id = ''
-            this.listaCentroCusto()
-        },
-
-        cadastrar() {
-            if (this.form.colaborador_id === '') {
-                valida_campo_vazio($(`#colaborador_${this.hash}`), 1)
-                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo COLABORADOR não pode ficar vazio')
-                this.resetaCampoColaborador()
-                return false
+        onMounted(() => {
+            const instance = getCurrentInstance()
+            const validaFn = instance?.proxy?.valida_campo_vazio ?? (typeof valida_campo_vazio === 'function' ? valida_campo_vazio : null)
+            if (validaFn) {
+                window.validaCampo = (el, tipo) => validaFn(el, tipo)
             }
-            if (this.form.gestor_id === '') {
-                valida_campo_vazio($(`#gestor_${this.hash}`), 1)
-                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo GESTOR não pode ficar vazio')
-                this.resetaCampoGestor()
-                return false
-            }
+            urlParamGet()
+            Object.assign(formDefault, _.cloneDeep(form))
+            Object.assign(formConfirmacaoDefault, _.cloneDeep(formConfirmacao))
+            nextTick(atualizar)
+            document.addEventListener('click', onClickOutside)
+        })
 
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
-                return false
-            }
+        onBeforeUnmount(() => {
+            document.removeEventListener('click', onClickOutside)
+        })
 
-            this.preload = true
-
-            axios
-                .post(`${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista`, this.form)
-                .then((response) => {
-                    this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
-                    let data = response.data
-                    mostraSucesso('', 'Solicitação registrada com sucesso!')
-                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-                    this.preload = false
-                })
-                .catch((error) => {
-                    this.preload = false
-                })
-        },
-
-        formOpen(id) {
-            Object.assign(this.form, this.formDefault)
-            this.form.id = id
-            this.cadastrado = false
-            this.atualizado = false
-            this.cadastrando = false
-            this.aprovando = false
-            this.aprovandoExtra = false
-            this.aprovandoRh = false
-            this.editando = false
-            this.visualizar = false
-
-            this.tituloJanela = `#${id}`
-
-            formReset()
-            this.preload = true
-
-            axios
-                .get(`${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista/${id}/editar`)
-                .then((response) => {
-                    let data = response.data
-                    Object.assign(this.form, data)
-                    this.listaCentroCusto()
-                    this.form.centro_custo_id = data.centro_custo_id
-
-                    this.tituloJanela = `#${id} Solicitação de transferência`
-                    if (this.aprovando) {
-                        this.form.status_aprovacao = data.status_aprovacao === null ? '' : data.status_aprovacao
-                        this.form.obs_aprovacao = data.obs_aprovacao === null ? '' : data.obs_aprovacao
-                    }
-                    if (this.aprovandoExtra) {
-                        this.form.status_aprovacao_extra = data.status_aprovacao_extra === null ? '' : data.status_aprovacao_extra
-                        this.form.obs_aprovacao_extra = data.obs_aprovacao_extra === null ? '' : data.obs_aprovacao_extra
-                    }
-                    if (this.aprovandoRh) {
-                        this.form.resposta_rh = data.resposta_rh === null ? '' : data.resposta_rh
-                        this.form.obs_rh = data.obs_rh === null ? '' : data.obs_rh
-                    }
-                    this.temAprovacaoExtra = data.tem_aprovacao_extra || false
-                    this.podeAprovarExtra = data.pode_aprovar_extra || false
-                    this.nomeAprovacaoExtra = data.nome_aprovacao_extra || 'Aprovação Extra'
-                    this.editando = true
-                    this.preload = false
-                })
-                .catch((error) => {
-                    this.preload = false
-                })
-        },
-
-        alterar() {
-            if (this.form.colaborador_id === '') {
-                valida_campo_vazio($(`#colaborador_${this.hash}`), 1)
-                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo COLABORADOR não pode ficar vazio')
-                this.resetaCampoColaborador()
-                return false
-            }
-            if (this.form.gestor_id === '') {
-                valida_campo_vazio($(`#gestor_${this.hash}`), 1)
-                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo GESTOR não pode ficar vazio')
-                this.resetaCampoGestor()
-                return false
-            }
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
-                return false
-            }
-
-            this.preload = true
-
-            axios
-                .put(`${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista/${this.form.id}`, this.form)
-                .then((response) => {
-                    this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
-                    let data = response.data
-                    mostraSucesso('', 'Solicitação alterada com sucesso!')
-                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-                    this.preload = false
-                })
-                .catch((error) => {
-                    this.preload = false
-                })
-        },
-
-        aprovar() {
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
-                return false
-            }
-
-            this.preload = true
-            axios
-                .put(`${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista/${this.form.id}/aprovar`, this.form)
-                .then((response) => {
-                    let data = response.data
-                    mostraSucesso('', 'Registro salvo com sucesso!')
-                    this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
-                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-                    this.preload = false
-                })
-                .catch((error) => {
-                    this.preload = false
-                })
-        },
-
-        aprovarExtra() {
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
-                return false
-            }
-
-            this.preload = true
-            axios
-                .put(`${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista/${this.form.id}/aprovar-extra`, this.form)
-                .then((response) => {
-                    let data = response.data
-                    mostraSucesso('', 'Aprovação extra salva com sucesso!')
-                    this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
-                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-                    this.preload = false
-                })
-                .catch((error) => {
-                    this.preload = false
-                })
-        },
-
-        aprovarRH() {
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
-                return false
-            }
-
-            this.preload = true
-            axios
-                .put(`${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista/${this.form.id}/aprovarrh`, this.form)
-                .then((response) => {
-                    let data = response.data
-                    mostraSucesso('', 'Aprovação RH salva com sucesso!')
-                    this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
-                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-                    this.preload = false
-                })
-                .catch((error) => {
-                    this.preload = false
-                })
-        },
-
-        carregou(dados) {
-            this.lista = dados.itens
-            this.aprovar_por_gestor = dados.aprovar_por_gestor
-            this.aprovar_por_rh = dados.aprovar_por_rh || false
-            this.temAprovacaoExtra = dados.tem_aprovacao_extra || false
-            this.podeAprovarExtra = dados.pode_aprovar_extra || false
-            this.nomeAprovacaoExtra = dados.nome_aprovacao_extra || 'Aprovação Extra'
-            this.controle.carregando = false
-        },
-        carregando() {
-            this.controle.carregando = true
-        },
-        atualizar() {
-            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+        return {
+            modalRef,
+            modal_janelaAtualizaStatus: modalStatusRef,
+            componente: componenteRef,
+            hash,
+            tituloJanela,
+            preload,
+            editando,
+            cadastrado,
+            cadastrando,
+            atualizado,
+            visualizar,
+            aprovando,
+            aprovandoExtra,
+            aprovandoRh,
+            aprovar_por_gestor,
+            aprovar_por_rh,
+            temAprovacaoExtra,
+            podeAprovarExtra,
+            nomeAprovacaoExtra,
+            preloadExportacao,
+            urlExportacao,
+            url_anexo,
+            anexoUploadAndamento,
+            podeanexar,
+            mimes,
+            selecionados,
+            selecionaTudo,
+            dropdownAbertoKey,
+            form,
+            formConfirmacao,
+            formDefault,
+            formConfirmacaoDefault,
+            lista,
+            centro_custos,
+            centroOrigemDesabilitadoPorColaborador,
+            urlPaginacao,
+            controle,
+            naoAprovados,
+            por_pagina,
+            paramsExport,
+            tudoMarcado,
+            listaCentroCusto,
+            confirmaAtualizacaoStatus,
+            formNovo,
+            cadastrar,
+            formOpen,
+            alterar,
+            aprovar,
+            aprovarExtra,
+            aprovarRH,
+            exportaExcel,
+            carregou,
+            carregando,
+            atualizar,
+            toggleDropdown,
+            isDropdownOpen,
+            fecharDropdown,
+            urlParamGet,
+            syncUrlFiltros,
+            selecionaTodos,
+            resetaCampoColaborador,
+            resetaCampoGestor,
+            onColaboradorSelecionado,
+            abrirModalAposFormOpen,
+            abrirModalSolicitar,
+            abrirModalAtualizarStatus,
+            buscarFiltro,
+            validarFormularioVisivel,
+            validarColaboradorEGestor
         }
     }
-}
+})
 </script>
 
 <style scoped>

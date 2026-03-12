@@ -220,6 +220,8 @@ class AutoCompletesController extends Controller
         })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaAberta.Municipio', 'VagaSelecionada:id,nome', 'Admissao')->take($quantidade)
             ->get()->map(function ($item) {
                 $item->label = "{$item->Curriculo->nome} - {$item->VagaAberta->VagaSelecionada->nome} - {$item->VagaAberta->Municipio->nome} - {$item->VagaAberta->Municipio->uf}";
+                $item->curriculo_id = $item->Curriculo->id ?? null;
+                $item->centro_custo_id = $item->Admissao->centro_custo_id ?? null;
                 return $item;
             });
     }
