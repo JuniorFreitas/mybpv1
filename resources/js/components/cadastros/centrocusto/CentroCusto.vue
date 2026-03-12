@@ -1,6 +1,6 @@
 <template>
     <div id="componente">
-        <modal :modal-pai="modal" :titulo="titulo_janela_form" size="g" :fechar="!preload" id="janelaForm" ref="modal_janelaForm">
+        <ModalComponent :modal-pai="modal" :titulo="titulo_janela_form" size="g" :fechar="!preload" id="janelaForm" ref="modal_janelaForm">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <fieldset class="mt-0" v-if="!preload">
@@ -55,10 +55,10 @@
 
                 <button v-show="cadastrado" type="button" class="btn btn-sm mr-1 btn-primary" @click="alterarForm"><i class="fa fa-save"></i> Alterar</button>
             </template>
-        </modal>
+        </ModalComponent>
         <fieldset>
             <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
+            <form class="row" @submit.prevent="onSubmitFiltro">
                 <div class="col-12 col-md-5">
                     <div class="form-group">
                         <label>Buscar</label>
@@ -89,7 +89,7 @@
                         <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                         Atualizar
                     </button>
-                    <button type="button" class="btn btn-sm mr-1 btn-secondary" @click="formNovo(); $refs.modal_janelaForm && $refs.modal_janelaForm.abrirModal()">
+                    <button type="button" class="btn btn-sm mr-1 btn-secondary" @click="abrirModalFormNovo">
                         <i class="fa fa-plus"></i> Cadastrar
                     </button>
                 </div>
@@ -128,7 +128,7 @@
                                 <button
                                     type="button"
                                     class="btn btn-sm mr-1 btn-primary"
-                                    @click="alterar(centrocusto.id); $refs.modal_janelaForm && $refs.modal_janelaForm.abrirModal()"
+                                    @click="abrirModalAlterar(centrocusto.id)"
                                 >
                                     <i class="fa fa-edit"></i>
                                 </button>
@@ -152,199 +152,204 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, computed, onMounted } from 'vue'
 import gestor from '../../GestorAprovacao'
 import controlePaginacao from '../../ControlePaginacao'
-import modal from '../../Modal'
-import editor from '@tinymce/tinymce-vue'
-import configuracoes from '../../../mixins/Configuracoes'
+import ModalComponent from '../../Modal'
 
-export default {
-    mixins: [configuracoes],
-    components: {
-        modal,
-        controlePaginacao,
-        editor,
-        gestor
+const props = defineProps({
+    qntPag: {
+        type: Number,
+        default: 20
     },
-    props: {
-        qntPag: {
-            type: Number,
-            required: false,
-            default: 20
-        },
-
-        status: {
-            type: Boolean,
-            required: false,
-            default: true
-        },
-
-        filtro: {
-            type: Boolean,
-            required: false,
-            default: true
-        },
-        modal: {
-            // modal Pai
-            type: String,
-            required: false,
-            default: ''
-        }
+    status: {
+        type: Boolean,
+        default: true
     },
-
-    mounted() {
-        this.atualizar()
-        this.formDefault = _.cloneDeep(this.form)
+    filtro: {
+        type: Boolean,
+        default: true
     },
-    data() {
-        return {
-            hash: String(Math.random()).substr(2),
-            titulo_janela_form: 'Centro de Custos',
+    modal: {
+        type: String,
+        default: ''
+    }
+})
 
-            preload: false,
-            editando: false,
-            cadastrado: false,
-            atualizado: false,
+const hash = ref(String(Math.random()).substr(2))
+const titulo_janela_form = ref('Centro de Custos')
+const preload = ref(false)
+const editando = ref(false)
+const cadastrado = ref(false)
+const atualizado = ref(false)
+const cliente_id = ref('')
+const authconfiguracao = ref(null)
+const formDefault = ref(null)
+const lista = ref([])
+const listaFilial = ref([])
+const clientes = ref([])
+const modal_janelaForm = ref(null)
+const componente = ref(null)
 
-            cliente_id: '',
+const form = reactive({
+    gestor_id: '',
+    autocomplete_label_gestor_modal: '',
+    autocomplete_label_gestor_modal_anterior: '',
+    label: '',
+    filiais: [],
+    ativo: true
+})
 
-            form: {
-                gestor_id: '',
-                autocomplete_label_gestor_modal: '',
-                autocomplete_label_gestor_modal_anterior: '',
-                label: '',
-                filiais: [],
-                ativo: true
-            },
-            formDefault: null,
+const urlPaginacao = `${URL_ADMIN}/cadastro/centrocusto/atualizar`
+const controle = reactive({
+    carregando: false,
+    dados: {
+        campoBusca: '',
+        campoStatus: ''
+    }
+})
 
-            //Paginacao
-            lista: [],
-            listaFilial: [],
+const temFilial = computed(() => authconfiguracao.value?.temFilial ?? false)
 
-            urlPaginacao: `${URL_ADMIN}/cadastro/centrocusto/atualizar`,
-            controle: {
-                carregando: false,
-                dados: {
-                    campoBusca: '',
-                    campoStatus: ''
-                }
-            }
-        }
-    },
-    methods: {
-        formNovo() {
-            this.titulo_janela_form = 'Cadastro Centro de Custos'
-            this.preload = false
-            this.cadastrado = false
-            this.atualizado = false
-            this.form = _.cloneDeep(this.formDefault) //copia
+function formNovo() {
+    titulo_janela_form.value = 'Cadastro Centro de Custos'
+    preload.value = false
+    cadastrado.value = false
+    atualizado.value = false
+    Object.assign(form, _.cloneDeep(formDefault.value))
+    form.filiais = []
+    ;(listaFilial.value || []).forEach((filial) => {
+        filial.selecionado = false
+        filial.cliente_filial_id = filial.id
+        form.filiais.push(filial)
+    })
+    formReset()
+}
 
-            this.listaFilial.forEach((filial) => {
-                filial.selecionado = false
-                filial.cliente_filial_id = filial.id
-                this.form.filiais.push(filial)
-            })
-
-            formReset()
-        },
-        cadastra() {
-            this.form.cliente_id = this.cliente_id === 0 ? this.form.cliente_id : this.cliente_id
-            $('#janelaForm :input:visible').trigger('blur')
-            if ($('#janelaForm :input:visible.is-invalid').length) {
-                mostraErro('', 'Verificar os erros')
-                return false
-            }
-            this.preload = true
-            axios
-                .post(`${URL_ADMIN}/cadastro/centrocusto`, this.form)
-                .then((res) => {
-                    this.$refs.modal_janelaForm && this.$refs.modal_janelaForm.fecharModal()
-                    mostraSucesso('', 'Centro de Custo cadastrado com sucesso')
-                    this.cadastrado = true
-                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-                    this.preload = false
-                })
-                .catch((error) => {
-                    this.cadastrado = false
-                    this.preload = false
-                })
-        },
-        alterar(centrocusto) {
-            this.form.cliente_id = this.cliente_id === 0 ? this.form.cliente_id : this.cliente_id
-            this.cadastrado = true
-            this.editando = true
-            this.preload = true
-            this.titulo_janela_form = 'Alterando Centro de Custo'
-            formReset()
-
-            this.form = _.cloneDeep(this.formDefault) //copia
-
-            axios
-                .get(`${URL_ADMIN}/cadastro/centrocusto/${centrocusto}/editar`)
-                .then((response) => {
-                    let data = response.data
-                    Object.assign(this.form, data)
-
-                    if (this.temFilial) {
-                        let fl = []
-                        this.listaFilial.forEach((filial) => {
-                            if (_.find(data.filiais, { cliente_filial_id: filial.id, ativo: true })) {
-                                filial.selecionado = true
-                                filial.cliente_filial_id = filial.id
-                                fl.push(filial)
-                            } else {
-                                filial.selecionado = false
-                                filial.cliente_filial_id = filial.id
-                                fl.push(filial)
-                            }
-                        })
-                        this.form.filiais = fl
-                    }
-
-                    this.editando = true
-                    this.preload = false
-                    setupCampo()
-                })
-                .catch((error) => (this.preload = false))
-        },
-        alterarForm() {
-            this.form.cliente_id = this.cliente_id === 0 ? this.form.cliente_id : this.cliente_id
-            $('#janelaForm :input:visible').trigger('blur')
-            if ($('#janelaForm :input:visible.is-invalid').length) {
-                mostraErro('', 'Verificar os erros')
-                return false
-            }
-            this.preload = true
-            axios
-                .put(`${URL_ADMIN}/cadastro/centrocusto/${this.form.id}`, this.form)
-                .then((res) => {
-                    this.$refs.modal_janelaForm && this.$refs.modal_janelaForm.fecharModal()
-                    mostraSucesso('', 'Centro de Custo Alterado com sucesso')
-                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-                    this.preload = false
-                })
-                .catch((error) => {
-                    this.cadastrado = false
-                    this.preload = false
-                })
-        },
-        carregou(dados) {
-            this.lista = dados.items
-            this.clientes = dados.clientes
-            this.listaFilial = dados.listaFilial
-            this.controle.carregando = false
-        },
-        carregando() {
-            this.controle.carregando = true
-        },
-        atualizar() {
-            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-        }
+async function cadastra() {
+    form.cliente_id = cliente_id.value === 0 ? form.cliente_id : cliente_id.value
+    $('#janelaForm :input:visible').trigger('blur')
+    if ($('#janelaForm :input:visible.is-invalid').length) {
+        mostraErro('', 'Verificar os erros')
+        return false
+    }
+    preload.value = true
+    try {
+        await axios.post(`${URL_ADMIN}/cadastro/centrocusto`, form)
+        modal_janelaForm.value?.fecharModal()
+        mostraSucesso('', 'Centro de Custo cadastrado com sucesso')
+        cadastrado.value = true
+        componente.value?.buscar?.()
+    } catch (error) {
+        cadastrado.value = false
+    } finally {
+        preload.value = false
     }
 }
+
+async function alterar(centrocustoId) {
+    form.cliente_id = cliente_id.value === 0 ? form.cliente_id : cliente_id.value
+    cadastrado.value = true
+    editando.value = true
+    preload.value = true
+    titulo_janela_form.value = 'Alterando Centro de Custo'
+    formReset()
+    Object.assign(form, _.cloneDeep(formDefault.value))
+    form.filiais = []
+
+    try {
+        const response = await axios.get(`${URL_ADMIN}/cadastro/centrocusto/${centrocustoId}/editar`)
+        const data = response.data
+        Object.assign(form, data)
+
+        if (temFilial.value) {
+            const fl = []
+            ;(listaFilial.value || []).forEach((filial) => {
+                if (_.find(data.filiais, { cliente_filial_id: filial.id, ativo: true })) {
+                    filial.selecionado = true
+                    filial.cliente_filial_id = filial.id
+                    fl.push(filial)
+                } else {
+                    filial.selecionado = false
+                    filial.cliente_filial_id = filial.id
+                    fl.push(filial)
+                }
+            })
+            form.filiais = fl
+        }
+
+        editando.value = true
+        setupCampo()
+    } catch (error) {
+        // silencioso
+    } finally {
+        preload.value = false
+    }
+}
+
+async function alterarForm() {
+    form.cliente_id = cliente_id.value === 0 ? form.cliente_id : cliente_id.value
+    $('#janelaForm :input:visible').trigger('blur')
+    if ($('#janelaForm :input:visible.is-invalid').length) {
+        mostraErro('', 'Verificar os erros')
+        return false
+    }
+    preload.value = true
+    try {
+        await axios.put(`${URL_ADMIN}/cadastro/centrocusto/${form.id}`, form)
+        modal_janelaForm.value?.fecharModal()
+        mostraSucesso('', 'Centro de Custo Alterado com sucesso')
+        componente.value?.buscar?.()
+    } catch (error) {
+        cadastrado.value = false
+    } finally {
+        preload.value = false
+    }
+}
+
+function carregou(dados) {
+    lista.value = dados.items
+    clientes.value = dados.clientes ?? []
+    listaFilial.value = dados.listaFilial ?? []
+    controle.carregando = false
+}
+
+function carregando() {
+    controle.carregando = true
+}
+
+function atualizar() {
+    if (componente.value) {
+        componente.value.atual = 1
+        componente.value.buscar?.()
+    }
+}
+
+function abrirModalFormNovo() {
+    formNovo()
+    modal_janelaForm.value?.abrirModal()
+}
+
+function abrirModalAlterar(centrocustoId) {
+    alterar(centrocustoId)
+    modal_janelaForm.value?.abrirModal()
+}
+
+function onSubmitFiltro() {
+    componente.value?.buscar?.()
+}
+
+onMounted(async () => {
+    try {
+        const { data } = await axios.get(`${URL_ADMIN}/usuario/autenticado/`)
+        authconfiguracao.value = data
+    } catch (error) {
+        // silencioso
+    }
+    formDefault.value = _.cloneDeep(form)
+    atualizar()
+})
 </script>
 
 <style scoped>

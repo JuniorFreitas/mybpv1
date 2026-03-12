@@ -587,7 +587,7 @@
         </li>
     @endif
 
-    @if(\App\Models\Sistema::permitirLinks('admissao_pre_admissao', 'admissao_documentos_carta_oferta', 'admissao_cih', 'admissao_processo', 'admissao_historico', 'admissao_pos_admissao','cadastro_tipos_cih'))
+    @if(\App\Models\Sistema::permitirLinks('admissao_pre_admissao', 'admissao_documentos_carta_oferta', 'admissao_cih', 'admissao_processo', 'admissao_importacao', 'admissao_historico', 'admissao_pos_admissao','cadastro_tipos_cih'))
         <li id="admissao">
             <a href="javascript://" class="has-arrow waves-effect" parent="admissao"><i class="bx bx-bookmark-plus"></i>
                 <span>ADMISSÃO</span>
@@ -660,6 +660,13 @@
                     <li>
                         <a href="{{route('g.admissao.admissao.index')}}" parent="admissao">
                             PROCESSO
+                        </a>
+                    </li>
+                @endcan
+                @can('admissao_importacao')
+                    <li>
+                        <a href="{{ route('g.admissao.admissao.import') }}" parent="admissao" key="admissao_importacao">
+                            IMPORTAÇÃO
                         </a>
                     </li>
                 @endcan
