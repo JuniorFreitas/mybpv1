@@ -7,6 +7,22 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 
 
+## [2.0.2] - 2026-03-11
+
+### Adicionado
+
+-   **Importação de admissões em planilha**
+    -   Comando `php artisan admissao:importar` para processar planilha Excel/XLSX de admissões em fila.
+    -   Comando `php artisan admissao:planilha-exemplo` para gerar planilha de exemplo.
+    -   Job `ImportacaoAdmissaoJob`: processamento assíncrono; envio de e-mail ao concluir (`ImportacaoConcluidaMail`).
+    -   Serviços de importação: `LeitorPlanilhaAdmissao`, `ValidadorLinhaPlanilhaAdmissao`, `MapperLinhaPlanilhaParaPayload`, `ResolvedorVagaAreaCentroCusto`, `PersistidorAdmissaoImportada`.
+    -   Tela e componente Vue para upload e acompanhamento da importação (`/g/admissao/import`).
+    -   Documentação em `docs/importacao/IMPORTACAO_ADMISSOES.md` e guia em PDF.
+    -   Traduções em `lang/pt_BR/importacao_admissao.php`.
+
+-   **Script SQL – centro de custo para CIH**
+    -   Script `docs/scripts/popular_centro_custo_cih_empresa_40568.sql`: preenche `centro_custo_id` em CIHs da empresa 40568 a partir do centro de custo da admissão dos colaboradores vinculados; inclui opção para espelhar CIH → admissão.
+
 ## [2.0.1] - 2026-03-11
 
 ### Corrigido
