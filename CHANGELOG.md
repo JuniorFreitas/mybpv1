@@ -7,6 +7,23 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 
 
+## [2.0.3] - 2026-03-12
+
+### Corrigido
+
+-   **Solicitação de transferência – botão Salvar RH**
+    -   Botão "Salvar RH" deixava de aparecer ao abrir aprovação pelo RH; condição de exibição passou a usar `!form.user_rh_id` em vez de `!form.resposta_rh`, alinhado ao critério do dropdown.
+
+### Modificado
+
+-   **Solicitação de transferência – Vue 3 e UX**
+    -   Componente `SolicitacaoTransferencia.vue` migrado para Vue 3 Composition API (`defineComponent` + `setup`), chamadas axios em async/await com try/catch/finally, constantes e funções reutilizáveis (Clean Code).
+    -   Autocomplete de colaboradores (`AutoCompletesController::colaboradores`): resposta passa a incluir `curriculo_id` e `centro_custo_id` na raiz do item para uso no frontend.
+
+-   **Solicitação de transferência – Centro de Custo Origem**
+    -   Ao solicitar nova transferência, ao selecionar o colaborador o campo "Centro de Custo Origem" é preenchido automaticamente com o centro de custo atual do colaborador (quando possuir).
+    -   Campo "Centro de Custo Origem" inicia desabilitado e só é habilitado quando o colaborador selecionado não possui centro de custo, para o usuário escolher manualmente.
+
 ## [2.0.2] - 2026-03-11
 
 ### Adicionado
