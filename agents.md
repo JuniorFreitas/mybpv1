@@ -124,14 +124,20 @@ Guia para modelos de IA atuarem com seguranca, qualidade e performance no projet
 - **Fila**: mover processamento pesado para jobs.
 - **Arquivos**: evitar leituras duplicadas.
 
-## 16) Fluxo de mudancas recomendado
+## 16) Testes (PHPUnit obrigatorio)
+
+- **Sempre em memoria**: os testes devem rodar **apenas** com banco em memoria (SQLite `:memory:`), configurado em `phpunit.xml`.
+- **Nunca** usar a base real em testes; **nunca** dar refresh/migrate na base de dados real.
+- O `phpunit.xml` define `DB_CONNECTION=sqlite` e `DB_DATABASE=:memory:` para garantir isolamento; nao remover nem sobrescrever com `.env`.
+
+## 17) Fluxo de mudancas recomendado
 
 1. Entender o contexto no `docs/` e no modulo afetado.
 2. Mapear impacto no fluxo de RH.
 3. Alterar codigo minimamente, com seguranca.
 4. Indicar testes necessarios (ou rodar se solicitado).
 
-## 17) Checklist minimo antes de finalizar
+## 18) Checklist minimo antes de finalizar
 
 - [ ] Sem segredos expostos
 - [ ] Sem N+1 evidentes
@@ -139,10 +145,10 @@ Guia para modelos de IA atuarem com seguranca, qualidade e performance no projet
 - [ ] Exportacao no padrao CIH
 - [ ] E-mails padronizados e enviados por fila
 - [ ] Cache com TTL e invalidacao correta
-- [ ] Testes indicados
+- [ ] Testes indicados (e rodando em memoria, nunca na base real)
 - [ ] Build/Assets nao quebrados
 
-## 18) Referencias rapidas
+## 19) Referencias rapidas
 
 - Documentacao principal: `docs/README.md`
 - Deploy: `docs/README-DEPLOY.md`

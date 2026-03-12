@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Habilidade;
+use App\Models\Papel;
 use DB;
 use Exception;
 use Illuminate\Database\Seeder;
@@ -138,6 +139,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'admissao_processo_insert', 'descricao' => 'Pode cadastrar um Admissão'];
         $lista[] = ['nome' => 'admissao_processo_update', 'descricao' => 'Pode alterar um Admissão'];
         $lista[] = ['nome' => 'admissao_processo_delete', 'descricao' => 'Pode apagar um Admissão'];
+        $lista[] = ['nome' => 'admissao_importacao', 'descricao' => 'Acessar rota/menu Importação de Admissões'];
 
 
         //Cloud------------------------------
@@ -533,6 +535,10 @@ class HabilidadesTableSeeder extends Seeder
                 }
             }
             \Cache::forget('habilidades_sistema');
+            $papel = Papel::find(1); // Suporte
+            $habilidades = Habilidade::all();
+            $papel->habilidades()->detach();
+            $papel->habilidades()->attach($habilidades);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();

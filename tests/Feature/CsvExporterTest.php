@@ -3,36 +3,44 @@
 namespace Tests\Feature;
 
 use App\Models\Arquivo;
-use Storage;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 use MasterTag\CsvExporter;
 use App\Models\User;
 
 class CsvExporterTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Storage::fake(Arquivo::DISCO_EXPORTACAO);
+    }
+
     public function testExportCsv()
     {
-        // Busque o usuário com ID 1
-        $user = User::find(1);
+        Event::fake();
 
-        // Dados fictícios para exportar
+        // Usuário em memória (objeto) — testes nunca usam base real
+        $user = new User();
+        $user->id = 1;
+        $user->empresa_id = 100;
+
+        // Criador de exportação no-op para não persistir no banco
+        $exportacaoCreator = function () {
+            // não persiste; apenas evita chamar Exportacao::create()
+        };
+
         $headers = ['Nome', 'Email'];
         $data = [
             ['John Doe', 'john@example.com'],
             ['Jane Smith', 'jane@example.com'],
         ];
 
-        // Crie o exportador CSV
-        $exporter = new CsvExporter($user, 'TestLocal', $headers, $data);
-
-        // Execute o processo de exportação
+        $exporter = new CsvExporter($user, 'TestLocal', $headers, $data, $exportacaoCreator);
         $fileName = $exporter->export();
 
-        // Verifique se o arquivo foi exportado com sucesso
         $this->assertNotNull($fileName);
-
-        // Verifique se o arquivo existe no armazenamento S3
         $this->assertTrue(Storage::disk(Arquivo::DISCO_EXPORTACAO)->exists($fileName));
-
     }
 }

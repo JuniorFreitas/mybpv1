@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Imports\Admissaoimport;
 use App\Jobs\Admissao\Importacao\ImportJob;
+use App\Jobs\Admissao\Importacao\ImportacaoAdmissaoJob;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use App\Jobs\JobExportaAdmissoes;
 use App\Models\Admissao;
 use App\Models\Arquivo;
@@ -2074,105 +2077,52 @@ class AdmissaoController extends Controller
     }
 
 
+    /**
+     * Exibe a tela de importação de admissões (upload de planilha).
+     */
     public function import(Request $request)
     {
-        ini_set('memory_limit', '-1');
-        ini_set('max_execution_time', '-1');
+        return view('g.admissao.import.index');
+    }
 
-        $import = new Admissaoimport;
-        \Excel::import($import, public_path('modelo_importacao_14.09.xlsx'));
+    /**
+     * Recebe o arquivo de importação, armazena e enfileira o job de processamento.
+     * Resposta imediata: importação enfileirada; o usuário será notificado ao concluir.
+     */
+    public function importUpload(Request $request): JsonResponse
+    {
+        $request->validate([
+            'planilha' => ['required', 'file', 'mimes:xlsx', 'max:20480'],
+            'empresa_id' => ['required', 'integer', 'min:1'],
+        ]);
 
-//        $empresa_id = auth()->user()->empresa_id;
-        $empresa_id = $request->query('empresa_id');
-
-        $dados = $import->dados->map(function ($line) {
-            return [
-                "curriculo" => [
-                    'cpf' => Sistema::mascaraCpf($line['cpf']),
-                    "nome" => (string)$line['nome'],
-                    "naturalidade" => (string)$line['naturalidade'],
-                    "email" => $line['email'] ? mb_strtolower(trim($line['email'])) : Sistema::EMAILPADRAO,
-                    "cnh" => (string)$line['cnh'],
-                    "cnh_vencimento" => $line['cnh_vencimento'] ? Date::excelToDateTimeObject($line['cnh_vencimento'])->format('d/m/Y') : null,
-                    "estado_civil" => (string)$line['estado_civil'],
-                    "rg" => (string)preg_replace("/[^0-9]/", "", $line['rg']),
-                    "rg_data_emissao" => $line['rg_emissao'] ? Date::excelToDateTimeObject($line['rg_emissao'])->format('d/m/Y') : null,
-                    "nascimento" => $line['nascimento'] ? Date::excelToDateTimeObject($line['rg_emissao'])->format('d/m/Y') : null,
-                    "sexo" => ucwords($line['sexo']),
-                    "filiacao_pai" => (string)$line['pai'],
-                    "filiacao_mae" => (string)$line['mae'],
-                    "pcd" => mb_strtolower(trim($line['pcd'])) == "sim",
-                    "cid" => (string)$line['cid'],
-                    "vaga_pretendida" => intval($line['cod_vaga']),
-                    "telefone" => [
-                        "whatsapp" => mb_strtolower(trim($line['whatsapp'])) == "sim" ? "whatsapp" : "celular",
-                        "numero" => Sistema::mascaraTelefone($line['telefone_numero']),
-                    ],
-                    "endereco" => [
-                        "cep" => Sistema::mascaraCep($line['cep']),
-                        "logradouro" => (string)$line['endereco'],
-                        "numero" => (string)$line['numero'],
-                        "complemento" => (string)$line['complemento'],
-                        "bairro" => (string)$line['bairro'],
-                        "municipio" => (string)$line['municipio'],
-                        "uf" => (string)$line['uf'],
-                    ],
-                ],
-                "admissao" => [
-                    "area_etiqueta_id" => $line['cod_area'],
-                    "centro_custo_id" => $line['centro_custo'],
-                    "data_entrega_area" => $line['data_entrega_area'] ? Date::excelToDateTimeObject($line['data_entrega_area'])->format('d/m/Y') : null,
-                    "salario" => number_format(floatval($line['salario']), 2, ',', '.'),
-                    "pis" => (string)$line['pis'],
-                    "ctps_numero" => (string)$line['ctps_numero'],
-                    "ctps_serie" => (string)$line['ctps_serie'],
-                    "ctps_data_emissao" => $line['ctps_data_emissao'] ? Date::excelToDateTimeObject($line['ctps_data_emissao'])->format('d/m/Y') : null,
-                    "titulo_eleitor_numero" => (string)$line['titulo_eleitor_numero'],
-                    "titulo_eleitor_sessao" => (string)$line['titulo_eleitor_sessao'],
-                    "titulo_eleitor_zona" => (string)$line['titulo_eleitor_zona'],
-                    "tipo_admissao" => mb_strtoupper($line['tipo_admissao']),
-                    "data_admissao" => Date::excelToDateTimeObject($line['data_admissao'])->format('d/m/Y'),
-                    "data_aso" => Date::excelToDateTimeObject($line['data_aso'])->format('d/m/Y'),
-                    "admissao_encerramento" => $line['admissao_encerramento'] ? Date::excelToDateTimeObject($line['admissao_encerramento'])->format('d/m/Y') : null,
-                    "prazo_experiencia" => ucfirst(trim($line['prazo_experiencia'])),
-                    "encaminhado_documento" => mb_strtolower(trim($line['encaminhado_documento'])) == "sim",
-                    "encaminhado_documento_data" => $line['encaminhado_documento_data'] ? Date::excelToDateTimeObject($line['encaminhado_documento_data'])->format('d/m/Y') : null,
-                    "encaminhado_exame" => mb_strtolower(trim($line['encaminhado_exame'])) == "sim",
-                    "encaminhado_exame_data" => $line['encaminhado_exame_data'] ? Date::excelToDateTimeObject($line['encaminhado_exame_data'])->format('d/m/Y') : null,
-                    "encaminhado_treinamento" => mb_strtolower(trim($line['encaminhado_treinamento'])) == "sim",
-                    "encaminhado_treinamento_data" => $line['encaminhado_treinamento_data'] ? Date::excelToDateTimeObject($line['encaminhado_treinamento_data'])->format('d/m/Y') : null,
-                    "numero_cracha" => (string)$line['numero_cracha'],
-                    "matricula" => (string)$line['matricula'],
-                    "banco" => [
-                        "nome" => (string)$line['banco'],
-                        "agencia" => (string)$line['agencia'],
-                        "conta" => (string)$line['conta'],
-                        "pix" => mb_strtolower(trim($line['pix'])) == "sim",
-                        "pix_tipo_chave" => $line['pix_tipo_chave'],
-                        "pix_chave" => (string)$line['pix_chave']
-                    ]
-                ]
-            ];
-        })->filter(function ($item) {
-            return $item['curriculo']['cpf'] != '';
-        })->unique('curriculo.cpf');
-
-        if ($dados->count() == 0) {
-            return response()->json([
-                'msg' => 'Nenhum registro encontrado',
-                "status" => 'error'
-            ], 400);
+        $empresaId = (int) $request->input('empresa_id');
+        $user = auth()->user();
+        if ($user && $user->empresa_id !== null && (int) $user->empresa_id !== $empresaId) {
+            throw ValidationException::withMessages(['empresa_id' => ['Empresa não autorizada.']]);
         }
 
+        $file = $request->file('planilha');
+        $uuid = Str::uuid()->toString();
+        $dir = 'importacao_admissoes/' . $empresaId;
+        $path = $file->storeAs($dir, $uuid . '.xlsx', 'local');
+        if ($path === false) {
+            return response()->json(['msg' => 'Erro ao salvar o arquivo.', 'status' => 'error'], 500);
+        }
 
-        $dados = $dados->toArray();
+        ImportacaoAdmissaoJob::dispatch(
+            $path,
+            $empresaId,
+            $user ? (int) $user->id : null,
+            100,
+            $uuid
+        );
 
-//         $teste = collect($dados)->split(1000);
-//
-//        return $teste[0]->toArray();
-        ImportJob::dispatch(auth()->user(), $dados, $empresa_id);
-
-        return response()->json(['msg' => 'Enviado para Fila'], 201);
+        return response()->json([
+            'msg' => 'Importação enfileirada. Você será notificado quando o processamento terminar.',
+            'status' => 'success',
+            'uuid' => $uuid,
+        ], 202);
         /*
         $dadosValidados = \Validator::make($dados, [
             '*.curriculo.cpf' => ['required', 'min:14',

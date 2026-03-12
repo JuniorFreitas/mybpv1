@@ -132,6 +132,8 @@ mix.js('resources/js/app.js', 'public/js')
     .js('resources/js/g/admissao/apontamento/intermitente/app.js', 'public/js/g/admissao/apontamento/intermitente/')
     //admissao->historico
     .js('resources/js/g/admissao/historico/app.js', 'public/js/g/admissao/historico/')
+    //admissao->import
+    .js('resources/js/g/admissao/import/app.js', 'public/js/g/admissao/import/')
     //admissao->pos-admissao
     .js('resources/js/g/posadmissao/app.js', 'public/js/g/posadmissao/')
 

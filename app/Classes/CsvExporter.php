@@ -33,19 +33,27 @@ class CsvExporter
     private $local;
 
     /**
+     * Callable opcional para criar registro de exportação (ex.: em testes, para não persistir).
+     * @var callable|null
+     */
+    private $exportacaoCreator;
+
+    /**
      * CsvExporter constructor.
      * @param User $user
      * @param string $local
      * @param array $headers
      * @param $data
+     * @param callable|null $exportacaoCreator Se informado, chamado em vez de Exportacao::create() (útil em testes)
      */
-    public function __construct(User $user, string $local, array $headers, $data)
+    public function __construct(User $user, string $local, array $headers, $data, ?callable $exportacaoCreator = null)
     {
         $this->user = $user;
         $this->local = $local;
         $this->fileName = $this->generateFileName(\Str::slug($this->local, '_'));
         $this->headers = $headers;
         $this->data = $data;
+        $this->exportacaoCreator = $exportacaoCreator;
     }
 
     /**
@@ -100,12 +108,17 @@ class CsvExporter
      */
     private function createExportLog(): void
     {
-        Exportacao::create([
+        $payload = [
             'user_id' => $this->user->id,
             'arquivo' => $this->fileName,
             'local' => $this->local,
             'removido' => false,
-        ]);
+        ];
+        if ($this->exportacaoCreator !== null) {
+            ($this->exportacaoCreator)($payload);
+            return;
+        }
+        Exportacao::create($payload);
     }
 
     /**
