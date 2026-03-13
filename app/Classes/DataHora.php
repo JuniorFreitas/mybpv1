@@ -59,6 +59,10 @@ class DataHora
 
         if (isset($data_e_hora)) { // se for passado algum parametro...
 
+            // Garante string e normaliza formato yyyy-d-m (ex.: 1994-29-7) para Y-m-d antes de qualquer parse
+            $data_e_hora = is_string($data_e_hora) ? $data_e_hora : (string) $data_e_hora;
+            $data_e_hora = self::normalizarDataInvalida($data_e_hora);
+
             // TimeStamp
             if (preg_match("/^\d{1,9999}$/", $data_e_hora)) {
 
@@ -180,7 +184,12 @@ class DataHora
                 $ANO = $partes[2];
 
                 $data_e_hora = "$ANO-$MES-$DIA";
-                $this->DateTime = new DateTime($data_e_hora);
+                try {
+                    $this->DateTime = new DateTime($data_e_hora);
+                } catch (\Throwable $e) {
+                    $data_e_hora = self::normalizarDataInvalida($data_e_hora);
+                    $this->DateTime = new DateTime($data_e_hora);
+                }
 
                 $this->dia = $this->DateTime->format('d');
                 $this->mes = $this->DateTime->format('m');
@@ -189,19 +198,77 @@ class DataHora
             }
 
             // se for passado 2011-03-13
-            if (preg_match("/^\d{4}-\d{2}-\d{2}$/", $data_e_hora)) {
-
-                $this->DateTime = new DateTime($data_e_hora);
-
+            if (!isset($this->DateTime) && preg_match("/^\d{4}-\d{2}-\d{2}$/", $data_e_hora)) {
+                try {
+                    $this->DateTime = new DateTime($data_e_hora);
+                } catch (\Throwable $e) {
+                    $data_e_hora = self::normalizarDataInvalida($data_e_hora);
+                    $this->DateTime = new DateTime($data_e_hora);
+                }
                 $this->dia = $this->DateTime->format('d');
                 $this->mes = $this->DateTime->format('m');
                 $this->ano = $this->DateTime->format('Y');
+            }
+
+            // formato yyyy-d-m ou yyyy-m-d (ex.: 1994-29-7 = 29/07/1994, 1980-26-10 = 26/10/1980)
+            if (!isset($this->DateTime) && preg_match('/^(\d{4})\D+(\d{1,2})\D+(\d{1,2})$/', $data_e_hora, $m)) {
+                $ano = (int) $m[1];
+                $a = (int) $m[2];
+                $b = (int) $m[3];
+                $normalizado = null;
+                if ($a >= 1 && $a <= 12 && $b >= 1 && $b <= 31 && checkdate($a, $b, $ano)) {
+                    $normalizado = sprintf('%04d-%02d-%02d', $ano, $a, $b);
+                } elseif ($b >= 1 && $b <= 12 && $a >= 1 && $a <= 31 && checkdate($b, $a, $ano)) {
+                    $normalizado = sprintf('%04d-%02d-%02d', $ano, $b, $a);
+                }
+                if ($normalizado !== null) {
+                    $this->DateTime = new DateTime($normalizado);
+                    $this->dia = $this->DateTime->format('d');
+                    $this->mes = $this->DateTime->format('m');
+                    $this->ano = $this->DateTime->format('Y');
+                }
             }
 
         } else { // se foi passado NULL...
             $this->atual(); // aplica a data e hora atual
         }
     }// FIM DO CONSTRUTOR
+
+    /**
+     * Converte string no formato yyyy-d-m (ex.: 1994-29-7) para Y-m-d.
+     * Não altera valores já em Y-m-d, timestamps ou com hora.
+     *
+     * @param mixed $data_e_hora
+     * @return mixed
+     */
+    private static function normalizarDataInvalida($data_e_hora)
+    {
+        if (!is_string($data_e_hora) || $data_e_hora === '') {
+            return $data_e_hora;
+        }
+        $data_e_hora = trim($data_e_hora);
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $data_e_hora)) {
+            return $data_e_hora;
+        }
+        if (preg_match('/^\d{4}-\d{2}-\d{2}\s/', $data_e_hora)) {
+            return $data_e_hora;
+        }
+        // Normaliza espaços/caracteres entre números (ex.: "1994 - 29 - 7" -> "1994-29-7") para o regex
+        $paraMatch = preg_replace('/\s+/', '', $data_e_hora);
+        if (!preg_match('/^(\d{4})\D+(\d{1,2})\D+(\d{1,2})$/', $paraMatch, $m)) {
+            return $data_e_hora;
+        }
+        $ano = (int) $m[1];
+        $a = (int) $m[2];
+        $b = (int) $m[3];
+        if ($a >= 1 && $a <= 12 && $b >= 1 && $b <= 31 && checkdate($a, $b, $ano)) {
+            return sprintf('%04d-%02d-%02d', $ano, $a, $b);
+        }
+        if ($b >= 1 && $b <= 12 && $a >= 1 && $a <= 31 && checkdate($b, $a, $ano)) {
+            return sprintf('%04d-%02d-%02d', $ano, $b, $a);
+        }
+        return $data_e_hora;
+    }
 
     public static function converterDatePicker($valor)
     {

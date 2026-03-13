@@ -15,7 +15,7 @@ Permitir que o cliente importe colaboradores em lote a partir de uma planilha Ex
 ## 2. Pré-requisitos
 
 - Planilha no formato do guia (aba **"Dados"**, primeira linha = cabeçalho com nomes das colunas).
-- **cod_vaga**, **cod_area** e **centro_custo**: podem ser preenchidos por **código** (número) ou por **nome** (importação inicial). Se usar nome e o registro não existir, o sistema pode criar (centro de custo) ou retornar erro (vaga/área — conforme configuração).
+- **cod_vaga**, **cod_area** e **centro_custo**: aceitam **código** (número), **nome** ou o formato **`id|descrição`** (ex.: `2340|AJUDANTE CIVIL - São Luís-MA`). No formato com pipe, o sistema usa apenas o ID (parte antes do primeiro `|`) na resolução. Se usar nome e o registro não existir, o sistema pode criar (centro de custo) ou retornar erro (vaga/área — conforme configuração).
 - Arquivo .xlsx válido; tamanho máximo definido na configuração do upload (recomendado: ex.: 10–20 MB).
 
 ---
@@ -69,7 +69,7 @@ Ao final, o terminal exibe um resumo: total processado, sucesso, erros e caminho
 ## 4. Estrutura da planilha
 
 - **Aba utilizada:** "Dados" (a primeira linha deve ser o cabeçalho; não alterar).
-- **A partir da linha 2:** cada linha = um colaborador.
+- **A partir da linha 2:** cada linha = um colaborador. **Linhas com CPF vazio** são ignoradas (não validadas nem incluídas no relatório).
 
 ### 4.1 Colunas obrigatórias (resumo)
 
@@ -84,8 +84,8 @@ Ao final, o terminal exibe um resumo: total processado, sucesso, erros e caminho
 | municipio*        | Cidade                                         |
 | uf*               | UF (2 letras)                                  |
 | telefone_numero*  | Telefone com DDD                               |
-| cod_vaga*         | Código ou nome da vaga                         |
-| centro_custo*     | Código ou nome do centro de custo              |
+| cod_vaga*         | Código ou nome da vaga; aceita formato **`id\|descrição`** (ex.: `2340\|AJUDANTE CIVIL - São Luís-MA`) — o sistema usa só o ID |
+| centro_custo*     | Código ou nome do centro de custo; aceita o mesmo formato **`id\|descrição`** |
 | tipo_admissao*    | FIXO, TEMPORARIO, INTERMITENTE, DETERMINADO, PJ, ESTÁGIO, APRENDIZ |
 | data_admissao*    | Data de admissão (dd/mm/aaaa)                 |
 | data_aso*         | Data do ASO (dd/mm/aaaa)                      |
@@ -100,7 +100,7 @@ Ao final, o terminal exibe um resumo: total processado, sucesso, erros e caminho
 
 ### 4.3 Outras colunas (opcionais ou condicionais)
 
-- naturalidade, email, cnh (SIM/NAO), cnh_vencimento, rg, rg_emissao, nascimento, sexo, estado_civil, pai, mae, pcd (SIM/NAO), cid (obrigatório se pcd = SIM), complemento, whatsapp (SIM/NAO), cod_area, vaga_mun, data_entrega_area, salario, pis, ctps_*, titulo_eleitor_*, banco, agencia, conta, pix (SIM/NAO), pix_tipo_chave, pix_chave (obrigatórios se pix = SIM), encaminhado_documento/exame/treinamento e datas, numero_cracha, matricula.
+- naturalidade, email, cnh (SIM/NAO), cnh_vencimento, rg, rg_emissao, nascimento, sexo, estado_civil, pai, mae, pcd (SIM/NAO), cid (obrigatório se pcd = SIM), complemento, whatsapp (SIM/NAO), **cod_area** (aceita formato `id|descrição` como cod_vaga e centro_custo), vaga_mun, data_entrega_area, salario, pis, ctps_*, titulo_eleitor_*, banco, agencia, conta, pix (SIM/NAO), pix_tipo_chave, pix_chave (obrigatórios se pix = SIM), encaminhado_documento/exame/treinamento e datas, numero_cracha, matricula.
 
 Listas permitidas (ex.: cnh, whatsapp, pix): **SIM**, **NAO**. Sexo: **MASCULINO**, **FEMININO** (ou M, F). Datas: sempre **dd/mm/aaaa**.
 

@@ -10,6 +10,7 @@ use App\Services\Admissao\Importacao\PersistidorAdmissaoImportada;
 use App\Services\Admissao\Importacao\ResolvedorVagaAreaCentroCusto;
 use App\Services\Admissao\Importacao\ValidadorLinhaPlanilhaAdmissao;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -61,6 +62,10 @@ class ImportacaoAdmissaoJob implements ShouldQueue
         $iterator = $leitor->ler($path, $this->chunkSize);
         foreach ($iterator as $chunk) {
             foreach ($chunk as $linha) {
+                if (trim((string) ($linha['cpf'] ?? '')) === '') {
+                    $numeroLinhaGlobal++;
+                    continue;
+                }
                 $errosLinha = $validador->validar($linha, $numeroLinhaGlobal, $this->empresaId);
                 if (!empty($errosLinha)) {
                     foreach ($errosLinha as $campo => $dados) {
@@ -106,8 +111,11 @@ class ImportacaoAdmissaoJob implements ShouldQueue
             }
         }
 
-        $relatorioPath = $this->salvarRelatorio($relatorio, $totalProcessadas, $totalSucesso, $totalErros);
+        $relatorioPath = $totalErros > 0
+            ? $this->salvarRelatorio($relatorio, $totalProcessadas, $totalSucesso, $totalErros)
+            : null;
         $this->notificarConclusao($relatorioPath, $totalProcessadas, $totalSucesso, $totalErros);
+        $this->enviarPlanilhaParaS3($path);
         $this->removerPlanilha();
     }
 
@@ -188,6 +196,40 @@ class ImportacaoAdmissaoJob implements ShouldQueue
             $relatorioPath
         );
         Mail::to($email)->queue($mailable);
+    }
+
+    /**
+     * Envia a planilha importada para o S3 (disco-exportacao).
+     * Caminho no S3: importacao_admissoes/{empresa_id}/{uuid}_{nome_arquivo}
+     */
+    private function enviarPlanilhaParaS3(string $pathLocal): void
+    {
+        if (!is_readable($pathLocal) || !is_file($pathLocal)) {
+            return;
+        }
+        $nomeArquivo = basename($pathLocal);
+        $ext = pathinfo($nomeArquivo, PATHINFO_EXTENSION);
+        if (strtolower($ext) !== 'xlsx' && strtolower($ext) !== 'xls') {
+            $nomeArquivo = $this->uuidImportacao . '.xlsx';
+        } else {
+            $nomeArquivo = $this->uuidImportacao . '_' . $nomeArquivo;
+        }
+        $caminhoS3 = 'importacao_admissoes/' . $this->empresaId . '/' . $nomeArquivo;
+        try {
+            $conteudo = file_get_contents($pathLocal);
+            Storage::disk('disco-exportacao')->put($caminhoS3, $conteudo);
+            \Log::info('Importação de admissões: planilha enviada para S3', [
+                'caminho_s3' => $caminhoS3,
+                'empresa_id' => $this->empresaId,
+                'uuid' => $this->uuidImportacao,
+            ]);
+        } catch (\Throwable $e) {
+            \Log::warning('Importação de admissões: falha ao enviar planilha para S3', [
+                'caminho_local' => $pathLocal,
+                'caminho_s3' => $caminhoS3,
+                'erro' => $e->getMessage(),
+            ]);
+        }
     }
 
     private function removerPlanilha(): void
