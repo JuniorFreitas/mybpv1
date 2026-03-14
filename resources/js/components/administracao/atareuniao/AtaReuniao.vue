@@ -15,7 +15,7 @@
                                     <label>Área</label>
                                     <select class="form-control form-control-sm" v-model="form.area_etiqueta_id">
                                         <option value="">Selecione</option>
-                                        <option :value="item.id" v-for="(item, index) in areasetiquetas" :key="item.id || index">
+                                        <option :value="item.id" v-for="(item, index) in areasetiquetas" :key="index">
                                             {{ item.label }}
                                         </option>
                                     </select>

@@ -956,6 +956,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::get('/anexoDownload/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'download'])->name('anexo-download');
             Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'anexoDelete'])->name('anexo-delete');
             Route::post('/uploadAnexos', [\App\Http\Controllers\HistoricoController::class, 'uploadAnexos'])->name('.upload-anexos');
+            Route::put('/remover-medida-administrativa', [\App\Http\Controllers\HistoricoController::class, 'removerMedidaAdministrativa'])->name('remover-medida-administrativa');
             Route::get('/{medida}/{feedback_id}/pdf', [\App\Http\Controllers\HistoricoController::class, 'medidasAdministrativasPDF'])->name('pdfMedidasAdministrativas');
             Route::post('/enviar-para-assinatura', [\App\Http\Controllers\HistoricoController::class, 'enviarMedidaParaAssinatura'])->name('enviarParaAssinatura')->middleware('assinatura.digital.habilitada');
         });

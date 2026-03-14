@@ -51,7 +51,7 @@
                                     <label>Área de Atuação</label>
                                     <select v-model="form.dados.area_id" class="form-control" onblur="valida_campo_vazio(this, 1)">
                                         <option value="">Selecione</option>
-                                        <option v-for="(item, index) in listaAreas" :key="item.id || index" :value="item.id">{{ item.label }}</option>
+                                        <option v-for="(item, index) in listaAreas" :key="index" :value="item.id">{{ item.label }}</option>
                                     </select>
                                 </div>
                             </div>
@@ -157,7 +157,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, index) in lista" :key="item.id || index">
+                        <tr v-for="(item, index) in lista" :key="index">
                             <td class="text-center">{{ item.id }}</td>
                             <td class="text-center">{{ item.dados.cnpj }}</td>
                             <td class="text-center">{{ item.dados.razao_social }}</td>

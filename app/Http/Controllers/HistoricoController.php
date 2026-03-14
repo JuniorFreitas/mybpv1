@@ -60,7 +60,7 @@ class HistoricoController extends Controller
 
         $avNoventaVencimento = Admissao::whereFeedbackId($feedback_id)->with('Feedback.AvaliacaoNoventaVencimento')->first();
         $restricao = new DataHora();
-        $restricao->addDia(2);
+        $restricao->addDia(7);
 
         $itemAvaliacaoExperiencia = $this->avaliacaoNoventaService->getItemIndividualParaHistorico(
             (int) $feedback_id,

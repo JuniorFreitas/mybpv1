@@ -23,7 +23,7 @@
                                         onblur="valida_campo_vazio(this, 1)"
                                     >
                                         <option value="">Selecione</option>
-                                        <option v-for="(item, index) in listaTiposAssinatura" :value="item" :key="item.id || index">
+                                        <option v-for="(item, index) in listaTiposAssinatura" :value="item" :key="index">
                                             {{ item }}
                                         </option>
                                     </select>
@@ -116,7 +116,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, index) in lista" :key="item.id || index">
+                        <tr v-for="(item, index) in lista" :key="index">
                             <td class="text-center">{{ item.id }}</td>
                             <td class="text-center">{{ item.nome }}</td>
                             <td class="text-center">{{ item.tipo }}</td>

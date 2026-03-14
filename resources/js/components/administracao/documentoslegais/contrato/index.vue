@@ -141,7 +141,7 @@
                                                     onblur="valida_campo_vazio(this, 1)"
                                                 >
                                                     <option value="">Selecione</option>
-                                                    <option v-for="(item, index) in listaAreas" :value="item.id" :key="item.id || index">
+                                                    <option v-for="(item, index) in listaAreas" :value="item.id" :key="index">
                                                         {{ item.label }}
                                                     </option>
                                                 </select>
@@ -295,7 +295,7 @@
                                                         onblur="valida_campo_vazio(this, 1)"
                                                     >
                                                         <option value="">Selecione ...</option>
-                                                        <option v-for="(item, index) in listaServicos" :value="item.id" :key="item.id || index">
+                                                        <option v-for="(item, index) in listaServicos" :value="item.id" :key="index">
                                                             {{ item.titulo }}
                                                         </option>
                                                     </select>
@@ -376,7 +376,7 @@
                                                         onblur="valida_campo_vazio(this, 1)"
                                                     >
                                                         <option value="">Selecione ...</option>
-                                                        <option v-for="(item, index) in listaFormasContrato" :value="item.id" :key="item.id || index">
+                                                        <option v-for="(item, index) in listaFormasContrato" :value="item.id" :key="index">
                                                             {{ item.titulo }}
                                                         </option>
                                                     </select>
@@ -478,7 +478,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, index) in lista" :key="item.id || index">
+                        <tr v-for="(item, index) in lista" :key="index">
                             <td data-label="ID">
                                 {{ item.id }}
                             </td>

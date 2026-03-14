@@ -234,7 +234,7 @@
                                                         <label>Tipo de Serviço</label>
                                                         <select v-model="obj.tipo_servico_fornecedor_id" class="form-control">
                                                             <option value="">Selecione ...</option>
-                                                            <option v-for="(item, index) in listaServicos" :value="item.id" :key="item.id || index">
+                                                            <option v-for="(item, index) in listaServicos" :value="item.id" :key="index">
                                                                 {{ item.label }}
                                                             </option>
                                                         </select>

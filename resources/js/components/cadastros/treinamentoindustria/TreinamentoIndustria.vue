@@ -180,7 +180,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, index) in lista" :key="item.id || index">
+                        <tr v-for="(item, index) in lista" :key="index">
                             <td class="text-center">{{ item.id }}</td>
                             <td class="text-center">{{ item.label }}</td>
                             <td class="text-center">{{ item.segmento_treinamento ? item.segmento_treinamento.nome : '-' }}</td>
