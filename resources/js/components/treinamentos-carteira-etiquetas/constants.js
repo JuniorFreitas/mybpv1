@@ -33,5 +33,6 @@ export const API_PATHS = {
     uploadAnexos: 'treinamento/uploadAnexos',
     export: 'treinamento/export',
     segmentosHabilitados: 'cadastro/segmentostreinamento/habilitados-empresa',
-    desmarcarTreinamentoRealizado: 'treinamento/desmarcar-treinamento-realizado'
+    desmarcarTreinamentoRealizado: 'treinamento/desmarcar-treinamento-realizado',
+    atualizarVencimento: 'treinamento/atualizar-vencimento'
 }

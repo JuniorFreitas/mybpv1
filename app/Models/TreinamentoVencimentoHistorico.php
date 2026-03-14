@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $feedback_id
  * @property int $empresa_id
  * @property int $treinamento_id
+ * @property int|null $vencimento_id Quando preenchido, o histórico refere-se apenas a este vencimento (alteração 1 a 1).
+ * @property bool $removido True quando o treinamento foi alterado para "não" (desmarcado).
  * @property int $user_id
  * @property array<array-key, mixed> $treinamentos_vencimentos
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -55,6 +57,8 @@ class TreinamentoVencimentoHistorico extends Model
         'feedback_id',
         'empresa_id',
         'treinamento_id',
+        'vencimento_id',
+        'removido',
         'user_id',
         'treinamentos_vencimentos',
     ];
@@ -63,6 +67,8 @@ class TreinamentoVencimentoHistorico extends Model
         'feedback_id' => 'int',
         'empresa_id' => 'int',
         'treinamento_id' => 'int',
+        'vencimento_id' => 'integer',
+        'removido' => 'boolean',
         'user_id' => 'int',
         'treinamentos_vencimentos' => 'json'
     ];

@@ -122,11 +122,9 @@ class TreinamentoController extends Controller
                 $treinamento = Treinamento::create($dados);
             }
 
-            // Passa Collection por referência para evitar cópia
             $this->processarVencimentos($treinamento, $listaVencimentos);
             $this->salvarHistorico($dados['feedback_id'], $treinamento->id);
 
-            // Auditoria apenas quando cliente tem config ativa e (privilegio_gestao_rh ou treinamento_carteira-etiquetas_retirar_treinamento_realizado)
             if ($pode_desmarcar && $vencimentosDesmarcadosIds->isNotEmpty()) {
                 $this->registrarAuditoriaDesmarcarTreinamentoRealizado(
                     $dados['feedback_id'],
@@ -256,6 +254,97 @@ class TreinamentoController extends Controller
     }
 
     /**
+     * Grava histórico apenas do vencimento alterado (1 a 1). Usado por atualizarVencimento.
+     */
+    private function salvarHistoricoVencimento(int $feedbackId, int $treinamentoId, int $vencimentoId, bool $removido): void
+    {
+        $payload = [
+            'feedback_id' => $feedbackId,
+            'empresa_id' => auth()->user()->empresa_id,
+            'treinamento_id' => $treinamentoId,
+            'vencimento_id' => $vencimentoId,
+            'removido' => $removido,
+            'user_id' => auth()->id(),
+        ];
+
+        if ($removido) {
+            $payload['treinamentos_vencimentos'] = [];
+        } else {
+            $treinamento = Treinamento::with(['Vencimentos' => fn ($q) => $q->where('vencimento_id', $vencimentoId)])
+                ->find($treinamentoId);
+            $payload['treinamentos_vencimentos'] = $treinamento->Vencimentos;
+        }
+
+        TreinamentoVencimentoHistorico::create($payload);
+    }
+
+    /**
+     * Atualiza apenas um vencimento do treinamento (1 a 1). Histórico registra só essa alteração.
+     * Request: feedback_id, vencimento (objeto com id, fez_treinamento, data_treinamento, data_vencimento, numero_fat, arquivo, etc.)
+     */
+    public function atualizarVencimento(Request $request): JsonResponse
+    {
+        $request->validate([
+            'feedback_id' => 'required|integer',
+            'vencimento' => 'required|array',
+            'vencimento.id' => 'required|integer',
+        ]);
+
+        $feedbackId = (int) $request->input('feedback_id');
+        $item = $request->input('vencimento');
+        $vencimentoId = (int) $item['id'];
+
+        $treinamento = Treinamento::whereFeedbackId($feedbackId)
+            ->whereHas('FeedbackCurriculo', fn ($q) => $q->where('empresa_id', auth()->user()->empresa_id))
+            ->first();
+
+        if (!$treinamento) {
+            return response()->json(['msg' => 'Treinamento não encontrado.'], 404);
+        }
+
+        $this->authorize('treinamento_carteira-etiquetas_update');
+
+        $clienteConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
+        $treinamento_permitir_desmarcar = $clienteConfig && ($clienteConfig->treinamento_permitir_desmarcar_realizado ?? false);
+        $privilegio_gestao_rh = auth()->user()->can('privilegio_gestao_rh');
+        $treinamento_retirar_realizado = auth()->user()->can('treinamento_carteira-etiquetas_retirar_treinamento_realizado');
+        $pode_desmarcar = $treinamento_permitir_desmarcar && ($privilegio_gestao_rh || $treinamento_retirar_realizado);
+
+        $pivot = $treinamento->Vencimentos()->where('vencimento_id', $vencimentoId)->first();
+        $wasRealized = $pivot !== null;
+        if ($wasRealized && empty($item['fez_treinamento']) && !$pode_desmarcar) {
+            $pivotData = $pivot->pivot ?? $pivot;
+            $item = array_merge($item, [
+                'fez_treinamento' => true,
+                'data_treinamento' => $pivotData->data_treinamento ?? $item['data_treinamento'] ?? null,
+                'data_vencimento' => $pivotData->data_vencimento ?? $item['data_vencimento'] ?? null,
+                'numero_fat' => $pivotData->numero_fat ?? $item['numero_fat'] ?? null,
+            ]);
+            if (!empty($pivotData->arquivo_id ?? null)) {
+                $item['arquivo'] = [['id' => $pivotData->arquivo_id, 'temporario' => false, 'chave' => '', 'falhou' => false]];
+            }
+        }
+
+        DB::beginTransaction();
+        try {
+            $treinamento->Vencimentos()->detach($vencimentoId);
+
+            if (!empty($item['fez_treinamento'])) {
+                $listaUmItem = collect([$item]);
+                $this->processarVencimentos($treinamento, $listaUmItem);
+            }
+
+            $this->salvarHistoricoVencimento($feedbackId, $treinamento->id, $vencimentoId, empty($item['fez_treinamento']));
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::debug('atualizarVencimento: ' . $e->getMessage());
+            return response()->json(['msg' => 'Não foi possível salvar o treinamento.'], 400);
+        }
+    }
+
+    /**
      * Desmarca um treinamento realizado (salvamento individual). Exige config ativa e (privilegio_gestao_rh ou treinamento_carteira-etiquetas_retirar_treinamento_realizado).
      * Recebe motivo e registra auditoria.
      *
@@ -304,9 +393,8 @@ class TreinamentoController extends Controller
         try {
             $treinamento->Vencimentos()->detach($vencimentoId);
 
-            // Mesma regra do store: gravar estado atual no histórico (após o detach)
             $feedbackId = (int) $request->input('feedback_id');
-            $this->salvarHistorico($feedbackId, $treinamento->id);
+            $this->salvarHistoricoVencimento($feedbackId, $treinamento->id, $vencimentoId, true);
 
             $this->registrarAuditoriaDesmarcarTreinamentoRealizado(
                 $feedbackId,

@@ -44,3 +44,7 @@ Documento de referência da migração da tela Treinamentos (Carteira/Etiquetas)
 - `resources/js/components/treinamentos-carteira-etiquetas/TreinamentosCarteiraEtiquetas.vue`
 - `resources/views/g/treinamentos/index.blade.php` (simplificado)
 - `resources/js/g/treinamentos/app.js` (apenas mount)
+
+## Documentação relacionada
+
+- **[TREINAMENTOS_CARTEIRA_ETIQUETAS_AUDITORIA_E_HISTORICO.md](TREINAMENTOS_CARTEIRA_ETIQUETAS_AUDITORIA_E_HISTORICO.md)** — Modal de auditoria (termo de responsabilidade, desmarcar com motivo), salvamento 1 a 1 por vencimento, histórico por vencimento (`vencimento_id`, `removido`), regra de config do cliente e habilidades para desmarcar, componente `ModalAuditoriaTermoResponsabilidade`, APIs e fluxos.

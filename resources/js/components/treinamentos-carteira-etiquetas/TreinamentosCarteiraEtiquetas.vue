@@ -1706,6 +1706,7 @@ export default defineComponent({
                     t.arquivo = []
                     t.arquivoDel = []
                     t._fez_treinamento_ja_salvo = false
+                    t._alterado = false
                     this.showModalMotivoDesmarcar = false
                     this.treinamentoMotivoDesmarcar = null
                     this.desmarcarPreload = false
@@ -1713,7 +1714,7 @@ export default defineComponent({
                         this.$refs.modalAuditoriaDesmarcar.fechar()
                     }
                     mostraSucesso('', response.data.msg || 'Treinamento desmarcado com sucesso.')
-                    await this.salvar(t)
+                    await this.atualizar()
                 }
             } catch (err) {
                 const msg = err.response && err.response.data && err.response.data.msg ? err.response.data.msg : 'Erro ao desmarcar treinamento.'
@@ -1965,7 +1966,20 @@ export default defineComponent({
                 this.preload = true
             }
             try {
-                const response = await axios.post(`${URL_ADMIN}/${API_PATHS.store}`, this.form)
+                let response
+                if (vencimentoId) {
+                    const item = this.form.listaVencimentos?.find((t) => t.id === vencimentoId)
+                    if (!item) {
+                        if (typeof toastr !== 'undefined') toastr.error('Vencimento não encontrado na lista.')
+                        return
+                    }
+                    response = await axios.post(`${URL_ADMIN}/${API_PATHS.atualizarVencimento}`, {
+                        feedback_id: this.form.feedback_id,
+                        vencimento: item
+                    })
+                } else {
+                    response = await axios.post(`${URL_ADMIN}/${API_PATHS.store}`, this.form)
+                }
                 if (response.status === 201) {
                     if (vencimentoId && this.form.listaVencimentos) {
                         const item = this.form.listaVencimentos.find((t) => t.id === vencimentoId)

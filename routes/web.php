@@ -1081,6 +1081,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::get('treinamento/proximovencimento', [\App\Http\Controllers\TreinamentoController::class, 'treinamentoProximoVencimento'])->name('vencimentoTreinamento');
         Route::post('treinamento/salvar-massa', [\App\Http\Controllers\TreinamentoController::class, 'storeMassa'])->name('storeMassa');
         Route::post('treinamento/desmarcar-treinamento-realizado', [\App\Http\Controllers\TreinamentoController::class, 'desmarcarTreinamentoRealizado'])->name('desmarcar-treinamento-realizado');
+        Route::post('treinamento/atualizar-vencimento', [\App\Http\Controllers\TreinamentoController::class, 'atualizarVencimento'])->name('atualizar-vencimento');
 
         Route::resource('treinamento', \App\Http\Controllers\TreinamentoController::class)->middleware('can:treinamento_carteira-etiquetas');
     });
