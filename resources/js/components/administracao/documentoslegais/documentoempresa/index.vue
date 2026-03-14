@@ -118,7 +118,7 @@
                                                                 <option value="">Selecione ...</option>
                                                                 <option
                                                                     v-for="(item, index) in listaDocumentosFiltrados"
-                                                                    :key="item.id || index"
+                                                                    :key="index"
                                                                     :value="item.id"
                                                                     v-text="item.nome"
                                                                 ></option>
@@ -309,7 +309,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, index) in lista" :key="item.id || index">
+                        <tr v-for="(item, index) in lista" :key="index">
                             <td data-label="ID">
                                 {{ item.id }}
                             </td>

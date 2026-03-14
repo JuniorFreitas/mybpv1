@@ -723,6 +723,26 @@
                                         <small class="text-muted">Controla o envio/schedule da avaliação de experiência para esta empresa.</small>
                                     </div>
                                 </div>
+                                <div class="col-12 col-sm-6 col-lg-4">
+                                    <div class="form-group">
+                                        <label>Permitir alterar "Realizou este treinamento?" para Não quando já realizado</label>
+                                        <select v-model="form.cliente_config.treinamento_permitir_desmarcar_realizado" class="form-control">
+                                            <option :value="false">Desabilitado</option>
+                                            <option :value="true">Habilitado</option>
+                                        </select>
+                                        <small class="text-muted">Quando habilitado, usuários com Gestão RH podem desmarcar treinamento já realizado na carteira/etiquetas.</small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-lg-4">
+                                    <div class="form-group">
+                                        <label>FAT em treinamentos obrigatório</label>
+                                        <select v-model="form.cliente_config.configuracoes.treinamento_fat_obrigatorio" class="form-control">
+                                            <option :value="false">Desabilitado</option>
+                                            <option :value="true">Habilitado</option>
+                                        </select>
+                                        <small class="text-muted">Quando habilitado, o número FAT é obrigatório ao salvar ou alterar treinamento realizado na carteira/etiquetas.</small>
+                                    </div>
+                                </div>
                             </div>
                         </fieldset>
 

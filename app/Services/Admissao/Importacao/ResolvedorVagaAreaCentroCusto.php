@@ -5,6 +5,7 @@ namespace App\Services\Admissao\Importacao;
 use App\Models\AreaEtiqueta;
 use App\Models\CentroCusto;
 use App\Models\VagasAbertas;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Resolve cod_vaga, cod_area e centro_custo (código ou nome) para os IDs internos da empresa.
@@ -39,13 +40,18 @@ class ResolvedorVagaAreaCentroCusto
      */
     public function resolverVaga(int $empresaId, $valor): array
     {
+        $valorOriginal = $valor;
         $valor = $this->normalizarValor($valor);
         if ($valor === '') {
-            return ['id' => null, 'erro' => 'Código ou nome da vaga é obrigatório.'];
+            $r = ['id' => null, 'erro' => 'Código ou nome da vaga é obrigatório.'];
+            $this->debugResolucao('vaga', $empresaId, $valorOriginal, $valor, $r);
+            return $r;
         }
 
         if ($this->vagaResolver !== null) {
-            return ($this->vagaResolver)($empresaId, $valor);
+            $r = ($this->vagaResolver)($empresaId, $valor);
+            $this->debugResolucao('vaga', $empresaId, $valorOriginal, $valor, $r);
+            return $r;
         }
 
         if ($this->ehNumerico($valor)) {
@@ -54,9 +60,13 @@ class ResolvedorVagaAreaCentroCusto
                 ->where('empresa_id', $empresaId)
                 ->first();
             if ($vagaAberta) {
-                return ['id' => $vagaAberta->id, 'erro' => null];
+                $r = ['id' => $vagaAberta->id, 'erro' => null];
+                $this->debugResolucao('vaga', $empresaId, $valorOriginal, $valor, $r, 'id');
+                return $r;
             }
-            return ['id' => null, 'erro' => 'Nenhuma vaga encontrada com o código informado.'];
+            $r = ['id' => null, 'erro' => 'Nenhuma vaga encontrada com o código informado. Valor: "' . $valor . '".'];
+            $this->debugResolucao('vaga', $empresaId, $valorOriginal, $valor, $r, 'id');
+            return $r;
         }
 
         $vagaAberta = VagasAbertas::withoutGlobalScopes()
@@ -67,9 +77,13 @@ class ResolvedorVagaAreaCentroCusto
             ->first();
 
         if ($vagaAberta) {
-            return ['id' => $vagaAberta->id, 'erro' => null];
+            $r = ['id' => $vagaAberta->id, 'erro' => null];
+            $this->debugResolucao('vaga', $empresaId, $valorOriginal, $valor, $r, 'nome');
+            return $r;
         }
-        return ['id' => null, 'erro' => 'Nenhuma vaga encontrada com o nome informado. Use o código numérico ou cadastre a vaga.'];
+        $r = ['id' => null, 'erro' => 'Nenhuma vaga encontrada com o nome informado. Use o código numérico ou cadastre a vaga. Valor: "' . $valor . '".'];
+        $this->debugResolucao('vaga', $empresaId, $valorOriginal, $valor, $r, 'nome');
+        return $r;
     }
 
     /**
@@ -79,13 +93,18 @@ class ResolvedorVagaAreaCentroCusto
      */
     public function resolverArea(int $empresaId, $valor): array
     {
+        $valorOriginal = $valor;
         $valor = $this->normalizarValor($valor);
         if ($valor === '') {
-            return ['id' => null, 'erro' => null];
+            $r = ['id' => null, 'erro' => null];
+            $this->debugResolucao('area', $empresaId, $valorOriginal, $valor, $r);
+            return $r;
         }
 
         if ($this->areaResolver !== null) {
-            return ($this->areaResolver)($empresaId, $valor);
+            $r = ($this->areaResolver)($empresaId, $valor);
+            $this->debugResolucao('area', $empresaId, $valorOriginal, $valor, $r);
+            return $r;
         }
 
         if ($this->ehNumerico($valor)) {
@@ -94,9 +113,13 @@ class ResolvedorVagaAreaCentroCusto
                 ->where('empresa_id', $empresaId)
                 ->first();
             if ($area) {
-                return ['id' => $area->id, 'erro' => null];
+                $r = ['id' => $area->id, 'erro' => null];
+                $this->debugResolucao('area', $empresaId, $valorOriginal, $valor, $r, 'id');
+                return $r;
             }
-            return ['id' => null, 'erro' => 'Nenhuma área encontrada com o código informado.'];
+            $r = ['id' => null, 'erro' => 'Nenhuma área encontrada com o código informado. Valor: "' . $valor . '".'];
+            $this->debugResolucao('area', $empresaId, $valorOriginal, $valor, $r, 'id');
+            return $r;
         }
 
         $area = AreaEtiqueta::withoutGlobalScopes()
@@ -105,9 +128,13 @@ class ResolvedorVagaAreaCentroCusto
             ->first();
 
         if ($area) {
-            return ['id' => $area->id, 'erro' => null];
+            $r = ['id' => $area->id, 'erro' => null];
+            $this->debugResolucao('area', $empresaId, $valorOriginal, $valor, $r, 'label');
+            return $r;
         }
-        return ['id' => null, 'erro' => 'Nenhuma área encontrada com o nome informado.'];
+        $r = ['id' => null, 'erro' => 'Nenhuma área encontrada com o nome informado. Valor: "' . $valor . '".'];
+        $this->debugResolucao('area', $empresaId, $valorOriginal, $valor, $r, 'label');
+        return $r;
     }
 
     /**
@@ -117,13 +144,18 @@ class ResolvedorVagaAreaCentroCusto
      */
     public function resolverCentroCusto(int $empresaId, $valor): array
     {
+        $valorOriginal = $valor;
         $valor = $this->normalizarValor($valor);
         if ($valor === '') {
-            return ['id' => null, 'erro' => 'Centro de custo é obrigatório.'];
+            $r = ['id' => null, 'erro' => 'Centro de custo é obrigatório.'];
+            $this->debugResolucao('centro_custo', $empresaId, $valorOriginal, $valor, $r);
+            return $r;
         }
 
         if ($this->centroCustoResolver !== null) {
-            return ($this->centroCustoResolver)($empresaId, $valor);
+            $r = ($this->centroCustoResolver)($empresaId, $valor);
+            $this->debugResolucao('centro_custo', $empresaId, $valorOriginal, $valor, $r);
+            return $r;
         }
 
         if ($this->ehNumerico($valor)) {
@@ -132,9 +164,13 @@ class ResolvedorVagaAreaCentroCusto
                 ->where('empresa_id', $empresaId)
                 ->first();
             if ($cc) {
-                return ['id' => $cc->id, 'erro' => null];
+                $r = ['id' => $cc->id, 'erro' => null];
+                $this->debugResolucao('centro_custo', $empresaId, $valorOriginal, $valor, $r, 'id');
+                return $r;
             }
-            return ['id' => null, 'erro' => 'Nenhum centro de custo encontrado com o código informado.'];
+            $r = ['id' => null, 'erro' => 'Nenhum centro de custo encontrado com o código informado. Valor: "' . $valor . '".'];
+            $this->debugResolucao('centro_custo', $empresaId, $valorOriginal, $valor, $r, 'id');
+            return $r;
         }
 
         $cc = CentroCusto::withoutGlobalScopes()
@@ -143,21 +179,56 @@ class ResolvedorVagaAreaCentroCusto
             ->first();
 
         if ($cc) {
-            return ['id' => $cc->id, 'erro' => null];
+            $r = ['id' => $cc->id, 'erro' => null];
+            $this->debugResolucao('centro_custo', $empresaId, $valorOriginal, $valor, $r, 'label');
+            return $r;
         }
-        return ['id' => null, 'erro' => 'Nenhum centro de custo encontrado com o nome informado. Use o código ou cadastre o centro de custo.'];
+        $r = ['id' => null, 'erro' => 'Nenhum centro de custo encontrado com o nome informado. Use o código ou cadastre o centro de custo. Valor: "' . $valor . '".'];
+        $this->debugResolucao('centro_custo', $empresaId, $valorOriginal, $valor, $r, 'label');
+        return $r;
     }
 
+    /**
+     * Normaliza o valor para resolução: trim e, se no formato "id|descrição", usa apenas o ID (primeiro segmento).
+     */
     private function normalizarValor($valor): string
     {
         if ($valor === null) {
             return '';
         }
-        return trim((string) $valor);
+        $valor = trim((string) $valor);
+        if (str_contains($valor, '|')) {
+            $partes = explode('|', $valor, 2);
+            $valor = trim($partes[0]);
+        }
+        return $valor;
     }
 
     private function ehNumerico($valor): bool
     {
         return is_numeric($valor) && (string)(int) $valor === (string) $valor;
+    }
+
+    /**
+     * Log de debug para cada resolução (empresa_id, valor original, valor normalizado, critério, resultado).
+     * Aparece em storage/logs/laravel.log quando LOG_LEVEL=debug.
+     *
+     * @param array{id: int|null, erro: string|null} $resultado
+     */
+    private function debugResolucao(string $tipo, int $empresaId, $valorOriginal, string $valorNormalizado, array $resultado, ?string $criterio = null): void
+    {
+        $valorOriginalStr = $valorOriginal === null ? 'null' : '"' . trim((string) $valorOriginal) . '"';
+        $resumo = $resultado['erro'] !== null
+            ? 'erro: ' . $resultado['erro']
+            : 'id: ' . (int) $resultado['id'];
+        $ctx = [
+            'tipo' => $tipo,
+            'empresa_id' => $empresaId,
+            'valor_original' => $valorOriginalStr,
+            'valor_normalizado' => $valorNormalizado === '' ? '(vazio)' : '"' . $valorNormalizado . '"',
+            'criterio' => $criterio ?? '-',
+            'resultado' => $resumo,
+        ];
+        Log::debug('ResolvedorVagaAreaCentroCusto', $ctx);
     }
 }

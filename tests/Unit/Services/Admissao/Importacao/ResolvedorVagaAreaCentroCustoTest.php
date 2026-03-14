@@ -37,6 +37,23 @@ class ResolvedorVagaAreaCentroCustoTest extends TestCase
         $this->assertNull($resultado['erro']);
     }
 
+    /** Formato planilha: id|descrição — deve usar só o ID na resolução. */
+    public function testResolveCodVagaFormatoIdPipeDescricaoUsaApenasId(): void
+    {
+        $resolvedor = new ResolvedorVagaAreaCentroCusto(
+            function (int $empresaId, string $valor) {
+                $this->assertSame(1, $empresaId);
+                $this->assertSame('2340', $valor);
+                return ['id' => 2340, 'erro' => null];
+            },
+            null,
+            null
+        );
+        $resultado = $resolvedor->resolverVaga($this->empresaId, '2340|AJUDANTE CIVIL - São Luís-MA');
+        $this->assertSame(2340, $resultado['id']);
+        $this->assertNull($resultado['erro']);
+    }
+
     public function testResolveCodVagaPorNomeComMock(): void
     {
         $resolvedor = new ResolvedorVagaAreaCentroCusto(

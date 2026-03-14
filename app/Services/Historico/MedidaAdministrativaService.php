@@ -261,7 +261,7 @@ class MedidaAdministrativaService
             'Feedback.Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento',
             'Feedback.Empresa:id,cnpj,razao_social,nome_fantasia,cep,logradouro,numero,complemento,bairro,municipio,uf,contato',
             'Feedback.Empresa.Logo:id,nome,layout,disco,imagem,file,thumb',
-            'Feedback.Admissao:id,feedback_id,data_admissao'
+            'Feedback.Admissao:id,feedback_id,data_admissao,centro_custo_filial_id'
         )->first();
     }
 }

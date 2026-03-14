@@ -194,32 +194,6 @@
                 </div>
             </div>
 
-            <!--        <div class="col-12 col-sm-6">-->
-            <!--            <div class="form-group">-->
-            <!--                <label>NR 33</label>-->
-            <!--                <select class="form-control" onchange="valida_campo(this,1)"-->
-            <!--                        onblur="valida_campo(this,1)" :disabled="visualizar || disabled"-->
-            <!--                        v-model="form.nr_trinta_tres">-->
-            <!--                    <option value="">Selecione</option>-->
-            <!--                    <option v-for="(item, index) in listSelects.todos_status_treinamentos" :value="item">{{ item }}</option>-->
-            :key="item.id || index"
-            <!--                </select>-->
-            <!--            </div>-->
-            <!--        </div>-->
-
-            <!--        <div class="col-12 col-sm-6">-->
-            <!--            <div class="form-group">-->
-            <!--                <label>NR 35</label>-->
-            <!--                <select class="form-control" onchange="valida_campo(this,1)"-->
-            <!--                        onblur="valida_campo(this,1)" :disabled="visualizar || disabled"-->
-            <!--                        v-model="form.nr_trinta_cinco">-->
-            <!--                    <option value="">Selecione</option>-->
-            <!--                    <option v-for="(item, index) in listSelects.todos_status_treinamentos" :value="item">{{ item }}</option>-->
-            :key="item.id || index"
-            <!--                </select>-->
-            <!--            </div>-->
-            <!--        </div>-->
-
             <div class="col-12 col-sm-6">
                 <div class="form-group">
                     <label>Número Crachá</label>

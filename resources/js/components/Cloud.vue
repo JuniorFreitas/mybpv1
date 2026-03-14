@@ -490,7 +490,7 @@
                                     </button>
                                 </td>
                             </tr>
-                            <tr v-for="(item, index) in lista" :key="item.id || index" v-if="!preload && lista.length > 0 && item.TemPermissao">
+                            <tr v-for="(item, index) in lista" :key="index" v-if="!preload && lista.length > 0 && item.TemPermissao">
                                 <td>
                                     <div v-if="item.tipo === 'pasta'">
                                         <button

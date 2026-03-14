@@ -293,7 +293,7 @@
 
                             <div class="col-12 mt-2" v-show="!preloadMsg">
                                 <ul class="timeline">
-                                    <li v-for="(item, index) in ocorrencia.respostas" :key="item.id || index">
+                                    <li v-for="(item, index) in ocorrencia.respostas" :key="index">
                                         <div class="trackind">
                                             <span
                                                 ><strong class="text-default">{{ item.usuario.nome }}</strong> diz:</span
@@ -532,7 +532,7 @@
                     <tbody>
                         <tr
                             v-for="(item, index) in lista"
-                            :key="item.id || index"
+                            :key="index"
                             :class="{
                                 'table-danger': item.status === 'novo',
                                 'table-warning': item.status === 'andamento',

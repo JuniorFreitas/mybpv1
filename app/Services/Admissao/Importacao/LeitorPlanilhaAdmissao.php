@@ -86,7 +86,8 @@ class LeitorPlanilhaAdmissao
     }
 
     /**
-     * Normaliza nomes de colunas: remove asterisco, trim, lowercase para chave.
+     * Normaliza nomes de colunas: remove asterisco, trim, lowercase, espaços -> underscore,
+     * para que "CPF*", "Cod. Vaga", "Data Admissão" batam com as chaves esperadas (cpf, cod_vaga, data_admissao).
      */
     private function normalizarCabecalhos(array $headerRow): array
     {
@@ -95,9 +96,18 @@ class LeitorPlanilhaAdmissao
             $key = is_scalar($value) ? trim((string) $value) : '';
             $key = preg_replace('/\*+$/', '', $key);
             $key = trim($key);
+            $key = mb_strtolower($key);
+            $key = preg_replace('/\s+/', '_', $key);
+            $key = $this->removerAcentosCabecalho($key);
             $headers[$index] = $key;
         }
         return $headers;
+    }
+
+    private function removerAcentosCabecalho(string $key): string
+    {
+        $map = ['ã' => 'a', 'á' => 'a', 'à' => 'a', 'â' => 'a', 'ä' => 'a', 'é' => 'e', 'ê' => 'e', 'í' => 'i', 'ó' => 'o', 'ô' => 'o', 'õ' => 'o', 'ú' => 'u', 'ü' => 'u', 'ç' => 'c'];
+        return strtr(mb_strtolower($key), $map);
     }
 
     private function montarLinha(array $headers, array $rowData): array
@@ -126,10 +136,34 @@ class LeitorPlanilhaAdmissao
                 $date = ExcelDate::excelToDateTimeObject($valor);
                 return $date->format('d/m/Y');
             } catch (\Throwable) {
-                return is_scalar($valor) ? trim((string) $valor) : $valor;
+                return $this->normalizarDataString($valor);
             }
         }
 
-        return is_scalar($valor) ? trim((string) $valor) : $valor;
+        return $this->normalizarDataString($valor);
+    }
+
+    /**
+     * Normaliza string de data: trim e, se for yyyy-d-m (dia/mês trocados), converte para dd/mm/yyyy.
+     */
+    private function normalizarDataString($valor): string
+    {
+        $v = is_scalar($valor) ? trim((string) $valor) : '';
+        if ($v === '') {
+            return $v;
+        }
+        // yyyy-d-m ou yyyy-dd-m (ex.: 1994-29-7) -> interpretar como dia=29, mês=7
+        if (preg_match('/^(\d{4})\D+(\d{1,2})\D+(\d{1,2})$/', $v, $m)) {
+            $ano = (int) $m[1];
+            $a = (int) $m[2];
+            $b = (int) $m[3];
+            if ($b >= 1 && $b <= 12 && $a >= 1 && $a <= 31 && checkdate($b, $a, $ano)) {
+                return sprintf('%02d/%02d/%04d', $a, $b, $ano);
+            }
+            if ($a >= 1 && $a <= 12 && $b >= 1 && $b <= 31 && checkdate($a, $b, $ano)) {
+                return sprintf('%02d/%02d/%04d', $b, $a, $ano);
+            }
+        }
+        return $v;
     }
 }

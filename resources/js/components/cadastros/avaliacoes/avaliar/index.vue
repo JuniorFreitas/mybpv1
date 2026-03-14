@@ -50,7 +50,7 @@
                         <table
                             class="table"
                             v-for="(item, index) in formAvaliarFinal.result_topico_pai_agrupado"
-                            :key="item.id || index"
+                            :key="index"
                         >
                             <thead>
                                 <tr>
@@ -157,7 +157,7 @@
                         </button>
 
                         <!-- CORREÇÃO APLICADA: Adicionado guard para planos_acoes -->
-                        <fieldset v-for="(item, index) in formAvaliarFinal.planos_acoes || []" :key="item.id || index">
+                        <fieldset v-for="(item, index) in formAvaliarFinal.planos_acoes || []" :key="index">
                             <legend>Plano - {{ index + 1 }}</legend>
                             <div class="row">
                                 <div class="col-lg-12">

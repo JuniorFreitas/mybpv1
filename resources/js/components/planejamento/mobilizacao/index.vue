@@ -55,7 +55,7 @@
             </div>
 
             <template v-if="dados.vagas_projeto.length">
-                <div class="col-12 p-3" v-for="(item, index) in dados.vagas_projeto" :key="item.id || index">
+                <div class="col-12 p-3" v-for="(item, index) in dados.vagas_projeto" :key="index">
                     <div class="text-center">
                         <h5>{{ item.vaga_aberta.titulo }}<br>
                             <pre>({{ item.vaga_aberta.vaga.nome }})</pre>

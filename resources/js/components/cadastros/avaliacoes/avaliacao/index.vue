@@ -276,7 +276,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, index) in lista" :key="item.id || index">
+                        <tr v-for="(item, index) in lista" :key="index">
                             <td class="text-center">{{ item.ano_avaliacao }}</td>
                             <td class="text-center">{{ item.titulo }}</td>
                             <td class="text-center">{{ item.avaliacao_tipo.nome }}</td>

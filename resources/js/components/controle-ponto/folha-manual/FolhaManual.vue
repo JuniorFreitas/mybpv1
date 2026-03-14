@@ -121,7 +121,7 @@
                     <div class="form-group">
                         <label for="">Exibir</label>
                         <select class="form-control form-control-sm" @change="atualizar()" :disabled="controle.carregando" v-model="controle.dados.pages">
-                            <option v-for="(item, index) in por_pagina" :value="item" :key="item.id || index">{{ item }}</option>
+                            <option v-for="(item, index) in por_pagina" :value="item" :key="index">{{ item }}</option>
                         </select>
                     </div>
                 </div>

@@ -11,7 +11,7 @@
                 </div>
             </div>
             <template v-if="lista.length">
-                <div class="row" v-for="(item, index) in lista" :key="item.id || index">
+                <div class="row" v-for="(item, index) in lista" :key="index">
                     <div class="col-12">
                         <div class="row">
                             <div class="col-12 col-sm-3 col-lg-2">

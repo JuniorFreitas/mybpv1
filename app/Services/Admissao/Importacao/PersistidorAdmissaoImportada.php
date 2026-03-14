@@ -100,15 +100,18 @@ class PersistidorAdmissaoImportada
             $municipioId = $vagaAberta->Municipio->id ?? null;
         }
 
+        $nascimento = $this->normalizarDataParaBanco($item['curriculo']['nascimento'] ?? null);
+        $cnhVencimento = $this->normalizarDataParaBanco($item['curriculo']['cnh_vencimento'] ?? null, true);
+
         $dadosCurriculo = [
             'id' => $usuario->id,
             'cpf' => $item['curriculo']['cpf'],
             'nome' => $item['curriculo']['nome'],
             'estado_civil' => $item['curriculo']['estado_civil'],
             'cnh' => $item['curriculo']['cnh'],
-            'cnh_vencimento' => $item['curriculo']['cnh_vencimento'],
+            'cnh_vencimento' => $cnhVencimento,
             'email' => $item['curriculo']['email'],
-            'nascimento' => $item['curriculo']['nascimento'],
+            'nascimento' => $nascimento,
             'naturalidade' => $item['curriculo']['naturalidade'],
             'logradouro' => $item['curriculo']['endereco']['logradouro'],
             'end_numero' => $item['curriculo']['endereco']['numero'],
@@ -150,11 +153,13 @@ class PersistidorAdmissaoImportada
         );
         $telefone_id = $telefone->id;
 
+        $vagaId = $vagaAberta !== null ? $vagaAberta->vaga_id : null;
+
         $curriculo->FeedBack()->updateOrCreate(
             ['curriculo_id' => $curriculo->id],
             [
                 'selecionado' => 'sim',
-                'vaga_id' => $item['curriculo']['vaga_pretendida'],
+                'vaga_id' => $vagaId,
                 'cliente_id' => $empresa_id,
                 'empresa_id' => $empresa_id,
                 'interesse' => true,
@@ -231,5 +236,41 @@ class PersistidorAdmissaoImportada
                 'titulo_eleitor_zona' => $item['admissao']['titulo_eleitor_zona'] ?? null,
             ]
         );
+    }
+
+    /**
+     * Garante data em Y-m-d para o banco/DataHora. Corrige formato yyyy-d-m (ex.: 1994-29-7).
+     *
+     * @param string|mixed $valor
+     */
+    private function normalizarDataParaBanco($valor, bool $opcional = false): ?string
+    {
+        $v = $valor === null || $valor === '' ? '' : trim((string) $valor);
+        if ($v === '') {
+            return $opcional ? null : '';
+        }
+        if (preg_match('/^(\d{4})\D+(\d{1,2})\D+(\d{1,2})$/', $v, $m)) {
+            $ano = (int) $m[1];
+            $a = (int) $m[2];
+            $b = (int) $m[3];
+            if ($a >= 1 && $a <= 12 && $b >= 1 && $b <= 31 && checkdate($a, $b, $ano)) {
+                return sprintf('%04d-%02d-%02d', $ano, $a, $b);
+            }
+            if ($b >= 1 && $b <= 12 && $a >= 1 && $a <= 31 && checkdate($b, $a, $ano)) {
+                return sprintf('%04d-%02d-%02d', $ano, $b, $a);
+            }
+        }
+        if (preg_match('/^(\d{1,2})\D+(\d{1,2})\D+(\d{4})$/', $v, $m)) {
+            $dia = (int) $m[1];
+            $mes = (int) $m[2];
+            $ano = (int) $m[3];
+            if ($mes >= 1 && $mes <= 12 && $dia >= 1 && $dia <= 31 && checkdate($mes, $dia, $ano)) {
+                return sprintf('%04d-%02d-%02d', $ano, $mes, $dia);
+            }
+        }
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $v)) {
+            return $v;
+        }
+        return $opcional ? null : $v;
     }
 }

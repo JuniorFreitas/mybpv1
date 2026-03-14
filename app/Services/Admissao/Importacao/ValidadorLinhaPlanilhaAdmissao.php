@@ -51,6 +51,7 @@ class ValidadorLinhaPlanilhaAdmissao
         $this->validarDatas($linha, $erros);
         $this->validarListas($linha, $erros);
         $this->validarCondicionais($linha, $erros);
+        $this->validarCentroCustoExistente($linha, $empresaId, $erros);
 
         return $erros;
     }
@@ -228,6 +229,30 @@ class ValidadorLinhaPlanilhaAdmissao
             $erros['encaminhado_treinamento_data'] = [
                 'mensagem' => (string) Lang::get('importacao_admissao.encaminhado_treinamento_data', [], 'pt_BR'),
                 'como_corrigir' => 'Informe a data (dd/mm/aaaa).',
+            ];
+        }
+    }
+
+    /**
+     * Valida se o centro de custo informado existe para a empresa (código ou nome).
+     */
+    private function validarCentroCustoExistente(array $linha, int $empresaId, array &$erros): void
+    {
+        if (isset($erros['centro_custo'])) {
+            return;
+        }
+        $valor = $this->valorString($linha, 'centro_custo');
+        if ($valor === '') {
+            return;
+        }
+
+        $resolvedor = new ResolvedorVagaAreaCentroCusto();
+        $resultado = $resolvedor->resolverCentroCusto($empresaId, $valor);
+
+        if ($resultado['erro'] !== null) {
+            $erros['centro_custo'] = [
+                'mensagem' => $resultado['erro'],
+                'como_corrigir' => 'Use o código ou nome do centro de custo cadastrado na empresa.',
             ];
         }
     }

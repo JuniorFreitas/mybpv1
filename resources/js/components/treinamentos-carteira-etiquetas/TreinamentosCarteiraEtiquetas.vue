@@ -31,9 +31,6 @@
 
 <modal ref="janelaTreinamento" id="janelaTreinamento" titulo="Treinamentos" :size="95">
     <template #conteudo>
-        <div class="alert alert-success text-center" v-show="cadastrado">
-            <h4><i class="icon fa fa-check"></i> Treinamento atualizado com sucesso</h4>
-        </div>
         <p class=" mt-2 text-center" v-if="preload">
             <i class="fa fa-spinner fa-pulse"></i> Aguarde ...
         </p>
@@ -179,29 +176,35 @@
 
             <div class="collapse" :class="{ show: openPanels.includes(index) }">
                 <div class="card-body">
-                    <div class="alert alert-warning p-2" style="font-size: 0.85rem;"
-                        v-show="treinamento.descricao">
-                        <strong>A quem se destina:</strong> {{ treinamento.descricao }}
-                    </div>
+                    <fieldset :disabled="salvandoVencimentoId === treinamento.id">
+                        <div class="alert alert-warning p-2" style="font-size: 0.85rem;"
+                            v-show="treinamento.descricao">
+                            <strong>A quem se destina:</strong> {{ treinamento.descricao }}
+                        </div>
 
-                    <div class="row">
-                        <div class="col-12 col-md-4">
-                            <div class="form-group">
-                                <label>Realizou este treinamento?</label>
-                                <select class="form-control" v-model="treinamento.fez_treinamento">
-                                    <option :value="true">Sim</option>
-                                    <option :value="false">Não</option>
-                                </select>
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <div class="form-group">
+                                    <label>Realizou este treinamento?</label>
+                                    <select class="form-control"
+                                        :key="'fez-'+treinamento.id+'-'+treinamento.fez_treinamento"
+                                        :value="treinamento.fez_treinamento"
+                                        :disabled="(treinamento.fez_treinamento && treinamento._fez_treinamento_ja_salvo && !(privilegio_gestao_rh && treinamento_permitir_desmarcar_realizado)) || salvandoVencimentoId === treinamento.id"
+                                        @change="onFezTreinamentoChange(treinamento, $event.target.value === 'true' || $event.target.value === true)">
+                                        <option :value="true">Sim</option>
+                                        <option :value="false">Não</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="row" v-if="treinamento.fez_treinamento">
+                        <div class="row" v-if="treinamento.fez_treinamento">
                         <!-- Datas de treinamento e vencimento (somente prazo fixo) -->
                         <template v-if="treinamento.prazo_fixo">
                             <div class="col-md-6 mt-2">
                                 <datepicker v-model="treinamento.data_treinamento"
                                     label="Data do treinamento"
+                                    :disabled="salvandoVencimentoId === treinamento.id"
                                     @input="calculoDataExpiracao(treinamento)"
                                     max="{{ (new \MasterTag\DataHora())->dataCompleta() }}"
                                     onblur="valida_data_vazio(this)"></datepicker>
@@ -218,14 +221,18 @@
                             <div class="col-md-6 mt-2">
                                 <datepicker v-model="treinamento.data_treinamento"
                                     label="Data do treinamento"
+                                    :disabled="salvandoVencimentoId === treinamento.id"
                                     max="{{ (new \MasterTag\DataHora())->dataCompleta() }}"
-                                    onblur="valida_data_vazio(this)"></datepicker>
+                                    onblur="valida_data_vazio(this)"
+                                    @input="marcarAlterado(treinamento)"></datepicker>
                             </div>
                             <div class="col-md-6 mt-2">
                                 <datepicker v-model="treinamento.data_vencimento"
                                     label="Data Vencimento"
+                                    :disabled="salvandoVencimentoId === treinamento.id"
                                     min="{{ (new \MasterTag\DataHora())->dataCompleta() }}"
-                                    onblur="valida_data_vazio(this)"></datepicker>
+                                    onblur="valida_data_vazio(this)"
+                                    @input="marcarAlterado(treinamento)"></datepicker>
                             </div>
                         </template>
                     </div>
@@ -236,12 +243,18 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Número da FAT</label>
+                                    <label>Número da FAT <span v-if="treinamento_fat_obrigatorio && treinamento.fez_treinamento" class="text-danger" aria-hidden="true">*</span></label>
                                     <input type="text" class="form-control"
-                                        v-model="treinamento.numero_fat">
+                                        v-model="treinamento.numero_fat"
+                                        :required="treinamento_fat_obrigatorio && treinamento.fez_treinamento"
+                                        :disabled="salvandoVencimentoId === treinamento.id"
+                                        :class="{ 'is-invalid': fatInvalido(treinamento) }"
+                                        @input="marcarAlterado(treinamento)"
+                                        @blur="onBlurFat(treinamento)"
+                                        @keypress="onKeypressFat(treinamento)">
                                 </div>
                             </div>
-                            <div class="col-md-12">
+                            <div class="col-md-12" :style="salvandoVencimentoId === treinamento.id ? { pointerEvents: 'none', opacity: 0.7 } : {}">
                                 <upload :model="treinamento.arquivo"
                                     :model-delete="treinamento.arquivoDel"
                                     :url="url_anexo"
@@ -249,10 +262,25 @@
                                     :multi="false"
                                     label="ANEXAR FAT"
                                     @onProgresso="anexoUploadAndamento=true"
-                                    @onFinalizado="anexoUploadAndamento=false"></upload>
+                                    @onFinalizado="onUploadFinalizado(treinamento)"></upload>
                             </div>
                         </div>
                     </fieldset>
+
+                    </fieldset>
+
+                    <div class="mt-3 pt-2 border-top" v-show="(treinamento._alterado === true) && !(treinamentoMotivoDesmarcar && treinamentoMotivoDesmarcar.id === treinamento.id)">
+                        <p class="text-muted small mb-2" v-if="salvandoVencimentoId === treinamento.id">
+                            <i class="fa fa-spinner fa-pulse mr-1"></i>
+                            Atualizando...
+                        </p>
+                        <button type="button" class="btn btn-sm btn-primary" @click="salvar(treinamento)"
+                            :disabled="salvandoVencimentoId === treinamento.id || anexoUploadAndamento || cadastrado || atualizado">
+                            <i class="fa fa-spinner fa-pulse" v-if="salvandoVencimentoId === treinamento.id"></i>
+                            <i class="fa fa-save" v-else></i>
+                            Salvar este treinamento
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -267,12 +295,36 @@
     </div>
     </template>
     <template #rodape>
-        <button type="button" class="btn btn-sm mr-1 btn-primary" @click="salvar"
-            v-if="!preload && (!cadastrado && !atualizado)">
-            <i class="fa fa-save"></i> Salvar
-        </button>
+        <!-- Botão de salvar foi movido para cada treinamento (salvar individual no card) -->
     </template>
 </modal>
+
+<modal-auditoria-termo-responsabilidade
+    ref="modalAuditoriaDesmarcar"
+    id="modalMotivoDesmarcar"
+    ref-name="modalMotivoDesmarcar"
+    titulo="Motivo da retirada do treinamento"
+    :texto-termo="textoTermoResponsabilidadeDesmarcar"
+    label-motivo="Motivo"
+    placeholder-motivo="Ex.: Registro feito por engano; treinamento não aplicável."
+    label-botao-confirmar="Confirmar e desmarcar"
+    :loading="desmarcarPreload"
+    @confirmar="onConfirmarAuditoriaDesmarcar"
+    @fechou="onModalMotivoDesmarcarFechou">
+    <template #conteudo-antecipado>
+        <p class="mb-2" v-if="treinamentoMotivoDesmarcar && (form.dadosFuncionario.nome || form.dadosFuncionario.cargo)">
+            <span v-if="form.dadosFuncionario.nome">Colaborador: <strong>{{ form.dadosFuncionario.nome }}</strong></span><span v-if="form.dadosFuncionario.nome && form.dadosFuncionario.cargo"> — </span><span v-if="form.dadosFuncionario.cargo">Cargo: <strong>{{ form.dadosFuncionario.cargo }}</strong></span>
+        </p>
+    </template>
+    <template #intro>
+        <span v-if="treinamentoMotivoDesmarcar">Informe o motivo para alterar <strong>{{ treinamentoMotivoDesmarcar.label }}</strong> de "Realizado" para "Não realizado".</span>
+    </template>
+    <template #conteudo-pos-termo>
+        <p class="text-muted small mb-0 mt-2" v-if="treinamentoMotivoDesmarcar">
+            O treinamento será desmarcado individualmente e a ação será registrada em auditoria.
+        </p>
+    </template>
+</modal-auditoria-termo-responsabilidade>
 
 <modal ref="janelaTreinamentoMassa" id="janelaTreinamentoMassa" titulo="Treinamentos" :size="95">
     <template #conteudo>
@@ -301,7 +353,8 @@
                                 <div class="col-12 col-md-6">
                                     <div class="form-group">
                                         <label for="">Realizou este treinamento?</label>
-                                        <select class="form-control" v-model="treinamento.fez_treinamento">
+                                        <select class="form-control" v-model="treinamento.fez_treinamento"
+                                            :disabled="treinamento.fez_treinamento && treinamento._fez_treinamento_ja_salvo && !(privilegio_gestao_rh && treinamento_permitir_desmarcar_realizado)">
                                             <option :value="true">Sim</option>
                                             <option :value="false">Não</option>
                                         </select>
@@ -321,8 +374,12 @@
                                         </template>
                                     </div>
                                     <div class="form-group">
-                                        <label for="">Numero da FAT</label>
-                                        <input type="text" class="form-control" v-model="treinamento.numero_fat">
+                                        <label for="">Numero da FAT <span v-if="treinamento_fat_obrigatorio && treinamento.fez_treinamento" class="text-danger" aria-hidden="true">*</span></label>
+                                        <input type="text" class="form-control" v-model="treinamento.numero_fat"
+                                            :required="treinamento_fat_obrigatorio && treinamento.fez_treinamento"
+                                            :class="{ 'is-invalid': fatInvalido(treinamento) }"
+                                            @blur="onBlurFat(treinamento)"
+                                            @keypress="onKeypressFat(treinamento)">
                                     </div>
                                 </div>
                             </div>
@@ -1160,6 +1217,7 @@ import ExportacaoMixin from '../../mixins/Exportacoes'
 import Upload from '../Upload.vue'
 import DateRangeFilter from '../DateRangeFilter.vue'
 import Modal from '../Modal.vue'
+import ModalAuditoriaTermoResponsabilidade from '../ModalAuditoriaTermoResponsabilidade.vue'
 import ControlePaginacao from '../ControlePaginacao.vue'
 
 export default defineComponent({
@@ -1170,6 +1228,7 @@ export default defineComponent({
         Upload,
         DateRangeFilter,
         Modal,
+        ModalAuditoriaTermoResponsabilidade,
         ControlePaginacao
     },
     data() {
@@ -1344,7 +1403,17 @@ export default defineComponent({
             },
 
             url_anexo: `${URL_ADMIN}/${API_PATHS.uploadAnexos}`,
-            anexoUploadAndamento: false
+            anexoUploadAndamento: false,
+
+            privilegio_gestao_rh: false,
+            treinamento_permitir_desmarcar_realizado: false,
+            treinamento_fat_obrigatorio: false,
+
+            showModalMotivoDesmarcar: false,
+            treinamentoMotivoDesmarcar: null,
+            desmarcarPreload: false,
+
+            salvandoVencimentoId: null
         }
     },
     mounted() {
@@ -1389,6 +1458,24 @@ export default defineComponent({
                 }
                 return this.listaColunasTreinamentos.some((col) => col.id === treinamento.id && col.checked)
             }
+        },
+        textoTermoResponsabilidadeDesmarcar() {
+            const nomeColaborador = this.form.dadosFuncionario && this.form.dadosFuncionario.nome ? this.form.dadosFuncionario.nome : ''
+            const nomeUsuario = this.AUTENTICADO && this.AUTENTICADO.nome ? this.AUTENTICADO.nome : ''
+            const labelTreinamento = this.treinamentoMotivoDesmarcar && this.treinamentoMotivoDesmarcar.label ? this.treinamentoMotivoDesmarcar.label : ''
+            return `<p>
+                Ao clicar em "Confirmar e desmarcar" e retirar o treinamento <strong>${labelTreinamento}</strong> marcado como realizado do colaborador <strong>${nomeColaborador}</strong>, eu, <strong>${nomeUsuario}</strong>, reconheço e aceito que estou assumindo a responsabilidade por esta ação.
+                <br><br>
+                Além disso, declaro que:
+                <br><br>
+                Estou ciente de que a retirada do treinamento realizado implica em uma alteração registrada em auditoria no sistema.
+                <br><br>
+                Confirmo que revisei cuidadosamente as informações e que o motivo informado é válido e justificável.
+                <br><br>
+                Aceito total responsabilidade por quaisquer consequências decorrentes da retirada do treinamento realizado.
+                <br><br>
+                Assumo que, ao clicar em "Confirmar e desmarcar" no sistema MyBP, estou ciente e concordo com as disposições deste termo de responsabilidade.
+            </p>`
         },
         emTreinamentos() {
             return this.lista.filter((item) => item.treinamento)
@@ -1542,13 +1629,122 @@ export default defineComponent({
                     feedback_id: this.form.feedback_id,
                     segmento_treinamento_id: this.form.segmento_treinamento_id
                 })
-                this.form.listaVencimentos = response.data.listaVencimentos || []
+                this.form.listaVencimentos = (response.data.listaVencimentos || []).map((t) => ({
+                    ...t,
+                    _fez_treinamento_ja_salvo: !!t.fez_treinamento,
+                    _alterado: false,
+                    _fatTouched: false
+                }))
+                if (response.data.privilegio_gestao_rh !== undefined) this.privilegio_gestao_rh = response.data.privilegio_gestao_rh
+                if (response.data.treinamento_permitir_desmarcar_realizado !== undefined) this.treinamento_permitir_desmarcar_realizado = response.data.treinamento_permitir_desmarcar_realizado
+                if (response.data.treinamento_retirar_treinamento_realizado !== undefined) this.treinamento_retirar_treinamento_realizado = response.data.treinamento_retirar_treinamento_realizado
+                if (response.data.treinamento_fat_obrigatorio !== undefined) this.treinamento_fat_obrigatorio = response.data.treinamento_fat_obrigatorio
                 this.openPanels = []
                 this.expandAll = false
             } catch {
                 // mantém preload = false no finally
             } finally {
                 this.preload = false
+            }
+        },
+        marcarAlterado(treinamento) {
+            if (treinamento) treinamento._alterado = true
+        },
+        /** Exibe is-invalid no campo FAT quando obrigatório, vazio e o campo foi tocado (blur/keypress) ou falhou na validação ao salvar */
+        fatInvalido(treinamento) {
+            if (!this.treinamento_fat_obrigatorio || !treinamento.fez_treinamento) return false
+            const vazio = !(treinamento.numero_fat || '').toString().trim()
+            return vazio && (treinamento._fatTouched === true)
+        },
+        onBlurFat(treinamento) {
+            if (treinamento) treinamento._fatTouched = true
+        },
+        onKeypressFat(treinamento) {
+            if (treinamento) treinamento._fatTouched = true
+        },
+        onUploadFinalizado(treinamento) {
+            this.anexoUploadAndamento = false
+            this.marcarAlterado(treinamento)
+        },
+        onFezTreinamentoChange(treinamento, newValue) {
+            const valorBoolean = newValue === true || newValue === 'true'
+            const precisaModal = !valorBoolean && treinamento._fez_treinamento_ja_salvo && (this.privilegio_gestao_rh || this.treinamento_retirar_treinamento_realizado) && this.treinamento_permitir_desmarcar_realizado
+            if (precisaModal) {
+                treinamento.fez_treinamento = false
+                treinamento._alterado = true
+                this.treinamentoMotivoDesmarcar = treinamento
+                this.showModalMotivoDesmarcar = true
+                this.$nextTick(() => {
+                    if (this.$refs.modalAuditoriaDesmarcar && typeof this.$refs.modalAuditoriaDesmarcar.abrir === 'function') {
+                        this.$refs.modalAuditoriaDesmarcar.abrir()
+                    }
+                })
+            } else {
+                treinamento.fez_treinamento = valorBoolean
+                treinamento._alterado = true
+            }
+        },
+        /** Chamado pelo botão Cancelar: restaura estado e fecha a modal. */
+        fecharModalMotivoDesmarcar() {
+            this.limparEstadoModalMotivoDesmarcar()
+            if (this.$refs.modalAuditoriaDesmarcar && typeof this.$refs.modalAuditoriaDesmarcar.fechar === 'function') {
+                this.$refs.modalAuditoriaDesmarcar.fechar()
+            }
+        },
+        /** Apenas restaura estado e limpa refs; não chama fecharModal (evita loop com @fechou). */
+        limparEstadoModalMotivoDesmarcar() {
+            const id = this.treinamentoMotivoDesmarcar && this.treinamentoMotivoDesmarcar.id
+            this.showModalMotivoDesmarcar = false
+            this.treinamentoMotivoDesmarcar = null
+            this.desmarcarPreload = false
+            if (id && this.form.listaVencimentos) {
+                const item = this.form.listaVencimentos.find((t) => t.id === id)
+                if (item) {
+                    item.fez_treinamento = true
+                    item._alterado = false
+                }
+            }
+        },
+        /** Handler do @fechou da modal (X ou backdrop): só limpa estado, não chama fecharModal. */
+        onModalMotivoDesmarcarFechou() {
+            this.limparEstadoModalMotivoDesmarcar()
+        },
+        /** Handler do @confirmar do componente de auditoria: desmarca o treinamento com o motivo informado. */
+        async onConfirmarAuditoriaDesmarcar({ motivo }) {
+            if (!this.treinamentoMotivoDesmarcar || !(motivo || '').trim()) return
+            const feedbackId = this.form.feedback_id
+            const vencimentoId = this.treinamentoMotivoDesmarcar.id
+            this.desmarcarPreload = true
+            try {
+                const response = await axios.post(`${URL_ADMIN}/${API_PATHS.desmarcarTreinamentoRealizado}`, {
+                    feedback_id: feedbackId,
+                    vencimento_id: vencimentoId,
+                    motivo: motivo.trim()
+                })
+                if (response.status === 200) {
+                    const t = this.treinamentoMotivoDesmarcar
+                    t.fez_treinamento = false
+                    t.data_treinamento = null
+                    t.data_vencimento = null
+                    t.numero_fat = null
+                    t.arquivo = []
+                    t.arquivoDel = []
+                    t._fez_treinamento_ja_salvo = false
+                    t._alterado = false
+                    this.showModalMotivoDesmarcar = false
+                    this.treinamentoMotivoDesmarcar = null
+                    this.desmarcarPreload = false
+                    if (this.$refs.modalAuditoriaDesmarcar && typeof this.$refs.modalAuditoriaDesmarcar.fechar === 'function') {
+                        this.$refs.modalAuditoriaDesmarcar.fechar()
+                    }
+                    mostraSucesso('', response.data.msg || 'Treinamento desmarcado com sucesso.')
+                    await this.atualizar()
+                }
+            } catch (err) {
+                const msg = err.response && err.response.data && err.response.data.msg ? err.response.data.msg : 'Erro ao desmarcar treinamento.'
+                mostraErro('', msg)
+            } finally {
+                this.desmarcarPreload = false
             }
         },
         marcarDesmarcarTodosTreinamentosColuna(valor) {
@@ -1703,11 +1899,20 @@ export default defineComponent({
 
                 this.form.dadosFuncionario = data.dadosFuncionario || {}
                 this.form.segmento_treinamento_id = data.segmento_treinamento_id ?? null
+                this.privilegio_gestao_rh = data.privilegio_gestao_rh ?? false
+                this.treinamento_permitir_desmarcar_realizado = data.treinamento_permitir_desmarcar_realizado ?? false
+                this.treinamento_retirar_treinamento_realizado = data.treinamento_retirar_treinamento_realizado ?? false
+                this.treinamento_fat_obrigatorio = data.treinamento_fat_obrigatorio ?? false
 
                 if (treinamento) {
                     this.editando = true
                     Object.assign(this.form, treinamento)
-                    this.form.listaVencimentos = data.listaVencimentos || []
+                    this.form.listaVencimentos = (data.listaVencimentos || []).map((t) => ({
+                        ...t,
+                        _fez_treinamento_ja_salvo: !!t.fez_treinamento,
+                        _alterado: false,
+                        _fatTouched: false
+                    }))
                     this.form.nr_trinta_tres = data.nr_trinta_tres
                     this.form.nr_trinta_cinco = data.nr_trinta_cinco
                     this.form.nome = curriculo?.nome ?? ''
@@ -1726,7 +1931,12 @@ export default defineComponent({
                     this.form.exame.feedback_id = feedback.id
                 }
 
-                this.form.listaVencimentos = data.listaVencimentos || []
+                this.form.listaVencimentos = (data.listaVencimentos || []).map((t) => ({
+                    ...t,
+                    _fez_treinamento_ja_salvo: !!t.fez_treinamento,
+                    _alterado: false,
+                    _fatTouched: false
+                }))
 
                 if (!this.form.nr_trinta_tres && this.form.listaVencimentos?.length) {
                     const index = _.findIndex(this.form.listaVencimentos, { id: 7 })
@@ -1744,7 +1954,7 @@ export default defineComponent({
             }
         },
 
-        async salvar() {
+        async salvar(treinamento) {
             formReset()
             const el = document.getElementById('janelaTreinamento')
             if (el) {
@@ -1771,22 +1981,75 @@ export default defineComponent({
                 }
             }
 
+            const vencimentoId = treinamento ? treinamento.id : null
+            // Validação FAT obrigatório: bloqueio no frontend antes de enviar (config ativa)
+            if (this.treinamento_fat_obrigatorio) {
+                if (vencimentoId) {
+                    const item = this.form.listaVencimentos?.find((t) => t.id === vencimentoId)
+                    if (item && item.fez_treinamento && !(item.numero_fat || '').toString().trim()) {
+                        item._fatTouched = true
+                        if (typeof toastr !== 'undefined') toastr.error('Número FAT é obrigatório para este cliente em treinamentos realizados.')
+                        else mostraErro('', 'Número FAT é obrigatório para este cliente em treinamentos realizados.')
+                        return false
+                    }
+                } else {
+                    const semFat = (this.form.listaVencimentos || []).filter(
+                        (t) => t.fez_treinamento && !(t.numero_fat || '').toString().trim()
+                    )
+                    if (semFat.length > 0) {
+                        semFat.forEach((t) => { t._fatTouched = true })
+                        if (typeof toastr !== 'undefined') toastr.error('Número FAT é obrigatório para este cliente em treinamentos realizados.')
+                        else mostraErro('', 'Número FAT é obrigatório para este cliente em treinamentos realizados.')
+                        return false
+                    }
+                }
+            }
+
             const janela = document.getElementById('janelaTreinamento')
             if (janela && janela.querySelectorAll('input.is-invalid, select.is-invalid, textarea.is-invalid, button.is-invalid').length) {
                 mostraErro('', 'Verifique os erros')
                 return false
             }
-
-            this.preload = true
+            if (vencimentoId) {
+                this.salvandoVencimentoId = vencimentoId
+            } else {
+                this.preload = true
+            }
             try {
-                const response = await axios.post(`${URL_ADMIN}/${API_PATHS.store}`, this.form)
-                if (response.status === 201) {
-                    this.cadastrado = true
-                    this.atualizar()
+                let response
+                if (vencimentoId) {
+                    const item = this.form.listaVencimentos?.find((t) => t.id === vencimentoId)
+                    if (!item) {
+                        if (typeof toastr !== 'undefined') toastr.error('Vencimento não encontrado na lista.')
+                        return
+                    }
+                    response = await axios.post(`${URL_ADMIN}/${API_PATHS.atualizarVencimento}`, {
+                        feedback_id: this.form.feedback_id,
+                        vencimento: item
+                    })
+                } else {
+                    response = await axios.post(`${URL_ADMIN}/${API_PATHS.store}`, this.form)
                 }
-            } catch {
-                // mantém preload = false no finally
+                if (response.status === 201) {
+                    if (vencimentoId && this.form.listaVencimentos) {
+                        const item = this.form.listaVencimentos.find((t) => t.id === vencimentoId)
+                        if (item) item._alterado = false
+                    }
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success('Treinamento atualizado com sucesso.')
+                    } else {
+                        mostraSucesso('', 'Treinamento atualizado com sucesso.')
+                    }
+                    this.atualizar()
+                    // Salvar individual: mantém o formulário visível; só seta cadastrado se não veio de um card
+                    if (!vencimentoId) {
+                        this.cadastrado = true
+                    }
+                }
+            } catch (err) {
+                // Erro já exibido pelo interceptor do axios (bootstrap.js)
             } finally {
+                this.salvandoVencimentoId = null
                 this.preload = false
             }
         },
@@ -1955,7 +2218,10 @@ export default defineComponent({
             this.lista = dados.itens
             this.listaTodosTreinamentos = dados.vencimentos
             this.selecionaTudo = this.tudoMarcado
-            this.formMassa.listaVencimentos = dados.vencimentos
+            this.formMassa.listaVencimentos = (dados.vencimentos || []).map((t) => ({
+                ...t,
+                _fez_treinamento_ja_salvo: !!t.fez_treinamento
+            }))
             this.lista_ccs = dados.cc
             if (!this.AUTENTICADO.temFilial) {
                 this.controle.dados.campoCnpj = Object.keys(dados.cc.cnpjs)[0]
@@ -2062,6 +2328,7 @@ export default defineComponent({
         },
 
         calculoDataExpiracao(treinamento) {
+            if (treinamento) treinamento._alterado = true
             if (!treinamento.data_treinamento) return
 
             const dateParts = treinamento.data_treinamento.split('/')

@@ -952,12 +952,13 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
 
         //Rotas Medidas Administrativas
         Route::group(['as' => 'medidas-administrativas.', 'prefix' => 'medidas-administrativas'], function () {
-            Route::get('/anexo/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'anexoShow'])->name('anexo-show');
-            Route::get('/anexoDownload/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'download'])->name('anexo-download');
-            Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'anexoDelete'])->name('anexo-delete');
-            Route::post('/uploadAnexos', [\App\Http\Controllers\HistoricoController::class, 'uploadAnexos'])->name('.upload-anexos');
-            Route::get('/{medida}/{feedback_id}/pdf', [\App\Http\Controllers\HistoricoController::class, 'medidasAdministrativasPDF'])->name('pdfMedidasAdministrativas');
-            Route::post('/enviar-para-assinatura', [\App\Http\Controllers\HistoricoController::class, 'enviarMedidaParaAssinatura'])->name('enviarParaAssinatura')->middleware('assinatura.digital.habilitada');
+            Route::get('/anexo/{arquivo}', [\App\Http\Controllers\MedidasAdministrativasController::class, 'anexoShow'])->name('anexo-show');
+            Route::get('/anexoDownload/{arquivo}', [\App\Http\Controllers\MedidasAdministrativasController::class, 'download'])->name('anexo-download');
+            Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\MedidasAdministrativasController::class, 'anexoDelete'])->name('anexo-delete');
+            Route::post('/uploadAnexos', [\App\Http\Controllers\MedidasAdministrativasController::class, 'uploadAnexos'])->name('upload-anexos');
+            Route::put('/remover-medida-administrativa', [\App\Http\Controllers\MedidasAdministrativasController::class, 'removerMedidaAdministrativa'])->name('remover-medida-administrativa');
+            Route::get('/{medida}/{feedback_id}/pdf', [\App\Http\Controllers\MedidasAdministrativasController::class, 'medidasAdministrativasPDF'])->name('pdfMedidasAdministrativas');
+            Route::post('/enviar-para-assinatura', [\App\Http\Controllers\MedidasAdministrativasController::class, 'enviarMedidaParaAssinatura'])->name('enviarParaAssinatura')->middleware('assinatura.digital.habilitada');
         });
 
         //Rotas Afastamento Historico
@@ -1079,6 +1080,8 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::post('treinamento/proximovencimento', [\App\Http\Controllers\TreinamentoController::class, 'treinamentoProximoVencimento'])->name('vencimentoTreinamento');
         Route::get('treinamento/proximovencimento', [\App\Http\Controllers\TreinamentoController::class, 'treinamentoProximoVencimento'])->name('vencimentoTreinamento');
         Route::post('treinamento/salvar-massa', [\App\Http\Controllers\TreinamentoController::class, 'storeMassa'])->name('storeMassa');
+        Route::post('treinamento/desmarcar-treinamento-realizado', [\App\Http\Controllers\TreinamentoController::class, 'desmarcarTreinamentoRealizado'])->name('desmarcar-treinamento-realizado');
+        Route::post('treinamento/atualizar-vencimento', [\App\Http\Controllers\TreinamentoController::class, 'atualizarVencimento'])->name('atualizar-vencimento');
 
         Route::resource('treinamento', \App\Http\Controllers\TreinamentoController::class)->middleware('can:treinamento_carteira-etiquetas');
     });
