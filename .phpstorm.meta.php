@@ -4686,7 +4686,7 @@ namespace PHPSTORM_META {
 'g.posadmissao.','g.posadmissao.posadmissao.index','g.posadmissao.posadmissao.create','g.posadmissao.posadmissao.store','g.posadmissao.posadmissao.show',
 'g.posadmissao.posadmissao.edit','g.posadmissao.posadmissao.update','g.posadmissao.posadmissao.destroy','g.historico.atualizar','g.historico.show',
 'g.historico.storeMedidas','g.historico.updateMedidas','g.historico.index','g.historico.medidas-administrativas.anexo-show','g.historico.medidas-administrativas.anexo-download',
-'g.historico.medidas-administrativas.anexo-delete','g.historico.medidas-administrativas..upload-anexos','g.historico.medidas-administrativas.pdfMedidasAdministrativas','g.historico.medidas-administrativas.enviarParaAssinatura','g.historico.afastamento-historico.anexo-show',
+'g.historico.medidas-administrativas.anexo-delete','g.historico.medidas-administrativas.upload-anexos','g.historico.medidas-administrativas.pdfMedidasAdministrativas','g.historico.medidas-administrativas.enviarParaAssinatura','g.historico.afastamento-historico.anexo-show',
 'g.historico.afastamento-historico.anexo-download','g.historico.afastamento-historico.anexo-delete','g.historico.afastamento-historico..upload-anexos','g.historico.afastamento-historico.store-afastamento','g.historico.afastamento-historico.show-afastamento',
 'g.historico.afastamento-historico.store-afastamento','g.historico.afastamento-historico.update-afastamento','g.historico.avaliacao-experiencia.gerar-link','g.historico.formulario-noventa-dias.storeNoventaDias','g.historico.formulario-noventa-dias.formularioNoventaDiasPDF',
 'g.historico.dossie.upload-anexos','g.historico.dossie.anexo-show','g.historico.dossie.anexo-download','g.historico.dossie.anexo-delete','g.historico.dossie.enviarParaAssinatura',

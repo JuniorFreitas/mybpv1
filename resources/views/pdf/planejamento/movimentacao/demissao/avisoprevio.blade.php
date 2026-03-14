@@ -52,7 +52,7 @@
         {{$demissaoPrevista->Colaborador->nome}}
     </div>
 
-@include('layouts.rodapePdf')
+    @include('layouts.rodapePdf')
 @endsection
 
 @push('style')

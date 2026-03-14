@@ -952,13 +952,13 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
 
         //Rotas Medidas Administrativas
         Route::group(['as' => 'medidas-administrativas.', 'prefix' => 'medidas-administrativas'], function () {
-            Route::get('/anexo/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'anexoShow'])->name('anexo-show');
-            Route::get('/anexoDownload/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'download'])->name('anexo-download');
-            Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\HistoricoController::class, 'anexoDelete'])->name('anexo-delete');
-            Route::post('/uploadAnexos', [\App\Http\Controllers\HistoricoController::class, 'uploadAnexos'])->name('.upload-anexos');
-            Route::put('/remover-medida-administrativa', [\App\Http\Controllers\HistoricoController::class, 'removerMedidaAdministrativa'])->name('remover-medida-administrativa');
-            Route::get('/{medida}/{feedback_id}/pdf', [\App\Http\Controllers\HistoricoController::class, 'medidasAdministrativasPDF'])->name('pdfMedidasAdministrativas');
-            Route::post('/enviar-para-assinatura', [\App\Http\Controllers\HistoricoController::class, 'enviarMedidaParaAssinatura'])->name('enviarParaAssinatura')->middleware('assinatura.digital.habilitada');
+            Route::get('/anexo/{arquivo}', [\App\Http\Controllers\MedidasAdministrativasController::class, 'anexoShow'])->name('anexo-show');
+            Route::get('/anexoDownload/{arquivo}', [\App\Http\Controllers\MedidasAdministrativasController::class, 'download'])->name('anexo-download');
+            Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\MedidasAdministrativasController::class, 'anexoDelete'])->name('anexo-delete');
+            Route::post('/uploadAnexos', [\App\Http\Controllers\MedidasAdministrativasController::class, 'uploadAnexos'])->name('upload-anexos');
+            Route::put('/remover-medida-administrativa', [\App\Http\Controllers\MedidasAdministrativasController::class, 'removerMedidaAdministrativa'])->name('remover-medida-administrativa');
+            Route::get('/{medida}/{feedback_id}/pdf', [\App\Http\Controllers\MedidasAdministrativasController::class, 'medidasAdministrativasPDF'])->name('pdfMedidasAdministrativas');
+            Route::post('/enviar-para-assinatura', [\App\Http\Controllers\MedidasAdministrativasController::class, 'enviarMedidaParaAssinatura'])->name('enviarParaAssinatura')->middleware('assinatura.digital.habilitada');
         });
 
         //Rotas Afastamento Historico
