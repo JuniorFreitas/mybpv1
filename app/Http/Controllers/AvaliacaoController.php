@@ -299,12 +299,12 @@ class AvaliacaoController extends Controller
             $item->pendente_avaliacao_par = $totalAvaliacaoPar != $totalAvaliacaoParConcluida;
             $item->pendente_avaliacao_gestor = $item->total_avaliacoes - $item->total_avaliacoes_concluidas;
             $item->token = \Crypt::encrypt($item->id);
-            $item->titulo_avaliacao = $item->Avaliacao->titulo;
-            $item->tipo_avaliacao = $item->Avaliacao->AvaliacaoTipo->nome;
+            $item->titulo_avaliacao = $item->Avaliacao?->titulo ?? 'Não informado';
+            $item->tipo_avaliacao = $item->Avaliacao?->AvaliacaoTipo?->nome ?? 'Não informado';
 
             $item->fluxo = Avaliacao::fluxoAvaliacao($item->avaliacao_id);
 
-            if (!$item->Avaliacao->auto_avaliacao) {
+            if ($item->Avaliacao && !$item->Avaliacao->auto_avaliacao) {
                 $item->total_avaliacoes = $avaliacaoFeedbackFunc->count();
                 $item->pendente_avaliacao_gestor = $item->total_avaliacoes - $item->total_avaliacoes_concluidas;
                 $item->fazer_avaliacao_final = $item->principal && $item->total_avaliacoes_concluidas === $item->total_avaliacoes && $item->status != 'Finalizada';
@@ -412,15 +412,19 @@ class AvaliacaoController extends Controller
 //                $query->where("status", $request->status);
 //            }
 
-            if (!$Avaliacao->auto_avaliacao) {
+            if ($Avaliacao && !$Avaliacao->auto_avaliacao) {
                 $resultado->where('principal', true);
             }
             $resultado->where('avaliacao_id', $request->campoAvaliacao);
         } else {
-            if (!$Avaliacao->auto_avaliacao) {
-                $resultado->where('principal', true);
+            if ($Avaliacao) {
+                if (!$Avaliacao->auto_avaliacao) {
+                    $resultado->where('principal', true);
+                }
+                $resultado->where('avaliacao_id', $Avaliacao->id);
+            } else {
+                $resultado->whereRaw('1 = 0');
             }
-            $resultado->where('avaliacao_id', $Avaliacao->id);
         }
 
         return $resultado;

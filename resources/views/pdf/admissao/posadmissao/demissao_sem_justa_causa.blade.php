@@ -51,8 +51,7 @@
         {{$dados->Feedback->Curriculo->nome}}
     </div>
 
-
-@include('layouts.footerDemissao')
+@include('layouts.rodapePdf')
 @endsection
 
 @push('style')

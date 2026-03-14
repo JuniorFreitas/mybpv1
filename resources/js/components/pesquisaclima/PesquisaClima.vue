@@ -8,7 +8,7 @@
                 </h6>
             </div>
 
-            <fieldset v-for="(item, index) in form" :key="item.id || index">
+            <fieldset v-for="(item, index) in form" :key="index">
                 <legend>Pergunta {{ parseInt(index) + 1 }}</legend>
                 <div class="form-group" v-if="item.id !== 43">
                     <label>{{ item.pergunta }}</label>

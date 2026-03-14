@@ -227,6 +227,12 @@ class ClientesController extends Controller
                         'cliente_id' => $cliente->id,
                         'supervisor_etiqueta_bloqueio' => $dados['cliente_config']['supervisor_etiqueta_bloqueio'],
                     ];
+                    if (Schema::hasColumn('cliente_configs', 'treinamento_permitir_desmarcar_realizado')) {
+                        $dadosClienteConfig['treinamento_permitir_desmarcar_realizado'] = filter_var($dados['cliente_config']['treinamento_permitir_desmarcar_realizado'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                    }
+                    if (Schema::hasColumn('cliente_configs', 'configuracoes')) {
+                        $dadosClienteConfig['configuracoes'] = $this->normalizarConfiguracoes($dados['cliente_config']['configuracoes'] ?? []);
+                    }
                     $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigAssinatura($dados['cliente_config']));
                     ClienteConfig::create($dadosClienteConfig);
 
@@ -595,6 +601,15 @@ class ClientesController extends Controller
                     'schedule_avaliacao_experiencia' => $dados['cliente_config']['schedule_avaliacao_experiencia'] ?? true,
                     'schedule_treinamento_vencimento' => $dados['cliente_config']['schedule_treinamento_vencimento'] ?? true,
                 ];
+                if (Schema::hasColumn('cliente_configs', 'treinamento_permitir_desmarcar_realizado')) {
+                    $dadosClienteConfig['treinamento_permitir_desmarcar_realizado'] = filter_var($dados['cliente_config']['treinamento_permitir_desmarcar_realizado'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                }
+                if (Schema::hasColumn('cliente_configs', 'configuracoes')) {
+                    $existentes = is_array($config->configuracoes) ? $config->configuracoes : [];
+                    $dadosClienteConfig['configuracoes'] = $this->normalizarConfiguracoes(
+                        array_merge($existentes, $dados['cliente_config']['configuracoes'] ?? [])
+                    );
+                }
                 $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigAssinatura($dados['cliente_config']));
                 $config->update($dadosClienteConfig);
             } else {
@@ -608,6 +623,12 @@ class ClientesController extends Controller
                     'schedule_treinamento_vencimento' => $dados['cliente_config']['schedule_treinamento_vencimento'] ?? true,
                     'cliente_id' => $cliente->id
                 ];
+                if (Schema::hasColumn('cliente_configs', 'treinamento_permitir_desmarcar_realizado')) {
+                    $dadosClienteConfig['treinamento_permitir_desmarcar_realizado'] = filter_var($dados['cliente_config']['treinamento_permitir_desmarcar_realizado'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                }
+                if (Schema::hasColumn('cliente_configs', 'configuracoes')) {
+                    $dadosClienteConfig['configuracoes'] = $this->normalizarConfiguracoes($dados['cliente_config']['configuracoes'] ?? []);
+                }
                 $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigAssinatura($dados['cliente_config']));
                 ClienteConfig::create($dadosClienteConfig);
             }
@@ -679,6 +700,16 @@ class ClientesController extends Controller
             ->filter(fn ($v) => $v > 0)
             ->values()
             ->all();
+    }
+
+    /**
+     * Normaliza o array de configuracoes (JSON) para persistência.
+     * Garante chaves conhecidas com tipo correto; preserva demais chaves.
+     */
+    private function normalizarConfiguracoes(array $config): array
+    {
+        $config['treinamento_fat_obrigatorio'] = filter_var($config['treinamento_fat_obrigatorio'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        return $config;
     }
 
     private function dadosConfigAssinatura(array $dadosConfig): array

@@ -30,9 +30,10 @@
 
                 @if($comErro)
                     <p style="margin: 15px 0;">Verifique o relatório em anexo (arquivo CSV) para ver os detalhes dos erros por linha e como corrigir.</p>
+                    <p style="margin: 15px 0;">O arquivo <strong>relatorio_importacao_admissoes.csv</strong> está anexado a este e-mail com o detalhamento (linha, campo, mensagem, como corrigir).</p>
+                @else
+                    <p style="margin: 15px 0;">Todas as <strong>{{ $totalSucesso }}</strong> linha(s) foram importadas com sucesso.</p>
                 @endif
-
-                <p style="margin: 15px 0;">O arquivo <strong>relatorio_importacao_admissoes.csv</strong> está anexado a este e-mail com o detalhamento (linha, campo, mensagem, como corrigir).</p>
 
                 <br><br>
             </td>

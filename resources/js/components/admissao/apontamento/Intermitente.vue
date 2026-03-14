@@ -1,47 +1,5 @@
 <template>
     <div>
-        <!--        <modal id="janelaRelatorio" :titulo="tituloJanela" :fechar="!preloadAjax" size="g" ref="modal_janelaRelatorio">-->
-        <!--            <template slot="conteudo">-->
-        <!--                <fieldset v-if="cliente_id == 1">-->
-        <!--                    <legend>Selecione o Cliente</legend>-->
-        <!--                    <div class="form-group">-->
-        <!--                        <select class="form-control" v-model="cliente_relatorio" onblur="valida_campo_vazio(this,1)"-->
-        <!--                                onchange="valida_campo_vazio(this,1)">-->
-        <!--                            <option value="">Selecione</option>-->
-        <!--                            <option v-for="(item, index) in listaClientes" :value="item.id">{{ item.razao_social }}</option>-->
-        :key="item.id || index"
-        <!--                        </select>-->
-        <!--                    </div>-->
-        <!--                </fieldset>-->
-
-        <!--                <fieldset>-->
-        <!--                    <legend>Escolha o período</legend>-->
-        <!--                    <div class="form-group">-->
-        <!--                        <date-picker label="Período" v-model="datarelatorio" :id="`data_relatorio_${hash}`"-->
-        <!--                                     :range="true"></date-picker>-->
-        <!--                    </div>-->
-        <!--                </fieldset>-->
-
-        <!--            </template>-->
-        <!--            <template slot="rodape">-->
-        <!--                <form method="post" target="_blank" v-show="tipoRelatorio === 'pdf'"-->
-        <!--                      action="{{ route('g.admissao.intermitente.relatorioPdf') }}">-->
-        <!--                    @csrf-->
-        <!--                    <input type="hidden" name="cliente_relatorio" :value="cliente_relatorio">-->
-        <!--                    <input type="hidden" name="intervalo" :value="datarelatorio">-->
-        <!--                    <button class="btn btn-sm mr-1 btn-primary">Gerar PDF</button>-->
-        <!--                </form>-->
-
-        <!--                <form method="post" target="_blank" v-show="tipoRelatorio === 'excel'"-->
-        <!--                      action="{{ route('g.admissao.intermitente.relatorioExcel') }}">-->
-        <!--                    @csrf-->
-        <!--                    <input type="hidden" name="cliente_relatorio" :value="cliente_relatorio">-->
-        <!--                    <input type="hidden" name="intervalo" :value="datarelatorio">-->
-        <!--                    <button class="btn btn-sm mr-1 btn-primary">Gerar Excel</button>-->
-        <!--                </form>-->
-        <!--            </template>-->
-        <!--        </modal>-->
-        <!--        </modal>-->
         <modal :titulo="tituloJanelaTreinamentos" size="g" :fechar="!preloadAjax" id="janelaTreinamentos" modal-pai="janelaCadastrar" ref="modal_janelaTreinamentos">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preloadAjax"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>

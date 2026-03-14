@@ -1,7 +1,7 @@
 @extends('layouts.pdfCartaMedidas')
 @section('title',$medida->tipo)
 @section('empresa')
-    @include('layouts.cabecalioEmpresa')
+    @include('layouts.cabecalioFilialEmpresaJob')
 @endsection
 @section('conteudo')
 

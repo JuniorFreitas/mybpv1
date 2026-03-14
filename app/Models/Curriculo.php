@@ -385,8 +385,13 @@ class Curriculo extends Model
             return null;
         }
 
+        $normalizado = self::normalizarDataParaDataHora($nascimento, true);
+        if ($normalizado === null) {
+            return null;
+        }
+
         $dataH = new DataHora();
-        return DataHora::distanciaTempo($nascimento . ' ' . $dataH->hora() . ':' . $dataH->minuto() . ':00', $dataH->dataHoraInsert())['ano'];
+        return DataHora::distanciaTempo($normalizado . ' ' . $dataH->hora() . ':' . $dataH->minuto() . ':00', $dataH->dataHoraInsert())['ano'];
     }
 
     //Acessor ->nascimento
@@ -405,39 +410,53 @@ class Curriculo extends Model
             return null;
         }
 
-        $data = new DataHora($nascimento);
+        $normalizado = self::normalizarDataParaDataHora($nascimento, true);
+        if ($normalizado === null) {
+            return null;
+        }
+        $data = new DataHora($normalizado);
         return $data->dataCompleta();
     }
 
     //Modificador ->nascimento
     public function setNascimentoAttribute($value)
     {
-        $data = new DataHora($value);
+        $valor = self::normalizarDataParaDataHora($value);
+        if ($valor === null || $valor === '') {
+            $this->attributes['nascimento'] = $valor;
+            return;
+        }
+        $data = new DataHora($valor);
         $this->attributes['nascimento'] = $data->dataInsert();
     }
 
-    //Acessor ->nascimento
+    //Acessor ->cnh_vencimento
     public function getCnhVencimentoAttribute($value)
     {
         $cnh = $value ?? ($this->attributes['cnh_vencimento'] ?? null);
 
         if (!is_null($cnh) && $cnh !== '') {
-            $data = new DataHora($cnh);
+            $normalizado = self::normalizarDataParaDataHora($cnh, true);
+            if ($normalizado === null) {
+                return null;
+            }
+            $data = new DataHora($normalizado);
             return $data->dataCompleta();
-        } else {
-            return null;
         }
+
+        return null;
     }
 
-    //Modificador ->nascimento
+    //Modificador ->cnh_vencimento
     public function setCnhVencimentoAttribute($value)
     {
-        if (!is_null($value)) {
-            $data = new DataHora($value);
-            $this->attributes['cnh_vencimento'] = $data->dataInsert();
-        } else {
+        $valor = self::normalizarDataParaDataHora($value, true);
+        if ($valor === null || $valor === '') {
             $this->attributes['cnh_vencimento'] = null;
+            return;
         }
+        $data = new DataHora($valor);
+        $this->attributes['cnh_vencimento'] = $data->dataInsert();
     }
 
     //Acessor ->rg_data_emissao
@@ -446,7 +465,11 @@ class Curriculo extends Model
         $rgDataEmissao = $value ?? ($this->attributes['rg_data_emissao'] ?? null);
 
         if (!is_null($rgDataEmissao) && $rgDataEmissao !== '') {
-            $data = new DataHora($rgDataEmissao);
+            $normalizado = self::normalizarDataParaDataHora($rgDataEmissao, true);
+            if ($normalizado === null) {
+                return null;
+            }
+            $data = new DataHora($normalizado);
             return $data->dataCompleta();
         }
 
@@ -456,10 +479,50 @@ class Curriculo extends Model
     //Modificador ->rg_data_emissao
     public function setRgDataEmissaoAttribute($value)
     {
-        if ($value) {
-            $data = new DataHora($value);
-            $this->attributes['rg_data_emissao'] = $data->dataInsert();
+        $valor = self::normalizarDataParaDataHora($value, true);
+        if ($valor === null || $valor === '') {
+            $this->attributes['rg_data_emissao'] = null;
+            return;
         }
+        $data = new DataHora($valor);
+        $this->attributes['rg_data_emissao'] = $data->dataInsert();
+    }
+
+    /**
+     * Converte string de data para formato aceito por DataHora (Y-m-d ou d/m/Y).
+     * Corrige formato yyyy-d-m (ex.: 1994-29-7) para Y-m-d.
+     *
+     * @param mixed $valor
+     */
+    public static function normalizarDataParaDataHora($valor, bool $opcional = false): ?string
+    {
+        $v = $valor === null || $valor === '' ? '' : trim((string) $valor);
+        if ($v === '') {
+            return $opcional ? null : '';
+        }
+        if (preg_match('/^(\d{4})\D+(\d{1,2})\D+(\d{1,2})$/', $v, $m)) {
+            $ano = (int) $m[1];
+            $a = (int) $m[2];
+            $b = (int) $m[3];
+            if ($a >= 1 && $a <= 12 && $b >= 1 && $b <= 31 && checkdate($a, $b, $ano)) {
+                return sprintf('%04d-%02d-%02d', $ano, $a, $b);
+            }
+            if ($b >= 1 && $b <= 12 && $a >= 1 && $a <= 31 && checkdate($b, $a, $ano)) {
+                return sprintf('%04d-%02d-%02d', $ano, $b, $a);
+            }
+        }
+        if (preg_match('/^(\d{1,2})\D+(\d{1,2})\D+(\d{4})$/', $v, $m)) {
+            $dia = (int) $m[1];
+            $mes = (int) $m[2];
+            $ano = (int) $m[3];
+            if ($mes >= 1 && $mes <= 12 && $dia >= 1 && $dia <= 31 && checkdate($mes, $dia, $ano)) {
+                return sprintf('%04d-%02d-%02d', $ano, $mes, $dia);
+            }
+        }
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $v)) {
+            return $v;
+        }
+        return $opcional ? null : $v;
     }
 
     public function getEnderecoCompletoAttribute()

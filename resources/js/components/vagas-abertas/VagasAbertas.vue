@@ -311,7 +311,7 @@
                                             <label>Formação</label>
                                             <select name="formacao" class="form-control" v-model="form.formacao">
                                                 <option value="">Selecione</option>
-                                                <option v-for="(item, index) in escolaridades" :value="item.id" :key="item.id || index">{{ item.tipo }}</option>
+                                                <option v-for="(item, index) in escolaridades" :value="item.id" :key="index">{{ item.tipo }}</option>
                                             </select>
                                         </div>
                                     </div>

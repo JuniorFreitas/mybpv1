@@ -10,7 +10,7 @@
             <i class="fa fa-plus"></i> Adicionar Plano
         </button>
 
-        <fieldset v-for="(item, index) in planos" :key="item.id || index">
+        <fieldset v-for="(item, index) in planos" :key="index">
             <legend>Plano - {{ index + 1 }}</legend>
             <div class="row">
                 <div class="col-lg-12">

@@ -297,7 +297,7 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
                 'Feedback.Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento',
                 'Feedback.Empresa:id,cnpj,razao_social,nome_fantasia,cep,logradouro,numero,complemento,bairro,municipio,uf,contato',
                 'Feedback.Empresa.Logo:id,nome,layout,disco,imagem,file,thumb',
-                'Feedback.Admissao:id,feedback_id,data_admissao'
+                'Feedback.Admissao:id,feedback_id,data_admissao,centro_custo_filial_id'
             )
             ->first();
 
@@ -306,7 +306,14 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
             return;
         }
 
-        $pdf = PDF::loadView('pdf.admissao.historico.medidasadministrativas.carta-advertencia', compact('medida'));
+        $dados = [
+            'dados_empresa' => Sistema::getEmpresaFilialMatriz(
+                $medida->Feedback->Admissao?->centro_custo_filial_id,
+                $medida->Feedback->empresa_id
+            ),
+        ];
+
+        $pdf = PDF::loadView('pdf.admissao.historico.medidasadministrativas.carta-advertencia', compact('medida', 'dados'));
         $pdf->setPaper('A4', 'portrait');
         $pdfContent = $pdf->output();
         $nomeArquivo = 'carta_' . Str::slug($medida->tipo) . '_' . (new DataHora())->nomeUnico() . '.pdf';

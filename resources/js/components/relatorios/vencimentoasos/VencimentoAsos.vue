@@ -67,7 +67,7 @@
                         <select class="form-control form-control-sm" v-model="controle.dados.campoTipoExame"
                                 :disabled="preload" @change="buscarDados()">
                             <option value="">Todos os tipos</option>
-                            <option v-for="(item, index) in listaTiposExame" :value="item.id" :key="item.id || index">{{ item.label }}</option>
+                            <option v-for="(item, index) in listaTiposExame" :value="item.id" :key="index">{{ item.label }}</option>
                         </select>
                     </div>
                 </div>

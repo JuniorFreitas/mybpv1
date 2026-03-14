@@ -230,7 +230,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(item, index) in tabelaNoventaAvaliacao" :key="item.id || index">
+                        <tr v-for="(item, index) in tabelaNoventaAvaliacao" :key="index">
                             <td class="text-center">{{ item.quantidade_avaliacao }}ª</td>
                             <td class="text-center">{{ item.created_at }}</td>
                             <td class="text-center">

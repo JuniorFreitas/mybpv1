@@ -27,7 +27,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(item, index) in tipos" :key="item.id || index">
+                            <tr v-for="(item, index) in tipos" :key="index">
                                 <td class="text-center">{{ item.nome }}</td>
                                 <td class="text-center">
                                     <bt-ativo :rota="`cadastro/beneficios/${item.id}/ativa-desativa`" :model="item"></bt-ativo>
@@ -100,7 +100,7 @@
                                     class="custom-select"
                                 >
                                     <option value="">Selecione</option>
-                                    <option v-for="(item, index) in tiposAtivos" :value="item.id" :key="item.id || index">{{ item.nome }}</option>
+                                    <option v-for="(item, index) in tiposAtivos" :value="item.id" :key="index">{{ item.nome }}</option>
                                 </select>
                             </div>
                             <div class="col-6">

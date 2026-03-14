@@ -75,7 +75,7 @@
                         v-model="form.pcmso_id"
                     >
                         <option value="">Selecione</option>
-                        <option v-for="(item, index) in listaPcmso" :value="item.id" :key="item.id || index">{{ item.label }}</option>
+                        <option v-for="(item, index) in listaPcmso" :value="item.id" :key="index">{{ item.label }}</option>
                     </select>
                 </div>
 
@@ -89,7 +89,7 @@
                         v-model="form.empresa_exame_id"
                     >
                         <option value="">Selecione</option>
-                        <option v-for="(item, index) in listaEmpresaExame" :value="item.id" :key="item.id || index">{{ item.nome }}</option>
+                        <option v-for="(item, index) in listaEmpresaExame" :value="item.id" :key="index">{{ item.nome }}</option>
                     </select>
                 </div>
 

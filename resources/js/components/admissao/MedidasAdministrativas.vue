@@ -2,10 +2,10 @@
     <div>
         <p class="mt-2" v-if="preload"><i class="fa fa-spinner fa-pulse"></i> Aguarde ...</p>
         <div v-if="!preload" :id="`form_${hash}`">
-            <button class="btn btn-sm mr-1 btn-primary mb-3" @click="addLIMedida"><i class="fa fa-plus"></i> Adicionar Medida</button>
+            <button class="btn btn-sm mr-1 btn-primary mb-3" @click="abrirModalNovaMedida"><i class="fa fa-plus"></i> Adicionar Medida</button>
 
             <template v-if="form.medidas_administrativas.length > 0">
-                <fieldset class="mb-2" v-for="(obj, index) in form.medidas_administrativas" :key="obj.id || index">
+                <fieldset class="mb-2" v-for="(obj, index) in form.medidas_administrativas" :key="index">
                     <legend>#{{ index + 1 }}</legend>
                     <div class="row">
                         <div class="col-md-4">
@@ -24,18 +24,6 @@
                             </select>
                         </div>
 
-                        <!--                    <div class="col-md-4">-->
-                        <!--                        <label>Definição</label>-->
-                        <!--                        <select class="form-control" v-model="obj.definicao" :disabled="!obj.novo"-->
-                        <!--                                onchange="valida_campo_vazio(this,1)"-->
-                        <!--                                onblur="valida_campo_vazio(this,1)">-->
-                        <!--                            <option value="">Selecione ...</option>-->
-                        <!--                            <option v-for="(item, index) in definicao" :value="item">-->
-                        :key="item.id || index"
-                        <!--                                {{ item }}-->
-                        <!--                            </option>-->
-                        <!--                        </select>-->
-                        <!--                    </div>-->
 
                         <div class="col-md-8">
                             <label>Causa</label>
@@ -94,7 +82,7 @@
                         <div class="col-12 mt-3" v-show="obj.novo">
                             <button class="btn btn-sm mr-1 btn-danger" @click="removerLIMedida(index)"><i class="fa fa-times"></i> Remover</button>
 
-                            <button class="btn btn-sm mr-1 btn-primary mt" @click="addLIMedida" v-show="index >= 1"><i class="fa fa-plus"></i> Adicionar</button>
+                            <button class="btn btn-sm mr-1 btn-primary mt" @click="abrirModalNovaMedida" v-show="index >= 1"><i class="fa fa-plus"></i> Adicionar</button>
                         </div>
 
                         <div class="col-12 mt-3" v-show="!obj.novo && validTypes.includes(obj.tipo)">
@@ -120,9 +108,9 @@
                 </fieldset>
             </template>
 
-            <button class="btn btn-sm mr-1 btn-primary mb-3" v-if="form.medidas_administrativas.length > 0" @click="salvar">
+            <!-- <button class="btn btn-sm mr-1 btn-primary mb-3" v-if="form.medidas_administrativas.length > 0" @click="salvar">
                 <i class="fa fa-save"></i> Salvar
-            </button>
+            </button> -->
         </div>
 
         <acao-assinatura-documento
@@ -136,6 +124,74 @@
             :atualizar-handler="atualizar"
         >
         </acao-assinatura-documento>
+
+        <!-- Modal para Cadastrar Nova Medida Administrativa -->
+        <modal ref="modalNovaMedida" :id="`janelaNovaMedida_${hash}`" titulo="Adicionar Medida Administrativa" :fechar="true" size="g" :mostrarBotaoFecharNoRodape="false">
+            <template #conteudo>
+                <div class="form-nova-medida-modal">
+                    <fieldset class="mb-3">
+                        <legend class="mb-2">Tipo e causa</legend>
+                        <div class="row">
+                            <div class="col-md-4 form-group">
+                                <label class="mb-1">Tipo</label>
+                                <select class="form-control form-control-sm" v-model="formNovaMedida.tipo">
+                                    <option value="">Selecione ...</option>
+                                    <option v-for="item in tipos" :key="item" :value="item">{{ item }}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-8 form-group">
+                                <label class="mb-1">Causa</label>
+                                <select class="form-control form-control-sm" v-model="formNovaMedida.causa">
+                                    <option value="">Selecione ...</option>
+                                    <option v-for="item in causas" :key="item" :value="item">{{ item }}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <fieldset class="mb-3">
+                        <legend class="mb-2">Descrição</legend>
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label class="mb-1">Motivo</label>
+                                <input type="text" class="form-control form-control-sm" v-model="formNovaMedida.motivo" placeholder="Informe o motivo" />
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label class="mb-1">Solicitante</label>
+                                <input type="text" class="form-control form-control-sm" v-model="formNovaMedida.solicitante" placeholder="Nome do solicitante" />
+                            </div>
+                        </div>
+                    </fieldset>
+                    <fieldset class="mb-3">
+                        <legend class="mb-2">Datas</legend>
+                        <div class="row">
+                            <div class="col-md-4 form-group">
+                                <date-picker label="Data Solicitação" v-model="formNovaMedida.data_solicitacao" :max="restricao"></date-picker>
+                            </div>
+                            <div class="col-md-4 form-group" v-if="!naoExibiRetorno.includes(formNovaMedida.tipo)">
+                                <date-picker label="Data Retorno" v-model="formNovaMedida.data_retorno" :min="hoje"></date-picker>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <fieldset class="mb-0">
+                        <legend class="mb-2">Anexo</legend>
+                        <upload
+                            :model="formNovaMedida.anexos"
+                            :model-delete="formNovaMedida.anexosDel"
+                            :url="url_anexo"
+                            label="Selecionar"
+                            @onProgresso="anexoUploadAndamento = true"
+                            @onFinalizado="anexoUploadAndamento = false"
+                        ></upload>
+                    </fieldset>
+                </div>
+            </template>
+            <template #rodape>
+                <button type="button" class="btn btn-sm btn-outline-secondary mr-2" @click="fecharModalNovaMedida" :disabled="preloadNovaMedida">Cancelar</button>
+                <button type="button" class="btn btn-sm btn-primary" @click="salvarMedidaDaModal" :disabled="preloadNovaMedida">
+                    <i class="fa" :class="preloadNovaMedida ? 'fa-spinner fa-pulse' : 'fa-save'"></i> {{ preloadNovaMedida ? 'Salvando...' : 'Salvar' }}
+                </button>
+            </template>
+        </modal>
 
         <!-- Modal para Remover Medida Administrativa -->
         <modal ref="modalRemoverMedida" :id="`janelaRemoverMedida_${hash}`" :titulo="tituloModalRemover" :fechar="!preloadRemover" :size="75">
@@ -235,6 +291,7 @@ export default {
     data() {
         return {
             preload: false,
+            preloadNovaMedida: false,
             URL_ADMIN,
 
             url_anexo: `${URL_ADMIN}/historico/medidas-administrativas/uploadAnexos`,
@@ -264,6 +321,18 @@ export default {
             definicao: [],
             privilegio_gestao_rh: false,
             assinaturaDigitalHabilitada: typeof window !== 'undefined' ? !!window.MYBP_ASSINATURA_DIGITAL_HABILITADA : true,
+
+            // Modal nova medida
+            formNovaMedida: {
+                tipo: '',
+                causa: '',
+                motivo: '',
+                solicitante: '',
+                data_solicitacao: '',
+                data_retorno: '',
+                anexos: [],
+                anexosDel: []
+            },
 
             // Modal remover medida
             medidaSelecionada: null,
@@ -379,6 +448,76 @@ export default {
             obj.anexosDel = []
 
             this.form.medidas_administrativas.unshift(obj)
+        },
+        resetFormNovaMedida() {
+            this.formNovaMedida = {
+                tipo: '',
+                causa: '',
+                motivo: '',
+                solicitante: '',
+                data_solicitacao: this.hoje || '',
+                data_retorno: this.hoje || '',
+                anexos: [],
+                anexosDel: []
+            }
+        },
+        abrirModalNovaMedida() {
+            this.resetFormNovaMedida()
+            this.$nextTick(() => {
+                if (this.$refs.modalNovaMedida && typeof this.$refs.modalNovaMedida.abrirModal === 'function') {
+                    this.$refs.modalNovaMedida.abrirModal()
+                }
+            })
+        },
+        fecharModalNovaMedida() {
+            if (this.$refs.modalNovaMedida && typeof this.$refs.modalNovaMedida.fecharModal === 'function') {
+                this.$refs.modalNovaMedida.fecharModal()
+            }
+        },
+        salvarMedidaDaModal() {
+            const f = this.formNovaMedida
+            if (!f.tipo || !f.causa || !f.motivo || !f.solicitante || !f.data_solicitacao) {
+                if (typeof mostraErro !== 'undefined') {
+                    mostraErro('', 'Preencha Tipo, Causa, Motivo, Solicitante e Data Solicitação.')
+                }
+                return
+            }
+            const obj = {
+                novo: true,
+                feedback_id: this.feedback_id,
+                tipo: f.tipo,
+                causa: f.causa,
+                definicao: '',
+                motivo: f.motivo,
+                solicitante: f.solicitante,
+                data_solicitacao: f.data_solicitacao,
+                data_retorno: f.data_retorno || f.data_solicitacao,
+                anexos: Array.isArray(f.anexos) ? [...f.anexos] : [],
+                anexosDel: Array.isArray(f.anexosDel) ? [...f.anexosDel] : []
+            }
+            const payload = {
+                medidas_administrativas: [...this.form.medidas_administrativas, obj],
+                medidas_administrativasDelete: this.form.medidas_administrativasDelete || []
+            }
+            this.preloadNovaMedida = true
+            axios
+                .post(`${URL_ADMIN}/historico/${this.feedback_id}`, payload)
+                .then((response) => {
+                    if (response.status === 200 || response.status === 201) {
+                        if (typeof mostraSucesso !== 'undefined') mostraSucesso('Medida administrativa salva com sucesso.')
+                        this.resetFormNovaMedida()
+                        this.fecharModalNovaMedida()
+                        this.atualizar()
+                    }
+                })
+                .catch((error) => {
+                    const data = error.response && error.response.data ? error.response.data : {}
+                    const msg = data.msg || data.message || (data.erros ? (typeof data.erros === 'object' ? 'Verifique os campos.' : data.erros) : 'Erro ao salvar medida administrativa.')
+                    if (typeof mostraErro !== 'undefined') mostraErro(msg)
+                })
+                .finally(() => {
+                    this.preloadNovaMedida = false
+                })
         },
         removerLIMedida(index) {
             if (this.editando) {

@@ -40,8 +40,8 @@ class MapperLinhaPlanilhaParaPayloadTest extends TestCase
         $this->assertSame(1, $payload['curriculo']['vaga_pretendida']);
         $this->assertSame(2, $payload['admissao']['area_etiqueta_id']);
         $this->assertSame(3, $payload['admissao']['centro_custo_id']);
-        $this->assertSame('01/01/2025', $payload['admissao']['data_admissao']);
-        $this->assertSame('02/01/2025', $payload['admissao']['data_aso']);
+        $this->assertSame('2025-01-01', $payload['admissao']['data_admissao']);
+        $this->assertSame('2025-01-02', $payload['admissao']['data_aso']);
     }
 
     public function testMapEmailVazioUsaEmailPadrao(): void
@@ -56,5 +56,27 @@ class MapperLinhaPlanilhaParaPayloadTest extends TestCase
         $linha = ['cpf' => '12345678909', 'nome' => 'X'];
         $payload = $this->mapper->map($linha, 1, null, 1);
         $this->assertNull($payload['admissao']['area_etiqueta_id']);
+    }
+
+    public function testMapCnhVencimentoPlaceholderViraNull(): void
+    {
+        $linha = [
+            'cpf' => '12345678909',
+            'nome' => 'X',
+            'cnh_vencimento' => 'aaaa-mm-dd',
+        ];
+        $payload = $this->mapper->map($linha, 1, null, 1);
+        $this->assertNull($payload['curriculo']['cnh_vencimento']);
+    }
+
+    public function testMapNascimentoFormatoTrocadoPlanilhaCorrigido(): void
+    {
+        $linha = [
+            'cpf' => '12345678909',
+            'nome' => 'X',
+            'nascimento' => '1994-29-7',
+        ];
+        $payload = $this->mapper->map($linha, 1, null, 1);
+        $this->assertSame('1994-07-29', $payload['curriculo']['nascimento']);
     }
 }
