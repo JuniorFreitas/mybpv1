@@ -32,5 +32,6 @@ export const API_PATHS = {
     proximovencimento: 'treinamento/proximovencimento',
     uploadAnexos: 'treinamento/uploadAnexos',
     export: 'treinamento/export',
-    segmentosHabilitados: 'cadastro/segmentostreinamento/habilitados-empresa'
+    segmentosHabilitados: 'cadastro/segmentostreinamento/habilitados-empresa',
+    desmarcarTreinamentoRealizado: 'treinamento/desmarcar-treinamento-realizado'
 }
