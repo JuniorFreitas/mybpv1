@@ -62,21 +62,46 @@ class TreinamentoController extends Controller
             $segmentoId = $this->resolverSegmentoTreinamentoId($dados);
             $this->atualizarSegmentoAdmissao($dados, $segmentoId);
 
-            // Usar referência para Collection grande
-            $listaVencimentos = collect($dados['listaVencimentos'])->filter(function ($item) {
+            $clienteConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
+            $treinamento_permitir_desmarcar = $clienteConfig && ($clienteConfig->treinamento_permitir_desmarcar_realizado ?? false);
+            $privilegio_gestao_rh = auth()->user()->can('privilegio_gestao_rh');
+
+            $isUpdate = isset($dados['id']);
+            $treinamento = $isUpdate ? Treinamento::find($dados['id']) : null;
+
+            $listaVencimentos = collect($dados['listaVencimentos']);
+            if ($isUpdate && $treinamento) {
+                $idsSegmento = $this->getVencimentosIdsPorSegmento($segmentoId);
+                $existingPivots = $treinamento->Vencimentos()->whereIn('vencimento_id', $idsSegmento)->get()->keyBy('vencimento_id');
+                $listaVencimentos = $listaVencimentos->map(function ($item) use ($existingPivots, $treinamento_permitir_desmarcar, $privilegio_gestao_rh) {
+                    $pivot = $existingPivots->get($item['id'] ?? null);
+                    $wasRealized = $pivot !== null;
+                    if ($wasRealized && empty($item['fez_treinamento']) && !($treinamento_permitir_desmarcar && $privilegio_gestao_rh)) {
+                        $pivotData = $pivot->pivot ?? $pivot;
+                        $merged = array_merge($item, [
+                            'fez_treinamento' => true,
+                            'data_treinamento' => $pivotData->data_treinamento ?? $item['data_treinamento'] ?? null,
+                            'data_vencimento' => $pivotData->data_vencimento ?? $item['data_vencimento'] ?? null,
+                            'numero_fat' => $pivotData->numero_fat ?? $item['numero_fat'] ?? null,
+                        ]);
+                        if (!empty($pivotData->arquivo_id)) {
+                            $merged['arquivo'] = [['id' => $pivotData->arquivo_id, 'temporario' => false, 'chave' => '', 'falhou' => false]];
+                        }
+                        return $merged;
+                    }
+                    return $item;
+                });
+            }
+            $listaVencimentos = $listaVencimentos->filter(function ($item) {
                 return $item['fez_treinamento'];
             });
 
-            $isUpdate = isset($dados['id']);
-
             if ($isUpdate) {
                 $this->authorize('treinamento_carteira-etiquetas_update');
-                $treinamento = Treinamento::find($dados['id']);
 
                 unset($dados['enviado_email'], $dados['email_aberto'], $dados['data_email_aberto'], $dados['data_envio']);
                 $treinamento->update($dados);
 
-                // Remove apenas vencimentos do segmento atual
                 $idsSegmento = $this->getVencimentosIdsPorSegmento($segmentoId);
                 if ($idsSegmento->isNotEmpty()) {
                     $treinamento->Vencimentos()->detach($idsSegmento->all());
@@ -408,6 +433,10 @@ class TreinamentoController extends Controller
             'idade' => $treinamento->Feedback->Curriculo->idade
         ];
 
+        $clienteConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
+        $treinamento->privilegio_gestao_rh = auth()->user()->can('privilegio_gestao_rh');
+        $treinamento->treinamento_permitir_desmarcar_realizado = $clienteConfig ? (bool) ($clienteConfig->treinamento_permitir_desmarcar_realizado ?? false) : false;
+
         return response()->json($treinamento);
     }
 
@@ -441,9 +470,13 @@ class TreinamentoController extends Controller
 
         $lista = $this->montarListaVencimentos($treinamento, $treinamentoVencimentos, $segmentoId);
 
+        $clienteConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
+
         return response()->json([
             'segmento_treinamento_id' => $segmentoId,
             'listaVencimentos' => $lista,
+            'privilegio_gestao_rh' => auth()->user()->can('privilegio_gestao_rh'),
+            'treinamento_permitir_desmarcar_realizado' => $clienteConfig ? (bool) ($clienteConfig->treinamento_permitir_desmarcar_realizado ?? false) : false,
         ]);
     }
 

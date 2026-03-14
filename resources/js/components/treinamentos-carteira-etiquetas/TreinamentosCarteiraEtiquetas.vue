@@ -188,7 +188,8 @@
                         <div class="col-12 col-md-4">
                             <div class="form-group">
                                 <label>Realizou este treinamento?</label>
-                                <select class="form-control" v-model="treinamento.fez_treinamento">
+                                <select class="form-control" v-model="treinamento.fez_treinamento"
+                                    :disabled="treinamento.fez_treinamento && !(privilegio_gestao_rh && treinamento_permitir_desmarcar_realizado)">
                                     <option :value="true">Sim</option>
                                     <option :value="false">Não</option>
                                 </select>
@@ -301,7 +302,8 @@
                                 <div class="col-12 col-md-6">
                                     <div class="form-group">
                                         <label for="">Realizou este treinamento?</label>
-                                        <select class="form-control" v-model="treinamento.fez_treinamento">
+                                        <select class="form-control" v-model="treinamento.fez_treinamento"
+                                            :disabled="treinamento.fez_treinamento && !(privilegio_gestao_rh && treinamento_permitir_desmarcar_realizado)">
                                             <option :value="true">Sim</option>
                                             <option :value="false">Não</option>
                                         </select>
@@ -1344,7 +1346,10 @@ export default defineComponent({
             },
 
             url_anexo: `${URL_ADMIN}/${API_PATHS.uploadAnexos}`,
-            anexoUploadAndamento: false
+            anexoUploadAndamento: false,
+
+            privilegio_gestao_rh: false,
+            treinamento_permitir_desmarcar_realizado: false
         }
     },
     mounted() {
@@ -1543,6 +1548,8 @@ export default defineComponent({
                     segmento_treinamento_id: this.form.segmento_treinamento_id
                 })
                 this.form.listaVencimentos = response.data.listaVencimentos || []
+                if (response.data.privilegio_gestao_rh !== undefined) this.privilegio_gestao_rh = response.data.privilegio_gestao_rh
+                if (response.data.treinamento_permitir_desmarcar_realizado !== undefined) this.treinamento_permitir_desmarcar_realizado = response.data.treinamento_permitir_desmarcar_realizado
                 this.openPanels = []
                 this.expandAll = false
             } catch {
@@ -1703,6 +1710,8 @@ export default defineComponent({
 
                 this.form.dadosFuncionario = data.dadosFuncionario || {}
                 this.form.segmento_treinamento_id = data.segmento_treinamento_id ?? null
+                this.privilegio_gestao_rh = data.privilegio_gestao_rh ?? false
+                this.treinamento_permitir_desmarcar_realizado = data.treinamento_permitir_desmarcar_realizado ?? false
 
                 if (treinamento) {
                     this.editando = true

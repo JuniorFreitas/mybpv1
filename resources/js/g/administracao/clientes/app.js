@@ -96,6 +96,7 @@ const app = createApp({
                     supervisor_etiqueta_bloqueio: true,
                     schedule_avaliacao_experiencia: true,
                     schedule_treinamento_vencimento: true,
+                    treinamento_permitir_desmarcar_realizado: false,
                     assinatura_digital_habilitada: false,
                     limite_assinaturas_mensal: '',
                     assinatura_alerta_user_ids: [],
@@ -293,12 +294,14 @@ const app = createApp({
                             supervisor_etiqueta_bloqueio: true,
                             schedule_avaliacao_experiencia: true,
                             schedule_treinamento_vencimento: true,
+                            treinamento_permitir_desmarcar_realizado: false,
                             assinatura_digital_habilitada: false,
                             limite_assinaturas_mensal: '',
                             assinatura_alerta_user_ids: [],
                             assinatura_alerta_grupo_ids: []
                         }
                     } else {
+                        this.form.cliente_config.treinamento_permitir_desmarcar_realizado = !!this.form.cliente_config.treinamento_permitir_desmarcar_realizado
                         this.form.cliente_config.assinatura_digital_habilitada = !!this.form.cliente_config.assinatura_digital_habilitada
                         this.form.cliente_config.limite_assinaturas_mensal = this.form.cliente_config.limite_assinaturas_mensal ?? ''
                         this.form.cliente_config.assinatura_alerta_user_ids = (this.form.cliente_config.assinatura_alerta_user_ids || []).map((id) =>
