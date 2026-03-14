@@ -97,6 +97,7 @@ const app = createApp({
                     schedule_avaliacao_experiencia: true,
                     schedule_treinamento_vencimento: true,
                     treinamento_permitir_desmarcar_realizado: false,
+                    configuracoes: { treinamento_fat_obrigatorio: false },
                     assinatura_digital_habilitada: false,
                     limite_assinaturas_mensal: '',
                     assinatura_alerta_user_ids: [],
@@ -295,12 +296,15 @@ const app = createApp({
                             schedule_avaliacao_experiencia: true,
                             schedule_treinamento_vencimento: true,
                             treinamento_permitir_desmarcar_realizado: false,
+                            configuracoes: { treinamento_fat_obrigatorio: false },
                             assinatura_digital_habilitada: false,
                             limite_assinaturas_mensal: '',
                             assinatura_alerta_user_ids: [],
                             assinatura_alerta_grupo_ids: []
                         }
                     } else {
+                        this.form.cliente_config.configuracoes = this.form.cliente_config.configuracoes || { treinamento_fat_obrigatorio: false }
+                        this.form.cliente_config.configuracoes.treinamento_fat_obrigatorio = !!this.form.cliente_config.configuracoes.treinamento_fat_obrigatorio
                         this.form.cliente_config.treinamento_permitir_desmarcar_realizado = !!this.form.cliente_config.treinamento_permitir_desmarcar_realizado
                         this.form.cliente_config.assinatura_digital_habilitada = !!this.form.cliente_config.assinatura_digital_habilitada
                         this.form.cliente_config.limite_assinaturas_mensal = this.form.cliente_config.limite_assinaturas_mensal ?? ''

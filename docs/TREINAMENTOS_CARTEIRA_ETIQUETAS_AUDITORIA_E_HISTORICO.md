@@ -52,10 +52,17 @@ Documentação das funcionalidades de **desmarcar treinamento realizado** (com t
 ### Flags enviadas ao frontend
 
 - `privilegio_gestao_rh` (boolean)
-- `treinamento_permitir_desmarcar_realizado` (boolean) — config do cliente
+- `treinamento_permitir_desmarcar_realizado` (boolean) — config do cliente (coluna)
 - `treinamento_retirar_treinamento_realizado` (boolean) — `can('treinamento_carteira-etiquetas_retirar_treinamento_realizado')`
+- `treinamento_fat_obrigatorio` (boolean) — lido de `ClienteConfig.configuracoes` (JSON); quando true, o número FAT é obrigatório ao salvar/alterar treinamento realizado.
 
 Enviadas em: resposta do **edit** (treinamento) e da **vencimentosPorSegmento**.
+
+### Configurações em JSON (cliente_configs.configuracoes)
+
+Novas configurações de cliente podem ser armazenadas no campo **configuracoes** (JSON) da tabela `cliente_configs`, evitando crescimento da tabela com muitas colunas. O model `ClienteConfig` expõe o método `getConfig(string $key, $default = null)` para leitura.
+
+- **treinamento_fat_obrigatorio** (boolean): quando habilitado na administração de clientes, o número da FAT passa a ser obrigatório ao salvar ou alterar treinamento realizado (store e atualizarVencimento). Validação no backend e no frontend (campo marcado como obrigatório e checagem antes do envio).
 
 ---
 

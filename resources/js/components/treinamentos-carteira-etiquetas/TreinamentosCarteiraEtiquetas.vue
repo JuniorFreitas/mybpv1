@@ -243,11 +243,15 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Número da FAT</label>
+                                    <label>Número da FAT <span v-if="treinamento_fat_obrigatorio && treinamento.fez_treinamento" class="text-danger" aria-hidden="true">*</span></label>
                                     <input type="text" class="form-control"
                                         v-model="treinamento.numero_fat"
+                                        :required="treinamento_fat_obrigatorio && treinamento.fez_treinamento"
                                         :disabled="salvandoVencimentoId === treinamento.id"
-                                        @input="marcarAlterado(treinamento)">
+                                        :class="{ 'is-invalid': fatInvalido(treinamento) }"
+                                        @input="marcarAlterado(treinamento)"
+                                        @blur="onBlurFat(treinamento)"
+                                        @keypress="onKeypressFat(treinamento)">
                                 </div>
                             </div>
                             <div class="col-md-12" :style="salvandoVencimentoId === treinamento.id ? { pointerEvents: 'none', opacity: 0.7 } : {}">
@@ -370,8 +374,12 @@
                                         </template>
                                     </div>
                                     <div class="form-group">
-                                        <label for="">Numero da FAT</label>
-                                        <input type="text" class="form-control" v-model="treinamento.numero_fat">
+                                        <label for="">Numero da FAT <span v-if="treinamento_fat_obrigatorio && treinamento.fez_treinamento" class="text-danger" aria-hidden="true">*</span></label>
+                                        <input type="text" class="form-control" v-model="treinamento.numero_fat"
+                                            :required="treinamento_fat_obrigatorio && treinamento.fez_treinamento"
+                                            :class="{ 'is-invalid': fatInvalido(treinamento) }"
+                                            @blur="onBlurFat(treinamento)"
+                                            @keypress="onKeypressFat(treinamento)">
                                     </div>
                                 </div>
                             </div>
@@ -1399,6 +1407,7 @@ export default defineComponent({
 
             privilegio_gestao_rh: false,
             treinamento_permitir_desmarcar_realizado: false,
+            treinamento_fat_obrigatorio: false,
 
             showModalMotivoDesmarcar: false,
             treinamentoMotivoDesmarcar: null,
@@ -1623,10 +1632,13 @@ export default defineComponent({
                 this.form.listaVencimentos = (response.data.listaVencimentos || []).map((t) => ({
                     ...t,
                     _fez_treinamento_ja_salvo: !!t.fez_treinamento,
-                    _alterado: false
+                    _alterado: false,
+                    _fatTouched: false
                 }))
                 if (response.data.privilegio_gestao_rh !== undefined) this.privilegio_gestao_rh = response.data.privilegio_gestao_rh
                 if (response.data.treinamento_permitir_desmarcar_realizado !== undefined) this.treinamento_permitir_desmarcar_realizado = response.data.treinamento_permitir_desmarcar_realizado
+                if (response.data.treinamento_retirar_treinamento_realizado !== undefined) this.treinamento_retirar_treinamento_realizado = response.data.treinamento_retirar_treinamento_realizado
+                if (response.data.treinamento_fat_obrigatorio !== undefined) this.treinamento_fat_obrigatorio = response.data.treinamento_fat_obrigatorio
                 this.openPanels = []
                 this.expandAll = false
             } catch {
@@ -1637,6 +1649,18 @@ export default defineComponent({
         },
         marcarAlterado(treinamento) {
             if (treinamento) treinamento._alterado = true
+        },
+        /** Exibe is-invalid no campo FAT quando obrigatório, vazio e o campo foi tocado (blur/keypress) ou falhou na validação ao salvar */
+        fatInvalido(treinamento) {
+            if (!this.treinamento_fat_obrigatorio || !treinamento.fez_treinamento) return false
+            const vazio = !(treinamento.numero_fat || '').toString().trim()
+            return vazio && (treinamento._fatTouched === true)
+        },
+        onBlurFat(treinamento) {
+            if (treinamento) treinamento._fatTouched = true
+        },
+        onKeypressFat(treinamento) {
+            if (treinamento) treinamento._fatTouched = true
         },
         onUploadFinalizado(treinamento) {
             this.anexoUploadAndamento = false
@@ -1877,6 +1901,8 @@ export default defineComponent({
                 this.form.segmento_treinamento_id = data.segmento_treinamento_id ?? null
                 this.privilegio_gestao_rh = data.privilegio_gestao_rh ?? false
                 this.treinamento_permitir_desmarcar_realizado = data.treinamento_permitir_desmarcar_realizado ?? false
+                this.treinamento_retirar_treinamento_realizado = data.treinamento_retirar_treinamento_realizado ?? false
+                this.treinamento_fat_obrigatorio = data.treinamento_fat_obrigatorio ?? false
 
                 if (treinamento) {
                     this.editando = true
@@ -1884,7 +1910,8 @@ export default defineComponent({
                     this.form.listaVencimentos = (data.listaVencimentos || []).map((t) => ({
                         ...t,
                         _fez_treinamento_ja_salvo: !!t.fez_treinamento,
-                        _alterado: false
+                        _alterado: false,
+                        _fatTouched: false
                     }))
                     this.form.nr_trinta_tres = data.nr_trinta_tres
                     this.form.nr_trinta_cinco = data.nr_trinta_cinco
@@ -1907,7 +1934,8 @@ export default defineComponent({
                 this.form.listaVencimentos = (data.listaVencimentos || []).map((t) => ({
                     ...t,
                     _fez_treinamento_ja_salvo: !!t.fez_treinamento,
-                    _alterado: false
+                    _alterado: false,
+                    _fatTouched: false
                 }))
 
                 if (!this.form.nr_trinta_tres && this.form.listaVencimentos?.length) {
@@ -1953,13 +1981,35 @@ export default defineComponent({
                 }
             }
 
+            const vencimentoId = treinamento ? treinamento.id : null
+            // Validação FAT obrigatório: bloqueio no frontend antes de enviar (config ativa)
+            if (this.treinamento_fat_obrigatorio) {
+                if (vencimentoId) {
+                    const item = this.form.listaVencimentos?.find((t) => t.id === vencimentoId)
+                    if (item && item.fez_treinamento && !(item.numero_fat || '').toString().trim()) {
+                        item._fatTouched = true
+                        if (typeof toastr !== 'undefined') toastr.error('Número FAT é obrigatório para este cliente em treinamentos realizados.')
+                        else mostraErro('', 'Número FAT é obrigatório para este cliente em treinamentos realizados.')
+                        return false
+                    }
+                } else {
+                    const semFat = (this.form.listaVencimentos || []).filter(
+                        (t) => t.fez_treinamento && !(t.numero_fat || '').toString().trim()
+                    )
+                    if (semFat.length > 0) {
+                        semFat.forEach((t) => { t._fatTouched = true })
+                        if (typeof toastr !== 'undefined') toastr.error('Número FAT é obrigatório para este cliente em treinamentos realizados.')
+                        else mostraErro('', 'Número FAT é obrigatório para este cliente em treinamentos realizados.')
+                        return false
+                    }
+                }
+            }
+
             const janela = document.getElementById('janelaTreinamento')
             if (janela && janela.querySelectorAll('input.is-invalid, select.is-invalid, textarea.is-invalid, button.is-invalid').length) {
                 mostraErro('', 'Verifique os erros')
                 return false
             }
-
-            const vencimentoId = treinamento ? treinamento.id : null
             if (vencimentoId) {
                 this.salvandoVencimentoId = vencimentoId
             } else {
@@ -1997,9 +2047,7 @@ export default defineComponent({
                     }
                 }
             } catch (err) {
-                if (err.response && err.response.data && err.response.data.msg && typeof toastr !== 'undefined') {
-                    toastr.error(err.response.data.msg)
-                }
+                // Erro já exibido pelo interceptor do axios (bootstrap.js)
             } finally {
                 this.salvandoVencimentoId = null
                 this.preload = false

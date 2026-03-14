@@ -102,6 +102,16 @@ class TreinamentoController extends Controller
                 return $item['fez_treinamento'];
             });
 
+            $treinamento_fat_obrigatorio = $clienteConfig ? $clienteConfig->getConfig('treinamento_fat_obrigatorio', false) : false;
+            if ($treinamento_fat_obrigatorio && $listaVencimentos->isNotEmpty()) {
+                $semFat = $listaVencimentos->filter(function ($item) {
+                    return empty(trim((string) ($item['numero_fat'] ?? '')));
+                });
+                if ($semFat->isNotEmpty()) {
+                    return response()->json(['msg' => 'Número FAT é obrigatório para este cliente em treinamentos realizados.'], 400);
+                }
+            }
+
             $vencimentosDesmarcadosIds = collect();
             if ($isUpdate && $treinamento && $pode_desmarcar && $existingPivotsForAudit) {
                 $vencimentosDesmarcadosIds = $existingPivotsForAudit->keys()->diff($listaVencimentos->pluck('id'))->values();
@@ -323,6 +333,11 @@ class TreinamentoController extends Controller
             if (!empty($pivotData->arquivo_id ?? null)) {
                 $item['arquivo'] = [['id' => $pivotData->arquivo_id, 'temporario' => false, 'chave' => '', 'falhou' => false]];
             }
+        }
+
+        $treinamento_fat_obrigatorio = $clienteConfig ? $clienteConfig->getConfig('treinamento_fat_obrigatorio', false) : false;
+        if ($treinamento_fat_obrigatorio && !empty($item['fez_treinamento']) && empty(trim((string) ($item['numero_fat'] ?? '')))) {
+            return response()->json(['msg' => 'Número FAT é obrigatório para este cliente em treinamentos realizados.'], 400);
         }
 
         DB::beginTransaction();
@@ -650,6 +665,7 @@ class TreinamentoController extends Controller
         $treinamento->privilegio_gestao_rh = auth()->user()->can('privilegio_gestao_rh');
         $treinamento->treinamento_permitir_desmarcar_realizado = $clienteConfig ? (bool) ($clienteConfig->treinamento_permitir_desmarcar_realizado ?? false) : false;
         $treinamento->treinamento_retirar_treinamento_realizado = auth()->user()->can('treinamento_carteira-etiquetas_retirar_treinamento_realizado');
+        $treinamento->treinamento_fat_obrigatorio = $clienteConfig ? $clienteConfig->getConfig('treinamento_fat_obrigatorio', false) : false;
 
         return response()->json($treinamento);
     }
@@ -692,6 +708,7 @@ class TreinamentoController extends Controller
             'privilegio_gestao_rh' => auth()->user()->can('privilegio_gestao_rh'),
             'treinamento_permitir_desmarcar_realizado' => $clienteConfig ? (bool) ($clienteConfig->treinamento_permitir_desmarcar_realizado ?? false) : false,
             'treinamento_retirar_treinamento_realizado' => auth()->user()->can('treinamento_carteira-etiquetas_retirar_treinamento_realizado'),
+            'treinamento_fat_obrigatorio' => $clienteConfig ? $clienteConfig->getConfig('treinamento_fat_obrigatorio', false) : false,
         ]);
     }
 

@@ -25,7 +25,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $limite_assinaturas_mensal Limite de documentos de assinatura digital por mês (null = sem limite)
  * @property array|null $assinatura_alerta_user_ids IDs de usuários que recebem alerta de cota
  * @property array|null $assinatura_alerta_grupo_ids IDs de grupos (papeis) que recebem alerta de cota
+ * @property array|null $configuracoes Configurações adicionais em JSON (ex.: treinamento_fat_obrigatorio)
  * @property-read \App\Models\Cliente|null $Cliente
+ * @method mixed getConfig(string $key, mixed $default = null)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig query()
@@ -82,6 +84,7 @@ class ClienteConfig extends Model
         'assinatura_alerta_grupo_ids',
         'assinatura_exibir_ip_completo',
         'assinatura_exibir_cpf_completo',
+        'configuracoes',
     ];
 
     protected $casts = [
@@ -100,9 +103,23 @@ class ClienteConfig extends Model
         'assinatura_alerta_grupo_ids' => 'array',
         'assinatura_exibir_ip_completo' => 'boolean',
         'assinatura_exibir_cpf_completo' => 'boolean',
+        'configuracoes' => 'array',
     ];
 
     public $timestamps = false;
+
+    /**
+     * Retorna um valor da chave em configuracoes (JSON), com default.
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
+    public function getConfig(string $key, $default = null)
+    {
+        $config = $this->configuracoes ?? [];
+        return $config[$key] ?? $default;
+    }
 
     public function Cliente()
     {
