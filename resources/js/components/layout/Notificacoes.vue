@@ -147,6 +147,10 @@ export default {
                     this.lista.push(e)
                     this.mostrarToast()
                 })
+                .listen('.importacao_admissoes_concluida', (e) => {
+                    this.lista.push(e)
+                    this.mostrarToast()
+                })
         }
     },
     methods: {
