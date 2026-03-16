@@ -303,16 +303,26 @@ class TreinamentoController extends Controller
         $feedbackId = (int) $request->input('feedback_id');
         $item = $request->input('vencimento');
         $vencimentoId = (int) $item['id'];
+        $empresaId = auth()->user()->empresa_id;
 
         $treinamento = Treinamento::whereFeedbackId($feedbackId)
-            ->whereHas('FeedbackCurriculo', fn ($q) => $q->where('empresa_id', auth()->user()->empresa_id))
+            ->whereHas('FeedbackCurriculo', fn ($q) => $q->where('empresa_id', $empresaId))
             ->first();
 
         if (!$treinamento) {
-            return response()->json(['msg' => 'Treinamento não encontrado.'], 404);
+            $feedback = FeedbackCurriculo::where('id', $feedbackId)->where('empresa_id', $empresaId)->first();
+            if (!$feedback) {
+                return response()->json(['msg' => 'Treinamento não encontrado.'], 404);
+            }
+            // $this->authorize('treinamento_carteira-etiquetas_insert');
+            $treinamento = Treinamento::create([
+                'feedback_id' => $feedbackId,
+                'cadastrou' => auth()->id(),
+                'tipo' => 'Fixo',
+            ]);
+        } else {
+            $this->authorize('treinamento_carteira-etiquetas_update');
         }
-
-        $this->authorize('treinamento_carteira-etiquetas_update');
 
         $clienteConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
         $treinamento_permitir_desmarcar = $clienteConfig && ($clienteConfig->treinamento_permitir_desmarcar_realizado ?? false);
