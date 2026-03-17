@@ -672,9 +672,9 @@ class CihController extends Controller
 
                 $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
                 if ($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
-                    $rows[$key]['centro_de_custo'] = $row->CentroDeCusto->label;
+                    $rows[$key]['centro_de_custo'] = $row->CentroDeCusto ? $row->CentroDeCusto->label : '';
                 } else {
-                    $rows[$key]['area'] = $row->area_id ? $row->Area->label : $row->outra_area;
+                    $rows[$key]['area'] = $row->area_id && $row->Area ? $row->Area->label : $row->outra_area;
                 }
             }
         }

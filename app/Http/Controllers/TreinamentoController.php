@@ -221,6 +221,26 @@ class TreinamentoController extends Controller
      * @param array &$lista - REFERÊNCIA
      * @return int|null
      */
+    /**
+     * Verifica se o item (vencimento) possui anexo FAT válido (novo upload ou já existente).
+     * Usado quando treinamento_fat_obrigatorio está ativo.
+     */
+    private function itemTemAnexoFat(array $item): bool
+    {
+        if (empty($item['arquivo']) || !is_array($item['arquivo']) || !isset($item['arquivo'][0])) {
+            return false;
+        }
+        $arq = $item['arquivo'][0];
+        // Anexo existente (veio do pivot)
+        if (!empty($arq['id']) && empty($arq['temporario'])) {
+            return true;
+        }
+        // Novo upload: temporário, com chave e não falhou
+        return !empty($arq['temporario'])
+            && !empty($arq['chave'])
+            && empty($arq['falhou']);
+    }
+
     private function processarArquivoPrincipal(array &$lista): ?int
     {
         if (!isset($lista['arquivo'][0]) ||
@@ -346,8 +366,8 @@ class TreinamentoController extends Controller
         }
 
         $treinamento_fat_obrigatorio = $clienteConfig ? $clienteConfig->getConfig('treinamento_fat_obrigatorio', false) : false;
-        if ($treinamento_fat_obrigatorio && !empty($item['fez_treinamento']) && empty(trim((string) ($item['numero_fat'] ?? '')))) {
-            return response()->json(['msg' => 'Número FAT é obrigatório para este cliente em treinamentos realizados.'], 400);
+        if ($treinamento_fat_obrigatorio && !empty($item['fez_treinamento']) && !$this->itemTemAnexoFat($item)) {
+            return response()->json(['msg' => 'Anexo da FAT é obrigatório para este cliente em treinamentos realizados.'], 400);
         }
 
         DB::beginTransaction();

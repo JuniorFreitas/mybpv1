@@ -243,26 +243,23 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Número da FAT <span v-if="treinamento_fat_obrigatorio && treinamento.fez_treinamento" class="text-danger" aria-hidden="true">*</span></label>
+                                    <label>Número da FAT</label>
                                     <input type="text" class="form-control"
                                         v-model="treinamento.numero_fat"
-                                        :required="treinamento_fat_obrigatorio && treinamento.fez_treinamento"
                                         :disabled="salvandoVencimentoId === treinamento.id"
-                                        :class="{ 'is-invalid': fatInvalido(treinamento) }"
-                                        @input="marcarAlterado(treinamento)"
-                                        @blur="onBlurFat(treinamento)"
-                                        @keypress="onKeypressFat(treinamento)">
+                                        @input="marcarAlterado(treinamento)">
                                 </div>
                             </div>
-                            <div class="col-md-12" :style="salvandoVencimentoId === treinamento.id ? { pointerEvents: 'none', opacity: 0.7 } : {}">
+                            <div class="col-md-12" :class="{ 'is-invalid': anexoFatInvalido(treinamento) }" :style="salvandoVencimentoId === treinamento.id ? { pointerEvents: 'none', opacity: 0.7 } : {}">
                                 <upload :model="treinamento.arquivo"
                                     :model-delete="treinamento.arquivoDel"
                                     :url="url_anexo"
                                     :quantidade="1"
                                     :multi="false"
-                                    label="ANEXAR FAT"
+                                    :label="treinamento_fat_obrigatorio && treinamento.fez_treinamento ? 'ANEXAR FAT *' : 'ANEXAR FAT'"
                                     @onProgresso="anexoUploadAndamento=true"
                                     @onFinalizado="onUploadFinalizado(treinamento)"></upload>
+                                <div class="invalid-feedback" v-if="anexoFatInvalido(treinamento)">Anexo da FAT é obrigatório para este cliente em treinamentos realizados.</div>
                             </div>
                         </div>
                     </fieldset>
@@ -374,12 +371,8 @@
                                         </template>
                                     </div>
                                     <div class="form-group">
-                                        <label for="">Numero da FAT <span v-if="treinamento_fat_obrigatorio && treinamento.fez_treinamento" class="text-danger" aria-hidden="true">*</span></label>
-                                        <input type="text" class="form-control" v-model="treinamento.numero_fat"
-                                            :required="treinamento_fat_obrigatorio && treinamento.fez_treinamento"
-                                            :class="{ 'is-invalid': fatInvalido(treinamento) }"
-                                            @blur="onBlurFat(treinamento)"
-                                            @keypress="onKeypressFat(treinamento)">
+                                        <label for="">Numero da FAT</label>
+                                        <input type="text" class="form-control" v-model="treinamento.numero_fat">
                                     </div>
                                 </div>
                             </div>
@@ -1633,7 +1626,6 @@ export default defineComponent({
                     ...t,
                     _fez_treinamento_ja_salvo: !!t.fez_treinamento,
                     _alterado: false,
-                    _fatTouched: false
                 }))
                 if (response.data.privilegio_gestao_rh !== undefined) this.privilegio_gestao_rh = response.data.privilegio_gestao_rh
                 if (response.data.treinamento_permitir_desmarcar_realizado !== undefined) this.treinamento_permitir_desmarcar_realizado = response.data.treinamento_permitir_desmarcar_realizado
@@ -1650,17 +1642,17 @@ export default defineComponent({
         marcarAlterado(treinamento) {
             if (treinamento) treinamento._alterado = true
         },
-        /** Exibe is-invalid no campo FAT quando obrigatório, vazio e o campo foi tocado (blur/keypress) ou falhou na validação ao salvar */
-        fatInvalido(treinamento) {
+        /** Verifica se o item tem anexo FAT válido (existente ou novo upload). */
+        itemTemAnexoFat(treinamento) {
+            if (!treinamento.arquivo || !Array.isArray(treinamento.arquivo) || treinamento.arquivo.length === 0) return false
+            const arq = treinamento.arquivo[0]
+            if (arq.id && !arq.temporario) return true
+            return !!(arq.temporario && arq.chave && !arq.falhou)
+        },
+        /** Exibe is-invalid no bloco de anexo FAT quando obrigatório, sem anexo e falhou na validação ao salvar. */
+        anexoFatInvalido(treinamento) {
             if (!this.treinamento_fat_obrigatorio || !treinamento.fez_treinamento) return false
-            const vazio = !(treinamento.numero_fat || '').toString().trim()
-            return vazio && (treinamento._fatTouched === true)
-        },
-        onBlurFat(treinamento) {
-            if (treinamento) treinamento._fatTouched = true
-        },
-        onKeypressFat(treinamento) {
-            if (treinamento) treinamento._fatTouched = true
+            return !this.itemTemAnexoFat(treinamento) && (treinamento._anexoTouched === true)
         },
         onUploadFinalizado(treinamento) {
             this.anexoUploadAndamento = false
@@ -1911,7 +1903,6 @@ export default defineComponent({
                         ...t,
                         _fez_treinamento_ja_salvo: !!t.fez_treinamento,
                         _alterado: false,
-                        _fatTouched: false
                     }))
                     this.form.nr_trinta_tres = data.nr_trinta_tres
                     this.form.nr_trinta_cinco = data.nr_trinta_cinco
@@ -1935,7 +1926,6 @@ export default defineComponent({
                     ...t,
                     _fez_treinamento_ja_salvo: !!t.fez_treinamento,
                     _alterado: false,
-                    _fatTouched: false
                 }))
 
                 if (!this.form.nr_trinta_tres && this.form.listaVencimentos?.length) {
@@ -1982,24 +1972,24 @@ export default defineComponent({
             }
 
             const vencimentoId = treinamento ? treinamento.id : null
-            // Validação FAT obrigatório: bloqueio no frontend antes de enviar (config ativa)
+            // Validação FAT obrigatório (apenas anexo): bloqueio no frontend antes de enviar (config ativa)
             if (this.treinamento_fat_obrigatorio) {
                 if (vencimentoId) {
                     const item = this.form.listaVencimentos?.find((t) => t.id === vencimentoId)
-                    if (item && item.fez_treinamento && !(item.numero_fat || '').toString().trim()) {
-                        item._fatTouched = true
-                        if (typeof toastr !== 'undefined') toastr.error('Número FAT é obrigatório para este cliente em treinamentos realizados.')
-                        else mostraErro('', 'Número FAT é obrigatório para este cliente em treinamentos realizados.')
+                    if (item && item.fez_treinamento && !this.itemTemAnexoFat(item)) {
+                        item._anexoTouched = true
+                        if (typeof toastr !== 'undefined') toastr.error('Anexo da FAT é obrigatório para este cliente em treinamentos realizados.')
+                        else mostraErro('', 'Anexo da FAT é obrigatório para este cliente em treinamentos realizados.')
                         return false
                     }
                 } else {
-                    const semFat = (this.form.listaVencimentos || []).filter(
-                        (t) => t.fez_treinamento && !(t.numero_fat || '').toString().trim()
+                    const semAnexoFat = (this.form.listaVencimentos || []).filter(
+                        (t) => t.fez_treinamento && !this.itemTemAnexoFat(t)
                     )
-                    if (semFat.length > 0) {
-                        semFat.forEach((t) => { t._fatTouched = true })
-                        if (typeof toastr !== 'undefined') toastr.error('Número FAT é obrigatório para este cliente em treinamentos realizados.')
-                        else mostraErro('', 'Número FAT é obrigatório para este cliente em treinamentos realizados.')
+                    if (semAnexoFat.length > 0) {
+                        semAnexoFat.forEach((t) => { t._anexoTouched = true })
+                        if (typeof toastr !== 'undefined') toastr.error('Anexo da FAT é obrigatório para este cliente em treinamentos realizados.')
+                        else mostraErro('', 'Anexo da FAT é obrigatório para este cliente em treinamentos realizados.')
                         return false
                     }
                 }
@@ -2048,6 +2038,12 @@ export default defineComponent({
                 }
             } catch (err) {
                 // Erro já exibido pelo interceptor do axios (bootstrap.js)
+                const msg = err.response?.data?.msg || ''
+                if (msg.indexOf('Anexo da FAT') !== -1 && this.form.listaVencimentos) {
+                    this.form.listaVencimentos.forEach((t) => {
+                        if (t.fez_treinamento && !this.itemTemAnexoFat(t)) t._anexoTouched = true
+                    })
+                }
             } finally {
                 this.salvandoVencimentoId = null
                 this.preload = false
@@ -2065,6 +2061,16 @@ export default defineComponent({
             if (janelaMassa && janelaMassa.querySelectorAll('input.is-invalid, select.is-invalid, textarea.is-invalid, button.is-invalid').length) {
                 mostraErro('', 'Verifique os erros')
                 return false
+            }
+
+            // Com FAT obrigatório, o salvamento em massa não permite anexo por item; exige edição individual.
+            if (this.treinamento_fat_obrigatorio && (this.formMassa.listaVencimentos || []).some((t) => t.fez_treinamento)) {
+                if (typeof toastr !== 'undefined') {
+                    toastr.error('Para este cliente o anexo da FAT é obrigatório. Salve cada treinamento individualmente pela carteira para anexar a FAT.')
+                } else {
+                    mostraErro('', 'Para este cliente o anexo da FAT é obrigatório. Salve cada treinamento individualmente pela carteira para anexar a FAT.')
+                }
+                return
             }
 
             this.preload = true
