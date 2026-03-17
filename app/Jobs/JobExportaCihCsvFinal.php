@@ -43,7 +43,7 @@ class JobExportaCihCsvFinal implements ShouldQueue
         $this->nomeArquivo = $nomeArquivo;
         $this->filtros = $filtros;
         $this->modelo_cih_config = $modelo_cih_config;
-        
+
         // Gerar chave de lock única baseada no arquivo e usuário
         $this->lockKey = 'cih_export_lock_' . md5($nomeArquivo . '_' . $usuario . '_' . json_encode($filtros));
     }
@@ -64,7 +64,7 @@ class JobExportaCihCsvFinal implements ShouldQueue
             \Log::info('Iniciando exportação CIH CSV final');
             \Log::info('Lock adquirido com sucesso. Lock key: ' . $this->lockKey);
             \Log::info('Filtros: ' . json_encode($this->filtros));
-            
+
             $headers = $this->getHeaders();
             \Log::info('Cabeçalhos: ' . json_encode($headers));
 
@@ -112,7 +112,6 @@ class JobExportaCihCsvFinal implements ShouldQueue
                 "Cargo",
                 "Centro de Custo",
                 "Data Ocorrência",
-                "data_ocorrencia_iso",
                 "Ocorrência",
                 "Responsável Lançamento",
                 'Data Lançamento',
@@ -134,19 +133,15 @@ class JobExportaCihCsvFinal implements ShouldQueue
             "Área",
             "Centro de Custo",
             "Data Ocorrência",
-            "data_ocorrencia_iso",
             "Ocorrência",
             "Responsável Lançamento",
             'Data Lançamento',
-            'data_iso_lancamento',
             "Ação",
             "Status Aprovação Gestor",
             "Data Aprovação Gestor",
-            "data_iso_aprovacao_gestor",
             "Responsável Aprovação Gestor",
             "Status Aprovação RH",
             "Data Aprovação RH",
-            "data_iso_aprovacao_rh",
             "Responsável Aprovação RH"
         ];
     }
@@ -387,6 +382,7 @@ class JobExportaCihCsvFinal implements ShouldQueue
         };
 
         if ($this->modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
+            // 17 colunas, na mesma ordem do getHeaders() para CONFIG_CENTRO_DE_CUSTO (sem colunas data_iso extras)
             return [
                 $cleanText($cih->id ?? ''),
                 $cleanText($colaborador->Curriculo->nome ?? ''),
@@ -394,19 +390,15 @@ class JobExportaCihCsvFinal implements ShouldQueue
                 $cleanText($colaborador->VagaAberta->Vaga->nome ?? ''),
                 $cleanText($cih->CentroDeCusto->label ?? ''),
                 $cleanText($cih->data_lancamento ?? ''),
-                $cleanText($cih->data_iso_lancamento ?? ''),
                 $cleanText($cih->Tag ? $cih->Tag->label : $cih->outra_tag ?? ''),
                 $cleanText($cih->ResponsavelLancamento ? $cih->ResponsavelLancamento->nome : ''),
                 $cleanText($cih->data_criacao ?? ''),
-                $cleanText($cih->data_iso_criacao ?? ''),
                 $cleanText($cih->acao ?? ''),
                 $cleanText($cih->status ?? "aguardando"),
                 $cleanText($cih->data_aprovacao ?? ''),
-                $cleanText($cih->data_iso_aprovacao_gestor ?? ''),
                 $cleanText($cih->ResponsavelAprovacao ? $cih->ResponsavelAprovacao->nome : ''),
                 $cleanText($cih->resposta_rh ?? ""),
                 $cleanText($cih->data_aprovacao_rh ?? ''),
-                $cleanText($cih->data_iso_aprovacao_rh ?? ''),
                 $cleanText($cih->RhAprovacao ? $cih->RhAprovacao->nome : ''),
             ];
         }
@@ -419,19 +411,15 @@ class JobExportaCihCsvFinal implements ShouldQueue
             $cleanText($cih->area_id ? ($cih->Area->label ?? '') : ($cih->outra_area ?? '')),
             $cleanText($colaborador->Admissao->CentroDeCusto->label ?? ''),
             $cleanText($cih->data_lancamento ?? ''),
-            $cleanText($cih->data_iso_lancamento ?? ''),
             $cleanText($cih->Tag ? $cih->Tag->label : $cih->outra_tag ?? ''),
             $cleanText($cih->ResponsavelLancamento ? $cih->ResponsavelLancamento->nome : ''),
             $cleanText($cih->data_criacao ?? ''),
-            $cleanText($cih->data_iso_criacao ?? ''),
             $cleanText($cih->acao ?? ''),
             $cleanText($cih->status ?? "aguardando"),
             $cleanText($cih->data_aprovacao ?? ''),
-            $cleanText($cih->data_iso_aprovacao_gestor ?? ''),
             $cleanText($cih->ResponsavelAprovacao ? $cih->ResponsavelAprovacao->nome : ''),
             $cleanText($cih->resposta_rh ?? ""),
             $cleanText($cih->data_aprovacao_rh ?? ''),
-            $cleanText($cih->data_iso_aprovacao_rh ?? ''),
             $cleanText($cih->RhAprovacao ? $cih->RhAprovacao->nome : ''),
         ];
     }
@@ -443,19 +431,19 @@ class JobExportaCihCsvFinal implements ShouldQueue
     private function acquireLock()
     {
         $lockValue = gethostname() . '_' . getmypid() . '_' . time();
-        
+
         try {
             // Tentar adquirir o lock usando atomic operation
             $acquired = Cache::store('redis')->add($this->lockKey, $lockValue, $this->lockTimeout);
-            
+
             if ($acquired) {
                 \Log::info("Lock adquirido: {$this->lockKey} = {$lockValue}");
                 return true;
             }
-            
+
             \Log::info("Falha ao adquirir lock: {$this->lockKey} - Lock já existe");
             return false;
-            
+
         } catch (\Exception $e) {
             \Log::error("Erro ao tentar adquirir lock: {$e->getMessage()}");
             // Em caso de erro no Redis, permite execução para não quebrar o sistema

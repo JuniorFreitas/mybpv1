@@ -706,7 +706,9 @@ function createFormDefault() {
     data_transferencia: '',
     obs: '',
     obs_aprovacao: '',
-    status_aprovacao: ''
+    status_aprovacao: '',
+    anexos: [],
+    anexosDel: []
     }
 }
 
@@ -959,6 +961,8 @@ export default defineComponent({
             try {
                 const { data } = await axios.get(`${BASE_URL}/${id}/editar`)
                 Object.assign(form, data)
+                form.anexos = Array.isArray(form.anexos) ? form.anexos : []
+                form.anexosDel = Array.isArray(form.anexosDel) ? form.anexosDel : []
                 await listaCentroCusto()
                 form.centro_custo_id = data.centro_custo_id ?? ''
                 tituloJanela.value = `#${id} Solicitação de transferência`
