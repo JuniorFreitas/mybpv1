@@ -221,6 +221,26 @@ class TreinamentoController extends Controller
      * @param array &$lista - REFERÊNCIA
      * @return int|null
      */
+    /**
+     * Verifica se o item (vencimento) possui anexo FAT válido (novo upload ou já existente).
+     * Usado quando treinamento_fat_obrigatorio está ativo.
+     */
+    private function itemTemAnexoFat(array $item): bool
+    {
+        if (empty($item['arquivo']) || !is_array($item['arquivo']) || !isset($item['arquivo'][0])) {
+            return false;
+        }
+        $arq = $item['arquivo'][0];
+        // Anexo existente (veio do pivot)
+        if (!empty($arq['id']) && empty($arq['temporario'])) {
+            return true;
+        }
+        // Novo upload: temporário, com chave e não falhou
+        return !empty($arq['temporario'])
+            && !empty($arq['chave'])
+            && empty($arq['falhou']);
+    }
+
     private function processarArquivoPrincipal(array &$lista): ?int
     {
         if (!isset($lista['arquivo'][0]) ||
@@ -303,16 +323,26 @@ class TreinamentoController extends Controller
         $feedbackId = (int) $request->input('feedback_id');
         $item = $request->input('vencimento');
         $vencimentoId = (int) $item['id'];
+        $empresaId = auth()->user()->empresa_id;
 
         $treinamento = Treinamento::whereFeedbackId($feedbackId)
-            ->whereHas('FeedbackCurriculo', fn ($q) => $q->where('empresa_id', auth()->user()->empresa_id))
+            ->whereHas('FeedbackCurriculo', fn ($q) => $q->where('empresa_id', $empresaId))
             ->first();
 
         if (!$treinamento) {
-            return response()->json(['msg' => 'Treinamento não encontrado.'], 404);
+            $feedback = FeedbackCurriculo::where('id', $feedbackId)->where('empresa_id', $empresaId)->first();
+            if (!$feedback) {
+                return response()->json(['msg' => 'Treinamento não encontrado.'], 404);
+            }
+            // $this->authorize('treinamento_carteira-etiquetas_insert');
+            $treinamento = Treinamento::create([
+                'feedback_id' => $feedbackId,
+                'cadastrou' => auth()->id(),
+                'tipo' => 'Fixo',
+            ]);
+        } else {
+            $this->authorize('treinamento_carteira-etiquetas_update');
         }
-
-        $this->authorize('treinamento_carteira-etiquetas_update');
 
         $clienteConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
         $treinamento_permitir_desmarcar = $clienteConfig && ($clienteConfig->treinamento_permitir_desmarcar_realizado ?? false);
@@ -336,8 +366,8 @@ class TreinamentoController extends Controller
         }
 
         $treinamento_fat_obrigatorio = $clienteConfig ? $clienteConfig->getConfig('treinamento_fat_obrigatorio', false) : false;
-        if ($treinamento_fat_obrigatorio && !empty($item['fez_treinamento']) && empty(trim((string) ($item['numero_fat'] ?? '')))) {
-            return response()->json(['msg' => 'Número FAT é obrigatório para este cliente em treinamentos realizados.'], 400);
+        if ($treinamento_fat_obrigatorio && !empty($item['fez_treinamento']) && !$this->itemTemAnexoFat($item)) {
+            return response()->json(['msg' => 'Anexo da FAT é obrigatório para este cliente em treinamentos realizados.'], 400);
         }
 
         DB::beginTransaction();

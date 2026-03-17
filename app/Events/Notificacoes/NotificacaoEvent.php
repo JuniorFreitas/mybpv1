@@ -18,6 +18,7 @@ class NotificacaoEvent implements ShouldBroadcastNow
     const MEMBRO_TAREFA_REMOVE = 'membro_tarefa_remove';
     const EXPORTACAO_EXCEL = 'exportacao_excel';
     const EXPORTACAO_PDF = 'exportacao_pdf';
+    const IMPORTACAO_ADMISSOES_CONCLUIDA = 'importacao_admissoes_concluida';
 
     const TIPO_PADRAO = 'padrao';
 
@@ -106,6 +107,23 @@ class NotificacaoEvent implements ShouldBroadcastNow
                     'icone' => 'fas fa-file-pdf',
                     'titulo' => "Seu pdf {$this->dados['local']} está pronto",
                     'descricao' => "Verifique na área de downloads",
+                ];
+                $notificacao = Notificacao::create([
+                    'tipo' => $this->tipo,
+                    'payload' => $saida,
+                    'user_id' => $this->dados['user_id'],
+                    'visto' => false
+                ]);
+                return $notificacao->toArray();
+
+            case self::IMPORTACAO_ADMISSOES_CONCLUIDA:
+                $totalProcessadas = $this->dados['total_processadas'] ?? 0;
+                $totalSucesso = $this->dados['total_sucesso'] ?? 0;
+                $totalErros = $this->dados['total_erros'] ?? 0;
+                $saida = [
+                    'icone' => 'fas fa-file-import',
+                    'titulo' => 'Importação de admissões concluída',
+                    'descricao' => "{$totalProcessadas} processadas, {$totalSucesso} com sucesso" . ($totalErros > 0 ? ", {$totalErros} com erro. Verifique seu e-mail para o relatório." : '.'),
                 ];
                 $notificacao = Notificacao::create([
                     'tipo' => $this->tipo,

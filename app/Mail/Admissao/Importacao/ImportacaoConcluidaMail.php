@@ -21,7 +21,7 @@ class ImportacaoConcluidaMail extends Mailable implements ShouldQueue
         public int $totalProcessadas,
         public int $totalSucesso,
         public int $totalErros,
-        public ?string $relatorioPath = null
+        public ?string $relatorioConteudoCsv = null
     ) {
         $this->to($this->emailUsuario, $this->nomeUsuario);
         $this->from(env('MAIL_FROM_ADDRESS'), env('APP_NAME'));
@@ -37,9 +37,8 @@ class ImportacaoConcluidaMail extends Mailable implements ShouldQueue
     {
         $view = $this->view('email.admissao.importacao.concluida');
 
-        if ($this->relatorioPath !== null && is_readable($this->relatorioPath)) {
-            $view->attach($this->relatorioPath, [
-                'as' => 'relatorio_importacao_admissoes.csv',
+        if ($this->relatorioConteudoCsv !== null && $this->relatorioConteudoCsv !== '') {
+            $view->attachData($this->relatorioConteudoCsv, 'relatorio_importacao_admissoes.csv', [
                 'mime' => 'text/csv',
             ]);
         }

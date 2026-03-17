@@ -36,6 +36,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use MasterTag\DataHora;
 use PDF;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -2110,12 +2111,26 @@ class AdmissaoController extends Controller
             return response()->json(['msg' => 'Erro ao salvar o arquivo.', 'status' => 'error'], 500);
         }
 
+        $caminhoS3 = $dir . '/' . $uuid . '.xlsx';
+        try {
+            $conteudo = file_get_contents(storage_path('app/' . $path));
+            Storage::disk(Arquivo::DISCO_EXPORTACAO)->put($caminhoS3, $conteudo);
+        } catch (\Throwable $e) {
+            \Log::warning('Importação admissões: falha ao enviar planilha para S3 no upload', [
+                'path' => $path,
+                'caminho_s3' => $caminhoS3,
+                'erro' => $e->getMessage(),
+            ]);
+            return response()->json(['msg' => 'Erro ao enviar arquivo para o storage.', 'status' => 'error'], 500);
+        }
+
         ImportacaoAdmissaoJob::dispatch(
             $path,
             $empresaId,
             $user ? (int) $user->id : null,
             100,
-            $uuid
+            $uuid,
+            $caminhoS3
         );
 
         return response()->json([
