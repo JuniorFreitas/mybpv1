@@ -1,11 +1,17 @@
 @extends('layouts.pdf_filial')
+<style>
+    /* Margem inferior só o necessário para o rodapé (evita faixa branca enorme abaixo do texto) */
+    @page {
+        margin: 10mm 2mm 8mm 2mm;
+    }
+</style>
 <div style="margin-left: 9px">
     @include('layouts.cabecalioFilialEmpresaJob')
 </div>
-<div style="position: fixed; right: -4cm; top: 13cm; text-align: left;transform: rotate(90deg);">
+<div style="position: fixed; left: 20px; bottom: 0; text-align: left; width: 90%; padding-bottom: 2px;">
     @include('layouts.rodapePdfFilialJob')
 </div>
-<div style="margin-left: 6%; width: 85%">
+<div style="margin-left: 2.5%; width: 93%; padding-bottom: 28px;">
     <p class="f11"
        style="text-align: center; margin-bottom: 1cm; margin-top: 0.5cm; text-transform: uppercase"><br>
         <strong>CONTRATO DE TRABALHO A TÍTULO DE EXPERIÊNCIA</strong><br>
@@ -251,14 +257,16 @@
         dela dará o competente recibo.
     </p><br>
     <br><br>
-    <div class="f11" style="line-height: 26pt">
+    <div class="f11" style="line-height: 14pt">
         São
-        Luís/MA, {{ (new \MasterTag\DataHora($dados['dados_colaborador']->Admissao->data_admissao))->dataCompletaExt() }}
-        .
+        Luís/MA, 
+        {{ (new \MasterTag\DataHora($dados['dados_colaborador']->Admissao->data_admissao))->dataCompletaExt() }}.
         <br>
-        <br>
-        <br>
+        <br>        <br>
+
     </div>
+    <br>
+
     <div class="f11" style="line-height: 15pt;text-align: center">
         <hr style="width: 10cm; margin-left: 24%; border:none; border-top: 1px solid #333">
         {{$dados['dados_empresa']['razao_social']}}
@@ -266,10 +274,11 @@
         <br>
         <br>
         <hr style="width: 10cm; margin-top: 5px;  margin-left: 24%;  border:none; border-top: 1px solid #333">
-        {{$dados['dados_colaborador']->nome}}
+        {{$dados['dados_colaborador']->Curriculo->nome}}
     </div>
 
-    <div class="f11" style="line-height: 15pt;text-align: left">
+    
+    <div class="f11" style="line-height: 12pt;text-align: left">
         <p class="f11" style="margin-bottom: 26pt; margin-top: 30pt">
             TESTEMUNHAS:
         </p>

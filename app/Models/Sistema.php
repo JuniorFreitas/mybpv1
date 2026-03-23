@@ -10,8 +10,10 @@ use App\Models\Exportacao;
 use DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use MasterTag\DataHora;
@@ -286,7 +288,10 @@ class Sistema
         }
 
         $type = pathinfo($path, PATHINFO_EXTENSION);
-        $data = file_get_contents($path);
+        $data = self::obterConteudoArquivo($path, (bool) $storage);
+        if ($data === null) {
+            return '';
+        }
 
         $mime = 'image';
         if ($type == 'pdf') {
@@ -294,6 +299,38 @@ class Sistema
         }
 
         return "data:$mime/" . $type . ';base64,' . base64_encode($data);
+    }
+
+    /**
+     * Le o arquivo local/remoto e tenta fallback no disco S3 para URLs privadas.
+     */
+    private static function obterConteudoArquivo(string $path, bool $storage): ?string
+    {
+        $data = @file_get_contents($path);
+        if ($data !== false) {
+            return $data;
+        }
+
+        if (!$storage || !filter_var($path, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+
+        $s3Key = ltrim((string) parse_url($path, PHP_URL_PATH), '/');
+        if ($s3Key === '') {
+            return null;
+        }
+
+        try {
+            if (Storage::disk('s3')->exists($s3Key)) {
+                return Storage::disk('s3')->get($s3Key);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao carregar arquivo no fallback S3.', [
+                'erro' => $e->getMessage(),
+            ]);
+        }
+
+        return null;
     }
 
     public static function convertBase2($arquivo, $storage = null)
@@ -318,9 +355,20 @@ class Sistema
 
     public static function valorPorExtenso($valor = 0, $moeda = TRUE, $genero = "M")
     {
+        if ($valor === null || $valor === '') {
+            return "zero";
+        }
+
         // deixar o numero como string 1.200,00, como 120000
+        $valor = (string) $valor;
         $valor = str_replace(".", "", $valor);
         $valor = str_replace(',', "", $valor);
+        $valor = trim($valor);
+
+        if ($valor === '' || !is_numeric($valor)) {
+            return "zero";
+        }
+
         if ($valor == 0.00) {
             return "zero";
         }

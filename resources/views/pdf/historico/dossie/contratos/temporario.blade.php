@@ -15,7 +15,7 @@
         }
 
         @page {
-            margin: 0cm 0cm;
+            margin: 0cm 0cm 8mm 0cm;
             height: 22cm;
         }
 
@@ -29,6 +29,7 @@
 
         .conteudo {
             margin-top: 0.2cm;
+            padding-bottom: 28px;
         }
 
         .h5 {
@@ -333,7 +334,9 @@
     </div>
 </div>
 <div style="clear: both"></div>
-@include('layouts.rodapePdf',['semassinatura' => false])
+<div style="position: fixed; left: 20px; bottom: 0; text-align: left; width: 90%; padding-bottom: 2px;">
+    @include('layouts.rodapePdfFilialJob')
+</div>
 
 </body>
 </html>
