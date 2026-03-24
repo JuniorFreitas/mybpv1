@@ -92,18 +92,29 @@
                                 @endphp
                                 <div style="width: 50%; font-size: 5.5pt; text-align: right; float: left;">
                                     @if($assinatura_sesmt && !empty($assinatura_sesmt['url_thumb']))
-                                        <img
-                                            src="{{ $assinatura_sesmt['url_thumb'] }}"
-                                            alt="" style="width: 63%; margin-right: 0.5cm">
-                                    @elseif($assinatura_sesmt)
-                                        <table style="width: 100%; padding: 2mm">
+                                        <table style="width: 100%; padding: 0 2mm;">
                                             <tr>
-                                                <td style="text-align: center">
-                                                    <span style="color: blue; text-align: center; font-family: 'Sacramento', cursive; font-size: 6pt; position: relative; top: 5px">{{ $assinatura_sesmt['nome'] ?? 'Não informado' }}</span>
+                                                <td style="text-align: center; vertical-align: bottom; padding-bottom: 0;">
+                                                    <img
+                                                        src="{{ $assinatura_sesmt['url_thumb'] }}"
+                                                        alt="" style="max-width: 63%; max-height: 1cm; display: block; margin: 0 auto -0.2mm;">
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td style="text-align: center; border-top: 0.3mm solid; padding-bottom: -50px !important;">
+                                                <td style="text-align: center; border-top: 0.3mm solid;">
+                                                    {{ $assinatura_sesmt['tipo'] ?? 'Não informado' }}
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    @elseif($assinatura_sesmt)
+                                        <table style="width: 100%; padding: 0 2mm;">
+                                            <tr>
+                                                <td style="text-align: center; vertical-align: bottom; padding-bottom: 0;">
+                                                    <span style="color: blue; text-align: center; font-family: 'Sacramento', cursive; font-size: 6pt;">{{ $assinatura_sesmt['nome'] ?? 'Não informado' }}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="text-align: center; border-top: 0.3mm solid;">
                                                     {{ $assinatura_sesmt['tipo'] ?? 'Não informado' }}
                                                 </td>
                                             </tr>
@@ -113,14 +124,23 @@
 
                                 <div style="width: 50%; font-size: 5.5pt; text-align: left; float: left;">
                                     @if($assinatura_gestor_rh && !empty($assinatura_gestor_rh['url_thumb']))
-                                        <img
-                                            src="{{ $assinatura_gestor_rh['url_thumb'] }}"
-                                            alt="" style="width: 55%; margin-left: 0.5cm">
-                                    @elseif($assinatura_gestor_rh)
-                                        <table style="width: 100%; padding: 2mm">
+                                        <table style="width: 100%; padding: 0 2mm;">
                                             <tr>
-                                                <td style="text-align: center">
-                                                    <span style="color: blue; text-align: center; font-family: 'Sacramento', cursive; font-size: 6pt; position: relative; top: 5px">{{ $assinatura_gestor_rh['nome'] ?? 'Não informado' }}</span>
+                                                <td style="text-align: center; vertical-align: bottom; padding-bottom: 0;">
+                                                    <img
+                                                        src="{{ $assinatura_gestor_rh['url_thumb'] }}"
+                                                        alt="" style="max-width: 55%; max-height: 1cm; display: block; margin: 0 auto -0.2mm;">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="text-align: center; border-top: 0.3mm solid;">{{ $assinatura_gestor_rh['tipo'] ?? 'Não informado' }}</td>
+                                            </tr>
+                                        </table>
+                                    @elseif($assinatura_gestor_rh)
+                                        <table style="width: 100%; padding: 0 2mm;">
+                                            <tr>
+                                                <td style="text-align: center; vertical-align: bottom; padding-bottom: 0;">
+                                                    <span style="color: blue; text-align: center; font-family: 'Sacramento', cursive; font-size: 6pt;">{{ $assinatura_gestor_rh['nome'] ?? 'Não informado' }}</span>
                                                 </td>
                                             </tr>
                                             <tr>
