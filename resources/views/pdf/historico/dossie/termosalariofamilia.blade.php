@@ -1,10 +1,18 @@
 @extends('layouts.pdf_filial')
 @section('title','Relatorio de ponto')
 @section('conteudo')
+    <style>
+        @page {
+            margin: 10mm 2mm 8mm 2mm;
+        }
+    </style>
     <div style="margin-left: 9px">
         @include('layouts.cabecalioFilialEmpresaJob')
     </div>
-    <div style="margin-left: 9px; width: 95%">
+    <div style="position: fixed; left: 20px; bottom: 0; text-align: left; width: 90%; padding-bottom: 2px;">
+        @include('layouts.rodapePdfFilialJob')
+    </div>
+    <div style="margin-left: 2.5%; width: 93%; padding-bottom: 28px;">
         <p class="f12"
            style="text-align: center; margin-bottom: 1cm; margin-top: 0.5cm; text-transform: uppercase">
             <b>TERMO DE RESPONSABILIDADE</b><br>
@@ -58,9 +66,6 @@
             {{$dados['dados_colaborador']->Curriculo->nome}}
         </div>
 
-        <div style="position:fixed; bottom: 35px">
-            @include('layouts.rodapePdfFilialJob')
-        </div>
     </div>
 @stop
 
