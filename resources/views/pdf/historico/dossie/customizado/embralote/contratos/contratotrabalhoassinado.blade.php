@@ -1,10 +1,18 @@
 @extends('layouts.pdf_filial')
 @section('title','Relatorio de ponto')
 @section('conteudo')
+    <style>
+        @page {
+            margin: 10mm 2mm 8mm 2mm;
+        }
+    </style>
     <div style="margin-left: 9px">
         @include('layouts.cabecalioFilialEmpresaJob')
     </div>
-    <div style="margin-left: 5.2%; width: 87%">
+    <div style="position: fixed; left: 20px; bottom: 0; text-align: left; width: 90%; padding-bottom: 2px;">
+        @include('layouts.rodapePdfFilialJob')
+    </div>
+    <div style="margin-left: 5.2%; width: 87%; padding-bottom: 28px;">
         <p
             style="text-align: center; margin-top: -0.3cm; font-size: 13pt; text-transform: uppercase">
             <br><br>
@@ -471,10 +479,6 @@
     </div>
 
 @stop
-
-<div style="position: fixed; right: -3.8cm; top: 16cm; text-align: left;transform: rotate(90deg);">
-    @include('layouts.rodapePdfFilialJob')
-</div>
 @push('style')
     <style type="text/css">
         .obs {
@@ -486,10 +490,6 @@
         .f11 {
             font-size: 10pt !important;
             line-height: 14pt;
-        }
-
-        .rodapeAssinatura {
-            color: #b2acac !important;
         }
 
     </style>
