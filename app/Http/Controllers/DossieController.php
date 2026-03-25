@@ -67,7 +67,7 @@ class DossieController extends Controller
         $feedback = FeedbackCurriculo::select('id', 'curriculo_id')->whereId($feedback_id)->with(
             array_merge(
                 $this->listaDeRelacionamentos(),
-                ['Curriculo:id,nome,email,cpf', 'Curriculo.User:id,login']
+                ['Curriculo:id,nome,email,cpf', 'Curriculo.User:id,login', 'Curriculo.FotoTres']
             )
         )->first();
 
@@ -77,6 +77,10 @@ class DossieController extends Controller
             $formattedKey = preg_replace('/^get_documento_relacionado_/', '', $key);
             $formattedFeedback[$formattedKey] = $value;
         }
+
+        $formattedFeedback['foto_tres'] = $feedback->Curriculo && $feedback->Curriculo->FotoTres
+            ? $feedback->Curriculo->FotoTres->values()->all()
+            : [];
 
         $tipoModelosAssinatura = [
             'contratotrabalhoassinado',
@@ -137,6 +141,8 @@ class DossieController extends Controller
                 $this->handleDocument($type, $dados, $feedback);
             }
 
+            $this->handleFotoTresCurriculo($dados, $feedback);
+
             DB::commit();
             return response()->json([], 201);
         } catch (\Exception $e) {
@@ -193,11 +199,58 @@ class DossieController extends Controller
         LogHistorico::createLog($feedback->id, "Inseriu $label");
     }
 
+    /**
+     * Foto 3x4 do currículo (mesmo fluxo do processo de admissão: disco fotocurriculo + pivot documentos_curriculos).
+     */
+    private function handleFotoTresCurriculo(array $dados, FeedbackCurriculo $feedback): void
+    {
+        $curriculo = $feedback->Curriculo;
+        if (!$curriculo) {
+            return;
+        }
+
+        if (isset($dados['foto_tresDel'])) {
+            foreach ($dados['foto_tresDel'] as $id_anexo) {
+                $arquivo = Arquivo::find($id_anexo);
+                if ($arquivo) {
+                    $arquivo->excluir();
+                    LogHistorico::createLog($feedback->id, 'Removeu FOTO 3X4');
+                }
+            }
+        }
+
+        if (!isset($dados['foto_tres'])) {
+            return;
+        }
+
+        foreach ($dados['foto_tres'] as $anexo) {
+            if (!empty($anexo['id'])) {
+                Arquivo::whereId($anexo['id'])->update(['nome' => $anexo['nome'] ?? '']);
+            }
+            $arquivo = Arquivo::whereChave($anexo['chave'] ?? '')->whereId($anexo['id'])->first();
+            if (!$arquivo) {
+                continue;
+            }
+            if ($curriculo->FotoTres()->where('arquivos.id', $arquivo->id)->exists()) {
+                continue;
+            }
+            $arquivo->temporario = false;
+            $arquivo->chave = '';
+            $arquivo->save();
+            $curriculo->FotoTres()->attach($arquivo->id, ['tipo' => 'foto3x4']);
+            LogHistorico::createLog($feedback->id, 'Inseriu FOTO 3X4');
+        }
+    }
 
     // Anexos-------------------------------------------------
     public function uploadAnexos(Request $request)
     {
         return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENSPDF, Arquivo::DISCO_DOSSIE);
+    }
+
+    public function uploadFotoTres(Request $request)
+    {
+        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENS, Arquivo::DISCO_FOTOCURRICULO);
     }
 
     public function anexoShow(Request $request, $arquivo)
