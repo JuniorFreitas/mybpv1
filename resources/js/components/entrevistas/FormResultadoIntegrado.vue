@@ -5,7 +5,7 @@
             <div class="row">
                 <div class="col-12 col-sm-6">
                     <div class="form-group">
-                        <label>Encaminhado para Documentos</label>
+                        <label>Encaminhado para Documentos <span class="text-danger">*</span></label>
                         <select
                             class="form-control"
                             onchange="valida_campo_vazio(this,1)"
@@ -66,7 +66,7 @@
                 </div>
 
                 <div class="col-12 col-sm-6" v-if="form.encaminhado_exame">
-                    <label>PCMSO</label>
+                    <label>PCMSO <span class="text-danger">*</span></label>
                     <select
                         class="form-control"
                         v-bind:onchange="!empresasSemValidacao.includes(AUTENTICADO.cliente_id) ? 'valida_campo_vazio(this,1)' : null"
@@ -80,7 +80,7 @@
                 </div>
 
                 <div class="col-12 col-sm-6" v-if="form.encaminhado_exame">
-                    <label>Empresa Exame</label>
+                    <label>Empresa Exame <span class="text-danger">*</span></label>
                     <select
                         class="form-control"
                         v-bind:onchange="!empresasSemValidacao.includes(AUTENTICADO.cliente_id) ? 'valida_campo_vazio(this,1)' : null"
@@ -125,7 +125,7 @@
             <div class="row">
                 <div class="col-12 col-sm-6">
                     <div class="form-group">
-                        <label>Encaminhado para Treinamento</label>
+                        <label>Encaminhado para Treinamento <span class="text-danger">*</span></label>
                         <select
                             class="form-control"
                             onchange="valida_campo_vazio(this,1)"
@@ -155,7 +155,7 @@
         <div class="row">
             <div class="col-12 col-sm-6">
                 <div class="form-group">
-                    <label>Exceção</label>
+                    <label>Exceção <span class="text-danger">*</span></label>
                     <select
                         class="form-control"
                         onchange="valida_campo_vazio(this,1)"
@@ -172,7 +172,7 @@
 
             <div class="col-12 col-sm-6" v-if="form.excessao">
                 <div class="form-group">
-                    <label>Autorizado por</label>
+                    <label>Autorizado por <span class="text-danger">*</span></label>
                     <input
                         type="text"
                         :disabled="visualizar || disabled"
@@ -188,7 +188,7 @@
         <div class="row">
             <div class="col-12 col-sm-6">
                 <div class="form-group">
-                    <label>Responsável pelo envio</label>
+                    <label>Responsável pelo envio <span class="text-danger">*</span></label>
                     <input
                         type="text"
                         :disabled="visualizar || disabled"

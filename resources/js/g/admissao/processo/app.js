@@ -1010,14 +1010,35 @@ const app = createApp({
             setupCampo()
         },
 
-        CadastraAvulsa() {
-            formReset()
-            this.validaBlur()
-            $('#janelaAdmissaoAvulsa :input:visible').trigger('blur')
-            $('#janelaAdmissaoAvulsa :input:visible.is-invalid').length
-            let countErro = document.querySelectorAll('.is-invalid').length
+        /**
+         * Dispara blur apenas em .validacampo visíveis e habilitados dentro do modal (evita validar outros modais/ocultos).
+         */
+        validaBlurNoModal(selector) {
+            const $root = $(selector)
+            $root.find('.validacampo:visible:enabled').each(function () {
+                this.focus()
+                this.blur()
+            })
+        },
 
-            if (countErro > 0) {
+        /**
+         * Conta erros só em campos visíveis e habilitados (não valida desabilitados nem trechos ocultos).
+         */
+        temErroValidacaoModal(selector) {
+            return $(selector).find(':input:visible:enabled.is-invalid').length > 0
+        },
+
+        CadastraAvulsa() {
+            if (!this.exibiFormulario) {
+                toastr.error('Conclua a busca pelo CPF e preencha os dados exibidos antes de salvar.', 'Atenção!')
+                return false
+            }
+
+            formReset()
+            this.validaBlurNoModal('#janelaAdmissaoAvulsa')
+            $('#janelaAdmissaoAvulsa :input:visible:enabled').trigger('blur')
+
+            if (this.temErroValidacaoModal('#janelaAdmissaoAvulsa')) {
                 toastr.error('Verifique os campos', 'Atenção!')
                 return false
             }
@@ -1080,8 +1101,8 @@ const app = createApp({
         CadastraMassa() {
             formReset()
 
-            $('#janelaAdmissaoMassa :input:visible').trigger('blur')
-            if ($('#janelaAdmissaoMassa :input:visible.is-invalid').length) {
+            $('#janelaAdmissaoMassa :input:visible:enabled').trigger('blur')
+            if ($('#janelaAdmissaoMassa :input:visible:enabled.is-invalid').length) {
                 mostraErro('', 'Verifique os erros')
                 return false
             }
@@ -1216,16 +1237,14 @@ const app = createApp({
         },
 
         alterar() {
-            this.validaBlur()
-            let countErro = document.querySelectorAll('.is-invalid').length
-            if (countErro > 0) {
-                toastr.error('Verifique os campos', 'Atenção!')
+            if (this.visualizar) {
                 return false
             }
 
-            $('#janelaCadastrar :input:visible').trigger('blur')
-            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
-                mostraErro('', 'Verifique os erros')
+            this.validaBlurNoModal('#janelaCadastrar')
+            $('#janelaCadastrar :input:visible:enabled').trigger('blur')
+            if (this.temErroValidacaoModal('#janelaCadastrar')) {
+                toastr.error('Verifique os campos', 'Atenção!')
                 return false
             }
 
