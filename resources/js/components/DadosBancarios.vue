@@ -4,22 +4,22 @@
             <legend class="text-uppercase">Dados Bancários</legend>
             <div class="row">
                 <div class="col-md-4 mb-2">
-                    <label>Banco</label>
+                    <label>Banco <span class="text-danger">*</span></label>
                     <input class="form-control" v-model="model.banco"
                            onblur="valida_campo_vazio(this,1)" type="text" :disabled="visualizar">
                 </div>
                 <div class="col-md-4 mb-2">
-                    <label>Agência</label>
+                    <label>Agência <span class="text-danger">*</span></label>
                     <input class="form-control" v-model="model.agencia"
                            onblur="valida_campo_vazio(this,1)" type="text" :disabled="visualizar">
                 </div>
                 <div class="col-md-4 mb-2">
-                    <label>Conta</label>
+                    <label>Conta <span class="text-danger">*</span></label>
                     <input class="form-control" v-model="model.conta"
                            onblur="valida_campo_vazio(this,1)" type="text" :disabled="visualizar">
                 </div>
                 <div class="col-md-4 mb-2">
-                    <label>Tem PIX?</label>
+                    <label>Tem PIX? <span class="text-danger">*</span></label>
                     <select class="form-control" v-model="model.pix" onblur="valida_campo_vazio(this,1)"
                             onchange="valida_campo_vazio(this,1)" :disabled="visualizar">
                         <option :value="''">Selecione</option>
@@ -28,12 +28,12 @@
                     </select>
                 </div>
                 <div class="col-md-4 mb-2" v-show="model.pix === true">
-                    <label>Tipo de Chave</label>
+                    <label>Tipo de Chave <span class="text-danger">*</span></label>
                     <input class="form-control" v-model="model.tipochavepix"
                            onblur="valida_campo_vazio(this,1)" type="text" :disabled="visualizar">
                 </div>
                 <div class="col-md-4 mb-2" v-show="model.pix === true">
-                    <label>Chave do Pix</label>
+                    <label>Chave do Pix <span class="text-danger">*</span></label>
                     <input class="form-control" v-model="model.chavepix"
                            onblur="valida_campo_vazio(this,1)" type="text" :disabled="visualizar">
                 </div>

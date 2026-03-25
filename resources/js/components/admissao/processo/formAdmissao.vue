@@ -64,7 +64,7 @@
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
-                    <label>Função</label>
+                    <label>Função <span class="text-danger">*</span></label>
                     <input
                         type="text"
                         class="form-control"
@@ -140,7 +140,7 @@
 
             <div class="col-12 col-sm-6" v-if="form.tipo_admissao === 'FIXO'">
                 <div class="form-group">
-                    <label>Prazo de experiência</label>
+                    <label>Prazo de experiência <span class="text-danger">*</span></label>
                     <select
                         class="form-control"
                         onchange="valida_campo_vazio(this, 1)"
@@ -233,7 +233,7 @@
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
-                    <label>Status</label>
+                    <label>Status <span class="text-danger">*</span></label>
                     <select
                         class="form-control"
                         onchange="valida_campo_vazio(this, 1)"
@@ -264,7 +264,7 @@
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
-                    <label>Data da Admissão</label>
+                    <label>Data da Admissão <span v-if="verificaStatusAdmitidoProntoAdmissao" class="text-danger">*</span></label>
                     <input
                         type="text"
                         class="form-control validacampo"
@@ -323,7 +323,7 @@
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
-                    <label>PIS</label>
+                    <label>PIS <span v-if="verificaStatusAdmitidoProntoAdmissao" class="text-danger">*</span></label>
                     <input
                         type="text"
                         class="form-control validacampo"
@@ -351,7 +351,7 @@
 
             <div class="col-12 col-sm-6">
                 <div class="form-group">
-                    <label>Série CTPS</label>
+                    <label>Série CTPS <span v-if="verificaStatusAdmitidoProntoAdmissao && form.dados_admissoes.ctps_numero && String(form.dados_admissoes.ctps_numero).length" class="text-danger">*</span></label>
                     <input
                         type="text"
                         class="form-control validacampo"

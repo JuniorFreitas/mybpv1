@@ -3,6 +3,19 @@
         <p class="mt-2" v-if="preload"><i class="fa fa-spinner fa-pulse"></i> Aguarde ...</p>
         <div v-if="!preload" :id="`form_${hash}`">
             <fieldset>
+                <legend>FOTO 3x4 (Foto Escaneada)</legend>
+                <upload
+                    label="Selecionar Imagem"
+                    :url="urlFotoTresUpload"
+                    :model="form.foto_tres"
+                    :model-delete="form.foto_tresDel"
+                    :apenas-imagens="true"
+                    :quantidade="1"
+                    @onprogresso="anexoUploadAndamento = true"
+                    @onfinalizado="anexoUploadAndamento = false"
+                ></upload>
+            </fieldset>
+            <fieldset>
                 <legend>DOCUMENTO DE SELEÇÃO</legend>
                 <upload
                     label="Selecionar anexo(s)"
@@ -631,6 +644,7 @@ export default {
             URL_ADMIN,
 
             urlAnexoUpload: `${URL_ADMIN}/historico/dossie/uploadAnexos`,
+            urlFotoTresUpload: `${URL_ADMIN}/historico/dossie/uploadFotoTres`,
             anexoUploadAndamento: false,
 
             hoje: '',
