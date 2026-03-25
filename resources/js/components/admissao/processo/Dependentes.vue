@@ -16,7 +16,7 @@
                     <div class="row">
                         <div class="col-12 col-sm-6 col-lg-4">
                             <div class="form-group">
-                                <label>Tipo</label>
+                                <label>Tipo <span class="text-danger">*</span></label>
                                 <select class="form-control validacampo" v-model="dependente.tipo"
                                         :disabled="visualizar"
                                         @change.prevent="valida_campo_vazio($event.target, 1)"  onblur="valida_campo_vazio(this, 1)">
@@ -37,7 +37,7 @@
                     <div class="row">
                         <div class="col-12 col-sm-6 col-lg-6">
                             <div class="form-group">
-                                <label>Nome</label>
+                                <label>Nome <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control validacampo" onblur="valida_campo_vazio(this,2)"
                                        :disabled="visualizar"
                                        v-model="dependente.nome" placeholder="Ex: Ana">

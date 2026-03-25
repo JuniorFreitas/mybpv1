@@ -985,6 +985,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         //Rotas DOSSIE (rotas específicas antes das com parâmetro, igual medidas-administrativas)
         Route::group(['as' => 'dossie.', 'prefix' => 'dossie'], function () {
             Route::post('/uploadAnexos', [\App\Http\Controllers\DossieController::class, 'uploadAnexos'])->name('upload-anexos');
+            Route::post('/uploadFotoTres', [\App\Http\Controllers\DossieController::class, 'uploadFotoTres'])->name('upload-foto-tres');
             Route::get('/anexo/{arquivo}', [\App\Http\Controllers\DossieController::class, 'anexoShow'])->name('anexo-show');
             Route::get('/anexoDownload/{arquivo}', [\App\Http\Controllers\DossieController::class, 'download'])->name('anexo-download');
             Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\DossieController::class, 'anexoDelete'])->name('anexo-delete');

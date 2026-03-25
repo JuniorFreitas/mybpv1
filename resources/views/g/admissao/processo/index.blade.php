@@ -240,7 +240,7 @@
                                             <div class="col-12 col-sm-6 col-lg-6 col-xl-6"
                                                  v-if="formAvulsa.curriculo.formacao >=8">
                                                 <div class="form-group">
-                                                    <label>Curso</label>
+                                                    <label>Curso <span class="text-danger">*</span></label>
                                                     <input type="text" class="form-control"
                                                            v-model="formAvulsa.curriculo.formacao_curso"
                                                            placeholder="Ex: Administração"
@@ -854,7 +854,7 @@
                             <div class="col-12 col-sm-6 col-lg-6 col-xl-6"
                                  v-if="form.curriculo.formacao >=8">
                                 <div class="form-group">
-                                    <label>Curso</label>
+                                    <label>Curso <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control"
                                            :disabled="visualizar"
                                            v-model="form.curriculo.formacao_curso"
@@ -1060,7 +1060,7 @@
                 <fieldset>
                     <legend>RESULTADO INTEGRADO</legend>
                     <form-resultado-integrado
-                        :form="form.resultado_integrado" :disabled="visualizar"
+                        :form="form.resultado_integrado" :disabled="visualizar || !editando"
                         :visualizar="visualizar"></form-resultado-integrado>
                 </fieldset>
 
@@ -1069,7 +1069,8 @@
                     <legend class="text-uppercase">ADMISSÃO</legend>
 
                     <form-admissao :form="form.admissao"
-                                   :visualizar="visualizar"></form-admissao>
+                                   :visualizar="visualizar"
+                                   :disabled="visualizar || !editando"></form-admissao>
 
                     <div class="col-12">
                         <dependentes :model="form.curriculo.dependentes" :visualizar='visualizar'
@@ -1143,7 +1144,7 @@
 
                         <div class="col-12 col-sm-6" v-if="form_massa.tipo_admissao === 'FIXO'">
                             <div class="form-group">
-                                <label>Prazo de experiência</label>
+                                <label>Prazo de experiência <span class="text-danger">*</span></label>
                                 <select class="form-control" onchange="valida_campo_vazio(this,1)"
                                         onblur="valida_campo_vazio(this,1)"
                                         v-model="form_massa.prazo_experiencia">
@@ -1214,7 +1215,7 @@
 
                         <div class="col-12 col-sm-6">
                             <div class="form-group">
-                                <label>Status</label>
+                                <label>Status <span class="text-danger">*</span></label>
                                 <select class="form-control" onchange="valida_campo_vazio(this,1)"
 
                                         onblur="valida_campo_vazio(this,1)"
