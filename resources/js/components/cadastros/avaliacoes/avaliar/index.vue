@@ -470,7 +470,7 @@
                         <span class="badge ma-legend-pill ma-legend-pill--danger mb-1 mr-1">Pendente autoavaliação</span>
                         <span class="badge ma-legend-pill ma-legend-pill--pink mb-1 mr-1">Pendente autoavaliação colaborador</span>
                         <span class="badge ma-legend-pill ma-legend-pill--warning mb-1 mr-1">Pendente avaliação do par</span>
-                        <span class="badge ma-legend-pill ma-legend-pill--info mb-1 mr-1">Pendente avaliação gestor</span>
+                        <span class="badge ma-legend-pill ma-legend-pill--gestor-wait mb-1 mr-1">Pendente avaliação gestor</span>
                         <span class="badge ma-legend-pill ma-legend-pill--warn-final mb-1 mr-1">Falta avaliação final</span>
                         <span class="badge ma-legend-pill ma-legend-pill--success mb-1 mr-1">Completa</span>
                     </div>
@@ -483,7 +483,7 @@
                         <span class=" font-weight-bold  mr-2 mb-1 w-100">Legenda:</span>
                         <span class="badge ma-legend-pill ma-legend-pill--light mb-1 mr-1">Pendente avaliação do gestor</span>
                         <span class="badge ma-legend-pill ma-legend-pill--warn-final mb-1 mr-1">Falta avaliação final</span>
-                        <span class="badge ma-legend-pill ma-legend-pill--info mb-1 mr-1">Avaliada pelo gestor</span>
+                        <span class="badge ma-legend-pill ma-legend-pill--avaliada mb-1 mr-1">Avaliada pelo gestor</span>
                         <span class="badge ma-legend-pill ma-legend-pill--success mb-1 mr-1">Completa</span>
                     </div>
                 </div>
@@ -731,7 +731,7 @@
                                             <div class="mt-2 d-flex flex-wrap align-items-center">
                                                 <span class="badge ma-status-badge ma-status-badge--pend" v-if="item.status === 'Pendente'">Pendente gestor</span>
                                                 <span class="badge ma-status-badge ma-status-badge--final-pend" v-else-if="item.status === 'Avaliada' && item.fazer_avaliacao_final">Falta avaliação final</span>
-                                                <span class="badge ma-status-badge ma-status-badge--info" v-else-if="item.status === 'Avaliada'">Avaliada pelo gestor</span>
+                                                <span class="badge ma-status-badge ma-status-badge--avaliada" v-else-if="item.status === 'Avaliada'">Avaliada pelo gestor</span>
                                                 <span class="badge ma-status-badge ma-status-badge--ok" v-else-if="item.status === 'Finalizada'">Completa</span>
                                             </div>
                                         </div>
@@ -1110,7 +1110,7 @@ export default {
                 Avaliada: {
                     titulo: 'Avaliada',
                     subtitulo: 'Sem avaliação final pendente neste fluxo',
-                    icon: 'fa-clipboard-list',
+                    icon: 'fa-user-check',
                     cls: 'ma-grupo--avaliada'
                 },
                 Finalizada: {
@@ -1886,10 +1886,17 @@ export default {
     color: #856404;
     border: 1px solid rgba(255, 193, 7, 0.5);
 }
-.ma-legend-pill--info {
-    background: rgba(23, 162, 184, 0.15);
-    color: #0c5460;
-    border: 1px solid rgba(23, 162, 184, 0.35);
+/* Aguardando ação do gestor (autoavaliação) — índigo, distinto de “Avaliada” */
+.ma-legend-pill--gestor-wait {
+    background: rgba(92, 77, 157, 0.14);
+    color: #3e2a6b;
+    border: 1px solid rgba(92, 77, 157, 0.45);
+}
+/* Gestor já avaliou (checkpoint) — azul royal, distinto do ciano e do índigo */
+.ma-legend-pill--avaliada {
+    background: rgba(21, 101, 192, 0.12);
+    color: #0d47a1;
+    border: 1px solid rgba(21, 101, 192, 0.4);
 }
 .ma-legend-pill--success {
     background: rgba(40, 167, 69, 0.15);
@@ -2047,8 +2054,8 @@ export default {
 }
 .ma-tr--pend-gestor,
 .ma-item-card.ma-tr--pend-gestor {
-    border-left: 4px solid #17a2b8;
-    background: rgba(23, 162, 184, 0.08);
+    border-left: 4px solid #5c4d9d;
+    background: rgba(92, 77, 157, 0.07);
 }
 .ma-tr--done,
 .ma-item-card.ma-tr--done {
@@ -2062,8 +2069,8 @@ export default {
 }
 .ma-tr--gestor-avaliada,
 .ma-item-card.ma-tr--gestor-avaliada {
-    border-left: 4px solid #17a2b8;
-    background: rgba(23, 162, 184, 0.08);
+    border-left: 4px solid #1565c0;
+    background: rgba(21, 101, 192, 0.07);
 }
 .ma-tr--gestor-pend-final,
 .ma-item-card.ma-tr--gestor-pend-final {
@@ -2077,8 +2084,8 @@ export default {
 }
 .ma-tr--avaliada-sem-final-pend,
 .ma-item-card.ma-tr--avaliada-sem-final-pend {
-    border-left: 4px solid #17a2b8;
-    background: rgba(23, 162, 184, 0.08);
+    border-left: 4px solid #1565c0;
+    background: rgba(21, 101, 192, 0.07);
 }
 .ma-tr--gestor-done,
 .ma-item-card.ma-tr--gestor-done {
@@ -2099,10 +2106,10 @@ export default {
     color: #495057;
     border: 1px solid #ced4da;
 }
-.ma-status-badge--info {
-    background: rgba(23, 162, 184, 0.15);
-    color: #0c5460;
-    border: 1px solid rgba(23, 162, 184, 0.35);
+.ma-status-badge--avaliada {
+    background: rgba(21, 101, 192, 0.12);
+    color: #0d47a1;
+    border: 1px solid rgba(21, 101, 192, 0.4);
 }
 .ma-status-badge--final-pend {
     background: rgba(253, 126, 20, 0.2);
@@ -2197,12 +2204,12 @@ export default {
     color: #7c2d12;
 }
 .ma-grupo--avaliada .ma-grupo-label {
-    background: rgba(23, 162, 184, 0.15);
-    border-left: 4px solid #17a2b8;
+    background: rgba(21, 101, 192, 0.1);
+    border-left: 4px solid #1565c0;
 }
 .ma-grupo--avaliada .ma-grupo-ico {
-    background: rgba(23, 162, 184, 0.25);
-    color: #0c5460;
+    background: rgba(21, 101, 192, 0.2);
+    color: #0d47a1;
 }
 .ma-grupo--final .ma-grupo-label {
     background: rgba(40, 167, 69, 0.15);
