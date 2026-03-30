@@ -278,20 +278,44 @@
                         </div>
                     </fieldset>
 
-                    <fieldset>
-                        <legend>ESCALA DE AVALIAÇÃO</legend>
-                        <span><strong>Para esta avaliação considerar as atribuições básicas abaixo, conforme as seguintes notas:</strong></span
-                        ><br />
-                        <span
-                            >5 - Superou muito as expectativas: É percebido por outras áreas/pessoas como alguém com uma atuação excepcional, modelo de
-                            referência</span
-                        ><br />
-                        <span>4 - Superou as expectativas: Atuação melhor que o esperado com alto padrão de qualidade</span><br />
-                        <span>3 -Atingiu as expectativas: Atuação adequada ao esperado (satisfatório), atende os padrões de qualidade e produtividade</span
-                        ><br />
-                        <span>2 - Abaixo das expectativas: Atuação abaixo do esperado (precisa de desenvolvimento)</span><br />
-                        <span>1 - Muito abaixo das expectativas: Atuação não aceitável, desempenho muito abaixo do que é esperado para a função</span>
-                    </fieldset>
+                    <div class="escala-avaliacao-minhas" role="region" aria-label="Escala de avaliação de 1 a 5">
+                        <div class="escala-cabecalho">
+                            <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                            <div class="escala-titulo">Escala de avaliação</div>
+                        </div>
+                        <p class="escala-intro">
+                            <strong>Para esta avaliação, considere as atribuições básicas abaixo, conforme as seguintes notas:</strong>
+                        </p>
+                        <div class="escala-item">
+                            <span class="nota-badge nota-5">5</span>
+                            <span class="escala-texto"
+                                ><strong>Superou muito as expectativas:</strong> É percebido por outras áreas/pessoas como alguém com uma atuação
+                                excepcional, modelo de referência</span
+                            >
+                        </div>
+                        <div class="escala-item">
+                            <span class="nota-badge nota-4">4</span>
+                            <span class="escala-texto"><strong>Superou as expectativas:</strong> Atuação melhor que o esperado com alto padrão de qualidade</span>
+                        </div>
+                        <div class="escala-item">
+                            <span class="nota-badge nota-3">3</span>
+                            <span class="escala-texto"
+                                ><strong>Atingiu as expectativas:</strong> Atuação adequada ao esperado (satisfatório), atende os padrões de qualidade e
+                                produtividade</span
+                            >
+                        </div>
+                        <div class="escala-item">
+                            <span class="nota-badge nota-2">2</span>
+                            <span class="escala-texto"><strong>Abaixo das expectativas:</strong> Atuação abaixo do esperado (precisa de desenvolvimento)</span>
+                        </div>
+                        <div class="escala-item">
+                            <span class="nota-badge nota-1">1</span>
+                            <span class="escala-texto"
+                                ><strong>Muito abaixo das expectativas:</strong> Atuação não aceitável, desempenho muito abaixo do que é esperado para a
+                                função</span
+                            >
+                        </div>
+                    </div>
 
                     <fieldset v-for="item in lista_topicos" :key="item.id">
                         <legend>{{ item.topico }}</legend>
@@ -303,16 +327,36 @@
                             <p class="quebra_linha_textarea">{{ subtopico.topico_explicacao }}</p>
                             <div class="form-group">
                                 <label>{{ visualizando ? 'Nota' : 'Informe sua nota' }}</label>
-                                <select
-                                    :disabled="visualizando"
-                                    class="form-control validacampo"
-                                    @blur.prevent="valida_campo_vazio($event.target, 1)"
-                                    @change.prevent="valida_campo_vazio($event.target, 1)"
-                                    v-model="formAvaliar.respostas[item.id][index].nota"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option v-for="resp in 5" :value="resp" :key="resp">{{ resp }}</option>
-                                </select>
+                                <input
+                                    type="hidden"
+                                    class="validacampo nota-hidden-input"
+                                    :data-item="item.id"
+                                    :data-index="index"
+                                    :value="formAvaliar.respostas[item.id][index].nota"
+                                    autocomplete="off"
+                                />
+                                <div class="nota-options d-flex flex-wrap">
+                                    <div v-for="n in 5" :key="n" class="nota-option">
+                                        <input
+                                            type="radio"
+                                            class="nota-input-hidden"
+                                            :id="'avnota_' + item.id + '_' + index + '_' + n"
+                                            :name="'avnota_' + item.id + '_' + index"
+                                            :value="n"
+                                            v-model="formAvaliar.respostas[item.id][index].nota"
+                                            :disabled="visualizando"
+                                            @change="validaNotaCampo(item.id, index)"
+                                        />
+                                        <label
+                                            v-tippy="tooltipOpcoesNota(n)"
+                                            :for="'avnota_' + item.id + '_' + index + '_' + n"
+                                            :class="['nota-btn', 'nota-btn-' + n]"
+                                        >
+                                            <span class="nota-btn-num">{{ n }}</span>
+                                            <span class="nota-btn-hint">{{ dicasNotaCurtas[n] }}</span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                             <h5 v-if="formAvaliar.principal">Nota do colaborador: {{ formAvaliar.respostasFunc[item.id][index].nota }}</h5>
                         </fieldset>
@@ -832,6 +876,21 @@ export default {
 
             dropdownAbertoKey: null,
 
+            textosTooltipNota: {
+                5: 'Superou muito as expectativas: É percebido por outras áreas/pessoas como alguém com uma atuação excepcional, modelo de referência.',
+                4: 'Superou as expectativas: Atuação melhor que o esperado com alto padrão de qualidade.',
+                3: 'Atingiu as expectativas: Atuação adequada ao esperado (satisfatório), atende os padrões de qualidade e produtividade.',
+                2: 'Abaixo das expectativas: Atuação abaixo do esperado (precisa de desenvolvimento).',
+                1: 'Muito abaixo das expectativas: Atuação não aceitável, desempenho muito abaixo do que é esperado para a função.'
+            },
+            dicasNotaCurtas: {
+                5: 'Superou muito',
+                4: 'Superou',
+                3: 'Atingiu',
+                2: 'Abaixo',
+                1: 'Muito abaixo'
+            },
+
             urlPaginacao: `${URL_ADMIN}/cadastro/avaliacoes/avaliar/atualizar`,
             urlImpressao: `${URL_ADMIN}/cadastro/avaliacoes/avaliar/impressao`,
 
@@ -902,6 +961,31 @@ export default {
                 return
             }
             this.dropdownAbertoKey = null
+        },
+        tooltipOpcoesNota(n) {
+            const content = this.textosTooltipNota[n]
+            if (!content) {
+                return {}
+            }
+            return {
+                content,
+                maxWidth: 340,
+                interactive: true,
+                appendTo: () => document.body,
+                zIndex: 10050,
+                delay: [120, 40],
+                touch: ['hold', 450]
+            }
+        },
+        validaNotaCampo(itemId, index) {
+            this.$nextTick(() => {
+                const el = this.$el.querySelector(
+                    `.nota-hidden-input[data-item="${itemId}"][data-index="${index}"]`
+                )
+                if (el && typeof window.valida_campo_vazio === 'function') {
+                    window.valida_campo_vazio(el, 1)
+                }
+            })
         },
         // CORREÇÃO PRINCIPAL: Substituição do filtro por métodos
         formatarDecimal(valor) {
@@ -1160,5 +1244,239 @@ export default {
 
 .bg-cinza {
     background: #f1f1f1 !important;
+}
+
+/* Minhas Avaliações — escala e botões de nota (alinhado à Avaliação de Experiência) */
+.escala-avaliacao-minhas {
+    position: relative;
+    background: linear-gradient(135deg, #f0f7fb 0%, #ffffff 55%, #f5fafc 100%);
+    border: 1px solid rgba(0, 55, 85, 0.18);
+    border-left: 5px solid #003755;
+    border-radius: 12px;
+    padding: 1.25rem 1.35rem 1.35rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 8px 24px rgba(0, 55, 85, 0.1);
+}
+.escala-avaliacao-minhas::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 12px 12px 0 0;
+    background: linear-gradient(90deg, #003755, #1a5f7a);
+}
+.escala-avaliacao-minhas .escala-cabecalho {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 2px solid rgba(0, 55, 85, 0.12);
+}
+.escala-avaliacao-minhas .escala-cabecalho .fa {
+    font-size: 1.35rem;
+    color: #003755;
+}
+.escala-avaliacao-minhas .escala-titulo {
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    color: #003755;
+    margin: 0;
+    text-transform: uppercase;
+}
+.escala-avaliacao-minhas .escala-intro {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #1a1a1a;
+    margin-bottom: 1rem;
+    padding: 0.65rem 0.75rem;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 8px;
+    border: 1px dashed rgba(0, 55, 85, 0.25);
+}
+.escala-avaliacao-minhas .escala-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 0.65rem;
+    padding: 0.35rem 0.25rem;
+    border-radius: 8px;
+}
+.escala-avaliacao-minhas .escala-item:last-child {
+    margin-bottom: 0;
+}
+.escala-avaliacao-minhas .nota-badge {
+    flex-shrink: 0;
+    min-width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 55, 85, 0.25);
+}
+.escala-avaliacao-minhas .nota-badge.nota-5 {
+    background: linear-gradient(145deg, #0d6e4a, #1a9966);
+}
+.escala-avaliacao-minhas .nota-badge.nota-4 {
+    background: linear-gradient(145deg, #0d7a5c, #1a9e72);
+}
+.escala-avaliacao-minhas .nota-badge.nota-3 {
+    background: linear-gradient(145deg, #c9a227, #d4af37);
+    color: #1a1a1a;
+}
+.escala-avaliacao-minhas .nota-badge.nota-2 {
+    background: linear-gradient(145deg, #c45c26, #d97736);
+}
+.escala-avaliacao-minhas .nota-badge.nota-1 {
+    background: linear-gradient(145deg, #a83232, #c44545);
+}
+.escala-avaliacao-minhas .escala-texto {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #2c3e50;
+    padding-top: 2px;
+}
+
+.nota-options {
+    gap: 10px;
+}
+.nota-option {
+    position: relative;
+    flex: 1;
+    min-width: 72px;
+}
+.nota-input-hidden {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+.nota-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 6px;
+    min-height: 76px;
+    width: 100%;
+    margin: 0;
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-weight: 600;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.nota-btn .nota-btn-num {
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1;
+}
+.nota-btn .nota-btn-hint {
+    display: block;
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1.15;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    max-width: 100%;
+}
+.nota-btn-5 {
+    border-color: rgba(26, 153, 102, 0.45);
+    color: #0d5a3f;
+    background: rgba(26, 153, 102, 0.07);
+}
+.nota-btn-4 {
+    border-color: rgba(26, 158, 114, 0.45);
+    color: #0d6b50;
+    background: rgba(26, 158, 114, 0.07);
+}
+.nota-btn-3 {
+    border-color: rgba(201, 162, 39, 0.55);
+    color: #6b5a12;
+    background: rgba(212, 175, 55, 0.12);
+}
+.nota-btn-2 {
+    border-color: rgba(196, 92, 38, 0.5);
+    color: #8b3d12;
+    background: rgba(217, 119, 54, 0.1);
+}
+.nota-btn-1 {
+    border-color: rgba(168, 50, 50, 0.5);
+    color: #8b2020;
+    background: rgba(196, 69, 69, 0.08);
+}
+.nota-btn:hover {
+    filter: brightness(0.97);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 55, 85, 0.12);
+}
+.nota-option input[type='radio']:checked + .nota-btn-5 {
+    background: linear-gradient(145deg, #0d6e4a, #1a9966);
+    color: #fff;
+    border-color: #0d6e4a;
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(13, 110, 74, 0.35);
+}
+.nota-option input[type='radio']:checked + .nota-btn-4 {
+    background: linear-gradient(145deg, #0d7a5c, #1a9e72);
+    color: #fff;
+    border-color: #0d7a5c;
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(13, 122, 92, 0.35);
+}
+.nota-option input[type='radio']:checked + .nota-btn-3 {
+    background: linear-gradient(145deg, #c9a227, #d4af37);
+    color: #1a1a1a;
+    border-color: #b8941f;
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(201, 162, 39, 0.4);
+}
+.nota-option input[type='radio']:checked + .nota-btn-3 .nota-btn-hint {
+    color: #2d2510;
+}
+.nota-option input[type='radio']:checked + .nota-btn-2 {
+    background: linear-gradient(145deg, #c45c26, #d97736);
+    color: #fff;
+    border-color: #c45c26;
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(196, 92, 38, 0.35);
+}
+.nota-option input[type='radio']:checked + .nota-btn-1 {
+    background: linear-gradient(145deg, #a83232, #c44545);
+    color: #fff;
+    border-color: #a83232;
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(168, 50, 50, 0.35);
+}
+.nota-option input[type='radio']:checked + .nota-btn .nota-btn-hint {
+    opacity: 0.95;
+}
+.nota-option input[type='radio']:checked + .nota-btn-3 .nota-btn-hint {
+    color: #2d2510;
+}
+.nota-option input[type='radio']:disabled + .nota-btn {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+@media (max-width: 768px) {
+    .nota-options {
+        flex-direction: column;
+    }
+    .nota-option {
+        min-width: 100%;
+    }
 }
 </style>
