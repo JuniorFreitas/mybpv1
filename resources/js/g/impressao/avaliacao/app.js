@@ -19,7 +19,8 @@ const app = createApp({
                 result_subtopico: [],
                 resultChart: [],
                 planos_acoes: [],
-                planos_acoes_delete: []
+                planos_acoes_delete: [],
+                fluxo_etapas: []
             }
         }
     },
@@ -27,6 +28,27 @@ const app = createApp({
         radarchart
     },
     methods: {
+        tituloEtapaFluxoPdf(indice, avaliador) {
+            const etapas = this.formAvaliarFinal.fluxo_etapas
+            if (etapas && etapas[indice] && etapas[indice].label) {
+                return String(etapas[indice].label).toUpperCase()
+            }
+            if (avaliador && avaliador.origem === 'Funcionario') {
+                return 'AUTOAVALIAÇÃO'
+            }
+            return 'AVALIADOR ' + (indice + 1)
+        },
+        tituloConsideracoesPdf(indice, avaliador) {
+            if (avaliador && avaliador.origem === 'Funcionario') {
+                return 'CONSIDERAÇÕES DA AUTOAVALIAÇÃO'
+            }
+            const etapas = this.formAvaliarFinal.fluxo_etapas
+            const nome =
+                etapas && etapas[indice] && etapas[indice].label
+                    ? String(etapas[indice].label).toUpperCase()
+                    : 'AVALIADOR ' + (indice + 1)
+            return 'CONSIDERAÇÕES DO ' + nome
+        },
         casasDecimais(valor) {
             return valor.toFixed(1)
         },
@@ -59,6 +81,7 @@ const app = createApp({
         this.formAvaliarFinal.result_subtopico = dados.result_subtopico
         this.formAvaliarFinal.resultChart = dados.resultChart
         this.formAvaliarFinal.planos_acoes = dados.planos_acoes
+        this.formAvaliarFinal.fluxo_etapas = dados.fluxo_etapas || []
 
         this.print()
     }

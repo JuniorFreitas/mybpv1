@@ -41,6 +41,7 @@ class AvaliacaoController extends Controller
     {
         $this->authorize('cadastro_avaliacao_insert');
         $dados = $request->input();
+        $dados['mostrar_notas_avaliador_final'] = (bool)($dados['mostrar_notas_avaliador_final'] ?? false);
         $titulo = $dados['titulo'];
 
         $arrayValidacao = [
@@ -112,6 +113,7 @@ class AvaliacaoController extends Controller
     {
         $this->authorize('cadastro_avaliacao_update');
         $dados = $request->input();
+        $dados['mostrar_notas_avaliador_final'] = (bool)($dados['mostrar_notas_avaliador_final'] ?? false);
 
         $arrayValidacao = [
             'titulo' => [
@@ -442,10 +444,15 @@ class AvaliacaoController extends Controller
         $respostas = [];
         $respostasFunc = [];
 
-        $avaliacaoFeedbackFunc = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
-            ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)
-            ->whereAvaliadorId($avaliacaoFeedback->funcionario_id)
-            ->first();
+        $mostrarNotasAvaliadorFinal = (bool) optional($avaliacaoFeedback->avaliacao)->mostrar_notas_avaliador_final;
+        $avaliacaoFeedbackFunc = null;
+
+        if ($avaliacaoFeedback->principal && $mostrarNotasAvaliadorFinal) {
+            $avaliacaoFeedbackFunc = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
+                ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)
+                ->whereAvaliadorId($avaliacaoFeedback->funcionario_id)
+                ->first();
+        }
 
         foreach ($avaliacaoTopicos as $topico) {
             foreach ($topico->subtopicos as $subtopico) {
@@ -458,14 +465,16 @@ class AvaliacaoController extends Controller
                     'nota' => $avaliacaoResposta ? $avaliacaoResposta->nota : ''
                 ];
 
-                $avaliacaoRespostaFunc = AvaliacaoResposta::where('avaliacao_feedback_id', $avaliacaoFeedbackFunc->id)
-                    ->where('topico_id', $subtopico->id)->first();
+                if ($avaliacaoFeedback->principal && $mostrarNotasAvaliadorFinal && $avaliacaoFeedbackFunc) {
+                    $avaliacaoRespostaFunc = AvaliacaoResposta::where('avaliacao_feedback_id', $avaliacaoFeedbackFunc->id)
+                        ->where('topico_id', $subtopico->id)->first();
 
-                $respostasFunc[$topico->id][] = [
-                    'avaliacao_feedback_id' => $avaliacaoFeedbackFunc->id,
-                    'topico_id' => $subtopico->id,
-                    'nota' => $avaliacaoRespostaFunc ? $avaliacaoRespostaFunc->nota : ''
-                ];
+                    $respostasFunc[$topico->id][] = [
+                        'avaliacao_feedback_id' => $avaliacaoFeedbackFunc->id,
+                        'topico_id' => $subtopico->id,
+                        'nota' => $avaliacaoRespostaFunc ? $avaliacaoRespostaFunc->nota : ''
+                    ];
+                }
             }
         }
 
@@ -488,17 +497,51 @@ class AvaliacaoController extends Controller
             $dadosDoFuncionario = Sistema::getColaboradorDados($feedbackCurriculo->curriculo_id, $feedbackCurriculo->empresa_id);
         }
 
+        $outrasAvaliacoesNotas = [];
+        if ($avaliacaoFeedback->principal && $mostrarNotasAvaliadorFinal) {
+            $outrosFeedbacks = AvaliacaoFeedback::query()
+                ->where('avaliacao_id', $avaliacaoFeedback->avaliacao_id)
+                ->where('funcionario_id', $avaliacaoFeedback->funcionario_id)
+                ->where('id', '!=', $avaliacaoFeedback->id)
+                ->where('origem_feedback', AvaliacaoFeedback::ORIGEM_AVALIADOR)
+                ->whereIn('status', [AvaliacaoFeedback::STATUS_CONCLUIDA, AvaliacaoFeedback::STATUS_FINAL])
+                ->with(['Avaliador:id,nome', 'TipoAvaliador', 'Respostas'])
+                ->orderBy('id')
+                ->get();
+
+            foreach ($outrosFeedbacks as $of) {
+                $respostasOutro = [];
+                foreach ($avaliacaoTopicos as $topico) {
+                    foreach ($topico->subtopicos as $subtopico) {
+                        $avaliacaoResposta = $of->respostas->where('topico_id', $subtopico->id)->first();
+                        $respostasOutro[$topico->id][] = [
+                            'topico_id' => $subtopico->id,
+                            'nota' => $avaliacaoResposta ? $avaliacaoResposta->nota : '',
+                        ];
+                    }
+                }
+                $outrasAvaliacoesNotas[] = [
+                    'feedback_id' => $of->id,
+                    'avaliador_nome' => $of->Avaliador->nome ?? 'Não informado',
+                    'tipo_avaliador_label' => optional($of->TipoAvaliador)->label ?? '',
+                    'comentario' => $of->comentario ?? '',
+                    'respostas' => $respostasOutro,
+                ];
+            }
+        }
+
         return response()->json([
             'topicos' => $avaliacaoTopicos,
             'avaliacao_feedback_id' => $avaliacaoFeedback->id,
             'respostas' => $respostas,
-            'respostas_funcionario' => $avaliacaoFeedback->principal ? $respostasFunc : [],
+            'respostas_funcionario' => ($avaliacaoFeedback->principal && $mostrarNotasAvaliadorFinal) ? $respostasFunc : [],
             'comentario' => $avaliacaoFeedback->comentario ?: '',
-            'comentario_funcionario' => $avaliacaoFeedbackFunc->comentario ?: '',
+            'comentario_funcionario' => $avaliacaoFeedbackFunc ? ($avaliacaoFeedbackFunc->comentario ?: '') : '',
             'dados_do_funcionario' => $dadosDoFuncionario,
             'origem_feedback' => $avaliacaoFeedback->origem_feedback,
             'principal' => $avaliacaoFeedback->principal,
             'tipo_pj' => $avaliacaoFeedback->tipo_pj,
+            'outras_avaliacoes_notas' => $outrasAvaliacoesNotas,
         ]);
     }
 
@@ -737,6 +780,7 @@ class AvaliacaoController extends Controller
             'titulo_avaliacao' => $avaliacaoFeedback->Avaliacao->titulo,
             'tipo_avaliacao' => $avaliacaoFeedback->Avaliacao->AvaliacaoTipo->nome,
             'tipo_pj' => $avaliacaoFeedback->tipo_pj,
+            'fluxo_etapas' => Avaliacao::fluxoAvaliacao($avaliacaoFeedback->avaliacao_id)->values()->all(),
         ];
     }
 

@@ -4,8 +4,15 @@
             <template #conteudo>
                 <preload v-show="preloadAvalFinal"></preload>
                 <div v-if="!preloadAvalFinal">
-                    <fieldset>
-                        <legend>DADOS</legend>
+                    <fieldset class="ma-modal-fieldset">
+                        <legend class="ma-modal-legend">{{ formAvaliarFinal.tipo_pj ? 'Dados do fornecedor' : 'Dados do colaborador' }}</legend>
+                        <p class="ma-modal-lead">
+                            {{
+                                formAvaliarFinal.tipo_pj
+                                    ? 'Identificação utilizada neste ciclo de avaliação.'
+                                    : 'Informações cadastrais da pessoa avaliada neste ciclo.'
+                            }}
+                        </p>
                         <div class="row mb-3" v-if="formAvaliarFinal.dados_do_funcionario.cnpj_lotacao">
                             <div class="col-12">
                                 <strong>CNPJ:</strong>
@@ -45,8 +52,13 @@
                         </div>
                     </fieldset>
 
-                    <!-- CORREÇÃO APLICADA: Adicionada verificação de segurança -->
-                    <template  v-if="formAvaliarFinal.result_topico_pai_agrupado && formAvaliarFinal.result_topico_pai_agrupado.length > 0">
+                    <template v-if="formAvaliarFinal.result_topico_pai_agrupado && formAvaliarFinal.result_topico_pai_agrupado.length > 0">
+                        <h6 class="ma-modal-section-title mt-3 mb-2">
+                            <i class="fa fa-table mr-2 text-primary"></i>Resultado por competência
+                        </h6>
+                        <p class="ma-modal-lead ma-modal-lead--tight mb-3">
+                            Consolidado das notas informadas em cada etapa do fluxo, com a média calculada por critério.
+                        </p>
                         <table
                             class="table"
                             v-for="(item, index) in formAvaliarFinal.result_topico_pai_agrupado"
@@ -59,10 +71,10 @@
                                     <!-- CORREÇÃO APLICADA: Adicionado guard para avaliadores -->
                                     <th class="text-center" v-for="(avaliador, id) in (item[0] || {}).avaliadores || []" :key="avaliador.id">
                                         <span>
-                                            {{ avaliador.origem === 'Funcionario' ? 'Autoavaliação' : 'Avaliador ' + (id + 1) }}
+                                            {{ tituloEtapaFluxoColuna(id, avaliador) }}
                                         </span>
                                     </th>
-                                    <th class="text-center">MÉDIA</th>
+                                    <th class="text-center">Média</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -96,9 +108,7 @@
                             </tbody>
                         </table>
                     </template>
-                    <!-- CORREÇÃO APLICADA: Melhorada a verificação de segurança -->
-                    <table
-                        class="table"
+                    <template
                         v-if="
                             formAvaliarFinal.result_topico_pai_agrupado &&
                             formAvaliarFinal.result_topico_pai_agrupado.length > 0 &&
@@ -107,62 +117,79 @@
                             formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores
                         "
                     >
-                        <thead>
-                            <tr>
-                                <th
-                                    class="text-center"
-                                    v-for="(avaliador, id) in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
-                                    :key="avaliador.id"
-                                >
-                                    <span>
-                                        {{ avaliador.origem === 'Funcionario' ? 'Autoavaliação' : 'Avaliador ' + (id + 1) }}
-                                    </span>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td
-                                    v-for="(avaliador, avalIndex) in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
-                                    :key="avaliador.id || avalIndex"
-                                >
-                                    <label>Considerações</label>
-                                    <textarea rows="5" class="form-control form-control-sm" readonly="readonly">{{ avaliador.comentario }}</textarea>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        <h6 class="ma-modal-section-title mt-4 mb-2">
+                            <i class="fa fa-comment-dots mr-2 text-primary"></i>Comentários por etapa
+                        </h6>
+                        <p class="ma-modal-lead ma-modal-lead--tight mb-3">
+                            Texto registrado por cada participante ao concluir a sua etapa no fluxo.
+                        </p>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th
+                                        class="text-center"
+                                        v-for="(avaliador, id) in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
+                                        :key="avaliador.id"
+                                    >
+                                        <span>
+                                            {{ tituloEtapaFluxoColuna(id, avaliador) }}
+                                        </span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td
+                                        v-for="(avaliador, avalIndex) in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
+                                        :key="avaliador.id || avalIndex"
+                                    >
+                                        <label class="ma-modal-label-muted">Comentário nesta etapa</label>
+                                        <textarea rows="5" class="form-control form-control-sm" readonly="readonly">{{ avaliador.comentario }}</textarea>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </template>
 
-                    <!-- CORREÇÃO APLICADA: Adicionada verificação de segurança para charts -->
                     <div class="row justify-content-center mt-5" v-if="formAvaliarFinal.resultChart && formAvaliarFinal.resultChart.length > 0">
+                        <div class="col-12 text-center mb-3">
+                            <h6 class="ma-modal-section-title mb-1">
+                                <i class="fa fa-chart-area mr-2 text-primary"></i>Visão gráfica por grupo de competências
+                            </h6>
+                            <p class="ma-modal-lead ma-modal-lead--tight mb-0">Leitura rápida do perfil de desempenho em cada eixo avaliado.</p>
+                        </div>
                         <div v-for="(chart, index) in formAvaliarFinal.resultChart" :key="chart.id || index" class="col-md-4">
-                            <h4 class="text-center">{{ chart.name }}</h4>
+                            <h4 class="text-center ma-modal-chart-name">{{ chart.name }}</h4>
                             <RadarChart :id="chart.name" :chart-data="chart.data" />
-                            <!-- CORREÇÃO APLICADA: Método em vez de filtro -->
-                            <h4 class="text-center">
-                                Média:
+                            <h4 class="text-center ma-modal-chart-media">
+                                Média no grupo:
                                 {{ getMediaFormatada(chart.name) }}
                             </h4>
                         </div>
-                        <div class="col-md-12 text-center">
-                            <h4>Nota final: {{ formatarDecimal(formAvaliarFinal.nota_final) }}</h4>
+                        <div class="col-md-12 text-center mt-2">
+                            <p class="ma-modal-nota-final mb-0">
+                                <span class="ma-modal-nota-final__rotulo">Nota final consolidada</span>
+                                <span class="ma-modal-nota-final__valor">{{ formatarDecimal(formAvaliarFinal.nota_final) }}</span>
+                            </p>
                         </div>
                     </div>
 
-                    <fieldset>
-                        <legend>Oportunidades de Melhoria / Plano de Ação</legend>
+                    <fieldset class="ma-modal-fieldset mt-4">
+                        <legend class="ma-modal-legend">Plano de ação e oportunidades de melhoria</legend>
+                        <p class="ma-modal-lead">
+                            Registre ações objetivas, prazos e responsáveis para apoiar o desenvolvimento nos pontos que precisam evoluir.
+                        </p>
 
                         <button class="btn btn-sm mr-1 btn-primary mb-2" @click="addPlanoAcao($event.target)" v-show="!visualizando">
-                            <i class="fa fa-plus"></i> Adicionar Plano
+                            <i class="fa fa-plus"></i> Adicionar plano
                         </button>
 
-                        <!-- CORREÇÃO APLICADA: Adicionado guard para planos_acoes -->
-                        <fieldset v-for="(item, index) in formAvaliarFinal.planos_acoes || []" :key="index">
-                            <legend>Plano - {{ index + 1 }}</legend>
+                        <fieldset v-for="(item, index) in formAvaliarFinal.planos_acoes || []" :key="index" class="ma-modal-plano-item">
+                            <legend class="ma-modal-legend ma-modal-legend--sub">Plano {{ index + 1 }}</legend>
                             <div class="row">
                                 <div class="col-lg-12">
                                     <div class="form-group">
-                                        <label>Competência/Desempenho</label>
+                                        <label>Competência ou critério relacionado</label>
                                         <select
                                             class="form-control form-control-sm validacampo"
                                             v-model="item.topico_id"
@@ -170,7 +197,7 @@
                                             @blur.prevent="valida_campo_vazio($event.target, 1)"
                                             @change.prevent="valida_campo_vazio($event.target, 1)"
                                         >
-                                            <option value="">Selecione</option>
+                                            <option value="">Selecione a competência</option>
                                             <!-- CORREÇÃO APLICADA: Adicionado guard para result_topico -->
                                             <option v-for="(topico, topico_id) in formAvaliarFinal.result_topico || {}" :key="topico_id" :value="topico_id">
                                                 {{ topico.topico_pai }} -
@@ -182,7 +209,7 @@
                                             class="my-3 text-danger"
                                             v-if="item.topico_id && formAvaliarFinal.result_topico && formAvaliarFinal.result_topico[item.topico_id]"
                                         >
-                                            Média:
+                                            Média neste critério:
                                             {{ getMediaTopico(item.topico_id) }}
                                         </h5>
                                     </div>
@@ -190,13 +217,14 @@
 
                                 <div class="col-lg-12">
                                     <div class="form-group">
-                                        <label for="">Plano de Ação</label>
+                                        <label>Descrição do plano de ação</label>
                                         <textarea
                                             rows="5"
                                             class="form-control form-control-sm validacampo"
                                             v-model="item.plano_de_acao"
                                             @blur.prevent="valida_campo_vazio($event.target, 1)"
                                             :disabled="visualizando"
+                                            placeholder="O que será feito, como será acompanhado e o resultado esperado."
                                         ></textarea>
                                     </div>
                                 </div>
@@ -214,7 +242,9 @@
                                 </div>
 
                                 <div class="col-lg-12" v-show="!visualizando">
-                                    <button class="btn btn-sm mr-1 btn-danger" @click="removerPlanoAcao(index)"><i class="fa fa-trash"></i> Apagar</button>
+                                    <button type="button" class="btn btn-sm mr-1 btn-outline-danger" @click="removerPlanoAcao(index)">
+                                        <i class="fa fa-trash"></i> Remover este plano
+                                    </button>
                                 </div>
                             </div>
                         </fieldset>
@@ -228,7 +258,7 @@
                     v-show="editando && !visualizando && !preload && formAvaliarFinal.planos_acoes && formAvaliarFinal.planos_acoes.length > 0"
                     @click="salvarAvaliacaoFinal()"
                 >
-                    <i class="fa fa-save"></i> Salvar
+                    <i class="fa fa-check"></i> Concluir avaliação final
                 </button>
             </template>
         </modal>
@@ -238,7 +268,14 @@
                 <preload v-show="preload"></preload>
                 <div v-if="!preload">
                     <fieldset>
-                        <legend>DADOS</legend>
+                        <legend>{{ formAvaliar.tipo_pj ? 'Dados do fornecedor' : 'Dados do colaborador' }}</legend>
+                        <p class="ma-modal-lead">
+                            {{
+                                formAvaliar.tipo_pj
+                                    ? 'Identificação utilizada neste ciclo de avaliação.'
+                                    : 'Informações cadastrais de quem está sendo avaliado.'
+                            }}
+                        </p>
                         <div class="row mb-3" v-if="formAvaliar.dados_do_funcionario.cnpj_lotacao">
                             <div class="col-12">
                                 <strong>CNPJ:</strong>
@@ -281,10 +318,10 @@
                     <div class="escala-avaliacao-minhas" role="region" aria-label="Escala de avaliação de 1 a 5">
                         <div class="escala-cabecalho">
                             <i class="fa fa-bar-chart" aria-hidden="true"></i>
-                            <div class="escala-titulo">Escala de avaliação</div>
+                            <div class="escala-titulo">Escala de 1 a 5</div>
                         </div>
                         <p class="escala-intro">
-                            <strong>Para esta avaliação, considere as atribuições básicas abaixo, conforme as seguintes notas:</strong>
+                            <strong>Para cada critério, escolha a nota que melhor representa o desempenho observado,</strong> usando as descrições abaixo como referência.
                         </p>
                         <div class="escala-item">
                             <span class="nota-badge nota-5">5</span>
@@ -326,7 +363,7 @@
                             <legend>{{ subtopico.topico }}</legend>
                             <p class="quebra_linha_textarea">{{ subtopico.topico_explicacao }}</p>
                             <div class="form-group">
-                                <label>{{ visualizando ? 'Nota' : 'Informe sua nota' }}</label>
+                                <label>{{ visualizando ? 'Nota registrada' : 'Sua nota neste critério' }}</label>
                                 <input
                                     type="hidden"
                                     class="validacampo nota-hidden-input"
@@ -358,28 +395,94 @@
                                     </div>
                                 </div>
                             </div>
-                            <h5 v-if="formAvaliar.principal">Nota do colaborador: {{ formAvaliar.respostasFunc[item.id][index].nota }}</h5>
+                            <div v-if="painelReferenciaNotasVisivel(item, index)" class="ma-ref-panel">
+                                <div class="ma-ref-panel__head">
+                                    <i class="fa fa-chart-line" aria-hidden="true"></i>
+                                    <span>Referência: notas das etapas anteriores para este critério</span>
+                                </div>
+                                <div v-if="hasSelfNotaReferencia(item, index)" class="ma-ref-line">
+                                    <div class="ma-ref-line__who">
+                                        <span class="ma-ref-ico ma-ref-ico--self"><i class="fa fa-user" aria-hidden="true"></i></span>
+                                        <div class="ma-ref-line__text">
+                                            <span class="ma-ref-line__title">Colaborador</span>
+                                            <span class="ma-ref-line__sub">Autoavaliação</span>
+                                        </div>
+                                    </div>
+                                    <span
+                                        :class="[
+                                            'ma-ref-nota-pill',
+                                            notaReferenciaClasse(formAvaliar.respostasFunc[item.id][index].nota)
+                                        ]"
+                                    >{{ formAvaliar.respostasFunc[item.id][index].nota }}</span>
+                                </div>
+                                <div
+                                    v-for="outra in formAvaliar.outras_avaliacoes_notas"
+                                    :key="'nota-' + outra.feedback_id + '-' + item.id + '-' + index"
+                                    v-show="outraNotaVisivel(outra, item, index)"
+                                    class="ma-ref-line"
+                                >
+                                    <div class="ma-ref-line__who">
+                                        <span class="ma-ref-ico ma-ref-ico--peer"><i class="fa fa-user-tie" aria-hidden="true"></i></span>
+                                        <div class="ma-ref-line__text">
+                                            <span class="ma-ref-line__title">{{ outra.tipo_avaliador_label || 'Avaliador' }}</span>
+                                            <span class="ma-ref-line__sub">{{ outra.avaliador_nome }}</span>
+                                        </div>
+                                    </div>
+                                    <span
+                                        :class="['ma-ref-nota-pill', notaReferenciaClasse(outra.respostas[item.id][index].nota)]"
+                                    >{{ outra.respostas[item.id][index].nota }}</span>
+                                </div>
+                            </div>
                         </fieldset>
                     </fieldset>
                     <fieldset>
-                        <legend>MINHAS CONSIDERAÇÕES</legend>
+                        <legend>Minhas considerações</legend>
+                        <p class="ma-modal-lead">
+                            Use este espaço para contextualizar a sua avaliação, destacar pontos fortes ou situações relevantes.
+                        </p>
                         <textarea
                             :disabled="visualizando"
                             v-model="formAvaliar.comentario"
                             class="form-control"
                             @blur.prevent="valida_campo_vazio($event.target, 1)"
                             @change.prevent="valida_campo_vazio($event.target, 1)"
-                            placeholder="Se desejar, faça considerações"
+                            placeholder="Ex.: resultados alcançados, desafios, necessidade de desenvolvimento ou outros comentários que complementem as notas."
                             rows="4"
                         ></textarea>
 
-                        <h5 class="mt-3" v-if="formAvaliar.principal">Considerações do colaborador: {{ formAvaliar.comentario_funcionario }}</h5>
+                        <div
+                            v-if="formAvaliar.principal && (formAvaliar.comentario_funcionario || temConsideracoesOutrosAvaliadores)"
+                            class="ma-ref-panel ma-ref-panel--coment mt-3"
+                        >
+                            <div class="ma-ref-panel__head">
+                                <i class="fa fa-comments" aria-hidden="true"></i>
+                                    <span>Referência: comentários já enviados</span>
+                            </div>
+                            <div v-if="formAvaliar.comentario_funcionario" class="ma-ref-coment">
+                                <div class="ma-ref-coment__label">
+                                    <i class="fa fa-user mr-1 text-primary"></i>Colaborador
+                                </div>
+                                <p class="ma-ref-coment__text">{{ formAvaliar.comentario_funcionario }}</p>
+                            </div>
+                            <div
+                                v-for="outra in formAvaliar.outras_avaliacoes_notas"
+                                :key="'com-' + outra.feedback_id"
+                                v-show="outra.comentario && String(outra.comentario).trim()"
+                                class="ma-ref-coment"
+                            >
+                                <div class="ma-ref-coment__label">
+                                    <i class="fa fa-user-tie mr-1 text-primary"></i>{{ outra.tipo_avaliador_label || 'Avaliador' }}
+                                    <span class="ma-ref-coment__nome">— {{ outra.avaliador_nome }}</span>
+                                </div>
+                                <p class="ma-ref-coment__text">{{ outra.comentario }}</p>
+                            </div>
+                        </div>
                     </fieldset>
                 </div>
             </template>
             <template #rodape>
                 <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !preload && !visualizando" @click="salvar()">
-                    <i class="fa fa-save"></i> Salvar
+                    <i class="fa fa-paper-plane"></i> Enviar avaliação
                 </button>
             </template>
         </modal>
@@ -485,6 +588,37 @@
                         <span class="badge ma-legend-pill ma-legend-pill--warn-final mb-1 mr-1">Falta avaliação final</span>
                         <span class="badge ma-legend-pill ma-legend-pill--avaliada mb-1 mr-1">Avaliada pelo gestor</span>
                         <span class="badge ma-legend-pill ma-legend-pill--success mb-1 mr-1">Completa</span>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="card ma-card ma-fluxo-card shadow border-0 mb-3"
+                v-if="!controle.carregando && selecionadaAvaliacao && fluxoEtapasExibicao.length"
+            >
+                <div class="ma-fluxo-card__accent" aria-hidden="true"></div>
+                <div class="card-body py-3 px-3">
+                    <div class="mb-3">
+                        <h6 class="ma-fluxo-card__title mb-1">
+                            <i class="fa fa-project-diagram mr-2 text-primary"></i>Fluxo da avaliação
+                        </h6>
+                        <p class="ma-fluxo-card__subtitle mb-0">
+                            Ciclo
+                            <span class="ma-fluxo-card__titulo-av">{{ selecionadaAvaliacao.titulo }}</span>
+                        </p>
+                    </div>
+                    <div class="ma-fluxo-steps" role="list">
+                        <template v-for="(etapa, idx) in fluxoEtapasExibicao" :key="'fluxo-' + idx">
+                            <div class="ma-fluxo-chip" role="listitem">
+                                <span class="ma-fluxo-chip__num">{{ idx + 1 }}</span>
+                                <span class="ma-fluxo-chip__txt">{{ etapa.label }}</span>
+                            </div>
+                            <i
+                                v-if="idx < fluxoEtapasExibicao.length - 1"
+                                class="fa fa-chevron-right ma-fluxo-chip__sep"
+                                aria-hidden="true"
+                            ></i>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -669,7 +803,7 @@
                                             >
                                                 <span class="ma-k ma-como-destaque__rotulo">Como</span>
                                                 <span class="ma-valor-destaque d-block mt-1 ma-como-destaque">
-                                                    {{ item.tipo_avaliador ? item.tipo_avaliador.label : '---' }}
+                                                    {{ rotuloComoAvaliacao(item) }}
                                                 </span>
                                             </div>
                                             <div
@@ -922,7 +1056,7 @@ export default {
         return {
             hash: String(Math.random()).substr(2),
             titulo_janela: 'Avaliação',
-            titulo_janela_final: 'Open Feedback - Avaliação Final',
+            titulo_janela_final: 'Avaliação final',
             preload: false,
             preloadAvalFinal: false,
             editando: false,
@@ -936,7 +1070,8 @@ export default {
                 respostasFunc: [],
                 dados_do_funcionario: [],
                 comentario: '',
-                comentario_funcionario: ''
+                comentario_funcionario: '',
+                outras_avaliacoes_notas: []
             },
 
             // CORREÇÃO APLICADA: Inicialização melhorada do formAvaliarFinal
@@ -953,7 +1088,8 @@ export default {
                 result_subtopico: [],
                 resultChart: [],
                 planos_acoes: [],
-                planos_acoes_delete: []
+                planos_acoes_delete: [],
+                fluxo_etapas: []
             },
 
             formAvaliarDefault: null,
@@ -989,8 +1125,6 @@ export default {
 
             urlPaginacao: `${URL_ADMIN}/cadastro/avaliacoes/avaliar/atualizar`,
             urlImpressao: `${URL_ADMIN}/cadastro/avaliacoes/avaliar/impressao`,
-
-            fluxoAvaliacao: null,
 
             controle: {
                 carregando: false,
@@ -1089,9 +1223,77 @@ export default {
                     o.value !== '' && o.value !== null && o.value !== undefined ? String(o.value) : undefined
             }))
             return [todos, ...lista]
+        },
+        /** Etapas do fluxo (mesma regra de Avaliacao::fluxoAvaliacao) para exibir na tela Minhas avaliações */
+        fluxoEtapasExibicao() {
+            const a = this.selecionadaAvaliacao
+            if (!a) {
+                return []
+            }
+            const raw = a.fluxo
+            const steps = Array.isArray(raw)
+                ? raw.map((item) => ({
+                      label: (item.label || '') + (item.principal ? ' (Avaliador Final)' : '')
+                  }))
+                : []
+            if (a.auto_avaliacao) {
+                return [{ label: 'Auto Avaliação' }, ...steps]
+            }
+            return steps
+        },
+        temConsideracoesOutrosAvaliadores() {
+            return (this.formAvaliar.outras_avaliacoes_notas || []).some(
+                (o) => o.comentario && String(o.comentario).trim() !== ''
+            )
         }
     },
     methods: {
+        /** Rótulo da coluna de avaliador na avaliação final (modal / alinhado ao PDF quando houver fluxo_etapas) */
+        tituloEtapaFluxoColuna(indice, avaliador) {
+            const etapas = this.formAvaliarFinal.fluxo_etapas
+            if (etapas && etapas[indice] && etapas[indice].label) {
+                return etapas[indice].label
+            }
+            if (avaliador && avaliador.origem === 'Funcionario') {
+                return 'Autoavaliação'
+            }
+            return 'Avaliador ' + (indice + 1)
+        },
+        hasSelfNotaReferencia(item, index) {
+            const n = this.formAvaliar.respostasFunc[item.id]?.[index]?.nota
+            return n !== '' && n !== null && n !== undefined
+        },
+        outraNotaVisivel(outra, item, index) {
+            const n = outra.respostas?.[item.id]?.[index]?.nota
+            return n !== '' && n !== null && n !== undefined
+        },
+        painelReferenciaNotasVisivel(item, index) {
+            if (!this.formAvaliar.principal) {
+                return false
+            }
+            if (this.hasSelfNotaReferencia(item, index)) {
+                return true
+            }
+            return (this.formAvaliar.outras_avaliacoes_notas || []).some((o) => this.outraNotaVisivel(o, item, index))
+        },
+        notaReferenciaClasse(n) {
+            const v = Math.round(Number(n))
+            if (v >= 1 && v <= 5) {
+                return 'ma-ref-nota-pill--' + v
+            }
+            return ''
+        },
+        /** Rótulo do campo "Como" na lista — inclui (Avaliador Final) quando aplicável */
+        rotuloComoAvaliacao(item) {
+            if (!item.tipo_avaliador || !item.tipo_avaliador.label) {
+                return '---'
+            }
+            const base = String(item.tipo_avaliador.label).trim()
+            if (item.principal && !base.includes('(Avaliador Final)')) {
+                return `${base} (Avaliador Final)`
+            }
+            return base
+        },
         agruparPorStatus(itens) {
             const ordem = ['Pendente', 'AvaliacaoFinalPendente', 'Avaliada', 'Finalizada']
             const meta = {
@@ -1394,7 +1596,7 @@ export default {
         avaliarForm(avaliacaoFeedback, visualizando = false) {
             this.visualizando = visualizando
             this.editando = true
-            this.titulo_janela = `Avaliação: ${avaliacaoFeedback.avaliacao.titulo}`
+            this.titulo_janela = `Avaliar — ${avaliacaoFeedback.avaliacao.titulo}`
             this.preload = true
 
             this.formAvaliar = _.cloneDeep(this.formAvaliarDefault) //copia
@@ -1413,6 +1615,7 @@ export default {
                     this.formAvaliar.origem_feedback = response.data.origem_feedback
                     this.formAvaliar.principal = response.data.principal
                     this.formAvaliar.tipo_pj = response.data.tipo_pj
+                    this.formAvaliar.outras_avaliacoes_notas = response.data.outras_avaliacoes_notas || []
                     this.editando = true
                     setupCampo()
                     this.preload = false
@@ -1424,7 +1627,7 @@ export default {
         avaliarFinalForm(avaliacaoFeedback, visualizando = false) {
             this.visualizando = visualizando
             this.editando = true
-            this.titulo_janela = `Avaliação Final: ${avaliacaoFeedback.avaliacao.titulo}`
+            this.titulo_janela_final = `Avaliação final — ${avaliacaoFeedback.avaliacao.titulo}`
             this.preloadAvalFinal = true
 
             // Reset para um estado seguro
@@ -1456,7 +1659,8 @@ export default {
                         resultChart: data.resultChart || [],
                         resultado_topico_pai: data.resultado_topico_pai || {},
                         planos_acoes: data.planos_acoes || [],
-                        result_topico: data.result_topico || {}
+                        result_topico: data.result_topico || {},
+                        fluxo_etapas: data.fluxo_etapas || []
                     })
 
                     this.editando = true
@@ -1514,7 +1718,6 @@ export default {
         },
         carregou(dados) {
             this.lista = dados.itens
-            this.fluxoAvaliacao = dados.itens.length ? dados.itens[0].fluxo : null
             this.lista_avaliacoes_tipos = dados.avaliacoes_tipos
             this.lista_status = dados.lista_status
             this.lista_avaliacoes_por_ano = dados.lista_avaliacoes_por_ano
@@ -2218,5 +2421,319 @@ export default {
 .ma-grupo--final .ma-grupo-ico {
     background: rgba(40, 167, 69, 0.25);
     color: #155724;
+}
+/* Painel de referência (avaliador final — notas e comentários anteriores) */
+.ma-ref-panel {
+    margin-top: 1rem;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f5f9fc 0%, #ffffff 55%, #f8fafc 100%);
+    border: 1px solid rgba(0, 55, 85, 0.12);
+    border-left: 4px solid #003755;
+    box-shadow: 0 4px 14px rgba(0, 55, 85, 0.06);
+}
+.ma-ref-panel--coment {
+    border-left-color: #1565c0;
+    background: linear-gradient(135deg, #f3f7fb 0%, #ffffff 60%, #f9fbfd 100%);
+}
+.ma-ref-panel__head {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #003755;
+    margin-bottom: 0.65rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(0, 55, 85, 0.1);
+}
+.ma-ref-panel__head .fa {
+    opacity: 0.9;
+}
+.ma-ref-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.45rem 0;
+    border-bottom: 1px dashed rgba(0, 55, 85, 0.08);
+}
+.ma-ref-line:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.ma-ref-line__who {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-width: 0;
+}
+.ma-ref-line__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.ma-ref-line__title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #212529;
+    line-height: 1.25;
+}
+.ma-ref-line__sub {
+    font-size: 0.75rem;
+    color: #6c757d;
+    line-height: 1.2;
+}
+.ma-ref-ico {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.85rem;
+}
+.ma-ref-ico--self {
+    background: rgba(21, 101, 192, 0.12);
+    color: #1565c0;
+}
+.ma-ref-ico--peer {
+    background: rgba(0, 55, 85, 0.1);
+    color: #003755;
+}
+.ma-ref-nota-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.35rem;
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    line-height: 1;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.ma-ref-nota-pill--1 {
+    background: #fdecea;
+    color: #c62828;
+    border: 1px solid rgba(198, 40, 40, 0.25);
+}
+.ma-ref-nota-pill--2 {
+    background: #fff3e0;
+    color: #e65100;
+    border: 1px solid rgba(230, 81, 0, 0.2);
+}
+.ma-ref-nota-pill--3 {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid rgba(46, 125, 50, 0.2);
+}
+.ma-ref-nota-pill--4 {
+    background: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid rgba(21, 101, 192, 0.2);
+}
+.ma-ref-nota-pill--5 {
+    background: #e8eaf6;
+    color: #283593;
+    border: 1px solid rgba(40, 53, 147, 0.25);
+}
+.ma-ref-coment {
+    padding: 0.5rem 0 0.35rem;
+}
+.ma-ref-coment + .ma-ref-coment {
+    border-top: 1px dashed rgba(0, 55, 85, 0.1);
+    margin-top: 0.35rem;
+    padding-top: 0.75rem;
+}
+.ma-ref-coment__label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #495057;
+    margin-bottom: 0.35rem;
+}
+.ma-ref-coment__nome {
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: normal;
+    color: #6c757d;
+}
+.ma-ref-coment__text {
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #343a40;
+    margin: 0;
+    padding: 0.55rem 0.65rem;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 55, 85, 0.08);
+}
+
+/* Card fluxo da avaliação */
+.ma-fluxo-card {
+    overflow: hidden;
+    position: relative;
+}
+.ma-fluxo-card__accent {
+    height: 4px;
+    width: 100%;
+    background: linear-gradient(90deg, #003755, #1a5f7a, #1565c0);
+    border-radius: 0;
+}
+.ma-fluxo-card__title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #212529;
+    letter-spacing: -0.01em;
+}
+.ma-fluxo-card__subtitle {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+.ma-fluxo-card__titulo-av {
+    color: #003755;
+    font-weight: 600;
+}
+.ma-fluxo-steps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.25rem;
+}
+.ma-fluxo-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.65rem 0.35rem 0.35rem;
+    background: #fff;
+    border: 1px solid rgba(0, 55, 85, 0.14);
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0, 55, 85, 0.06);
+}
+.ma-fluxo-chip__num {
+    width: 1.65rem;
+    height: 1.65rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(145deg, #003755, #1a5f7a);
+    flex-shrink: 0;
+}
+.ma-fluxo-chip__txt {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #212529;
+    max-width: 14rem;
+    line-height: 1.25;
+}
+.ma-fluxo-chip__sep {
+    color: rgba(0, 55, 85, 0.35);
+    font-size: 0.65rem;
+    margin: 0 0.1rem;
+}
+@media (max-width: 575.98px) {
+    .ma-fluxo-chip__txt {
+        max-width: 11rem;
+    }
+}
+
+/* Modais — hierarquia de textos */
+.ma-modal-fieldset {
+    margin-bottom: 1.35rem;
+}
+.ma-modal-legend {
+    float: none;
+    width: auto;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #003755;
+    letter-spacing: 0.01em;
+    padding: 0 0 0.35rem 0;
+    margin-bottom: 0.35rem;
+    border-bottom: 2px solid rgba(0, 55, 85, 0.12);
+}
+.ma-modal-legend--sub {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #495057;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(0, 55, 85, 0.08);
+}
+.ma-modal-lead {
+    font-size: 0.84rem;
+    color: #6c757d;
+    line-height: 1.5;
+    margin: 0 0 1rem 0;
+}
+.ma-modal-lead--tight {
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+}
+.ma-modal-section-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #212529;
+    letter-spacing: -0.01em;
+}
+.ma-modal-label-muted {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6c757d;
+    margin-bottom: 0.35rem;
+}
+.ma-modal-chart-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #003755;
+    margin-bottom: 0.5rem;
+}
+.ma-modal-chart-media {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #495057;
+    margin-top: 0.75rem;
+}
+.ma-modal-nota-final {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.85rem 1.25rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f5f9fc 0%, #ffffff 100%);
+    border: 1px solid rgba(0, 55, 85, 0.14);
+    box-shadow: 0 6px 20px rgba(0, 55, 85, 0.08);
+}
+.ma-modal-nota-final__rotulo {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6c757d;
+}
+.ma-modal-nota-final__valor {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: #003755;
+    line-height: 1.1;
+}
+.ma-modal-plano-item {
+    margin-top: 1rem;
+    padding: 1rem 1rem 0.5rem;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 55, 85, 0.1);
+    background: rgba(255, 255, 255, 0.95);
 }
 </style>
