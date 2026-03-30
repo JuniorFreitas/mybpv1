@@ -85,7 +85,7 @@
                             <th class="avaliador-header" v-for="(avaliador, id) in item[0].avaliadores"
                                 :key="avaliador.id"
                             >
-                                @{{ avaliador.origem === 'Funcionario' ? 'AUTOAVALIAÇÃO' : 'AVALIADOR ' + (id + 1) }}
+                                @{{ tituloEtapaFluxoPdf(id, avaliador) }}
                             </th>
                             <th class="media-header">MÉDIA</th>
                         </tr>
@@ -115,8 +115,7 @@
                      :key="avaliador.id" class="consideracao-item"
                 >
                     <div class="consideracao-header">
-                        <h3>CONSIDERAÇÕES @{{ avaliador.origem === 'Funcionario' ? 'DA AUTOAVALIAÇÃO' : 'DO AVALIADOR '
-                            + (id+1) }}</h3>
+                        <h3>@{{ tituloConsideracoesPdf(id, avaliador) }}</h3>
                     </div>
                     <div class="consideracao-content">
                         <p class="texto">@{{ avaliador.comentario }}</p>
