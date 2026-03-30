@@ -90,6 +90,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Destinatários suprimidos (nunca recebem envio)
+    |--------------------------------------------------------------------------
+    |
+    | Lista de endereços removidos de To/Cc/Bcc antes do envio. Se não restar
+    | nenhum destinatário, a mensagem não é enviada. Comparado sem diferenciar
+    | maiúsculas/minúsculas. No .env use MAIL_SUPPRESS_RECIPIENTS separado por vírgula.
+    |
+    */
+
+    'suppress_recipients' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('MAIL_SUPPRESS_RECIPIENTS', 'sistema@mybp.com.br'))
+    ))),
+
+    /*
+    |--------------------------------------------------------------------------
     | Markdown Mail Settings
     |--------------------------------------------------------------------------
     |
