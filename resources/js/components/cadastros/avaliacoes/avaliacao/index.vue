@@ -113,6 +113,21 @@
                     <fieldset>
                         <legend>Fluxo</legend>
                         <div class="alert alert-info">Se Auto Avaliação estiver marcado como sim ocupara a primeira ordem do fluxo</div>
+                        <div class="form-group">
+                            <label>Mostrar notas das etapas anteriores para o Avaliador Final</label>
+                            <select
+                                class="form-control form-control-sm"
+                                v-model="form.mostrar_notas_avaliador_final"
+                                @change="valida_campo_vazio($event.target, 1)"
+                                @blur="valida_campo_vazio($event.target, 1)"
+                            >
+                                <option :value="true">Sim</option>
+                                <option :value="false">Não</option>
+                            </select>
+                        </div>
+                        <div class="alert alert-secondary mb-0">
+                            Quando habilitado, o avaliador final visualizará a nota da autoavaliação (se existir) e as notas dos avaliadores anteriores no momento de preencher sua etapa.
+                        </div>
 
                         <div class="form-group">
                             <label>Tipo de avaliador</label>
@@ -402,6 +417,7 @@ export default {
                 status: '',
                 ativo: true,
                 auto_avaliacao: true,
+                mostrar_notas_avaliador_final: false,
                 avaliacao_tipo_id: '',
                 fluxo: [],
                 tipo_pj: this.tipoPj

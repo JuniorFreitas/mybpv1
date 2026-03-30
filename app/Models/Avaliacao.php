@@ -84,7 +84,8 @@ class Avaliacao extends Model
         'ativo',
         'auto_avaliacao',
         'fluxo',
-        'tipo_pj'
+        'tipo_pj',
+        'mostrar_notas_avaliador_final'
     ];
 
     protected $casts = [
@@ -99,7 +100,8 @@ class Avaliacao extends Model
         'ativo' => 'boolean',
         'auto_avaliacao' => 'boolean',
         'fluxo' => 'json',
-        'tipo_pj' => 'boolean'
+        'tipo_pj' => 'boolean',
+        'mostrar_notas_avaliador_final' => 'boolean'
     ];
 
     public $timestamps = false;
