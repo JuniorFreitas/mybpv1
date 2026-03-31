@@ -312,6 +312,19 @@ class AvaliacaoController extends Controller
                 $item->fazer_avaliacao_final = $item->principal && $item->total_avaliacoes_concluidas === $item->total_avaliacoes && $item->status != 'Finalizada';
             }
 
+            $avaliacaoFeedbackPrincipal = AvaliacaoFeedback::whereAvaliacaoId($item->avaliacao_id)
+                ->whereFuncionarioId($item->funcionario_id)
+                ->wherePrincipal(true)
+                ->first();
+
+            $item->pdi_cadastrado = false;
+
+            if ($avaliacaoFeedbackPrincipal) {
+                $item->pdi_cadastrado = AvaliacaoResultado::where('avaliacao_feedback_id', $avaliacaoFeedbackPrincipal->id)
+                    ->where('gestor_id', $avaliacaoFeedbackPrincipal->avaliador_id)
+                    ->exists();
+            }
+
             return $item;
         });
 

@@ -590,120 +590,123 @@
                                                 <span class="text-nowrap"><i class="fa fa-calendar-alt mr-1"></i>{{ item.avaliacao.data_fim_prazo }}</span>
                                             </div>
                                         </div>
-                                        <div
-                                            class="dropdown flex-shrink-0 ml-auto"
-                                            :class="{ show: isDropdownOpen(item.id, 'auto') }"
-                                            v-show="
-                                                (item.status === 'Pendente' && item.fez_auto_avaliacao && !item.principal) ||
-                                                (item.status === 'Pendente' && item.fez_auto_avaliacao && item.principal && !item.pendente_avaliacao_par) ||
-                                                (item.status === 'Pendente' && !item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id) ||
-                                                item.status === 'Avaliada' ||
-                                                (item.status === 'Avaliada' && item.fazer_avaliacao_final) ||
-                                                (item.status === 'Finalizada' && !item.fazer_avaliacao_final)
-                                            "
-                                        >
+                                        <div class="d-flex align-items-start flex-shrink-0 ml-auto">
                                             <button
+                                                v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
                                                 type="button"
-                                                class="btn btn-sm btn-outline-primary ma-btn-acao rounded-circle"
-                                                :id="`dropdownMenuLink_${item.id}_auto`"
-                                                aria-haspopup="true"
-                                                :aria-expanded="isDropdownOpen(item.id, 'auto') ? 'true' : 'false'"
-                                                @click.prevent.stop="toggleDropdown(item.id, 'auto')"
+                                                class="btn btn-sm btn-outline-primary mr-2"
+                                                @click="abrirModalEdicaoPdi(item)"
                                             >
-                                                <i class="fas fa-ellipsis-v"></i>
+                                                Editar PDI
                                             </button>
 
                                             <div
-                                                class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                                class="dropdown"
                                                 :class="{ show: isDropdownOpen(item.id, 'auto') }"
-                                                :aria-labelledby="`dropdownMenuLink_${item.id}_auto`"
-                                                @click="fecharDropdown"
+                                                v-show="
+                                                    (item.status === 'Pendente' && item.fez_auto_avaliacao && !item.principal) ||
+                                                    (item.status === 'Pendente' && item.fez_auto_avaliacao && item.principal && !item.pendente_avaliacao_par) ||
+                                                    (item.status === 'Pendente' && !item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id) ||
+                                                    item.status === 'Avaliada' ||
+                                                    (item.status === 'Avaliada' && item.fazer_avaliacao_final) ||
+                                                    (item.status === 'Finalizada' && !item.fazer_avaliacao_final)
+                                                "
                                             >
-                                                <a
-                                                    class="dropdown-item"
-                                                    href="javascript://"
-                                                    title="Avaliar"
-                                                    @click="abrirModalAvaliacao(item)"
-                                                    v-if="
-                                                        (item.status === 'Pendente' && item.fez_auto_avaliacao && !item.principal) ||
-                                                        (item.status === 'Pendente' &&
-                                                            item.fez_auto_avaliacao &&
-                                                            item.principal &&
-                                                            !item.pendente_avaliacao_par)
-                                                    "
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-primary ma-btn-acao rounded-circle"
+                                                    :id="`dropdownMenuLink_${item.id}_auto`"
+                                                    aria-haspopup="true"
+                                                    :aria-expanded="isDropdownOpen(item.id, 'auto') ? 'true' : 'false'"
+                                                    @click.prevent.stop="toggleDropdown(item.id, 'auto')"
                                                 >
-                                                    Avaliar
-                                                </a>
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
 
-                                                <a
-                                                    class="dropdown-item"
-                                                    href="javascript://"
-                                                    title="Avaliar"
-                                                    @click="abrirModalAvaliacao(item)"
-                                                    v-if="item.status === 'Pendente' && !item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id"
+                                                <div
+                                                    class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                                    :class="{ show: isDropdownOpen(item.id, 'auto') }"
+                                                    :aria-labelledby="`dropdownMenuLink_${item.id}_auto`"
+                                                    @click="fecharDropdown"
                                                 >
-                                                    Avaliar
-                                                </a>
+                                                    <a
+                                                        class="dropdown-item"
+                                                        href="javascript://"
+                                                        title="Avaliar"
+                                                        @click="abrirModalAvaliacao(item)"
+                                                        v-if="
+                                                            (item.status === 'Pendente' && item.fez_auto_avaliacao && !item.principal) ||
+                                                            (item.status === 'Pendente' &&
+                                                                item.fez_auto_avaliacao &&
+                                                                item.principal &&
+                                                                !item.pendente_avaliacao_par)
+                                                        "
+                                                    >
+                                                        Avaliar
+                                                    </a>
 
-                                                <a
-                                                    class="dropdown-item"
-                                                    href="javascript://"
-                                                    title="Visualizar Avaliação"
-                                                    @click="abrirModalAvaliacao(item, true)"
-                                                    v-if="item.status === 'Avaliada'"
-                                                >
-                                                    Visualizar Avaliação
-                                                </a>
+                                                    <a
+                                                        class="dropdown-item"
+                                                        href="javascript://"
+                                                        title="Avaliar"
+                                                        @click="abrirModalAvaliacao(item)"
+                                                        v-if="
+                                                            item.status === 'Pendente' && !item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id
+                                                        "
+                                                    >
+                                                        Avaliar
+                                                    </a>
 
-                                                <a
-                                                    class="dropdown-item"
-                                                    href="javascript://"
-                                                    title="Visualizar Avaliação"
-                                                    @click="abrirModalAvaliacao(item, true)"
-                                                    v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final"
-                                                >
-                                                    Visualizar Avaliação
-                                                </a>
+                                                    <a
+                                                        class="dropdown-item"
+                                                        href="javascript://"
+                                                        title="Visualizar Avaliação"
+                                                        @click="abrirModalAvaliacao(item, true)"
+                                                        v-if="item.status === 'Avaliada'"
+                                                    >
+                                                        Visualizar Avaliação
+                                                    </a>
 
-                                                <a
-                                                    class="dropdown-item"
-                                                    href="javascript://"
-                                                    title="Fazer Avaliação Final"
-                                                    @click="abrirModalAvaliacaoFinal(item)"
-                                                    v-if="item.status === 'Avaliada' && item.fazer_avaliacao_final"
-                                                >
-                                                    Fazer Avaliação Final
-                                                </a>
+                                                    <a
+                                                        class="dropdown-item"
+                                                        href="javascript://"
+                                                        title="Visualizar Avaliação"
+                                                        @click="abrirModalAvaliacao(item, true)"
+                                                        v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final"
+                                                    >
+                                                        Visualizar Avaliação
+                                                    </a>
 
-                                                <a
-                                                    class="dropdown-item"
-                                                    href="javascript://"
-                                                    title="Visualizar Avaliação Final"
-                                                    @click="abrirModalAvaliacaoFinal(item, true)"
-                                                    v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
-                                                >
-                                                    Visualizar Avaliação Final
-                                                </a>
+                                                    <a
+                                                        class="dropdown-item"
+                                                        href="javascript://"
+                                                        title="Fazer Avaliação Final"
+                                                        @click="abrirModalAvaliacaoFinal(item)"
+                                                        v-if="item.status === 'Avaliada' && item.fazer_avaliacao_final"
+                                                    >
+                                                        Fazer Avaliação Final
+                                                    </a>
 
-                                                <a
-                                                    class="dropdown-item"
-                                                    href="javascript://"
-                                                    title="Editar PDI"
-                                                    @click="abrirModalEdicaoPdi(item)"
-                                                    v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
-                                                >
-                                                    Editar PDI
-                                                </a>
+                                                    <a
+                                                        class="dropdown-item"
+                                                        href="javascript://"
+                                                        title="Visualizar Avaliação Final"
+                                                        @click="abrirModalAvaliacaoFinal(item, true)"
+                                                        v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
+                                                    >
+                                                        Visualizar Avaliação Final
+                                                    </a>
 
-                                                <a
-                                                    class="dropdown-item"
-                                                    :href="`${urlImpressao}/${item.token}`"
-                                                    target="_blank"
-                                                    title="Imprimir Avaliação Final"
-                                                    v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
-                                                >
-                                                    Imprimir Avaliação Final
-                                                </a>
+                                                    <a
+                                                        class="dropdown-item"
+                                                        :href="`${urlImpressao}/${item.token}`"
+                                                        target="_blank"
+                                                        title="Imprimir Avaliação Final"
+                                                        v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
+                                                    >
+                                                        Imprimir Avaliação Final
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -804,95 +807,96 @@
                                                 <span class="badge ma-status-badge ma-status-badge--ok" v-else-if="item.status === 'Finalizada'">Completa</span>
                                             </div>
                                         </div>
-                                        <div
-                                            class="dropdown flex-shrink-0 ml-auto"
-                                            :class="{ show: isDropdownOpen(item.id, 'gestor') }"
-                                            v-show="
-                                                (item.status === 'Pendente' && item.principal && !item.pendente_avaliacao_par) ||
-                                                item.status === 'Avaliada' ||
-                                                (item.status === 'Avaliada' && item.fazer_avaliacao_final) ||
-                                                (item.status === 'Finalizada' && !item.fazer_avaliacao_final)
-                                            "
-                                        >
+                                        <div class="d-flex align-items-start flex-shrink-0 ml-auto">
                                             <button
+                                                v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
                                                 type="button"
-                                                class="btn btn-sm btn-outline-primary ma-btn-acao rounded-circle"
-                                                :id="`dropdownMenuLink_${item.id}_gestor`"
-                                                aria-haspopup="true"
-                                                :aria-expanded="isDropdownOpen(item.id, 'gestor') ? 'true' : 'false'"
-                                                @click.prevent.stop="toggleDropdown(item.id, 'gestor')"
+                                                class="btn btn-sm btn-outline-primary mr-2"
+                                                @click="abrirModalEdicaoPdi(item)"
                                             >
-                                                <i class="fas fa-ellipsis-v"></i>
+                                                Editar PDI
                                             </button>
 
                                             <div
-                                                class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                                class="dropdown"
                                                 :class="{ show: isDropdownOpen(item.id, 'gestor') }"
-                                                :aria-labelledby="`dropdownMenuLink_${item.id}_gestor`"
-                                                @click="fecharDropdown"
+                                                v-show="
+                                                    (item.status === 'Pendente' && item.principal && !item.pendente_avaliacao_par) ||
+                                                    item.status === 'Avaliada' ||
+                                                    (item.status === 'Avaliada' && item.fazer_avaliacao_final) ||
+                                                    (item.status === 'Finalizada' && !item.fazer_avaliacao_final)
+                                                "
                                             >
-                                                <a
-                                                    class="dropdown-item"
-                                                    href="javascript://"
-                                                    title="Avaliar"
-                                                    @click="abrirModalAvaliacao(item)"
-                                                    v-if="item.status === 'Pendente' && item.principal"
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-primary ma-btn-acao rounded-circle"
+                                                    :id="`dropdownMenuLink_${item.id}_gestor`"
+                                                    aria-haspopup="true"
+                                                    :aria-expanded="isDropdownOpen(item.id, 'gestor') ? 'true' : 'false'"
+                                                    @click.prevent.stop="toggleDropdown(item.id, 'gestor')"
                                                 >
-                                                    Avaliar
-                                                </a>
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
 
-                                                <a
-                                                    class="dropdown-item"
-                                                    href="javascript://"
-                                                    title="Visualizar Avaliação"
-                                                    @click="abrirModalAvaliacao(item, true)"
-                                                    v-if="item.status === 'Avaliada'"
+                                                <div
+                                                    class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                                    :class="{ show: isDropdownOpen(item.id, 'gestor') }"
+                                                    :aria-labelledby="`dropdownMenuLink_${item.id}_gestor`"
+                                                    @click="fecharDropdown"
                                                 >
-                                                    Visualizar Avaliação
-                                                </a>
+                                                    <a
+                                                        class="dropdown-item"
+                                                        href="javascript://"
+                                                        title="Avaliar"
+                                                        @click="abrirModalAvaliacao(item)"
+                                                        v-if="item.status === 'Pendente' && item.principal"
+                                                    >
+                                                        Avaliar
+                                                    </a>
 
-                                                <a
-                                                    class="dropdown-item"
-                                                    href="javascript://"
-                                                    title="Fazer Avaliação Final"
-                                                    @click="abrirModalAvaliacaoFinal(item)"
-                                                    v-if="item.status === 'Avaliada' && item.fazer_avaliacao_final"
-                                                >
-                                                    Fazer Avaliação Final
-                                                </a>
+                                                    <a
+                                                        class="dropdown-item"
+                                                        href="javascript://"
+                                                        title="Visualizar Avaliação"
+                                                        @click="abrirModalAvaliacao(item, true)"
+                                                        v-if="item.status === 'Avaliada'"
+                                                    >
+                                                        Visualizar Avaliação
+                                                    </a>
 
-                                                <a
-                                                    class="dropdown-item"
-                                                    href="javascript://"
-                                                    title="Visualizar Avaliação Final"
-                                                    @click="abrirModalAvaliacaoFinal(item, true)"
-                                                    v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
-                                                >
-                                                    Visualizar Avaliação Final
-                                                </a>
+                                                    <a
+                                                        class="dropdown-item"
+                                                        href="javascript://"
+                                                        title="Fazer Avaliação Final"
+                                                        @click="abrirModalAvaliacaoFinal(item)"
+                                                        v-if="item.status === 'Avaliada' && item.fazer_avaliacao_final"
+                                                    >
+                                                        Fazer Avaliação Final
+                                                    </a>
 
-                                                <a
-                                                    class="dropdown-item"
-                                                    href="javascript://"
-                                                    title="Editar PDI"
-                                                    @click="abrirModalEdicaoPdi(item)"
-                                                    v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
-                                                >
-                                                    Editar PDI
-                                                </a>
+                                                    <a
+                                                        class="dropdown-item"
+                                                        href="javascript://"
+                                                        title="Visualizar Avaliação Final"
+                                                        @click="abrirModalAvaliacaoFinal(item, true)"
+                                                        v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
+                                                    >
+                                                        Visualizar Avaliação Final
+                                                    </a>
 
-                                                <a
-                                                    class="dropdown-item"
-                                                    :href="`${urlImpressao}/${item.token}`"
-                                                    target="_blank"
-                                                    title="Imprimir Avaliação Final"
-                                                    v-if="
-                                                        item.status === 'Finalizada' ||
-                                                        (item.total_avaliacoes_concluidas > 0 && (item.principal || tem_privilegio_gestao_rh))
-                                                    "
-                                                >
-                                                    Imprimir Avaliação Final
-                                                </a>
+                                                    <a
+                                                        class="dropdown-item"
+                                                        :href="`${urlImpressao}/${item.token}`"
+                                                        target="_blank"
+                                                        title="Imprimir Avaliação Final"
+                                                        v-if="
+                                                            item.status === 'Finalizada' ||
+                                                            (item.total_avaliacoes_concluidas > 0 && (item.principal || tem_privilegio_gestao_rh))
+                                                        "
+                                                    >
+                                                        Imprimir Avaliação Final
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
