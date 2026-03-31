@@ -4,8 +4,8 @@
             <template #conteudo>
                 <preload v-show="preloadAvalFinal"></preload>
                 <div v-if="!preloadAvalFinal">
-                    <fieldset class="ma-modal-fieldset">
-                        <legend class="ma-modal-legend">{{ formAvaliarFinal.tipo_pj ? 'Dados do fornecedor' : 'Dados do colaborador' }}</legend>
+                    <fieldset>
+                        <legend>{{ formAvaliarFinal.tipo_pj ? 'Dados do fornecedor' : 'Dados do colaborador' }}</legend>
                         <p class="ma-modal-lead">
                             {{
                                 formAvaliarFinal.tipo_pj
@@ -53,17 +53,11 @@
                     </fieldset>
 
                     <template v-if="formAvaliarFinal.result_topico_pai_agrupado && formAvaliarFinal.result_topico_pai_agrupado.length > 0">
-                        <h6 class="ma-modal-section-title mt-3 mb-2">
-                            <i class="fa fa-table mr-2 text-primary"></i>Resultado por competência
-                        </h6>
+                        <h6 class="ma-modal-section-title mt-3 mb-2"><i class="fa fa-table mr-2 text-primary"></i>Resultado por competência</h6>
                         <p class="ma-modal-lead ma-modal-lead--tight mb-3">
                             Consolidado das notas informadas em cada etapa do fluxo, com a média calculada por critério.
                         </p>
-                        <table
-                            class="table"
-                            v-for="(item, index) in formAvaliarFinal.result_topico_pai_agrupado"
-                            :key="index"
-                        >
+                        <table class="table" v-for="(item, index) in formAvaliarFinal.result_topico_pai_agrupado" :key="index">
                             <thead>
                                 <tr>
                                     <!-- CORREÇÃO APLICADA: Mudança de item[index] para item[0] com guard -->
@@ -117,12 +111,8 @@
                             formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores
                         "
                     >
-                        <h6 class="ma-modal-section-title mt-4 mb-2">
-                            <i class="fa fa-comment-dots mr-2 text-primary"></i>Comentários por etapa
-                        </h6>
-                        <p class="ma-modal-lead ma-modal-lead--tight mb-3">
-                            Texto registrado por cada participante ao concluir a sua etapa no fluxo.
-                        </p>
+                        <h6 class="ma-modal-section-title mt-4 mb-2"><i class="fa fa-comment-dots mr-2 text-primary"></i>Comentários por etapa</h6>
+                        <p class="ma-modal-lead ma-modal-lead--tight mb-3">Texto registrado por cada participante ao concluir a sua etapa no fluxo.</p>
                         <table class="table">
                             <thead>
                                 <tr>
@@ -174,91 +164,25 @@
                         </div>
                     </div>
 
-                    <fieldset class="ma-modal-fieldset mt-4">
-                        <legend class="ma-modal-legend">Plano de ação e oportunidades de melhoria</legend>
-                        <p class="ma-modal-lead">
-                            Registre ações objetivas, prazos e responsáveis para apoiar o desenvolvimento nos pontos que precisam evoluir.
-                        </p>
-
-                        <button class="btn btn-sm mr-1 btn-primary mb-2" @click="addPlanoAcao($event.target)" v-show="!visualizando">
-                            <i class="fa fa-plus"></i> Adicionar plano
-                        </button>
-
-                        <fieldset v-for="(item, index) in formAvaliarFinal.planos_acoes || []" :key="index" class="ma-modal-plano-item">
-                            <legend class="ma-modal-legend ma-modal-legend--sub">Plano {{ index + 1 }}</legend>
-                            <div class="row">
-                                <div class="col-lg-12">
-                                    <div class="form-group">
-                                        <label>Competência ou critério relacionado</label>
-                                        <select
-                                            class="form-control form-control-sm validacampo"
-                                            v-model="item.topico_id"
-                                            :disabled="visualizando"
-                                            @blur.prevent="valida_campo_vazio($event.target, 1)"
-                                            @change.prevent="valida_campo_vazio($event.target, 1)"
-                                        >
-                                            <option value="">Selecione a competência</option>
-                                            <!-- CORREÇÃO APLICADA: Adicionado guard para result_topico -->
-                                            <option v-for="(topico, topico_id) in formAvaliarFinal.result_topico || {}" :key="topico_id" :value="topico_id">
-                                                {{ topico.topico_pai }} -
-                                                {{ topico.subtopico }}
-                                            </option>
-                                        </select>
-                                        <!-- CORREÇÃO APLICADA: Método em vez de filtro -->
-                                        <h5
-                                            class="my-3 text-danger"
-                                            v-if="item.topico_id && formAvaliarFinal.result_topico && formAvaliarFinal.result_topico[item.topico_id]"
-                                        >
-                                            Média neste critério:
-                                            {{ getMediaTopico(item.topico_id) }}
-                                        </h5>
-                                    </div>
-                                </div>
-
-                                <div class="col-lg-12">
-                                    <div class="form-group">
-                                        <label>Descrição do plano de ação</label>
-                                        <textarea
-                                            rows="5"
-                                            class="form-control form-control-sm validacampo"
-                                            v-model="item.plano_de_acao"
-                                            @blur.prevent="valida_campo_vazio($event.target, 1)"
-                                            :disabled="visualizando"
-                                            placeholder="O que será feito, como será acompanhado e o resultado esperado."
-                                        ></textarea>
-                                    </div>
-                                </div>
-
-                                <div class="col-lg-4">
-                                    <div class="form-group">
-                                        <date-picker formsm label="Início" v-model="item.inicio" :disabled="visualizando"></date-picker>
-                                    </div>
-                                </div>
-
-                                <div class="col-lg-4">
-                                    <div class="form-group">
-                                        <date-picker formsm label="Término" v-model="item.termino" :disabled="visualizando"></date-picker>
-                                    </div>
-                                </div>
-
-                                <div class="col-lg-12" v-show="!visualizando">
-                                    <button type="button" class="btn btn-sm mr-1 btn-outline-danger" @click="removerPlanoAcao(index)">
-                                        <i class="fa fa-trash"></i> Remover este plano
-                                    </button>
-                                </div>
-                            </div>
-                        </fieldset>
-                    </fieldset>
+                    <PlanosAcao
+                        :planos="formAvaliarFinal.planos_acoes || []"
+                        :result-topico="formAvaliarFinal.result_topico || {}"
+                        :visualizando="visualizando"
+                        :titulo="tituloPlanoAcao"
+                        :descricao="descricaoPlanoAcao"
+                        @adicionar="addPlanoAcao"
+                        @remover="removerPlanoAcao"
+                    />
                 </div>
             </template>
             <template #rodape>
                 <button
                     type="button"
                     class="btn btn-sm mr-1 btn-primary"
-                    v-show="editando && !visualizando && !preload && formAvaliarFinal.planos_acoes && formAvaliarFinal.planos_acoes.length > 0"
+                    v-show="editando && !visualizando && !preloadAvalFinal && formAvaliarFinal.planos_acoes && formAvaliarFinal.planos_acoes.length > 0"
                     @click="salvarAvaliacaoFinal()"
                 >
-                    <i class="fa fa-check"></i> Concluir avaliação final
+                    <i :class="isEditandoPdi ? 'fa fa-save' : 'fa fa-check'"></i> {{ textoBotaoSalvarPdi }}
                 </button>
             </template>
         </modal>
@@ -321,18 +245,21 @@
                             <div class="escala-titulo">Escala de 1 a 5</div>
                         </div>
                         <p class="escala-intro">
-                            <strong>Para cada critério, escolha a nota que melhor representa o desempenho observado,</strong> usando as descrições abaixo como referência.
+                            <strong>Para cada critério, escolha a nota que melhor representa o desempenho observado,</strong> usando as descrições abaixo como
+                            referência.
                         </p>
                         <div class="escala-item">
                             <span class="nota-badge nota-5">5</span>
                             <span class="escala-texto"
-                                ><strong>Superou muito as expectativas:</strong> É percebido por outras áreas/pessoas como alguém com uma atuação
-                                excepcional, modelo de referência</span
+                                ><strong>Superou muito as expectativas:</strong> É percebido por outras áreas/pessoas como alguém com uma atuação excepcional,
+                                modelo de referência</span
                             >
                         </div>
                         <div class="escala-item">
                             <span class="nota-badge nota-4">4</span>
-                            <span class="escala-texto"><strong>Superou as expectativas:</strong> Atuação melhor que o esperado com alto padrão de qualidade</span>
+                            <span class="escala-texto"
+                                ><strong>Superou as expectativas:</strong> Atuação melhor que o esperado com alto padrão de qualidade</span
+                            >
                         </div>
                         <div class="escala-item">
                             <span class="nota-badge nota-3">3</span>
@@ -408,12 +335,9 @@
                                             <span class="ma-ref-line__sub">Autoavaliação</span>
                                         </div>
                                     </div>
-                                    <span
-                                        :class="[
-                                            'ma-ref-nota-pill',
-                                            notaReferenciaClasse(formAvaliar.respostasFunc[item.id][index].nota)
-                                        ]"
-                                    >{{ formAvaliar.respostasFunc[item.id][index].nota }}</span>
+                                    <span :class="['ma-ref-nota-pill', notaReferenciaClasse(formAvaliar.respostasFunc[item.id][index].nota)]">{{
+                                        formAvaliar.respostasFunc[item.id][index].nota
+                                    }}</span>
                                 </div>
                                 <div
                                     v-for="outra in formAvaliar.outras_avaliacoes_notas"
@@ -428,18 +352,16 @@
                                             <span class="ma-ref-line__sub">{{ outra.avaliador_nome }}</span>
                                         </div>
                                     </div>
-                                    <span
-                                        :class="['ma-ref-nota-pill', notaReferenciaClasse(outra.respostas[item.id][index].nota)]"
-                                    >{{ outra.respostas[item.id][index].nota }}</span>
+                                    <span :class="['ma-ref-nota-pill', notaReferenciaClasse(outra.respostas[item.id][index].nota)]">{{
+                                        outra.respostas[item.id][index].nota
+                                    }}</span>
                                 </div>
                             </div>
                         </fieldset>
                     </fieldset>
                     <fieldset>
                         <legend>Minhas considerações</legend>
-                        <p class="ma-modal-lead">
-                            Use este espaço para contextualizar a sua avaliação, destacar pontos fortes ou situações relevantes.
-                        </p>
+                        <p class="ma-modal-lead">Use este espaço para contextualizar a sua avaliação, destacar pontos fortes ou situações relevantes.</p>
                         <textarea
                             :disabled="visualizando"
                             v-model="formAvaliar.comentario"
@@ -456,12 +378,10 @@
                         >
                             <div class="ma-ref-panel__head">
                                 <i class="fa fa-comments" aria-hidden="true"></i>
-                                    <span>Referência: comentários já enviados</span>
+                                <span>Referência: comentários já enviados</span>
                             </div>
                             <div v-if="formAvaliar.comentario_funcionario" class="ma-ref-coment">
-                                <div class="ma-ref-coment__label">
-                                    <i class="fa fa-user mr-1 text-primary"></i>Colaborador
-                                </div>
+                                <div class="ma-ref-coment__label"><i class="fa fa-user mr-1 text-primary"></i>Colaborador</div>
                                 <p class="ma-ref-coment__text">{{ formAvaliar.comentario_funcionario }}</p>
                             </div>
                             <div
@@ -490,9 +410,7 @@
         <div id="conteudo" class="ma-conteudo">
             <div class="card ma-card ma-filtros shadow border-0 mb-3">
                 <div class="card-body py-3 ma-filtros-card-body">
-                    <h6 class="ma-card-title text-uppercase  mb-3">
-                        <i class="fa fa-sliders-h mr-2 text-primary"></i>Filtros
-                    </h6>
+                    <h6 class="ma-card-title text-uppercase mb-3"><i class="fa fa-sliders-h mr-2 text-primary"></i>Filtros</h6>
                     <form
                         class="row align-items-end ma-filtros-form"
                         @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null"
@@ -566,10 +484,13 @@
                 </div>
             </div>
 
-            <div class="card ma-card ma-legenda shadow border-0 mb-3" v-if="!controle.carregando && selecionadaAvaliacao && selecionadaAvaliacao.auto_avaliacao">
+            <div
+                class="card ma-card ma-legenda shadow border-0 mb-3"
+                v-if="!controle.carregando && selecionadaAvaliacao && selecionadaAvaliacao.auto_avaliacao"
+            >
                 <div class="card-body py-2">
                     <div class="d-flex flex-wrap align-items-center">
-                        <span class=" font-weight-bold  mr-2 mb-1 w-100">Legenda:</span>
+                        <span class="font-weight-bold mr-2 mb-1 w-100">Legenda:</span>
                         <span class="badge ma-legend-pill ma-legend-pill--danger mb-1 mr-1">Pendente autoavaliação</span>
                         <span class="badge ma-legend-pill ma-legend-pill--pink mb-1 mr-1">Pendente autoavaliação colaborador</span>
                         <span class="badge ma-legend-pill ma-legend-pill--warning mb-1 mr-1">Pendente avaliação do par</span>
@@ -580,10 +501,13 @@
                 </div>
             </div>
 
-            <div class="card ma-card ma-legenda shadow border-0 mb-3" v-if="!controle.carregando && selecionadaAvaliacao && !selecionadaAvaliacao.auto_avaliacao">
+            <div
+                class="card ma-card ma-legenda shadow border-0 mb-3"
+                v-if="!controle.carregando && selecionadaAvaliacao && !selecionadaAvaliacao.auto_avaliacao"
+            >
                 <div class="card-body py-2">
                     <div class="d-flex flex-wrap align-items-center">
-                        <span class=" font-weight-bold  mr-2 mb-1 w-100">Legenda:</span>
+                        <span class="font-weight-bold mr-2 mb-1 w-100">Legenda:</span>
                         <span class="badge ma-legend-pill ma-legend-pill--light mb-1 mr-1">Pendente avaliação do gestor</span>
                         <span class="badge ma-legend-pill ma-legend-pill--warn-final mb-1 mr-1">Falta avaliação final</span>
                         <span class="badge ma-legend-pill ma-legend-pill--avaliada mb-1 mr-1">Avaliada pelo gestor</span>
@@ -592,16 +516,11 @@
                 </div>
             </div>
 
-            <div
-                class="card ma-card ma-fluxo-card shadow border-0 mb-3"
-                v-if="!controle.carregando && selecionadaAvaliacao && fluxoEtapasExibicao.length"
-            >
+            <div class="card ma-card ma-fluxo-card shadow border-0 mb-3" v-if="!controle.carregando && selecionadaAvaliacao && fluxoEtapasExibicao.length">
                 <div class="ma-fluxo-card__accent" aria-hidden="true"></div>
                 <div class="card-body py-3 px-3">
                     <div class="mb-3">
-                        <h6 class="ma-fluxo-card__title mb-1">
-                            <i class="fa fa-project-diagram mr-2 text-primary"></i>Fluxo da avaliação
-                        </h6>
+                        <h6 class="ma-fluxo-card__title mb-1"><i class="fa fa-project-diagram mr-2 text-primary"></i>Fluxo da avaliação</h6>
                         <p class="ma-fluxo-card__subtitle mb-0">
                             Ciclo
                             <span class="ma-fluxo-card__titulo-av">{{ selecionadaAvaliacao.titulo }}</span>
@@ -613,11 +532,7 @@
                                 <span class="ma-fluxo-chip__num">{{ idx + 1 }}</span>
                                 <span class="ma-fluxo-chip__txt">{{ etapa.label }}</span>
                             </div>
-                            <i
-                                v-if="idx < fluxoEtapasExibicao.length - 1"
-                                class="fa fa-chevron-right ma-fluxo-chip__sep"
-                                aria-hidden="true"
-                            ></i>
+                            <i v-if="idx < fluxoEtapasExibicao.length - 1" class="fa fa-chevron-right ma-fluxo-chip__sep" aria-hidden="true"></i>
                         </template>
                     </div>
                 </div>
@@ -628,7 +543,7 @@
             </p>
 
             <div class="alert alert-light border text-center ma-empty rounded shadow-sm" v-show="!controle.carregando && lista.length === 0">
-                <i class="fa fa-inbox fa-2x  mb-2 d-block"></i>
+                <i class="fa fa-inbox fa-2x mb-2 d-block"></i>
                 <span class="">Nenhum registro encontrado para os filtros selecionados.</span>
             </div>
 
@@ -638,12 +553,15 @@
                         <div>
                             <i class="fa fa-th-large mr-2 text-primary"></i>
                             <strong>Minhas avaliações</strong>
-                            <span class="text-muted  d-block d-md-inline ml-md-2 mt-1 mt-md-0" v-if="selecionadaAvaliacao">{{ selecionadaAvaliacao.titulo }}</span>
+                            <span class="text-muted d-block d-md-inline ml-md-2 mt-1 mt-md-0" v-if="selecionadaAvaliacao">{{
+                                selecionadaAvaliacao.titulo
+                            }}</span>
                         </div>
                         <span class="badge badge-pill badge-secondary ma-count-pill">{{ lista.length }} registro(s)</span>
                     </div>
-                    <p class="  mb-0 px-3 pt-2 ma-agrupado-hint" v-if="lista.length">
-                        <i class="fa fa-layer-group mr-1"></i> Agrupado por status: pendentes; em seguida quem falta avaliação final; depois demais avaliadas e finalizadas.
+                    <p class="mb-0 px-3 pt-2 ma-agrupado-hint" v-if="lista.length">
+                        <i class="fa fa-layer-group mr-1"></i> Agrupado por status: pendentes; em seguida quem falta avaliação final; depois demais avaliadas e
+                        finalizadas.
                     </p>
                     <div class="card-body py-3 px-3 ma-cards-lista">
                         <template v-for="grupo in gruposListaAuto" :key="'ga-' + grupo.status">
@@ -657,20 +575,17 @@
                                     <span class="badge badge-pill ma-grupo-count">{{ grupo.itens.length }}</span>
                                 </div>
                             </div>
-                            <div
-                                v-for="item in grupo.itens"
-                                :key="item.id"
-                                class="card ma-item-card border-0 shadow-sm mb-2"
-                                :class="classesCardAuto(item)"
-                            >
+                            <div v-for="item in grupo.itens" :key="item.id" class="card ma-item-card border-0 shadow-sm mb-2" :class="classesCardAuto(item)">
                                 <div class="card-body py-3 px-3">
                                     <div class="d-flex flex-wrap justify-content-between align-items-start">
                                         <div class="flex-grow-1 pr-2 ma-min-w-0">
                                             <div class="d-flex flex-wrap align-items-center">
-                                                <span class="badge badge-pill badge-light border ma-badge-ano mr-2 mb-1">{{ item.avaliacao.ano_avaliacao }}</span>
+                                                <span class="badge badge-pill badge-light border ma-badge-ano mr-2 mb-1">{{
+                                                    item.avaliacao.ano_avaliacao
+                                                }}</span>
                                                 <span class="ma-cell-title mb-0">{{ item.avaliacao.titulo }}</span>
                                             </div>
-                                            <div class="  mt-1">
+                                            <div class="mt-1">
                                                 <span class="d-inline-block mr-2">{{ item.avaliacao.avaliacao_tipo.nome }}</span>
                                                 <span class="text-nowrap"><i class="fa fa-calendar-alt mr-1"></i>{{ item.avaliacao.data_fim_prazo }}</span>
                                             </div>
@@ -708,10 +623,13 @@
                                                     class="dropdown-item"
                                                     href="javascript://"
                                                     title="Avaliar"
-                                                    @click="avaliarForm(item); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
+                                                    @click="abrirModalAvaliacao(item)"
                                                     v-if="
                                                         (item.status === 'Pendente' && item.fez_auto_avaliacao && !item.principal) ||
-                                                        (item.status === 'Pendente' && item.fez_auto_avaliacao && item.principal && !item.pendente_avaliacao_par)
+                                                        (item.status === 'Pendente' &&
+                                                            item.fez_auto_avaliacao &&
+                                                            item.principal &&
+                                                            !item.pendente_avaliacao_par)
                                                     "
                                                 >
                                                     Avaliar
@@ -721,7 +639,7 @@
                                                     class="dropdown-item"
                                                     href="javascript://"
                                                     title="Avaliar"
-                                                    @click="avaliarForm(item); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
+                                                    @click="abrirModalAvaliacao(item)"
                                                     v-if="item.status === 'Pendente' && !item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id"
                                                 >
                                                     Avaliar
@@ -731,7 +649,7 @@
                                                     class="dropdown-item"
                                                     href="javascript://"
                                                     title="Visualizar Avaliação"
-                                                    @click="avaliarForm(item, true); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
+                                                    @click="abrirModalAvaliacao(item, true)"
                                                     v-if="item.status === 'Avaliada'"
                                                 >
                                                     Visualizar Avaliação
@@ -741,7 +659,7 @@
                                                     class="dropdown-item"
                                                     href="javascript://"
                                                     title="Visualizar Avaliação"
-                                                    @click="avaliarForm(item, true); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
+                                                    @click="abrirModalAvaliacao(item, true)"
                                                     v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final"
                                                 >
                                                     Visualizar Avaliação
@@ -751,7 +669,7 @@
                                                     class="dropdown-item"
                                                     href="javascript://"
                                                     title="Fazer Avaliação Final"
-                                                    @click="avaliarFinalForm(item); $refs.modal_janelaAvaliacaoFinal && $refs.modal_janelaAvaliacaoFinal.abrirModal()"
+                                                    @click="abrirModalAvaliacaoFinal(item)"
                                                     v-if="item.status === 'Avaliada' && item.fazer_avaliacao_final"
                                                 >
                                                     Fazer Avaliação Final
@@ -761,10 +679,20 @@
                                                     class="dropdown-item"
                                                     href="javascript://"
                                                     title="Visualizar Avaliação Final"
-                                                    @click="avaliarFinalForm(item, true); $refs.modal_janelaAvaliacaoFinal && $refs.modal_janelaAvaliacaoFinal.abrirModal()"
+                                                    @click="abrirModalAvaliacaoFinal(item, true)"
                                                     v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
                                                 >
                                                     Visualizar Avaliação Final
+                                                </a>
+
+                                                <a
+                                                    class="dropdown-item"
+                                                    href="javascript://"
+                                                    title="Editar PDI"
+                                                    @click="abrirModalEdicaoPdi(item)"
+                                                    v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
+                                                >
+                                                    Editar PDI
                                                 </a>
 
                                                 <a
@@ -780,7 +708,7 @@
                                         </div>
                                     </div>
                                     <hr class="my-3 ma-item-hr" />
-                                    <div class="row  mx-0">
+                                    <div class="row mx-0">
                                         <div class="col-12 col-md-6 mb-2 mb-md-0">
                                             <span class="ma-k">{{ selecionadaAvaliacao.tipo_pj ? 'Fornecedor' : 'Colaborador' }}</span>
                                             <div class="mt-1">
@@ -797,19 +725,13 @@
                                             </div>
                                         </div>
                                         <div class="col-12 mt-2 pt-2 border-top border-light">
-                                            <div
-                                                v-if="item.origem_feedback === 'Avaliador'"
-                                                class=""
-                                            >
+                                            <div v-if="item.origem_feedback === 'Avaliador'" class="">
                                                 <span class="ma-k ma-como-destaque__rotulo">Como</span>
                                                 <span class="ma-valor-destaque d-block mt-1 ma-como-destaque">
                                                     {{ rotuloComoAvaliacao(item) }}
                                                 </span>
                                             </div>
-                                            <div
-                                                v-else-if="item.origem_feedback === 'Funcionario' && !item.principal"
-                                                class=""
-                                            >
+                                            <div v-else-if="item.origem_feedback === 'Funcionario' && !item.principal" class="">
                                                 <span class="ma-k ma-como-destaque__rotulo">Como</span>
                                                 <span class="ma-valor-destaque d-block mt-1 ma-como-destaque ma-como-destaque--auto">Autoavaliação</span>
                                             </div>
@@ -826,12 +748,15 @@
                         <div>
                             <i class="fa fa-th-large mr-2 text-primary"></i>
                             <strong>Minhas avaliações</strong>
-                            <span class="text-muted  d-block d-md-inline ml-md-2 mt-1 mt-md-0" v-if="selecionadaAvaliacao">{{ selecionadaAvaliacao.titulo }}</span>
+                            <span class="text-muted d-block d-md-inline ml-md-2 mt-1 mt-md-0" v-if="selecionadaAvaliacao">{{
+                                selecionadaAvaliacao.titulo
+                            }}</span>
                         </div>
                         <span class="badge badge-pill badge-secondary ma-count-pill">{{ totalRegistrosListaGestor }} registro(s)</span>
                     </div>
-                    <p class=" text-muted mb-0 px-3 pt-2 ma-agrupado-hint" v-if="totalRegistrosListaGestor">
-                        <i class="fa fa-layer-group mr-1"></i> Agrupado por status (gestor principal): pendentes; falta avaliação final; demais avaliadas; finalizadas.
+                    <p class="text-muted mb-0 px-3 pt-2 ma-agrupado-hint" v-if="totalRegistrosListaGestor">
+                        <i class="fa fa-layer-group mr-1"></i> Agrupado por status (gestor principal): pendentes; falta avaliação final; demais avaliadas;
+                        finalizadas.
                     </p>
                     <div class="card-body py-3 px-3 ma-cards-lista">
                         <template v-for="grupo in gruposListaGestor" :key="'gg-' + grupo.status">
@@ -855,17 +780,27 @@
                                     <div class="d-flex flex-wrap justify-content-between align-items-start">
                                         <div class="flex-grow-1 pr-2 ma-min-w-0">
                                             <div class="d-flex flex-wrap align-items-center">
-                                                <span class="badge badge-pill badge-light border ma-badge-ano mr-2 mb-1">{{ item.avaliacao.ano_avaliacao }}</span>
+                                                <span class="badge badge-pill badge-light border ma-badge-ano mr-2 mb-1">{{
+                                                    item.avaliacao.ano_avaliacao
+                                                }}</span>
                                                 <span class="ma-cell-title mb-0">{{ item.avaliacao.titulo }}</span>
                                             </div>
-                                            <div class="  mt-1">
+                                            <div class="mt-1">
                                                 <span class="d-inline-block mr-2">{{ item.avaliacao.avaliacao_tipo.nome }}</span>
                                                 <span class="text-nowrap"><i class="fa fa-calendar-alt mr-1"></i>{{ item.avaliacao.data_fim_prazo }}</span>
                                             </div>
                                             <div class="mt-2 d-flex flex-wrap align-items-center">
-                                                <span class="badge ma-status-badge ma-status-badge--pend" v-if="item.status === 'Pendente'">Pendente gestor</span>
-                                                <span class="badge ma-status-badge ma-status-badge--final-pend" v-else-if="item.status === 'Avaliada' && item.fazer_avaliacao_final">Falta avaliação final</span>
-                                                <span class="badge ma-status-badge ma-status-badge--avaliada" v-else-if="item.status === 'Avaliada'">Avaliada pelo gestor</span>
+                                                <span class="badge ma-status-badge ma-status-badge--pend" v-if="item.status === 'Pendente'"
+                                                    >Pendente gestor</span
+                                                >
+                                                <span
+                                                    class="badge ma-status-badge ma-status-badge--final-pend"
+                                                    v-else-if="item.status === 'Avaliada' && item.fazer_avaliacao_final"
+                                                    >Falta avaliação final</span
+                                                >
+                                                <span class="badge ma-status-badge ma-status-badge--avaliada" v-else-if="item.status === 'Avaliada'"
+                                                    >Avaliada pelo gestor</span
+                                                >
                                                 <span class="badge ma-status-badge ma-status-badge--ok" v-else-if="item.status === 'Finalizada'">Completa</span>
                                             </div>
                                         </div>
@@ -900,7 +835,7 @@
                                                     class="dropdown-item"
                                                     href="javascript://"
                                                     title="Avaliar"
-                                                    @click="avaliarForm(item); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
+                                                    @click="abrirModalAvaliacao(item)"
                                                     v-if="item.status === 'Pendente' && item.principal"
                                                 >
                                                     Avaliar
@@ -910,7 +845,7 @@
                                                     class="dropdown-item"
                                                     href="javascript://"
                                                     title="Visualizar Avaliação"
-                                                    @click="avaliarForm(item, true); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
+                                                    @click="abrirModalAvaliacao(item, true)"
                                                     v-if="item.status === 'Avaliada'"
                                                 >
                                                     Visualizar Avaliação
@@ -920,7 +855,7 @@
                                                     class="dropdown-item"
                                                     href="javascript://"
                                                     title="Fazer Avaliação Final"
-                                                    @click="avaliarFinalForm(item); $refs.modal_janelaAvaliacaoFinal && $refs.modal_janelaAvaliacaoFinal.abrirModal()"
+                                                    @click="abrirModalAvaliacaoFinal(item)"
                                                     v-if="item.status === 'Avaliada' && item.fazer_avaliacao_final"
                                                 >
                                                     Fazer Avaliação Final
@@ -930,10 +865,20 @@
                                                     class="dropdown-item"
                                                     href="javascript://"
                                                     title="Visualizar Avaliação Final"
-                                                    @click="avaliarFinalForm(item, true); $refs.modal_janelaAvaliacaoFinal && $refs.modal_janelaAvaliacaoFinal.abrirModal()"
+                                                    @click="abrirModalAvaliacaoFinal(item, true)"
                                                     v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
                                                 >
                                                     Visualizar Avaliação Final
+                                                </a>
+
+                                                <a
+                                                    class="dropdown-item"
+                                                    href="javascript://"
+                                                    title="Editar PDI"
+                                                    @click="abrirModalEdicaoPdi(item)"
+                                                    v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
+                                                >
+                                                    Editar PDI
                                                 </a>
 
                                                 <a
@@ -952,7 +897,7 @@
                                         </div>
                                     </div>
                                     <hr class="my-3 ma-item-hr" />
-                                    <div class="row  mx-0">
+                                    <div class="row mx-0">
                                         <div class="col-12 col-md-6 mb-2 mb-md-0">
                                             <span class="ma-k">Funcionário</span>
                                             <div class="mt-1">
@@ -973,7 +918,8 @@
                             </div>
                         </template>
                         <div v-if="lista.length && !totalRegistrosListaGestor" class="alert alert-light border text-center ma-empty mb-0">
-                            Nenhum registro neste fluxo como gestor principal. Outras linhas podem aparecer na visão de autoavaliação ou como avaliador secundário.
+                            Nenhum registro neste fluxo como gestor principal. Outras linhas podem aparecer na visão de autoavaliação ou como avaliador
+                            secundário.
                         </div>
                     </div>
                 </div>
@@ -999,6 +945,7 @@ import modal from '../../../Modal'
 import DatePicker from '../../../DatePicker'
 import RadarChart from '../../../Charts/Radar'
 import ComboboxAutoComplete from '../../../ComboboxAutoComplete'
+import PlanosAcao from './components/PlanosAcao.vue'
 import validacoes from '../../../../mixins/Validacoes'
 
 export default {
@@ -1007,7 +954,8 @@ export default {
         controlePaginacao,
         DatePicker,
         RadarChart,
-        ComboboxAutoComplete
+        ComboboxAutoComplete,
+        PlanosAcao
     },
     mixins: [validacoes],
     props: {
@@ -1061,6 +1009,7 @@ export default {
             preloadAvalFinal: false,
             editando: false,
             visualizando: false,
+            modoAvaliacaoFinal: 'finalizar',
             tem_privilegio_gestao_rh: false,
 
             chartsRadares: [],
@@ -1219,8 +1168,7 @@ export default {
             const lista = (this.statusAvaliacaoSelecionada || []).map((o) => ({
                 value: o.value,
                 label: o.label,
-                meta:
-                    o.value !== '' && o.value !== null && o.value !== undefined ? String(o.value) : undefined
+                meta: o.value !== '' && o.value !== null && o.value !== undefined ? String(o.value) : undefined
             }))
             return [todos, ...lista]
         },
@@ -1242,9 +1190,21 @@ export default {
             return steps
         },
         temConsideracoesOutrosAvaliadores() {
-            return (this.formAvaliar.outras_avaliacoes_notas || []).some(
-                (o) => o.comentario && String(o.comentario).trim() !== ''
-            )
+            return (this.formAvaliar.outras_avaliacoes_notas || []).some((o) => o.comentario && String(o.comentario).trim() !== '')
+        },
+        isEditandoPdi() {
+            return this.modoAvaliacaoFinal === 'editar-pdi'
+        },
+        textoBotaoSalvarPdi() {
+            return this.isEditandoPdi ? 'Salvar PDI' : 'Concluir avaliação final'
+        },
+        tituloPlanoAcao() {
+            return this.isEditandoPdi ? 'PDI e acompanhamento' : 'Plano de ação e oportunidades de melhoria'
+        },
+        descricaoPlanoAcao() {
+            return this.isEditandoPdi
+                ? 'Atualize as ações, prazos e responsáveis para manter o acompanhamento do desenvolvimento após a finalização da avaliação.'
+                : 'Registre ações objetivas, prazos e responsáveis para apoiar o desenvolvimento nos pontos que precisam evoluir.'
         }
     },
     methods: {
@@ -1366,11 +1326,7 @@ export default {
             if (comboAno && typeof comboAno.containsTarget === 'function' && comboAno.containsTarget(event.target)) {
                 return
             }
-            if (
-                comboAvaliacao &&
-                typeof comboAvaliacao.containsTarget === 'function' &&
-                comboAvaliacao.containsTarget(event.target)
-            ) {
+            if (comboAvaliacao && typeof comboAvaliacao.containsTarget === 'function' && comboAvaliacao.containsTarget(event.target)) {
                 return
             }
             if (comboStatus && typeof comboStatus.containsTarget === 'function' && comboStatus.containsTarget(event.target)) {
@@ -1507,9 +1463,7 @@ export default {
         },
         validaNotaCampo(itemId, index) {
             this.$nextTick(() => {
-                const el = this.$el.querySelector(
-                    `.nota-hidden-input[data-item="${itemId}"][data-index="${index}"]`
-                )
+                const el = this.$el.querySelector(`.nota-hidden-input[data-item="${itemId}"][data-index="${index}"]`)
                 if (el && typeof window.valida_campo_vazio === 'function') {
                     window.valida_campo_vazio(el, 1)
                 }
@@ -1593,9 +1547,25 @@ export default {
             this.formAvaliarFinal.planos_acoes.splice(index, 1)
         },
 
+        abrirModalAvaliacao(avaliacaoFeedback, visualizando = false) {
+            this.avaliarForm(avaliacaoFeedback, visualizando)
+            this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.abrirModal()
+        },
+
+        abrirModalAvaliacaoFinal(avaliacaoFeedback, visualizando = false) {
+            this.avaliarFinalForm(avaliacaoFeedback, visualizando)
+            this.$refs.modal_janelaAvaliacaoFinal && this.$refs.modal_janelaAvaliacaoFinal.abrirModal()
+        },
+
+        abrirModalEdicaoPdi(avaliacaoFeedback) {
+            this.editarPdiForm(avaliacaoFeedback)
+            this.$refs.modal_janelaAvaliacaoFinal && this.$refs.modal_janelaAvaliacaoFinal.abrirModal()
+        },
+
         avaliarForm(avaliacaoFeedback, visualizando = false) {
             this.visualizando = visualizando
             this.editando = true
+            this.modoAvaliacaoFinal = 'finalizar'
             this.titulo_janela = `Avaliar — ${avaliacaoFeedback.avaliacao.titulo}`
             this.preload = true
 
@@ -1624,10 +1594,12 @@ export default {
         },
 
         // CORREÇÃO APLICADA: Melhorada a função avaliarFinalForm
-        avaliarFinalForm(avaliacaoFeedback, visualizando = false) {
+        avaliarFinalForm(avaliacaoFeedback, visualizando = false, modo = 'finalizar') {
             this.visualizando = visualizando
             this.editando = true
-            this.titulo_janela_final = `Avaliação final — ${avaliacaoFeedback.avaliacao.titulo}`
+            this.modoAvaliacaoFinal = modo
+            this.titulo_janela_final =
+                modo === 'editar-pdi' ? `Editar PDI — ${avaliacaoFeedback.avaliacao.titulo}` : `Avaliação final — ${avaliacaoFeedback.avaliacao.titulo}`
             this.preloadAvalFinal = true
 
             // Reset para um estado seguro
@@ -1674,6 +1646,10 @@ export default {
                 })
         },
 
+        editarPdiForm(avaliacaoFeedback) {
+            this.avaliarFinalForm(avaliacaoFeedback, false, 'editar-pdi')
+        },
+
         salvarAvaliacaoFinal() {
             this.validaBlur()
             let countErro = document.querySelectorAll('.is-invalid').length
@@ -1688,12 +1664,12 @@ export default {
                 .put(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${this.formAvaliarFinal.avaliacao_feedback_id}/final`, this.formAvaliarFinal)
                 .then((response) => {
                     this.$refs.modal_janelaAvaliacaoFinal && this.$refs.modal_janelaAvaliacaoFinal.fecharModal()
-                    mostraSucesso('', 'Avaliação Final salva com sucesso')
+                    mostraSucesso('', this.isEditandoPdi ? 'PDI salvo com sucesso' : 'Avaliação final salva com sucesso')
                     this.preloadAvalFinal = false
                     this.atualizado = true
                     this.atualizar()
                 })
-                .catch((error) => (this.preload = false))
+                .catch((error) => (this.preloadAvalFinal = false))
         },
 
         salvar() {
@@ -2173,7 +2149,9 @@ export default {
 .ma-item-card {
     border-radius: 10px;
     overflow: hidden;
-    transition: background 0.15s ease, box-shadow 0.15s ease;
+    transition:
+        background 0.15s ease,
+        box-shadow 0.15s ease;
 }
 .ma-item-card:hover {
     box-shadow: 0 0.25rem 0.65rem rgba(0, 55, 85, 0.1) !important;
@@ -2199,11 +2177,9 @@ export default {
     color: #003755;
     line-height: 1.35;
     letter-spacing: 0.01em;
-    
 }
 .ma-valor-destaque--inline {
     display: inline;
-    
 }
 .ma-como-destaque {
     padding: 0.55rem 0.85rem;
