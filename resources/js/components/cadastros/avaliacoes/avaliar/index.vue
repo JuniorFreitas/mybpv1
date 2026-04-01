@@ -457,7 +457,7 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-md-3 col-lg-3 ma-filtro-status-col">
+                        <div class="col-12 col-md-3 col-lg-2 ma-filtro-status-col">
                             <div class="form-group mb-2 mb-md-0 ma-filtro-status-wrap">
                                 <label class="ma-label" for="ma-filtro-status-input">Status</label>
                                 <combobox-auto-complete
@@ -470,6 +470,77 @@
                                     empty-message="Nenhum status encontrado."
                                     @opening="fecharOutrosFiltros($event)"
                                     @select="onSelectStatusCombobox"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-3 col-lg-2 mt-2 mt-lg-0">
+                            <div class="form-group mb-2 mb-md-0">
+                                <label class="ma-label" for="ma-filtro-legenda-input">Fluxo da avaliação</label>
+                                <combobox-auto-complete
+                                    ref="comboLegenda"
+                                    instance-id="legenda"
+                                    v-model="controle.dados.campoLegenda"
+                                    :options="legendaComboboxOpcoes"
+                                    :disabled="controle.carregando"
+                                    input-id="ma-filtro-legenda-input"
+                                    empty-message="Nenhuma etapa encontrada."
+                                    @opening="fecharOutrosFiltros($event)"
+                                    @select="onSelectLegendaCombobox"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6 col-lg-3 mt-2 mt-lg-0">
+                            <div class="form-group mb-2 mb-md-0">
+                                <label class="ma-label" for="ma-filtro-avaliador-input">Avaliador</label>
+                                <combobox-auto-complete
+                                    ref="comboAvaliador"
+                                    instance-id="avaliador"
+                                    v-model="controle.dados.campoAvaliador"
+                                    :options="avaliadoresComboboxOpcoes"
+                                    :disabled="controle.carregando"
+                                    input-id="ma-filtro-avaliador-input"
+                                    empty-message="Nenhum avaliador encontrado."
+                                    :max-results="100"
+                                    @opening="fecharOutrosFiltros($event)"
+                                    @select="onSelectAvaliadorCombobox"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6 col-lg-3 mt-2 mt-lg-0">
+                            <div class="form-group mb-2 mb-md-0">
+                                <label class="ma-label" for="ma-filtro-colaborador-input">Colaborador</label>
+                                <combobox-auto-complete
+                                    ref="comboColaborador"
+                                    instance-id="colaborador"
+                                    v-model="controle.dados.campoColaborador"
+                                    :options="colaboradoresComboboxOpcoes"
+                                    :disabled="controle.carregando"
+                                    input-id="ma-filtro-colaborador-input"
+                                    empty-message="Nenhum colaborador encontrado."
+                                    :max-results="100"
+                                    @opening="fecharOutrosFiltros($event)"
+                                    @select="onSelectColaboradorCombobox"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6 col-lg-3 mt-2 mt-lg-0">
+                            <div class="form-group mb-2 mb-md-0">
+                                <label class="ma-label" for="ma-filtro-como-input">Como</label>
+                                <combobox-auto-complete
+                                    ref="comboComo"
+                                    instance-id="como"
+                                    v-model="controle.dados.campoComo"
+                                    :options="comoComboboxOpcoes"
+                                    :disabled="controle.carregando"
+                                    input-id="ma-filtro-como-input"
+                                    empty-message="Nenhum tipo de avaliador encontrado."
+                                    :max-results="100"
+                                    @opening="fecharOutrosFiltros($event)"
+                                    @select="onSelectComoCombobox"
                                 />
                             </div>
                         </div>
@@ -488,7 +559,7 @@
                 class="card ma-card ma-legenda shadow border-0 mb-3"
                 v-if="!controle.carregando && selecionadaAvaliacao && selecionadaAvaliacao.auto_avaliacao"
             >
-                <div class="card-body py-2">
+                <!-- <div class="card-body py-2">
                     <div class="d-flex flex-wrap align-items-center">
                         <span class="font-weight-bold mr-2 mb-1 w-100">Legenda:</span>
                         <span class="badge ma-legend-pill ma-legend-pill--danger mb-1 mr-1">Pendente autoavaliação</span>
@@ -498,7 +569,7 @@
                         <span class="badge ma-legend-pill ma-legend-pill--warn-final mb-1 mr-1">Falta avaliação final</span>
                         <span class="badge ma-legend-pill ma-legend-pill--success mb-1 mr-1">Completa</span>
                     </div>
-                </div>
+                </div> -->
             </div>
 
             <div
@@ -542,388 +613,228 @@
                 <preload></preload>
             </p>
 
-            <div class="alert alert-light border text-center ma-empty rounded shadow-sm" v-show="!controle.carregando && lista.length === 0">
+            <div class="alert alert-light border text-center ma-empty rounded shadow-sm" v-show="!controle.carregando && listaExibicao.length === 0">
                 <i class="fa fa-inbox fa-2x mb-2 d-block"></i>
                 <span class="">Nenhum registro encontrado para os filtros selecionados.</span>
             </div>
 
-            <div v-show="!controle.carregando && lista.length > 0">
-                <div class="card ma-card shadow border-0 mb-3" v-if="selecionadaAvaliacao && selecionadaAvaliacao.auto_avaliacao">
-                    <div class="card-header ma-table-card-header d-flex flex-wrap justify-content-between align-items-center">
-                        <div>
-                            <i class="fa fa-th-large mr-2 text-primary"></i>
-                            <strong>Minhas avaliações</strong>
-                            <span class="text-muted d-block d-md-inline ml-md-2 mt-1 mt-md-0" v-if="selecionadaAvaliacao">{{
-                                selecionadaAvaliacao.titulo
-                            }}</span>
-                        </div>
-                        <span class="badge badge-pill badge-secondary ma-count-pill">{{ lista.length }} registro(s)</span>
-                    </div>
-                    <p class="mb-0 px-3 pt-2 ma-agrupado-hint" v-if="lista.length">
-                        <i class="fa fa-layer-group mr-1"></i> Agrupado por status: pendentes; em seguida quem falta avaliação final; depois demais avaliadas e
-                        finalizadas.
-                    </p>
-                    <div class="card-body py-3 px-3 ma-cards-lista">
-                        <template v-for="grupo in gruposListaAuto" :key="'ga-' + grupo.status">
-                            <div class="ma-grupo-header mb-2" :class="grupo.cls">
-                                <div class="ma-grupo-label">
-                                    <span class="ma-grupo-ico"><i class="fa" :class="grupo.icon"></i></span>
-                                    <div class="ma-grupo-texto">
-                                        <strong>{{ grupo.titulo }}</strong>
-                                        <span class="ma-grupo-sub d-none d-sm-inline">{{ grupo.subtitulo }}</span>
-                                    </div>
-                                    <span class="badge badge-pill ma-grupo-count">{{ grupo.itens.length }}</span>
-                                </div>
-                            </div>
-                            <div v-for="item in grupo.itens" :key="item.id" class="card ma-item-card border-0 shadow-sm mb-2" :class="classesCardAuto(item)">
-                                <div class="card-body py-3 px-3">
-                                    <div class="d-flex flex-wrap justify-content-between align-items-start">
-                                        <div class="flex-grow-1 pr-2 ma-min-w-0">
-                                            <div class="d-flex flex-wrap align-items-center">
-                                                <span class="badge badge-pill badge-light border ma-badge-ano mr-2 mb-1">{{
-                                                    item.avaliacao.ano_avaliacao
-                                                }}</span>
-                                                <span class="ma-cell-title mb-0">{{ item.avaliacao.titulo }}</span>
-                                            </div>
-                                            <div class="mt-1">
-                                                <span class="d-inline-block mr-2">{{ item.avaliacao.avaliacao_tipo.nome }}</span>
-                                                <span class="text-nowrap"><i class="fa fa-calendar-alt mr-1"></i>{{ item.avaliacao.data_fim_prazo }}</span>
+            <div v-show="!controle.carregando && listaExibicao.length > 0">
+                <div class="" v-if="selecionadaAvaliacao">
+                    <div class="">
+                        <div v-for="card in cardsColaboradoresExibicao" :key="`col-${card.funcionario.id}`" class="card ma-colaborador-card shadow-sm">
+                            <div class="card-body py-3 px-3">
+                                <div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
+                                    <div class="flex-grow-1 pr-2 ma-min-w-0">
+                                        <div class="d-flex flex-wrap align-items-center">
+                                            <div class="ma-colaborador-head mb-1">
+                                                <span class="ma-colaborador-nome">{{ card.funcionario.nome }}</span>
                                             </div>
                                         </div>
-                                        <div class="d-flex align-items-start flex-shrink-0 ml-auto">
-                                            <button
-                                                v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
-                                                type="button"
-                                                class="btn btn-sm btn-outline-primary mr-2"
-                                                @click="abrirModalEdicaoPdi(item)"
+                                        <div class="mt-1">
+                                            <span class="d-inline-block mr-2">{{ card.avaliacao.avaliacao_tipo.nome }}</span>
+                                            <span class="text-nowrap"><i class="fa fa-calendar-alt mr-1"></i>{{ card.avaliacao.data_fim_prazo }}</span>
+                                        </div>
+                                        <div class="mt-2 d-flex flex-wrap align-items-center">
+                                            <span class="ma-status-inline mr-2 mb-1">{{ statusResumoCard(card) }}</span>
+                                            <span v-if="mostrarDetalhesFluxoCard(card)" class="ma-fluxo-inline mb-1">{{
+                                                statusFluxoCard(card.principalItem)
+                                            }}</span>
+                                            <span
+                                                v-if="mostrarDetalhesFluxoCard(card) && statusPdiExtra(card.principalItem)"
+                                                class="ma-fluxo-inline ma-fluxo-inline--pending mb-1"
+                                                >{{ statusPdiExtra(card.principalItem) }}</span
                                             >
-                                                Editar PDI
-                                            </button>
-
-                                            <div
-                                                class="dropdown"
-                                                :class="{ show: isDropdownOpen(item.id, 'auto') }"
-                                                v-show="
-                                                    (item.status === 'Pendente' && item.fez_auto_avaliacao && !item.principal) ||
-                                                    (item.status === 'Pendente' && item.fez_auto_avaliacao && item.principal && !item.pendente_avaliacao_par) ||
-                                                    (item.status === 'Pendente' && !item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id) ||
-                                                    item.status === 'Avaliada' ||
-                                                    (item.status === 'Avaliada' && item.fazer_avaliacao_final) ||
-                                                    (item.status === 'Finalizada' && !item.fazer_avaliacao_final)
-                                                "
-                                            >
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-sm btn-outline-primary ma-btn-acao rounded-circle"
-                                                    :id="`dropdownMenuLink_${item.id}_auto`"
-                                                    aria-haspopup="true"
-                                                    :aria-expanded="isDropdownOpen(item.id, 'auto') ? 'true' : 'false'"
-                                                    @click.prevent.stop="toggleDropdown(item.id, 'auto')"
-                                                >
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-
-                                                <div
-                                                    class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
-                                                    :class="{ show: isDropdownOpen(item.id, 'auto') }"
-                                                    :aria-labelledby="`dropdownMenuLink_${item.id}_auto`"
-                                                    @click="fecharDropdown"
-                                                >
-                                                    <a
-                                                        class="dropdown-item"
-                                                        href="javascript://"
-                                                        title="Avaliar"
-                                                        @click="abrirModalAvaliacao(item)"
-                                                        v-if="
-                                                            (item.status === 'Pendente' && item.fez_auto_avaliacao && !item.principal) ||
-                                                            (item.status === 'Pendente' &&
-                                                                item.fez_auto_avaliacao &&
-                                                                item.principal &&
-                                                                !item.pendente_avaliacao_par)
-                                                        "
-                                                    >
-                                                        Avaliar
-                                                    </a>
-
-                                                    <a
-                                                        class="dropdown-item"
-                                                        href="javascript://"
-                                                        title="Avaliar"
-                                                        @click="abrirModalAvaliacao(item)"
-                                                        v-if="
-                                                            item.status === 'Pendente' && !item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id
-                                                        "
-                                                    >
-                                                        Avaliar
-                                                    </a>
-
-                                                    <a
-                                                        class="dropdown-item"
-                                                        href="javascript://"
-                                                        title="Visualizar Avaliação"
-                                                        @click="abrirModalAvaliacao(item, true)"
-                                                        v-if="item.status === 'Avaliada'"
-                                                    >
-                                                        Visualizar Avaliação
-                                                    </a>
-
-                                                    <a
-                                                        class="dropdown-item"
-                                                        href="javascript://"
-                                                        title="Visualizar Avaliação"
-                                                        @click="abrirModalAvaliacao(item, true)"
-                                                        v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final"
-                                                    >
-                                                        Visualizar Avaliação
-                                                    </a>
-
-                                                    <a
-                                                        class="dropdown-item"
-                                                        href="javascript://"
-                                                        title="Fazer Avaliação Final"
-                                                        @click="abrirModalAvaliacaoFinal(item)"
-                                                        v-if="item.status === 'Avaliada' && item.fazer_avaliacao_final"
-                                                    >
-                                                        Fazer Avaliação Final
-                                                    </a>
-
-                                                    <a
-                                                        class="dropdown-item"
-                                                        href="javascript://"
-                                                        title="Visualizar Avaliação Final"
-                                                        @click="abrirModalAvaliacaoFinal(item, true)"
-                                                        v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
-                                                    >
-                                                        Visualizar Avaliação Final
-                                                    </a>
-
-                                                    <a
-                                                        class="dropdown-item"
-                                                        :href="`${urlImpressao}/${item.token}`"
-                                                        target="_blank"
-                                                        title="Imprimir Avaliação Final"
-                                                        v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
-                                                    >
-                                                        Imprimir Avaliação Final
-                                                    </a>
-                                                </div>
+                                            <span class="ma-progress-chip mb-1">{{ percentualConclusaoCard(card) }}% concluído</span>
+                                        </div>
+                                        <div class="ma-card-summary mt-3">
+                                            <div class="ma-card-summary__item">
+                                                <span class="ma-card-summary__label">Progresso</span>
+                                                <span class="ma-card-summary__value">{{ etapasConcluidasResumo(card) }}</span>
+                                            </div>
+                                            <div class="ma-card-summary__item" v-if="mostrarProximoFluxoCard(card)">
+                                                <span class="ma-card-summary__label">Próximo no fluxo</span>
+                                                <span class="ma-card-summary__value">{{ resumoProximoFluxoCard(card) }}</span>
+                                            </div>
+                                            <div class="ma-card-summary__item" v-if="mostrarDetalhesFluxoCard(card) && statusPdiExtra(card.principalItem)">
+                                                <span class="ma-card-summary__label">PDI</span>
+                                                <span class="ma-card-summary__value">{{ statusPdiExtra(card.principalItem) }}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <hr class="my-3 ma-item-hr" />
-                                    <div class="row mx-0">
-                                        <div class="col-12 col-md-6 mb-2 mb-md-0">
-                                            <span class="ma-k">{{ selecionadaAvaliacao.tipo_pj ? 'Fornecedor' : 'Colaborador' }}</span>
-                                            <div class="mt-1">
-                                                <span class="ma-valor-destaque">
-                                                    <i class="fa fa-user text-primary mr-1" v-if="item.avaliador_id === item.funcionario_id"></i>
-                                                    {{ item.funcionario.nome }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="col-12 col-md-6">
-                                            <span class="ma-k">Avaliador</span>
-                                            <div class="mt-1">
-                                                <span class="ma-valor-destaque">{{ item.avaliador.nome }}</span>
-                                            </div>
-                                        </div>
-                                        <div class="col-12 mt-2 pt-2 border-top border-light">
-                                            <div v-if="item.origem_feedback === 'Avaliador'" class="">
-                                                <span class="ma-k ma-como-destaque__rotulo">Como</span>
-                                                <span class="ma-valor-destaque d-block mt-1 ma-como-destaque">
-                                                    {{ rotuloComoAvaliacao(item) }}
-                                                </span>
-                                            </div>
-                                            <div v-else-if="item.origem_feedback === 'Funcionario' && !item.principal" class="">
-                                                <span class="ma-k ma-como-destaque__rotulo">Como</span>
-                                                <span class="ma-valor-destaque d-block mt-1 ma-como-destaque ma-como-destaque--auto">Autoavaliação</span>
-                                            </div>
-                                        </div>
+
+                                    <div class="d-flex flex-wrap align-items-start justify-content-end">
+                                        <button
+                                            v-if="feedbackVisualizavelDoUsuario(card) && !tem_privilegio_gestao_rh"
+                                            type="button"
+                                            class="btn btn-sm btn-primary ma-btn-atualizar mr-2 mb-2"
+                                            @click="abrirModalAvaliacao(feedbackVisualizavelDoUsuario(card), true)"
+                                        >
+                                            <i class="fa fa-eye mr-1"></i>
+                                            Visualizar sua avaliação
+                                        </button>
+                                        <button
+                                            v-if="podeEditarPdi(card.principalItem)"
+                                            type="button"
+                                            class="btn btn-sm btn-primary ma-btn-atualizar mr-2 mb-2"
+                                            @click="abrirModalEdicaoPdi(card.principalItem)"
+                                        >
+                                            <i class="fa fa-tasks mr-1"></i>
+                                            Acompanhar PDI
+                                        </button>
+                                        <button
+                                            v-if="podeVisualizarAvaliacaoFinal(card.principalItem)"
+                                            type="button"
+                                            class="btn btn-sm btn-primary ma-btn-atualizar mr-2 mb-2"
+                                            @click="abrirModalAvaliacaoFinal(card.principalItem, true)"
+                                        >
+                                            <i class="fa fa-clipboard-list mr-1"></i>
+                                            PDI
+                                        </button>
+                                        <a
+                                            v-if="podeImprimirAvaliacaoFinal(card.principalItem)"
+                                            class="btn btn-sm btn-primary ma-btn-atualizar mb-2"
+                                            :href="`${urlImpressao}/${card.principalItem.token}`"
+                                            target="_blank"
+                                        >
+                                            <i class="fa fa-print mr-1"></i>
+                                            Imprimir
+                                        </a>
                                     </div>
                                 </div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
 
-                <div class="card ma-card shadow border-0 mb-3" v-if="selecionadaAvaliacao && !selecionadaAvaliacao.auto_avaliacao">
-                    <div class="card-header ma-table-card-header d-flex flex-wrap justify-content-between align-items-center">
-                        <div>
-                            <i class="fa fa-th-large mr-2 text-primary"></i>
-                            <strong>Minhas avaliações</strong>
-                            <span class="text-muted d-block d-md-inline ml-md-2 mt-1 mt-md-0" v-if="selecionadaAvaliacao">{{
-                                selecionadaAvaliacao.titulo
-                            }}</span>
-                        </div>
-                        <span class="badge badge-pill badge-secondary ma-count-pill">{{ totalRegistrosListaGestor }} registro(s)</span>
-                    </div>
-                    <p class="text-muted mb-0 px-3 pt-2 ma-agrupado-hint" v-if="totalRegistrosListaGestor">
-                        <i class="fa fa-layer-group mr-1"></i> Agrupado por status (gestor principal): pendentes; falta avaliação final; demais avaliadas;
-                        finalizadas.
-                    </p>
-                    <div class="card-body py-3 px-3 ma-cards-lista">
-                        <template v-for="grupo in gruposListaGestor" :key="'gg-' + grupo.status">
-                            <div class="ma-grupo-header mb-2" :class="grupo.cls">
-                                <div class="ma-grupo-label">
-                                    <span class="ma-grupo-ico"><i class="fa" :class="grupo.icon"></i></span>
-                                    <div class="ma-grupo-texto">
-                                        <strong>{{ grupo.titulo }}</strong>
-                                        <span class="ma-grupo-sub d-none d-sm-inline">{{ grupo.subtitulo }}</span>
+                                <div v-if="mostrarDetalhesFluxoCard(card)" class="ma-colaborador-fluxo">
+                                    <div class="ma-etapas-strip">
+                                        <div
+                                            v-for="etapa in fluxoEtapasVisiveisColaborador(card)"
+                                            :key="`${card.funcionario.id}-${etapa.key}`"
+                                            class="ma-etapa-chip"
+                                            :class="[
+                                                `ma-etapa-chip--${etapa.state}`,
+                                                {
+                                                    'ma-etapa-chip--current': etapa.isCurrent,
+                                                    'ma-etapa-chip--active': etapaAtivaColaborador(card)?.key === etapa.key
+                                                }
+                                            ]"
+                                            @click="setEtapaAtiva(card, etapa)"
+                                        >
+                                            <span class="ma-etapa-chip__dot"></span>
+                                            <span class="ma-etapa-chip__label">{{ etapa.label }}</span>
+                                            <span class="ma-etapa-chip__badge">{{ etapa.badge }}</span>
+                                        </div>
                                     </div>
-                                    <span class="badge badge-pill ma-grupo-count">{{ grupo.itens.length }}</span>
-                                </div>
-                            </div>
-                            <div
-                                v-for="item in grupo.itens"
-                                :key="'gestor-' + item.id"
-                                class="card ma-item-card border-0 shadow-sm mb-2"
-                                :class="classesCardGestor(item)"
-                            >
-                                <div class="card-body py-3 px-3">
-                                    <div class="d-flex flex-wrap justify-content-between align-items-start">
-                                        <div class="flex-grow-1 pr-2 ma-min-w-0">
-                                            <div class="d-flex flex-wrap align-items-center">
-                                                <span class="badge badge-pill badge-light border ma-badge-ano mr-2 mb-1">{{
-                                                    item.avaliacao.ano_avaliacao
-                                                }}</span>
-                                                <span class="ma-cell-title mb-0">{{ item.avaliacao.titulo }}</span>
-                                            </div>
-                                            <div class="mt-1">
-                                                <span class="d-inline-block mr-2">{{ item.avaliacao.avaliacao_tipo.nome }}</span>
-                                                <span class="text-nowrap"><i class="fa fa-calendar-alt mr-1"></i>{{ item.avaliacao.data_fim_prazo }}</span>
-                                            </div>
-                                            <div class="mt-2 d-flex flex-wrap align-items-center">
-                                                <span class="badge ma-status-badge ma-status-badge--pend" v-if="item.status === 'Pendente'"
-                                                    >Pendente gestor</span
-                                                >
+
+                                    <div
+                                        v-if="etapaAtivaColaborador(card)"
+                                        class="ma-etapa-card"
+                                        :class="[
+                                            `ma-etapa-card--${etapaAtivaColaborador(card).state}`,
+                                            { 'ma-etapa-card--current': etapaAtivaColaborador(card).isCurrent }
+                                        ]"
+                                    >
+                                        <div class="ma-etapa-card__head">
+                                            <div>
+                                                <span class="ma-etapa-card__title">{{ etapaAtivaColaborador(card).label }}</span>
+                                                <span class="ma-etapa-card__subtitle">{{ etapaAtivaColaborador(card).resumo }}</span>
                                                 <span
-                                                    class="badge ma-status-badge ma-status-badge--final-pend"
-                                                    v-else-if="item.status === 'Avaliada' && item.fazer_avaliacao_final"
-                                                    >Falta avaliação final</span
+                                                    v-if="mostrarProximoFluxoCard(card) && etapaAtivaColaborador(card).proximoTexto"
+                                                    class="ma-etapa-card__next"
+                                                    >Próximo: {{ etapaAtivaColaborador(card).proximoTexto }}</span
                                                 >
-                                                <span class="badge ma-status-badge ma-status-badge--avaliada" v-else-if="item.status === 'Avaliada'"
-                                                    >Avaliada pelo gestor</span
+                                                <span v-else-if="resumoConclusaoPessoal(card)" class="ma-etapa-card__next">{{
+                                                    resumoConclusaoPessoal(card)
+                                                }}</span>
+                                                <span
+                                                    v-if="mostrarProximoFluxoCard(card) && etapaAtivaColaborador(card).faltantesTexto"
+                                                    class="ma-etapa-card__missing"
+                                                    >Faltam: {{ etapaAtivaColaborador(card).faltantesTexto }}</span
                                                 >
-                                                <span class="badge ma-status-badge ma-status-badge--ok" v-else-if="item.status === 'Finalizada'">Completa</span>
+                                            </div>
+                                            <div class="ma-etapa-card__meta">
+                                                <button
+                                                    v-if="etapaAtivaColaborador(card).podeExpandir"
+                                                    type="button"
+                                                    class="btn btn-link btn-sm ma-etapa-toggle"
+                                                    @click="toggleEtapaExpandida(card, etapaAtivaColaborador(card))"
+                                                >
+                                                    {{ etapaExpandida(card, etapaAtivaColaborador(card)) ? 'Recolher' : 'Expandir' }}
+                                                </button>
+                                                <span
+                                                    class="ma-etapa-badge"
+                                                    :class="[
+                                                        `ma-etapa-badge--${etapaAtivaColaborador(card).state}`,
+                                                        { 'ma-etapa-badge--current': etapaAtivaColaborador(card).isCurrent }
+                                                    ]"
+                                                    >{{ etapaAtivaColaborador(card).badge }}</span
+                                                >
                                             </div>
                                         </div>
-                                        <div class="d-flex align-items-start flex-shrink-0 ml-auto">
-                                            <button
-                                                v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
-                                                type="button"
-                                                class="btn btn-sm btn-outline-primary mr-2"
-                                                @click="abrirModalEdicaoPdi(item)"
-                                            >
-                                                Editar PDI
-                                            </button>
 
+                                        <div v-if="etapaAtivaColaborador(card).avaliacoes.length" class="ma-etapa-lista">
                                             <div
-                                                class="dropdown"
-                                                :class="{ show: isDropdownOpen(item.id, 'gestor') }"
-                                                v-show="
-                                                    (item.status === 'Pendente' && item.principal && !item.pendente_avaliacao_par) ||
-                                                    item.status === 'Avaliada' ||
-                                                    (item.status === 'Avaliada' && item.fazer_avaliacao_final) ||
-                                                    (item.status === 'Finalizada' && !item.fazer_avaliacao_final)
-                                                "
+                                                v-for="avaliacaoItem in itensVisiveisEtapa(card, etapaAtivaColaborador(card))"
+                                                :key="avaliacaoItem.id"
+                                                class="ma-etapa-linha"
+                                                :class="{ 'ma-etapa-linha--next': isPrimeiroPendenteDaEtapa(etapaAtivaColaborador(card), avaliacaoItem) }"
                                             >
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-sm btn-outline-primary ma-btn-acao rounded-circle"
-                                                    :id="`dropdownMenuLink_${item.id}_gestor`"
-                                                    aria-haspopup="true"
-                                                    :aria-expanded="isDropdownOpen(item.id, 'gestor') ? 'true' : 'false'"
-                                                    @click.prevent.stop="toggleDropdown(item.id, 'gestor')"
-                                                >
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
+                                                <div class="ma-etapa-linha__info">
+                                                    <span class="ma-etapa-linha__nome">
+                                                        <i
+                                                            :class="iconeEstadoLinha(etapaAtivaColaborador(card), avaliacaoItem)"
+                                                            class="ma-etapa-linha__icone mr-2"
+                                                        ></i
+                                                        >{{ avaliacaoItem.avaliador.nome }}
+                                                    </span>
+                                                    <span class="ma-etapa-linha__como">{{ rotuloComoEtapa(avaliacaoItem) }}</span>
+                                                </div>
 
-                                                <div
-                                                    class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
-                                                    :class="{ show: isDropdownOpen(item.id, 'gestor') }"
-                                                    :aria-labelledby="`dropdownMenuLink_${item.id}_gestor`"
-                                                    @click="fecharDropdown"
-                                                >
-                                                    <a
-                                                        class="dropdown-item"
-                                                        href="javascript://"
-                                                        title="Avaliar"
-                                                        @click="abrirModalAvaliacao(item)"
-                                                        v-if="item.status === 'Pendente' && item.principal"
+                                                <div class="ma-etapa-linha__acoes">
+                                                    <span class="ma-etapa-linha__status">{{ statusLinhaFluxo(avaliacaoItem) }}</span>
+
+                                                    <button
+                                                        v-if="etapaAtivaColaborador(card).key !== 'final' && podeAvaliarItem(avaliacaoItem)"
+                                                        type="button"
+                                                        class="btn btn-sm btn-primary ma-btn-atualizar mr-1 mb-1"
+                                                        @click="abrirModalAvaliacao(avaliacaoItem)"
                                                     >
+                                                        <i class="fa fa-pen mr-1"></i>
                                                         Avaliar
-                                                    </a>
+                                                    </button>
 
-                                                    <a
-                                                        class="dropdown-item"
-                                                        href="javascript://"
-                                                        title="Visualizar Avaliação"
-                                                        @click="abrirModalAvaliacao(item, true)"
-                                                        v-if="item.status === 'Avaliada'"
+                                                    <button
+                                                        v-if="etapaAtivaColaborador(card).key !== 'final' && podeVisualizarItem(avaliacaoItem)"
+                                                        type="button"
+                                                        class="btn btn-sm btn-primary ma-btn-atualizar mr-1 mb-1"
+                                                        @click="abrirModalAvaliacao(avaliacaoItem, true)"
                                                     >
-                                                        Visualizar Avaliação
-                                                    </a>
+                                                        <i class="fa fa-eye mr-1"></i>
+                                                        Visualizar
+                                                    </button>
 
-                                                    <a
-                                                        class="dropdown-item"
-                                                        href="javascript://"
-                                                        title="Fazer Avaliação Final"
-                                                        @click="abrirModalAvaliacaoFinal(item)"
-                                                        v-if="item.status === 'Avaliada' && item.fazer_avaliacao_final"
+                                                    <button
+                                                        v-if="podeFazerAvaliacaoFinal(avaliacaoItem)"
+                                                        type="button"
+                                                        class="btn btn-sm btn-primary ma-btn-atualizar mr-1 mb-1"
+                                                        @click="abrirModalAvaliacaoFinal(avaliacaoItem)"
                                                     >
-                                                        Fazer Avaliação Final
-                                                    </a>
-
-                                                    <a
-                                                        class="dropdown-item"
-                                                        href="javascript://"
-                                                        title="Visualizar Avaliação Final"
-                                                        @click="abrirModalAvaliacaoFinal(item, true)"
-                                                        v-if="item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal"
-                                                    >
-                                                        Visualizar Avaliação Final
-                                                    </a>
-
-                                                    <a
-                                                        class="dropdown-item"
-                                                        :href="`${urlImpressao}/${item.token}`"
-                                                        target="_blank"
-                                                        title="Imprimir Avaliação Final"
-                                                        v-if="
-                                                            item.status === 'Finalizada' ||
-                                                            (item.total_avaliacoes_concluidas > 0 && (item.principal || tem_privilegio_gestao_rh))
-                                                        "
-                                                    >
-                                                        Imprimir Avaliação Final
-                                                    </a>
+                                                        <i class="fa fa-route mr-1"></i>
+                                                        Plano de acao (PDI)
+                                                    </button>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                    <hr class="my-3 ma-item-hr" />
-                                    <div class="row mx-0">
-                                        <div class="col-12 col-md-6 mb-2 mb-md-0">
-                                            <span class="ma-k">Funcionário</span>
-                                            <div class="mt-1">
-                                                <span class="ma-valor-destaque">
-                                                    <i class="fa fa-user text-primary mr-1" v-if="item.avaliador_id === item.funcionario_id"></i>
-                                                    {{ item.funcionario.nome }}
-                                                </span>
+
+                                            <div
+                                                v-if="etapaAtivaColaborador(card).podeExpandir && !etapaExpandida(card, etapaAtivaColaborador(card))"
+                                                class="ma-etapa-collapse-hint"
+                                            >
+                                                Mostrando {{ itensVisiveisEtapa(card, etapaAtivaColaborador(card)).length }} de
+                                                {{ etapaAtivaColaborador(card).avaliacoes.length }} avaliador(es).
                                             </div>
                                         </div>
-                                        <div class="col-12 col-md-6">
-                                            <span class="ma-k">Avaliador</span>
-                                            <div class="mt-1">
-                                                <span class="ma-valor-destaque">{{ item.avaliador.nome }}</span>
-                                            </div>
-                                        </div>
+
+                                        <div v-else class="ma-etapa-vazia">Nenhum avaliador definido para esta etapa do fluxo.</div>
                                     </div>
                                 </div>
                             </div>
-                        </template>
-                        <div v-if="lista.length && !totalRegistrosListaGestor" class="alert alert-light border text-center ma-empty mb-0">
-                            Nenhum registro neste fluxo como gestor principal. Outras linhas podem aparecer na visão de autoavaliação ou como avaliador
-                            secundário.
                         </div>
                     </div>
                 </div>
@@ -963,6 +874,16 @@ export default {
     },
     mixins: [validacoes],
     props: {
+        currentUserId: {
+            type: Number,
+            required: false,
+            default: null
+        },
+        currentUserName: {
+            type: String,
+            required: false,
+            default: ''
+        },
         qntPag: {
             type: Number,
             required: false,
@@ -1049,17 +970,23 @@ export default {
             formAvaliarFinalDefault: null,
 
             lista: [],
+            lista_fluxo_completo: [],
             lista_topicos: [],
             lista_avaliacoes_tipos: [],
             lista_avaliacoes: [],
             lista_anos: [],
             lista_status: [],
+            lista_avaliadores_filtro: [],
+            lista_colaboradores_filtro: [],
+            lista_como_filtro: [],
 
             lista_avaliacoes_por_ano: [],
 
             avaliacaoSelecionada: null,
 
             dropdownAbertoKey: null,
+            etapasAtivasPorCard: {},
+            etapasExpandidas: {},
 
             textosTooltipNota: {
                 5: 'Superou muito as expectativas: É percebido por outras áreas/pessoas como alguém com uma atuação excepcional, modelo de referência.',
@@ -1085,6 +1012,10 @@ export default {
                     campoBusca: '',
                     campoAvaliacao: '',
                     campoStatus: '',
+                    campoLegenda: '',
+                    campoAvaliador: '',
+                    campoColaborador: '',
+                    campoComo: '',
                     ano_avaliacao: new Date().getFullYear(),
                     tipo_avaliacao: ''
                 }
@@ -1128,13 +1059,29 @@ export default {
             return status ?? []
         },
         gruposListaAuto() {
-            return this.agruparPorStatus(this.lista)
+            return this.agruparPorStatus(this.listaExibicao)
         },
         gruposListaGestor() {
-            return this.agruparPorStatus(this.lista.filter((i) => !i.avaliacao.auto_avaliacao && i.principal))
+            return this.agruparPorStatus(this.listaExibicao.filter((i) => !i.avaliacao.auto_avaliacao && i.principal))
         },
         totalRegistrosListaGestor() {
-            return this.lista.filter((i) => !i.avaliacao.auto_avaliacao && i.principal).length
+            return this.listaExibicao.filter((i) => !i.avaliacao.auto_avaliacao && i.principal).length
+        },
+        listaExibicao() {
+            return this.lista || []
+        },
+        cardsColaboradoresExibicao() {
+            const gruposPermitidos = new Set(this.listaExibicao.map((item) => `${item.avaliacao_id}-${item.funcionario_id}`))
+
+            const baseFluxo = (this.lista_fluxo_completo || []).filter((item) => gruposPermitidos.has(`${item.avaliacao_id}-${item.funcionario_id}`))
+
+            return this.agruparPorColaborador(baseFluxo)
+        },
+        feedbacksPermitidosMap() {
+            return (this.lista || []).reduce((acc, item) => {
+                acc[item.id] = true
+                return acc
+            }, {})
         },
         listaAnosOrdenados() {
             let anos = []
@@ -1175,6 +1122,36 @@ export default {
                 meta: o.value !== '' && o.value !== null && o.value !== undefined ? String(o.value) : undefined
             }))
             return [todos, ...lista]
+        },
+        legendaComboboxOpcoes() {
+            const todos = { value: '', label: 'Todas as etapas do fluxo' }
+            const lista = this.selecionadaAvaliacao?.auto_avaliacao
+                ? [
+                      { value: 'autoavaliacao_pendente', label: 'Passo 1: falta autoavaliação' },
+                      { value: 'autoavaliacao_realizada', label: 'Passo 1: autoavaliação concluída' },
+                      { value: 'avaliacao_par_pendente', label: 'Passo 2: falta avaliação do par' },
+                      { value: 'avaliacao_par_realizada', label: 'Passo 2: avaliação do par concluída' },
+                      { value: 'avaliacao_gestor_pendente', label: 'Passo 3: falta avaliação do gestor' },
+                      { value: 'avaliacao_gestor_realizada', label: 'Passo 3: avaliação do gestor concluída' },
+                      { value: 'fluxo_concluido', label: 'Fluxo concluído' },
+                      { value: 'acompanhamento_plano_acao', label: 'Acompanhamento plano de ação' }
+                  ]
+                : [
+                      { value: 'avaliacao_gestor_pendente', label: 'Passo 1: falta avaliação do gestor' },
+                      { value: 'avaliacao_gestor_realizada', label: 'Passo 1: avaliação do gestor concluída' },
+                      { value: 'fluxo_concluido', label: 'Fluxo concluído' },
+                      { value: 'acompanhamento_plano_acao', label: 'Acompanhamento plano de ação' }
+                  ]
+            return [todos, ...lista]
+        },
+        avaliadoresComboboxOpcoes() {
+            return this.ordenarOpcoesPessoaComUsuarioLogadoPrimeiro(this.mapearPessoasParaCombobox(this.lista_avaliadores_filtro, 'avaliador'))
+        },
+        colaboradoresComboboxOpcoes() {
+            return this.ordenarOpcoesPessoaComUsuarioLogadoPrimeiro(this.mapearPessoasParaCombobox(this.lista_colaboradores_filtro, 'funcionario'))
+        },
+        comoComboboxOpcoes() {
+            return [{ value: '', label: 'Todos os tipos' }, ...(this.lista_como_filtro || [])]
         },
         /** Etapas do fluxo (mesma regra de Avaliacao::fluxoAvaliacao) para exibir na tela Minhas avaliações */
         fluxoEtapasExibicao() {
@@ -1310,6 +1287,244 @@ export default {
                     itens: map[key]
                 }))
         },
+        agruparPorColaborador(itens) {
+            const grupos = _.groupBy(itens || [], 'funcionario_id')
+
+            return Object.values(grupos)
+                .map((grupo) => {
+                    const ordenados = [...grupo].sort((a, b) => {
+                        if (a.principal && !b.principal) return 1
+                        if (!a.principal && b.principal) return -1
+                        return String(a.avaliador?.nome || '').localeCompare(String(b.avaliador?.nome || ''))
+                    })
+
+                    const principalItem = grupo.find((item) => item.principal) || grupo[0]
+
+                    return {
+                        funcionario: principalItem.funcionario,
+                        avaliacao: principalItem.avaliacao,
+                        principalItem,
+                        itens: ordenados
+                    }
+                })
+                .sort((a, b) => {
+                    const aEhUsuarioLogado = this.isPropriaAvaliacaoColaborador(a)
+                    const bEhUsuarioLogado = this.isPropriaAvaliacaoColaborador(b)
+
+                    if (aEhUsuarioLogado && !bEhUsuarioLogado) {
+                        return -1
+                    }
+
+                    if (!aEhUsuarioLogado && bEhUsuarioLogado) {
+                        return 1
+                    }
+
+                    return String(a.funcionario?.nome || '').localeCompare(String(b.funcionario?.nome || ''))
+                })
+        },
+        pesoStatusColaborador(item) {
+            if (!item) return 99
+            if (item.status === 'Pendente') return 1
+            if (item.status === 'Avaliada' && item.fazer_avaliacao_final) return 2
+            if (item.status === 'Avaliada') return 3
+            if (item.status === 'Finalizada') return 4
+            return 99
+        },
+        fluxoEtapasColaborador(card) {
+            const etapas = []
+            const avaliacao = this.selecionadaAvaliacao
+
+            if (!avaliacao) {
+                return etapas
+            }
+
+            if (avaliacao.auto_avaliacao) {
+                const autoItems = card.itens.filter((item) => item.origem_feedback === 'Funcionario' && !item.principal)
+                etapas.push(this.montarEtapaColaborador('auto', 'Autoavaliação', autoItems, 'O colaborador inicia este ciclo com a autoavaliação.'))
+            }
+
+            ;(avaliacao.fluxo || []).forEach((etapa, index) => {
+                const labelBase = etapa.principal && !String(etapa.label || '').includes('(Avaliador Final)') ? `${etapa.label} (Avaliador Final)` : etapa.label
+                const label = this.rotuloEtapaCurto(labelBase)
+                const itensEtapa = card.itens.filter(
+                    (item) => Number(item.avaliacao_tipo_id) === Number(etapa.id) && Boolean(item.principal) === Boolean(etapa.principal)
+                )
+
+                etapas.push(this.montarEtapaColaborador(`fluxo-${index}`, label, itensEtapa, 'Etapa definida no fluxo configurado da avaliação.'))
+            })
+
+            const indiceAtual = etapas.findIndex((etapa) => etapa.state === 'pending')
+            const indiceFallback = indiceAtual === -1 ? etapas.map((etapa) => etapa.state).lastIndexOf('done') : -1
+
+            return etapas.map((etapa, index) => ({
+                ...etapa,
+                isCurrent: index === indiceAtual || (indiceAtual === -1 && indiceFallback === index)
+            }))
+        },
+        montarEtapaColaborador(key, label, itensEtapa, fallbackResumo) {
+            if (!itensEtapa.length) {
+                return {
+                    key,
+                    label,
+                    resumo: fallbackResumo,
+                    badge: 'Sem definição',
+                    state: 'idle',
+                    avaliacoes: [],
+                    faltantesTexto: '',
+                    podeExpandir: false
+                }
+            }
+
+            const pendentes = itensEtapa.filter((item) => item.status === 'Pendente').length
+            const concluidas = itensEtapa.length - pendentes
+            const faltantes = itensEtapa
+                .filter((item) => item.status === 'Pendente')
+                .map((item) => item.avaliador?.nome)
+                .filter(Boolean)
+            const primeiroPendente = itensEtapa.find((item) => item.status === 'Pendente')
+
+            return {
+                key,
+                label,
+                resumo: pendentes ? `${concluidas}/${itensEtapa.length} concluída(s)` : 'Todos os avaliadores desta etapa já concluíram',
+                badge: pendentes ? `${pendentes} pendente(s)` : 'Concluída',
+                state: pendentes ? 'pending' : 'done',
+                avaliacoes: itensEtapa,
+                proximoTexto: primeiroPendente ? this.proximoResponsavelEtapa(primeiroPendente) : '',
+                faltantesTexto: faltantes.join(', '),
+                podeExpandir: itensEtapa.length > 2
+            }
+        },
+        percentualConclusaoCard(card) {
+            const etapas = this.fluxoEtapasVisiveisColaborador(card)
+            if (!etapas.length) {
+                return 0
+            }
+
+            const concluidas = etapas.filter((etapa) => etapa.state === 'done').length
+            return Math.round((concluidas / etapas.length) * 100)
+        },
+        chaveEtapaAtiva(card) {
+            return `${card.avaliacao.id}-${card.funcionario.id}`
+        },
+        isPropriaAvaliacaoColaborador(card) {
+            return Boolean(this.currentUserId && card?.funcionario?.id && Number(this.currentUserId) === Number(card.funcionario.id))
+        },
+        fluxoEtapasVisiveisColaborador(card) {
+            const etapas = this.fluxoEtapasColaborador(card)
+
+            if (this.tem_privilegio_gestao_rh || this.isPropriaAvaliacaoColaborador(card)) {
+                return etapas
+            }
+
+            const acessiveis = this.feedbacksAcessiveisDoCard(card)
+            const maiorIndiceAcessivel = etapas.reduce((maior, etapa, indice) => {
+                const temFeedbackAcessivel = (etapa.avaliacoes || []).some((item) => acessiveis.some((acessivel) => acessivel.id === item.id))
+                return temFeedbackAcessivel ? indice : maior
+            }, -1)
+
+            if (maiorIndiceAcessivel === -1) {
+                return etapas.slice(0, 1)
+            }
+
+            return etapas.slice(0, maiorIndiceAcessivel + 1)
+        },
+        feedbacksDoUsuarioNoCard(card) {
+            if (this.tem_privilegio_gestao_rh || this.isPropriaAvaliacaoColaborador(card)) {
+                return []
+            }
+
+            return (card?.itens || []).filter((item) => Boolean(this.feedbacksPermitidosMap[item.id]))
+        },
+        etapaAtivaColaborador(card) {
+            const etapas = this.fluxoEtapasVisiveisColaborador(card)
+            if (!etapas.length) {
+                return null
+            }
+
+            const etapasAtivasPorCard = this.etapasAtivasPorCard || {}
+            const chaveSalva = etapasAtivasPorCard[this.chaveEtapaAtiva(card)]
+            return etapas.find((etapa) => etapa.key === chaveSalva) || etapas.find((etapa) => etapa.isCurrent) || etapas[0]
+        },
+        setEtapaAtiva(card, etapa) {
+            this.$set(this.etapasAtivasPorCard, this.chaveEtapaAtiva(card), etapa.key)
+        },
+        etapasConcluidasResumo(card) {
+            const etapas = this.fluxoEtapasVisiveisColaborador(card)
+            const concluidas = etapas.filter((etapa) => etapa.state === 'done').length
+            return `${concluidas} de ${etapas.length} etapas concluídas`
+        },
+        proximoResponsavelCard(card) {
+            const etapas = this.fluxoEtapasVisiveisColaborador(card)
+            const etapaAtual = etapas.find((etapa) => etapa.isCurrent)
+
+            if (!etapaAtual) {
+                return 'Fluxo concluído'
+            }
+
+            return etapaAtual.proximoTexto || 'Fluxo concluído'
+        },
+        feedbacksAcessiveisDoCard(card) {
+            return (card?.itens || []).filter((item) => this.usuarioPodeAcessarFeedback(item))
+        },
+        feedbackVisualizavelDoUsuario(card) {
+            const feedbacks = this.feedbacksAcessiveisDoCard(card).filter((item) => item.status !== 'Pendente')
+
+            if (!feedbacks.length) {
+                return null
+            }
+
+            const doUsuarioLogado = feedbacks.find((item) => Number(item.avaliador_id) === Number(this.currentUserId))
+            return doUsuarioLogado || feedbacks[0]
+        },
+        usuarioTemAcaoPendenteNoCard(card) {
+            return this.feedbacksAcessiveisDoCard(card).some(
+                (item) => this.podeAvaliarItem(item) || this.podeFazerAvaliacaoFinal(item) || this.podeEditarPdi(item)
+            )
+        },
+        resumoConclusaoPessoal(card) {
+            if (this.tem_privilegio_gestao_rh || this.isPropriaAvaliacaoColaborador(card)) {
+                return ''
+            }
+
+            const feedbacksDoUsuario = this.feedbacksDoUsuarioNoCard(card)
+            const concluiuAlgo = feedbacksDoUsuario.some((item) => item.status !== 'Pendente')
+
+            if (feedbacksDoUsuario.length && concluiuAlgo && !this.usuarioTemAcaoPendenteNoCard(card)) {
+                return 'Sua avaliação foi realizada'
+            }
+
+            return ''
+        },
+        mostrarDetalhesFluxoCard(card) {
+            return !this.resumoConclusaoPessoal(card)
+        },
+        statusResumoCard(card) {
+            return this.resumoConclusaoPessoal(card) || this.statusCardLabel(card.principalItem)
+        },
+        mostrarProximoFluxoCard(card) {
+            return card?.principalItem?.status !== 'Finalizada' && !this.resumoConclusaoPessoal(card)
+        },
+        resumoProximoFluxoCard(card) {
+            return this.resumoConclusaoPessoal(card) || this.proximoResponsavelCard(card)
+        },
+        chaveEtapaExpandida(card, etapa) {
+            return `${card.avaliacao.id}-${card.funcionario.id}-${etapa.key}`
+        },
+        etapaExpandida(card, etapa) {
+            return Boolean(this.etapasExpandidas[this.chaveEtapaExpandida(card, etapa)])
+        },
+        toggleEtapaExpandida(card, etapa) {
+            const chave = this.chaveEtapaExpandida(card, etapa)
+            this.$set(this.etapasExpandidas, chave, !this.etapaExpandida(card, etapa))
+        },
+        itensVisiveisEtapa(card, etapa) {
+            if (!etapa.podeExpandir || this.etapaExpandida(card, etapa)) {
+                return etapa.avaliacoes
+            }
+
+            return etapa.avaliacoes.slice(0, 2)
+        },
         toggleDropdown(itemId, tipo) {
             const key = `${tipo}:${itemId}`
             this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
@@ -1327,6 +1542,10 @@ export default {
             const comboAno = this.$refs.comboAno
             const comboAvaliacao = this.$refs.comboAvaliacao
             const comboStatus = this.$refs.comboStatus
+            const comboLegenda = this.$refs.comboLegenda
+            const comboAvaliador = this.$refs.comboAvaliador
+            const comboColaborador = this.$refs.comboColaborador
+            const comboComo = this.$refs.comboComo
             if (comboAno && typeof comboAno.containsTarget === 'function' && comboAno.containsTarget(event.target)) {
                 return
             }
@@ -1334,6 +1553,18 @@ export default {
                 return
             }
             if (comboStatus && typeof comboStatus.containsTarget === 'function' && comboStatus.containsTarget(event.target)) {
+                return
+            }
+            if (comboLegenda && typeof comboLegenda.containsTarget === 'function' && comboLegenda.containsTarget(event.target)) {
+                return
+            }
+            if (comboAvaliador && typeof comboAvaliador.containsTarget === 'function' && comboAvaliador.containsTarget(event.target)) {
+                return
+            }
+            if (comboColaborador && typeof comboColaborador.containsTarget === 'function' && comboColaborador.containsTarget(event.target)) {
+                return
+            }
+            if (comboComo && typeof comboComo.containsTarget === 'function' && comboComo.containsTarget(event.target)) {
                 return
             }
             this.dropdownAbertoKey = null
@@ -1349,11 +1580,25 @@ export default {
             if (manter !== 'status' && this.$refs.comboStatus && typeof this.$refs.comboStatus.close === 'function') {
                 this.$refs.comboStatus.close()
             }
+            if (manter !== 'legenda' && this.$refs.comboLegenda && typeof this.$refs.comboLegenda.close === 'function') {
+                this.$refs.comboLegenda.close()
+            }
+            if (manter !== 'avaliador' && this.$refs.comboAvaliador && typeof this.$refs.comboAvaliador.close === 'function') {
+                this.$refs.comboAvaliador.close()
+            }
+            if (manter !== 'colaborador' && this.$refs.comboColaborador && typeof this.$refs.comboColaborador.close === 'function') {
+                this.$refs.comboColaborador.close()
+            }
+            if (manter !== 'como' && this.$refs.comboComo && typeof this.$refs.comboComo.close === 'function') {
+                this.$refs.comboComo.close()
+            }
         },
         onSelectAnoCombobox() {
+            this.controle.dados.campoLegenda = ''
             this.onAnoFiltroChange()
         },
         onSelectAvaliacaoCombobox() {
+            this.controle.dados.campoLegenda = ''
             this.$nextTick(() => {
                 if (this.$refs.componente && this.$refs.componente.buscar) {
                     this.$refs.componente.buscar()
@@ -1366,6 +1611,402 @@ export default {
                     this.$refs.componente.buscar()
                 }
             })
+        },
+        onSelectLegendaCombobox() {
+            this.fecharDropdown()
+            this.$nextTick(() => {
+                if (this.$refs.componente && this.$refs.componente.buscar) {
+                    this.$refs.componente.buscar()
+                }
+            })
+        },
+        onSelectAvaliadorCombobox() {
+            this.$nextTick(() => {
+                if (this.$refs.componente && this.$refs.componente.buscar) {
+                    this.$refs.componente.buscar()
+                }
+            })
+        },
+        onSelectColaboradorCombobox() {
+            this.$nextTick(() => {
+                if (this.$refs.componente && this.$refs.componente.buscar) {
+                    this.$refs.componente.buscar()
+                }
+            })
+        },
+        onSelectComoCombobox() {
+            this.$nextTick(() => {
+                if (this.$refs.componente && this.$refs.componente.buscar) {
+                    this.$refs.componente.buscar()
+                }
+            })
+        },
+        mapearPessoasParaCombobox(lista, campo) {
+            const pessoas = []
+            const vistos = new Set()
+
+            ;(lista || []).forEach((item) => {
+                const pessoa = item && item[campo] ? item[campo] : item
+                if (!pessoa || !pessoa.id || vistos.has(pessoa.id)) {
+                    return
+                }
+                vistos.add(pessoa.id)
+                pessoas.push({
+                    value: pessoa.id,
+                    label: pessoa.nome,
+                    raw: pessoa
+                })
+            })
+
+            if (this.currentUserId && this.currentUserName && !vistos.has(this.currentUserId)) {
+                pessoas.push({
+                    value: this.currentUserId,
+                    label: this.currentUserName,
+                    raw: { id: this.currentUserId, nome: this.currentUserName }
+                })
+            }
+
+            return [{ value: '', label: campo === 'avaliador' ? 'Todos os avaliadores' : 'Todos os colaboradores' }, ...pessoas]
+        },
+        ordenarOpcoesPessoaComUsuarioLogadoPrimeiro(opcoes) {
+            if (!this.currentUserId) {
+                return opcoes
+            }
+
+            const [todos, ...demais] = opcoes
+            demais.sort((a, b) => {
+                if (a.value === this.currentUserId) return -1
+                if (b.value === this.currentUserId) return 1
+                return String(a.label || '').localeCompare(String(b.label || ''))
+            })
+
+            return todos ? [todos, ...demais] : demais
+        },
+        correspondeLegendaSelecionada(item) {
+            const legenda = this.controle.dados.campoLegenda
+            if (!legenda) {
+                return true
+            }
+
+            switch (legenda) {
+                case 'autoavaliacao_pendente':
+                    return !!item.pendente_autoavaliacao
+                case 'autoavaliacao_realizada':
+                    return item.origem_feedback === 'Funcionario' && !item.principal && item.status !== 'Pendente'
+                case 'avaliacao_par_pendente':
+                    return !!item.pendente_avaliacao_par
+                case 'avaliacao_par_realizada':
+                    return item.origem_feedback === 'Avaliador' && !item.principal && item.status !== 'Pendente'
+                case 'avaliacao_gestor_pendente':
+                    return !!item.pendente_avaliacao_gestor
+                case 'avaliacao_gestor_realizada':
+                    return item.principal && !item.pendente_avaliacao_gestor
+                case 'fluxo_concluido':
+                    return (
+                        !item.pendente_autoavaliacao &&
+                        !item.pendente_autoavaliacao_colaborador &&
+                        !item.pendente_avaliacao_par &&
+                        !item.pendente_avaliacao_gestor
+                    )
+                default:
+                    return true
+            }
+        },
+        statusCardLabel(item) {
+            if (item.status === 'Finalizada') {
+                return 'Completa'
+            }
+            if (item.status === 'Avaliada' && item.fazer_avaliacao_final) {
+                return 'Falta avaliação final'
+            }
+            if (!item.avaliacao?.auto_avaliacao && item.status === 'Avaliada') {
+                return 'Avaliada pelo gestor'
+            }
+            if (item.pendente_autoavaliacao) {
+                return 'Pendente autoavaliação'
+            }
+            if (item.pendente_autoavaliacao_colaborador) {
+                return 'Pendente autoavaliação colaborador'
+            }
+            if (item.pendente_avaliacao_par) {
+                return 'Pendente avaliação do par'
+            }
+            if (item.pendente_avaliacao_gestor) {
+                return item.avaliacao?.auto_avaliacao ? 'Pendente avaliação gestor' : 'Pendente avaliação do gestor'
+            }
+            return item.status || 'Não informado'
+        },
+        fluxoCardAtual(item) {
+            if (item.status === 'Finalizada') {
+                return 'Avaliação final concluída'
+            }
+
+            if (item.status === 'Avaliada' && item.fazer_avaliacao_final) {
+                return 'Avaliações do fluxo concluídas'
+            }
+
+            if (item.principal && item.status === 'Avaliada') {
+                return 'Avaliação do gestor realizada'
+            }
+
+            if (item.origem_feedback === 'Avaliador' && item.status === 'Avaliada') {
+                return `${this.rotuloComoAvaliacao(item)} realizada`
+            }
+
+            if (item.origem_feedback === 'Funcionario' && !item.principal && item.status === 'Avaliada') {
+                return 'Autoavaliação realizada'
+            }
+
+            return 'Aguardando início desta etapa'
+        },
+        fluxoEtapasCard(item) {
+            const etapas = []
+
+            if (item.avaliacao?.auto_avaliacao) {
+                etapas.push({
+                    key: 'auto',
+                    label: 'Autoavaliação',
+                    state: item.pendente_autoavaliacao ? 'pending' : 'done'
+                })
+
+                etapas.push({
+                    key: 'par',
+                    label: 'Par',
+                    state: item.pendente_avaliacao_par ? 'pending' : this.etapaParConcluida(item) ? 'done' : 'idle'
+                })
+            }
+
+            etapas.push({
+                key: 'gestor',
+                label: 'Gestor',
+                state: item.pendente_avaliacao_gestor ? 'pending' : this.etapaGestorConcluida(item) ? 'done' : 'idle'
+            })
+
+            etapas.push({
+                key: 'final',
+                label: 'Avaliação final',
+                state: item.status === 'Finalizada' ? 'done' : item.status === 'Avaliada' && item.fazer_avaliacao_final ? 'pending' : 'idle'
+            })
+
+            return etapas
+        },
+        etapaParConcluida(item) {
+            return item.avaliacao?.auto_avaliacao && item.origem_feedback === 'Avaliador' && !item.principal && item.status !== 'Pendente'
+        },
+        etapaGestorConcluida(item) {
+            if (item.status === 'Finalizada') {
+                return true
+            }
+
+            return item.principal && item.status === 'Avaliada'
+        },
+        fluxoCardPendente(item) {
+            if (item.status === 'Finalizada') {
+                return 'Nenhuma pendência no fluxo'
+            }
+
+            if (item.pendente_autoavaliacao) {
+                return 'Falta a autoavaliação'
+            }
+
+            if (item.pendente_autoavaliacao_colaborador) {
+                return 'Falta a autoavaliação do colaborador'
+            }
+
+            if (item.pendente_avaliacao_par) {
+                return 'Falta a avaliação do par'
+            }
+
+            if (item.pendente_avaliacao_gestor) {
+                return item.avaliacao?.auto_avaliacao ? 'Falta a avaliação do gestor' : 'Falta a avaliação do gestor principal'
+            }
+
+            if (item.status === 'Avaliada' && item.fazer_avaliacao_final) {
+                return 'Falta a avaliação final'
+            }
+
+            return 'Sem pendência imediata'
+        },
+        fluxoObrigatorioPendente(item) {
+            if (item.status === 'Finalizada') {
+                return 'Fluxo concluído'
+            }
+
+            if (item.pendente_autoavaliacao) {
+                return 'Falta a autoavaliação'
+            }
+
+            if (item.pendente_autoavaliacao_colaborador) {
+                return 'Falta a autoavaliação do colaborador'
+            }
+
+            if (item.pendente_avaliacao_par) {
+                return 'Falta a avaliação do par'
+            }
+
+            if (item.pendente_avaliacao_gestor) {
+                return item.avaliacao?.auto_avaliacao ? 'Falta a avaliação do gestor' : 'Falta a avaliação do gestor principal'
+            }
+
+            return 'Fluxo concluído'
+        },
+        statusFluxoCard(item) {
+            return this.fluxoObrigatorioPendente(item)
+        },
+        statusPdiExtra(item) {
+            if (!item) {
+                return ''
+            }
+
+            if (item.status === 'Finalizada') {
+                return 'Plano de acao concluido'
+            }
+
+            if (item.status === 'Avaliada' && item.fazer_avaliacao_final) {
+                return 'Plano de acao pendente'
+            }
+
+            return ''
+        },
+        rotuloComoEtapa(item) {
+            if (item.origem_feedback === 'Funcionario' && !item.principal) {
+                return 'Autoavaliação'
+            }
+
+            return this.rotuloComoAvaliacao(item)
+        },
+        statusLinhaFluxo(item) {
+            if (item.status === 'Finalizada') {
+                return 'Fluxo concluído'
+            }
+            if (item.principal && item.status === 'Avaliada' && item.fazer_avaliacao_final) {
+                return 'Avaliou, falta plano de ação (PDI)'
+            }
+            if (item.status === 'Avaliada') {
+                return 'Avaliação realizada'
+            }
+            return 'Pendente'
+        },
+        isPrimeiroPendenteDaEtapa(etapa, avaliacaoItem) {
+            if (!etapa || !avaliacaoItem) {
+                return false
+            }
+
+            const primeiroPendente = (etapa.avaliacoes || []).find((item) => item.status === 'Pendente')
+            return Boolean(primeiroPendente && primeiroPendente.id === avaliacaoItem.id)
+        },
+        iniciaisPessoa(nome) {
+            const partes = String(nome || '')
+                .trim()
+                .split(/\s+/)
+                .filter(Boolean)
+
+            if (!partes.length) {
+                return '--'
+            }
+
+            if (partes.length === 1) {
+                return partes[0].slice(0, 2).toUpperCase()
+            }
+
+            return `${partes[0][0] || ''}${partes[partes.length - 1][0] || ''}`.toUpperCase()
+        },
+        proximoResponsavelEtapa(item) {
+            if (!item) {
+                return ''
+            }
+
+            if (item.origem_feedback === 'Funcionario' && !item.principal) {
+                return 'Autoavaliação'
+            }
+
+            return item.avaliador?.nome || this.rotuloComoEtapa(item)
+        },
+        rotuloEtapaCurto(label) {
+            return String(label || '')
+                .replace('(Avaliador Final)', '(Final)')
+                .replace('Auto Avaliação', 'Autoavaliação')
+                .trim()
+        },
+        iconeEstadoEtapa(etapa) {
+            if (etapa.state === 'done') {
+                return 'fa fa-check-circle'
+            }
+
+            if (etapa.isCurrent || etapa.state === 'pending') {
+                return 'fa fa-clock'
+            }
+
+            return 'fa fa-minus-circle'
+        },
+        iconeEstadoLinha(etapa, item) {
+            if (item?.status === 'Finalizada' || item?.status === 'Avaliada') {
+                return 'fa fa-check-circle'
+            }
+
+            if (this.isPrimeiroPendenteDaEtapa(etapa, item) || etapa?.state === 'pending') {
+                return 'fa fa-clock'
+            }
+
+            return 'fa fa-minus-circle'
+        },
+        usuarioPodeAcessarFeedback(item) {
+            if (!item) {
+                return false
+            }
+
+            return Boolean(this.feedbacksPermitidosMap[item.id]) || this.tem_privilegio_gestao_rh
+        },
+        podeAvaliarItem(item) {
+            if (!item || !this.usuarioPodeAcessarFeedback(item)) {
+                return false
+            }
+
+            if (item.avaliacao?.auto_avaliacao) {
+                return (
+                    (item.status === 'Pendente' && item.fez_auto_avaliacao && !item.principal) ||
+                    (item.status === 'Pendente' && item.fez_auto_avaliacao && item.principal && !item.pendente_avaliacao_par) ||
+                    (item.status === 'Pendente' && !item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id)
+                )
+            }
+
+            return item.status === 'Pendente' && item.principal
+        },
+        podeVisualizarItem(item) {
+            return this.usuarioPodeAcessarFeedback(item) && (item.status === 'Avaliada' || (item.status === 'Finalizada' && !item.fazer_avaliacao_final))
+        },
+        podeFazerAvaliacaoFinal(item) {
+            return this.usuarioPodeAcessarFeedback(item) && item.status === 'Avaliada' && item.fazer_avaliacao_final && item.principal
+        },
+        podeEditarPdi(item) {
+            return this.usuarioPodeAcessarFeedback(item) && item.status === 'Finalizada' && !item.fazer_avaliacao_final && item.principal
+        },
+        podeVisualizarAvaliacaoFinal(item) {
+            return (
+                this.usuarioPodeAcessarFeedback(item) &&
+                item.status === 'Finalizada' &&
+                !item.fazer_avaliacao_final &&
+                (item.principal || this.tem_privilegio_gestao_rh)
+            )
+        },
+        podeImprimirAvaliacaoFinal(item) {
+            return (
+                this.usuarioPodeAcessarFeedback(item) &&
+                item.status === 'Finalizada' &&
+                !item.fazer_avaliacao_final &&
+                (item.principal || this.tem_privilegio_gestao_rh)
+            )
+        },
+        valorFiltroComo(item) {
+            if (item.origem_feedback === 'Funcionario' && !item.principal) {
+                return 'autoavaliacao'
+            }
+
+            if (!item.tipo_avaliador || !item.tipo_avaliador.id) {
+                return ''
+            }
+
+            return item.principal ? `tipo:${item.tipo_avaliador.id}:principal` : `tipo:${item.tipo_avaliador.id}`
         },
         selecionarAvaliacaoFiltro(item) {
             if (!item) {
@@ -1603,7 +2244,7 @@ export default {
             this.editando = true
             this.modoAvaliacaoFinal = modo
             this.titulo_janela_final =
-                modo === 'editar-pdi' ? `Editar PDI — ${avaliacaoFeedback.avaliacao.titulo}` : `Avaliação final — ${avaliacaoFeedback.avaliacao.titulo}`
+                modo === 'editar-pdi' ? `Acompanhar PDI — ${avaliacaoFeedback.avaliacao.titulo}` : `Plano de ação (PDI) — ${avaliacaoFeedback.avaliacao.titulo}`
             this.preloadAvalFinal = true
 
             // Reset para um estado seguro
@@ -1698,9 +2339,13 @@ export default {
         },
         carregou(dados) {
             this.lista = dados.itens
+            this.lista_fluxo_completo = dados.itens_fluxo_completo || dados.itens || []
             this.lista_avaliacoes_tipos = dados.avaliacoes_tipos
             this.lista_status = dados.lista_status
             this.lista_avaliacoes_por_ano = dados.lista_avaliacoes_por_ano
+            this.lista_avaliadores_filtro = dados.lista_avaliadores || []
+            this.lista_colaboradores_filtro = dados.lista_colaboradores || []
+            this.lista_como_filtro = dados.lista_como || []
             this.tem_privilegio_gestao_rh = dados.tem_privilegio_gestao_rh
             this.controle.carregando = false
         },
@@ -1753,6 +2398,556 @@ export default {
 
 .bg-cinza {
     background: #f1f1f1 !important;
+}
+
+.ma-status-inline {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(0, 55, 85, 0.08);
+    color: #003755;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.ma-fluxo-inline {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(25, 135, 84, 0.12);
+    color: #155724;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.ma-fluxo-inline--pending {
+    background: rgba(255, 193, 7, 0.18);
+    color: #856404;
+}
+
+.ma-progress-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(13, 110, 253, 0.1);
+    color: #0d6efd;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.ma-btn-card {
+    min-height: 38px;
+    padding: 0.48rem 0.9rem;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.1;
+    transition: 0.18s ease;
+}
+
+.ma-btn-card--primary {
+    border: 1px solid rgba(0, 55, 85, 0.22);
+    background: rgba(0, 55, 85, 0.06);
+    color: #003755;
+}
+
+.ma-btn-card--secondary {
+    border: 1px solid rgba(108, 117, 125, 0.22);
+    background: rgba(108, 117, 125, 0.06);
+    color: #42515d;
+}
+
+.ma-btn-card--ghost {
+    border: 1px solid rgba(44, 62, 80, 0.2);
+    background: #fff;
+    color: #2f4556;
+}
+
+.ma-btn-card:hover,
+.ma-btn-card:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(23, 52, 73, 0.08);
+}
+
+.ma-card-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 0.65rem;
+}
+
+.ma-card-summary__item {
+    padding: 0.7rem 0.8rem;
+    border-radius: 12px;
+    background: rgba(0, 55, 85, 0.04);
+    border: 1px solid rgba(0, 55, 85, 0.08);
+}
+
+.ma-card-summary__label {
+    display: block;
+    color: #6b7a87;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.ma-card-summary__value {
+    display: block;
+    margin-top: 0.25rem;
+    color: #1f3442;
+    font-size: 0.9rem;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.ma-fluxo-card-inline {
+    background: linear-gradient(180deg, rgba(0, 55, 85, 0.04), rgba(0, 55, 85, 0.01));
+    border: 1px solid rgba(0, 55, 85, 0.1);
+    border-radius: 12px;
+    padding: 0.85rem;
+}
+
+.ma-fluxo-card-inline__head {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+
+.ma-fluxo-track {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.65rem;
+}
+
+.ma-fluxo-step {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 10px;
+    border: 1px solid #d9e2e8;
+    background: #f8fafb;
+    min-height: 48px;
+}
+
+.ma-fluxo-step__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #adb5bd;
+    flex: 0 0 10px;
+}
+
+.ma-fluxo-step__label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #324b5c;
+    line-height: 1.2;
+}
+
+.ma-fluxo-step--done {
+    background: rgba(25, 135, 84, 0.1);
+    border-color: rgba(25, 135, 84, 0.22);
+}
+
+.ma-fluxo-step--done .ma-fluxo-step__dot {
+    background: #198754;
+}
+
+.ma-fluxo-step--pending {
+    background: rgba(255, 193, 7, 0.16);
+    border-color: rgba(255, 193, 7, 0.35);
+}
+
+.ma-fluxo-step--pending .ma-fluxo-step__dot {
+    background: #ffc107;
+}
+
+.ma-fluxo-step--idle {
+    background: #f8fafb;
+    border-color: #d9e2e8;
+}
+
+.ma-colaborador-card {
+    width: 100%;
+    border: 1px solid rgba(0, 55, 85, 0.14);
+    border-left: 4px solid rgba(0, 55, 85, 0.38);
+    border-radius: 14px;
+    margin: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 253, 0.98));
+    box-shadow: 0 10px 24px rgba(15, 33, 49, 0.05) !important;
+}
+
+.ma-colaborador-card + .ma-colaborador-card {
+    margin-top: 1.25rem;
+}
+
+.ma-card--colaboradores {
+    width: 100%;
+}
+
+.ma-card--colaboradores > .card-body {
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
+}
+
+.ma-colaborador-head {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+}
+
+.ma-colaborador-monograma {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(0, 55, 85, 0.1), rgba(0, 55, 85, 0.04));
+    color: #003755;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    flex: 0 0 32px;
+}
+
+.ma-colaborador-nome {
+    display: block;
+    min-width: 0;
+    color: #17384d;
+    font-size: 1.12rem;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+}
+
+.ma-colaborador-fluxo {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.ma-etapas-strip {
+    display: flex;
+    gap: 0.55rem;
+    overflow-x: auto;
+    padding-bottom: 0.15rem;
+    scrollbar-width: thin;
+}
+
+.ma-etapa-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 0.45rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid #dce5ec;
+    background: #f8fafb;
+    color: #314a5b;
+    transition: 0.15s ease;
+}
+
+.ma-etapa-chip__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #aab6c2;
+    flex: 0 0 8px;
+}
+
+.ma-etapa-chip__label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.ma-etapa-chip__badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #6a7b88;
+    white-space: nowrap;
+}
+
+.ma-etapa-chip--done {
+    background: rgba(25, 135, 84, 0.08);
+    border-color: rgba(25, 135, 84, 0.2);
+}
+
+.ma-etapa-chip--done .ma-etapa-chip__dot {
+    background: #198754;
+}
+
+.ma-etapa-chip--pending {
+    background: rgba(255, 193, 7, 0.12);
+    border-color: rgba(255, 193, 7, 0.3);
+}
+
+.ma-etapa-chip--pending .ma-etapa-chip__dot {
+    background: #ffc107;
+}
+
+.ma-etapa-chip--active {
+    border-color: rgba(13, 110, 253, 0.38);
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.08);
+    background: linear-gradient(180deg, rgba(13, 110, 253, 0.06), #f8fbff);
+}
+
+.ma-etapa-chip--current .ma-etapa-chip__dot {
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.12);
+}
+
+.ma-etapa-chip--done.ma-etapa-chip--current .ma-etapa-chip__dot {
+    background: #198754;
+    box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.14);
+}
+
+.ma-etapa-card {
+    border: 1px solid #e6edf2;
+    border-radius: 12px;
+    background: #fbfdff;
+    padding: 0.8rem;
+}
+
+.ma-etapa-card--current {
+    border-color: rgba(13, 110, 253, 0.45);
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.08);
+    background: linear-gradient(180deg, rgba(13, 110, 253, 0.06), #fbfdff);
+}
+
+.ma-etapa-card__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.ma-etapa-card__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.ma-etapa-card__title {
+    display: block;
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #003755;
+}
+
+.ma-etapa-card__subtitle {
+    display: block;
+    margin-top: 0.2rem;
+    color: #6c7b88;
+    font-size: 0.78rem;
+}
+
+.ma-etapa-card__missing {
+    display: block;
+    margin-top: 0.28rem;
+    color: #b26a00;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.ma-etapa-toggle {
+    padding: 0;
+    min-height: auto;
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+.ma-btn-acao-etapa {
+    min-height: 34px;
+    padding: 0.38rem 0.75rem;
+    border-radius: 9px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.ma-btn-acao-etapa--primary {
+    border: 1px solid transparent;
+    background: #0d6efd;
+    color: #fff;
+}
+
+.ma-btn-acao-etapa--secondary {
+    border: 1px solid rgba(108, 117, 125, 0.24);
+    background: rgba(108, 117, 125, 0.05);
+    color: #495966;
+}
+
+.ma-btn-acao-etapa--accent {
+    border: 1px solid rgba(0, 55, 85, 0.22);
+    background: rgba(0, 55, 85, 0.06);
+    color: #003755;
+}
+
+.ma-etapa-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.74rem;
+    font-weight: 800;
+}
+
+.ma-etapa-badge--done {
+    background: rgba(25, 135, 84, 0.12);
+    color: #155724;
+}
+
+.ma-etapa-badge--pending {
+    background: rgba(255, 193, 7, 0.18);
+    color: #856404;
+}
+
+.ma-etapa-badge--idle {
+    background: rgba(108, 117, 125, 0.12);
+    color: #5f6b76;
+}
+
+.ma-etapa-badge--current {
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.12);
+}
+
+.ma-etapa-lista {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.ma-etapa-linha {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    align-items: center;
+    border: 1px solid #edf2f6;
+    border-radius: 10px;
+    background: #fff;
+    padding: 0.75rem;
+}
+
+.ma-etapa-linha--next {
+    border-color: rgba(13, 110, 253, 0.35);
+    background: linear-gradient(180deg, rgba(13, 110, 253, 0.05), #fff);
+    box-shadow: inset 3px 0 0 #0d6efd;
+}
+
+.ma-etapa-linha__info {
+    min-width: 0;
+    display: grid;
+}
+
+.ma-etapa-linha__nome {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 700;
+    color: #243744;
+}
+
+.ma-etapa-linha__avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: rgba(0, 55, 85, 0.1);
+    color: #003755;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    flex: 0 0 28px;
+}
+
+.ma-etapa-linha__icone {
+    width: 14px;
+    text-align: center;
+}
+
+.ma-etapa-card .fa-check-circle {
+    color: #198754;
+}
+
+.ma-etapa-card .fa-clock {
+    color: #d39e00;
+}
+
+.ma-etapa-card .fa-minus-circle {
+    color: #8a98a5;
+}
+
+.ma-etapa-card--current .ma-etapa-linha__icone:not(.fa-check-circle) {
+    color: #0d6efd;
+}
+
+.ma-etapa-linha--next .ma-etapa-linha__avatar {
+    background: rgba(13, 110, 253, 0.12);
+    color: #0d6efd;
+}
+
+.ma-etapa-linha__como {
+    font-size: 0.76rem;
+    color: #6d7e8b;
+}
+
+.ma-etapa-linha__acoes {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.ma-etapa-linha__status {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #4a5c69;
+    margin-right: 0.3rem;
+}
+
+.ma-etapa-vazia {
+    border-radius: 10px;
+    background: #f8fafb;
+    color: #7a8894;
+    padding: 0.8rem;
+    font-size: 0.82rem;
+}
+
+.ma-etapa-collapse-hint {
+    color: #6d7e8b;
+    font-size: 0.75rem;
+    padding-top: 0.1rem;
+}
+
+@media (max-width: 767px) {
+    .ma-etapas-strip {
+        margin-right: -0.25rem;
+        padding-right: 0.25rem;
+    }
+
+    .ma-etapa-linha {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .ma-etapa-linha__acoes {
+        width: 100%;
+        justify-content: flex-start;
+    }
 }
 
 /* Minhas Avaliações — escala e botões de nota (alinhado à Avaliação de Experiência) */
@@ -2160,8 +3355,8 @@ export default {
 .ma-item-card:hover {
     box-shadow: 0 0.25rem 0.65rem rgba(0, 55, 85, 0.1) !important;
 }
-.ma-cards-lista {
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
+.ma-card > .card-body > .ma-colaborador-card:first-child {
+    margin-top: 0.25rem;
 }
 .ma-grupo-header {
     border-radius: 8px;
