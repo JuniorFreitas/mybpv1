@@ -574,6 +574,8 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                 Route::get('avaliar/{avaliacaoFeedback}/final', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarFinal'])->name('avaliarFinal')->middleware('can:avaliacoes_listar');
                 Route::get('avaliar/impressao/{token}', [\App\Http\Controllers\AvaliacaoController::class, 'imprimir'])->name('avaliarImprimir')->middleware('can:avaliacoes_listar');
                 Route::put('avaliar/{avaliacaoFeedback}/final', [\App\Http\Controllers\AvaliacaoController::class, 'salvaAvaliacao'])->name('salvarAvaliacao')->middleware('can:avaliacoes_listar');
+                Route::post('avaliar/notificar-pendentes', [\App\Http\Controllers\AvaliacaoController::class, 'notificarPendentes'])->name('avaliarNotificarPendentes')->middleware('can:avaliacoes_listar');
+                Route::post('avaliar/{avaliacaoFeedback}/notificar-pendente', [\App\Http\Controllers\AvaliacaoController::class, 'notificarPendente'])->name('avaliarNotificarPendente')->middleware('can:avaliacoes_listar');
                 Route::get('avaliar', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarIndex'])->name('avaliarIndex')->middleware('can:avaliacoes_listar');
             });
 
@@ -622,6 +624,8 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                     Route::get('avaliar/{avaliacaoFeedback}/final', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarFinal'])->name('avaliarFinal')->middleware('can:avaliacoes_listar');
                     Route::get('avaliar/impressao/{token}', [\App\Http\Controllers\AvaliacaoController::class, 'imprimir'])->name('avaliarImprimir')->middleware('can:avaliacoes_listar');
                     Route::put('avaliar/{avaliacaoFeedback}/final', [\App\Http\Controllers\AvaliacaoController::class, 'salvaAvaliacao'])->name('salvarAvaliacao')->middleware('can:avaliacoes_listar');
+                    Route::post('avaliar/notificar-pendentes', [\App\Http\Controllers\AvaliacaoController::class, 'notificarPendentes'])->name('avaliarNotificarPendentes')->middleware('can:avaliacoes_listar');
+                    Route::post('avaliar/{avaliacaoFeedback}/notificar-pendente', [\App\Http\Controllers\AvaliacaoController::class, 'notificarPendente'])->name('avaliarNotificarPendente')->middleware('can:avaliacoes_listar');
                     Route::get('avaliar', [\App\Http\Controllers\AvaliacaoController::class, 'avaliarIndex'])->name('avaliarIndex')->middleware('can:avaliacoes_listar');
                 });
             });

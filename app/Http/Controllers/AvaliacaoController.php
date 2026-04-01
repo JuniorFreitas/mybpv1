@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\JobAutoAvaliacaoConcluida;
 use App\Jobs\JobExportaAvaliacoesCsv;
 use App\Models\Avaliacao;
 use App\Models\AvaliacaoAvaliadoresTipos;
@@ -15,6 +14,7 @@ use App\Models\FeedbackCurriculo;
 use App\Models\Sistema;
 use App\Models\User;
 use App\Rules\TenantUniqueRules;
+use App\Services\Avaliacoes\AvaliacaoNotificacaoService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -604,6 +604,42 @@ class AvaliacaoController extends Controller
         return view('g.cadastros.avaliacoes.avaliar.index');
     }
 
+    public function notificarPendente(AvaliacaoFeedback $avaliacaoFeedback, AvaliacaoNotificacaoService $avaliacaoNotificacaoService)
+    {
+        $this->authorize('avaliacoes_listar');
+
+        if (!$this->temPrivilegioGestaoRh()) {
+            return response()->json(['msg' => 'Você não tem permissão para notificar pendências.'], 403);
+        }
+
+        $enviado = $avaliacaoNotificacaoService->notificarPendenteManual($avaliacaoFeedback, auth()->user());
+
+        if (!$enviado) {
+            return response()->json(['msg' => 'Nenhuma notificação foi enviada para esta etapa.'], 422);
+        }
+
+        return response()->json(['msg' => 'Notificação enviada com sucesso.']);
+    }
+
+    public function notificarPendentes(Request $request, AvaliacaoNotificacaoService $avaliacaoNotificacaoService)
+    {
+        $this->authorize('avaliacoes_listar');
+
+        if (!$this->temPrivilegioGestaoRh()) {
+            return response()->json(['msg' => 'Você não tem permissão para notificar pendências.'], 403);
+        }
+
+        $feedbacks = $this->decorarFeedbacks($this->filtroAvaliar($request)->get());
+
+        if ($request->filled('campoLegenda')) {
+            $feedbacks = $this->filtrarFeedbacksPorLegenda($feedbacks, $request->campoLegenda)->values();
+        }
+
+        $total = $avaliacaoNotificacaoService->notificarPendentesManualmente($feedbacks, auth()->user());
+
+        return response()->json(['msg' => "{$total} notificação(ões) enviada(s) com sucesso."]);
+    }
+
     public function avaliarEdit(AvaliacaoFeedback $avaliacaoFeedback)
     {
         $this->authorize('avaliacoes_avaliar');
@@ -712,7 +748,7 @@ class AvaliacaoController extends Controller
         ]);
     }
 
-    public function avaliarUpdate(Request $request, AvaliacaoFeedback $avaliacaoFeedback)
+    public function avaliarUpdate(Request $request, AvaliacaoFeedback $avaliacaoFeedback, AvaliacaoNotificacaoService $avaliacaoNotificacaoService)
     {
         $this->authorize('avaliacoes_avaliar');
 
@@ -744,36 +780,9 @@ class AvaliacaoController extends Controller
                 'fim_feedback' => (new DataHora())->dataHoraInsert()
             ]);
 
-            $dados_job = [];
-
-            if ($salvarAvaliacao && $avaliacaoFeedback->origem_feedback === AvaliacaoFeedback::ORIGEM_FUNCIONARIO && $avaliacaoFeedback->status === AvaliacaoFeedback::STATUS_CONCLUIDA) {
-                $avaliadores = AvaliacaoFeedback::select(['id', 'empresa_id', 'avaliacao_id', 'avaliador_id', 'funcionario_id', 'status'])
-                    ->where('avaliacao_id', $avaliacaoFeedback->avaliacao_id)
-                    ->where('funcionario_id', $avaliacaoFeedback->funcionario_id)
-                    ->with('Avaliador:id,nome,login')
-                    ->with('Funcionario:id,nome')
-                    ->with('Avaliacao:id,titulo')
-                    ->OrigemAvaliador()
-                    ->get();
-
-                foreach ($avaliadores as $avaliador) {
-
-                    $dados_job['nome'] = $avaliador->avaliador->nome;
-                    $dados_job['email'] = $avaliador->avaliador->login;
-                    $dados_job['funcionario'] = $avaliador->funcionario->nome;
-                    $dados_job['avaliacao'] = $avaliador->avaliacao->titulo;
-                    $dados_job['empresa_id'] = $avaliacaoFeedback->empresa_id;
-
-                    JobAutoAvaliacaoConcluida::dispatch([
-                        'nome' => $dados_job['nome'],
-                        'email' => $dados_job['email'],
-                        'funcionario' => $dados_job['funcionario'],
-                        'avaliacao' => $dados_job['avaliacao'],
-                        'empresa_id' => $dados_job['empresa_id']
-                    ]);
-
-                    $dados_job = [];
-                }
+            if ($salvarAvaliacao) {
+                $avaliacaoFeedback->refresh();
+                $avaliacaoNotificacaoService->notificarProximaEtapaPorConclusao($avaliacaoFeedback);
             }
             DB::commit();
             return response()->json(['msg' => 'Avaliação concluída com sucesso']);

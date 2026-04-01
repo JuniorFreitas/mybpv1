@@ -543,6 +543,17 @@
                                 <i class="fa fa-eraser mr-1"></i>
                                 Limpar filtros
                             </button>
+
+                            <button
+                                v-if="tem_privilegio_gestao_rh"
+                                type="button"
+                                class="btn btn-sm btn-primary ma-btn-atualizar px-3 ml-2"
+                                :disabled="controle.carregando || notificandoPendentes"
+                                @click="notificarPendentes"
+                            >
+                                <i :class="notificandoPendentes ? 'fa fa-bell fa-spin mr-1' : 'fa fa-bell mr-1'"></i>
+                                Notificar pendentes
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -784,6 +795,19 @@
                                                     <span class="ma-etapa-linha__status">{{ statusLinhaFluxo(avaliacaoItem) }}</span>
 
                                                     <button
+                                                        v-if="tem_privilegio_gestao_rh && podeNotificarPendente(avaliacaoItem)"
+                                                        type="button"
+                                                        class="btn btn-sm btn-primary ma-btn-atualizar mr-1 mb-1"
+                                                        :disabled="notificandoFeedbackIds[avaliacaoItem.id]"
+                                                        @click="notificarPendente(avaliacaoItem)"
+                                                    >
+                                                        <i
+                                                            :class="notificandoFeedbackIds[avaliacaoItem.id] ? 'fa fa-bell fa-spin mr-1' : 'fa fa-bell mr-1'"
+                                                        ></i>
+                                                        Notificar
+                                                    </button>
+
+                                                    <button
                                                         v-if="etapaAtivaColaborador(card).key !== 'final' && podeAvaliarItem(avaliacaoItem)"
                                                         type="button"
                                                         class="btn btn-sm btn-primary ma-btn-atualizar mr-1 mb-1"
@@ -980,6 +1004,8 @@ export default {
             dropdownAbertoKey: null,
             etapasAtivasPorCard: {},
             etapasExpandidas: {},
+            notificandoPendentes: false,
+            notificandoFeedbackIds: {},
 
             textosTooltipNota: {
                 5: 'Superou muito as expectativas: É percebido por outras áreas/pessoas como alguém com uma atuação excepcional, modelo de referência.',
@@ -1415,7 +1441,10 @@ export default {
             return etapas.find((etapa) => etapa.key === chaveSalva) || etapas.find((etapa) => etapa.isCurrent) || etapas[0]
         },
         setEtapaAtiva(card, etapa) {
-            this.$set(this.etapasAtivasPorCard, this.chaveEtapaAtiva(card), etapa.key)
+            this.etapasAtivasPorCard = {
+                ...this.etapasAtivasPorCard,
+                [this.chaveEtapaAtiva(card)]: etapa.key
+            }
         },
         etapasConcluidasResumo(card) {
             const etapas = this.fluxoEtapasVisiveisColaborador(card)
@@ -1484,7 +1513,10 @@ export default {
         },
         toggleEtapaExpandida(card, etapa) {
             const chave = this.chaveEtapaExpandida(card, etapa)
-            this.$set(this.etapasExpandidas, chave, !this.etapaExpandida(card, etapa))
+            this.etapasExpandidas = {
+                ...this.etapasExpandidas,
+                [chave]: !this.etapaExpandida(card, etapa)
+            }
         },
         itensVisiveisEtapa(card, etapa) {
             if (!etapa.podeExpandir || this.etapaExpandida(card, etapa)) {
@@ -1972,6 +2004,55 @@ export default {
                 !item.fazer_avaliacao_final &&
                 (item.principal || this.tem_privilegio_gestao_rh)
             )
+        },
+        podeNotificarPendente(item) {
+            if (!this.tem_privilegio_gestao_rh || !item) {
+                return false
+            }
+
+            if (item.avaliacao?.auto_avaliacao) {
+                return (
+                    (item.status === 'Pendente' && item.fez_auto_avaliacao && !item.principal) ||
+                    (item.status === 'Pendente' && item.fez_auto_avaliacao && item.principal && !item.pendente_avaliacao_par) ||
+                    (item.status === 'Pendente' && !item.fez_auto_avaliacao && item.avaliador_id === item.funcionario_id)
+                )
+            }
+
+            return item.status === 'Pendente' && item.principal
+        },
+        async notificarPendente(item) {
+            if (!this.podeNotificarPendente(item)) {
+                return
+            }
+
+            this.notificandoFeedbackIds = {
+                ...this.notificandoFeedbackIds,
+                [item.id]: true
+            }
+
+            try {
+                const { data } = await axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/${item.id}/notificar-pendente`)
+                mostraSucesso('', data.msg || 'Notificação enviada com sucesso')
+            } catch (error) {
+                toastr.error(error?.response?.data?.msg || 'Não foi possível enviar a notificação', 'Erro!')
+            } finally {
+                this.notificandoFeedbackIds = {
+                    ...this.notificandoFeedbackIds,
+                    [item.id]: false
+                }
+            }
+        },
+        async notificarPendentes() {
+            this.notificandoPendentes = true
+
+            try {
+                const { data } = await axios.post(`${URL_ADMIN}/cadastro/avaliacoes/avaliar/notificar-pendentes`, this.controle.dados)
+                mostraSucesso('', data.msg || 'Notificações enviadas com sucesso')
+            } catch (error) {
+                toastr.error(error?.response?.data?.msg || 'Não foi possível enviar as notificações', 'Erro!')
+            } finally {
+                this.notificandoPendentes = false
+            }
         },
         valorFiltroComo(item) {
             if (item.origem_feedback === 'Funcionario' && !item.principal) {
