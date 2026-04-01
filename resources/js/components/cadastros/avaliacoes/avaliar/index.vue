@@ -457,24 +457,7 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-md-3 col-lg-2 ma-filtro-status-col">
-                            <div class="form-group mb-2 mb-md-0 ma-filtro-status-wrap">
-                                <label class="ma-label" for="ma-filtro-status-input">Status</label>
-                                <combobox-auto-complete
-                                    ref="comboStatus"
-                                    instance-id="status"
-                                    v-model="controle.dados.campoStatus"
-                                    :options="statusComboboxOpcoes"
-                                    :disabled="controle.carregando"
-                                    input-id="ma-filtro-status-input"
-                                    empty-message="Nenhum status encontrado."
-                                    @opening="fecharOutrosFiltros($event)"
-                                    @select="onSelectStatusCombobox"
-                                />
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-md-3 col-lg-2 mt-2 mt-lg-0">
+                        <div class="col-12 col-md-6 col-lg-3 mt-2 mt-lg-0">
                             <div class="form-group mb-2 mb-md-0">
                                 <label class="ma-label" for="ma-filtro-legenda-input">Fluxo da avaliação</label>
                                 <combobox-auto-complete
@@ -545,10 +528,20 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-md-3 col-lg-auto mt-2">
+                        <div class="col-12 col-lg-12 mt-3 d-flex flex-wrap justify-content-start">
                             <button type="button" class="btn btn-sm btn-primary ma-btn-atualizar px-3" :disabled="controle.carregando" @click="atualizar">
                                 <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
                                 Atualizar lista
+                            </button>
+
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-secondary ma-btn-limpar px-3 ml-2"
+                                :disabled="controle.carregando"
+                                @click="limparFiltros"
+                            >
+                                <i class="fa fa-eraser mr-1"></i>
+                                Limpar filtros
                             </button>
                         </div>
                     </form>
@@ -1011,7 +1004,6 @@ export default {
                 dados: {
                     campoBusca: '',
                     campoAvaliacao: '',
-                    campoStatus: '',
                     campoLegenda: '',
                     campoAvaliador: '',
                     campoColaborador: '',
@@ -1042,21 +1034,6 @@ export default {
         },
         selecionadaAvaliacao() {
             return this.lista_avaliacoes.find((item) => item.id === this.controle.dados.campoAvaliacao) ?? null
-        },
-        statusAvaliacaoSelecionada() {
-            let statusSemAutoAvaliacao = [
-                { label: 'Pendente avaliação gestor', value: 'Pendente' },
-                { label: 'Avaliada pelo Gestor', value: 'Avaliada' },
-                { label: 'Completa', value: 'Finalizada' }
-            ]
-            let statusComAutoAvaliacao = [
-                { label: 'Pendente', value: 'Pendente' },
-                { label: 'Avaliada', value: 'Avaliada' },
-                { label: 'Finalizada', value: 'Finalizada' }
-            ]
-
-            let status = this.selecionadaAvaliacao?.auto_avaliacao ? statusComAutoAvaliacao : statusSemAutoAvaliacao
-            return status ?? []
         },
         gruposListaAuto() {
             return this.agruparPorStatus(this.listaExibicao)
@@ -1113,15 +1090,6 @@ export default {
                 label: `${a.titulo || ''} — ${a.status || ''}`,
                 raw: a
             }))
-        },
-        statusComboboxOpcoes() {
-            const todos = { value: '', label: 'Todos os status' }
-            const lista = (this.statusAvaliacaoSelecionada || []).map((o) => ({
-                value: o.value,
-                label: o.label,
-                meta: o.value !== '' && o.value !== null && o.value !== undefined ? String(o.value) : undefined
-            }))
-            return [todos, ...lista]
         },
         legendaComboboxOpcoes() {
             const todos = { value: '', label: 'Todas as etapas do fluxo' }
@@ -1541,7 +1509,6 @@ export default {
             }
             const comboAno = this.$refs.comboAno
             const comboAvaliacao = this.$refs.comboAvaliacao
-            const comboStatus = this.$refs.comboStatus
             const comboLegenda = this.$refs.comboLegenda
             const comboAvaliador = this.$refs.comboAvaliador
             const comboColaborador = this.$refs.comboColaborador
@@ -1550,9 +1517,6 @@ export default {
                 return
             }
             if (comboAvaliacao && typeof comboAvaliacao.containsTarget === 'function' && comboAvaliacao.containsTarget(event.target)) {
-                return
-            }
-            if (comboStatus && typeof comboStatus.containsTarget === 'function' && comboStatus.containsTarget(event.target)) {
                 return
             }
             if (comboLegenda && typeof comboLegenda.containsTarget === 'function' && comboLegenda.containsTarget(event.target)) {
@@ -1577,9 +1541,6 @@ export default {
             if (manter !== 'avaliacao' && this.$refs.comboAvaliacao && typeof this.$refs.comboAvaliacao.close === 'function') {
                 this.$refs.comboAvaliacao.close()
             }
-            if (manter !== 'status' && this.$refs.comboStatus && typeof this.$refs.comboStatus.close === 'function') {
-                this.$refs.comboStatus.close()
-            }
             if (manter !== 'legenda' && this.$refs.comboLegenda && typeof this.$refs.comboLegenda.close === 'function') {
                 this.$refs.comboLegenda.close()
             }
@@ -1599,13 +1560,6 @@ export default {
         },
         onSelectAvaliacaoCombobox() {
             this.controle.dados.campoLegenda = ''
-            this.$nextTick(() => {
-                if (this.$refs.componente && this.$refs.componente.buscar) {
-                    this.$refs.componente.buscar()
-                }
-            })
-        },
-        onSelectStatusCombobox() {
             this.$nextTick(() => {
                 if (this.$refs.componente && this.$refs.componente.buscar) {
                     this.$refs.componente.buscar()
@@ -1637,6 +1591,28 @@ export default {
         onSelectComoCombobox() {
             this.$nextTick(() => {
                 if (this.$refs.componente && this.$refs.componente.buscar) {
+                    this.$refs.componente.buscar()
+                }
+            })
+        },
+        limparFiltros() {
+            const anoAtual = new Date().getFullYear()
+            const anoPadrao = this.listaAnosOrdenados.includes(anoAtual) ? anoAtual : this.listaAnosOrdenados[0] || anoAtual
+
+            this.controle.dados.campoBusca = ''
+            this.controle.dados.campoLegenda = ''
+            this.controle.dados.campoAvaliador = ''
+            this.controle.dados.campoColaborador = ''
+            this.controle.dados.campoComo = ''
+            this.controle.dados.ano_avaliacao = anoPadrao
+
+            const avaliacoesAno = this.lista_avaliacoes.filter((a) => Number(a.ano_avaliacao) === Number(anoPadrao))
+            this.controle.dados.campoAvaliacao = avaliacoesAno[0]?.id || ''
+
+            this.$nextTick(() => {
+                this.fecharOutrosFiltros(null)
+                if (this.$refs.componente && this.$refs.componente.buscar) {
+                    this.$refs.componente.atual = 1
                     this.$refs.componente.buscar()
                 }
             })
@@ -3202,19 +3178,26 @@ export default {
 }
 .ma-filtros-form {
     overflow: visible;
+    row-gap: 0.75rem;
 }
 .ma-filtro-avaliacao-col,
-.ma-filtro-ano-col,
-.ma-filtro-status-col {
+.ma-filtro-ano-col {
     overflow: visible;
     position: relative;
     z-index: 50;
 }
 .ma-filtro-avaliacao-wrap,
-.ma-filtro-ano-wrap,
-.ma-filtro-status-wrap {
+.ma-filtro-ano-wrap {
     position: relative;
     z-index: 51;
+}
+.ma-filtros-form > [class*='col-'] .form-group {
+    width: 100%;
+}
+.ma-filtros-form .combobox-auto-complete,
+.ma-filtros-form .ma-filtro-combo,
+.ma-filtros-form .ma-filtro-combo .form-control {
+    width: 100%;
 }
 .ma-card-title {
     letter-spacing: 0.04em;
@@ -3242,6 +3225,13 @@ export default {
 .ma-btn-atualizar {
     border-radius: 8px;
     font-weight: 600;
+    min-width: 180px;
+}
+
+.ma-btn-limpar {
+    border-radius: 8px;
+    font-weight: 600;
+    min-width: 180px;
 }
 .ma-legenda .ma-legend-pill {
     font-weight: 600;
