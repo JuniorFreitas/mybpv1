@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\JobAutoAvaliacaoConcluida;
 use App\Jobs\JobExportaAvaliacoesCsv;
 use App\Models\Avaliacao;
 use App\Models\AvaliacaoAvaliadoresTipos;
@@ -15,6 +14,8 @@ use App\Models\FeedbackCurriculo;
 use App\Models\Sistema;
 use App\Models\User;
 use App\Rules\TenantUniqueRules;
+use App\Services\Avaliacoes\AvaliacaoNotificacaoService;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use MasterTag\DataHora;
@@ -277,13 +278,142 @@ class AvaliacaoController extends Controller
     public function atualizarAvaliar(Request $request)
     {
         $this->authorize('avaliacoes_listar');
-        $resultado = $this->filtroAvaliar($request)->paginate($request->porPag ?: 20);
+        $queryFiltrada = $this->filtroAvaliar($request);
+        $porPagina = (int)($request->porPag ?: 20);
+        $paginaAtual = LengthAwarePaginator::resolveCurrentPage();
         $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->get();
         $lista_avaliacoes = Avaliacao::whereAtivo(true)->orderBy('titulo')->get();
 
+        $requestOpcoesFiltro = $request->duplicate();
+        $requestOpcoesFiltro->merge([
+            'campoAvaliador' => null,
+            'campoColaborador' => null,
+            'campoComo' => null,
+        ]);
 
-        $avaliacoesFeedbacks = collect($resultado->items())->transform(function ($item) {
+        $opcoesFiltroFeedbacks = $this->filtroAvaliar($requestOpcoesFiltro)->get();
 
+        if ($request->filled('campoLegenda')) {
+            $feedbacksFiltrados = $this->filtrarFeedbacksPorLegenda(
+                $this->decorarFeedbacks((clone $queryFiltrada)->get()),
+                $request->campoLegenda
+            )->values();
+
+            $resultado = new LengthAwarePaginator(
+                $feedbacksFiltrados->forPage($paginaAtual, $porPagina)->values(),
+                $feedbacksFiltrados->count(),
+                $porPagina,
+                $paginaAtual,
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+        } else {
+            $resultado = (clone $queryFiltrada)->paginate($porPagina);
+            $resultado->setCollection($this->decorarFeedbacks(collect($resultado->items())));
+        }
+
+        $gruposColaboradores = collect($resultado->items())
+            ->map(fn($item) => [
+                'avaliacao_id' => $item->avaliacao_id,
+                'funcionario_id' => $item->funcionario_id,
+            ])
+            ->unique(fn($item) => $item['avaliacao_id'] . '-' . $item['funcionario_id'])
+            ->values();
+
+        $feedbacksFluxoCompleto = collect();
+
+        if ($gruposColaboradores->isNotEmpty()) {
+            $feedbacksFluxoCompleto = AvaliacaoFeedback::with('Avaliacao.AvaliacaoTipo', 'TipoAvaliador', 'Funcionario:id,nome,login,temp,ativo,deleted_at', 'Avaliador:id,nome,login')
+                ->whereHas('Funcionario', function ($query) {
+                    $query->ativoNaoExcluido();
+                })->whereHas('Avaliador', function ($query) {
+                    $query->ativoNaoExcluido();
+                })
+                ->where(function ($query) use ($gruposColaboradores) {
+                    foreach ($gruposColaboradores as $grupo) {
+                        $query->orWhere(function ($subQuery) use ($grupo) {
+                            $subQuery->where('avaliacao_id', $grupo['avaliacao_id'])
+                                ->where('funcionario_id', $grupo['funcionario_id']);
+                        });
+                    }
+                })
+                ->get();
+        }
+
+        $avaliacoesFeedbacks = collect($resultado->items());
+        $feedbacksFluxoCompleto = $this->decorarFeedbacks($feedbacksFluxoCompleto);
+
+        $avaliacoes_ano = (new Avaliacao())->listaTodasAvaliacoesAgrupadaAno(auth()->user()->empresa_id);
+
+        $listaAvaliadores = $opcoesFiltroFeedbacks
+            ->filter(fn($item) => $item->Avaliador)
+            ->map(fn($item) => [
+                'id' => $item->Avaliador->id,
+                'nome' => $item->Avaliador->nome,
+            ])
+            ->unique('id')
+            ->sortBy('nome', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+
+        $listaColaboradores = $opcoesFiltroFeedbacks
+            ->filter(fn($item) => $item->Funcionario)
+            ->map(fn($item) => [
+                'id' => $item->Funcionario->id,
+                'nome' => $item->Funcionario->nome,
+            ])
+            ->unique('id')
+            ->sortBy('nome', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+
+        $listaComo = $opcoesFiltroFeedbacks
+            ->map(function ($item) {
+                if ($item->origem_feedback === AvaliacaoFeedback::ORIGEM_FUNCIONARIO && !$item->principal) {
+                    return [
+                        'value' => 'autoavaliacao',
+                        'label' => 'Autoavaliação',
+                    ];
+                }
+
+                if (!$item->TipoAvaliador) {
+                    return null;
+                }
+
+                $label = trim($item->TipoAvaliador->label ?? '');
+                if ($label === '') {
+                    return null;
+                }
+
+                return [
+                    'value' => $item->principal ? "tipo:{$item->TipoAvaliador->id}:principal" : "tipo:{$item->TipoAvaliador->id}",
+                    'label' => $item->principal && !str_contains($label, '(Avaliador Final)') ? "{$label} (Avaliador Final)" : $label,
+                ];
+            })
+            ->filter()
+            ->unique('value')
+            ->sortBy('label', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+
+        return response()->json([
+            'atual' => $resultado->currentPage(),
+            'ultima' => $resultado->lastPage(),
+            'total' => $resultado->total(),
+            'dados' => [
+                'itens' => $avaliacoesFeedbacks,
+                'itens_fluxo_completo' => $feedbacksFluxoCompleto,
+                'avaliacoes_tipos' => $avaliacoes_tipos,
+                'lista_avaliacoes' => $lista_avaliacoes,
+                'lista_status' => Avaliacao::LISTA_STATUS,
+                'tem_privilegio_gestao_rh' => $this->temPrivilegioGestaoRh(),
+                'lista_avaliacoes_por_ano' => $avaliacoes_ano,
+                'lista_avaliadores' => $listaAvaliadores,
+                'lista_colaboradores' => $listaColaboradores,
+                'lista_como' => $listaComo,
+            ]
+        ]);
+    }
+
+    private function decorarFeedbacks($feedbacks)
+    {
+        return collect($feedbacks)->transform(function ($item) {
             $avaliacaoFeedbackFunc = AvaliacaoFeedback::whereAvaliacaoId($item->avaliacao_id)->whereFuncionarioId($item->funcionario_id);
             $avaliacaoPar = clone $avaliacaoFeedbackFunc;
             $avaliacaoPar = $avaliacaoPar->where('origem_feedback', AvaliacaoFeedback::ORIGEM_AVALIADOR)->where('principal', false);
@@ -312,24 +442,38 @@ class AvaliacaoController extends Controller
                 $item->fazer_avaliacao_final = $item->principal && $item->total_avaliacoes_concluidas === $item->total_avaliacoes && $item->status != 'Finalizada';
             }
 
+            $avaliacaoFeedbackPrincipal = AvaliacaoFeedback::whereAvaliacaoId($item->avaliacao_id)
+                ->whereFuncionarioId($item->funcionario_id)
+                ->wherePrincipal(true)
+                ->first();
+
+            $item->pdi_cadastrado = false;
+
+            if ($avaliacaoFeedbackPrincipal) {
+                $item->pdi_cadastrado = AvaliacaoResultado::where('avaliacao_feedback_id', $avaliacaoFeedbackPrincipal->id)
+                    ->where('gestor_id', $avaliacaoFeedbackPrincipal->avaliador_id)
+                    ->exists();
+            }
+
             return $item;
         });
+    }
 
-        $avaliacoes_ano = (new Avaliacao())->listaTodasAvaliacoesAgrupadaAno(auth()->user()->empresa_id);
-
-        return response()->json([
-            'atual' => $resultado->currentPage(),
-            'ultima' => $resultado->lastPage(),
-            'total' => $resultado->total(),
-            'dados' => [
-                'itens' => $avaliacoesFeedbacks,
-                'avaliacoes_tipos' => $avaliacoes_tipos,
-                'lista_avaliacoes' => $lista_avaliacoes,
-                'lista_status' => Avaliacao::LISTA_STATUS,
-                'tem_privilegio_gestao_rh' => $this->temPrivilegioGestaoRh(),
-                'lista_avaliacoes_por_ano' => $avaliacoes_ano,
-            ]
-        ]);
+    private function filtrarFeedbacksPorLegenda($feedbacks, string $legenda)
+    {
+        return collect($feedbacks)->filter(function ($item) use ($legenda) {
+            return match ($legenda) {
+                'autoavaliacao_pendente' => (bool)$item->pendente_autoavaliacao,
+                'autoavaliacao_realizada' => $item->origem_feedback === AvaliacaoFeedback::ORIGEM_FUNCIONARIO && !$item->principal && $item->status !== AvaliacaoFeedback::STATUS_AGUARDANDO,
+                'avaliacao_par_pendente' => (bool)$item->pendente_avaliacao_par,
+                'avaliacao_par_realizada' => $item->origem_feedback === AvaliacaoFeedback::ORIGEM_AVALIADOR && !$item->principal && $item->status !== AvaliacaoFeedback::STATUS_AGUARDANDO,
+                'avaliacao_gestor_pendente' => (bool)$item->pendente_avaliacao_gestor,
+                'avaliacao_gestor_realizada' => (bool)!$item->pendente_avaliacao_gestor && (bool)$item->principal,
+                'fluxo_concluido' => $item->status === AvaliacaoFeedback::STATUS_FINAL,
+                'acompanhamento_plano_acao' => $item->status === AvaliacaoFeedback::STATUS_FINAL && (bool)$item->pdi_cadastrado,
+                default => true,
+            };
+        });
     }
 
     public function getListaAvaliacoes(Request $request)
@@ -388,6 +532,29 @@ class AvaliacaoController extends Controller
             });
         }
 
+        if ($request->filled('campoAvaliador')) {
+            $resultado->whereAvaliadorId($request->campoAvaliador);
+        }
+
+        if ($request->filled('campoColaborador')) {
+            $resultado->whereFuncionarioId($request->campoColaborador);
+        }
+
+        if ($request->filled('campoComo')) {
+            if ($request->campoComo === 'autoavaliacao') {
+                $resultado->where('origem_feedback', AvaliacaoFeedback::ORIGEM_FUNCIONARIO)
+                    ->where('principal', false);
+            } elseif (preg_match('/^tipo:(\d+)(:principal)?$/', $request->campoComo, $matches)) {
+                $resultado->where('avaliacao_tipo_id', $matches[1]);
+
+                if (!empty($matches[2])) {
+                    $resultado->where('principal', true);
+                } else {
+                    $resultado->where('principal', false);
+                }
+            }
+        }
+
         $Avaliacao = Avaliacao::select(['id', 'auto_avaliacao'])->whereAtivo(true)->orderBy('titulo')->limit(1)->first();
 
         if ($request->filled('campoAvaliacao')) {
@@ -435,6 +602,42 @@ class AvaliacaoController extends Controller
     public function avaliarIndex(Request $request)
     {
         return view('g.cadastros.avaliacoes.avaliar.index');
+    }
+
+    public function notificarPendente(AvaliacaoFeedback $avaliacaoFeedback, AvaliacaoNotificacaoService $avaliacaoNotificacaoService)
+    {
+        $this->authorize('avaliacoes_listar');
+
+        if (!$this->temPrivilegioGestaoRh()) {
+            return response()->json(['msg' => 'Você não tem permissão para notificar pendências.'], 403);
+        }
+
+        $enviado = $avaliacaoNotificacaoService->notificarPendenteManual($avaliacaoFeedback, auth()->user());
+
+        if (!$enviado) {
+            return response()->json(['msg' => 'Nenhuma notificação foi enviada para esta etapa.'], 422);
+        }
+
+        return response()->json(['msg' => 'Notificação enviada com sucesso.']);
+    }
+
+    public function notificarPendentes(Request $request, AvaliacaoNotificacaoService $avaliacaoNotificacaoService)
+    {
+        $this->authorize('avaliacoes_listar');
+
+        if (!$this->temPrivilegioGestaoRh()) {
+            return response()->json(['msg' => 'Você não tem permissão para notificar pendências.'], 403);
+        }
+
+        $feedbacks = $this->decorarFeedbacks($this->filtroAvaliar($request)->get());
+
+        if ($request->filled('campoLegenda')) {
+            $feedbacks = $this->filtrarFeedbacksPorLegenda($feedbacks, $request->campoLegenda)->values();
+        }
+
+        $total = $avaliacaoNotificacaoService->notificarPendentesManualmente($feedbacks, auth()->user());
+
+        return response()->json(['msg' => "{$total} notificação(ões) enviada(s) com sucesso."]);
     }
 
     public function avaliarEdit(AvaliacaoFeedback $avaliacaoFeedback)
@@ -545,7 +748,7 @@ class AvaliacaoController extends Controller
         ]);
     }
 
-    public function avaliarUpdate(Request $request, AvaliacaoFeedback $avaliacaoFeedback)
+    public function avaliarUpdate(Request $request, AvaliacaoFeedback $avaliacaoFeedback, AvaliacaoNotificacaoService $avaliacaoNotificacaoService)
     {
         $this->authorize('avaliacoes_avaliar');
 
@@ -577,36 +780,9 @@ class AvaliacaoController extends Controller
                 'fim_feedback' => (new DataHora())->dataHoraInsert()
             ]);
 
-            $dados_job = [];
-
-            if ($salvarAvaliacao && $avaliacaoFeedback->origem_feedback === AvaliacaoFeedback::ORIGEM_FUNCIONARIO && $avaliacaoFeedback->status === AvaliacaoFeedback::STATUS_CONCLUIDA) {
-                $avaliadores = AvaliacaoFeedback::select(['id', 'empresa_id', 'avaliacao_id', 'avaliador_id', 'funcionario_id', 'status'])
-                    ->where('avaliacao_id', $avaliacaoFeedback->avaliacao_id)
-                    ->where('funcionario_id', $avaliacaoFeedback->funcionario_id)
-                    ->with('Avaliador:id,nome,login')
-                    ->with('Funcionario:id,nome')
-                    ->with('Avaliacao:id,titulo')
-                    ->OrigemAvaliador()
-                    ->get();
-
-                foreach ($avaliadores as $avaliador) {
-
-                    $dados_job['nome'] = $avaliador->avaliador->nome;
-                    $dados_job['email'] = $avaliador->avaliador->login;
-                    $dados_job['funcionario'] = $avaliador->funcionario->nome;
-                    $dados_job['avaliacao'] = $avaliador->avaliacao->titulo;
-                    $dados_job['empresa_id'] = $avaliacaoFeedback->empresa_id;
-
-                    JobAutoAvaliacaoConcluida::dispatch([
-                        'nome' => $dados_job['nome'],
-                        'email' => $dados_job['email'],
-                        'funcionario' => $dados_job['funcionario'],
-                        'avaliacao' => $dados_job['avaliacao'],
-                        'empresa_id' => $dados_job['empresa_id']
-                    ]);
-
-                    $dados_job = [];
-                }
+            if ($salvarAvaliacao) {
+                $avaliacaoFeedback->refresh();
+                $avaliacaoNotificacaoService->notificarProximaEtapaPorConclusao($avaliacaoFeedback);
             }
             DB::commit();
             return response()->json(['msg' => 'Avaliação concluída com sucesso']);
