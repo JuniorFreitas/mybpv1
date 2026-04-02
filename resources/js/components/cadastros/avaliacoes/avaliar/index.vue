@@ -57,46 +57,42 @@
                         <p class="ma-modal-lead ma-modal-lead--tight mb-3">
                             Consolidado das notas informadas em cada etapa do fluxo, com a média calculada por critério.
                         </p>
-                        <table class="table" v-for="(item, index) in formAvaliarFinal.result_topico_pai_agrupado" :key="index">
+                        <table class="table ma-resultado-competencia-table" v-for="(item, index) in formAvaliarFinal.result_topico_pai_agrupado" :key="index">
                             <thead>
                                 <tr>
                                     <!-- CORREÇÃO APLICADA: Mudança de item[index] para item[0] com guard -->
-                                    <th>{{ (item[0] || {}).topico_pai || '' }}</th>
+                                    <th class="ma-resultado-competencia-table__head ma-resultado-competencia-table__head--criterio">
+                                        {{ (item[0] || {}).topico_pai || '' }}
+                                    </th>
                                     <!-- CORREÇÃO APLICADA: Adicionado guard para avaliadores -->
-                                    <th class="text-center" v-for="(avaliador, id) in (item[0] || {}).avaliadores || []" :key="avaliador.id">
+                                    <th
+                                        class="text-center ma-resultado-competencia-table__head"
+                                        v-for="(avaliador, id) in (item[0] || {}).avaliadores || []"
+                                        :key="avaliador.id"
+                                    >
                                         <span>
                                             {{ tituloEtapaFluxoColuna(id, avaliador) }}
                                         </span>
                                     </th>
-                                    <th class="text-center">Média</th>
+                                    <th class="text-center ma-resultado-competencia-table__head ma-resultado-competencia-table__head--media">Média</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <!-- CORREÇÃO APLICADA: Substituído $index por subIndex -->
                                 <tr v-for="(sub, subIndex) in item" :key="sub.id || subIndex">
-                                    <td style="width: 33%">{{ sub.subtopico }}</td>
+                                    <td style="width: 39%" class="ma-resultado-competencia-table__criterio">{{ sub.subtopico }}</td>
                                     <!-- CORREÇÃO APLICADA: Adicionado guard para avaliadores e filtro casasDecimais -->
-                                    <td style="width: 15%" v-for="(avaliador, avalIndex) in sub.avaliadores || []" :key="avaliador.id || avalIndex">
-                                        <input
-                                            type="number"
-                                            class="form-control form-control-sm text-center"
-                                            readonly="readonly"
-                                            min="0"
-                                            max="5"
-                                            step="0.1"
-                                            :value="formatarDecimal(avaliador.nota)"
-                                        />
+                                    <td style="width: 14%" v-for="(avaliador, avalIndex) in sub.avaliadores || []" :key="avaliador.id || avalIndex">
+                                        <div class="ma-resultado-nota" :class="classeNotaResultado(avaliador.nota)">
+                                            <span class="ma-resultado-nota__numero">{{ formatarDecimal(avaliador.nota) }}</span>
+                                            <span class="ma-resultado-nota__texto">{{ textoNotaResultado(avaliador.nota) }}</span>
+                                        </div>
                                     </td>
-                                    <td style="width: 7%" class="text-center">
-                                        <input
-                                            type="number"
-                                            class="form-control form-control-sm text-center"
-                                            readonly="readonly"
-                                            min="0"
-                                            max="5"
-                                            step="0.1"
-                                            :value="formatarDecimal(sub.media)"
-                                        />
+                                    <td style="width: 9%" class="text-center">
+                                        <div class="ma-resultado-nota ma-resultado-nota--media" :class="classeNotaResultado(sub.media)">
+                                            <span class="ma-resultado-nota__numero">{{ formatarDecimal(sub.media) }}</span>
+                                            <span class="ma-resultado-nota__texto">{{ textoNotaResultado(sub.media) }}</span>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -113,32 +109,24 @@
                     >
                         <h6 class="ma-modal-section-title mt-4 mb-2"><i class="fa fa-comment-dots mr-2 text-primary"></i>Comentários por etapa</h6>
                         <p class="ma-modal-lead ma-modal-lead--tight mb-3">Texto registrado por cada participante ao concluir a sua etapa no fluxo.</p>
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th
-                                        class="text-center"
-                                        v-for="(avaliador, id) in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
-                                        :key="avaliador.id"
-                                    >
-                                        <span>
-                                            {{ tituloEtapaFluxoColuna(id, avaliador) }}
-                                        </span>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td
-                                        v-for="(avaliador, avalIndex) in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
-                                        :key="avaliador.id || avalIndex"
-                                    >
-                                        <label class="ma-modal-label-muted">Comentário nesta etapa</label>
-                                        <textarea rows="5" class="form-control form-control-sm" readonly="readonly">{{ avaliador.comentario }}</textarea>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="ma-modal-comments-panel">
+                            <div
+                                v-for="(avaliador, avalIndex) in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
+                                :key="avaliador.id || avalIndex"
+                                class="ma-modal-comment-item"
+                            >
+                                <div class="ma-modal-comment-item__head">
+                                    <div class="ma-modal-comment-item__title">
+                                        <i class="fa fa-user mr-2 text-primary"></i>
+                                        <span>{{ tituloEtapaFluxoColuna(avalIndex, avaliador) }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="ma-modal-comment-item__body">
+                                    {{ avaliador.comentario || 'Sem comentário registrado nesta etapa.' }}
+                                </div>
+                            </div>
+                        </div>
                     </template>
 
                     <div class="row justify-content-center mt-5" v-if="formAvaliarFinal.resultChart && formAvaliarFinal.resultChart.length > 0">
@@ -1185,6 +1173,9 @@ export default {
     methods: {
         /** Rótulo da coluna de avaliador na avaliação final (modal / alinhado ao PDF quando houver fluxo_etapas) */
         tituloEtapaFluxoColuna(indice, avaliador) {
+            if (avaliador && avaliador.tipo) {
+                return avaliador.tipo
+            }
             const etapas = this.formAvaliarFinal.fluxo_etapas
             if (etapas && etapas[indice] && etapas[indice].label) {
                 return etapas[indice].label
@@ -1217,6 +1208,22 @@ export default {
                 return 'ma-ref-nota-pill--' + v
             }
             return ''
+        },
+        classeNotaResultado(nota) {
+            const v = Math.round(Number(nota))
+            if (v >= 1 && v <= 5) {
+                return `ma-resultado-nota--${v}`
+            }
+            return 'ma-resultado-nota--neutro'
+        },
+        textoNotaResultado(nota) {
+            const v = Math.round(Number(nota))
+            if (v === 1) return 'Muito abaixo'
+            if (v === 2) return 'Abaixo'
+            if (v === 3) return 'Atingiu'
+            if (v === 4) return 'Superou'
+            if (v === 5) return 'Superou muito'
+            return 'Sem nota'
         },
         /** Rótulo do campo "Como" na lista — inclui (Avaliador Final) quando aplicável */
         rotuloComoAvaliacao(item) {
@@ -1334,7 +1341,10 @@ export default {
 
             if (avaliacao.auto_avaliacao) {
                 const autoItems = card.itens.filter((item) => item.origem_feedback === 'Funcionario' && !item.principal)
-                etapas.push(this.montarEtapaColaborador('auto', 'Autoavaliação', autoItems, 'O colaborador inicia este ciclo com a autoavaliação.'))
+                const etapaAuto = this.montarEtapaColaborador('auto', 'Autoavaliação', autoItems, 'O colaborador inicia este ciclo com a autoavaliação.')
+                if (etapaAuto) {
+                    etapas.push(etapaAuto)
+                }
             }
 
             ;(avaliacao.fluxo || []).forEach((etapa, index) => {
@@ -1344,7 +1354,10 @@ export default {
                     (item) => Number(item.avaliacao_tipo_id) === Number(etapa.id) && Boolean(item.principal) === Boolean(etapa.principal)
                 )
 
-                etapas.push(this.montarEtapaColaborador(`fluxo-${index}`, label, itensEtapa, 'Etapa definida no fluxo configurado da avaliação.'))
+                const etapaFluxo = this.montarEtapaColaborador(`fluxo-${index}`, label, itensEtapa, 'Etapa definida no fluxo configurado da avaliação.')
+                if (etapaFluxo) {
+                    etapas.push(etapaFluxo)
+                }
             })
 
             const indiceAtual = etapas.findIndex((etapa) => etapa.state === 'pending')
@@ -1357,16 +1370,7 @@ export default {
         },
         montarEtapaColaborador(key, label, itensEtapa, fallbackResumo) {
             if (!itensEtapa.length) {
-                return {
-                    key,
-                    label,
-                    resumo: fallbackResumo,
-                    badge: 'Sem definição',
-                    state: 'idle',
-                    avaliacoes: [],
-                    faltantesTexto: '',
-                    podeExpandir: false
-                }
+                return null
             }
 
             const pendentes = itensEtapa.filter((item) => item.status === 'Pendente').length
@@ -3970,6 +3974,140 @@ export default {
     letter-spacing: 0.04em;
     color: #6c757d;
     margin-bottom: 0.35rem;
+}
+.ma-modal-comments-panel {
+    border: 1px solid rgba(0, 55, 85, 0.12);
+    border-left: 4px solid #0d6efd;
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(248, 251, 255, 0.95), rgba(255, 255, 255, 0.98));
+    padding: 1rem 1.15rem;
+}
+.ma-modal-comment-item + .ma-modal-comment-item {
+    margin-top: 0.95rem;
+    padding-top: 0.95rem;
+    border-top: 1px dashed rgba(0, 55, 85, 0.12);
+}
+.ma-modal-comment-item__head {
+    margin-bottom: 0.55rem;
+}
+.ma-modal-comment-item__title {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    font-size: 0.94rem;
+    font-weight: 800;
+    color: #21455d;
+    text-transform: uppercase;
+}
+.ma-modal-comment-item__body {
+    border: 1px solid rgba(0, 55, 85, 0.08);
+    border-radius: 12px;
+    background: #fff;
+    padding: 0.9rem 0.95rem;
+    color: #3f4f5d;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    white-space: pre-line;
+}
+.ma-resultado-competencia-table th,
+.ma-resultado-competencia-table td {
+    vertical-align: middle;
+}
+.ma-resultado-competencia-table thead th {
+    border-top: 0;
+    border-bottom: 2px solid rgba(0, 55, 85, 0.08);
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+}
+.ma-resultado-competencia-table tbody td {
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+    border-top: 1px solid rgba(0, 55, 85, 0.06);
+}
+.ma-resultado-competencia-table__head {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #4e5a66;
+}
+.ma-resultado-competencia-table__head--criterio {
+    font-size: 0.86rem;
+    color: #4a5560;
+}
+.ma-resultado-competencia-table__head--media {
+    color: #003755;
+}
+.ma-resultado-competencia-table__criterio {
+    color: #334754;
+    font-weight: 600;
+    font-size: 0.96rem;
+    line-height: 1.55;
+    letter-spacing: -0.01em;
+    padding-right: 1rem;
+}
+.ma-resultado-competencia-table tbody tr:hover .ma-resultado-competencia-table__criterio {
+    color: #17384d;
+}
+.ma-resultado-nota {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.18rem;
+    min-height: 56px;
+    border-radius: 10px;
+    border: 2px solid #d6dde3;
+    font-weight: 700;
+    font-size: 0.95rem;
+    background: #f5f7f9;
+    color: #4d5b67;
+    text-align: center;
+    padding: 0.35rem 0.45rem;
+}
+.ma-resultado-nota__numero {
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1;
+}
+.ma-resultado-nota__texto {
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1.1;
+}
+.ma-resultado-nota--media {
+    min-width: 84px;
+    box-shadow: inset 0 0 0 1px rgba(0, 55, 85, 0.08);
+}
+.ma-resultado-nota--5 {
+    background: #effaf4;
+    border-color: #8fd1b0;
+    color: #0f6a46;
+}
+.ma-resultado-nota--4 {
+    background: #eef8f4;
+    border-color: #a7d8bf;
+    color: #15714d;
+}
+.ma-resultado-nota--3 {
+    background: #fbf8ec;
+    border-color: #dcc36f;
+    color: #7a6615;
+}
+.ma-resultado-nota--2 {
+    background: #fcf2ec;
+    border-color: #e7b28a;
+    color: #a4541d;
+}
+.ma-resultado-nota--1 {
+    background: #fdf0f0;
+    border-color: #e29d9d;
+    color: #9d2a2a;
+}
+.ma-resultado-nota--neutro {
+    background: #f5f7f9;
+    border-color: #d6dde3;
+    color: #4d5b67;
 }
 .ma-modal-chart-name {
     font-size: 1.05rem;

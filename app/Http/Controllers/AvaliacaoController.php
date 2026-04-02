@@ -881,11 +881,23 @@ class AvaliacaoController extends Controller
                 'avaliadores' => $avaliacoesFeedbacks->map(function ($item) use ($key) {
                     $nome_exp = explode(' ', $item->Avaliador->nome);
                     $nome_avaliador = $nome_exp[0] . ' ' . $nome_exp[count($nome_exp) - 1];
+
+                    $tipoAvaliador = 'Avaliador';
+                    if ($item->origem_feedback === AvaliacaoFeedback::ORIGEM_FUNCIONARIO) {
+                        $tipoAvaliador = 'Autoavaliação';
+                    } elseif ($item->TipoAvaliador && $item->TipoAvaliador->label) {
+                        $tipoAvaliador = $item->TipoAvaliador->label;
+                        if ($item->principal && !str_contains($tipoAvaliador, '(Avaliador Final)')) {
+                            $tipoAvaliador .= ' (Avaliador Final)';
+                        }
+                    }
+
                     return [
                         'id' => $item->avaliador_id,
                         'origem' => $item->origem_feedback,
                         'comentario' => $item->comentario,
                         'nome' => mb_strtoupper($nome_avaliador),
+                        'tipo' => $tipoAvaliador,
                         'nota' => $item->respostas->where('topico_id', $key)->first()->nota
                     ];
                 }),
