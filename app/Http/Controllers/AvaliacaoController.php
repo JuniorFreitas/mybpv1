@@ -23,6 +23,33 @@ use MasterTag\DataHora;
 class AvaliacaoController extends Controller
 {
 
+    private function avaliacaoPermiteResponder(AvaliacaoFeedback $avaliacaoFeedback): bool
+    {
+        $avaliacao = $avaliacaoFeedback->avaliacao;
+
+        if (!$avaliacao || $avaliacao->status !== Avaliacao::STATUS_ABERTA) {
+            return false;
+        }
+
+        if (empty($avaliacao->getRawOriginal('data_fim_prazo')) && empty($avaliacao->data_fim_prazo)) {
+            return true;
+        }
+
+        $dataFimPrazo = $avaliacao->getRawOriginal('data_fim_prazo') ?: $avaliacao->data_fim_prazo;
+
+        try {
+            if (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $dataFimPrazo)) {
+                $prazo = \Carbon\Carbon::createFromFormat('d/m/Y', $dataFimPrazo)->endOfDay();
+            } else {
+                $prazo = \Carbon\Carbon::parse($dataFimPrazo)->endOfDay();
+            }
+        } catch (\Throwable $e) {
+            return false;
+        }
+
+        return now()->lte($prazo);
+    }
+
     protected function temPrivilegioGestaoRh(): bool
     {
         return (bool)in_array('privilegio_gestao_rh', auth()->user()->listaDeHabilidades());
@@ -643,6 +670,13 @@ class AvaliacaoController extends Controller
     public function avaliarEdit(AvaliacaoFeedback $avaliacaoFeedback)
     {
         $this->authorize('avaliacoes_avaliar');
+
+        if (!$this->avaliacaoPermiteResponder($avaliacaoFeedback)) {
+            return response()->json([
+                'msg' => 'Esta avaliação está encerrada ou fora do prazo para resposta.'
+            ], 422);
+        }
+
         $avaliacaoTopicos = AvaliacaoTopico::TopicosPais()->with('Subtopicos')->where('avaliacao_tipo_id', $avaliacaoFeedback->avaliacao->avaliacao_tipo_id)->get();
         $respostas = [];
         $respostasFunc = [];
@@ -751,6 +785,12 @@ class AvaliacaoController extends Controller
     public function avaliarUpdate(Request $request, AvaliacaoFeedback $avaliacaoFeedback, AvaliacaoNotificacaoService $avaliacaoNotificacaoService)
     {
         $this->authorize('avaliacoes_avaliar');
+
+        if (!$this->avaliacaoPermiteResponder($avaliacaoFeedback)) {
+            return response()->json([
+                'msg' => 'Esta avaliação está encerrada ou fora do prazo para resposta.'
+            ], 422);
+        }
 
         $dados = $request->input();
 

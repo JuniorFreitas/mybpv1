@@ -545,7 +545,7 @@
                             </button>
 
                             <button
-                                v-if="tem_privilegio_gestao_rh"
+                                v-if="tem_privilegio_gestao_rh && selecionadaAvaliacao && selecionadaAvaliacao.status === 'Aberta'"
                                 type="button"
                                 class="btn btn-sm btn-primary ma-btn-atualizar px-3 ml-2"
                                 :disabled="controle.carregando || notificandoPendentes"
@@ -1965,8 +1965,40 @@ export default {
 
             return Boolean(this.feedbacksPermitidosMap[item.id]) || this.tem_privilegio_gestao_rh
         },
+        parseDataAvaliacaoPrazo(data) {
+            if (!data) {
+                return null
+            }
+
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(data)) {
+                const [dia, mes, ano] = data.split('/').map(Number)
+                return new Date(ano, mes - 1, dia, 23, 59, 59)
+            }
+
+            const parsed = new Date(data)
+            return Number.isNaN(parsed.getTime()) ? null : parsed
+        },
+        avaliacaoPermiteAcao(item) {
+            if (!item?.avaliacao) {
+                return false
+            }
+
+            if (item.avaliacao.status !== 'Aberta') {
+                return false
+            }
+
+            const prazo = this.parseDataAvaliacaoPrazo(item.avaliacao.data_fim_prazo)
+            if (!prazo) {
+                return true
+            }
+
+            const hoje = new Date()
+            hoje.setHours(0, 0, 0, 0)
+
+            return prazo >= hoje
+        },
         podeAvaliarItem(item) {
-            if (!item || !this.usuarioPodeAcessarFeedback(item)) {
+            if (!item || !this.usuarioPodeAcessarFeedback(item) || !this.avaliacaoPermiteAcao(item)) {
                 return false
             }
 
@@ -2006,7 +2038,7 @@ export default {
             )
         },
         podeNotificarPendente(item) {
-            if (!this.tem_privilegio_gestao_rh || !item) {
+            if (!this.tem_privilegio_gestao_rh || !item || item.avaliacao?.status !== 'Aberta') {
                 return false
             }
 
