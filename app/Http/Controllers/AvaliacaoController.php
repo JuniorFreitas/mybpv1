@@ -23,6 +23,33 @@ use MasterTag\DataHora;
 class AvaliacaoController extends Controller
 {
 
+    private function avaliacaoPermiteResponder(AvaliacaoFeedback $avaliacaoFeedback): bool
+    {
+        $avaliacao = $avaliacaoFeedback->avaliacao;
+
+        if (!$avaliacao || $avaliacao->status !== Avaliacao::STATUS_ABERTA) {
+            return false;
+        }
+
+        if (empty($avaliacao->getRawOriginal('data_fim_prazo')) && empty($avaliacao->data_fim_prazo)) {
+            return true;
+        }
+
+        $dataFimPrazo = $avaliacao->getRawOriginal('data_fim_prazo') ?: $avaliacao->data_fim_prazo;
+
+        try {
+            if (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $dataFimPrazo)) {
+                $prazo = \Carbon\Carbon::createFromFormat('d/m/Y', $dataFimPrazo)->endOfDay();
+            } else {
+                $prazo = \Carbon\Carbon::parse($dataFimPrazo)->endOfDay();
+            }
+        } catch (\Throwable $e) {
+            return false;
+        }
+
+        return now()->lte($prazo);
+    }
+
     protected function temPrivilegioGestaoRh(): bool
     {
         return (bool)in_array('privilegio_gestao_rh', auth()->user()->listaDeHabilidades());
@@ -643,6 +670,13 @@ class AvaliacaoController extends Controller
     public function avaliarEdit(AvaliacaoFeedback $avaliacaoFeedback)
     {
         $this->authorize('avaliacoes_avaliar');
+
+        if (!$this->avaliacaoPermiteResponder($avaliacaoFeedback)) {
+            return response()->json([
+                'msg' => 'Esta avaliação está encerrada ou fora do prazo para resposta.'
+            ], 422);
+        }
+
         $avaliacaoTopicos = AvaliacaoTopico::TopicosPais()->with('Subtopicos')->where('avaliacao_tipo_id', $avaliacaoFeedback->avaliacao->avaliacao_tipo_id)->get();
         $respostas = [];
         $respostasFunc = [];
@@ -752,6 +786,12 @@ class AvaliacaoController extends Controller
     {
         $this->authorize('avaliacoes_avaliar');
 
+        if (!$this->avaliacaoPermiteResponder($avaliacaoFeedback)) {
+            return response()->json([
+                'msg' => 'Esta avaliação está encerrada ou fora do prazo para resposta.'
+            ], 422);
+        }
+
         $dados = $request->input();
 
         $respostas = collect($dados['respostas'])->collapse()->all();
@@ -841,11 +881,23 @@ class AvaliacaoController extends Controller
                 'avaliadores' => $avaliacoesFeedbacks->map(function ($item) use ($key) {
                     $nome_exp = explode(' ', $item->Avaliador->nome);
                     $nome_avaliador = $nome_exp[0] . ' ' . $nome_exp[count($nome_exp) - 1];
+
+                    $tipoAvaliador = 'Avaliador';
+                    if ($item->origem_feedback === AvaliacaoFeedback::ORIGEM_FUNCIONARIO) {
+                        $tipoAvaliador = 'Autoavaliação';
+                    } elseif ($item->TipoAvaliador && $item->TipoAvaliador->label) {
+                        $tipoAvaliador = $item->TipoAvaliador->label;
+                        if ($item->principal && !str_contains($tipoAvaliador, '(Avaliador Final)')) {
+                            $tipoAvaliador .= ' (Avaliador Final)';
+                        }
+                    }
+
                     return [
                         'id' => $item->avaliador_id,
                         'origem' => $item->origem_feedback,
                         'comentario' => $item->comentario,
                         'nome' => mb_strtoupper($nome_avaliador),
+                        'tipo' => $tipoAvaliador,
                         'nota' => $item->respostas->where('topico_id', $key)->first()->nota
                     ];
                 }),

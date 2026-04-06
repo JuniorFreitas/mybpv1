@@ -112,8 +112,7 @@ export default {
             if (this.atual >= this.ultima) {
                 this.atual = this.ultima
             }
-            //return false;
-            //this.$emit('update:atual', this.atual);
+            this.$emit('update:atual', Number(this.atual))
             this.buscar()
         },
 
@@ -149,10 +148,12 @@ export default {
                 if (ref.atual >= ref.ultima) {
                     ref.atual = ref.ultima
                 }
+                ref.$emit('update:atual', Number(ref.atual))
                 if (data.dados) {
                     ref.$emit('carregou', data.dados)
                 } else {
                     ref.atual = 1
+                    ref.$emit('update:atual', Number(ref.atual))
                     ref.$emit('carregou', [])
                 }
             } catch (err) {
