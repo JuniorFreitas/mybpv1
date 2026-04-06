@@ -28,10 +28,24 @@ const app = createApp({
         radarchart
     },
     methods: {
+        normalizarTituloEtapa(titulo) {
+            const valor = String(titulo || '')
+                .trim()
+                .toUpperCase()
+
+            if (/^AUTO\s*AVALIA[CÇ][AÃ]O$/i.test(valor)) {
+                return 'AUTOAVALIAÇÃO'
+            }
+
+            return valor
+        },
         tituloEtapaFluxoPdf(indice, avaliador) {
+            if (avaliador && avaliador.tipo) {
+                return this.normalizarTituloEtapa(avaliador.tipo)
+            }
             const etapas = this.formAvaliarFinal.fluxo_etapas
             if (etapas && etapas[indice] && etapas[indice].label) {
-                return String(etapas[indice].label).toUpperCase()
+                return this.normalizarTituloEtapa(etapas[indice].label)
             }
             if (avaliador && avaliador.origem === 'Funcionario') {
                 return 'AUTOAVALIAÇÃO'
@@ -39,15 +53,39 @@ const app = createApp({
             return 'AVALIADOR ' + (indice + 1)
         },
         tituloConsideracoesPdf(indice, avaliador) {
-            if (avaliador && avaliador.origem === 'Funcionario') {
-                return 'CONSIDERAÇÕES DA AUTOAVALIAÇÃO'
+            const titulo = this.tituloEtapaFluxoPdf(indice, avaliador)
+            return titulo === 'AUTOAVALIAÇÃO' ? 'CONSIDERAÇÕES DA AUTOAVALIAÇÃO' : 'CONSIDERAÇÕES DO ' + titulo
+        },
+        comentarioVisivel(avaliador) {
+            return Boolean(avaliador && String(avaliador.comentario || '').trim())
+        },
+        ordemFluxoComentario(avaliador, indice) {
+            const titulo = this.tituloEtapaFluxoPdf(indice, avaliador)
+
+            if (titulo === 'AUTOAVALIAÇÃO') {
+                return -1
             }
-            const etapas = this.formAvaliarFinal.fluxo_etapas
-            const nome =
-                etapas && etapas[indice] && etapas[indice].label
-                    ? String(etapas[indice].label).toUpperCase()
-                    : 'AVALIADOR ' + (indice + 1)
-            return 'CONSIDERAÇÕES DO ' + nome
+
+            const etapas = this.formAvaliarFinal.fluxo_etapas || []
+            const indiceFluxo = etapas.findIndex((etapa) => this.normalizarTituloEtapa(etapa.label) === titulo)
+
+            if (indiceFluxo !== -1) {
+                return indiceFluxo
+            }
+
+            return 999 + indice
+        },
+        comentariosOrdenados() {
+            const avaliadores = this.formAvaliarFinal.result_topico_pai_agrupado?.[0]?.[0]?.avaliadores || []
+
+            return avaliadores
+                .map((avaliador, indice) => ({
+                    ...avaliador,
+                    __indice: indice,
+                    __titulo: this.tituloEtapaFluxoPdf(indice, avaliador)
+                }))
+                .filter((avaliador) => this.comentarioVisivel(avaliador))
+                .sort((a, b) => this.ordemFluxoComentario(a, a.__indice) - this.ordemFluxoComentario(b, b.__indice))
         },
         casasDecimais(valor) {
             return valor.toFixed(1)

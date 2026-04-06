@@ -399,10 +399,7 @@
             <div class="card ma-card ma-filtros shadow border-0 mb-3">
                 <div class="card-body py-3 ma-filtros-card-body">
                     <h6 class="ma-card-title text-uppercase mb-3"><i class="fa fa-sliders-h mr-2 text-primary"></i>Filtros</h6>
-                    <form
-                        class="row align-items-end ma-filtros-form"
-                        @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null"
-                    >
+                    <form class="row align-items-end ma-filtros-form" @submit.prevent="buscarComFiltros()">
                         <div class="col-12 col-md-4 col-lg-2 ma-filtro-ano-col">
                             <div class="form-group mb-2 mb-md-0 ma-filtro-ano-wrap">
                                 <label class="ma-label" for="ma-filtro-ano-input">Ano</label>
@@ -852,6 +849,7 @@
                 :url="urlPaginacao"
                 :por-pagina="qntPag"
                 :dados="controle.dados"
+                v-on:update:atual="onUpdatePagina"
                 v-on:carregou="carregou"
                 v-on:carregando="carregando"
             ></controle-paginacao>
@@ -924,7 +922,13 @@ export default {
             const pick = noAno.length ? noAno[0] : first
             this.controle.dados.campoAvaliacao = pick.id
         }
+        this.aplicarFiltrosDaUrl()
         document.addEventListener('click', this.onClickOutside)
+        this.$nextTick(() => {
+            if (this.$refs.componente) {
+                this.$refs.componente.atual = this.paginaAtual || 1
+            }
+        })
         await this.atualizar()
     },
     beforeUnmount() {
@@ -990,6 +994,7 @@ export default {
             avaliacaoSelecionada: null,
 
             dropdownAbertoKey: null,
+            paginaAtual: 1,
             etapasAtivasPorCard: {},
             etapasExpandidas: {},
             notificandoPendentes: false,
@@ -1171,6 +1176,78 @@ export default {
         }
     },
     methods: {
+        getFiltrosQueryParams() {
+            const params = {}
+            const dados = this.controle.dados || {}
+
+            if (dados.ano_avaliacao) params.ano_avaliacao = String(dados.ano_avaliacao)
+            if (dados.campoAvaliacao) params.campoAvaliacao = String(dados.campoAvaliacao)
+            if (dados.campoLegenda) params.campoLegenda = String(dados.campoLegenda)
+            if (dados.campoAvaliador) params.campoAvaliador = String(dados.campoAvaliador)
+            if (dados.campoColaborador) params.campoColaborador = String(dados.campoColaborador)
+            if (dados.campoComo) params.campoComo = String(dados.campoComo)
+            if (dados.campoBusca) params.campoBusca = String(dados.campoBusca)
+            if (this.paginaAtual && Number(this.paginaAtual) > 1) params.page = String(this.paginaAtual)
+
+            return params
+        },
+        sincronizarFiltrosNaUrl() {
+            const params = new URLSearchParams(this.getFiltrosQueryParams())
+            const qs = params.toString()
+            const url = `${window.location.pathname}${qs ? `?${qs}` : ''}`
+
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState({}, '', url)
+            }
+        },
+        aplicarFiltrosDaUrl() {
+            const urlParams = new URLSearchParams(window.location.search)
+            const ano = Number(urlParams.get('ano_avaliacao'))
+            const campoAvaliacao = Number(urlParams.get('campoAvaliacao'))
+            const page = Number(urlParams.get('page'))
+
+            if (!Number.isNaN(ano) && ano) {
+                this.controle.dados.ano_avaliacao = ano
+            }
+
+            if (!Number.isNaN(campoAvaliacao) && campoAvaliacao) {
+                this.controle.dados.campoAvaliacao = campoAvaliacao
+                const avaliacaoSelecionada = this.lista_avaliacoes.find((item) => Number(item.id) === campoAvaliacao)
+                if (avaliacaoSelecionada?.ano_avaliacao) {
+                    this.controle.dados.ano_avaliacao = Number(avaliacaoSelecionada.ano_avaliacao)
+                }
+            }
+
+            this.controle.dados.campoLegenda = urlParams.get('campoLegenda') || ''
+            this.controle.dados.campoAvaliador = urlParams.get('campoAvaliador') || ''
+            this.controle.dados.campoColaborador = urlParams.get('campoColaborador') || ''
+            this.controle.dados.campoComo = urlParams.get('campoComo') || ''
+            this.controle.dados.campoBusca = urlParams.get('campoBusca') || ''
+            this.paginaAtual = !Number.isNaN(page) && page > 0 ? page : 1
+
+            if (!this.controle.dados.campoAvaliacao) {
+                const avaliacoesAno = this.lista_avaliacoes.filter((a) => Number(a.ano_avaliacao) === Number(this.controle.dados.ano_avaliacao))
+                this.controle.dados.campoAvaliacao = avaliacoesAno[0]?.id || this.controle.dados.campoAvaliacao
+            }
+        },
+        buscarComFiltros(resetPagina = true) {
+            if (resetPagina && this.$refs.componente) {
+                this.$refs.componente.atual = 1
+                this.paginaAtual = 1
+            } else if (this.$refs.componente) {
+                this.$refs.componente.atual = this.paginaAtual || 1
+            }
+
+            this.sincronizarFiltrosNaUrl()
+
+            if (this.$refs.componente && this.$refs.componente.buscar) {
+                this.$refs.componente.buscar()
+            }
+        },
+        onUpdatePagina(pagina) {
+            this.paginaAtual = Number(pagina) || 1
+            this.sincronizarFiltrosNaUrl()
+        },
         /** Rótulo da coluna de avaliador na avaliação final (modal / alinhado ao PDF quando houver fluxo_etapas) */
         tituloEtapaFluxoColuna(indice, avaliador) {
             if (avaliador && avaliador.tipo) {
@@ -1596,40 +1673,20 @@ export default {
         },
         onSelectAvaliacaoCombobox() {
             this.controle.dados.campoLegenda = ''
-            this.$nextTick(() => {
-                if (this.$refs.componente && this.$refs.componente.buscar) {
-                    this.$refs.componente.buscar()
-                }
-            })
+            this.$nextTick(() => this.buscarComFiltros())
         },
         onSelectLegendaCombobox() {
             this.fecharDropdown()
-            this.$nextTick(() => {
-                if (this.$refs.componente && this.$refs.componente.buscar) {
-                    this.$refs.componente.buscar()
-                }
-            })
+            this.$nextTick(() => this.buscarComFiltros())
         },
         onSelectAvaliadorCombobox() {
-            this.$nextTick(() => {
-                if (this.$refs.componente && this.$refs.componente.buscar) {
-                    this.$refs.componente.buscar()
-                }
-            })
+            this.$nextTick(() => this.buscarComFiltros())
         },
         onSelectColaboradorCombobox() {
-            this.$nextTick(() => {
-                if (this.$refs.componente && this.$refs.componente.buscar) {
-                    this.$refs.componente.buscar()
-                }
-            })
+            this.$nextTick(() => this.buscarComFiltros())
         },
         onSelectComoCombobox() {
-            this.$nextTick(() => {
-                if (this.$refs.componente && this.$refs.componente.buscar) {
-                    this.$refs.componente.buscar()
-                }
-            })
+            this.$nextTick(() => this.buscarComFiltros())
         },
         limparFiltros() {
             const anoAtual = new Date().getFullYear()
@@ -1647,10 +1704,7 @@ export default {
 
             this.$nextTick(() => {
                 this.fecharOutrosFiltros(null)
-                if (this.$refs.componente && this.$refs.componente.buscar) {
-                    this.$refs.componente.atual = 1
-                    this.$refs.componente.buscar()
-                }
+                this.buscarComFiltros()
             })
         },
         mapearPessoasParaCombobox(lista, campo) {
@@ -2106,9 +2160,7 @@ export default {
                 return
             }
             this.controle.dados.campoAvaliacao = item.id
-            this.$nextTick(() => {
-                this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-            })
+            this.$nextTick(() => this.buscarComFiltros())
         },
         onAnoFiltroChange() {
             const itens = this.avaliacoesDoAno
@@ -2117,9 +2169,7 @@ export default {
                 if (!atualOk) {
                     this.selecionarAvaliacaoFiltro(itens[0])
                 } else {
-                    this.$nextTick(() => {
-                        this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-                    })
+                    this.$nextTick(() => this.buscarComFiltros())
                 }
             } else {
                 const fb = this.lista_avaliacoes[0]
@@ -2133,9 +2183,7 @@ export default {
                     })
                 } else {
                     this.controle.dados.campoAvaliacao = ''
-                    this.$nextTick(() => {
-                        this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-                    })
+                    this.$nextTick(() => this.buscarComFiltros())
                 }
             }
         },
@@ -2446,8 +2494,7 @@ export default {
             this.controle.carregando = true
         },
         async atualizar() {
-            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            ;(await this) && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.buscarComFiltros()
         }
     }
 }
