@@ -57,46 +57,42 @@
                         <p class="ma-modal-lead ma-modal-lead--tight mb-3">
                             Consolidado das notas informadas em cada etapa do fluxo, com a média calculada por critério.
                         </p>
-                        <table class="table" v-for="(item, index) in formAvaliarFinal.result_topico_pai_agrupado" :key="index">
+                        <table class="table ma-resultado-competencia-table" v-for="(item, index) in formAvaliarFinal.result_topico_pai_agrupado" :key="index">
                             <thead>
                                 <tr>
                                     <!-- CORREÇÃO APLICADA: Mudança de item[index] para item[0] com guard -->
-                                    <th>{{ (item[0] || {}).topico_pai || '' }}</th>
+                                    <th class="ma-resultado-competencia-table__head ma-resultado-competencia-table__head--criterio">
+                                        {{ (item[0] || {}).topico_pai || '' }}
+                                    </th>
                                     <!-- CORREÇÃO APLICADA: Adicionado guard para avaliadores -->
-                                    <th class="text-center" v-for="(avaliador, id) in (item[0] || {}).avaliadores || []" :key="avaliador.id">
+                                    <th
+                                        class="text-center ma-resultado-competencia-table__head"
+                                        v-for="(avaliador, id) in (item[0] || {}).avaliadores || []"
+                                        :key="avaliador.id"
+                                    >
                                         <span>
                                             {{ tituloEtapaFluxoColuna(id, avaliador) }}
                                         </span>
                                     </th>
-                                    <th class="text-center">Média</th>
+                                    <th class="text-center ma-resultado-competencia-table__head ma-resultado-competencia-table__head--media">Média</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <!-- CORREÇÃO APLICADA: Substituído $index por subIndex -->
                                 <tr v-for="(sub, subIndex) in item" :key="sub.id || subIndex">
-                                    <td style="width: 33%">{{ sub.subtopico }}</td>
+                                    <td style="width: 39%" class="ma-resultado-competencia-table__criterio">{{ sub.subtopico }}</td>
                                     <!-- CORREÇÃO APLICADA: Adicionado guard para avaliadores e filtro casasDecimais -->
-                                    <td style="width: 15%" v-for="(avaliador, avalIndex) in sub.avaliadores || []" :key="avaliador.id || avalIndex">
-                                        <input
-                                            type="number"
-                                            class="form-control form-control-sm text-center"
-                                            readonly="readonly"
-                                            min="0"
-                                            max="5"
-                                            step="0.1"
-                                            :value="formatarDecimal(avaliador.nota)"
-                                        />
+                                    <td style="width: 14%" v-for="(avaliador, avalIndex) in sub.avaliadores || []" :key="avaliador.id || avalIndex">
+                                        <div class="ma-resultado-nota" :class="classeNotaResultado(avaliador.nota)">
+                                            <span class="ma-resultado-nota__numero">{{ formatarDecimal(avaliador.nota) }}</span>
+                                            <span class="ma-resultado-nota__texto">{{ textoNotaResultado(avaliador.nota) }}</span>
+                                        </div>
                                     </td>
-                                    <td style="width: 7%" class="text-center">
-                                        <input
-                                            type="number"
-                                            class="form-control form-control-sm text-center"
-                                            readonly="readonly"
-                                            min="0"
-                                            max="5"
-                                            step="0.1"
-                                            :value="formatarDecimal(sub.media)"
-                                        />
+                                    <td style="width: 9%" class="text-center">
+                                        <div class="ma-resultado-nota ma-resultado-nota--media" :class="classeNotaResultado(sub.media)">
+                                            <span class="ma-resultado-nota__numero">{{ formatarDecimal(sub.media) }}</span>
+                                            <span class="ma-resultado-nota__texto">{{ textoNotaResultado(sub.media) }}</span>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -113,32 +109,24 @@
                     >
                         <h6 class="ma-modal-section-title mt-4 mb-2"><i class="fa fa-comment-dots mr-2 text-primary"></i>Comentários por etapa</h6>
                         <p class="ma-modal-lead ma-modal-lead--tight mb-3">Texto registrado por cada participante ao concluir a sua etapa no fluxo.</p>
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th
-                                        class="text-center"
-                                        v-for="(avaliador, id) in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
-                                        :key="avaliador.id"
-                                    >
-                                        <span>
-                                            {{ tituloEtapaFluxoColuna(id, avaliador) }}
-                                        </span>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td
-                                        v-for="(avaliador, avalIndex) in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
-                                        :key="avaliador.id || avalIndex"
-                                    >
-                                        <label class="ma-modal-label-muted">Comentário nesta etapa</label>
-                                        <textarea rows="5" class="form-control form-control-sm" readonly="readonly">{{ avaliador.comentario }}</textarea>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="ma-modal-comments-panel">
+                            <div
+                                v-for="(avaliador, avalIndex) in formAvaliarFinal.result_topico_pai_agrupado[0][0].avaliadores"
+                                :key="avaliador.id || avalIndex"
+                                class="ma-modal-comment-item"
+                            >
+                                <div class="ma-modal-comment-item__head">
+                                    <div class="ma-modal-comment-item__title">
+                                        <i class="fa fa-user mr-2 text-primary"></i>
+                                        <span>{{ tituloEtapaFluxoColuna(avalIndex, avaliador) }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="ma-modal-comment-item__body">
+                                    {{ avaliador.comentario || 'Sem comentário registrado nesta etapa.' }}
+                                </div>
+                            </div>
+                        </div>
                     </template>
 
                     <div class="row justify-content-center mt-5" v-if="formAvaliarFinal.resultChart && formAvaliarFinal.resultChart.length > 0">
@@ -411,10 +399,7 @@
             <div class="card ma-card ma-filtros shadow border-0 mb-3">
                 <div class="card-body py-3 ma-filtros-card-body">
                     <h6 class="ma-card-title text-uppercase mb-3"><i class="fa fa-sliders-h mr-2 text-primary"></i>Filtros</h6>
-                    <form
-                        class="row align-items-end ma-filtros-form"
-                        @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null"
-                    >
+                    <form class="row align-items-end ma-filtros-form" @submit.prevent="buscarComFiltros()">
                         <div class="col-12 col-md-4 col-lg-2 ma-filtro-ano-col">
                             <div class="form-group mb-2 mb-md-0 ma-filtro-ano-wrap">
                                 <label class="ma-label" for="ma-filtro-ano-input">Ano</label>
@@ -545,7 +530,7 @@
                             </button>
 
                             <button
-                                v-if="tem_privilegio_gestao_rh"
+                                v-if="tem_privilegio_gestao_rh && selecionadaAvaliacao && selecionadaAvaliacao.status === 'Aberta'"
                                 type="button"
                                 class="btn btn-sm btn-primary ma-btn-atualizar px-3 ml-2"
                                 :disabled="controle.carregando || notificandoPendentes"
@@ -864,6 +849,7 @@
                 :url="urlPaginacao"
                 :por-pagina="qntPag"
                 :dados="controle.dados"
+                v-on:update:atual="onUpdatePagina"
                 v-on:carregou="carregou"
                 v-on:carregando="carregando"
             ></controle-paginacao>
@@ -936,7 +922,13 @@ export default {
             const pick = noAno.length ? noAno[0] : first
             this.controle.dados.campoAvaliacao = pick.id
         }
+        this.aplicarFiltrosDaUrl()
         document.addEventListener('click', this.onClickOutside)
+        this.$nextTick(() => {
+            if (this.$refs.componente) {
+                this.$refs.componente.atual = this.paginaAtual || 1
+            }
+        })
         await this.atualizar()
     },
     beforeUnmount() {
@@ -1002,6 +994,7 @@ export default {
             avaliacaoSelecionada: null,
 
             dropdownAbertoKey: null,
+            paginaAtual: 1,
             etapasAtivasPorCard: {},
             etapasExpandidas: {},
             notificandoPendentes: false,
@@ -1183,8 +1176,83 @@ export default {
         }
     },
     methods: {
+        getFiltrosQueryParams() {
+            const params = {}
+            const dados = this.controle.dados || {}
+
+            if (dados.ano_avaliacao) params.ano_avaliacao = String(dados.ano_avaliacao)
+            if (dados.campoAvaliacao) params.campoAvaliacao = String(dados.campoAvaliacao)
+            if (dados.campoLegenda) params.campoLegenda = String(dados.campoLegenda)
+            if (dados.campoAvaliador) params.campoAvaliador = String(dados.campoAvaliador)
+            if (dados.campoColaborador) params.campoColaborador = String(dados.campoColaborador)
+            if (dados.campoComo) params.campoComo = String(dados.campoComo)
+            if (dados.campoBusca) params.campoBusca = String(dados.campoBusca)
+            if (this.paginaAtual && Number(this.paginaAtual) > 1) params.page = String(this.paginaAtual)
+
+            return params
+        },
+        sincronizarFiltrosNaUrl() {
+            const params = new URLSearchParams(this.getFiltrosQueryParams())
+            const qs = params.toString()
+            const url = `${window.location.pathname}${qs ? `?${qs}` : ''}`
+
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState({}, '', url)
+            }
+        },
+        aplicarFiltrosDaUrl() {
+            const urlParams = new URLSearchParams(window.location.search)
+            const ano = Number(urlParams.get('ano_avaliacao'))
+            const campoAvaliacao = Number(urlParams.get('campoAvaliacao'))
+            const page = Number(urlParams.get('page'))
+
+            if (!Number.isNaN(ano) && ano) {
+                this.controle.dados.ano_avaliacao = ano
+            }
+
+            if (!Number.isNaN(campoAvaliacao) && campoAvaliacao) {
+                this.controle.dados.campoAvaliacao = campoAvaliacao
+                const avaliacaoSelecionada = this.lista_avaliacoes.find((item) => Number(item.id) === campoAvaliacao)
+                if (avaliacaoSelecionada?.ano_avaliacao) {
+                    this.controle.dados.ano_avaliacao = Number(avaliacaoSelecionada.ano_avaliacao)
+                }
+            }
+
+            this.controle.dados.campoLegenda = urlParams.get('campoLegenda') || ''
+            this.controle.dados.campoAvaliador = urlParams.get('campoAvaliador') || ''
+            this.controle.dados.campoColaborador = urlParams.get('campoColaborador') || ''
+            this.controle.dados.campoComo = urlParams.get('campoComo') || ''
+            this.controle.dados.campoBusca = urlParams.get('campoBusca') || ''
+            this.paginaAtual = !Number.isNaN(page) && page > 0 ? page : 1
+
+            if (!this.controle.dados.campoAvaliacao) {
+                const avaliacoesAno = this.lista_avaliacoes.filter((a) => Number(a.ano_avaliacao) === Number(this.controle.dados.ano_avaliacao))
+                this.controle.dados.campoAvaliacao = avaliacoesAno[0]?.id || this.controle.dados.campoAvaliacao
+            }
+        },
+        buscarComFiltros(resetPagina = true) {
+            if (resetPagina && this.$refs.componente) {
+                this.$refs.componente.atual = 1
+                this.paginaAtual = 1
+            } else if (this.$refs.componente) {
+                this.$refs.componente.atual = this.paginaAtual || 1
+            }
+
+            this.sincronizarFiltrosNaUrl()
+
+            if (this.$refs.componente && this.$refs.componente.buscar) {
+                this.$refs.componente.buscar()
+            }
+        },
+        onUpdatePagina(pagina) {
+            this.paginaAtual = Number(pagina) || 1
+            this.sincronizarFiltrosNaUrl()
+        },
         /** Rótulo da coluna de avaliador na avaliação final (modal / alinhado ao PDF quando houver fluxo_etapas) */
         tituloEtapaFluxoColuna(indice, avaliador) {
+            if (avaliador && avaliador.tipo) {
+                return avaliador.tipo
+            }
             const etapas = this.formAvaliarFinal.fluxo_etapas
             if (etapas && etapas[indice] && etapas[indice].label) {
                 return etapas[indice].label
@@ -1217,6 +1285,22 @@ export default {
                 return 'ma-ref-nota-pill--' + v
             }
             return ''
+        },
+        classeNotaResultado(nota) {
+            const v = Math.round(Number(nota))
+            if (v >= 1 && v <= 5) {
+                return `ma-resultado-nota--${v}`
+            }
+            return 'ma-resultado-nota--neutro'
+        },
+        textoNotaResultado(nota) {
+            const v = Math.round(Number(nota))
+            if (v === 1) return 'Muito abaixo'
+            if (v === 2) return 'Abaixo'
+            if (v === 3) return 'Atingiu'
+            if (v === 4) return 'Superou'
+            if (v === 5) return 'Superou muito'
+            return 'Sem nota'
         },
         /** Rótulo do campo "Como" na lista — inclui (Avaliador Final) quando aplicável */
         rotuloComoAvaliacao(item) {
@@ -1334,7 +1418,10 @@ export default {
 
             if (avaliacao.auto_avaliacao) {
                 const autoItems = card.itens.filter((item) => item.origem_feedback === 'Funcionario' && !item.principal)
-                etapas.push(this.montarEtapaColaborador('auto', 'Autoavaliação', autoItems, 'O colaborador inicia este ciclo com a autoavaliação.'))
+                const etapaAuto = this.montarEtapaColaborador('auto', 'Autoavaliação', autoItems, 'O colaborador inicia este ciclo com a autoavaliação.')
+                if (etapaAuto) {
+                    etapas.push(etapaAuto)
+                }
             }
 
             ;(avaliacao.fluxo || []).forEach((etapa, index) => {
@@ -1344,7 +1431,10 @@ export default {
                     (item) => Number(item.avaliacao_tipo_id) === Number(etapa.id) && Boolean(item.principal) === Boolean(etapa.principal)
                 )
 
-                etapas.push(this.montarEtapaColaborador(`fluxo-${index}`, label, itensEtapa, 'Etapa definida no fluxo configurado da avaliação.'))
+                const etapaFluxo = this.montarEtapaColaborador(`fluxo-${index}`, label, itensEtapa, 'Etapa definida no fluxo configurado da avaliação.')
+                if (etapaFluxo) {
+                    etapas.push(etapaFluxo)
+                }
             })
 
             const indiceAtual = etapas.findIndex((etapa) => etapa.state === 'pending')
@@ -1357,16 +1447,7 @@ export default {
         },
         montarEtapaColaborador(key, label, itensEtapa, fallbackResumo) {
             if (!itensEtapa.length) {
-                return {
-                    key,
-                    label,
-                    resumo: fallbackResumo,
-                    badge: 'Sem definição',
-                    state: 'idle',
-                    avaliacoes: [],
-                    faltantesTexto: '',
-                    podeExpandir: false
-                }
+                return null
             }
 
             const pendentes = itensEtapa.filter((item) => item.status === 'Pendente').length
@@ -1592,40 +1673,20 @@ export default {
         },
         onSelectAvaliacaoCombobox() {
             this.controle.dados.campoLegenda = ''
-            this.$nextTick(() => {
-                if (this.$refs.componente && this.$refs.componente.buscar) {
-                    this.$refs.componente.buscar()
-                }
-            })
+            this.$nextTick(() => this.buscarComFiltros())
         },
         onSelectLegendaCombobox() {
             this.fecharDropdown()
-            this.$nextTick(() => {
-                if (this.$refs.componente && this.$refs.componente.buscar) {
-                    this.$refs.componente.buscar()
-                }
-            })
+            this.$nextTick(() => this.buscarComFiltros())
         },
         onSelectAvaliadorCombobox() {
-            this.$nextTick(() => {
-                if (this.$refs.componente && this.$refs.componente.buscar) {
-                    this.$refs.componente.buscar()
-                }
-            })
+            this.$nextTick(() => this.buscarComFiltros())
         },
         onSelectColaboradorCombobox() {
-            this.$nextTick(() => {
-                if (this.$refs.componente && this.$refs.componente.buscar) {
-                    this.$refs.componente.buscar()
-                }
-            })
+            this.$nextTick(() => this.buscarComFiltros())
         },
         onSelectComoCombobox() {
-            this.$nextTick(() => {
-                if (this.$refs.componente && this.$refs.componente.buscar) {
-                    this.$refs.componente.buscar()
-                }
-            })
+            this.$nextTick(() => this.buscarComFiltros())
         },
         limparFiltros() {
             const anoAtual = new Date().getFullYear()
@@ -1643,10 +1704,7 @@ export default {
 
             this.$nextTick(() => {
                 this.fecharOutrosFiltros(null)
-                if (this.$refs.componente && this.$refs.componente.buscar) {
-                    this.$refs.componente.atual = 1
-                    this.$refs.componente.buscar()
-                }
+                this.buscarComFiltros()
             })
         },
         mapearPessoasParaCombobox(lista, campo) {
@@ -1965,8 +2023,40 @@ export default {
 
             return Boolean(this.feedbacksPermitidosMap[item.id]) || this.tem_privilegio_gestao_rh
         },
+        parseDataAvaliacaoPrazo(data) {
+            if (!data) {
+                return null
+            }
+
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(data)) {
+                const [dia, mes, ano] = data.split('/').map(Number)
+                return new Date(ano, mes - 1, dia, 23, 59, 59)
+            }
+
+            const parsed = new Date(data)
+            return Number.isNaN(parsed.getTime()) ? null : parsed
+        },
+        avaliacaoPermiteAcao(item) {
+            if (!item?.avaliacao) {
+                return false
+            }
+
+            if (item.avaliacao.status !== 'Aberta') {
+                return false
+            }
+
+            const prazo = this.parseDataAvaliacaoPrazo(item.avaliacao.data_fim_prazo)
+            if (!prazo) {
+                return true
+            }
+
+            const hoje = new Date()
+            hoje.setHours(0, 0, 0, 0)
+
+            return prazo >= hoje
+        },
         podeAvaliarItem(item) {
-            if (!item || !this.usuarioPodeAcessarFeedback(item)) {
+            if (!item || !this.usuarioPodeAcessarFeedback(item) || !this.avaliacaoPermiteAcao(item)) {
                 return false
             }
 
@@ -2006,7 +2096,7 @@ export default {
             )
         },
         podeNotificarPendente(item) {
-            if (!this.tem_privilegio_gestao_rh || !item) {
+            if (!this.tem_privilegio_gestao_rh || !item || item.avaliacao?.status !== 'Aberta') {
                 return false
             }
 
@@ -2070,9 +2160,7 @@ export default {
                 return
             }
             this.controle.dados.campoAvaliacao = item.id
-            this.$nextTick(() => {
-                this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-            })
+            this.$nextTick(() => this.buscarComFiltros())
         },
         onAnoFiltroChange() {
             const itens = this.avaliacoesDoAno
@@ -2081,9 +2169,7 @@ export default {
                 if (!atualOk) {
                     this.selecionarAvaliacaoFiltro(itens[0])
                 } else {
-                    this.$nextTick(() => {
-                        this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-                    })
+                    this.$nextTick(() => this.buscarComFiltros())
                 }
             } else {
                 const fb = this.lista_avaliacoes[0]
@@ -2097,9 +2183,7 @@ export default {
                     })
                 } else {
                     this.controle.dados.campoAvaliacao = ''
-                    this.$nextTick(() => {
-                        this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
-                    })
+                    this.$nextTick(() => this.buscarComFiltros())
                 }
             }
         },
@@ -2410,8 +2494,7 @@ export default {
             this.controle.carregando = true
         },
         async atualizar() {
-            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            ;(await this) && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.buscarComFiltros()
         }
     }
 }
@@ -3938,6 +4021,140 @@ export default {
     letter-spacing: 0.04em;
     color: #6c757d;
     margin-bottom: 0.35rem;
+}
+.ma-modal-comments-panel {
+    border: 1px solid rgba(0, 55, 85, 0.12);
+    border-left: 4px solid #0d6efd;
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(248, 251, 255, 0.95), rgba(255, 255, 255, 0.98));
+    padding: 1rem 1.15rem;
+}
+.ma-modal-comment-item + .ma-modal-comment-item {
+    margin-top: 0.95rem;
+    padding-top: 0.95rem;
+    border-top: 1px dashed rgba(0, 55, 85, 0.12);
+}
+.ma-modal-comment-item__head {
+    margin-bottom: 0.55rem;
+}
+.ma-modal-comment-item__title {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    font-size: 0.94rem;
+    font-weight: 800;
+    color: #21455d;
+    text-transform: uppercase;
+}
+.ma-modal-comment-item__body {
+    border: 1px solid rgba(0, 55, 85, 0.08);
+    border-radius: 12px;
+    background: #fff;
+    padding: 0.9rem 0.95rem;
+    color: #3f4f5d;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    white-space: pre-line;
+}
+.ma-resultado-competencia-table th,
+.ma-resultado-competencia-table td {
+    vertical-align: middle;
+}
+.ma-resultado-competencia-table thead th {
+    border-top: 0;
+    border-bottom: 2px solid rgba(0, 55, 85, 0.08);
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+}
+.ma-resultado-competencia-table tbody td {
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+    border-top: 1px solid rgba(0, 55, 85, 0.06);
+}
+.ma-resultado-competencia-table__head {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #4e5a66;
+}
+.ma-resultado-competencia-table__head--criterio {
+    font-size: 0.86rem;
+    color: #4a5560;
+}
+.ma-resultado-competencia-table__head--media {
+    color: #003755;
+}
+.ma-resultado-competencia-table__criterio {
+    color: #334754;
+    font-weight: 600;
+    font-size: 0.96rem;
+    line-height: 1.55;
+    letter-spacing: -0.01em;
+    padding-right: 1rem;
+}
+.ma-resultado-competencia-table tbody tr:hover .ma-resultado-competencia-table__criterio {
+    color: #17384d;
+}
+.ma-resultado-nota {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.18rem;
+    min-height: 56px;
+    border-radius: 10px;
+    border: 2px solid #d6dde3;
+    font-weight: 700;
+    font-size: 0.95rem;
+    background: #f5f7f9;
+    color: #4d5b67;
+    text-align: center;
+    padding: 0.35rem 0.45rem;
+}
+.ma-resultado-nota__numero {
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1;
+}
+.ma-resultado-nota__texto {
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1.1;
+}
+.ma-resultado-nota--media {
+    min-width: 84px;
+    box-shadow: inset 0 0 0 1px rgba(0, 55, 85, 0.08);
+}
+.ma-resultado-nota--5 {
+    background: #effaf4;
+    border-color: #8fd1b0;
+    color: #0f6a46;
+}
+.ma-resultado-nota--4 {
+    background: #eef8f4;
+    border-color: #a7d8bf;
+    color: #15714d;
+}
+.ma-resultado-nota--3 {
+    background: #fbf8ec;
+    border-color: #dcc36f;
+    color: #7a6615;
+}
+.ma-resultado-nota--2 {
+    background: #fcf2ec;
+    border-color: #e7b28a;
+    color: #a4541d;
+}
+.ma-resultado-nota--1 {
+    background: #fdf0f0;
+    border-color: #e29d9d;
+    color: #9d2a2a;
+}
+.ma-resultado-nota--neutro {
+    background: #f5f7f9;
+    border-color: #d6dde3;
+    color: #4d5b67;
 }
 .ma-modal-chart-name {
     font-size: 1.05rem;
