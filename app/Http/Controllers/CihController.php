@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\Admissao\Apontamento\Cih\JobCihAprovarReprovar;
 use App\Jobs\Admissao\Apontamento\Cih\JobCihStore;
-use App\Jobs\JobExportaCihCsvFinal;
+use App\Jobs\Admissao\Apontamento\Cih\JobExportaCihCsv;
 use App\Jobs\JobExportaPdf;
 use App\Models\AreaEtiqueta;
 use App\Models\Arquivo;
@@ -498,7 +498,7 @@ class CihController extends Controller
         $nameArquivo = "admissao_cih" . rand(1000, 9999) . "_" . date('YmdHis') . ".csv";
         $filtros = $request->all();
         \Log::info('Filtros: ' . json_encode($filtros));
-        JobExportaCihCsvFinal::dispatch(
+        JobExportaCihCsv::dispatch(
             auth()->id(),
             "Admissão - CIH",
             $nameArquivo,
