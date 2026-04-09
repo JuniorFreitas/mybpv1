@@ -3,7 +3,6 @@
 namespace App\Services\Cih;
 
 use App\Models\Cih;
-use Carbon\Carbon;
 
 class CihExportFormatter
 {
@@ -81,7 +80,7 @@ class CihExportFormatter
             $this->cleanText($colaborador->Admissao->pis ?? ''),
             $this->cleanText($colaborador->VagaAberta->Vaga->nome ?? ''),
             $this->cleanText($cih->CentroDeCusto->label ?? ''),
-            $this->cleanText($this->formatDateOnlyBr($cih)),
+            $this->cleanText($cih->data_lancamento),
             $this->cleanText($cih->data_iso_lancamento),
             $this->cleanText($cih->Tag?->label ?? $cih->outra_tag ?? ''),
             $this->cleanText($cih->ResponsavelLancamento?->nome ?? ''),
@@ -105,7 +104,7 @@ class CihExportFormatter
             $this->cleanText($colaborador->VagaAberta->Vaga->nome ?? ''),
             $this->cleanText($cih->area_id ? ($cih->Area->label ?? '') : ($cih->outra_area ?? '')),
             $this->cleanText($colaborador->Admissao->CentroDeCusto->label ?? ''),
-            $this->cleanText($this->formatDateOnlyBr($cih)),
+            $this->cleanText($cih->data_lancamento),
             $this->cleanText($cih->data_iso_lancamento),
             $this->cleanText($cih->Tag?->label ?? $cih->outra_tag ?? ''),
             $this->cleanText($cih->ResponsavelLancamento?->nome ?? ''),
@@ -121,31 +120,6 @@ class CihExportFormatter
             $this->cleanText($cih->data_iso_aprovacao_rh),
             $this->cleanText($cih->RhAprovacao?->nome ?? ''),
         ];
-    }
-
-    private function formatDateOnlyBr(Cih $cih): string
-    {
-        if (!empty($cih->data_iso_lancamento)) {
-            try {
-                return Carbon::parse($cih->data_iso_lancamento)->format('d/m/Y');
-            } catch (\Throwable $exception) {
-                // fallback para o valor exibido no model
-            }
-        }
-
-        if (!empty($cih->data_lancamento)) {
-            if (preg_match('/(\d{2}\/\d{2}\/\d{4})/', $cih->data_lancamento, $matches)) {
-                return $matches[1];
-            }
-
-            try {
-                return Carbon::parse($cih->data_lancamento)->format('d/m/Y');
-            } catch (\Throwable $exception) {
-                return '';
-            }
-        }
-
-        return '';
     }
 
     private function cleanText(?string $text): string
