@@ -88,7 +88,6 @@ class JobExportaCihCsvFinal implements ShouldQueue
             ]);
 
             \Log::info('Exportação CIH CSV finalizada com sucesso');
-
         } catch (\Exception $e) {
             \Log::error('Erro na exportação CIH CSV: ' . $e->getMessage());
             \Log::error('Stack trace: ' . $e->getTraceAsString());
@@ -375,10 +374,43 @@ class JobExportaCihCsvFinal implements ShouldQueue
             $text = trim($text);
 
             // Substituir caracteres problemáticos
-            $text = str_replace(['√†', '√°', '√≥', '√≠', '√ß', '√£', '√µ', '√∫'],
-                ['ã', 'á', 'ó', 'í', 'ç', 'ã', 'õ', 'ú'], $text);
+            $text = str_replace(
+                ['√†', '√°', '√≥', '√≠', '√ß', '√£', '√µ', '√∫'],
+                ['ã', 'á', 'ó', 'í', 'ç', 'ã', 'õ', 'ú'],
+                $text
+            );
 
             return $text;
+        };
+
+        // Formata apenas a data no padrão brasileiro (dd/mm/aaaa)
+        $formatDateBrOnly = function ($date) {
+            if (empty($date)) {
+                return '';
+            }
+
+            if ($date instanceof \DateTimeInterface) {
+                return $date->format('d/m/Y');
+            }
+
+            $dateString = trim((string) $date);
+            if ($dateString === '') {
+                return '';
+            }
+
+            if (preg_match('/(\d{4})-(\d{2})-(\d{2})/', $dateString, $matches)) {
+                return $matches[3] . '/' . $matches[2] . '/' . $matches[1];
+            }
+
+            if (preg_match('/(\d{2})\/(\d{2})\/(\d{4})/', $dateString, $matches)) {
+                return $matches[1] . '/' . $matches[2] . '/' . $matches[3];
+            }
+
+            try {
+                return \Carbon\Carbon::parse($dateString)->format('d/m/Y');
+            } catch (\Exception $e) {
+                return '';
+            }
         };
 
         if ($this->modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
@@ -389,7 +421,7 @@ class JobExportaCihCsvFinal implements ShouldQueue
                 $cleanText($colaborador->Admissao->pis ?? ''),
                 $cleanText($colaborador->VagaAberta->Vaga->nome ?? ''),
                 $cleanText($cih->CentroDeCusto->label ?? ''),
-                $cleanText($cih->data_lancamento ?? ''),
+                $cleanText($formatDateBrOnly($cih->data_lancamento ?? '')),
                 $cleanText($cih->Tag ? $cih->Tag->label : $cih->outra_tag ?? ''),
                 $cleanText($cih->ResponsavelLancamento ? $cih->ResponsavelLancamento->nome : ''),
                 $cleanText($cih->data_criacao ?? ''),
@@ -410,7 +442,7 @@ class JobExportaCihCsvFinal implements ShouldQueue
             $cleanText($colaborador->VagaAberta->Vaga->nome ?? ''),
             $cleanText($cih->area_id ? ($cih->Area->label ?? '') : ($cih->outra_area ?? '')),
             $cleanText($colaborador->Admissao->CentroDeCusto->label ?? ''),
-            $cleanText($cih->data_lancamento ?? ''),
+            $cleanText($formatDateBrOnly($cih->data_lancamento ?? '')),
             $cleanText($cih->Tag ? $cih->Tag->label : $cih->outra_tag ?? ''),
             $cleanText($cih->ResponsavelLancamento ? $cih->ResponsavelLancamento->nome : ''),
             $cleanText($cih->data_criacao ?? ''),
@@ -443,7 +475,6 @@ class JobExportaCihCsvFinal implements ShouldQueue
 
             \Log::info("Falha ao adquirir lock: {$this->lockKey} - Lock já existe");
             return false;
-
         } catch (\Exception $e) {
             \Log::error("Erro ao tentar adquirir lock: {$e->getMessage()}");
             // Em caso de erro no Redis, permite execução para não quebrar o sistema
