@@ -1023,6 +1023,11 @@ export default {
             if (d.token) params.token = d.token
             this.atualizarUrlMovimentacao(params)
         },
+        /** Remove filtro por token de e-mail (deep link) para a listagem mostrar todos os registros após nova solicitação. */
+        limparTokenFiltroListagem() {
+            this.controle.dados.token = ''
+            this.syncUrlFiltros()
+        },
         changeCentroCusto() {
             this.form.filial = false
             this.form.centro_custo_filial_id = ''
@@ -1095,6 +1100,7 @@ export default {
             formReset()
             setupCampo()
             this.form = _.cloneDeep(this.formDefault) //copia
+            this.limparTokenFiltroListagem()
             this.listaCentroCusto()
         },
 
@@ -1125,14 +1131,35 @@ export default {
             axios
                 .post(`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista`, this.form)
                 .then((response) => {
-                    this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
-                    let data = response.data
-                    mostraSucesso('', 'Solicitação registrada com sucesso!')
-                    this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    if (response.status === 201) {
+                        this.limparTokenFiltroListagem()
+                        this.$refs[this.hash] && this.$refs[this.hash].fecharModal()
+                        mostraSucesso('', 'Solicitação registrada com sucesso!')
+                        this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+                    } else {
+                        mostraErro('', 'Resposta inesperada do servidor ao registrar a solicitação.')
+                    }
                     this.preload = false
                 })
                 .catch((error) => {
                     this.preload = false
+                    const d = error.response && error.response.data ? error.response.data : {}
+                    let msg = d.msg || 'Houve um erro ao registrar a solicitação. Tente novamente.'
+                    if (d.erros && typeof d.erros === 'object') {
+                        const partes = []
+                        Object.keys(d.erros).forEach((k) => {
+                            const v = d.erros[k]
+                            if (Array.isArray(v)) {
+                                v.forEach((t) => partes.push(t))
+                            } else if (v != null && v !== '') {
+                                partes.push(String(v))
+                            }
+                        })
+                        if (partes.length) {
+                            msg = partes.join(' ')
+                        }
+                    }
+                    mostraErro('', msg)
                 })
         },
 

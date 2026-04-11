@@ -231,7 +231,7 @@ class DemissaoPrevistaController extends Controller
                 'us.nome as solicitante_nome',
                 'dp.empresa_id',
                 'dp.colaborador_id',
-                'c.nome as colaborador_nome',
+                DB::raw('COALESCE(c.nome, u.nome) as colaborador_nome'),
                 'c.email as colaborador_email',
                 'c.cpf as colaborador_cpf',
                 'dp.centro_custo_id',
@@ -263,15 +263,15 @@ class DemissaoPrevistaController extends Controller
                 'dp.obs',
                 'dp.obs_rh'
             )
-            ->join('users as u', 'dp.colaborador_id', '=', 'u.id')
-            ->join('users as us', 'dp.user_id', '=', 'us.id')
-            ->join('curriculos as c', 'u.id', '=', 'c.id')
-            ->join('feedback_curriculos as fc', function ($join) {
+            ->leftJoin('users as u', 'dp.colaborador_id', '=', 'u.id')
+            ->leftJoin('users as us', 'dp.user_id', '=', 'us.id')
+            ->leftJoin('curriculos as c', 'u.id', '=', 'c.id')
+            ->leftJoin('feedback_curriculos as fc', function ($join) {
                 $join->on('u.id', '=', 'fc.curriculo_id')
                     ->whereNull('fc.deleted_at')
                     ->whereRaw('fc.id = (SELECT MAX(id) FROM feedback_curriculos WHERE curriculo_id = u.id AND feedback_curriculos.deleted_at IS NULL)');
             })
-            ->join('admissoes as a', function ($join) {
+            ->leftJoin('admissoes as a', function ($join) {
                 $join->on('fc.id', '=', 'a.feedback_id')
                     ->whereNull('a.deleted_at')
                     ->whereRaw('a.id = (SELECT MAX(id) FROM admissoes WHERE feedback_id = fc.id AND admissoes.deleted_at IS NULL)');
@@ -324,10 +324,12 @@ class DemissaoPrevistaController extends Controller
         }
 
         if ($request->filled('campoBusca')) {
-            $resultado->where(function ($r) use ($request) {
-                $r->where('c.nome', 'like', '%' . $request->campoBusca . '%')
-                    ->orWhere('c.id', $request->campoBusca)
-                    ->orWhere('dp.id', $request->campoBusca);
+            $busca = $request->campoBusca;
+            $resultado->where(function ($r) use ($busca) {
+                $r->where('c.nome', 'like', '%' . $busca . '%')
+                    ->orWhere('u.nome', 'like', '%' . $busca . '%')
+                    ->orWhere('c.id', $busca)
+                    ->orWhere('dp.id', $busca);
             });
         }
 
