@@ -294,7 +294,16 @@ class PontoEletronico extends Model {
             "totalDias" => 0,
             'total_minutos' => 0
         ];
+
+        if (!$this->Jornada || !$this->Jornada->Periodos) {
+            return $dados;
+        }
+
         foreach ($this->Jornada->Periodos as $index => $periodo) {
+            if (!$periodo->entrada || !$periodo->saida) {
+                continue;
+            }
+
             $inicio = new DataHora($periodo->entrada);
             $fim = new DataHora($periodo->saida);
             $duracao = DataHora::distanciaTempo($inicio->dataHoraInsert(), $fim->dataHoraInsert());
