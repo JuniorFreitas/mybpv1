@@ -23,7 +23,11 @@ class JobNotificacaoRecursiva implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
+
     public $timeout = 300;
+
+    /** Atrasos entre tentativas (segundos) — útil para erros SMTP transitórios (ex.: 451). */
+    public $backoff = [45, 120, 300];
 
     private $mudancaCargoId;
     private $empresaId;

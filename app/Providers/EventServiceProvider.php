@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Listeners\RedirectLocalMailCcAndBcc;
 use App\Listeners\SuppressConfiguredMailRecipients;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -19,7 +20,9 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+        // RedirectLocal (local + MAIL_MAILER=ses) deve vir antes: MessageSending usa `until()` e para no primeiro retorno não nulo (ex.: false do Suppress).
         MessageSending::class => [
+            RedirectLocalMailCcAndBcc::class,
             SuppressConfiguredMailRecipients::class,
         ],
     ];
