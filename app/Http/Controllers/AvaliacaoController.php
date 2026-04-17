@@ -1018,6 +1018,19 @@ class AvaliacaoController extends Controller
         $dados = $this->avaliarFinal($token);
         $tipo_pj = $dados['tipo_pj'];
 
+        if (! empty($dados['planos_acoes'])) {
+            foreach ($dados['planos_acoes'] as $plano) {
+                if ($plano instanceof \Illuminate\Database\Eloquent\Model) {
+                    $plano->setAttribute(
+                        'plano_de_acao',
+                        \App\Support\AvaliacaoPlanoAcaoImpressaoHtmlSanitizer::sanitize(
+                            (string) $plano->getAttribute('plano_de_acao')
+                        )
+                    );
+                }
+            }
+        }
+
         return view('pdf.avaliacoes.desempenho', compact('dados', 'tipo_pj'));
     }
 
