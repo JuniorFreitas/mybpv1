@@ -134,12 +134,12 @@ export default {
                 })
             }
 
-            // Ação Imprimir
+            // Ação Exportar PDF
             if (this.item.status === 'Finalizada' && !this.item.fazer_avaliacao_final && this.item.principal) {
                 acoes.push({
                     tipo: 'imprimir',
-                    texto: 'Imprimir Avaliação Final',
-                    icone: 'fa-print',
+                    texto: 'Exportar PDF',
+                    icone: 'fa-file-pdf',
                     url: `${this.urlImpressao}/${this.item.token}`
                 })
             }

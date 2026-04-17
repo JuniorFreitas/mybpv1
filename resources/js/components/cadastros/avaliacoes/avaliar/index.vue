@@ -697,8 +697,8 @@
                                             :href="`${urlImpressao}/${card.principalItem.token}`"
                                             target="_blank"
                                         >
-                                            <i class="fa fa-print mr-1"></i>
-                                            Imprimir
+                                            <i class="fa fa-file-pdf mr-1"></i>
+                                            Exportar PDF
                                         </a>
                                     </div>
                                 </div>
