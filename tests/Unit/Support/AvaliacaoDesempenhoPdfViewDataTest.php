@@ -2,7 +2,10 @@
 
 namespace Tests\Unit\Support;
 
+use App\Models\AvaliacaoAvaliadoresTipos;
+use App\Models\AvaliacaoFeedback;
 use App\Support\AvaliacaoDesempenhoPdfViewData;
+use Illuminate\Support\Collection;
 use PHPUnit\Framework\TestCase;
 
 class AvaliacaoDesempenhoPdfViewDataTest extends TestCase
@@ -54,6 +57,62 @@ class AvaliacaoDesempenhoPdfViewDataTest extends TestCase
             AvaliacaoDesempenhoPdfViewData::tituloEtapaFluxoColunaPdf(0, ['origem' => 'Funcionario'], [])
         );
         $this->assertSame('Avaliador 2', AvaliacaoDesempenhoPdfViewData::tituloEtapaFluxoColunaPdf(1, ['origem' => 'Avaliador'], []));
+    }
+
+    public function test_indice_etapa_fluxo_pdf_prioriza_avaliacao_tipo_id(): void
+    {
+        $fluxo = [
+            ['id' => 0, 'label' => 'Auto Avaliação', 'principal' => false],
+            ['id' => 10, 'label' => 'Gestor direto (Avaliador Final)', 'principal' => true],
+        ];
+        $av = [
+            'tipo' => 'Gestor',
+            'origem' => AvaliacaoFeedback::ORIGEM_AVALIADOR,
+            'avaliacao_tipo_id' => 10,
+        ];
+        $this->assertSame(1, AvaliacaoDesempenhoPdfViewData::indiceEtapaNoFluxoPdf($av, $fluxo));
+        $avSemId = ['tipo' => 'Gestor', 'origem' => AvaliacaoFeedback::ORIGEM_AVALIADOR];
+        $this->assertNull(AvaliacaoDesempenhoPdfViewData::indiceEtapaNoFluxoPdf($avSemId, $fluxo));
+    }
+
+    public function test_ordenar_feedbacks_por_fluxo_respeita_ordem_das_etapas(): void
+    {
+        $fluxo = [
+            ['id' => 0, 'label' => 'Auto Avaliação', 'principal' => false],
+            ['id' => 2, 'label' => 'Avaliador Par', 'principal' => false],
+            ['id' => 1, 'label' => 'Gestor direto (Avaliador Final)', 'principal' => true],
+        ];
+
+        $tipoPar = new AvaliacaoAvaliadoresTipos(['label' => 'Avaliador Par']);
+        $tipoGestor = new AvaliacaoAvaliadoresTipos(['label' => 'Gestor direto']);
+
+        $gestorFinal = new AvaliacaoFeedback([
+            'origem_feedback' => AvaliacaoFeedback::ORIGEM_AVALIADOR,
+            'principal' => true,
+            'avaliacao_tipo_id' => 1,
+        ]);
+        $gestorFinal->setRelation('TipoAvaliador', $tipoGestor);
+
+        $par = new AvaliacaoFeedback([
+            'origem_feedback' => AvaliacaoFeedback::ORIGEM_AVALIADOR,
+            'principal' => false,
+            'avaliacao_tipo_id' => 2,
+        ]);
+        $par->setRelation('TipoAvaliador', $tipoPar);
+
+        $auto = new AvaliacaoFeedback([
+            'origem_feedback' => AvaliacaoFeedback::ORIGEM_FUNCIONARIO,
+            'principal' => false,
+            'avaliacao_tipo_id' => null,
+        ]);
+        $auto->setRelation('TipoAvaliador', null);
+
+        $embaralhado = new Collection([$gestorFinal, $par, $auto]);
+        $ordenado = AvaliacaoDesempenhoPdfViewData::ordenarFeedbacksPorFluxo($embaralhado, $fluxo)->values();
+
+        $this->assertSame($auto, $ordenado[0]);
+        $this->assertSame($par, $ordenado[1]);
+        $this->assertSame($gestorFinal, $ordenado[2]);
     }
 
     public function test_itens_escala_informativo_pdf_cinco_niveis_e_texto_nivel_5(): void

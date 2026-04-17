@@ -2,6 +2,9 @@
 
 namespace App\Support;
 
+use App\Models\AvaliacaoFeedback;
+use Illuminate\Support\Collection;
+
 /**
  * Dados derivados para o PDF de desempenho (ordem de comentários e títulos de etapa),
  * espelhando a lógica usada na impressão via Vue (resources/js/g/impressao/avaliacao/app.js).
@@ -172,6 +175,62 @@ final class AvaliacaoDesempenhoPdfViewData
     }
 
     /**
+     * Índice da etapa no array `fluxo_etapas` (retorno de fluxoAvaliacao): id da etapa = avaliacao_tipo_id;
+     * autoavaliação = etapa com id 0 (prepend em fluxoAvaliacao).
+     *
+     * @param  array<string, mixed>  $avaliador  Deve incluir `origem`, opcional `tipo` e `avaliacao_tipo_id`
+     * @param  list<array<string, mixed>>  $fluxoEtapas
+     */
+    public static function indiceEtapaNoFluxoPdf(array $avaliador, array $fluxoEtapas): ?int
+    {
+        $origem = (string) ($avaliador['origem'] ?? '');
+        $isAuto = $origem === AvaliacaoFeedback::ORIGEM_FUNCIONARIO
+            || self::normalizarTituloEtapa((string) ($avaliador['tipo'] ?? '')) === 'AUTOAVALIAÇÃO';
+
+        if ($isAuto) {
+            foreach ($fluxoEtapas as $i => $etapa) {
+                if ((int) ($etapa['id'] ?? -1) === 0) {
+                    return (int) $i;
+                }
+                if (self::normalizarTituloEtapa((string) ($etapa['label'] ?? '')) === 'AUTOAVALIAÇÃO') {
+                    return (int) $i;
+                }
+            }
+
+            return 0;
+        }
+
+        $tipoId = (int) ($avaliador['avaliacao_tipo_id'] ?? 0);
+        if ($tipoId <= 0) {
+            return null;
+        }
+
+        foreach ($fluxoEtapas as $i => $etapa) {
+            if ((int) ($etapa['id'] ?? -999999) === $tipoId) {
+                return (int) $i;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Chave de ordenação das colunas no PDF / API: posição no fluxo, com fallback por título (legado).
+     *
+     * @param  array<string, mixed>  $avaliador
+     * @param  list<array<string, mixed>>  $fluxoEtapas
+     */
+    public static function ordemColunaFluxoPdf(array $avaliador, array $fluxoEtapas, int $indiceFallback): int
+    {
+        $pos = self::indiceEtapaNoFluxoPdf($avaliador, $fluxoEtapas);
+        if ($pos !== null) {
+            return $pos;
+        }
+
+        return self::ordemFluxoComentario($avaliador, $indiceFallback, $fluxoEtapas);
+    }
+
+    /**
      * @param  array<string, mixed>  $dados  Retorno de avaliarFinal()
      * @return list<array{indice: int, avaliador: array<string, mixed>}>
      */
@@ -207,8 +266,8 @@ final class AvaliacaoDesempenhoPdfViewData
         }
 
         usort($items, function (array $a, array $b) use ($fluxo): int {
-            return self::ordemFluxoComentario($a['avaliador'], $a['indice'], $fluxo)
-                <=> self::ordemFluxoComentario($b['avaliador'], $b['indice'], $fluxo);
+            return self::ordemColunaFluxoPdf($a['avaliador'], $fluxo, $a['indice'])
+                <=> self::ordemColunaFluxoPdf($b['avaliador'], $fluxo, $b['indice']);
         });
 
         return $items;
@@ -236,7 +295,7 @@ final class AvaliacaoDesempenhoPdfViewData
             $wrapped[] = [
                 'origIdx' => $i,
                 'av' => $av,
-                'ord' => self::ordemFluxoComentario($av, (int) $i, $fluxoEtapas),
+                'ord' => self::ordemColunaFluxoPdf($av, $fluxoEtapas, (int) $i),
             ];
         }
         usort($wrapped, function (array $a, array $b): int {
@@ -244,6 +303,65 @@ final class AvaliacaoDesempenhoPdfViewData
         });
 
         return array_column($wrapped, 'av');
+    }
+
+    /**
+     * Mesmos campos usados em {@see AvaliacaoController::avaliarFinal()} para montar cada avaliador no resultado.
+     *
+     * @return array{tipo: string, origem: string}
+     */
+    public static function avaliadorOrdemPayloadFromFeedback(AvaliacaoFeedback $item): array
+    {
+        $tipoAvaliador = 'Avaliador';
+        if ($item->origem_feedback === AvaliacaoFeedback::ORIGEM_FUNCIONARIO) {
+            $tipoAvaliador = 'Autoavaliação';
+        } elseif ($item->TipoAvaliador && $item->TipoAvaliador->label) {
+            $tipoAvaliador = (string) $item->TipoAvaliador->label;
+            if ($item->principal && ! str_contains($tipoAvaliador, '(Avaliador Final)')) {
+                $tipoAvaliador .= ' (Avaliador Final)';
+            }
+        }
+
+        return [
+            'tipo' => $tipoAvaliador,
+            'origem' => (string) $item->origem_feedback,
+        ];
+    }
+
+    public static function ordemFluxoAvaliacaoFeedback(AvaliacaoFeedback $item, int $indiceNoLote, array $fluxoEtapas): int
+    {
+        $payload = self::avaliadorOrdemPayloadFromFeedback($item);
+        $payload['avaliacao_tipo_id'] = $item->avaliacao_tipo_id;
+
+        return self::ordemColunaFluxoPdf($payload, $fluxoEtapas, $indiceNoLote);
+    }
+
+    /**
+     * Ordena feedbacks do colaborador na mesma sequência do fluxo da avaliação (etapas cadastradas + auto, se houver).
+     *
+     * @param  Collection<int, AvaliacaoFeedback>  $feedbacks
+     * @param  list<array<string, mixed>>  $fluxoEtapas
+     * @return Collection<int, AvaliacaoFeedback>
+     */
+    public static function ordenarFeedbacksPorFluxo(Collection $feedbacks, array $fluxoEtapas): Collection
+    {
+        $items = $feedbacks->values()->all();
+        $wrapped = [];
+        foreach ($items as $i => $fb) {
+            if (! $fb instanceof AvaliacaoFeedback) {
+                continue;
+            }
+            $wrapped[] = [
+                'fb' => $fb,
+                'ord' => self::ordemFluxoAvaliacaoFeedback($fb, (int) $i, $fluxoEtapas),
+                'idx' => (int) $i,
+            ];
+        }
+        usort($wrapped, function (array $a, array $b): int {
+            return $a['ord'] <=> $b['ord'] ?: $a['idx'] <=> $b['idx'];
+        });
+
+        return collect(array_column($wrapped, 'fb'));
     }
 
     public static function ordenarDadosParaPdf(array $dados): array

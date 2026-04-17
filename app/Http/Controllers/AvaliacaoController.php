@@ -15,6 +15,7 @@ use App\Models\Sistema;
 use App\Models\User;
 use App\Rules\TenantUniqueRules;
 use App\Services\Avaliacoes\AvaliacaoNotificacaoService;
+use App\Support\AvaliacaoDesempenhoPdfViewData;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -863,12 +864,15 @@ class AvaliacaoController extends Controller
             ], 401);
         }
 
+        $fluxoEtapas = Avaliacao::fluxoAvaliacao($avaliacaoFeedback->avaliacao_id)->values()->all();
+
         $avaliacoesFeedbacks = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
             ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)
             ->withSum('Respostas', 'nota')
-            ->with('Respostas')
-            ->orderBy('principal', 'desc')
+            ->with(['Respostas', 'TipoAvaliador', 'Avaliador'])
             ->get();
+
+        $avaliacoesFeedbacks = AvaliacaoDesempenhoPdfViewData::ordenarFeedbacksPorFluxo($avaliacoesFeedbacks, $fluxoEtapas);
 
         $avaliacaoFeedbackFuncionario = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
             ->whereOrigemFeedback(AvaliacaoFeedback::ORIGEM_FUNCIONARIO)
@@ -912,6 +916,7 @@ class AvaliacaoController extends Controller
                         'comentario' => $item->comentario,
                         'nome' => mb_strtoupper($nome_avaliador),
                         'tipo' => $tipoAvaliador,
+                        'avaliacao_tipo_id' => $item->avaliacao_tipo_id,
                         'nota' => $item->respostas->where('topico_id', $key)->first()->nota
                     ];
                 }),
@@ -1022,7 +1027,7 @@ class AvaliacaoController extends Controller
             'titulo_avaliacao' => $avaliacaoFeedback->Avaliacao->titulo,
             'tipo_avaliacao' => $avaliacaoFeedback->Avaliacao->AvaliacaoTipo->nome,
             'tipo_pj' => $avaliacaoFeedback->tipo_pj,
-            'fluxo_etapas' => Avaliacao::fluxoAvaliacao($avaliacaoFeedback->avaliacao_id)->values()->all(),
+            'fluxo_etapas' => $fluxoEtapas,
         ];
     }
 
@@ -1049,10 +1054,10 @@ class AvaliacaoController extends Controller
             }
         }
 
-        $dados = \App\Support\AvaliacaoDesempenhoPdfViewData::ordenarDadosParaPdf($dados);
+        $dados = AvaliacaoDesempenhoPdfViewData::ordenarDadosParaPdf($dados);
 
         $resultTopicoPorId = collect($dados['result_topico'] ?? [])->keyBy('topico_id');
-        $comentariosPdf = \App\Support\AvaliacaoDesempenhoPdfViewData::comentariosOrdenados($dados);
+        $comentariosPdf = AvaliacaoDesempenhoPdfViewData::comentariosOrdenados($dados);
         $radarCharts = \App\Support\AvaliacaoDesempenhoPdfRadarSvg::chartsFromDados($dados);
 
         /** @var \Barryvdh\DomPDF\PDF $pdf */
