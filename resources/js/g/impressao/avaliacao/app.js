@@ -103,6 +103,21 @@ const app = createApp({
         },
         fecharJanela: function () {
             window.close()
+        },
+        /**
+         * Aguarda o Vue atualizar o DOM e o Chart.js (radares) pintar antes do print,
+         * senão a janela de impressão sai em branco ou incompleta.
+         */
+        aguardarRenderEImprimir() {
+            this.$nextTick(() => {
+                this.$nextTick(() => {
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            window.setTimeout(() => this.print(), 120)
+                        })
+                    })
+                })
+            })
         }
     },
     mounted() {
@@ -121,7 +136,7 @@ const app = createApp({
         this.formAvaliarFinal.planos_acoes = dados.planos_acoes
         this.formAvaliarFinal.fluxo_etapas = dados.fluxo_etapas || []
 
-        this.print()
+        this.aguardarRenderEImprimir()
     }
 })
 

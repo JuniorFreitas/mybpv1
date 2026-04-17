@@ -90,6 +90,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Redirecionamento em APP_ENV=local
+    |--------------------------------------------------------------------------
+    |
+    | Quando APP_ENV=local, Mail::alwaysTo() força todos os envios para este
+    | endereço (útil para testar SES sem atingir usuários reais).
+    |
+    */
+
+    'local_redirect_to' => env('MAIL_LOCAL_REDIRECT_TO') ?: env('MAIL_LOCAL_ADDRESS') ?: 'josedejesusjunior@gmail.com',
+
+    /*
+    |--------------------------------------------------------------------------
+    | CC / BCC em local + SES
+    |--------------------------------------------------------------------------
+    |
+    | Somente quando APP_ENV=local e MAIL_MAILER=ses: qualquer CC ou BCC é
+    | substituído por um único BCC para este endereço (teste sem cópias reais).
+    |
+    */
+
+    'local_redirect_cc_bcc' => env('MAIL_LOCAL_REDIRECT_CC_BCC') ?: 'juniorfreitas@dynamusti.com.br',
+
+    /*
+    |--------------------------------------------------------------------------
     | Destinatários suprimidos (nunca recebem envio)
     |--------------------------------------------------------------------------
     |
