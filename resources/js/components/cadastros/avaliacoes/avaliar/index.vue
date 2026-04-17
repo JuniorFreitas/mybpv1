@@ -337,7 +337,7 @@
                                         <span class="ma-ref-ico ma-ref-ico--peer"><i class="fa fa-user-tie" aria-hidden="true"></i></span>
                                         <div class="ma-ref-line__text">
                                             <span class="ma-ref-line__title">{{ outra.tipo_avaliador_label || 'Avaliador' }}</span>
-                                            <span class="ma-ref-line__sub">{{ outra.avaliador_nome }}</span>
+                                            <!-- <span class="ma-ref-line__sub">{{ outra.avaliador_nome }}</span> -->
                                         </div>
                                     </div>
                                     <span :class="['ma-ref-nota-pill', notaReferenciaClasse(outra.respostas[item.id][index].nota)]">{{
@@ -348,21 +348,29 @@
                         </fieldset>
                     </fieldset>
                     <fieldset>
-                        <legend>Minhas considerações</legend>
-                        <p class="ma-modal-lead">Use este espaço para contextualizar a sua avaliação, destacar pontos fortes ou situações relevantes.</p>
-                        <textarea
-                            :disabled="visualizando"
-                            v-model="formAvaliar.comentario"
-                            class="form-control"
-                            @blur.prevent="valida_campo_vazio($event.target, 1)"
-                            @change.prevent="valida_campo_vazio($event.target, 1)"
-                            placeholder="Ex.: resultados alcançados, desafios, necessidade de desenvolvimento ou outros comentários que complementem as notas."
-                            rows="4"
-                        ></textarea>
+                        <template v-if="!visualizando">
+                            <legend>Minhas considerações</legend>
+                            <p class="ma-modal-lead">Use este espaço para contextualizar a sua avaliação, destacar pontos fortes ou situações relevantes.</p>
+                            <textarea
+                                v-model="formAvaliar.comentario"
+                                class="form-control"
+                                @blur.prevent="valida_campo_vazio($event.target, 1)"
+                                @change.prevent="valida_campo_vazio($event.target, 1)"
+                                placeholder="Ex.: resultados alcançados, desafios, necessidade de desenvolvimento ou outros comentários que complementem as notas."
+                                rows="4"
+                            ></textarea>
+                        </template>
 
                         <div
-                            v-if="formAvaliar.principal && (formAvaliar.comentario_funcionario || temConsideracoesOutrosAvaliadores)"
-                            class="ma-ref-panel ma-ref-panel--coment mt-3"
+                            v-if="
+                                (formAvaliar.principal &&
+                                    (formAvaliar.comentario_funcionario ||
+                                        temConsideracoesOutrosAvaliadores ||
+                                        (visualizando && temComentarioAvaliadorAtual))) ||
+                                (!formAvaliar.principal && visualizando && temComentarioAvaliadorAtual)
+                            "
+                            class="ma-ref-panel ma-ref-panel--coment"
+                            :class="visualizando ? 'mt-0' : 'mt-3'"
                         >
                             <div class="ma-ref-panel__head">
                                 <i class="fa fa-comments" aria-hidden="true"></i>
@@ -383,6 +391,10 @@
                                     <span class="ma-ref-coment__nome">— {{ outra.avaliador_nome }}</span>
                                 </div>
                                 <p class="ma-ref-coment__text">{{ outra.comentario }}</p>
+                            </div>
+                            <div v-if="visualizando && temComentarioAvaliadorAtual" class="ma-ref-coment">
+                                <div class="ma-ref-coment__label"><i class="fa fa-pen mr-1 text-primary"></i>Minhas considerações</div>
+                                <p class="ma-ref-coment__text">{{ formAvaliar.comentario }}</p>
                             </div>
                         </div>
                     </fieldset>
@@ -685,8 +697,8 @@
                                             :href="`${urlImpressao}/${card.principalItem.token}`"
                                             target="_blank"
                                         >
-                                            <i class="fa fa-print mr-1"></i>
-                                            Imprimir
+                                            <i class="fa fa-file-pdf mr-1"></i>
+                                            Exportar PDF
                                         </a>
                                     </div>
                                 </div>
@@ -1159,6 +1171,10 @@ export default {
         },
         temConsideracoesOutrosAvaliadores() {
             return (this.formAvaliar.outras_avaliacoes_notas || []).some((o) => o.comentario && String(o.comentario).trim() !== '')
+        },
+        temComentarioAvaliadorAtual() {
+            const c = this.formAvaliar?.comentario
+            return c != null && String(c).trim() !== ''
         },
         isEditandoPdi() {
             return this.modoAvaliacaoFinal === 'editar-pdi'

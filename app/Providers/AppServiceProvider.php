@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
@@ -28,6 +29,16 @@ class AppServiceProvider extends ServiceProvider
     {
         if ($this->app->isProduction() || env('MIX_AMBIENTE') == 'prod') {
             \URL::forceScheme('https');
+        }
+
+        if ($this->app->environment('local')) {
+            $redirectTo = config('mail.local_redirect_to');
+            if (is_string($redirectTo)) {
+                $redirectTo = trim($redirectTo);
+            }
+            if (is_string($redirectTo) && $redirectTo !== '') {
+                Mail::alwaysTo($redirectTo);
+            }
         }
 
         Schema::defaultStringLength(250);

@@ -15,9 +15,11 @@ use App\Models\Sistema;
 use App\Models\User;
 use App\Rules\TenantUniqueRules;
 use App\Services\Avaliacoes\AvaliacaoNotificacaoService;
+use App\Support\AvaliacaoDesempenhoPdfViewData;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use MasterTag\DataHora;
 
 class AvaliacaoController extends Controller
@@ -48,6 +50,18 @@ class AvaliacaoController extends Controller
         }
 
         return now()->lte($prazo);
+    }
+
+    /**
+     * Permite carregar respostas em modo somente leitura após prazo/encerramento da campanha,
+     * quando esta etapa de feedback já foi concluída (ou ciclo finalizado).
+     */
+    private function avaliacaoPermiteVisualizarEtapaConcluida(AvaliacaoFeedback $avaliacaoFeedback): bool
+    {
+        return in_array($avaliacaoFeedback->status, [
+            AvaliacaoFeedback::STATUS_CONCLUIDA,
+            AvaliacaoFeedback::STATUS_FINAL,
+        ], true);
     }
 
     protected function temPrivilegioGestaoRh(): bool
@@ -671,7 +685,8 @@ class AvaliacaoController extends Controller
     {
         $this->authorize('avaliacoes_avaliar');
 
-        if (!$this->avaliacaoPermiteResponder($avaliacaoFeedback)) {
+        if (! $this->avaliacaoPermiteResponder($avaliacaoFeedback)
+            && ! $this->avaliacaoPermiteVisualizarEtapaConcluida($avaliacaoFeedback)) {
             return response()->json([
                 'msg' => 'Esta avaliação está encerrada ou fora do prazo para resposta.'
             ], 422);
@@ -849,12 +864,15 @@ class AvaliacaoController extends Controller
             ], 401);
         }
 
+        $fluxoEtapas = Avaliacao::fluxoAvaliacao($avaliacaoFeedback->avaliacao_id)->values()->all();
+
         $avaliacoesFeedbacks = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
             ->whereFuncionarioId($avaliacaoFeedback->funcionario_id)
             ->withSum('Respostas', 'nota')
-            ->with('Respostas')
-            ->orderBy('principal', 'desc')
+            ->with(['Respostas', 'TipoAvaliador', 'Avaliador'])
             ->get();
+
+        $avaliacoesFeedbacks = AvaliacaoDesempenhoPdfViewData::ordenarFeedbacksPorFluxo($avaliacoesFeedbacks, $fluxoEtapas);
 
         $avaliacaoFeedbackFuncionario = AvaliacaoFeedback::whereAvaliacaoId($avaliacaoFeedback->avaliacao_id)
             ->whereOrigemFeedback(AvaliacaoFeedback::ORIGEM_FUNCIONARIO)
@@ -898,6 +916,7 @@ class AvaliacaoController extends Controller
                         'comentario' => $item->comentario,
                         'nome' => mb_strtoupper($nome_avaliador),
                         'tipo' => $tipoAvaliador,
+                        'avaliacao_tipo_id' => $item->avaliacao_tipo_id,
                         'nota' => $item->respostas->where('topico_id', $key)->first()->nota
                     ];
                 }),
@@ -1008,7 +1027,7 @@ class AvaliacaoController extends Controller
             'titulo_avaliacao' => $avaliacaoFeedback->Avaliacao->titulo,
             'tipo_avaliacao' => $avaliacaoFeedback->Avaliacao->AvaliacaoTipo->nome,
             'tipo_pj' => $avaliacaoFeedback->tipo_pj,
-            'fluxo_etapas' => Avaliacao::fluxoAvaliacao($avaliacaoFeedback->avaliacao_id)->values()->all(),
+            'fluxo_etapas' => $fluxoEtapas,
         ];
     }
 
@@ -1016,9 +1035,55 @@ class AvaliacaoController extends Controller
     {
         $token = \Crypt::decrypt($token);
         $dados = $this->avaliarFinal($token);
-        $tipo_pj = $dados['tipo_pj'];
+        if (! is_array($dados)) {
+            return $dados;
+        }
 
-        return view('pdf.avaliacoes.desempenho', compact('dados', 'tipo_pj'));
+        $tipo_pj = (bool) ($dados['tipo_pj'] ?? false);
+
+        if (! empty($dados['planos_acoes'])) {
+            foreach ($dados['planos_acoes'] as $plano) {
+                if ($plano instanceof \Illuminate\Database\Eloquent\Model) {
+                    $plano->setAttribute(
+                        'plano_de_acao',
+                        \App\Support\AvaliacaoPlanoAcaoImpressaoHtmlSanitizer::sanitize(
+                            (string) $plano->getAttribute('plano_de_acao')
+                        )
+                    );
+                }
+            }
+        }
+
+        $dados = AvaliacaoDesempenhoPdfViewData::ordenarDadosParaPdf($dados);
+
+        $resultTopicoPorId = collect($dados['result_topico'] ?? [])->keyBy('topico_id');
+        $comentariosPdf = AvaliacaoDesempenhoPdfViewData::comentariosOrdenados($dados);
+        $radarCharts = \App\Support\AvaliacaoDesempenhoPdfRadarSvg::chartsFromDados($dados);
+
+        /** @var \Barryvdh\DomPDF\PDF $pdf */
+        $pdf = app('dompdf.wrapper');
+        $pdf->setPaper('a4', 'portrait');
+        $pdf->setOption('defaultFont', 'dejavu sans');
+        $pdf->setOption('isRemoteEnabled', true);
+        $pdf->setOption('isJavascriptEnabled', false);
+        $pdf->loadView('pdf.avaliacoes.desempenho_dompdf', [
+            'dados' => $dados,
+            'tipo_pj' => $tipo_pj,
+            'resultTopicoPorId' => $resultTopicoPorId,
+            'comentariosPdf' => $comentariosPdf,
+            'radarCharts' => $radarCharts,
+        ]);
+
+        $nomeColaborador = (string) data_get($dados, 'dados_do_funcionario.nome', '');
+        $slugColaborador = Str::slug($nomeColaborador, '-', 'pt');
+        if ($slugColaborador === '') {
+            $slugColaborador = 'colaborador';
+        }
+        $slugColaborador = mb_substr($slugColaborador, 0, 80);
+
+        $nomeArquivo = 'avaliacao-desempenho-' . $slugColaborador . '-' . now()->format('Y-m-d_His') . '.pdf';
+
+        return $pdf->download($nomeArquivo);
     }
 
     public function salvaAvaliacao(Request $request, AvaliacaoFeedback $avaliacaoFeedback)

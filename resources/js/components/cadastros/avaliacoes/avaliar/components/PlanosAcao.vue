@@ -13,19 +13,20 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="form-group">
-                        <label>Competência ou critério relacionado</label>
-                        <select
-                            class="form-control form-control-sm validacampo"
+                        <label class="d-block" :for="'ma-pdi-topico-' + index">Competência ou critério relacionado</label>
+                        <combobox-auto-complete
+                            :instance-id="'pdi-topico-' + index"
+                            :input-id="'ma-pdi-topico-' + index"
                             v-model="item.topico_id"
+                            :options="topicosComboboxOpcoes"
                             :disabled="!podeEditar"
-                            @blur.prevent="validarCampo($event.target)"
-                            @change.prevent="validarCampo($event.target)"
-                        >
-                            <option value="">Selecione a competência</option>
-                            <option v-for="(topico, topico_id) in resultTopico" :key="topico_id" :value="topico_id">
-                                {{ topico.topico_pai }} - {{ topico.subtopico }}
-                            </option>
-                        </select>
+                            placeholder-blur="Selecione a competência"
+                            placeholder-focus="Digite para filtrar…"
+                            empty-message="Nenhuma competência encontrada."
+                            :max-results="200"
+                            wrapper-class="ma-pdi-topico-combo"
+                            @select="() => validarTopicoAposSelecao(index)"
+                        />
                         <h5 class="my-3 text-danger" v-if="item.topico_id && resultTopico[item.topico_id]">
                             Média neste critério: {{ getMediaTopico(item.topico_id, resultTopico) }}
                         </h5>
@@ -35,14 +36,17 @@
                 <div class="col-lg-12">
                     <div class="form-group">
                         <label>Descrição do plano de ação</label>
-                        <textarea
-                            rows="5"
-                            class="form-control form-control-sm validacampo"
-                            v-model="item.plano_de_acao"
-                            @blur.prevent="validarCampo($event.target)"
-                            :disabled="!podeEditar"
-                            placeholder="O que será feito, como será acompanhado e o resultado esperado."
-                        ></textarea>
+                        <div v-if="podeEditar" :key="'editor-pdi-' + index + '-' + (item.id || 'novo')" class="ma-pdi-editor-wrap">
+                            <editor :api-key="editorPlanoInit.key" v-model="item.plano_de_acao" :init="editorPlanoInit" />
+                        </div>
+                        <div
+                            v-else
+                            class="form-control form-control-sm ma-plano-acao-html border rounded p-2 bg-light"
+                            style="min-height: 120px"
+                        >
+                            <div v-if="planoAcaoTemConteudo(item)" v-html="item.plano_de_acao"></div>
+                            <span v-else class="text-muted">—</span>
+                        </div>
                     </div>
                 </div>
 
@@ -70,12 +74,17 @@
 
 <script>
 import DatePicker from '../../../../DatePicker'
+import ComboboxAutoComplete from '../../../../ComboboxAutoComplete'
+import Editor from '@tinymce/tinymce-vue'
+import { tinyPadrao } from '../../../../../utils'
 import avaliacaoMixin from '../mixins/avaliacaoMixin'
 
 export default {
     name: 'PlanosAcao',
     components: {
-        DatePicker
+        DatePicker,
+        ComboboxAutoComplete,
+        Editor
     },
     mixins: [avaliacaoMixin],
     props: {
@@ -100,17 +109,69 @@ export default {
             default: 'Registre ações objetivas, prazos e responsáveis para apoiar o desenvolvimento nos pontos que precisam evoluir.'
         }
     },
+    data() {
+        return {
+            /** Mesmo preset de vagas abertas (`tinyPadrao`), altura menor para o modal do PDI. */
+            editorPlanoInit: {
+                ...tinyPadrao,
+                height: 280,
+                resize: true
+            }
+        }
+    },
     computed: {
         podeEditar() {
             return !this.visualizando
+        },
+        topicosComboboxOpcoes() {
+            const raw = this.resultTopico && typeof this.resultTopico === 'object' ? this.resultTopico : {}
+            const opts = [{ value: '', label: 'Selecione a competência' }]
+            for (const id of Object.keys(raw)) {
+                const t = raw[id]
+                if (!t) {
+                    continue
+                }
+                opts.push({
+                    value: id,
+                    label: `${t.topico_pai} - ${t.subtopico}`,
+                    raw: { id, ...t }
+                })
+            }
+            return opts
         }
     },
     methods: {
-        validarCampo(target) {
-            if (typeof valida_campo_vazio === 'function') {
-                valida_campo_vazio(target, 1)
+        planoAcaoTemConteudo(item) {
+            const h = item?.plano_de_acao
+            if (h == null || String(h).trim() === '') {
+                return false
             }
+            const texto = String(h).replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim()
+            return texto !== ''
+        },
+        validarTopicoAposSelecao(index) {
+            this.$nextTick(() => {
+                const el = document.getElementById(`ma-pdi-topico-${index}`)
+                if (el && typeof valida_campo_vazio === 'function') {
+                    valida_campo_vazio(el, 1)
+                }
+            })
         }
     }
 }
 </script>
+
+<style scoped>
+.ma-pdi-topico-combo {
+    max-width: 100%;
+}
+.ma-pdi-editor-wrap {
+    max-width: 100%;
+}
+.ma-plano-acao-html :deep(p) {
+    margin-bottom: 0.35rem;
+}
+.ma-plano-acao-html :deep(p:last-child) {
+    margin-bottom: 0;
+}
+</style>

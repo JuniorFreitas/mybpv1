@@ -468,9 +468,10 @@ class MudancaCargoController extends Controller
                 'data_aprovacao_rh' => (new DataHora())->dataHoraInsert()
             ]);
 
+            $admissao = Admissao::with('Feedback')->find($dados['admissao_id']);
+
             if ($dados['status_aprovacao_rh'] === 'aprovado') {
 
-                $admissao = Admissao::find($dados['admissao_id']);
                 if (!$dados['mantem_cargo']) {
                     $admissao->Feedback->update([
                         'vagas_abertas_id' => $mudancaCargo->VagaAbertaNova->id

@@ -177,7 +177,7 @@
 
                     <div class="plano-info">
                         <span class="label-plano">PLANO DE AÇÃO:</span>
-                        <div class="plano-texto">@{{ item.plano_de_acao }}</div>
+                        <div class="plano-texto" v-html="item.plano_de_acao"></div>
                     </div>
 
                     <div class="prazo-info">
@@ -591,6 +591,28 @@
         line-height: 1.5;
         text-align: justify;
         color: #444;
+    }
+
+    .plano-texto strong,
+    .plano-texto b {
+        font-weight: 700;
+    }
+
+    .plano-texto em,
+    .plano-texto i {
+        font-style: italic;
+    }
+
+    .plano-texto u {
+        text-decoration: underline;
+    }
+
+    .plano-texto p {
+        margin: 0 0 0.5em;
+    }
+
+    .plano-texto p:last-child {
+        margin-bottom: 0;
     }
 
     .prazo-periodo {

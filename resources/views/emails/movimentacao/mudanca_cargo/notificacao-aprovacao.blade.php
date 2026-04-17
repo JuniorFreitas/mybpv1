@@ -20,6 +20,28 @@ $nome_aprovacao_extra = $dados['nome_aprovacao_extra'];
 $url = $dados['url'];
 $has_aprovacao_extra = $dados['has_aprovacao_extra'] ?? false;
 
+/** Datas de MudancaCargo vêm como d/m/Y (acessors DataHora); Carbon::parse() não interpreta esse formato. */
+$formatarDataMudancaEmail = static function ($valor): string {
+    if ($valor === null || $valor === '') {
+        return '';
+    }
+    if ($valor instanceof \DateTimeInterface) {
+        return \Carbon\Carbon::instance($valor)->format('d/m/Y');
+    }
+    $s = trim((string) $valor);
+    if ($s === '') {
+        return '';
+    }
+    if (preg_match('/^(\d{2}\/\d{2}\/\d{4})/u', $s, $m)) {
+        return $m[1];
+    }
+    try {
+        return \Carbon\Carbon::parse($s)->format('d/m/Y');
+    } catch (\Throwable $e) {
+        return $s;
+    }
+};
+
 $titulos = [
 'criacao' => 'Nova solicitação de mudança de cargo — sua aprovação é necessária',
 'pendente_aprovacao_extra' => "Mudança de cargo — aguardando aprovação de {$nome_aprovacao_extra}",
@@ -197,21 +219,21 @@ $mensagem = $mensagens[$tipo] ?? '';
                     </tr>
                     <tr>
                         <td style="color: #555;"><strong>Data de Solicitação:</strong></td>
-                        <td>{{ $mudanca->data_solicitacao ? \Carbon\Carbon::parse($mudanca->data_solicitacao)->format('d/m/Y') : '' }}</td>
+                        <td>{{ $formatarDataMudancaEmail($mudanca->data_solicitacao) }}</td>
                     </tr>
                     <tr style="background: #f8f9fa;">
                         <td style="color: #555;"><strong>Data Atualização Gestor:</strong></td>
-                        <td>{{ $mudanca->data_aprovacao_gestor ? \Carbon\Carbon::parse($mudanca->data_aprovacao_gestor)->format('d/m/Y') : '' }}</td>
+                        <td>{{ $formatarDataMudancaEmail($mudanca->data_aprovacao_gestor) }}</td>
                     </tr>
                     @if($has_aprovacao_extra)
                     <tr>
                         <td style="color: #555;"><strong>Data Atualização {{ $nome_aprovacao_extra }}:</strong></td>
-                        <td>{{ $mudanca->data_aprovacao_extra ? \Carbon\Carbon::parse($mudanca->data_aprovacao_extra)->format('d/m/Y') : '' }}</td>
+                        <td>{{ $formatarDataMudancaEmail($mudanca->data_aprovacao_extra) }}</td>
                     </tr>
                     @endif
                     <tr style="background: #f8f9fa;">
                         <td style="color: #555;"><strong>Data Atualização RH:</strong></td>
-                        <td>{{ $mudanca->data_aprovacao_rh ? \Carbon\Carbon::parse($mudanca->data_aprovacao_rh)->format('d/m/Y') : '' }}</td>
+                        <td>{{ $formatarDataMudancaEmail($mudanca->data_aprovacao_rh) }}</td>
                     </tr>
                 </table>
             </div>
