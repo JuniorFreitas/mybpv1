@@ -38,6 +38,108 @@ final class AvaliacaoDesempenhoPdfViewData
     }
 
     /**
+     * Rótulo da coluna de etapa como no modal PDI (Vue: tituloEtapaFluxoColuna), sem forçar caixa alta.
+     *
+     * @param  array<string, mixed>  $avaliador
+     * @param  list<array<string, mixed>>  $fluxoEtapas
+     */
+    public static function tituloEtapaFluxoColunaPdf(int $indice, array $avaliador, array $fluxoEtapas): string
+    {
+        if (($avaliador['tipo'] ?? '') !== '') {
+            return trim((string) $avaliador['tipo']);
+        }
+        if (! empty($fluxoEtapas[$indice]['label'])) {
+            return trim((string) $fluxoEtapas[$indice]['label']);
+        }
+        if (($avaliador['origem'] ?? '') === 'Funcionario') {
+            return 'Autoavaliação';
+        }
+
+        return 'Avaliador ' . ($indice + 1);
+    }
+
+    /** Mesma regra do modal: uma casa decimal ou 0.0 se inválido. */
+    public static function formatarDecimalNotaPdf(mixed $valor): string
+    {
+        if ($valor === null || $valor === '' || ! is_numeric($valor)) {
+            return '0.0';
+        }
+
+        return number_format((float) $valor, 1, '.', '');
+    }
+
+    /** Rótulo da escala (caixa mista), espelhando textoNotaResultado no Vue. */
+    public static function textoNotaResultadoPdf(mixed $nota): string
+    {
+        if ($nota === null || $nota === '' || ! is_numeric($nota)) {
+            return 'Sem nota';
+        }
+        $v = (int) round((float) $nota);
+
+        return match ($v) {
+            1 => 'Muito abaixo',
+            2 => 'Abaixo',
+            3 => 'Atingiu',
+            4 => 'Superou',
+            5 => 'Superou muito',
+            default => 'Sem nota',
+        };
+    }
+
+    /** Versão em maiúsculas para a segunda linha da célula (como no PDI). */
+    public static function textoNotaResultadoMaiusculoPdf(mixed $nota): string
+    {
+        return mb_strtoupper(self::textoNotaResultadoPdf($nota), 'UTF-8');
+    }
+
+    /**
+     * Informativo da escala 1–5 para o PDF; textos alinhados ao componente Vue `EscalaAvaliacao`.
+     *
+     * @return list<array{nota: int, texto: string}>
+     */
+    public static function itensEscalaInformativoDesempenhoPdf(): array
+    {
+        return [
+            [
+                'nota' => 5,
+                'texto' => 'Superou muito as expectativas: É percebido por outras áreas/pessoas como alguém com uma atuação excepcional, modelo de referência',
+            ],
+            [
+                'nota' => 4,
+                'texto' => 'Superou as expectativas: Atuação melhor que o esperado com alto padrão de qualidade',
+            ],
+            [
+                'nota' => 3,
+                'texto' => 'Atingiu as expectativas: Atuação adequada ao esperado (satisfatório), atende os padrões de qualidade e produtividade',
+            ],
+            [
+                'nota' => 2,
+                'texto' => 'Abaixo das expectativas: Atuação abaixo do esperado (precisa de desenvolvimento)',
+            ],
+            [
+                'nota' => 1,
+                'texto' => 'Muito abaixo das expectativas: Atuação não aceitável, desempenho muito abaixo do que é esperado para a função',
+            ],
+        ];
+    }
+
+    /**
+     * Sufixo da classe CSS da célula de nota (1–5 ou neutro), alinhado a classeNotaResultado no Vue.
+     */
+    public static function sufixoClasseNotaResultadoPdf(mixed $nota): string
+    {
+        if ($nota === null || $nota === '' || ! is_numeric($nota)) {
+            return 'neutro';
+        }
+        $v = (int) round((float) $nota);
+        if ($v >= 1 && $v <= 5) {
+            return (string) $v;
+        }
+
+        return 'neutro';
+    }
+
+    /**
      * @param  array<string, mixed>  $avaliador
      * @param  list<array<string, mixed>>  $fluxoEtapas
      */

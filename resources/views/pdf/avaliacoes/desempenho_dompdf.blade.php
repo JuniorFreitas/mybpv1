@@ -106,6 +106,20 @@
             border-bottom: 1px solid #ccc;
             padding-bottom: 4px;
         }
+        .secao-titulo--pdi {
+            font-size: 10pt;
+            font-weight: bold;
+            color: #003755;
+            margin: 14px 0 6px;
+            border-bottom: 1px solid rgba(0, 55, 85, 0.12);
+            padding-bottom: 3px;
+        }
+        .secao-lead {
+            font-size: 8pt;
+            color: #64748b;
+            line-height: 1.45;
+            margin: 0 0 10px;
+        }
         /* av-table: regras explícitas (DomPDF ignora herança em th/td com frequência) */
         table.av-table,
         table.av-table caption,
@@ -178,6 +192,66 @@
             background-color: #e74c3c;
             border: 1px solid #c0392b;
         }
+        /* Resultado por competência — mesmo padrão visual do modal PDI */
+        table.av-table.av-table--pdi-resultado thead th.comp,
+        table.av-table.av-table--pdi-resultado thead th.avaliador-th,
+        table.av-table.av-table--pdi-resultado thead th.med {
+            background-color: #ffffff !important;
+            color: #4e5a66 !important;
+            border-top: none !important;
+            border-bottom: 2px solid rgba(0, 55, 85, 0.08) !important;
+            font-weight: bold !important;
+            font-size: 8.2pt !important;
+        }
+        table.av-table.av-table--pdi-resultado thead th.comp {
+            text-align: left !important;
+            color: #4a5560 !important;
+        }
+        table.av-table.av-table--pdi-resultado thead th.med {
+            color: #003755 !important;
+        }
+        table.av-table.av-table--pdi-resultado tbody tr:nth-child(even) td {
+            background-color: #fbfcfd;
+        }
+        table.av-table.av-table--pdi-resultado tbody tr:nth-child(odd) td {
+            background-color: #ffffff;
+        }
+        table.av-table.av-table--pdi-resultado td.comp {
+            font-weight: 600 !important;
+            color: #334754 !important;
+            font-size: 8.6pt !important;
+            line-height: 1.45;
+        }
+        .rc-nota {
+            text-align: center;
+            padding: 3px 4px 4px;
+            border-radius: 8px;
+            border: 1.5px solid #d6dde3;
+            font-weight: bold;
+            background: #f5f7f9;
+            color: #4d5b67;
+        }
+        .rc-nota__num {
+            font-size: 9pt;
+            font-weight: bold;
+            line-height: 1.05;
+        }
+        .rc-nota__lbl {
+            font-size: 5.6pt;
+            font-weight: bold;
+            letter-spacing: 0.02em;
+            line-height: 1.12;
+            margin-top: 1px;
+        }
+        .rc-nota--media {
+            box-shadow: inset 0 0 0 0.5px rgba(0, 55, 85, 0.08);
+        }
+        .rc-nota--5 { background: #effaf4; border-color: #8fd1b0; color: #0f6a46; }
+        .rc-nota--4 { background: #eef8f4; border-color: #a7d8bf; color: #15714d; }
+        .rc-nota--3 { background: #fbf8ec; border-color: #dcc36f; color: #7a6615; }
+        .rc-nota--2 { background: #fcf2ec; border-color: #e7b28a; color: #a4541d; }
+        .rc-nota--1 { background: #fdf0f0; border-color: #e29d9d; color: #9d2a2a; }
+        .rc-nota--neutro { background: #f5f7f9; border-color: #d6dde3; color: #4d5b67; }
         .graf-item {
             margin: 0 auto 20px;
             text-align: center;
@@ -231,14 +305,79 @@
             font-weight: bold;
         }
         .graf-resumo tbody tr:nth-child(even) td { background-color: #f8fafc; }
+        /* Informativo da escala 1–5 (DomPDF: tabela mais previsível que flex) */
+        .escala-informativo {
+            border: 1.5px solid rgba(0, 55, 85, 0.12);
+            border-radius: 8px;
+            padding: 8px 10px 10px;
+            margin: 0 0 14px;
+            background: #fbfcfd;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        .escala-informativo__titulo {
+            font-size: 9pt;
+            font-weight: bold;
+            color: #003755;
+            margin: 0 0 4px;
+            letter-spacing: 0.02em;
+        }
+        .escala-informativo__intro {
+            margin: 0 0 6px;
+            font-size: 7.5pt;
+            line-height: 1.45;
+            color: #334754;
+            text-align: justify;
+        }
+        table.escala-informativo-tbl {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 7.5pt;
+            line-height: 1.42;
+            color: #1a252f;
+        }
+        table.escala-informativo-tbl td {
+            padding: 3px 0;
+            vertical-align: top;
+            border: none;
+        }
+        table.escala-informativo-tbl td.escala-informativo-tbl__nota {
+            width: 34px;
+            padding-right: 6px;
+            text-align: center;
+        }
+        .rc-nota.rc-nota--mini {
+            padding: 2px 4px 3px;
+            min-width: 0;
+        }
+        .rc-nota.rc-nota--mini .rc-nota__num {
+            font-size: 7.5pt;
+            line-height: 1.1;
+        }
+        .rc-nota.rc-nota--mini .rc-nota__lbl {
+            display: none;
+        }
         .nota-final {
             text-align: center;
-            font-size: 14pt;
-            font-weight: bold;
-            color: #27ae60;
-            border: 2px solid #27ae60;
-            padding: 12px;
             margin: 14px 0;
+            padding: 12px 14px;
+            border: 1.5px solid rgba(0, 55, 85, 0.12);
+            border-radius: 8px;
+            background: #fbfcfd;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        .nota-final__titulo {
+            font-size: 10pt;
+            font-weight: bold;
+            color: #003755;
+            margin: 0 0 8px;
+            letter-spacing: 0.02em;
+        }
+        .nota-final__nota {
+            display: inline-block;
+            min-width: 72px;
+            text-align: center;
         }
         .plano-bloco {
             border: 1.5px solid #34495e;
@@ -347,18 +486,40 @@
         </table>
     </fieldset>
 
-    <div class="secao-titulo">RESULTADO POR COMPETÊNCIA</div>
+    <div class="secao-titulo secao-titulo--pdi">Resultado por competência</div>
+    <p class="secao-lead">Consolidado das notas informadas em cada etapa do fluxo, com a média calculada por critério.</p>
+
+    <div class="escala-informativo">
+        <div class="escala-informativo__titulo">Escala de avaliação (notas de 1 a 5)</div>
+        <p class="escala-informativo__intro">
+            <strong>Para esta avaliação, considere as atribuições abaixo, conforme a nota atribuída a cada critério.</strong>
+        </p>
+        <table class="escala-informativo-tbl" role="presentation">
+            @foreach(\App\Support\AvaliacaoDesempenhoPdfViewData::itensEscalaInformativoDesempenhoPdf() as $ei)
+                @php $sfxEscala = \App\Support\AvaliacaoDesempenhoPdfViewData::sufixoClasseNotaResultadoPdf($ei['nota']); @endphp
+                <tr>
+                    <td class="escala-informativo-tbl__nota">
+                        <div class="rc-nota rc-nota--{{ $sfxEscala }} rc-nota--mini">
+                            <div class="rc-nota__num">{{ $ei['nota'] }}</div>
+                        </div>
+                    </td>
+                    <td>{{ $ei['texto'] }}</td>
+                </tr>
+            @endforeach
+        </table>
+    </div>
+
     @foreach(collect($dados['result_topico_pai_agrupado'] ?? []) as $grupo)
         @php $linhas = collect($grupo); $head = $linhas->first(); @endphp
         @if($head && !empty($head['avaliadores']))
-            <table class="av-table">
+            <table class="av-table av-table--pdi-resultado">
                 <thead>
                     <tr>
                         <th class="comp">{{ $head['topico_pai'] ?? '' }}</th>
                         @foreach($head['avaliadores'] as $idx => $avaliador)
-                            <th class="avaliador-th">{{ \App\Support\AvaliacaoDesempenhoPdfViewData::tituloEtapaFluxoPdf((int) $idx, is_array($avaliador) ? $avaliador : [], $dados['fluxo_etapas'] ?? []) }}</th>
+                            <th class="avaliador-th">{{ \App\Support\AvaliacaoDesempenhoPdfViewData::tituloEtapaFluxoColunaPdf((int) $idx, is_array($avaliador) ? $avaliador : [], $dados['fluxo_etapas'] ?? []) }}</th>
                         @endforeach
-                        <th class="med">MÉDIA</th>
+                        <th class="med">Média</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -366,16 +527,20 @@
                         <tr>
                             <td class="comp">{{ $sub['subtopico'] ?? '' }}</td>
                             @foreach($sub['avaliadores'] ?? [] as $av)
+                                @php $nAv = is_array($av) ? ($av['nota'] ?? null) : null; $sfxAv = \App\Support\AvaliacaoDesempenhoPdfViewData::sufixoClasseNotaResultadoPdf($nAv); @endphp
                                 <td>
-                                    @if(isset($av['nota']))
-                                        <span class="pill pill--nota">{{ number_format((float) $av['nota'], 1, '.', '') }}</span>
-                                    @endif
+                                    <div class="rc-nota rc-nota--{{ $sfxAv }}">
+                                        <div class="rc-nota__num">{{ \App\Support\AvaliacaoDesempenhoPdfViewData::formatarDecimalNotaPdf($nAv) }}</div>
+                                        <div class="rc-nota__lbl">{{ \App\Support\AvaliacaoDesempenhoPdfViewData::textoNotaResultadoMaiusculoPdf($nAv) }}</div>
+                                    </div>
                                 </td>
                             @endforeach
+                            @php $nMed = $sub['media'] ?? null; $sfxMed = \App\Support\AvaliacaoDesempenhoPdfViewData::sufixoClasseNotaResultadoPdf($nMed); @endphp
                             <td>
-                                @if(isset($sub['media']))
-                                    <span class="pill pill--media">{{ number_format((float) $sub['media'], 1, '.', '') }}</span>
-                                @endif
+                                <div class="rc-nota rc-nota--media rc-nota--{{ $sfxMed }}">
+                                    <div class="rc-nota__num">{{ \App\Support\AvaliacaoDesempenhoPdfViewData::formatarDecimalNotaPdf($nMed) }}</div>
+                                    <div class="rc-nota__lbl">{{ \App\Support\AvaliacaoDesempenhoPdfViewData::textoNotaResultadoMaiusculoPdf($nMed) }}</div>
+                                </div>
                             </td>
                         </tr>
                     @endforeach
@@ -384,19 +549,6 @@
         @endif
     @endforeach
 
-    @if(count($comentariosPdf) > 0)
-        <div class="page-break"></div>
-        <div class="secao-titulo">COMENTÁRIOS POR ETAPA</div>
-        @foreach($comentariosPdf as $row)
-            @php $av = $row['avaliador']; $idx = $row['indice']; @endphp
-            <div class="consideracao-bloco">
-                <h3>{{ \App\Support\AvaliacaoDesempenhoPdfViewData::tituloConsideracoesPdf($idx, $av, $dados['fluxo_etapas'] ?? []) }}</h3>
-                <div class="txt">{{ $av['comentario'] ?? '' }}</div>
-            </div>
-        @endforeach
-    @endif
-
-    <div class="page-break"></div>
     <div class="secao-titulo">VISÃO GRÁFICA DO DESEMPENHO</div>
     <p style="text-align:center;font-size:8.5pt;color:#64748b;margin:0 0 14px">Radar por grupo de competências (escala 0 a 5), equivalente ao gráfico da avaliação na tela.</p>
 
@@ -421,32 +573,31 @@
         <p style="text-align:center;color:#64748b">Não há dados para gráfico radar.</p>
     @endforelse
 
-    <div class="secao-titulo" style="margin-top:18px">RESUMO TABULAR POR CRITÉRIO</div>
-    <div class="graf-resumo">
-        @foreach(collect($dados['result_topico'] ?? [])->groupBy('topico_pai') as $nomePai => $linhas)
-            <p style="font-weight:bold;margin:10px 0 5px;font-size:9pt;color:#2c3e50">{{ $nomePai }}</p>
-            <table>
-                <thead>
-                    <tr><th>Critério</th><th style="width:72px;text-align:center">Média</th></tr>
-                </thead>
-                <tbody>
-                    @foreach($linhas as $lin)
-                        <tr>
-                            <td>{{ is_array($lin) ? ($lin['subtopico'] ?? '') : ($lin->subtopico ?? '') }}</td>
-                            <td style="text-align:center">
-                                @php $m = is_array($lin) ? ($lin['media'] ?? null) : ($lin->media ?? null); @endphp
-                                @if($m !== null)
-                                    <span class="pill pill--media">{{ number_format((float) $m, 1, '.', '') }}</span>
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @endforeach
+    @php
+        $nFinal = $dados['nota_final'] ?? null;
+        $sfxFinal = \App\Support\AvaliacaoDesempenhoPdfViewData::sufixoClasseNotaResultadoPdf($nFinal);
+    @endphp
+    <div class="nota-final">
+        <div class="nota-final__titulo">NOTA FINAL</div>
+        <div class="nota-final__nota rc-nota rc-nota--media rc-nota--{{ $sfxFinal }}">
+            <div class="rc-nota__num">{{ \App\Support\AvaliacaoDesempenhoPdfViewData::formatarDecimalNotaPdf($nFinal) }}</div>
+            <div class="rc-nota__lbl">{{ \App\Support\AvaliacaoDesempenhoPdfViewData::textoNotaResultadoMaiusculoPdf($nFinal) }}</div>
+        </div>
     </div>
 
-    <div class="nota-final">NOTA FINAL: {{ number_format((float) ($dados['nota_final'] ?? 0), 1, '.', '') }}</div>
+
+    @if(count($comentariosPdf) > 0)
+        {{-- <div class="page-break"></div> --}}
+        <div class="secao-titulo">COMENTÁRIOS POR ETAPA</div>
+        @foreach($comentariosPdf as $row)
+            @php $av = $row['avaliador']; $idx = $row['indice']; @endphp
+            <div class="consideracao-bloco">
+                <h3>{{ \App\Support\AvaliacaoDesempenhoPdfViewData::tituloConsideracoesPdf($idx, $av, $dados['fluxo_etapas'] ?? []) }}</h3>
+                <div class="txt">{{ $av['comentario'] ?? '' }}</div>
+            </div>
+        @endforeach
+    @endif
+
 
     <div class="page-break"></div>
     <div class="secao-titulo">OPORTUNIDADES DE MELHORIA / PLANO DE AÇÃO</div>

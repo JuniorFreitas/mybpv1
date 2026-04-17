@@ -38,6 +38,45 @@ class AvaliacaoDesempenhoPdfViewDataTest extends TestCase
         $this->assertStringContainsString('Primeiro', (string) ($ordenados[0]['avaliador']['comentario'] ?? ''));
     }
 
+    public function test_titulo_etapa_coluna_pdf_espelha_modal_sem_caixa_alta_forcada(): void
+    {
+        $fluxo = [['label' => 'Avaliador par']];
+        $this->assertSame(
+            'Gestor direto',
+            AvaliacaoDesempenhoPdfViewData::tituloEtapaFluxoColunaPdf(0, ['tipo' => 'Gestor direto', 'origem' => 'Avaliador'], $fluxo)
+        );
+        $this->assertSame(
+            'Avaliador par',
+            AvaliacaoDesempenhoPdfViewData::tituloEtapaFluxoColunaPdf(0, ['origem' => 'Avaliador'], $fluxo)
+        );
+        $this->assertSame(
+            'Autoavaliação',
+            AvaliacaoDesempenhoPdfViewData::tituloEtapaFluxoColunaPdf(0, ['origem' => 'Funcionario'], [])
+        );
+        $this->assertSame('Avaliador 2', AvaliacaoDesempenhoPdfViewData::tituloEtapaFluxoColunaPdf(1, ['origem' => 'Avaliador'], []));
+    }
+
+    public function test_itens_escala_informativo_pdf_cinco_niveis_e_texto_nivel_5(): void
+    {
+        $itens = AvaliacaoDesempenhoPdfViewData::itensEscalaInformativoDesempenhoPdf();
+        $this->assertCount(5, $itens);
+        $this->assertSame(5, $itens[0]['nota']);
+        $this->assertStringContainsString('Superou muito as expectativas', $itens[0]['texto']);
+        $this->assertSame(1, $itens[4]['nota']);
+        $this->assertStringContainsString('Muito abaixo das expectativas', $itens[4]['texto']);
+    }
+
+    public function test_formatar_decimal_e_texto_nota_igual_modal_pdi(): void
+    {
+        $this->assertSame('3.5', AvaliacaoDesempenhoPdfViewData::formatarDecimalNotaPdf(3.5));
+        $this->assertSame('0.0', AvaliacaoDesempenhoPdfViewData::formatarDecimalNotaPdf(null));
+        $this->assertSame('Atingiu', AvaliacaoDesempenhoPdfViewData::textoNotaResultadoPdf(3));
+        $this->assertSame('ATINGIU', AvaliacaoDesempenhoPdfViewData::textoNotaResultadoMaiusculoPdf(3));
+        $this->assertSame('Sem nota', AvaliacaoDesempenhoPdfViewData::textoNotaResultadoPdf(99));
+        $this->assertSame('3', AvaliacaoDesempenhoPdfViewData::sufixoClasseNotaResultadoPdf(2.6));
+        $this->assertSame('neutro', AvaliacaoDesempenhoPdfViewData::sufixoClasseNotaResultadoPdf(''));
+    }
+
     public function test_ordenar_dados_pdf_por_topico_id_e_ordem_graficos(): void
     {
         $dados = [
