@@ -169,7 +169,7 @@ class PreAdmissaoController extends Controller
                             $doc->url_download = "";
                             if (in_array($doc->disco, Arquivo::LISTAGEM_DISCOS)) {
                                 $doc->url = config('filesystems.disks.' . $doc->disco . '.urlShow') . "/{$doc->file}";
-                                $doc->url_download = config('filesystemzs.disks.' . $doc->disco . '.urlDownload') . "/{$doc->file}";
+                                $doc->url_download = config('filesystems.disks.' . $doc->disco . '.urlDownload') . "/{$doc->file}";
                             };
                             return $doc;
                         });
