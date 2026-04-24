@@ -1,5 +1,77 @@
 <template>
     <div>
+        <modal
+            id="modalSegmento"
+            ref="modal_modalSegmento"
+            :titulo="tituloModal"
+            :fechar="true"
+            size="g"
+        >
+            <template #conteudo>
+                <div class="form-group">
+                    <label>Nome</label>
+                    <input v-model="form.nome" class="form-control form-control-sm" type="text" placeholder="Ex: ALUMAR">
+                </div>
+                <div class="form-group">
+                    <label>Slug (código)</label>
+                    <input v-model="form.slug" class="form-control form-control-sm" type="text" placeholder="Ex: alumar">
+                </div>
+                <div class="form-group">
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="seg_ativo">
+                        <label class="custom-control-label" for="seg_ativo">Ativo</label>
+                    </div>
+                </div>
+
+                <hr class="my-3">
+                <h6 class="font-weight-bold text-primary">Configurações da Carteira de Treinamento</h6>
+                <p class="small text-muted mb-2">Imagens usadas no PDF da carteira. Caminho relativo (ex: images/carteira/arquivo.webp).</p>
+                <div class="form-group">
+                    <label>Imagem cabeçalho (caminho)</label>
+                    <input v-model="form.config_carteira.cabecalho_img" class="form-control form-control-sm" type="text" placeholder="Ex: images/carteira/cabecalho_carteira_alumar.webp">
+                </div>
+                <div class="form-group">
+                    <label>Imagem verso (caminho)</label>
+                    <input v-model="form.config_carteira.verso_img" class="form-control form-control-sm" type="text" placeholder="Ex: images/carteira/verso_carteira_alumar.webp">
+                </div>
+
+                <hr class="my-3">
+                <h6 class="font-weight-bold text-primary">Configurações da Etiqueta de Bloqueio</h6>
+                <p class="small text-muted mb-2">Define se o segmento exibe etiqueta de bloqueio e os textos/ramal usados no PDF.</p>
+                <div class="form-group">
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" v-model="form.config_carteira.exibir_etiqueta_bloqueio" class="custom-control-input" id="seg_exibir_bloqueio">
+                        <label class="custom-control-label" for="seg_exibir_bloqueio">Exibir etiqueta de bloqueio para este segmento</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ramal de emergência</label>
+                    <input v-model="form.config_carteira.ramal_emergencia" class="form-control form-control-sm" type="text" placeholder="Ex: 1199">
+                </div>
+                <div class="form-group">
+                    <label>Texto principal (não use, mova ou opere)</label>
+                    <input v-model="form.config_carteira.bloqueio_texto_nao_use" class="form-control form-control-sm" type="text" placeholder="NÃO USE, MOVA OU OPERE...">
+                </div>
+                <div class="form-group">
+                    <label>Texto demissão</label>
+                    <input v-model="form.config_carteira.bloqueio_texto_demissao" class="form-control form-control-sm" type="text" placeholder="QUEM OPERAR O EQUIPAMENTO...">
+                </div>
+                <div class="form-group">
+                    <label>Texto "Cuidado"</label>
+                    <input v-model="form.config_carteira.bloqueio_texto_cuidado" class="form-control form-control-sm" type="text" placeholder="CUIDADO!">
+                </div>
+                <div class="form-group">
+                    <label>Texto "Homens trabalhando"</label>
+                    <input v-model="form.config_carteira.bloqueio_texto_homens_trabalhando" class="form-control form-control-sm" type="text" placeholder="HOMENS TRABALHANDO NÃO OPERE...">
+                </div>
+            </template>
+            <template #rodape>
+                <button type="button" class="btn btn-primary" @click="salvar">
+                    {{ editando ? 'Salvar' : 'Cadastrar' }}
+                </button>
+            </template>
+        </modal>
+
         <div class="mb-3 d-flex align-items-center">
             <button type="button" class="btn btn-sm mr-1 btn-primary" @click="formNovo(); $refs.modal_modalSegmento && $refs.modal_modalSegmento.abrirModal()">
                 <i class="fa fa-plus"></i> Novo segmento
@@ -55,86 +127,21 @@
                 </div>
             </div>
         </div>
-
-        <div class="modal fade" id="modalSegmento" tabindex="-1">
-            <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">{{ editando ? 'Editar' : 'Novo' }} segmento</h5>
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label>Nome</label>
-                            <input v-model="form.nome" class="form-control form-control-sm" type="text" placeholder="Ex: ALUMAR">
-                        </div>
-                        <div class="form-group">
-                            <label>Slug (código)</label>
-                            <input v-model="form.slug" class="form-control form-control-sm" type="text" placeholder="Ex: alumar">
-                        </div>
-                        <div class="form-group">
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="seg_ativo">
-                                <label class="custom-control-label" for="seg_ativo">Ativo</label>
-                            </div>
-                        </div>
-
-                        <hr class="my-3">
-                        <h6 class="font-weight-bold text-primary">Configurações da Carteira de Treinamento</h6>
-                        <p class="small text-muted mb-2">Imagens usadas no PDF da carteira. Caminho relativo (ex: images/carteira/arquivo.webp).</p>
-                        <div class="form-group">
-                            <label>Imagem cabeçalho (caminho)</label>
-                            <input v-model="form.config_carteira.cabecalho_img" class="form-control form-control-sm" type="text" placeholder="Ex: images/carteira/cabecalho_carteira_alumar.webp">
-                        </div>
-                        <div class="form-group">
-                            <label>Imagem verso (caminho)</label>
-                            <input v-model="form.config_carteira.verso_img" class="form-control form-control-sm" type="text" placeholder="Ex: images/carteira/verso_carteira_alumar.webp">
-                        </div>
-
-                        <hr class="my-3">
-                        <h6 class="font-weight-bold text-primary">Configurações da Etiqueta de Bloqueio</h6>
-                        <p class="small text-muted mb-2">Define se o segmento exibe etiqueta de bloqueio e os textos/ramal usados no PDF.</p>
-                        <div class="form-group">
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" v-model="form.config_carteira.exibir_etiqueta_bloqueio" class="custom-control-input" id="seg_exibir_bloqueio">
-                                <label class="custom-control-label" for="seg_exibir_bloqueio">Exibir etiqueta de bloqueio para este segmento</label>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Ramal de emergência</label>
-                            <input v-model="form.config_carteira.ramal_emergencia" class="form-control form-control-sm" type="text" placeholder="Ex: 1199">
-                        </div>
-                        <div class="form-group">
-                            <label>Texto principal (não use, mova ou opere)</label>
-                            <input v-model="form.config_carteira.bloqueio_texto_nao_use" class="form-control form-control-sm" type="text" placeholder="NÃO USE, MOVA OU OPERE...">
-                        </div>
-                        <div class="form-group">
-                            <label>Texto demissão</label>
-                            <input v-model="form.config_carteira.bloqueio_texto_demissao" class="form-control form-control-sm" type="text" placeholder="QUEM OPERAR O EQUIPAMENTO...">
-                        </div>
-                        <div class="form-group">
-                            <label>Texto "Cuidado"</label>
-                            <input v-model="form.config_carteira.bloqueio_texto_cuidado" class="form-control form-control-sm" type="text" placeholder="CUIDADO!">
-                        </div>
-                        <div class="form-group">
-                            <label>Texto "Homens trabalhando"</label>
-                            <input v-model="form.config_carteira.bloqueio_texto_homens_trabalhando" class="form-control form-control-sm" type="text" placeholder="HOMENS TRABALHANDO NÃO OPERE...">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-                        <button type="button" class="btn btn-primary" @click="salvar">
-                            {{ editando ? 'Salvar' : 'Cadastrar' }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </template>
 
 <script>
+import modal from '../../Modal'
+
 export default {
+    components: {
+        modal
+    },
+    computed: {
+        tituloModal() {
+            return this.editando ? 'Editar segmento' : 'Novo segmento'
+        }
+    },
     data() {
         return {
             lista: [],

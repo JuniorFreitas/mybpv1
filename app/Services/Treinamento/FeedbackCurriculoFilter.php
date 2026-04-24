@@ -363,6 +363,14 @@ class FeedbackCurriculoFilter
             });
         }
 
+        // Filtro Padrão de treinamento (Segmento da admissão)
+        if (isset($this->filters['segmento_treinamento_id']) && $this->filters['segmento_treinamento_id'] !== '') {
+            $segmentoTreinamentoId = (int) $this->filters['segmento_treinamento_id'];
+            $this->query->whereHas('Admissao', function ($query) use ($segmentoTreinamentoId) {
+                $query->where('segmento_treinamento_id', $segmentoTreinamentoId);
+            });
+        }
+
         return $this;
     }
 
