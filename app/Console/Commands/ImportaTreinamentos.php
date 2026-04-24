@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use MasterTag\DataHora;
 
-class ImportaTreinamento extends Command
+class ImportaTreinamentos extends Command
 {
     private const STATUS_SUCESSO = 'SUCESSO';
     private const STATUS_FALHA = 'FALHA';
