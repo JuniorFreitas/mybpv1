@@ -473,112 +473,140 @@
 
 <fieldset>
     <legend class="text-uppercase">Filtro</legend>
-    <div class="row">
-        <date-range-filter
-            v-model:enabled="controle.dados.campoVencimento"
-            v-model:start-date="controle.dados.dataInicioVencimento"
-            v-model:end-date="controle.dados.dataFimVencimento"
-            :disabled="controle.carregando"
-            :id-suffix="'vencimento-' + hash"
-            label="Por período de vencimento"
-            wrapper-class="col-12 col-lg-3"
-            @update:startDate="atualizarVencimentoString"
-            @update:endDate="atualizarVencimentoString"
+    <div class="row align-items-end filtro-toolbar-compact">
+        <div class="col-12 col-md-4 mb-2">
+            <label>Busca rápida</label>
+            <input type="text"
+                placeholder="Nome do colaborador"
+                autocomplete="off"
+                class="form-control form-control-sm"
+                :disabled="controle.carregando"
+                v-model="controle.dados.campoBusca"
+                @keyup.enter="atualizar">
+        </div>
+        <div class="col-12 col-md-3 mb-2">
+            <label>CPF</label>
+            <input type="text"
+                placeholder="CPF"
+                autocomplete="mastertag"
+                v-mascara:cpf
+                class="form-control form-control-sm"
+                :disabled="controle.carregando"
+                v-model="controle.dados.campoCPF"
+                @keyup.enter="atualizar">
+        </div>
+        <div class="col-12 col-md-5 mb-2 d-flex flex-wrap gap-compact">
+            <button type="button" class="btn btn-sm btn-success mb-1 mr-1"
+                :disabled="controle.carregando"
+                @click="atualizar">
+                <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
+                Buscar
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary mb-1 mr-1"
+                :disabled="controle.carregando"
+                @click="limparFiltros">
+                <i class="fa fa-eraser"></i>
+                Limpar filtros
+            </button>
+            <button type="button"
+                class="btn btn-sm btn-outline-primary mb-1"
+                :disabled="controle.carregando"
+                @click="filtrosAvancadosAbertos = !filtrosAvancadosAbertos">
+                <i class="fa" :class="filtrosAvancadosAbertos ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                {{ filtrosAvancadosAbertos ? 'Ocultar filtros avançados' : 'Mostrar filtros avançados' }}
+                <span class="badge badge-light ml-1">{{ totalFiltrosAtivos }}</span>
+            </button>
+        </div>
+    </div>
+    <div class="row mb-1" v-if="activeFilterChips.length">
+        <div class="col-12">
+            <div class="d-flex flex-wrap">
+                <span class="badge badge-light border mr-2 mb-2 px-2 py-1" v-for="chip in activeFilterChips" :key="chip.key">
+                    {{ chip.label }}
+                    <a href="javascript://" class="ml-1 text-danger" @click.prevent="limparFiltroAtivo(chip.key)">
+                        <i class="fa fa-times"></i>
+                    </a>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-2" v-show="filtrosAvancadosAbertos">
+        <div class="col-12">
+            <h6 class="filtro-section-title">Períodos</h6>
+        </div>
+        <date-range-filter v-model:enabled="controle.dados.campoVencimento" v-model:start-date="controle.dados.dataInicioVencimento"
+            v-model:end-date="controle.dados.dataFimVencimento" :disabled="controle.carregando" :id-suffix="'vencimento-' + hash"
+            label="Período de vencimento" wrapper-class="col-12 col-lg-4"
+            @update:startDate="atualizarVencimentoString" @update:endDate="atualizarVencimentoString"
             @update:enabled="atualizarVencimentoString">
         </date-range-filter>
 
-        <date-range-filter
-            v-model:enabled="controle.dados.campoPeriodoTreinado"
-            v-model:start-date="controle.dados.dataInicioPeriodoTreinado"
-            v-model:end-date="controle.dados.dataFimPeriodoTreinado"
-            :disabled="controle.carregando"
-            :id-suffix="'periodo-treinado-' + hash"
-            label="Por período treinado"
-            wrapper-class="col-12 col-lg-3"
-            @update:startDate="atualizarPeriodoTreinadoString"
-            @update:endDate="atualizarPeriodoTreinadoString"
+        <date-range-filter v-model:enabled="controle.dados.campoPeriodoTreinado" v-model:start-date="controle.dados.dataInicioPeriodoTreinado"
+            v-model:end-date="controle.dados.dataFimPeriodoTreinado" :disabled="controle.carregando" :id-suffix="'periodo-treinado-' + hash"
+            label="Período treinado" wrapper-class="col-12 col-lg-4"
+            @update:startDate="atualizarPeriodoTreinadoString" @update:endDate="atualizarPeriodoTreinadoString"
             @update:enabled="atualizarPeriodoTreinadoString">
         </date-range-filter>
 
-        <div class="col-12 col-lg-3">
-            <label>Admitidos</label>
-            <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                v-model="controle.dados.campoAdmitido">
-                <option value="">Geral</option>
-                <option value="S">Sim</option>
-                <option value="N">Não</option>
-            </select>
-        </div>
-
-        <div class="col-12 col-sm-2">
-            <div class="form-group">
-                <label>Por Demitido</label>
-                <select class="form-control form-control-sm"
-                    @change="atualizar"
-                    :disabled="controle.carregando"
-                    v-model="controle.dados.campoDemitido">
-                    <option :value="true">Sim</option>
-                    <option :value="false">Não</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="col-12 col-lg-3">
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
             <label>Treinados</label>
             <select class="custom-select custom-select-sm" @change="selecionaTreinados($event.target.value)"
-                :disabled="controle.carregando"
-                v-model="controle.dados.campo_treinados">
+                :disabled="controle.carregando" v-model="controle.dados.campo_treinados">
                 <option value="">Sem filtro</option>
                 <option value="S">Sim</option>
                 <option value="N">Não</option>
             </select>
         </div>
 
-        <div class="col-12 col-lg-4 mb-3">
-            <label>Buscar</label>
-            <input type="text"
-                placeholder="Buscar por nome"
-                autocomplete="off"
-                class="form-control form-control-sm" :disabled="controle.carregando"
-                v-model="controle.dados.campoBusca">
-        </div>
-
-        <div class="col-12 col-lg-3 mb-3">
-            <label>CPF</label>
-            <input type="text"
-                placeholder="Buscar por cpf"
-                autocomplete="mastertag"
-                v-mascara:cpf
-                class="form-control form-control-sm" :disabled="controle.carregando"
-                v-model="controle.dados.campoCPF">
-        </div>
-
-        <div class="col-12 col-lg-3 mb-3">
-            <label>Foto 3x4</label>
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
+            <label>Padrão de treinamento</label>
             <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                v-model="controle.dados.campoFoto">
-                <option value="">Geral</option>
-                <option :value="true">Sim</option>
-                <option :value="false">Não</option>
+                v-model="controle.dados.segmento_treinamento_id">
+                <option value="">Todos</option>
+                <option v-for="s in segmentosTreinamento" :key="s.id" :value="String(s.id)">
+                    {{ s.nome }}
+                </option>
             </select>
         </div>
 
-        <div class="col-12 col-lg-2 mb-3">
-            <label>Nº Crachá</label>
-            <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                v-model="controle.dados.campoCracha">
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
+            <label>Admitidos</label>
+            <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoAdmitido">
                 <option value="">Geral</option>
                 <option value="S">Sim</option>
                 <option value="N">Não</option>
             </select>
         </div>
 
-        <div class="col-12 col-lg-4 mb-3"
-            v-if="lista_ccs && AUTENTICADO.temFilial">
-            <label for="">Por Cnpj</label>
-            <select class="form-control form-control-sm" @change="changeCnpj"
-                :disabled="controle.carregando"
-                v-model="controle.dados.campoCnpj">
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
+            <label>Por demitido</label>
+            <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoDemitido">
+                <option :value="false">Não</option>
+                <option :value="true">Sim</option>
+            </select>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
+            <label>Foto 3x4</label>
+            <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoFoto">
+                <option value="">Geral</option>
+                <option :value="true">Sim</option>
+                <option :value="false">Não</option>
+            </select>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
+            <label>Nº Crachá</label>
+            <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoCracha">
+                <option value="">Geral</option>
+                <option value="S">Sim</option>
+                <option value="N">Não</option>
+            </select>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4 mb-3" v-if="lista_ccs && AUTENTICADO.temFilial">
+            <label>CNPJ</label>
+            <select class="form-control form-control-sm" @change="changeCnpj" :disabled="controle.carregando" v-model="controle.dados.campoCnpj">
                 <option value="">Todos</option>
                 <option v-for="(item, key) in lista_ccs.cnpjs" :value="key" :keys="key">
                     {{item.nome_fantasia}} - {{item.cnpj}}
@@ -586,46 +614,36 @@
             </select>
         </div>
 
-        <div class="col-12 mb-3" :class="AUTENTICADO.temFilial ? 'col-lg-3' : 'col-lg-5'" v-if="lista_ccs">
-            <label for="">Centro de Custo</label>
-            <select class="form-control form-control-sm" @change="atualizar"
-                :disabled="controle.carregando"
-                v-model="controle.dados.campoCentroCusto">
+        <div class="col-12 mb-3" :class="AUTENTICADO.temFilial ? 'col-lg-4' : 'col-lg-6'" v-if="lista_ccs">
+            <label>Centro de Custo</label>
+            <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoCentroCusto">
                 <option value="">Todos</option>
                 <option :title="item.label" v-for="(item, key) in filtroListaCentroCustoCnpj"
-                    :value="item.matriz ? item.id : item.filial_id"
-                    :keys="key">
+                    :value="item.matriz ? item.id : item.filial_id" :keys="key">
                     {{item.label}}
                 </option>
                 <option value="--naoinformado--">--- Não Informado ---</option>
             </select>
         </div>
 
-        <div class="col-12 col-md-3">
-            <div class="form-group">
-                <label>Por Vaga</label>
-                <autocomplete :disabled="controle.carregando" :caminho="controle.dados.caminho_autocomplete"
-                    :valido="controle.dados.campoVaga !== ''"
-                    v-model="controle.dados.autocomplete_label"
-                    placeholder="Por vaga"
-                    @onblur="resetaCampo"
-                    @onselect="selecionaVaga"></autocomplete>
-            </div>
-        </div>
-
-        <div class="col-12 mb-3" :class="AUTENTICADO.temFilial ? 'col-lg-3' : 'col-lg-5'">
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
             <label>Cargo</label>
             <input type="text"
                 placeholder="Buscar por cargo"
                 autocomplete="off"
-                class="form-control form-control-sm" :disabled="controle.carregando"
-                v-model="controle.dados.campoCargo">
+                class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoCargo">
         </div>
 
-        <div class="col-12 col-lg-2 mb-3">
-            <label>Estados</label>
-            <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                v-model="controle.dados.campoUf">
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
+            <label>Por vaga</label>
+            <autocomplete :disabled="controle.carregando" :caminho="controle.dados.caminho_autocomplete"
+                :valido="controle.dados.campoVaga !== ''" v-model="controle.dados.autocomplete_label"
+                placeholder="Por vaga" @onblur="resetaCampo" @onselect="selecionaVaga"></autocomplete>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
+            <label>Estado</label>
+            <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoUf">
                 <option value="">Todos</option>
                 <option value="AC">AC</option>
                 <option value="AL">AL</option>
@@ -657,8 +675,21 @@
             </select>
         </div>
 
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
+            <label>Exibir</label>
+            <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
+                v-model="controle.dados.pages">
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="500">500</option>
+            </select>
+        </div>
+
         <div class="col-12">
-            <label>Treinamentos</label>
+            <h6 class="filtro-section-title">Treinamentos Específicos</h6>
+        </div>
+        <div class="col-12 col-lg-8 mb-3">
             <select class="custom-select custom-select-sm" @change="addTreinamento($event.target.value)"
                 :disabled="controle.carregando"
                 v-model="controle.dados.treinamentos">
@@ -672,9 +703,9 @@
 
         </div>
 
-        <div class="col-12 mt-2">
+        <div class="col-12 mt-1">
             <div class="p-2" style="border: 1px dashed #cccbcb">
-                <h6>TREINAMENTOS SELECIONADOS:</h6>
+                <h6>TREINAMENTOS ESPECÍFICOS SELECIONADOS:</h6>
                 <div class="row">
                     <small class="p-2 ml-2 mb-2 table-secondary text-dark rounded"
                         v-for="(item, ind) in controle.dados.treinamentos_selecionados">
@@ -1318,6 +1349,8 @@ export default defineComponent({
                 }
             },
             formMassaDefault: null,
+            filtrosAvancadosAbertos: true,
+            initialPage: null,
 
             vencimentos: [],
             listaTodosTreinamentos: [],
@@ -1391,7 +1424,8 @@ export default defineComponent({
                     dataFimPeriodoTreinado: '',
                     periodoTreinado: '',
                     campoCnpj: '',
-                    campoCentroCusto: ''
+                    campoCentroCusto: '',
+                    segmento_treinamento_id: ''
                 }
             },
 
@@ -1418,10 +1452,20 @@ export default defineComponent({
             this.controle.dados.campoCliente = parseInt(this.cliente_id)
             this.controle.dados.cliente_custom = parseInt(this.cliente_id)
         }
+        this.urlParamGet()
         this.listaVagas()
         this.listaAreasGeral()
         this.carregarSegmentosTreinamento()
-        this.atualizar()
+        if (this.initialPage != null && this.initialPage >= 1) {
+            this.$nextTick(() => {
+                if (this.$refs.componente) {
+                    this.$refs.componente.atual = this.initialPage
+                    this.$refs.componente.buscar && this.$refs.componente.buscar()
+                }
+            })
+        } else {
+            this.atualizar()
+        }
 
         document.addEventListener('click', this.onClickOutside)
 
@@ -1442,6 +1486,7 @@ export default defineComponent({
     },
     beforeUnmount() {
         document.removeEventListener('click', this.onClickOutside)
+        if (this._syncUrlTimer) clearTimeout(this._syncUrlTimer)
     },
     computed: {
         isColunaTreinamentoSelecionada() {
@@ -1563,9 +1608,163 @@ export default defineComponent({
             return this.form.listaVencimentos
                 ? this.form.listaVencimentos.filter((t) => t.fez_treinamento && this.getTreinamentoStatus(t) === 'vencido').length
                 : 0
+        },
+        totalFiltrosAtivos() {
+            const d = this.controle.dados
+            const lista = [
+                d.campoBusca,
+                d.campoCPF,
+                d.campoVaga,
+                d.campoUf,
+                d.campoArea,
+                d.campoCargo,
+                d.segmento_treinamento_id,
+                d.campo_treinados,
+                d.campoNr_trinta_tres,
+                d.campoNr_trinta_cinco,
+                d.campoNr_ebtv,
+                d.campoAdmitido,
+                d.campoCracha,
+                d.campoFoto,
+                d.campoPcd,
+                d.campoCnpj,
+                d.campoCentroCusto
+            ]
+            let total = lista.filter((v) => v !== '' && v !== null && v !== undefined).length
+            if (d.campoDemitido === true) total++
+            if (d.campoVencimento && d.dataInicioVencimento && d.dataFimVencimento) total++
+            if (d.campoPeriodoTreinado && d.dataInicioPeriodoTreinado && d.dataFimPeriodoTreinado) total++
+            if (Array.isArray(d.treinamentos_selecionados) && d.treinamentos_selecionados.length > 0) total++
+            return total
+        },
+        activeFilterChips() {
+            const d = this.controle.dados
+            const segmentoSelecionado = this.segmentosTreinamento.find((s) => String(s.id) === String(d.segmento_treinamento_id))
+            const chips = []
+            if (d.campoBusca) chips.push({ key: 'campoBusca', label: `Busca: ${d.campoBusca}` })
+            if (d.campoCPF) chips.push({ key: 'campoCPF', label: `CPF: ${d.campoCPF}` })
+            if (d.segmento_treinamento_id) chips.push({ key: 'segmento_treinamento_id', label: `Padrão: ${segmentoSelecionado ? segmentoSelecionado.nome : d.segmento_treinamento_id}` })
+            if (d.campo_treinados) chips.push({ key: 'campo_treinados', label: `Treinados: ${d.campo_treinados === 'S' ? 'Sim' : 'Não'}` })
+            if (d.campoAdmitido) chips.push({ key: 'campoAdmitido', label: `Admitidos: ${d.campoAdmitido === 'S' ? 'Sim' : 'Não'}` })
+            if (d.campoDemitido === true) chips.push({ key: 'campoDemitido', label: 'Demitidos: Sim' })
+            if (d.campoCnpj) chips.push({ key: 'campoCnpj', label: 'CNPJ selecionado' })
+            if (d.campoCentroCusto) chips.push({ key: 'campoCentroCusto', label: 'Centro de custo selecionado' })
+            if (d.campoVaga) chips.push({ key: 'campoVaga', label: 'Vaga selecionada' })
+            if (d.campoCargo) chips.push({ key: 'campoCargo', label: `Cargo: ${d.campoCargo}` })
+            if (d.campoUf) chips.push({ key: 'campoUf', label: `UF: ${d.campoUf}` })
+            if (d.campoFoto !== '') chips.push({ key: 'campoFoto', label: `Foto 3x4: ${d.campoFoto ? 'Sim' : 'Não'}` })
+            if (d.campoCracha) chips.push({ key: 'campoCracha', label: `Crachá: ${d.campoCracha}` })
+            if (d.campoVencimento && d.dataInicioVencimento && d.dataFimVencimento) chips.push({ key: 'campoVencimento', label: `Vencimento: ${d.dataInicioVencimento} até ${d.dataFimVencimento}` })
+            if (d.campoPeriodoTreinado && d.dataInicioPeriodoTreinado && d.dataFimPeriodoTreinado) chips.push({ key: 'campoPeriodoTreinado', label: `Período treinado: ${d.dataInicioPeriodoTreinado} até ${d.dataFimPeriodoTreinado}` })
+            if (Array.isArray(d.treinamentos_selecionados) && d.treinamentos_selecionados.length > 0) {
+                chips.push({ key: 'treinamentos_selecionados', label: `Treinamentos: ${d.treinamentos_selecionados.length}` })
+            }
+            return chips
+        }
+    },
+    watch: {
+        'controle.dados': {
+            handler() {
+                if (this._syncUrlTimer) clearTimeout(this._syncUrlTimer)
+                this._syncUrlTimer = setTimeout(() => this.syncUrlFiltros(), 350)
+            },
+            deep: true
         }
     },
     methods: {
+        boolFromParam(value, fallback = '') {
+            if (value === null || value === '') return fallback
+            if (value === 'true' || value === '1' || value === 'S') return true
+            if (value === 'false' || value === '0' || value === 'N') return false
+            return fallback
+        },
+        urlParamGet() {
+            const urlParams = new URLSearchParams(window.location.search)
+            const d = this.controle.dados
+            if (urlParams.get('pages')) d.pages = parseInt(urlParams.get('pages'), 10) || 50
+            if (urlParams.get('campoBusca')) d.campoBusca = urlParams.get('campoBusca')
+            if (urlParams.get('campoCPF')) d.campoCPF = urlParams.get('campoCPF')
+            if (urlParams.get('campoVaga')) d.campoVaga = urlParams.get('campoVaga')
+            if (urlParams.get('campoUf')) d.campoUf = urlParams.get('campoUf')
+            if (urlParams.get('campoArea')) d.campoArea = urlParams.get('campoArea')
+            if (urlParams.get('campoCargo')) d.campoCargo = urlParams.get('campoCargo')
+            if (urlParams.get('segmento_treinamento_id')) d.segmento_treinamento_id = urlParams.get('segmento_treinamento_id')
+            if (urlParams.get('campo_treinados')) d.campo_treinados = urlParams.get('campo_treinados')
+            if (urlParams.get('campoAdmitido')) d.campoAdmitido = urlParams.get('campoAdmitido')
+            d.campoDemitido = this.boolFromParam(urlParams.get('campoDemitido'), false)
+            const campoFoto = this.boolFromParam(urlParams.get('campoFoto'), '')
+            if (campoFoto !== '') d.campoFoto = campoFoto
+            if (urlParams.get('campoCracha')) d.campoCracha = urlParams.get('campoCracha')
+            const campoPcd = this.boolFromParam(urlParams.get('campoPcd'), '')
+            if (campoPcd !== '') d.campoPcd = campoPcd
+            if (urlParams.get('campoCnpj')) d.campoCnpj = urlParams.get('campoCnpj')
+            if (urlParams.get('campoCentroCusto')) d.campoCentroCusto = urlParams.get('campoCentroCusto')
+            if (urlParams.get('treinamentos')) {
+                d.treinamentos_selecionados = urlParams
+                    .get('treinamentos')
+                    .split('|')
+                    .map((item) => item.trim())
+                    .filter(Boolean)
+                d.campo_treinados = d.treinamentos_selecionados.length ? 'S' : d.campo_treinados
+            }
+            d.campoVencimento = this.boolFromParam(urlParams.get('campoVencimento'), false)
+            if (urlParams.get('dataInicioVencimento')) d.dataInicioVencimento = urlParams.get('dataInicioVencimento')
+            if (urlParams.get('dataFimVencimento')) d.dataFimVencimento = urlParams.get('dataFimVencimento')
+            d.campoPeriodoTreinado = this.boolFromParam(urlParams.get('campoPeriodoTreinado'), false)
+            if (urlParams.get('dataInicioPeriodoTreinado')) d.dataInicioPeriodoTreinado = urlParams.get('dataInicioPeriodoTreinado')
+            if (urlParams.get('dataFimPeriodoTreinado')) d.dataFimPeriodoTreinado = urlParams.get('dataFimPeriodoTreinado')
+            if (d.campoVencimento && d.dataInicioVencimento && d.dataFimVencimento) {
+                d.vencimento = d.dataInicioVencimento + ' até ' + d.dataFimVencimento
+            }
+            if (d.campoPeriodoTreinado && d.dataInicioPeriodoTreinado && d.dataFimPeriodoTreinado) {
+                d.periodoTreinado = d.dataInicioPeriodoTreinado + ' até ' + d.dataFimPeriodoTreinado
+            }
+            if (urlParams.get('page')) {
+                const p = parseInt(urlParams.get('page'), 10)
+                if (p >= 1) this.initialPage = p
+            }
+            if (this.totalFiltrosAtivos > 0) this.filtrosAvancadosAbertos = true
+        },
+        syncUrlFiltros() {
+            const d = this.controle.dados
+            const atual = this.$refs.componente && this.$refs.componente.atual ? this.$refs.componente.atual : 1
+            const params = {}
+            if (d.pages && String(d.pages) !== '50') params.pages = d.pages
+            if (d.campoBusca) params.campoBusca = d.campoBusca
+            if (d.campoCPF) params.campoCPF = d.campoCPF
+            if (d.campoVaga) params.campoVaga = d.campoVaga
+            if (d.campoUf) params.campoUf = d.campoUf
+            if (d.campoArea) params.campoArea = d.campoArea
+            if (d.campoCargo) params.campoCargo = d.campoCargo
+            if (d.segmento_treinamento_id) params.segmento_treinamento_id = d.segmento_treinamento_id
+            if (d.campo_treinados) params.campo_treinados = d.campo_treinados
+            if (d.campoAdmitido) params.campoAdmitido = d.campoAdmitido
+            if (d.campoDemitido === true) params.campoDemitido = 'true'
+            if (d.campoCracha) params.campoCracha = d.campoCracha
+            if (d.campoFoto !== '') params.campoFoto = String(d.campoFoto)
+            if (d.campoPcd !== '') params.campoPcd = String(d.campoPcd)
+            if (d.campoCnpj) params.campoCnpj = d.campoCnpj
+            if (d.campoCentroCusto) params.campoCentroCusto = d.campoCentroCusto
+            if (Array.isArray(d.treinamentos_selecionados) && d.treinamentos_selecionados.length > 0) {
+                params.treinamentos = d.treinamentos_selecionados.join('|')
+            }
+            if (d.campoVencimento && d.dataInicioVencimento && d.dataFimVencimento) {
+                params.campoVencimento = 'true'
+                params.dataInicioVencimento = d.dataInicioVencimento
+                params.dataFimVencimento = d.dataFimVencimento
+            }
+            if (d.campoPeriodoTreinado && d.dataInicioPeriodoTreinado && d.dataFimPeriodoTreinado) {
+                params.campoPeriodoTreinado = 'true'
+                params.dataInicioPeriodoTreinado = d.dataInicioPeriodoTreinado
+                params.dataFimPeriodoTreinado = d.dataFimPeriodoTreinado
+            }
+            if (atual > 1) params.page = atual
+            const qs = new URLSearchParams(params).toString()
+            const url = qs ? `${window.location.pathname}?${qs}` : window.location.pathname
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState({}, '', url)
+            }
+        },
         abrirModal(refName) {
             const ref = this.$refs[refName]
             const r = Array.isArray(ref) ? ref[0] : ref
@@ -2233,15 +2432,100 @@ export default defineComponent({
                 this.controle.dados.campoCnpj = Object.keys(dados.cc.cnpjs)[0]
             }
             this.controle.carregando = false
+            this.$nextTick(() => this.syncUrlFiltros())
         },
         carregando() {
             this.controle.carregando = true
         },
         atualizar() {
+            this.syncUrlFiltros()
             if (this.$refs && this.$refs.componente) {
                 this.$refs.componente.atual = 1
                 if (this.$refs.componente.buscar) this.$refs.componente.buscar()
             }
+        },
+        limparFiltros() {
+            const d = this.controle.dados
+            d.campoBusca = ''
+            d.campoCPF = ''
+            d.campoVaga = ''
+            d.campoUf = ''
+            d.campoArea = ''
+            d.campoCargo = ''
+            d.segmento_treinamento_id = ''
+            d.campo_treinados = ''
+            d.campoNr_trinta_tres = ''
+            d.campoNr_trinta_cinco = ''
+            d.campoNr_ebtv = ''
+            d.campoAdmitido = ''
+            d.campoDemitido = false
+            d.campoCracha = ''
+            d.campoFoto = ''
+            d.campoPcd = ''
+            d.campoVencimento = false
+            d.dataInicioVencimento = ''
+            d.dataFimVencimento = ''
+            d.vencimento = ''
+            d.campoPeriodoTreinado = false
+            d.dataInicioPeriodoTreinado = ''
+            d.dataFimPeriodoTreinado = ''
+            d.periodoTreinado = ''
+            d.campoCnpj = ''
+            d.campoCentroCusto = ''
+            d.treinamentos = ''
+            d.treinamentos_selecionados = []
+            d.pages = 50
+            this.filtrosAvancadosAbertos = false
+            this.syncUrlFiltros()
+            this.atualizar()
+        },
+        limparFiltroAtivo(key) {
+            const d = this.controle.dados
+            const resetMap = {
+                campoBusca: () => (d.campoBusca = ''),
+                campoCPF: () => (d.campoCPF = ''),
+                segmento_treinamento_id: () => (d.segmento_treinamento_id = ''),
+                campo_treinados: () => {
+                    d.campo_treinados = ''
+                    d.treinamentos = ''
+                    d.treinamentos_selecionados = []
+                },
+                campoAdmitido: () => (d.campoAdmitido = ''),
+                campoDemitido: () => (d.campoDemitido = false),
+                campoCnpj: () => {
+                    d.campoCnpj = ''
+                    d.campoCentroCusto = ''
+                },
+                campoCentroCusto: () => (d.campoCentroCusto = ''),
+                campoVaga: () => {
+                    d.campoVaga = ''
+                    d.autocomplete_label = ''
+                    d.autocomplete_label_anterior = ''
+                },
+                campoCargo: () => (d.campoCargo = ''),
+                campoUf: () => (d.campoUf = ''),
+                campoFoto: () => (d.campoFoto = ''),
+                campoCracha: () => (d.campoCracha = ''),
+                campoVencimento: () => {
+                    d.campoVencimento = false
+                    d.dataInicioVencimento = ''
+                    d.dataFimVencimento = ''
+                    d.vencimento = ''
+                },
+                campoPeriodoTreinado: () => {
+                    d.campoPeriodoTreinado = false
+                    d.dataInicioPeriodoTreinado = ''
+                    d.dataFimPeriodoTreinado = ''
+                    d.periodoTreinado = ''
+                },
+                treinamentos_selecionados: () => {
+                    d.treinamentos = ''
+                    d.treinamentos_selecionados = []
+                    d.campo_treinados = ''
+                }
+            }
+            if (resetMap[key]) resetMap[key]()
+            this.atualizar()
         },
 
         atualizarVencimentoString() {
@@ -2361,6 +2645,23 @@ export default defineComponent({
 </script>
 <style scoped>
 /* Garante que o dropdown aberto fique acima do card e que o menu seja visível */
+.filtro-toolbar-compact {
+    padding: 0.25rem 0 0.5rem;
+    border-bottom: 1px dashed #d7dde3;
+    margin-bottom: 0.25rem;
+}
+.gap-compact {
+    gap: 0.35rem;
+}
+.filtro-section-title {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6c757d;
+    margin: 0.4rem 0 0.35rem;
+    border-bottom: 1px solid #eef1f4;
+    padding-bottom: 0.35rem;
+}
 .dropdown-carteira-etiquetas.show {
     position: relative;
     z-index: 1040;
