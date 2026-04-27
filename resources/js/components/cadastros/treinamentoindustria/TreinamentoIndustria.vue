@@ -75,6 +75,60 @@
                                     </select>
                                 </div>
                             </div>
+                            <div class="col-12 mb-2">
+                                <div class="custom-control custom-switch">
+                                    <input
+                                        type="checkbox"
+                                        v-model="form.vinculo_todos_cargos"
+                                        class="custom-control-input"
+                                        id="vinculo_todos_cargos"
+                                        @change="onToggleVinculoTodosCargos"
+                                    />
+                                    <label class="custom-control-label" for="vinculo_todos_cargos">Vincular a todos os cargos</label>
+                                </div>
+                                <small v-if="form.vinculo_todos_cargos" class="text-muted d-block">
+                                    Quando ativo, o treinamento vale para qualquer cargo, independentemente da lista abaixo.
+                                </small>
+                            </div>
+                            <div class="col-12 col-md-12" v-show="!form.vinculo_todos_cargos">
+                                <fieldset>
+                                    <legend>Cargos vinculados</legend>
+                                    <div class="form-group">
+                                        <label>Adicionar cargo</label>
+                                        <autocomplete
+                                            :caminho="`autocomplete/cargos_ativos`"
+                                            :formsm="true"
+                                            v-model="form.autocomplete_label_cargo"
+                                            placeholder="Selecione um cargo"
+                                            :id="`cargo_${hash}`"
+                                            @onselect="selecionaCargo"
+                                        ></autocomplete>
+                                    </div>
+
+                                    <div class="table-responsive" v-if="form.cargos.length > 0">
+                                        <table class="table table-bordered table-hover table-condensed bg-white">
+                                            <thead>
+                                                <tr class="bg-default">
+                                                    <th class="text-center">#</th>
+                                                    <th>Cargo</th>
+                                                    <th class="text-center">Remover</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(cargo, index) in form.cargos" :key="cargo.id">
+                                                    <td class="text-center">{{ index + 1 }}</td>
+                                                    <td>{{ cargo.nome }}</td>
+                                                    <td class="text-center">
+                                                        <a href="javascript://" class="btn btn-sm mr-1 btn-danger" @click.prevent="removerCargo(index)">
+                                                            <i class="fa fa-times" aria-hidden="true"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </fieldset>
+                            </div>
                             <div class="col-12 mt-2">
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="ativo" />
@@ -171,7 +225,8 @@
                         <tr class="bg-default">
                             <td class="text-center">Nº</td>
                             <td class="text-center">Nome</td>
-                            <td class="text-center">Segmento</td>
+                            <td class="text-center">Padrão de Treinamento</td>
+                            <td class="text-center">Todos os cargos</td>
                             <td class="text-center">A Quem se destina</td>
                             <td class="text-center">Prazo fixo (dias)</td>
                             <td class="text-center">Ordem</td>
@@ -184,6 +239,10 @@
                             <td class="text-center">{{ item.id }}</td>
                             <td class="text-center">{{ item.label }}</td>
                             <td class="text-center">{{ item.segmento_treinamento ? item.segmento_treinamento.nome : '-' }}</td>
+                            <td class="text-center">
+                                <span v-if="item.vinculo_todos_cargos" class="badge badge-info">Sim</span>
+                                <span v-else class="text-muted">Não</span>
+                            </td>
                             <td class="text-center">{{ item.descricao }}</td>
                             <td class="text-center">{{ item.prazo_fixo }}</td>
                             <td class="text-center">{{ item.ordem }}</td>
@@ -270,7 +329,12 @@ export default {
                 prazo_fixo: 365,
                 ordem: 1,
                 ativo: true,
-                segmento_treinamento_id: null
+                segmento_treinamento_id: null,
+                vinculo_todos_cargos: false,
+                cargos: [],
+                cargo_ids: [],
+                cargo_id: '',
+                autocomplete_label_cargo: ''
             },
 
             formDefault: null,
@@ -290,6 +354,37 @@ export default {
         }
     },
     methods: {
+        removerCargo(index) {
+            this.form.cargos.splice(index, 1)
+            this.form.cargo_ids = this.form.cargos.map((item) => item.id)
+        },
+        selecionaCargo(obj) {
+            if (this.form.vinculo_todos_cargos) {
+                return
+            }
+            const cargo = {
+                id: obj.id,
+                nome: obj.nome || obj.label
+            }
+
+            const atual = this.form.cargos.findIndex((item) => item.id === cargo.id)
+            if (atual >= 0) {
+                mostraErro('', `O cargo ${cargo.nome} já está na lista.`)
+                this.form.autocomplete_label_cargo = ''
+                return
+            }
+
+            this.form.cargos.push(cargo)
+            this.form.cargo_ids = this.form.cargos.map((item) => item.id)
+            this.form.autocomplete_label_cargo = ''
+        },
+        onToggleVinculoTodosCargos() {
+            if (this.form.vinculo_todos_cargos) {
+                this.form.cargos = []
+                this.form.cargo_ids = []
+                this.form.autocomplete_label_cargo = ''
+            }
+        },
         carregarSegmentos() {
             axios
                 .get(`${URL_ADMIN}/cadastro/segmentostreinamento/lista`)
@@ -317,7 +412,11 @@ export default {
                 return false
             }
             this.preload = true
-            const payload = { ...this.form, prazo_parada: null }
+            const payload = {
+                ...this.form,
+                prazo_parada: null,
+                cargo_ids: this.form.vinculo_todos_cargos ? [] : this.form.cargos.map((item) => item.id)
+            }
             axios
                 .post(`${URL_ADMIN}/cadastro/treinamentoindustria`, payload)
                 .then((res) => {
@@ -346,6 +445,14 @@ export default {
                 .get(`${URL_ADMIN}/cadastro/treinamentoindustria/${treinamentoindustria}/editar`)
                 .then((response) => {
                     Object.assign(this.form, response.data)
+                    if (this.form.vinculo_todos_cargos) {
+                        this.form.cargos = []
+                        this.form.cargo_ids = []
+                    } else {
+                        this.form.cargos = response.data.vagas || []
+                        this.form.cargo_ids = this.form.cargos.map((item) => item.id)
+                    }
+                    this.form.autocomplete_label_cargo = ''
                     this.editando = true
                     setupCampo()
                 })
@@ -361,7 +468,11 @@ export default {
             }
 
             this.preload = true
-            const payload = { ...this.form, prazo_parada: null }
+            const payload = {
+                ...this.form,
+                prazo_parada: null,
+                cargo_ids: this.form.vinculo_todos_cargos ? [] : this.form.cargos.map((item) => item.id)
+            }
             axios
                 .put(`${URL_ADMIN}/cadastro/treinamentoindustria/${this.form.id}`, payload)
                 .then((response) => {

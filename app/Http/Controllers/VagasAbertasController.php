@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Projeto;
 use App\Models\Simulado;
+use App\Models\Vaga;
 use App\Models\VagaProjeto;
 use App\Models\VagasAbertas;
+use App\Models\Vencimento;
 use Barryvdh\DomPDF\PDF;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -143,12 +145,30 @@ class VagasAbertasController extends Controller
      */
     public function edit(VagasAbertas $vagas_aberta)
     {
-        $vagas_aberta->load('Municipio', 'Vaga', 'Simulados', 'Projetos');
+        $vagas_aberta->load(
+            'Municipio',
+            'Vaga',
+            'Vaga.Vencimentos:id,label,segmento_treinamento_id,vinculo_todos_cargos',
+            'Vaga.Vencimentos.SegmentoTreinamento:id,nome',
+            'Simulados',
+            'Projetos'
+        );
 
         $vagas_aberta->Simulados->transform(function ($item) {
             $item->tipo_prova = $item->simulado->tipo_prova;
             return $item;
         });
+
+        $vencimentosTodosCargos = Vencimento::with('SegmentoTreinamento:id,nome')
+            ->where('vinculo_todos_cargos', true)
+            ->where('ativo', true)
+            ->whereNotNull('label')
+            ->get(['id', 'label', 'segmento_treinamento_id', 'vinculo_todos_cargos']);
+
+        if ($vagas_aberta->Vaga) {
+            $merged = $vagas_aberta->Vaga->Vencimentos->concat($vencimentosTodosCargos)->unique('id')->values();
+            $vagas_aberta->Vaga->setRelation('vencimentos', $merged);
+        }
 
         return $vagas_aberta;
 
@@ -286,7 +306,12 @@ class VagasAbertasController extends Controller
     public function atualizar(Request $request)
     {
         $this->authorize('cadastro_vagas_abertas');
-        $resultado = VagasAbertas::with('Vaga', 'Municipio', 'Simulados.Simulado');
+        $resultado = VagasAbertas::with(
+            'Vaga.Vencimentos:id,label,segmento_treinamento_id,vinculo_todos_cargos',
+            'Vaga.Vencimentos.SegmentoTreinamento:id,nome',
+            'Municipio',
+            'Simulados.Simulado'
+        );
         if ($request->filled('campoBusca')) {
             $resultado->whereHas('Vaga', function ($q) use ($request) {
                 $q->where('nome', 'like', '%' . $request->campoBusca . '%');
@@ -301,8 +326,18 @@ class VagasAbertasController extends Controller
         $simulados = Simulado::whereAtivo(true)->orderBy('titulo')->get();
         $projetos = Projeto::where('qnt_total_restante', '>=', 0)->get();
 
-        $items = collect($resultado->items())->transform(function($item){
+        $vencimentosTodosCargos = Vencimento::with('SegmentoTreinamento:id,nome')
+            ->where('vinculo_todos_cargos', true)
+            ->where('ativo', true)
+            ->whereNotNull('label')
+            ->get(['id', 'label', 'segmento_treinamento_id', 'vinculo_todos_cargos']);
+
+        $items = collect($resultado->items())->transform(function ($item) use ($vencimentosTodosCargos) {
             $item->slug = "{$item->id}/".Str::slug($item->titulo);
+            if ($item->Vaga) {
+                $merged = $item->Vaga->Vencimentos->concat($vencimentosTodosCargos)->unique('id')->values();
+                $item->Vaga->setRelation('vencimentos', $merged);
+            }
             return $item;
         });
 
@@ -316,6 +351,41 @@ class VagasAbertasController extends Controller
                 'projetos' => $projetos,
             ]
         ]);
+    }
+
+    /**
+     * Treinamentos (vencimentos) vinculados ao cargo, para uso na tela de Vagas Abertas.
+     */
+    public function treinamentosDoCargo(Vaga $vaga)
+    {
+        $this->authorize('cadastro_vagas_abertas');
+
+        $vaga->load([
+            'Vencimentos' => function ($q) {
+                $q->select('vencimentos.id', 'vencimentos.label', 'vencimentos.segmento_treinamento_id', 'vencimentos.vinculo_todos_cargos')
+                    ->where('vencimentos.ativo', true);
+            },
+            'Vencimentos.SegmentoTreinamento:id,nome',
+        ]);
+
+        $globais = Vencimento::with('SegmentoTreinamento:id,nome')
+            ->where('vinculo_todos_cargos', true)
+            ->where('ativo', true)
+            ->whereNotNull('label')
+            ->get(['id', 'label', 'segmento_treinamento_id', 'vinculo_todos_cargos']);
+
+        $merged = $vaga->Vencimentos->concat($globais)->unique('id')->values();
+
+        return response()->json(
+            $merged->map(function ($v) {
+                return [
+                    'id' => $v->id,
+                    'label' => $v->label,
+                    'padrao_treinamento' => optional($v->SegmentoTreinamento)->nome ?? 'Geral',
+                    'todos_cargos' => (bool) ($v->vinculo_todos_cargos ?? false),
+                ];
+            })
+        );
     }
 
     public function ativaDesativa(VagasAbertas $vagas_aberta)

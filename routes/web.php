@@ -180,6 +180,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::get('colaboradores', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradores'])->name('colaboradores');
         Route::get('colaboradores-ferias', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradoresFerias'])->name('colaboradoresFerias');
         Route::get('cargosEmpresa', [\App\Http\Controllers\AutoCompletesController::class, 'cargosEmpresa'])->name('cargosEmpresa');
+        Route::get('vencimentos-ativos', [\App\Http\Controllers\AutoCompletesController::class, 'vencimentosAtivos'])->name('vencimentosAtivos');
         Route::get('buscaUsuariosAtivos', [\App\Http\Controllers\AutoCompletesController::class, 'buscaUsuariosAtivos'])->name('buscaUsuariosAtivos');
         //        Route::get('colaboradorIntermitente/{cliente_id}', [\App\Http\Controllers\AutoCompletesController::class, 'colaboradorIntermitenteCliente'])->name('colaboradorIntermitenteCliente');
 
@@ -501,6 +502,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
 
             Route::put('vagas-abertas/{vagas_aberta}/ativa-desativa', [\App\Http\Controllers\VagasAbertasController::class, 'ativaDesativa'])->name('vagas_abertas.ativaDesativa')->middleware('can:cadastro_vagas_abertas_update');
             Route::post('vagas-abertas/atualizar', [\App\Http\Controllers\VagasAbertasController::class, 'atualizar'])->name('vagas_abertas.atualizar')->middleware('can:cadastro_vagas_abertas');
+            Route::get('vagas-abertas/cargo/{vaga}/treinamentos', [\App\Http\Controllers\VagasAbertasController::class, 'treinamentosDoCargo'])->name('vagas_abertas.treinamentos_cargo')->middleware('can:cadastro_vagas_abertas');
             Route::get('vagas-abertas/prova/{simulado}/{vaga_aberta}', [\App\Http\Controllers\VagasAbertasController::class, 'vagaAbertaSimulado'])->name('vagas_abertas.vagaAbertaSimulado')->middleware('can:cadastro_vagas_abertas');
             Route::resource('vagas-abertas', \App\Http\Controllers\VagasAbertasController::class)->middleware('can:cadastro_vagas_abertas');
         });

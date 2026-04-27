@@ -89,4 +89,9 @@ class Vaga extends Model
         return $this->hasOne(VagasAbertas::class, 'vaga_id', 'id');
     }
 
+    public function Vencimentos()
+    {
+        return $this->belongsToMany(Vencimento::class, 'vagas_vencimentos', 'vaga_id', 'vencimento_id')->withTimestamps();
+    }
+
 }
