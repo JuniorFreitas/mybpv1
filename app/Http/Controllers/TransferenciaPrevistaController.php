@@ -87,7 +87,7 @@ class TransferenciaPrevistaController extends Controller
         // Informações de aprovação extra
         $config = AprovacaoExtraConfig::getConfigAtiva($transferenciaPrevista->empresa_id, 'transferencia');
         $transferenciaPrevista->tem_aprovacao_extra = $config ? true : false;
-        $transferenciaPrevista->pode_aprovar_extra = $config ? $config->usuarioPodeAprovar(auth()->id()) : false;
+        $transferenciaPrevista->pode_aprovar_extra = $config ? $config->podeAprovar(auth()->id()) : false;
         $transferenciaPrevista->nome_aprovacao_extra = $config ? $config->nome_aprovacao : '';
 
         return $transferenciaPrevista;
@@ -183,7 +183,7 @@ class TransferenciaPrevistaController extends Controller
         // Verifica se usu\u00e1rio pode aprovar (via config)
         $config = AprovacaoExtraConfig::getConfigAtiva($transferenciaPrevista->empresa_id, 'transferencia');
 
-        if (!$config || !$config->usuarioPodeAprovar(auth()->id())) {
+        if (!$config || !$config->podeAprovar(auth()->id())) {
             return response()->json(['msg' => 'Voc\u00ea n\u00e3o tem permiss\u00e3o para aprovar esta etapa'], 403);
         }
 
@@ -344,7 +344,7 @@ class TransferenciaPrevistaController extends Controller
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
                 'aprovar_por_rh' => auth()->user()->can('privilegio_gestao_rh') || auth()->user()->can('privilegio_aprovar_por_rh') || auth()->user()->can('privilegio_aprovar_rh'),
                 'tem_aprovacao_extra' => $config ? true : false,
-                'pode_aprovar_extra' => $config ? $config->usuarioPodeAprovar(auth()->id()) : false,
+                'pode_aprovar_extra' => $config ? $config->podeAprovar(auth()->id()) : false,
                 'nome_aprovacao_extra' => $config ? $config->nome_aprovacao : '',
             ]
         ]);

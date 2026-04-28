@@ -170,8 +170,9 @@ export default {
                     this.isOpen = true;
                     this.arrowCounter=0;*/
                     if (this.metodo === 'get') {
+                        const separador = this.caminho.includes('?') ? '&' : '?'
                         axios
-                            .get(`${URL_ADMIN}/${this.caminho}?busca=${this.el.value}&rows=${this.rows}`)
+                            .get(`${URL_ADMIN}/${this.caminho}${separador}busca=${this.el.value}&rows=${this.rows}`)
                             .then(({ data }) => {
                                 this.isLoading = false
                                 this.results = data

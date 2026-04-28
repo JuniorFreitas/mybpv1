@@ -26,6 +26,58 @@
                     <label for="switch">Ativo</label>
                 </div>
 
+                <fieldset class="mt-3">
+                    <legend>Treinamentos</legend>
+
+                    <div class="form-group">
+                        <label>Padrão de Treinamento</label>
+                        <select class="form-control form-control-sm"
+                                v-model="form.segmento_treinamento_id"
+                                @change="mudouSegmentoTreinamento()">
+                            <option value="">Todos os padrões</option>
+                            <option v-for="segmento in segmentos" :key="segmento.id" :value="segmento.id">
+                                @{{segmento.nome}}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Adicionar treinamento</label>
+                        <autocomplete :caminho="caminhoAutocompleteVencimentos()"
+                                      :formsm="true"
+                                      v-model="form.autocomplete_label_vencimento"
+                                      placeholder="Selecione um treinamento"
+                                      :id="`vencimento_${hash}`"
+                                      @onselect="selecionaVencimento"></autocomplete>
+                    </div>
+
+                    <div class="table-responsive" v-if="form.vencimentos.length > 0">
+                        <table class="table table-bordered table-hover table-condensed bg-white">
+                            <thead>
+                            <tr class="bg-default">
+                                <th class="text-center">#</th>
+                                <th>Treinamento</th>
+                                <th>Padrão de Treinamento</th>
+                                <th class="text-center">Remover</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="(vencimento, index) in form.vencimentos" :key="vencimento.id">
+                                <td class="text-center">@{{index + 1}}</td>
+                                <td>@{{vencimento.label}}</td>
+                                <td>@{{vencimento.segmento_nome || 'Geral'}}</td>
+                                <td class="text-center">
+                                    <a href="javascript://" class="btn btn-sm mr-1 btn-danger"
+                                       @click.prevent="removerVencimento(index)">
+                                        <i class="fa fa-times" aria-hidden="true"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </fieldset>
+
             </form>
         </template>
         <template #rodape>

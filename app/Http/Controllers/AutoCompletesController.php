@@ -10,6 +10,7 @@ use App\Models\Municipio;
 use App\Models\User;
 use App\Models\Vaga;
 use App\Models\VagasAbertas;
+use App\Models\Vencimento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -331,6 +332,38 @@ class AutoCompletesController extends Controller
             ->take($quantidade)
             ->get()->map(function ($item) {
                 $item->label = $item->nome;
+                return $item;
+            });
+    }
+
+    public function vencimentosAtivos(Request $request)
+    {
+        $busca = $request->query('busca');
+        if ($busca == '') {
+            return response()->json([], 201);
+        }
+
+        $quantidade = $request->query('rows');
+        $segmentoTreinamentoId = $request->query('segmento_treinamento_id');
+
+        $query = Vencimento::with('SegmentoTreinamento:id,nome')
+            ->whereAtivo(true)
+            ->whereNotNull('label');
+
+        if ($segmentoTreinamentoId) {
+            $query->where(function ($q) use ($segmentoTreinamentoId) {
+                $q->where('segmento_treinamento_id', $segmentoTreinamentoId)
+                    ->orWhereNull('segmento_treinamento_id');
+            });
+        }
+
+        return $query->where('label', 'like', '%' . $busca . '%')
+            ->orderBy('label')
+            ->take($quantidade)
+            ->get()
+            ->map(function ($item) {
+                $item->label = $item->label;
+                $item->segmento_nome = optional($item->SegmentoTreinamento)->nome ?? 'Geral';
                 return $item;
             });
     }

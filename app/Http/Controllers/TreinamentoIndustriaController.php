@@ -41,14 +41,41 @@ class TreinamentoIndustriaController extends Controller
     {
         $this->authorize('cadastro_treinamento_sgi_insert');
         $dados = $request->input();
+        $dados['vinculo_todos_cargos'] = $this->normalizeBoolean($dados['vinculo_todos_cargos'] ?? false);
+        $cargoIds = $this->normalizeIds($dados['cargo_ids'] ?? []);
+        unset($dados['cargo_ids']);
+        if ($dados['vinculo_todos_cargos']) {
+            $cargoIds = [];
+        }
         $dadosValidados = \Validator::make($dados,
             [
                 'label' => 'required',
                 'label_reduzida' => Rule::requiredIf($request->input('exibir_na_carteira')),
                 'descricao' => 'required',
                 'ativo' => 'required',
+                'vinculo_todos_cargos' => 'required|boolean',
             ]
         );
+        if (!$dados['vinculo_todos_cargos']) {
+            $cargosValidados = \Validator::make(
+                ['cargo_ids' => $cargoIds],
+                [
+                    'cargo_ids' => 'nullable|array',
+                    'cargo_ids.*' => 'integer',
+                    'cargo_ids.*' => Rule::exists('vagas', 'id')->where(function ($query) {
+                        $query->whereAtivo(true);
+                    }),
+                ]
+            );
+
+            if ($cargosValidados->fails()) {
+                return response()->json([
+                    'msg' => 'Erro ao Cadastrar Treinamento Indústria',
+                    'erros' => $cargosValidados->errors()
+                ], 400);
+            }
+        }
+
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao Cadastrar Treinamento Indústria',
@@ -63,7 +90,8 @@ class TreinamentoIndustriaController extends Controller
                 }
                 $dados['segmento_treinamento_id'] = $dados['segmento_treinamento_id'] ?? SegmentoTreinamento::getIdAlumar();
 
-                Vencimento::create($dados);
+                $vencimento = Vencimento::create($dados);
+                $vencimento->Vagas()->sync($dados['vinculo_todos_cargos'] ? [] : $cargoIds);
 
                 DB::commit();
                 return response()->json([], 201);
@@ -95,7 +123,13 @@ class TreinamentoIndustriaController extends Controller
      */
     public function edit($id)
     {
-        return Vencimento::with('SegmentoTreinamento:id,nome,slug')->whereId($id)->first();
+        $vencimento = Vencimento::with('SegmentoTreinamento:id,nome,slug', 'Vagas:id,nome')->whereId($id)->first();
+        if (!$vencimento) {
+            return $vencimento;
+        }
+
+        $vencimento->cargo_ids = $vencimento->Vagas->pluck('id')->values();
+        return $vencimento;
     }
 
     /**
@@ -110,14 +144,41 @@ class TreinamentoIndustriaController extends Controller
 //        dd($request->input());
         $this->authorize('cadastro_treinamento_sgi_update');
         $dados = $request->input();
+        $dados['vinculo_todos_cargos'] = $this->normalizeBoolean($dados['vinculo_todos_cargos'] ?? false);
+        $cargoIds = $this->normalizeIds($dados['cargo_ids'] ?? []);
+        unset($dados['cargo_ids']);
+        if ($dados['vinculo_todos_cargos']) {
+            $cargoIds = [];
+        }
         $dadosValidados = \Validator::make($dados,
             [
                 'label' => 'required',
                 'label_reduzida' => Rule::requiredIf($request->input('exibir_na_carteira')),
                 'descricao' => 'required',
                 'ativo' => 'required',
+                'vinculo_todos_cargos' => 'required|boolean',
             ]
         );
+        if (!$dados['vinculo_todos_cargos']) {
+            $cargosValidados = \Validator::make(
+                ['cargo_ids' => $cargoIds],
+                [
+                    'cargo_ids' => 'nullable|array',
+                    'cargo_ids.*' => 'integer',
+                    'cargo_ids.*' => Rule::exists('vagas', 'id')->where(function ($query) {
+                        $query->whereAtivo(true);
+                    }),
+                ]
+            );
+
+            if ($cargosValidados->fails()) {
+                return response()->json([
+                    'msg' => 'Erro ao Editar Treinamento Indústria',
+                    'erros' => $cargosValidados->errors()
+                ], 400);
+            }
+        }
+
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao Editar Treinamento Indústria',
@@ -137,6 +198,7 @@ class TreinamentoIndustriaController extends Controller
                 }
 
                 $vencimento->update($dados);
+                $vencimento->Vagas()->sync($dados['vinculo_todos_cargos'] ? [] : $cargoIds);
 
                 DB::commit();
                 return response()->json([], 201);
@@ -199,5 +261,35 @@ class TreinamentoIndustriaController extends Controller
         $treinamento->save();
         $treinamento->refresh();
         return response()->json(['ativo' => $treinamento->ativo], 201);
+    }
+
+    private function normalizeIds($ids): array
+    {
+        if (!is_array($ids)) {
+            return [];
+        }
+
+        return collect($ids)
+            ->filter(function ($id) {
+                return is_numeric($id);
+            })
+            ->map(function ($id) {
+                return (int) $id;
+            })
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function normalizeBoolean($value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+        if ($value === 1 || $value === '1' || $value === 'true' || $value === true) {
+            return true;
+        }
+
+        return false;
     }
 }

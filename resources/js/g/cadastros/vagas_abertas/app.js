@@ -12,7 +12,7 @@ const app = createApp({
     mixins: [MixinConfig],
     data() {
         return {
-            tituloJanela: 'Cadastrando Vaga',
+            tituloJanela: 'Cadastrando Cargo',
             preloadAjax: false,
             editando: false,
             apagado: false,
@@ -60,6 +60,8 @@ const app = createApp({
             listaSimulados: [],
             listaProjetos: [],
             listaProjetosAdicionais: [],
+
+            treinamentosCargo: [],
 
             controle: {
                 carregando: false,
@@ -133,12 +135,28 @@ const app = createApp({
             this.form.vaga_id = obj.id
             this.form.autocomplete_label_vaga_modal = obj.label
             this.form.autocomplete_label_vaga_modal_anterior = obj.label
+            this.carregarTreinamentosCargo(obj.id)
+        },
+        carregarTreinamentosCargo(vagaId) {
+            if (!vagaId) {
+                this.treinamentosCargo = []
+                return
+            }
+            axios
+                .get(`${URL_ADMIN}/cadastro/vagas-abertas/cargo/${vagaId}/treinamentos`)
+                .then((res) => {
+                    this.treinamentosCargo = res.data || []
+                })
+                .catch(() => {
+                    this.treinamentosCargo = []
+                })
         },
         resetaCampoVagaModal() {
             if (this.form.autocomplete_label_vaga_modal_anterior !== this.form.autocomplete_label_vaga_modal) {
                 this.form.autocomplete_label_vaga_modal_anterior = ''
                 this.form.autocomplete_label_vaga_modal = ''
                 this.form.vaga_id = ''
+                this.treinamentosCargo = []
 
                 setTimeout(() => {
                     if (this.form.vaga_id === '') {
@@ -194,12 +212,13 @@ const app = createApp({
             this.atualizado = false
             this.editando = false
 
-            this.tituloJanela = 'Cadastrando Vaga'
+            this.tituloJanela = 'Cadastrando Cargo'
 
             formReset()
             setupCampo()
 
             this.form = _.cloneDeep(this.formDefault) //copia
+            this.treinamentosCargo = []
             this.leitura = false
         },
         cadastrar() {
@@ -257,6 +276,14 @@ const app = createApp({
                     Object.assign(this.form, response.data)
                     this.form.autocomplete_label_vaga_modal = response.data.vaga.nome
                     this.form.autocomplete_label_vaga_modal_anterior = response.data.vaga.nome
+
+                    const vencimentos = response.data.vaga.vencimentos || []
+                    this.treinamentosCargo = vencimentos.map((v) => ({
+                        id: v.id,
+                        label: v.label,
+                        padrao_treinamento: v.segmento_treinamento && v.segmento_treinamento.nome ? v.segmento_treinamento.nome : 'Geral',
+                        todos_cargos: !!v.vinculo_todos_cargos
+                    }))
 
                     this.form.autocomplete_label_municipio_modal = response.data.municipio.nome + ' - ' + response.data.municipio.uf
                     this.form.autocomplete_label_municipio_modal_anterior = response.data.municipio.nome + ' - ' + response.data.municipio.uf

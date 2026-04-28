@@ -29,6 +29,35 @@
                                   @onselect="selecionaVagaModal"></autocomplete>
                 </div>
 
+                <div class="form-group" v-if="treinamentosCargo.length > 0">
+                    <label>Treinamentos vinculados ao cargo</label>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-condensed bg-white mb-0">
+                            <thead>
+                            <tr class="bg-default">
+                                <th>Treinamento</th>
+                                <th>Padrão de Treinamento</th>
+                                <th>Escopo</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="t in treinamentosCargo" :key="t.id">
+                                <td>@{{ t.label }}</td>
+                                <td>@{{ t.padrao_treinamento }}</td>
+                                <td>
+                                    <span v-if="t.todos_cargos" class="badge badge-info">Todos os cargos</span>
+                                    <span v-else class="text-muted">Cargo</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="form-group" v-else-if="form.vaga_id && !editando">
+                    <p class="text-muted mb-0"><small>Nenhum treinamento vinculado a este cargo.</small></p>
+                </div>
+
                 <div class="form-group">
                     <label for="descricao">Titulo</label>
                     <input class="form-control" v-model="form.titulo" onblur="valida_campo_vazio(this,1)"
@@ -266,6 +295,7 @@
                 <tr class="bg-default">
                     <th class="text-center">ID</th>
                     <th>Vaga</th>
+                    <th>Treinamentos do cargo</th>
                     <th>Título</th>
                     <th>Descrição</th>
                     <th>Local</th>
@@ -282,6 +312,21 @@
                     <td>
                         @{{vaga.vaga.nome}} <br>
                         <small style="word-break: break-all">@{{ urlVaga }}/@{{ vaga.slug }}</small>
+                    </td>
+
+                    <td>
+                        <template v-if="vaga.vaga && vaga.vaga.vencimentos && vaga.vaga.vencimentos.length">
+                            <ul class="mb-0 pl-3">
+                                <li v-for="v in vaga.vaga.vencimentos" :key="v.id">
+                                    <span>@{{ v.label }}</span>
+                                    <small class="text-muted"> — @{{ v.segmento_treinamento && v.segmento_treinamento.nome ? v.segmento_treinamento.nome : 'Geral' }}</small>
+                                    <span v-if="v.vinculo_todos_cargos" class="badge badge-info ml-1">Todos os cargos</span>
+                                </li>
+                            </ul>
+                        </template>
+                        <span v-else class="text-muted">—</span>
+                    </td>
+
                     <td>
                         @{{vaga.titulo}}
                     </td>

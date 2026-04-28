@@ -4,7 +4,7 @@ import { registerGlobals } from '../../../registerGlobals'
 const app = createApp({
     data() {
         return {
-            tituloJanela: 'Cadastrando Vaga',
+            tituloJanela: 'Cadastrando Cargo',
             preloadAjax: false,
             editando: false,
             apagado: false,
@@ -13,16 +13,23 @@ const app = createApp({
 
             form: {
                 nome: '',
-                ativo: true
+                ativo: true,
+                vencimentos: [],
+                vencimento_ids: [],
+                vencimento_id: '',
+                autocomplete_label_vencimento: '',
+                segmento_treinamento_id: ''
             },
 
             formDefault: null,
             campoNome: null,
+            hash: `vaga_${parseInt(Math.random() * 999999)}`,
 
             cadastrado: false,
             atualizado: false,
 
             lista: [],
+            segmentos: [],
 
             controle: {
                 carregando: false,
@@ -35,15 +42,60 @@ const app = createApp({
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
+        this.carregarSegmentos()
         this.atualizar()
     },
     methods: {
+        carregarSegmentos() {
+            axios
+                .get(`${URL_ADMIN}/cadastro/segmentostreinamento/lista`)
+                .then((response) => {
+                    this.segmentos = response.data || []
+                })
+                .catch(() => {
+                    this.segmentos = []
+                })
+        },
+        mudouSegmentoTreinamento() {
+            this.form.autocomplete_label_vencimento = ''
+        },
+        caminhoAutocompleteVencimentos() {
+            if (!this.form.segmento_treinamento_id) {
+                return 'autocomplete/vencimentos-ativos'
+            }
+
+            return `autocomplete/vencimentos-ativos?segmento_treinamento_id=${this.form.segmento_treinamento_id}`
+        },
+        removerVencimento(index) {
+            this.form.vencimentos.splice(index, 1)
+            this.form.vencimento_ids = this.form.vencimentos.map((item) => item.id)
+        },
+
+        selecionaVencimento(obj) {
+            const vencimento = {
+                id: obj.id,
+                label: obj.label || obj.nome,
+                segmento_nome: obj.segmento_nome || obj.segmento_treinamento?.nome || 'Geral'
+            }
+
+            const atual = this.form.vencimentos.findIndex((val) => val.id === vencimento.id)
+            if (atual >= 0) {
+                mostraErro('', `O treinamento ${vencimento.label} já está na lista.`)
+                this.form.autocomplete_label_vencimento = ''
+                return
+            }
+
+            this.form.vencimentos.push(vencimento)
+            this.form.vencimento_ids = this.form.vencimentos.map((item) => item.id)
+            this.form.autocomplete_label_vencimento = ''
+        },
+
         formNovo() {
             this.cadastrado = false
             this.atualizado = false
             this.editando = false
 
-            this.tituloJanela = 'Cadastrando Vaga'
+            this.tituloJanela = 'Cadastrando Cargo'
 
             formReset()
             setupCampo()
@@ -62,6 +114,7 @@ const app = createApp({
             }
 
             this.preloadAjax = true
+            this.form.vencimento_ids = this.form.vencimentos.map((item) => item.id)
             axios
                 .post(`${URL_ADMIN}/cadastro/vagas`, this.form)
                 .then((response) => {
@@ -77,7 +130,7 @@ const app = createApp({
             this.cadastrado = false
             this.atualizado = false
             this.editando = false
-            this.tituloJanela = 'Alterando Vaga'
+            this.tituloJanela = 'Alterando Cargo'
             this.preloadAjax = true
             formReset()
 
@@ -88,6 +141,13 @@ const app = createApp({
                 .get(`${URL_ADMIN}/cadastro/vagas/${id}/editar`)
                 .then((response) => {
                     Object.assign(this.form, response.data)
+                    this.form.vencimentos = (response.data.vencimentos || []).map((item) => ({
+                        id: item.id,
+                        label: item.label,
+                        segmento_nome: item.segmento_treinamento?.nome || 'Geral'
+                    }))
+                    this.form.vencimento_ids = this.form.vencimentos.map((item) => item.id)
+                    this.form.autocomplete_label_vencimento = ''
                     this.editando = true
                     this.preloadAjax = false
                     setupCampo()
@@ -105,6 +165,7 @@ const app = createApp({
             }
 
             this.form._method = 'PUT'
+            this.form.vencimento_ids = this.form.vencimentos.map((item) => item.id)
             this.preloadAjax = true
 
             axios

@@ -78,6 +78,7 @@ class Vencimento extends Model
         'ordem',
         'empresa_id',
         'segmento_treinamento_id',
+        'vinculo_todos_cargos',
     ];
 
     protected $casts = [
@@ -92,6 +93,7 @@ class Vencimento extends Model
         'ordem' => 'int',
         'empresa_id' => 'int',
         'segmento_treinamento_id' => 'int',
+        'vinculo_todos_cargos' => 'boolean',
     ];
 
     public static function cacheKey($empresaId): string
@@ -126,5 +128,10 @@ class Vencimento extends Model
             'id',
             'arquivo_id'
         );
+    }
+
+    public function Vagas()
+    {
+        return $this->belongsToMany(Vaga::class, 'vagas_vencimentos', 'vencimento_id', 'vaga_id')->withTimestamps();
     }
 }
