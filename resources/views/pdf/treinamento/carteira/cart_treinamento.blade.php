@@ -82,7 +82,7 @@
                                 </ul>
 
                                 @if(!empty($treinamento['alerta_sem_cargo_vinculo']))
-                                    <div style="margin-top: 2mm; background: #fff3cd; border: 0.2mm solid #ffeeba; color: #856404; border-radius: 2px; padding: 2px; font-size: 4.6pt;">
+                                    <div style="margin-top: 2mm; display:none; background: #fff3cd; border: 0.2mm solid #ffeeba; color: #856404; border-radius: 2px; padding: 2px; font-size: 4.6pt;">
                                         Atenção: colaborador sem cargo definido. Não foi possível validar o vínculo dos treinamentos por cargo.
                                     </div>
                                 @endif
