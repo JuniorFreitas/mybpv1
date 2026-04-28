@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Admissao;
+use App\Models\Cbo;
 use App\Models\Cliente;
 use App\Models\DocumentoContratos;
 use App\Models\FeedbackCurriculo;
@@ -364,6 +365,46 @@ class AutoCompletesController extends Controller
             ->map(function ($item) {
                 $item->label = $item->label;
                 $item->segmento_nome = optional($item->SegmentoTreinamento)->nome ?? 'Geral';
+                return $item;
+            });
+    }
+
+    public function cbosAtivos(Request $request)
+    {
+        $busca = trim((string) $request->query('busca', ''));
+        if ($busca === '') {
+            return response()->json([], 201);
+        }
+
+        $quantidade = (int) $request->query('rows', 20);
+        $quantidade = $quantidade > 0 ? $quantidade : 20;
+
+        return Cbo::query()
+            ->leftJoin('cbo_familias as familia', 'familia.codigo', '=', 'cbos.codigo_familia')
+            ->where('cbos.ativo', true)
+            ->where(function ($query) use ($busca) {
+                $query->where('cbos.codigo', 'like', "{$busca}%")
+                    ->orWhere('cbos.codigo', 'like', "%{$busca}%")
+                    ->orWhere('cbos.codigo_familia', 'like', "%{$busca}%")
+                    ->orWhere('cbos.titulo', 'like', "%{$busca}%")
+                    ->orWhere('familia.codigo', 'like', "%{$busca}%")
+                    ->orWhere('familia.titulo', 'like', "%{$busca}%")
+                    ->orWhere('familia.descricao_sumaria', 'like', "%{$busca}%");
+            })
+            ->orderByRaw('CASE WHEN cbos.codigo LIKE ? THEN 0 ELSE 1 END', ["{$busca}%"])
+            ->orderBy('cbos.codigo')
+            ->take($quantidade)
+            ->get([
+                'cbos.id',
+                'cbos.codigo',
+                'cbos.titulo',
+                'cbos.codigo_familia',
+                'familia.titulo as familia',
+                'familia.descricao_sumaria',
+            ])
+            ->map(function ($item) {
+                $familia = $item->familia ?: 'Família não informada';
+                $item->label = "{$item->codigo} - {$item->titulo} - {$familia}";
                 return $item;
             });
     }

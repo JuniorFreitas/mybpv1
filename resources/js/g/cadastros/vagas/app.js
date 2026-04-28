@@ -14,6 +14,13 @@ const app = createApp({
             form: {
                 nome: '',
                 ativo: true,
+                cbo_id: null,
+                cbo_codigo: '',
+                codigo_familia: '',
+                cbo_titulo: '',
+                cbo_familia: '',
+                cbo_descricao_sumaria: '',
+                autocomplete_label_cbo: '',
                 vencimentos: [],
                 vencimento_ids: [],
                 vencimento_id: '',
@@ -65,6 +72,38 @@ const app = createApp({
             }
 
             return `autocomplete/vencimentos-ativos?segmento_treinamento_id=${this.form.segmento_treinamento_id}`
+        },
+        caminhoAutocompleteCbos() {
+            return 'autocomplete/cbos-ativos'
+        },
+        selecionaCbo(obj) {
+            this.form.cbo_id = obj.id || null
+            this.form.cbo_codigo = obj.codigo || ''
+            this.form.codigo_familia = obj.codigo_familia || ''
+            this.form.cbo_titulo = obj.titulo || ''
+            this.form.cbo_familia = obj.familia || ''
+            this.form.cbo_descricao_sumaria = obj.descricao_sumaria || ''
+            this.form.autocomplete_label_cbo = obj.label || ''
+        },
+        validarCboSelecionado() {
+            if (!this.form.autocomplete_label_cbo) {
+                this.form.cbo_id = null
+                this.form.cbo_codigo = ''
+                this.form.codigo_familia = ''
+                this.form.cbo_titulo = ''
+                this.form.cbo_familia = ''
+                this.form.cbo_descricao_sumaria = ''
+                return
+            }
+
+            if (!this.form.cbo_id) {
+                this.form.autocomplete_label_cbo = ''
+                this.form.cbo_codigo = ''
+                this.form.codigo_familia = ''
+                this.form.cbo_titulo = ''
+                this.form.cbo_familia = ''
+                this.form.cbo_descricao_sumaria = ''
+            }
         },
         removerVencimento(index) {
             this.form.vencimentos.splice(index, 1)
@@ -141,6 +180,7 @@ const app = createApp({
                 .get(`${URL_ADMIN}/cadastro/vagas/${id}/editar`)
                 .then((response) => {
                     Object.assign(this.form, response.data)
+                    this.form.autocomplete_label_cbo = response.data.autocomplete_label_cbo || ''
                     this.form.vencimentos = (response.data.vencimentos || []).map((item) => ({
                         id: item.id,
                         label: item.label,

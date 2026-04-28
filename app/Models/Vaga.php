@@ -56,8 +56,8 @@ class Vaga extends Model
     }
 
     protected $table = 'vagas';
-    protected $fillable = ['categoria_id', 'nome', 'ativo', 'empresa_id'];
-    protected $casts = ['id' => 'int', 'categoria_id' => 'int', 'nome' => 'string', 'ativo' => 'boolean', 'empresa_id' => 'int'];
+    protected $fillable = ['categoria_id', 'nome', 'ativo', 'empresa_id', 'cbo_id'];
+    protected $casts = ['id' => 'int', 'categoria_id' => 'int', 'nome' => 'string', 'ativo' => 'boolean', 'empresa_id' => 'int', 'cbo_id' => 'int'];
 
     public function usesTimestamps()
     {
@@ -92,6 +92,11 @@ class Vaga extends Model
     public function Vencimentos()
     {
         return $this->belongsToMany(Vencimento::class, 'vagas_vencimentos', 'vaga_id', 'vencimento_id')->withTimestamps();
+    }
+
+    public function Cbo()
+    {
+        return $this->belongsTo(Cbo::class, 'cbo_id');
     }
 
 }
