@@ -148,6 +148,7 @@ class VagasAbertasController extends Controller
         $vagas_aberta->load(
             'Municipio',
             'Vaga',
+            'Vaga.Cbo.familia',
             'Vaga.Vencimentos:id,label,segmento_treinamento_id,vinculo_todos_cargos',
             'Vaga.Vencimentos.SegmentoTreinamento:id,nome',
             'Simulados',

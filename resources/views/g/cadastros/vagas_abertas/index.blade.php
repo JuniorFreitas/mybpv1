@@ -5,6 +5,26 @@
     <hr class="bg-default" style="margin-top: -5px;">
 @stop
 @section('content')
+@push('css')
+    <style>
+        /* <details> no modal: esconde marcador nativo e mantém layout alinhado ao restante do formulário */
+        #janelaCadastrar .treinamentos-cargo-details > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        #janelaCadastrar .treinamentos-cargo-details > summary {
+            list-style: none;
+        }
+
+        #janelaCadastrar .treinamentos-cargo-details > summary .treinamentos-cargo-chevron {
+            transition: transform 0.2s ease;
+        }
+
+        #janelaCadastrar .treinamentos-cargo-details[open] > summary .treinamentos-cargo-chevron {
+            transform: rotate(180deg);
+        }
+    </style>
+@endpush
 
     <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :size="90">
         <template #conteudo>
@@ -29,29 +49,63 @@
                                   @onselect="selecionaVagaModal"></autocomplete>
                 </div>
 
-                <div class="form-group" v-if="treinamentosCargo.length > 0">
-                    <label>Treinamentos vinculados ao cargo</label>
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover table-condensed bg-white mb-0">
-                            <thead>
-                            <tr class="bg-default">
-                                <th>Treinamento</th>
-                                <th>Padrão de Treinamento</th>
-                                <th>Escopo</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr v-for="t in treinamentosCargo" :key="t.id">
-                                <td>@{{ t.label }}</td>
-                                <td>@{{ t.padrao_treinamento }}</td>
-                                <td>
-                                    <span v-if="t.todos_cargos" class="badge badge-info">Todos os cargos</span>
-                                    <span v-else class="text-muted">Cargo</span>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                <fieldset class="mt-2"
+                            v-if="form.vaga_id && (cargoCboResumo.cbo_codigo || cargoCboResumo.codigo_familia || cargoCboResumo.cbo_titulo || cargoCboResumo.cbo_familia || cargoCboResumo.cbo_descricao_sumaria)">
+                    <legend class="font-size-14 mb-0">CBO do cargo</legend>
+                    <div class="mt-2 p-3 border rounded bg-light">
+                        <div class="row">
+                            <div class="col-12 col-md-6">
+                                <div class="mb-1"><small class="text-uppercase text-muted">Código CBO</small></div>
+                                <div class="mb-2 font-weight-bold">@{{ cargoCboResumo.cbo_codigo || '—' }}</div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="mb-1"><small class="text-uppercase text-muted">Código da família</small></div>
+                                <div class="mb-2 font-weight-bold">@{{ cargoCboResumo.codigo_familia || '—' }}</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-1"><small class="text-uppercase text-muted">Título</small></div>
+                        <div class="mb-2 font-weight-bold">@{{ cargoCboResumo.cbo_titulo || 'Não informado' }}</div>
+
+                        <div class="mb-1"><small class="text-uppercase text-muted">Família</small></div>
+                        <div class="mb-2">@{{ cargoCboResumo.cbo_familia || 'Não informada' }}</div>
+
+                        <div class="mb-1"><small class="text-uppercase text-muted">Descrição sumária</small></div>
+                        <div class="mb-0">@{{ cargoCboResumo.cbo_descricao_sumaria || 'Não informada' }}</div>
                     </div>
+                </fieldset>
+
+                <div class="form-group" v-if="treinamentosCargo.length > 0">
+                    {{-- <details>: abre/fecha nativo no navegador (evita conflito Collapse Bootstrap + modal/Vue). Fechado: sem atributo open. --}}
+                    <details class="treinamentos-cargo-details border rounded overflow-hidden bg-white">
+                        <summary
+                            class="d-flex justify-content-between align-items-center bg-default py-2 px-3 mb-0 text-left"
+                            style="cursor: pointer; box-shadow: none;">
+                            <span>
+                                <span class="font-weight-bold">Treinamentos vinculados ao cargo</span>
+                                <small class="text-muted ml-1">(@{{ treinamentosCargo.length }})</small>
+                            </span>
+                            <i class="fa fa-fw fa-chevron-down treinamentos-cargo-chevron" aria-hidden="true"></i>
+                        </summary>
+                        <div class="border-top">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover table-condensed bg-white mb-0">
+                                    <thead>
+                                    <tr class="bg-default">
+                                        <th>Treinamento</th>
+                                        <th>Padrão de Treinamento</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr v-for="t in treinamentosCargo" :key="t.id">
+                                        <td>@{{ t.label }}</td>
+                                        <td>@{{ t.padrao_treinamento }}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </details>
                 </div>
 
                 <div class="form-group" v-else-if="form.vaga_id && !editando">
@@ -295,7 +349,7 @@
                 <tr class="bg-default">
                     <th class="text-center">ID</th>
                     <th>Vaga</th>
-                    <th>Treinamentos do cargo</th>
+                    <th>Treinamentos Vinculados</th>
                     <th>Título</th>
                     <th>Descrição</th>
                     <th>Local</th>
@@ -316,14 +370,12 @@
 
                     <td>
                         <template v-if="vaga.vaga && vaga.vaga.vencimentos && vaga.vaga.vencimentos.length">
-                            <ul class="mb-0 pl-3">
-                                <li v-for="v in vaga.vaga.vencimentos" :key="v.id">
-                                    <span>@{{ v.label }}</span>
-                                    <small class="text-muted"> — @{{ v.segmento_treinamento && v.segmento_treinamento.nome ? v.segmento_treinamento.nome : 'Geral' }}</small>
-                                    <span v-if="v.vinculo_todos_cargos" class="badge badge-info ml-1">Todos os cargos</span>
-                                </li>
-                            </ul>
+                            <span>Sim</span>
+                            <br>
+                            <span class="text-muted"> @{{ vaga.vaga.vencimentos.length }}
+                                @{{ vaga.vaga.vencimentos.length === 1 ? 'treinamento' : 'treinamentos' }}</span>
                         </template>
+                        <span v-else-if="vaga.vaga" class="text-muted">Não</span>
                         <span v-else class="text-muted">—</span>
                     </td>
 

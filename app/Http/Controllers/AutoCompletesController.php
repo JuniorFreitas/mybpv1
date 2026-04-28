@@ -68,6 +68,7 @@ class AutoCompletesController extends Controller
         $busca = $request->query('busca');
         if ($busca === '*') {
             return Vaga::whereAtivo(true)
+                ->with(['Cbo.familia'])
                 ->get()
                 ->map(function ($item) {
                     $item->label = $item->nome;
@@ -75,6 +76,7 @@ class AutoCompletesController extends Controller
                 });
         } else {
             return Vaga::whereAtivo(true)->where('nome', 'like', '%' . $busca . '%')->take($quantidade)
+                ->with(['Cbo.familia'])
                 ->get()
                 ->map(function ($item) {
                     $item->label = $item->nome;

@@ -63,6 +63,15 @@ const app = createApp({
 
             treinamentosCargo: [],
 
+            /** Resumo do CBO do cargo (mesmos campos exibidos na tela de Cargos). */
+            cargoCboResumo: {
+                cbo_codigo: '',
+                codigo_familia: '',
+                cbo_titulo: '',
+                cbo_familia: '',
+                cbo_descricao_sumaria: ''
+            },
+
             controle: {
                 carregando: false,
                 dados: {
@@ -131,10 +140,40 @@ const app = createApp({
             }
         },
 
+        limparCargoCboResumo() {
+            this.cargoCboResumo = {
+                cbo_codigo: '',
+                codigo_familia: '',
+                cbo_titulo: '',
+                cbo_familia: '',
+                cbo_descricao_sumaria: ''
+            }
+        },
+
+        preencherCargoCboResumoDeVaga(vaga) {
+            this.limparCargoCboResumo()
+            if (!vaga) {
+                return
+            }
+            const cbo = vaga.cbo || vaga.Cbo
+            if (!cbo) {
+                return
+            }
+            const fam = cbo.familia || cbo.Familia || {}
+            this.cargoCboResumo = {
+                cbo_codigo: cbo.codigo != null ? String(cbo.codigo) : '',
+                codigo_familia: cbo.codigo_familia != null ? String(cbo.codigo_familia) : '',
+                cbo_titulo: cbo.titulo || '',
+                cbo_familia: fam.titulo || '',
+                cbo_descricao_sumaria: fam.descricao_sumaria || ''
+            }
+        },
+
         selecionaVagaModal(obj) {
             this.form.vaga_id = obj.id
             this.form.autocomplete_label_vaga_modal = obj.label
             this.form.autocomplete_label_vaga_modal_anterior = obj.label
+            this.preencherCargoCboResumoDeVaga(obj)
             this.carregarTreinamentosCargo(obj.id)
         },
         carregarTreinamentosCargo(vagaId) {
@@ -157,6 +196,7 @@ const app = createApp({
                 this.form.autocomplete_label_vaga_modal = ''
                 this.form.vaga_id = ''
                 this.treinamentosCargo = []
+                this.limparCargoCboResumo()
 
                 setTimeout(() => {
                     if (this.form.vaga_id === '') {
@@ -219,6 +259,7 @@ const app = createApp({
 
             this.form = _.cloneDeep(this.formDefault) //copia
             this.treinamentosCargo = []
+            this.limparCargoCboResumo()
             this.leitura = false
         },
         cadastrar() {
@@ -287,6 +328,7 @@ const app = createApp({
 
                     this.form.autocomplete_label_municipio_modal = response.data.municipio.nome + ' - ' + response.data.municipio.uf
                     this.form.autocomplete_label_municipio_modal_anterior = response.data.municipio.nome + ' - ' + response.data.municipio.uf
+                    this.preencherCargoCboResumoDeVaga(response.data.vaga)
                     this.editando = true
                     this.preloadAjax = false
                     setupCampo()
