@@ -8,7 +8,18 @@ class CboColumnMapper
     private const OCUPACAO_CODIGO = ['codigo_ocupacao', 'cod_ocupacao', 'cod_ocup', 'codigo', 'cod'];
 
     /** @var array<int, string> */
-    private const OCUPACAO_TITULO = ['titulo', 'titulo_ocupacao', 'ocupacao', 'descricao', 'descricao_ocupacao', 'nome'];
+    private const OCUPACAO_TITULO = [
+        'titulo',
+        'titulo_ocupacao',
+        'nome_ocupacao',
+        'ocupacao',
+        'descricao',
+        'descricao_ocupacao',
+        // cbo2002-perfilocupacional.csv (matriz ocupação × atividades)
+        'nome_grande_area',
+        'nome',
+        'nome_atividade',
+    ];
 
     /** @var array<int, string> */
     private const OCUPACAO_FAMILIA = ['codigo_familia', 'cod_familia', 'familia', 'cod_fam', 'codfamilia'];

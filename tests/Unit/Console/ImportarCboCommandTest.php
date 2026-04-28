@@ -69,4 +69,35 @@ class ImportarCboCommandTest extends TestCase
         $cbo = Cbo::query()->where('codigo', '317110')->first();
         $this->assertNotNull($cbo);
     }
+
+    public function testImportarAceitaFormatoPerfilOcupacionalGovBr(): void
+    {
+        Http::fake([
+            'https://cbo.test/familias.csv' => Http::response(
+                "COD_FAMILIA;TITULO_FAMILIA\n0201;Família teste\n",
+                200,
+                ['Content-Type' => 'text/csv']
+            ),
+            'https://cbo.test/ocupacoes.csv' => Http::response(
+                implode("\n", [
+                    'COD_GRANDE_GRUPO;COD_SUBGRUPO_PRINCIPAL;COD_SUBGRUPO;COD_FAMILIA;COD_OCUPACAO;SGL_GRANDE_AREA;NOME_GRANDE_AREA;COD_ATIVIDADE;NOME_ATIVIDADE',
+                    '0;02;020;0201;020105;A;Título oficial da ocupação;1;Atividade A',
+                    '0;02;020;0201;020105;A;Título oficial da ocupação;2;Atividade B',
+                    '0;02;020;0201;020105;A;Outro rótulo;3;Atividade C',
+                ]) . "\n",
+                200,
+                ['Content-Type' => 'text/csv']
+            ),
+        ]);
+
+        config(['services.cbo.perfil_csv_url' => null]);
+
+        $this->artisan('cbo:importar', ['--force' => true])->assertSuccessful();
+
+        $this->assertDatabaseHas('cbos', [
+            'codigo' => '020105',
+            'titulo' => 'Título oficial da ocupação',
+            'codigo_familia' => '0201',
+        ]);
+    }
 }

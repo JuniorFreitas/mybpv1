@@ -130,6 +130,8 @@ class CboImportService
             throw new \RuntimeException('CSV de ocupações: não foi possível detectar colunas de código e título.');
         }
 
+        $rows = $this->consolidateOcupacaoRows($rows, $headers, $map);
+
         $ok = 0;
         $skip = 0;
         $chunks = array_chunk($rows, self::CHUNK);
@@ -261,5 +263,72 @@ class CboImportService
         }
 
         return $digits;
+    }
+
+    /**
+     * CSVs como cbo2002-perfilocupacional.csv repetem o mesmo código de ocupação em várias linhas
+     * (atividades). Mantém uma linha por código, com título mais frequente e primeira família válida.
+     *
+     * @param array<int, array<int, string>> $rows
+     * @param array<int, string> $headers
+     * @param array{codigo: int|null, titulo: int|null, familia: int|null} $map
+     * @return array<int, array<int, string>>
+     */
+    private function consolidateOcupacaoRows(array $rows, array $headers, array $map): array
+    {
+        $numCols = count($headers);
+        if ($numCols === 0 || $rows === []) {
+            return $rows;
+        }
+
+        /** @var array<string, array<string, int>> */
+        $tituloPorCodigo = [];
+        /** @var array<string, string> */
+        $familiaPorCodigo = [];
+        /** @var array<string, array<int, string>> */
+        $modeloPorCodigo = [];
+
+        foreach ($rows as $row) {
+            for ($i = count($row); $i < $numCols; $i++) {
+                $row[$i] = '';
+            }
+            $codigo = preg_replace('/\D/', '', $row[$map['codigo']] ?? '') ?? '';
+            if ($codigo === '' || strlen($codigo) < 4) {
+                continue;
+            }
+            $titulo = trim($row[$map['titulo']] ?? '');
+            if ($titulo !== '') {
+                $tituloPorCodigo[$codigo][$titulo] = ($tituloPorCodigo[$codigo][$titulo] ?? 0) + 1;
+            }
+            if ($map['familia'] !== null) {
+                $rawFam = trim($row[$map['familia']] ?? '');
+                if ($rawFam !== '' && ! array_key_exists($codigo, $familiaPorCodigo)) {
+                    $familiaPorCodigo[$codigo] = $rawFam;
+                }
+            }
+            if (! array_key_exists($codigo, $modeloPorCodigo)) {
+                $modeloPorCodigo[$codigo] = $row;
+            }
+        }
+
+        if (count($modeloPorCodigo) === count($rows)) {
+            return $rows;
+        }
+
+        $out = [];
+        foreach ($modeloPorCodigo as $codigo => $row) {
+            if (empty($tituloPorCodigo[$codigo])) {
+                continue;
+            }
+            arsort($tituloPorCodigo[$codigo]);
+            $melhorTitulo = (string) array_key_first($tituloPorCodigo[$codigo]);
+            $row[$map['titulo']] = $melhorTitulo;
+            if ($map['familia'] !== null && isset($familiaPorCodigo[$codigo])) {
+                $row[$map['familia']] = $familiaPorCodigo[$codigo];
+            }
+            $out[] = $row;
+        }
+
+        return $out;
     }
 }
