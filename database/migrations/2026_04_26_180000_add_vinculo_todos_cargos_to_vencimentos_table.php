@@ -14,7 +14,7 @@ class AddVinculoTodosCargosToVencimentosTable extends Migration
     public function up()
     {
         Schema::table('vencimentos', function (Blueprint $table) {
-            $table->boolean('vinculo_todos_cargos')->default(false)->after('segmento_treinamento_id');
+            $table->boolean('vinculo_todos_cargos')->default(true)->after('segmento_treinamento_id');
         });
     }
 

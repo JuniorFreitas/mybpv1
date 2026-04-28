@@ -29,6 +29,31 @@
     </template>
 </modal>
 
+<modal ref="modalAjudaVinculoCargo" id="modalAjudaVinculoCargo" titulo="Como vincular treinamento ao cargo" size="g">
+    <template #conteudo>
+        <p class="mb-3">
+            Quando aparece o aviso de que o treinamento <strong>não está vinculado ao cargo</strong>, significa que o cadastro do treinamento (vencimento) não está associado ao <strong>cargo (vaga)</strong> do colaborador nesta empresa. Você pode corrigir o cadastro e, em seguida, os dados na carteira continuam podendo ser atualizados normalmente.
+        </p>
+        <h6 class="font-weight-bold">Opção 1 — Pelo cadastro de Cargos (recomendado)</h6>
+        <ol class="pl-3 mb-3">
+            <li>Acesse o menu de cadastros e abra <strong>Cargos</strong> (lista de cargos / vagas).</li>
+            <li>Localize o <strong>mesmo cargo</strong> vinculado ao colaborador e clique para <strong>editar</strong>.</li>
+            <li>Na seção <strong>Treinamentos</strong>, escolha o <strong>padrão de treinamento</strong> (segmento), se aplicável.</li>
+            <li>Use <strong>Adicionar treinamento</strong> para incluir o treinamento desejado na lista do cargo.</li>
+            <li>Salve o cargo com <strong>Alterar</strong>.</li>
+        </ol>
+        <h6 class="font-weight-bold">Opção 2 — Pelo cadastro de Treinamentos da indústria</h6>
+        <ol class="pl-3 mb-3">
+            <li>Abra o cadastro de <strong>Treinamentos da indústria</strong> (treinamentos / vencimentos configurados para a empresa).</li>
+            <li>Edite o treinamento em questão e marque os <strong>cargos</strong> aos quais ele se aplica, ou use a opção de vínculo a <strong>todos os cargos</strong> quando o treinamento for obrigatório para qualquer função.</li>
+            <li>Salve as alterações.</li>
+        </ol>
+        <div class="alert alert-light border mb-0">
+            <strong>Dica:</strong> depois de vincular o treinamento ao cargo, volte à carteira/etiquetas e atualize a tela ou reabra o colaborador para conferir se o aviso deixou de aparecer.
+        </div>
+    </template>
+</modal>
+
 <modal ref="janelaTreinamento" id="janelaTreinamento" titulo="Treinamentos" :size="95">
     <template #conteudo>
         <p class=" mt-2 text-center" v-if="preload">
@@ -52,6 +77,20 @@
                     </div>
                 </div>
             </fieldset>
+
+            <div class="alert alert-warning" v-if="form.alertaSemCargoVinculo">
+                <i class="fa fa-exclamation-triangle"></i>
+                Não foi possível validar vínculo de treinamentos por cargo porque o colaborador está sem cargo definido.
+            </div>
+
+            <div class="alert alert-danger" v-if="form.listaVencimentosNaoVinculadosCargo && form.listaVencimentosNaoVinculadosCargo.length > 0">
+                <strong>Treinamentos realizados sem vínculo com o cargo:</strong>
+                <ul class="mb-0 mt-2 pl-3">
+                    <li v-for="treinamentoAlerta in form.listaVencimentosNaoVinculadosCargo" :key="`alerta-${treinamentoAlerta.id}`">
+                        {{ treinamentoAlerta.label_reduzida || treinamentoAlerta.label }}
+                    </li>
+                </ul>
+            </div>
 
             <fieldset>
                 <legend>Padrão de treinamento</legend>
@@ -125,11 +164,22 @@
     </div>
 
     <div class="mb-4" v-if="form.listaVencimentos && form.listaVencimentos.length > 0">
-        <div class="input-group input-group">
-            <input type="text" class="form-control" placeholder="Buscar treinamento..."
-                v-model="trainingSearchQuery">
-            <div class="input-group-append">
-                <span class="input-group-text"><i class="fa fa-search"></i></span>
+        <div class="row">
+            <div class="col-md-8 mb-2 mb-md-0">
+                <div class="input-group input-group">
+                    <input type="text" class="form-control" placeholder="Buscar treinamento..."
+                        v-model="trainingSearchQuery">
+                    <div class="input-group-append">
+                        <span class="input-group-text"><i class="fa fa-search"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select class="form-control" v-model="trainingVinculoFilter">
+                    <option value="all">Todos</option>
+                    <option value="com_vinculo">Com vínculo ao cargo</option>
+                    <option value="sem_vinculo">Sem vínculo ao cargo</option>
+                </select>
             </div>
         </div>
     </div>
@@ -161,6 +211,9 @@
                         <i class="fa"
                             :class="openPanels.includes(index) ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
                         {{ treinamento.label }}
+                        <span v-if="treinamento.nao_vinculado_ao_cargo" class="text-danger">
+                            (treinamento sem vínculo com o cargo)
+                        </span>
                     </button>
                 </h5>
                 <span class="badge"
@@ -177,6 +230,18 @@
             <div class="collapse" :class="{ show: openPanels.includes(index) }">
                 <div class="card-body">
                     <fieldset :disabled="salvandoVencimentoId === treinamento.id">
+                        <div class="alert alert-warning p-2" style="font-size: 0.85rem;"
+                            v-if="treinamento.nao_vinculado_ao_cargo">
+                            <strong>Treinamento sem vínculo com o cargo atual.</strong>
+                            Este treinamento não está vinculado ao cargo do colaborador; você ainda pode atualizar os dados abaixo.
+                            <button type="button"
+                                class="btn btn-link btn-sm p-0 ml-1 align-baseline text-info"
+                                title="Como vincular treinamento ao cargo"
+                                aria-label="Como vincular treinamento ao cargo"
+                                @click.prevent="abrirModal(refsModal.MODAL_AJUDA_VINCULO_CARGO)">
+                                <i class="fa fa-info-circle fa-lg" aria-hidden="true"></i>
+                            </button>
+                        </div>
                         <div class="alert alert-warning p-2" style="font-size: 0.85rem;"
                             v-show="treinamento.descricao">
                             <strong>A quem se destina:</strong> {{ treinamento.descricao }}
@@ -1194,7 +1259,12 @@
                             <tbody>
                                 <template v-for="v in item.treinamento.vencimentos">
                                     <tr v-if="isColunaTreinamentoSelecionada(v)" :key="v.id" :class="v.pivot.status.corBorder">
-                                        <td>{{ v.label }}</td>
+                                        <td>
+                                            {{ v.label }}
+                                            <small v-if="v.nao_vinculado_ao_cargo" class="text-danger d-block">
+                                                (treinamento sem vínculo do cargo)
+                                            </small>
+                                        </td>
                                         <td>{{ v.pivot.data_treinamento }}</td>
                                         <td>{{ v.pivot.data_vencimento }}</td>
                                         <td>
@@ -1291,6 +1361,7 @@ export default defineComponent({
 
             trainingSearchQuery: '',
             trainingStatusFilter: 'all',
+            trainingVinculoFilter: 'all',
 
             form: {
                 dadosFuncionario: {
@@ -1311,6 +1382,8 @@ export default defineComponent({
                 email_aberto: '',
                 data_email_aberto: '',
                 listaVencimentos: [],
+                listaVencimentosNaoVinculadosCargo: [],
+                alertaSemCargoVinculo: false,
 
                 nr_trinta_tres: true,
                 nr_trinta_cinco: true,
@@ -1574,16 +1647,31 @@ export default defineComponent({
         treinamentosFiltrados() {
             if (!this.form.listaVencimentos) return []
 
-            return this.form.listaVencimentos.filter((training) => {
-                const matchesSearch = this.trainingSearchQuery === '' || training.label.toLowerCase().includes(this.trainingSearchQuery.toLowerCase())
+            return this.form.listaVencimentos
+                .filter((training) => {
+                    const labelTreinamento = (training.label || '').toLowerCase()
+                    const matchesSearch = this.trainingSearchQuery === '' || labelTreinamento.includes(this.trainingSearchQuery.toLowerCase())
+                    let matchesVinculo = true
+                    if (this.trainingVinculoFilter === 'com_vinculo') {
+                        matchesVinculo = !training.nao_vinculado_ao_cargo
+                    } else if (this.trainingVinculoFilter === 'sem_vinculo') {
+                        matchesVinculo = !!training.nao_vinculado_ao_cargo
+                    }
+
                 let matchesStatus = true
                 if (this.trainingStatusFilter !== 'all') {
                     const status = this.getTreinamentoStatus(training)
                     matchesStatus = status === this.trainingStatusFilter
                 }
 
-                return matchesSearch && matchesStatus
-            })
+                    return matchesSearch && matchesStatus && matchesVinculo
+                })
+                .sort((a, b) => {
+                    const aSemVinculo = !!a.nao_vinculado_ao_cargo
+                    const bSemVinculo = !!b.nao_vinculado_ao_cargo
+                    if (aSemVinculo === bSemVinculo) return 0
+                    return aSemVinculo ? 1 : -1
+                })
         },
 
         treinamentosNaoRealizados() {
@@ -1826,6 +1914,8 @@ export default defineComponent({
                     _fez_treinamento_ja_salvo: !!t.fez_treinamento,
                     _alterado: false,
                 }))
+                this.form.listaVencimentosNaoVinculadosCargo = response.data.listaVencimentosNaoVinculadosCargo || []
+                this.form.alertaSemCargoVinculo = !!response.data.alertaSemCargoVinculo
                 if (response.data.privilegio_gestao_rh !== undefined) this.privilegio_gestao_rh = response.data.privilegio_gestao_rh
                 if (response.data.treinamento_permitir_desmarcar_realizado !== undefined) this.treinamento_permitir_desmarcar_realizado = response.data.treinamento_permitir_desmarcar_realizado
                 if (response.data.treinamento_retirar_treinamento_realizado !== undefined) this.treinamento_retirar_treinamento_realizado = response.data.treinamento_retirar_treinamento_realizado
@@ -2090,6 +2180,8 @@ export default defineComponent({
 
                 this.form.dadosFuncionario = data.dadosFuncionario || {}
                 this.form.segmento_treinamento_id = data.segmento_treinamento_id ?? null
+                this.form.listaVencimentosNaoVinculadosCargo = data.listaVencimentosNaoVinculadosCargo || []
+                this.form.alertaSemCargoVinculo = !!data.alertaSemCargoVinculo
                 this.privilegio_gestao_rh = data.privilegio_gestao_rh ?? false
                 this.treinamento_permitir_desmarcar_realizado = data.treinamento_permitir_desmarcar_realizado ?? false
                 this.treinamento_retirar_treinamento_realizado = data.treinamento_retirar_treinamento_realizado ?? false

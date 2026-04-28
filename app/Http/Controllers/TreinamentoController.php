@@ -628,7 +628,10 @@ class TreinamentoController extends Controller
             : (optional($treinamento->Admissao)->segmento_treinamento_id ?? SegmentoTreinamento::getIdAlumar());
 
         $treinamento->segmento_treinamento_id = $segmentoId;
-        $treinamento->listaVencimentos = $this->montarListaVencimentos($treinamento, $treinamentoVencimentos, $segmentoId);
+        $dadosVinculoCargo = $this->montarListaVencimentosPorVinculoCargo($treinamento, $treinamentoVencimentos, $segmentoId);
+        $treinamento->listaVencimentos = $dadosVinculoCargo['listaVencimentos'];
+        $treinamento->listaVencimentosNaoVinculadosCargo = $dadosVinculoCargo['listaVencimentosNaoVinculadosCargo'];
+        $treinamento->alertaSemCargoVinculo = $dadosVinculoCargo['alertaSemCargoVinculo'];
 
         /*  $treinamento->listaVencimentos = Vencimento::whereAtivo(true)->orderBy('ordem')->get()->transform(function ($item) use ($treinamento, $treinamentoVencimentos) {
               if ($treinamento->Treinamento) {
@@ -728,13 +731,15 @@ class TreinamentoController extends Controller
             ? (int) $request->input('segmento_treinamento_id')
             : (optional($treinamento->Admissao)->segmento_treinamento_id ?? SegmentoTreinamento::getIdAlumar());
 
-        $lista = $this->montarListaVencimentos($treinamento, $treinamentoVencimentos, $segmentoId);
+        $dadosVinculoCargo = $this->montarListaVencimentosPorVinculoCargo($treinamento, $treinamentoVencimentos, $segmentoId);
 
         $clienteConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
 
         return response()->json([
             'segmento_treinamento_id' => $segmentoId,
-            'listaVencimentos' => $lista,
+            'listaVencimentos' => $dadosVinculoCargo['listaVencimentos'],
+            'listaVencimentosNaoVinculadosCargo' => $dadosVinculoCargo['listaVencimentosNaoVinculadosCargo'],
+            'alertaSemCargoVinculo' => $dadosVinculoCargo['alertaSemCargoVinculo'],
             'privilegio_gestao_rh' => auth()->user()->can('privilegio_gestao_rh'),
             'treinamento_permitir_desmarcar_realizado' => $clienteConfig ? (bool) ($clienteConfig->treinamento_permitir_desmarcar_realizado ?? false) : false,
             'treinamento_retirar_treinamento_realizado' => auth()->user()->can('treinamento_carteira-etiquetas_retirar_treinamento_realizado'),
@@ -781,16 +786,26 @@ class TreinamentoController extends Controller
         return response()->json($vencimentos, 200);
     }
 
-    private function montarListaVencimentos(ResultadoIntegrado $treinamento, $treinamentoVencimentos, ?int $segmentoId)
+    private function montarListaVencimentosPorVinculoCargo(ResultadoIntegrado $treinamento, $treinamentoVencimentos, ?int $segmentoId): array
     {
-        $vencimentosQuery = Vencimento::whereAtivo(true)->orderBy('ordem');
+        $vagaId = optional($treinamento->Feedback)->vaga_id ? (int) $treinamento->Feedback->vaga_id : null;
+
+        $vencimentosQuery = Vencimento::whereAtivo(true)->orderBy('ordem')->with('Vagas:id');
         if ($segmentoId) {
             $vencimentosQuery->where(function ($q) use ($segmentoId) {
                 $q->where('segmento_treinamento_id', $segmentoId)->orWhereNull('segmento_treinamento_id');
             });
         }
+        if ($vagaId) {
+            $vencimentosQuery->where(function ($q) use ($vagaId) {
+                $q->where('vinculo_todos_cargos', true)
+                    ->orWhereHas('Vagas', function ($qVaga) use ($vagaId) {
+                        $qVaga->where('vagas.id', $vagaId);
+                    });
+            });
+        }
 
-        return $vencimentosQuery->get()
+        $listaVencimentos = $vencimentosQuery->get()
             ->transform(function ($item) use ($treinamento, $treinamentoVencimentos) {
                 if ($treinamento->Treinamento) {
                     $pivo = $treinamento->Treinamento->Vencimentos()->whereId($item->id);
@@ -830,6 +845,92 @@ class TreinamentoController extends Controller
             })
             ->sortBy('dias_vencer')
             ->values();
+
+        $listaNaoVinculadosCargo = collect();
+        $realizadosForaVinculo = collect();
+        if ($treinamento->Treinamento) {
+            $realizados = $treinamento->Treinamento->Vencimentos()->with('Vagas:id')->get();
+            if ($segmentoId) {
+                $realizados = $realizados->filter(function ($v) use ($segmentoId) {
+                    return $v->segmento_treinamento_id === null || (int) $v->segmento_treinamento_id === (int) $segmentoId;
+                })->values();
+            }
+
+            if ($vagaId) {
+                $realizadosForaVinculo = $realizados->filter(function ($v) use ($vagaId) {
+                    if ($v->vinculo_todos_cargos) {
+                        return false;
+                    }
+
+                    return !$v->Vagas->contains(function ($vaga) use ($vagaId) {
+                        return (int) $vaga->id === (int) $vagaId;
+                    });
+                })->values();
+
+                $listaNaoVinculadosCargo = $realizadosForaVinculo->map(function ($v) {
+                    return [
+                        'id' => $v->id,
+                        'label' => $v->label,
+                        'label_reduzida' => $v->label_reduzida,
+                        'data_treinamento' => optional($v->pivot)->data_treinamento,
+                        'data_vencimento' => optional($v->pivot)->data_vencimento,
+                    ];
+                });
+
+                $idsListaAtual = $listaVencimentos->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+                $extrasNaoVinculados = $realizadosForaVinculo
+                    ->filter(function ($v) use ($idsListaAtual) {
+                        return !in_array((int) $v->id, $idsListaAtual, true);
+                    })
+                    ->map(function ($v) use ($treinamentoVencimentos) {
+                        $arquivo = [];
+                        if ($treinamentoVencimentos) {
+                            $pivotData = $treinamentoVencimentos->where('vencimento_id', $v->id)->first();
+                            if ($pivotData && $pivotData->arquivo) {
+                                $arquivo = [$pivotData->arquivo];
+                            }
+                        }
+
+                        return (object) [
+                            'id' => $v->id,
+                            'label' => $v->label,
+                            'label_reduzida' => $v->label_reduzida,
+                            'descricao' => $v->descricao,
+                            'prazo_fixo' => $v->prazo_fixo,
+                            'prazo_parada' => $v->prazo_parada,
+                            'exibir_na_carteira' => $v->exibir_na_carteira,
+                            'vinculo_todos_cargos' => $v->vinculo_todos_cargos,
+                            'nao_vinculado_ao_cargo' => true,
+                            'data_treinamento' => optional($v->pivot)->data_treinamento,
+                            'data_vencimento' => optional($v->pivot)->data_vencimento,
+                            'numero_fat' => optional($v->pivot)->numero_fat,
+                            'fez_treinamento' => true,
+                            'arquivo' => $arquivo,
+                            'arquivoDel' => [],
+                            'dias_vencer' => optional($v->pivot)->data_vencimento
+                                ? DataHora::diferencaDias(
+                                    (new DataHora())->dataInsert() . ' 00:00:00',
+                                    (new DataHora(optional($v->pivot)->data_vencimento))->dataInsert() . ' 23:59:59'
+                                )
+                                : PHP_INT_MAX,
+                        ];
+                    });
+
+                if ($extrasNaoVinculados->isNotEmpty()) {
+                    $listaVencimentos = $listaVencimentos
+                        ->concat($extrasNaoVinculados)
+                        ->sortBy('dias_vencer')
+                        ->values();
+                }
+            }
+        }
+
+        return [
+            'listaVencimentos' => $listaVencimentos,
+            'listaVencimentosNaoVinculadosCargo' => $listaNaoVinculadosCargo->values(),
+            'alertaSemCargoVinculo' => $vagaId === null,
+        ];
     }
 
     private function resolverSegmentoTreinamentoId(array $dados): ?int
@@ -907,7 +1008,10 @@ class TreinamentoController extends Controller
                 $q->select('id', 'feedback_id');
             },
             'Treinamento.Vencimentos' => function ($q) {
-                $q->select('vencimentos.id', 'label', 'label_reduzida', 'segmento_treinamento_id', 'exibir_na_carteira');
+                $q->select('vencimentos.id', 'label', 'label_reduzida', 'segmento_treinamento_id', 'exibir_na_carteira', 'vinculo_todos_cargos');
+            },
+            'Treinamento.Vencimentos.Vagas' => function ($q) {
+                $q->select('vagas.id');
             },
             'VagaAberta' => function ($q) {
                 $q->select('id', 'vaga_id');
@@ -951,6 +1055,13 @@ class TreinamentoController extends Controller
                     $i->fez_treinamento = $item->Treinamento->Vencimentos()->where('vencimento_id', $i->id)->count() > 0 ? true : false;
                     $i->pivot->status = $this->StatusTreinamento($i->pivot->data_vencimento);
                     $i->dias_vencer = DataHora::diferencaDias((new DataHora())->dataInsert() . ' 00:00:00', (new DataHora($i->pivot->data_vencimento))->dataInsert() . ' 23:59:59');
+                    $vagaId = $item->vaga_id ? (int) $item->vaga_id : null;
+                    $i->nao_vinculado_ao_cargo = false;
+                    if ($vagaId) {
+                        $i->nao_vinculado_ao_cargo = !$i->vinculo_todos_cargos && !$i->Vagas->contains(function ($vaga) use ($vagaId) {
+                            return (int) $vaga->id === (int) $vagaId;
+                        });
+                    }
                     return $i;
                 });
 
@@ -1186,7 +1297,7 @@ class TreinamentoController extends Controller
                 'FeedbackCurriculo.Curriculo.FotoTres:id,nome,file,disco',
                 'FeedbackCurriculo.Admissao:id,feedback_id,numero_cracha,cargo,usa_lentes_corretivas,area_etiqueta_id,segmento_treinamento_id',
                 'FeedbackCurriculo.Admissao.SegmentoTreinamento:id,nome,slug,config_carteira',
-                'Vencimentos'
+                'Vencimentos.Vagas:id'
             ])
             ->get()
             ->transform(function ($item) use ($telefone_supervisor) {
@@ -1227,6 +1338,47 @@ class TreinamentoController extends Controller
                         return $v->segmento_treinamento_id === $alumarId || $v->segmento_treinamento_id === null;
                     });
                 }
+                $vagaId = optional($item->FeedbackCurriculo)->vaga_id ? (int) $item->FeedbackCurriculo->vaga_id : null;
+                $alertaSemCargoVinculo = $vagaId === null;
+
+                $vencimentosNaoVinculadosCargo = collect();
+                if (!$alertaSemCargoVinculo) {
+                    $vencimentosNaoVinculadosCargo = $vencimentosFiltrados
+                        ->filter(function ($v) use ($vagaId) {
+                            if ($v->vinculo_todos_cargos) {
+                                return false;
+                            }
+
+                            return !$v->Vagas->contains(function ($vaga) use ($vagaId) {
+                                return (int) $vaga->id === (int) $vagaId;
+                            });
+                        })
+                        ->values()
+                        ->map(function ($v) {
+                            return [
+                                'id' => $v->id,
+                                'label' => $v->label,
+                                'label_reduzida' => $v->label_reduzida,
+                                'data_treinamento' => optional($v->pivot)->data_treinamento,
+                                'data_vencimento' => optional($v->pivot)->data_vencimento,
+                            ];
+                        });
+
+                    $vencimentosFiltrados = $vencimentosFiltrados
+                        ->filter(function ($v) use ($vagaId) {
+                            if ($v->vinculo_todos_cargos) {
+                                return true;
+                            }
+
+                            return $v->Vagas->contains(function ($vaga) use ($vagaId) {
+                                return (int) $vaga->id === (int) $vagaId;
+                            });
+                        })
+                        ->values();
+                }
+
+                $item->setAttribute('alerta_sem_cargo_vinculo', $alertaSemCargoVinculo);
+                $item->setAttribute('vencimentos_nao_vinculados_cargo', $vencimentosNaoVinculadosCargo->values()->all());
                 $item->setRelation('vencimentos', $vencimentosFiltrados);
                 // Foto 3x4 em base64 (cache do disco fotocurriculo) para PDF carteira/bloqueio evitar requisições HTTP
                 $curriculo = $item->FeedbackCurriculo->Curriculo ?? null;

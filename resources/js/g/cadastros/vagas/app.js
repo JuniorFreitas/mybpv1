@@ -4,7 +4,7 @@ import { registerGlobals } from '../../../registerGlobals'
 const app = createApp({
     data() {
         return {
-            tituloJanela: 'Cadastrando Vaga',
+            tituloJanela: 'Cadastrando Cargo',
             preloadAjax: false,
             editando: false,
             apagado: false,
@@ -95,7 +95,7 @@ const app = createApp({
             this.atualizado = false
             this.editando = false
 
-            this.tituloJanela = 'Cadastrando Vaga'
+            this.tituloJanela = 'Cadastrando Cargo'
 
             formReset()
             setupCampo()
@@ -130,7 +130,7 @@ const app = createApp({
             this.cadastrado = false
             this.atualizado = false
             this.editando = false
-            this.tituloJanela = 'Alterando Vaga'
+            this.tituloJanela = 'Alterando Cargo'
             this.preloadAjax = true
             formReset()
 

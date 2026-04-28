@@ -12,7 +12,7 @@ const app = createApp({
     mixins: [MixinConfig],
     data() {
         return {
-            tituloJanela: 'Cadastrando Vaga',
+            tituloJanela: 'Cadastrando Cargo',
             preloadAjax: false,
             editando: false,
             apagado: false,
@@ -212,7 +212,7 @@ const app = createApp({
             this.atualizado = false
             this.editando = false
 
-            this.tituloJanela = 'Cadastrando Vaga'
+            this.tituloJanela = 'Cadastrando Cargo'
 
             formReset()
             setupCampo()

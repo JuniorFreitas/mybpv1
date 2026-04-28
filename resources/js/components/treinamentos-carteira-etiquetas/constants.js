@@ -5,6 +5,7 @@
 
 export const REFS_MODAL = {
     MODAL_FILTRO_COLUNAS: 'modalFiltroColunas',
+    MODAL_AJUDA_VINCULO_CARGO: 'modalAjudaVinculoCargo',
     JANELA_TREINAMENTO: 'janelaTreinamento',
     JANELA_TREINAMENTO_MASSA: 'janelaTreinamentoMassa',
     JANELA_ENVIAR: 'janelaEnviar',
@@ -13,6 +14,7 @@ export const REFS_MODAL = {
 
 export const MODAL_IDS = {
     FILTRO_COLUNAS: 'filtroColunas',
+    AJUDA_VINCULO_CARGO: 'modalAjudaVinculoCargo',
     JANELA_TREINAMENTO: 'janelaTreinamento',
     JANELA_TREINAMENTO_MASSA: 'janelaTreinamentoMassa',
     JANELA_ENVIAR: 'janelaEnviar',

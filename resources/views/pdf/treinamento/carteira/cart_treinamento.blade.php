@@ -80,6 +80,27 @@
                                         @endif
                                     @endforeach
                                 </ul>
+
+                                @if(!empty($treinamento['alerta_sem_cargo_vinculo']))
+                                    <div style="margin-top: 2mm; background: #fff3cd; border: 0.2mm solid #ffeeba; color: #856404; border-radius: 2px; padding: 2px; font-size: 4.6pt;">
+                                        Atenção: colaborador sem cargo definido. Não foi possível validar o vínculo dos treinamentos por cargo.
+                                    </div>
+                                @endif
+
+                                @if(!empty($treinamento['vencimentos_nao_vinculados_cargo']))
+                                    <div style="margin-top: 1.5mm; background: #f8d7da; border: 0.2mm solid #f5c6cb; color: #721c24; border-radius: 2px; padding: 2px;">
+                                        <div style="font-size: 4.8pt; font-weight: bold; margin-bottom: 0.8mm;">
+                                            Treinamentos fora do vínculo do cargo:
+                                        </div>
+                                        <ul style="margin: 0; padding-left: 2.6mm; font-size: 4.5pt;">
+                                            @foreach($treinamento['vencimentos_nao_vinculados_cargo'] as $vencimentoAlerta)
+                                                <li>
+                                                    {{ $vencimentoAlerta['label_reduzida'] ?: $vencimentoAlerta['label'] }}
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
                             </td>
                         </tr>
 
