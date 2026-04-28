@@ -1,6 +1,7 @@
 <?php
 
 use App\Classes\ZapNotificacao;
+use App\Http\Controllers\Api\CboController;
 use App\Models\CartaOferta;
 use App\Models\Sistema;
 use Illuminate\Http\Request;
@@ -65,6 +66,11 @@ Route::middleware(['api', 'auth:sanctum', 'usuario.ativo'])->group(function () {
 Route::group(['as' => 'v1', 'prefix' => 'v1/{empresa_slug}', 'middleware' => ['apitoken']], function () {
     Route::get('/', [\App\Http\Controllers\Api\IntegracaoVagaAbertaController::class, 'getVagasAbertasByEmpresa']);
     Route::get('/dadosempresa', [\App\Http\Controllers\Api\IntegracaoVagaAbertaController::class, 'getDadosEmpresa']);
+});
+
+Route::middleware(['api', 'apitoken'])->group(function () {
+    Route::get('cbos', [CboController::class, 'index']);
+    Route::get('cbos/{codigo}', [CboController::class, 'show'])->where('codigo', '[0-9]+');
 });
 
 Route::group(['as' => 'vaga'], function () {

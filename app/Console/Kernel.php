@@ -75,6 +75,13 @@ class Kernel extends ConsoleKernel
             ->name('mybp_encerrar_avaliacoes_vencidas')
             ->onOneServer();
 
+        // $schedule->command('cbo:importar')
+        //     ->monthlyOn(1, '03:00')
+        //     ->withoutOverlapping()
+        //     ->runInBackground()
+        //     ->name('cbo_importar')
+        //     ->onOneServer();
+
     }
 
     /**
