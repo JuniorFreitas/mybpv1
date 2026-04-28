@@ -14,17 +14,65 @@
             </div>
             <form v-if="!preloadAjax && (!cadastrado && !atualizado)" id="form" onsubmit="return false;">
 
-                <div class="form-group">
-                    <label>Nome</label>
-                    <input type="text" class="form-control" v-model="form.nome"
-                           placeholder="Nome"
-                           autocomplete="off">
-                </div>
+                <fieldset>
+                    <legend>Sobre o cargo</legend>
+                    <div class="row">
+                        <div class="col-12 col-md-8">
+                            <div class="form-group">
+                                <label>Título do cargo</label>
+                                <input type="text" class="form-control form-control-sm" v-model="form.nome"
+                                    placeholder="Ex.: Analista de RH"
+                                    autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4 d-flex align-items-end">
+                            <div class="custom-control custom-switch mb-3">
+                                <input type="checkbox"
+                                    class="custom-control-input"
+                                    v-model="form.ativo"
+                                    :id="`switch_ativo_${hash}`">
+                                <label class="custom-control-label font-weight-bold" :for="`switch_ativo_${hash}`">
+                                    Ativo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
 
-                <div class="switchToggle">
-                    <input type="checkbox" v-model="form.ativo" id="switch">
-                    <label for="switch">Ativo</label>
-                </div>
+                <fieldset class="mt-3">
+                    <legend>CBO</legend>
+                    <div class="form-group">
+                        <label>Buscar CBO por código, título ou família</label>
+                        <autocomplete :caminho="caminhoAutocompleteCbos()"
+                                      :formsm="true"
+                                      v-model="form.autocomplete_label_cbo"
+                                      placeholder="Ex.: 317110"
+                                      :id="`cbo_${hash}`"
+                                      @onselect="selecionaCbo"
+                                      @onblur="validarCboSelecionado"></autocomplete>
+                    </div>
+                    <div v-if="form.cbo_codigo || form.codigo_familia || form.cbo_titulo || form.cbo_familia || form.cbo_descricao_sumaria" class="mt-2 p-3 border rounded bg-light">
+                        <div class="row">
+                            <div class="col-12 col-md-6">
+                                <div class="mb-1"><small class="text-uppercase text-muted">Código CBO</small></div>
+                                <div class="mb-2 font-weight-bold">@{{ form.cbo_codigo || '—' }}</div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="mb-1"><small class="text-uppercase text-muted">Código da família</small></div>
+                                <div class="mb-2 font-weight-bold">@{{ form.codigo_familia || '—' }}</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-1"><small class="text-uppercase text-muted">Título</small></div>
+                        <div class="mb-2 font-weight-bold">@{{ form.cbo_titulo || 'Não informado' }}</div>
+
+                        <div class="mb-1"><small class="text-uppercase text-muted">Família</small></div>
+                        <div class="mb-2">@{{ form.cbo_familia || 'Não informada' }}</div>
+
+                        <div class="mb-1"><small class="text-uppercase text-muted">Descrição sumária</small></div>
+                        <div class="mb-0">@{{ form.cbo_descricao_sumaria || 'Não informada' }}</div>
+                    </div>
+                </fieldset>
 
                 <fieldset class="mt-3">
                     <legend>Treinamentos</legend>
@@ -144,6 +192,7 @@
                 <tr class="bg-default">
                     <th class="text-center">ID</th>
                     <th>Nome</th>
+                    <th>CBO</th>
                     <th>Ativo</th>
                     <th>Ação</th>
                 </tr>
@@ -156,6 +205,11 @@
 
                     <td>
                         @{{vaga.nome}}
+                    </td>
+
+                    <td>
+                        <span v-if="vaga.cbo_label">@{{ vaga.cbo_label }}</span>
+                        <span v-else class="text-muted">Não vinculado</span>
                     </td>
 
                     <td class="text-center">

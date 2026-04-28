@@ -42,6 +42,7 @@ class VagaController extends Controller
         $this->authorize('cadastro_vagas_insert');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados['cbo_id'] = empty($dados['cbo_id']) ? null : (int) $dados['cbo_id'];
         $vencimentoIds = $this->normalizeIds($dados['vencimento_ids'] ?? []);
         unset($dados['vencimento_ids']);
         $vencimentoIds = $this->filtrarVencimentosSemVinculoTodosCargos($vencimentoIds);
@@ -54,6 +55,7 @@ class VagaController extends Controller
                 }),
             ],
             'ativo' => 'required|boolean',
+            'cbo_id' => 'nullable|integer|exists:cbos,id',
         ]);
 
         $vencimentosValidados = \Validator::make(
@@ -115,8 +117,19 @@ class VagaController extends Controller
      */
     public function edit(Vaga $vaga)
     {
-        $vaga->load('Vencimentos:id,label,segmento_treinamento_id', 'Vencimentos.SegmentoTreinamento:id,nome');
+        $vaga->load('Vencimentos:id,label,segmento_treinamento_id', 'Vencimentos.SegmentoTreinamento:id,nome', 'Cbo:id,codigo,titulo,codigo_familia', 'Cbo.familia:codigo,titulo,descricao_sumaria');
         $vaga->vencimento_ids = $vaga->Vencimentos->pluck('id')->values();
+        $vaga->autocomplete_label_cbo = $vaga->Cbo ? sprintf(
+            '%s - %s - %s',
+            $vaga->Cbo->codigo,
+            $vaga->Cbo->titulo,
+            $vaga->Cbo->familia?->titulo ?? 'Família não informada'
+        ) : '';
+        $vaga->cbo_codigo = $vaga->Cbo?->codigo;
+        $vaga->codigo_familia = $vaga->Cbo?->codigo_familia ?? $vaga->Cbo?->familia?->codigo;
+        $vaga->cbo_titulo = $vaga->Cbo?->titulo;
+        $vaga->cbo_familia = $vaga->Cbo?->familia?->titulo;
+        $vaga->cbo_descricao_sumaria = $vaga->Cbo?->familia?->descricao_sumaria;
         return $vaga;
     }
 
@@ -132,6 +145,7 @@ class VagaController extends Controller
         $this->authorize('cadastro_vagas_update');
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados['cbo_id'] = empty($dados['cbo_id']) ? null : (int) $dados['cbo_id'];
         $vencimentoIds = $this->normalizeIds($dados['vencimento_ids'] ?? []);
         unset($dados['vencimento_ids']);
         $vencimentoIds = $this->filtrarVencimentosSemVinculoTodosCargos($vencimentoIds);
@@ -144,6 +158,7 @@ class VagaController extends Controller
                 }),
             ],
             'ativo' => 'required|boolean',
+            'cbo_id' => 'nullable|integer|exists:cbos,id',
         ]);
 
         $vencimentosValidados = \Validator::make(
@@ -200,7 +215,7 @@ class VagaController extends Controller
     public function atualizar(Request $request)
     {
         $this->authorize('cadastro_vagas');
-        $resultado = Vaga::orderBy('nome');
+        $resultado = Vaga::with('Cbo:id,codigo,titulo,codigo_familia', 'Cbo.familia:codigo,titulo')->orderBy('nome');
         if ($request->filled('campoBusca')) {
             $resultado->where('nome', 'like', '%' . $request->campoBusca . '%')
                 ->orWhere('id', $request->campoBusca);
@@ -211,12 +226,21 @@ class VagaController extends Controller
         }
 
         $resultado = $resultado->paginate(50);
+        $dados = collect($resultado->items())->map(function (Vaga $vaga) {
+            $vaga->cbo_label = $vaga->Cbo ? sprintf(
+                '%s - %s - %s',
+                $vaga->Cbo->codigo,
+                $vaga->Cbo->titulo,
+                $vaga->Cbo->familia?->titulo ?? 'Família não informada'
+            ) : null;
+            return $vaga;
+        })->values();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => $resultado->items()
+            'dados' => $dados
         ]);
     }
 
