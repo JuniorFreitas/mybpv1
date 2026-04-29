@@ -6,6 +6,8 @@ use App\Models\Arquivo;
 use App\Models\CarteiraAssinatura;
 use App\Models\Sistema;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 
 /**
  * Cache de imagens da carteira de treinamento em base64 para melhorar performance do PDF.
@@ -15,7 +17,11 @@ class CarteiraImagemCache
 {
     private const PREFIX_PUBLIC = 'carteira_img_b64:';
     private const PREFIX_ASSINATURA = 'carteira_assinatura_b64:';
+    private const PREFIX_FOTO_PRINT = 'carteira_foto_print_jpg:';
     private const TTL_DAYS = 30;
+
+    /** TTL menor para miniatura de impressão: renova rápido se a foto for substituída. */
+    private const TTL_FOTO_PRINT_DAYS = 7;
 
     /**
      * Converte imagem do diretório public para base64 (data:image/...;base64,...) com cache.
@@ -90,10 +96,31 @@ class CarteiraImagemCache
      */
     public static function fotoCurriculo3x4ParaDataUrl(string $file): ?string
     {
-        $data = Arquivo::getFotocurriculoAnexoContentAndMime($file);
-        if ($data === null) {
+        $disk = Storage::disk(Arquivo::DISCO_FOTOCURRICULO);
+        if (!$disk->exists($file)) {
             return null;
         }
-        return 'data:' . $data['mime'] . ';base64,' . base64_encode($data['content']);
+
+        $mtime = (int) $disk->lastModified($file);
+        $cacheKey = self::PREFIX_FOTO_PRINT . md5($file) . ':' . $mtime;
+
+        return Cache::remember($cacheKey, now()->addDays(self::TTL_FOTO_PRINT_DAYS), function () use ($file) {
+            $data = Arquivo::getFotocurriculoAnexoContentAndMime($file);
+            if ($data === null) {
+                return null;
+            }
+
+            try {
+                $img = Image::make($data['content']);
+                $img->orientate();
+                $img->fit(420, 560, function ($constraint) {
+                    $constraint->upsize();
+                });
+
+                return 'data:image/jpeg;base64,' . base64_encode((string) $img->encode('jpg', 82));
+            } catch (\Throwable) {
+                return 'data:' . $data['mime'] . ';base64,' . base64_encode($data['content']);
+            }
+        });
     }
 }

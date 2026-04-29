@@ -105,7 +105,7 @@
                 @endif
                 <tr>
                     <td style="width: 2.20cm; font-size: 3.8pt; height: 0.02cm;  border-top:none; border-right: none;text-align: center;">
-                                <span style="font-family: 'Sacramento', cursive; color: blue">
+                                <span class="font-assinatura">
                                     @if ($treinamento->FeedbackCurriculo->Cliente->id == 3)
                                         José Meneses Barros
                                     @else
@@ -114,7 +114,7 @@
                                 </span>
                     </td>
                     <td align="center" colspan="2" style="height: 0.02cm; border-top:none; ">
-                                <span style="font-family: 'Sacramento', cursive; color: blue">
+                                <span class="font-assinatura">
                                      @if ($treinamento->FeedbackCurriculo->Cliente->id == 3)
                                         Josue Góis
                                     @else
