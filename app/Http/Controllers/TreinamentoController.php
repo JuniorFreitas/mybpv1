@@ -17,6 +17,7 @@ use App\Models\FeedbackCurriculo;
 use App\Models\Treinamento;
 use App\Models\TreinamentoVencimentoHistorico;
 use App\Models\Vencimento;
+use App\Services\Treinamento\CarteiraEtiquetaBloqueioLayout;
 use App\Services\Treinamento\CarteiraImagemCache;
 use App\Services\Treinamento\FeedbackCurriculoFilter;
 use Illuminate\Http\JsonResponse;
@@ -1285,6 +1286,8 @@ class TreinamentoController extends Controller
             ->first()
             ->supervisor_etiqueta_bloqueio;
 
+        $embedImagensSegmentoBase64 = $request->boolean('as_pdf');
+
         $treinamentos = Treinamento::select([
             'id',
             'feedback_id',
@@ -1300,7 +1303,7 @@ class TreinamentoController extends Controller
                 'Vencimentos.Vagas:id'
             ])
             ->get()
-            ->transform(function ($item) use ($telefone_supervisor) {
+            ->transform(function ($item) use ($telefone_supervisor, $embedImagensSegmentoBase64) {
                 $telefone = "";
                 if ($item->FeedbackCurriculo->Admissao) {
                     $telefone = $telefone_supervisor ? Admissao::getNumeroSupervisor($item->FeedbackCurriculo->empresa_id, $item->FeedbackCurriculo->Admissao->area_etiqueta_id) : \App\Models\Curriculo::getTelPrincipal($item->FeedbackCurriculo->curriculo_id, false);
@@ -1316,8 +1319,13 @@ class TreinamentoController extends Controller
                 // Imagens do segmento em base64 com cache (path + filemtime na chave = invalida ao atualizar arquivo)
                 $pathCabecalho = !empty($segmentoConfig['cabecalho_img']) ? $segmentoConfig['cabecalho_img'] : 'images/carteira/cabecalho_carteira_alumar.webp';
                 $pathVerso = !empty($segmentoConfig['verso_img']) ? $segmentoConfig['verso_img'] : 'images/carteira/verso_carteira_alumar.webp';
-                $segmentoConfig['cabecalho_img_base64'] = CarteiraImagemCache::imagemPublicaParaBase64($pathCabecalho);
-                $segmentoConfig['verso_img_base64'] = CarteiraImagemCache::imagemPublicaParaBase64($pathVerso);
+                if ($embedImagensSegmentoBase64) {
+                    $segmentoConfig['cabecalho_img_base64'] = CarteiraImagemCache::imagemPublicaParaBase64($pathCabecalho);
+                    $segmentoConfig['verso_img_base64'] = CarteiraImagemCache::imagemPublicaParaBase64($pathVerso);
+                } else {
+                    $segmentoConfig['cabecalho_img_base64'] = null;
+                    $segmentoConfig['verso_img_base64'] = null;
+                }
                 // setAttribute para que toArray() inclua na view (carteira e bloqueio usam essas configs)
                 $item->setAttribute('segmento_config', $segmentoConfig);
                 $item->setAttribute('segmento_slug', $segmentoSlug);
@@ -1400,7 +1408,28 @@ class TreinamentoController extends Controller
             }));
         }
 
-        return view('pdf.treinamento.carteira.pdf', compact('treinamentos', 'tipo', 'empresa'));
+        $viewData = array_merge(
+            compact('treinamentos', 'tipo', 'empresa'),
+            [
+                'forPdf' => $request->boolean('as_pdf'),
+                'bloqueio_altura_linha_par_mm' => CarteiraEtiquetaBloqueioLayout::alturaLinhaParMm(),
+            ]
+        );
+
+        if ($request->boolean('as_pdf')) {
+            $pdf = app('dompdf.wrapper');
+            $pdf->setPaper('a4', 'portrait');
+            $pdf->setOption('isRemoteEnabled', true);
+            $pdf->setOption('isJavascriptEnabled', false);
+            $pdf->setOption('isPhpEnabled', false);
+            $chroot = realpath(public_path());
+            $pdf->setOption('chroot', $chroot !== false ? $chroot : public_path());
+            $pdf->loadView('pdf.treinamento.carteira.pdf', $viewData);
+
+            return $pdf->stream('carteira-treinamento.pdf');
+        }
+
+        return view('pdf.treinamento.carteira.pdf', $viewData);
     }
 
     /**

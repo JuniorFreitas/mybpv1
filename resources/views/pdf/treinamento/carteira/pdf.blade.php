@@ -12,9 +12,7 @@
 
     @if($tipo == 'treinamento_bloqueio')
         @include('pdf.treinamento.carteira.cart_treinamento')
-        <div style="clear: both; margin: 0; padding: 0;"></div>
-        <div style="page-break-after: always; margin: 0; padding: 0;"></div>
-        @include('pdf.treinamento.carteira.cart_bloqueio')
+        @include('pdf.treinamento.carteira.cart_bloqueio', ['aposTreinamento' => true])
     @endif
 
 @endsection
