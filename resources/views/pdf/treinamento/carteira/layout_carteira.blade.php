@@ -12,8 +12,8 @@
         :root {
             --font-sans: 'Noto Sans', 'DejaVu Sans', Arial, sans-serif;
             --font-script: 'Sacramento', cursive;
-            --font-scale-xxs: 4.5pt;
-            --font-scale-xs: 5pt;
+            --font-scale-xxs: 5pt;
+            --font-scale-xs: 5.5pt;
             --font-scale-sm: 5.5pt;
             --font-scale-md: 6pt;
             --font-scale-base: 10pt;
@@ -56,10 +56,10 @@
             print-color-adjust: exact !important;
         }
 
-        /* Margem da folha: reduz corte nas bordas (PDF Dompdf e impressão) */
+        /* Margem da folha zero (PDF Dompdf e impressão; combine com margens “Nenhuma” no diálogo do navegador se precisar) */
         @page {
             size: A4 portrait;
-            margin: 10mm;
+            margin: 2mm;
         }
 
         body {
@@ -403,9 +403,10 @@
             margin-top: 4mm;
             font-weight: bold !important;
             font-size: var(--font-scale-xl);
-            word-wrap: break-word;
-            overflow-wrap: anywhere;
-            hyphens: auto;
+            word-wrap: normal;
+            overflow-wrap: normal;
+            word-break: normal;
+            hyphens: none;
         }
 
         .etiqueta-texto-aviso.colorRed {
@@ -416,9 +417,10 @@
             margin-top: 1cm;
             font-weight: bold !important;
             font-size: var(--font-scale-xl);
-            word-wrap: break-word;
-            overflow-wrap: anywhere;
-            hyphens: auto;
+            word-wrap: normal;
+            overflow-wrap: normal;
+            word-break: normal;
+            hyphens: none;
         }
 
         .etiqueta-titulo-cuidado {
@@ -464,9 +466,10 @@
         .etiqueta-meta-linha {
             margin-top: 1.3mm;
             font-size: var(--font-scale-base);
-            word-wrap: break-word;
-            overflow-wrap: anywhere;
-            hyphens: auto;
+            word-wrap: normal;
+            overflow-wrap: normal;
+            word-break: normal;
+            hyphens: none;
         }
 
         .etiqueta-logos-row {

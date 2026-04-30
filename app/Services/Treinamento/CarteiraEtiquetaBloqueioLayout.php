@@ -12,8 +12,8 @@ final class CarteiraEtiquetaBloqueioLayout
     /** Altura útil da folha A4 em mm (área de conteúdo, sem margens de página). */
     public const A4_ALTURA_MM = 297.0;
 
-    /** Soma margem superior + inferior de @page (ex.: 10mm + 10mm). */
-    public const MARGEM_PAGINA_VERTICAL_MM = 20.0;
+    /** Soma margem superior + inferior de @page (ex.: 0mm + 0mm). */
+    public const MARGEM_PAGINA_VERTICAL_MM = 0.0;
 
     /** Soma padding vertical do wrap de bloqueio no PDF (ex.: 2mm + 2mm em body.carteira--pdf). */
     public const WRAP_BLOQUEIO_PADDING_VERTICAL_MM = 4.0;

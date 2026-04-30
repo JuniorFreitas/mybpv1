@@ -19,6 +19,6 @@ class CarteiraEtiquetaBloqueioLayoutTest extends TestCase
             / CarteiraEtiquetaBloqueioLayout::LINHAS_POR_FOLHA;
 
         $this->assertEqualsWithDelta($esperado, CarteiraEtiquetaBloqueioLayout::alturaLinhaParMm(), 0.0001);
-        $this->assertEqualsWithDelta(135.0, CarteiraEtiquetaBloqueioLayout::alturaLinhaParMm(), 0.0001);
+        $this->assertEqualsWithDelta(145.0, CarteiraEtiquetaBloqueioLayout::alturaLinhaParMm(), 0.0001);
     }
 }
