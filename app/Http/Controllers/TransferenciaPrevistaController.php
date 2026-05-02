@@ -10,6 +10,7 @@ use App\Models\LogHistorico;
 use App\Models\TransferenciaPrevista;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use MasterTag\DataHora;
 
 class TransferenciaPrevistaController extends Controller
@@ -24,11 +25,16 @@ class TransferenciaPrevistaController extends Controller
     {
         $dados = $request->input();
         $dados['user_id'] = auth()->id();
+        $dados['centro_custo_origem_id'] = $this->normalizarCentroCustoOrigemId($dados['centro_custo_origem_id'] ?? null);
 
         $dadosValidados = \Validator::make(
             $dados,
             [
-                'centro_custo_origem_id' => 'required',
+                'centro_custo_origem_id' => [
+                    'nullable',
+                    'integer',
+                    Rule::exists('centro_custos', 'id')->where('empresa_id', auth()->user()->empresa_id),
+                ],
                 'centro_custo_destino_id' => 'required',
                 'colaborador_id' => 'required',
             ]
@@ -83,6 +89,9 @@ class TransferenciaPrevistaController extends Controller
         $transferenciaPrevista->autocomplete_label_gestor_modal_anterior = $transferenciaPrevista->GestorAprovacao ? $transferenciaPrevista->GestorAprovacao->nome : '';
         $transferenciaPrevista->anexosDel = [];
         $transferenciaPrevista->load('Anexos');
+        $transferenciaPrevista->loadMissing('Colaborador.Feedback.Admissao');
+        $admissao = $transferenciaPrevista->Colaborador?->Feedback?->Admissao;
+        $transferenciaPrevista->centro_custo_id = $admissao?->centro_custo_id;
 
         // Informações de aprovação extra
         $config = AprovacaoExtraConfig::getConfigAtiva($transferenciaPrevista->empresa_id, 'transferencia');
@@ -104,11 +113,16 @@ class TransferenciaPrevistaController extends Controller
     {
         $dados = $request->input();
         $dados['user_id'] = auth()->user()->id;
+        $dados['centro_custo_origem_id'] = $this->normalizarCentroCustoOrigemId($dados['centro_custo_origem_id'] ?? null);
 
         $dadosValidados = \Validator::make(
             $dados,
             [
-                'centro_custo_origem_id' => 'required',
+                'centro_custo_origem_id' => [
+                    'nullable',
+                    'integer',
+                    Rule::exists('centro_custos', 'id')->where('empresa_id', auth()->user()->empresa_id),
+                ],
                 'centro_custo_destino_id' => 'required',
                 'colaborador_id' => 'required',
             ]
@@ -131,6 +145,15 @@ class TransferenciaPrevistaController extends Controller
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
         }
+    }
+
+    private function normalizarCentroCustoOrigemId(mixed $valor): ?int
+    {
+        if ($valor === null || $valor === '') {
+            return null;
+        }
+
+        return (int) $valor;
     }
 
     public function aprovar(Request $request, TransferenciaPrevista $transferenciaPrevista)

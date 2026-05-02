@@ -22,13 +22,13 @@
                             ></colaborador>
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
-                                    <label>Centro de Custo Origem <span class="text-danger">*</span></label>
+                                    <label>Centro de Custo Origem</label>
                                     <select
                                         v-model="form.centro_custo_origem_id"
                                         class="form-control form-control-sm"
                                         :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh || centroOrigemDesabilitadoPorColaborador"
-                                        onchange="valida_campo_vazio(this, 1)"
-                                        onblur="valida_campo_vazio(this, 1)"
+                                        onchange="valida_campo_vazio(this, 0)"
+                                        onblur="valida_campo_vazio(this, 0)"
                                     >
                                         <option value="">Selecione</option>
                                         <option v-for="item in centro_custos" :key="item.value" :value="item.id">
@@ -526,7 +526,7 @@
                         <div class="detail-item">
                             <i class="fas fa-building text-muted"></i>
                             <span class="detail-label">Centro Custo Origem:</span>
-                            <span class="detail-value">{{ item.centro_custo_origem.label }}</span>
+                            <span class="detail-value">{{ item.centro_custo_origem?.label ?? 'Não informado' }}</span>
                         </div>
                         <div class="detail-item">
                             <i class="fas fa-building text-muted"></i>
@@ -981,6 +981,7 @@ export default defineComponent({
                 temAprovacaoExtra.value = data.tem_aprovacao_extra || false
                 podeAprovarExtra.value = data.pode_aprovar_extra || false
                 nomeAprovacaoExtra.value = data.nome_aprovacao_extra || 'Aprovação Extra'
+                centroOrigemDesabilitadoPorColaborador.value = !!(data.centro_custo_id ?? '')
                 editando.value = true
             } catch (_err) {
                 if (typeof mostraErro === 'function') mostraErro(_err)
