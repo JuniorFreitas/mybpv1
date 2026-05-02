@@ -17,7 +17,7 @@ use MasterTag\DataHora;
  *
  * @property int $id
  * @property int|null $colaborador_id
- * @property int $centro_custo_origem_id
+ * @property int|null $centro_custo_origem_id
  * @property int $centro_custo_destino_id
  * @property \Illuminate\Support\Carbon $data_transferencia
  * @property int|null $user_id

@@ -30,7 +30,7 @@ class JobTransferenciaPrevistaAprovar implements ShouldQueue
             'email_para' => $transferenciaPrevista->UserCadastrou->login,
             'status_aprovacao' => $transferenciaPrevista->status_aprovacao,
             'id' => $transferenciaPrevista->id,
-            'centro_custo_origem' => $transferenciaPrevista->CentroCustoOrigem->label,
+            'centro_custo_origem' => $transferenciaPrevista->CentroCustoOrigem?->label ?? 'Não informado',
             'centro_custo_destino' => $transferenciaPrevista->CentroCustoDestino->label,
             'colaborador' => $transferenciaPrevista->Colaborador->nome,
             'empresa_id' => auth()->user()->empresa_id

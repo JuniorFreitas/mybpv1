@@ -32,7 +32,7 @@ class TransferenciaPrevistaExportFormatter
             $this->cleanText($row->UserCadastrou->nome ?? ''),
             $this->cleanText($row->created_at ? (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5) : ''),
             $this->cleanText($colaboradorNome),
-            $this->cleanText($row->CentroCustoOrigem->label ?? ''),
+            $this->cleanText($row->CentroCustoOrigem?->label ?? ''),
             $this->cleanText($row->CentroCustoDestino->label ?? ''),
             $this->cleanText($row->data_transferencia ? (new DataHora($row->data_transferencia))->dataCompleta() : ''),
             $this->cleanText($row->GestorAprovacao->nome ?? ''),
