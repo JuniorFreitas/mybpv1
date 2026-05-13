@@ -254,7 +254,7 @@
                                     <select class="form-control"
                                         :key="'fez-'+treinamento.id+'-'+treinamento.fez_treinamento"
                                         :value="treinamento.fez_treinamento"
-                                        :disabled="(treinamento.fez_treinamento && treinamento._fez_treinamento_ja_salvo && !(privilegio_gestao_rh && treinamento_permitir_desmarcar_realizado)) || salvandoVencimentoId === treinamento.id"
+                                        :disabled="(treinamento.fez_treinamento && treinamento._fez_treinamento_ja_salvo && !((privilegio_gestao_rh || treinamento_retirar_treinamento_realizado) && treinamento_permitir_desmarcar_realizado)) || salvandoVencimentoId === treinamento.id"
                                         @change="onFezTreinamentoChange(treinamento, $event.target.value === 'true' || $event.target.value === true)">
                                         <option :value="true">Sim</option>
                                         <option :value="false">Não</option>
@@ -416,7 +416,7 @@
                                     <div class="form-group">
                                         <label for="">Realizou este treinamento?</label>
                                         <select class="form-control" v-model="treinamento.fez_treinamento"
-                                            :disabled="treinamento.fez_treinamento && treinamento._fez_treinamento_ja_salvo && !(privilegio_gestao_rh && treinamento_permitir_desmarcar_realizado)">
+                                            :disabled="treinamento.fez_treinamento && treinamento._fez_treinamento_ja_salvo && !((privilegio_gestao_rh || treinamento_retirar_treinamento_realizado) && treinamento_permitir_desmarcar_realizado)">
                                             <option :value="true">Sim</option>
                                             <option :value="false">Não</option>
                                         </select>
