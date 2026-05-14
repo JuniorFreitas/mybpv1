@@ -459,7 +459,9 @@
 
     <fieldset class="dados-box">
         <legend>{{ $tipo_pj ? 'DADOS DO FORNECEDOR' : 'DADOS DO COLABORADOR' }}</legend>
-        @php $df = $dados['dados_do_funcionario'] ?? []; @endphp
+        @php
+            $df = json_decode(json_encode($dados['dados_do_funcionario'] ?? []), true) ?: [];
+        @endphp
         @if(!empty($df['cnpj_lotacao']['razao_social']))
             <table class="dados-tbl">
                 <tr>
