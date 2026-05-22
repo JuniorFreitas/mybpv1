@@ -946,6 +946,8 @@ class Sistema
         }
 
         return cache()->remember('getEmpresa_' . $empresa_id, now()->addDays(120), function () use ($cliente, $empresa_id) {
+            $logoArquivo = $cliente->Logo->first()?->urlThumb;
+
             return [
                 'id' => $cliente->id,
                 'empresa_id' => $empresa_id,
@@ -953,7 +955,7 @@ class Sistema
                 'cnpj' => $cliente->cnpj,
                 'nome_fantasia' => $cliente->nome_fantasia,
                 'endereco_completo' => mb_strtoupper($cliente->endereco_completo),
-                'logo' => self::convertBase3($cliente->Logo->first()->urlThumb, true),
+                'logo' => $logoArquivo ? self::convertBase3($logoArquivo, true) : '',
                 'filial' => false,
             ];
         });
@@ -983,7 +985,12 @@ class Sistema
             $filial = $centroCustoFilial->Filial;
             $dados = (object)$filial->dados;
 
-            $logo = isset($dados->logo) ? self::convertBase3($dados->Logo->first()->urlThumb, true) : self::convertBase3(Cliente::withoutGlobalScopes()->find($empresa_id)->Logo->first()->urlThumb, true);
+            if (isset($dados->logo)) {
+                $logoArquivo = $dados->Logo->first()?->urlThumb;
+            } else {
+                $logoArquivo = Cliente::withoutGlobalScopes()->find($empresa_id)?->Logo->first()?->urlThumb;
+            }
+            $logo = $logoArquivo ? self::convertBase3($logoArquivo, true) : '';
 
             return [
                 'id' => $filial->id,
