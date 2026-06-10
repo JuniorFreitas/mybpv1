@@ -14,19 +14,27 @@
                         <p class="card-subtitle mb-2 text-muted">
                             <i class="fas fa-map-marker-alt"></i> {{ dados_vaga.municipio.nome }} - {{ dados_vaga.municipio.uf }}
                         </p>
-                        <div class="float-md-left">
-                            <a href="javascript://" class="btn mr-1 mb-2 btn-primary" target="_blank"
-                                 @click="$refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()">CANDIDATAR-SE</a
+                        <div class="vaga-card-actions">
+                            <a
+                                href="javascript://"
+                                class="btn btn-primary vaga-card-action-btn"
+                                target="_blank"
+                                @click="$refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
                             >
-                        </div>
+                                CANDIDATAR-SE
+                            </a>
 
-                        <!--                        href="https://api.whatsapp.com/send?text=Vaga aberta no site da BPSE para {{dados_vaga.vaga.nome}} -  {{ dados_vaga.municipio.nome }} - {{ dados_vaga.municipio.uf }} é só acessar https://bpse.com.br/vaga-aberta/{{dados_vaga.id}}/{{dados_vaga.Vaga.slug}}"-->
-                        <!---->
-                        <!--                        href="https://www.facebook.com/sharer/sharer.php?u=https://bpse.com.br/vaga-aberta/{{dados_vaga.id}}/"-->
+                            <!-- href="https://api.whatsapp.com/send?text=Vaga aberta no site da BPSE para {{dados_vaga.vaga.nome}} -  {{ dados_vaga.municipio.nome }} - {{ dados_vaga.municipio.uf }} é só acessar https://bpse.com.br/vaga-aberta/{{dados_vaga.id}}/{{dados_vaga.Vaga.slug}}" -->
+                            <!-- href="https://www.facebook.com/sharer/sharer.php?u=https://bpse.com.br/vaga-aberta/{{dados_vaga.id}}/" -->
 
-                        <div class="float-md-right">
-                            <a class="btn mr-1 mb-2 btn-outline-primary" target="_blank"><i class="fab fa-whatsapp"></i> COMPARTILHAR</a>
-                            <a class="btn mr-1 mb-2 btn-outline-primary" target="_blank"><i class="fab fa-facebook"></i> COMPARTILHAR</a>
+                            <div class="vaga-card-share-group">
+                                <a class="btn btn-outline-primary vaga-card-action-btn" target="_blank">
+                                    <i class="fab fa-whatsapp"></i> COMPARTILHAR
+                                </a>
+                                <a class="btn btn-outline-primary vaga-card-action-btn" target="_blank">
+                                    <i class="fab fa-facebook"></i> COMPARTILHAR
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1043,5 +1051,50 @@ ul.timeline > li:before {
     padding: 0.5rem 0.8rem;
     background-color: #f4f4f4;
     border-radius: 0.5rem;
+}
+
+.vaga-card-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.vaga-card-share-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.vaga-card-action-btn {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    padding: 0.5rem 0.95rem;
+}
+
+.vaga-card-action-btn i {
+    margin-right: 0.35rem;
+}
+
+@media (max-width: 767.98px) {
+    .vaga-card-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .vaga-card-share-group {
+        width: 100%;
+    }
+
+    .vaga-card-action-btn {
+        width: 100%;
+    }
 }
 </style>

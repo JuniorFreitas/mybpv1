@@ -1,0 +1,234 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "MyBP — Integração SPA v2 + recrutamento legado",
+    "description": "Cobre `routes/api.php`: prefixo `v2/integracao` (rotas 76–103) e grupo `vaga` legado (105–114).\n\n**v2:** header `X-API-TOKEN` (variável `X_API_TOKEN`) nos endpoints sob `apitoken`. Logotipo é público (sem token).\n\n**Legado:** sem `X-API-TOKEN`; envie `empresa_id` no body onde indicado (slug da empresa na URL nos GETs).\n\nVariáveis: `base_url`, `X_API_TOKEN`, `apelido`, `empresa_slug`, `empresa_id`, `vaga_aberta_id`, `slug_vaga_aberta`, `page`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "X_API_TOKEN", "value": "" },
+    { "key": "apelido", "value": "sua-empresa" },
+    { "key": "empresa_slug", "value": "sua-empresa" },
+    { "key": "empresa_id", "value": "1" },
+    { "key": "vaga_aberta_id", "value": "1" },
+    { "key": "slug_vaga_aberta", "value": "titulo-da-vaga" },
+    { "key": "page", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "v2 — Integração SPA (/api/v2/integracao)",
+      "item": [
+        {
+          "name": "Logotipo por apelido (público)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "image/*,*/*", "type": "text" }
+            ],
+            "url": "{{base_url}}/api/v2/integracao/media/{{apelido}}/logotipo?thumb=0",
+            "description": "Sem `X-API-TOKEN`. Query `thumb=1` para miniatura quando existir."
+          }
+        },
+        {
+          "name": "Lista empresas ativas (GET /)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-API-TOKEN", "value": "{{X_API_TOKEN}}", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" }
+            ],
+            "url": "{{base_url}}/api/v2/integracao/",
+            "description": "Empresas ativas com apelido preenchido."
+          }
+        },
+        {
+          "name": "Lista empresas ativas (alias /empresas-ativas)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-API-TOKEN", "value": "{{X_API_TOKEN}}", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" }
+            ],
+            "url": "{{base_url}}/api/v2/integracao/empresas-ativas",
+            "description": "Mesmo handler de GET `/api/v2/integracao/`."
+          }
+        },
+        {
+          "name": "Empresa + preview vagas (até 6)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-API-TOKEN", "value": "{{X_API_TOKEN}}", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" }
+            ],
+            "url": "{{base_url}}/api/v2/integracao/{{apelido}}",
+            "description": "Apelido não pode ser `media` (reservado). Vagas com ativo=true."
+          }
+        },
+        {
+          "name": "Vagas abertas (paginado)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-API-TOKEN", "value": "{{X_API_TOKEN}}", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" }
+            ],
+            "url": "{{base_url}}/api/v2/integracao/{{apelido}}/vagas-abertas?page={{page}}",
+            "description": "Query `page` opcional."
+          }
+        },
+        {
+          "name": "Detalhe vaga aberta",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-API-TOKEN", "value": "{{X_API_TOKEN}}", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" }
+            ],
+            "url": "{{base_url}}/api/v2/integracao/{{apelido}}/vagas-abertas/{{vaga_aberta_id}}/{{slug_vaga_aberta}}",
+            "description": "Slug = `Str::slug` do título da vaga no Laravel."
+          }
+        },
+        {
+          "name": "Busca currículo (CPF + nascimento)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-TOKEN", "value": "{{X_API_TOKEN}}", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpf\": \"000.000.000-00\",\n  \"nascimento\": \"01/01/1990\"\n}"
+            },
+            "url": "{{base_url}}/api/v2/integracao/{{apelido}}/busca-curriculo",
+            "description": "`empresa_id` é injetado pelo backend a partir do apelido."
+          }
+        },
+        {
+          "name": "Verifica CPF duplicado (empresa)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-TOKEN", "value": "{{X_API_TOKEN}}", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpf\": \"000.000.000-00\",\n  \"nascimento\": \"01/01/1990\"\n}"
+            },
+            "url": "{{base_url}}/api/v2/integracao/{{apelido}}/busca-cpf",
+            "description": "Array vazio ou `[{ cpf mascarado, created_at }]`. `nascimento` opcional: se coincidir com o currículo, não entra como conflito."
+          }
+        },
+        {
+          "name": "Cadastra currículo",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-TOKEN", "value": "{{X_API_TOKEN}}", "type": "text" },
+              { "key": "Accept", "value": "application/json", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vaga_aberta_id\": 1,\n  \"cpf_padrao\": \"00000000000\",\n  \"nome\": \"Candidato Teste\"\n}"
+            },
+            "url": "{{base_url}}/api/v2/integracao/{{apelido}}/cadastra-curriculo",
+            "description": "Mesmas regras de POST `/api/cadastra-curriculo`; monte o JSON completo no cliente."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Recrutamento legado (grupo vaga, /api)",
+      "item": [
+        {
+          "name": "GET vagas por empresa (slug)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": "{{base_url}}/api/{{empresa_slug}}",
+            "description": "`VagaAbertaController::getVagasAbertasByEmpresa`. Sem token."
+          }
+        },
+        {
+          "name": "GET vaga aberta por id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json", "type": "text" }],
+            "url": "{{base_url}}/api/{{empresa_slug}}/{{vaga_aberta_id}}",
+            "description": "`getVagaAberta`."
+          }
+        },
+        {
+          "name": "POST atualizar vaga aberta (form)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"empresa_id\": {{empresa_id}},\n  \"vaga_aberta_id\": {{vaga_aberta_id}}\n}"
+            },
+            "url": "{{base_url}}/api/{{empresa_id}}/vaga-aberta/{{vaga_aberta_id}}",
+            "description": "`atualizar` — ajuste o body conforme o front legado."
+          }
+        },
+        {
+          "name": "POST busca-curriculo",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"empresa_id\": {{empresa_id}},\n  \"cpf\": \"000.000.000-00\",\n  \"nascimento\": \"01/01/1990\"\n}"
+            },
+            "url": "{{base_url}}/api/busca-curriculo",
+            "description": "`buscaCurriculo` — `empresa_id` obrigatório no body."
+          }
+        },
+        {
+          "name": "POST busca-cpf",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"empresa_id\": {{empresa_id}},\n  \"cpf\": \"000.000.000-00\",\n  \"nascimento\": \"01/01/1990\"\n}"
+            },
+            "url": "{{base_url}}/api/busca-cpf",
+            "description": "`buscaCpf` — `empresa_id` obrigatório; `nascimento` opcional."
+          }
+        },
+        {
+          "name": "POST cadastra-curriculo",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"empresa_id\": {{empresa_id}},\n  \"vaga_aberta_id\": {{vaga_aberta_id}},\n  \"nome\": \"Candidato\"\n}"
+            },
+            "url": "{{base_url}}/api/cadastra-curriculo",
+            "description": "`store` — expandir o JSON como no formulário público de vagas."
+          }
+        }
+      ]
+    }
+  ]
+}

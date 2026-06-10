@@ -97,6 +97,10 @@ n- fornecedores
 - CIH e intermitente
 - histórico de admissão e pós-admissão
 
+**Operacao / CLI**
+
+- Download em lote dos anexos de CIH a partir de CSV: [DOWNLOAD_ANEXOS_CIH_CLI.md](./DOWNLOAD_ANEXOS_CIH_CLI.md) (`php artisan mybp:download-cih-anexos`).
+
 **Arquivos-base**
 
 - `app/Http/Controllers/AdmissaoController.php`

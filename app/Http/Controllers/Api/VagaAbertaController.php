@@ -9,7 +9,6 @@ use App\Mail\Recrutamento\CadastroMail;
 use App\Mail\RecrutamentoMail;
 use App\Models\Cliente;
 use App\Models\Curriculo;
-use App\Models\CurriculoAtualizacao;
 use App\Models\CurriculoExperiencia;
 use App\Models\CurriculoQualificacao;
 use App\Models\Escolaridade;
@@ -22,7 +21,9 @@ use App\Rules\CpfValidoEmpresaRules;
 use App\Rules\VagaAbertaEmpresaRules;
 use App\Rules\VerificaCpfEmpresaRules;
 use DB;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Mail;
 use MasterTag\DataHora;
@@ -107,10 +108,9 @@ class VagaAbertaController extends Controller
             ], 400);
         }
 
-        $user = User::select(['id', 'nome'])->where('tipo', '!=', User::EMPRESA)
-            ->whereEmpresaId($request->empresa_id)->whereHas('Curriculo', function ($q) use ($cpf) {
-                $q->withoutGlobalScopes()->whereCpf($cpf);
-            })->first();
+        $user = $this->queryUsuariosNaoEmpresaComCurriculoPorCpf($request->empresa_id, $cpf)
+            ->select(['id', 'nome'])
+            ->first();
 
         $escolaridades = Escolaridade::get();
 
@@ -168,6 +168,75 @@ class VagaAbertaController extends Controller
             'escolaridades' => $escolaridades,
             'success' => true
         ]);
+    }
+
+    /**
+     * Verifica se o CPF já possui currículo na empresa. Mesma base de {@see buscaCurriculo}
+     * (usuário não-Empresa da empresa com currículo pelo CPF, escopo de currículo sem global scopes).
+     *
+     * Retorno: lista de `{ cpf mascarado, created_at }` ordenada por cadastro. Vazio se não houver conflito.
+     * Se `nascimento` for enviado e bater com o do currículo, esse registro é ignorado (mesmo candidato).
+     *
+     * Espera `cpf` e `empresa_id` no body (na integração v2 o controller injeta `empresa_id` pelo apelido).
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function buscaCpf(Request $request)
+    {
+        $cpf = Sistema::transformCpfCnpj((string) $request->input('cpf', ''));
+        if ($cpf === '' || ! Sistema::validaCPF($cpf)) {
+            return response()->json([]);
+        }
+
+        $empresaId = $request->input('empresa_id');
+        if ($empresaId === null || $empresaId === '') {
+            return response()->json([]);
+        }
+
+        if (! Schema::hasTable('curriculos')) {
+            return response()->json([]);
+        }
+
+        $nascimentoCompletoInformado = null;
+        $nascimentoBruto = $request->input('nascimento');
+        if ($nascimentoBruto !== null && $nascimentoBruto !== '') {
+            $dataNascimento = Sistema::dataTransform($nascimentoBruto);
+            if ($dataNascimento) {
+                $nascimentoCompletoInformado = (new DataHora($dataNascimento))->dataCompleta();
+            }
+        }
+
+        $usuarios = $this->queryUsuariosNaoEmpresaComCurriculoPorCpf((int) $empresaId, $cpf)
+            ->select(['id'])
+            ->with(['Curriculo' => static function ($q) {
+                $q->withoutGlobalScopes()
+                    ->select(['id', 'cpf', 'nascimento', 'created_at']);
+            }])
+            ->orderBy('id')
+            ->get();
+
+        $curriculos = $usuarios
+            ->map(static fn (User $user) => $user->Curriculo)
+            ->filter();
+
+        if ($nascimentoCompletoInformado !== null) {
+            $curriculos = $curriculos->filter(
+                static fn (Curriculo $c) => $c->nascimento !== $nascimentoCompletoInformado
+            );
+        }
+
+        $payload = $curriculos
+            ->sortBy('created_at')
+            ->values()
+            ->map(static function (Curriculo $c) {
+                return [
+                    'cpf' => Sistema::maskCpf($c->cpf),
+                    'created_at' => (string) $c->created_at,
+                ];
+            })
+            ->all();
+
+        return response()->json($payload);
     }
 
     public function atualizar(Request $request)
@@ -338,8 +407,6 @@ class VagaAbertaController extends Controller
                 }
             } else {
                 $curriculo = Curriculo::withoutGlobalScopes()->find($user->first()->id);
-                $atualizacao = ['curriculo_id' => $curriculo->id];
-                CurriculoAtualizacao::create($atualizacao);
 
                 if (isset($dados['telefonesDelete'])) {
                     foreach ($dados['telefonesDelete'] as $index) {
@@ -490,5 +557,19 @@ class VagaAbertaController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    /**
+     * Usuários da empresa (tipo diferente de Empresa) que possuem currículo com o CPF informado.
+     * Espelha o critério de {@see buscaCurriculo} para manter uma única fonte de verdade.
+     */
+    private function queryUsuariosNaoEmpresaComCurriculoPorCpf(int|string $empresaId, string $cpf): Builder
+    {
+        return User::query()
+            ->where('tipo', '!=', User::EMPRESA)
+            ->whereEmpresaId((int) $empresaId)
+            ->whereHas('Curriculo', static function ($q) use ($cpf) {
+                $q->withoutGlobalScopes()->whereCpf($cpf);
+            });
     }
 }

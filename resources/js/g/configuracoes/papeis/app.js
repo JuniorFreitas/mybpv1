@@ -1,22 +1,11 @@
 import { createApp } from 'vue'
 import { registerGlobals } from '../../../registerGlobals'
-const abrirModal = (selector) => {
-    if (typeof $ === 'undefined') return
-    $(selector).modal('show')
-}
-
-const fecharModal = (selector) => {
-    if (typeof $ === 'undefined') return
-    $(selector).modal('hide')
-}
-
-
 
 // Constantes da aplicação
 const CONSTANTS = {
     TITULOS: {
-        CADASTRAR: 'Cadastrando grupo',
-        ALTERAR: 'Alterando grupo'
+        CADASTRAR: 'Novo grupo de usuários',
+        ALTERAR_PREFIXO: 'Editar grupo'
     },
     MENSAGENS: {
         SUCESSO_CADASTRO: 'Grupo cadastrado com sucesso!',
@@ -29,7 +18,9 @@ const CONSTANTS = {
     ELEMENTOS: {
         JANELA_CADASTRAR: '#janelaCadastrar',
         ABA_IDENTIFICACAO: '#aba-identificacao-tab'
-    }
+    },
+    /** Sempre ligada em todo grupo (usuário precisa alterar a própria senha). */
+    HABILIDADE_OBRIGATORIA_ALTERAR_SENHA: 'usuario_alterar-senha'
 }
 
 const app = createApp({
@@ -38,12 +29,17 @@ const app = createApp({
             tituloJanela: '',
             empresa_id: '',
             preloadAjax: false,
+            /** Texto do overlay enquanto carrega ou salva (evita UI duplicada / faixa presa). */
+            mensagemOverlayModal: 'Aguarde…',
             editando: false,
 
             cadastrado: false,
             atualizado: false,
             urlAjax: '',
             apagado: false,
+
+            /** Evita texto de “fluxo novo” enquanto carrega edição (editando só vira true após o AJAX). */
+            mostrarDicasFluxoNovo: false,
 
             form: {
                 id: '',
@@ -64,15 +60,11 @@ const app = createApp({
             categoriaFiltro: '',
             categoriasHabilidades: [],
             todasHabilidades: true,
-            paginaHabilidades: 1,
-            itensPorPaginaHabilidades: 10,
 
             // Variáveis para usuários vinculados
             listaUsuarios: [],
             usuariosFiltrados: [],
             filtroUsuarios: '',
-            paginaUsuarios: 1,
-            itensPorPaginaUsuarios: 10,
 
             dados: {},
             controle: {
@@ -86,6 +78,20 @@ const app = createApp({
     },
     computed: {
         /**
+         * Há busca por texto ou categoria selecionada no filtro.
+         */
+        habilidadesFiltroAtivo() {
+            return Boolean(this.filtroHabilidades.trim() || this.categoriaFiltro)
+        },
+
+        /**
+         * Quantas habilidades visíveis no filtro estão com permissão.
+         */
+        habilidadesPermitidasNoFiltro() {
+            return this.habilidadesFiltradas.filter((h) => h.acesso).length
+        },
+
+        /**
          * Conta o número de habilidades selecionadas
          */
         habilidadesSelecionadas() {
@@ -93,35 +99,42 @@ const app = createApp({
         },
 
         /**
-         * Calcula o total de páginas para as habilidades filtradas
+         * Habilidades filtradas agrupadas por prefixo do nome (categoria), ordenadas.
          */
-        totalPaginasHabilidades() {
-            return Math.ceil(this.habilidadesFiltradas.length / this.itensPorPaginaHabilidades)
+        habilidadesAgrupadasPorCategoria() {
+            const map = new Map()
+            for (const h of this.habilidadesFiltradas) {
+                const cat = this.extrairCategoria(h.nome)
+                if (!map.has(cat)) {
+                    map.set(cat, [])
+                }
+                map.get(cat).push(h)
+            }
+            for (const arr of map.values()) {
+                arr.sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'))
+            }
+            return Array.from(map.entries())
+                .map(([categoria, itens]) => ({ categoria, itens }))
+                .sort((a, b) => a.categoria.localeCompare(b.categoria, 'pt-BR'))
         },
 
         /**
-         * Retorna as habilidades da página atual
+         * Usuários filtrados separados por situação (ativo / inativo).
          */
-        habilidadesPaginadas() {
-            const inicio = (this.paginaHabilidades - 1) * this.itensPorPaginaHabilidades
-            const fim = inicio + this.itensPorPaginaHabilidades
-            return this.habilidadesFiltradas.slice(inicio, fim)
-        },
-
-        /**
-         * Calcula o total de páginas para os usuários filtrados
-         */
-        totalPaginasUsuarios() {
-            return Math.ceil(this.usuariosFiltrados.length / this.itensPorPaginaUsuarios)
-        },
-
-        /**
-         * Retorna os usuários da página atual
-         */
-        usuariosPaginados() {
-            const inicio = (this.paginaUsuarios - 1) * this.itensPorPaginaUsuarios
-            const fim = inicio + this.itensPorPaginaUsuarios
-            return this.usuariosFiltrados.slice(inicio, fim)
+        usuariosAgrupadosPorStatus() {
+            const ativos = []
+            const inativos = []
+            for (const u of this.usuariosFiltrados) {
+                if (u.ativo) {
+                    ativos.push(u)
+                } else {
+                    inativos.push(u)
+                }
+            }
+            const cmp = (a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR')
+            ativos.sort(cmp)
+            inativos.sort(cmp)
+            return { ativos, inativos }
         }
     },
     mounted() {
@@ -141,8 +154,6 @@ const app = createApp({
                     (usuario) => usuario.nome.toLowerCase().includes(termo) || usuario.email.toLowerCase().includes(termo)
                 )
             }
-            // Reset da paginação quando filtrar
-            this.paginaUsuarios = 1
         },
 
         /**
@@ -153,6 +164,9 @@ const app = createApp({
         formatarData(data) {
             if (!data) return 'Nunca'
             const dataObj = new Date(data)
+            if (Number.isNaN(dataObj.getTime())) {
+                return String(data)
+            }
             return dataObj.toLocaleDateString('pt-BR') + ' ' + dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
         },
 
@@ -176,8 +190,6 @@ const app = createApp({
             }
 
             this.habilidadesFiltradas = habilidades
-            // Reset da paginação quando filtrar
-            this.paginaHabilidades = 1
         },
 
         /**
@@ -193,6 +205,29 @@ const app = createApp({
             return 'Outros'
         },
 
+        ehHabilidadeObrigatoriaAlterarSenha(habilidade) {
+            return habilidade && String(habilidade.nome) === CONSTANTS.HABILIDADE_OBRIGATORIA_ALTERAR_SENHA
+        },
+
+        /**
+         * Garante que a permissão de alterar própria senha permaneça concedida em todo grupo.
+         */
+        garantirHabilidadeAlterarSenha() {
+            this.listaDeHabilidades.forEach((h) => {
+                if (this.ehHabilidadeObrigatoriaAlterarSenha(h)) {
+                    h.acesso = true
+                }
+            })
+        },
+
+        definirAcessoHabilidade(habilidade, conceder) {
+            if (this.ehHabilidadeObrigatoriaAlterarSenha(habilidade) && !conceder) {
+                return
+            }
+            habilidade.acesso = Boolean(conceder)
+            this.syncFlagTodasHabilidades()
+        },
+
         /**
          * Gera a lista de categorias únicas das habilidades
          */
@@ -205,45 +240,61 @@ const app = createApp({
         },
 
         /**
-         * Seleciona todas as habilidades de uma categoria específica
-         * @param {string} categoria - Categoria a ser selecionada
+         * Marca permissão em todas as habilidades do escopo atual:
+         * com filtro (busca ou categoria), só as listadas; sem filtro, todas do grupo.
          */
-        selecionarPorCategoria(categoria) {
-            this.listaDeHabilidades.forEach((habilidade) => {
-                if (this.extrairCategoria(habilidade.nome) === categoria) {
-                    habilidade.acesso = true
+        marcarTodasNoEscopoAtual() {
+            const alvos = this.habilidadesFiltroAtivo ? this.habilidadesFiltradas : this.listaDeHabilidades
+            alvos.forEach((h) => {
+                h.acesso = true
+            })
+            this.syncFlagTodasHabilidades()
+        },
+
+        /**
+         * Remove permissão no mesmo escopo de marcarTodasNoEscopoAtual.
+         */
+        desmarcarTodasNoEscopoAtual() {
+            const alvos = this.habilidadesFiltroAtivo ? this.habilidadesFiltradas : this.listaDeHabilidades
+            alvos.forEach((h) => {
+                if (!this.ehHabilidadeObrigatoriaAlterarSenha(h)) {
+                    h.acesso = false
                 }
             })
+            this.garantirHabilidadeAlterarSenha()
+            this.syncFlagTodasHabilidades()
         },
 
         /**
-         * Desmarca todas as habilidades
+         * Atualiza flag auxiliar quando todas da lista completa estão permitidas.
          */
-        desmarcarTodas() {
-            this.listaDeHabilidades.forEach((habilidade) => {
-                habilidade.acesso = false
-            })
-            this.todasHabilidades = false
+        syncFlagTodasHabilidades() {
+            this.todasHabilidades =
+                this.listaDeHabilidades.length > 0 && this.listaDeHabilidades.every((h) => h.acesso)
         },
 
         /**
-         * Alterna a seleção de todas as habilidades
-         * Se todas estavam selecionadas, desmarca todas
-         * Se nem todas estavam selecionadas, marca todas
+         * Quantas habilidades do subconjunto (ex.: um grupo na tela) estão permitidas.
          */
-        selecionarTodas() {
-            this.todasHabilidades = !this.todasHabilidades
-            const valor = this.todasHabilidades
-
-            this.listaDeHabilidades.forEach((habilidade) => {
-                habilidade.acesso = valor
-            })
+        contarPermitidasNoGrupo(itens) {
+            return itens.filter((h) => h.acesso).length
         },
+
+        /**
+         * Limpa busca e categoria para voltar ao escopo completo nas ações em massa.
+         */
+        limparFiltroHabilidades() {
+            this.filtroHabilidades = ''
+            this.categoriaFiltro = ''
+            this.filtrarHabilidades()
+        },
+
         /**
          * Inicializa o formulário para cadastro de novo grupo
          * Carrega a lista de habilidades disponíveis
          */
         async formNovo() {
+            this.mostrarDicasFluxoNovo = true
             this.tituloJanela = CONSTANTS.TITULOS.CADASTRAR
             $(CONSTANTS.ELEMENTOS.ABA_IDENTIFICACAO).tab('show')
             Object.assign(this.form, this.formDefault)
@@ -258,15 +309,18 @@ const app = createApp({
          * Carrega a lista de habilidades do servidor
          */
         async carregarHabilidades() {
+            this.mensagemOverlayModal = 'Carregando permissões…'
             this.preloadAjax = true
 
             try {
                 const { data } = await axios.get(`${URL_ADMIN}/papeis/novo`)
                 this.listaDeHabilidades = data
-                this.habilidadesFiltradas = [...data]
                 this.filtroHabilidades = ''
                 this.categoriaFiltro = ''
+                this.garantirHabilidadeAlterarSenha()
+                this.filtrarHabilidades()
                 this.gerarCategorias()
+                this.syncFlagTodasHabilidades()
             } catch (error) {
                 this.tratarErro('Erro ao carregar habilidades', error)
             } finally {
@@ -278,7 +332,6 @@ const app = createApp({
          * Reseta os estados do formulário
          */
         resetarEstados() {
-            this.preloadAjax = true
             this.cadastrado = false
             this.atualizado = false
             this.editando = false
@@ -316,6 +369,7 @@ const app = createApp({
          * Prepara os dados do formulário para envio
          */
         prepararDadosFormulario() {
+            this.garantirHabilidadeAlterarSenha()
             this.form.listaDeHabilidades = this.listaDeHabilidades
             this.form.empresa_id = this.empresa_id
         },
@@ -327,6 +381,7 @@ const app = createApp({
          * @param {string} mensagemSucesso - Mensagem de sucesso
          */
         async enviarDados(metodo, url, mensagemSucesso) {
+            this.mensagemOverlayModal = 'Salvando grupo…'
             this.preloadAjax = true
 
             const config = {
@@ -362,15 +417,25 @@ const app = createApp({
          */
         tratarErro(mensagem, error) {
             console.error(mensagem, error)
-            // Aqui você pode adicionar lógica para mostrar notificações de erro
-            // ou enviar logs para um serviço de monitoramento
+            const res = error && error.response
+            if (res && res.status === 400 && res.data && res.data.erros) {
+                const msgs = Object.values(res.data.erros).flat().join(' ')
+                if (typeof mostraErro === 'function') {
+                    mostraErro('Não foi possível salvar', msgs || res.data.msg || mensagem)
+                }
+                return
+            }
+            if (typeof mostraErro === 'function') {
+                mostraErro('', res && res.data && res.data.msg ? res.data.msg : mensagem)
+            }
         },
         /**
          * Inicializa o formulário para edição de papel existente
          * @param {number} id - ID do papel a ser editado
          */
         async formAlterar(id) {
-            this.tituloJanela = CONSTANTS.TITULOS.ALTERAR
+            this.mostrarDicasFluxoNovo = false
+            this.tituloJanela = `${CONSTANTS.TITULOS.ALTERAR_PREFIXO} · …`
             $(CONSTANTS.ELEMENTOS.ABA_IDENTIFICACAO).tab('show')
             formReset()
             this.resetarEstados()
@@ -384,6 +449,7 @@ const app = createApp({
          * @param {number} id - ID do papel
          */
         async carregarDadosPapel(id) {
+            this.mensagemOverlayModal = 'Carregando dados do grupo…'
             this.preloadAjax = true
 
             try {
@@ -396,6 +462,8 @@ const app = createApp({
 
                     this.aplicarHabilidadesSelecionadas(data.papel.habilidades)
                     this.editando = true
+                    const nome = (data.papel && data.papel.nome) || 'Grupo'
+                    this.tituloJanela = `${CONSTANTS.TITULOS.ALTERAR_PREFIXO} · ${nome}`
 
                     // Gera as categorias das habilidades
                     this.gerarCategorias()
@@ -405,7 +473,6 @@ const app = createApp({
                         this.listaUsuarios = data.usuariosVinculados
                         this.usuariosFiltrados = [...data.usuariosVinculados]
                         this.filtroUsuarios = ''
-                        this.paginaUsuarios = 1
                     }
                 }
             } catch (error) {
@@ -424,8 +491,9 @@ const app = createApp({
                 const habilidadeSelecionada = habilidadesPapel.find((h) => h.id === habilidade.id)
                 habilidade.acesso = !!habilidadeSelecionada
             })
-            // Atualiza a lista filtrada após aplicar as seleções
             this.filtrarHabilidades()
+            this.garantirHabilidadeAlterarSenha()
+            this.syncFlagTodasHabilidades()
         },
         /**
          * Altera um papel existente
@@ -461,6 +529,24 @@ const app = createApp({
          */
         carregando() {
             this.controle.carregando = true
+        },
+
+        /**
+         * Limpa estado auxiliar ao fechar a modal (evita flash de dados antigos na próxima abertura).
+         */
+        limparEstadoModal() {
+            this.mostrarDicasFluxoNovo = false
+            this.preloadAjax = false
+            this.mensagemOverlayModal = 'Aguarde…'
+            this.listaUsuarios = []
+            this.usuariosFiltrados = []
+            this.filtroUsuarios = ''
+            this.listaDeHabilidades = []
+            this.habilidadesFiltradas = []
+            this.filtroHabilidades = ''
+            this.categoriaFiltro = ''
+            this.categoriasHabilidades = []
+            this.todasHabilidades = true
         }
     }
 })
