@@ -28,9 +28,8 @@ class ArquivoLogotipoIntegracaoSpaEmpresasAtivasCacheObserver
 
     private function forgetIfLogotipo(int $arquivoId): void
     {
-        $exists = DB::table('cliente_imagens')
+        $exists = DB::table('cliente_logotipo')
             ->where('arquivo_id', $arquivoId)
-            ->where('tipo', 'logotipo')
             ->exists();
 
         if ($exists) {
