@@ -7,8 +7,18 @@ use MasterTag\DataHora;
 
 class TransferenciaPrevistaExportFormatter
 {
+    /** Nome configurado da aprovação extra (ex: "Gerência"). Quando null, usa "Aprovação Extra". */
+    private string $nomeAprovacaoExtra;
+
+    public function __construct(?string $nomeAprovacaoExtra = null)
+    {
+        $this->nomeAprovacaoExtra = $nomeAprovacaoExtra ?: 'Aprovação Extra';
+    }
+
     public function getHeaders(): array
     {
+        $extra = $this->nomeAprovacaoExtra;
+
         return [
             'Quem Solicitou',
             'Data da Solicitação',
@@ -22,12 +32,20 @@ class TransferenciaPrevistaExportFormatter
             'Quem Aprovou/Reprovou',
             'Data da Aprovação/Reprovação',
             'Observação Aprovação/Reprovação',
+            "Status {$extra}",
+            "Quem Aprovou {$extra}",
+            "Data e Hora Aprovação {$extra}",
         ];
     }
 
     public function formatRow(TransferenciaPrevista $row): array
     {
         $colaboradorNome = $row->Colaborador ? $row->Colaborador->nome : '';
+        $dataHoraAprovacaoExtra = '';
+        if (!empty($row->data_aprovacao_extra)) {
+            $dataHoraAprovacaoExtra = (new DataHora($row->data_aprovacao_extra))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao_extra))->horaCompleta(), 0, 5);
+        }
+
         return [
             $this->cleanText($row->UserCadastrou->nome ?? ''),
             $this->cleanText($row->created_at ? (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5) : ''),
@@ -41,6 +59,9 @@ class TransferenciaPrevistaExportFormatter
             $this->cleanText($row->QuemAprovou->nome ?? 'aguardando'),
             $this->cleanText($row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : ''),
             $this->cleanText($row->obs_aprovacao ?? ''),
+            $this->cleanText($row->status_aprovacao_extra ?? ''),
+            $this->cleanText($row->UserAprovacaoExtra->nome ?? ''),
+            $this->cleanText($dataHoraAprovacaoExtra),
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace App\Jobs\Movimentacao\MudaCargoPrevista;
 
 use App\Events\Notificacoes\NotificacaoEvent;
+use App\Models\AprovacaoExtraConfig;
 use App\Models\Exportacao;
 use App\Models\User;
 use App\Services\MudancaCargo\MudancaCargoCsvFileManager;
@@ -39,7 +40,9 @@ class JobMudaCargoPrevistaExportaExcel implements ShouldQueue
     {
         try {
             $user = $this->authenticateUser();
-            $formatter = new MudancaCargoExportFormatter();
+            $configExtra = AprovacaoExtraConfig::getConfigAtiva($user->empresa_id, AprovacaoExtraConfig::TIPO_MUDANCA_CARGO);
+            $nomeAprovacaoExtra = $configExtra ? $configExtra->nome_aprovacao : null;
+            $formatter = new MudancaCargoExportFormatter($nomeAprovacaoExtra);
             $fileManager = new MudancaCargoCsvFileManager();
             $headers = $formatter->getHeaders();
             $fileManager->createTempFile($headers);

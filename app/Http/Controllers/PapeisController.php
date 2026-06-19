@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Habilidade;
 use App\Models\Papel;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class PapeisController extends Controller
 {
@@ -66,12 +68,8 @@ class PapeisController extends Controller
             ], 400);
         } else {
             $papel = Papel::create($dados);
-            $habilidades = collect($request->listaDeHabilidades)->filter(function ($habilidade) {
-                if ($habilidade['acesso'] == 'true') {
-                    return $habilidade;
-                }
-            })->pluck('id');
-            $papel->habilidades()->attach($habilidades);
+            $habilidades = $this->colecaoIdsHabilidadesMarcadasComObrigatorias($request);
+            $papel->habilidades()->attach($habilidades->all());
 
             return response()->json([], 201);
         }
@@ -149,12 +147,8 @@ class PapeisController extends Controller
             ], 400);
         } else {
             $papel->update($dados);
-            $habilidades = collect($request->listaDeHabilidades)->filter(function ($habilidade) {
-                if ($habilidade['acesso'] == 'true') {
-                    return $habilidade;
-                }
-            })->pluck('id');
-            $papel->habilidades()->sync($habilidades);
+            $habilidades = $this->colecaoIdsHabilidadesMarcadasComObrigatorias($request);
+            $papel->habilidades()->sync($habilidades->all());
             return response()->json([], 201);
         }
     }
@@ -213,6 +207,30 @@ class PapeisController extends Controller
         $papel->save();
         $papel->refresh();
         return response()->json(['ativo' => $papel->ativo], 201);
+    }
+
+    /**
+     * IDs das habilidades marcadas no payload + permissão obrigatória "usuario_alterar-senha".
+     */
+    protected function colecaoIdsHabilidadesMarcadasComObrigatorias(Request $request): Collection
+    {
+        $lista = $request->input('listaDeHabilidades', []);
+        if (!is_array($lista)) {
+            $lista = [];
+        }
+        $ids = collect($lista)
+            ->filter(function ($habilidade) {
+                return ($habilidade['acesso'] ?? false) === true
+                    || ($habilidade['acesso'] ?? '') == 'true';
+            })
+            ->pluck('id');
+
+        $obrigatorioId = Habilidade::query()->where('nome', 'usuario_alterar-senha')->value('id');
+        if ($obrigatorioId) {
+            $ids = $ids->push((int) $obrigatorioId)->unique()->values();
+        }
+
+        return $ids;
     }
 
 }

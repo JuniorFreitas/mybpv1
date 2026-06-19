@@ -73,6 +73,35 @@ Route::middleware(['api', 'apitoken'])->group(function () {
     Route::get('cbos/{codigo}', [CboController::class, 'show'])->where('codigo', '[0-9]+');
 });
 
+Route::middleware(['api'])
+    ->prefix('v2/integracao')
+    ->group(function () {
+        Route::get('media/{apelido}/logotipo', [\App\Http\Controllers\Api\IntegracaoSpaMediaController::class, 'logotipo'])
+            ->where('apelido', '[a-zA-Z0-9_-]+')
+            ->name('api.integracao_spa.media.logotipo');
+
+        $apelidoPattern = '(?!media$)[a-zA-Z0-9_-]+';
+
+        Route::middleware('apitoken')->group(function () use ($apelidoPattern) {
+            Route::get('/', [\App\Http\Controllers\Api\IntegracaoSpaV2Controller::class, 'empresasAtivas']);
+            Route::get('/empresas-ativas', [\App\Http\Controllers\Api\IntegracaoSpaV2Controller::class, 'empresasAtivas']);
+            Route::get('{apelido}/vagas-abertas/{vaga_aberta_id}/{slug_vaga_aberta}', [\App\Http\Controllers\Api\IntegracaoSpaV2Controller::class, 'vagaAbertaDetalhe'])
+                ->where('apelido', $apelidoPattern)
+                ->whereNumber('vaga_aberta_id')
+                ->where('slug_vaga_aberta', '[a-zA-Z0-9\-]+');
+            Route::get('{apelido}/vagas-abertas', [\App\Http\Controllers\Api\IntegracaoSpaV2Controller::class, 'vagasAbertasPaginadas'])
+                ->where('apelido', $apelidoPattern);
+            Route::post('{apelido}/busca-curriculo', [\App\Http\Controllers\Api\IntegracaoSpaCurriculoController::class, 'buscaCurriculo'])
+                ->where('apelido', $apelidoPattern);
+            Route::post('{apelido}/busca-cpf', [\App\Http\Controllers\Api\IntegracaoSpaCurriculoController::class, 'buscaCpf'])
+                ->where('apelido', $apelidoPattern);
+            Route::post('{apelido}/cadastra-curriculo', [\App\Http\Controllers\Api\IntegracaoSpaCurriculoController::class, 'cadastraCurriculo'])
+                ->where('apelido', $apelidoPattern);
+            Route::get('{apelido}', [\App\Http\Controllers\Api\IntegracaoSpaV2Controller::class, 'empresaComPreview'])
+                ->where('apelido', $apelidoPattern);
+        });
+    });
+
 Route::group(['as' => 'vaga'], function () {
     Route::get('{empresa_slug}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'getVagasAbertasByEmpresa']);
     Route::get('{empresa_slug}/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'getVagaAberta']);

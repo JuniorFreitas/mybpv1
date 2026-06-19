@@ -10,6 +10,9 @@
                     <strong>{{ form.curriculo?.idade ?? '—' }} anos </strong><br>
                     Contato:
                     <strong>{{ form.tel_principal ? form.tel_principal.numero : 'não informado' }}</strong>
+                    <span v-if="form.tel_principal?.tipo_text || form.tel_principal?.tipo">
+                        ({{ form.tel_principal.tipo_text || form.tel_principal.tipo }})
+                    </span>
                     <br>
                     Vaga: <strong>{{ form.vaga_aberta_municipio }}</strong> - PCD:<strong>
                     {{ form.curriculo?.pcd ? 'Sim' : 'Não' }}</strong><br>

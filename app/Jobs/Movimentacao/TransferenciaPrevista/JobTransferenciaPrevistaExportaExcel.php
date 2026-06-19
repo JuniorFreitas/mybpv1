@@ -3,6 +3,7 @@
 namespace App\Jobs\Movimentacao\TransferenciaPrevista;
 
 use App\Events\Notificacoes\NotificacaoEvent;
+use App\Models\AprovacaoExtraConfig;
 use App\Models\Exportacao;
 use App\Models\User;
 use App\Services\TransferenciaPrevista\TransferenciaPrevistaCsvFileManager;
@@ -39,7 +40,9 @@ class JobTransferenciaPrevistaExportaExcel implements ShouldQueue
     {
         try {
             $user = $this->authenticateUser();
-            $formatter = new TransferenciaPrevistaExportFormatter();
+            $configExtra = AprovacaoExtraConfig::getConfigAtiva($user->empresa_id, AprovacaoExtraConfig::TIPO_TRANSFERENCIA);
+            $nomeAprovacaoExtra = $configExtra ? $configExtra->nome_aprovacao : null;
+            $formatter = new TransferenciaPrevistaExportFormatter($nomeAprovacaoExtra);
             $fileManager = new TransferenciaPrevistaCsvFileManager();
             $headers = $formatter->getHeaders();
             $fileManager->createTempFile($headers);

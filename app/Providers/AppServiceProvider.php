@@ -15,6 +15,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->app->bind(
+            \App\Contracts\IntegracaoSpa\EmpresaIntegracaoSpaQuery::class,
+            \App\Services\IntegracaoSpa\EmpresaIntegracaoSpaEloquent::class
+        );
+        $this->app->bind(
+            \App\Contracts\IntegracaoSpa\VagaIntegracaoSpaQuery::class,
+            \App\Services\IntegracaoSpa\VagaIntegracaoSpaEloquent::class
+        );
+
         if ($this->app->isLocal()) {
             $this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
         }
@@ -45,6 +54,10 @@ class AppServiceProvider extends ServiceProvider
 
         // ✅ Observer para invalidar cache de RH automaticamente
         \App\Models\User::observe(\App\Observers\UserRHCacheObserver::class);
+
+        \App\Models\Cliente::observe(\App\Observers\ClienteIntegracaoSpaEmpresasAtivasCacheObserver::class);
+        \App\Models\Arquivo::observe(\App\Observers\ArquivoLogotipoIntegracaoSpaEmpresasAtivasCacheObserver::class);
+        \App\Models\VagasAbertas::observe(\App\Observers\VagasAbertasIntegracaoSpaPaginaCacheObserver::class);
 
         \Route::resourceVerbs([
             'create' => 'novo',
