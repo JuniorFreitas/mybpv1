@@ -20,7 +20,7 @@
         "intervention/image": "^2.5",
         "juniorfreitas/phpquery-laravel": "dev-master",
         "laravel/framework": "^12.0",
-        "laravel/horizon": "^6.0",
+        "laravel/horizon": "^5.47.2",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.0",

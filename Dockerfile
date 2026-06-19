@@ -26,8 +26,7 @@ RUN chmod +x $APP_SCRIPTS/start && \
     chmod +x /usr/share/nginx/html/.deploy/scripts/start && \
     # Garantir que o diretório de scripts tenha permissões corretas
     chmod -R 755 /usr/share/nginx/html/.deploy/scripts/ && \
-    rm -f composer.lock && \
-    composer install --ignore-platform-reqs && \
+    composer install --ignore-platform-reqs --no-dev --prefer-dist && \
     php artisan horizon:publish && \
     chmod -R 775 bootstrap/cache
 
