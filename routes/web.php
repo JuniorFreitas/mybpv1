@@ -785,6 +785,8 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::post('parecer-rota/export', [\App\Http\Controllers\ParecerRotaController::class, 'export'])->name('parecer_rota_transporte.excel')->middleware('can:entrevista_parecer_rota');
             Route::post('parecer-rota/atualizar', [\App\Http\Controllers\ParecerRotaController::class, 'atualizar'])->name('atualizar')->middleware('can:entrevista_parecer_rota');
             Route::post('parecer-rota/ficha_pdf', [\App\Http\Controllers\ParecerRotaController::class, 'getFichaPdf'])->name('parecer_rota_transporte.getFichaPdf')->middleware('can:entrevista_parecer_rota');
+            Route::get('parecer-rota/{parecer_rota}/preview-whatsapp', [\App\Http\Controllers\ParecerRotaController::class, 'previewWhatsapp'])->name('parecer_rota_transporte.previewWhatsapp')->middleware('can:entrevista_parecer_rota');
+            Route::post('parecer-rota/{parecer_rota}/enviar-whatsapp', [\App\Http\Controllers\ParecerRotaController::class, 'enviarWhatsapp'])->name('parecer_rota_transporte.enviarWhatsapp')->middleware('can:entrevista_parecer_rota');
             Route::resource('parecer-rota', \App\Http\Controllers\ParecerRotaController::class, ['parameters' => ['parecer-rota' => 'parecer_rota']])->middleware('can:entrevista_parecer_rota');
         });
 

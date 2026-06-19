@@ -237,6 +237,7 @@ export default {
         },
         onEnter() {
             if (this.arrowCounter === -1) {
+                this.$emit('onenter')
                 return false
             }
             //console.log('onEnter');

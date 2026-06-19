@@ -112,6 +112,8 @@ class ParecerRota extends Model
         'bairro_residencia',
         'ponto_referencia_residencia',
         'observacao',
+        'whatsapp_enviado_em',
+        'whatsapp_enviado_por',
     ];
 
     protected $casts = [
@@ -136,6 +138,8 @@ class ParecerRota extends Model
         'bairro_residencia' => 'string',
         'ponto_referencia_residencia' => 'string',
         'observacao' => 'string',
+        'whatsapp_enviado_em' => 'datetime',
+        'whatsapp_enviado_por' => 'int',
     ];
 
     //Acessor ->datalido
@@ -161,6 +165,11 @@ class ParecerRota extends Model
     public function QuemAprovou()
     {
         return $this->hasOne(User::class, 'id', 'aprovado_por');
+    }
+
+    public function QuemEnviouWhatsapp()
+    {
+        return $this->hasOne(User::class, 'id', 'whatsapp_enviado_por');
     }
 
     protected static function booted()

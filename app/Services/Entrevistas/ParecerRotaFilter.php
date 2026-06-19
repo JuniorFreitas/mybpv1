@@ -22,13 +22,13 @@ class ParecerRotaFilter
             'TelPrincipal',
             'parecerRh',
             'parecerTecnica',
-            'parecerRota',
+            'parecerRota.QuemEnviouWhatsapp:id,nome',
             'parecerTeste'
         )
             ->join('curriculos', 'feedback_curriculos.curriculo_id', '=', 'curriculos.id')
             ->has('parecerRh')
-            ->whereIn('selecionado', ['sim', 'standby'])
-            ->where('interesse', true)
+            ->whereIn('feedback_curriculos.selecionado', ['sim', 'standby'])
+            ->where('feedback_curriculos.interesse', true)
             ->select('feedback_curriculos.*');
 
         $this->filters = [];
@@ -84,7 +84,7 @@ class ParecerRotaFilter
     public function whereIds(array $ids): self
     {
         if (!empty($ids)) {
-            $this->query->whereIn('id', $ids);
+            $this->query->whereIn('feedback_curriculos.id', $ids);
         }
         return $this;
     }
@@ -117,7 +117,7 @@ class ParecerRotaFilter
 
         // Filtro por cliente
         if (isset($this->filters['campoCliente']) && !empty($this->filters['campoCliente'])) {
-            $this->query->where('cliente_id', $this->filters['campoCliente']);
+            $this->query->where('feedback_curriculos.cliente_id', $this->filters['campoCliente']);
         }
 
         // Filtro por vaga

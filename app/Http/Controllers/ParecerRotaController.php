@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Jobs\JobExportaParecerRota;
 use App\Models\FeedbackCurriculo;
 use App\Models\ParecerRota;
+use App\Models\TelefoneCurriculo;
 use App\Services\Entrevistas\ParecerRotaFilter;
+use App\Services\Entrevistas\ParecerRotaWhatsappService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -125,15 +127,26 @@ class ParecerRotaController extends Controller
     {
         try {
             $feedback = $parecerRota->load([
-                'parecerRota',
+                'parecerRota.QuemEnviouWhatsapp:id,nome',
                 'parecerRh:feedback_id,tipo_entrevista',
                 'Curriculo',
                 'Curriculo.Formacao',
+                'Curriculo.Telefones',
+                'telCadPrincipal',
                 'TelPrincipal',
                 'vagaSelecionada'
             ]);
 
-            return response()->json($feedback, 200);
+            $telefoneWhatsapp = $feedback->Curriculo?->Telefones
+                ?->where('tipo', TelefoneCurriculo::TIPO_WHATS)
+                ->sortByDesc(fn (TelefoneCurriculo $telefone) => $telefone->principal ? 1 : 0)
+                ->first();
+
+            $data = $feedback->toArray();
+            $data['tel_principal'] = $feedback->telCadPrincipal ?? $feedback->TelPrincipal;
+            $data['telefone_whatsapp_candidato'] = $telefoneWhatsapp;
+
+            return response()->json($data, 200);
 
         } catch (\Exception $e) {
             \Log::error('Erro ao carregar dados do parecer rota', [
@@ -205,6 +218,129 @@ class ParecerRotaController extends Controller
 
             return response()->json([
                 'msg' => 'Erro ao atualizar o parecer de rota. Tente novamente.'
+            ], 400);
+        }
+    }
+
+    /**
+     * Pré-visualiza a mensagem de WhatsApp do parecer rota.
+     */
+    public function previewWhatsapp(ParecerRota $parecerRota, ParecerRotaWhatsappService $whatsappService): JsonResponse
+    {
+        $user = auth()->user();
+
+        if (!$user->enviaWhatsApp()) {
+            return response()->json([
+                'msg' => 'Envio de WhatsApp não habilitado para esta empresa.',
+            ], 400);
+        }
+
+        if (!$parecerRota->tem_rota) {
+            return response()->json([
+                'msg' => 'Envio permitido somente quando há rota que atende.',
+            ], 400);
+        }
+
+        try {
+            $parecerRota->load([
+                'FeedbackCurriculo.Curriculo',
+                'FeedbackCurriculo.Curriculo.Formacao',
+                'FeedbackCurriculo.Curriculo.Telefones',
+                'FeedbackCurriculo.telCadPrincipal',
+                'FeedbackCurriculo.TelPrincipal',
+                'FeedbackCurriculo.vagaSelecionada',
+                'QuemEnviouWhatsapp:id,nome',
+            ]);
+
+            $feedback = $parecerRota->FeedbackCurriculo;
+
+            if (!$feedback) {
+                return response()->json([
+                    'msg' => 'Feedback não encontrado para este parecer.',
+                ], 404);
+            }
+
+            $telefoneWhatsapp = $feedback->Curriculo?->Telefones
+                ?->where('tipo', TelefoneCurriculo::TIPO_WHATS)
+                ->sortByDesc(fn (TelefoneCurriculo $telefone) => $telefone->principal ? 1 : 0)
+                ->first();
+
+            $candidato = $feedback->toArray();
+            $candidato['tel_principal'] = $feedback->telCadPrincipal ?? $feedback->TelPrincipal;
+            $candidato['telefone_whatsapp_candidato'] = $telefoneWhatsapp;
+
+            return response()->json([
+                'mensagem' => $whatsappService->montarMensagem($parecerRota, $user),
+                'feedback_id' => $parecerRota->feedback_id,
+                'candidato' => $candidato,
+                'parecer_rota' => [
+                    'id' => $parecerRota->id,
+                    'whatsapp_enviado_em' => $parecerRota->whatsapp_enviado_em,
+                    'quem_enviou_whatsapp' => $parecerRota->QuemEnviouWhatsapp,
+                ],
+                'telefone_whatsapp_candidato' => $telefoneWhatsapp,
+                'tel_principal' => $candidato['tel_principal'],
+            ], 200);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao pré-visualizar WhatsApp parecer rota', [
+                'error' => $e->getMessage(),
+                'parecer_id' => $parecerRota->id,
+                'user_id' => auth()->id(),
+            ]);
+
+            return response()->json([
+                'msg' => 'Erro ao carregar pré-visualização do WhatsApp.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Envia informações da rota via WhatsApp ao candidato.
+     */
+    public function enviarWhatsapp(Request $request, ParecerRota $parecerRota, ParecerRotaWhatsappService $whatsappService): JsonResponse
+    {
+        $dadosValidados = \Validator::make($request->all(), [
+            'telefone' => 'required|string|min:10',
+            'tipo' => 'required|in:' . TelefoneCurriculo::TIPO_WHATS,
+        ], [
+            'telefone.required' => 'Informe o telefone WhatsApp do candidato',
+            'telefone.min' => 'Telefone inválido',
+            'tipo.required' => 'Informe o tipo do telefone',
+            'tipo.in' => 'O telefone deve ser do tipo WhatsApp',
+        ]);
+
+        if ($dadosValidados->fails()) {
+            return response()->json([
+                'msg' => 'Erro ao enviar WhatsApp',
+                'erros' => $dadosValidados->errors(),
+            ], 400);
+        }
+
+        try {
+            $parecerAtualizado = $whatsappService->enviar(
+                $parecerRota,
+                $dadosValidados->validated()['telefone'],
+                $dadosValidados->validated()['tipo'],
+                auth()->user()
+            );
+
+            return response()->json([
+                'msg' => 'WhatsApp enfileirado com sucesso',
+                'data' => $parecerAtualizado,
+            ], 200);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'msg' => $e->getMessage(),
+            ], 400);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao enviar WhatsApp parecer rota', [
+                'error' => $e->getMessage(),
+                'parecer_id' => $parecerRota->id,
+                'user_id' => auth()->id(),
+            ]);
+
+            return response()->json([
+                'msg' => 'Erro ao enviar WhatsApp. Tente novamente.',
             ], 400);
         }
     }
