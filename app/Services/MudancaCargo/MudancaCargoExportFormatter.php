@@ -42,10 +42,10 @@ class MudancaCargoExportFormatter
             "Status {$extra}",
             "Quem Aprovou {$extra}",
             "Data e Hora Aprovação {$extra}",
-            'RH Aprovação',
-            'Data da Aprovação RH',
-            'Resposta RH',
-            'OBS RH',
+            'Status RH',
+            'Quem Aprovou/Reprovou RH',
+            'Data da Aprovação/Reprovação RH',
+            'Observação Aprovação/Reprovação RH',
         ];
     }
 
@@ -84,9 +84,9 @@ class MudancaCargoExportFormatter
             $this->cleanText($row->status_aprovacao_extra ?? ''),
             $this->cleanText($row->AprovacaoExtra->nome ?? ''),
             $this->cleanText($dataHoraAprovacaoExtra),
-            $this->cleanText($row->status_aprovacao_rh && $row->RhAprovacao ? $row->RhAprovacao->nome : ''),
-            $this->cleanText($dataAprovacaoRh),
             $this->cleanText($row->status_aprovacao_rh ?? ''),
+            $this->cleanText($row->RhAprovacao->nome ?? ''),
+            $this->cleanText($dataAprovacaoRh),
             $this->cleanText($row->obs_rh ?? ''),
         ];
     }
