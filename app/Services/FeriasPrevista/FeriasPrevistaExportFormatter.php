@@ -40,9 +40,10 @@ class FeriasPrevistaExportFormatter
             "Status {$extra}",
             "Quem Aprovou {$extra}",
             "Data Aprovação {$extra}",
-            'RH Aprovação',
-            'Data da Aprovação RH',
-            'Resposta RH',
+            'Status RH',
+            'Quem Aprovou/Reprovou RH',
+            'Data da Aprovação/Reprovação RH',
+            'Observação Aprovação/Reprovação RH',
         ];
     }
 
@@ -58,6 +59,10 @@ class FeriasPrevistaExportFormatter
         $dataAprovacaoExtra = '';
         if (!empty($row->data_aprovacao_extra)) {
             $dataAprovacaoExtra = (new DataHora($row->data_aprovacao_extra))->dataCompleta();
+        }
+        $dataAprovacaoRh = '';
+        if (!empty($row->data_aprovacao_rh)) {
+            $dataAprovacaoRh = (new DataHora($row->data_aprovacao_rh))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao_rh))->horaCompleta(), 0, 5);
         }
 
         return [
@@ -82,9 +87,10 @@ class FeriasPrevistaExportFormatter
             $this->cleanText($row->status_aprovacao_extra ?? ''),
             $this->cleanText($row->AprovacaoExtra->nome ?? ''),
             $this->cleanText($dataAprovacaoExtra),
-            $this->cleanText($row->status_aprovacao_rh && $row->RhAprovacao ? $row->RhAprovacao->nome : ''),
-            $this->cleanText($row->status_aprovacao_rh && $row->data_aprovacao_rh ? (new DataHora($row->data_aprovacao_rh))->dataCompleta() : ''),
             $this->cleanText($row->status_aprovacao_rh ?? ''),
+            $this->cleanText($row->RhAprovacao->nome ?? ''),
+            $this->cleanText($dataAprovacaoRh),
+            $this->cleanText($row->obs_rh ?? ''),
         ];
     }
 

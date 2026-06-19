@@ -35,6 +35,10 @@ class TransferenciaPrevistaExportFormatter
             "Status {$extra}",
             "Quem Aprovou {$extra}",
             "Data e Hora Aprovação {$extra}",
+            'Status RH',
+            'Quem Aprovou/Reprovou RH',
+            'Data da Aprovação/Reprovação RH',
+            'Observação Aprovação/Reprovação RH',
         ];
     }
 
@@ -44,6 +48,10 @@ class TransferenciaPrevistaExportFormatter
         $dataHoraAprovacaoExtra = '';
         if (!empty($row->data_aprovacao_extra)) {
             $dataHoraAprovacaoExtra = (new DataHora($row->data_aprovacao_extra))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao_extra))->horaCompleta(), 0, 5);
+        }
+        $dataAprovacaoRh = '';
+        if (!empty($row->data_aprovacao_rh)) {
+            $dataAprovacaoRh = (new DataHora($row->data_aprovacao_rh))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao_rh))->horaCompleta(), 0, 5);
         }
 
         return [
@@ -62,6 +70,10 @@ class TransferenciaPrevistaExportFormatter
             $this->cleanText($row->status_aprovacao_extra ?? ''),
             $this->cleanText($row->UserAprovacaoExtra->nome ?? ''),
             $this->cleanText($dataHoraAprovacaoExtra),
+            $this->cleanText($row->resposta_rh ?? ''),
+            $this->cleanText($row->RhAprovacao->nome ?? ''),
+            $this->cleanText($dataAprovacaoRh),
+            $this->cleanText($row->obs_rh ?? ''),
         ];
     }
 
