@@ -19,6 +19,7 @@ class IntermitenteFixoPrevistaExportQueryBuilder
             'VagaAbertaAnterior:id,titulo,vaga_id',
             'VagaAbertaNova:id,titulo,vaga_id',
             'UserAprovacao:id,nome',
+            'UserAprovacaoExtra:id,nome',
             'UserCadastrou:id,nome',
             'GestorAprovacao:id,nome',
             'RhAprovacao:id,nome',

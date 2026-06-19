@@ -3,6 +3,7 @@
 namespace App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista;
 
 use App\Events\Notificacoes\NotificacaoEvent;
+use App\Models\AprovacaoExtraConfig;
 use App\Models\Exportacao;
 use App\Models\User;
 use App\Services\IntermitenteFixoPrevista\IntermitenteFixoPrevistaCsvFileManager;
@@ -39,7 +40,9 @@ class JobMudaIntermitenteFixoPrevistaExportaExcel implements ShouldQueue
     {
         try {
             $user = $this->authenticateUser();
-            $formatter = new IntermitenteFixoPrevistaExportFormatter();
+            $configExtra = AprovacaoExtraConfig::getConfigAtiva($user->empresa_id, AprovacaoExtraConfig::TIPO_INTERMITENTE_FIXO);
+            $nomeAprovacaoExtra = $configExtra ? $configExtra->nome_aprovacao : null;
+            $formatter = new IntermitenteFixoPrevistaExportFormatter($nomeAprovacaoExtra);
             $fileManager = new IntermitenteFixoPrevistaCsvFileManager();
             $headers = $formatter->getHeaders();
             $fileManager->createTempFile($headers);

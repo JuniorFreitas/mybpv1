@@ -7,8 +7,18 @@ use MasterTag\DataHora;
 
 class IntermitenteFixoPrevistaExportFormatter
 {
+    /** Nome configurado da aprovação extra (ex: "Gerência"). Quando null, usa "Aprovação Extra". */
+    private string $nomeAprovacaoExtra;
+
+    public function __construct(?string $nomeAprovacaoExtra = null)
+    {
+        $this->nomeAprovacaoExtra = $nomeAprovacaoExtra ?: 'Aprovação Extra';
+    }
+
     public function getHeaders(): array
     {
+        $extra = $this->nomeAprovacaoExtra;
+
         return [
             'Quem Solicitou',
             'Data da Solicitação',
@@ -26,6 +36,9 @@ class IntermitenteFixoPrevistaExportFormatter
             'Quem Aprovou/Reprovou',
             'Data da Aprovação/Reprovação',
             'Observação Aprovação/Reprovação',
+            "Status {$extra}",
+            "Quem Aprovou {$extra}",
+            "Data e Hora Aprovação {$extra}",
             'RH Aprovação',
             'Data da Aprovação RH',
             'Resposta RH',
@@ -42,6 +55,10 @@ class IntermitenteFixoPrevistaExportFormatter
         }
         $dataAprovacaoRh = $row->status_aprovacao_rh && $row->data_aprovacao_rh
             ? (new DataHora($row->data_aprovacao_rh))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao_rh))->horaCompleta(), 0, 5) : '';
+        $dataHoraAprovacaoExtra = '';
+        if (!empty($row->data_aprovacao_extra)) {
+            $dataHoraAprovacaoExtra = (new DataHora($row->data_aprovacao_extra))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao_extra))->horaCompleta(), 0, 5);
+        }
 
         return [
             $this->cleanText($row->UserCadastrou->nome ?? ''),
@@ -60,6 +77,9 @@ class IntermitenteFixoPrevistaExportFormatter
             $this->cleanText($row->UserAprovacao->nome ?? 'aguardando'),
             $this->cleanText($row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : ''),
             $this->cleanText($row->obs_aprovacao ?? ''),
+            $this->cleanText($row->status_aprovacao_extra ?? ''),
+            $this->cleanText($row->UserAprovacaoExtra->nome ?? ''),
+            $this->cleanText($dataHoraAprovacaoExtra),
             $this->cleanText($row->status_aprovacao_rh && $row->RhAprovacao ? $row->RhAprovacao->nome : ''),
             $this->cleanText($dataAprovacaoRh),
             $this->cleanText($row->status_aprovacao_rh ?? ''),
