@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyBP DBA — Dashboard</title>
+  <style>
+    :root {
+      --bg: #0f1419; --surface: #1a2332; --border: #2d3a4f; --text: #e6edf3;
+      --muted: #8b9cb3; --critical: #f85149; --high: #f0883e; --medium: #d29922;
+      --low: #3fb950; --info: #58a6ff; --accent: #388bfd;
+      --perf: #a371f7; --sec: #f85149; --schema: #39d353; --query: #58a6ff; --conv: #d29922;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+    header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 24px; }
+    header h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 8px; }
+    .meta { color: var(--muted); font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 16px; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; border-left: 4px solid var(--muted); }
+    .card.critical { border-left-color: var(--critical); }
+    .card.high { border-left-color: var(--high); }
+    .card.medium { border-left-color: var(--medium); }
+    .card.low { border-left-color: var(--low); }
+    .card.info { border-left-color: var(--info); }
+    .card .count { font-size: 2rem; font-weight: 700; }
+    .card .label { font-size: 0.75rem; text-transform: uppercase; color: var(--muted); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+    .panel h2 { font-size: 0.875rem; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .heatmap { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    .heatmap th, .heatmap td { border: 1px solid var(--border); padding: 6px 8px; text-align: center; }
+    .heatmap th { background: var(--bg); color: var(--muted); font-weight: 500; }
+    .hm-0 { background: var(--bg); color: var(--muted); }
+    .hm-c { background: rgba(248,81,73,0.35); color: var(--critical); font-weight: 600; }
+    .hm-h { background: rgba(240,136,62,0.3); color: var(--high); }
+    .hm-m { background: rgba(210,153,34,0.25); color: var(--medium); }
+    .hm-l { background: rgba(63,185,80,0.2); color: var(--low); }
+    .hm-i { background: rgba(88,166,255,0.15); color: var(--info); }
+    .bars { display: flex; flex-direction: column; gap: 8px; }
+    .bar-row { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+    .bar-label { width: 56px; color: var(--muted); flex-shrink: 0; font-weight: 600; }
+    .bar-track { flex: 1; height: 20px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--accent); border-radius: 4px; min-width: 2px; }
+    .bar-count { width: 28px; text-align: right; color: var(--muted); }
+    .filters { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; align-items: center; }
+    .filters label { font-size: 0.8rem; color: var(--muted); }
+    .filters select, .filters input {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      padding: 6px 10px; border-radius: 6px; font-size: 0.875rem;
+    }
+    table.findings { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    table.findings th, table.findings td { border-bottom: 1px solid var(--border); padding: 10px 8px; text-align: left; }
+    table.findings th { color: var(--muted); font-weight: 500; position: sticky; top: 0; background: var(--surface); }
+    table.findings tbody tr { cursor: pointer; }
+    table.findings tbody tr:hover { background: rgba(56,139,253,0.08); }
+    table.findings tbody tr.selected { background: rgba(56,139,253,0.15); }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+    .badge.critical { background: rgba(248,81,73,0.2); color: var(--critical); }
+    .badge.high { background: rgba(240,136,62,0.2); color: var(--high); }
+    .badge.medium { background: rgba(210,153,34,0.2); color: var(--medium); }
+    .badge.low { background: rgba(63,185,80,0.2); color: var(--low); }
+    .badge.info { background: rgba(88,166,255,0.2); color: var(--info); }
+    .badge-cat { background: rgba(163,113,247,0.2); color: var(--perf); }
+    .badge-cat.SEC { background: rgba(248,81,73,0.2); color: var(--sec); }
+    .badge-cat.SCHEMA { background: rgba(57,211,83,0.2); color: var(--schema); }
+    .badge-cat.QUERY { background: rgba(88,166,255,0.2); color: var(--query); }
+    .badge-cat.CONV { background: rgba(210,153,34,0.2); color: var(--conv); }
+    .detail-panel { margin-top: 24px; }
+    .detail-panel h3 { font-size: 1.1rem; margin-bottom: 12px; }
+    .detail-section { margin-bottom: 16px; }
+    .detail-section h4 { font-size: 0.75rem; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .detail-section p, .detail-section pre { font-size: 0.875rem; white-space: pre-wrap; word-break: break-word; }
+    .detail-section pre { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; overflow-x: auto; }
+    .empty-detail { color: var(--muted); font-style: italic; padding: 24px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>MyBP — DBA Sênior Dashboard</h1>
+      <div class="meta" id="meta"></div>
+    </header>
+    <div class="cards" id="severity-cards"></div>
+    <div class="grid-2">
+      <div class="panel">
+        <h2>Heatmap Categoria × Severidade</h2>
+        <table class="heatmap" id="heatmap"></table>
+      </div>
+      <div class="panel">
+        <h2>Achados por categoria</h2>
+        <div class="bars" id="category-bars"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Achados</h2>
+      <div class="filters">
+        <label>Severidade <select id="filter-severity"><option value="">Todas</option></select></label>
+        <label>Categoria <select id="filter-category"><option value="">Todas</option></select></label>
+        <label>Fonte <select id="filter-source"><option value="">Todas</option></select></label>
+        <label>Busca <input type="search" id="filter-search" placeholder="título, localização..."></label>
+      </div>
+      <div style="overflow-x:auto; max-height: 400px; overflow-y: auto;">
+        <table class="findings">
+          <thead>
+            <tr>
+              <th>ID</th><th>Cat</th><th>Severidade</th><th>Título</th><th>Localização</th><th>Fonte</th><th>Prio</th>
+            </tr>
+          </thead>
+          <tbody id="findings-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel detail-panel" id="detail-panel">
+      <div class="empty-detail">Selecione um achado na tabela para ver causa e remediação.</div>
+    </div>
+  </div>
+  <script type="application/json" id="dba-data">{"audit_id":"","target":"","generated_at":"","scope":{},"summary":{},"findings":[]}</script>
+  <script>
+    window.__DBA_DATA__ = JSON.parse(document.getElementById('dba-data').textContent);
+    const CATEGORIES = ["PERF", "SEC", "SCHEMA", "QUERY", "CONV"];
+    const SEVERITIES = ["critical", "high", "medium", "low", "info"];
+    const data = window.__DBA_DATA__;
+    let selectedId = null;
+
+    function esc(s) {
+      const d = document.createElement("div");
+      d.textContent = s == null ? "" : String(s);
+      return d.innerHTML;
+    }
+
+    function renderMeta() {
+      const scope = data.scope || {};
+      const parts = [
+        "Auditoria: " + esc(data.audit_id),
+        "Alvo: " + esc(data.target),
+        "Gerado: " + esc((data.generated_at || "").replace("T", " ").slice(0, 19)),
+        "Estático: " + (scope.static ? "sim" : "não"),
+        "Live DB: " + (scope.live ? "sim" : (scope.live_skipped_reason || "não")),
+        "DDL dump: " + (scope.ddl_dump ? "sim" : "não"),
+      ];
+      document.getElementById("meta").innerHTML = parts.map(p => "<span>" + p + "</span>").join("");
+    }
+
+    function renderCards() {
+      const s = data.summary || {};
+      document.getElementById("severity-cards").innerHTML = SEVERITIES.map(sev => `
+        <div class="card ${sev}">
+          <div class="count">${s[sev] || 0}</div>
+          <div class="label">${sev}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderHeatmap() {
+      const matrix = {};
+      CATEGORIES.forEach(c => { matrix[c] = { critical:0, high:0, medium:0, low:0, info:0 }; });
+      (data.findings || []).forEach(f => {
+        const cat = f.category || "CONV";
+        if (!matrix[cat]) matrix[cat] = { critical:0, high:0, medium:0, low:0, info:0 };
+        const sev = f.severity || "info";
+        if (matrix[cat][sev] !== undefined) matrix[cat][sev]++;
+      });
+      const hmClass = { critical:"hm-c", high:"hm-h", medium:"hm-m", low:"hm-l", info:"hm-i" };
+      let html = "<tr><th>Cat</th>" + SEVERITIES.map(s => "<th>" + s + "</th>").join("") + "<th>Σ</th></tr>";
+      CATEGORIES.forEach(cat => {
+        const row = matrix[cat];
+        const total = SEVERITIES.reduce((a, s) => a + (row[s] || 0), 0);
+        if (total === 0) return;
+        html += "<tr><th>" + esc(cat) + "</th>";
+        SEVERITIES.forEach(s => {
+          const n = row[s] || 0;
+          html += "<td class=\"" + (n ? hmClass[s] : "hm-0") + "\">" + (n || "—") + "</td>";
+        });
+        html += "<td><strong>" + total + "</strong></td></tr>";
+      });
+      document.getElementById("heatmap").innerHTML = html;
+    }
+
+    function renderBars() {
+      const counts = {};
+      CATEGORIES.forEach(c => counts[c] = 0);
+      (data.findings || []).forEach(f => {
+        const cat = f.category || "CONV";
+        counts[cat] = (counts[cat] || 0) + 1;
+      });
+      const max = Math.max(1, ...Object.values(counts));
+      const colors = { PERF:"var(--perf)", SEC:"var(--sec)", SCHEMA:"var(--schema)", QUERY:"var(--query)", CONV:"var(--conv)" };
+      document.getElementById("category-bars").innerHTML = Object.entries(counts)
+        .filter(([, n]) => n > 0)
+        .sort((a, b) => b[1] - a[1])
+        .map(([cat, n]) => `
+          <div class="bar-row">
+            <span class="bar-label">${esc(cat)}</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${(n/max)*100}%;background:${colors[cat]||'var(--accent)'}"></div></div>
+            <span class="bar-count">${n}</span>
+          </div>
+        `).join("");
+    }
+
+    function getFiltered() {
+      const sev = document.getElementById("filter-severity").value;
+      const cat = document.getElementById("filter-category").value;
+      const src = document.getElementById("filter-source").value;
+      const q = document.getElementById("filter-search").value.toLowerCase();
+      return (data.findings || []).filter(f => {
+        if (sev && f.severity !== sev) return false;
+        if (cat && f.category !== cat) return false;
+        if (src && f.source !== src) return false;
+        if (q) {
+          const hay = [f.title, f.location, f.id, f.root_cause].join(" ").toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+    }
+
+    function renderTable() {
+      const rows = getFiltered();
+      document.getElementById("findings-body").innerHTML = rows.map(f => `
+        <tr data-id="${esc(f.id)}" class="${f.id === selectedId ? "selected" : ""}">
+          <td>${esc(f.id)}</td>
+          <td><span class="badge-cat ${esc(f.category)}">${esc(f.category)}</span></td>
+          <td><span class="badge ${esc(f.severity)}">${esc(f.severity)}</span></td>
+          <td>${esc(f.title)}</td>
+          <td>${esc(f.location)}</td>
+          <td>${esc(f.source)}</td>
+          <td>${esc(f.priority)}</td>
+        </tr>
+      `).join("");
+      document.querySelectorAll("#findings-body tr").forEach(tr => {
+        tr.addEventListener("click", () => showDetail(tr.dataset.id));
+      });
+    }
+
+    function showDetail(id) {
+      selectedId = id;
+      const f = (data.findings || []).find(x => x.id === id);
+      const panel = document.getElementById("detail-panel");
+      if (!f) { panel.innerHTML = '<div class="empty-detail">Achado não encontrado.</div>'; return; }
+      const extra = [];
+      if (f.ddl_suggestion) extra.push(`<div class="detail-section"><h4>DDL sugerido</h4><pre>${esc(f.ddl_suggestion)}</pre></div>`);
+      if (f.orm_recommendation) extra.push(`<div class="detail-section"><h4>ORM / Query Builder</h4><p>${esc(f.orm_recommendation)}</p></div>`);
+      if (f.explain_recommended) extra.push(`<div class="detail-section"><h4>EXPLAIN</h4><p>Recomendado executar EXPLAIN na query afetada.</p></div>`);
+      panel.innerHTML = `
+        <h3>${esc(f.id)} — ${esc(f.title)}</h3>
+        <div class="detail-section"><h4>Causa</h4><p>${esc(f.root_cause)}</p></div>
+        <div class="detail-section"><h4>Evidência</h4><pre>${esc(f.evidence)}</pre></div>
+        <div class="detail-section"><h4>Como resolver</h4><pre>${esc(f.remediation)}</pre></div>
+        ${extra.join("")}
+        <div class="detail-section"><h4>Metadados</h4>
+          <p>Categoria: ${esc(f.category)} | Status: ${esc(f.status)} | Prioridade: ${esc(f.priority)}</p>
+        </div>
+      `;
+      renderTable();
+    }
+
+    function populateFilters() {
+      const sevSel = document.getElementById("filter-severity");
+      const catSel = document.getElementById("filter-category");
+      const srcSel = document.getElementById("filter-source");
+      SEVERITIES.forEach(s => { const o = document.createElement("option"); o.value = s; o.textContent = s; sevSel.appendChild(o); });
+      CATEGORIES.forEach(c => { const o = document.createElement("option"); o.value = c; o.textContent = c; catSel.appendChild(o); });
+      [...new Set((data.findings || []).map(f => f.source).filter(Boolean))].sort().forEach(s => {
+        const opt = document.createElement("option"); opt.value = s; opt.textContent = s; srcSel.appendChild(opt);
+      });
+      ["filter-severity","filter-category","filter-source","filter-search"].forEach(id => {
+        document.getElementById(id).addEventListener("input", renderTable);
+        document.getElementById(id).addEventListener("change", renderTable);
+      });
+    }
+
+    function init() {
+      renderMeta(); renderCards(); renderHeatmap(); renderBars();
+      populateFilters(); renderTable();
+      const first = (data.findings || [])[0];
+      if (first) showDetail(first.id);
+    }
+    init();
+  </script>
+</body>
+</html>

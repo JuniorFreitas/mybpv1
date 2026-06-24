@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mybp.local/docs/database/schema/findings.schema.json",
+  "title": "MyBP DBA Findings",
+  "type": "object",
+  "required": ["audit_id", "target", "generated_at", "scope", "summary", "findings"],
+  "properties": {
+    "audit_id": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "target": { "type": "string" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "static": { "type": "boolean" },
+        "live": { "type": "boolean" },
+        "live_skipped_reason": { "type": ["string", "null"] },
+        "ddl_dump": { "type": "boolean" },
+        "explain": { "type": "boolean" }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["critical", "high", "medium", "low", "info"],
+      "properties": {
+        "critical": { "type": "integer", "minimum": 0 },
+        "high": { "type": "integer", "minimum": 0 },
+        "medium": { "type": "integer", "minimum": 0 },
+        "low": { "type": "integer", "minimum": 0 },
+        "info": { "type": "integer", "minimum": 0 },
+        "by_category": {
+          "type": "object",
+          "additionalProperties": { "type": "integer" }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id", "category", "severity", "title", "location", "source",
+          "status", "priority", "root_cause", "evidence", "remediation"
+        ],
+        "properties": {
+          "id": { "type": "string", "pattern": "^DBA-\\d{3,}$" },
+          "category": {
+            "type": "string",
+            "enum": ["PERF", "SEC", "SCHEMA", "QUERY", "CONV"]
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low", "info"]
+          },
+          "title": { "type": "string" },
+          "location": { "type": "string" },
+          "source": {
+            "type": "string",
+            "enum": ["migrations", "models", "sql_scan", "live", "ddl_diff", "manual"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["open", "accepted_risk", "fixed"]
+          },
+          "priority": { "type": "string", "enum": ["P1", "P2", "P3", "P4"] },
+          "root_cause": { "type": "string" },
+          "evidence": { "type": "string" },
+          "remediation": { "type": "string" },
+          "explain_recommended": { "type": "boolean" },
+          "ddl_suggestion": { "type": "string" },
+          "orm_recommendation": { "type": "string" },
+          "references": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}
