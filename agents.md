@@ -154,4 +154,6 @@ Guia para modelos de IA atuarem com seguranca, qualidade e performance no projet
 - Deploy: `docs/README-DEPLOY.md`
 - Scripts de agents: `agents/scripts/README.md`
 - Padroes internos: `agents/*/README.md`
+- Pentest OWASP: `agents/pentest-owasp/README.md` e `.cursor/skills/pentest-owasp/SKILL.md`
+- DBA Senior (performance/seguranca DB): `agents/dba-senior/README.md` e `.cursor/skills/dba-senior/SKILL.md`
 - Migracao frontend (Composition API + Services): `docs/PLANO_MIGRACAO_COMPOSITION_API_SERVICES.md`, agente `agents/migracao-frontend/README.md`

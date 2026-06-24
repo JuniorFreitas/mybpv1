@@ -33,3 +33,6 @@ supervisord.pid
 # Export local de anexos CIH (dados sensiveis)
 /download_anexos_cih/
 .playwright-cli/
+
+docs/database/audits/
+docs/security/audits/
