@@ -19,5 +19,6 @@ export const API_PATHS = {
     editar: (id) => `usuarios/${id}/editar`,
     simularUsuario: 'usuarios/simularUsuario',
     buscaGrupoEmpresa: (empresaId) => `usuario/busca-grupo-empresa/${empresaId}`,
+    whatsappPreferenciasModelo: (empresaId) => `usuarios/whatsapp-preferencias/modelo?empresa_id=${empresaId}`,
     ativaDesativa: (id) => `usuarios/${id}/ativa-desativa`
 }

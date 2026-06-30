@@ -55,6 +55,7 @@ const app = createApp({
                 curriculo_id: '',
                 observacao: '',
                 temwhatsapp: false,
+                tel_principal: null,
                 envia_whatsapp: false,
                 numero_telefone: ''
             },
@@ -83,6 +84,10 @@ const app = createApp({
             dadosFinalizar: [],
             vagas: [],
             areasEtiquetas: [],
+
+            previewWhatsappAberto: false,
+            previewWhatsappTipo: '',
+            previewWhatsappContexto: {},
 
             controle: {
                 carregando: false,
@@ -247,6 +252,7 @@ const app = createApp({
                     this.formEmail.id = data.id
                     this.formEmail.email = data.curriculo.email
                     this.formEmail.temwhatsapp = data.tel_principal.tipo === 'whatsapp'
+                    this.formEmail.tel_principal = data.tel_principal
                     this.formEmail.envia_whatsapp = data.tel_principal.tipo === 'whatsapp'
                     this.formEmail.numero_telefone = data.tel_principal.sonumero
                     this.tituloJanela = `Reenvio de E-mail - ${data.curriculo.nome}`
@@ -348,6 +354,38 @@ const app = createApp({
         atualizar() {
             this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
             this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+        },
+
+        previewWhatsappEmail() {
+            const apelido = this.authconfiguracao?.apelido || ''
+            const observacao = (this.formEmail.observacao || '').trim()
+            this.previewWhatsappContexto = {
+                nome_destinatario: this.tituloJanela.replace('Reenvio de E-mail - ', ''),
+                url_documentos: `${window.location.origin}/${apelido}/documentos`,
+                observacao: observacao !== '' ? `${observacao}\n\n` : '',
+            }
+            this.previewWhatsappTipo = 'admissao_documentos'
+            this.previewWhatsappAberto = true
+        },
+
+        previewWhatsappFinalizar() {
+            const empExame = this.listaEmpresasExames.find(
+                (item) => item.id === this.formFinalizar.empresa_exame_id
+            )
+            const pcmso = this.listaPcmsos.find((item) => item.id === this.formFinalizar.pcmso_id)
+            const nomeDestinatario = this.dadosFinalizar?.curriculo?.nome || ''
+
+            this.previewWhatsappContexto = {
+                nome_destinatario: nomeDestinatario,
+                tipo_exame: pcmso?.label || 'Admissional',
+                clinica_nome: empExame ? empExame.nome : '',
+                clinica_endereco: empExame?.dados?.endereco?.endereco_completo || '',
+                clinica_telefone: empExame?.dados?.telefone || '',
+                data_encaminhamento: new Date().toLocaleString('pt-BR'),
+                data_realizacao: this.formFinalizar.encaminhado_exame_data || '',
+            }
+            this.previewWhatsappTipo = 'exame_encaminhamento'
+            this.previewWhatsappAberto = true
         }
     }
 })

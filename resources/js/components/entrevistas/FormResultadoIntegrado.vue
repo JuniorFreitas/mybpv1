@@ -37,12 +37,14 @@
                     </div>
                 </div>
                 <div class="col-2" v-if="form.documentos_entregue">
-                    <div class="switchToggle" v-show="whatsappLiberado">
+                    <div class="switchToggle" v-show="whatsappPodeNotificar('admissao_documentos', telefonePrincipal)">
                         <input type="checkbox" v-model="form.envia_whatsapp_documentos"
                                :disabled="visualizar || disabled || encaminhado.documentos"
                                id="envia_whatsapp_documentos">
                         <label for="envia_whatsapp_documentos">Enviar Whatsapp</label>
                     </div>
+                    <button type="button" class="btn btn-link btn-sm p-0" v-show="whatsappPodeNotificar('admissao_documentos', telefonePrincipal)"
+                            @click="previewWhatsapp('admissao_documentos')">Visualizar mensagem</button>
                 </div>
             </div>
         </fieldset>
@@ -111,11 +113,13 @@
                     </div>
                 </div>
                 <div class="col-2" v-if="form.encaminhado_exame">
-                    <div class="switchToggle" v-show="whatsappLiberado">
+                    <div class="switchToggle" v-show="whatsappPodeNotificar('admissao_exame', telefonePrincipal)">
                         <input type="checkbox" v-model="form.envia_whatsapp_exame"
                                :disabled="visualizar || disabled || encaminhado.exame" id="envia_whatsapp_exame">
                         <label for="envia_whatsapp_exame">Enviar Whatsapp</label>
                     </div>
+                    <button type="button" class="btn btn-link btn-sm p-0" v-show="whatsappPodeNotificar('admissao_exame', telefonePrincipal)"
+                            @click="previewWhatsapp('admissao_exame')">Visualizar mensagem</button>
                 </div>
             </div>
         </fieldset>
@@ -213,6 +217,12 @@
             </div>
         </div>
     </div>
+
+    <whatsapp-preview-modal
+        v-model="previewWhatsappAberto"
+        :tipo-mensagem="previewWhatsappTipo"
+        :contexto="previewWhatsappContexto"
+    />
 </template>
 
 <script>
@@ -256,6 +266,14 @@ export default {
         disabled: {
             type: Boolean,
             default: false
+        },
+        nomeCandidato: {
+            type: String,
+            default: 'Candidato'
+        },
+        telefonePrincipal: {
+            type: Object,
+            default: null,
         }
     },
 
@@ -269,7 +287,10 @@ export default {
                 treinamento: false
             },
             AUTENTICADO,
-            empresasSemValidacao: [78862]
+            empresasSemValidacao: [78862],
+            previewWhatsappAberto: false,
+            previewWhatsappTipo: '',
+            previewWhatsappContexto: {},
         };
     },
     async mounted() {
@@ -297,6 +318,30 @@ export default {
             exame: !!this.form.encaminhado_exame,
             treinamento: !!this.form.encaminhado_treinamento
         };
+    },
+    methods: {
+        previewWhatsapp(tipo) {
+            const empExame = this.listaEmpresaExame.find((item) => item.id === this.form.empresa_exame_id)
+            const urlDocumentos = `${window.location.origin}/${this.AUTENTICADO.apelido}/documentos`
+
+            if (tipo === 'admissao_documentos') {
+                this.previewWhatsappContexto = {
+                    nome_destinatario: this.nomeCandidato,
+                    url_documentos: urlDocumentos,
+                    observacao: '',
+                }
+            } else {
+                this.previewWhatsappContexto = {
+                    nome_destinatario: this.nomeCandidato,
+                    clinica_nome: empExame ? empExame.nome : '',
+                    clinica_endereco: empExame?.dados?.endereco?.endereco_completo || '',
+                    clinica_telefone: empExame?.dados?.telefone || '',
+                }
+            }
+
+            this.previewWhatsappTipo = tipo
+            this.previewWhatsappAberto = true
+        }
     }
 };
 </script>

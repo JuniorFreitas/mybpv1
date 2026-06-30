@@ -25,7 +25,7 @@ class JobEnviaZap implements ShouldQueue
     public function __construct($dados)
     {
         $this->dados = $dados;
-        $this->delay = now()->addSeconds(rand(5, 10));
+        $this->delay = now()->addSeconds(ZapNotificacao::calcularDelayFila());
     }
 
     /**
@@ -35,10 +35,8 @@ class JobEnviaZap implements ShouldQueue
      */
     public function handle()
     {
-        (new ZapNotificacao())->enviar([
-            'enviado_id' => $this->dados['enviado_id'],
-            'telefone' => $this->dados['telefone'],
-            'mensagem' => $this->dados['mensagem'],
-        ]);
+        $zap = new ZapNotificacao();
+        $dados = $zap->normalizarDadosEnvio($this->dados);
+        $zap->send($dados);
     }
 }

@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-docker exec -t app php artisan migrate --force
-docker exec -t app php artisan db:seed --class=HabilidadesTableSeeder --force
-#docker exec -t app php artisan db:seed --class=OcorrenciasJornadaTableSeeder --force
-docker exec -t app composer dump
+set -euo pipefail
+
+CONTAINER="${MYBP_CONTAINER:-mybpdp}"
+
+docker exec -t "${CONTAINER}" php artisan migrate --force
+docker exec -t "${CONTAINER}" php artisan db:seed --class=HabilidadesTableSeeder --force
+docker exec -t "${CONTAINER}" php artisan db:seed --class=WhatsappTemplatePadraoSeeder --force
+docker exec -t "${CONTAINER}" composer dump-autoload

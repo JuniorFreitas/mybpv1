@@ -66,6 +66,9 @@ const app = createApp({
             formDefault: null,
             form_feedback: this.createInitialFeedback(),
             form_feedbackDefault: null,
+            previewWhatsappAberto: false,
+            previewWhatsappTipo: 'recrutamento_selecao',
+            previewWhatsappContexto: {},
 
             // ===== CAMPOS DE REFERÊNCIA =====
             campoNome: null,
@@ -591,6 +594,20 @@ const app = createApp({
 
         resetarPaginacao() {
             this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
+        },
+
+        previewRecrutamentoWhatsapp() {
+            const label = this.form_feedback.autocomplete_label_vaga_modal || ''
+            const partes = label.split(' - ')
+            this.previewWhatsappContexto = {
+                nome_destinatario: this.form.nome,
+                vaga_titulo: partes[0] || label,
+                vaga_cidade: partes.length >= 3 ? `${partes[1]}/${partes[2]}` : (partes[1] || ''),
+                data_entrevista: this.form_feedback.data_entrevista || '',
+                local_entrevista: this.form_feedback.local_entrevista || '',
+            }
+            this.previewWhatsappTipo = 'recrutamento_selecao'
+            this.previewWhatsappAberto = true
         }
     }
 })

@@ -172,7 +172,7 @@ const app = createApp({
             return resultado
         },
         podeEnviarWhatsapp() {
-            if (!this.whatsappLiberado || !this.parecerRotaWhatsappId) {
+            if (!this.whatsappTipoHabilitado('parecer_rota_transporte') || !this.parecerRotaWhatsappId) {
                 return false
             }
 

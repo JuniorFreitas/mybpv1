@@ -496,6 +496,14 @@
             @endif
         </div>
     </div>
+    <telefone-usuario-modal />
+    @can('preferencias_notificacao_whatsapp')
+        <div class="row mt-3">
+            <div class="col-12 col-lg-6">
+                <whatsapp-preferencias-usuario />
+            </div>
+        </div>
+    @endcan
 @endsection
 @push('js')
 
@@ -520,7 +528,7 @@
                     axios.put(`${URL_ADMIN}/concordarTermos`).then(response => {
                         if (response.status === 201) {
                             $('#termosdeuso_popup').modal('hide')
-                            // mostraSucesso('', '')
+                            window.dispatchEvent(new CustomEvent('mybp:termos-aceitos'))
                         }
                     })
                 }

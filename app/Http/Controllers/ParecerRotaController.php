@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
+use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
 use App\Jobs\JobExportaParecerRota;
 use App\Models\FeedbackCurriculo;
 use App\Models\ParecerRota;
@@ -229,9 +231,12 @@ class ParecerRotaController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->enviaWhatsApp()) {
+        if (!app(WhatsappNotificationGateService::class)->podeEnviar(
+            TipoMensagemWhatsapp::ParecerRotaTransporte,
+            (int) $user->empresa_id,
+        )) {
             return response()->json([
-                'msg' => 'Envio de WhatsApp não habilitado para esta empresa.',
+                'msg' => 'Envio de WhatsApp não permitido: empresa sem WhatsApp liberado ou módulo de Transporte desativado.',
             ], 400);
         }
 

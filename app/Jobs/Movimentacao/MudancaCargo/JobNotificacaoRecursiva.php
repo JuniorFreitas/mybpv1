@@ -3,6 +3,7 @@
 namespace App\Jobs\Movimentacao\MudancaCargo;
 
 use App\Helpers\RHHelper;
+use App\Jobs\Movimentacao\Concerns\EnviaWhatsappNotificacaoMovimentacao;
 use App\Mail\Movimentacao\MudancaCargo\NotificacaoAprovacaoMail;
 use App\Models\AprovacaoExtraConfig;
 use App\Models\CentroCusto;
@@ -20,7 +21,7 @@ use Illuminate\Support\Facades\Mail;
 
 class JobNotificacaoRecursiva implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, EnviaWhatsappNotificacaoMovimentacao;
 
     public $tries = 3;
 
@@ -384,6 +385,7 @@ class JobNotificacaoRecursiva implements ShouldQueue
             $email->bcc($bcc);
         }
         $email->send(new NotificacaoAprovacaoMail($dados));
+        $this->enviarWhatsappAposEmail($dados, $destinatarios, 'Mudança de cargo');
     }
 
     private function dispararProximaNotificacao(string $tipoAtual)

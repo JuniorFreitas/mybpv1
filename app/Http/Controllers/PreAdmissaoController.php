@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Classes\ZapNotificacao;
+use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
+use App\Domain\Whatsapp\Services\WhatsappCurriculoTelefoneResolver;
+use App\Domain\Whatsapp\Services\WhatsappMessageFactory;
+use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
 use App\Jobs\ControleExames\JobExame;
 use App\Jobs\Entrevista\JobEnvioDocumento;
 use App\Jobs\Entrevista\JobEnvioFeedbackDocumento;
@@ -293,23 +297,39 @@ class PreAdmissaoController extends Controller
             }
 
             if ($request->envia_whatsapp) {
-                if (auth()->user()->EmpresaConfiguracoes->envia_whatsapp && $colaborador->TelPrincipal->tipo == 'whatsapp' && !is_null($empExame)) {
-                    $mensagem = "Prezado(a) sr(a) *{$colaborador->Curriculo->nome}*, Tudo bem?\n\nEstamos encaminhando para realização de *Exame de ordem *{$tipoExame->label}*, " .
-                        "no primeiro dia útil após recebimento dessa notificação (considerar de segunda à sábado).\n\n" .
-                        "🏥 Local do Exame: \n*{$empExame->nome}*.\n" .
-                        "📍 Endereço: *{$empExame->dados['endereco']['endereco_completo']}*\n" .
-                        "📞 Contato: *{$empExame->dados['telefone']}*\n" .
-                        "🗓️ Data de encaminhamento: *{$data_encaminhamento}*\n" .
-                        "🗓️ Data de realização: *{$data_realizacao}*" .
-                        "\n\n" .
-                        "Atenciosamente,\n\n" .
-                        "Equipe " . auth()->user()->Empresa->razao_social . "\n\n" .
-                        "_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
+                $podeEnviarWhatsapp = app(WhatsappNotificationGateService::class)->podeEnviar(
+                    TipoMensagemWhatsapp::ExameEncaminhamento,
+                    (int) auth()->user()->empresa_id,
+                );
+
+                $telefoneResolver = app(WhatsappCurriculoTelefoneResolver::class);
+                $telefonePrincipal = $telefoneResolver->telefonePrincipalPermiteWhatsapp($colaborador->TelPrincipal)
+                    ? $colaborador->TelPrincipal
+                    : null;
+
+                if ($podeEnviarWhatsapp && $telefonePrincipal && !is_null($empExame)) {
+                    $mensagem = app(WhatsappMessageFactory::class)->render(
+                        TipoMensagemWhatsapp::ExameEncaminhamento,
+                        (int) auth()->user()->empresa_id,
+                        [
+                            'nome_destinatario' => $colaborador->Curriculo->nome,
+                            'tipo_exame' => $tipoExame->label,
+                            'clinica_nome' => $empExame->nome,
+                            'clinica_endereco' => $empExame->dados['endereco']['endereco_completo'] ?? '',
+                            'clinica_telefone' => $empExame->dados['telefone'] ?? '',
+                            'data_encaminhamento' => $data_encaminhamento,
+                            'data_realizacao' => $data_realizacao,
+                        ]
+                    );
 
                     (new ZapNotificacao())->enviar([
                         'enviado_id' => $colaborador->curriculo_id,
-                        'telefone' => $colaborador->TelPrincipal->sonumero,
-                        'mensagem' => $mensagem
+                        'telefone' => $telefonePrincipal->sonumero,
+                        'mensagem' => $mensagem,
+                        '_whatsapp_meta' => ZapNotificacao::meta(
+                            TipoMensagemWhatsapp::ExameEncaminhamento,
+                            (int) auth()->user()->empresa_id,
+                        ),
                     ]);
                 }
             }
@@ -384,48 +404,50 @@ class PreAdmissaoController extends Controller
                 ]);
             }
 
-            if (auth()->user()->enviaWhatsApp() && $dados['temwhatsapp'] && $dados['envia_whatsapp'] && $dados['numero_telefone']) {
-                $ambiente = env('AMBIENTE', 'local') == 'prod' ?: 'local';
-                if ($ambiente != 'prod') {
-                    $zapTelAtivo = \DB::table("zap_numeros")->where("ativo", true)->first();
-                    $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '559899023762';
-                }
+            $podeEnviarWhatsappDocumentos = app(WhatsappNotificationGateService::class)->podeEnviar(
+                TipoMensagemWhatsapp::AdmissaoDocumentos,
+                (int) auth()->user()->empresa_id,
+            );
 
-                if (auth()->user()->empresa_id == 65974) {
-                    //Equatorial
-                    $mensagemWhats = "Olá, " . $curriculo->nome . "!\n\n";
-                    $mensagemWhats .= $dados['observacao'] . "\n\n";
-                    $mensagemWhats .= "Atenciosamente,\n";
-                    $mensagemWhats .= "*Time Recrutamento e Seleção $Empresa->nome_fantasia*\n";
+            if ($podeEnviarWhatsappDocumentos && $dados['temwhatsapp'] && $dados['envia_whatsapp'] && $dados['numero_telefone']) {
+                $telefonePrincipal = app(WhatsappCurriculoTelefoneResolver::class)
+                    ->resolverPrincipalWhatsapp((int) $curriculo->id);
 
-                    if (strlen($dados['observacao']) == 0) {
+                if ($telefonePrincipal) {
+                    $ambiente = env('AMBIENTE', 'local') == 'prod' ?: 'local';
+                    if ($ambiente != 'prod') {
+                        $zapTelAtivo = \DB::table("zap_numeros")->where("ativo", true)->first();
+                        $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '559899023762';
+                    }
+
+                    $observacao = trim((string) ($dados['observacao'] ?? ''));
+                    $mensagemWhats = app(WhatsappMessageFactory::class)->render(
+                        TipoMensagemWhatsapp::AdmissaoDocumentos,
+                        (int) auth()->user()->empresa_id,
+                        [
+                            'nome_destinatario' => $curriculo->nome,
+                            'url_documentos' => env('APP_URL') . '/' . auth()->user()->Empresa->apelido . '/documentos',
+                            'observacao' => $observacao !== '' ? $observacao . "\n\n" : '',
+                        ]
+                    );
+
+                    if (auth()->user()->empresa_id == 65974 && $observacao === '') {
                         $mensagemWhats = '';
                     }
-                } else {
-                    //Todas
-                    $mensagemWhats = "Olá, " . $curriculo->nome . "!\n\n";
-                    $mensagemWhats .= "Parabéns por chegado até esta etapa! Você foi aprovado(a) na etapa de entrevista e seleção e agora vamos ";
-                    $mensagemWhats .= "para a etapa de documentos para admissão.!\n\n";
-                    $mensagemWhats .= "Para continuidade no processo, segue o link abaixo para que seja anexado os documentos conforme descrição.\n\n";
-                    $mensagemWhats .= "Link: " . env('APP_URL') . "/" . auth()->user()->Empresa->apelido . "/documentos\n\n";
 
-                    $mensagemWhats .= "Destaca-se que é muito importante que todos os documentos sejam anexados corretamente ";
-                    $mensagemWhats .= "para que possamos dar continuidade no processo de admissão.\n\n";
-
-                    $mensagemWhats .= "\n\nAtenciosamente,\n";
-                    $mensagemWhats .= "*Time Recrutamento e Seleção $Empresa->nome_fantasia*\n";
-                }
-
-                if (strlen($mensagemWhats) > 0) {
-                    (new ZapNotificacao())->enviar([
-                        'enviado_id' => 1,
-                        'telefone' => preg_replace('/[^0-9]/', '', $dados['numero_telefone']),
-                        'mensagem' => $mensagemWhats,
-                    ]);
+                    if (strlen($mensagemWhats) > 0) {
+                        (new ZapNotificacao())->enviar([
+                            'enviado_id' => $curriculo->id,
+                            'telefone' => $telefonePrincipal->sonumero,
+                            'mensagem' => $mensagemWhats,
+                            '_whatsapp_meta' => ZapNotificacao::meta(
+                                TipoMensagemWhatsapp::AdmissaoDocumentos,
+                                (int) auth()->user()->empresa_id,
+                            ),
+                        ]);
+                    }
                 }
             }
-
-
             return response()->json([], 201);
         } catch (\Exception $e) {
             DB::rollBack();

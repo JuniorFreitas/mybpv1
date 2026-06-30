@@ -69,7 +69,7 @@
 
                 <fieldset v-if="!preloadForm">
                     <legend class="text-uppercase">ENCAMINHAMENTO PARA ADMISSÃO</legend>
-                    <form-resultado-integrado :form="form.resultado_integrado"></form-resultado-integrado>
+                    <form-resultado-integrado :form="form.resultado_integrado" :nome-candidato="form.curriculo ? form.curriculo.nome : 'Candidato'" :telefone-principal="form.tel_principal"></form-resultado-integrado>
                 </fieldset>
 
             </div>

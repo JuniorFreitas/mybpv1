@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista;
 
+use App\Jobs\Movimentacao\Concerns\EnviaWhatsappNotificacaoMovimentacao;
 use App\Mail\Movimentacao\MudaIntermitenteFixoPrevista\NotificacaoAprovacaoMail;
 use App\Models\AprovacaoExtraConfig;
 use App\Models\CentroCusto;
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\Mail;
 
 class JobNotificacaoRecursiva implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, EnviaWhatsappNotificacaoMovimentacao;
 
     public $tries = 3;
     public $timeout = 300;
@@ -363,6 +364,7 @@ class JobNotificacaoRecursiva implements ShouldQueue
             $email->bcc($bcc);
         }
         $email->send(new NotificacaoAprovacaoMail($dados));
+        $this->enviarWhatsappAposEmail($dados, $destinatarios, 'Intermitente fixo');
     }
 
     /**

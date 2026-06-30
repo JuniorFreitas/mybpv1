@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Classes\ZapNotificacao;
+use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
+use App\Domain\Whatsapp\Services\WhatsappCurriculoTelefoneResolver;
+use App\Domain\Whatsapp\Services\WhatsappMessageFactory;
+use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
 use App\Jobs\JobConvocacaoIntermitentes;
 use App\Jobs\JobExportaExcel;
 use App\Jobs\JobRespostaIntermitentes;
@@ -75,11 +79,14 @@ class IntermitenteController extends Controller
                 'msg' => 'Erro ao Salvar Informações',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
+        } 
+
             try {
                 DB::beginTransaction();
-                $permite_envio_whatsapp = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
-                $permite_envio_whatsapp = !empty($permite_envio_whatsapp) && $permite_envio_whatsapp->envia_whatsapp;
+                $permite_envio_whatsapp = app(WhatsappNotificationGateService::class)->podeEnviar(
+                    TipoMensagemWhatsapp::IntermitenteConvocacao,
+                    (int) auth()->user()->empresa_id,
+                );
                 $empresa = Cliente::find(auth()->user()->empresa_id);
 
                 $dados['tipo_id'] = $dados['tipo_id'] > 0 ? $dados['tipo_id'] : null;
@@ -107,23 +114,32 @@ class IntermitenteController extends Controller
                     ];
 
                     if ($permite_envio_whatsapp) {
-                        $mensagem = "Prezado(a), *{$dadosEnvio[$index]['colaborador']}*";
-                        $mensagem .= "\nConforme seu modelo de contrato INTERMITENTE prevê a convocação ao trabalho, ";
-                        $mensagem .= "viemos através dessa mensagem informá-lo(a) que o(a) Sr(a). está convocado(a) para trabalho ";
-                        $mensagem .= "no período de *".$dadosEnvio[$index]['periodo']."* no *".$dadosEnvio[$index]['centro_de_custo']." / ".$dadosEnvio[$index]['area']."*.";
-                        $mensagem .= "\n\nPara isso, gentileza confirmar aceite de convocação, conforme links abaixo ⬇️";
-                        $mensagem .= "\n\nPara *aceitar*, clique no link a seguir:\n".$dadosEnvio[$index]['resposta_sim'];
-                        $mensagem .= "\n\nPara *recusar*, clique no link a seguir:\n".$dadosEnvio[$index]['resposta_nao'];
-                        $mensagem .= "\n\nInformamos que você tem até *".$dadosEnvio[$index]['prazo_resposta_expiracao']."* para sinalizar a sua resposta.";
-                        $mensagem .= "\n\nUm forte abraço da equipe *" . $dadosEnvio[$index]['empresa'] . "*\n\n_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
+                        $mensagem = app(WhatsappMessageFactory::class)->render(
+                            TipoMensagemWhatsapp::IntermitenteConvocacao,
+                            (int) $empresa->id,
+                            [
+                                'nome_destinatario' => $dadosEnvio[$index]['colaborador'],
+                                'periodo' => $dadosEnvio[$index]['periodo'],
+                                'centro_custo' => $dadosEnvio[$index]['centro_de_custo'],
+                                'area' => $dadosEnvio[$index]['area'],
+                                'link_sim' => $dadosEnvio[$index]['resposta_sim'],
+                                'link_nao' => $dadosEnvio[$index]['resposta_nao'],
+                                'prazo_resposta' => $dadosEnvio[$index]['prazo_resposta_expiracao'],
+                            ]
+                        );
 
-                        $telefonePrincipal = TelefoneCurriculo::whereCurriculoId($curriculo['id'])->wherePrincipal(true)->first();
+                        $telefonePrincipal = app(WhatsappCurriculoTelefoneResolver::class)
+                            ->resolverPrincipalWhatsapp((int) $curriculo['id']);
 
-                        if ($telefonePrincipal->tipo == 'whatsapp') {
+                        if ($telefonePrincipal) {
                             (new ZapNotificacao())->enviar([
                                 'enviado_id' => $curriculo['id'],
                                 'telefone' => $telefonePrincipal->sonumero,
                                 'mensagem' => $mensagem,
+                                '_whatsapp_meta' => ZapNotificacao::meta(
+                                    TipoMensagemWhatsapp::IntermitenteConvocacao,
+                                    (int) auth()->user()->empresa_id,
+                                ),
                             ]);
                         }
                     }
@@ -156,10 +172,8 @@ class IntermitenteController extends Controller
                 DB::rollback();
                 $msg = "error STORE Intermitente:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
                 \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
-                //return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
-        }
     }
 
     public function storeTipo(Request $request)

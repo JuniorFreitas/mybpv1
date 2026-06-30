@@ -91,6 +91,25 @@
                             <option :value="false">Não</option>
                         </select>
                     </div>
+                    <fieldset>
+                        <legend>Contatos</legend>
+                        <telefone
+                            :model="form.telefones"
+                            :model-delete="form.telefonesDelete"
+                            :pais="false"
+                            :ramal="false"
+                            :detalhe="false"
+                            :qnt_min="0"
+                        />
+                    </fieldset>
+                    <whatsapp-preferencias-form
+                        v-if="canUpdate || canInsert"
+                        :preferencias="whatsappPreferencias"
+                        :whatsapp-liberado="whatsappLiberado"
+                        input-prefix="usuario-whatsapp-pref"
+                        descricao="Defina quais notificações WhatsApp este usuário deve receber."
+                        @update:preferencias="whatsappPreferencias = $event"
+                    />
                     <fieldset v-if="tipos_usuarios_gerenciais.includes(form.tipo)">
                         <legend>Tipos de e-mails que esse usuário pode receber:</legend>
                         <div
@@ -416,6 +435,7 @@
 <script>
 import { defineComponent } from 'vue'
 import { REFS_MODAL, MODAL_IDS, API_PATHS } from './constants'
+import WhatsappPreferenciasForm from '../WhatsappPreferenciasForm.vue'
 
 const getBaseUrl = () => (typeof URL_ADMIN !== 'undefined' ? URL_ADMIN : '')
 
@@ -439,6 +459,8 @@ const formDefault = () => ({
     empresa_id: '',
     ativo: true,
     gestor: false,
+    telefones: [],
+    telefonesDelete: [],
     user_recebe_email: [],
     privilegio_gestor_area: false,
     privilegio_gestor_centro_custo: false
@@ -446,6 +468,8 @@ const formDefault = () => ({
 
 export default defineComponent({
     name: 'Usuarios',
+
+    components: { WhatsappPreferenciasForm },
 
     props: {
         urlAtualizar: { type: String, required: true },
@@ -478,6 +502,8 @@ export default defineComponent({
             lista_tipos: [],
             tipos_usuarios_gerenciais: [],
             user_recebe_emailDefault: null,
+            whatsappLiberado: false,
+            whatsappPreferencias: [],
 
             lista: [],
             empresa_id: '',
@@ -538,14 +564,14 @@ export default defineComponent({
         },
 
         async abrirModalNovo() {
-            this.formNovo()
+            await this.formNovo()
             await this.$nextTick()
             this.$refs.janelaCadastrar?.abrirModal?.()
         },
 
-        formNovo() {
+        async formNovo() {
             if (typeof window.formReset === 'function') window.formReset()
-            this.form = { ...formDefault() }
+            this.form = { ...formDefault(), telefones: [], telefonesDelete: [] }
             this.cadastrado = false
             this.atualizado = false
             this.editando = false
@@ -556,7 +582,8 @@ export default defineComponent({
             this.form.user_recebe_email = this.user_recebe_emailDefault
                 ? { ...this.user_recebe_emailDefault }
                 : {}
-            this.selecionaEmpresa(this.empresaId)
+            await this.selecionaEmpresa(this.empresaId)
+            await this.carregarWhatsappPreferencias(this.form.empresa_id || this.empresaId)
         },
 
         async abrirModalAlterar(id) {
@@ -567,7 +594,7 @@ export default defineComponent({
 
         async formAlterar(id) {
             if (typeof window.formReset === 'function') window.formReset()
-            this.form = { ...formDefault() }
+            this.form = { ...formDefault(), telefones: [], telefonesDelete: [] }
             this.selecionaEmpresa(this.empresaId)
             if (Number(this.empresaId) !== 100) {
                 this.form.empresa_id = this.empresaId
@@ -583,11 +610,15 @@ export default defineComponent({
                 const { data } = await api().get(API_PATHS.editar(id))
                 const usuario = data.usuario || {}
                 Object.assign(this.form, usuario)
+                this.form.telefones = usuario.telefones || []
+                this.form.telefonesDelete = []
                 if (usuario.grupo_id == null) this.form.grupo_id = ''
                 if (usuario.gestor == null) this.form.gestor = false
                 this.listaPapeis = data.papeis || []
                 this.listaCloud = data.cloud || []
                 this.form.user_recebe_email = data.formulario_vazio ? { ...data.formulario_vazio } : {}
+                this.whatsappLiberado = !!data.whatsapp_liberado
+                this.whatsappPreferencias = this.normalizarWhatsappPreferencias(data.whatsapp_preferencias || [])
                 this.editando = true
             } catch (err) {
                 // erro tratado
@@ -608,7 +639,14 @@ export default defineComponent({
             this.preloadAjax = true
             try {
                 const base = getBaseUrl()
-                const payload = { ...this.form, login: (this.form.login || '').toLowerCase().trim() }
+                const payload = {
+                    ...this.form,
+                    login: (this.form.login || '').toLowerCase().trim(),
+                    whatsapp_preferencias: this.whatsappPreferencias.map((item) => ({
+                        modulo: item.modulo,
+                        receber: !!item.receber,
+                    })),
+                }
                 await api().post(API_PATHS.usuarios, payload)
                 this.cadastrado = true
                 this.atualizar()
@@ -631,7 +669,14 @@ export default defineComponent({
             this.preloadAjax = true
             try {
                 const base = getBaseUrl()
-                const payload = { ...this.form, login: (this.form.login || '').toLowerCase().trim() }
+                const payload = {
+                    ...this.form,
+                    login: (this.form.login || '').toLowerCase().trim(),
+                    whatsapp_preferencias: this.whatsappPreferencias.map((item) => ({
+                        modulo: item.modulo,
+                        receber: !!item.receber,
+                    })),
+                }
                 await api().put(`${API_PATHS.usuarios}/${this.form.id}`, payload)
                 this.atualizado = true
                 this.atualizar()
@@ -701,6 +746,33 @@ export default defineComponent({
 
         async onEmpresaChange() {
             await this.selecionaEmpresa(this.form.empresa_id)
+            await this.carregarWhatsappPreferencias(this.form.empresa_id)
+        },
+
+        normalizarWhatsappPreferencias(preferencias) {
+            return (preferencias || []).map((item) => ({
+                ...item,
+                receber: !!item.receber,
+                habilitado_empresa: item.habilitado_empresa !== false,
+            }))
+        },
+
+        async carregarWhatsappPreferencias(empresaId) {
+            const id = empresaId || this.empresaId
+            if (!id || Number(id) === 100) {
+                this.whatsappLiberado = false
+                this.whatsappPreferencias = []
+                return
+            }
+
+            try {
+                const { data } = await api().get(API_PATHS.whatsappPreferenciasModelo(id))
+                this.whatsappLiberado = !!data.whatsapp_liberado
+                this.whatsappPreferencias = this.normalizarWhatsappPreferencias(data.preferencias || [])
+            } catch (err) {
+                this.whatsappLiberado = false
+                this.whatsappPreferencias = []
+            }
         },
 
         async buscarGruposEmpresa(id) {

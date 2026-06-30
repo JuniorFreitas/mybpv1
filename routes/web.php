@@ -146,6 +146,10 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
     Route::get('downloads/exportacao/{arquivo}', [\App\Http\Controllers\HomeController::class, 'downloadArquivo'])->name('downloadArquivo');
     Route::put('concordarTermos', [\App\Http\Controllers\HomeController::class, 'concordarTermos'])->name('concordarTermos');
     Route::get('nps/deve-exibir', [\App\Http\Controllers\NpsController::class, 'deveExibir'])->name('nps.deve-exibir');
+    Route::get('usuario/telefone/deve-atualizar', [\App\Http\Controllers\UserController::class, 'telefoneDeveAtualizar'])->name('usuario.telefone.deve-atualizar');
+    Route::put('usuario/telefone', [\App\Http\Controllers\UserController::class, 'atualizarTelefoneUsuario'])->name('usuario.telefone.atualizar');
+    Route::get('usuario/whatsapp-preferencias', [\App\Http\Controllers\UserController::class, 'showWhatsappPreferencias'])->name('usuario.whatsapp-preferencias.show');
+    Route::put('usuario/whatsapp-preferencias', [\App\Http\Controllers\UserController::class, 'updateWhatsappPreferencias'])->name('usuario.whatsapp-preferencias.update');
     Route::post('nps', [\App\Http\Controllers\NpsController::class, 'store'])->name('nps.store');
     Route::get('relatorios/nps', [\App\Http\Controllers\NpsController::class, 'gerenciamento'])->name('relatorios.nps.index');
     Route::post('relatorios/nps/export', [\App\Http\Controllers\NpsController::class, 'export'])->name('relatorios.nps.export');
@@ -409,6 +413,24 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::put('/{id}/ativa-desativa', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'ativaDesativa'])->name('ativa-desativa')->middleware('can:cadastro_customizacoes_aprovacao_extra');
             Route::post('/pode-aprovar', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'podeAprovar'])->name('pode-aprovar')->middleware('can:cadastro_customizacoes_aprovacao_extra');
         });
+    });
+
+    // Configurações WhatsApp por empresa
+    Route::group(['as' => 'configuracoes.whatsapp.', 'prefix' => 'configuracoes/whatsapp'], function () {
+        Route::get('/', [\App\Http\Controllers\WhatsappConfigController::class, 'index'])->name('index');
+        Route::get('/status', [\App\Http\Controllers\WhatsappConfigController::class, 'status'])->name('status');
+        Route::get('/config', [\App\Http\Controllers\WhatsappConfigController::class, 'showConfig'])->name('config.show');
+        Route::put('/config', [\App\Http\Controllers\WhatsappConfigController::class, 'updateConfig'])->name('config.update');
+        Route::put('/modulos', [\App\Http\Controllers\WhatsappConfigController::class, 'updateModulos'])->name('modulos.update');
+        Route::get('/usuarios-notificacoes', [\App\Http\Controllers\WhatsappConfigController::class, 'listarUsuariosNotificacoes'])->name('usuarios-notificacoes.index');
+        Route::put('/usuarios-notificacoes/{userId}', [\App\Http\Controllers\WhatsappConfigController::class, 'atualizarPreferenciaUsuario'])->name('usuarios-notificacoes.update');
+        Route::get('/templates', [\App\Http\Controllers\WhatsappConfigController::class, 'listTemplates'])->name('templates.index');
+        Route::get('/templates/{tipo}', [\App\Http\Controllers\WhatsappConfigController::class, 'showTemplate'])->name('templates.show');
+        Route::put('/templates/{tipo}', [\App\Http\Controllers\WhatsappConfigController::class, 'updateTemplate'])->name('templates.update');
+        Route::delete('/templates/{tipo}', [\App\Http\Controllers\WhatsappConfigController::class, 'destroyTemplate'])->name('templates.destroy');
+        Route::post('/templates/{tipo}/preview', [\App\Http\Controllers\WhatsappConfigController::class, 'previewTemplate'])->name('templates.preview');
+        Route::post('/preview-fluxo', [\App\Http\Controllers\WhatsappConfigController::class, 'previewFluxo'])->name('preview-fluxo');
+        Route::get('/tipos', [\App\Http\Controllers\WhatsappConfigController::class, 'tipos'])->name('tipos');
     });
 
     //Cadastro
@@ -1294,6 +1316,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::put('usuarios/simularUsuario', [\App\Http\Controllers\UserController::class, 'simularUsuario'])->name('simularUsuario');
 
         Route::post('usuarios/atualizar', [\App\Http\Controllers\UserController::class, 'atualizar'])->name('usuarios.atualizar')->middleware('can:usuario_usuarios');
+        Route::get('usuarios/whatsapp-preferencias/modelo', [\App\Http\Controllers\UserController::class, 'whatsappPreferenciasModelo'])->name('usuarios.whatsapp-preferencias.modelo')->middleware('can:usuario_usuarios');
         Route::put('usuarios/{usuario}/ativa-desativa', [\App\Http\Controllers\UserController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:usuario_usuarios');
 
         Route::resource('usuarios', \App\Http\Controllers\UserController::class)->middleware('can:usuario_usuarios');

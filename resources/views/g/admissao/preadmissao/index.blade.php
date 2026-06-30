@@ -100,12 +100,19 @@
                             </div>
 
                             <div class="custom-control custom-switch float-left ml-3"
-                                 v-if="whatsappLiberado && dadosFinalizar.tel_principal && dadosFinalizar.tel_principal.tipo ==='whatsapp'">
+                                 v-if="whatsappPodeNotificar('exame_encaminhamento', dadosFinalizar.tel_principal)">
                                 <input type="checkbox" v-model="formFinalizar.envia_whatsapp"
                                        class="custom-control-input"
                                        id="envia_whatsapp">
                                 <label class="custom-control-label"
                                        for="envia_whatsapp">Enviar WhatsApp</label>
+                            </div>
+                            <div class="col-12 mt-2"
+                                 v-if="whatsappPodeNotificar('exame_encaminhamento', dadosFinalizar.tel_principal)">
+                                <button type="button" class="btn btn-sm btn-outline-success"
+                                        @click="previewWhatsappFinalizar">
+                                    <i class="fab fa-whatsapp"></i> Visualizar mensagem
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -126,8 +133,8 @@
             <div v-if="!preload">
                 <div class="alert alert-warning">Observação: Comunicamos que a troca do e-mail, implicará também na
                     mudança do acesso ao Sistema.
-                    <span v-if="whatsappLiberado && authconfiguracao.empresa_id === 65974">
-                        <br> Quando o Campo mensagem for preenchido e o colaborador possuir Whatsapp será enviado junto ao e-mail uma mensagem via Whatsapp.
+                    <span v-if="whatsappPodeNotificar('admissao_documentos', formEmail.tel_principal)">
+                        <br> Quando habilitado, o colaborador também receberá a mensagem via WhatsApp.
                        </span>
                 </div>
                 <fieldset>
@@ -150,13 +157,17 @@
                         </div>
                     </div>
 
-                    <div class="col-3"
-                         v-if="whatsappLiberado && authconfiguracao.empresa_id === 65974 && formEmail.temwhatsapp">
-                        <label for="">Envia WhatsApp</label>
-                        <select class="form-control form-control-sm" v-model="formEmail.envia_whatsapp">
-                            <option :value="true">Sim</option>
-                            <option :value="false">Não</option>
-                        </select>
+                    <div class="col-12"
+                         v-if="whatsappPodeNotificar('admissao_documentos', formEmail.tel_principal)">
+                        <div class="custom-control custom-switch mb-2">
+                            <input type="checkbox" class="custom-control-input" id="envia_whatsapp_email"
+                                   v-model="formEmail.envia_whatsapp">
+                            <label class="custom-control-label" for="envia_whatsapp_email">Enviar WhatsApp</label>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-success"
+                                @click="previewWhatsappEmail">
+                            <i class="fab fa-whatsapp"></i> Visualizar mensagem
+                        </button>
                     </div>
                 </fieldset>
             </div>
@@ -346,6 +357,12 @@
                             :dados="controle.dados"
                             v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
     </div>
+
+    <whatsapp-preview-modal
+        v-model="previewWhatsappAberto"
+        :tipo-mensagem="previewWhatsappTipo"
+        :contexto="previewWhatsappContexto"
+    />
 @stop
 @push('js')
     <script src="{{mix('js/g/admissao/preadmissao/app.js')}}"></script>

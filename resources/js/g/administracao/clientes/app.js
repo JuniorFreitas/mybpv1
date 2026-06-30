@@ -5,6 +5,7 @@ import endereco from '../../../components/Endereco'
 import datepicker from '../../../components/DatePicker'
 import upload from '../../../components/Upload'
 import Filial from '../../../components/administracao/clientes/Filial'
+import WhatsappConfig from '../../../components/configuracoes/whatsapp/WhatsappConfig.vue'
 
 const app = createApp({
     components: {
@@ -12,7 +13,8 @@ const app = createApp({
         endereco,
         datepicker,
         upload,
-        Filial
+        Filial,
+        WhatsappConfig,
     },
     data() {
         return {

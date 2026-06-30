@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Classes\ZapNotificacao;
+use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
+use App\Domain\Whatsapp\Services\WhatsappCurriculoTelefoneResolver;
+use App\Domain\Whatsapp\Services\WhatsappMessageFactory;
+use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
 use App\Jobs\ControleExames\JobExame;
 use App\Models\Admissao;
 use App\Models\AlternativaFormulario;
@@ -151,23 +155,39 @@ class ControleExameController extends Controller
                 }
 
                 if ($request->envia_whatsapp) {
-                    if (auth()->user()->EmpresaConfiguracoes->envia_whatsapp && $colaborador->TelPrincipal->tipo == 'whatsapp' && !is_null($empExame)) {
-                        $mensagem = "Prezado(a) sr(a) *{$colaborador->Curriculo->nome}*, Tudo bem?\n\nEstamos encaminhando para realização de *Exame de ordem *{$tipoExame->label}*, " .
-                            "no primeiro dia útil após recebimento dessa notificação (considerar de segunda à sábado).\n\n" .
-                            "🏥 Local do Exame: \n*{$empExame->nome}*.\n" .
-                            "📍 Endereço: *{$empExame->dados['endereco']['endereco_completo']}*\n" .
-                            "📞 Contato: *{$empExame->dados['telefone']}*\n" .
-                            "🗓️ Data de encaminhamento: *{$data_encaminhamento}*\n" .
-                            "🗓️ Data de realização: *{$data_realizacao}*" .
-                            "\n\n" .
-                            "Atenciosamente,\n\n" .
-                            "Equipe " . auth()->user()->Empresa->razao_social . "\n\n" .
-                            "_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
+                    $podeEnviarWhatsapp = app(WhatsappNotificationGateService::class)->podeEnviar(
+                        TipoMensagemWhatsapp::ExameEncaminhamento,
+                        (int) auth()->user()->empresa_id,
+                    );
+
+                    $telefoneResolver = app(WhatsappCurriculoTelefoneResolver::class);
+                    $telefonePrincipal = $telefoneResolver->telefonePrincipalPermiteWhatsapp($colaborador->TelPrincipal)
+                        ? $colaborador->TelPrincipal
+                        : null;
+
+                    if ($podeEnviarWhatsapp && $telefonePrincipal && !is_null($empExame)) {
+                        $mensagem = app(WhatsappMessageFactory::class)->render(
+                            TipoMensagemWhatsapp::ExameEncaminhamento,
+                            (int) auth()->user()->empresa_id,
+                            [
+                                'nome_destinatario' => $colaborador->Curriculo->nome,
+                                'tipo_exame' => $tipoExame->label,
+                                'clinica_nome' => $empExame->nome,
+                                'clinica_endereco' => $empExame->dados['endereco']['endereco_completo'] ?? '',
+                                'clinica_telefone' => $empExame->dados['telefone'] ?? '',
+                                'data_encaminhamento' => $data_encaminhamento,
+                                'data_realizacao' => $data_realizacao,
+                            ]
+                        );
 
                         (new ZapNotificacao())->enviar([
                             'enviado_id' => $colaborador->curriculo_id,
-                            'telefone' => $colaborador->TelPrincipal->sonumero,
-                            'mensagem' => $mensagem
+                            'telefone' => $telefonePrincipal->sonumero,
+                            'mensagem' => $mensagem,
+                            '_whatsapp_meta' => ZapNotificacao::meta(
+                                TipoMensagemWhatsapp::ExameEncaminhamento,
+                                (int) auth()->user()->empresa_id,
+                            ),
                         ]);
                     }
                 }

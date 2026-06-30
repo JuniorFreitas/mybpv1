@@ -7,6 +7,7 @@ use Spatie\Activitylog\Models\Activity;
 
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Domain\Whatsapp\Services\WhatsappConfigService;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -145,5 +146,12 @@ class ClienteConfig extends Model
         4 => self::CENTO_E_VINTE_DIAS,
     ];
 
-
+    protected static function booted(): void
+    {
+        static::saved(function (ClienteConfig $config): void {
+            if ($config->cliente_id && $config->wasChanged('envia_whatsapp')) {
+                app(WhatsappConfigService::class)->invalidateCache((int) $config->cliente_id);
+            }
+        });
+    }
 }

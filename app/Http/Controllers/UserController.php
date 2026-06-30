@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\JobBoasVindas;
+use App\Domain\Whatsapp\Services\WhatsappConfigService;
+use App\Http\Requests\WhatsappPreferenciasUsuarioRequest;
 use App\Jobs\JobRecuperaSenha;
 use App\Models\Arquivo;
 use App\Models\Cliente;
 use App\Models\ClienteConfig;
 use App\Models\ClienteFilial;
+use App\Models\Curriculo;
 use App\Models\GrupoCloud;
 use App\Models\Papel;
+use App\Models\RecrutamentoHistorico;
 use App\Models\RecuperacaoSenha;
 use App\Models\TipoRecebeEmail;
 use App\Models\User;
+use App\Models\TelefoneCurriculo;
 use DB;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
@@ -95,15 +99,29 @@ class UserController extends Controller
             'senha' => $password,
         ]);
 
-        $usuario = User::create($dados);
+        try {
+            DB::beginTransaction();
 
-        if (isset($dados['user_recebe_email'])) {
-            unset($dados['user_recebe_email'][0]);
-            foreach ($dados['user_recebe_email'] as $index => $email) {
-                $usuario->UserRecebeEmail()->attach($index, ['ativo' => $email == null ? false : true]);
+            $usuario = User::create($dados);
+
+            if (isset($dados['user_recebe_email'])) {
+                unset($dados['user_recebe_email'][0]);
+                foreach ($dados['user_recebe_email'] as $index => $email) {
+                    $usuario->UserRecebeEmail()->attach($index, ['ativo' => $email == null ? false : true]);
+                }
             }
-        }
 
+            $this->processarTelefones($usuario, $dados['telefones'] ?? []);
+            $this->salvarWhatsappPreferenciasAdmin($usuario, $dados['whatsapp_preferencias'] ?? null);
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'msg' => 'Erro ao cadastrar usuário',
+            ], 400);
+        }
 
         return response()->json([], 201);
 
@@ -120,6 +138,10 @@ class UserController extends Controller
     {
         $this->authorize('usuario_usuarios_update');
         $usuario->load('papel:id,nome', 'Empresa', 'UserRecebeEmail');
+        $usuario->setRelation(
+            'telefones',
+            TelefoneCurriculo::where('curriculo_id', $usuario->id)->get()
+        );
 
         $ids_form = array();
         foreach ($usuario->UserRecebeEmail as $f) {
@@ -130,7 +152,18 @@ class UserController extends Controller
 
         $papeis = Papel::whereEmpresaId($usuario->empresa_id)->NotClinica()->orderBy('nome');
         $cloud = GrupoCloud::whereEmpresaId($usuario->empresa_id)->orderBy('nome')->get();
-        return response()->json(['usuario' => $usuario, 'papeis' => $papeis->get(), 'cloud' => $cloud, 'formulario_vazio' => $formulario_vazio], 200);
+
+        return response()->json([
+            'usuario' => $usuario,
+            'papeis' => $papeis->get(),
+            'cloud' => $cloud,
+            'formulario_vazio' => $formulario_vazio,
+            'whatsapp_liberado' => $this->whatsappLiberadoParaEmpresa((int) $usuario->empresa_id),
+            'whatsapp_preferencias' => app(WhatsappConfigService::class)->listPreferenciasUsuarioForApi(
+                (int) $usuario->id,
+                (int) $usuario->empresa_id,
+            ),
+        ], 200);
     }
 
 
@@ -154,24 +187,42 @@ class UserController extends Controller
                 'erros' => $dadosValidados->errors()
             ], 400);
         } else {
-            if (isset($dados['user_recebe_email'])) {
-                if (count($usuario->UserRecebeEmail) == 0) {
-                    unset($dados['user_recebe_email'][0]);
-                    foreach ($dados['user_recebe_email'] as $index => $email) {
-                        $usuario->UserRecebeEmail()->attach($index, ['ativo' => $email == null ? false : true]);
-                    }
-                } else if (count($usuario->UserRecebeEmail) < count($dados['user_recebe_email'])) {
-                    foreach ($dados['user_recebe_email'] as $index => $email) {
-                        $usuario->UserRecebeEmail()->detach($index);
-                        $usuario->UserRecebeEmail()->attach($index, ['ativo' => $email == null ? false : true]);
-                    }
-                } else {
-                    foreach ($dados['user_recebe_email'] as $index => $email) {
-                        $usuario->UserRecebeEmail()->updateExistingPivot($index, ['ativo' => $email]);
+            try {
+                DB::beginTransaction();
+
+                if (isset($dados['user_recebe_email'])) {
+                    if (count($usuario->UserRecebeEmail) == 0) {
+                        unset($dados['user_recebe_email'][0]);
+                        foreach ($dados['user_recebe_email'] as $index => $email) {
+                            $usuario->UserRecebeEmail()->attach($index, ['ativo' => $email == null ? false : true]);
+                        }
+                    } else if (count($usuario->UserRecebeEmail) < count($dados['user_recebe_email'])) {
+                        foreach ($dados['user_recebe_email'] as $index => $email) {
+                            $usuario->UserRecebeEmail()->detach($index);
+                            $usuario->UserRecebeEmail()->attach($index, ['ativo' => $email == null ? false : true]);
+                        }
+                    } else {
+                        foreach ($dados['user_recebe_email'] as $index => $email) {
+                            $usuario->UserRecebeEmail()->updateExistingPivot($index, ['ativo' => $email]);
+                        }
                     }
                 }
+
+                $this->excluirTelefones($usuario, $dados['telefonesDelete'] ?? []);
+                $this->processarTelefones($usuario, $dados['telefones'] ?? []);
+                $this->salvarWhatsappPreferenciasAdmin($usuario, $dados['whatsapp_preferencias'] ?? null);
+
+                $usuario->update($dados);
+
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+
+                return response()->json([
+                    'msg' => 'Erro ao atualizar os dados do usuário',
+                ], 400);
             }
-            $usuario->update($dados);
+
             return response()->json([], 201);
         }
     }
@@ -208,6 +259,8 @@ class UserController extends Controller
                 'user_id' => auth()->id(),
                 'nome' => auth()->user()->nome,
                 'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
+                'podeConfigurarWhatsapp' => auth()->user()->can('configuracao_whatsapp') || auth()->user()->can('administracao_clientes'),
+                'podeConfigurarPreferenciasWhatsapp' => auth()->user()->can('preferencias_notificacao_whatsapp'),
                 'temFilial' => (bool)$temfilial,
                 'apelido' => Cliente::select('apelido')->whereId(auth()->user()->empresa_id)->first()->apelido,
                 'cnpjs' => (new Cliente())->Cnpjs(auth()->user()->empresa_id),
@@ -225,6 +278,8 @@ class UserController extends Controller
                 'user_id' => auth()->id(),
                 'nome' => auth()->user()->nome,
                 'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
+                'podeConfigurarWhatsapp' => auth()->user()->can('configuracao_whatsapp') || auth()->user()->can('administracao_clientes'),
+                'podeConfigurarPreferenciasWhatsapp' => auth()->user()->can('preferencias_notificacao_whatsapp'),
                 'temFilial' => (bool)$temfilial,
                 'apelido' => Cliente::select('apelido')->whereId(auth()->user()->empresa_id)->first()->apelido,
                 'cnpjs' => (new Cliente())->Cnpjs(auth()->user()->empresa_id),
@@ -529,5 +584,302 @@ class UserController extends Controller
     public function download(Request $request, $arquivo)
     {
         return Arquivo::anexoDownload(Arquivo::DISCO_PERFIL_USUARIO, $arquivo);
+    }
+
+    public function telefoneDeveAtualizar()
+    {
+        $usuario = auth()->user();
+
+        if (!$usuario->termos) {
+            return response()->json(['mostrar' => false]);
+        }
+
+        $status = $this->statusTelefoneUsuario($usuario);
+
+        if (!$status['precisa']) {
+            return response()->json(['mostrar' => false]);
+        }
+
+        $mensagens = [
+            'sem_telefone' => 'Você ainda não possui telefone cadastrado. Atualize seus dados para continuar utilizando a plataforma.',
+            'sem_principal' => 'Nenhum telefone está marcado como principal. Marque um contato principal para continuar.',
+        ];
+
+        return response()->json([
+            'mostrar' => true,
+            'motivo' => $status['motivo'],
+            'mensagem' => $mensagens[$status['motivo']] ?? '',
+            'telefones' => $status['telefones']->values(),
+        ]);
+    }
+
+    public function atualizarTelefoneUsuario(Request $request)
+    {
+        $usuario = auth()->user();
+        $dados = $request->input();
+        $telefones = $dados['telefones'] ?? [];
+
+        $telefonesComNumero = array_values(array_filter($telefones, function ($telefone) {
+            return trim((string) ($telefone['numero'] ?? '')) !== '';
+        }));
+
+        if (count($telefonesComNumero) === 0) {
+            return response()->json(['msg' => 'Informe pelo menos um telefone'], 400);
+        }
+
+        $temPrincipal = collect($telefonesComNumero)->contains(function ($telefone) {
+            return filter_var($telefone['principal'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        });
+
+        if (!$temPrincipal) {
+            return response()->json(['msg' => 'Marque um telefone como principal'], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+            $this->excluirTelefones($usuario, $dados['telefonesDelete'] ?? []);
+            $this->processarTelefones($usuario, $telefones);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json(['msg' => 'Erro ao atualizar telefone'], 400);
+        }
+
+        $status = $this->statusTelefoneUsuario($usuario->fresh());
+        if ($status['precisa']) {
+            return response()->json(['msg' => 'Não foi possível validar o telefone principal'], 400);
+        }
+
+        return response()->json([], 201);
+    }
+
+    public function whatsappPreferenciasModelo(Request $request, WhatsappConfigService $configService)
+    {
+        $this->authorize('usuario_usuarios');
+
+        $empresaId = $this->resolverEmpresaIdParaPreferencias($request);
+
+        return response()->json([
+            'whatsapp_liberado' => $this->whatsappLiberadoParaEmpresa($empresaId),
+            'preferencias' => $this->preferenciasPadraoParaEmpresa($configService, $empresaId),
+        ]);
+    }
+
+    public function showWhatsappPreferencias(WhatsappConfigService $configService)
+    {
+        $user = auth()->user();
+
+        if (!$user->can('preferencias_notificacao_whatsapp')) {
+            abort(403, 'Sem permissão para configurar preferências de WhatsApp.');
+        }
+
+        return response()->json([
+            'whatsapp_liberado' => (bool) ClienteConfig::query()
+                ->where('cliente_id', $user->empresa_id)
+                ->value('envia_whatsapp'),
+            'preferencias' => $configService->listPreferenciasUsuarioForApi(
+                (int) $user->id,
+                (int) $user->empresa_id,
+            ),
+        ]);
+    }
+
+    public function updateWhatsappPreferencias(
+        WhatsappPreferenciasUsuarioRequest $request,
+        WhatsappConfigService $configService,
+    ) {
+        $user = auth()->user();
+        $configService->savePreferenciasUsuario((int) $user->id, $request->input('preferencias', []));
+
+        return response()->json([
+            'success' => true,
+            'preferencias' => $configService->listPreferenciasUsuarioForApi(
+                (int) $user->id,
+                (int) $user->empresa_id,
+            ),
+        ]);
+    }
+
+    private function statusTelefoneUsuario(User $usuario): array
+    {
+        $telefones = TelefoneCurriculo::where('curriculo_id', $usuario->id)->get();
+        $telefonesValidos = $telefones->filter(function ($telefone) {
+            return trim((string) $telefone->numero) !== '';
+        });
+
+        if ($telefonesValidos->isEmpty()) {
+            return [
+                'precisa' => true,
+                'motivo' => 'sem_telefone',
+                'telefones' => $telefones,
+            ];
+        }
+
+        $temPrincipal = $telefonesValidos->contains(function ($telefone) {
+            return (bool) $telefone->principal;
+        });
+
+        if (!$temPrincipal) {
+            return [
+                'precisa' => true,
+                'motivo' => 'sem_principal',
+                'telefones' => $telefones,
+            ];
+        }
+
+        return [
+            'precisa' => false,
+            'motivo' => null,
+            'telefones' => $telefones,
+        ];
+    }
+
+    private function processarTelefones(User $usuario, array $telefones): void
+    {
+        $this->garantirCurriculoUsuario($usuario);
+
+        foreach ($telefones as $telefone) {
+            if (empty($telefone['numero'])) {
+                continue;
+            }
+
+            $dados = [
+                'tipo' => $telefone['tipo'] ?? TelefoneCurriculo::TIPO_CELULAR,
+                'pais' => $telefone['pais'] ?? '55',
+                'numero' => $telefone['numero'],
+                'ramal' => $telefone['ramal'] ?? null,
+                'detalhe' => $telefone['detalhe'] ?? null,
+                'principal' => filter_var($telefone['principal'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'curriculo_id' => $usuario->id,
+            ];
+
+            if (!empty($telefone['id']) && (int) $telefone['id'] > 0) {
+                $telefoneExistente = TelefoneCurriculo::where('id', $telefone['id'])
+                    ->where('curriculo_id', $usuario->id)
+                    ->first();
+
+                if (!$telefoneExistente) {
+                    continue;
+                }
+
+                $dadosAnteriores = $telefoneExistente->toArray();
+                $telefoneExistente->update($dados);
+
+                RecrutamentoHistorico::registrar(
+                    $usuario->id,
+                    RecrutamentoHistorico::ACAO_TELEFONE_ATUALIZADO,
+                    RecrutamentoHistorico::MODULO_TELEFONE,
+                    null,
+                    "Telefone {$dados['numero']} foi atualizado",
+                    $dadosAnteriores,
+                    $telefoneExistente->fresh()->toArray()
+                );
+            } else {
+                $novoTelefone = TelefoneCurriculo::create($dados);
+
+                RecrutamentoHistorico::registrar(
+                    $usuario->id,
+                    RecrutamentoHistorico::ACAO_TELEFONE_ADICIONADO,
+                    RecrutamentoHistorico::MODULO_TELEFONE,
+                    null,
+                    "Telefone {$dados['numero']} foi adicionado",
+                    null,
+                    $novoTelefone->toArray()
+                );
+            }
+        }
+    }
+
+    private function excluirTelefones(User $usuario, array $telefonesDelete): void
+    {
+        foreach ($telefonesDelete as $telefoneId) {
+            $telefone = TelefoneCurriculo::where('id', $telefoneId)
+                ->where('curriculo_id', $usuario->id)
+                ->first();
+
+            if (!$telefone) {
+                continue;
+            }
+
+            RecrutamentoHistorico::registrar(
+                $usuario->id,
+                RecrutamentoHistorico::ACAO_TELEFONE_REMOVIDO,
+                RecrutamentoHistorico::MODULO_TELEFONE,
+                null,
+                "Telefone {$telefone->numero} foi removido",
+                $telefone->toArray(),
+                null
+            );
+
+            $telefone->delete();
+        }
+    }
+
+    private function garantirCurriculoUsuario(User $usuario): void
+    {
+        $curriculoExiste = Curriculo::withoutGlobalScopes()
+            ->where('id', $usuario->id)
+            ->exists();
+
+        if ($curriculoExiste) {
+            return;
+        }
+
+        Curriculo::withoutGlobalScopes()->create([
+            'id' => $usuario->id,
+            'cpf' => $this->cpfPlaceholderUsuario($usuario->id),
+            'nome' => $usuario->nome,
+            'email' => $usuario->login,
+            'nascimento' => '1900-01-01',
+        ]);
+    }
+
+    private function resolverEmpresaIdParaPreferencias(Request $request): int
+    {
+        $empresaId = (int) ($request->input('empresa_id') ?: auth()->user()->empresa_id);
+
+        if (
+            auth()->user()->empresa_id !== User::MYBP_EMPRESA_ID
+            && $empresaId !== (int) auth()->user()->empresa_id
+        ) {
+            $empresaId = (int) auth()->user()->empresa_id;
+        }
+
+        return $empresaId;
+    }
+
+    private function whatsappLiberadoParaEmpresa(int $empresaId): bool
+    {
+        return (bool) ClienteConfig::query()
+            ->where('cliente_id', $empresaId)
+            ->value('envia_whatsapp');
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function preferenciasPadraoParaEmpresa(WhatsappConfigService $configService, int $empresaId): array
+    {
+        return array_map(static function (array $item) {
+            return [
+                'modulo' => $item['modulo'],
+                'receber' => true,
+                'habilitado_empresa' => (bool) $item['habilitado'],
+                'tipos' => $item['tipos'],
+            ];
+        }, $configService->listModulosHabilitadosForApi($empresaId));
+    }
+
+    private function salvarWhatsappPreferenciasAdmin(User $usuario, mixed $preferencias): void
+    {
+        if (!is_array($preferencias)) {
+            return;
+        }
+
+        app(WhatsappConfigService::class)->savePreferenciasUsuario((int) $usuario->id, $preferencias);
+    }
+
+    private function cpfPlaceholderUsuario(int $userId): string
+    {
+        return '9' . str_pad((string) $userId, 10, '0', STR_PAD_LEFT);
     }
 }

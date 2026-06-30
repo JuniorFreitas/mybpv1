@@ -239,6 +239,9 @@ mix.js('resources/js/app.js', 'public/js')
     //Aprovação Extra Config
     .js('resources/js/g/administracao/aprovacao-extra-config/app.js', 'public/js/g/aprovacao-extra-config/')
 
+    //Configurações WhatsApp
+    .js('resources/js/g/configuracoes/whatsapp/app.js', 'public/js/g/configuracoes/whatsapp/')
+
     .copyDirectory('resources/js/tinymce', 'public/js/tinymce')
     .vue({ version: 3 })
 

@@ -3,6 +3,9 @@
 namespace App\Services\Entrevistas;
 
 use App\Classes\ZapNotificacao;
+use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
+use App\Domain\Whatsapp\Services\WhatsappMessageFactory;
+use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
 use App\Models\LogHistorico;
 use App\Models\ParecerRota;
 use App\Models\TelefoneCurriculo;
@@ -18,19 +21,17 @@ class ParecerRotaWhatsappService
         $user->loadMissing('Empresa');
 
         $nome = $parecer->FeedbackCurriculo?->Curriculo?->nome ?? 'Candidato';
-        $rota = $this->valorOuNaoInformado($parecer->qual);
-        $bairro = $this->valorOuNaoInformado($parecer->bairro_rota);
-        $ponto = $this->valorOuNaoInformado($parecer->ponto_referencia_rota);
-        $empresa = $user->Empresa?->razao_social ?? 'Não informado';
 
-        return "Prezado(a) sr(a) *{$nome}*, Tudo bem?\n\n"
-            . "Seguem as informações da rota de transporte:\n\n"
-            . "🚌 Rota: *{$rota}*\n"
-            . "📍 Bairro: *{$bairro}*\n"
-            . "📌 Ponto de referência: *{$ponto}*\n"
-            . "Atenciosamente,\n\n"
-            . "Equipe de Transporte\n"
-            . "*{$empresa}*";
+        return app(WhatsappMessageFactory::class)->render(
+            TipoMensagemWhatsapp::ParecerRotaTransporte,
+            (int) $user->empresa_id,
+            [
+                'nome_destinatario' => $nome,
+                'rota' => $this->valorOuNaoInformado($parecer->qual),
+                'bairro' => $this->valorOuNaoInformado($parecer->bairro_rota),
+                'ponto_referencia' => $this->valorOuNaoInformado($parecer->ponto_referencia_rota),
+            ]
+        );
     }
 
     public function montarAcaoLog(ParecerRota $parecer, string $telefoneMascara): string
@@ -81,8 +82,13 @@ class ParecerRotaWhatsappService
             throw new InvalidArgumentException('O telefone deve ser do tipo WhatsApp.');
         }
 
-        if (!$user->enviaWhatsApp()) {
-            throw new InvalidArgumentException('Envio de WhatsApp não habilitado para esta empresa.');
+        if (!app(WhatsappNotificationGateService::class)->podeEnviar(
+            TipoMensagemWhatsapp::ParecerRotaTransporte,
+            (int) $user->empresa_id,
+        )) {
+            throw new InvalidArgumentException(
+                'Envio de WhatsApp não permitido: empresa sem WhatsApp liberado ou módulo de Transporte desativado.',
+            );
         }
 
         $parecer->loadMissing('FeedbackCurriculo');
@@ -108,6 +114,10 @@ class ParecerRotaWhatsappService
                 'enviado_id' => $curriculoId,
                 'telefone' => $telefoneSalvo->sonumero,
                 'mensagem' => $mensagem,
+                '_whatsapp_meta' => ZapNotificacao::meta(
+                    TipoMensagemWhatsapp::ParecerRotaTransporte,
+                    (int) $user->empresa_id,
+                ),
             ]);
 
             LogHistorico::createLog(

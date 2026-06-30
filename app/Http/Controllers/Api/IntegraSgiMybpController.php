@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Classes\ZapNotificacao;
+use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
+use App\Domain\Whatsapp\Services\WhatsappCurriculoTelefoneResolver;
+use App\Domain\Whatsapp\Services\WhatsappMessageFactory;
+use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
 use App\Http\Controllers\Controller;
 use App\Jobs\JobEnvioCartaOferta;
 use App\Models\Admissao;
@@ -384,20 +388,19 @@ class IntegraSgiMybpController extends Controller
                 $curriculo->update($dadosCurriculo);
             }
 
-            //cria telefone
             if ($curriculo->Telefones()->count() == 0) {
-                $telefone = $curriculo->Telefones()->create([
+                $curriculo->Telefones()->create([
                     'tipo' => $curriculoDados['telefone']['tipo'],
                     'pais' => $curriculoDados['telefone']['pais'],
                     'numero' => $curriculoDados['telefone']['numero'],
                     'ramal' => $curriculoDados['telefone']['ramal'],
                     'detalhe' => $curriculoDados['telefone']['detalhe'],
-                    'principal' => true
+                    'principal' => true,
                 ]);
-            } else {
-                $telefone = $curriculo->Telefones()->first();
             }
 
+            $telefoneWhatsapp = app(WhatsappCurriculoTelefoneResolver::class)
+                ->resolverPrincipalWhatsapp((int) $curriculo->id);
 
             $vagaAbertaSelecionada = VagasAbertas::withoutGlobalScopes()->find($curriculoDados['vaga_pretendida']);
 
@@ -426,8 +429,14 @@ class IntegraSgiMybpController extends Controller
                 'url_documento' => $link_carta_oferta,
             ]);
 
-            if ($telefone->tipo == TelefoneCurriculo::TIPO_WHATS) {
-                $dados['telefone'] = $telefone->sonumero;
+            if (
+                $telefoneWhatsapp
+                && app(WhatsappNotificationGateService::class)->podeEnviar(
+                    TipoMensagemWhatsapp::CartaOfertaSgi,
+                    (int) $empresa_id,
+                )
+            ) {
+                $dados['telefone'] = $telefoneWhatsapp->sonumero;
 
                 $ambiente = env('AMBIENTE', 'local') == 'prod' ?: 'local';
                 if ($ambiente != 'prod') {
@@ -435,17 +444,24 @@ class IntegraSgiMybpController extends Controller
                     $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '559899023762';
                 }
 
-                $mensagemWhats = "Olá, " . $curriculo->nome . "!\n\n";
-                $mensagemWhats .= "Para continuidade no processo, segue o link abaixo para que seja anexada a *CARTA OFERTA ASSINADA*.";
-                $mensagemWhats .= "\n\n" . $link_carta_oferta;
-                $mensagemWhats .= "\n\n*Atenção:* A carta oferta deve ser assinada até 24h úteis";
-                $mensagemWhats .= "\n\nAtenciosamente,\n";
-                $mensagemWhats .= "*Time Recrutamento e Seleção BPSE*\n";
+                $mensagemWhats = app(WhatsappMessageFactory::class)->render(
+                    TipoMensagemWhatsapp::CartaOfertaSgi,
+                    (int) $empresa_id,
+                    [
+                        'nome_destinatario' => $curriculo->nome,
+                        'url_carta' => $link_carta_oferta,
+                        'prazo_resposta' => '24h úteis',
+                    ]
+                );
 
                 (new ZapNotificacao())->enviar([
                     'enviado_id' => 1,
                     'telefone' => preg_replace('/[^0-9]/', '', $dados['telefone']),
                     'mensagem' => $mensagemWhats,
+                    '_whatsapp_meta' => ZapNotificacao::meta(
+                        TipoMensagemWhatsapp::CartaOfertaSgi,
+                        (int) $empresa_id,
+                    ),
                 ]);
             }
 

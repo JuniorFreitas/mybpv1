@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\JobEnviaZap;
+use App\Classes\ZapNotificacao;
+use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
+use App\Domain\Whatsapp\Services\WhatsappCurriculoTelefoneResolver;
+use App\Domain\Whatsapp\Services\WhatsappMessageFactory;
+use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
 use App\Jobs\JobExportaExcel;
 use App\Jobs\Recrutamento\JobDesclassificacao;
 use App\Jobs\Recrutamento\JobProva;
@@ -274,8 +278,7 @@ class RecrutamentoController extends Controller
         $requestData['user_envia_whatsapp'] = null;
 
         // Configurar WhatsApp se permitido
-        $whatsappConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
-        $whatsappEnabled = !empty($whatsappConfig) && $whatsappConfig->envia_whatsapp;
+        $whatsappEnabled = $this->podeEnviarWhatsappRecrutamento(TipoMensagemWhatsapp::RecrutamentoSelecao);
 
         if ($requestData['contato_realizado'] && $whatsappEnabled) {
             $requestData['envia_whatsapp'] = $requestData['envia_whatsapp'] == 'true';
@@ -515,20 +518,24 @@ class RecrutamentoController extends Controller
      */
     private function sendWhatsAppSelectionMessage(array $requestData, array $curriculumData, Cliente $empresa, Curriculo $curriculo): void
     {
-        $whatsappConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
-        $whatsappEnabled = !empty($whatsappConfig) && $whatsappConfig->envia_whatsapp;
+        $whatsappEnabled = $this->podeEnviarWhatsappRecrutamento(TipoMensagemWhatsapp::RecrutamentoSelecao);
 
         if ($requestData['contato_realizado'] && $requestData['envia_whatsapp'] && $whatsappEnabled) {
             $vagaAbertaId = isset($requestData['vaga_aberta']['id']) ? $requestData['vaga_aberta']['id'] : $requestData['vagas_abertas_id'];
             $vagaAberta = VagasAbertas::find($vagaAbertaId);
             $message = $this->buildSelectionWhatsAppMessage($curriculumData, $requestData, $empresa, $vagaAberta);
 
-            $telefonePrincipal = TelefoneCurriculo::whereCurriculoId($curriculo->id)->wherePrincipal(true)->first();
-            if ($telefonePrincipal && $telefonePrincipal->tipo == 'whatsapp') {
-                JobEnviaZap::dispatch([
+            $telefonePrincipal = app(WhatsappCurriculoTelefoneResolver::class)
+                ->resolverPrincipalWhatsapp((int) $curriculo->id);
+            if ($telefonePrincipal) {
+                (new ZapNotificacao())->enviar([
                     'enviado_id' => $curriculo->id,
                     'telefone' => $telefonePrincipal->sonumero,
                     'mensagem' => $message,
+                    '_whatsapp_meta' => ZapNotificacao::meta(
+                        TipoMensagemWhatsapp::RecrutamentoSelecao,
+                        (int) auth()->user()->empresa_id,
+                    ),
                 ]);
             }
         }
@@ -539,18 +546,22 @@ class RecrutamentoController extends Controller
      */
     private function sendWhatsAppSelectionMessageWithJob(array $requestData, array $curriculumData, Cliente $empresa, Curriculo $curriculo, VagasAbertas $vagaAberta): void
     {
-        $whatsappConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
-        $whatsappEnabled = !empty($whatsappConfig) && $whatsappConfig->envia_whatsapp;
+        $whatsappEnabled = $this->podeEnviarWhatsappRecrutamento(TipoMensagemWhatsapp::RecrutamentoSelecao);
 
         if ($requestData['contato_realizado'] && $requestData['envia_whatsapp'] && $whatsappEnabled) {
             $message = $this->buildSelectionWhatsAppMessage($curriculumData, $requestData, $empresa, $vagaAberta);
 
-            $telefonePrincipal = TelefoneCurriculo::whereCurriculoId($curriculo->id)->wherePrincipal(true)->first();
-            if ($telefonePrincipal && $telefonePrincipal->tipo == 'whatsapp') {
-                JobEnviaZap::dispatch([
+            $telefonePrincipal = app(WhatsappCurriculoTelefoneResolver::class)
+                ->resolverPrincipalWhatsapp((int) $curriculo->id);
+            if ($telefonePrincipal) {
+                (new ZapNotificacao())->enviar([
                     'enviado_id' => $curriculo->id,
                     'telefone' => $telefonePrincipal->sonumero,
                     'mensagem' => $message,
+                    '_whatsapp_meta' => ZapNotificacao::meta(
+                        TipoMensagemWhatsapp::RecrutamentoSelecao,
+                        (int) auth()->user()->empresa_id,
+                    ),
                 ]);
             }
         }
@@ -561,7 +572,17 @@ class RecrutamentoController extends Controller
      */
     private function buildSelectionWhatsAppMessage(array $curriculumData, array $requestData, Cliente $empresa, VagasAbertas $vagaAberta): string
     {
-        return "👏🏽👏🏽Parabéns, *{$curriculumData['nome']}*. Você foi *selecionado(a)*!\nPara a vaga *{$vagaAberta->titulo} - {$vagaAberta->Municipio->nome}/{$vagaAberta->Municipio->uf}* fique atento as próximas etapas do processo!\n\n📆 Data da entrevista: {$requestData['data_entrevista']}\n📍Local da entrevista: {$requestData['local_entrevista']}\n\nSucesso e esperamos vê-lo em breve. \n\n*☺️ Um forte abraço da equipe " . $empresa->razao_social . "*\n\n_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._";
+        return app(WhatsappMessageFactory::class)->render(
+            TipoMensagemWhatsapp::RecrutamentoSelecao,
+            (int) auth()->user()->empresa_id,
+            [
+                'nome_destinatario' => $curriculumData['nome'],
+                'vaga_titulo' => $vagaAberta->titulo,
+                'vaga_cidade' => $vagaAberta->Municipio->nome . '/' . $vagaAberta->Municipio->uf,
+                'data_entrevista' => $requestData['data_entrevista'],
+                'local_entrevista' => $requestData['local_entrevista'],
+            ]
+        );
     }
 
     /**
@@ -620,19 +641,23 @@ class RecrutamentoController extends Controller
      */
     private function sendExamWhatsAppMessage(array $requestData, array $curriculumData, Curriculo $curriculo, $provas): void
     {
-        $whatsappConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
-        $whatsappEnabled = !empty($whatsappConfig) && $whatsappConfig->envia_whatsapp;
+        $whatsappEnabled = $this->podeEnviarWhatsappRecrutamento(TipoMensagemWhatsapp::RecrutamentoProvas);
 
         if ($requestData['contato_realizado'] && $requestData['envia_whatsapp'] && $whatsappEnabled) {
             $quantidadeProvas = count($provas);
             $message = $this->buildExamWhatsAppMessage($curriculumData, $requestData, $quantidadeProvas, $provas);
 
-            $telefonePrincipal = TelefoneCurriculo::whereCurriculoId($curriculo->id)->wherePrincipal(true)->first();
-            if ($telefonePrincipal && $telefonePrincipal->tipo == 'whatsapp') {
-                JobEnviaZap::dispatch([
+            $telefonePrincipal = app(WhatsappCurriculoTelefoneResolver::class)
+                ->resolverPrincipalWhatsapp((int) $curriculo->id);
+            if ($telefonePrincipal) {
+                (new ZapNotificacao())->enviar([
                     'enviado_id' => $curriculo->id,
                     'telefone' => $telefonePrincipal->sonumero,
                     'mensagem' => $message,
+                    '_whatsapp_meta' => ZapNotificacao::meta(
+                        TipoMensagemWhatsapp::RecrutamentoProvas,
+                        (int) auth()->user()->empresa_id,
+                    ),
                 ]);
             }
         }
@@ -643,19 +668,25 @@ class RecrutamentoController extends Controller
      */
     private function buildExamWhatsAppMessage(array $curriculumData, array $requestData, int $quantidadeProvas, $provas): string
     {
-        if ($quantidadeProvas > 1) {
-            $message = "Parabéns, *{$curriculumData['nome']}*. Você foi *selecionado(a)*!\nVocê está recebendo um convite para realizar as avaliações abaixo relacionadas ao seu processo seletivo para a vaga de *{$requestData['autocomplete_label_vaga_modal']}* através da plataforma MyBP.\nUma vez iniciado o teste não existe a possibilidade de pausar, portanto se prepare e reserve um tempo para preenchê-los.\n\n";
-        } else {
-            $message = "Parabéns, *{$curriculumData['nome']}*. Você foi *selecionado(a)*!\nVocê está recebendo um convite para realizar a avaliação abaixo relacionada ao seu processo seletivo para a vaga de *{$requestData['autocomplete_label_vaga_modal']}* através da plataforma MyBP.\nUma vez iniciado o teste não existe a possibilidade de pausar, portanto se prepare e reserve um tempo para preenchê-los.\n\n";
-        }
-
+        $links = '';
         foreach ($provas as $prova) {
-            $message .= route('provas.prova.simulado', [$prova->vaga_id, $prova->simulado_id, $prova->Simulado->slug]) . "\n";
+            $links .= route('provas.prova.simulado', [$prova->vaga_id, $prova->simulado_id, $prova->Simulado->slug]) . "\n";
         }
 
-        $message .= "\n\nCuidado para não perder o prazo! Esperamos te ver em breve!\n\n*Equipe RH BPSE*";
-
-        return $message;
+        return app(WhatsappMessageFactory::class)->render(
+            TipoMensagemWhatsapp::RecrutamentoProvas,
+            (int) auth()->user()->empresa_id,
+            [
+                'nome_destinatario' => $curriculumData['nome'],
+                'vaga_titulo' => $requestData['autocomplete_label_vaga_modal'],
+                'intro_provas' => WhatsappMessageFactory::buildIntroProvas(
+                    $curriculumData['nome'],
+                    $requestData['autocomplete_label_vaga_modal'],
+                    $quantidadeProvas
+                ),
+                'links_provas' => trim($links),
+            ]
+        );
     }
 
     /**
@@ -702,8 +733,7 @@ class RecrutamentoController extends Controller
     {
         $resultado = $this->filtro($request)->paginate($request->pages ?: 300);
 
-        $whatsappConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
-        $whatsappEnabled = !empty($whatsappConfig) ? $whatsappConfig->envia_whatsapp : false;
+        $whatsappEnabled = $this->podeEnviarWhatsappRecrutamento(TipoMensagemWhatsapp::RecrutamentoSelecao);
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -942,5 +972,13 @@ class RecrutamentoController extends Controller
                 'per_page' => $historico->perPage(),
             ]
         ]);
+    }
+
+    private function podeEnviarWhatsappRecrutamento(TipoMensagemWhatsapp $tipo): bool
+    {
+        return app(WhatsappNotificationGateService::class)->podeEnviar(
+            $tipo,
+            (int) auth()->user()->empresa_id,
+        );
     }
 }

@@ -124,13 +124,21 @@
                                     </div>
 
                                     <div class="custom-control custom-switch float-left ml-3"
-                                         v-if="whatsappLiberado && dados.tel_principal.tipo ==='whatsapp'">
+                                         v-if="whatsappPodeNotificar('exame_encaminhamento', dados.tel_principal)">
                                         <input type="checkbox" v-model="form.envia_whatsapp"
                                                class="custom-control-input"
                                                id="envia_whatsapp">
                                         <label class="custom-control-label"
                                                for="envia_whatsapp">Enviar WhatsApp</label>
                                     </div>
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-info btn-sm float-left ml-2"
+                                        v-if="whatsappPodeNotificar('exame_encaminhamento', dados.tel_principal)"
+                                        @click="abrirPreviewWhatsapp"
+                                    >
+                                        <i class="fab fa-whatsapp"></i> Visualizar mensagem
+                                    </button>
                                 </div>
                             </div>
 
@@ -875,6 +883,12 @@
                         :por-pagina="controle.dados.pages" :dados="controle.dados" @carregou="carregou"
                         @carregando="carregando">
     </controle-paginacao>
+
+    <whatsapp-preview-modal
+        v-model="previewWhatsappAberto"
+        :tipo-mensagem="previewWhatsappTipo"
+        :contexto="previewWhatsappContexto"
+    />
 </div>
 </template>
 
@@ -968,6 +982,9 @@ export default defineComponent({
             historico: [],
             listaPcmsos: [],
             listaExameTipos: [],
+            previewWhatsappAberto: false,
+            previewWhatsappTipo: 'exame_encaminhamento',
+            previewWhatsappContexto: {},
             lista_ccs: null,
             controle: {
                 carregando: true,
@@ -1230,6 +1247,21 @@ export default defineComponent({
                 this.$refs.componente.atual = 1
                 this.$refs.componente.buscar && this.$refs.componente.buscar()
             }
+        },
+        abrirPreviewWhatsapp() {
+            const empExame = this.listaEmpresasExames.find((item) => item.id === this.form.empresa_exame_id)
+            const tipoExame = this.listaExameTipos.find((item) => item.id === this.form.exame_tipo_id)
+            this.previewWhatsappContexto = {
+                nome_destinatario: this.dados.nome,
+                tipo_exame: tipoExame ? tipoExame.label : '',
+                clinica_nome: empExame ? empExame.nome : '',
+                clinica_endereco: empExame?.dados?.endereco?.endereco_completo || '',
+                clinica_telefone: empExame?.dados?.telefone || '',
+                data_encaminhamento: this.form.encaminhamento_data || '',
+                data_realizacao: this.form.encaminhado_exame_data || '',
+            }
+            this.previewWhatsappTipo = 'exame_encaminhamento'
+            this.previewWhatsappAberto = true
         }
     }
 })

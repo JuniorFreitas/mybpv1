@@ -89,6 +89,10 @@
                             href="#nav-dados-filiais"
                             role="tab" aria-controls="nav-dados-filiais" aria-selected="true">FILIAIS</a>
                     </li>
+                    <li class="nav-item" v-if="editando && form.tipo_cliente === 'Cliente'">
+                        <a class="nav-item nav-link" id="nav-whatsapp-tab" data-toggle="tab" href="#nav-whatsapp"
+                            role="tab" aria-controls="nav-whatsapp" aria-selected="false">WHATSAPP</a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-item nav-link" id="nav-config-tab" data-toggle="tab" href="#nav-config"
                             role="tab" aria-controls="nav-config" aria-selected="false">CONFIGURAÇÕES</a>
@@ -939,6 +943,27 @@
                                     </div>
                                 </div>
                             </div>
+                        </fieldset>
+                    </div>
+
+                    <div
+                        class="tab-pane fade"
+                        id="nav-whatsapp"
+                        role="tabpanel"
+                        aria-labelledby="nav-whatsapp-tab"
+                        v-if="editando && form.tipo_cliente === 'Cliente'"
+                    >
+                        <fieldset>
+                            <legend class="text-uppercase">Configurações WhatsApp</legend>
+                            <p class="text-muted small">
+                                Templates, módulos de envio, dados de contato e preferências dos usuários deste cliente.
+                                O envio só ocorre quando "Envia notificação no WhatsApp" estiver habilitado em Configurações.
+                            </p>
+                            <whatsapp-config
+                                v-if="form.id"
+                                :key="'whatsapp-' + form.id"
+                                :empresa-id="form.id"
+                            />
                         </fieldset>
                     </div>
                 </div>

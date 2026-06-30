@@ -770,7 +770,7 @@
                                     <i class="fas fa-eye mr-2 text-info"></i> Visualizar
                                 </a>
                                 <a class="dropdown-item" href="javascript://"
-                                   v-if="whatsappLiberado && entrevista.parecer_rota && entrevista.parecer_rota.tem_rota"
+                                   v-if="whatsappTipoHabilitado('parecer_rota_transporte') && entrevista.parecer_rota && entrevista.parecer_rota.tem_rota"
                                    @click.prevent="abrirModalWhatsapp(entrevista)">
                                     <i class="fab fa-whatsapp mr-2 text-success"></i> Enviar WhatsApp
                                 </a>

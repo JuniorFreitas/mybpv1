@@ -10,12 +10,16 @@
         "homol": "cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=8192 dotenv -e .env.homol -- node_modules/webpack/bin/webpack.js --config=node_modules/laravel-mix/setup/webpack.config.js",
         "prod": "cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=8192 dotenv -e .env.prod -- node_modules/webpack/bin/webpack.js --config=node_modules/laravel-mix/setup/webpack.config.js",
         "prod_old": "npm run production",
-        "production": "cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=8192 node_modules/webpack/bin/webpack.js --config=node_modules/laravel-mix/setup/webpack.config.js"
+        "production": "cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=8192 node_modules/webpack/bin/webpack.js --config=node_modules/laravel-mix/setup/webpack.config.js",
+        "test:e2e:whatsapp:login": "PLAYWRIGHT_FORCE_LOGIN=1 playwright test tests/e2e/whatsapp/auth.setup.ts --project=setup",
+        "test:e2e:whatsapp": "playwright test tests/e2e/whatsapp --project=whatsapp-chrome",
+        "test:e2e:whatsapp:ui": "playwright test tests/e2e/whatsapp --ui"
     },
     "engines": {
         "node": ">=24"
     },
     "devDependencies": {
+        "@playwright/test": "^1.61.1",
         "@vue/compiler-sfc": "^3.5.29",
         "axios": "^1.13.6",
         "bootstrap": "^4.6.2",

@@ -361,6 +361,8 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'administracao_aprovacao_extra_config_update', 'descricao' => 'Pode alterar uma Configuração de Aprovação Extra'];
         $lista[] = ['nome' => 'administracao_aprovacao_extra_config_delete', 'descricao' => 'Pode apagar uma Configuração de Aprovação Extra'];
         $lista[] = ['nome' => 'cadastro_customizacoes_aprovacao_extra', 'descricao' => 'Configurar Aprovações Extras (menu Customizações)'];
+        $lista[] = ['nome' => 'configuracao_whatsapp', 'descricao' => 'Configurar templates e dados de contato WhatsApp (menu Customizações)'];
+        $lista[] = ['nome' => 'preferencias_notificacao_whatsapp', 'descricao' => 'Escolher quais notificações WhatsApp deseja receber da empresa'];
 
         //Relatorios
         $lista[] = ['nome' => 'relatorio_relatorios', 'descricao' => 'Acessar Relatórios'];

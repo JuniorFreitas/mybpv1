@@ -3,6 +3,9 @@
 namespace Tests\Unit\Services\Entrevistas;
 
 use App\Classes\ZapNotificacao;
+use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
+use App\Domain\Whatsapp\Services\WhatsappMessageFactory;
+use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
 use App\Jobs\JobSendNotificacaoWhatsApp;
 use App\Models\Cliente;
 use App\Models\Curriculo;
@@ -11,7 +14,6 @@ use App\Models\ParecerRota;
 use App\Models\TelefoneCurriculo;
 use App\Models\User;
 use App\Services\Entrevistas\ParecerRotaWhatsappService;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use InvalidArgumentException;
 use Mockery;
@@ -48,12 +50,27 @@ class ParecerRotaWhatsappServiceTest extends TestCase
         $parecer->setRelation('FeedbackCurriculo', $feedback);
 
         $empresa = new Cliente(['razao_social' => 'Empresa Teste LTDA']);
-        $user = new User();
+        $user = new User(['empresa_id' => 1]);
         $user->setRelation('Empresa', $empresa);
+
+        $factory = Mockery::mock(WhatsappMessageFactory::class);
+        $factory->shouldReceive('render')
+            ->once()
+            ->with(
+                TipoMensagemWhatsapp::ParecerRotaTransporte,
+                1,
+                Mockery::on(function (array $contexto) {
+                    return $contexto['nome_destinatario'] === 'MARIA SILVA'
+                        && $contexto['rota'] === 'Linha 10';
+                })
+            )
+            ->andReturn("Prezado(a) sr(a) *Maria Silva*, Tudo bem?\n\nSeguem as informações da rota de transporte:\n\n🚌 Rota: *Linha 10*\n📍 Bairro: *Centro*\n📌 Ponto de referência: *Praça Central*\nAtenciosamente,\n\nEquipe de Transporte\n*Empresa Teste LTDA*");
+
+        $this->app->instance(WhatsappMessageFactory::class, $factory);
 
         $mensagem = $this->service->montarMensagem($parecer, $user);
 
-        $this->assertStringContainsString('MARIA SILVA', $mensagem);
+        $this->assertStringContainsString('Maria Silva', $mensagem);
         $this->assertStringContainsString('Linha 10', $mensagem);
         $this->assertStringContainsString('Centro', $mensagem);
         $this->assertStringContainsString('Praça Central', $mensagem);
@@ -83,14 +100,21 @@ class ParecerRotaWhatsappServiceTest extends TestCase
         $this->service->enviar($parecer, '98999023762', TelefoneCurriculo::TIPO_CELULAR, $user);
     }
 
-    public function testEnviarLancaExcecaoQuandoWhatsappDesabilitadoNaEmpresa(): void
+    public function testEnviarLancaExcecaoQuandoEmpresaSemWhatsappOuModuloDesativado(): void
     {
         $parecer = new ParecerRota(['tem_rota' => true]);
-        $user = Mockery::mock(User::class);
-        $user->shouldReceive('enviaWhatsApp')->once()->andReturn(false);
+        $user = Mockery::mock(User::class)->makePartial();
+        $user->empresa_id = 10;
+
+        $gate = Mockery::mock(WhatsappNotificationGateService::class);
+        $gate->shouldReceive('podeEnviar')
+            ->once()
+            ->with(TipoMensagemWhatsapp::ParecerRotaTransporte, 10)
+            ->andReturn(false);
+        $this->app->instance(WhatsappNotificationGateService::class, $gate);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Envio de WhatsApp não habilitado para esta empresa.');
+        $this->expectExceptionMessage('empresa sem WhatsApp liberado ou módulo de Transporte desativado');
 
         $this->service->enviar($parecer, '98999023762', TelefoneCurriculo::TIPO_WHATS, $user);
     }
@@ -125,18 +149,25 @@ class ParecerRotaWhatsappServiceTest extends TestCase
         $_ENV['AMBIENTE'] = 'local';
         $_SERVER['AMBIENTE'] = 'local';
 
-        DB::shouldReceive('table')->once()->with('zap_numeros')->andReturnSelf();
-        DB::shouldReceive('where')->once()->with('ativo', true)->andReturnSelf();
-        DB::shouldReceive('first')->once()->andReturn(null);
+        $this->app->forgetInstance(WhatsappNotificationGateService::class);
+
+        $gate = Mockery::mock(WhatsappNotificationGateService::class);
+        $gate->shouldReceive('podeEnviar')->once()->andReturn(true);
+        $this->app->instance(WhatsappNotificationGateService::class, $gate);
 
         (new ZapNotificacao())->enviar([
             'enviado_id' => 1,
             'telefone' => '5511999999999',
             'mensagem' => 'teste parecer rota',
+            '_whatsapp_meta' => ZapNotificacao::meta(
+                TipoMensagemWhatsapp::ParecerRotaTransporte,
+                1,
+            ),
         ]);
 
         Queue::assertPushed(JobSendNotificacaoWhatsApp::class, function (JobSendNotificacaoWhatsApp $job) {
-            return $job->dados['telefone'] === '5598999023762';
+            return $job->dados['telefone'] === '5511999999999'
+                && ($job->dados['_whatsapp_meta']['tipo'] ?? null) === TipoMensagemWhatsapp::ParecerRotaTransporte->value;
         });
     }
 }

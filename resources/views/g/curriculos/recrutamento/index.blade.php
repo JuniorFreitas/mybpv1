@@ -370,7 +370,7 @@
                             </div>
                         </div>
 
-                        <template v-if="permite_envio_whatsapp">
+                        <template v-if="permite_envio_whatsapp && telefonePrincipal && telefonePrincipal.tipo === 'whatsapp'">
                             <div class="col-12 col-md-4"
                                  v-if="form_feedback.contato_realizado"
                             >
@@ -385,6 +385,15 @@
                                         <option :value="true">SIM</option>
                                         <option :value="false">NÃO</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4" v-if="form_feedback.contato_realizado && form_feedback.envia_whatsapp">
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <button type="button" class="btn btn-outline-info btn-sm btn-block"
+                                            @click="previewRecrutamentoWhatsapp">
+                                        <i class="fab fa-whatsapp"></i> Visualizar mensagem
+                                    </button>
                                 </div>
                             </div>
                         </template>
@@ -754,6 +763,12 @@
                             :dados="controle.dados"
                             v-on:carregou="carregou" v-on:carregando="carregando"
         ></controle-paginacao>
+
+        <whatsapp-preview-modal
+            v-model="previewWhatsappAberto"
+            :tipo-mensagem="previewWhatsappTipo"
+            :contexto="previewWhatsappContexto"
+        />
     </div>
 @stop
 @push('js')

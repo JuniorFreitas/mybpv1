@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Classes\ZapNotificacao;
+use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
+use App\Domain\Whatsapp\Services\WhatsappCurriculoTelefoneResolver;
+use App\Domain\Whatsapp\Services\WhatsappMessageFactory;
+use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
 use App\Http\Controllers\Api\IntegraSgiMybpController;
 use App\Jobs\AssinaturaDigital\JobProcessarEnvioAssinatura;
 use App\Jobs\Entrevista\JobEnvioDocumento;
@@ -173,7 +177,8 @@ class CartaOfertaGerencialController extends Controller
 
                 \DB::commit();
 
-                $telefone = $cartaOferta->curriculo->Telefones()->where('tipo', TelefoneCurriculo::TIPO_WHATS)->wherePrincipal(true)->first();
+                $telefone = app(WhatsappCurriculoTelefoneResolver::class)
+                    ->resolverPrincipalWhatsapp((int) $cartaOferta->curriculo_id);
                 $urlDocumentos = env('APP_URL') . "/" . auth()->user()->Empresa->apelido . "/documentos";
 
                 if ($request->resposta == CartaOferta::STATUS_ACEITO_RH) {
@@ -186,7 +191,13 @@ class CartaOfertaGerencialController extends Controller
                         'url_checklist' => route('download-checklist', ['empresa' => auth()->user()->Empresa->apelido]),
                     ]);
 
-                    if ($telefone->tipo == TelefoneCurriculo::TIPO_WHATS) {
+                    if (
+                        $telefone
+                        && app(WhatsappNotificationGateService::class)->podeEnviar(
+                            TipoMensagemWhatsapp::CartaOfertaGerencial,
+                            (int) $cartaOferta->empresa_id,
+                        )
+                    ) {
                         $dados['telefone'] = $telefone->sonumero;
 
                         $ambiente = env('AMBIENTE', 'local') == 'prod' ?: 'local';
@@ -195,19 +206,23 @@ class CartaOfertaGerencialController extends Controller
                             $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '559899023762';
                         }
 
-                        $mensagemWhats = "Prezado(a) sr(a), " . $cartaOferta->curriculo->nome . ", tudo bem?";
-                        $mensagemWhats .= "\n\nParabéns por chegado até esta etapa! Você foi aprovado(a) na etapa de entrevista e seleção e agora vamos para a etapa de documentos para admissão.";
-                        $mensagemWhats .= "\n\nEstamos enviando em anexo o PDF do checklist.";
-                        $mensagemWhats .= "\n\nPara continuidade no processo, segue o link abaixo para que seja anexado os documentos conforme descrição.";
-                        $mensagemWhats .= "\n\n" . $urlDocumentos;
-                        $mensagemWhats .= "\n\nDestaca-se que é muito importante que todos os documentos sejam anexados corretamente e sem omissões para que não haja atraso na etapa de documentação, necessária para a continuidade de sua admissão";
-                        $mensagemWhats .= "\n\nAtenciosamente,\n";
-                        $mensagemWhats .= "*Time Recrutamento e Seleção BPSE*\n";
+                        $mensagemWhats = app(WhatsappMessageFactory::class)->render(
+                            TipoMensagemWhatsapp::CartaOfertaGerencial,
+                            (int) $cartaOferta->empresa_id,
+                            [
+                                'nome_destinatario' => $cartaOferta->curriculo->nome,
+                                'url_documentos' => $urlDocumentos,
+                            ]
+                        );
 
                         (new ZapNotificacao())->enviar([
                             'enviado_id' => auth()->id(),
                             'telefone' => preg_replace('/[^0-9]/', '', $dados['telefone']),
                             'mensagem' => $mensagemWhats,
+                            '_whatsapp_meta' => ZapNotificacao::meta(
+                                TipoMensagemWhatsapp::CartaOfertaGerencial,
+                                (int) $cartaOferta->empresa_id,
+                            ),
                             "anexo" => [
                                 "arquivo" => $checklistArquivo,
                                 "tipo" => "pdf"

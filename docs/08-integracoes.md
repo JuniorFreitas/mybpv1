@@ -34,6 +34,8 @@ O sistema usa muitos discos nomeados por domínio funcional, com fallback local 
 - Envio de mensagens e mídia por `ZapDynamusService`.
 - Uso em recrutamento, exames, intermitente e endpoint API dedicado.
 - Disparo normalmente via job `JobSendNotificacaoWhatsApp`.
+- Configuração por empresa (templates, módulos, preferências, gate de envio): ver **[WHATSAPP_CONFIGURACAO_EMPRESA.md](./WHATSAPP_CONFIGURACAO_EMPRESA.md)**.
+- Status de entrega (implementado vs. pendente): **[WHATSAPP_STATUS_ENTREGA.md](./WHATSAPP_STATUS_ENTREGA.md)**.
 
 **Arquivos-base**
 
