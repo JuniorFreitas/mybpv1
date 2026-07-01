@@ -34,7 +34,7 @@ class RecrutamentoController extends Controller
      */
     public function index()
     {
-        $curriculos = Curriculo::count();
+        $curriculos = Curriculo::whereHas('VagaAberta')->count();
         return view('g.curriculos.recrutamento.index', compact('curriculos'));
     }
 
@@ -762,6 +762,7 @@ class RecrutamentoController extends Controller
             'vaga_pretendida', 'pcd', 'uf_vaga', 'municipio_id', 'sexo',
             'estado_civil', 'lido', 'created_at'
         ])
+            ->whereHas('VagaAberta')
             ->with('VagaAberta.VagaSelecionada',
                 'FeedBack:id,curriculo_id,interesse,selecionado,contato_realizado')
             ->doesntHave('FeedBack.parecerRh');

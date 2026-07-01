@@ -161,7 +161,7 @@
                     <legend>Formação</legend>
                     <div class="row">
                         <div class="col-12" style="font-size: 0.8rem;">
-                            <p>Formação: <span v-if="editando">@{{ form.formacao.tipo }}</span></p>
+                            <p>Formação: <span v-if="editando">@{{ form.formacao?.tipo || 'Não informado' }}</span></p>
                             <p>Curso: <span
                                     v-if="editando"
                                 >@{{ form.formacao_curso }} ( @{{ form.formacao_status }} )</span>
@@ -217,7 +217,7 @@
                             <div class="form-group">
                                 <label>Vaga Pretendida</label>
                                 <input type="text" disabled="disabled" class="form-control"
-                                       :value="form.vaga_aberta.vaga_selecionada.nome"
+                                       :value="form.vaga_aberta?.vaga_selecionada?.nome || 'Não informado'"
                                 >
                             </div>
 
@@ -462,7 +462,7 @@
                             </div>
                         </div>
                         <div class="col-12 col-sm-12" style="font-size: 0.8rem;" v-if="feedback && form.lido">
-                            <p>Lido por: <span v-if="editando">@{{ form.usuario.nome }}</span></p>
+                            <p>Lido por: <span v-if="editando">@{{ form.usuario?.nome || 'Não informado' }}</span></p>
                             <p>Em: <span v-if="editando">@{{ form.datalido }}</span></p>
                         </div>
                     </div>
@@ -695,7 +695,7 @@
                         @{{curriculo.uf_vaga ? curriculo.uf_vaga : 'Não informado'}}
                     </td>
                     <td data-label="Vaga">
-                        @{{curriculo.vaga_aberta.vaga_selecionada.nome}}
+                        @{{curriculo.vaga_aberta?.vaga_selecionada?.nome || 'Não informado'}}
                     </td>
                     <td data-label="PCD">
                         @{{curriculo.pcd ? "SIM" : "NÃO"}}

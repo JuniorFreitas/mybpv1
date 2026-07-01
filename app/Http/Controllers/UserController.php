@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domain\Whatsapp\Services\WhatsappConfigService;
 use App\Http\Requests\WhatsappPreferenciasUsuarioRequest;
+use App\Jobs\JobBoasVindas;
 use App\Jobs\JobRecuperaSenha;
 use App\Models\Arquivo;
 use App\Models\Cliente;

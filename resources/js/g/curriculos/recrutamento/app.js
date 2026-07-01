@@ -339,12 +339,28 @@ const app = createApp({
             }
 
             Object.assign(this.form, data)
+            this.normalizarRelacoesFormulario()
 
             if (data.feed_back) {
                 this.processarFeedback(data.feed_back)
             }
 
             this.finalizarCarregamentoFormulario(data)
+        },
+
+        normalizarRelacoesFormulario() {
+            if (!this.form.formacao) {
+                this.form.formacao = {}
+            }
+            if (!this.form.experiencias) {
+                this.form.experiencias = []
+            }
+            if (!this.form.qualificacoes) {
+                this.form.qualificacoes = []
+            }
+            if (!this.form.telefones) {
+                this.form.telefones = []
+            }
         },
 
         processarFeedback(feedbackData) {
