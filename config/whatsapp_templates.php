@@ -3,6 +3,12 @@
 return [
     'cache_ttl_minutes' => 15,
 
+    /** Quando false, jobs de movimentação não disparam WhatsApp (e-mail continua ativo). */
+    'movimentacao_notificacoes_habilitadas' => filter_var(
+        env('WHATSAPP_MOVIMENTACAO_NOTIFICACOES_HABILITADAS', false),
+        FILTER_VALIDATE_BOOLEAN
+    ),
+
     'rodape_padrao' => '_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._',
 
     'max_corpo_length' => 4096,

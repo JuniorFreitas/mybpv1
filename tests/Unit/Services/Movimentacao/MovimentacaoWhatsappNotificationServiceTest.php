@@ -18,9 +18,35 @@ class MovimentacaoWhatsappNotificationServiceTest extends TestCase
         parent::tearDown();
     }
 
+    public function testNaoEnviaQuandoNotificacoesMovimentacaoDesabilitadasGlobalmente(): void
+    {
+        Queue::fake();
+        config(['whatsapp_templates.movimentacao_notificacoes_habilitadas' => false]);
+
+        $gate = Mockery::mock(WhatsappNotificationGateService::class);
+        $gate->shouldNotReceive('podeEnviar');
+
+        $telefoneResolver = Mockery::mock(WhatsappUsuarioTelefoneResolver::class);
+        $telefoneResolver->shouldNotReceive('resolverNumeroEnvio');
+
+        $service = new MovimentacaoWhatsappNotificationService($gate, $telefoneResolver);
+
+        $service->enviarNotificacaoAprovacao(
+            104,
+            ['gestor@empresa.com'],
+            'Férias',
+            'criacao',
+            'Colaborador Teste',
+            'https://mybp.test/movimentacao',
+        );
+
+        Queue::assertNothingPushed();
+    }
+
     public function testNaoEnviaQuandoModuloMovimentacaoDesabilitadoNaEmpresa(): void
     {
         Queue::fake();
+        config(['whatsapp_templates.movimentacao_notificacoes_habilitadas' => true]);
 
         $gate = Mockery::mock(WhatsappNotificationGateService::class);
         $gate->shouldReceive('podeEnviar')

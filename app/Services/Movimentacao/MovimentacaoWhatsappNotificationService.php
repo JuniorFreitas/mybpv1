@@ -27,6 +27,16 @@ class MovimentacaoWhatsappNotificationService
         string $url,
         string $nomeAprovacaoExtra = 'Aprovação Extra'
     ): void {
+        if (!config('whatsapp_templates.movimentacao_notificacoes_habilitadas', false)) {
+            Log::info('WhatsApp não enviado: notificações de movimentação desabilitadas', [
+                'empresa_id' => $empresaId,
+                'modulo' => TipoMensagemWhatsapp::MovimentacaoAprovacao->modulo(),
+                'tipo' => TipoMensagemWhatsapp::MovimentacaoAprovacao->value,
+            ]);
+
+            return;
+        }
+
         if (!$this->gate->podeEnviar(TipoMensagemWhatsapp::MovimentacaoAprovacao, $empresaId)) {
             Log::info('WhatsApp não enviado: módulo desabilitado ou empresa sem permissão', [
                 'empresa_id' => $empresaId,
