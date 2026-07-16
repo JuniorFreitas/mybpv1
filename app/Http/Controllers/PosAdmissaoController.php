@@ -116,7 +116,14 @@ class PosAdmissaoController extends Controller
     public function demissaoPdf($id)
     {
 
-        $dados = Demissao::whereId($id)->with('motivoRescisao', 'tipoAviso')->first();
+        $dados = Demissao::whereId($id)->with(
+            'motivoRescisao',
+            'tipoAviso',
+            'Feedback.Curriculo',
+            'Feedback.Empresa',
+            'Feedback.AvaliacaoNoventaVencimento',
+            'User.DadosEmpresa'
+        )->first();
 
         if ($dados->Feedback->AvaliacaoNoventaVencimento !== null) {
             $datasVencimento = AvaliacaoNoventaVencimento::find($dados->Feedback->AvaliacaoNoventaVencimento->id);
