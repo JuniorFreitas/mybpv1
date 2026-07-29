@@ -2,19 +2,19 @@
 
 namespace App\Jobs\AssinaturaDigital;
 
-use App\Models\Admissao;
 use App\Models\CartaOferta;
 use App\Models\CartaOfertaTemplate;
 use App\Models\Cliente;
 use App\Models\DemissaoPrevista;
 use App\Models\DocumentoContratos;
-use App\Models\EmpresaTemporaria;
 use App\Models\FeedbackCurriculo;
 use App\Models\MedidaAdministrativa;
 use App\Models\Sistema;
 use App\Models\User;
 use App\Services\AssinaturaDigital\AssinaturaDigitalService;
 use App\Services\CartaOferta\CartaOfertaTemplateRenderer;
+use App\Services\Dossie\DossiePdfService;
+use App\Services\Dossie\DossieTipoService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -53,7 +53,7 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
         $this->signatarios = $signatarios;
     }
 
-    public function handle(AssinaturaDigitalService $service): void
+    public function handle(AssinaturaDigitalService $service, DossiePdfService $dossiePdfService, DossieTipoService $dossieTipoService): void
     {
         try {
             Auth::onceUsingId($this->solicitanteId);
@@ -72,7 +72,7 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
                     $this->processarMedida($service);
                     break;
                 case self::TIPO_DOSSIE:
-                    $this->processarDossie($service);
+                    $this->processarDossie($service, $dossiePdfService, $dossieTipoService);
                     break;
                 default:
                     Log::warning('JobProcessarEnvioAssinatura: tipo inválido', ['tipo' => $this->tipo]);
@@ -332,12 +332,20 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
         );
     }
 
-    protected function processarDossie(AssinaturaDigitalService $service): void
-    {
+    protected function processarDossie(
+        AssinaturaDigitalService $service,
+        DossiePdfService $dossiePdfService,
+        DossieTipoService $dossieTipoService
+    ): void {
         $tipoModelo = (string) ($this->payload['tipo_modelo'] ?? '');
         $curriculoId = (int) ($this->payload['curriculo_id'] ?? 0);
         $feedbackId = (int) ($this->payload['feedback_id'] ?? 0);
         if (!$tipoModelo || !$curriculoId || !$feedbackId) {
+            return;
+        }
+
+        if (!$dossieTipoService->permiteAssinatura($tipoModelo, $this->empresaId)) {
+            Log::warning('JobProcessarEnvioAssinatura[dossie]: tipo_modelo sem assinatura', ['tipo_modelo' => $tipoModelo, 'empresa_id' => $this->empresaId]);
             return;
         }
 
@@ -355,37 +363,20 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
             return;
         }
 
-        $tipoAdmissao = Str::slug($colaborador->Admissao->tipo_admissao);
         $usuarioSolicitante = User::select('nome')->find($this->solicitanteId);
-        $dados = [
-            'dados_empresa' => Sistema::getEmpresaFilialMatriz($colaborador->Admissao->centro_custo_filial_id, $colaborador->empresa_id),
-            'dados_colaborador' => $colaborador,
-            'solicitante' => $usuarioSolicitante ? $usuarioSolicitante->nome : 'Sistema',
-        ];
+        $pdf = $dossiePdfService->gerar(
+            $colaborador,
+            $cliente,
+            $tipoModelo,
+            $usuarioSolicitante?->nome ?? 'Sistema'
+        );
 
-        if ($tipoModelo === 'contratotrabalhoassinado') {
-            if (in_array($colaborador->Admissao->tipo_admissao, [Admissao::TIPO_ADMISSAO_TEMPORARIO, Admissao::TIPO_ADMISSAO_INTERMITENTE, Admissao::TIPO_ADMISSAO_DETERMINADO])) {
-                $temporaria = EmpresaTemporaria::whereEmpresaId($colaborador->empresa_id)->first();
-                $pdf = PDF::loadView('pdf.historico.dossie.contratos.' . $tipoAdmissao, compact('dados', 'cliente', 'temporaria'));
-            } else {
-                $view = "pdf.historico.dossie.customizado.{$cliente->apelido}.contratos.{$tipoModelo}";
-                if (view()->exists($view)) {
-                    $pdf = PDF::loadView($view, compact('dados', 'cliente'));
-                } else {
-                    $pdf = PDF::loadView('pdf.historico.dossie.default.contratos.' . $tipoModelo, compact('dados', 'cliente'));
-                }
-            }
-        } else {
-            $pdf = PDF::loadView('pdf.historico.dossie.' . $tipoModelo, compact('dados', 'cliente'));
-        }
-
-        $pdf->setPaper('A4', 'portrait');
         $pdfContent = $pdf->output();
         $nomeArquivo = $tipoModelo . '_' . Str::slug($colaborador->Curriculo->nome ?? 'documento') . '.pdf';
 
         $service->criarEnvio(
             $this->empresaId,
-            $this->tipoModeloParaTipoDocumento($tipoModelo),
+            $dossieTipoService->tipoModeloParaTipoDocumento($tipoModelo, $this->empresaId),
             FeedbackCurriculo::class,
             $colaborador->id,
             $this->solicitanteId,
@@ -395,18 +386,5 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
             $nomeArquivo,
             null
         );
-    }
-
-    protected function tipoModeloParaTipoDocumento(string $tipoModelo): string
-    {
-        $map = [
-            'contratotrabalhoassinado' => 'contrato_trabalho',
-            'termoconfiabilidade' => 'termo_confidencialidade',
-            'valetransporte' => 'opcao_vale_transporte',
-            'acordocompensacaohoras' => 'acordo_compensacao_horas',
-            'termosalariofamilia' => 'termo_salario_familia',
-            'declaracaodependentesimposto' => 'declaracao_dependentes_ir',
-        ];
-        return $map[$tipoModelo] ?? $tipoModelo;
     }
 }

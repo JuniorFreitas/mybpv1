@@ -658,8 +658,13 @@ class FeedbackCurriculo extends Model
             // Extrai o tipo do método chamado
             $tipo = substr($method, strlen('getDocumentoRelacionado'));
 
+            $tiposValidos = DossieTipo::tiposConhecidos();
+            if (empty($tiposValidos)) {
+                $tiposValidos = self::RELACIONAMENTOS_DOCS;
+            }
+
             // Verifica se o tipo é válido
-            if (in_array($tipo, self::RELACIONAMENTOS_DOCS)) {
+            if (in_array($tipo, $tiposValidos, true)) {
                 // Retorna uma instância de Builder com o relacionamento
                 return $this->getDocumentoRelacionado($tipo);
             }
