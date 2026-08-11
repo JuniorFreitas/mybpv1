@@ -20,3 +20,8 @@ storage/framework/cache/**
 storage/framework/sessions/**
 storage/framework/views/**
 .deploy/storage
+.cursor
+.opencode
+.phpunit.cache
+.planning
+.playwright-cli

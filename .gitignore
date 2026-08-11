@@ -40,3 +40,9 @@ test-results/
 
 docs/database/audits/
 docs/security/audits/
+
+.cursor/
+.opencode/
+.phpunit.cache
+.planning/
+.playwright-cli/

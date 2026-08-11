@@ -396,28 +396,98 @@
             </template>
         </modal>
 
-        <button
-            class="btn btn-sm mr-1 btn-outline-primary"
-            v-if="!forbidden"
-            :disabled="preload"
-            @click.prevent="abrirNovaPasta"
-        >
-            <i class="fas fa-folder-plus"></i> Nova Pasta
-        </button>
+        <div class="cloud-toolbar">
+            <button
+                class="btn btn-sm btn-outline-primary cloud-toolbar-btn"
+                v-if="!forbidden"
+                :disabled="preload"
+                @click.prevent="abrirNovaPasta"
+            >
+                <i class="fas fa-folder-plus"></i> Nova Pasta
+            </button>
 
-        <button class="btn btn-sm mr-1 btn-outline-primary" :disabled="preload" @click="atualizar"><i class="fas fa-sync"></i> Atualizar</button>
+            <button
+                class="btn btn-sm btn-outline-primary cloud-toolbar-btn"
+                :disabled="preload"
+                @click="atualizar"
+            >
+                <i class="fas fa-sync"></i> Atualizar
+            </button>
 
-        <upload
-            v-show="itemBusca !== '' && !preload"
-            label="Upload"
-            :model="arquivosUpload"
-            :url="urlArquivoUpload"
-            @onprogresso="(arquivo) => {; arquivoUploadAtual = arquivo; }"
-            @onprogressogeral="(info) => {; pctGeral = info.pct; }"
-            @onfinalizado="uploadFinalizado"
-            :simples="true"
-            :dados-ajax="{ cloud_id: cloud, pertence_id: itemBusca }"
-        />
+            <button
+                v-if="!forbidden"
+                type="button"
+                class="btn btn-sm cloud-toolbar-btn"
+                :class="buscaAberta ? 'btn-primary' : 'btn-outline-primary'"
+                :disabled="preload && !buscaAberta"
+                :aria-pressed="buscaAberta ? 'true' : 'false'"
+                title="Pesquisar arquivos e pastas"
+                @click="alternarBusca"
+            >
+                <i class="fas fa-search"></i> Pesquisar
+            </button>
+
+            <form
+                v-if="!forbidden && buscaAberta"
+                class="cloud-busca-wrap"
+                @submit.prevent="executarBusca"
+            >
+                <div class="input-group input-group-sm cloud-busca-input">
+                    <input
+                        ref="inputBuscaCloud"
+                        type="search"
+                        class="form-control"
+                        v-model="campoBusca"
+                        :disabled="preload"
+                        placeholder="Digite e pressione Enter..."
+                        autocomplete="off"
+                        @keydown.esc.prevent="fecharBusca"
+                    />
+                    <div class="input-group-append">
+                        <button
+                            type="submit"
+                            class="btn btn-outline-primary cloud-toolbar-btn"
+                            :disabled="preload || campoBusca.trim().length < 2"
+                            title="Buscar (Enter)"
+                        >
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-outline-secondary cloud-toolbar-btn"
+                            :disabled="preload"
+                            title="Fechar busca"
+                            @click="fecharBusca"
+                        >
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <select
+                    class="form-control form-control-sm cloud-busca-tipo"
+                    v-model="filtroTipoBusca"
+                    :disabled="preload"
+                    title="Filtrar por tipo"
+                >
+                    <option value="">Todos</option>
+                    <option value="pasta">Pastas</option>
+                    <option value="arquivo">Arquivos</option>
+                </select>
+            </form>
+
+            <div class="cloud-toolbar-upload" v-show="itemBusca !== '' && !preload && !modoBusca">
+                <upload
+                    label="Upload"
+                    :model="arquivosUpload"
+                    :url="urlArquivoUpload"
+                    @onprogresso="(arquivo) => {; arquivoUploadAtual = arquivo; }"
+                    @onprogressogeral="(info) => {; pctGeral = info.pct; }"
+                    @onfinalizado="uploadFinalizado"
+                    :simples="true"
+                    :dados-ajax="{ cloud_id: cloud, pertence_id: itemBusca }"
+                />
+            </div>
+        </div>
         <div class="progress my-3" style="height: 15px" v-if="arquivosUpload.length > 0">
             <div
                 class="progress-bar progress-bar-striped progress-bar-animated"
@@ -446,7 +516,7 @@
         </div>
 
         <!--Caminho de Rato-->
-        <div class="row">
+        <div class="row" v-if="!modoBusca">
             <div class="col-12">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb" style="margin-top: 10px; margin-bottom: 0px; padding: 0.2rem 1rem; font-size: 13.5px">
@@ -461,6 +531,20 @@
                         </li>
                     </ol>
                 </nav>
+            </div>
+        </div>
+        <div class="row" v-else>
+            <div class="col-12">
+                <div class="alert alert-light border py-2 px-3 mt-2 mb-0 d-flex align-items-center justify-content-between">
+                    <span>
+                        <i class="fas fa-search mr-1"></i>
+                        Resultados para <strong>“{{ termoBuscaAtivo }}”</strong>
+                        <span class="text-muted" v-if="!preload">({{ totalBusca }})</span>
+                    </span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" :disabled="preload" @click="fecharBusca">
+                        Voltar à pasta atual
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -485,7 +569,7 @@
                                     <preload></preload>
                                 </td>
                             </tr>
-                            <tr v-if="!preload && itemBusca">
+                            <tr v-if="!preload && itemBusca && !modoBusca">
                                 <td colspan="6">
                                     <button
                                         class="btn btn-sm mr-1 btn-outline-dark border-0"
@@ -496,17 +580,25 @@
                                     </button>
                                 </td>
                             </tr>
+                            <tr v-if="!preload && modoBusca && lista.length === 0">
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    Nenhum arquivo ou pasta encontrado com permissão para “{{ termoBuscaAtivo }}”.
+                                </td>
+                            </tr>
                             <template v-for="(item, index) in lista" :key="index">
                             <tr v-if="!preload && lista.length > 0 && item.TemPermissao">
                                 <td>
                                     <div v-if="item.tipo === 'pasta'">
                                         <button
                                             class="btn btn-outline-default text-left border-0"
-                                            @click="abriPasta(item.id); adicionaCaminho(item)"
+                                            @click="clicarPastaLista(item)"
                                         >
                                             <i class="fas fa-folder mr-1" style="color: #eecd6d"></i> {{ item.label }}
                                         </button>
-                                        <br />
+                                        <div class="small text-muted pl-1" v-if="modoBusca">
+                                            {{ formatarCaminhoResultado(item) }}
+                                        </div>
+                                        <br v-if="!modoBusca" />
                                     </div>
                                     <div v-if="item.tipo === 'arquivo'">
                                         <svg
@@ -569,6 +661,9 @@
                                         >
                                             {{ item.label }}{{ item.arquivo.extensao }}
                                         </button>
+                                        <div class="small text-muted pl-1" v-if="modoBusca">
+                                            {{ formatarCaminhoResultado(item) }}
+                                        </div>
                                     </div>
                                 </td>
                                 <td class="text-center" v-if="item.tipo === 'pasta'">
@@ -599,6 +694,29 @@
                             </template>
                         </tbody>
                     </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2" v-if="modoBusca && !preload && totalBusca > 0">
+                    <small class="text-muted">
+                        Página {{ paginaBusca }} de {{ ultimaPaginaBusca }}
+                    </small>
+                    <div>
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary mr-1"
+                            :disabled="paginaBusca <= 1 || preload"
+                            @click="mudarPaginaBusca(paginaBusca - 1)"
+                        >
+                            Anterior
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary"
+                            :disabled="paginaBusca >= ultimaPaginaBusca || preload"
+                            @click="mudarPaginaBusca(paginaBusca + 1)"
+                        >
+                            Próxima
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -828,7 +946,18 @@ export default {
                 left: 0,
                 minWidth: 180,
                 maxHeight: 420
-            }
+            },
+
+            // Busca no Cloud
+            buscaAberta: false,
+            campoBusca: '',
+            filtroTipoBusca: '',
+            modoBusca: false,
+            termoBuscaAtivo: '',
+            paginaBusca: 1,
+            ultimaPaginaBusca: 1,
+            totalBusca: 0,
+            _buscaRequestId: 0
         }
     },
     computed: {
@@ -893,6 +1022,141 @@ export default {
         window.removeEventListener('popstate', this._onPopState)
     },
     methods: {
+        alternarBusca() {
+            if (this.buscaAberta) {
+                this.fecharBusca()
+                return
+            }
+            this.buscaAberta = true
+            this.$nextTick(() => {
+                const input = this.$refs.inputBuscaCloud
+                if (input && typeof input.focus === 'function') {
+                    input.focus()
+                }
+            })
+        },
+        fecharBusca() {
+            const tinhaResultados = this.modoBusca
+            this.buscaAberta = false
+            this.campoBusca = ''
+            this.filtroTipoBusca = ''
+            this.modoBusca = false
+            this.termoBuscaAtivo = ''
+            this.paginaBusca = 1
+            this.ultimaPaginaBusca = 1
+            this.totalBusca = 0
+            this._buscaRequestId += 1
+            if (tinhaResultados) {
+                this.atualizar({ syncUrl: false })
+            }
+        },
+        executarBusca() {
+            const termo = String(this.campoBusca || '').trim()
+            if (termo.length < 2) {
+                if (typeof toastr !== 'undefined') {
+                    toastr.warning('Digite ao menos 2 caracteres para pesquisar')
+                }
+                return
+            }
+            this.paginaBusca = 1
+            this.buscarNoCloud()
+        },
+        mudarPaginaBusca(pagina) {
+            this.paginaBusca = pagina
+            this.buscarNoCloud()
+        },
+        limparBusca({ recarregarPasta = true } = {}) {
+            this.campoBusca = ''
+            this.filtroTipoBusca = ''
+            this.modoBusca = false
+            this.termoBuscaAtivo = ''
+            this.paginaBusca = 1
+            this.ultimaPaginaBusca = 1
+            this.totalBusca = 0
+            this._buscaRequestId += 1
+            if (recarregarPasta) {
+                this.atualizar({ syncUrl: false })
+            }
+        },
+        formatarCaminhoResultado(item) {
+            const partes = (item.caminho || []).map((p) => p.label)
+            return partes.length ? `Início / ${partes.join(' / ')}` : 'Início'
+        },
+        abrirResultadoPasta(item) {
+            this.buscaAberta = false
+            this.limparBusca({ recarregarPasta: false })
+            const pastaNoCaminho = {
+                id: item.id,
+                label: item.label,
+                slug: item.slug || this.slugifyLabel(item.label)
+            }
+            this.caminho = [{ label: 'Inicio', id: '' }, ...(item.caminho || []), pastaNoCaminho]
+            this.preload = true
+            this.$emit('abri-pasta', item.id)
+            setTimeout(() => {
+                this.atualizar({ syncUrl: true })
+            }, 50)
+        },
+        clicarPastaLista(item) {
+            if (this.modoBusca) {
+                this.abrirResultadoPasta(item)
+                return
+            }
+            this.adicionaCaminho(item)
+            this.abriPasta(item.id)
+        },
+        async buscarNoCloud() {
+            const termo = String(this.campoBusca || '').trim()
+            if (termo.length < 2 || !this.slug) {
+                return
+            }
+
+            const requestId = ++this._buscaRequestId
+            this.preload = true
+            this.modoBusca = true
+            this.termoBuscaAtivo = termo
+            this.fecharDropdown()
+
+            try {
+                const params = {
+                    q: termo,
+                    page: this.paginaBusca,
+                    porPagina: 30
+                }
+                if (this.filtroTipoBusca) {
+                    params.tipo = this.filtroTipoBusca
+                }
+
+                const { data } = await axios.get(`${URL_ADMIN}/cloud/${this.slug}/buscar`, { params })
+                if (requestId !== this._buscaRequestId) {
+                    return
+                }
+
+                this.lista = data.lista || []
+                this.habilidades = data.habilidades || this.habilidades
+                if (this.habilidades.length && this.habilidades[0].pivot) {
+                    this.meu_grupo = this.habilidades[0].pivot.grupo_cloud_id
+                }
+                this.paginaBusca = data.atual || 1
+                this.ultimaPaginaBusca = data.ultima || 1
+                this.totalBusca = data.total || 0
+                this.forbidden = false
+            } catch (error) {
+                if (requestId !== this._buscaRequestId) {
+                    return
+                }
+                if (error.response && error.response.status === 403) {
+                    this.forbidden = true
+                }
+                this.lista = []
+                this.totalBusca = 0
+                this.ultimaPaginaBusca = 1
+            } finally {
+                if (requestId === this._buscaRequestId) {
+                    this.preload = false
+                }
+            }
+        },
         slugifyLabel(texto) {
             return String(texto || '')
                 .normalize('NFD')
@@ -994,31 +1258,61 @@ export default {
                 this.atualizarPosicaoDropdown(toggleEl, tipo)
             }
             this.$nextTick(() => {
-                if (toggleEl) {
-                    this.atualizarPosicaoDropdown(toggleEl, tipo)
-                }
+                if (!toggleEl || this._dropdownToggleEl !== toggleEl) return
+                this.atualizarPosicaoDropdown(toggleEl, tipo)
+                // Remeasure após o menu pintar no DOM (altura real) para colar no botão
+                requestAnimationFrame(() => {
+                    if (this._dropdownToggleEl === toggleEl) {
+                        this.atualizarPosicaoDropdown(toggleEl, tipo)
+                    }
+                })
             })
         },
         atualizarPosicaoDropdown(toggleEl, tipo = 'arquivo') {
+            if (!toggleEl || typeof toggleEl.getBoundingClientRect !== 'function') {
+                return
+            }
+
             const rect = toggleEl.getBoundingClientRect()
+            const gap = 4
+            const margin = 8
             const menuMinWidth = Math.max(tipo === 'pasta' ? 180 : rect.width, 200)
-            const menuMaxHeight = Math.min(window.innerHeight * 0.7, 420)
-            const approxHeight = Math.min(menuMaxHeight, 320)
-            let top = rect.bottom + 4
-            if (top + approxHeight > window.innerHeight - 8) {
-                top = Math.max(8, rect.top - approxHeight - 4)
+            const spaceBelow = window.innerHeight - rect.bottom - margin
+            const spaceAbove = rect.top - margin
+            const menuEl = this.$refs.cloudDropdownMenu
+            const alturaReal = menuEl && menuEl.offsetHeight ? menuEl.offsetHeight : 0
+
+            // Prefere abrir abaixo, colado ao botão. Só sobe se o espaço de baixo for apertado.
+            const abrirAcima = spaceBelow < 140 && spaceAbove > spaceBelow
+
+            let top
+            let maxHeight
+
+            if (abrirAcima) {
+                maxHeight = Math.min(420, Math.max(120, spaceAbove - gap))
+                const alturaUsada = alturaReal > 0
+                    ? Math.min(alturaReal, maxHeight)
+                    : Math.min(240, maxHeight)
+                // Fundo do menu logo acima do botão
+                top = Math.max(margin, rect.top - gap - alturaUsada)
+            } else {
+                top = rect.bottom + gap
+                maxHeight = Math.min(420, Math.max(120, spaceBelow - gap))
             }
+
             let left = tipo === 'pasta' ? rect.right - menuMinWidth : rect.left
-            if (left + menuMinWidth > window.innerWidth - 8) {
-                left = Math.max(8, window.innerWidth - menuMinWidth - 8)
+            if (left + menuMinWidth > window.innerWidth - margin) {
+                left = Math.max(margin, window.innerWidth - menuMinWidth - margin)
             }
-            if (left < 8) left = 8
-            const maxHeight = Math.max(120, window.innerHeight - top - 8)
+            if (left < margin) {
+                left = margin
+            }
+
             this.dropdownPosicao = {
                 top,
                 left,
                 minWidth: menuMinWidth,
-                maxHeight: Math.min(menuMaxHeight, maxHeight)
+                maxHeight
             }
         },
         fecharDropdown() {
@@ -1571,6 +1865,16 @@ export default {
 
         /*--------ATUALIZAR LISTA DE ITENS--------*/
         atualizar({ syncUrl = false } = {}) {
+            // Sai do modo busca ao listar a pasta atual (mantém o painel/texto se estiver aberto)
+            if (this.modoBusca) {
+                this.modoBusca = false
+                this.termoBuscaAtivo = ''
+                this.paginaBusca = 1
+                this.ultimaPaginaBusca = 1
+                this.totalBusca = 0
+                this._buscaRequestId += 1
+            }
+
             this.preload = true
             this.forbidden = true
             this.form.pertence = this.itemBusca // incluindo a pasta
@@ -1815,6 +2119,69 @@ export default {
 
 .chip-svg:hover {
     color: #666666;
+}
+
+.cloud-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.5rem;
+    min-height: 31px;
+}
+
+.cloud-toolbar-btn,
+.cloud-toolbar .btn-sm,
+.cloud-toolbar .form-control-sm,
+.cloud-toolbar .input-group-sm > .form-control,
+.cloud-toolbar .input-group-sm > .input-group-append > .btn {
+    height: 31px;
+    min-height: 31px;
+    line-height: 1.2;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    box-sizing: border-box;
+    margin: 0;
+    vertical-align: middle;
+}
+
+.cloud-toolbar-upload {
+    display: inline-flex;
+    align-items: center;
+}
+
+.cloud-toolbar-upload :deep(.btn),
+.cloud-toolbar-upload ::v-deep .btn {
+    height: 31px;
+    min-height: 31px;
+    margin: 0;
+    line-height: 1.2;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    box-sizing: border-box;
+}
+
+.cloud-busca-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: 100%;
+    margin: 0;
+}
+
+.cloud-busca-input {
+    width: min(320px, 60vw);
+    flex: 0 1 auto;
+}
+
+.cloud-busca-input .form-control {
+    height: 31px;
+}
+
+.cloud-busca-tipo {
+    width: 110px;
+    flex: 0 0 110px;
+    height: 31px;
 }
 </style>
 

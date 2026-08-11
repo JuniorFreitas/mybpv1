@@ -1137,6 +1137,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::get('cloud/anexoDownload/{arquivo}', [\App\Http\Controllers\CloudController::class, 'download'])->name('anexo-download')->middleware(['signed:relative', 'can:cloud'])->where('arquivo', '.*');
         Route::delete('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoDelete'])->name('anexo-delete')->middleware(['signed:relative', 'can:cloud'])->where('arquivo', '.*');
         Route::get('cloud/{slug}/resolver-path', [\App\Http\Controllers\CloudController::class, 'resolverPath'])->name('cloud.resolverPath')->middleware('can:cloud');
+        Route::get('cloud/{slug}/buscar', [\App\Http\Controllers\CloudController::class, 'buscar'])->name('cloud.buscar')->middleware('can:cloud');
         Route::get('cloud/{id}/{titulo}', [\App\Http\Controllers\CloudController::class, 'redirectLegacy'])->name('cloud.single.legacy')->middleware('can:cloud');
         Route::resource('cloud', \App\Http\Controllers\CloudController::class)->except(['show'])->middleware('can:cloud');
         Route::get('cloud/{slug}', [\App\Http\Controllers\CloudController::class, 'getSingle'])->name('cloud.single')->middleware('can:cloud');
