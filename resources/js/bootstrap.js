@@ -24,6 +24,7 @@ try {
             if (modalId != null && zIndex != null) {
                 $(`#modal-backdrop${zIndex}`).remove()
             }
+            // Reavalia no timeout: evita race ao fechar/abrir rápido (remove modal-open com modal ainda aberta → trava scroll)
             const modaisVisiveis = $('.modal.show').length
             const backdrops = $('.modal-backdrop').length
             if (modaisVisiveis === 0) {
@@ -31,6 +32,8 @@ try {
                     $('.modal-backdrop').remove()
                 }
                 $('body').removeClass('modal-open').css({ 'padding-right': '', 'overflow': '' })
+            } else {
+                $('body').addClass('modal-open').css('overflow', 'hidden')
             }
         }, 50)
     }

@@ -161,15 +161,20 @@ button:disabled {
     cursor: no-drop;
 }
 
-// Modal Customizaçao
-//.modal-header {
-//    background: blue;
-//    color: white
-//}
-//
-//.btClose {
-//    color: white
-//}
+// Modal: scroll sempre disponível quando visível (Bootstrap só libera via body.modal-open,
+// o que falha em races e trava a barra de rolagem intermitentemente).
+.modal.show {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+// .main-content tem overflow:hidden e corta o scroll da modal (position:fixed).
+// Com modal aberta, libera o clip sem mover o DOM (Teleport quebrava a abertura).
+body.modal-open .main-content,
+body.modal-open .layout-wrapper {
+    overflow: visible !important;
+}
 
 
 //fieldset e legend

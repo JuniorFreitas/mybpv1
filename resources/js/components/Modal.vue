@@ -104,7 +104,7 @@ export default defineComponent({
             preload: false,
             tela: window.innerWidth,
             zIndex: 0,
-            modalKey: 0,  // alterado ao fechar para recriar o DOM da modal e evitar scroll no background
+            modalKey: 0, // alterado ao fechar para recriar o DOM da modal e evitar scroll no background
             _resizeHandler: null
         }
     },
@@ -124,7 +124,7 @@ export default defineComponent({
             $(`#${backdropId}`).remove()
             $minhaModal.removeClass('show').css('display', 'none').attr('aria-hidden', 'true')
             if ($('.modal.show').length === 0) {
-                $('body').removeClass('modal-open').css('overflow', '')
+                $('body').removeClass('modal-open').css({ overflow: '', 'padding-right': '' })
             } else {
                 $('body').addClass('modal-open').css('overflow', 'hidden')
             }
@@ -133,7 +133,14 @@ export default defineComponent({
         },
 
         abrirModal() {
-            $('#' + this.id).modal('show')
+            const $modal = $('#' + this.id)
+            if (!$modal.length) {
+                return
+            }
+            // Garante scroll da própria modal (Bootstrap só libera via body.modal-open)
+            $modal.css({ 'overflow-x': 'hidden', 'overflow-y': 'auto' })
+            $('body').addClass('modal-open').css('overflow', 'hidden')
+            $modal.modal('show')
             this.$emit('abriu', {})
         }
     },
@@ -147,6 +154,8 @@ export default defineComponent({
         $container.on('show.bs.modal', '.modal', function (event) {
             let modalEl = this
             $('body').addClass('modal-open').css('overflow', 'hidden')
+            // Scroll na modal independente de races com modal-open
+            $(modalEl).css({ 'overflow-x': 'hidden', 'overflow-y': 'auto' })
             var zIndex = 1040 + 10 * $('.modal:visible').length
             self.zIndex = zIndex
             $(modalEl).css('z-index', zIndex)
@@ -174,7 +183,7 @@ export default defineComponent({
             if ($('.modal.show').length > 0) {
                 $('body').addClass('modal-open').css('overflow', 'hidden')
             } else {
-                $('body').removeClass('modal-open').css('overflow', '')
+                $('body').removeClass('modal-open').css({ overflow: '', 'padding-right': '' })
             }
             if (self.id === modalId) {
                 self.modalKey += 1
@@ -229,3 +238,12 @@ export default defineComponent({
     }
 })
 </script>
+
+<style>
+/* Modal visível sempre pode rolar (não depende só de body.modal-open) */
+.modal.show {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+</style>

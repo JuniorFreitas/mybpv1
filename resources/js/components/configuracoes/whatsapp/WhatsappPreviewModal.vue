@@ -63,7 +63,15 @@ export default defineComponent({
         const fechar = () => emit('update:modelValue', false)
 
         const toggleBodyScroll = (aberto) => {
-            document.body.classList.toggle('modal-open', aberto)
+            // Não remove modal-open se outra modal Bootstrap ainda estiver aberta (ex.: recrutamento)
+            const outrasAbertas = typeof $ !== 'undefined' && $('.modal.show').length > 0
+            if (aberto) {
+                document.body.classList.add('modal-open')
+                document.body.style.overflow = 'hidden'
+            } else if (!outrasAbertas) {
+                document.body.classList.remove('modal-open')
+                document.body.style.overflow = ''
+            }
         }
 
         const carregar = async () => {
