@@ -177,6 +177,113 @@ class CloudController extends Controller
     }
 
     /**
+     * Busca arquivos e pastas dentro de um Cloud específico, apenas itens com permissão do grupo do usuário.
+     */
+    public function buscar(Request $request, string $slug)
+    {
+        $this->authorize('cloud');
+        $cloud = Cloud::encontrarAutorizadoPorSlugOuAbortar($slug);
+
+        $grupoCloud = auth()->user()?->GrupoCloud;
+        if (!$grupoCloud) {
+            return response()->json(['msg' => 'Usuário sem grupo Cloud'], 403);
+        }
+
+        $dados = $request->validate([
+            'q' => ['required', 'string', 'min:2', 'max:120'],
+            'tipo' => ['nullable', Rule::in(['pasta', 'arquivo'])],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'porPagina' => ['nullable', 'integer', 'min:5', 'max:100'],
+        ]);
+
+        $termoBruto = trim($dados['q']);
+        $termoLike = '%' . addcslashes($termoBruto, '%_\\') . '%';
+        $porPagina = (int) ($dados['porPagina'] ?? 30);
+        $grupoId = (int) $grupoCloud->id;
+
+        $query = ItensCloud::query()
+            ->where('cloud_id', $cloud->id)
+            ->where('label', 'like', $termoLike)
+            ->whereHas('Permissoes', function ($q) use ($grupoId) {
+                $q->where('grupo_cloud_id', $grupoId);
+            })
+            ->with([
+                'Arquivo',
+                'Criou:id,nome',
+                'Editou:id,nome',
+                'Pertence:id,label,pertence',
+            ]);
+
+        if (!empty($dados['tipo'])) {
+            $query->where('tipo', $dados['tipo']);
+        }
+
+        $paginator = $query
+            ->orderBy('tipo')
+            ->orderBy('label')
+            ->paginate($porPagina);
+
+        $mapaPastas = ItensCloud::query()
+            ->where('cloud_id', $cloud->id)
+            ->where('tipo', 'pasta')
+            ->get(['id', 'label', 'pertence'])
+            ->keyBy('id');
+
+        $lista = $paginator->getCollection()->map(function (ItensCloud $item) use ($mapaPastas) {
+            $item->setAttribute('TemPermissao', true);
+            $item->slug = Cloud::slugify($item->label);
+            $item->setAttribute('caminho', $this->montarCaminhoItem($item, $mapaPastas));
+
+            return $item;
+        });
+
+        $paginator->setCollection($lista);
+
+        $habilidades = $grupoCloud->Habilidades;
+
+        return response()->json([
+            'lista' => $paginator->items(),
+            'habilidades' => $habilidades,
+            'atual' => $paginator->currentPage(),
+            'ultima' => $paginator->lastPage(),
+            'total' => $paginator->total(),
+            'porPagina' => $paginator->perPage(),
+            'q' => $termoBruto,
+        ]);
+    }
+
+    /**
+     * Monta o breadcrumb (pastas ancestrais) de um item a partir do mapa de pastas do Cloud.
+     *
+     * @param  \Illuminate\Support\Collection<int, ItensCloud>  $mapaPastas
+     * @return array<int, array{id:int,label:string,slug:string}>
+     */
+    protected function montarCaminhoItem(ItensCloud $item, $mapaPastas): array
+    {
+        $caminho = [];
+        $atualId = $item->pertence;
+        $guard = 0;
+
+        while ($atualId && $guard < 64) {
+            $pasta = $mapaPastas->get($atualId);
+            if (!$pasta) {
+                break;
+            }
+
+            array_unshift($caminho, [
+                'id' => (int) $pasta->id,
+                'label' => $pasta->label,
+                'slug' => Cloud::slugify($pasta->label),
+            ]);
+
+            $atualId = $pasta->pertence;
+            $guard++;
+        }
+
+        return $caminho;
+    }
+
+    /**
      * @param Request $request
      * @param int|string $cloud
      * @param int|string|null $id
