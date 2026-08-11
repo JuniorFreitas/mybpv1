@@ -263,16 +263,25 @@ class Arquivo extends Model
     public const CLOUD_URL_ASSINADA_MINUTOS = 60;
 
     /**
+     * Gera URL assinada relativa (estável atrás de proxy/CDN; não depende de APP_URL/host).
+     */
+    protected function urlAssinadaCloud(string $routeName, string $arquivo): string
+    {
+        return URL::temporarySignedRoute(
+            $routeName,
+            now()->addMinutes(self::CLOUD_URL_ASSINADA_MINUTOS),
+            ['arquivo' => $arquivo],
+            absolute: false
+        );
+    }
+
+    /**
      * @return string
      */
     public function getUrlAttribute()
     {
         if ($this->disco === self::DISCO_CLOUD && $this->file) {
-            return URL::temporarySignedRoute(
-                'g.cloud.anexo-show',
-                now()->addMinutes(self::CLOUD_URL_ASSINADA_MINUTOS),
-                ['arquivo' => $this->file]
-            );
+            return $this->urlAssinadaCloud('g.cloud.anexo-show', $this->file);
         }
 
         if (in_array($this->disco, self::LISTAGEM_DISCOS)) {
@@ -292,11 +301,7 @@ class Arquivo extends Model
                 return '';
             }
 
-            return URL::temporarySignedRoute(
-                'g.cloud.anexo-show',
-                now()->addMinutes(self::CLOUD_URL_ASSINADA_MINUTOS),
-                ['arquivo' => $path]
-            );
+            return $this->urlAssinadaCloud('g.cloud.anexo-show', $path);
         }
 
         if (in_array($this->disco, self::LISTAGEM_DISCOS)) {
@@ -312,11 +317,7 @@ class Arquivo extends Model
     public function getUrlDownloadAttribute()
     {
         if ($this->disco === self::DISCO_CLOUD && $this->file) {
-            return URL::temporarySignedRoute(
-                'g.cloud.anexo-download',
-                now()->addMinutes(self::CLOUD_URL_ASSINADA_MINUTOS),
-                ['arquivo' => $this->file]
-            );
+            return $this->urlAssinadaCloud('g.cloud.anexo-download', $this->file);
         }
 
         if (in_array($this->disco, self::LISTAGEM_DISCOS)) {
@@ -331,11 +332,7 @@ class Arquivo extends Model
     public function getUrlDeleteAttribute()
     {
         if ($this->disco === self::DISCO_CLOUD && $this->file) {
-            return URL::temporarySignedRoute(
-                'g.cloud.anexo-delete',
-                now()->addMinutes(self::CLOUD_URL_ASSINADA_MINUTOS),
-                ['arquivo' => $this->file]
-            );
+            return $this->urlAssinadaCloud('g.cloud.anexo-delete', $this->file);
         }
 
         if (in_array($this->disco, self::LISTAGEM_DISCOS)) {

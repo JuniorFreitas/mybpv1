@@ -142,12 +142,14 @@ Anexos ficavam em `/publico/cloud/anexo/...` (públicos). Dados sensíveis.
 - Rotas públicas `/publico/cloud/*` **removidas**.
 - Accessors em `Arquivo` para `disco-cloud`:
   - `url` / `urlThumb` / `urlDownload` / `urlDelete` → `URL::temporarySignedRoute` (TTL 60 min).
+  - URLs **relativas** + middleware `signed:relative` (estável atrás de proxy/CDN; não quebra por APP_URL/host).
   - **Thumb** (`_p`) só na **listagem** (`urlThumb`).
   - **Visualização** usa a imagem **original** (`url`).
 - Rotas autenticadas + assinadas:
-  - `GET g/cloud/anexo/{arquivo}` — show (signed + `can:cloud`)
-  - `GET g/cloud/anexoDownload/{arquivo}` — download (signed + `can:cloud`)
-  - `DELETE g/cloud/anexo/{arquivo}` — delete (signed + `can:cloud`)
+  - `GET g/cloud/anexo/{arquivo}` — show (`signed:relative` + `can:cloud`)
+  - `GET g/cloud/anexoDownload/{arquivo}` — download (`signed:relative` + `can:cloud`)
+  - `DELETE g/cloud/anexo/{arquivo}` — delete (`signed:relative` + `can:cloud`)
+- `TrustProxies` com `$proxies = '*'` para respeitar `X-Forwarded-*` (Cloudflare/LB).
 - Autorização em `CloudController::autorizarArquivoCloud()`:
   1. Usuário autenticado
   2. Arquivo existe no disco Cloud
