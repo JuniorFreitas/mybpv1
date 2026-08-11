@@ -80,7 +80,73 @@ class Cloud extends Model
     {
         return $this->belongsToMany(User::class, 'user_clouds', 'cloud_id', 'user_id')->select(['id', 'nome']);
     }
-    
+
+    /**
+     * Sincroniza membros do grupo Administradores em todos os Clouds da empresa:
+     * adiciona nos clouds e remove dos clouds quando sai do grupo.
+     *
+     * @param  iterable<int>  $usuariosAdicionados
+     * @param  iterable<int>  $usuariosRemovidos
+     */
+    public static function sincronizarMembrosAdministradores(int $empresaId, iterable $usuariosAdicionados = [], iterable $usuariosRemovidos = []): void
+    {
+        $cloudIds = static::query()
+            ->where('empresa_id', $empresaId)
+            ->pluck('id');
+
+        if ($cloudIds->isEmpty()) {
+            return;
+        }
+
+        $adicionados = collect($usuariosAdicionados)
+            ->filter(fn ($id) => $id !== null && $id !== '')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $removidos = collect($usuariosRemovidos)
+            ->filter(fn ($id) => $id !== null && $id !== '')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        if ($removidos->isNotEmpty()) {
+            \DB::table('user_clouds')
+                ->whereIn('cloud_id', $cloudIds)
+                ->whereIn('user_id', $removidos)
+                ->delete();
+        }
+
+        if ($adicionados->isEmpty()) {
+            return;
+        }
+
+        $existentes = \DB::table('user_clouds')
+            ->whereIn('cloud_id', $cloudIds)
+            ->whereIn('user_id', $adicionados)
+            ->get(['cloud_id', 'user_id'])
+            ->mapWithKeys(fn ($row) => ["{$row->cloud_id}:{$row->user_id}" => true]);
+
+        $novos = [];
+        foreach ($cloudIds as $cloudId) {
+            foreach ($adicionados as $userId) {
+                $chave = "{$cloudId}:{$userId}";
+                if (!isset($existentes[$chave])) {
+                    $novos[] = [
+                        'cloud_id' => $cloudId,
+                        'user_id' => $userId,
+                    ];
+                }
+            }
+        }
+
+        if (!empty($novos)) {
+            foreach (array_chunk($novos, 500) as $lote) {
+                \DB::table('user_clouds')->insert($lote);
+            }
+        }
+    }
+
     public static function todosCloudsAdminAtivo($usuarioId, $empresaId)
     {
         return Cloud::where('empresa_id', $empresaId)->where('ativo', true)->get();

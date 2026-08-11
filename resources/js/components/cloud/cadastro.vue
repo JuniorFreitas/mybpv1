@@ -36,7 +36,10 @@
 
             <fieldset v-if="editando">
                 <legend>Membros</legend>
-                <div class="alert alert-info">Todos os membros do Grupo Administradores automaticamente são adicionados.</div>
+                <div class="alert alert-info">
+                    Todos os membros do Grupo Administradores são adicionados automaticamente.
+                    Ao remover alguém desse grupo, a pessoa também é removida dos membros do Cloud.
+                </div>
 
                 <div class="form-group">
                     <label>Colaborador </label>

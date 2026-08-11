@@ -53,15 +53,14 @@ class ItensCloudController extends Controller
             $dados['quem_criou'] = auth()->id();
 
             $item = ItensCloud::create($dados);
-            $permissoes = collect([$this->grupoAdmin()]);
+            $dadosPermissao = [];
             if ($request->filled('permissoes')) {
-                $dadosPermissao = [];
                 foreach ($dados['permissoes'] as $grupo_cloud) {
                     $dadosPermissao[] = $grupo_cloud['id'];
                 }
-                $permissoes = $permissoes->concat($dadosPermissao);
             }
-            $item->Permissoes()->attach($permissoes);
+            $permissoes = ItensCloud::permissoesComAdministradores($dadosPermissao);
+            $item->Permissoes()->sync($permissoes);
             DB::commit();
             return response()->json([], 201);
         } catch (\Exception $e) {
@@ -126,18 +125,14 @@ class ItensCloudController extends Controller
                 DB::beginTransaction();
                 $dados['quem_editou'] = auth()->id(); // pego quem editou
 
-                $permissoes = collect([$this->grupoAdmin()]); // seto a permissao grupo "todos (root)"
-
-                //Verifico se tem algum grupo marcado
+                $dadosPermissao = [];
                 if ($request->filled('permissoes')) {
-                    $dadosPermissao = []; // inicio um array vazio para fazer o loop
                     foreach ($dados['permissoes'] as $grupo_cloud) {
                         $dadosPermissao[] = $grupo_cloud['id'];
                     }
-                    $permissoes = $permissoes->concat($dadosPermissao);
                 }
 
-                $permissoes = $permissoes->unique()->values();
+                $permissoes = ItensCloud::permissoesComAdministradores($dadosPermissao);
 
                 $itenscloud->update($dados); // atualizo o item
 
@@ -419,9 +414,13 @@ class ItensCloudController extends Controller
                 ];
 
                 $item = ItensCloud::create($dadosUpload);
-                $pasta = ItensCloud::find($request->pertence_id);
-                $permissoes = $pasta->Permissoes()->pluck('grupo_cloud_id');
-                $item->Permissoes()->attach($permissoes);
+                $pasta = $request->pertence_id ? ItensCloud::find($request->pertence_id) : null;
+                $permissoesPasta = $pasta
+                    ? $pasta->Permissoes()->pluck('grupo_cloud_id')
+                    : collect();
+                $empresaId = optional($item->Cloud()->first())->empresa_id ?? auth()->user()->empresa_id;
+                $permissoes = ItensCloud::permissoesComAdministradores($permissoesPasta, $empresaId);
+                $item->Permissoes()->sync($permissoes);
 
                 //get de permissoes da pasta
                 \DB::commit();
@@ -504,8 +503,6 @@ class ItensCloudController extends Controller
 
     protected function grupoAdmin()
     {
-        return GrupoCloud::where('nome', 'Administradores')
-            ->whereEmpresaId(auth()->user()->empresa_id)
-            ->first()->id;
+        return GrupoCloud::idAdministradores(auth()->user()->empresa_id);
     }
 }

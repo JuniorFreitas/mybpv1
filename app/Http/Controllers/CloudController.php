@@ -46,16 +46,20 @@ class CloudController extends Controller
             $dados['quem_criou'] = auth()->id();
             $cloud = ItensCloud::create($dados);
 
-            $permissoes = collect([GrupoCloud::GRUPOADMIN, GrupoCloud::GRUPOADMINFINANCEIRO]);
+            $dadosPermissao = [];
             if ($request->filled('permissoes')) {
-                $dadosPermissao = [];
                 foreach ($dados['permissoes'] as $grupo) {
                     $dadosPermissao[] = $grupo['id'];
                 }
-                $permissoes = $permissoes->concat($dadosPermissao);
+            }
+            $permissoes = ItensCloud::permissoesComAdministradores($dadosPermissao);
+            // Mantém compatibilidade com permissão financeira legada quando existir
+            if (GrupoCloud::query()->whereKey(GrupoCloud::GRUPOADMINFINANCEIRO)->exists()) {
+                $permissoes[] = GrupoCloud::GRUPOADMINFINANCEIRO;
+                $permissoes = array_values(array_unique($permissoes));
             }
 
-            $cloud->Permissoes()->attach($permissoes);
+            $cloud->Permissoes()->sync($permissoes);
 
             return response()->json([], 201);
         }
