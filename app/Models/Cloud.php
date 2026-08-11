@@ -82,6 +82,39 @@ class Cloud extends Model
     }
 
     /**
+     * Verifica se o usuário autenticado é membro deste Cloud e se ele está ativo.
+     */
+    public function usuarioTemAcesso(?User $user = null): bool
+    {
+        $user = $user ?? auth()->user();
+        if (!$user || !$this->ativo) {
+            return false;
+        }
+
+        return $user->Clouds()
+            ->where('clouds.id', $this->id)
+            ->exists();
+    }
+
+    /**
+     * Localiza Cloud autorizado para o usuário ou aborta (404/403).
+     * Protege contra IDOR por ID na URL.
+     */
+    public static function encontrarAutorizadoOuAbortar(int|string $cloudId): self
+    {
+        $cloud = static::query()->whereKey($cloudId)->first();
+        if (!$cloud) {
+            abort(404);
+        }
+
+        if (!$cloud->usuarioTemAcesso()) {
+            abort(403, 'Sem permissão para acessar este Cloud');
+        }
+
+        return $cloud;
+    }
+
+    /**
      * Sincroniza membros do grupo Administradores em todos os Clouds da empresa:
      * adiciona nos clouds e remove dos clouds quando sai do grupo.
      *

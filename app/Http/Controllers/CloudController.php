@@ -79,6 +79,13 @@ class CloudController extends Controller
 
     public function editarPasta(ItensCloud $item)
     {
+        $this->authorize('cloud');
+        Cloud::encontrarAutorizadoOuAbortar($item->cloud_id);
+
+        if (!$item->TemPermissao) {
+            return response()->json(['msg' => 'Sem permissão para acessar este item'], 403);
+        }
+
         $iteCloud = $item;
         $iteCloud->permissoes = $item->Permissoes->transform(function ($i) {
             $i->permitido = true;
@@ -88,37 +95,41 @@ class CloudController extends Controller
     }
 
     /**
-     * @param $id
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|void
+     * @param int|string $id
+     * @param string|null $titulo
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function getSingle($id)
+    public function getSingle($id, $titulo = null)
     {
         $this->authorize('cloud');
 
-        $cloud = Cloud::with('Itens', 'Raiz')->find($id);
-        if (!$cloud) {
-            return abort(404);
+        $cloud = Cloud::encontrarAutorizadoOuAbortar($id);
+
+        // Impede slug falso na URL (força URL canônica)
+        $tituloAtual = rawurldecode((string) $titulo);
+        if ($tituloAtual !== $cloud->nome) {
+            return redirect()->route('g.cloud.cloud.single', [
+                'id' => $cloud->id,
+                'titulo' => $cloud->nome,
+            ]);
         }
-        if (!auth()->user()->Clouds()->find($id)) {
-            return abort(403);
-        }
+
         return view('g.cloud.index', compact('cloud'));
     }
 
     /**
      * @param Request $request
-     * @param $cloud
-     * @param $id
-     * @return \Illuminate\Http\JsonResponse|void
+     * @param int|string $cloud
+     * @param int|string|null $id
+     * @return \Illuminate\Http\JsonResponse
      */
     public function atualizar(Request $request, $cloud, $id = null)
     {
-        if (!auth()->user()->Clouds()->find($cloud)) {
-            return abort(403);
-        }
+        $this->authorize('cloud');
+        $cloudModel = Cloud::encontrarAutorizadoOuAbortar($cloud);
 
-        $resultado = ItensCloud::whereCloudId($cloud)
+        $resultado = ItensCloud::whereCloudId($cloudModel->id)
             ->with(
                 'Pertence:id,pertence',
                 'Arquivo',
@@ -131,16 +142,20 @@ class CloudController extends Controller
         }
 
         if ($id) {
-            $itemBusca = ItensCloud::find($id);
+            $itemBusca = ItensCloud::query()
+                ->where('cloud_id', $cloudModel->id)
+                ->whereKey($id)
+                ->first();
+
             if (!$itemBusca) {
-                return response()->json(['msg' => 'Pasta ou Arquivo não encontrado!'], 400);
+                return response()->json(['msg' => 'Pasta ou Arquivo não encontrado!'], 404);
             }
 
             if ($itemBusca->tipo == 'pasta') {
                 if ($itemBusca->TemPermissao) {
                     $resultado->wherePertence($id);
                 } else {
-                    return response()->json(['msg' => 'Sem permissao para acessar a pasta',], 403);
+                    return response()->json(['msg' => 'Sem permissao para acessar a pasta'], 403);
                 }
             } else {
                 return response()->json(['msg' => 'O item não é uma pasta'], 400);
@@ -154,7 +169,6 @@ class CloudController extends Controller
             return $item;
         });
 
-        //Permitindo sempre para Grupo Todos
         $grupos = GrupoCloud::whereAtivo(true)->get()->transform(function ($item) {
             $item->permitido = false;
             return $item;

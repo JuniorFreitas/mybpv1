@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Arquivo;
+use App\Models\Cloud;
 use App\Models\GrupoCloud;
 use App\Models\ItensCloud;
 use App\Models\User;
@@ -25,6 +26,18 @@ class ItensCloudController extends Controller
         $this->authorize('cloud_insert');
         $dados = $request->input();
 
+        $cloud = Cloud::encontrarAutorizadoOuAbortar($dados['cloud_id'] ?? 0);
+        $dados['cloud_id'] = $cloud->id;
+
+        if (!empty($dados['pertence'])) {
+            $pastaPai = ItensCloud::query()
+                ->where('cloud_id', $cloud->id)
+                ->whereKey($dados['pertence'])
+                ->first();
+            if (!$pastaPai) {
+                return response()->json(['msg' => 'Pasta pai não encontrada neste Cloud'], 404);
+            }
+        }
 
         $regra = Rule::unique('itens_cloud')->where(function ($query) use ($dados) {
             return $query->whereCloudId($dados['cloud_id'])
@@ -82,6 +95,8 @@ class ItensCloudController extends Controller
      */
     public function edit(ItensCloud $itenscloud)
     {
+        Cloud::encontrarAutorizadoOuAbortar($itenscloud->cloud_id);
+
         $iteCloud = $itenscloud;
         $iteCloud->permissoes = $itenscloud->Permissoes->transform(function ($i) {
             $i->permitido = true;
@@ -101,7 +116,10 @@ class ItensCloudController extends Controller
     {
         //UpdatePara Pasta
         $this->authorize('cloud_update');
+        Cloud::encontrarAutorizadoOuAbortar($itenscloud->cloud_id);
         $dados = $request->input();
+        // Impede troca de cloud_id via payload (IDOR)
+        $dados['cloud_id'] = $itenscloud->cloud_id;
 
         $regra = Rule::unique('itens_cloud')->where(function ($query) use ($dados) {
             return $query->whereCloudId($dados['cloud_id'])
@@ -176,6 +194,8 @@ class ItensCloudController extends Controller
      */
     public function destroy(ItensCloud $itenscloud)
     {
+        Cloud::encontrarAutorizadoOuAbortar($itenscloud->cloud_id);
+
         try {
             DB::beginTransaction();
             if ($itenscloud->deleted_at !== null) {
@@ -205,6 +225,8 @@ class ItensCloudController extends Controller
 
     public function revisar(ItensCloud $item)
     {
+        Cloud::encontrarAutorizadoOuAbortar($item->cloud_id);
+
         try {
             $agora = new DataHora();
             DB::beginTransaction();
@@ -268,6 +290,8 @@ class ItensCloudController extends Controller
 
     public function aprovar(ItensCloud $item)
     {
+        Cloud::encontrarAutorizadoOuAbortar($item->cloud_id);
+
         try {
             $agora = new DataHora();
             DB::beginTransaction();
@@ -301,10 +325,10 @@ class ItensCloudController extends Controller
 
     public function moverEstruturaPasta(Request $request, $cloud, $id = null)
     {
-        $resultado = ItensCloud::whereCloudId($cloud)->whereTipo('pasta')->with('Pertence', 'Arquivo', 'Criou', 'Editou');
+        $cloudModel = Cloud::encontrarAutorizadoOuAbortar($cloud);
+        $resultado = ItensCloud::whereCloudId($cloudModel->id)->whereTipo('pasta')->with('Pertence', 'Arquivo', 'Criou', 'Editou');
 
-
-        if ($id == 'null') {
+        if ($id == 'null' || $id === null) {
             $resultado->whereNull('pertence');
             $anterior = null;
             $atualNome = null;
@@ -314,9 +338,16 @@ class ItensCloudController extends Controller
                 $item->append('TemPermissao');
                 return $item;
             });
-        }
-        if ($id != 'null') {
-            $itemBusca = ItensCloud::find($id);
+        } else {
+            $itemBusca = ItensCloud::query()
+                ->where('cloud_id', $cloudModel->id)
+                ->whereKey($id)
+                ->first();
+
+            if (!$itemBusca) {
+                return response()->json(['msg' => 'Pasta não encontrada neste Cloud'], 404);
+            }
+
             $anterior = $itemBusca->pertence;
             $atualNome = $itemBusca->label;
             $atual_id = $itemBusca->id;
@@ -324,7 +355,7 @@ class ItensCloudController extends Controller
             if ($itemBusca->TemPermissao) {
                 $resultado->wherePertence($id);
             } else {
-                return response()->json(['msg' => 'Sem permissao para acessar a pasta',], 403);
+                return response()->json(['msg' => 'Sem permissao para acessar a pasta'], 403);
             }
 
             $resultado = $resultado->orderBy('label')->get();
@@ -346,6 +377,19 @@ class ItensCloudController extends Controller
 
     public function moverArquivo(Request $request, ItensCloud $item)
     {
+        Cloud::encontrarAutorizadoOuAbortar($item->cloud_id);
+
+        if ($request->filled('pasta')) {
+            $destino = ItensCloud::query()
+                ->where('cloud_id', $item->cloud_id)
+                ->whereKey($request->pasta)
+                ->where('tipo', 'pasta')
+                ->first();
+            if (!$destino) {
+                return response()->json(['msg' => 'Pasta de destino inválida neste Cloud'], 404);
+            }
+        }
+
         try {
             $agora = new DataHora();
             if ($item->pertence == $request->inicial) {
@@ -371,6 +415,18 @@ class ItensCloudController extends Controller
     // Anexos-------------------------------------------------
     public function uploadAnexos(Request $request)
     {
+        $cloud = Cloud::encontrarAutorizadoOuAbortar($request->cloud_id ?? 0);
+
+        if ($request->pertence_id) {
+            $pastaDestino = ItensCloud::query()
+                ->where('cloud_id', $cloud->id)
+                ->whereKey($request->pertence_id)
+                ->first();
+            if (!$pastaDestino) {
+                return response()->json(['msg' => 'Pasta de destino não encontrada neste Cloud'], 404);
+            }
+        }
+
         if ($request->file('arquivo')->isValid()) {
             $mimeType = $request->file('arquivo')->getMimeType();
 
@@ -384,7 +440,7 @@ class ItensCloudController extends Controller
 
                 $nome = substr($request->file('arquivo')->getClientOriginalName(), 0, -$tmExt);
 
-                $item = ItensCloud::whereCloudId($request->cloud_id)
+                $item = ItensCloud::whereCloudId($cloud->id)
                     ->whereLabel($nome)
                     ->whereTipo('arquivo')
                     ->whereDeletedAt(null)
@@ -405,7 +461,7 @@ class ItensCloudController extends Controller
                 $arquivo->save();
 
                 $dadosUpload = [
-                    'cloud_id' => $request->cloud_id,
+                    'cloud_id' => $cloud->id,
                     'arquivo_id' => $arquivo->id,
                     'label' => $arquivo->nome,
                     'tipo' => 'arquivo',
@@ -414,7 +470,9 @@ class ItensCloudController extends Controller
                 ];
 
                 $item = ItensCloud::create($dadosUpload);
-                $pasta = $request->pertence_id ? ItensCloud::find($request->pertence_id) : null;
+                $pasta = $request->pertence_id
+                    ? ItensCloud::query()->where('cloud_id', $cloud->id)->whereKey($request->pertence_id)->first()
+                    : null;
                 $permissoesPasta = $pasta
                     ? $pasta->Permissoes()->pluck('grupo_cloud_id')
                     : collect();
@@ -442,6 +500,16 @@ class ItensCloudController extends Controller
 
     public function uploadAtualizarAnexos(Request $request)
     {
+        $itemAtual = ItensCloud::query()
+            ->where('arquivo_id', $request->anterior_id)
+            ->first();
+
+        if (!$itemAtual) {
+            return response()->json(['msg' => 'Arquivo não encontrado'], 404);
+        }
+
+        Cloud::encontrarAutorizadoOuAbortar($itemAtual->cloud_id);
+
         if ($request->file('arquivo')->isValid()) {
             $mimeType = $request->file('arquivo')->getMimeType();
 
@@ -466,7 +534,9 @@ class ItensCloudController extends Controller
                     'data_aprovacao' => null,
                 ];
 
-                ItensCloud::whereArquivoId($request->anterior_id)->update($dadosUpload);
+                ItensCloud::where('id', $itemAtual->id)
+                    ->where('cloud_id', $itemAtual->cloud_id)
+                    ->update($dadosUpload);
                 Arquivo::find($request->anterior_id)->excluir();
 
                 \DB::commit();
