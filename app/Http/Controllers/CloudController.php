@@ -244,13 +244,93 @@ class CloudController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow(Arquivo::DISCO_CLOUD, $arquivo);
+        $this->autorizarArquivoCloud($arquivo);
+        $caminho = $this->resolverCaminhoAnexoCloud($arquivo, (bool) $request->query('thumb'));
+
+        return Arquivo::anexoShow(Arquivo::DISCO_CLOUD, $caminho);
     }
 
     //anexo ou foto
     public function download($arquivo)
     {
+        $this->autorizarArquivoCloud($arquivo);
+
         return Arquivo::anexoDownload(Arquivo::DISCO_CLOUD, $arquivo);
+    }
+
+    public function anexoDelete(Request $request, $arquivo)
+    {
+        $this->autorizarArquivoCloud($arquivo);
+
+        return Arquivo::anexoDelete(Arquivo::DISCO_CLOUD, $arquivo);
+    }
+
+    /**
+     * Exige autenticação, mesma empresa, membership no Cloud e permissão no item.
+     */
+    protected function autorizarArquivoCloud(string $arquivo): Arquivo
+    {
+        if (!auth()->check()) {
+            abort(401, 'Não autenticado');
+        }
+
+        $user = auth()->user();
+
+        $model = Arquivo::query()
+            ->where('disco', Arquivo::DISCO_CLOUD)
+            ->where(function ($query) use ($arquivo) {
+                $query->where('file', $arquivo)->orWhere('thumb', $arquivo);
+            })
+            ->first();
+
+        if (!$model) {
+            abort(404);
+        }
+
+        $item = ItensCloud::query()->where('arquivo_id', $model->id)->first();
+        if (!$item) {
+            abort(404);
+        }
+
+        $cloud = Cloud::encontrarAutorizadoOuAbortar($item->cloud_id);
+
+        if ((int) $cloud->empresa_id !== (int) $user->empresa_id) {
+            abort(403, 'Sem permissão para acessar este arquivo');
+        }
+
+        if (!$item->TemPermissao) {
+            abort(403, 'Sem permissão para acessar este arquivo');
+        }
+
+        return $model;
+    }
+
+    /**
+     * Resolve path do anexo; para imagens com ?thumb=1 usa o arquivo _p.
+     */
+    protected function resolverCaminhoAnexoCloud(string $arquivo, bool $forcarThumb = false): string
+    {
+        if (!$forcarThumb) {
+            return $arquivo;
+        }
+
+        $model = Arquivo::query()
+            ->where('disco', Arquivo::DISCO_CLOUD)
+            ->where(function ($query) use ($arquivo) {
+                $query->where('file', $arquivo)->orWhere('thumb', $arquivo);
+            })
+            ->first();
+
+        if ($model && $model->imagem && $model->thumb) {
+            return $model->thumb;
+        }
+
+        $pos = strrpos($arquivo, '.');
+        if ($pos === false) {
+            return $arquivo;
+        }
+
+        return substr($arquivo, 0, $pos) . '_p.' . substr($arquivo, $pos + 1);
     }
 
     //CLOUD CADASTRO

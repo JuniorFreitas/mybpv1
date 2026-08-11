@@ -119,7 +119,7 @@
                         <i class="fa fa-eye"></i>
                     </div>
                     <iframe
-                        :src="`https://docs.google.com/viewer?url=${exibindo.url}?file=fdg46fgd&embedded=true`"
+                        :src="exibindo.url"
                         v-show="!exibindo.imagem"
                         frameborder="0"
                         style="height: 70vh; width: 100%"
@@ -614,7 +614,7 @@
             <template v-if="dropdownTipo === 'arquivo'">
                 <a
                     v-if="temHabilidade('Download')"
-                    :href="`${url_publico}/anexoDownload/${dropdownItem.arquivo.file}`"
+                    :href="dropdownItem.arquivo.urlDownload"
                     class="cloud-acoes-item"
                     target="_blank"
                     download

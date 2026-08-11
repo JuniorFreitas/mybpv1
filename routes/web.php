@@ -76,16 +76,7 @@ Route::group(['prefix' => 'publico', 'as' => 'publico.'], function () {
     Route::post('upload', [\App\Http\Controllers\PublicoController::class, 'upload'])->name('upload');
     Route::get('foto/{nome}', [\App\Http\Controllers\PublicoController::class, 'download'])->name('foto-download');
 
-    Route::get('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoShow'])->name('cloud.anexo-show');
-    //    Route::get('cloud/{arquivo}', [\App\Http\Controllers\CloudController::class,'download'])->name('cloud.anexo-download')->middleware(['auth', 'habilidades', 'can:cloud']);
-    Route::get('cloud/anexoDownload/{arquivo}', [\App\Http\Controllers\CloudController::class, 'download'])->name('cloud.anexo-download');
-    Route::delete('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoDelete'])->name('cloud.anexo-delete')->middleware(['auth', 'configuracao_habilidades', 'can:cloud']);
-
-
-    Route::get('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoShow'])->name('cloud.anexo-show');
-    //    Route::get('cloud/{arquivo}', [\App\Http\Controllers\CloudController::class,'download'])->name('cloud.anexo-download')->middleware(['auth', 'habilidades', 'can:cloud']);
-    Route::get('cloud/anexoDownload/{arquivo}', [\App\Http\Controllers\CloudController::class, 'download'])->name('cloud.anexo-download');
-    Route::delete('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoDelete'])->name('cloud.anexo-delete')->middleware(['auth', 'configuracao_habilidades', 'can:cloud']);
+    // Cloud: rotas públicas removidas (arquivos sensíveis → URLs assinadas em /g/cloud/*)
 });
 
 
@@ -1142,6 +1133,9 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
     Route::group(['as' => 'cloud.'], function () {
         Route::get('cloud/atualizar/{cloud}/{id?}', [\App\Http\Controllers\CloudController::class, 'atualizar'])->name('cloud.atualizar')->middleware('can:cloud'); // manter essa rota antes do resource
         Route::get('cloud/editar/pasta/{item}', [\App\Http\Controllers\CloudController::class, 'editarPasta'])->name('cloud.editarPasta')->middleware('can:cloud'); // manter essa rota antes do resource
+        Route::get('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoShow'])->name('anexo-show')->middleware(['signed', 'can:cloud'])->where('arquivo', '.*');
+        Route::get('cloud/anexoDownload/{arquivo}', [\App\Http\Controllers\CloudController::class, 'download'])->name('anexo-download')->middleware(['signed', 'can:cloud'])->where('arquivo', '.*');
+        Route::delete('cloud/anexo/{arquivo}', [\App\Http\Controllers\CloudController::class, 'anexoDelete'])->name('anexo-delete')->middleware(['signed', 'can:cloud'])->where('arquivo', '.*');
         Route::get('cloud/{slug}/resolver-path', [\App\Http\Controllers\CloudController::class, 'resolverPath'])->name('cloud.resolverPath')->middleware('can:cloud');
         Route::get('cloud/{id}/{titulo}', [\App\Http\Controllers\CloudController::class, 'redirectLegacy'])->name('cloud.single.legacy')->middleware('can:cloud');
         Route::resource('cloud', \App\Http\Controllers\CloudController::class)->except(['show'])->middleware('can:cloud');
