@@ -6,6 +6,7 @@ use App\Models\Arquivo;
 use App\Models\Cloud;
 use App\Models\GrupoCloud;
 use App\Models\ItensCloud;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -46,16 +47,20 @@ class CloudController extends Controller
             $dados['quem_criou'] = auth()->id();
             $cloud = ItensCloud::create($dados);
 
-            $permissoes = collect([GrupoCloud::GRUPOADMIN, GrupoCloud::GRUPOADMINFINANCEIRO]);
+            $dadosPermissao = [];
             if ($request->filled('permissoes')) {
-                $dadosPermissao = [];
                 foreach ($dados['permissoes'] as $grupo) {
                     $dadosPermissao[] = $grupo['id'];
                 }
-                $permissoes = $permissoes->concat($dadosPermissao);
+            }
+            $permissoes = ItensCloud::permissoesComAdministradores($dadosPermissao);
+            // Mantém compatibilidade com permissão financeira legada quando existir
+            if (GrupoCloud::query()->whereKey(GrupoCloud::GRUPOADMINFINANCEIRO)->exists()) {
+                $permissoes[] = GrupoCloud::GRUPOADMINFINANCEIRO;
+                $permissoes = array_values(array_unique($permissoes));
             }
 
-            $cloud->Permissoes()->attach($permissoes);
+            $cloud->Permissoes()->sync($permissoes);
 
             return response()->json([], 201);
         }
@@ -74,6 +79,13 @@ class CloudController extends Controller
 
     public function editarPasta(ItensCloud $item)
     {
+        $this->authorize('cloud');
+        Cloud::encontrarAutorizadoOuAbortar($item->cloud_id);
+
+        if (!$item->TemPermissao) {
+            return response()->json(['msg' => 'Sem permissão para acessar este item'], 403);
+        }
+
         $iteCloud = $item;
         $iteCloud->permissoes = $item->Permissoes->transform(function ($i) {
             $i->permitido = true;
@@ -83,37 +95,99 @@ class CloudController extends Controller
     }
 
     /**
-     * @param $id
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|void
+     * @param string $slug
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function getSingle($id)
+    public function getSingle(string $slug)
     {
         $this->authorize('cloud');
 
-        $cloud = Cloud::with('Itens', 'Raiz')->find($id);
-        if (!$cloud) {
-            return abort(404);
-        }
-        if (!auth()->user()->Clouds()->find($id)) {
-            return abort(403);
-        }
+        $cloud = Cloud::encontrarAutorizadoPorSlugOuAbortar($slug);
+
         return view('g.cloud.index', compact('cloud'));
     }
 
     /**
+     * Redireciona URLs antigas /cloud/{id}/{titulo} para /cloud/{slug}.
+     */
+    public function redirectLegacy($id, $titulo = null)
+    {
+        $this->authorize('cloud');
+        $cloud = Cloud::encontrarAutorizadoOuAbortar($id);
+
+        return redirect()->route('g.cloud.cloud.single', ['slug' => $cloud->slug], 301);
+    }
+
+    /**
+     * Resolve o caminho amigável (?path=pasta/subpasta) para pasta_id + breadcrumb.
+     */
+    public function resolverPath(Request $request, string $slug)
+    {
+        $this->authorize('cloud');
+        $cloud = Cloud::encontrarAutorizadoPorSlugOuAbortar($slug);
+
+        $path = trim((string) $request->query('path', ''), '/');
+        if ($path === '') {
+            return response()->json([
+                'pasta_id' => '',
+                'caminho' => [],
+            ]);
+        }
+
+        $segments = array_values(array_filter(explode('/', $path), fn ($s) => $s !== ''));
+        $pertence = null;
+        $caminho = [];
+
+        foreach ($segments as $segment) {
+            $query = ItensCloud::query()
+                ->where('cloud_id', $cloud->id)
+                ->where('tipo', 'pasta');
+
+            if ($pertence === null) {
+                $query->whereNull('pertence');
+            } else {
+                $query->where('pertence', $pertence);
+            }
+
+            $pasta = $query->get()->first(function (ItensCloud $item) use ($segment) {
+                return Cloud::slugify($item->label) === $segment;
+            });
+
+            if (!$pasta) {
+                return response()->json(['msg' => 'Caminho não encontrado'], 404);
+            }
+
+            if (!$pasta->TemPermissao) {
+                return response()->json(['msg' => 'Sem permissão para acessar a pasta'], 403);
+            }
+
+            $caminho[] = [
+                'id' => $pasta->id,
+                'label' => $pasta->label,
+                'slug' => Cloud::slugify($pasta->label),
+            ];
+            $pertence = $pasta->id;
+        }
+
+        return response()->json([
+            'pasta_id' => $pertence,
+            'caminho' => $caminho,
+        ]);
+    }
+
+    /**
      * @param Request $request
-     * @param $cloud
-     * @param $id
-     * @return \Illuminate\Http\JsonResponse|void
+     * @param int|string $cloud
+     * @param int|string|null $id
+     * @return \Illuminate\Http\JsonResponse
      */
     public function atualizar(Request $request, $cloud, $id = null)
     {
-        if (!auth()->user()->Clouds()->find($cloud)) {
-            return abort(403);
-        }
+        $this->authorize('cloud');
+        $cloudModel = Cloud::encontrarAutorizadoOuAbortar($cloud);
 
-        $resultado = ItensCloud::whereCloudId($cloud)
+        $resultado = ItensCloud::whereCloudId($cloudModel->id)
             ->with(
                 'Pertence:id,pertence',
                 'Arquivo',
@@ -126,16 +200,20 @@ class CloudController extends Controller
         }
 
         if ($id) {
-            $itemBusca = ItensCloud::find($id);
+            $itemBusca = ItensCloud::query()
+                ->where('cloud_id', $cloudModel->id)
+                ->whereKey($id)
+                ->first();
+
             if (!$itemBusca) {
-                return response()->json(['msg' => 'Pasta ou Arquivo não encontrado!'], 400);
+                return response()->json(['msg' => 'Pasta ou Arquivo não encontrado!'], 404);
             }
 
             if ($itemBusca->tipo == 'pasta') {
                 if ($itemBusca->TemPermissao) {
                     $resultado->wherePertence($id);
                 } else {
-                    return response()->json(['msg' => 'Sem permissao para acessar a pasta',], 403);
+                    return response()->json(['msg' => 'Sem permissao para acessar a pasta'], 403);
                 }
             } else {
                 return response()->json(['msg' => 'O item não é uma pasta'], 400);
@@ -146,10 +224,10 @@ class CloudController extends Controller
 
         $resultado->transform(function (ItensCloud $item) {
             $item->append('TemPermissao');
+            $item->slug = Cloud::slugify($item->label);
             return $item;
         });
 
-        //Permitindo sempre para Grupo Todos
         $grupos = GrupoCloud::whereAtivo(true)->get()->transform(function ($item) {
             $item->permitido = false;
             return $item;
@@ -166,13 +244,93 @@ class CloudController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow(Arquivo::DISCO_CLOUD, $arquivo);
+        $this->autorizarArquivoCloud($arquivo);
+        $caminho = $this->resolverCaminhoAnexoCloud($arquivo, (bool) $request->query('thumb'));
+
+        return Arquivo::anexoShow(Arquivo::DISCO_CLOUD, $caminho);
     }
 
     //anexo ou foto
     public function download($arquivo)
     {
+        $this->autorizarArquivoCloud($arquivo);
+
         return Arquivo::anexoDownload(Arquivo::DISCO_CLOUD, $arquivo);
+    }
+
+    public function anexoDelete(Request $request, $arquivo)
+    {
+        $this->autorizarArquivoCloud($arquivo);
+
+        return Arquivo::anexoDelete(Arquivo::DISCO_CLOUD, $arquivo);
+    }
+
+    /**
+     * Exige autenticação, mesma empresa, membership no Cloud e permissão no item.
+     */
+    protected function autorizarArquivoCloud(string $arquivo): Arquivo
+    {
+        if (!auth()->check()) {
+            abort(401, 'Não autenticado');
+        }
+
+        $user = auth()->user();
+
+        $model = Arquivo::query()
+            ->where('disco', Arquivo::DISCO_CLOUD)
+            ->where(function ($query) use ($arquivo) {
+                $query->where('file', $arquivo)->orWhere('thumb', $arquivo);
+            })
+            ->first();
+
+        if (!$model) {
+            abort(404);
+        }
+
+        $item = ItensCloud::query()->where('arquivo_id', $model->id)->first();
+        if (!$item) {
+            abort(404);
+        }
+
+        $cloud = Cloud::encontrarAutorizadoOuAbortar($item->cloud_id);
+
+        if ((int) $cloud->empresa_id !== (int) $user->empresa_id) {
+            abort(403, 'Sem permissão para acessar este arquivo');
+        }
+
+        if (!$item->TemPermissao) {
+            abort(403, 'Sem permissão para acessar este arquivo');
+        }
+
+        return $model;
+    }
+
+    /**
+     * Resolve path do anexo; para imagens com ?thumb=1 usa o arquivo _p.
+     */
+    protected function resolverCaminhoAnexoCloud(string $arquivo, bool $forcarThumb = false): string
+    {
+        if (!$forcarThumb) {
+            return $arquivo;
+        }
+
+        $model = Arquivo::query()
+            ->where('disco', Arquivo::DISCO_CLOUD)
+            ->where(function ($query) use ($arquivo) {
+                $query->where('file', $arquivo)->orWhere('thumb', $arquivo);
+            })
+            ->first();
+
+        if ($model && $model->imagem && $model->thumb) {
+            return $model->thumb;
+        }
+
+        $pos = strrpos($arquivo, '.');
+        if ($pos === false) {
+            return $arquivo;
+        }
+
+        return substr($arquivo, 0, $pos) . '_p.' . substr($arquivo, $pos + 1);
     }
 
     //CLOUD CADASTRO
@@ -185,19 +343,22 @@ class CloudController extends Controller
     public function listarClouds(Request $request)
     {
 //        $this->authorize('cloud_cadastro');
-        $resultado = Cloud::orderBy('nome');
+        $resultado = Cloud::query()
+            ->withCount('Usuarios')
+            ->orderBy('nome');
 
         if ($request->filled('campoBusca')) {
-            $resultado->where('titulo', 'like', '%' . $request->campoBusca . '%');
+            $resultado->where('nome', 'like', '%' . $request->campoBusca . '%');
         }
 
-        $resultado = $resultado->paginate($request->pages);
+        $porPagina = (int) ($request->input('porPagina') ?: $request->input('pages') ?: 20);
+        $resultado = $resultado->paginate($porPagina);
 
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => ['lista' => $resultado->items(),]
+            'dados' => ['lista' => $resultado->items()],
         ]);
     }
 
@@ -231,7 +392,7 @@ class CloudController extends Controller
                 $cloud->Usuarios()->attach($uadmin);
             }
             DB::commit();
-            return response()->json([]);
+            return response()->json(['id' => $cloud->id, 'slug' => $cloud->slug], 201);
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::debug($e->getMessage());
@@ -243,17 +404,96 @@ class CloudController extends Controller
 
     public function edit(Request $request, Cloud $cloud)
     {
-        return $cloud->load('Usuarios');
+        $adminIds = $this->grupoAdmin()->pluck('id');
+        $userIds = $cloud->Usuarios()->pluck('users.id');
+
+        $usuarios = User::query()
+            ->whereIn('id', $userIds)
+            ->with('GrupoCloud:id,nome')
+            ->orderBy('nome')
+            ->get(['id', 'nome', 'grupo_cloud_id'])
+            ->map(function ($usuario) use ($adminIds) {
+                $ehAdmin = $adminIds->contains($usuario->id);
+                return [
+                    'id' => $usuario->id,
+                    'nome' => $usuario->nome,
+                    'administrador' => $ehAdmin,
+                    'grupo_nome' => $ehAdmin
+                        ? GrupoCloud::NOME_ADMINISTRADORES
+                        : ($usuario->GrupoCloud->nome ?? '—'),
+                    'novo' => false,
+                ];
+            })
+            ->values();
+
+        $grupos = GrupoCloud::query()
+            ->where('ativo', true)
+            ->where('empresa_id', auth()->user()->empresa_id)
+            ->where('nome', '!=', GrupoCloud::NOME_ADMINISTRADORES)
+            ->withCount(['Usuarios' => function ($query) {
+                $query->where('ativo', true);
+            }])
+            ->orderBy('nome')
+            ->get(['id', 'nome', 'descricao']);
+
+        return response()->json([
+            'id' => $cloud->id,
+            'nome' => $cloud->nome,
+            'slug' => $cloud->slug,
+            'ativo' => $cloud->ativo,
+            'usuarios' => $usuarios,
+            'grupos' => $grupos,
+            'administradores_ids' => $adminIds->values(),
+        ]);
+    }
+
+    public function usuariosDoGrupo(GrupoCloud $grupocloud)
+    {
+        if ((int) $grupocloud->empresa_id !== (int) auth()->user()->empresa_id) {
+            return response()->json(['msg' => 'Sem permissão'], 403);
+        }
+
+        if ($grupocloud->nome === GrupoCloud::NOME_ADMINISTRADORES) {
+            return response()->json(['msg' => 'O grupo Administradores já é incluído automaticamente'], 422);
+        }
+
+        $adminId = GrupoCloud::idAdministradores(auth()->user()->empresa_id);
+
+        $usuarios = $grupocloud->Usuarios()
+            ->where('ativo', true)
+            ->select(['id', 'nome', 'grupo_cloud_id'])
+            ->orderBy('nome')
+            ->get()
+            ->map(function ($usuario) use ($adminId, $grupocloud) {
+                return [
+                    'id' => $usuario->id,
+                    'nome' => $usuario->nome,
+                    'administrador' => (int) $usuario->grupo_cloud_id === (int) $adminId,
+                    'grupo_nome' => $grupocloud->nome,
+                    'novo' => true,
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'grupo' => [
+                'id' => $grupocloud->id,
+                'nome' => $grupocloud->nome,
+            ],
+            'usuarios' => $usuarios,
+        ]);
     }
 
     protected function grupoAdmin()
     {
-        return GrupoCloud::where('nome', 'Administradores')
+        $grupo = GrupoCloud::where('nome', GrupoCloud::NOME_ADMINISTRADORES)
             ->whereEmpresaId(auth()->user()->empresa_id)
-            ->with('Usuarios', function ($query) {
+            ->with(['Usuarios' => function ($query) {
                 $query->select(['id', 'nome', 'grupo_cloud_id'])->where('ativo', true);
-            })
-            ->first()->usuarios;
+            }])
+            ->first();
+
+        return $grupo ? $grupo->usuarios : collect();
     }
 
     public function updateCloud(Request $request, Cloud $cloud)
@@ -283,8 +523,15 @@ class CloudController extends Controller
 
             $cloud->Usuarios()->detach();
 
-            foreach ($request->usuarios as $usuario) {
-                $cloud->Usuarios()->attach($usuario['id']);
+            $usuariosIds = collect($request->input('usuarios', []))
+                ->pluck('id')
+                ->filter()
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values();
+
+            if ($usuariosIds->isNotEmpty()) {
+                $cloud->Usuarios()->attach($usuariosIds);
             }
 
             foreach ($this->grupoAdmin()->pluck('id') as $uadmin) {

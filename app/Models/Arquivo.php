@@ -12,6 +12,7 @@ use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Intervention\Image\ImageManagerStatic as Image;
 
 /**
@@ -257,10 +258,23 @@ class Arquivo extends Model
     ];
 
     /**
+     * TTL (minutos) das URLs assinadas do Cloud.
+     */
+    public const CLOUD_URL_ASSINADA_MINUTOS = 60;
+
+    /**
      * @return string
      */
     public function getUrlAttribute()
     {
+        if ($this->disco === self::DISCO_CLOUD && $this->file) {
+            return URL::temporarySignedRoute(
+                'g.cloud.anexo-show',
+                now()->addMinutes(self::CLOUD_URL_ASSINADA_MINUTOS),
+                ['arquivo' => $this->file]
+            );
+        }
+
         if (in_array($this->disco, self::LISTAGEM_DISCOS)) {
             return config('filesystems.disks.' . $this->disco . '.urlShow') . "/{$this->file}";
         }
@@ -272,8 +286,22 @@ class Arquivo extends Model
      */
     public function getUrlThumbAttribute()
     {
+        if ($this->disco === self::DISCO_CLOUD) {
+            $path = ($this->imagem && $this->thumb) ? $this->thumb : $this->file;
+            if (!$path) {
+                return '';
+            }
+
+            return URL::temporarySignedRoute(
+                'g.cloud.anexo-show',
+                now()->addMinutes(self::CLOUD_URL_ASSINADA_MINUTOS),
+                ['arquivo' => $path]
+            );
+        }
+
         if (in_array($this->disco, self::LISTAGEM_DISCOS)) {
-            return config('filesystems.disks.' . $this->disco . '.urlThumb') . "/{$this->file}";
+            $path = ($this->imagem && $this->thumb) ? $this->thumb : $this->file;
+            return config('filesystems.disks.' . $this->disco . '.urlThumb') . "/{$path}";
         }
         return "";
     }
@@ -283,6 +311,14 @@ class Arquivo extends Model
      */
     public function getUrlDownloadAttribute()
     {
+        if ($this->disco === self::DISCO_CLOUD && $this->file) {
+            return URL::temporarySignedRoute(
+                'g.cloud.anexo-download',
+                now()->addMinutes(self::CLOUD_URL_ASSINADA_MINUTOS),
+                ['arquivo' => $this->file]
+            );
+        }
+
         if (in_array($this->disco, self::LISTAGEM_DISCOS)) {
             return config('filesystems.disks.' . $this->disco . '.urlDownload') . "/{$this->file}";
         }
@@ -294,6 +330,14 @@ class Arquivo extends Model
      */
     public function getUrlDeleteAttribute()
     {
+        if ($this->disco === self::DISCO_CLOUD && $this->file) {
+            return URL::temporarySignedRoute(
+                'g.cloud.anexo-delete',
+                now()->addMinutes(self::CLOUD_URL_ASSINADA_MINUTOS),
+                ['arquivo' => $this->file]
+            );
+        }
+
         if (in_array($this->disco, self::LISTAGEM_DISCOS)) {
             return config('filesystems.disks.' . $this->disco . '.urlDelete') . "/{$this->file}";
         }

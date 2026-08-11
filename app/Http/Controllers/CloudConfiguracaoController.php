@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cloud;
 use App\Models\GrupoCloud;
 use App\Models\HabilidadeCloud;
 use App\Models\User;
@@ -133,6 +134,10 @@ class CloudConfiguracaoController extends Controller
         } else {
             try {
                 \DB::beginTransaction();
+
+                $membrosAnteriores = $grupocloud->Usuarios()->pluck('id');
+                $ehAdministradores = $grupocloud->nome === GrupoCloud::NOME_ADMINISTRADORES;
+
                 $grupocloud->update($dados);
                 $habilidades = collect($request->habilidades)->filter(function ($habilidade) {
                     if ($habilidade['acesso'] == 'true') {
@@ -141,19 +146,35 @@ class CloudConfiguracaoController extends Controller
                 })->pluck('id');
                 $grupocloud->habilidades()->sync($habilidades);
 
-                foreach ($dados['usuariosDelete'] as $id) {
-                    User::find($id)->update(['grupo_cloud_id' => null]);
+                foreach ($dados['usuariosDelete'] ?? [] as $id) {
+                    User::find($id)?->update(['grupo_cloud_id' => null]);
                 }
 
-                foreach ($dados['usuarios'] as $linha) {
-                    User::find($linha['id'])->update(['grupo_cloud_id' => $grupocloud->id]);
+                foreach ($dados['usuarios'] ?? [] as $linha) {
+                    User::find($linha['id'])?->update(['grupo_cloud_id' => $grupocloud->id]);
+                }
+
+                if ($ehAdministradores) {
+                    $membrosAtuais = collect($dados['usuarios'] ?? [])->pluck('id');
+                    $adicionados = $membrosAtuais->diff($membrosAnteriores)->values();
+                    $removidos = collect($dados['usuariosDelete'] ?? [])
+                        ->merge($membrosAnteriores->diff($membrosAtuais))
+                        ->unique()
+                        ->values();
+
+                    Cloud::sincronizarMembrosAdministradores(
+                        (int) ($grupocloud->empresa_id ?? auth()->user()->empresa_id),
+                        $adicionados,
+                        $removidos
+                    );
                 }
 
                 \DB::commit();
                 return response()->json([], 201);
-            } catch (\ErrorException $e) {
+            } catch (\Throwable $e) {
                 DB::rollBack();
-                return response($e->getMessage(), 400);
+                \Log::debug($e->getMessage());
+                return response()->json(['msg' => 'Erro ao alterar grupo'], 400);
             }
 
         }

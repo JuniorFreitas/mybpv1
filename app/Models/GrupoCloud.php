@@ -68,10 +68,24 @@ class GrupoCloud extends Model
 
     const GRUPOADMIN = 1;
     const GRUPOADMINFINANCEIRO = 11;
+    public const NOME_ADMINISTRADORES = 'Administradores';
 
     public function usesTimestamps(): bool
     {
         return false;
+    }
+
+    public static function idAdministradores(?int $empresaId = null): ?int
+    {
+        $empresaId = $empresaId ?? auth()->user()?->empresa_id;
+        if (!$empresaId) {
+            return null;
+        }
+
+        return static::query()
+            ->where('nome', self::NOME_ADMINISTRADORES)
+            ->where('empresa_id', $empresaId)
+            ->value('id');
     }
 
     //return $this->belongsToMany(Arquivo::class, 'foto_admissaos', 'curriculo_id', 'arquivo_id');

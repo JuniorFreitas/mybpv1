@@ -1,6 +1,6 @@
 <template>
     <div>
-        <modal id="janelaCadastrarPasta" :titulo="tituloNovaPasta" size="g" :fechar="!preload_pasta" ref="modal_janelaCadastrarPasta">
+        <modal id="janelaCadastrarPasta" :titulo="tituloNovaPasta" size="g" :fechar="!preload_pasta" ref="modal_janelaCadastrarPasta" @fechou="resetEstadoPasta">
             <template #conteudo>
                 <div class="alert alert-success text-center" v-show="cadastrado">
                     <h5><i class="icon fa fa-check"></i> Pasta criada com sucesso!</h5>
@@ -64,24 +64,30 @@
                                             </thead>
 
                                             <tbody>
-                                                <tr v-for="(grupo, index) in grupos">
-                                                :key="grupo.id || index"
+                                                <tr v-for="(grupo, index) in grupos" :key="grupo.id || index">
                                                     <td>{{ grupo.nome }}</td>
                                                     <td>{{ grupo.descricao }}</td>
                                                     <td class="text-center">
+                                                        <span
+                                                            v-if="isGrupoAdministradores(grupo)"
+                                                            class="btn btn-sm mr-1 btn-success disabled"
+                                                            title="O grupo Administradores não pode ter a permissão removida"
+                                                        >
+                                                            <span class="fa fa-ok" aria-hidden="true"></span> Permitido
+                                                        </span>
                                                         <a
+                                                            v-else-if="grupo.permitido"
                                                             class="btn btn-sm mr-1 btn-success"
                                                             href="#"
-                                                            @click.prevent="grupo.permitido = !grupo.permitido; removePermissao(grupo)"
-                                                            v-if="grupo.permitido"
+                                                            @click.prevent="negarGrupo(grupo)"
                                                         >
                                                             <span class="fa fa-ok" aria-hidden="true"></span> Permitido
                                                         </a>
                                                         <a
+                                                            v-else
                                                             class="btn btn-sm mr-1 btn-danger"
                                                             href="#"
-                                                            @click.prevent="grupo.permitido = !grupo.permitido; adicionaPermissao(grupo)"
-                                                            v-if="!grupo.permitido"
+                                                            @click.prevent="permitirGrupo(grupo)"
                                                         >
                                                             <span class="fa fa-remove" aria-hidden="true"></span> Negado
                                                         </a>
@@ -103,7 +109,7 @@
                 </button>
             </template>
         </modal>
-        <modal id="janelaVisualizadora" :size="90" :titulo="titulojanelavisualizar" ref="modal_janelaVisualizadora">
+        <modal id="janelaVisualizadora" :size="90" :titulo="titulojanelavisualizar" ref="modal_janelaVisualizadora" @fechou="exibindo = null; titulojanelavisualizar = ''">
             <template #conteudo>
                 <div class="col-12" v-if="exibindo && exibindo.imagem">
                     <img :src="exibindo.url" class="img-fluid d-flex mx-auto" />
@@ -113,7 +119,7 @@
                         <i class="fa fa-eye"></i>
                     </div>
                     <iframe
-                        :src="`https://docs.google.com/viewer?url=${exibindo.url}?file=fdg46fgd&embedded=true`"
+                        :src="exibindo.url"
                         v-show="!exibindo.imagem"
                         frameborder="0"
                         style="height: 70vh; width: 100%"
@@ -124,7 +130,7 @@
                 <!--                <a :href="urlBase+srcDownload" download class="btn btn-sm mr-1 btn-outline-default"><i class="fa fa-download"></i> Download</a>-->
             </template>
         </modal>
-        <modal id="janelaDetalhes" titulo="Detalhes" ref="modal_janelaDetalhes">
+        <modal id="janelaDetalhes" titulo="Detalhes" ref="modal_janelaDetalhes" @fechou="detalhes = null">
             <template #conteudo>
                 <fieldset v-if="detalhes">
                     <legend>Expecificações</legend>
@@ -143,7 +149,7 @@
         </modal>
 
         <!-- Modal encaminhamento de e-mail -->
-        <modal id="janelaEnviarRevisao" :fechar="!formEnviarRevisao.preload" titulo="Enviar para Revisão" ref="modal_janelaEnviarRevisao">
+        <modal id="janelaEnviarRevisao" :fechar="!formEnviarRevisao.preload" titulo="Enviar para Revisão" ref="modal_janelaEnviarRevisao" @fechou="resetEstadoEnviarRevisao">
             <template #conteudo>
                 <span v-show="formEnviarRevisao.preload">
                     <preload label="Enviando ..."></preload>
@@ -193,7 +199,7 @@
             </template>
         </modal>
 
-        <modal id="janelaEnviarAprovacao" :fechar="!formEnviarAprovacao.preload" titulo="Enviar para Aprovação" ref="modal_janelaEnviarAprovacao">
+        <modal id="janelaEnviarAprovacao" :fechar="!formEnviarAprovacao.preload" titulo="Enviar para Aprovação" ref="modal_janelaEnviarAprovacao" @fechou="resetEstadoEnviarAprovacao">
             <template #conteudo>
                 <span v-show="formEnviarAprovacao.preload">
                     <preload label="Enviando ..."></preload>
@@ -244,7 +250,7 @@
         </modal>
 
         <!-- Modal confirmar -->
-        <modal id="janelaConfirmarApagar" :titulo="tituloApagar" ref="modal_janelaConfirmarApagar">
+        <modal id="janelaConfirmarApagar" :titulo="tituloApagar" ref="modal_janelaConfirmarApagar" @fechou="resetEstadoApagar">
             <template #conteudo>
                 <span v-show="preloadDel">
                     <preload></preload>
@@ -268,7 +274,7 @@
                 </div>
             </template>
         </modal>
-        <modal id="janelaConfirmarAprovar" :titulo="tituloAprovar" ref="modal_janelaConfirmarAprovar">
+        <modal id="janelaConfirmarAprovar" :titulo="tituloAprovar" ref="modal_janelaConfirmarAprovar" @fechou="resetEstadoAprovar">
             <template #conteudo>
                 <span v-show="preloadAprovado">
                     <preload></preload>
@@ -291,7 +297,7 @@
                 </div>
             </template>
         </modal>
-        <modal id="janelaConfirmarRevisar" :titulo="tituloRevisar" ref="modal_janelaConfirmarRevisar">
+        <modal id="janelaConfirmarRevisar" :titulo="tituloRevisar" ref="modal_janelaConfirmarRevisar" @fechou="resetEstadoRevisar">
             <template #conteudo>
                 <span v-show="preloadRevisado">
                     <preload></preload>
@@ -314,7 +320,7 @@
                 </div>
             </template>
         </modal>
-        <modal id="janelaMover" titulo="Mover Arquivo" @fechou="janelaMover = false" :fechar="!preloadMover" ref="modal_janelaMover">
+        <modal id="janelaMover" titulo="Mover Arquivo" @fechou="resetEstadoMover" :fechar="!preloadMover" ref="modal_janelaMover">
             <template #conteudo>
                 <pasta
                     :model="mover"
@@ -336,7 +342,7 @@
             </template>
         </modal>
         <!-- Modal atualizar arquivo-->
-        <modal id="janelaAtualizar" titulo="Atualizando arquivo" :fechar="!emprogressoAtualizar" ref="modal_janelaAtualizar">
+        <modal id="janelaAtualizar" titulo="Atualizando arquivo" :fechar="!emprogressoAtualizar" ref="modal_janelaAtualizar" @fechou="resetEstadoAtualizarArquivo">
             <template #conteudo>
                 <div v-show="atualizadoSucesso" class="col-12 alert alert-success"><i class="fa fa-check"></i> Arquivo atualizado com sucesso!</div>
                 <div v-show="!atualizadoSucesso">
@@ -394,7 +400,7 @@
             class="btn btn-sm mr-1 btn-outline-primary"
             v-if="!forbidden"
             :disabled="preload"
-            @click.prevent="formNovaPasta; $refs.modal_janelaCadastrarPasta && $refs.modal_janelaCadastrarPasta.abrirModal()"
+            @click.prevent="abrirNovaPasta"
         >
             <i class="fas fa-folder-plus"></i> Nova Pasta
         </button>
@@ -460,7 +466,7 @@
 
         <div class="row mt-3" id="corpo_cloud">
             <div class="col-12">
-                <div class="table-responsive" id="table-responsive">
+                <div class="table-responsive cloud-table-responsive" id="table-responsive" ref="tableResponsive" :class="{ 'dropdown-open': dropdownAberto !== null }">
                     <table class="table table-hover bg-white">
                         <thead>
                             <tr class="bg-default">
@@ -490,7 +496,8 @@
                                     </button>
                                 </td>
                             </tr>
-                            <tr v-for="(item, index) in lista" :key="index" v-if="!preload && lista.length > 0 && item.TemPermissao">
+                            <template v-for="(item, index) in lista" :key="index">
+                            <tr v-if="!preload && lista.length > 0 && item.TemPermissao">
                                 <td>
                                     <div v-if="item.tipo === 'pasta'">
                                         <button
@@ -548,132 +555,20 @@
                                         </svg>
 
                                         <img :src="item.arquivo.urlThumb" alt="" style="width: 45px" v-if="item.arquivo.imagem" />
-                                        <div class="btn-group dropright" v-if="item.TemPermissao">
-                                            <button
-                                                type="button"
-                                                :class="{
-                                                    'marcador dropdown-toggle': !item.revisado && !item.aprovado,
-                                                    'marcadorRevisado dropdown-toggle': item.revisado && !item.aprovado,
-                                                    'normal dropdown-toggle': (item.revisado && item.aprovado) || (!item.revisado && item.aprovado)
-                                                }"
-                                                data-toggle="dropdown"
-                                                aria-haspopup="true"
-                                                aria-expanded="false"
-                                            >
-                                                {{ item.label }}{{ item.arquivo.extensao }}
-                                            </button>
-                                            <div class="dropdown-menu dropdown-menu-custom" aria-labelledby="dropdownMenuButton" role="menu">
-                                                <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Download')">
-                                                    <a
-                                                        :href="`${url_publico}/anexoDownload/${item.arquivo.file}`"
-                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
-                                                        target="_blank"
-                                                        download
-                                                    >
-                                                        <i class="fas fa-download"></i> Download
-                                                    </a>
-                                                </div>
-                                                <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Visualizar')">
-                                                    <a
-                                                        href="#"
-                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
-                                                        @click.prevent="visualizar(item.arquivo); $refs.modal_janelaVisualizadora && $refs.modal_janelaVisualizadora.abrirModal()"
-                                                    >
-                                                        <i class="fas fa-search"></i> Visualizar
-                                                    </a>
-                                                </div>
-                                                <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Detalhes')">
-                                                    <a
-                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
-                                                        href="#"
-                                                        @click.prevent="exibirDetalhes(item); $refs.modal_janelaDetalhes && $refs.modal_janelaDetalhes.abrirModal()"
-                                                    >
-                                                        <i class="fas fa-list"></i> Detalhes
-                                                    </a>
-                                                </div>
-                                                <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Editar')">
-                                                    <a
-                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
-                                                        href="#"
-                                                        @click.prevent="formAlterar(item.id); $refs.modal_janelaCadastrarPasta && $refs.modal_janelaCadastrarPasta.abrirModal()"
-                                                    >
-                                                        <i class="fas fa-edit"></i> Editar
-                                                    </a>
-                                                </div>
-                                                <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Mover')">
-                                                    <a
-                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
-                                                        href="#"
-                                                        @click="pastaMover(item.id); $refs.modal_janelaMover && $refs.modal_janelaMover.abrirModal()"
-                                                    >
-                                                        <i class="fas fa-arrows-alt-v"></i> Mover
-                                                    </a>
-                                                </div>
-                                                <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Deletar')">
-                                                    <a
-                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
-                                                        href="#"
-                                                        @click.prevent="janelaConfirmar(item); $refs.modal_janelaConfirmarApagar && $refs.modal_janelaConfirmarApagar.abrirModal()"
-                                                    >
-                                                        <i class="far fa-trash-alt"></i> Deletar
-                                                    </a>
-                                                </div>
-                                                <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Atualizar')">
-                                                    <a
-                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
-                                                        href="#"
-                                                        @click.prevent="janelaAtualizar(item); $refs.modal_janelaAtualizar && $refs.modal_janelaAtualizar.abrirModal()"
-                                                    >
-                                                        <i class="fas fa-sync"></i> Atualizar
-                                                    </a>
-                                                </div>
-                                                <div
-                                                    class="col-12 py-1"
-                                                    v-if="habilidades.find((habilidade) => habilidade.nome === 'Revisar')"
-                                                    v-show="(!item.revisado && !item.aprovado) || !item.revisado"
-                                                >
-                                                    <a
-                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
-                                                        href="#"
-                                                        @click.prevent="janelaConfirmarRevisar(item); $refs.modal_janelaConfirmarRevisar && $refs.modal_janelaConfirmarRevisar.abrirModal()"
-                                                    >
-                                                        <i class="fas fa-recycle"></i> Revisar
-                                                    </a>
-                                                </div>
-                                                <div class="col-12 py-1" v-show="(!item.revisado && !item.aprovado) || !item.revisado">
-                                                    <a
-                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
-                                                        href="#"
-                                                        @click.prevent="janelaEnviarRevisao(item); $refs.modal_janelaEnviarRevisao && $refs.modal_janelaEnviarRevisao.abrirModal()"
-                                                    >
-                                                        <i class="fas fa-share-square"></i> Enviar para Revisão
-                                                    </a>
-                                                </div>
-                                                <div
-                                                    class="col-12 py-1"
-                                                    v-if="habilidades.find((habilidade) => habilidade.nome === 'Aprovar')"
-                                                    v-show="!item.aprovado || (item.revisado && !item.aprovado)"
-                                                >
-                                                    <a
-                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
-                                                        href="#"
-                                                        @click.prevent="janelaConfirmarAprovar(item); $refs.modal_janelaConfirmarAprovar && $refs.modal_janelaConfirmarAprovar.abrirModal()"
-                                                    >
-                                                        <i class="fas fa-tasks"></i> Aprovar
-                                                    </a>
-                                                </div>
-
-                                                <div class="col-12 py-1" v-show="!item.aprovado || (item.revisado && !item.aprovado)">
-                                                    <a
-                                                        class="btn btn-sm mr-1 btn-block btn-outline-primary"
-                                                        href="#"
-                                                        @click.prevent="janelaEnviarAprovacao(item); $refs.modal_janelaEnviarAprovacao && $refs.modal_janelaEnviarAprovacao.abrirModal()"
-                                                    >
-                                                        <i class="fas fa-share-square"></i> Enviar para Aprovação
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <button
+                                            v-if="item.TemPermissao"
+                                            type="button"
+                                            :class="{
+                                                'marcador cloud-dropdown-btn': !item.revisado && !item.aprovado,
+                                                'marcadorRevisado cloud-dropdown-btn': item.revisado && !item.aprovado,
+                                                'normal cloud-dropdown-btn': (item.revisado && item.aprovado) || (!item.revisado && item.aprovado)
+                                            }"
+                                            aria-haspopup="true"
+                                            :aria-expanded="isDropdownAberto(item, 'arquivo')"
+                                            @click.prevent.stop="toggleDropdown(item, 'arquivo', $event)"
+                                        >
+                                            {{ item.label }}{{ item.arquivo.extensao }}
+                                        </button>
                                     </div>
                                 </td>
                                 <td class="text-center" v-if="item.tipo === 'pasta'">
@@ -689,60 +584,114 @@
                                     {{ item.editou ? item.editou.nome : '' }}
                                 </td>
                                 <td class="text-right" :colspan="item.tipo === 'arquivo' ? 5 : 0">
-                                    <div class="btn-group dropright" v-if="item.tipo === 'pasta'">
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm mr-1 btn-default dropdown-toggle"
-                                            v-if="
-                                                habilidades.find((habilidade) => habilidade.nome === 'Mover') ||
-                                                habilidades.find((habilidade) => habilidade.nome === 'Editar') ||
-                                                habilidades.find((habilidade) => habilidade.nome === 'Deletar')
-                                            "
-                                            data-toggle="dropdown"
-                                            aria-haspopup="true"
-                                            aria-expanded="false"
-                                        >
-                                            <i class="fa fa-ellipsis-v"></i>
-                                        </button>
-                                        <div class="dropdown-menu dropdown-menu-custom">
-                                            <div class="col-12 py-1" v-show="item.pertence && habilidades.find((habilidade) => habilidade.nome === 'Mover')">
-                                                <a
-                                                    class="btn btn-sm mr-1 btn-block btn-outline-primary"
-                                                    href="#"
-                                                    @click="pastaMover(item.id); $refs.modal_janelaMover && $refs.modal_janelaMover.abrirModal()"
-                                                >
-                                                    <i class="fas fa-arrows-alt-v"></i> Mover
-                                                </a>
-                                            </div>
-                                            <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Editar')">
-                                                <a
-                                                    class="btn btn-sm mr-1 btn-block btn-outline-primary"
-                                                    href="javascript://"
-                                                    v-if="item.tipo === 'pasta'"
-                                                    @click.prevent="formAlterar(item.id); $refs.modal_janelaCadastrarPasta && $refs.modal_janelaCadastrarPasta.abrirModal()"
-                                                >
-                                                    <i class="fa fa-edit" aria-hidden="true"></i> Editar
-                                                </a>
-                                            </div>
-                                            <div class="col-12 py-1" v-if="habilidades.find((habilidade) => habilidade.nome === 'Deletar')">
-                                                <a
-                                                    class="btn btn-sm mr-1 btn-block btn-outline-primary"
-                                                    href="javascript://"
-                                                    v-if="item.tipo === 'pasta'"
-                                                    @click.prevent="janelaConfirmar(item); $refs.modal_janelaConfirmarApagar && $refs.modal_janelaConfirmarApagar.abrirModal()"
-                                                >
-                                                    <i class="fa fa-trash" aria-hidden="true"></i> Deletar
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <button
+                                        v-if="item.tipo === 'pasta' && (temHabilidade('Mover') || temHabilidade('Editar') || temHabilidade('Deletar'))"
+                                        type="button"
+                                        class="btn btn-sm mr-1 btn-default cloud-dropdown-btn"
+                                        aria-haspopup="true"
+                                        :aria-expanded="isDropdownAberto(item, 'pasta')"
+                                        @click.prevent.stop="toggleDropdown(item, 'pasta', $event)"
+                                    >
+                                        <i class="fa fa-ellipsis-v"></i>
+                                    </button>
                                 </td>
                             </tr>
+                            </template>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
+        <Teleport to="body">
+        <div
+            v-if="dropdownAberto && dropdownItem"
+            ref="cloudDropdownMenu"
+            class="cloud-acoes-menu"
+            :style="dropdownMenuStyle"
+            @click.stop
+        >
+            <template v-if="dropdownTipo === 'arquivo'">
+                <a
+                    v-if="temHabilidade('Download')"
+                    :href="dropdownItem.arquivo.urlDownload"
+                    class="cloud-acoes-item"
+                    target="_blank"
+                    download
+                    @click="fecharDropdown"
+                >
+                    <i class="fas fa-download"></i> Download
+                </a>
+                <button v-if="temHabilidade('Visualizar')" type="button" class="cloud-acoes-item" @click="execAcaoArquivo('visualizar')">
+                    <i class="fas fa-search"></i> Visualizar
+                </button>
+                <button v-if="temHabilidade('Detalhes')" type="button" class="cloud-acoes-item" @click="execAcaoArquivo('detalhes')">
+                    <i class="fas fa-list"></i> Detalhes
+                </button>
+                <button v-if="temHabilidade('Editar')" type="button" class="cloud-acoes-item" @click="execAcaoArquivo('editar')">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
+                <button v-if="temHabilidade('Mover')" type="button" class="cloud-acoes-item" @click="execAcaoArquivo('mover')">
+                    <i class="fas fa-arrows-alt-v"></i> Mover
+                </button>
+                <button v-if="temHabilidade('Deletar')" type="button" class="cloud-acoes-item" @click="execAcaoArquivo('deletar')">
+                    <i class="far fa-trash-alt"></i> Deletar
+                </button>
+                <button v-if="temHabilidade('Atualizar')" type="button" class="cloud-acoes-item" @click="execAcaoArquivo('atualizar')">
+                    <i class="fas fa-sync"></i> Atualizar
+                </button>
+                <button
+                    v-if="temHabilidade('Revisar') && ((!dropdownItem.revisado && !dropdownItem.aprovado) || !dropdownItem.revisado)"
+                    type="button"
+                    class="cloud-acoes-item"
+                    @click="execAcaoArquivo('revisar')"
+                >
+                    <i class="fas fa-recycle"></i> Revisar
+                </button>
+                <button
+                    v-if="(!dropdownItem.revisado && !dropdownItem.aprovado) || !dropdownItem.revisado"
+                    type="button"
+                    class="cloud-acoes-item"
+                    @click="execAcaoArquivo('enviarRevisao')"
+                >
+                    <i class="fas fa-share-square"></i> Enviar para Revisão
+                </button>
+                <button
+                    v-if="temHabilidade('Aprovar') && (!dropdownItem.aprovado || (dropdownItem.revisado && !dropdownItem.aprovado))"
+                    type="button"
+                    class="cloud-acoes-item"
+                    @click="execAcaoArquivo('aprovar')"
+                >
+                    <i class="fas fa-tasks"></i> Aprovar
+                </button>
+                <button
+                    v-if="!dropdownItem.aprovado || (dropdownItem.revisado && !dropdownItem.aprovado)"
+                    type="button"
+                    class="cloud-acoes-item"
+                    @click="execAcaoArquivo('enviarAprovacao')"
+                >
+                    <i class="fas fa-share-square"></i> Enviar para Aprovação
+                </button>
+            </template>
+            <template v-else-if="dropdownTipo === 'pasta'">
+                <button
+                    v-if="dropdownItem.pertence && temHabilidade('Mover')"
+                    type="button"
+                    class="cloud-acoes-item"
+                    @click="execAcaoPasta('mover')"
+                >
+                    <i class="fas fa-arrows-alt-v"></i> Mover
+                </button>
+                <button v-if="temHabilidade('Editar')" type="button" class="cloud-acoes-item" @click="execAcaoPasta('editar')">
+                    <i class="fa fa-edit" aria-hidden="true"></i> Editar
+                </button>
+                <button v-if="temHabilidade('Deletar')" type="button" class="cloud-acoes-item" @click="execAcaoPasta('deletar')">
+                    <i class="fa fa-trash" aria-hidden="true"></i> Deletar
+                </button>
+            </template>
+        </div>
+        </Teleport>
+
     </div>
 </template>
 
@@ -762,6 +711,11 @@ export default {
             type: Number,
             required: true,
             default: () => ''
+        },
+        slug: {
+            type: String,
+            required: true,
+            default: ''
         },
         itemBusca: {
             type: [Number, String],
@@ -865,12 +819,31 @@ export default {
             preloadMover: false,
             janelaMover: false,
             movido: false,
-            mover: {}
+            mover: {},
+            dropdownAberto: null,
+            dropdownItem: null,
+            dropdownTipo: null,
+            dropdownPosicao: {
+                top: 0,
+                left: 0,
+                minWidth: 180,
+                maxHeight: 420
+            }
         }
     },
     computed: {
         urlBase() {
             return `${URL_ADMIN}/cloud/anexoDownload/`
+        },
+        dropdownMenuStyle() {
+            return {
+                position: 'fixed',
+                top: `${this.dropdownPosicao.top}px`,
+                left: `${this.dropdownPosicao.left}px`,
+                minWidth: `${this.dropdownPosicao.minWidth}px`,
+                maxHeight: `${this.dropdownPosicao.maxHeight}px`,
+                zIndex: 2000
+            }
         }
     },
     mounted() {
@@ -889,13 +862,243 @@ export default {
         this.csrf = CSRF_token
         this.url_publico = `${URL_PUBLICO}/cloud`
         this.caminho.push(raiz)
-        this.atualizar()
-
-        // $('.table-responsive').on('show.bs.dropdown', function () {
-        //     $('.table-responsive').css("overflow", "inherit");
-        // });
+        this._ignorandoPopstate = false
+        this._onPopState = () => {
+            if (this._ignorandoPopstate) return
+            this.carregarDaUrl({ fromPopstate: true })
+        }
+        window.addEventListener('popstate', this._onPopState)
+        this.carregarDaUrl({ replace: true })
+        this._fecharDropdownFora = (event) => {
+            if (!this.dropdownAberto) return
+            const menu = this.$refs.cloudDropdownMenu
+            const toggle = this._dropdownToggleEl
+            if (menu && menu.contains(event.target)) return
+            if (toggle && toggle.contains(event.target)) return
+            this.fecharDropdown()
+        }
+        this._reposicionarDropdown = () => {
+            if (this.dropdownAberto && this._dropdownToggleEl) {
+                this.atualizarPosicaoDropdown(this._dropdownToggleEl, this.dropdownTipo)
+            }
+        }
+        document.addEventListener('click', this._fecharDropdownFora)
+        window.addEventListener('resize', this._reposicionarDropdown)
+        window.addEventListener('scroll', this._reposicionarDropdown, true)
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this._fecharDropdownFora)
+        window.removeEventListener('resize', this._reposicionarDropdown)
+        window.removeEventListener('scroll', this._reposicionarDropdown, true)
+        window.removeEventListener('popstate', this._onPopState)
     },
     methods: {
+        slugifyLabel(texto) {
+            return String(texto || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+                || 'item'
+        },
+        pathAtual() {
+            return this.caminho
+                .filter((folder) => folder.id !== '' && folder.id != null)
+                .map((folder) => folder.slug || this.slugifyLabel(folder.label))
+                .join('/')
+        },
+        urlCloudComPath(path) {
+            let adminPath = String(URL_ADMIN || '/g')
+            try {
+                adminPath = new URL(URL_ADMIN, window.location.origin).pathname
+            } catch (e) {
+                // mantém adminPath como string
+            }
+            adminPath = adminPath.replace(/\/$/, '')
+            const base = `${adminPath}/cloud/${this.slug}`
+            return path ? `${base}?path=${path}` : base
+        },
+        sincronizarUrl({ replace = false } = {}) {
+            if (!this.slug) return
+            const path = this.pathAtual()
+            const url = this.urlCloudComPath(path)
+            const atual = `${window.location.pathname}${window.location.search}`
+            if (atual === url) return
+
+            this._ignorandoPopstate = true
+            if (replace) {
+                history.replaceState({ cloudPath: path }, '', url)
+            } else {
+                history.pushState({ cloudPath: path }, '', url)
+            }
+            this.$nextTick(() => {
+                this._ignorandoPopstate = false
+            })
+        },
+        async carregarDaUrl({ replace = false, fromPopstate = false } = {}) {
+            const params = new URLSearchParams(window.location.search)
+            const path = (params.get('path') || '').replace(/^\/+|\/+$/g, '')
+
+            this.caminho = [{ label: 'Inicio', id: '' }]
+
+            if (!path) {
+                this.$emit('abri-pasta', '')
+                if (!fromPopstate) {
+                    this.sincronizarUrl({ replace: true })
+                }
+                await this.$nextTick()
+                this.atualizar({ syncUrl: false })
+                return
+            }
+
+            try {
+                const { data } = await axios.get(`${URL_ADMIN}/cloud/${this.slug}/resolver-path`, {
+                    params: { path }
+                })
+                this.caminho = [{ label: 'Inicio', id: '' }, ...(data.caminho || [])]
+                this.$emit('abri-pasta', data.pasta_id || '')
+                if (!fromPopstate) {
+                    this.sincronizarUrl({ replace: !!replace })
+                }
+                await this.$nextTick()
+                setTimeout(() => this.atualizar({ syncUrl: false }), 50)
+            } catch (error) {
+                this.$emit('abri-pasta', '')
+                this.sincronizarUrl({ replace: true })
+                await this.$nextTick()
+                this.atualizar({ syncUrl: false })
+            }
+        },
+        dropdownKey(item, tipo) {
+            return `${tipo}-${item.id}`
+        },
+        isDropdownAberto(item, tipo) {
+            return this.dropdownAberto === this.dropdownKey(item, tipo)
+        },
+        temHabilidade(nome) {
+            return !!(this.habilidades || []).find((h) => h.nome === nome)
+        },
+        toggleDropdown(item, tipo, event) {
+            const key = this.dropdownKey(item, tipo)
+            if (this.dropdownAberto === key) {
+                this.fecharDropdown()
+                return
+            }
+            const toggleEl = event && event.currentTarget ? event.currentTarget : null
+            this._dropdownToggleEl = toggleEl
+            this.dropdownItem = item
+            this.dropdownTipo = tipo
+            this.dropdownAberto = key
+            if (toggleEl) {
+                this.atualizarPosicaoDropdown(toggleEl, tipo)
+            }
+            this.$nextTick(() => {
+                if (toggleEl) {
+                    this.atualizarPosicaoDropdown(toggleEl, tipo)
+                }
+            })
+        },
+        atualizarPosicaoDropdown(toggleEl, tipo = 'arquivo') {
+            const rect = toggleEl.getBoundingClientRect()
+            const menuMinWidth = Math.max(tipo === 'pasta' ? 180 : rect.width, 200)
+            const menuMaxHeight = Math.min(window.innerHeight * 0.7, 420)
+            const approxHeight = Math.min(menuMaxHeight, 320)
+            let top = rect.bottom + 4
+            if (top + approxHeight > window.innerHeight - 8) {
+                top = Math.max(8, rect.top - approxHeight - 4)
+            }
+            let left = tipo === 'pasta' ? rect.right - menuMinWidth : rect.left
+            if (left + menuMinWidth > window.innerWidth - 8) {
+                left = Math.max(8, window.innerWidth - menuMinWidth - 8)
+            }
+            if (left < 8) left = 8
+            const maxHeight = Math.max(120, window.innerHeight - top - 8)
+            this.dropdownPosicao = {
+                top,
+                left,
+                minWidth: menuMinWidth,
+                maxHeight: Math.min(menuMaxHeight, maxHeight)
+            }
+        },
+        fecharDropdown() {
+            this.dropdownAberto = null
+            this.dropdownItem = null
+            this.dropdownTipo = null
+            this._dropdownToggleEl = null
+        },
+        acaoDropdown(fn) {
+            this.fecharDropdown()
+            if (typeof fn === 'function') {
+                fn()
+            }
+        },
+        execAcaoArquivo(acao) {
+            const item = this.dropdownItem
+            if (!item) return
+            const mapa = {
+                visualizar: () => {
+                    this.visualizar(item.arquivo)
+                    this.$refs.modal_janelaVisualizadora && this.$refs.modal_janelaVisualizadora.abrirModal()
+                },
+                detalhes: () => {
+                    this.exibirDetalhes(item)
+                    this.$refs.modal_janelaDetalhes && this.$refs.modal_janelaDetalhes.abrirModal()
+                },
+                editar: () => {
+                    this.formAlterar(item.id)
+                    this.$refs.modal_janelaCadastrarPasta && this.$refs.modal_janelaCadastrarPasta.abrirModal()
+                },
+                mover: () => {
+                    this.pastaMover(item.id)
+                    this.$refs.modal_janelaMover && this.$refs.modal_janelaMover.abrirModal()
+                },
+                deletar: () => {
+                    this.janelaConfirmar(item)
+                    this.$refs.modal_janelaConfirmarApagar && this.$refs.modal_janelaConfirmarApagar.abrirModal()
+                },
+                atualizar: () => {
+                    this.janelaAtualizar(item)
+                    this.$refs.modal_janelaAtualizar && this.$refs.modal_janelaAtualizar.abrirModal()
+                },
+                revisar: () => {
+                    this.janelaConfirmarRevisar(item)
+                    this.$refs.modal_janelaConfirmarRevisar && this.$refs.modal_janelaConfirmarRevisar.abrirModal()
+                },
+                enviarRevisao: () => {
+                    this.janelaEnviarRevisao(item)
+                    this.$refs.modal_janelaEnviarRevisao && this.$refs.modal_janelaEnviarRevisao.abrirModal()
+                },
+                aprovar: () => {
+                    this.janelaConfirmarAprovar(item)
+                    this.$refs.modal_janelaConfirmarAprovar && this.$refs.modal_janelaConfirmarAprovar.abrirModal()
+                },
+                enviarAprovacao: () => {
+                    this.janelaEnviarAprovacao(item)
+                    this.$refs.modal_janelaEnviarAprovacao && this.$refs.modal_janelaEnviarAprovacao.abrirModal()
+                }
+            }
+            this.acaoDropdown(mapa[acao])
+        },
+        execAcaoPasta(acao) {
+            const item = this.dropdownItem
+            if (!item) return
+            const mapa = {
+                mover: () => {
+                    this.pastaMover(item.id)
+                    this.$refs.modal_janelaMover && this.$refs.modal_janelaMover.abrirModal()
+                },
+                editar: () => {
+                    this.formAlterar(item.id)
+                    this.$refs.modal_janelaCadastrarPasta && this.$refs.modal_janelaCadastrarPasta.abrirModal()
+                },
+                deletar: () => {
+                    this.janelaConfirmar(item)
+                    this.$refs.modal_janelaConfirmarApagar && this.$refs.modal_janelaConfirmarApagar.abrirModal()
+                }
+            }
+            this.acaoDropdown(mapa[acao])
+        },
         formatBytes(bytes, decimals, kib) {
             const usarKib = kib || false
             if (bytes === 0) return '0 Bytes'
@@ -913,13 +1116,15 @@ export default {
             this.removeMover = !(dados.atual === dados.inicial || dados.atual === dados.arquivo || !dados.atual)
         },
         pastaMover(arquivo) {
-            setTimeout(() => {
-                this.movido = false
-                this.mover.cloud = this.cloud
-                this.mover.item = this.itemBusca
-                this.mover.arquivo = arquivo
-                this.janelaMover = true
-            }, 200)
+            this.movido = false
+            this.preloadMover = false
+            this.removeMover = false
+            this.mover = {
+                cloud: this.cloud,
+                item: this.itemBusca,
+                arquivo: arquivo
+            }
+            this.janelaMover = true
         },
         moverArquivo() {
             setTimeout(() => {
@@ -935,6 +1140,8 @@ export default {
         /*--------UPLOADS--------*/
         uploadFinalizado() {
             this.arquivosUpload = []
+            this.arquivoUploadAtual = null
+            this.pctGeral = 0
             setTimeout(() => {
                 this.atualizar()
             }, 100)
@@ -942,7 +1149,7 @@ export default {
 
         /*--------UPLOADS ATUALIZAR--------*/
         janelaAtualizar(obj) {
-            this.atualizadoSucesso = false
+            this.resetEstadoAtualizarArquivo()
             this.id_anterior_atualizar = obj.arquivo_id
         },
         uploadAtualizarFinalizado() {
@@ -955,45 +1162,170 @@ export default {
         },
 
         /*--------PERMISSÕES EM PASTA E ITENS--------*/
-        adicionaPermissao(id) {
-            this.form.permissoes.push(id)
+        isGrupoAdministradores(grupo) {
+            return !!(grupo && grupo.nome === 'Administradores')
         },
-        removePermissao(id) {
-            let index = _.indexOf(this.form.permissoes, id)
-            this.form.permissoes.splice(index, 1)
+        adicionaPermissao(grupo) {
+            if (!grupo) return
+            const jaExiste = this.form.permissoes.some((item) => item.id === grupo.id)
+            if (!jaExiste) {
+                this.form.permissoes.push(grupo)
+            }
+        },
+        removePermissao(grupo) {
+            if (!grupo || this.isGrupoAdministradores(grupo)) {
+                return
+            }
+            const index = this.form.permissoes.findIndex((item) => item.id === grupo.id)
+            if (index !== -1) {
+                this.form.permissoes.splice(index, 1)
+            }
+        },
+        permitirGrupo(grupo) {
+            if (!grupo || this.isGrupoAdministradores(grupo)) {
+                return
+            }
+            grupo.permitido = true
+            this.adicionaPermissao(grupo)
+            this.sincronizarTodosGrupos()
+        },
+        negarGrupo(grupo) {
+            if (!grupo || this.isGrupoAdministradores(grupo)) {
+                return
+            }
+            grupo.permitido = false
+            this.removePermissao(grupo)
+            this.sincronizarTodosGrupos()
+        },
+        garantirPermissaoAdministradores() {
+            _.forEach(this.grupos, (grupo) => {
+                if (this.isGrupoAdministradores(grupo)) {
+                    grupo.permitido = true
+                    this.adicionaPermissao(grupo)
+                }
+            })
+        },
+        sincronizarTodosGrupos() {
+            const gruposAlteraveis = (this.grupos || []).filter((grupo) => !this.isGrupoAdministradores(grupo))
+            this.form.todosGrupos = gruposAlteraveis.length > 0 && gruposAlteraveis.every((grupo) => grupo.permitido)
         },
         selecionarTodos() {
             this.form.todosGrupos = !this.form.todosGrupos
             _.forEach(this.grupos, (grupo) => {
+                if (this.isGrupoAdministradores(grupo)) {
+                    grupo.permitido = true
+                    this.adicionaPermissao(grupo)
+                    return
+                }
                 grupo.permitido = this.form.todosGrupos
                 if (this.form.todosGrupos) {
                     this.adicionaPermissao(grupo)
                 } else {
-                    this.form.permissoes = []
+                    this.removePermissao(grupo)
                 }
             })
+            this.garantirPermissaoAdministradores()
         },
 
         /*--------FORM PASTA E ITENS--------*/
+        abrirNovaPasta() {
+            this.formNovaPasta()
+            this.$refs.modal_janelaCadastrarPasta && this.$refs.modal_janelaCadastrarPasta.abrirModal()
+        },
+        resetEstadoPasta() {
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
+            this.preload_pasta = false
+            this.tituloNovaPasta = 'NOVA PASTA'
+            if (this.formDefault) {
+                this.form = _.cloneDeep(this.formDefault)
+                this.form.cloud_id = this.cloud
+                this.form.pertence = this.itemBusca
+            }
+            _.forEach(this.grupos, (grupo) => {
+                grupo.permitido = false
+            })
+        },
+        resetEstadoApagar() {
+            this.apagado = false
+            this.preloadDel = false
+            this.tituloApagar = ''
+            if (this.formDefault) {
+                this.form = _.cloneDeep(this.formDefault)
+                this.form.cloud_id = this.cloud
+                this.form.pertence = this.itemBusca
+            }
+        },
+        resetEstadoAprovar() {
+            this.aprovado = false
+            this.preloadAprovado = false
+            this.tituloAprovar = ''
+            if (this.formDefault) {
+                this.form = _.cloneDeep(this.formDefault)
+                this.form.cloud_id = this.cloud
+                this.form.pertence = this.itemBusca
+            }
+        },
+        resetEstadoRevisar() {
+            this.revisado = false
+            this.preloadRevisado = false
+            this.tituloRevisar = ''
+            if (this.formDefault) {
+                this.form = _.cloneDeep(this.formDefault)
+                this.form.cloud_id = this.cloud
+                this.form.pertence = this.itemBusca
+            }
+        },
+        resetEstadoEnviarRevisao() {
+            if (this.formEnviarRevisaoDefault) {
+                this.formEnviarRevisao = _.cloneDeep(this.formEnviarRevisaoDefault)
+            }
+        },
+        resetEstadoEnviarAprovacao() {
+            if (this.formEnviarAprovacaoDefault) {
+                this.formEnviarAprovacao = _.cloneDeep(this.formEnviarAprovacaoDefault)
+            }
+        },
+        resetEstadoMover() {
+            this.janelaMover = false
+            this.movido = false
+            this.preloadMover = false
+            this.removeMover = false
+            this.mover = {}
+        },
+        resetEstadoAtualizarArquivo() {
+            this.atualizadoSucesso = false
+            this.emprogressoAtualizar = false
+            this.arquivosAtualizarUpload = []
+            this.arquivoAtualizarUploadAtual = null
+            this.pctGeralAtualizar = 0
+            this.id_anterior_atualizar = 0
+        },
         formNovaPasta() {
             this.cadastrado = false
             this.atualizado = false
             this.editando = false
+            this.preload_pasta = false
 
             this.tituloNovaPasta = 'NOVA PASTA'
 
             formReset()
             setupCampo()
             this.form = _.cloneDeep(this.formDefault) //copia
+            this.form.cloud_id = this.cloud
             this.form.pertence = this.itemBusca
+            this.form.permissoes = []
 
-            // desmarco todos e deixo somente o meu ativo
+            // desmarco todos e deixo somente o meu ativo + Administradores
             _.forEach(this.grupos, (grupo) => {
                 grupo.permitido = false
-                if (grupo.id === this.meu_grupo) {
+                if (grupo.id === this.meu_grupo || this.isGrupoAdministradores(grupo)) {
                     grupo.permitido = true
+                    this.adicionaPermissao(grupo)
                 }
             })
+            this.sincronizarTodosGrupos()
         },
         criaPasta() {
             $('#janelaCadastrarPasta :input:visible').trigger('blur')
@@ -1001,6 +1333,7 @@ export default {
                 alert('Verificar os erros')
                 return false
             }
+            this.garantirPermissaoAdministradores()
             this.preload_pasta = true
             // delete this.form.id;
             axios
@@ -1021,19 +1354,22 @@ export default {
             this.cadastrado = false
             this.atualizado = false
             this.editando = true
+            this.preload_pasta = false
             this.tituloNovaPasta = 'Alterando'
 
             this.preload_pasta = true
 
-            // desmarco todos e deixo somente o meu ativo
+            // desmarco todos e deixo somente o meu ativo + Administradores
             _.forEach(this.grupos, (grupo) => {
                 grupo.permitido = false
-                if (grupo.id === this.meu_grupo) {
+                if (grupo.id === this.meu_grupo || this.isGrupoAdministradores(grupo)) {
                     grupo.permitido = true
                 }
             })
 
-            Object.assign(this.form, this.formDefault)
+            this.form = _.cloneDeep(this.formDefault)
+            this.form.cloud_id = this.cloud
+            this.form.id = id
             formReset()
             axios
                 .get(`${URL_ADMIN}/itenscloud/${id}/editar`)
@@ -1043,16 +1379,16 @@ export default {
                     this.tituloNovaPasta = `Alterando - ${data.label}`
                     setupCampo()
 
-                    // muda para todos se for igual a qnt de grupo
-                    this.form.todosGrupos = data.permissoes.length - 2 === this.grupos.length
-
                     //ligando os botoes
-                    _.forEach(this.grupos, function (grupo) {
+                    _.forEach(this.grupos, (grupo) => {
                         let achou = _.find(data.permissoes, { id: grupo.id })
-                        if (achou) {
+                        if (achou || this.isGrupoAdministradores(grupo)) {
                             grupo.permitido = true
+                            this.adicionaPermissao(grupo)
                         }
                     })
+                    this.garantirPermissaoAdministradores()
+                    this.sincronizarTodosGrupos()
 
                     this.preload_pasta = false
                 })
@@ -1064,6 +1400,7 @@ export default {
                 alert('Verificar os erros')
                 return false
             }
+            this.garantirPermissaoAdministradores()
             this.form._method = 'PUT'
             this.preload_pasta = true
             axios
@@ -1103,13 +1440,13 @@ export default {
             itemBusca = id
             this.$emit('abri-pasta', itemBusca)
             setTimeout(() => {
-                this.atualizar()
+                this.atualizar({ syncUrl: true })
             }, 50)
         },
 
         /*--------JANELA APAGAR--------*/
         janelaConfirmar(obj) {
-            this.form = obj
+            this.form = _.cloneDeep(obj)
             this.tituloApagar = `Apagar ${this.form.tipo}`
             this.apagado = false
             this.preloadDel = false
@@ -1159,7 +1496,7 @@ export default {
 
         /*--------JANELA APROVAR--------*/
         janelaConfirmarAprovar(obj) {
-            this.form = obj
+            this.form = _.cloneDeep(obj)
             this.tituloAprovar = `Aprovar`
             this.aprovado = false
             this.preloadAprovado = false
@@ -1213,7 +1550,7 @@ export default {
 
         /*--------JANELA REVISAR--------*/
         janelaConfirmarRevisar(obj) {
-            this.form = obj
+            this.form = _.cloneDeep(obj)
             this.tituloRevisar = `Revisar`
             this.revisado = false
             this.preloadRevisado = false
@@ -1233,10 +1570,13 @@ export default {
         },
 
         /*--------ATUALIZAR LISTA DE ITENS--------*/
-        atualizar() {
+        atualizar({ syncUrl = false } = {}) {
             this.preload = true
             this.forbidden = true
             this.form.pertence = this.itemBusca // incluindo a pasta
+            if (syncUrl) {
+                this.sincronizarUrl()
+            }
             axios
                 .get(`${URL_ADMIN}/cloud/atualizar/${this.cloud}/${this.itemBusca}`)
                 .then((response) => {
@@ -1260,15 +1600,10 @@ export default {
                     this.habilidades = data.habilidades
                     this.meu_grupo = this.habilidades[0].pivot.grupo_cloud_id
                     this.preload = false
-                    let tableResponsive = document.getElementById('table-responsive')
-                    setTimeout(() => {
-                        if (tableResponsive.offsetHeight <= 550) {
-                            tableResponsive.style.minHeight = '550px'
-                        }
-                    }, 100)
+                    this.fecharDropdown()
                 })
                 .catch((error) => {
-                    if (error.response.status === 403) {
+                    if (error.response && error.response.status === 403) {
                         this.forbidden = true
                     }
                     this.preload = false
@@ -1405,7 +1740,15 @@ export default {
 
 .table-responsive {
     /*min-height: 350px;*/
-    /*overflow: inherit;*/
+}
+
+.cloud-table-responsive.dropdown-open {
+    overflow: visible !important;
+}
+
+.cloud-dropdown-btn {
+    border: none;
+    cursor: pointer;
 }
 
 .chip {
@@ -1472,5 +1815,42 @@ export default {
 
 .chip-svg:hover {
     color: #666666;
+}
+</style>
+
+<style>
+.cloud-acoes-menu {
+    position: fixed;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    overflow-y: auto;
+}
+
+.cloud-acoes-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: 1px solid #184056;
+    border-radius: 4px;
+    background: #fff;
+    color: #184056;
+    padding: 6px 10px;
+    font-size: 13px;
+    line-height: 1.2;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.cloud-acoes-item:hover {
+    background: #184056;
+    color: #fff;
+    text-decoration: none;
 }
 </style>

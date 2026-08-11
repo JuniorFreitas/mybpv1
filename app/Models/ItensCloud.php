@@ -228,6 +228,51 @@ class ItensCloud extends Model
         return $this->Permissoes()->whereIn('grupo_cloud_id', [auth()->user()->GrupoCloud->id])->count() > 0 ? true : false;
     }
 
+    /**
+     * Garante que o grupo Administradores da empresa do Cloud tenha permissão neste item.
+     */
+    public function garantirPermissaoAdministradores(): void
+    {
+        $empresaId = $this->relationLoaded('Cloud')
+            ? $this->Cloud?->empresa_id
+            : ($this->Cloud()->value('empresa_id') ?? auth()->user()?->empresa_id);
+
+        if (!$empresaId) {
+            $empresaId = auth()->user()?->empresa_id;
+        }
+
+        $grupoAdminId = GrupoCloud::idAdministradores($empresaId);
+        if (!$grupoAdminId) {
+            return;
+        }
+
+        $this->Permissoes()->syncWithoutDetaching([$grupoAdminId]);
+    }
+
+    /**
+     * Monta a lista de permissões sempre incluindo o grupo Administradores.
+     *
+     * @param  iterable<int|string>  $grupoIds
+     * @return array<int>
+     */
+    public static function permissoesComAdministradores(iterable $grupoIds = [], ?int $empresaId = null): array
+    {
+        $empresaId = $empresaId ?? auth()->user()?->empresa_id;
+        $adminId = GrupoCloud::idAdministradores($empresaId);
+
+        $ids = collect($grupoIds)
+            ->filter(fn ($id) => $id !== null && $id !== '')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        if ($adminId) {
+            $ids->prepend($adminId);
+        }
+
+        return $ids->unique()->values()->all();
+    }
+
     public function Arquivo()
     {
         return $this->hasOne(Arquivo::class, 'id', 'arquivo_id');
