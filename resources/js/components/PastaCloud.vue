@@ -24,8 +24,8 @@
                         </button>
                     </td>
                 </tr>
-                <template  v-if="!preload && lista.length > 0 && item.TemPermissao">
-                    <tr v-for="(item, index) in lista" :key="index">
+                <template v-for="(item, index) in lista" :key="item.id || index">
+                    <tr v-if="item.TemPermissao">
                         <td>
                             <button class="btn btn-sm mr-1 btn-outline-default text-left border-0"
                                     @click="abriPasta(item.id)"

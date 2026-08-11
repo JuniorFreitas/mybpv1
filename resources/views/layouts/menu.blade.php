@@ -808,7 +808,7 @@
                 {{-- auth()->user()->GrupoCloud?->nome == 'Administradores'--}}
                 @foreach(auth()->user()->CloudsAtivo as $cloud)
                     <li>
-                        <a href="{{route('g.cloud.cloud.single', [$cloud->id, $cloud->nome])}}" parent="cloud"
+                        <a href="{{ route('g.cloud.cloud.single', $cloud->slug) }}" parent="cloud"
                            key="{{$cloud->nome}}">
                             <i class="fas fa-folder"
                                style="color: #EECD6D; font-size: 0.85rem;"></i> {{$cloud->nome}}

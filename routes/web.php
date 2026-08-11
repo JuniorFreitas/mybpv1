@@ -1141,9 +1141,11 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
     //Cloud
     Route::group(['as' => 'cloud.'], function () {
         Route::get('cloud/atualizar/{cloud}/{id?}', [\App\Http\Controllers\CloudController::class, 'atualizar'])->name('cloud.atualizar')->middleware('can:cloud'); // manter essa rota antes do resource
-        Route::get('cloud/{id}/{titulo}', [\App\Http\Controllers\CloudController::class, 'getSingle'])->name('cloud.single')->middleware('can:cloud'); // manter essa rota antes do resource
         Route::get('cloud/editar/pasta/{item}', [\App\Http\Controllers\CloudController::class, 'editarPasta'])->name('cloud.editarPasta')->middleware('can:cloud'); // manter essa rota antes do resource
-        Route::resource('cloud', \App\Http\Controllers\CloudController::class)->middleware('can:cloud');
+        Route::get('cloud/{slug}/resolver-path', [\App\Http\Controllers\CloudController::class, 'resolverPath'])->name('cloud.resolverPath')->middleware('can:cloud');
+        Route::get('cloud/{id}/{titulo}', [\App\Http\Controllers\CloudController::class, 'redirectLegacy'])->name('cloud.single.legacy')->middleware('can:cloud');
+        Route::resource('cloud', \App\Http\Controllers\CloudController::class)->except(['show'])->middleware('can:cloud');
+        Route::get('cloud/{slug}', [\App\Http\Controllers\CloudController::class, 'getSingle'])->name('cloud.single')->middleware('can:cloud');
 
         Route::group(['as' => 'cadastro.', 'prefix' => 'clouds'], function () {
             Route::get('cadastro', [\App\Http\Controllers\CloudController::class, 'indexCadastro'])->name('indexCadastro') //                ->middleware('can:cloud_cadastro')

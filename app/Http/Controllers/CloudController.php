@@ -95,27 +95,85 @@ class CloudController extends Controller
     }
 
     /**
-     * @param int|string $id
-     * @param string|null $titulo
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
+     * @param string $slug
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function getSingle($id, $titulo = null)
+    public function getSingle(string $slug)
     {
         $this->authorize('cloud');
 
+        $cloud = Cloud::encontrarAutorizadoPorSlugOuAbortar($slug);
+
+        return view('g.cloud.index', compact('cloud'));
+    }
+
+    /**
+     * Redireciona URLs antigas /cloud/{id}/{titulo} para /cloud/{slug}.
+     */
+    public function redirectLegacy($id, $titulo = null)
+    {
+        $this->authorize('cloud');
         $cloud = Cloud::encontrarAutorizadoOuAbortar($id);
 
-        // Impede slug falso na URL (força URL canônica)
-        $tituloAtual = rawurldecode((string) $titulo);
-        if ($tituloAtual !== $cloud->nome) {
-            return redirect()->route('g.cloud.cloud.single', [
-                'id' => $cloud->id,
-                'titulo' => $cloud->nome,
+        return redirect()->route('g.cloud.cloud.single', ['slug' => $cloud->slug], 301);
+    }
+
+    /**
+     * Resolve o caminho amigável (?path=pasta/subpasta) para pasta_id + breadcrumb.
+     */
+    public function resolverPath(Request $request, string $slug)
+    {
+        $this->authorize('cloud');
+        $cloud = Cloud::encontrarAutorizadoPorSlugOuAbortar($slug);
+
+        $path = trim((string) $request->query('path', ''), '/');
+        if ($path === '') {
+            return response()->json([
+                'pasta_id' => '',
+                'caminho' => [],
             ]);
         }
 
-        return view('g.cloud.index', compact('cloud'));
+        $segments = array_values(array_filter(explode('/', $path), fn ($s) => $s !== ''));
+        $pertence = null;
+        $caminho = [];
+
+        foreach ($segments as $segment) {
+            $query = ItensCloud::query()
+                ->where('cloud_id', $cloud->id)
+                ->where('tipo', 'pasta');
+
+            if ($pertence === null) {
+                $query->whereNull('pertence');
+            } else {
+                $query->where('pertence', $pertence);
+            }
+
+            $pasta = $query->get()->first(function (ItensCloud $item) use ($segment) {
+                return Cloud::slugify($item->label) === $segment;
+            });
+
+            if (!$pasta) {
+                return response()->json(['msg' => 'Caminho não encontrado'], 404);
+            }
+
+            if (!$pasta->TemPermissao) {
+                return response()->json(['msg' => 'Sem permissão para acessar a pasta'], 403);
+            }
+
+            $caminho[] = [
+                'id' => $pasta->id,
+                'label' => $pasta->label,
+                'slug' => Cloud::slugify($pasta->label),
+            ];
+            $pertence = $pasta->id;
+        }
+
+        return response()->json([
+            'pasta_id' => $pertence,
+            'caminho' => $caminho,
+        ]);
     }
 
     /**
@@ -166,6 +224,7 @@ class CloudController extends Controller
 
         $resultado->transform(function (ItensCloud $item) {
             $item->append('TemPermissao');
+            $item->slug = Cloud::slugify($item->label);
             return $item;
         });
 
@@ -253,7 +312,7 @@ class CloudController extends Controller
                 $cloud->Usuarios()->attach($uadmin);
             }
             DB::commit();
-            return response()->json(['id' => $cloud->id], 201);
+            return response()->json(['id' => $cloud->id, 'slug' => $cloud->slug], 201);
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::debug($e->getMessage());
@@ -300,6 +359,7 @@ class CloudController extends Controller
         return response()->json([
             'id' => $cloud->id,
             'nome' => $cloud->nome,
+            'slug' => $cloud->slug,
             'ativo' => $cloud->ativo,
             'usuarios' => $usuarios,
             'grupos' => $grupos,

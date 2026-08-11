@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use App\Tenant\Traits\TenantTrait;
+use App\Models\Concerns\HasActivitylogOptions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
-use App\Models\Concerns\HasActivitylogOptions;
 
 /**
  * App\Models\Cloud
@@ -15,6 +16,7 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @property int $id
  * @property int $empresa_id
  * @property string $nome
+ * @property string $slug
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property bool $ativo
@@ -58,8 +60,61 @@ class Cloud extends Model
         $activity->descricao = "";
     }
 
-    protected $fillable = ['nome', 'empresa_id', 'ativo'];
-    protected $casts = ['id' => 'int', 'empresa_id' => 'int', 'nome' => 'string', 'ativo' => 'boolean'];
+    protected $fillable = ['nome', 'slug', 'empresa_id', 'ativo'];
+    protected $casts = [
+        'id' => 'int',
+        'empresa_id' => 'int',
+        'nome' => 'string',
+        'slug' => 'string',
+        'ativo' => 'boolean',
+    ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (Cloud $cloud) {
+            if ($cloud->isDirty('nome') || blank($cloud->slug)) {
+                $empresaId = (int) ($cloud->empresa_id ?: auth()->user()?->empresa_id);
+                $cloud->slug = static::gerarSlugUnico(
+                    (string) $cloud->nome,
+                    $empresaId,
+                    $cloud->exists ? (int) $cloud->id : null
+                );
+            }
+        });
+    }
+
+    /**
+     * Slug amigável (labels de pasta / nome do cloud).
+     */
+    public static function slugify(string $texto): string
+    {
+        $slug = Str::slug($texto);
+
+        return $slug !== '' ? $slug : 'item';
+    }
+
+    /**
+     * Gera slug único por empresa, com sufixo numérico se necessário.
+     */
+    public static function gerarSlugUnico(string $nome, int $empresaId, ?int $ignorarId = null): string
+    {
+        $base = static::slugify($nome);
+        $slug = $base;
+        $sufixo = 2;
+
+        while (
+            static::query()
+                ->where('empresa_id', $empresaId)
+                ->where('slug', $slug)
+                ->when($ignorarId, fn ($q) => $q->where('id', '!=', $ignorarId))
+                ->exists()
+        ) {
+            $slug = $base . '-' . $sufixo;
+            $sufixo++;
+        }
+
+        return $slug;
+    }
 
     public function Empresa()
     {
@@ -103,6 +158,23 @@ class Cloud extends Model
     public static function encontrarAutorizadoOuAbortar(int|string $cloudId): self
     {
         $cloud = static::query()->whereKey($cloudId)->first();
+        if (!$cloud) {
+            abort(404);
+        }
+
+        if (!$cloud->usuarioTemAcesso()) {
+            abort(403, 'Sem permissão para acessar este Cloud');
+        }
+
+        return $cloud;
+    }
+
+    /**
+     * Localiza Cloud autorizado pelo slug ou aborta (404/403).
+     */
+    public static function encontrarAutorizadoPorSlugOuAbortar(string $slug): self
+    {
+        $cloud = static::query()->where('slug', $slug)->first();
         if (!$cloud) {
             abort(404);
         }

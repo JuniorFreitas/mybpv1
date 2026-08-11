@@ -1,6 +1,6 @@
 <template>
     <div>
-        <modal id="janelaCadastrarPasta" :titulo="tituloNovaPasta" size="g" :fechar="!preload_pasta" ref="modal_janelaCadastrarPasta">
+        <modal id="janelaCadastrarPasta" :titulo="tituloNovaPasta" size="g" :fechar="!preload_pasta" ref="modal_janelaCadastrarPasta" @fechou="resetEstadoPasta">
             <template #conteudo>
                 <div class="alert alert-success text-center" v-show="cadastrado">
                     <h5><i class="icon fa fa-check"></i> Pasta criada com sucesso!</h5>
@@ -109,7 +109,7 @@
                 </button>
             </template>
         </modal>
-        <modal id="janelaVisualizadora" :size="90" :titulo="titulojanelavisualizar" ref="modal_janelaVisualizadora">
+        <modal id="janelaVisualizadora" :size="90" :titulo="titulojanelavisualizar" ref="modal_janelaVisualizadora" @fechou="exibindo = null; titulojanelavisualizar = ''">
             <template #conteudo>
                 <div class="col-12" v-if="exibindo && exibindo.imagem">
                     <img :src="exibindo.url" class="img-fluid d-flex mx-auto" />
@@ -130,7 +130,7 @@
                 <!--                <a :href="urlBase+srcDownload" download class="btn btn-sm mr-1 btn-outline-default"><i class="fa fa-download"></i> Download</a>-->
             </template>
         </modal>
-        <modal id="janelaDetalhes" titulo="Detalhes" ref="modal_janelaDetalhes">
+        <modal id="janelaDetalhes" titulo="Detalhes" ref="modal_janelaDetalhes" @fechou="detalhes = null">
             <template #conteudo>
                 <fieldset v-if="detalhes">
                     <legend>Expecificações</legend>
@@ -149,7 +149,7 @@
         </modal>
 
         <!-- Modal encaminhamento de e-mail -->
-        <modal id="janelaEnviarRevisao" :fechar="!formEnviarRevisao.preload" titulo="Enviar para Revisão" ref="modal_janelaEnviarRevisao">
+        <modal id="janelaEnviarRevisao" :fechar="!formEnviarRevisao.preload" titulo="Enviar para Revisão" ref="modal_janelaEnviarRevisao" @fechou="resetEstadoEnviarRevisao">
             <template #conteudo>
                 <span v-show="formEnviarRevisao.preload">
                     <preload label="Enviando ..."></preload>
@@ -199,7 +199,7 @@
             </template>
         </modal>
 
-        <modal id="janelaEnviarAprovacao" :fechar="!formEnviarAprovacao.preload" titulo="Enviar para Aprovação" ref="modal_janelaEnviarAprovacao">
+        <modal id="janelaEnviarAprovacao" :fechar="!formEnviarAprovacao.preload" titulo="Enviar para Aprovação" ref="modal_janelaEnviarAprovacao" @fechou="resetEstadoEnviarAprovacao">
             <template #conteudo>
                 <span v-show="formEnviarAprovacao.preload">
                     <preload label="Enviando ..."></preload>
@@ -250,7 +250,7 @@
         </modal>
 
         <!-- Modal confirmar -->
-        <modal id="janelaConfirmarApagar" :titulo="tituloApagar" ref="modal_janelaConfirmarApagar">
+        <modal id="janelaConfirmarApagar" :titulo="tituloApagar" ref="modal_janelaConfirmarApagar" @fechou="resetEstadoApagar">
             <template #conteudo>
                 <span v-show="preloadDel">
                     <preload></preload>
@@ -274,7 +274,7 @@
                 </div>
             </template>
         </modal>
-        <modal id="janelaConfirmarAprovar" :titulo="tituloAprovar" ref="modal_janelaConfirmarAprovar">
+        <modal id="janelaConfirmarAprovar" :titulo="tituloAprovar" ref="modal_janelaConfirmarAprovar" @fechou="resetEstadoAprovar">
             <template #conteudo>
                 <span v-show="preloadAprovado">
                     <preload></preload>
@@ -297,7 +297,7 @@
                 </div>
             </template>
         </modal>
-        <modal id="janelaConfirmarRevisar" :titulo="tituloRevisar" ref="modal_janelaConfirmarRevisar">
+        <modal id="janelaConfirmarRevisar" :titulo="tituloRevisar" ref="modal_janelaConfirmarRevisar" @fechou="resetEstadoRevisar">
             <template #conteudo>
                 <span v-show="preloadRevisado">
                     <preload></preload>
@@ -320,7 +320,7 @@
                 </div>
             </template>
         </modal>
-        <modal id="janelaMover" titulo="Mover Arquivo" @fechou="janelaMover = false" :fechar="!preloadMover" ref="modal_janelaMover">
+        <modal id="janelaMover" titulo="Mover Arquivo" @fechou="resetEstadoMover" :fechar="!preloadMover" ref="modal_janelaMover">
             <template #conteudo>
                 <pasta
                     :model="mover"
@@ -342,7 +342,7 @@
             </template>
         </modal>
         <!-- Modal atualizar arquivo-->
-        <modal id="janelaAtualizar" titulo="Atualizando arquivo" :fechar="!emprogressoAtualizar" ref="modal_janelaAtualizar">
+        <modal id="janelaAtualizar" titulo="Atualizando arquivo" :fechar="!emprogressoAtualizar" ref="modal_janelaAtualizar" @fechou="resetEstadoAtualizarArquivo">
             <template #conteudo>
                 <div v-show="atualizadoSucesso" class="col-12 alert alert-success"><i class="fa fa-check"></i> Arquivo atualizado com sucesso!</div>
                 <div v-show="!atualizadoSucesso">
@@ -400,7 +400,7 @@
             class="btn btn-sm mr-1 btn-outline-primary"
             v-if="!forbidden"
             :disabled="preload"
-            @click.prevent="formNovaPasta; $refs.modal_janelaCadastrarPasta && $refs.modal_janelaCadastrarPasta.abrirModal()"
+            @click.prevent="abrirNovaPasta"
         >
             <i class="fas fa-folder-plus"></i> Nova Pasta
         </button>
@@ -712,6 +712,11 @@ export default {
             required: true,
             default: () => ''
         },
+        slug: {
+            type: String,
+            required: true,
+            default: ''
+        },
         itemBusca: {
             type: [Number, String],
             required: false,
@@ -857,7 +862,13 @@ export default {
         this.csrf = CSRF_token
         this.url_publico = `${URL_PUBLICO}/cloud`
         this.caminho.push(raiz)
-        this.atualizar()
+        this._ignorandoPopstate = false
+        this._onPopState = () => {
+            if (this._ignorandoPopstate) return
+            this.carregarDaUrl({ fromPopstate: true })
+        }
+        window.addEventListener('popstate', this._onPopState)
+        this.carregarDaUrl({ replace: true })
         this._fecharDropdownFora = (event) => {
             if (!this.dropdownAberto) return
             const menu = this.$refs.cloudDropdownMenu
@@ -879,8 +890,86 @@ export default {
         document.removeEventListener('click', this._fecharDropdownFora)
         window.removeEventListener('resize', this._reposicionarDropdown)
         window.removeEventListener('scroll', this._reposicionarDropdown, true)
+        window.removeEventListener('popstate', this._onPopState)
     },
     methods: {
+        slugifyLabel(texto) {
+            return String(texto || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+                || 'item'
+        },
+        pathAtual() {
+            return this.caminho
+                .filter((folder) => folder.id !== '' && folder.id != null)
+                .map((folder) => folder.slug || this.slugifyLabel(folder.label))
+                .join('/')
+        },
+        urlCloudComPath(path) {
+            let adminPath = String(URL_ADMIN || '/g')
+            try {
+                adminPath = new URL(URL_ADMIN, window.location.origin).pathname
+            } catch (e) {
+                // mantém adminPath como string
+            }
+            adminPath = adminPath.replace(/\/$/, '')
+            const base = `${adminPath}/cloud/${this.slug}`
+            return path ? `${base}?path=${path}` : base
+        },
+        sincronizarUrl({ replace = false } = {}) {
+            if (!this.slug) return
+            const path = this.pathAtual()
+            const url = this.urlCloudComPath(path)
+            const atual = `${window.location.pathname}${window.location.search}`
+            if (atual === url) return
+
+            this._ignorandoPopstate = true
+            if (replace) {
+                history.replaceState({ cloudPath: path }, '', url)
+            } else {
+                history.pushState({ cloudPath: path }, '', url)
+            }
+            this.$nextTick(() => {
+                this._ignorandoPopstate = false
+            })
+        },
+        async carregarDaUrl({ replace = false, fromPopstate = false } = {}) {
+            const params = new URLSearchParams(window.location.search)
+            const path = (params.get('path') || '').replace(/^\/+|\/+$/g, '')
+
+            this.caminho = [{ label: 'Inicio', id: '' }]
+
+            if (!path) {
+                this.$emit('abri-pasta', '')
+                if (!fromPopstate) {
+                    this.sincronizarUrl({ replace: true })
+                }
+                await this.$nextTick()
+                this.atualizar({ syncUrl: false })
+                return
+            }
+
+            try {
+                const { data } = await axios.get(`${URL_ADMIN}/cloud/${this.slug}/resolver-path`, {
+                    params: { path }
+                })
+                this.caminho = [{ label: 'Inicio', id: '' }, ...(data.caminho || [])]
+                this.$emit('abri-pasta', data.pasta_id || '')
+                if (!fromPopstate) {
+                    this.sincronizarUrl({ replace: !!replace })
+                }
+                await this.$nextTick()
+                setTimeout(() => this.atualizar({ syncUrl: false }), 50)
+            } catch (error) {
+                this.$emit('abri-pasta', '')
+                this.sincronizarUrl({ replace: true })
+                await this.$nextTick()
+                this.atualizar({ syncUrl: false })
+            }
+        },
         dropdownKey(item, tipo) {
             return `${tipo}-${item.id}`
         },
@@ -1027,13 +1116,15 @@ export default {
             this.removeMover = !(dados.atual === dados.inicial || dados.atual === dados.arquivo || !dados.atual)
         },
         pastaMover(arquivo) {
-            setTimeout(() => {
-                this.movido = false
-                this.mover.cloud = this.cloud
-                this.mover.item = this.itemBusca
-                this.mover.arquivo = arquivo
-                this.janelaMover = true
-            }, 200)
+            this.movido = false
+            this.preloadMover = false
+            this.removeMover = false
+            this.mover = {
+                cloud: this.cloud,
+                item: this.itemBusca,
+                arquivo: arquivo
+            }
+            this.janelaMover = true
         },
         moverArquivo() {
             setTimeout(() => {
@@ -1049,6 +1140,8 @@ export default {
         /*--------UPLOADS--------*/
         uploadFinalizado() {
             this.arquivosUpload = []
+            this.arquivoUploadAtual = null
+            this.pctGeral = 0
             setTimeout(() => {
                 this.atualizar()
             }, 100)
@@ -1056,7 +1149,7 @@ export default {
 
         /*--------UPLOADS ATUALIZAR--------*/
         janelaAtualizar(obj) {
-            this.atualizadoSucesso = false
+            this.resetEstadoAtualizarArquivo()
             this.id_anterior_atualizar = obj.arquivo_id
         },
         uploadAtualizarFinalizado() {
@@ -1135,16 +1228,92 @@ export default {
         },
 
         /*--------FORM PASTA E ITENS--------*/
+        abrirNovaPasta() {
+            this.formNovaPasta()
+            this.$refs.modal_janelaCadastrarPasta && this.$refs.modal_janelaCadastrarPasta.abrirModal()
+        },
+        resetEstadoPasta() {
+            this.cadastrado = false
+            this.atualizado = false
+            this.editando = false
+            this.preload_pasta = false
+            this.tituloNovaPasta = 'NOVA PASTA'
+            if (this.formDefault) {
+                this.form = _.cloneDeep(this.formDefault)
+                this.form.cloud_id = this.cloud
+                this.form.pertence = this.itemBusca
+            }
+            _.forEach(this.grupos, (grupo) => {
+                grupo.permitido = false
+            })
+        },
+        resetEstadoApagar() {
+            this.apagado = false
+            this.preloadDel = false
+            this.tituloApagar = ''
+            if (this.formDefault) {
+                this.form = _.cloneDeep(this.formDefault)
+                this.form.cloud_id = this.cloud
+                this.form.pertence = this.itemBusca
+            }
+        },
+        resetEstadoAprovar() {
+            this.aprovado = false
+            this.preloadAprovado = false
+            this.tituloAprovar = ''
+            if (this.formDefault) {
+                this.form = _.cloneDeep(this.formDefault)
+                this.form.cloud_id = this.cloud
+                this.form.pertence = this.itemBusca
+            }
+        },
+        resetEstadoRevisar() {
+            this.revisado = false
+            this.preloadRevisado = false
+            this.tituloRevisar = ''
+            if (this.formDefault) {
+                this.form = _.cloneDeep(this.formDefault)
+                this.form.cloud_id = this.cloud
+                this.form.pertence = this.itemBusca
+            }
+        },
+        resetEstadoEnviarRevisao() {
+            if (this.formEnviarRevisaoDefault) {
+                this.formEnviarRevisao = _.cloneDeep(this.formEnviarRevisaoDefault)
+            }
+        },
+        resetEstadoEnviarAprovacao() {
+            if (this.formEnviarAprovacaoDefault) {
+                this.formEnviarAprovacao = _.cloneDeep(this.formEnviarAprovacaoDefault)
+            }
+        },
+        resetEstadoMover() {
+            this.janelaMover = false
+            this.movido = false
+            this.preloadMover = false
+            this.removeMover = false
+            this.mover = {}
+        },
+        resetEstadoAtualizarArquivo() {
+            this.atualizadoSucesso = false
+            this.emprogressoAtualizar = false
+            this.arquivosAtualizarUpload = []
+            this.arquivoAtualizarUploadAtual = null
+            this.pctGeralAtualizar = 0
+            this.id_anterior_atualizar = 0
+        },
         formNovaPasta() {
             this.cadastrado = false
             this.atualizado = false
             this.editando = false
+            this.preload_pasta = false
 
             this.tituloNovaPasta = 'NOVA PASTA'
 
             formReset()
             setupCampo()
             this.form = _.cloneDeep(this.formDefault) //copia
+            this.form.cloud_id = this.cloud
             this.form.pertence = this.itemBusca
             this.form.permissoes = []
 
@@ -1185,6 +1354,7 @@ export default {
             this.cadastrado = false
             this.atualizado = false
             this.editando = true
+            this.preload_pasta = false
             this.tituloNovaPasta = 'Alterando'
 
             this.preload_pasta = true
@@ -1197,7 +1367,9 @@ export default {
                 }
             })
 
-            Object.assign(this.form, this.formDefault)
+            this.form = _.cloneDeep(this.formDefault)
+            this.form.cloud_id = this.cloud
+            this.form.id = id
             formReset()
             axios
                 .get(`${URL_ADMIN}/itenscloud/${id}/editar`)
@@ -1268,13 +1440,13 @@ export default {
             itemBusca = id
             this.$emit('abri-pasta', itemBusca)
             setTimeout(() => {
-                this.atualizar()
+                this.atualizar({ syncUrl: true })
             }, 50)
         },
 
         /*--------JANELA APAGAR--------*/
         janelaConfirmar(obj) {
-            this.form = obj
+            this.form = _.cloneDeep(obj)
             this.tituloApagar = `Apagar ${this.form.tipo}`
             this.apagado = false
             this.preloadDel = false
@@ -1324,7 +1496,7 @@ export default {
 
         /*--------JANELA APROVAR--------*/
         janelaConfirmarAprovar(obj) {
-            this.form = obj
+            this.form = _.cloneDeep(obj)
             this.tituloAprovar = `Aprovar`
             this.aprovado = false
             this.preloadAprovado = false
@@ -1378,7 +1550,7 @@ export default {
 
         /*--------JANELA REVISAR--------*/
         janelaConfirmarRevisar(obj) {
-            this.form = obj
+            this.form = _.cloneDeep(obj)
             this.tituloRevisar = `Revisar`
             this.revisado = false
             this.preloadRevisado = false
@@ -1398,10 +1570,13 @@ export default {
         },
 
         /*--------ATUALIZAR LISTA DE ITENS--------*/
-        atualizar() {
+        atualizar({ syncUrl = false } = {}) {
             this.preload = true
             this.forbidden = true
             this.form.pertence = this.itemBusca // incluindo a pasta
+            if (syncUrl) {
+                this.sincronizarUrl()
+            }
             axios
                 .get(`${URL_ADMIN}/cloud/atualizar/${this.cloud}/${this.itemBusca}`)
                 .then((response) => {
@@ -1428,7 +1603,7 @@ export default {
                     this.fecharDropdown()
                 })
                 .catch((error) => {
-                    if (error.response.status === 403) {
+                    if (error.response && error.response.status === 403) {
                         this.forbidden = true
                     }
                     this.preload = false
