@@ -142,12 +142,14 @@ Anexos ficavam em `/publico/cloud/anexo/...` (públicos). Dados sensíveis.
 - Rotas públicas `/publico/cloud/*` **removidas**.
 - Accessors em `Arquivo` para `disco-cloud`:
   - `url` / `urlThumb` / `urlDownload` / `urlDelete` → `URL::temporarySignedRoute` (TTL 60 min).
+  - URLs **relativas** + middleware `signed:relative` (estável atrás de proxy/CDN; não quebra por APP_URL/host).
   - **Thumb** (`_p`) só na **listagem** (`urlThumb`).
   - **Visualização** usa a imagem **original** (`url`).
 - Rotas autenticadas + assinadas:
-  - `GET g/cloud/anexo/{arquivo}` — show (signed + `can:cloud`)
-  - `GET g/cloud/anexoDownload/{arquivo}` — download (signed + `can:cloud`)
-  - `DELETE g/cloud/anexo/{arquivo}` — delete (signed + `can:cloud`)
+  - `GET g/cloud/anexo/{arquivo}` — show (`signed:relative` + `can:cloud`)
+  - `GET g/cloud/anexoDownload/{arquivo}` — download (`signed:relative` + `can:cloud`)
+  - `DELETE g/cloud/anexo/{arquivo}` — delete (`signed:relative` + `can:cloud`)
+- `TrustProxies` com `$proxies = '*'` para respeitar `X-Forwarded-*` (Cloudflare/LB).
 - Autorização em `CloudController::autorizarArquivoCloud()`:
   1. Usuário autenticado
   2. Arquivo existe no disco Cloud
@@ -238,6 +240,23 @@ npm run prod   # ou npm run dev — assets Cloud.vue / PastaCloud / cadastro
 ```
 
 Garantir `APP_KEY` estável (assinatura de URL depende dela) e `APP_URL` alinhado ao host usado no browser.
+
+### Cloudflare (produção)
+
+Já tratado no código:
+
+- `TrustProxies` com `$proxies = '*'` + headers `X-Forwarded-*`
+- URLs assinadas **relativas** + middleware `signed:relative`
+- `URL::forceScheme('https')` fora de `local`
+- Headers `Cache-Control` / `Cloudflare-CDN-Cache-Control: no-store` nos anexos do Cloud
+
+Configurar no painel Cloudflare:
+
+1. **`APP_URL`** no `.env` de produção: `https://sistema.mybp.com.br` (mesmo host que o browser usa).
+2. **SSL/TLS**: modo **Full (strict)** recomendado.
+3. **Rocket Loader**: desativar (ou excluir `/g/*`) — aparece no stack e pode interferir em JS/assets.
+4. **Cache Rules**: não cachear `/g/cloud/anexo*` e `/g/cloud/anexoDownload*` (ou confiar nos headers `no-store`).
+5. Após deploy: limpar cache Cloudflare da zona se thumbs antigas ficarem em 403.
 
 ---
 
