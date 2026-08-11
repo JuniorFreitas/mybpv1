@@ -25,10 +25,11 @@ return [
         'disco-cloud' => array_merge($default,
             [
                 'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-cloud') : 'arquivos/disco-cloud',
-                'urlShow' => env('APP_URL') . '/publico/cloud/anexo',
-                'urlDownload' => env('APP_URL') . '/publico/cloud/anexo',
-                'urlThumb' => env('APP_URL') . '/publico/cloud/anexo',
-                'urlDelete' => env('APP_URL') . '/publico/cloud/anexo',
+                'urlShow' => env('APP_URL') . '/g/cloud/anexo',
+                'urlDownload' => env('APP_URL') . '/g/cloud/anexoDownload',
+                'urlThumb' => env('APP_URL') . '/g/cloud/anexo',
+                'urlDelete' => env('APP_URL') . '/g/cloud/anexo',
+                'visibility' => 'private',
             ]
         ),
          'disco-exportacao' => array_merge($default,

@@ -8,7 +8,7 @@
 
 {{--    <button class="btn btn-success" @click="atualizar(1)">Atualizar</button>--}}
 
-    <cloud :cloud="{{ $cloud->id }}" :item-busca="itemAtual" ref="cloud" @abri-pasta="openFolder"></cloud>
+    <cloud :cloud="{{ $cloud->id }}" :slug="'{{ $cloud->slug }}'" :item-busca="itemAtual" ref="cloud" @abri-pasta="openFolder"></cloud>
 
 @stop
 @push('js')
