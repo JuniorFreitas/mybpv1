@@ -247,7 +247,9 @@ class CloudController extends Controller
         $this->autorizarArquivoCloud($arquivo);
         $caminho = $this->resolverCaminhoAnexoCloud($arquivo, (bool) $request->query('thumb'));
 
-        return Arquivo::anexoShow(Arquivo::DISCO_CLOUD, $caminho);
+        return $this->respostaAnexoPrivado(
+            Arquivo::anexoShow(Arquivo::DISCO_CLOUD, $caminho)
+        );
     }
 
     //anexo ou foto
@@ -255,7 +257,9 @@ class CloudController extends Controller
     {
         $this->autorizarArquivoCloud($arquivo);
 
-        return Arquivo::anexoDownload(Arquivo::DISCO_CLOUD, $arquivo);
+        return $this->respostaAnexoPrivado(
+            Arquivo::anexoDownload(Arquivo::DISCO_CLOUD, $arquivo)
+        );
     }
 
     public function anexoDelete(Request $request, $arquivo)
@@ -263,6 +267,24 @@ class CloudController extends Controller
         $this->autorizarArquivoCloud($arquivo);
 
         return Arquivo::anexoDelete(Arquivo::DISCO_CLOUD, $arquivo);
+    }
+
+    /**
+     * Evita cache da Cloudflare/browser em anexos autenticados/assinados.
+     */
+    protected function respostaAnexoPrivado(mixed $response): mixed
+    {
+        if (!method_exists($response, 'headers')) {
+            return $response;
+        }
+
+        $response->headers->set('Cache-Control', 'private, no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+        $response->headers->set('CDN-Cache-Control', 'no-store');
+        $response->headers->set('Cloudflare-CDN-Cache-Control', 'no-store');
+
+        return $response;
     }
 
     /**
