@@ -6,6 +6,7 @@ use App\Models\Arquivo;
 use App\Models\Cloud;
 use App\Models\GrupoCloud;
 use App\Models\ItensCloud;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -189,19 +190,22 @@ class CloudController extends Controller
     public function listarClouds(Request $request)
     {
 //        $this->authorize('cloud_cadastro');
-        $resultado = Cloud::orderBy('nome');
+        $resultado = Cloud::query()
+            ->withCount('Usuarios')
+            ->orderBy('nome');
 
         if ($request->filled('campoBusca')) {
-            $resultado->where('titulo', 'like', '%' . $request->campoBusca . '%');
+            $resultado->where('nome', 'like', '%' . $request->campoBusca . '%');
         }
 
-        $resultado = $resultado->paginate($request->pages);
+        $porPagina = (int) ($request->input('porPagina') ?: $request->input('pages') ?: 20);
+        $resultado = $resultado->paginate($porPagina);
 
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
-            'dados' => ['lista' => $resultado->items(),]
+            'dados' => ['lista' => $resultado->items()],
         ]);
     }
 
@@ -235,7 +239,7 @@ class CloudController extends Controller
                 $cloud->Usuarios()->attach($uadmin);
             }
             DB::commit();
-            return response()->json([]);
+            return response()->json(['id' => $cloud->id], 201);
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::debug($e->getMessage());
@@ -247,17 +251,95 @@ class CloudController extends Controller
 
     public function edit(Request $request, Cloud $cloud)
     {
-        return $cloud->load('Usuarios');
+        $adminIds = $this->grupoAdmin()->pluck('id');
+        $userIds = $cloud->Usuarios()->pluck('users.id');
+
+        $usuarios = User::query()
+            ->whereIn('id', $userIds)
+            ->with('GrupoCloud:id,nome')
+            ->orderBy('nome')
+            ->get(['id', 'nome', 'grupo_cloud_id'])
+            ->map(function ($usuario) use ($adminIds) {
+                $ehAdmin = $adminIds->contains($usuario->id);
+                return [
+                    'id' => $usuario->id,
+                    'nome' => $usuario->nome,
+                    'administrador' => $ehAdmin,
+                    'grupo_nome' => $ehAdmin
+                        ? GrupoCloud::NOME_ADMINISTRADORES
+                        : ($usuario->GrupoCloud->nome ?? '—'),
+                    'novo' => false,
+                ];
+            })
+            ->values();
+
+        $grupos = GrupoCloud::query()
+            ->where('ativo', true)
+            ->where('empresa_id', auth()->user()->empresa_id)
+            ->where('nome', '!=', GrupoCloud::NOME_ADMINISTRADORES)
+            ->withCount(['Usuarios' => function ($query) {
+                $query->where('ativo', true);
+            }])
+            ->orderBy('nome')
+            ->get(['id', 'nome', 'descricao']);
+
+        return response()->json([
+            'id' => $cloud->id,
+            'nome' => $cloud->nome,
+            'ativo' => $cloud->ativo,
+            'usuarios' => $usuarios,
+            'grupos' => $grupos,
+            'administradores_ids' => $adminIds->values(),
+        ]);
+    }
+
+    public function usuariosDoGrupo(GrupoCloud $grupocloud)
+    {
+        if ((int) $grupocloud->empresa_id !== (int) auth()->user()->empresa_id) {
+            return response()->json(['msg' => 'Sem permissão'], 403);
+        }
+
+        if ($grupocloud->nome === GrupoCloud::NOME_ADMINISTRADORES) {
+            return response()->json(['msg' => 'O grupo Administradores já é incluído automaticamente'], 422);
+        }
+
+        $adminId = GrupoCloud::idAdministradores(auth()->user()->empresa_id);
+
+        $usuarios = $grupocloud->Usuarios()
+            ->where('ativo', true)
+            ->select(['id', 'nome', 'grupo_cloud_id'])
+            ->orderBy('nome')
+            ->get()
+            ->map(function ($usuario) use ($adminId, $grupocloud) {
+                return [
+                    'id' => $usuario->id,
+                    'nome' => $usuario->nome,
+                    'administrador' => (int) $usuario->grupo_cloud_id === (int) $adminId,
+                    'grupo_nome' => $grupocloud->nome,
+                    'novo' => true,
+                ];
+            })
+            ->values();
+
+        return response()->json([
+            'grupo' => [
+                'id' => $grupocloud->id,
+                'nome' => $grupocloud->nome,
+            ],
+            'usuarios' => $usuarios,
+        ]);
     }
 
     protected function grupoAdmin()
     {
-        return GrupoCloud::where('nome', 'Administradores')
+        $grupo = GrupoCloud::where('nome', GrupoCloud::NOME_ADMINISTRADORES)
             ->whereEmpresaId(auth()->user()->empresa_id)
-            ->with('Usuarios', function ($query) {
+            ->with(['Usuarios' => function ($query) {
                 $query->select(['id', 'nome', 'grupo_cloud_id'])->where('ativo', true);
-            })
-            ->first()->usuarios;
+            }])
+            ->first();
+
+        return $grupo ? $grupo->usuarios : collect();
     }
 
     public function updateCloud(Request $request, Cloud $cloud)
@@ -287,8 +369,15 @@ class CloudController extends Controller
 
             $cloud->Usuarios()->detach();
 
-            foreach ($request->usuarios as $usuario) {
-                $cloud->Usuarios()->attach($usuario['id']);
+            $usuariosIds = collect($request->input('usuarios', []))
+                ->pluck('id')
+                ->filter()
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values();
+
+            if ($usuariosIds->isNotEmpty()) {
+                $cloud->Usuarios()->attach($usuariosIds);
             }
 
             foreach ($this->grupoAdmin()->pluck('id') as $uadmin) {

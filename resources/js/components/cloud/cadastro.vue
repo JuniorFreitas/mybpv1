@@ -1,105 +1,203 @@
 <template>
-    <div>
-        <div v-if="open && !openGroup">
-            <h4 class="text-default">{{ upper(tituloJanela) }}</h4>
-
-            <button class="btn btn-sm mr-1 btn-secondary" @click.prevent="voltar"><i class="fa fa-arrow-left"></i> Voltar</button>
-
-            <preload class="my-2" v-show="preloadAjax"></preload>
-            <form v-show="!preloadAjax && !cadastrado && !atualizado" @submit.prevent="submitForm">
-                <fieldset>
-                    <legend>INFORMAÇÕES</legend>
-                    <div class="form-group">
-                        <label>Nome</label>
-                        <input
-                            type="text"
-                            class="form-control form-control-sm"
-                            v-model="form.nome"
-                            placeholder="Nome do Cloud"
-                            autocomplete="off"
-                            onblur="valida_campo_vazio(this, 2)"
-                        />
-                    </div>
-
-                    <div class="form-group">
-                        <label>Ativo</label>
-                        <select class="form-control form-control-sm" v-model="form.ativo">
-                            <option :value="true">Sim</option>
-                            <option :value="false">Não</option>
-                        </select>
-                    </div>
-
-                    <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !preloadAjax" @click="alterar">Alterar</button>
-                    <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !preloadAjax" @click="cadastrar">Cadastrar</button>
-                </fieldset>
-            </form>
-
-            <fieldset v-if="editando">
-                <legend>Membros</legend>
-                <div class="alert alert-info">
-                    Todos os membros do Grupo Administradores são adicionados automaticamente.
-                    Ao remover alguém desse grupo, a pessoa também é removida dos membros do Cloud.
-                </div>
-
-                <div class="form-group">
-                    <label>Colaborador </label>
-                    <autocomplete
-                        :caminho="`autocomplete/buscaUsuariosAtivos`"
-                        :formsm="true"
-                        v-model="form.autocomplete_label_colaborador"
-                        placeholder="Selecione um(a) colaborador(a)"
-                        :id="`colaborador_${hash}`"
-                        @onselect="selecionaColaborador"
-                    ></autocomplete>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-condensed bg-white" v-if="form.usuarios.length > 0">
-                        <thead>
-                            <tr class="bg-default">
-                                <th class="text-center">Nome</th>
-                                <th class="text-center">Remover</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(colaborador, index) in form.usuarios" :key="colaborador.id || index">
-                                <td class="text-center">{{ colaborador.nome }}</td>
-                                <td class="text-center">
-                                    <a href="javascript://" class="btn btn-sm mr-1 btn-danger" @click.prevent="removerLIColaborador(index)">
-                                        <i class="fa fa-times" aria-hidden="true"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </fieldset>
-        </div>
-
-        <div v-if="openGroup && !open">
-            <button class="btn btn-sm mr-1 btn-secondary" @click.prevent="voltar"><i class="fa fa-arrow-left"></i> Voltar</button>
-            <!--            <grupo></grupo>-->
-        </div>
-
-        <div v-show="!open && !openGroup">
-            <h4 class="text-default">CLOUD</h4>
-
-            <div class="row">
-                <div class="col-md-4 column mb-2">
-                    <form id="formBusca" onsubmit="return false">
-                        <label>Buscar:</label>
-                        <input type="text" placeholder="Nome do cloud" autocomplete="off" class="form-control form-control-sm" />
-                    </form>
-                </div>
+    <div class="cloud-cadastro">
+        <!-- FORMULÁRIO -->
+        <div v-if="open">
+            <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
+                <h4 class="text-default mb-0">{{ upper(tituloJanela) }}</h4>
+                <button type="button" class="btn btn-sm btn-secondary" @click.prevent="voltar">
+                    <i class="fa fa-arrow-left"></i> Voltar
+                </button>
             </div>
 
-            <button type="button" class="btn btn-sm mr-1 btn-success" @click.prevent="atualizar"><i class="fa fa-sync"></i> Atualizar</button>
+            <preload class="my-2" v-show="preloadAjax"></preload>
 
-            <button type="button" class="btn btn-sm mr-1 btn-primary" @click="formNovo"><i class="fa fa-upload"></i> Novo Cloud</button>
+            <div v-show="!preloadAjax">
+                <fieldset>
+                    <legend>Dados do Cloud</legend>
+                    <form @submit.prevent="submitForm">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label>Nome</label>
+                                    <input
+                                        type="text"
+                                        class="form-control form-control-sm"
+                                        v-model="form.nome"
+                                        placeholder="Nome do Cloud"
+                                        autocomplete="off"
+                                        onblur="valida_campo_vazio(this, 2)"
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Ativo</label>
+                                    <select class="form-control form-control-sm" v-model="form.ativo">
+                                        <option :value="true">Sim</option>
+                                        <option :value="false">Não</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-primary" v-if="editando" @click="alterar">
+                            <i class="fa fa-save"></i> Salvar alterações
+                        </button>
+                        <button type="button" class="btn btn-sm btn-primary" v-else @click="cadastrar">
+                            <i class="fa fa-save"></i> Cadastrar
+                        </button>
+                    </form>
+                </fieldset>
 
-            <!--            <button type="button" class="btn btn-sm mr-1 btn-primary" @click="openGroup=true">-->
-            <!--                <i class="fas fa-users-cog"></i> Grupo-->
-            <!--            </button>-->
+                <fieldset v-if="editando">
+                    <legend>Acesso — {{ form.usuarios.length }} membro(s)</legend>
+
+                    <div class="alert alert-info py-2">
+                        Membros do grupo <strong>Administradores</strong> entram automaticamente e não podem ser removidos por aqui.
+                        Ao escolher um grupo, os colaboradores ativos dele são incluídos na lista.
+                    </div>
+
+                    <div class="btn-group btn-group-sm mb-3" role="group">
+                        <button
+                            type="button"
+                            class="btn"
+                            :class="modoAdicao === 'grupo' ? 'btn-primary' : 'btn-outline-primary'"
+                            @click="modoAdicao = 'grupo'"
+                        >
+                            <i class="fa fa-users"></i> Grupo
+                        </button>
+                        <button
+                            type="button"
+                            class="btn"
+                            :class="modoAdicao === 'colaborador' ? 'btn-primary' : 'btn-outline-primary'"
+                            @click="modoAdicao = 'colaborador'"
+                        >
+                            <i class="fa fa-user"></i> Colaborador
+                        </button>
+                    </div>
+
+                    <div class="row" v-if="modoAdicao === 'grupo'">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label>Selecionar grupo</label>
+                                <select class="form-control form-control-sm" v-model="grupoSelecionadoId">
+                                    <option :value="null">Selecione um grupo...</option>
+                                    <option v-for="grupo in gruposDisponiveis" :key="grupo.id" :value="grupo.id">
+                                        {{ grupo.nome }}
+                                        <template v-if="grupo.usuarios_count != null"> ({{ grupo.usuarios_count }})</template>
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="form-group w-100">
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-success btn-block"
+                                    :disabled="!grupoSelecionadoId || preloadGrupo"
+                                    @click="adicionarPorGrupo"
+                                >
+                                    <i :class="preloadGrupo ? 'fa fa-spinner fa-spin' : 'fa fa-plus'"></i>
+                                    Incluir membros do grupo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" v-else>
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label>Buscar colaborador</label>
+                                <autocomplete
+                                    :caminho="`autocomplete/buscaUsuariosAtivos`"
+                                    :formsm="true"
+                                    v-model="form.autocomplete_label_colaborador"
+                                    placeholder="Digite o nome do colaborador"
+                                    :id="`colaborador_${hash}`"
+                                    @onselect="selecionaColaborador"
+                                ></autocomplete>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <input
+                                type="text"
+                                class="form-control form-control-sm"
+                                v-model="filtroMembros"
+                                placeholder="Filtrar membros da lista..."
+                            />
+                        </div>
+                    </div>
+
+                    <div class="table-responsive" v-if="membrosFiltrados.length > 0">
+                        <table class="table table-bordered table-hover table-sm bg-white mb-0">
+                            <thead>
+                                <tr class="bg-default">
+                                    <th>Nome</th>
+                                    <th class="text-center" style="width: 180px">Grupo</th>
+                                    <th class="text-center" style="width: 90px">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="colaborador in membrosFiltrados" :key="colaborador.id">
+                                    <td>{{ colaborador.nome }}</td>
+                                    <td class="text-center">
+                                        <span
+                                            class="badge"
+                                            :class="colaborador.administrador ? 'badge-warning' : 'badge-light text-dark'"
+                                        >
+                                            {{ colaborador.grupo_nome || '—' }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <button
+                                            v-if="!colaborador.administrador"
+                                            type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            title="Remover"
+                                            @click.prevent="removerLIColaboradorPorId(colaborador.id)"
+                                        >
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                        <span v-else class="text-muted">—</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted mb-0" v-else>
+                        Nenhum membro na lista<span v-if="filtroMembros"> com esse filtro</span>.
+                    </p>
+                </fieldset>
+            </div>
+        </div>
+
+        <!-- LISTAGEM -->
+        <div v-show="!open">
+            <h4 class="text-default">Clouds</h4>
+
+            <div class="row align-items-end mb-2">
+                <div class="col-md-5 mb-2">
+                    <label class="mb-1">Buscar</label>
+                    <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        v-model="controle.dados.campoBusca"
+                        placeholder="Nome do cloud"
+                        autocomplete="off"
+                        @keyup.enter="atualizar"
+                    />
+                </div>
+                <div class="col-md-7 mb-2">
+                    <button type="button" class="btn btn-sm btn-success mr-1" @click.prevent="atualizar">
+                        <i class="fa fa-sync"></i> Atualizar
+                    </button>
+                    <button type="button" class="btn btn-sm btn-primary" @click="formNovo">
+                        <i class="fa fa-plus"></i> Novo Cloud
+                    </button>
+                </div>
+            </div>
 
             <preload class="mt-2" v-if="controle.carregando"></preload>
 
@@ -111,33 +209,32 @@
                     <table class="tabela" v-if="!controle.carregando && lista.length > 0">
                         <thead>
                             <tr class="bg-default">
-                                <th class="text-center">ID</th>
-                                <th class="text-center">Nome</th>
-                                <th class="text-center">Ativo</th>
-                                <th></th>
+                                <th class="text-center" style="width: 70px">ID</th>
+                                <th>Nome</th>
+                                <th class="text-center" style="width: 120px">Membros</th>
+                                <th class="text-center" style="width: 90px">Ativo</th>
+                                <th class="text-center" style="width: 100px"></th>
                             </tr>
                         </thead>
-
                         <tbody>
                             <tr v-for="item in lista" :key="item.id">
                                 <td class="text-center">{{ item.id }}</td>
-                                <td class="text-center">{{ item.nome }}</td>
+                                <td>{{ item.nome }}</td>
+                                <td class="text-center">
+                                    <span class="badge badge-secondary">{{ item.usuarios_count || 0 }}</span>
+                                </td>
                                 <td class="text-center">
                                     <bt-ativo :rota="`clouds/cadastro/${item.id}/ativa-desativa`" :model="item"></bt-ativo>
                                 </td>
                                 <td class="text-center">
-                                    <a
-                                        class="btn btn-sm mr-1 btn-success btnFormAlterar"
-                                        href="javascript://"
-                                        @click.prevent="formAlterar(item.id); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-success"
+                                        title="Editar"
+                                        @click.prevent="formAlterar(item.id)"
                                     >
-                                        <i class="fa fa-edit"></i>
-                                    </a>
-                                    <!--                                <a class="btn btn-sm mr-1 btn-danger btnFormExcluir" href="javascript://"-->
-                                    <!--                                   @click.prevent="janelaConfirmar(item.id)" data-toggle="modal"-->
-                                    <!-- @click="$refs.modal_janelaConfirmar && $refs.modal_janelaConfirmar.abrirModal()">-->
-                                    <!--                                    <i class="fa fa-trash" aria-hidden="true"></i>-->
-                                    <!--                                </a>-->
+                                        <i class="fa fa-edit"></i> Editar
+                                    </button>
                                 </td>
                             </tr>
                         </tbody>
@@ -160,212 +257,247 @@
 </template>
 
 <script>
-import grupo from './grupo'
-
 export default {
-    components: {
-        grupo
-    },
     data() {
         return {
             tituloJanela: 'Cadastrando Cloud',
             preloadAjax: false,
+            preloadGrupo: false,
             editando: false,
-            cadastrado: false,
-            atualizado: false,
-            apagado: false,
             open: false,
-            openGroup: false,
+            modoAdicao: 'grupo',
+            grupoSelecionadoId: null,
+            filtroMembros: '',
+            grupos: [],
+            administradoresIds: [],
 
             form: {
+                id: null,
                 nome: '',
                 usuarios: [],
                 usuariosDelete: [],
-                ativo: true
+                ativo: true,
+                autocomplete_label_colaborador: ''
             },
 
             formDefault: null,
-            URL_ADMIN,
-            _,
             hash: `mastertag_${parseInt(Math.random() * 999999)}`,
-
             url_paginacao: `${URL_ADMIN}/clouds/cadastro/atualizar`,
-
             lista: [],
-
             controle: {
                 carregando: false,
-                dados: {}
+                dados: {
+                    pages: 20,
+                    campoBusca: ''
+                }
             }
         }
     },
+    computed: {
+        gruposDisponiveis() {
+            return (this.grupos || []).filter((grupo) => grupo.nome !== 'Administradores')
+        },
+        membrosFiltrados() {
+            const termo = (this.filtroMembros || '').trim().toLowerCase()
+            const lista = Array.isArray(this.form.usuarios) ? this.form.usuarios : []
+            if (!termo) {
+                return lista
+            }
+            return lista.filter((item) => {
+                const nome = (item.nome || '').toLowerCase()
+                const grupo = (item.grupo_nome || '').toLowerCase()
+                return nome.includes(termo) || grupo.includes(termo)
+            })
+        }
+    },
     mounted() {
-        this.formDefault = _.cloneDeep(this.form) //copia
+        this.formDefault = _.cloneDeep(this.form)
         this.atualizar()
     },
     methods: {
         upper(value) {
             if (!value) return ''
-            return value.toUpperCase()
+            return String(value).toUpperCase()
         },
-        removerLIColaborador(index) {
-            if (this.editando && !this.form.usuarios[index].novo) {
-                this.form.usuariosDelete.push(this.form.usuarios[index].id)
+        isAdministrador(usuario) {
+            if (!usuario) return false
+            if (usuario.administrador) return true
+            return (this.administradoresIds || []).includes(usuario.id)
+        },
+        adicionarUsuarioNaLista(usuario) {
+            if (!usuario || !usuario.id) return false
+            const jaExiste = this.form.usuarios.some((item) => Number(item.id) === Number(usuario.id))
+            if (jaExiste) {
+                return false
+            }
+            const administrador = !!usuario.administrador || this.isAdministrador(usuario)
+            this.form.usuarios.push({
+                id: usuario.id,
+                nome: usuario.nome,
+                administrador,
+                grupo_nome: administrador
+                    ? 'Administradores'
+                    : usuario.grupo_nome || '—',
+                novo: usuario.novo !== false
+            })
+            return true
+        },
+        removerLIColaboradorPorId(id) {
+            const index = this.form.usuarios.findIndex((item) => Number(item.id) === Number(id))
+            if (index < 0) return
+            const usuario = this.form.usuarios[index]
+            if (this.isAdministrador(usuario)) {
+                return
+            }
+            if (this.editando && !usuario.novo) {
+                this.form.usuariosDelete.push(usuario.id)
             }
             this.form.usuarios.splice(index, 1)
         },
         selecionaColaborador(obj) {
-            const usuario = {}
-            usuario.novo = true
-            usuario.id = obj.id
-            usuario.nome = obj.nome
-
-            let atual = this.form.usuarios.findIndex((val) => val.id === usuario.id)
-
-            if (atual < 0) {
-                //Se não existir ainda no array
-                this.form.usuarios.push(usuario)
-            } else {
-                mostraErro('', `O colaborador(a) ${usuario.nome} já está na lista.`)
-                this.form.autocomplete_label_colaborador = ''
-                return false
-            }
+            const grupoNome = (obj.GrupoCloud && obj.GrupoCloud.nome) || (obj.grupo_cloud && obj.grupo_cloud.nome) || '—'
+            const adicionou = this.adicionarUsuarioNaLista({
+                id: obj.id,
+                nome: obj.nome,
+                administrador: grupoNome === 'Administradores',
+                grupo_nome: grupoNome,
+                novo: true
+            })
             this.form.autocomplete_label_colaborador = ''
+            if (!adicionou) {
+                mostraErro('', `O colaborador(a) ${obj.nome} já está na lista.`)
+            }
         },
-
-        resetaCampoColaborador() {
-            if (this.form.autocomplete_label_colaborador_anterior !== this.form.autocomplete_label_colaborador) {
-                this.form.autocomplete_label_colaborador_anterior = ''
-                this.form.autocomplete_label_colaborador = ''
-                this.form.colaborador_id = ''
-
-                setTimeout(() => {
-                    if (this.form.colaborador_id === '') {
-                        valida_campo_vazio($(`#colaborador_${this.hash}`), 1)
-                        $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur')
-                        mostraErro('Erro', 'O Campo Colaborador não pode ficar vazio')
+        async adicionarPorGrupo() {
+            if (!this.grupoSelecionadoId) return
+            this.preloadGrupo = true
+            try {
+                const { data } = await axios.get(`${URL_ADMIN}/clouds/cadastro/grupos/${this.grupoSelecionadoId}/usuarios`)
+                const usuarios = data.usuarios || []
+                const nomeGrupo = data.grupo?.nome || 'grupo'
+                let incluidos = 0
+                let ignorados = 0
+                usuarios.forEach((usuario) => {
+                    if (
+                        this.adicionarUsuarioNaLista({
+                            ...usuario,
+                            grupo_nome: usuario.grupo_nome || nomeGrupo
+                        })
+                    ) {
+                        incluidos++
+                    } else {
+                        ignorados++
                     }
-                }, 100)
+                })
+                if (incluidos === 0 && ignorados === 0) {
+                    mostraErro('', `O grupo ${nomeGrupo} não possui colaboradores ativos.`)
+                } else {
+                    mostraSucesso(
+                        `${incluidos} colaborador(es) incluído(s) do grupo ${nomeGrupo}` +
+                            (ignorados ? ` (${ignorados} já estavam na lista)` : '')
+                    )
+                }
+                this.grupoSelecionadoId = null
+            } catch (error) {
+                // erro global axios
+            } finally {
+                this.preloadGrupo = false
             }
         },
         voltar() {
-            this.atualizar()
             this.open = false
-            this.openGroup = false
+            this.filtroMembros = ''
+            this.modoAdicao = 'grupo'
+            this.grupoSelecionadoId = null
+            this.atualizar()
         },
         formNovo() {
-            this.cadastrado = false
-            this.atualizado = false
             this.editando = false
             this.open = true
-            this.openGroup = false
-
             this.tituloJanela = 'Cadastrando Cloud'
-
+            this.filtroMembros = ''
+            this.modoAdicao = 'grupo'
+            this.grupoSelecionadoId = null
+            this.grupos = []
+            this.administradoresIds = []
             formReset()
-            this.form = _.cloneDeep(this.formDefault) //copia
-            this.form.habilidades = _.cloneDeep(this.listaDeHabilidades)
+            this.form = _.cloneDeep(this.formDefault)
         },
-
         submitForm() {
             this.editando ? this.alterar() : this.cadastrar()
         },
-
         async cadastrar() {
-            $('#janelaCadastrar :input:visible').trigger('blur')
-            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
-                alert('Verificar os erros')
+            if (!(this.form.nome || '').trim() || (this.form.nome || '').trim().length < 2) {
+                mostraErro('', 'Informe o nome do Cloud (mínimo 2 caracteres).')
                 return false
             }
 
             this.preloadAjax = true
-            await axios
-                .post(`${URL_ADMIN}/clouds/cadastro`, this.form)
-                .then((response) => {
-                    mostraSucesso('Cadastro realizado com sucesso!')
-                    this.preloadAjax = false
-                    this.openGroup = false
+            try {
+                const { data } = await axios.post(`${URL_ADMIN}/clouds/cadastro`, this.form)
+                mostraSucesso('Cloud cadastrado com sucesso! Agora você pode gerenciar o acesso.')
+                this.preloadAjax = false
+                if (data && data.id) {
+                    await this.formAlterar(data.id)
+                } else {
                     this.open = false
                     this.atualizar()
-                })
-                .catch((error) => {
-                    this.preloadAjax = false
-                })
+                }
+            } catch (error) {
+                this.preloadAjax = false
+            }
         },
-
         async formAlterar(id) {
-            this.form = _.cloneDeep(this.formDefault) //copia
+            this.form = _.cloneDeep(this.formDefault)
             this.form.id = id
             this.open = true
-            this.openGroup = false
-            this.cadastrado = false
-            this.atualizado = false
             this.editando = false
             this.tituloJanela = 'Alterando Cloud'
-
+            this.filtroMembros = ''
+            this.modoAdicao = 'grupo'
+            this.grupoSelecionadoId = null
             this.preloadAjax = true
-
             formReset()
-            await axios
-                .get(`${URL_ADMIN}/clouds/cadastro/${id}/editar`)
-                .then(({ data }) => {
-                    this.editando = true
-                    Object.assign(this.form, data)
-                    this.preloadAjax = false
-                })
-                .catch((error) => {
-                    this.preloadAjax = false
-                })
-        },
 
+            try {
+                const { data } = await axios.get(`${URL_ADMIN}/clouds/cadastro/${id}/editar`)
+                this.editando = true
+                this.form.id = data.id
+                this.form.nome = data.nome
+                this.form.ativo = data.ativo
+                this.form.usuarios = Array.isArray(data.usuarios) ? data.usuarios : []
+                this.form.usuariosDelete = []
+                this.grupos = Array.isArray(data.grupos) ? data.grupos : []
+                this.administradoresIds = Array.isArray(data.administradores_ids) ? data.administradores_ids : []
+                this.tituloJanela = `Alterando Cloud — ${data.nome}`
+                this.preloadAjax = false
+            } catch (error) {
+                this.preloadAjax = false
+                this.open = false
+            }
+        },
         alterar() {
-            $('#janelaCadastrar :input:visible').trigger('blur')
-            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
-                alert('Verificar os erros')
+            if (!(this.form.nome || '').trim() || (this.form.nome || '').trim().length < 2) {
+                mostraErro('', 'Informe o nome do Cloud (mínimo 2 caracteres).')
                 return false
             }
 
             this.preloadAjax = true
-
             axios
                 .put(`${URL_ADMIN}/clouds/cadastro/${this.form.id}`, this.form)
-                .then(({ data }) => {
-                    mostraSucesso('Altereção realizada com sucesso!')
-                    this.open = false
+                .then(() => {
+                    mostraSucesso('Alteração realizada com sucesso!')
                     this.preloadAjax = false
-                    this.atualizar()
+                    this.voltar()
                 })
-                .catch((error) => {
-                    this.preloadAjax = false
-                })
-        },
-
-        janelaConfirmar(id) {
-            this.form.id = id
-            this.apagado = false
-            this.preloadAjax = false
-        },
-
-        apagar() {
-            this.preloadAjax = true
-
-            axios
-                .delete(`${URL_ADMIN}/clouds/cadastro/${this.form.id}`, this.form)
-                .then(({ data }) => {
-                    this.preloadAjax = false
-                    this.apagado = true
-                    this.atualizar()
-                })
-                .catch((error) => {
+                .catch(() => {
                     this.preloadAjax = false
                 })
         },
-
         carregou(dados) {
-            this.lista = dados.lista
+            this.lista = dados.lista || []
             this.controle.carregando = false
         },
-
         carregando() {
             this.controle.carregando = true
         },
@@ -381,4 +513,9 @@ export default {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.cloud-cadastro .badge-warning {
+    background: #f0ad4e;
+    color: #212529;
+}
+</style>

@@ -1152,6 +1152,8 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             ;
             Route::post('cadastro', [\App\Http\Controllers\CloudController::class, 'storeCloud'])->name('storeCloud') //                ->middleware('can:cloud_cadastro')
             ;
+            Route::get('cadastro/grupos/{grupocloud}/usuarios', [\App\Http\Controllers\CloudController::class, 'usuariosDoGrupo'])->name('usuariosDoGrupo') //                ->middleware('can:cloud_cadastro')
+            ;
             Route::get('cadastro/{cloud}/editar', [\App\Http\Controllers\CloudController::class, 'edit'])->name('edit') //                ->middleware('can:cloud_cadastro')
             ;
 
