@@ -6,6 +6,7 @@ use App\Models\Concerns\HasActivitylogOptions;
 use Spatie\Activitylog\Models\Activity;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
 
 /**
@@ -40,18 +41,60 @@ use MasterTag\DataHora;
 class AtaReuniaoAcao extends Model
 {
 
-    use LogsActivity, HasActivitylogOptions;
+    use LogsActivity, HasActivitylogOptions, SoftDeletes;
+
+    public const STATUS_NAO_INICIADA = 'nao_iniciada';
+    public const STATUS_EM_ANDAMENTO = 'em_andamento';
+    public const STATUS_AGUARDANDO_TERCEIRO = 'aguardando_terceiro';
+    public const STATUS_AGUARDANDO_VALIDACAO = 'aguardando_validacao';
+    public const STATUS_CONCLUIDA = 'concluida';
+    public const STATUS_ATRASADA = 'atrasada';
+    public const STATUS_CANCELADA = 'cancelada';
+    public const STATUS_REPROGRAMADA = 'reprogramada';
 
     protected static $logName = 'AtaReuniaoAcao';
     protected $fillable = [
+        'empresa_id',
         'ata_reuniao_id',
+        'titulo',
+        'descricao',
         'responsavel',
+        'responsavel_id',
+        'criado_por',
         'email',
         'acao',
         'prazo',
         'continuo',
         'observacao',
         'status',
+        'prioridade',
+        'percentual_conclusao',
+        'evidencia_esperada',
+        'data_conclusao',
+        'validador_id',
+        'validado_em',
+    ];
+
+    protected $casts = [
+        'id' => 'int',
+        'empresa_id' => 'int',
+        'ata_reuniao_id' => 'int',
+        'titulo' => 'string',
+        'descricao' => 'string',
+        'responsavel' => 'string',
+        'responsavel_id' => 'int',
+        'criado_por' => 'int',
+        'email' => 'string',
+        'acao' => 'string',
+        'continuo' => 'boolean',
+        'observacao' => 'string',
+        'status' => 'string',
+        'prioridade' => 'string',
+        'percentual_conclusao' => 'int',
+        'evidencia_esperada' => 'string',
+        'data_conclusao' => 'datetime',
+        'validador_id' => 'int',
+        'validado_em' => 'datetime',
     ];
 
     public function getDescriptionForEvent(string $eventName): string
@@ -83,10 +126,15 @@ class AtaReuniaoAcao extends Model
     }
 
 
-    public $timestamps = false;
+    public $timestamps = true;
 
     public function AtaReuniao()
     {
         return $this->hasOne(AtaReuniao::class, 'id', 'ata_reuniao_id');
+    }
+
+    public function ResponsavelUsuario()
+    {
+        return $this->hasOne(\App\Models\User::class, 'id', 'responsavel_id');
     }
 }

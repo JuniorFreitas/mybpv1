@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Scopes\ScopeEmpresa;
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -55,7 +56,17 @@ use App\Models\Concerns\HasActivitylogOptions;
  */
 class AtaReuniao extends Model
 {
-    use LogsActivity, HasActivitylogOptions, TenantTrait;
+    use LogsActivity, HasActivitylogOptions, SoftDeletes, TenantTrait;
+
+    public const STATUS_RASCUNHO = 'rascunho';
+    public const STATUS_EM_ELABORACAO = 'em_elaboracao';
+    public const STATUS_AGUARDANDO_REVISAO = 'aguardando_revisao';
+    public const STATUS_AGUARDANDO_APROVACAO = 'aguardando_aprovacao';
+    public const STATUS_AJUSTES_SOLICITADOS = 'ajustes_solicitados';
+    public const STATUS_APROVADA = 'aprovada';
+    public const STATUS_PUBLICADA = 'publicada';
+    public const STATUS_ENCERRADA = 'encerrada';
+    public const STATUS_CANCELADA = 'cancelada';
 
 
     protected static $logFillable = true;
@@ -76,20 +87,56 @@ class AtaReuniao extends Model
 
     protected $fillable = [
         'id',
+        'codigo',
+        'uuid_publico',
         'quem_cadastrou',
+        'titulo',
+        'objetivo',
+        'status',
+        'nivel_acesso',
+        'classificacao_confidencialidade',
+        'organizador_id',
+        'redator_id',
+        'aprovacao_modo',
+        'versao_atual',
+        'timezone',
+        'link_videoconferencia',
+        'observacoes',
         'local',
         'data_inicio',
         'data_fim',
+        'aprovada_em',
+        'publicada_em',
+        'bloqueada_em',
+        'cancelada_em',
         'empresa_id',
         'area_etiqueta_id',
         'centro_custo_id',
     ];
 
     protected $casts = [
+        'codigo' => 'string',
+        'uuid_publico' => 'string',
         'quem_cadastrou' => 'int',
+        'titulo' => 'string',
+        'objetivo' => 'string',
+        'status' => 'string',
+        'nivel_acesso' => 'string',
+        'classificacao_confidencialidade' => 'string',
+        'organizador_id' => 'int',
+        'redator_id' => 'int',
+        'aprovacao_modo' => 'string',
+        'versao_atual' => 'string',
+        'timezone' => 'string',
+        'link_videoconferencia' => 'string',
+        'observacoes' => 'string',
         'local' => 'string',
         'data_inicio' => 'string',
         'data_fim' => 'string',
+        'aprovada_em' => 'datetime',
+        'publicada_em' => 'datetime',
+        'bloqueada_em' => 'datetime',
+        'cancelada_em' => 'datetime',
         'empresa_id' => 'int',
         'area_etiqueta_id' => 'int',
         'centro_custo_id' => 'int',
@@ -167,6 +214,46 @@ class AtaReuniao extends Model
 
     public function CentroCusto(){
         return $this->hasOne(CentroCusto::class, 'id', 'centro_custo_id');
+    }
+
+    public function Organizador()
+    {
+        return $this->hasOne(User::class, 'id', 'organizador_id');
+    }
+
+    public function Redator()
+    {
+        return $this->hasOne(User::class, 'id', 'redator_id');
+    }
+
+    public function Acessos()
+    {
+        return $this->hasMany(AtaReuniaoAcesso::class, 'ata_reuniao_id', 'id');
+    }
+
+    public function Aprovacoes()
+    {
+        return $this->hasMany(AtaReuniaoAprovacao::class, 'ata_reuniao_id', 'id');
+    }
+
+    public function Versoes()
+    {
+        return $this->hasMany(AtaReuniaoVersao::class, 'ata_reuniao_id', 'id');
+    }
+
+    public function Comentarios()
+    {
+        return $this->hasMany(AtaReuniaoComentario::class, 'ata_reuniao_id', 'id');
+    }
+
+    public function Anexos()
+    {
+        return $this->hasMany(AtaReuniaoAnexo::class, 'ata_reuniao_id', 'id');
+    }
+
+    public function Ciencias()
+    {
+        return $this->hasMany(AtaReuniaoCiencia::class, 'ata_reuniao_id', 'id');
     }
 
 }

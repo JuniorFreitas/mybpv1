@@ -70,6 +70,11 @@ class Kernel extends ConsoleKernel
             ->name('mybp_avaliacao_pendencias')
             ->onOneServer();
 
+        $schedule->command('mybp:ata-pendencias')
+            ->dailyAt('07:00')
+            ->name('mybp_ata_pendencias')
+            ->onOneServer();
+
         $schedule->command('mybp:encerrar-avaliacoes-vencidas')
             ->dailyAt('00:10')
             ->name('mybp_encerrar_avaliacoes_vencidas')

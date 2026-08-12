@@ -120,6 +120,10 @@ Route::group(['prefix' => '3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9t
      Route::get('parecer_gestor_rh/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', 'EntrevistaGestorClienteController@export')->name('gestor_rh.excel');*/
 });
 
+Route::get('atareuniao/externo/{token}', [\App\Http\Controllers\AtaReuniaoController::class, 'externo'])
+    ->name('atareuniao.externo')
+    ->middleware(['signed', 'throttle:30,1']);
+
 
 Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], 'as' => 'g.', 'prefix' => 'g'], function () {
 
@@ -364,8 +368,24 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
 
         //Ata de Reunião
         Route::group(['as' => 'atareuniao.'], function () {
+            Route::get('atareuniao/dashboard-resumo', [\App\Http\Controllers\AtaReuniaoController::class, 'dashboardResumo'])->name('dashboardResumo')->middleware('can:administracao_atareuniao');
+            Route::get('atareuniao/relatorios', [\App\Http\Controllers\AtaReuniaoController::class, 'relatorios'])->name('relatorios')->middleware('can:administracao_atareuniao');
+            Route::post('atareuniao/relatorios/exportar', [\App\Http\Controllers\AtaReuniaoController::class, 'exportarRelatorio'])->name('exportarRelatorio')->middleware('can:administracao_atareuniao');
+            Route::get('atareuniao/notificacao-config', [\App\Http\Controllers\AtaReuniaoController::class, 'notificacaoConfig'])->name('notificacaoConfig')->middleware('can:administracao_atareuniao_privilegio_adm');
+            Route::put('atareuniao/notificacao-config', [\App\Http\Controllers\AtaReuniaoController::class, 'salvarNotificacaoConfig'])->name('salvarNotificacaoConfig')->middleware('can:administracao_atareuniao_privilegio_adm');
+            Route::get('atareuniao/minhas-atas', [\App\Http\Controllers\AtaReuniaoController::class, 'minhasAtas'])->name('minhasAtas')->middleware('can:administracao_atareuniao');
+            Route::get('atareuniao/minhas-pendencias', [\App\Http\Controllers\AtaReuniaoController::class, 'minhasPendencias'])->name('minhasPendencias')->middleware('can:administracao_atareuniao');
             Route::post('atareuniao/atualizar', [\App\Http\Controllers\AtaReuniaoController::class, 'atualizar'])->name('atualizarAtaReuniao')->middleware('can:administracao_atareuniao');
             Route::get('atareuniao/pdf/{item}', [\App\Http\Controllers\AtaReuniaoController::class, 'pdf'])->name('pdfAtaReuniao')->middleware('can:administracao_atareuniao');
+            Route::post('atareuniao/{id}/solicitar-aprovacao', [\App\Http\Controllers\AtaReuniaoController::class, 'solicitarAprovacao'])->name('solicitarAprovacao')->middleware('can:administracao_atareuniao');
+            Route::post('atareuniao/{id}/decidir-aprovacao', [\App\Http\Controllers\AtaReuniaoController::class, 'decidirAprovacao'])->name('decidirAprovacao')->middleware('can:administracao_atareuniao');
+            Route::post('atareuniao/{id}/compartilhar-externo', [\App\Http\Controllers\AtaReuniaoController::class, 'compartilharExterno'])->name('compartilharExterno')->middleware('can:administracao_atareuniao');
+            Route::get('atareuniao/{id}/comentarios', [\App\Http\Controllers\AtaReuniaoController::class, 'comentarios'])->name('comentarios')->middleware('can:administracao_atareuniao');
+            Route::post('atareuniao/{id}/comentarios', [\App\Http\Controllers\AtaReuniaoController::class, 'comentar'])->name('comentar')->middleware('can:administracao_atareuniao');
+            Route::get('atareuniao/{id}/anexos', [\App\Http\Controllers\AtaReuniaoController::class, 'anexos'])->name('anexos')->middleware('can:administracao_atareuniao');
+            Route::post('atareuniao/{id}/anexos', [\App\Http\Controllers\AtaReuniaoController::class, 'registrarAnexo'])->name('registrarAnexo')->middleware('can:administracao_atareuniao');
+            Route::post('atareuniao/{id}/ciencia', [\App\Http\Controllers\AtaReuniaoController::class, 'confirmarCiencia'])->name('confirmarCiencia')->middleware('can:administracao_atareuniao');
+            Route::delete('atareuniao/compartilhamentos/{compartilhamentoId}', [\App\Http\Controllers\AtaReuniaoController::class, 'revogarCompartilhamento'])->name('revogarCompartilhamento')->middleware('can:administracao_atareuniao');
             Route::resource('atareuniao', \App\Http\Controllers\AtaReuniaoController::class)->middleware('can:administracao_atareuniao');
         });
 

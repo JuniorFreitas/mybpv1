@@ -5,20 +5,38 @@
 @endsection
 @section('conteudo')
     <h5 class="text-center text-uppercase" style="margin-top: 30px">ATA DE REUNIÃO<br>
+        @if($atareuniao->codigo)<small>{{ $atareuniao->codigo }}</small>@endif
     </h5><br>
 
 {{--    <table style="border: 1px solid #666666; padding: 8px 17px 15px; text-align: center">--}}
 {{--        <tr>--}}
 {{--            <td>--}}
                 <p style="line-height: 17pt; font-size: 9.5pt; text-align: center">
+                    Título: <strong>{{ $atareuniao->titulo ?: 'Ata de Reunião' }} |</strong>
+                    Status: <strong>{{ $atareuniao->status ?: 'rascunho' }} |</strong>
+                    Versão: <strong>{{ $atareuniao->versao_atual ?: '0.1' }}</strong><br>
                     Local: <strong>{{ $atareuniao->local }}  |</strong>
                     Data Inicio: <strong>{{ $atareuniao->data_inicio }}  |</strong>
                     Data Fim: <strong>{{ $atareuniao->data_fim }}  |</strong>
-                    Quem Cadastrou: <strong>{{ $atareuniao->QuemCadastrou->nome }}</strong>
+                    Quem Cadastrou: <strong>{{ optional($atareuniao->QuemCadastrou)->nome }}</strong><br>
+                    Classificação: <strong>{{ $atareuniao->classificacao_confidencialidade ?: 'uso_interno' }}</strong>
                 </p>
 {{--            </td>--}}
 {{--        </tr>--}}
 {{--    </table>--}}
+
+    @if($atareuniao->objetivo)
+        <table width="100%" border="0" class="tabela" style="margin-top: 30px">
+            <tr class="topo">
+                <td class="text-center">Objetivo</td>
+            </tr>
+            <tr class="linha">
+                <td class="text-left">{{ $atareuniao->objetivo }}</td>
+            </tr>
+        </table>
+        <br>
+        <br>
+    @endif
 
     <table width="100%" border="0" class="tabela" style="margin-top: 30px">
 
@@ -66,7 +84,7 @@
         @foreach($atareuniao['Acoes'] as $ac)
             <tr class="linha">
                 <td class="text-center">{{ $ac->responsavel }}</td>
-                <td class="text-center">{{ $ac->acao }}</td>
+                <td class="text-center">{{ $ac->descricao ?: $ac->acao }}</td>
                 <td class="text-center">
                     @if($ac->prazo){{$ac->prazo}}
                     @elseif($ac->continuo == true)Contínuo
@@ -100,6 +118,32 @@
                 <td class="text-center"></td>
             </tr>
         @endforeach
+    </table>
+    <br>
+    <br>
+
+    <h5 class="text-center" style="margin-top: 30px">APROVAÇÕES</h5>
+    <table width="100%" border="0" class="tabela" style="margin-top: 30px">
+        <tr class="topo">
+            <td class="text-center">Aprovador</td>
+            <td class="text-center">Status</td>
+            <td class="text-center">Decisão</td>
+            <td class="text-center">Data</td>
+            <td class="text-center">Comentário</td>
+        </tr>
+        @forelse($atareuniao->Aprovacoes as $aprovacao)
+            <tr class="linha">
+                <td class="text-center">{{ optional($aprovacao->Aprovador)->nome ?: 'Não informado' }}</td>
+                <td class="text-center">{{ $aprovacao->status }}</td>
+                <td class="text-center">{{ $aprovacao->decisao ?: '-' }}</td>
+                <td class="text-center">{{ optional($aprovacao->respondido_em)->format('d/m/Y H:i') ?: '-' }}</td>
+                <td class="text-center">{{ $aprovacao->comentario ?: '-' }}</td>
+            </tr>
+        @empty
+            <tr class="linha">
+                <td class="text-center" colspan="5">Nenhuma aprovação registrada</td>
+            </tr>
+        @endforelse
     </table>
     <br>
     <br>
