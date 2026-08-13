@@ -24,6 +24,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Mail;
 use MasterTag\DataHora;
 
@@ -1545,26 +1546,121 @@ class TreinamentoController extends Controller
         }
     }
 
-    // Anexos-------------------------------------------------
+    // Anexos FAT -------------------------------------------------
     public function uploadAnexos(Request $request)
     {
-        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASDOCIMGPDF, Arquivo::DISCO_CLOUD);
+        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASDOCIMGPDF, Arquivo::DISCO_TREINAMENTO);
     }
 
     public function anexoShow(Request $request, $arquivo)
     {
-        return Arquivo::anexoShow(Arquivo::DISCO_CLOUD, $arquivo);
+        $model = $this->autorizarArquivoFat($arquivo);
+        $disco = $this->resolverDiscoArquivoFat($arquivo, $model);
+
+        return $this->respostaAnexoPrivado(
+            Arquivo::anexoShow($disco, $arquivo)
+        );
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        return Arquivo::anexoDelete(Arquivo::DISCO_CLOUD, $arquivo);
+        $model = $this->autorizarArquivoFat($arquivo);
+        $disco = $this->resolverDiscoArquivoFat($arquivo, $model);
+
+        return Arquivo::anexoDelete($disco, $arquivo);
     }
 
-    //anexo ou foto
     public function download(Request $request, $arquivo)
     {
-        return Arquivo::anexoDownload(Arquivo::DISCO_CLOUD, $arquivo);
+        $model = $this->autorizarArquivoFat($arquivo);
+        $disco = $this->resolverDiscoArquivoFat($arquivo, $model);
+
+        return $this->respostaAnexoPrivado(
+            Arquivo::anexoDownload($disco, $arquivo)
+        );
+    }
+
+    /**
+     * Autoriza anexo FAT: autenticado, mesma empresa (vínculo) ou uploader do temporário.
+     */
+    protected function autorizarArquivoFat(string $arquivo): Arquivo
+    {
+        if (!auth()->check()) {
+            abort(401, 'Não autenticado');
+        }
+
+        $user = auth()->user();
+
+        $model = Arquivo::query()
+            ->whereIn('disco', [Arquivo::DISCO_TREINAMENTO, Arquivo::DISCO_CLOUD])
+            ->where(function ($query) use ($arquivo) {
+                $query->where('file', $arquivo)->orWhere('thumb', $arquivo);
+            })
+            ->first();
+
+        if (!$model) {
+            abort(404);
+        }
+
+        // Upload ainda não vinculado: só quem enviou
+        if ($model->temporario) {
+            if ((int) $model->quem_enviou === (int) $user->id) {
+                return $model;
+            }
+            abort(403, 'Sem permissão para acessar este arquivo');
+        }
+
+        $autorizado = DB::table('treinamento_vencimento as tv')
+            ->join('treinamentos as t', 't.id', '=', 'tv.treinamento_id')
+            ->join('feedback_curriculos as f', 'f.id', '=', 't.feedback_id')
+            ->where('tv.arquivo_id', $model->id)
+            ->where('f.empresa_id', $user->empresa_id)
+            ->exists();
+
+        if (!$autorizado) {
+            abort(403, 'Sem permissão para acessar este arquivo');
+        }
+
+        return $model;
+    }
+
+    /**
+     * Usa o disco do registro quando o arquivo existe lá; senão fallback cloud ↔ treinamento.
+     */
+    protected function resolverDiscoArquivoFat(string $arquivo, ?Arquivo $model = null): string
+    {
+        if ($model && in_array($model->disco, [Arquivo::DISCO_TREINAMENTO, Arquivo::DISCO_CLOUD], true)
+            && Storage::disk($model->disco)->exists($arquivo)) {
+            return $model->disco;
+        }
+
+        if (Storage::disk(Arquivo::DISCO_TREINAMENTO)->exists($arquivo)) {
+            return Arquivo::DISCO_TREINAMENTO;
+        }
+
+        if (Storage::disk(Arquivo::DISCO_CLOUD)->exists($arquivo)) {
+            return Arquivo::DISCO_CLOUD;
+        }
+
+        abort(404);
+    }
+
+    /**
+     * Evita cache de CDN/browser em anexos autenticados/assinados.
+     */
+    protected function respostaAnexoPrivado(mixed $response): mixed
+    {
+        if (!method_exists($response, 'headers')) {
+            return $response;
+        }
+
+        $response->headers->set('Cache-Control', 'private, no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+        $response->headers->set('CDN-Cache-Control', 'no-store');
+        $response->headers->set('Cloudflare-CDN-Cache-Control', 'no-store');
+
+        return $response;
     }
 
 }

@@ -1086,11 +1086,11 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::post('controle-exames-resultado/uploadAnexos', [\App\Http\Controllers\ControleExameController::class, 'uploadAnexos'])->name('.upload-anexos');
 
 
-        //Enviar para Revisao
+        //Enviar para Revisao — FAT: URL assinada + permissão de carteira (não passa pelo Cloud)
         Route::post('treinamento/uploadAnexos', [\App\Http\Controllers\TreinamentoController::class, 'uploadAnexos'])->name('treinamento.upload-anexos');
-        Route::get('treinamento/anexo/{arquivo}', [\App\Http\Controllers\TreinamentoController::class, 'anexoShow'])->name('treinamento.anexo-show');
-        Route::get('treinamento/anexoDownload/{arquivo}', [\App\Http\Controllers\TreinamentoController::class, 'download'])->name('treinamento.anexo-download');
-        Route::delete('treinamento/anexo/{arquivo}', [\App\Http\Controllers\TreinamentoController::class, 'anexoDelete'])->name('treinamento.anexo-delete');
+        Route::get('treinamento/anexo/{arquivo}', [\App\Http\Controllers\TreinamentoController::class, 'anexoShow'])->name('treinamento.anexo-show')->middleware(['signed:relative', 'can:treinamento_carteira-etiquetas'])->where('arquivo', '.*');
+        Route::get('treinamento/anexoDownload/{arquivo}', [\App\Http\Controllers\TreinamentoController::class, 'download'])->name('treinamento.anexo-download')->middleware(['signed:relative', 'can:treinamento_carteira-etiquetas'])->where('arquivo', '.*');
+        Route::delete('treinamento/anexo/{arquivo}', [\App\Http\Controllers\TreinamentoController::class, 'anexoDelete'])->name('treinamento.anexo-delete')->middleware(['signed:relative', 'can:treinamento_carteira-etiquetas'])->where('arquivo', '.*');
 
         Route::post('treinamento/enviar-carteira', [\App\Http\Controllers\TreinamentoController::class, 'enviarCarteiraEmail']);
         Route::post('treinamento/carteiras', [\App\Http\Controllers\TreinamentoController::class, 'carteiraPdf'])->name('carteiraPdf');
