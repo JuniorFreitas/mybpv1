@@ -75,17 +75,20 @@
                                         <div class="form-group">
                                             <label>Tipo</label>
                                             <select class="form-control" v-model="form.tipo_pessoa"
-                                                    :disabled="editando">
+                                                    :disabled="editando"
+                                                    @change="onChangeTipoPessoa">
                                                 <option
                                                     value="{{\App\Models\Fornecedor::PESSOA_JURIDICA}}">Pessoa Jurídica
                                                 </option>
-
+                                                <option
+                                                    value="{{\App\Models\Fornecedor::PESSOA_FISICA}}">Pessoa Física
+                                                </option>
                                             </select>
                                         </div>
                                     </div>
 
                                     <div class="col-12 col-sm-6 col-lg-6 col-xl-6"
-                                         v-show="form.tipo_pessoa === '{{\App\Models\Fornecedor::PESSOA_JURIDICA}}'">
+                                         v-if="form.tipo_pessoa === '{{\App\Models\Fornecedor::PESSOA_JURIDICA}}'">
                                         <div class="form-group">
                                             <label>CNPJ</label>
                                             <input type="text" id="cnpj" class="form-control" placeholder="CNPJ"
@@ -96,15 +99,17 @@
                                         </div>
                                     </div>
 
-{{--                                    <div class="col-12 col-sm-6 col-lg-6 col-xl-6"--}}
-{{--                                         v-show="form.tipo_pessoa === '{{\App\Models\Fornecedor::PESSOA_FISICA}}'">--}}
-{{--                                        <div class="form-group">--}}
-{{--                                            <label>CPF</label>--}}
-{{--                                            <input type="text" class="form-control" placeholder="CPF"--}}
-{{--                                                   v-model="form.cpf" :disabled="editando" autocomplete="mastertag"--}}
-{{--                                                   onblur="valida_cpf_vazio(this)" v-mascara:cpf>--}}
-{{--                                        </div>--}}
-{{--                                    </div>--}}
+                                    <div class="col-12 col-sm-6 col-lg-6 col-xl-6"
+                                         v-if="form.tipo_pessoa === '{{\App\Models\Fornecedor::PESSOA_FISICA}}'">
+                                        <div class="form-group">
+                                            <label>CPF</label>
+                                            <input type="text" id="cpf" class="form-control" placeholder="CPF"
+                                                   v-model="form.cpf" :disabled="editando" autocomplete="mastertag"
+                                                   onblur="valida_cpf_vazio(this)"
+                                                   @blur="verificaCpf"
+                                                   v-mascara:cpf>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="row">
@@ -118,14 +123,13 @@
                                                    autocomplete="mastertag" onblur="valida_campo_vazio(this,3)">
                                         </div>
 
-{{--                                        <div class="form-group"--}}
-{{--                                             v-if="form.tipo_pessoa === '{{\App\Models\Fornecedor::PESSOA_FISICA}}'">--}}
-{{--                                            <label>Nome</label>--}}
-{{--                                            <input type="text" class="form-control" v-model="form.nome"--}}
-{{--                                                   placeholder="Nome do Fornecedor"--}}
-{{--                                                   :disabled="preloadCnpj"--}}
-{{--                                                   autocomplete="mastertag" onblur="valida_campo_vazio(this,3)">--}}
-{{--                                        </div>--}}
+                                        <div class="form-group"
+                                             v-if="form.tipo_pessoa === '{{\App\Models\Fornecedor::PESSOA_FISICA}}'">
+                                            <label>Nome</label>
+                                            <input type="text" class="form-control" v-model="form.nome"
+                                                   placeholder="Nome do Fornecedor"
+                                                   autocomplete="mastertag" onblur="valida_campo_vazio(this,3)">
+                                        </div>
                                     </div>
 
                                     <div class="col-12 col-sm-6 col-lg-6 col-xl-6"
