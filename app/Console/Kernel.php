@@ -4,7 +4,6 @@ namespace App\Console;
 
 use App\Jobs\Admissao\Historico\AvaliacaoNoventaVencimento\AvaliacaoNoventaVencimentoJob;
 use App\Jobs\controle_ponto\VerificaJornadasJob;
-use App\Jobs\JobDeletaExportacaoExcel;
 use App\Jobs\Movimentacao\FeriasPrevista\VerificaSaidaFeriasJob;
 use App\Jobs\Movimentacao\FeriasPrevista\VerificaVencimentoFeriasJob;
 use App\Jobs\Rotinas\JobAniversariantesDia;
@@ -42,7 +41,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(new VerificaVencimentoFeriasJob)->monthly()->name('VerificaVencimentoFeriasJob')->onOneServer();
         $schedule->call(new VerificaSaidaFeriasJob)->monthly()->name('VerificaSaidaFeriasJob')->onOneServer();
         $schedule->call(new AvaliacaoNoventaVencimentoJob)->daily()->name('AvaliacaoNoventaVencimentoJob')->onOneServer();
-        $schedule->call(new JobDeletaExportacaoExcel)->daily()->name('JobDeletaExportacaoExcel')->onOneServer();
+        $schedule->command('mybp:limpar-exportacoes')->daily()->name('JobDeletaExportacaoExcel')->onOneServer();
         $schedule->call(new JobAniversariantesDia)->daily()->name('JobAniversariantesDia')->onOneServer();
         $schedule->call(new JobConvocacaoIntermitente())->hourly()->name('JobConvocacaoIntermitente')->onOneServer();
         $schedule->call(new JobFerias())->daily()->name('JobFerias')->onOneServer();
