@@ -322,10 +322,23 @@ const app = createApp({
         },
 
         async verificaCpf() {
-            if (!this.editando) {
-                try {
-                    await axios.get(`${URL_ADMIN}/administracao/fornecedor/buscar-cpf?cpf=${this.form.cpf}`)
-                } catch (err) {}
+            if (this.editando || !this.form.cpf || this.form.cpf.length !== 14) return
+
+            try {
+                await axios.get(`${API_ENDPOINTS.FORNECEDOR_BUSCAR_CPF}?cpf=${this.form.cpf}`)
+            } catch (error) {
+                mostraErro('', error.response?.data?.msg || 'CPF já cadastrado ou inválido')
+            }
+        },
+
+        onChangeTipoPessoa() {
+            if (this.form.tipo_pessoa === 'pessoa_física') {
+                this.form.cnpj = ''
+                this.form.razao_social = ''
+                this.form.nome_fantasia = ''
+            } else {
+                this.form.cpf = ''
+                this.form.nome = ''
             }
         }
     }
