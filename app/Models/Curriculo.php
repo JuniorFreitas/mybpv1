@@ -421,9 +421,9 @@ class Curriculo extends Model
     //Modificador ->nascimento
     public function setNascimentoAttribute($value)
     {
-        $valor = self::normalizarDataParaDataHora($value);
+        $valor = self::normalizarDataParaDataHora($value, true);
         if ($valor === null || $valor === '') {
-            $this->attributes['nascimento'] = $valor;
+            $this->attributes['nascimento'] = null;
             return;
         }
         $data = new DataHora($valor);
