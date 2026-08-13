@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Intervention\Image\ImageManagerStatic as Image;
@@ -258,9 +259,12 @@ class Arquivo extends Model
     ];
 
     /**
-     * TTL (minutos) das URLs assinadas do Cloud.
+     * TTL (minutos) das URLs assinadas (Cloud / FAT treinamento).
      */
     public const CLOUD_URL_ASSINADA_MINUTOS = 60;
+
+    /** @var bool|null cache por instância: FAT vinculada a treinamento_vencimento */
+    protected ?bool $ehFatTreinamentoCache = null;
 
     /**
      * Gera URL assinada relativa (estável atrás de proxy/CDN; não depende de APP_URL/host).
@@ -276,10 +280,36 @@ class Arquivo extends Model
     }
 
     /**
+     * FAT de treinamento: disco próprio ou legado ainda marcado como disco-cloud.
+     */
+    protected function usaRotasAssinadasTreinamento(): bool
+    {
+        if ($this->disco === self::DISCO_TREINAMENTO) {
+            return true;
+        }
+
+        if ($this->disco !== self::DISCO_CLOUD || !$this->id) {
+            return false;
+        }
+
+        if ($this->ehFatTreinamentoCache === null) {
+            $this->ehFatTreinamentoCache = DB::table('treinamento_vencimento')
+                ->where('arquivo_id', $this->id)
+                ->exists();
+        }
+
+        return $this->ehFatTreinamentoCache;
+    }
+
+    /**
      * @return string
      */
     public function getUrlAttribute()
     {
+        if ($this->usaRotasAssinadasTreinamento() && $this->file) {
+            return $this->urlAssinadaCloud('g.treinamentos.treinamento.anexo-show', $this->file);
+        }
+
         if ($this->disco === self::DISCO_CLOUD && $this->file) {
             return $this->urlAssinadaCloud('g.cloud.anexo-show', $this->file);
         }
@@ -295,6 +325,15 @@ class Arquivo extends Model
      */
     public function getUrlThumbAttribute()
     {
+        if ($this->usaRotasAssinadasTreinamento()) {
+            $path = ($this->imagem && $this->thumb) ? $this->thumb : $this->file;
+            if (!$path) {
+                return '';
+            }
+
+            return $this->urlAssinadaCloud('g.treinamentos.treinamento.anexo-show', $path);
+        }
+
         if ($this->disco === self::DISCO_CLOUD) {
             $path = ($this->imagem && $this->thumb) ? $this->thumb : $this->file;
             if (!$path) {
@@ -316,6 +355,10 @@ class Arquivo extends Model
      */
     public function getUrlDownloadAttribute()
     {
+        if ($this->usaRotasAssinadasTreinamento() && $this->file) {
+            return $this->urlAssinadaCloud('g.treinamentos.treinamento.anexo-download', $this->file);
+        }
+
         if ($this->disco === self::DISCO_CLOUD && $this->file) {
             return $this->urlAssinadaCloud('g.cloud.anexo-download', $this->file);
         }
@@ -331,6 +374,10 @@ class Arquivo extends Model
      */
     public function getUrlDeleteAttribute()
     {
+        if ($this->usaRotasAssinadasTreinamento() && $this->file) {
+            return $this->urlAssinadaCloud('g.treinamentos.treinamento.anexo-delete', $this->file);
+        }
+
         if ($this->disco === self::DISCO_CLOUD && $this->file) {
             return $this->urlAssinadaCloud('g.cloud.anexo-delete', $this->file);
         }
@@ -775,11 +822,29 @@ class Arquivo extends Model
      */
     public static function anexoDownload($disco, $arquivo)
     {
-        if (Storage::disk($disco)->exists($arquivo)) {
-            $item = Arquivo::whereFile($arquivo)->whereDisco($disco)->orWhere('thumb', $arquivo)->first(['nome', 'extensao']);
-            return Storage::disk($disco)->download($arquivo, $item->nome . $item->extensao);
+        if (!Storage::disk($disco)->exists($arquivo)) {
+            abort(404);
         }
-        abort(404);
+
+        // Agrupa OR para não soltar o filtro de disco; nome com fallback se registro divergir do path físico.
+        $item = Arquivo::query()
+            ->where(function ($query) use ($arquivo, $disco) {
+                $query->where(function ($q) use ($arquivo, $disco) {
+                    $q->where('file', $arquivo)->where('disco', $disco);
+                })->orWhere(function ($q) use ($arquivo) {
+                    $q->where('thumb', $arquivo);
+                })->orWhere(function ($q) use ($arquivo) {
+                    // Legado FAT: disco no banco pode diferir do disco físico (cloud ↔ treinamento)
+                    $q->where('file', $arquivo)
+                        ->whereIn('disco', [self::DISCO_TREINAMENTO, self::DISCO_CLOUD]);
+                });
+            })
+            ->first(['nome', 'extensao']);
+
+        $nomeDownload = ($item?->nome ?: pathinfo($arquivo, PATHINFO_FILENAME))
+            . ($item?->extensao ?: '');
+
+        return Storage::disk($disco)->download($arquivo, $nomeDownload);
     }
 
     /**
