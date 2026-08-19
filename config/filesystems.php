@@ -95,6 +95,17 @@ return [
             ]
         ),
 
+        'disco-treinamento' => array_merge($default,
+            [
+                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-cloud') : 'arquivos/disco-cloud',
+                'urlShow' => env('APP_URL') . '/g/treinamento/anexo',
+                'urlDownload' => env('APP_URL') . '/g/treinamento/anexoDownload',
+                'urlThumb' => env('APP_URL') . '/g/treinamento/anexo',
+                'urlDelete' => env('APP_URL') . '/g/treinamento/anexo',
+                'visibility' => 'private',
+            ]
+        ),
+
         'disco-assinatura' => array_merge($default,
             [
                 'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-assinatura') : 'arquivos/disco-assinatura',
