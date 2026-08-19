@@ -42,6 +42,9 @@
                                     value="{{\App\Models\Fornecedor::TIPO_PARCEIRO}}">Parceiro
                                 </option>
                                 <option
+                                    value="{{\App\Models\Fornecedor::TIPO_PARCEIRO_EXTERNO}}">Parceiro Externo
+                                </option>
+                                <option
                                     value="{{\App\Models\Fornecedor::TIPO_TERCEIRO}}">Terceiro
                                 </option>
                             </select>
@@ -430,6 +433,9 @@
                         </option>
                         <option
                             value="{{\App\Models\Fornecedor::TIPO_PARCEIRO}}">Parceiro
+                        </option>
+                        <option
+                            value="{{\App\Models\Fornecedor::TIPO_PARCEIRO_EXTERNO}}">Parceiro Externo
                         </option>
                         <option
                             value="{{\App\Models\Fornecedor::TIPO_TERCEIRO}}">Terceiro

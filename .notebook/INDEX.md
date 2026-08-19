@@ -1,8 +1,8 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-08-12
+Last updated: 2026-08-18
 
-- [fat-treinamento-cloud-404](fat-treinamento-cloud-404.md) — FAT usava disco-cloud; auth Cloud exige ItensCloud → 404 | gotcha | treinamento, fat, cloud, anexo
-- [importacao-admissoes-flow](importacao-admissoes-flow.md) — Upload xlsx → Job fila → validar/resolver/persistir → e-mail | flow | admissao, importacao, queue
-- [vaga-vagas-abertas-create](vaga-vagas-abertas-create.md) — Vaga (cargo) + VagasAbertas (empresa+vaga+municipio); create UI/scripts | flow | vaga, vagas_abertas, municipio
+- [fornecedor-pf-cpf](fornecedor-pf-cpf.md) — Cadastro PF + tipos (incl. Parceiro Externo) | flow | fornecedor, cpf
+- [importacao-admissoes-flow](importacao-admissoes-flow.md) — Fluxo de importação de admissões | flow | importacao
+- [vaga-vagas-abertas-create](vaga-vagas-abertas-create.md) — Criação de vagas abertas | flow | vagas
