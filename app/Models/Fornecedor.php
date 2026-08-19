@@ -13,7 +13,7 @@ use App\Models\Concerns\HasActivitylogOptions;
  *
  * @property int $id
  * @property int|null $empresa_id
- * @property string $tipo Fornecedor, Terceiro, Parceiro
+ * @property string $tipo Fornecedor, Terceiro, Parceiro, Parceiro Externo
  * @property string|null $cnpj
  * @property string|null $cpf
  * @property string|null $nome
@@ -127,6 +127,7 @@ class Fornecedor extends Model
     public const TIPO_FORNECEDOR = 'Fornecedor';
     public const TIPO_TERCEIRO = 'Terceiro';
     public const TIPO_PARCEIRO = 'Parceiro';
+    public const TIPO_PARCEIRO_EXTERNO = 'Parceiro Externo';
 
     public const VENCIMENTO_MENSAL = 'mensal';
     public const VENCIMENTO_TRIMESTRAL = 'trimestral';
