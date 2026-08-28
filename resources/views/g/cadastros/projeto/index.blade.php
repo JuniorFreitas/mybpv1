@@ -396,7 +396,7 @@
                 id="controle"
                 ref="componente"
                 url="{{route('g.projetos.projetos.atualizar')}}"
-                por-pagina="100"
+                :por-pagina="controle.dados.pages"
                 :dados="controle.dados"
                 v-on:carregou="carregou"
                 v-on:carregando="carregando">

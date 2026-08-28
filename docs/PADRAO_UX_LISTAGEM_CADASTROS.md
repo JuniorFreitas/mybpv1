@@ -32,17 +32,25 @@ Guia reutilizável para telas de listagem com filtros, cards e combobox (mesmo p
                 <input id="meu-filtro" class="form-control form-control-sm" />
             </div>
         </div>
-        <div class="col-12 col-lg-5 mybp-combobox-wrap">
-            <div class="form-group mb-2 mb-lg-0">
-                <label class="mybp-label" for="meu-cnpj">Por Cnpj</label>
-                <combobox-auto-complete
-                    input-id="meu-cnpj"
-                    instance-id="meu-cnpj"
-                    v-model="controle.dados.campoCnpj"
-                    :options="cnpjComboboxOpcoesFiltro"
-                />
-            </div>
-        </div>
+                <div class="col-12 col-lg-6">
+                    <div class="form-group mb-2 mb-lg-0">
+                        <label class="mybp-label" for="meu-filtro-status">Status</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroStatus"
+                                instance-id="filtro-status"
+                                v-model="controle.dados.campoStatus"
+                                :options="filtroStatusOpcoes"
+                                input-id="meu-filtro-status"
+                                placeholder-blur="Todos os status"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @opening="fecharOutrosComboboxes('filtro-status')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
+                    </div>
+                </div>
     </template>
 
     <template #acoes>
@@ -66,7 +74,9 @@ Guia reutilizável para telas de listagem com filtros, cards e combobox (mesmo p
 
 Sem filial: Buscar `col-lg-6` + Status `col-lg-6`.
 
-## Combobox (CNPJ / lotação)
+## Combobox nos filtros
+
+**Regra:** todo filtro que não seja busca livre usa `ComboboxAutoComplete` — status, enums, CNPJ, cargo, cidade, etc. **Não usar `<select>` nativo** nos filtros.
 
 Opções no formato `{ value, label, meta?, raw? }`:
 
@@ -87,6 +97,37 @@ const cnpjComboboxOpcoesFiltro = computed(() => [
 ```
 
 Filtro vazio (`value: ''`) = todos. No cadastro/edição, não incluir opção vazia — matriz como padrão.
+
+**Combobox:** `@select="onSelectFiltro"` → `atualizar()` imediato (sem clicar em Atualizar).
+
+### Query params (histórico compartilhável)
+
+Usar `resources/js/utils/listagemQueryParams.js`:
+
+1. Definir `CAMPOS_FILTRO_URL` com todas as chaves de `controle.dados`
+2. No `mounted`: `lerFiltrosDaUrl()` → `$nextTick` → `atualizar()`
+3. Watch: `criarWatchQueryParams(CAMPOS_FILTRO_URL)` (debounce 400ms)
+4. URL via `history.replaceState` (igual planejamento/movimentacao)
+
+Exemplo: `/g/cadastro/areas?campoBusca=comercial&campoStatus=false&page=2`
+
+**Paginação:** `page` (página atual, se > 1) e `pages` (itens por página, se ≠ padrão). Sincronizar também em `carregou()` após navegar entre páginas.
+
+### Status (enum fixo)
+
+```javascript
+filtroStatusOpcoes() {
+    return [
+        { value: '', label: 'Todos os status' },
+        { value: 'true', label: 'Apenas ativos' },
+        { value: 'false', label: 'Apenas inativos' }
+    ]
+}
+```
+
+### CNPJ / lotação
+
+Ver bloco `cnpjComboboxOpcoesFiltro` acima (primeira opção `Todos os CNPJs`).
 
 ## Listagem em cards
 
@@ -128,9 +169,11 @@ Estilos carregados via `resources/sass/app.scss` → `@import "mybp-listagem-ui"
 
 ## Checklist ao migrar uma tela
 
-- [ ] Importar `FiltroListagem` e usar slots `#filtros` / `#acoes`
+- [ ] Importar `FiltroListagem` e `ComboboxAutoComplete`
+- [ ] Filtros enum/status/CNPJ via combobox (sem `<select>` nativo)
 - [ ] Labels com `mybp-label` (ou `ma-label` — alias visual igual em Minhas Avaliações)
-- [ ] CNPJ com `ComboboxAutoComplete`, não `<select>` nativo
+- [ ] `@select="onSelectFiltro"` em combobox (atualiza listagem na hora)
+- [ ] Query params com `listagemQueryParams.js` (`CAMPOS_FILTRO_URL` + watch)
 - [ ] Cards com classes `mybp-*`, não CSS duplicado no componente
 - [ ] Botões de ação na segunda linha do filtro
 - [ ] Estados: loading (`preload`), vazio (`alert-warning`), info contextual (`alert-info`)
@@ -138,4 +181,5 @@ Estilos carregados via `resources/sass/app.scss` → `@import "mybp-listagem-ui"
 ## Referências cruzadas
 
 - Combobox e filtros avançados: `resources/js/components/cadastros/avaliacoes/avaliar/index.vue`
+- Skill de migração: `.cursor/skills/mybp-front-cardlist/SKILL.md`
 - Cards similares: `resources/js/components/administracao/aprovacao-extra-config/AprovacaoExtraConfig.vue`

@@ -2,6 +2,10 @@ import { createApp } from 'vue'
 import { registerGlobals } from '../../../registerGlobals'
 import ComboboxAutoComplete from '../../../components/ComboboxAutoComplete'
 import FiltroListagem from '../../../components/ui/FiltroListagem'
+import { lerFiltrosDaUrl, lerPaginacaoDaUrl, sincronizarFiltrosNaUrl, criarWatchQueryParams, montarExtrasPaginacao, aplicarPaginaInicialListagem, buscarListagem } from '../../../utils/listagemQueryParams'
+
+const CAMPOS_FILTRO_URL = ['campoBusca', 'campoDisponibilidade', 'campoVinculoVagas']
+const PAGES_DEFAULT = 100
 
 const app = createApp({
     components: {
@@ -40,7 +44,8 @@ const app = createApp({
                 dados: {
                     campoBusca: '',
                     campoDisponibilidade: '',
-                    campoVinculoVagas: ''
+                    campoVinculoVagas: '',
+                    pages: PAGES_DEFAULT
                 }
             },
 
@@ -79,14 +84,32 @@ const app = createApp({
         }
     },
     mounted() {
+        this.urlParamGetFiltros()
+        const paginaInicial = lerPaginacaoDaUrl(this.controle.dados, { pagesDefault: PAGES_DEFAULT })
         this.formDefault = _.cloneDeep(this.form)
-        this.atualizar()
+        this.$nextTick(() => {
+            aplicarPaginaInicialListagem(this, paginaInicial)
+            buscarListagem(this, { resetPagina: false })
+        })
         document.addEventListener('click', this.onClickOutside)
     },
     beforeUnmount() {
         document.removeEventListener('click', this.onClickOutside)
     },
+    watch: {
+        'controle.dados': criarWatchQueryParams(CAMPOS_FILTRO_URL, { pagesDefault: PAGES_DEFAULT })
+    },
     methods: {
+        urlParamGetFiltros() {
+            lerFiltrosDaUrl(this.controle.dados, CAMPOS_FILTRO_URL)
+        },
+        syncUrlFiltros() {
+            sincronizarFiltrosNaUrl(
+                this.controle.dados,
+                CAMPOS_FILTRO_URL,
+                montarExtrasPaginacao(this, { pagesDefault: PAGES_DEFAULT })
+            )
+        },
         onSubmitFiltro() {
             this.atualizar()
         },
@@ -502,6 +525,7 @@ const app = createApp({
 
             this.lista = dados.itens || []
             this.controle.carregando = false
+            this.$nextTick(() => this.syncUrlFiltros())
         },
 
         carregando() {
@@ -509,8 +533,7 @@ const app = createApp({
         },
 
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            buscarListagem(this, { resetPagina: true })
         }
     }
 })

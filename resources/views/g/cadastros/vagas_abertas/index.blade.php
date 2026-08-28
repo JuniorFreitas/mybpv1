@@ -37,8 +37,14 @@
             </div>
             <form v-if="!preloadAjax && (!cadastrado && !atualizado)" id="form" onsubmit="return false;">
 
+                <p class="mybp-campo-obrigatorio-legenda mb-3">
+                    Campos com <span class="text-danger">*</span> são obrigatórios.
+                </p>
+
                 <div class="form-group">
-                    <label for="">Informe o cargo</label>
+                    <label class="mybp-label" :for="hash">
+                        Cargo <span class="text-danger">*</span>
+                    </label>
                     <autocomplete :caminho="cargos_ativos"
                                   :valido="form.vaga_id !== ''"
                                   v-model="form.autocomplete_label_vaga_modal"
@@ -113,19 +119,23 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="descricao">Titulo</label>
-                    <input class="form-control" v-model="form.titulo" onblur="valida_campo_vazio(this,1)"
+                    <label class="mybp-label" for="vaga-aberta-titulo">
+                        Título <span class="text-danger">*</span>
+                    </label>
+                    <input id="vaga-aberta-titulo" class="form-control" v-model="form.titulo" onblur="valida_campo_vazio(this,1)"
                            placeholder="Informe o título da vaga"
                     >
                 </div>
 
                 <div class="form-group">
-                    <label for="descricao">Descrição</label>
+                    <label class="mybp-label" for="vaga-aberta-descricao">Descrição</label>
                     <editor :api-key='tinyPadrao.key' v-model="form.descricao" :init="tinyPadrao"></editor>
                 </div>
 
                 <div class="form-group">
-                    <label for="Cidade">Cidade</label>
+                    <label class="mybp-label" :for="`mun_${hash}`">
+                        Cidade <span class="text-danger">*</span>
+                    </label>
                     <autocomplete :caminho="todos_municipios"
                                   :valido="form.municipio_id !== ''"
                                   v-model="form.autocomplete_label_municipio_modal"
@@ -136,10 +146,10 @@
                 </div>
 
                 <fieldset>
-                    <legend>Projetos</legend>
+                    <legend>Projetos <small class="text-muted font-weight-normal">(opcional)</small></legend>
 
                     <p class="text-muted small mb-2">
-                        Opcional. Vincule a vaga a um ou mais projetos respeitando a quantidade disponível em cada um.
+                        Vincule a vaga a um ou mais projetos respeitando a quantidade disponível em cada um.
                     </p>
 
                     <div class="alert alert-warning py-2 small mb-3" v-if="!temProjetosDisponiveis && !editando">
@@ -187,7 +197,9 @@
                             </div>
 
                             <div class="col-md-2">
-                                <label>Qtd. total</label>
+                                <label>
+                                    Qtd. total <span class="text-danger">*</span>
+                                </label>
                                 <input type="number"
                                        :min="quantidadeMinimaProjeto(obj)"
                                        :max="quantidadeMaximaProjeto(obj, index) || null"
@@ -212,7 +224,9 @@
 
                         <div class="row" v-else>
                             <div class="col-md-6">
-                                <label>Projeto</label>
+                                <label>
+                                    Projeto <span class="text-danger">*</span>
+                                </label>
 
                                 <select class="form-control"
                                         v-model="obj.projeto_id"
@@ -247,7 +261,9 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label>Quantidade total de vagas</label>
+                                <label>
+                                    Quantidade total de vagas <span class="text-danger">*</span>
+                                </label>
                                 <input type="number"
                                        :min="quantidadeMinimaProjeto(obj)"
                                        :max="quantidadeMaximaProjeto(obj, index) || null"
@@ -277,7 +293,7 @@
                 </fieldset>
 
                 <fieldset>
-                    <legend>Provas</legend>
+                    <legend>Provas <small class="text-muted font-weight-normal">(opcional)</small></legend>
 
                     <button class="btn btn-sm mr-1 btn-primary mb-3" @click="addLISimulado">
                         <i class="fa fa-plus"></i> Adicionar
@@ -289,7 +305,9 @@
                         <div class="row">
 
                             <div class="col-md-4">
-                                <label>Prova</label>
+                                <label>
+                                    Prova <span class="text-danger">*</span>
+                                </label>
 
                                 <select class="form-control" v-model="obj.simulado_id"
                                         @change="selecionaSimulado(obj.simulado_id, index)"
@@ -302,7 +320,9 @@
                             </div>
 
                             <div class="col-md-3" v-if="obj.tipo_prova === 'objetiva'">
-                                <label>Duração em minutos</label>
+                                <label>
+                                    Duração em minutos <span class="text-danger">*</span>
+                                </label>
                                 <input type="number" min="15" placeholder="duração da prova" v-model="obj.duracao"
                                        v-mascara:numero
                                        class="form-control"
@@ -789,7 +809,7 @@
                 id="controle"
                 ref="componente"
                 url="{{route('g.vagas.vagas_abertas.atualizar')}}"
-                por-pagina="100"
+                :por-pagina="controle.dados.pages"
                 :dados="controle.dados"
                 v-on:carregou="carregou"
                 v-on:carregando="carregando">

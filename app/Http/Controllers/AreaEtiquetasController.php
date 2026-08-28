@@ -146,21 +146,42 @@ class AreaEtiquetasController extends Controller
         $resultado = AreaEtiqueta::with('Gestor:id,nome,empresa_id', 'CentroCusto:id,empresa_id,label')->orderBy('id');
 
         if ($request->filled('campoBusca')) {
-            $resultado->where('label', 'like', '%' . $request->campoBusca . '%');
+            $termo = trim((string) $request->campoBusca);
+            $resultado->where(function ($query) use ($termo) {
+                $query->where('label', 'like', '%' . $termo . '%');
+                if (is_numeric($termo)) {
+                    $query->orWhere('id', (int) $termo);
+                }
+            });
         }
 
         if ($request->filled('campoStatus')) {
-            $status = $request->campoStatus == 'true';
-            $resultado->whereAtivo($status);
+            $status = filter_var($request->campoStatus, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($status !== null) {
+                $resultado->whereAtivo($status);
+            }
         }
 
         $resultado = $resultado->paginate($porPagina);
+        $items = collect($resultado->items());
+        $supervisores = DB::table('cliente_area_etiquetas')
+            ->whereIn('area_etiqueta_id', $items->pluck('id'))
+            ->pluck('numero_supervisor', 'area_etiqueta_id');
+
+        $items = $items->map(function (AreaEtiqueta $area) use ($supervisores) {
+            $area->gestor_nome = $area->Gestor?->nome;
+            $area->centro_custo_label = $area->CentroCusto?->label;
+            $area->numero_supervisor = $supervisores[$area->id] ?? null;
+
+            return $area;
+        });
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'items' => $resultado->items(),
+                'items' => $items->values()->all(),
                 'empresa_id' => auth()->user()->empresa_id,
             ]
         ], 200);

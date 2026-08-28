@@ -14,15 +14,26 @@
             </div>
             <form v-if="!preloadAjax && (!cadastrado && !atualizado)" id="form" onsubmit="return false;">
 
+                <p class="mybp-campo-obrigatorio-legenda mb-3">
+                    Campos com <span class="text-danger">*</span> são obrigatórios.
+                </p>
+
                 <fieldset>
                     <legend>Sobre o cargo</legend>
                     <div class="row">
                         <div class="col-12 col-md-8">
                             <div class="form-group">
-                                <label>Título do cargo</label>
-                                <input type="text" class="form-control form-control-sm" v-model="form.nome"
+                                <label class="mybp-label" for="cargo-nome">
+                                    Título do cargo <span class="text-danger">*</span>
+                                </label>
+                                <input
+                                    id="cargo-nome"
+                                    type="text"
+                                    class="form-control form-control-sm"
+                                    v-model="form.nome"
                                     placeholder="Ex.: Analista de RH"
-                                    autocomplete="off">
+                                    autocomplete="off"
+                                >
                             </div>
                         </div>
                         <div class="col-12 col-md-4 d-flex align-items-end">
@@ -40,9 +51,9 @@
                 </fieldset>
 
                 <fieldset class="mt-3">
-                    <legend>CBO</legend>
+                    <legend>CBO <small class="text-muted font-weight-normal">(opcional)</small></legend>
                     <div class="form-group">
-                        <label>Buscar CBO por código, título ou família</label>
+                        <label class="mybp-label" :for="`cbo_${hash}`">Buscar CBO por código, título ou família</label>
                         <autocomplete :caminho="caminhoAutocompleteCbos()"
                                       :formsm="true"
                                       v-model="form.autocomplete_label_cbo"
@@ -75,7 +86,7 @@
                 </fieldset>
 
                 <fieldset class="mt-3">
-                    <legend>Treinamentos do cargo</legend>
+                    <legend>Treinamentos do cargo <small class="text-muted font-weight-normal">(somente leitura)</small></legend>
 
                     <div class="alert alert-info border-0 py-2 mb-3" role="alert">
                         <i class="fa fa-info-circle mr-1"></i>
@@ -149,16 +160,21 @@
                 <div class="col-12 col-lg-6">
                     <div class="form-group mb-2 mb-lg-0">
                         <label class="mybp-label" for="vaga-filtro-status">Status</label>
-                        <select
-                            id="vaga-filtro-status"
-                            class="form-control form-control-sm"
-                            :disabled="controle.carregando"
-                            v-model="controle.dados.campoStatus"
-                        >
-                            <option value="">Todos os status</option>
-                            <option :value="true">Apenas ativos</option>
-                            <option :value="false">Apenas inativos</option>
-                        </select>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroStatus"
+                                instance-id="filtro-status"
+                                v-model="controle.dados.campoStatus"
+                                :options="filtroStatusOpcoes"
+                                :disabled="controle.carregando"
+                                input-id="vaga-filtro-status"
+                                placeholder-blur="Todos os status"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @opening="fecharOutrosComboboxes('filtro-status')"
+                                @select="onSelectFiltro"
+                            ></combobox-auto-complete>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -229,34 +245,41 @@
                         </div>
                     </div>
 
-                    <div class="mybp-card-secoes-row" v-if="temCbo(vaga)">
-                        <div class="mybp-card-destaque mybp-card-destaque--primary mybp-card-destaque--full">
-                            <i class="fas fa-briefcase text-primary"></i>
-                            <div class="mybp-card-destaque-info">
-                                <small class="mybp-card-destaque-etapa">
-                                    CBO @{{ vaga.cbo_codigo || '—' }}
-                                    <span v-if="vaga.cbo_codigo_familia"> · Família @{{ vaga.cbo_codigo_familia }}</span>
-                                </small>
-                                <strong class="mybp-card-destaque-valor mybp-card-destaque-valor--wrap">@{{ vaga.cbo_titulo }}</strong>
-                                <small class="text-muted d-block mt-1" v-if="vaga.cbo_familia">@{{ vaga.cbo_familia }}</small>
+                    <div class="mybp-card-conteudo">
+                        <div class="mybp-card-secoes-row">
+                            <div
+                                class="mybp-card-destaque mybp-card-destaque--primary"
+                                v-if="temCbo(vaga)"
+                            >
+                                <i class="fas fa-briefcase text-primary"></i>
+                                <div class="mybp-card-destaque-info">
+                                    <small class="mybp-card-destaque-etapa">
+                                        CBO @{{ vaga.cbo_codigo || '—' }}
+                                        <span v-if="vaga.cbo_codigo_familia"> · Família @{{ vaga.cbo_codigo_familia }}</span>
+                                    </small>
+                                    <strong class="mybp-card-destaque-valor mybp-card-destaque-valor--wrap">@{{ vaga.cbo_titulo }}</strong>
+                                    <small class="text-muted d-block mt-1" v-if="vaga.cbo_familia">@{{ vaga.cbo_familia }}</small>
+                                </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <div class="mybp-card-details-row" v-else>
-                        <div class="mybp-detail-item">
-                            <i class="fas fa-briefcase text-muted"></i>
-                            <span class="mybp-detail-label">CBO</span>
-                            <span class="mybp-detail-value text-muted">Não vinculado</span>
-                        </div>
-                    </div>
+                            <div class="mybp-card-destaque" v-else>
+                                <i class="fas fa-briefcase text-muted"></i>
+                                <div class="mybp-card-destaque-info">
+                                    <small class="mybp-card-destaque-etapa">CBO</small>
+                                    <strong class="mybp-card-destaque-valor mybp-card-destaque-valor--wrap text-muted">
+                                        Não vinculado
+                                    </strong>
+                                </div>
+                            </div>
 
-                    <div class="mybp-card-secoes-row">
-                        <div class="mybp-card-destaque mybp-card-destaque--info mybp-card-destaque--full">
-                            <i class="fas fa-graduation-cap text-info"></i>
-                            <div class="mybp-card-destaque-info">
-                                <small class="mybp-card-destaque-etapa">Treinamentos do cargo</small>
-                                <strong class="mybp-card-destaque-valor mybp-card-destaque-valor--wrap">@{{ resumoTreinamentos(vaga) }}</strong>
+                            <div class="mybp-card-destaque mybp-card-destaque--info">
+                                <i class="fas fa-graduation-cap text-info"></i>
+                                <div class="mybp-card-destaque-info">
+                                    <small class="mybp-card-destaque-etapa">Treinamentos do cargo</small>
+                                    <strong class="mybp-card-destaque-valor mybp-card-destaque-valor--wrap">
+                                        @{{ resumoTreinamentos(vaga) }}
+                                    </strong>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -268,7 +291,7 @@
                 id="controle"
                 ref="componente"
                 url="{{route('g.vagas.vagas.atualizar')}}"
-                por-pagina="100"
+                :por-pagina="controle.dados.pages"
                 :dados="controle.dados"
                 v-on:carregou="carregou"
                 v-on:carregando="carregando">

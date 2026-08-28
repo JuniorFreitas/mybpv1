@@ -5,17 +5,27 @@
                 <p class="mt-2 text-center" v-if="preload"><i class="fa fa-spinner fa-pulse"></i>Carregando...</p>
                 <fieldset v-if="!preload">
                     <legend>Cadastro de Área</legend>
+                    <p class="mybp-campo-obrigatorio-legenda mb-3">Campos com <span class="text-danger">*</span> são obrigatórios.</p>
                     <div class="row">
                         <div class="col-12">
-                            <label>Nome</label>
-                            <input class="form-control form-control-sm" type="text" onblur="valida_campo_vazio(this, 1)" v-model="form.label" />
+                            <label class="mybp-label" for="area-form-nome">Nome <span class="text-danger">*</span></label>
+                            <input
+                                id="area-form-nome"
+                                class="form-control form-control-sm"
+                                type="text"
+                                placeholder="Informe o nome da área"
+                                onblur="valida_campo_vazio(this, 1)"
+                                v-model="form.label"
+                            />
                         </div>
 
                         <div class="col-12 mt-2 mb-2">
-                            <label>Contato supervisor para etiqueta</label>
+                            <label class="mybp-label" for="area-form-supervisor">Contato supervisor para etiqueta</label>
                             <input
+                                id="area-form-supervisor"
                                 class="form-control form-control-sm"
                                 type="text"
+                                placeholder="Informe o telefone do supervisor"
                                 onblur="valida_telefone(this)"
                                 v-mascara:telefone
                                 v-model="form.numero_supervisor"
@@ -26,8 +36,8 @@
 
                         <div class="col-12">
                             <div class="form-group">
-                                <label>Centro de Custo</label>
-                                <select v-model="form.centro_custo_id" class="form-control">
+                                <label class="mybp-label" for="area-form-centro-custo">Centro de Custo</label>
+                                <select id="area-form-centro-custo" v-model="form.centro_custo_id" class="form-control form-control-sm">
                                     <option value="">Selecione</option>
                                     <option v-for="item in centro_custos" :value="item.id" :key="item.id">
                                         {{ item.label }}
@@ -54,16 +64,15 @@
             </template>
         </modal>
 
-        <!-- Filtro -->
-        <fieldset>
-            <legend>Filtro</legend>
-            <form class="row" @submit.prevent="$refs.componente && $refs.componente.buscar ? $refs.componente.buscar() : null">
-                <div class="col-12 col-md-5">
-                    <div class="form-group">
-                        <label>Buscar</label>
+        <filtro-listagem @submit="onSubmitFiltro">
+            <template #filtros>
+                <div class="col-12 col-lg-6">
+                    <div class="form-group mb-2 mb-lg-0">
+                        <label class="mybp-label" for="area-filtro-busca">Buscar</label>
                         <input
+                            id="area-filtro-busca"
                             type="text"
-                            placeholder="Buscar por nome"
+                            placeholder="Buscar por nome ou ID"
                             autocomplete="off"
                             class="form-control form-control-sm"
                             :disabled="controle.carregando"
@@ -72,29 +81,39 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4">
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoStatus" @change="atualizar()">
-                            <option value="">Todos os Status</option>
-                            <option :value="true">Apenas Ativos</option>
-                            <option :value="false">Apenas Inativos</option>
-                        </select>
+                <div class="col-12 col-lg-6">
+                    <div class="form-group mb-2 mb-lg-0">
+                        <label class="mybp-label" for="area-filtro-status">Status</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroStatus"
+                                instance-id="filtro-status"
+                                v-model="controle.dados.campoStatus"
+                                :options="filtroStatusOpcoes"
+                                :disabled="controle.carregando"
+                                input-id="area-filtro-status"
+                                placeholder-blur="Todos os status"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @opening="fecharOutrosComboboxes('filtro-status')"
+                                @select="onSelectFiltro"
+                            ></combobox-auto-complete>
+                        </div>
                     </div>
                 </div>
+            </template>
 
-                <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
-                        <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                        Atualizar
-                    </button>
+            <template #acoes>
+                <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
+                    Atualizar
+                </button>
 
-                    <button type="button" class="btn btn-sm mr-1 btn-secondary" :disabled="controle.carregando" @click="formNovo">
-                        <i class="fa fa-plus"></i> Cadastrar Área
-                    </button>
-                </div>
-            </form>
-        </fieldset>
+                <button type="button" class="btn btn-sm btn-secondary" :disabled="controle.carregando" @click="formNovo">
+                    <i class="fa fa-plus"></i> Cadastrar Área
+                </button>
+            </template>
+        </filtro-listagem>
 
         <div id="conteudo">
             <preload class="mt-2 text-center" v-if="controle.carregando"></preload>
@@ -103,43 +122,92 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-                <table class="tabela">
-                    <thead>
-                        <tr class="bg-default">
-                            <td class="text-center">ID</td>
-                            <td class="text-center">Nome</td>
-                            <td class="text-center">Gestor</td>
-                            <td class="text-center">Centro de Custo</td>
-                            <td class="text-center">Ativo</td>
-                            <td class="text-center">Opções</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(area, index) in lista" :key="area.id || index">
-                            <td class="text-center">{{ area.id }}</td>
-                            <td class="text-center">{{ area.label }}</td>
-                            <td class="text-center">{{ area.gestor ? area.gestor.nome : 'Não Informado' }}</td>
-                            <td class="text-center">{{ area.centro_custo ? area.centro_custo.label : 'Não Informado' }}</td>
-                            <td class="text-center">
-                                <bt-ativo :rota="`cadastro/areas/${area.id}/ativa-desativa`" :model="area"></bt-ativo>
-                            </td>
-                            <td class="text-center">
-                                <button type="button" class="btn btn-sm mr-1 btn-primary" @click="alterar(area.id)">
-                                    <i class="fa fa-edit"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+                <div class="mybp-card" v-for="area in lista" :key="area.id">
+                    <div class="mybp-card-header-row">
+                        <div class="mybp-card-left">
+                            <span class="mybp-badge-id">#{{ area.id }}</span>
+                            <div class="mybp-card-titulo">
+                                <strong>{{ area.label }}</strong>
+                            </div>
+                        </div>
+                        <div class="mybp-card-right">
+                            <bt-ativo
+                                :rota="`cadastro/areas/${area.id}/ativa-desativa`"
+                                :model="area"
+                                @atualizou="atualizar()"
+                            ></bt-ativo>
+                            <div class="dropdown" :class="{ show: isDropdownOpen(area.id) }">
+                                <a
+                                    class="mybp-btn-acoes-compact"
+                                    href="#"
+                                    role="button"
+                                    aria-haspopup="true"
+                                    :aria-expanded="isDropdownOpen(area.id) ? 'true' : 'false'"
+                                    @click.prevent.stop="toggleDropdown(area.id)"
+                                >
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div
+                                    class="dropdown-menu mybp-dropdown-menu dropdown-menu-right"
+                                    :class="{ show: isDropdownOpen(area.id) }"
+                                    @click="fecharDropdown"
+                                >
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Editar"
+                                        @click.prevent="abrirEdicaoArea(area.id)"
+                                    >
+                                        <i class="fa fa-edit mr-1"></i> Editar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mybp-card-conteudo">
+                        <div class="mybp-card-secoes-row">
+                            <div class="mybp-card-destaque mybp-card-destaque--primary">
+                                <i class="fas fa-user-tie text-primary"></i>
+                                <div class="mybp-card-destaque-info">
+                                    <small class="mybp-card-destaque-etapa">Gestor responsável</small>
+                                    <strong class="mybp-card-destaque-valor mybp-card-destaque-valor--wrap">
+                                        {{ resumoGestor(area) }}
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div class="mybp-card-destaque mybp-card-destaque--info">
+                                <i class="fas fa-building text-info"></i>
+                                <div class="mybp-card-destaque-info">
+                                    <small class="mybp-card-destaque-etapa">Centro de Custo</small>
+                                    <strong class="mybp-card-destaque-valor mybp-card-destaque-valor--wrap">
+                                        {{ resumoCentroCusto(area) }}
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div class="mybp-card-destaque">
+                                <i class="fas fa-phone text-muted"></i>
+                                <div class="mybp-card-destaque-info">
+                                    <small class="mybp-card-destaque-etapa">Supervisor (etiqueta)</small>
+                                    <strong class="mybp-card-destaque-valor mybp-card-destaque-valor--wrap">
+                                        {{ resumoSupervisor(area) }}
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <controle-paginacao
-                class="d-flex justify-content-center"
+                class="d-flex justify-content-center mt-3"
                 id="controle"
                 ref="componente"
                 :url="urlPaginacao"
-                :por-pagina="qntPag"
+                :por-pagina="controle.dados.pages"
                 :dados="controle.dados"
                 v-on:carregou="carregou"
                 v-on:carregando="carregando"
@@ -151,15 +219,29 @@
 <script>
 import controlePaginacao from '../../ControlePaginacao'
 import modal from '../../Modal'
-import editor from '@tinymce/tinymce-vue'
 import gestor from '../../GestorAprovacao.vue'
+import FiltroListagem from '../../ui/FiltroListagem.vue'
+import ComboboxAutoComplete from '../../ComboboxAutoComplete.vue'
+import {
+    lerFiltrosDaUrl,
+    lerPaginacaoDaUrl,
+    sincronizarFiltrosNaUrl,
+    criarWatchQueryParams,
+    montarExtrasPaginacao,
+    aplicarPaginaInicialListagem,
+    buscarListagem
+} from '../../../utils/listagemQueryParams'
+
+const CAMPOS_FILTRO_URL = ['campoBusca', 'campoStatus']
+const PAGES_DEFAULT = 20
 
 export default {
     components: {
         modal,
         controlePaginacao,
-        editor,
-        gestor
+        gestor,
+        FiltroListagem,
+        ComboboxAutoComplete
     },
     props: {
         qntPag: {
@@ -180,7 +262,6 @@ export default {
             default: true
         },
         modal: {
-            // modal Pai
             type: String,
             required: false,
             default: ''
@@ -188,20 +269,40 @@ export default {
     },
 
     mounted() {
-        this.atualizar()
+        this.urlParamGetFiltros()
+        const paginaInicial = lerPaginacaoDaUrl(this.controle.dados, { pagesDefault: this.qntPag })
         this.formDefault = _.cloneDeep(this.form)
+        this.$nextTick(() => {
+            aplicarPaginaInicialListagem(this, paginaInicial)
+            buscarListagem(this, { resetPagina: false })
+        })
+        document.addEventListener('click', this.onClickOutside)
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
+    },
+    watch: {
+        'controle.dados': criarWatchQueryParams(CAMPOS_FILTRO_URL, { pagesDefault: PAGES_DEFAULT })
+    },
+    computed: {
+        filtroStatusOpcoes() {
+            return [
+                { value: '', label: 'Todos os status' },
+                { value: 'true', label: 'Apenas ativos' },
+                { value: 'false', label: 'Apenas inativos' }
+            ]
+        }
     },
     data() {
         return {
             hash: String(Math.random()).substr(2),
             titulo_janela_form: 'Áreas',
+            dropdownAbertoKey: null,
 
             preload: false,
             editando: false,
             cadastrado: false,
             atualizado: false,
-
-            // cliente_id: '',
 
             empresa_id: '',
 
@@ -218,7 +319,6 @@ export default {
             },
             formDefault: null,
 
-            //Paginacao
             lista: [],
             centro_custos: [],
 
@@ -227,18 +327,74 @@ export default {
                 carregando: false,
                 dados: {
                     campoBusca: '',
-                    campoStatus: ''
+                    campoStatus: '',
+                    pages: PAGES_DEFAULT
                 }
             }
         }
     },
     methods: {
+        urlParamGetFiltros() {
+            lerFiltrosDaUrl(this.controle.dados, CAMPOS_FILTRO_URL)
+        },
+        syncUrlFiltros() {
+            sincronizarFiltrosNaUrl(
+                this.controle.dados,
+                CAMPOS_FILTRO_URL,
+                montarExtrasPaginacao(this, { pagesDefault: this.qntPag })
+            )
+        },
+        onSubmitFiltro() {
+            this.atualizar()
+        },
+        onSelectFiltro() {
+            this.atualizar()
+        },
+        fecharOutrosComboboxes(manter) {
+            const combos = [['filtro-status', 'comboFiltroStatus']]
+
+            combos.forEach(([id, refName]) => {
+                if (id !== manter && this.$refs[refName]?.close) {
+                    this.$refs[refName].close()
+                }
+            })
+        },
+        onClickOutside(event) {
+            if (event?.target?.closest?.('.dropdown')) return
+            if (event?.target?.closest?.('.mybp-combobox-wrap')) return
+            this.dropdownAbertoKey = null
+            this.fecharOutrosComboboxes(null)
+        },
+        toggleDropdown(areaId) {
+            if (!areaId) return
+            const key = `area:${areaId}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(areaId) {
+            return this.dropdownAbertoKey === `area:${areaId}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+        abrirEdicaoArea(areaId) {
+            this.fecharDropdown()
+            this.alterar(areaId)
+        },
+        resumoGestor(area) {
+            return area.gestor_nome || area.gestor?.nome || area.Gestor?.nome || 'Não informado'
+        },
+        resumoCentroCusto(area) {
+            return area.centro_custo_label || area.centro_custo?.label || area.CentroCusto?.label || 'Não informado'
+        },
+        resumoSupervisor(area) {
+            return area.numero_supervisor || 'Não informado'
+        },
         formNovo() {
             this.titulo_janela_form = 'Cadastro Áreas'
             this.preload = false
             this.cadastrado = false
             this.atualizado = false
-            this.form = _.cloneDeep(this.formDefault) //copia
+            this.form = _.cloneDeep(this.formDefault)
             formReset()
             if (this.$refs && this.$refs.modalForm && typeof this.$refs.modalForm.abrirModal === 'function') {
                 this.$refs.modalForm.abrirModal()
@@ -274,7 +430,7 @@ export default {
             this.titulo_janela_form = 'Alterando Área'
             formReset()
 
-            this.form = _.cloneDeep(this.formDefault) //copia
+            this.form = _.cloneDeep(this.formDefault)
 
             this.preload = true
 
@@ -318,6 +474,7 @@ export default {
         carregou(dados) {
             this.lista = dados.items
             this.controle.carregando = false
+            this.$nextTick(() => this.syncUrlFiltros())
             axios
                 .post(`${URL_PUBLICO}/centro-custos/`, { empresa_id: dados.empresa_id })
                 .then((response) => {
@@ -331,60 +488,8 @@ export default {
             this.controle.carregando = true
         },
         atualizar() {
-            if (this.$refs && this.$refs.componente) {
-                this.$refs.componente.atual = 1
-            }
-            if (this.$refs && this.$refs.componente && this.$refs.componente.buscar) {
-                this.$refs.componente.buscar()
-            }
+            buscarListagem(this, { resetPagina: true })
         }
     }
 }
 </script>
-
-<style scoped>
-.card {
-    border: none;
-    background: transparent;
-}
-
-ul.timeline {
-    list-style-type: none;
-    position: relative;
-}
-
-ul.timeline:before {
-    content: ' ';
-    background: #d4d9df;
-    display: inline-block;
-    position: absolute;
-    left: 29px;
-    width: 2px;
-    height: 100%;
-    z-index: 400;
-}
-
-ul.timeline > li {
-    margin: 20px 0;
-    padding-left: 20px;
-}
-
-ul.timeline > li:before {
-    content: ' ';
-    background: white;
-    display: inline-block;
-    position: absolute;
-    border-radius: 50%;
-    border: 3px solid #184056;
-    left: 20px;
-    width: 20px;
-    height: 20px;
-    z-index: 400;
-}
-
-.trackind {
-    padding: 0.5rem 0.8rem;
-    background-color: #f4f4f4;
-    border-radius: 0.5rem;
-}
-</style>

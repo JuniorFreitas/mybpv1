@@ -1,8 +1,16 @@
 import { createApp } from 'vue'
 import { registerGlobals } from '../../../registerGlobals'
 import FiltroListagem from '../../../components/ui/FiltroListagem'
+import ComboboxAutoComplete from '../../../components/ComboboxAutoComplete'
+import { lerFiltrosDaUrl, lerPaginacaoDaUrl, sincronizarFiltrosNaUrl, criarWatchQueryParams, montarExtrasPaginacao, aplicarPaginaInicialListagem, buscarListagem } from '../../../utils/listagemQueryParams'
+
+const CAMPOS_FILTRO_URL = ['campoBusca', 'campoStatus']
+const PAGES_DEFAULT = 100
 
 const app = createApp({
+    components: {
+        ComboboxAutoComplete
+    },
     data() {
         return {
             tituloJanela: 'Cadastrando Cargo',
@@ -41,28 +49,70 @@ const app = createApp({
                 carregando: false,
                 dados: {
                     campoBusca: '',
-                    campoStatus: ''
+                    campoStatus: '',
+                    pages: PAGES_DEFAULT
                 }
             },
 
             dropdownAbertoKey: null
         }
     },
+    computed: {
+        filtroStatusOpcoes() {
+            return [
+                { value: '', label: 'Todos os status' },
+                { value: 'true', label: 'Apenas ativos' },
+                { value: 'false', label: 'Apenas inativos' }
+            ]
+        }
+    },
     mounted() {
+        this.urlParamGetFiltros()
+        const paginaInicial = lerPaginacaoDaUrl(this.controle.dados, { pagesDefault: PAGES_DEFAULT })
         this.formDefault = _.cloneDeep(this.form) //copia
-        this.atualizar()
+        this.$nextTick(() => {
+            aplicarPaginaInicialListagem(this, paginaInicial)
+            buscarListagem(this, { resetPagina: false })
+        })
         document.addEventListener('click', this.onClickOutside)
     },
     beforeUnmount() {
         document.removeEventListener('click', this.onClickOutside)
     },
+    watch: {
+        'controle.dados': criarWatchQueryParams(CAMPOS_FILTRO_URL, { pagesDefault: PAGES_DEFAULT })
+    },
     methods: {
+        urlParamGetFiltros() {
+            lerFiltrosDaUrl(this.controle.dados, CAMPOS_FILTRO_URL)
+        },
+        syncUrlFiltros() {
+            sincronizarFiltrosNaUrl(
+                this.controle.dados,
+                CAMPOS_FILTRO_URL,
+                montarExtrasPaginacao(this, { pagesDefault: PAGES_DEFAULT })
+            )
+        },
         onSubmitFiltro() {
             this.atualizar()
         },
+        onSelectFiltro() {
+            this.atualizar()
+        },
+        fecharOutrosComboboxes(manter) {
+            const combos = [['filtro-status', 'comboFiltroStatus']]
+
+            combos.forEach(([id, refName]) => {
+                if (id !== manter && this.$refs[refName]?.close) {
+                    this.$refs[refName].close()
+                }
+            })
+        },
         onClickOutside(event) {
             if (event?.target?.closest?.('.dropdown')) return
+            if (event?.target?.closest?.('.mybp-combobox-wrap')) return
             this.dropdownAbertoKey = null
+            this.fecharOutrosComboboxes(null)
         },
         toggleDropdown(vagaId) {
             if (!vagaId) return
@@ -265,6 +315,7 @@ const app = createApp({
         carregou(dados) {
             this.lista = dados
             this.controle.carregando = false
+            this.$nextTick(() => this.syncUrlFiltros())
         },
 
         carregando() {
@@ -272,8 +323,7 @@ const app = createApp({
         },
 
         atualizar() {
-            this.$refs && this && this && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            buscarListagem(this, { resetPagina: true })
         }
     }
 })
