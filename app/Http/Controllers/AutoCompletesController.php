@@ -49,11 +49,20 @@ class AutoCompletesController extends Controller
         }
         $quantidade = $request->query('rows');
         $busca = $request->query('busca');
-        return VagasAbertas::whereAtivoSistema(true)->with('Vaga', 'Projetos.Projeto')
+        return VagasAbertas::whereAtivoSistema(true)
+            ->with('Vaga', 'Municipio', 'Projetos.Projeto')
             ->where('titulo', 'like', '%' . $busca . '%')->take($quantidade)
             ->get()
             ->map(function ($item) {
-                $item->label = $item->titulo . ' - ' . $item->Municipio->nome . ' - ' . $item->Municipio->uf;
+                $local = $item->Municipio
+                    ? "{$item->Municipio->nome} - {$item->Municipio->uf}"
+                    : 'Local não informado';
+                $cargo = $item->Vaga?->nome ?? 'Cargo não informado';
+                $item->label = "{$item->titulo} · {$local}";
+                $item->municipio_label = $item->Municipio
+                    ? "{$item->Municipio->nome} - {$item->Municipio->uf}"
+                    : null;
+
                 return $item;
             });
     }
