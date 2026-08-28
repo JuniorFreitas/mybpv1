@@ -47,7 +47,7 @@
         "vue-loader": "^17.4.2",
         "webpack": "^5.91.0",
         "webpack-cli": "^5.1.4",
-        "webpack-dev-server": "^4.15.2"
+        "webpack-dev-server": "^6.0.0"
     },
     "dependencies": {
         "@e965/xlsx": "^0.20.3",
@@ -60,7 +60,7 @@
         "node-waves": "^0.7.6",
         "simplebar": "^5.3.9",
         "sweetalert2": "^11.26.17",
-        "uuid": "^8.3.2",
+        "uuid": "^14.0.2",
         "vue-chartjs": "^5.3.2",
         "vue-multiselect": "^3.4.0",
         "vue-tippy": "^6.7.1",
