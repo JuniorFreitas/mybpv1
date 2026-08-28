@@ -135,62 +135,146 @@
                                   @onselect="selecionaMunicipioModal"></autocomplete>
                 </div>
 
-{{--                <fieldset>--}}
-{{--                    <legend>Projetos</legend>--}}
+                <fieldset>
+                    <legend>Projetos</legend>
 
-{{--                    <button class="btn btn-sm mr-1 btn-primary mb-3" @click="addLIProjeto">--}}
-{{--                        <i class="fa fa-plus"></i> Adicionar--}}
-{{--                    </button>--}}
+                    <p class="text-muted small mb-2">
+                        Opcional. Vincule a vaga a um ou mais projetos respeitando a quantidade disponível em cada um.
+                    </p>
 
-{{--                    <fieldset class=" mb-2" v-if="form.projetos.length > 0"--}}
-{{--                              v-for="(obj, index) in form.projetos" :key="index">--}}
-{{--                        <legend>#@{{ index + 1 }}</legend>--}}
-{{--                        <div class="row">--}}
+                    <div class="alert alert-warning py-2 small mb-3" v-if="!temProjetosDisponiveis && !editando">
+                        Não há projetos com vagas disponíveis no momento. Cadastre ou libere vagas em Projetos antes de vincular.
+                    </div>
 
-{{--                            <div class="col-md-6">--}}
-{{--                                <label>Projeto</label>--}}
+                    <button class="btn btn-sm mr-1 btn-primary mb-3"
+                            type="button"
+                            :disabled="!podeAdicionarNovoProjeto"
+                            @click="addLIProjeto">
+                        <i class="fa fa-plus"></i> Adicionar
+                    </button>
 
-{{--                                <select class="form-control" v-model="obj.projeto_id"--}}
-{{--                                        @change="selecionaProjeto(obj.projeto_id, index)"--}}
-{{--                                        onblur="valida_campo_vazio(this, 1)" onchange="valida_campo_vazio(this, 1)">--}}
-{{--                                    <option value="">Selecione...</option>--}}
-{{--                                    <option v-for="item in listaProjetos" :value="item.id">--}}
-{{--                                        @{{ item.nome }}--}}
-{{--                                    </option>--}}
-{{--                                </select>--}}
-{{--                            </div>--}}
+                    <p class="text-muted small mb-3" v-if="form.projetos.length === 0">
+                        Nenhum projeto vinculado. Clique em Adicionar para incluir.
+                    </p>
 
-{{--                            <div class="col-md-2" v-show="obj.projeto_id > 0 && !editando">--}}
-{{--                                <label>Vagas disponíveis</label>--}}
+                    <fieldset class="mybp-projeto-linha mb-2"
+                              v-if="form.projetos.length > 0"
+                              v-for="(obj, index) in form.projetos"
+                              :key="obj.id || `novo-${index}`">
+                        <legend>#@{{ index + 1 }}</legend>
 
-{{--                                <input type="number" disabled v-model="obj.qnt_disponivel"--}}
-{{--                                       v-mascara:numero--}}
-{{--                                       class="form-control"--}}
-{{--                                       onblur="valida_campo_vazio(this,1)">--}}
-{{--                            </div>--}}
+                        <div class="alert py-2 small mb-3"
+                             :class="projetoPossuiVinculos(obj) ? 'alert-warning' : 'alert-info'"
+                             v-if="projetoLinhaExistente(obj)">
+                            @{{ mensagemProjetoExistente(obj) }}
+                        </div>
 
-{{--                            <div class="col-md-4">--}}
-{{--                                  <label>Quantidade total de vagas</label>--}}
-{{--                                <input type="number" placeholder="Quantidade total de vagas para este projeto"--}}
-{{--                                       @change="verificaQuantidadeVagas(obj.qnt_disponivel,obj.qnt_total,obj.projeto_id)"--}}
-{{--                                       v-model="obj.qnt_total"--}}
-{{--                                       v-mascara:numero--}}
-{{--                                       class="form-control"--}}
-{{--                                       onblur="valida_campo_vazio(this,1)">--}}
-{{--                            </div>--}}
+                        <div class="row" v-if="projetoLinhaExistente(obj)">
+                            <div class="col-md-5">
+                                <label>Projeto</label>
+                                <input type="text"
+                                       class="form-control"
+                                       readonly
+                                       :value="nomeProjetoPorId(obj.projeto_id, obj)">
+                            </div>
 
-{{--                            <div class="col-12 mt-3">--}}
-{{--                                <button class="btn btn-sm mr-1 btn-danger" @click="removerLIProjeto(index)"><i--}}
-{{--                                        class="fa fa-times"></i> Remover--}}
-{{--                                </button>--}}
+                            <div class="col-md-2">
+                                <label>Preenchidas</label>
+                                <input type="number"
+                                       class="form-control"
+                                       readonly
+                                       :value="obj.qnt_preenchida || 0">
+                            </div>
 
-{{--                                <button class="btn btn-sm mr-1 btn-primary mt" @click="addLIProjeto" v-show="index >=1">--}}
-{{--                                    <i class="fa fa-plus"></i> Adicionar--}}
-{{--                                </button>--}}
-{{--                            </div>--}}
-{{--                        </div>--}}
-{{--                    </fieldset>--}}
-{{--                </fieldset>--}}
+                            <div class="col-md-2">
+                                <label>Qtd. total</label>
+                                <input type="number"
+                                       :min="quantidadeMinimaProjeto(obj)"
+                                       :max="quantidadeMaximaProjeto(obj, index) || null"
+                                       v-model="obj.qnt_total"
+                                       v-mascara:numero
+                                       @input="ajustarQuantidadeProjeto(index)"
+                                       @change="ajustarQuantidadeProjeto(index)"
+                                       class="form-control">
+                                <small class="text-muted">
+                                    Preenchidas: @{{ obj.qnt_preenchida || 0 }} · Livre no projeto: @{{ quantidadeLivreProjetoLinha(obj, index) }} · Mín.: @{{ quantidadeMinimaProjeto(obj) }} · Máx.: @{{ quantidadeMaximaProjeto(obj, index) }}
+                                </small>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label>Livre no projeto</label>
+                                <input type="number"
+                                       class="form-control"
+                                       readonly
+                                       :value="quantidadeLivreProjetoLinha(obj, index)">
+                            </div>
+                        </div>
+
+                        <div class="row" v-else>
+                            <div class="col-md-6">
+                                <label>Projeto</label>
+
+                                <select class="form-control"
+                                        v-model="obj.projeto_id"
+                                        @change="selecionaProjeto(obj.projeto_id, index)"
+                                        onblur="valida_campo_vazio(this, 1)"
+                                        onchange="valida_campo_vazio(this, 1)">
+                                    <option value="">Selecione...</option>
+                                    <option v-for="item in projetosOpcoesPara(index)"
+                                            :key="item.id"
+                                            :value="item.id"
+                                            :disabled="projetoOpcaoDesabilitada(item, obj)">
+                                        @{{ labelOpcaoProjeto(item) }}
+                                    </option>
+                                </select>
+                                <small class="text-muted" v-if="listaProjetos.length === 0">
+                                    Carregando projetos… Atualize a listagem se a lista continuar vazia.
+                                </small>
+                                <small class="text-muted" v-else-if="projetosOpcoesPara(index).length === 0">
+                                    Todos os projetos já foram selecionados nesta vaga.
+                                </small>
+                                <small class="text-muted" v-else-if="!projetosOpcoesPara(index).some((item) => !projetoOpcaoDesabilitada(item, obj))">
+                                    Nenhum projeto com vagas disponíveis no momento. Projetos esgotados aparecem desabilitados.
+                                </small>
+                            </div>
+
+                            <div class="col-md-2" v-if="obj.projeto_id">
+                                <label>Livre no projeto</label>
+                                <input type="number"
+                                       disabled
+                                       :value="quantidadeLivreProjetoLinha(obj, index)"
+                                       class="form-control">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label>Quantidade total de vagas</label>
+                                <input type="number"
+                                       :min="quantidadeMinimaProjeto(obj)"
+                                       :max="quantidadeMaximaProjeto(obj, index) || null"
+                                       placeholder="Quantidade para este projeto"
+                                       @input="ajustarQuantidadeProjeto(index)"
+                                       @change="ajustarQuantidadeProjeto(index)"
+                                       v-model="obj.qnt_total"
+                                       v-mascara:numero
+                                       class="form-control"
+                                       onblur="valida_campo_vazio(this,1)">
+                                <small class="text-muted" v-if="obj.projeto_id">
+                                    Preenchidas: @{{ obj.qnt_preenchida || 0 }} · Livre no projeto: @{{ quantidadeLivreProjetoLinha(obj, index) }} · Mín.: @{{ quantidadeMinimaProjeto(obj) }} · Máx.: @{{ quantidadeMaximaProjeto(obj, index) }}
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-3 px-0">
+                            <button class="btn btn-sm mr-1 btn-danger"
+                                    type="button"
+                                    :disabled="!podeRemoverProjeto(obj)"
+                                    :title="!podeRemoverProjeto(obj) ? mensagemProjetoExistente(obj) : 'Remover vínculo'"
+                                    @click="removerLIProjeto(index)">
+                                <i class="fa fa-times"></i> Remover
+                            </button>
+                        </div>
+                    </fieldset>
+                </fieldset>
 
                 <fieldset>
                     <legend>Provas</legend>
@@ -423,6 +507,25 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="col-12 col-lg-4 mybp-combobox-wrap">
+                    <div class="form-group mb-0">
+                        <label class="mybp-label" for="vaga-aberta-filtro-projeto">Projeto</label>
+                        <combobox-auto-complete
+                            ref="comboFiltroProjeto"
+                            instance-id="filtro-projeto"
+                            v-model="controle.dados.campoProjetoId"
+                            :options="filtroProjetoOpcoes"
+                            :disabled="controle.carregando"
+                            input-id="vaga-aberta-filtro-projeto"
+                            placeholder-blur="Todos os projetos"
+                            empty-message="Nenhum projeto encontrado."
+                            :max-results="50"
+                            @opening="fecharOutrosComboboxes('filtro-projeto')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
             </template>
 
             <template #acoes>
@@ -648,6 +751,22 @@
                                         class="mybp-card-tag"
                                         v-for="(titulo, idx) in vaga.simulados_titulos"
                                         :key="`simulado-${vaga.id}-${idx}`"
+                                    >
+                                        @{{ titulo }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mybp-card-destaque mybp-card-destaque--success">
+                            <i class="fas fa-project-diagram text-success"></i>
+                            <div class="mybp-card-destaque-info">
+                                <small class="mybp-card-destaque-etapa">Projetos vinculados</small>
+                                <strong class="mybp-card-destaque-valor mybp-card-destaque-valor--wrap">@{{ resumoProjetos(vaga) }}</strong>
+                                <div class="mybp-card-tags" v-if="vaga.projetos_titulos && vaga.projetos_titulos.length">
+                                    <span
+                                        class="mybp-card-tag"
+                                        v-for="(titulo, idx) in vaga.projetos_titulos"
+                                        :key="`projeto-${vaga.id}-${idx}`"
                                     >
                                         @{{ titulo }}
                                     </span>

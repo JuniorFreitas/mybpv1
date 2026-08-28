@@ -302,6 +302,26 @@
     background: #fffbf0;
 }
 
+.mybp-card-destaque--success {
+    border-color: #c3e6cb;
+    background: #f4fbf6;
+}
+
+.mybp-projeto-linha {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem 1rem 0.75rem;
+    background: #fafbfc;
+}
+
+.mybp-projeto-linha legend {
+    font-size: 0.85rem;
+    font-weight: 600;
+    width: auto;
+    padding: 0 0.35rem;
+    margin-bottom: 0.5rem;
+}
+
 .mybp-card-destaque i {
     font-size: 1.125rem;
     flex-shrink: 0;
