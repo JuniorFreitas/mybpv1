@@ -10,7 +10,7 @@ Initialize the Firebase app in the service worker by passing in the messagingSen
 * New configuration for app@pulseservice.com
 */
 firebase.initializeApp({
-    apiKey: "AIzaSyBIB10-Piv01Sf49pme8ZxN5LjF-42X7t0",
+    apiKey: "",
     authDomain: "pushchefe.firebaseapp.com",
     databaseURL: "https://pushchefe.firebaseio.com",
     projectId: "pushchefe",
