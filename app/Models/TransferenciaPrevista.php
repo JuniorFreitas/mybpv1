@@ -118,6 +118,13 @@ class TransferenciaPrevista extends Model
         'status_aprovacao',
         'empresa_id',
         'gestor_id',
+        'exige_aprovacao_gestor_destino',
+        'fluxo_gestores_automatico',
+        'gestor_destino_id',
+        'user_aprovacao_gestor_destino_id',
+        'status_aprovacao_gestor_destino',
+        'obs_aprovacao_gestor_destino',
+        'data_aprovacao_gestor_destino',
         'aprovacao_extra_id',
         'status_aprovacao_extra',
         'obs_aprovacao_extra',
@@ -145,6 +152,13 @@ class TransferenciaPrevista extends Model
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s',
         'gestor_id' => 'int',
+        'exige_aprovacao_gestor_destino' => 'boolean',
+        'fluxo_gestores_automatico' => 'boolean',
+        'gestor_destino_id' => 'int',
+        'user_aprovacao_gestor_destino_id' => 'int',
+        'status_aprovacao_gestor_destino' => 'string',
+        'obs_aprovacao_gestor_destino' => 'string',
+        'data_aprovacao_gestor_destino' => 'datetime:d/m/Y à\s H:i:s',
         'aprovacao_extra_id' => 'int',
         'status_aprovacao_extra' => 'string',
         'obs_aprovacao_extra' => 'string',
@@ -203,6 +217,21 @@ class TransferenciaPrevista extends Model
     public function GestorAprovacao()
     {
         return $this->hasOne(User::class, 'id', 'gestor_id');
+    }
+
+    public function GestorOrigem()
+    {
+        return $this->hasOne(User::class, 'id', 'gestor_id')->select(['id', 'nome', 'login', 'ativo']);
+    }
+
+    public function GestorDestino()
+    {
+        return $this->hasOne(User::class, 'id', 'gestor_destino_id')->select(['id', 'nome', 'login', 'ativo']);
+    }
+
+    public function QuemAprovouGestorDestino()
+    {
+        return $this->hasOne(User::class, 'id', 'user_aprovacao_gestor_destino_id')->select(['id', 'nome', 'login', 'ativo']);
     }
 
     public function UserAprovacao()

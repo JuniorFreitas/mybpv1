@@ -204,6 +204,7 @@ class User extends Authenticatable
         'api_token',
         'empresa_id',
         'gestor',
+        'gestor_superior_id',
         'privilegio_gestor_area',
         'privilegio_gestor_centro_custo',
         'require_password_reset',
@@ -253,6 +254,7 @@ class User extends Authenticatable
         'api_token' => 'string',
         'empresa_id' => 'int',
         'gestor' => 'boolean',
+        'gestor_superior_id' => 'int',
         'privilegio_gestor_area' => 'boolean',
         'privilegio_gestor_centro_custo' => 'boolean',
         'require_password_reset' => 'boolean',
@@ -361,6 +363,12 @@ class User extends Authenticatable
     public function Curriculo()
     {
         return $this->hasOne(Curriculo::class, 'id', 'id');
+    }
+
+    public function GestorSuperior()
+    {
+        return $this->belongsTo(User::class, 'gestor_superior_id', 'id')
+            ->select(['id', 'nome', 'login', 'ativo', 'gestor_superior_id']);
     }
 
     public function Cliente()

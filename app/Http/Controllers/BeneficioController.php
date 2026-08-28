@@ -189,16 +189,22 @@ class BeneficioController extends Controller
 
         // se tiver busca
         if ($request->filled('campoBusca')) {
-            $resultado->where(function ($q) use ($request) {
-                $q->where('assunto', 'like', '%' . $request->campoBusca . '%')
-                    ->orWhereHas('Respostas', function ($q) use ($request) {
-                        $q->where('resposta', 'like', '%' . $request->campoBusca . '%');
+            $termo = $request->campoBusca;
+            $resultado->where(function ($query) use ($termo) {
+                $query->where('nome', 'like', '%' . $termo . '%')
+                    ->orWhereHas('TipoBeneficio', function ($q) use ($termo) {
+                        $q->where('nome', 'like', '%' . $termo . '%');
                     });
             });
         }
-        // se for um tipo Problema ou Anotação
+
+        if ($request->filled('campoTipoBeneficio')) {
+            $resultado->where('tipobeneficio_id', (int) $request->campoTipoBeneficio);
+        }
+
+        // legado — ignorar campoTipo antigo se enviado sem uso na tela
         if ($request->filled('campoTipo')) {
-            $resultado->where('tipo', $request->campoTipo);
+            $resultado->where('tipobeneficio_id', (int) $request->campoTipo);
         }
 
         $permissoes = auth()->user()->listaDeHabilidades();

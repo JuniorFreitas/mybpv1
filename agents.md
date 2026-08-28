@@ -71,6 +71,7 @@ Guia para modelos de IA atuarem com seguranca, qualidade e performance no projet
 
 - Sempre usar **Vue 3** no frontend.
 - Preferir **componentes Vue** ao inves de concentrar logica/layout direto em Blade.
+- **Listagens de cadastro (filtros + cards):** seguir `docs/PADRAO_UX_LISTAGEM_CADASTROS.md` — classes `mybp-*`, componente `FiltroListagem.vue`, combobox `ComboboxAutoComplete.vue`.
 - **Dividir componentes** da melhor forma possivel para manutencao e codigo mais leve.
 - Em qualquer componente, considerar **performance, seguranca e otimizacao** desde o inicio.
 - O objetivo e manter o frontend modular para permitir **migracao futura** sem reescrever tudo.

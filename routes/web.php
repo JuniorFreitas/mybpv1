@@ -736,9 +736,11 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             });
 
             Route::group(['as' => 'solicitacao_transferencia.'], function () {
+                Route::get('centro-custo/{centrocusto}/gestor-responsavel', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'gestorResponsavel'])->name('centro-custo.gestor-responsavel');
                 Route::post('transferencia-prevista/atualizacao-status', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'atualizacaoStatus'])->name('transferencia-prevista.atualizacaoStatus');
                 Route::post('transferencia-prevista/atualizar', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('transferencia-prevista/{transferenciaPrevista}/aprovar', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::put('transferencia-prevista/{transferenciaPrevista}/aprovar-gestor-destino', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovarGestorDestino'])->name('aprovarGestorDestino');
                 Route::put('transferencia-prevista/{transferenciaPrevista}/aprovar-extra', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovarExtra'])->name('aprovarExtra');
                 Route::put('transferencia-prevista/{transferenciaPrevista}/aprovarrh', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovarRH'])->name('aprovarRH');
                 Route::post('transferencia-prevista/export', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'export'])->name('transferencia-prevista.excel');

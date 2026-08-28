@@ -10,6 +10,7 @@ use App\Models\CentroCusto;
 use App\Models\Curriculo;
 use App\Models\TransferenciaPrevista;
 use App\Models\User;
+use App\Services\TransferenciaPrevista\TransferenciaPrevistaFluxoAprovacaoService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -54,12 +55,12 @@ class JobNotificacaoRecursiva implements ShouldQueue
                 return;
             }
 
-            // Eager loading para evitar N+1
-            // Carregar dados necessários com poucas queries
             $userIds = array_values(array_filter([
                 $this->transferencia->user_id,
                 $this->transferencia->gestor_id,
+                $this->transferencia->gestor_destino_id,
                 $this->transferencia->user_aprovacao_id,
+                $this->transferencia->user_aprovacao_gestor_destino_id,
                 $this->transferencia->aprovacao_extra_id,
                 $this->transferencia->user_rh_id,
             ]));
@@ -78,7 +79,10 @@ class JobNotificacaoRecursiva implements ShouldQueue
 
             $this->transferencia->setRelation('Solicitante', $usuarios->get($this->transferencia->user_id));
             $this->transferencia->setRelation('GestorAprovacao', $usuarios->get($this->transferencia->gestor_id));
+            $this->transferencia->setRelation('GestorOrigem', $usuarios->get($this->transferencia->gestor_id));
+            $this->transferencia->setRelation('GestorDestino', $usuarios->get($this->transferencia->gestor_destino_id));
             $this->transferencia->setRelation('UserAprovacao', $usuarios->get($this->transferencia->user_aprovacao_id));
+            $this->transferencia->setRelation('QuemAprovouGestorDestino', $usuarios->get($this->transferencia->user_aprovacao_gestor_destino_id));
             $this->transferencia->setRelation('UserAprovacaoExtra', $usuarios->get($this->transferencia->aprovacao_extra_id));
             $this->transferencia->setRelation('RhAprovacao', $usuarios->get($this->transferencia->user_rh_id));
 
@@ -107,7 +111,6 @@ class JobNotificacaoRecursiva implements ShouldQueue
                 : null;
             $this->transferencia->setRelation('Colaborador', $colaborador);
 
-            // Cache de configuração e RH (busca uma única vez)
             $this->cacheConfig = AprovacaoExtraConfig::getConfigAtiva(
                 $this->transferencia->empresa_id,
                 'transferencia'
@@ -139,14 +142,14 @@ class JobNotificacaoRecursiva implements ShouldQueue
         }
     }
 
-    /**
-     * Determina o tipo de notificação baseado no status
-     */
     private function determinarTipoNotificacao(): ?string
     {
-        // 1. Reprovações (verificar PRIMEIRO para evitar notificar próximas etapas)
         if ($this->transferencia->status_aprovacao === 'reprovado') {
-            return 'reprovado_gestor';
+            return 'reprovado_gestor_origem';
+        }
+
+        if ($this->transferencia->status_aprovacao_gestor_destino === 'reprovado') {
+            return 'reprovado_gestor_destino';
         }
 
         if ($this->transferencia->status_aprovacao_extra === 'reprovado') {
@@ -157,22 +160,28 @@ class JobNotificacaoRecursiva implements ShouldQueue
             return 'reprovado_rh';
         }
 
-        // 2. Criação inicial
         if (!$this->transferencia->status_aprovacao) {
-            return 'criacao';
+            return $this->transferencia->fluxo_gestores_automatico ? 'criacao_gestor_origem' : 'criacao';
         }
 
-        // 3. Aprovado pelo gestor
-        if ($this->transferencia->status_aprovacao === 'aprovado' && !$this->transferencia->status_aprovacao_extra && !$this->transferencia->resposta_rh) {
+        if ($this->transferencia->fluxo_gestores_automatico
+            && $this->transferencia->exige_aprovacao_gestor_destino
+            && !$this->transferencia->status_aprovacao_gestor_destino
+            && $this->transferencia->status_aprovacao === 'aprovado') {
+            return 'criacao_gestor_destino';
+        }
+
+        if ($this->transferencia->status_aprovacao === 'aprovado'
+            && (!$this->transferencia->exige_aprovacao_gestor_destino || $this->transferencia->status_aprovacao_gestor_destino === 'aprovado')
+            && !$this->transferencia->status_aprovacao_extra
+            && !$this->transferencia->resposta_rh) {
             return $this->cacheConfig ? 'pendente_aprovacao_extra' : 'pendente_aprovacao_rh';
         }
 
-        // 4. Aprovado pela aprovação extra
         if ($this->cacheConfig && $this->transferencia->status_aprovacao_extra === 'aprovado' && !$this->transferencia->resposta_rh) {
             return 'pendente_aprovacao_rh';
         }
 
-        // 5. Aprovação final pelo RH
         if ($this->transferencia->resposta_rh === 'aprovado') {
             return 'aprovado_final';
         }
@@ -180,17 +189,11 @@ class JobNotificacaoRecursiva implements ShouldQueue
         return null;
     }
 
-    /**
-     * Busca emails do RH uma única vez (cache)
-     */
     private function buscarEmailsRH(): array
     {
         return RHHelper::buscarEmailsRH($this->transferencia->empresa_id);
     }
 
-    /**
-     * Busca email de usuário com cache (evita queries repetidas)
-     */
     private function buscarEmailUsuario(int $userId): ?string
     {
         if (isset(self::$usuariosCarregados[$userId])) {
@@ -207,23 +210,25 @@ class JobNotificacaoRecursiva implements ShouldQueue
         return self::$usuariosCarregados[$userId];
     }
 
-    /**
-     * Busca destinatários baseado no tipo de notificação
-     */
     private function buscarDestinatarios(string $tipo): array
     {
         $destinatarios = [];
 
         switch ($tipo) {
             case 'criacao':
-                // Notifica gestor para aprovação (próxima etapa)
-                if ($this->transferencia->GestorAprovacao && $this->transferencia->GestorAprovacao->login) {
-                    $destinatarios[] = $this->transferencia->GestorAprovacao->login;
+            case 'criacao_gestor_origem':
+                if ($this->transferencia->GestorOrigem && $this->transferencia->GestorOrigem->login) {
+                    $destinatarios[] = $this->transferencia->GestorOrigem->login;
+                }
+                break;
+
+            case 'criacao_gestor_destino':
+                if ($this->transferencia->GestorDestino && $this->transferencia->GestorDestino->login) {
+                    $destinatarios[] = $this->transferencia->GestorDestino->login;
                 }
                 break;
 
             case 'pendente_aprovacao_extra':
-                // ✅ GESTOR APROVOU: Notifica Aprovação Extra (próxima) + Solicitante (anterior)
                 if ($this->cacheConfig && $this->cacheConfig->usuarios_autorizados) {
                     $emails = User::withoutGlobalScopes()
                         ->select('login')
@@ -240,10 +245,10 @@ class JobNotificacaoRecursiva implements ShouldQueue
                 }
                 $this->adicionarEmailUsuario($destinatarios, $this->transferencia->user_id);
                 $this->adicionarEmailUsuario($destinatarios, $this->transferencia->user_aprovacao_id);
+                $this->adicionarEmailUsuario($destinatarios, $this->transferencia->user_aprovacao_gestor_destino_id);
                 break;
 
             case 'pendente_aprovacao_rh':
-                // ✅ APROVAÇÃO EXTRA APROVOU (ou Gestor se não tem Extra): Notifica RH (próxima) + anteriores
                 $destinatarios = array_merge($destinatarios, $this->cacheEmailsRH);
 
                 if ($this->transferencia->Solicitante && $this->transferencia->Solicitante->login) {
@@ -252,80 +257,78 @@ class JobNotificacaoRecursiva implements ShouldQueue
                 if ($this->transferencia->UserAprovacao && $this->transferencia->UserAprovacao->login) {
                     $destinatarios[] = $this->transferencia->UserAprovacao->login;
                 }
+                $this->adicionarEmailUsuario($destinatarios, $this->transferencia->user_aprovacao_gestor_destino_id);
                 if ($this->transferencia->aprovacao_extra_id) {
                     $email = $this->buscarEmailUsuario($this->transferencia->aprovacao_extra_id);
                     if ($email) {
                         $destinatarios[] = $email;
                     }
                 }
-                $this->adicionarEmailUsuario($destinatarios, $this->transferencia->user_id);
-                $this->adicionarEmailUsuario($destinatarios, $this->transferencia->user_aprovacao_id);
-                $this->adicionarEmailUsuario($destinatarios, $this->transferencia->aprovacao_extra_id);
                 break;
 
+            case 'reprovado_gestor_origem':
             case 'reprovado_gestor':
-                // ⚠️ GESTOR REPROVOU: Notifica apenas SOLICITANTE
                 if ($this->transferencia->Solicitante && $this->transferencia->Solicitante->login) {
                     $destinatarios[] = $this->transferencia->Solicitante->login;
                 }
-                Log::info("🔙 Gestor reprovou - Notificando apenas SOLICITANTE");
                 break;
 
-            case 'reprovado_aprovacao_extra':
-                // ⚠️ APROVAÇÃO EXTRA REPROVOU: Notifica SOLICITANTE + GESTOR
+            case 'reprovado_gestor_destino':
                 if ($this->transferencia->Solicitante && $this->transferencia->Solicitante->login) {
                     $destinatarios[] = $this->transferencia->Solicitante->login;
                 }
                 if ($this->transferencia->UserAprovacao && $this->transferencia->UserAprovacao->login) {
                     $destinatarios[] = $this->transferencia->UserAprovacao->login;
                 }
-                Log::info("🔙 Aprovação Extra reprovou - Notificando SOLICITANTE + GESTOR");
+                break;
+
+            case 'reprovado_aprovacao_extra':
+                if ($this->transferencia->Solicitante && $this->transferencia->Solicitante->login) {
+                    $destinatarios[] = $this->transferencia->Solicitante->login;
+                }
+                if ($this->transferencia->UserAprovacao && $this->transferencia->UserAprovacao->login) {
+                    $destinatarios[] = $this->transferencia->UserAprovacao->login;
+                }
+                $this->adicionarEmailUsuario($destinatarios, $this->transferencia->user_aprovacao_gestor_destino_id);
                 break;
 
             case 'reprovado_rh':
             case 'cancelado':
-                // ⚠️ RH REPROVOU: Notifica TODAS as etapas anteriores
                 if ($this->transferencia->Solicitante && $this->transferencia->Solicitante->login) {
                     $destinatarios[] = $this->transferencia->Solicitante->login;
                 }
                 if ($this->transferencia->UserAprovacao && $this->transferencia->UserAprovacao->login) {
                     $destinatarios[] = $this->transferencia->UserAprovacao->login;
                 }
+                $this->adicionarEmailUsuario($destinatarios, $this->transferencia->user_aprovacao_gestor_destino_id);
                 if ($this->transferencia->aprovacao_extra_id) {
                     $email = $this->buscarEmailUsuario($this->transferencia->aprovacao_extra_id);
                     if ($email) {
                         $destinatarios[] = $email;
                     }
                 }
-                Log::info("🔙 RH reprovou - Notificando TODAS as etapas anteriores");
                 break;
 
             case 'aprovado_final':
-                // Notifica TODOS os envolvidos EXCETO RH (que já aprovou)
                 if ($this->transferencia->Solicitante && $this->transferencia->Solicitante->login) {
                     $destinatarios[] = $this->transferencia->Solicitante->login;
                 }
                 if ($this->transferencia->UserAprovacao && $this->transferencia->UserAprovacao->login) {
                     $destinatarios[] = $this->transferencia->UserAprovacao->login;
                 }
+                $this->adicionarEmailUsuario($destinatarios, $this->transferencia->user_aprovacao_gestor_destino_id);
                 if ($this->transferencia->aprovacao_extra_id) {
                     $email = $this->buscarEmailUsuario($this->transferencia->aprovacao_extra_id);
                     if ($email) {
                         $destinatarios[] = $email;
                     }
                 }
-                $this->adicionarEmailUsuario($destinatarios, $this->transferencia->user_id);
-                $this->adicionarEmailUsuario($destinatarios, $this->transferencia->user_aprovacao_id);
-                $this->adicionarEmailUsuario($destinatarios, $this->transferencia->aprovacao_extra_id);
                 break;
         }
 
         return array_unique(array_filter($destinatarios));
     }
 
-    /**
-     * Adiciona email de usuário por ID (fallback para etapas anteriores)
-     */
     private function adicionarEmailUsuario(array &$destinatarios, ?int $userId): void
     {
         if (!$userId) {
@@ -338,9 +341,6 @@ class JobNotificacaoRecursiva implements ShouldQueue
         }
     }
 
-    /**
-     * Envia email usando Mailable
-     */
     private function enviarEmail(string $tipo, array $destinatarios)
     {
         $dados = [
@@ -351,7 +351,9 @@ class JobNotificacaoRecursiva implements ShouldQueue
             'centro_custo_destino' => $this->transferencia->CentroCustoDestino ? $this->transferencia->CentroCustoDestino->label : '',
             'solicitante' => $this->transferencia->Solicitante ? $this->transferencia->Solicitante->nome : '',
             'gestor_aprovador' => $this->transferencia->UserAprovacao ? $this->transferencia->UserAprovacao->nome : '',
-            'gestor_selecionado' => $this->transferencia->GestorAprovacao ? $this->transferencia->GestorAprovacao->nome : '',
+            'gestor_selecionado' => $this->transferencia->GestorOrigem ? $this->transferencia->GestorOrigem->nome : '',
+            'gestor_destino' => $this->transferencia->GestorDestino ? $this->transferencia->GestorDestino->nome : '',
+            'gestor_destino_aprovador' => $this->transferencia->QuemAprovouGestorDestino ? $this->transferencia->QuemAprovouGestorDestino->nome : '',
             'aprovacao_extra' => $this->transferencia->UserAprovacaoExtra ? $this->transferencia->UserAprovacaoExtra->nome : '',
             'rh' => $this->transferencia->RhAprovacao ? $this->transferencia->RhAprovacao->nome : '',
             'nome_aprovacao_extra' => $this->cacheConfig ? $this->cacheConfig->nome_aprovacao : 'Aprovação Extra',
@@ -361,29 +363,12 @@ class JobNotificacaoRecursiva implements ShouldQueue
             ]),
             'empresa_id' => $this->transferencia->empresa_id,
             'has_aprovacao_extra' => (bool) $this->cacheConfig,
+            'exige_gestor_destino' => (bool) $this->transferencia->exige_aprovacao_gestor_destino,
         ];
 
-        Log::debug("Dados do email", [
-            'tipo' => $tipo,
-            'transferencia_id' => $this->transferencia->id,
-            'colaborador' => $dados['colaborador'],
-            'centro_custo_origem' => $dados['centro_custo_origem'],
-            'centro_custo_destino' => $dados['centro_custo_destino'],
-            'solicitante' => $dados['solicitante'],
-            'gestor_aprovador' => $dados['gestor_aprovador'] ?? '',
-            'gestor_selecionado' => $dados['gestor_selecionado'] ?? '',
-            'aprovacao_extra' => $dados['aprovacao_extra'],
-            'rh' => $dados['rh'],
-            'empresa_id' => $this->transferencia->empresa_id,
-        ]);
         $bcc = array_slice($destinatarios, 1);
         $mailHost = config('mail.mailers.smtp.host') ?? config('mail.host');
         $isMailtrap = $mailHost === 'smtp.mailtrap.io';
-        Log::info("Preparando email - Tipo: {$tipo}, Destinatários: " . implode(', ', $destinatarios));
-        Log::info("Enviando email para: {$destinatarios[0]} - Tipo: {$tipo}");
-        if (!empty($bcc) && $isMailtrap) {
-            Log::info("BCC (não enviado no Mailtrap): " . implode(', ', $bcc));
-        }
 
         $email = Mail::to($destinatarios[0]);
         if (!empty($bcc) && !$isMailtrap) {
@@ -393,39 +378,25 @@ class JobNotificacaoRecursiva implements ShouldQueue
         $this->enviarWhatsappAposEmail($dados, $destinatarios, 'Transferência');
     }
 
-    /**
-     * Dispara próxima notificação automaticamente
-     */
     private function dispararProximaNotificacao(string $tipoAtual)
     {
         $tiposQueNaoDisparam = [
+            'reprovado_gestor_origem',
             'reprovado_gestor',
+            'reprovado_gestor_destino',
             'reprovado_aprovacao_extra',
             'reprovado_rh',
             'cancelado',
-            'aprovado_final'
+            'aprovado_final',
+            'criacao_gestor_origem',
+            'criacao',
+            'criacao_gestor_destino',
+            'pendente_aprovacao_extra',
+            'pendente_aprovacao_rh',
         ];
 
-        if (in_array($tipoAtual, $tiposQueNaoDisparam)) {
-            Log::info("⛔ Tipo '{$tipoAtual}' NÃO dispara próxima etapa - fluxo encerrado");
-            return;
+        if (in_array($tipoAtual, $tiposQueNaoDisparam, true)) {
+            Log::info("Tipo '{$tipoAtual}' aguarda ação ou encerrou fluxo");
         }
-
-        if ($tipoAtual === 'criacao') {
-            Log::info("Tipo 'criacao' aguarda aprovação do gestor");
-            return;
-        }
-
-        if ($tipoAtual === 'pendente_aprovacao_extra') {
-            Log::info("Tipo 'pendente_aprovacao_extra' aguarda aprovação extra");
-            return;
-        }
-
-        if ($tipoAtual === 'pendente_aprovacao_rh') {
-            Log::info("Tipo 'pendente_aprovacao_rh' aguarda aprovação do RH");
-            return;
-        }
-
-        Log::info("Nenhuma próxima notificação para tipo '{$tipoAtual}'");
     }
 }

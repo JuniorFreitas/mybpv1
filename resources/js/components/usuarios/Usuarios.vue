@@ -153,6 +153,18 @@
                                 Gestor de centro de custo
                             </label>
                         </div>
+                        <div class="form-group mt-2">
+                            <label>Gestor superior</label>
+                            <autocomplete
+                                :caminho="`autocomplete/todos-gestores-ativos/`"
+                                :formsm="true"
+                                :valido="true"
+                                v-model="form.autocomplete_label_gestor_superior"
+                                placeholder="Digite o nome do gestor superior"
+                                id="gestor_superior_usuario"
+                                @onselect="selecionaGestorSuperior"
+                            ></autocomplete>
+                        </div>
                     </fieldset>
                 </form>
             </template>
@@ -436,6 +448,7 @@
 import { defineComponent } from 'vue'
 import { REFS_MODAL, MODAL_IDS, API_PATHS } from './constants'
 import WhatsappPreferenciasForm from '../WhatsappPreferenciasForm.vue'
+import autocomplete from '../AutoComplete.vue'
 
 const getBaseUrl = () => (typeof URL_ADMIN !== 'undefined' ? URL_ADMIN : '')
 
@@ -463,13 +476,16 @@ const formDefault = () => ({
     telefonesDelete: [],
     user_recebe_email: [],
     privilegio_gestor_area: false,
-    privilegio_gestor_centro_custo: false
+    privilegio_gestor_centro_custo: false,
+    gestor_superior_id: '',
+    autocomplete_label_gestor_superior: '',
+    autocomplete_label_gestor_superior_anterior: ''
 })
 
 export default defineComponent({
     name: 'Usuarios',
 
-    components: { WhatsappPreferenciasForm },
+    components: { WhatsappPreferenciasForm, autocomplete },
 
     props: {
         urlAtualizar: { type: String, required: true },
@@ -614,6 +630,9 @@ export default defineComponent({
                 this.form.telefonesDelete = []
                 if (usuario.grupo_id == null) this.form.grupo_id = ''
                 if (usuario.gestor == null) this.form.gestor = false
+                this.form.gestor_superior_id = usuario.gestor_superior_id || ''
+                this.form.autocomplete_label_gestor_superior = usuario.gestor_superior?.nome || ''
+                this.form.autocomplete_label_gestor_superior_anterior = this.form.autocomplete_label_gestor_superior
                 this.listaPapeis = data.papeis || []
                 this.listaCloud = data.cloud || []
                 this.form.user_recebe_email = data.formulario_vazio ? { ...data.formulario_vazio } : {}
@@ -635,6 +654,8 @@ export default defineComponent({
             if (!this.form.gestor) {
                 this.form.privilegio_gestor_centro_custo = false
                 this.form.privilegio_gestor_area = false
+                this.form.gestor_superior_id = ''
+                this.form.autocomplete_label_gestor_superior = ''
             }
             this.preloadAjax = true
             try {
@@ -665,6 +686,8 @@ export default defineComponent({
             if (!this.form.gestor) {
                 this.form.privilegio_gestor_centro_custo = false
                 this.form.privilegio_gestor_area = false
+                this.form.gestor_superior_id = ''
+                this.form.autocomplete_label_gestor_superior = ''
             }
             this.preloadAjax = true
             try {
@@ -725,6 +748,12 @@ export default defineComponent({
             } finally {
                 this.preloadAjax = false
             }
+        },
+
+        selecionaGestorSuperior(obj) {
+            this.form.gestor_superior_id = obj.id
+            this.form.autocomplete_label_gestor_superior = obj.label
+            this.form.autocomplete_label_gestor_superior_anterior = obj.label
         },
 
         async selecionaEmpresa(id) {

@@ -341,17 +341,22 @@ class AutoCompletesController extends Controller
 
     public function vencimentosAtivos(Request $request)
     {
-        $busca = $request->query('busca');
-        if ($busca == '') {
+        $busca = trim((string) $request->query('busca', ''));
+        if ($busca === '') {
             return response()->json([], 201);
         }
 
-        $quantidade = $request->query('rows');
+        $quantidade = (int) $request->query('rows', 20);
+        $quantidade = $quantidade > 0 ? $quantidade : 20;
         $segmentoTreinamentoId = $request->query('segmento_treinamento_id');
 
         $query = Vencimento::with('SegmentoTreinamento:id,nome')
             ->whereAtivo(true)
             ->whereNotNull('label');
+
+        if ($request->boolean('somente_vinculo_por_cargo')) {
+            $query->where('vinculo_todos_cargos', false);
+        }
 
         if ($segmentoTreinamentoId) {
             $query->where(function ($q) use ($segmentoTreinamentoId) {
@@ -360,13 +365,20 @@ class AutoCompletesController extends Controller
             });
         }
 
-        return $query->where('label', 'like', '%' . $busca . '%')
+        return $query->where(function ($q) use ($busca) {
+                $q->where('label', 'like', '%' . $busca . '%')
+                    ->orWhere('label_reduzida', 'like', '%' . $busca . '%');
+            })
             ->orderBy('label')
             ->take($quantidade)
             ->get()
             ->map(function ($item) {
-                $item->label = $item->label;
                 $item->segmento_nome = optional($item->SegmentoTreinamento)->nome ?? 'Geral';
+                $item->vinculo_todos_cargos = (bool) $item->vinculo_todos_cargos;
+                if ($item->vinculo_todos_cargos) {
+                    $item->label = $item->label . ' — todos os cargos';
+                }
+
                 return $item;
             });
     }

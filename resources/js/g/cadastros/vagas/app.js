@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import { registerGlobals } from '../../../registerGlobals'
+import FiltroListagem from '../../../components/ui/FiltroListagem'
 
 const app = createApp({
     data() {
@@ -22,10 +23,7 @@ const app = createApp({
                 cbo_descricao_sumaria: '',
                 autocomplete_label_cbo: '',
                 vencimentos: [],
-                vencimento_ids: [],
-                vencimento_id: '',
-                autocomplete_label_vencimento: '',
-                segmento_treinamento_id: ''
+                treinamentos_globais_count: 0
             },
 
             formDefault: null,
@@ -36,7 +34,8 @@ const app = createApp({
             atualizado: false,
 
             lista: [],
-            segmentos: [],
+
+            urlTreinamentoIndustria: `${URL_ADMIN}/cadastro/treinamentoindustria`,
 
             controle: {
                 carregando: false,
@@ -44,34 +43,109 @@ const app = createApp({
                     campoBusca: '',
                     campoStatus: ''
                 }
-            }
+            },
+
+            dropdownAbertoKey: null
         }
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
-        this.carregarSegmentos()
         this.atualizar()
+        document.addEventListener('click', this.onClickOutside)
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
     },
     methods: {
-        carregarSegmentos() {
-            axios
-                .get(`${URL_ADMIN}/cadastro/segmentostreinamento/lista`)
-                .then((response) => {
-                    this.segmentos = response.data || []
-                })
-                .catch(() => {
-                    this.segmentos = []
-                })
+        onSubmitFiltro() {
+            this.atualizar()
         },
-        mudouSegmentoTreinamento() {
-            this.form.autocomplete_label_vencimento = ''
+        onClickOutside(event) {
+            if (event?.target?.closest?.('.dropdown')) return
+            this.dropdownAbertoKey = null
         },
-        caminhoAutocompleteVencimentos() {
-            if (!this.form.segmento_treinamento_id) {
-                return 'autocomplete/vencimentos-ativos'
+        toggleDropdown(vagaId) {
+            if (!vagaId) return
+            const key = `vaga:${vagaId}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(vagaId) {
+            return this.dropdownAbertoKey === `vaga:${vagaId}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+        abrirEdicaoVaga(vagaId) {
+            this.fecharDropdown()
+            this.formAlterar(vagaId)
+            this.$refs.janelaCadastrar?.abrirModal()
+        },
+        normalizarVencimentosResposta(data) {
+            const lista = data?.vencimentos || data?.Vencimentos || []
+
+            return lista.map((item) => ({
+                id: item.id,
+                label: item.label,
+                segmento_nome:
+                    item.segmento_treinamento?.nome ||
+                    item.SegmentoTreinamento?.nome ||
+                    item.segmento_nome ||
+                    'Geral'
+            }))
+        },
+        resumoTreinamentos(vaga) {
+            const vinculados = Number(vaga?.treinamentos_vinculados_count ?? 0)
+            const globais = Number(vaga?.treinamentos_globais_count ?? 0)
+            const total = Number(vaga?.treinamentos_total_count ?? vinculados + globais)
+
+            if (total === 0) {
+                return 'Nenhum'
             }
 
-            return `autocomplete/vencimentos-ativos?segmento_treinamento_id=${this.form.segmento_treinamento_id}`
+            if (vinculados === 0 && globais > 0) {
+                return globais === 1
+                    ? '1 treinamento (todos os cargos)'
+                    : `${globais} treinamentos (todos os cargos)`
+            }
+
+            if (globais === 0) {
+                return vinculados === 1 ? '1 treinamento' : `${vinculados} treinamentos`
+            }
+
+            const labelTotal = total === 1 ? '1 treinamento' : `${total} treinamentos`
+            const labelVinculados = vinculados === 1 ? '1 vinculado' : `${vinculados} vinculados`
+            const labelGlobais = globais === 1 ? '1 global' : `${globais} globais`
+
+            return `${labelTotal} (${labelVinculados}, ${labelGlobais})`
+        },
+        resumoTreinamentosForm() {
+            const vinculados = this.form?.vencimentos?.length ?? 0
+            const globais = Number(this.form?.treinamentos_globais_count ?? 0)
+
+            return this.resumoTreinamentos({
+                treinamentos_vinculados_count: vinculados,
+                treinamentos_globais_count: globais,
+                treinamentos_total_count: vinculados + globais
+            })
+        },
+        temCbo(vaga) {
+            return !!(vaga?.cbo_vinculado || vaga?.cbo_codigo || vaga?.cbo_titulo)
+        },
+        tratarErroSalvar(error, acao) {
+            this.preloadAjax = false
+            const erros = error?.response?.data?.erros
+            const msg = error?.response?.data?.msg || `Erro ao ${acao} cargo.`
+
+            if (erros && typeof erros === 'object') {
+                const detalhes = Object.values(erros)
+                    .flat()
+                    .filter(Boolean)
+                    .join(' ')
+                mostraErro('', detalhes || msg)
+                return
+            }
+
+            mostraErro('', msg)
         },
         caminhoAutocompleteCbos() {
             return 'autocomplete/cbos-ativos'
@@ -105,29 +179,6 @@ const app = createApp({
                 this.form.cbo_descricao_sumaria = ''
             }
         },
-        removerVencimento(index) {
-            this.form.vencimentos.splice(index, 1)
-            this.form.vencimento_ids = this.form.vencimentos.map((item) => item.id)
-        },
-
-        selecionaVencimento(obj) {
-            const vencimento = {
-                id: obj.id,
-                label: obj.label || obj.nome,
-                segmento_nome: obj.segmento_nome || obj.segmento_treinamento?.nome || 'Geral'
-            }
-
-            const atual = this.form.vencimentos.findIndex((val) => val.id === vencimento.id)
-            if (atual >= 0) {
-                mostraErro('', `O treinamento ${vencimento.label} já está na lista.`)
-                this.form.autocomplete_label_vencimento = ''
-                return
-            }
-
-            this.form.vencimentos.push(vencimento)
-            this.form.vencimento_ids = this.form.vencimentos.map((item) => item.id)
-            this.form.autocomplete_label_vencimento = ''
-        },
 
         formNovo() {
             this.cadastrado = false
@@ -153,7 +204,6 @@ const app = createApp({
             }
 
             this.preloadAjax = true
-            this.form.vencimento_ids = this.form.vencimentos.map((item) => item.id)
             axios
                 .post(`${URL_ADMIN}/cadastro/vagas`, this.form)
                 .then((response) => {
@@ -163,7 +213,7 @@ const app = createApp({
                         this.atualizar()
                     }
                 })
-                .catch((error) => (this.preloadAjax = false))
+                .catch((error) => this.tratarErroSalvar(error, 'cadastrar'))
         },
         formAlterar(id) {
             this.cadastrado = false
@@ -181,18 +231,13 @@ const app = createApp({
                 .then((response) => {
                     Object.assign(this.form, response.data)
                     this.form.autocomplete_label_cbo = response.data.autocomplete_label_cbo || ''
-                    this.form.vencimentos = (response.data.vencimentos || []).map((item) => ({
-                        id: item.id,
-                        label: item.label,
-                        segmento_nome: item.segmento_treinamento?.nome || 'Geral'
-                    }))
-                    this.form.vencimento_ids = this.form.vencimentos.map((item) => item.id)
-                    this.form.autocomplete_label_vencimento = ''
+                    this.form.vencimentos = this.normalizarVencimentosResposta(response.data)
+                    this.form.treinamentos_globais_count = response.data.treinamentos_globais_count || 0
                     this.editando = true
                     this.preloadAjax = false
                     setupCampo()
                 })
-                .catch((error) => (this.preloadAjax = false))
+                .catch((error) => this.tratarErroSalvar(error, 'carregar'))
         },
 
         alterar() {
@@ -205,7 +250,6 @@ const app = createApp({
             }
 
             this.form._method = 'PUT'
-            this.form.vencimento_ids = this.form.vencimentos.map((item) => item.id)
             this.preloadAjax = true
 
             axios
@@ -215,7 +259,7 @@ const app = createApp({
                     this.atualizado = true
                     this.atualizar()
                 })
-                .catch((error) => (this.preloadAjax = false))
+                .catch((error) => this.tratarErroSalvar(error, 'alterar'))
         },
 
         carregou(dados) {
@@ -235,4 +279,5 @@ const app = createApp({
 })
 
 registerGlobals(app)
+app.component('FiltroListagem', FiltroListagem)
 app.mount('#app')

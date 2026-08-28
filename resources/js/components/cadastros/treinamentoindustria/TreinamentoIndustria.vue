@@ -93,6 +93,9 @@
                             <div class="col-12 col-md-12" v-show="!form.vinculo_todos_cargos">
                                 <fieldset>
                                     <legend>Cargos vinculados</legend>
+                                    <p class="text-muted small mb-2">
+                                        O mesmo vínculo é exibido no cadastro de Cargo (somente leitura).
+                                    </p>
                                     <div class="form-group">
                                         <label>Adicionar cargo</label>
                                         <autocomplete

@@ -16,7 +16,7 @@
                             <colaborador
                                 label="Colaborador *"
                                 :model="form"
-                                :verifica="visualizar || aprovando || aprovandoExtra || aprovandoRh"
+                                :verifica="visualizar || aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
                                 :hash="hash"
                                 @evtseleciona="onColaboradorSelecionado"
                             ></colaborador>
@@ -26,7 +26,7 @@
                                     <select
                                         v-model="form.centro_custo_origem_id"
                                         class="form-control form-control-sm"
-                                        :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh || centroOrigemDesabilitadoPorColaborador"
+                                        :disabled="visualizar || aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh || centroOrigemDesabilitadoPorColaborador"
                                         onchange="valida_campo_vazio(this, 0)"
                                         onblur="valida_campo_vazio(this, 0)"
                                     >
@@ -44,7 +44,7 @@
                                     <select
                                         v-model="form.centro_custo_destino_id"
                                         class="form-control form-control-sm"
-                                        :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
+                                        :disabled="visualizar || aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
                                         onchange="valida_campo_vazio(this, 1)"
                                         onblur="valida_campo_vazio(this, 1)"
                                     >
@@ -63,16 +63,32 @@
                                     label=""
                                     class="corrigiDatepicker"
                                     v-model="form.data_transferencia"
-                                    :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
+                                    :disabled="visualizar || aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
                                 ></datepicker>
                             </div>
 
-                            <gestoraprovacao
-                                label="Gestor Aprovação *"
-                                :model="form"
-                                :verifica="visualizar || aprovando || aprovandoExtra || aprovandoRh"
-                                :hash="hash"
-                            ></gestoraprovacao>
+                            <div class="col-12 col-md-6">
+                                <div class="form-group">
+                                    <label>Gestor responsável pela origem</label>
+                                    <input
+                                        type="text"
+                                        class="form-control form-control-sm"
+                                        :value="form.label_gestor_origem || 'Selecione o centro de custo origem'"
+                                        disabled
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="form-group">
+                                    <label>Gestor responsável pelo destino</label>
+                                    <input
+                                        type="text"
+                                        class="form-control form-control-sm"
+                                        :value="form.label_gestor_destino || 'Selecione o centro de custo destino'"
+                                        disabled
+                                    />
+                                </div>
+                            </div>
 
                             <div class="col-12">
                                 <div class="form-group">
@@ -82,7 +98,7 @@
                                         v-model="form.obs"
                                         cols="5"
                                         rows="5"
-                                        :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
+                                        :disabled="visualizar || aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
                                     ></textarea>
                                 </div>
                             </div>
@@ -91,7 +107,7 @@
                         <div class="alert alert-warning" v-if="!form.data_aprovacao && !cadastrando">Esta solicitação ainda não foi aprovada ou reprovada!</div>
 
                         <fieldset v-if="visualizar || aprovando">
-                            <legend>Aprovação Gestor</legend>
+                            <legend>Aprovação Gestor Origem</legend>
                             <div class="row">
                                 <div v-if="!aprovando && form.user_aprovacao" class="col-12">
                                     <legend>
@@ -105,7 +121,7 @@
                                         <label>Observação</label>
                                         <textarea
                                             class="form-control form-control-sm"
-                                            :disabled="!aprovando || aprovandoExtra || aprovandoRh"
+                                            :disabled="!aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
                                             v-model="form.obs_aprovacao"
                                             cols="5"
                                             rows="5"
@@ -117,8 +133,50 @@
                                     <div class="form-group">
                                         <label>Status</label>
                                         <select
-                                            :disabled="!aprovando || aprovandoExtra || aprovandoRh"
+                                            :disabled="!aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
                                             v-model="form.status_aprovacao"
+                                            class="form-control form-control-sm validacampo"
+                                            onchange="valida_campo_vazio(this, 1)"
+                                            onblur="valida_campo_vazio(this, 1)"
+                                        >
+                                            <option value="">Selecione...</option>
+                                            <option value="aprovado">Aprovar</option>
+                                            <option value="reprovado">Reprovar</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset v-if="(visualizar || aprovandoGestorDestino) && form.exige_aprovacao_gestor_destino">
+                            <legend>Aprovação Gestor Destino</legend>
+                            <div class="row">
+                                <div v-if="!aprovandoGestorDestino && form.quem_aprovou_gestor_destino" class="col-12">
+                                    <legend>
+                                        {{ form.status_aprovacao_gestor_destino }} por: {{ form.quem_aprovou_gestor_destino.nome }} em
+                                        {{ form.data_aprovacao_gestor_destino }}
+                                    </legend>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label>Observação</label>
+                                        <textarea
+                                            class="form-control form-control-sm"
+                                            :disabled="!aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
+                                            v-model="form.obs_aprovacao_gestor_destino"
+                                            cols="5"
+                                            rows="5"
+                                        ></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Status</label>
+                                        <select
+                                            :disabled="!aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
+                                            v-model="form.status_aprovacao_gestor_destino"
                                             class="form-control form-control-sm validacampo"
                                             onchange="valida_campo_vazio(this, 1)"
                                             onblur="valida_campo_vazio(this, 1)"
@@ -241,7 +299,7 @@
             </template>
             <template #rodape>
                 <div v-show="!visualizar">
-                    <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !aprovando && !atualizado && !preload" @click.prevent="alterar">
+                    <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !aprovando && !aprovandoGestorDestino && !atualizado && !preload" @click.prevent="alterar">
                         <i class="fa fa-edit"></i> Alterar
                     </button>
                     <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado && !preload" @click.prevent="cadastrar">
@@ -255,6 +313,14 @@
                     @click.prevent="aprovar"
                 >
                     <i class="fa fa-save"></i> Salvar
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm mr-1 btn-primary"
+                    v-show="aprovandoGestorDestino && !atualizado && !preload && !form.data_aprovacao_gestor_destino"
+                    @click.prevent="aprovarGestorDestino"
+                >
+                    <i class="fa fa-save"></i> Salvar Gestor Destino
                 </button>
                 <button
                     type="button"
@@ -433,29 +499,35 @@
                             <span
                                 class="status-badge"
                                 :class="{
-                                    'status-reprovado':
-                                        item.status_aprovacao === 'reprovado' ||
-                                        item.status_aprovacao_extra === 'reprovado' ||
-                                        item.resposta_rh === 'reprovado',
+                                    'status-reprovado': itemReprovado(item),
                                     'status-aprovado': item.resposta_rh === 'aprovado',
                                     'status-aprovado-extra': temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado' && !item.resposta_rh,
+                                    'status-aprovado-gestor-destino':
+                                        item.exige_aprovacao_gestor_destino &&
+                                        item.status_aprovacao_gestor_destino === 'aprovado' &&
+                                        (!temAprovacaoExtra || !item.status_aprovacao_extra) &&
+                                        !item.resposta_rh,
                                     'status-aprovado-gestor':
-                                        item.status_aprovacao === 'aprovado' && (!temAprovacaoExtra || !item.status_aprovacao_extra) && !item.resposta_rh,
+                                        item.status_aprovacao === 'aprovado' &&
+                                        (!item.exige_aprovacao_gestor_destino || !item.status_aprovacao_gestor_destino) &&
+                                        (!temAprovacaoExtra || !item.status_aprovacao_extra) &&
+                                        !item.resposta_rh,
                                     'status-pendente': !item.status_aprovacao
                                 }"
                             >
-                                <span
-                                    v-if="
-                                        item.status_aprovacao === 'reprovado' || item.status_aprovacao_extra === 'reprovado' || item.resposta_rh === 'reprovado'
-                                    "
-                                >
+                                <span v-if="itemReprovado(item)">
                                     <i class="fas fa-times-circle"></i> REPROVADO
                                 </span>
                                 <span v-else-if="item.resposta_rh === 'aprovado'"> <i class="fas fa-check-circle"></i> APROVADO RH </span>
                                 <span v-else-if="temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado'">
                                     <i class="fas fa-check-circle"></i> APROVADO {{ nomeAprovacaoExtra.toUpperCase() }}
                                 </span>
-                                <span v-else-if="item.status_aprovacao === 'aprovado'"> <i class="fas fa-check-circle"></i> APROVADO GESTOR </span>
+                                <span v-else-if="item.exige_aprovacao_gestor_destino && item.status_aprovacao_gestor_destino === 'aprovado'">
+                                    <i class="fas fa-check-circle"></i> APROVADO GESTOR DESTINO
+                                </span>
+                                <span v-else-if="item.status_aprovacao === 'aprovado'">
+                                    <i class="fas fa-check-circle"></i> APROVADO GESTOR ORIGEM
+                                </span>
                                 <span v-else> <i class="fas fa-clock"></i> EM ABERTO </span>
                             </span>
                             <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
@@ -479,18 +551,27 @@
                                     <a
                                         class="dropdown-item"
                                         href="javascript://"
-                                        title="Aprovação Gestor"
-                                        @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: false, aprovando: true, aprovandoExtra: false, aprovandoRh: false, podeanexar: true })"
-                                        v-if="item.user_aprovacao_id === null && aprovar_por_gestor"
+                                        title="Aprovação Gestor Origem"
+                                        @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: false, aprovando: true, aprovandoGestorDestino: false, aprovandoExtra: false, aprovandoRh: false, podeanexar: true })"
+                                        v-if="!item.status_aprovacao && podeAprovarGestorOrigemItem(item)"
                                     >
-                                        Aprovação Gestor
+                                        Aprovação Gestor Origem
+                                    </a>
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Aprovação Gestor Destino"
+                                        @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: false, aprovando: false, aprovandoGestorDestino: true, aprovandoExtra: false, aprovandoRh: false, podeanexar: true })"
+                                        v-if="item.exige_aprovacao_gestor_destino && item.status_aprovacao === 'aprovado' && !item.status_aprovacao_gestor_destino && podeAprovarGestorDestinoItem(item)"
+                                    >
+                                        Aprovação Gestor Destino
                                     </a>
                                     <a
                                         class="dropdown-item"
                                         href="javascript://"
                                         :title="nomeAprovacaoExtra"
-                                        @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: false, aprovando: false, aprovandoExtra: true, aprovandoRh: false, podeanexar: false })"
-                                        v-if="temAprovacaoExtra && item.status_aprovacao === 'aprovado' && !item.status_aprovacao_extra && podeAprovarExtra"
+                                        @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: false, aprovando: false, aprovandoGestorDestino: false, aprovandoExtra: true, aprovandoRh: false, podeanexar: false })"
+                                        v-if="temAprovacaoExtra && gestoresConcluidosItem(item) && !item.status_aprovacao_extra && podeAprovarExtra"
                                     >
                                         {{ nomeAprovacaoExtra }}
                                     </a>
@@ -498,10 +579,10 @@
                                         class="dropdown-item"
                                         href="javascript://"
                                         title="Aprovação RH"
-                                        @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: true, aprovando: false, aprovandoExtra: false, aprovandoRh: true, podeanexar: false })"
+                                        @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: true, aprovando: false, aprovandoGestorDestino: false, aprovandoExtra: false, aprovandoRh: true, podeanexar: false })"
                                         v-if="
                                             ((temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') ||
-                                                (!temAprovacaoExtra && item.status_aprovacao === 'aprovado')) &&
+                                                (!temAprovacaoExtra && gestoresConcluidosItem(item))) &&
                                             !item.user_rh_id &&
                                             aprovar_por_rh
                                         "
@@ -512,7 +593,7 @@
                                         class="dropdown-item"
                                         href="javascript://"
                                         title="Visualizar"
-                                        @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: true, aprovando: false, aprovandoExtra: false, aprovandoRh: false, podeanexar: false })"
+                                        @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: true, aprovando: false, aprovandoGestorDestino: false, aprovandoExtra: false, aprovandoRh: false, podeanexar: false })"
                                     >
                                         Visualizar
                                     </a>
@@ -569,36 +650,74 @@
 
                             <i class="fas fa-chevron-right text-muted mx-2"></i>
 
-                            <!-- Gestor -->
+                            <!-- Gestor Origem -->
                             <div class="fluxo-step">
                                 <i v-if="item.status_aprovacao === 'aprovado'" class="fas fa-check-circle text-success"></i>
                                 <i v-else-if="item.status_aprovacao === 'reprovado'" class="fas fa-times-circle text-danger"></i>
                                 <i v-else class="fas fa-clock text-warning"></i>
                                 <div class="fluxo-info">
-                                    <small class="fluxo-etapa">Gestor</small>
+                                    <small class="fluxo-etapa">Gestor Origem</small>
                                     <small v-if="item.status_aprovacao === 'aprovado' && item.user_aprovacao" class="fluxo-aprovador text-success">
                                         {{ item.user_aprovacao.nome }}
                                     </small>
                                     <small v-else-if="item.status_aprovacao === 'reprovado' && item.user_aprovacao" class="fluxo-aprovador text-danger">
                                         {{ item.user_aprovacao.nome }}
                                     </small>
+                                    <small v-else-if="item.gestor_origem" class="fluxo-aprovador text-muted">
+                                        {{ item.gestor_origem.nome }}
+                                    </small>
                                     <small v-else class="fluxo-status text-warning">Aguardando</small>
                                     <small v-if="item.data_aprovacao" class="fluxo-data">{{ item.data_aprovacao }}</small>
                                 </div>
                             </div>
 
+                            <template v-if="item.exige_aprovacao_gestor_destino">
+                                <i class="fas fa-chevron-right text-muted mx-2"></i>
+
+                                <!-- Gestor Destino -->
+                                <div class="fluxo-step">
+                                    <i v-if="item.status_aprovacao === 'reprovado'" class="fas fa-ban text-secondary"></i>
+                                    <i v-else-if="item.status_aprovacao_gestor_destino === 'aprovado'" class="fas fa-check-circle text-success"></i>
+                                    <i v-else-if="item.status_aprovacao_gestor_destino === 'reprovado'" class="fas fa-times-circle text-danger"></i>
+                                    <i v-else-if="item.status_aprovacao === 'aprovado'" class="fas fa-clock text-warning"></i>
+                                    <i v-else class="fas fa-circle text-muted"></i>
+                                    <div class="fluxo-info">
+                                        <small class="fluxo-etapa">Gestor Destino</small>
+                                        <small v-if="item.status_aprovacao === 'reprovado'" class="fluxo-status text-secondary">Cancelada</small>
+                                        <small
+                                            v-else-if="item.status_aprovacao_gestor_destino === 'aprovado' && item.quem_aprovou_gestor_destino"
+                                            class="fluxo-aprovador text-success"
+                                        >
+                                            {{ item.quem_aprovou_gestor_destino.nome }}
+                                        </small>
+                                        <small
+                                            v-else-if="item.status_aprovacao_gestor_destino === 'reprovado' && item.quem_aprovou_gestor_destino"
+                                            class="fluxo-aprovador text-danger"
+                                        >
+                                            {{ item.quem_aprovou_gestor_destino.nome }}
+                                        </small>
+                                        <small v-else-if="item.status_aprovacao === 'aprovado' && item.gestor_destino" class="fluxo-aprovador text-warning">
+                                            {{ item.gestor_destino.nome }}
+                                        </small>
+                                        <small v-else-if="item.status_aprovacao === 'aprovado'" class="fluxo-status text-warning">Aguardando</small>
+                                        <small v-else class="fluxo-status">Pendente</small>
+                                        <small v-if="item.data_aprovacao_gestor_destino" class="fluxo-data">{{ item.data_aprovacao_gestor_destino }}</small>
+                                    </div>
+                                </div>
+                            </template>
+
                             <template v-if="temAprovacaoExtra">
                                 <i class="fas fa-chevron-right text-muted mx-2"></i>
                                 <!-- Aprovação Extra -->
                                 <div class="fluxo-step">
-                                    <i v-if="item.status_aprovacao === 'reprovado'" class="fas fa-ban text-secondary"></i>
+                                    <i v-if="fluxoCanceladoAntesExtra(item)" class="fas fa-ban text-secondary"></i>
                                     <i v-else-if="item.status_aprovacao_extra === 'aprovado'" class="fas fa-check-circle text-success"></i>
                                     <i v-else-if="item.status_aprovacao_extra === 'reprovado'" class="fas fa-times-circle text-danger"></i>
-                                    <i v-else-if="item.status_aprovacao === 'aprovado' && !item.status_aprovacao_extra" class="fas fa-clock text-warning"></i>
+                                    <i v-else-if="gestoresConcluidosItem(item) && !item.status_aprovacao_extra" class="fas fa-clock text-warning"></i>
                                     <i v-else class="fas fa-circle text-muted"></i>
                                     <div class="fluxo-info">
                                         <small class="fluxo-etapa">{{ nomeAprovacaoExtra }}</small>
-                                        <small v-if="item.status_aprovacao === 'reprovado'" class="fluxo-status text-secondary">Cancelada</small>
+                                        <small v-if="fluxoCanceladoAntesExtra(item)" class="fluxo-status text-secondary">Cancelada</small>
                                         <small
                                             v-else-if="item.status_aprovacao_extra === 'aprovado' && item.user_aprovacao_extra"
                                             class="fluxo-aprovador text-success"
@@ -611,7 +730,7 @@
                                         >
                                             {{ item.user_aprovacao_extra.nome }}
                                         </small>
-                                        <small v-else-if="item.status_aprovacao === 'aprovado'" class="fluxo-status text-warning">Aguardando</small>
+                                        <small v-else-if="gestoresConcluidosItem(item)" class="fluxo-status text-warning">Aguardando</small>
                                         <small v-else class="fluxo-status">Pendente</small>
                                         <small v-if="item.data_aprovacao_extra" class="fluxo-data">{{ item.data_aprovacao_extra }}</small>
                                     </div>
@@ -622,41 +741,21 @@
 
                             <!-- RH -->
                             <div class="fluxo-step">
-                                <i
-                                    v-if="item.status_aprovacao === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')"
-                                    class="fas fa-ban text-secondary"
-                                ></i>
+                                <i v-if="fluxoCanceladoAntesRh(item)" class="fas fa-ban text-secondary"></i>
                                 <i v-else-if="item.resposta_rh === 'aprovado'" class="fas fa-check-circle text-success"></i>
                                 <i v-else-if="item.resposta_rh === 'reprovado'" class="fas fa-times-circle text-danger"></i>
-                                <i
-                                    v-else-if="
-                                        (temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') ||
-                                        (!temAprovacaoExtra && item.status_aprovacao === 'aprovado')
-                                    "
-                                    class="fas fa-clock text-warning"
-                                ></i>
+                                <i v-else-if="etapaRhAguardandoItem(item)" class="fas fa-clock text-warning"></i>
                                 <i v-else class="fas fa-circle text-muted"></i>
                                 <div class="fluxo-info">
                                     <small class="fluxo-etapa">RH</small>
-                                    <small
-                                        v-if="item.status_aprovacao === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')"
-                                        class="fluxo-status text-secondary"
-                                        >Cancelada</small
-                                    >
+                                    <small v-if="fluxoCanceladoAntesRh(item)" class="fluxo-status text-secondary">Cancelada</small>
                                     <small v-else-if="item.resposta_rh === 'aprovado' && item.rh_aprovacao" class="fluxo-aprovador text-success">
                                         {{ item.rh_aprovacao.nome }}
                                     </small>
                                     <small v-else-if="item.resposta_rh === 'reprovado' && item.rh_aprovacao" class="fluxo-aprovador text-danger">
                                         {{ item.rh_aprovacao.nome }}
                                     </small>
-                                    <small
-                                        v-else-if="
-                                            (temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') ||
-                                            (!temAprovacaoExtra && item.status_aprovacao === 'aprovado')
-                                        "
-                                        class="fluxo-status text-warning"
-                                        >Aguardando</small
-                                    >
+                                    <small v-else-if="etapaRhAguardandoItem(item)" class="fluxo-status text-warning">Aguardando</small>
                                     <small v-else class="fluxo-status">Pendente</small>
                                     <small v-if="item.data_aprovacao_rh" class="fluxo-data">{{ item.data_aprovacao_rh }}</small>
                                 </div>
@@ -686,7 +785,6 @@ import axios from 'axios'
 import _ from 'lodash'
 import Upload from '../../Upload'
 import colaborador from '../../Colaborador'
-import gestoraprovacao from '../../GestorAprovacao'
 import DateRangeFilter from '../../DateRangeFilter'
 import Validacoes from '../../../mixins/Validacoes'
 
@@ -703,10 +801,16 @@ function createFormDefault() {
     autocomplete_label_gestor_modal_anterior: '',
     centro_custo_origem_id: '',
     centro_custo_destino_id: '',
+    label_gestor_origem: '',
+    label_gestor_destino: '',
+    exige_aprovacao_gestor_destino: false,
+    fluxo_gestores_automatico: true,
     data_transferencia: '',
     obs: '',
     obs_aprovacao: '',
     status_aprovacao: '',
+    obs_aprovacao_gestor_destino: '',
+    status_aprovacao_gestor_destino: '',
     anexos: [],
     anexosDel: []
     }
@@ -735,7 +839,7 @@ function createControleDados() {
 
 export default defineComponent({
     name: 'SolicitacaoTransferencia',
-    components: { colaborador, gestoraprovacao, DateRangeFilter, Upload },
+    components: { colaborador, DateRangeFilter, Upload },
     mixins: [Validacoes],
     inject: {
         atualizarUrlMovimentacao: { default: () => () => {} }
@@ -754,10 +858,12 @@ export default defineComponent({
         const atualizado = ref(false)
         const visualizar = ref(false)
         const aprovando = ref(false)
+        const aprovandoGestorDestino = ref(false)
         const aprovandoExtra = ref(false)
         const aprovandoRh = ref(false)
         const aprovar_por_gestor = ref(false)
         const aprovar_por_rh = ref(false)
+        const usuarioLogadoId = ref(null)
         const temAprovacaoExtra = ref(false)
         const podeAprovarExtra = ref(false)
         const nomeAprovacaoExtra = ref('')
@@ -776,6 +882,7 @@ export default defineComponent({
         const urlExportacao = `${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista/export`
         const url_anexo = `${URL_ADMIN}/planejamento/movimentacao/uploadAnexos`
         const urlPaginacao = `${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista/atualizar`
+        const urlGestorResponsavel = `${URL_ADMIN}/planejamento/movimentacao/centro-custo`
         const mimes = ref([])
 
         const formDefault = createFormDefault()
@@ -857,6 +964,7 @@ export default defineComponent({
             atualizado.value = false
             editando.value = false
             aprovando.value = false
+            aprovandoGestorDestino.value = false
             aprovandoExtra.value = false
             aprovandoRh.value = false
             visualizar.value = false
@@ -889,11 +997,12 @@ export default defineComponent({
                 resetaCampoColaborador()
                 return false
             }
-            if (!form.gestor_id) {
-                if (typeof valida_campo_vazio === 'function') valida_campo_vazio($(`#gestor_${hash}`), 1)
-                $(`#${hash} #gestor_${hash}`).focus().trigger('blur')
-                if (typeof mostraErro === 'function') mostraErro('', 'Campo GESTOR não pode ficar vazio')
-                resetaCampoGestor()
+            if (!form.centro_custo_origem_id) {
+                if (typeof mostraErro === 'function') mostraErro('', 'Campo CENTRO DE CUSTO ORIGEM não pode ficar vazio')
+                return false
+            }
+            if (!form.centro_custo_destino_id) {
+                if (typeof mostraErro === 'function') mostraErro('', 'Campo CENTRO DE CUSTO DESTINO não pode ficar vazio')
                 return false
             }
             return true
@@ -916,12 +1025,71 @@ export default defineComponent({
             const centroOrigem = model.centro_custo_id ?? ''
             form.centro_custo_origem_id = centroOrigem
             centroOrigemDesabilitadoPorColaborador.value = !!centroOrigem
+            carregarGestorResponsavel('origem', centroOrigem)
         }
 
-        function resetaCampoGestor() {
-            form.autocomplete_label_gestor_modal = ''
-            form.autocomplete_label_gestor_modal_anterior = ''
-            form.gestor_id = ''
+        async function carregarGestorResponsavel(tipo, centroCustoId) {
+            if (!centroCustoId) {
+                if (tipo === 'origem') form.label_gestor_origem = ''
+                if (tipo === 'destino') form.label_gestor_destino = ''
+                return
+            }
+            try {
+                const { data } = await axios.get(`${urlGestorResponsavel}/${centroCustoId}/gestor-responsavel`)
+                const nome = data.gestor_resolvido?.nome ?? data.gestor_principal?.nome ?? 'Não informado'
+                if (tipo === 'origem') form.label_gestor_origem = nome
+                if (tipo === 'destino') form.label_gestor_destino = nome
+            } catch (_err) {
+                if (tipo === 'origem') form.label_gestor_origem = 'Não informado'
+                if (tipo === 'destino') form.label_gestor_destino = 'Não informado'
+            }
+        }
+
+        function podeAprovarGestorOrigemItem(item) {
+            if (item.fluxo_gestores_automatico === false) {
+                return aprovar_por_gestor.value && !item.status_aprovacao
+            }
+            return item.gestor_id === usuarioLogadoId.value && !item.status_aprovacao
+        }
+
+        function podeAprovarGestorDestinoItem(item) {
+            return item.gestor_destino_id === usuarioLogadoId.value
+        }
+
+        function gestoresConcluidosItem(item) {
+            if (item.fluxo_gestores_automatico === false) {
+                return item.status_aprovacao === 'aprovado'
+            }
+            if (item.status_aprovacao !== 'aprovado') return false
+            if (item.exige_aprovacao_gestor_destino) {
+                return item.status_aprovacao_gestor_destino === 'aprovado'
+            }
+            return true
+        }
+
+        function itemReprovado(item) {
+            return (
+                item.status_aprovacao === 'reprovado' ||
+                item.status_aprovacao_gestor_destino === 'reprovado' ||
+                item.status_aprovacao_extra === 'reprovado' ||
+                item.resposta_rh === 'reprovado'
+            )
+        }
+
+        function fluxoCanceladoAntesExtra(item) {
+            return item.status_aprovacao === 'reprovado' || item.status_aprovacao_gestor_destino === 'reprovado'
+        }
+
+        function fluxoCanceladoAntesRh(item) {
+            return fluxoCanceladoAntesExtra(item) || item.status_aprovacao_extra === 'reprovado'
+        }
+
+        function etapaRhAguardandoItem(item) {
+            if (fluxoCanceladoAntesRh(item)) return false
+            if (temAprovacaoExtra.value) {
+                return item.status_aprovacao_extra === 'aprovado' && !item.resposta_rh
+            }
+            return gestoresConcluidosItem(item) && !item.resposta_rh
         }
 
         async function cadastrar() {
@@ -946,6 +1114,7 @@ export default defineComponent({
             editando.value = false
             visualizar.value = opt.visualizar ?? false
             aprovando.value = opt.aprovando ?? false
+            aprovandoGestorDestino.value = opt.aprovandoGestorDestino ?? false
             aprovandoExtra.value = opt.aprovandoExtra ?? false
             aprovandoRh.value = opt.aprovandoRh ?? false
             podeanexar.value = opt.podeanexar ?? false
@@ -978,6 +1147,14 @@ export default defineComponent({
                     form.resposta_rh = data.resposta_rh == null ? '' : data.resposta_rh
                     form.obs_rh = data.obs_rh == null ? '' : data.obs_rh
                 }
+                if (aprovandoGestorDestino.value) {
+                    form.status_aprovacao_gestor_destino = data.status_aprovacao_gestor_destino == null ? '' : data.status_aprovacao_gestor_destino
+                    form.obs_aprovacao_gestor_destino = data.obs_aprovacao_gestor_destino == null ? '' : data.obs_aprovacao_gestor_destino
+                }
+                form.label_gestor_origem = data.label_gestor_origem ?? ''
+                form.label_gestor_destino = data.label_gestor_destino ?? ''
+                form.exige_aprovacao_gestor_destino = data.exige_aprovacao_gestor_destino ?? false
+                form.fluxo_gestores_automatico = data.fluxo_gestores_automatico ?? false
                 temAprovacaoExtra.value = data.tem_aprovacao_extra || false
                 podeAprovarExtra.value = data.pode_aprovar_extra || false
                 nomeAprovacaoExtra.value = data.nome_aprovacao_extra || 'Aprovação Extra'
@@ -1043,6 +1220,21 @@ export default defineComponent({
             }
         }
 
+        async function aprovarGestorDestino() {
+            if (!validarFormularioVisivel()) return
+            preload.value = true
+            try {
+                await axios.put(`${BASE_URL}/${form.id}/aprovar-gestor-destino`, form)
+                if (typeof mostraSucesso === 'function') mostraSucesso('', 'Aprovação do gestor destino salva com sucesso!')
+                fecharModalPrincipal()
+                recarregarLista()
+            } catch (err) {
+                if (typeof mostraErro === 'function') mostraErro(err)
+            } finally {
+                preload.value = false
+            }
+        }
+
         async function aprovarRH() {
             if (!validarFormularioVisivel()) return
             preload.value = true
@@ -1079,6 +1271,7 @@ export default defineComponent({
             temAprovacaoExtra.value = dados.tem_aprovacao_extra ?? false
             podeAprovarExtra.value = dados.pode_aprovar_extra ?? false
             nomeAprovacaoExtra.value = dados.nome_aprovacao_extra ?? 'Aprovação Extra'
+            usuarioLogadoId.value = dados.usuario_logado_id ?? null
             controle.carregando = false
         }
 
@@ -1171,6 +1364,24 @@ export default defineComponent({
         }
 
         watch(
+            () => form.centro_custo_origem_id,
+            (valor) => {
+                if (cadastrando.value || (editando.value && !form.status_aprovacao)) {
+                    carregarGestorResponsavel('origem', valor)
+                }
+            }
+        )
+
+        watch(
+            () => form.centro_custo_destino_id,
+            (valor) => {
+                if (cadastrando.value || (editando.value && !form.status_aprovacao)) {
+                    carregarGestorResponsavel('destino', valor)
+                }
+            }
+        )
+
+        watch(
             () => controle.dados,
             () => {
                 if (_syncUrlTimer) clearTimeout(_syncUrlTimer)
@@ -1209,6 +1420,7 @@ export default defineComponent({
             atualizado,
             visualizar,
             aprovando,
+            aprovandoGestorDestino,
             aprovandoExtra,
             aprovandoRh,
             aprovar_por_gestor,
@@ -1245,8 +1457,17 @@ export default defineComponent({
             formOpen,
             alterar,
             aprovar,
+            aprovarGestorDestino,
             aprovarExtra,
             aprovarRH,
+            podeAprovarGestorOrigemItem,
+            podeAprovarGestorDestinoItem,
+            gestoresConcluidosItem,
+            itemReprovado,
+            fluxoCanceladoAntesExtra,
+            fluxoCanceladoAntesRh,
+            etapaRhAguardandoItem,
+            carregarGestorResponsavel,
             exportaExcel,
             carregou,
             carregando,
@@ -1258,7 +1479,6 @@ export default defineComponent({
             syncUrlFiltros,
             selecionaTodos,
             resetaCampoColaborador,
-            resetaCampoGestor,
             onColaboradorSelecionado,
             abrirModalAposFormOpen,
             abrirModalSolicitar,
@@ -1375,6 +1595,11 @@ export default defineComponent({
 .status-aprovado-gestor {
     background: #ffc107;
     color: #212529;
+}
+
+.status-aprovado-gestor-destino {
+    background: #fd7e14;
+    color: white;
 }
 
 .status-pendente {

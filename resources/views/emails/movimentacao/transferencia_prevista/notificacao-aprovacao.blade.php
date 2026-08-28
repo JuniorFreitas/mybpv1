@@ -10,6 +10,9 @@ $centro_custo_destino = $dados['centro_custo_destino'];
 $solicitante = $dados['solicitante'];
 $gestor = $dados['gestor_aprovador'] ?? '';
 $gestor_selecionado = $dados['gestor_selecionado'] ?? '';
+$gestor_destino = $dados['gestor_destino'] ?? '';
+$gestor_destino_aprovador = $dados['gestor_destino_aprovador'] ?? '';
+$exige_gestor_destino = $dados['exige_gestor_destino'] ?? false;
 $aprovacao_extra = $dados['aprovacao_extra'];
 $rh = $dados['rh'];
 $nome_aprovacao_extra = $dados['nome_aprovacao_extra'];
@@ -18,9 +21,13 @@ $has_aprovacao_extra = $dados['has_aprovacao_extra'] ?? false;
 
 $titulos = [
 'criacao' => 'Nova solicitação de transferência — sua aprovação é necessária',
+'criacao_gestor_origem' => 'Nova transferência — aguardando aprovação do gestor de origem',
+'criacao_gestor_destino' => 'Nova transferência — aguardando aprovação do gestor de destino',
 'pendente_aprovacao_extra' => "Transferência — aguardando aprovação de {$nome_aprovacao_extra}",
 'pendente_aprovacao_rh' => 'Transferência — aguardando aprovação do RH',
 'reprovado_gestor' => 'Solicitação de transferência reprovada pelo gestor',
+'reprovado_gestor_origem' => 'Solicitação de transferência reprovada pelo gestor de origem',
+'reprovado_gestor_destino' => 'Solicitação de transferência reprovada pelo gestor de destino',
 'reprovado_aprovacao_extra' => "Solicitação de transferência reprovada por {$nome_aprovacao_extra}",
 'reprovado_rh' => 'Solicitação de transferência reprovada pelo RH',
 'cancelado' => 'Solicitação de transferência cancelada',
@@ -29,13 +36,17 @@ $titulos = [
 
 $mensagens = [
 'criacao' => 'Uma nova solicitação de transferência foi registrada e está aguardando sua análise. Acesse o sistema para aprovar ou reprovar.',
-'pendente_aprovacao_extra' => "O gestor já aprovou. A solicitação agora aguarda a análise de {$nome_aprovacao_extra}. Você será notificado quando houver conclusão.",
-'pendente_aprovacao_rh' => 'O gestor e a aprovação anterior já validaram a solicitação. Agora ela aguarda a análise do RH para ser concluída.',
+'criacao_gestor_origem' => 'Uma nova solicitação de transferência foi registrada e aguarda a aprovação do gestor do centro de custo de origem.',
+'criacao_gestor_destino' => 'A transferência para um centro de custo sob sua gestão necessita da sua aprovação como gestor de destino.',
+'pendente_aprovacao_extra' => "Os gestores já aprovaram. A solicitação agora aguarda a análise de {$nome_aprovacao_extra}.",
+'pendente_aprovacao_rh' => 'Os gestores e a aprovação anterior já validaram a solicitação. Agora ela aguarda a análise do RH.',
 'reprovado_gestor' => 'A solicitação de transferência foi reprovada pelo gestor e o processo foi encerrado.',
+'reprovado_gestor_origem' => 'A solicitação de transferência foi reprovada pelo gestor de origem e o processo foi encerrado.',
+'reprovado_gestor_destino' => 'A solicitação de transferência foi reprovada pelo gestor de destino e o processo foi encerrado.',
 'reprovado_aprovacao_extra' => "A solicitação de transferência foi reprovada por {$nome_aprovacao_extra} e o processo foi encerrado.",
 'reprovado_rh' => 'A solicitação de transferência foi reprovada pelo RH e o processo foi encerrado.',
 'cancelado' => 'A solicitação de transferência foi cancelada e o processo foi encerrado.',
-'aprovado_final' => 'A solicitação de transferência foi aprovada por todos os responsáveis e está concluída. Os próximos passos já podem ser realizados.',
+'aprovado_final' => 'A solicitação de transferência foi aprovada por todos os responsáveis e está concluída.',
 ];
 
 $titulo = $titulos[$tipo] ?? 'Notificação';
@@ -69,10 +80,31 @@ $mensagem = $mensagens[$tipo] ?? '';
                                 <span style="font-size: 30px; color: #ffc107;">⏳</span>
                                 @endif
                                 <br>
-                                <strong style="font-size: 12px;">Gestor</strong><br>
-                                <span style="font-size: 11px; color: #6c757d;">{{ $gestor ?: 'Pendente' }}</span>
+                                <strong style="font-size: 12px;">Gestor Origem</strong><br>
+                                <span style="font-size: 11px; color: #6c757d;">{{ $gestor ?: ($gestor_selecionado ?: 'Pendente') }}</span>
                             </div>
                         </td>
+                        @if($exige_gestor_destino)
+                        <td align="center" style="width: 5%;">→</td>
+                        <td align="center" style="width: 20%;">
+                            <div style="text-align: center;">
+                                @if($transferencia->status_aprovacao === 'reprovado')
+                                <span style="font-size: 30px; color: #6c757d;">⊗</span>
+                                @elseif($transferencia->status_aprovacao_gestor_destino === 'aprovado')
+                                <span style="font-size: 30px; color: #28a745;">✓</span>
+                                @elseif($transferencia->status_aprovacao_gestor_destino === 'reprovado')
+                                <span style="font-size: 30px; color: #dc3545;">✗</span>
+                                @elseif($transferencia->status_aprovacao === 'aprovado')
+                                <span style="font-size: 30px; color: #ffc107;">⏳</span>
+                                @else
+                                <span style="font-size: 30px; color: #adb5bd;">○</span>
+                                @endif
+                                <br>
+                                <strong style="font-size: 12px;">Gestor Destino</strong><br>
+                                <span style="font-size: 11px; color: #6c757d;">{{ $gestor_destino_aprovador ?: ($gestor_destino ?: 'Pendente') }}</span>
+                            </div>
+                        </td>
+                        @endif
                         @if($has_aprovacao_extra)
                         <td align="center" style="width: 5%;">→</td>
                         <td align="center" style="width: 25%;">
@@ -162,17 +194,29 @@ $mensagem = $mensagens[$tipo] ?? '';
                         <td>{{ $solicitante }}</td>
                     </tr>
                     <tr>
-                        <td style="color: #555;"><strong>Gestor Selecionado:</strong></td>
+                        <td style="color: #555;"><strong>Gestor Origem:</strong></td>
                         <td>{{ $gestor_selecionado }}</td>
                     </tr>
+                    @if($exige_gestor_destino)
+                    <tr style="background: #f8f9fa;">
+                        <td style="color: #555;"><strong>Gestor Destino:</strong></td>
+                        <td>{{ $gestor_destino }}</td>
+                    </tr>
+                    @endif
                     <tr style="background: #f8f9fa;">
                         <td style="color: #555;"><strong>Data de Criação:</strong></td>
                         <td>{{ $transferencia->created_at ? \Carbon\Carbon::parse($transferencia->created_at)->format('d/m/Y') : '' }}</td>
                     </tr>
                     <tr>
-                        <td style="color: #555;"><strong>Data Atualização Gestor:</strong></td>
+                        <td style="color: #555;"><strong>Data Atualização Gestor Origem:</strong></td>
                         <td>{{ $transferencia->data_aprovacao ? \Carbon\Carbon::parse($transferencia->data_aprovacao)->format('d/m/Y') : '' }}</td>
                     </tr>
+                    @if($exige_gestor_destino)
+                    <tr style="background: #f8f9fa;">
+                        <td style="color: #555;"><strong>Data Atualização Gestor Destino:</strong></td>
+                        <td>{{ $transferencia->data_aprovacao_gestor_destino ? \Carbon\Carbon::parse($transferencia->data_aprovacao_gestor_destino)->format('d/m/Y') : '' }}</td>
+                    </tr>
+                    @endif
                     @if($has_aprovacao_extra)
                     <tr style="background: #f8f9fa;">
                         <td style="color: #555;"><strong>Data Atualização {{ $nome_aprovacao_extra }}:</strong></td>

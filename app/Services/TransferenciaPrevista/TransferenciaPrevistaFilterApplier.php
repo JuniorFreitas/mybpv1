@@ -104,7 +104,9 @@ class TransferenciaPrevistaFilterApplier
             return;
         }
         $query->where(function ($q) {
-            $q->where('user_id', $this->user->id)->orWhere('gestor_id', $this->user->id);
+            $q->where('user_id', $this->user->id)
+                ->orWhere('gestor_id', $this->user->id)
+                ->orWhere('gestor_destino_id', $this->user->id);
         });
     }
 
