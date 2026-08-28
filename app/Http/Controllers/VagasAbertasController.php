@@ -425,7 +425,7 @@ class VagasAbertasController extends Controller
             $item->cbo_familia = $cbo?->familia?->titulo;
             $item->cbo_vinculado = (bool) $cbo;
 
-            $descricaoPlain = trim(strip_tags(html_entity_decode((string) $item->descricao, ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+            $descricaoPlain = trim(preg_replace('/\s+/u', ' ', strip_tags(html_entity_decode((string) $item->descricao, ENT_QUOTES | ENT_HTML5, 'UTF-8'))));
             $item->descricao_tem_conteudo = $descricaoPlain !== '';
             $item->descricao_resumo = $descricaoPlain !== '' ? Str::limit($descricaoPlain, 300, '…') : null;
 

@@ -693,11 +693,17 @@
                         </div>
                     </div>
 
-                    <div class="mybp-card-secoes-row" v-if="vaga.descricao_tem_conteudo">
+                    <div class="mybp-card-conteudo">
+                    <div class="mybp-card-secoes-row">
                         <div class="mybp-card-destaque mybp-card-destaque--full">
                             <div class="mybp-card-destaque-info">
                                 <small class="mybp-card-destaque-etapa">Descrição</small>
-                                <p class="mybp-card-texto-resumo mb-0">@{{ vaga.descricao_resumo }}</p>
+                                <p
+                                    class="mybp-card-texto-resumo mb-0"
+                                    :class="{ 'mybp-card-texto-resumo--vazio': descricaoCardVazia(vaga) }"
+                                >
+                                    @{{ resumoDescricao(vaga) }}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -773,6 +779,7 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>

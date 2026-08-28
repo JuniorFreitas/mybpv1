@@ -347,6 +347,18 @@ const app = createApp({
                 'Link copiado! Cole no Instagram para compartilhar.'
             )
         },
+        resumoDescricao(vaga) {
+            if (vaga?.descricao_tem_conteudo && vaga?.descricao_resumo) {
+                return vaga.descricao_resumo
+            }
+
+            return 'Sem descrição'
+        },
+
+        descricaoCardVazia(vaga) {
+            return !vaga?.descricao_tem_conteudo
+        },
+
         resumoSimulados(vaga) {
             const total = Number(vaga?.simulados_count ?? 0)
             const ativos = Number(vaga?.simulados_ativos_count ?? 0)
