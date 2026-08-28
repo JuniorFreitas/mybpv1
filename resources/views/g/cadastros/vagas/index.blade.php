@@ -140,7 +140,12 @@
     </modal>
 
     <div>
-        <filtro-listagem @submit="onSubmitFiltro">
+        <filtro-listagem
+            @submit="onSubmitFiltro"
+            :mostrar-limpar-filtros="temFiltrosAtivos"
+            :desabilitado="controle.carregando"
+            @limpar="limparFiltros"
+        >
             <template #filtros>
                 <div class="col-12 col-lg-6">
                     <div class="form-group mb-2 mb-lg-0">

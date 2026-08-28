@@ -172,7 +172,12 @@
         </modal>
 
         <!-- Filtro -->
-        <FiltroListagem @submit="onSubmitFiltro">
+        <FiltroListagem
+            @submit="onSubmitFiltro"
+            :mostrar-limpar-filtros="temFiltrosAtivos"
+            :desabilitado="controle.carregando"
+            @limpar="limparFiltros"
+        >
             <template #filtros>
                 <div class="col-12 col-lg-5">
                     <div class="form-group mb-2 mb-lg-0">
@@ -330,6 +335,9 @@ import modal from '../../Modal'
 import FiltroListagem from '../../ui/FiltroListagem'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete'
 import editor from '@tinymce/tinymce-vue'
+import { temFiltrosPreenchidos, limparFiltrosListagem } from '../../../utils/listagemQueryParams'
+
+const CAMPOS_FILTRO_URL = ['campoBusca', 'campoTipoBeneficio']
 
 export default {
     components: {
@@ -386,6 +394,9 @@ export default {
             }))
 
             return [{ value: '', label: 'Todos os tipos' }, ...tipos]
+        },
+        temFiltrosAtivos() {
+            return temFiltrosPreenchidos(this.controle.dados, CAMPOS_FILTRO_URL)
         }
     },
     data() {
@@ -451,6 +462,11 @@ export default {
             }
         },
         onSelectFiltroTipo() {
+            this.atualizar()
+        },
+        limparFiltros() {
+            limparFiltrosListagem(this.controle.dados, CAMPOS_FILTRO_URL)
+            this.fecharOutrosComboboxes(null)
             this.atualizar()
         },
         onClickOutside(event) {

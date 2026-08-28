@@ -8,6 +8,30 @@ export function valorValidoParaQuery(val) {
 }
 
 /**
+ * Indica se algum campo de filtro (não paginação) está preenchido.
+ */
+export function temFiltrosPreenchidos(controleDados, campos = []) {
+    if (!controleDados || !campos.length) {
+        return false
+    }
+
+    return campos.some((campo) => valorValidoParaQuery(controleDados[campo]))
+}
+
+/**
+ * Zera os campos de filtro informados (mantém pages e demais chaves).
+ */
+export function limparFiltrosListagem(controleDados, campos = []) {
+    if (!controleDados || !campos.length) {
+        return
+    }
+
+    campos.forEach((campo) => {
+        controleDados[campo] = ''
+    })
+}
+
+/**
  * Lê filtros da URL (?campoBusca=...&campoStatus=...) para controle.dados.
  */
 export function lerFiltrosDaUrl(controleDados, campos = []) {

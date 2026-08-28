@@ -6,7 +6,7 @@ import Editor from '@tinymce/tinymce-vue'
 import MixinConfig from '../../../mixins/Configuracoes'
 import ComboboxAutoComplete from '../../../components/ComboboxAutoComplete'
 import FiltroListagem from '../../../components/ui/FiltroListagem'
-import { lerFiltrosDaUrl, lerPaginacaoDaUrl, sincronizarFiltrosNaUrl, criarWatchQueryParams, montarExtrasPaginacao, aplicarPaginaInicialListagem, buscarListagem } from '../../../utils/listagemQueryParams'
+import { lerFiltrosDaUrl, lerPaginacaoDaUrl, sincronizarFiltrosNaUrl, criarWatchQueryParams, montarExtrasPaginacao, aplicarPaginaInicialListagem, buscarListagem, temFiltrosPreenchidos, limparFiltrosListagem } from '../../../utils/listagemQueryParams'
 
 const CAMPOS_FILTRO_URL = [
     'campoBusca',
@@ -186,6 +186,9 @@ const app = createApp({
             const ultimaLinha = this.form.projetos[this.form.projetos.length - 1]
 
             return this.projetoLinhaCompleta(ultimaLinha) && this.existeProjetoDisponivelParaAdicionar()
+        },
+        temFiltrosAtivos() {
+            return temFiltrosPreenchidos(this.controle.dados, CAMPOS_FILTRO_URL)
         }
     },
     mounted() {
@@ -220,6 +223,11 @@ const app = createApp({
             this.atualizar()
         },
         onSelectFiltro() {
+            this.atualizar()
+        },
+        limparFiltros() {
+            limparFiltrosListagem(this.controle.dados, CAMPOS_FILTRO_URL)
+            this.fecharOutrosComboboxes(null)
             this.atualizar()
         },
         fecharOutrosComboboxes(manter) {

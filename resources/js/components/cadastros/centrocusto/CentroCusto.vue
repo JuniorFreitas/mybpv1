@@ -13,10 +13,14 @@
                 <preload class="text-center" v-if="carregandoModal"></preload>
                 <fieldset class="mt-0" v-if="!carregandoModal">
                     <legend>Dados do Centro de Custo</legend>
+                    <p class="mybp-campo-obrigatorio-legenda mb-3">
+                        Campos com <span class="text-danger">*</span> são obrigatórios.
+                    </p>
                     <div class="row">
                         <div class="col-12 mb-3">
-                            <label class="form-label">Nome <span class="text-danger">*</span></label>
+                            <label class="mybp-label" for="cc-form-nome">Nome <span class="text-danger">*</span></label>
                             <input
+                                id="cc-form-nome"
                                 class="form-control form-control-sm validacampo"
                                 type="text"
                                 placeholder="Informe o nome"
@@ -29,7 +33,7 @@
 
                         <div class="col-12">
                             <div class="form-group">
-                                <label class="form-label">Gestor substituto</label>
+                                <label class="mybp-label" for="cc-form-gestor-substituto">Gestor substituto</label>
                                 <autocomplete
                                     :caminho="`autocomplete/todos-gestores-ativos/`"
                                     :formsm="true"
@@ -97,7 +101,12 @@
         </ModalComponent>
 
         <div id="componente">
-            <FiltroListagem @submit="onSubmitFiltro">
+            <FiltroListagem
+                @submit="onSubmitFiltro"
+                :mostrar-limpar-filtros="temFiltrosAtivos"
+                :desabilitado="controle.carregando"
+                @limpar="limparFiltros"
+            >
                 <template #filtros>
                     <div class="col-12" :class="temFilial ? 'col-lg-4' : 'col-lg-6'">
                         <div class="form-group mb-2 mb-lg-0">
@@ -105,7 +114,7 @@
                             <input
                                 id="cc-filtro-busca"
                                 type="text"
-                                placeholder="Buscar por nome"
+                                placeholder="Buscar por nome ou ID"
                                 autocomplete="off"
                                 class="form-control form-control-sm"
                                 :disabled="controle.carregando"
@@ -117,17 +126,21 @@
                     <div class="col-12" :class="temFilial ? 'col-lg-3' : 'col-lg-6'">
                         <div class="form-group mb-2 mb-lg-0">
                             <label class="mybp-label" for="cc-filtro-status">Status</label>
-                            <select
-                                id="cc-filtro-status"
-                                class="form-control form-control-sm"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.campoStatus"
-                                @change="atualizar()"
-                            >
-                                <option value="">Todos os Status</option>
-                                <option :value="true">Apenas Ativos</option>
-                                <option :value="false">Apenas Inativos</option>
-                            </select>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    ref="comboFiltroStatus"
+                                    instance-id="filtro-status"
+                                    v-model="controle.dados.campoStatus"
+                                    :options="filtroStatusOpcoes"
+                                    :disabled="controle.carregando"
+                                    input-id="cc-filtro-status"
+                                    placeholder-blur="Todos os status"
+                                    empty-message="Nenhuma opção encontrada."
+                                    :max-results="10"
+                                    @opening="fecharOutrosComboboxes('filtro-status')"
+                                    @select="onSelectFiltro"
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -144,7 +157,7 @@
                                 empty-message="Nenhum CNPJ encontrado."
                                 :max-results="50"
                                 @opening="fecharOutrosComboboxes('filtro-cnpj')"
-                                @select="onSelectFiltroCnpj"
+                                @select="onSelectFiltro"
                             />
                         </div>
                     </div>
@@ -256,7 +269,7 @@
                 id="controle"
                 ref="componente"
                 :url="urlPaginacao"
-                :por-pagina="qntPag"
+                :por-pagina="controle.dados.pages"
                 :dados="controle.dados"
                 v-on:carregou="carregou"
                 v-on:carregando="carregando"
@@ -266,13 +279,24 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import gestor from '../../GestorAprovacao'
 import autocomplete from '../../AutoComplete'
 import controlePaginacao from '../../ControlePaginacao'
 import ModalComponent from '../../Modal'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete'
 import FiltroListagem from '../../ui/FiltroListagem'
+import {
+    lerFiltrosDaUrl,
+    lerPaginacaoDaUrl,
+    sincronizarFiltrosNaUrl,
+    montarExtrasPaginacao,
+    aplicarPaginaInicialListagem,
+    temFiltrosPreenchidos,
+    limparFiltrosListagem
+} from '../../../utils/listagemQueryParams'
+
+const CAMPOS_FILTRO_URL = ['campoBusca', 'campoStatus', 'campoCnpj']
 
 const props = defineProps({
     qntPag: {
@@ -308,8 +332,10 @@ const clientes = ref([])
 const modal_janelaForm = ref(null)
 const componente = ref(null)
 const dropdownAbertoKey = ref(null)
+const comboFiltroStatus = ref(null)
 const comboFiltroCnpj = ref(null)
 const comboFormCnpj = ref(null)
+let syncUrlTimer = null
 
 const form = reactive({
     gestor_id: '',
@@ -329,7 +355,8 @@ const controle = reactive({
     dados: {
         campoBusca: '',
         campoStatus: '',
-        campoCnpj: ''
+        campoCnpj: '',
+        pages: props.qntPag
     }
 })
 
@@ -348,7 +375,45 @@ const cnpjComboboxOpcoes = computed(() => {
 
 const cnpjComboboxOpcoesFiltro = computed(() => [{ value: '', label: 'Todos os CNPJs' }, ...cnpjComboboxOpcoes.value])
 
+const filtroStatusOpcoes = computed(() => [
+    { value: '', label: 'Todos os status' },
+    { value: 'true', label: 'Apenas ativos' },
+    { value: 'false', label: 'Apenas inativos' }
+])
+
+const temFiltrosAtivos = computed(() => temFiltrosPreenchidos(controle.dados, CAMPOS_FILTRO_URL))
+
+function getPaginacaoVm() {
+    return {
+        controle,
+        $refs: { componente: componente.value }
+    }
+}
+
+function urlParamGetFiltros() {
+    lerFiltrosDaUrl(controle.dados, CAMPOS_FILTRO_URL)
+}
+
+function syncUrlFiltros() {
+    sincronizarFiltrosNaUrl(
+        controle.dados,
+        CAMPOS_FILTRO_URL,
+        montarExtrasPaginacao(getPaginacaoVm(), { pagesDefault: props.qntPag })
+    )
+}
+
+function buscarListagemLocal(resetPagina = true) {
+    if (resetPagina && componente.value) {
+        componente.value.atual = 1
+    }
+
+    componente.value?.buscar?.()
+}
+
 function fecharOutrosComboboxes(manter) {
+    if (manter !== 'filtro-status' && comboFiltroStatus.value?.close) {
+        comboFiltroStatus.value.close()
+    }
     if (manter !== 'filtro-cnpj' && comboFiltroCnpj.value?.close) {
         comboFiltroCnpj.value.close()
     }
@@ -357,7 +422,13 @@ function fecharOutrosComboboxes(manter) {
     }
 }
 
-function onSelectFiltroCnpj() {
+function onSelectFiltro() {
+    atualizar()
+}
+
+function limparFiltros() {
+    limparFiltrosListagem(controle.dados, CAMPOS_FILTRO_URL)
+    fecharOutrosComboboxes(null)
     atualizar()
 }
 
@@ -437,6 +508,7 @@ function fecharDropdown() {
 
 function onClickOutside(event) {
     if (event?.target?.closest?.('.dropdown')) return
+    if (comboFiltroStatus.value?.containsTarget?.(event.target)) return
     if (comboFiltroCnpj.value?.containsTarget?.(event.target)) return
     if (comboFormCnpj.value?.containsTarget?.(event.target)) return
     dropdownAbertoKey.value = null
@@ -526,6 +598,7 @@ function carregou(dados) {
     clientes.value = dados.clientes ?? []
     listaCcs.value = dados.lista_ccs ?? null
     controle.carregando = false
+    nextTick(() => syncUrlFiltros())
 }
 
 function carregando() {
@@ -533,10 +606,7 @@ function carregando() {
 }
 
 function atualizar() {
-    if (componente.value) {
-        componente.value.atual = 1
-        componente.value.buscar?.()
-    }
+    buscarListagemLocal(true)
 }
 
 function abrirModalFormNovo() {
@@ -565,8 +635,20 @@ function resetaGestorSubstituto() {
 }
 
 function onSubmitFiltro() {
-    componente.value?.buscar?.()
+    atualizar()
 }
+
+watch(
+    () => controle.dados,
+    () => {
+        if (syncUrlTimer) {
+            clearTimeout(syncUrlTimer)
+        }
+
+        syncUrlTimer = setTimeout(() => syncUrlFiltros(), 400)
+    },
+    { deep: true }
+)
 
 onMounted(async () => {
     try {
@@ -576,8 +658,12 @@ onMounted(async () => {
         // silencioso
     }
     formDefault.value = _.cloneDeep(form)
+    urlParamGetFiltros()
+    const paginaInicial = lerPaginacaoDaUrl(controle.dados, { pagesDefault: props.qntPag })
     document.addEventListener('click', onClickOutside)
-    atualizar()
+    await nextTick()
+    aplicarPaginaInicialListagem(getPaginacaoVm(), paginaInicial)
+    buscarListagemLocal(false)
 })
 
 onBeforeUnmount(() => {

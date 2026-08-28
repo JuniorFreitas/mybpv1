@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { registerGlobals } from '../../../registerGlobals'
 import ComboboxAutoComplete from '../../../components/ComboboxAutoComplete'
 import FiltroListagem from '../../../components/ui/FiltroListagem'
-import { lerFiltrosDaUrl, lerPaginacaoDaUrl, sincronizarFiltrosNaUrl, criarWatchQueryParams, montarExtrasPaginacao, aplicarPaginaInicialListagem, buscarListagem } from '../../../utils/listagemQueryParams'
+import { lerFiltrosDaUrl, lerPaginacaoDaUrl, sincronizarFiltrosNaUrl, criarWatchQueryParams, montarExtrasPaginacao, aplicarPaginaInicialListagem, buscarListagem, temFiltrosPreenchidos, limparFiltrosListagem } from '../../../utils/listagemQueryParams'
 
 const CAMPOS_FILTRO_URL = ['campoBusca', 'campoDisponibilidade', 'campoVinculoVagas']
 const PAGES_DEFAULT = 100
@@ -81,6 +81,9 @@ const app = createApp({
                 { value: 'com_vinculo', label: 'Com vagas abertas vinculadas' },
                 { value: 'sem_vinculo', label: 'Sem vagas abertas vinculadas' }
             ]
+        },
+        temFiltrosAtivos() {
+            return temFiltrosPreenchidos(this.controle.dados, CAMPOS_FILTRO_URL)
         }
     },
     mounted() {
@@ -114,6 +117,11 @@ const app = createApp({
             this.atualizar()
         },
         onSelectFiltro() {
+            this.atualizar()
+        },
+        limparFiltros() {
+            limparFiltrosListagem(this.controle.dados, CAMPOS_FILTRO_URL)
+            this.fecharOutrosComboboxes(null)
             this.atualizar()
         },
         fecharOutrosComboboxes(manter) {

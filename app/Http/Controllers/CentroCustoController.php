@@ -213,12 +213,21 @@ class CentroCustoController extends Controller
             ->orderBy('id');
 
         if ($request->filled('campoBusca')) {
-            $resultado->where('label', 'like', '%' . $request->campoBusca . '%');
+            $termo = trim((string) $request->campoBusca);
+            $resultado->where(function ($query) use ($termo) {
+                $query->where('label', 'like', '%' . $termo . '%');
+
+                if (is_numeric($termo)) {
+                    $query->orWhere('id', (int) $termo);
+                }
+            });
         }
 
         if ($request->filled('campoStatus')) {
-            $status = $request->campoStatus == 'true';
-            $resultado->whereAtivo($status);
+            $status = filter_var($request->campoStatus, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($status !== null) {
+                $resultado->whereAtivo($status);
+            }
         }
 
         $listaCcs = null;

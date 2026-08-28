@@ -64,7 +64,12 @@
             </template>
         </modal>
 
-        <filtro-listagem @submit="onSubmitFiltro">
+        <filtro-listagem
+            @submit="onSubmitFiltro"
+            :mostrar-limpar-filtros="temFiltrosAtivos"
+            :desabilitado="controle.carregando"
+            @limpar="limparFiltros"
+        >
             <template #filtros>
                 <div class="col-12 col-lg-6">
                     <div class="form-group mb-2 mb-lg-0">
@@ -229,7 +234,9 @@ import {
     criarWatchQueryParams,
     montarExtrasPaginacao,
     aplicarPaginaInicialListagem,
-    buscarListagem
+    buscarListagem,
+    temFiltrosPreenchidos,
+    limparFiltrosListagem
 } from '../../../utils/listagemQueryParams'
 
 const CAMPOS_FILTRO_URL = ['campoBusca', 'campoStatus']
@@ -285,6 +292,9 @@ export default {
         'controle.dados': criarWatchQueryParams(CAMPOS_FILTRO_URL, { pagesDefault: PAGES_DEFAULT })
     },
     computed: {
+        temFiltrosAtivos() {
+            return temFiltrosPreenchidos(this.controle.dados, CAMPOS_FILTRO_URL)
+        },
         filtroStatusOpcoes() {
             return [
                 { value: '', label: 'Todos os status' },
@@ -348,6 +358,11 @@ export default {
             this.atualizar()
         },
         onSelectFiltro() {
+            this.atualizar()
+        },
+        limparFiltros() {
+            limparFiltrosListagem(this.controle.dados, CAMPOS_FILTRO_URL)
+            this.fecharOutrosComboboxes(null)
             this.atualizar()
         },
         fecharOutrosComboboxes(manter) {

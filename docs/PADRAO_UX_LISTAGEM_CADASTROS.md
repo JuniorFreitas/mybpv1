@@ -100,6 +100,10 @@ Filtro vazio (`value: ''`) = todos. No cadastro/edição, não incluir opção v
 
 **Combobox:** `@select="onSelectFiltro"` → `atualizar()` imediato (sem clicar em Atualizar).
 
+**Enter no Buscar:** pressionar Enter no `<input>` de busca dispara `@submit` do `FiltroListagem` → `onSubmitFiltro()` → `atualizar()`. Botão Atualizar: `type="submit"`.
+
+**Limpar filtros:** `:mostrar-limpar-filtros="temFiltrosAtivos"` + `@limpar="limparFiltros"` — visível apenas com filtro preenchido (`temFiltrosPreenchidos` em `listagemQueryParams.js`).
+
 ### Query params (histórico compartilhável)
 
 Usar `resources/js/utils/listagemQueryParams.js`:
@@ -173,6 +177,7 @@ Estilos carregados via `resources/sass/app.scss` → `@import "mybp-listagem-ui"
 - [ ] Filtros enum/status/CNPJ via combobox (sem `<select>` nativo)
 - [ ] Labels com `mybp-label` (ou `ma-label` — alias visual igual em Minhas Avaliações)
 - [ ] `@select="onSelectFiltro"` em combobox (atualiza listagem na hora)
+- [ ] `:mostrar-limpar-filtros="temFiltrosAtivos"` + `@limpar="limparFiltros"`
 - [ ] Query params com `listagemQueryParams.js` (`CAMPOS_FILTRO_URL` + watch)
 - [ ] Cards com classes `mybp-*`, não CSS duplicado no componente
 - [ ] Botões de ação na segunda linha do filtro
