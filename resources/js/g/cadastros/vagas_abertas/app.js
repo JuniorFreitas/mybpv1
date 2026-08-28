@@ -4,6 +4,7 @@ import { tinyPadrao } from '../../../utils'
 import autocomplete from '../../../components/AutoComplete'
 import Editor from '@tinymce/tinymce-vue'
 import MixinConfig from '../../../mixins/Configuracoes'
+import FiltroListagem from '../../../components/ui/FiltroListagem'
 const app = createApp({
     components: {
         autocomplete,
@@ -12,7 +13,7 @@ const app = createApp({
     mixins: [MixinConfig],
     data() {
         return {
-            tituloJanela: 'Cadastrando Cargo',
+            tituloJanela: 'Cadastrando Vaga Aberta',
             preloadAjax: false,
             editando: false,
             apagado: false,
@@ -78,15 +79,169 @@ const app = createApp({
                     campoBusca: '',
                     campoStatus: ''
                 }
-            }
+            },
+
+            dropdownAbertoKey: null
         }
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form) //copia
         this.atualizar()
+        document.addEventListener('click', this.onClickOutside)
         // this.listaVagas();
     },
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
+    },
     methods: {
+        onSubmitFiltro() {
+            this.atualizar()
+        },
+        onClickOutside(event) {
+            if (event?.target?.closest?.('.dropdown')) return
+            this.dropdownAbertoKey = null
+        },
+        toggleDropdown(vagaId) {
+            if (!vagaId) return
+            const key = `vaga-aberta:${vagaId}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(vagaId) {
+            return this.dropdownAbertoKey === `vaga-aberta:${vagaId}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+        abrirEdicaoVagaAberta(vagaId) {
+            this.fecharDropdown()
+            this.formAlterar(vagaId)
+            this.$refs.janelaCadastrar?.abrirModal()
+        },
+        resumoTreinamentos(vaga) {
+            const vinculados = Number(vaga?.treinamentos_vinculados_count ?? 0)
+            const globais = Number(vaga?.treinamentos_globais_count ?? 0)
+            const total = Number(vaga?.treinamentos_total_count ?? vinculados + globais)
+
+            if (total === 0) {
+                return 'Nenhum'
+            }
+
+            if (vinculados === 0 && globais > 0) {
+                return globais === 1
+                    ? '1 treinamento (todos os cargos)'
+                    : `${globais} treinamentos (todos os cargos)`
+            }
+
+            if (globais === 0) {
+                return vinculados === 1 ? '1 treinamento' : `${vinculados} treinamentos`
+            }
+
+            const labelTotal = total === 1 ? '1 treinamento' : `${total} treinamentos`
+            const labelVinculados = vinculados === 1 ? '1 vinculado' : `${vinculados} vinculados`
+            const labelGlobais = globais === 1 ? '1 global' : `${globais} globais`
+
+            return `${labelTotal} (${labelVinculados}, ${labelGlobais})`
+        },
+        temCbo(vaga) {
+            return !!(vaga?.cbo_vinculado || vaga?.cbo_codigo || vaga?.cbo_titulo)
+        },
+        urlVagaPublica(vaga) {
+            if (!vaga?.slug) {
+                return this.urlVaga
+            }
+
+            return `${this.urlVaga}/${vaga.slug}`
+        },
+        copiarLinkPublico(vaga) {
+            this.copiarTexto(this.urlVagaPublica(vaga), 'Link copiado!')
+        },
+        copiarTexto(texto, mensagem = 'Link copiado!') {
+            if (!texto) {
+                return
+            }
+
+            if (navigator.clipboard?.writeText) {
+                navigator.clipboard.writeText(texto)
+                    .then(() => {
+                        if (typeof toastr !== 'undefined') {
+                            toastr.success(mensagem)
+                        }
+                    })
+                    .catch(() => this.copiarTextoFallback(texto, mensagem))
+
+                return
+            }
+
+            this.copiarTextoFallback(texto, mensagem)
+        },
+        copiarTextoFallback(texto, mensagem = 'Link copiado!') {
+            const el = document.createElement('textarea')
+            el.value = texto
+            el.setAttribute('readonly', '')
+            el.style.position = 'absolute'
+            el.style.left = '-9999px'
+            document.body.appendChild(el)
+            el.select()
+            document.execCommand('copy')
+            document.body.removeChild(el)
+
+            if (typeof toastr !== 'undefined') {
+                toastr.success(mensagem)
+            }
+        },
+        copiarLinkPublicoFallback(url) {
+            this.copiarTextoFallback(url, 'Link copiado!')
+        },
+        textoCompartilharVaga(vaga) {
+            const partes = []
+
+            if (vaga?.titulo) {
+                partes.push(`Vaga: ${vaga.titulo}`)
+            }
+            if (vaga?.cargo_nome) {
+                partes.push(`Cargo: ${vaga.cargo_nome}`)
+            }
+            if (vaga?.municipio_label) {
+                partes.push(`Local: ${vaga.municipio_label}`)
+            }
+
+            partes.push(this.urlVagaPublica(vaga))
+
+            return partes.join('\n')
+        },
+        urlCompartilharWhatsapp(vaga) {
+            return `https://api.whatsapp.com/send?text=${encodeURIComponent(this.textoCompartilharVaga(vaga))}`
+        },
+        urlCompartilharFacebook(vaga) {
+            return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(this.urlVagaPublica(vaga))}`
+        },
+        urlCompartilharLinkedin(vaga) {
+            return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(this.urlVagaPublica(vaga))}`
+        },
+        compartilharInstagram(vaga) {
+            this.copiarTexto(
+                this.urlVagaPublica(vaga),
+                'Link copiado! Cole no Instagram para compartilhar.'
+            )
+        },
+        resumoSimulados(vaga) {
+            const total = Number(vaga?.simulados_count ?? 0)
+            const ativos = Number(vaga?.simulados_ativos_count ?? 0)
+
+            if (total === 0) {
+                return 'Nenhuma prova'
+            }
+
+            if (ativos === total) {
+                return total === 1 ? '1 prova' : `${total} provas`
+            }
+
+            if (ativos === 0) {
+                return total === 1 ? '1 prova (inativa)' : `${total} provas (todas inativas)`
+            }
+
+            return `${ativos} de ${total} provas ativas`
+        },
         addLISimulado() {
             const obj = {}
             obj.novo = true
@@ -252,7 +407,7 @@ const app = createApp({
             this.atualizado = false
             this.editando = false
 
-            this.tituloJanela = 'Cadastrando Cargo'
+            this.tituloJanela = 'Cadastrando Vaga Aberta'
 
             formReset()
             setupCampo()
@@ -387,4 +542,5 @@ const app = createApp({
 })
 
 registerGlobals(app)
+app.component('FiltroListagem', FiltroListagem)
 app.mount('#app')

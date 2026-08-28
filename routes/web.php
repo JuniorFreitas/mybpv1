@@ -515,6 +515,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::resource('vagas', \App\Http\Controllers\VagaController::class)->middleware('can:cadastro_vagas');
 
             Route::put('vagas-abertas/{vagas_aberta}/ativa-desativa', [\App\Http\Controllers\VagasAbertasController::class, 'ativaDesativa'])->name('vagas_abertas.ativaDesativa')->middleware('can:cadastro_vagas_abertas_update');
+            Route::put('vagas-abertas/{vagas_aberta}/ativa-desativa-sistema', [\App\Http\Controllers\VagasAbertasController::class, 'ativaDesativaSistema'])->name('vagas_abertas.ativaDesativaSistema')->middleware('can:cadastro_vagas_abertas_update');
             Route::post('vagas-abertas/atualizar', [\App\Http\Controllers\VagasAbertasController::class, 'atualizar'])->name('vagas_abertas.atualizar')->middleware('can:cadastro_vagas_abertas');
             Route::get('vagas-abertas/cargo/{vaga}/treinamentos', [\App\Http\Controllers\VagasAbertasController::class, 'treinamentosDoCargo'])->name('vagas_abertas.treinamentos_cargo')->middleware('can:cadastro_vagas_abertas');
             Route::get('vagas-abertas/prova/{simulado}/{vaga_aberta}', [\App\Http\Controllers\VagasAbertasController::class, 'vagaAbertaSimulado'])->name('vagas_abertas.vagaAbertaSimulado')->middleware('can:cadastro_vagas_abertas');

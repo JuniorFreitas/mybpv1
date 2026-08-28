@@ -264,22 +264,32 @@
 
                 </fieldset>
 
-                <div class="col-md-6">
-                    <label>Ativo Site</label>
-                    <select class="form-control" v-model="form.ativo"
-                            onblur="valida_campo_vazio(this, 1)" onchange="valida_campo_vazio(this, 1)">
-                        <option :value="true">Sim</option>
-                        <option :value="false">Não</option>
-                    </select>
-                </div>
+                <div class="d-flex flex-wrap align-items-center mt-2">
+                    <div class="custom-control custom-switch mb-0 mr-4">
+                        <input
+                            type="checkbox"
+                            class="custom-control-input"
+                            :id="`ativo_site_${hash}`"
+                            v-model="form.ativo"
+                        />
+                        <label class="custom-control-label" :for="`ativo_site_${hash}`">
+                            Ativo no site
+                            <small class="text-muted">(@{{ form.ativo ? 'Sim' : 'Não' }})</small>
+                        </label>
+                    </div>
 
-                <div class="col-md-6">
-                    <label>Ativo Sistema</label>
-                    <select class="form-control" v-model="form.ativo_sistema"
-                            onblur="valida_campo_vazio(this, 1)" onchange="valida_campo_vazio(this, 1)">
-                        <option :value="true">Sim</option>
-                        <option :value="false">Não</option>
-                    </select>
+                    <div class="custom-control custom-switch mb-0">
+                        <input
+                            type="checkbox"
+                            class="custom-control-input"
+                            :id="`ativo_sistema_${hash}`"
+                            v-model="form.ativo_sistema"
+                        />
+                        <label class="custom-control-label" :for="`ativo_sistema_${hash}`">
+                            Ativo no sistema
+                            <small class="text-muted">(@{{ form.ativo_sistema ? 'Sim' : 'Não' }})</small>
+                        </label>
+                    </div>
                 </div>
             </form>
         </template>
@@ -295,128 +305,285 @@
         </template>
     </modal>
 
-    <fieldset>
-        <legend>Filtro</legend>
-        <form class="row" @submit.prevent="$refs.componente.buscar()">
-            <div class="col-12 col-md-4">
-                <div class="form-group">
-                    <label>Buscar</label>
-                    <input type="text"
-                           placeholder="Buscar por nome"
-                           autocomplete="off"
-                           class="form-control form-control-sm" :disabled="controle.carregando"
-                           v-model="controle.dados.campoBusca">
+    <div>
+        <filtro-listagem @submit="onSubmitFiltro">
+            <template #filtros>
+                <div class="col-12 col-lg-6">
+                    <div class="form-group mb-2 mb-lg-0">
+                        <label class="mybp-label" for="vaga-aberta-filtro-busca">Buscar</label>
+                        <input
+                            id="vaga-aberta-filtro-busca"
+                            type="text"
+                            placeholder="Buscar por título, cargo ou cidade"
+                            autocomplete="off"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoBusca"
+                        />
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                    <div class="form-group mb-2 mb-lg-0">
+                        <label class="mybp-label" for="vaga-aberta-filtro-status">Status</label>
+                        <select
+                            id="vaga-aberta-filtro-status"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoStatus"
+                        >
+                            <option value="">Todos os status</option>
+                            <option :value="true">Apenas ativos</option>
+                            <option :value="false">Apenas inativos</option>
+                        </select>
+                    </div>
+                </div>
+            </template>
+
+            <template #acoes>
+                <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i> Atualizar
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-secondary"
+                    :disabled="controle.carregando"
+                    @click="formNovo(); $refs.janelaCadastrar?.abrirModal()"
+                >
+                    <i class="fa fa-plus"></i> Cadastrar Vaga Aberta
+                </button>
+            </template>
+        </filtro-listagem>
+
+        <div id="conteudo">
+            <preload class="text-center" v-if="controle.carregando"></preload>
+
+            <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length === 0">
+                <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+            </div>
+
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+                <div class="mybp-card" v-for="vaga in lista" :key="vaga.id">
+                    <div class="mybp-card-header-row">
+                        <div class="mybp-card-left">
+                            <span class="mybp-badge-id">#@{{ vaga.id }}</span>
+                            <div class="mybp-card-titulo">
+                                <strong>@{{ vaga.titulo }}</strong>
+                            </div>
+                        </div>
+                        <div class="mybp-card-right">
+                            <div class="mybp-card-status-botoes">
+                                <div class="mybp-card-status-item">
+                                    <bt-ativo
+                                        campo="ativo"
+                                        ativo-label="Ativo site"
+                                        inativo-label="Inativo site"
+                                        :rota="`cadastro/vagas-abertas/${vaga.id}/ativa-desativa`"
+                                        :model="vaga"
+                                        @atualizou="atualizar()"
+                                    ></bt-ativo>
+                                </div>
+                                <div class="mybp-card-status-item">
+                                    <bt-ativo
+                                        campo="ativo_sistema"
+                                        ativo-label="Ativo sistema"
+                                        inativo-label="Inativo sistema"
+                                        :rota="`cadastro/vagas-abertas/${vaga.id}/ativa-desativa-sistema`"
+                                        :model="vaga"
+                                        @atualizou="atualizar()"
+                                    ></bt-ativo>
+                                </div>
+                            </div>
+                            <div class="dropdown" :class="{ show: isDropdownOpen(vaga.id) }">
+                                <a
+                                    class="mybp-btn-acoes-compact"
+                                    href="#"
+                                    role="button"
+                                    aria-haspopup="true"
+                                    :aria-expanded="isDropdownOpen(vaga.id) ? 'true' : 'false'"
+                                    @click.prevent.stop="toggleDropdown(vaga.id)"
+                                >
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div
+                                    class="dropdown-menu mybp-dropdown-menu dropdown-menu-right"
+                                    :class="{ show: isDropdownOpen(vaga.id) }"
+                                    @click="fecharDropdown"
+                                >
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Editar"
+                                        @click.prevent="abrirEdicaoVagaAberta(vaga.id)"
+                                    >
+                                        <i class="fa fa-edit mr-1"></i> Editar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mybp-card-details-row">
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-briefcase text-muted"></i>
+                            <span class="mybp-detail-label">Cargo</span>
+                            <span class="mybp-detail-value">@{{ vaga.cargo_nome || '—' }}</span>
+                        </div>
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-map-marker-alt text-muted"></i>
+                            <span class="mybp-detail-label">Local</span>
+                            <span class="mybp-detail-value">@{{ vaga.municipio_label || '—' }}</span>
+                        </div>
+                        <div class="mybp-detail-item" v-if="vaga.updated_at_br">
+                            <i class="fas fa-clock text-muted"></i>
+                            <span class="mybp-detail-label">Atualizado</span>
+                            <span class="mybp-detail-value">@{{ vaga.updated_at_br }}</span>
+                        </div>
+                    </div>
+
+                    <div class="mybp-card-link-publico">
+                        <div class="mybp-card-link-publico-header">
+                            <i class="fas fa-link text-muted"></i>
+                            <span class="mybp-detail-label">Link público</span>
+                        </div>
+                        <div class="mybp-card-link-publico-acoes">
+                            <a
+                                class="mybp-card-link-publico-url"
+                                :href="urlVagaPublica(vaga)"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                @{{ urlVagaPublica(vaga) }}
+                            </a>
+                        </div>
+                        <div class="mybp-card-link-compartilhar">
+                            <div class="mybp-card-share-botoes">
+                                <button
+                                    type="button"
+                                    class="mybp-btn-share mybp-btn-share--copy"
+                                    title="Copiar link"
+                                    @click="copiarLinkPublico(vaga)"
+                                >
+                                    <i class="fa fa-copy"></i>
+                                </button>
+                                <a
+                                    class="mybp-btn-share mybp-btn-share--whatsapp"
+                                    :href="urlCompartilharWhatsapp(vaga)"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="Compartilhar no WhatsApp"
+                                >
+                                    <i class="fab fa-whatsapp"></i>
+                                </a>
+                                <a
+                                    class="mybp-btn-share mybp-btn-share--facebook"
+                                    :href="urlCompartilharFacebook(vaga)"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="Compartilhar no Facebook"
+                                >
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <button
+                                    type="button"
+                                    class="mybp-btn-share mybp-btn-share--instagram"
+                                    title="Copiar link para Instagram"
+                                    @click="compartilharInstagram(vaga)"
+                                >
+                                    <i class="fab fa-instagram"></i>
+                                </button>
+                                <a
+                                    class="mybp-btn-share mybp-btn-share--linkedin"
+                                    :href="urlCompartilharLinkedin(vaga)"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="Compartilhar no LinkedIn"
+                                >
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mybp-card-secoes-row" v-if="vaga.descricao_tem_conteudo">
+                        <div class="mybp-card-destaque mybp-card-destaque--full">
+                            <div class="mybp-card-destaque-info">
+                                <small class="mybp-card-destaque-etapa">Descrição</small>
+                                <p class="mybp-card-texto-resumo mb-0">@{{ vaga.descricao_resumo }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mybp-card-secoes-row" v-if="temCbo(vaga)">
+                        <div class="mybp-card-destaque mybp-card-destaque--primary mybp-card-destaque--full">
+                            <i class="fas fa-id-card text-primary"></i>
+                            <div class="mybp-card-destaque-info">
+                                <small class="mybp-card-destaque-etapa">
+                                    CBO @{{ vaga.cbo_codigo || '—' }}
+                                    <span v-if="vaga.cbo_codigo_familia"> · Família @{{ vaga.cbo_codigo_familia }}</span>
+                                </small>
+                                <strong class="mybp-card-destaque-valor mybp-card-destaque-valor--wrap">@{{ vaga.cbo_titulo }}</strong>
+                                <small class="text-muted d-block mt-1" v-if="vaga.cbo_familia">@{{ vaga.cbo_familia }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mybp-card-secoes-row">
+                        <div class="mybp-card-destaque mybp-card-destaque--info">
+                            <i class="fas fa-graduation-cap text-info"></i>
+                            <div class="mybp-card-destaque-info">
+                                <small class="mybp-card-destaque-etapa">Treinamentos do cargo</small>
+                                <strong class="mybp-card-destaque-valor mybp-card-destaque-valor--wrap">
+                                    @{{ vaga.treinamentos_tem_vinculo ? 'Sim' : 'Não' }}
+                                    <span class="text-muted font-weight-normal" v-if="vaga.treinamentos_tem_vinculo">
+                                        · @{{ resumoTreinamentos(vaga) }}
+                                    </span>
+                                </strong>
+                                <div
+                                    class="mybp-card-tags"
+                                    v-if="vaga.treinamentos_vinculados_labels && vaga.treinamentos_vinculados_labels.length"
+                                >
+                                    <span
+                                        class="mybp-card-tag"
+                                        v-for="(label, idx) in vaga.treinamentos_vinculados_labels"
+                                        :key="`treinamento-${vaga.id}-${idx}`"
+                                    >
+                                        @{{ label }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mybp-card-destaque mybp-card-destaque--warning">
+                            <i class="fas fa-file-alt text-warning"></i>
+                            <div class="mybp-card-destaque-info">
+                                <small class="mybp-card-destaque-etapa">Provas vinculadas</small>
+                                <strong class="mybp-card-destaque-valor mybp-card-destaque-valor--wrap">@{{ resumoSimulados(vaga) }}</strong>
+                                <div class="mybp-card-tags" v-if="vaga.simulados_titulos && vaga.simulados_titulos.length">
+                                    <span
+                                        class="mybp-card-tag"
+                                        v-for="(titulo, idx) in vaga.simulados_titulos"
+                                        :key="`simulado-${vaga.id}-${idx}`"
+                                    >
+                                        @{{ titulo }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-12 col-md-4">
-                <div class="form-group">
-                    <label>Status</label>
-                    <select class="form-control form-control-sm" v-model="controle.dados.campoStatus"
-                            @change="atualizar()">
-                        <option value="">Todos os Status</option>
-                        <option :value="true">Apenas Ativos</option>
-                        <option :value="false">Apenas Inativos</option>
-                    </select>
-
-                </div>
-            </div>
-
-            <div class="col-12 col-md-9">
-                <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
-                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>Atualizar
-                </button>
-                <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="controle.carregando"
-                        @click="formNovo(); $refs.janelaCadastrar?.abrirModal()">
-                    Cadastrar
-                </button>
-            </div>
-        </form>
-    </fieldset>
-
-    <p class="text-center" v-if="controle.carregando">
-        <i class="fa fa-spinner fa-pulse"></i> Carregando...
-    </p>
-
-    <div id="conteudo">
-        <div class="alert alert-warning" v-show="!controle.carregando && lista.length===0">
-            <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+            <controle-paginacao
+                class="d-flex justify-content-center mt-3"
+                id="controle"
+                ref="componente"
+                url="{{route('g.vagas.vagas_abertas.atualizar')}}"
+                por-pagina="100"
+                :dados="controle.dados"
+                v-on:carregou="carregou"
+                v-on:carregando="carregando">
+            </controle-paginacao>
         </div>
-
-        <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-            <table class="tabela">
-                <thead>
-                <tr class="bg-default">
-                    <th class="text-center">ID</th>
-                    <th>Vaga</th>
-                    <th>Treinamentos Vinculados</th>
-                    <th>Título</th>
-                    <th>Descrição</th>
-                    <th>Local</th>
-                    <th>Ativo</th>
-                    <th>Ação</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="vaga in lista">
-                    <td class="text-center">
-                        @{{vaga.id}}
-                    </td>
-
-                    <td>
-                        @{{vaga.vaga.nome}} <br>
-                        <small style="word-break: break-all">@{{ urlVaga }}/@{{ vaga.slug }}</small>
-                    </td>
-
-                    <td>
-                        <template v-if="vaga.vaga && vaga.vaga.vencimentos && vaga.vaga.vencimentos.length">
-                            <span>Sim</span>
-                            <br>
-                            <span class="text-muted"> @{{ vaga.vaga.vencimentos.length }}
-                                @{{ vaga.vaga.vencimentos.length === 1 ? 'treinamento' : 'treinamentos' }}</span>
-                        </template>
-                        <span v-else-if="vaga.vaga" class="text-muted">Não</span>
-                        <span v-else class="text-muted">—</span>
-                    </td>
-
-                    <td>
-                        @{{vaga.titulo}}
-                    </td>
-
-                    <td>
-                        <span v-html="vaga.descricao.substring(0,300)" v-if="vaga.descricao"></span>
-                    </td>
-
-                    <td>
-                        @{{vaga.municipio.nome}} - @{{vaga.municipio.uf}}
-                    </td>
-
-
-                    <td class="text-center">
-                        <bt-ativo :rota="`cadastro/vagas-abertas/${vaga.id}/ativa-desativa`" :model="vaga"></bt-ativo>
-                    </td>
-
-                    <td class="text-center">
-                        <a href="javascript://" class="btn btn-sm mr-1 btn-primary mb-1" title="Editar"
-                           @click.prevent="formAlterar(vaga.id); $refs.janelaCadastrar?.abrirModal()">
-                            <i class="fa fa-edit" aria-hidden="true"></i>
-                        </a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <controle-paginacao
-            class="d-flex justify-content-center"
-            id="controle"
-            ref="componente"
-            url="{{route('g.vagas.vagas_abertas.atualizar')}}"
-            por-pagina="100"
-            :dados="controle.dados"
-            v-on:carregou="carregou"
-            v-on:carregando="carregando">
-        </controle-paginacao>
     </div>
 @stop
 @push('js')

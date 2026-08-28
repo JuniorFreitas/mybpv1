@@ -15,7 +15,7 @@ Guia reutilizável para telas de listagem com filtros, cards e combobox (mesmo p
 | Estilos globais | `resources/sass/_mybp-listagem-ui.scss` |
 | Wrapper de filtros | `resources/js/components/ui/FiltroListagem.vue` |
 | Combobox | `resources/js/components/ComboboxAutoComplete.vue` |
-| Referência viva | `CentroCusto.vue`, `Beneficio.vue`, `resources/views/g/cadastros/vagas/index.blade.php` + `resources/js/g/cadastros/vagas/app.js` |
+| Referência viva | `CentroCusto.vue`, `Beneficio.vue`, `vagas/index.blade.php`, `vagas_abertas/index.blade.php` |
 
 ## Estrutura de filtros
 

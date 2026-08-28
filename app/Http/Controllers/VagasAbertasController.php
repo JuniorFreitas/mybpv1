@@ -307,19 +307,38 @@ class VagasAbertasController extends Controller
     public function atualizar(Request $request)
     {
         $this->authorize('cadastro_vagas_abertas');
-        $resultado = VagasAbertas::with(
-            'Vaga.Vencimentos:id,label,segmento_treinamento_id,vinculo_todos_cargos',
-            'Vaga.Vencimentos.SegmentoTreinamento:id,nome',
+        $treinamentosGlobaisCount = Vencimento::query()
+            ->whereAtivo(true)
+            ->where('vinculo_todos_cargos', true)
+            ->count();
+
+        $resultado = VagasAbertas::with([
+            'Vaga:id,nome,cbo_id',
+            'Vaga.Cbo:id,codigo,titulo,codigo_familia',
+            'Vaga.Cbo.familia:codigo,titulo',
+            'Vaga.Vencimentos' => function ($q) {
+                $q->select('vencimentos.id', 'vencimentos.label', 'vencimentos.segmento_treinamento_id', 'vencimentos.vinculo_todos_cargos', 'vencimentos.ativo')
+                    ->where('vencimentos.ativo', true);
+            },
             'Municipio',
-            'Simulados.Simulado'
-        );
+            'Simulados.Simulado:id,titulo,tipo_prova',
+        ]);
+
         if ($request->filled('campoBusca')) {
-            $resultado->whereHas('Vaga', function ($q) use ($request) {
-                $q->where('nome', 'like', '%' . $request->campoBusca . '%');
-            })->orWhere('id', $request->campoBusca);
+            $termo = $request->campoBusca;
+            $resultado->where(function ($query) use ($termo) {
+                $query->where('titulo', 'like', '%' . $termo . '%')
+                    ->orWhere('id', $termo)
+                    ->orWhereHas('Vaga', function ($q) use ($termo) {
+                        $q->where('nome', 'like', '%' . $termo . '%');
+                    })
+                    ->orWhereHas('Municipio', function ($q) use ($termo) {
+                        $q->where('nome', 'like', '%' . $termo . '%');
+                    });
+            });
         }
         if ($request->filled('campoStatus')) {
-            $status = $request->campoStatus == 'true' ? true : false;
+            $status = $request->campoStatus == 'true';
             $resultado->whereAtivo($status);
         }
 
@@ -327,20 +346,50 @@ class VagasAbertasController extends Controller
         $simulados = Simulado::whereAtivo(true)->orderBy('titulo')->get();
         $projetos = Projeto::where('qnt_total_restante', '>=', 0)->get();
 
-        $vencimentosTodosCargos = Vencimento::with('SegmentoTreinamento:id,nome')
-            ->where('vinculo_todos_cargos', true)
-            ->where('ativo', true)
-            ->whereNotNull('label')
-            ->get(['id', 'label', 'segmento_treinamento_id', 'vinculo_todos_cargos']);
+        $items = collect($resultado->items())->map(function (VagasAbertas $item) use ($treinamentosGlobaisCount) {
+            $item->slug = "{$item->id}/" . Str::slug($item->titulo);
+            $item->municipio_label = $item->Municipio
+                ? "{$item->Municipio->nome} - {$item->Municipio->uf}"
+                : null;
+            $item->cargo_nome = $item->Vaga?->nome;
 
-        $items = collect($resultado->items())->transform(function ($item) use ($vencimentosTodosCargos) {
-            $item->slug = "{$item->id}/".Str::slug($item->titulo);
-            if ($item->Vaga) {
-                $merged = $item->Vaga->Vencimentos->concat($vencimentosTodosCargos)->unique('id')->values();
-                $item->Vaga->setRelation('vencimentos', $merged);
-            }
+            $vinculados = $item->Vaga ? $item->Vaga->Vencimentos->count() : 0;
+            $item->treinamentos_vinculados_count = $vinculados;
+            $item->treinamentos_globais_count = $item->Vaga ? $treinamentosGlobaisCount : 0;
+            $item->treinamentos_total_count = $vinculados + ($item->Vaga ? $treinamentosGlobaisCount : 0);
+
+            $cbo = $item->Vaga?->Cbo;
+            $item->cbo_codigo = $cbo?->codigo;
+            $item->cbo_codigo_familia = $cbo?->codigo_familia ?? $cbo?->familia?->codigo;
+            $item->cbo_titulo = $cbo?->titulo;
+            $item->cbo_familia = $cbo?->familia?->titulo;
+            $item->cbo_vinculado = (bool) $cbo;
+
+            $descricaoPlain = trim(strip_tags(html_entity_decode((string) $item->descricao, ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+            $item->descricao_tem_conteudo = $descricaoPlain !== '';
+            $item->descricao_resumo = $descricaoPlain !== '' ? Str::limit($descricaoPlain, 300, '…') : null;
+
+            $item->updated_at_br = $item->updated_at?->format('d/m/Y H:i');
+
+            $simuladosVaga = $item->Simulados ?? collect();
+            $item->simulados_count = $simuladosVaga->count();
+            $item->simulados_ativos_count = $simuladosVaga->where('ativo', true)->count();
+            $item->simulados_titulos = $simuladosVaga->map(function ($simuladoVaga) {
+                $titulo = $simuladoVaga->Simulado?->titulo;
+                if (!$titulo) {
+                    return null;
+                }
+
+                return $simuladoVaga->ativo ? $titulo : "{$titulo} (inativa)";
+            })->filter()->values()->all();
+
+            $item->treinamentos_vinculados_labels = $item->Vaga
+                ? $item->Vaga->Vencimentos->pluck('label')->filter()->values()->all()
+                : [];
+            $item->treinamentos_tem_vinculo = $item->treinamentos_total_count > 0;
+
             return $item;
-        });
+        })->values();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -396,6 +445,15 @@ class VagasAbertasController extends Controller
         $vagas_aberta->save();
         $vagas_aberta->refresh();
         return response()->json(['ativo' => $vagas_aberta->ativo], 201);
+    }
+
+    public function ativaDesativaSistema(VagasAbertas $vagas_aberta)
+    {
+        $this->authorize('cadastro_vagas_abertas_update');
+        $vagas_aberta->ativo_sistema = !$vagas_aberta->ativo_sistema;
+        $vagas_aberta->save();
+        $vagas_aberta->refresh();
+        return response()->json(['ativo_sistema' => $vagas_aberta->ativo_sistema], 201);
     }
 
     public function vagaAbertaSimulado($simulado, $vaga_aberta)
