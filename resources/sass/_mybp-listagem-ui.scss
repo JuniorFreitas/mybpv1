@@ -28,6 +28,11 @@
 
 .mybp-filtros-form > [class*='col-'] .form-group {
     width: 100%;
+    margin-bottom: 0;
+}
+
+.mybp-filtros-form > [class*='col-'] {
+    margin-bottom: 1rem;
 }
 
 .mybp-filtros-form .form-control-sm {
@@ -37,7 +42,7 @@
 }
 
 .mybp-filtros-acoes-row {
-    margin-top: 0.75rem;
+    margin-top: 0.25rem;
 }
 
 .mybp-filtros-botoes {

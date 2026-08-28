@@ -4,11 +4,13 @@ import { tinyPadrao } from '../../../utils'
 import autocomplete from '../../../components/AutoComplete'
 import Editor from '@tinymce/tinymce-vue'
 import MixinConfig from '../../../mixins/Configuracoes'
+import ComboboxAutoComplete from '../../../components/ComboboxAutoComplete'
 import FiltroListagem from '../../../components/ui/FiltroListagem'
 const app = createApp({
     components: {
         autocomplete,
-        Editor
+        Editor,
+        ComboboxAutoComplete
     },
     mixins: [MixinConfig],
     data() {
@@ -22,6 +24,11 @@ const app = createApp({
 
             cargos_ativos: `autocomplete/cargos_ativos`,
             todos_municipios: `autocomplete/todos-municipios`,
+
+            filtroOpcoes: {
+                cargos: [],
+                municipios: []
+            },
 
             hash: `mastertag_${parseInt(Math.random() * 999999)}`,
             tinyPadrao,
@@ -77,11 +84,54 @@ const app = createApp({
                 carregando: false,
                 dados: {
                     campoBusca: '',
-                    campoStatus: ''
+                    campoAtivoSite: '',
+                    campoAtivoSistema: '',
+                    campoCargoId: '',
+                    campoMunicipioId: '',
+                    campoComProvas: ''
                 }
             },
 
             dropdownAbertoKey: null
+        }
+    },
+    computed: {
+        filtroAtivoSiteOpcoes() {
+            return [
+                { value: '', label: 'Todos' },
+                { value: 'true', label: 'Apenas ativos' },
+                { value: 'false', label: 'Apenas inativos' }
+            ]
+        },
+        filtroAtivoSistemaOpcoes() {
+            return [
+                { value: '', label: 'Todos' },
+                { value: 'true', label: 'Apenas ativos' },
+                { value: 'false', label: 'Apenas inativos' }
+            ]
+        },
+        filtroCargoOpcoes() {
+            const cargos = (this.filtroOpcoes.cargos || []).map((cargo) => ({
+                value: cargo.id,
+                label: cargo.nome
+            }))
+
+            return [{ value: '', label: 'Todos os cargos' }, ...cargos]
+        },
+        filtroMunicipioOpcoes() {
+            const municipios = (this.filtroOpcoes.municipios || []).map((municipio) => ({
+                value: municipio.id,
+                label: `${municipio.nome} - ${municipio.uf}`
+            }))
+
+            return [{ value: '', label: 'Todas as cidades' }, ...municipios]
+        },
+        filtroComProvasOpcoes() {
+            return [
+                { value: '', label: 'Todas' },
+                { value: 'sim', label: 'Com provas' },
+                { value: 'nao', label: 'Sem provas' }
+            ]
         }
     },
     mounted() {
@@ -97,9 +147,40 @@ const app = createApp({
         onSubmitFiltro() {
             this.atualizar()
         },
+        onSelectFiltro() {
+            this.atualizar()
+        },
+        fecharOutrosComboboxes(manter) {
+            const combos = [
+                ['filtro-ativo-site', 'comboFiltroAtivoSite'],
+                ['filtro-ativo-sistema', 'comboFiltroAtivoSistema'],
+                ['filtro-cargo', 'comboFiltroCargo'],
+                ['filtro-municipio', 'comboFiltroMunicipio'],
+                ['filtro-provas', 'comboFiltroProvas']
+            ]
+
+            combos.forEach(([id, refName]) => {
+                if (manter !== id && this.$refs[refName]?.close) {
+                    this.$refs[refName].close()
+                }
+            })
+        },
+        comboboxContemAlvo(event) {
+            const refs = [
+                'comboFiltroAtivoSite',
+                'comboFiltroAtivoSistema',
+                'comboFiltroCargo',
+                'comboFiltroMunicipio',
+                'comboFiltroProvas'
+            ]
+
+            return refs.some((refName) => this.$refs[refName]?.containsTarget?.(event.target))
+        },
         onClickOutside(event) {
             if (event?.target?.closest?.('.dropdown')) return
+            if (this.comboboxContemAlvo(event)) return
             this.dropdownAbertoKey = null
+            this.fecharOutrosComboboxes(null)
         },
         toggleDropdown(vagaId) {
             if (!vagaId) return
@@ -527,6 +608,10 @@ const app = createApp({
             this.listaSimulados = dados.simulados
             this.listaProjetos = dados.projetos
             this.listaProjetosAdicionais = dados.projetos
+            if (dados.filtros) {
+                this.filtroOpcoes.cargos = dados.filtros.cargos || []
+                this.filtroOpcoes.municipios = dados.filtros.municipios || []
+            }
             this.controle.carregando = false
         },
 

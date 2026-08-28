@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Municipio;
 use App\Models\Projeto;
 use App\Models\Simulado;
 use App\Models\Vaga;
@@ -337,9 +338,31 @@ class VagasAbertasController extends Controller
                     });
             });
         }
-        if ($request->filled('campoStatus')) {
-            $status = $request->campoStatus == 'true';
-            $resultado->whereAtivo($status);
+
+        if ($request->filled('campoAtivoSite')) {
+            $resultado->whereAtivo($request->campoAtivoSite == 'true');
+        } elseif ($request->filled('campoStatus')) {
+            $resultado->whereAtivo($request->campoStatus == 'true');
+        }
+
+        if ($request->filled('campoAtivoSistema')) {
+            $resultado->where('ativo_sistema', $request->campoAtivoSistema == 'true');
+        }
+
+        if ($request->filled('campoCargoId')) {
+            $resultado->where('vaga_id', (int) $request->campoCargoId);
+        }
+
+        if ($request->filled('campoMunicipioId')) {
+            $resultado->where('municipio_id', (int) $request->campoMunicipioId);
+        }
+
+        if ($request->filled('campoComProvas')) {
+            if ($request->campoComProvas === 'sim') {
+                $resultado->whereHas('Simulados');
+            } elseif ($request->campoComProvas === 'nao') {
+                $resultado->whereDoesntHave('Simulados');
+            }
         }
 
         $resultado = $resultado->orderByDesc('updated_at')->paginate(50);
@@ -399,8 +422,42 @@ class VagasAbertasController extends Controller
                 'itens' => $items,
                 'simulados' => $simulados,
                 'projetos' => $projetos,
+                'filtros' => $this->opcoesFiltroVagasAbertas(),
             ]
         ]);
+    }
+
+    private function opcoesFiltroVagasAbertas(): array
+    {
+        $vagaIds = VagasAbertas::query()
+            ->whereNotNull('vaga_id')
+            ->distinct()
+            ->pluck('vaga_id');
+
+        $municipioIds = VagasAbertas::query()
+            ->whereNotNull('municipio_id')
+            ->distinct()
+            ->pluck('municipio_id');
+
+        $cargos = $vagaIds->isEmpty()
+            ? collect()
+            : Vaga::query()
+                ->whereIn('id', $vagaIds)
+                ->whereAtivo(true)
+                ->orderBy('nome')
+                ->get(['id', 'nome']);
+
+        $municipios = $municipioIds->isEmpty()
+            ? collect()
+            : Municipio::query()
+                ->whereIn('id', $municipioIds)
+                ->orderBy('nome')
+                ->get(['id', 'nome', 'uf']);
+
+        return [
+            'cargos' => $cargos->values(),
+            'municipios' => $municipios->values(),
+        ];
     }
 
     /**

@@ -308,13 +308,13 @@
     <div>
         <filtro-listagem @submit="onSubmitFiltro">
             <template #filtros>
-                <div class="col-12 col-lg-6">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div class="col-12 col-lg-4">
+                    <div class="form-group mb-0">
                         <label class="mybp-label" for="vaga-aberta-filtro-busca">Buscar</label>
                         <input
                             id="vaga-aberta-filtro-busca"
                             type="text"
-                            placeholder="Buscar por título, cargo ou cidade"
+                            placeholder="Título, cargo, cidade ou ID"
                             autocomplete="off"
                             class="form-control form-control-sm"
                             :disabled="controle.carregando"
@@ -323,19 +323,104 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-6">
-                    <div class="form-group mb-2 mb-lg-0">
-                        <label class="mybp-label" for="vaga-aberta-filtro-status">Status</label>
-                        <select
-                            id="vaga-aberta-filtro-status"
-                            class="form-control form-control-sm"
-                            :disabled="controle.carregando"
-                            v-model="controle.dados.campoStatus"
-                        >
-                            <option value="">Todos os status</option>
-                            <option :value="true">Apenas ativos</option>
-                            <option :value="false">Apenas inativos</option>
-                        </select>
+                <div class="col-12 col-lg-4">
+                    <div class="form-group mb-0">
+                        <label class="mybp-label" for="vaga-aberta-filtro-ativo-site">Ativo no site</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroAtivoSite"
+                                instance-id="filtro-ativo-site"
+                                v-model="controle.dados.campoAtivoSite"
+                                :options="filtroAtivoSiteOpcoes"
+                                :disabled="controle.carregando"
+                                input-id="vaga-aberta-filtro-ativo-site"
+                                placeholder-blur="Todos"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @opening="fecharOutrosComboboxes('filtro-ativo-site')"
+                                @select="onSelectFiltro"
+                            ></combobox-auto-complete>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-4">
+                    <div class="form-group mb-0">
+                        <label class="mybp-label" for="vaga-aberta-filtro-ativo-sistema">Ativo no sistema</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroAtivoSistema"
+                                instance-id="filtro-ativo-sistema"
+                                v-model="controle.dados.campoAtivoSistema"
+                                :options="filtroAtivoSistemaOpcoes"
+                                :disabled="controle.carregando"
+                                input-id="vaga-aberta-filtro-ativo-sistema"
+                                placeholder-blur="Todos"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @opening="fecharOutrosComboboxes('filtro-ativo-sistema')"
+                                @select="onSelectFiltro"
+                            ></combobox-auto-complete>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-4 mybp-combobox-wrap">
+                    <div class="form-group mb-0">
+                        <label class="mybp-label" for="vaga-aberta-filtro-cargo">Cargo</label>
+                        <combobox-auto-complete
+                            ref="comboFiltroCargo"
+                            instance-id="filtro-cargo"
+                            v-model="controle.dados.campoCargoId"
+                            :options="filtroCargoOpcoes"
+                            :disabled="controle.carregando || !filtroCargoOpcoes.length"
+                            input-id="vaga-aberta-filtro-cargo"
+                            placeholder-blur="Todos os cargos"
+                            empty-message="Nenhum cargo encontrado."
+                            :max-results="50"
+                            @opening="fecharOutrosComboboxes('filtro-cargo')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-4 mybp-combobox-wrap">
+                    <div class="form-group mb-0">
+                        <label class="mybp-label" for="vaga-aberta-filtro-municipio">Cidade</label>
+                        <combobox-auto-complete
+                            ref="comboFiltroMunicipio"
+                            instance-id="filtro-municipio"
+                            v-model="controle.dados.campoMunicipioId"
+                            :options="filtroMunicipioOpcoes"
+                            :disabled="controle.carregando || filtroMunicipioOpcoes.length <= 1"
+                            input-id="vaga-aberta-filtro-municipio"
+                            placeholder-blur="Cidades com vaga aberta"
+                            empty-message="Nenhuma cidade encontrada."
+                            :max-results="50"
+                            @opening="fecharOutrosComboboxes('filtro-municipio')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-4">
+                    <div class="form-group mb-0">
+                        <label class="mybp-label" for="vaga-aberta-filtro-provas">Provas vinculadas</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroProvas"
+                                instance-id="filtro-provas"
+                                v-model="controle.dados.campoComProvas"
+                                :options="filtroComProvasOpcoes"
+                                :disabled="controle.carregando"
+                                input-id="vaga-aberta-filtro-provas"
+                                placeholder-blur="Todas"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @opening="fecharOutrosComboboxes('filtro-provas')"
+                                @select="onSelectFiltro"
+                            ></combobox-auto-complete>
+                        </div>
                     </div>
                 </div>
             </template>

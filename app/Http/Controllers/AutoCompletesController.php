@@ -152,6 +152,47 @@ class AutoCompletesController extends Controller
         }
     }
 
+    public function municipiosComVagasAbertas(Request $request)
+    {
+        $busca = $request->query('busca');
+        if ($busca == '') {
+            return response()->json([], 201);
+        }
+
+        $quantidade = (int) $request->query('rows', 20);
+        $municipioIds = VagasAbertas::query()
+            ->whereNotNull('municipio_id')
+            ->distinct()
+            ->pluck('municipio_id');
+
+        if ($municipioIds->isEmpty()) {
+            return response()->json([], 201);
+        }
+
+        $query = Municipio::query()->whereIn('id', $municipioIds);
+
+        if ($busca === '*') {
+            return $query
+                ->orderBy('nome')
+                ->get()
+                ->map(function ($item) {
+                    $item->label = $item->nome . ' - ' . $item->uf;
+                    return $item;
+                });
+        }
+
+        return $query
+            ->where('nome', 'like', '%' . $busca . '%')
+            ->orderByDesc('capital')
+            ->orderBy('nome')
+            ->take($quantidade)
+            ->get()
+            ->map(function ($item) {
+                $item->label = $item->nome . ' - ' . $item->uf;
+                return $item;
+            });
+    }
+
     public function usuariosAtivos(Request $request)
     {
         $busca = $request->query('busca');

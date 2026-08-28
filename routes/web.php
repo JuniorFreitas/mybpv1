@@ -167,6 +167,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::get('todos-gestores', [\App\Http\Controllers\AutoCompletesController::class, 'todosGestores'])->name('todos-gestores');
 
         Route::get('todos-municipios', [\App\Http\Controllers\AutoCompletesController::class, 'municipiosAll'])->name('municipiosAll');
+        Route::get('municipios-vagas-abertas', [\App\Http\Controllers\AutoCompletesController::class, 'municipiosComVagasAbertas'])->name('municipiosVagasAbertas');
         Route::get('todos-estados', function () {
             return response()->json(\App\Models\Municipio::todosEstados(), 200);
         });
