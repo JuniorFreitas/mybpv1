@@ -248,9 +248,32 @@ class EmpresaExameController extends Controller
 
     public function atualizar(Request $request)
     {
+        $porPagina = (int) $request->get('porPagina', $request->get('pages', 20));
+        $porPagina = $porPagina > 0 ? $porPagina : 20;
+
         $resultado = EmpresaExame::orderBy('nome');
 
-        $resultado = $resultado->paginate($request->pages);
+        if ($request->filled('campoBusca')) {
+            $termo = trim((string) $request->campoBusca);
+            $resultado->where(function ($query) use ($termo) {
+                $query->where('nome', 'like', '%' . $termo . '%')
+                    ->orWhere('dados->nome_fantasia', 'like', '%' . $termo . '%')
+                    ->orWhere('dados->cnpj', 'like', '%' . $termo . '%');
+
+                if (is_numeric($termo)) {
+                    $query->orWhere('id', (int) $termo);
+                }
+            });
+        }
+
+        if ($request->filled('campoStatus')) {
+            $status = filter_var($request->campoStatus, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($status !== null) {
+                $resultado->whereAtivo($status);
+            }
+        }
+
+        $resultado = $resultado->paginate($porPagina);
 
         $permissoes = [
             'pcmso' => auth()->user()->can('cadastro_empresa_pcmso')
@@ -261,7 +284,7 @@ class EmpresaExameController extends Controller
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'itens' => $resultado->items(),
+                'items' => $resultado->items(),
                 'permissoes' => $permissoes
             ]
         ]);
