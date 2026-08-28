@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Municipio;
 use App\Models\Projeto;
 use App\Models\Simulado;
 use App\Models\Vaga;
@@ -89,27 +90,19 @@ class VagasAbertasController extends Controller
                     }
                 }
 
+                if ($erroProjetos = $this->validarProjetosVaga($dados['projetos'] ?? [])) {
+                    DB::rollBack();
+
+                    return $erroProjetos;
+                }
+
                 if (isset($dados['projetos'])) {
                     foreach ($dados['projetos'] as $projetos) {
                         if (isset($projetos['novo'])) {
                             $projetos['vaga_aberta_id'] = $vagas_aberta->id;
                             $projetos['qnt_preenchida'] = 0;
-                            $qnt_total = intval($projetos['qnt_total']);
                             VagaProjeto::create($projetos);
-                            $Projeto = Projeto::find($projetos['projeto_id']);
-                            if ($qnt_total <= $Projeto->qnt_total_restante) {
-                                $projetoTotalRestante = $Projeto->qnt_total_restante - intval($projetos['qnt_total']);
-                                $projetoPreenchida = $Projeto->preenchidas;
-                                $vagaProjetosSoma = VagaProjeto::whereProjetoId($projetos['projeto_id'])->sum('qnt_total');
-                                if ($projetoPreenchida <= $vagaProjetosSoma) {
-                                    $Projeto->update([
-                                        'qnt_total_restante' => intval($projetoTotalRestante),
-                                        'preenchidas' => 0,
-                                    ]);
-                                }
-                            } else {
-                                return response()->json(['msg' => 'Erro, entre em contato com o desenvolvedor.'], 400);
-                            }
+                            $this->sincronizarRestanteProjeto((int) $projetos['projeto_id']);
                         }
                     }
                 }
@@ -152,12 +145,36 @@ class VagasAbertasController extends Controller
             'Vaga.Vencimentos:id,label,segmento_treinamento_id,vinculo_todos_cargos',
             'Vaga.Vencimentos.SegmentoTreinamento:id,nome',
             'Simulados',
-            'Projetos'
+            'Projetos.Projeto:id,nome,qnt_total,qnt_total_restante'
         );
 
         $vagas_aberta->Simulados->transform(function ($item) {
             $item->tipo_prova = $item->simulado->tipo_prova;
             return $item;
+        });
+
+        $vagas_aberta->Projetos->transform(function (VagaProjeto $vagaProjeto) {
+            $projeto = $vagaProjeto->Projeto;
+            if (!$projeto) {
+                return $vagaProjeto;
+            }
+
+            $alocadaOutras = (int) VagaProjeto::where('projeto_id', $vagaProjeto->projeto_id)
+                ->where('id', '!=', $vagaProjeto->id)
+                ->sum('qnt_total');
+
+            $alocadaTotal = (int) VagaProjeto::where('projeto_id', $vagaProjeto->projeto_id)->sum('qnt_total');
+            $livreGlobal = max(0, (int) $projeto->qnt_total - $alocadaTotal);
+
+            $vagaProjeto->qnt_alocada_outras = $alocadaOutras;
+            $vagaProjeto->projeto_qnt_total = (int) $projeto->qnt_total;
+            $vagaProjeto->qnt_livre_projeto = $livreGlobal;
+            $vagaProjeto->qnt_maxima_permitida = max(
+                (int) $vagaProjeto->qnt_preenchida,
+                $livreGlobal
+            );
+
+            return $vagaProjeto;
         });
 
         $vencimentosTodosCargos = Vencimento::with('SegmentoTreinamento:id,nome')
@@ -200,6 +217,14 @@ class VagasAbertasController extends Controller
             ], 400);
 
         } else {
+            if ($erroProjetosDelete = $this->validarProjetosDelete($dados['projetosDelete'] ?? [], $vagas_aberta->id)) {
+                return $erroProjetosDelete;
+            }
+
+            if ($erroProjetos = $this->validarProjetosVaga($dados['projetos'] ?? [], $vagas_aberta->id)) {
+                return $erroProjetos;
+            }
+
             try {
                 DB::beginTransaction();
                 $vagas_aberta->update($dados);
@@ -234,49 +259,40 @@ class VagasAbertasController extends Controller
                 if (isset($dados['projetosDelete'])) {
                     foreach ($dados['projetosDelete'] as $id) {
                         $vagaProjetos = VagaProjeto::whereId($id)->whereVagaAbertaId($vagas_aberta->id)->first();
-                        $projetoDel = Projeto::find($vagaProjetos->projeto_id);
-                        $projetoDel->update([
-                            'qnt_total_restante' => $projetoDel->qnt_total_restante + $vagaProjetos->qnt_total
-                        ]);
+                        if (!$vagaProjetos) {
+                            continue;
+                        }
+                        $projetoId = (int) $vagaProjetos->projeto_id;
                         $vagaProjetos->delete();
+                        $this->sincronizarRestanteProjeto($projetoId);
                     }
                 }
 
                 if (isset($dados['projetos'])) {
                     foreach ($dados['projetos'] as $projetos) {
                         $qnt_total = intval($projetos['qnt_total']);
-                        $Projeto = Projeto::find($projetos['projeto_id']);
                         if (isset($projetos['novo'])) {
                             $projetos['vaga_aberta_id'] = $vagas_aberta->id;
                             $projetos['qnt_preenchida'] = 0;
                             VagaProjeto::create($projetos);
-                            if ($qnt_total <= $Projeto->qnt_total_restante) {
-                                $Projeto->update([
-                                    'qnt_total_restante' => intval($Projeto->qnt_total_restante - $qnt_total),
-                                ]);
-                            } else {
-                                return response()->json(['msg' => 'Erro, entre em contato com o desenvolvedor.'], 400);
-                            }
+                            $this->sincronizarRestanteProjeto((int) $projetos['projeto_id']);
                         } else {
-//                            $vagaProjetos = VagaProjeto::whereProjetoId($projetos['projeto_id'])->whereVagaAbertaId($projetos['vaga_aberta_id'])->first();
-//                            $vagaProjetosSoma = (int) $vagaProjetos->sum('qnt_total');
-//                            $qnt = $qnt_total - $Projeto->qnt_total_restante;
-//                            $restante = $Projeto->qnt_total_restante - $qnt;
-//                            if ($restante > 0) {
-//                                $valor = $qnt_total - $Projeto->qnt_total_restante;
-//                                $projetoTotalRestante = $valor + $Projeto->qnt_total_restante;
-//                                $projetoPreenchida = $valor - $Projeto->preenchidas;
-//                                if ($projetoPreenchida <= $vagaProjetosSoma) {
-//                                    $Projeto->update([
-//                                        'qnt_total_restante' => $projetoTotalRestante,
-//                                    ]);
-//                                    $vagaProjetos->update(['qnt_total' => $qnt_total]);
-//                                } else {
-//                                    return response()->json(['msg' => 'Erro, quantidade de vagas indisponível para o projeto.'], 400);
-//                                }
-//                            } else {
-//                                return response()->json(['msg' => 'Erro, quantidade de vagas indisponível para o projeto.'], 400);
-//                            }
+                            $vagaProjeto = VagaProjeto::whereId($projetos['id'])
+                                ->whereVagaAbertaId($vagas_aberta->id)
+                                ->first();
+
+                            if (!$vagaProjeto) {
+                                DB::rollBack();
+
+                                return response()->json(['msg' => 'Vínculo de projeto não encontrado.'], 422);
+                            }
+
+                            if ((int) $vagaProjeto->qnt_total === $qnt_total) {
+                                continue;
+                            }
+
+                            $vagaProjeto->update(['qnt_total' => $qnt_total]);
+                            $this->sincronizarRestanteProjeto((int) $vagaProjeto->projeto_id);
                         }
                     }
                 }
@@ -307,40 +323,147 @@ class VagasAbertasController extends Controller
     public function atualizar(Request $request)
     {
         $this->authorize('cadastro_vagas_abertas');
-        $resultado = VagasAbertas::with(
-            'Vaga.Vencimentos:id,label,segmento_treinamento_id,vinculo_todos_cargos',
-            'Vaga.Vencimentos.SegmentoTreinamento:id,nome',
+        $treinamentosGlobaisCount = Vencimento::query()
+            ->whereAtivo(true)
+            ->where('vinculo_todos_cargos', true)
+            ->count();
+
+        $resultado = VagasAbertas::with([
+            'Vaga:id,nome,cbo_id',
+            'Vaga.Cbo:id,codigo,titulo,codigo_familia',
+            'Vaga.Cbo.familia:codigo,titulo',
+            'Vaga.Vencimentos' => function ($q) {
+                $q->select('vencimentos.id', 'vencimentos.label', 'vencimentos.segmento_treinamento_id', 'vencimentos.vinculo_todos_cargos', 'vencimentos.ativo')
+                    ->where('vencimentos.ativo', true);
+            },
             'Municipio',
-            'Simulados.Simulado'
-        );
+            'Simulados.Simulado:id,titulo,tipo_prova',
+            'Projetos.Projeto:id,nome',
+        ]);
+
         if ($request->filled('campoBusca')) {
-            $resultado->whereHas('Vaga', function ($q) use ($request) {
-                $q->where('nome', 'like', '%' . $request->campoBusca . '%');
-            })->orWhere('id', $request->campoBusca);
+            $termo = $request->campoBusca;
+            $resultado->where(function ($query) use ($termo) {
+                $query->where('titulo', 'like', '%' . $termo . '%')
+                    ->orWhere('id', $termo)
+                    ->orWhereHas('Vaga', function ($q) use ($termo) {
+                        $q->where('nome', 'like', '%' . $termo . '%');
+                    })
+                    ->orWhereHas('Municipio', function ($q) use ($termo) {
+                        $q->where('nome', 'like', '%' . $termo . '%');
+                    });
+            });
         }
-        if ($request->filled('campoStatus')) {
-            $status = $request->campoStatus == 'true' ? true : false;
-            $resultado->whereAtivo($status);
+
+        if ($request->filled('campoAtivoSite')) {
+            $resultado->whereAtivo($request->campoAtivoSite == 'true');
+        } elseif ($request->filled('campoStatus')) {
+            $resultado->whereAtivo($request->campoStatus == 'true');
+        }
+
+        if ($request->filled('campoAtivoSistema')) {
+            $resultado->where('ativo_sistema', $request->campoAtivoSistema == 'true');
+        }
+
+        if ($request->filled('campoCargoId')) {
+            $resultado->where('vaga_id', (int) $request->campoCargoId);
+        }
+
+        if ($request->filled('campoMunicipioId')) {
+            $resultado->where('municipio_id', (int) $request->campoMunicipioId);
+        }
+
+        if ($request->filled('campoComProvas')) {
+            if ($request->campoComProvas === 'sim') {
+                $resultado->whereHas('Simulados');
+            } elseif ($request->campoComProvas === 'nao') {
+                $resultado->whereDoesntHave('Simulados');
+            }
+        }
+
+        if ($request->filled('campoProjetoId')) {
+            if ($request->campoProjetoId === 'com_vinculo') {
+                $resultado->whereHas('Projetos');
+            } elseif ($request->campoProjetoId === 'sem_vinculo') {
+                $resultado->whereDoesntHave('Projetos');
+            } elseif (is_numeric($request->campoProjetoId)) {
+                $resultado->whereHas('Projetos', function ($q) use ($request) {
+                    $q->where('projeto_id', (int) $request->campoProjetoId);
+                });
+            }
         }
 
         $resultado = $resultado->orderByDesc('updated_at')->paginate(50);
         $simulados = Simulado::whereAtivo(true)->orderBy('titulo')->get();
-        $projetos = Projeto::where('qnt_total_restante', '>=', 0)->get();
+        $projetos = Projeto::query()
+            ->orderBy('nome')
+            ->get(['id', 'nome', 'qnt_total', 'qnt_total_restante', 'preenchidas'])
+            ->map(function (Projeto $projeto) {
+                $alocada = (int) VagaProjeto::where('projeto_id', $projeto->id)->sum('qnt_total');
+                $projeto->qnt_alocada = $alocada;
+                $projeto->qnt_disponivel_projeto = max(0, (int) $projeto->qnt_total - $alocada);
 
-        $vencimentosTodosCargos = Vencimento::with('SegmentoTreinamento:id,nome')
-            ->where('vinculo_todos_cargos', true)
-            ->where('ativo', true)
-            ->whereNotNull('label')
-            ->get(['id', 'label', 'segmento_treinamento_id', 'vinculo_todos_cargos']);
+                return $projeto;
+            });
 
-        $items = collect($resultado->items())->transform(function ($item) use ($vencimentosTodosCargos) {
-            $item->slug = "{$item->id}/".Str::slug($item->titulo);
-            if ($item->Vaga) {
-                $merged = $item->Vaga->Vencimentos->concat($vencimentosTodosCargos)->unique('id')->values();
-                $item->Vaga->setRelation('vencimentos', $merged);
-            }
+        $items = collect($resultado->items())->map(function (VagasAbertas $item) use ($treinamentosGlobaisCount) {
+            $item->slug = "{$item->id}/" . Str::slug($item->titulo);
+            $item->municipio_label = $item->Municipio
+                ? "{$item->Municipio->nome} - {$item->Municipio->uf}"
+                : null;
+            $item->cargo_nome = $item->Vaga?->nome;
+
+            $vinculados = $item->Vaga ? $item->Vaga->Vencimentos->count() : 0;
+            $item->treinamentos_vinculados_count = $vinculados;
+            $item->treinamentos_globais_count = $item->Vaga ? $treinamentosGlobaisCount : 0;
+            $item->treinamentos_total_count = $vinculados + ($item->Vaga ? $treinamentosGlobaisCount : 0);
+
+            $cbo = $item->Vaga?->Cbo;
+            $item->cbo_codigo = $cbo?->codigo;
+            $item->cbo_codigo_familia = $cbo?->codigo_familia ?? $cbo?->familia?->codigo;
+            $item->cbo_titulo = $cbo?->titulo;
+            $item->cbo_familia = $cbo?->familia?->titulo;
+            $item->cbo_vinculado = (bool) $cbo;
+
+            $descricaoPlain = trim(preg_replace('/\s+/u', ' ', strip_tags(html_entity_decode((string) $item->descricao, ENT_QUOTES | ENT_HTML5, 'UTF-8'))));
+            $item->descricao_tem_conteudo = $descricaoPlain !== '';
+            $item->descricao_resumo = $descricaoPlain !== '' ? Str::limit($descricaoPlain, 300, '…') : null;
+
+            $item->updated_at_br = $item->updated_at?->format('d/m/Y H:i');
+
+            $simuladosVaga = $item->Simulados ?? collect();
+            $item->simulados_count = $simuladosVaga->count();
+            $item->simulados_ativos_count = $simuladosVaga->where('ativo', true)->count();
+            $item->simulados_titulos = $simuladosVaga->map(function ($simuladoVaga) {
+                $titulo = $simuladoVaga->Simulado?->titulo;
+                if (!$titulo) {
+                    return null;
+                }
+
+                return $simuladoVaga->ativo ? $titulo : "{$titulo} (inativa)";
+            })->filter()->values()->all();
+
+            $projetosVaga = $item->Projetos ?? collect();
+            $item->projetos_count = $projetosVaga->count();
+            $item->projetos_titulos = $projetosVaga->map(function (VagaProjeto $vagaProjeto) {
+                $nome = $vagaProjeto->Projeto?->nome;
+                if (!$nome) {
+                    return null;
+                }
+
+                $total = (int) $vagaProjeto->qnt_total;
+                $preenchidas = (int) $vagaProjeto->qnt_preenchida;
+
+                return "{$nome} ({$preenchidas}/{$total})";
+            })->filter()->values()->all();
+
+            $item->treinamentos_vinculados_labels = $item->Vaga
+                ? $item->Vaga->Vencimentos->pluck('label')->filter()->values()->all()
+                : [];
+            $item->treinamentos_tem_vinculo = $item->treinamentos_total_count > 0;
+
             return $item;
-        });
+        })->values();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -350,8 +473,59 @@ class VagasAbertasController extends Controller
                 'itens' => $items,
                 'simulados' => $simulados,
                 'projetos' => $projetos,
+                'filtros' => $this->opcoesFiltroVagasAbertas(),
             ]
         ]);
+    }
+
+    private function opcoesFiltroVagasAbertas(): array
+    {
+        $vagaIds = VagasAbertas::query()
+            ->whereNotNull('vaga_id')
+            ->distinct()
+            ->pluck('vaga_id');
+
+        $municipioIds = VagasAbertas::query()
+            ->whereNotNull('municipio_id')
+            ->distinct()
+            ->pluck('municipio_id');
+
+        $cargos = $vagaIds->isEmpty()
+            ? collect()
+            : Vaga::query()
+                ->whereIn('id', $vagaIds)
+                ->whereAtivo(true)
+                ->orderBy('nome')
+                ->get(['id', 'nome']);
+
+        $municipios = $municipioIds->isEmpty()
+            ? collect()
+            : Municipio::query()
+                ->whereIn('id', $municipioIds)
+                ->orderBy('nome')
+                ->get(['id', 'nome', 'uf']);
+
+        $projetoIds = VagaProjeto::query()
+            ->distinct()
+            ->pluck('projeto_id');
+
+        $projetosFiltro = Projeto::query()
+            ->orderBy('nome')
+            ->get(['id', 'nome', 'qnt_total', 'qnt_total_restante'])
+            ->map(function (Projeto $projeto) {
+                $alocada = (int) VagaProjeto::where('projeto_id', $projeto->id)->sum('qnt_total');
+                $projeto->qnt_alocada = $alocada;
+                $projeto->qnt_disponivel_projeto = max(0, (int) $projeto->qnt_total - $alocada);
+
+                return $projeto;
+            });
+
+        return [
+            'cargos' => $cargos->values(),
+            'municipios' => $municipios->values(),
+            'projetos' => $projetosFiltro->values(),
+            'projetos_vinculados_ids' => $projetoIds->values(),
+        ];
     }
 
     /**
@@ -398,6 +572,15 @@ class VagasAbertasController extends Controller
         return response()->json(['ativo' => $vagas_aberta->ativo], 201);
     }
 
+    public function ativaDesativaSistema(VagasAbertas $vagas_aberta)
+    {
+        $this->authorize('cadastro_vagas_abertas_update');
+        $vagas_aberta->ativo_sistema = !$vagas_aberta->ativo_sistema;
+        $vagas_aberta->save();
+        $vagas_aberta->refresh();
+        return response()->json(['ativo_sistema' => $vagas_aberta->ativo_sistema], 201);
+    }
+
     public function vagaAbertaSimulado($simulado, $vaga_aberta)
     {
 
@@ -408,5 +591,176 @@ class VagasAbertasController extends Controller
         $pdf = \PDF::loadView('pdf.cadastro.prova.provasubjetiva', compact('prova', 'vaga'));
         $pdf->setPaper('A4', 'portrait');
         return $pdf->stream("prova.pdf");
+    }
+
+    /**
+     * Valida remoção de vínculos de projetos na edição da vaga aberta.
+     */
+    private function validarProjetosDelete(array $ids, int $vagaAbertaId): ?\Illuminate\Http\JsonResponse
+    {
+        foreach ($ids as $id) {
+            $vagaProjeto = VagaProjeto::whereId($id)->whereVagaAbertaId($vagaAbertaId)->first();
+
+            if (!$vagaProjeto) {
+                continue;
+            }
+
+            if ((int) $vagaProjeto->qnt_preenchida > 0) {
+                $nome = Projeto::find($vagaProjeto->projeto_id)?->nome ?? 'Projeto';
+
+                return response()->json([
+                    'msg' => "Não é possível remover o projeto \"{$nome}\" porque já possui {$vagaProjeto->qnt_preenchida} vaga(s) preenchida(s).",
+                ], 422);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Valida vínculos de projetos antes de persistir na vaga aberta.
+     */
+    private function validarProjetosVaga(array $projetos, ?int $vagaAbertaId = null): ?\Illuminate\Http\JsonResponse
+    {
+        if ($projetos === []) {
+            return null;
+        }
+
+        $projetoIds = [];
+
+        foreach ($projetos as $index => $item) {
+            $linha = $index + 1;
+
+            if (empty($item['projeto_id'])) {
+                return response()->json(['msg' => "Selecione o projeto na linha #{$linha}."], 422);
+            }
+
+            $projetoId = (int) $item['projeto_id'];
+
+            if (in_array($projetoId, $projetoIds, true)) {
+                return response()->json(['msg' => 'Não é permitido vincular o mesmo projeto mais de uma vez nesta vaga.'], 422);
+            }
+
+            $projetoIds[] = $projetoId;
+
+            $qntTotal = (int) ($item['qnt_total'] ?? 0);
+
+            if ($qntTotal < 1) {
+                return response()->json(['msg' => "Informe a quantidade de vagas na linha #{$linha}."], 422);
+            }
+
+            $isNovo = !empty($item['novo']) || empty($item['id']);
+
+            if (!$isNovo) {
+                $vagaProjeto = VagaProjeto::whereId($item['id'])
+                    ->when($vagaAbertaId, fn ($query) => $query->whereVagaAbertaId($vagaAbertaId))
+                    ->first();
+
+                if (!$vagaProjeto) {
+                    return response()->json(['msg' => "Vínculo de projeto da linha #{$linha} não encontrado."], 422);
+                }
+
+                $qntPreenchida = (int) $vagaProjeto->qnt_preenchida;
+
+                if ($qntTotal < $qntPreenchida) {
+                    return response()->json([
+                        'msg' => "A linha #{$linha} possui {$qntPreenchida} vaga(s) preenchida(s). A quantidade não pode ser menor que isso.",
+                    ], 422);
+                }
+
+                $projeto = Projeto::find($projetoId);
+
+                if (!$projeto) {
+                    return response()->json(['msg' => "Projeto da linha #{$linha} não encontrado."], 422);
+                }
+
+                $maxPermitida = $this->quantidadeMaximaLinhaProjeto($projeto, $qntPreenchida);
+
+                if ($qntTotal > $maxPermitida) {
+                    return response()->json([
+                        'msg' => "O projeto \"{$projeto->nome}\" possui {$this->quantidadeLivreProjeto($projeto)} vaga(s) livre(s). A quantidade total não pode ser maior que {$maxPermitida}.",
+                    ], 422);
+                }
+
+                continue;
+            }
+
+            $projeto = Projeto::find($projetoId);
+
+            if (!$projeto) {
+                return response()->json(['msg' => "Projeto da linha #{$linha} não encontrado."], 422);
+            }
+
+            $livreProjeto = $this->quantidadeLivreProjeto($projeto);
+
+            foreach ($projetos as $outroIndex => $outro) {
+                if ($outroIndex === $index) {
+                    continue;
+                }
+
+                if ((int) ($outro['projeto_id'] ?? 0) !== $projetoId) {
+                    continue;
+                }
+
+                if (!empty($outro['novo']) || empty($outro['id'])) {
+                    $livreProjeto -= (int) ($outro['qnt_total'] ?? 0);
+                }
+            }
+
+            $maxPermitida = max(1, $livreProjeto);
+
+            if ($qntTotal > $maxPermitida) {
+                return response()->json([
+                    'msg' => "O projeto \"{$projeto->nome}\" possui {$this->quantidadeLivreProjeto($projeto)} vaga(s) livre(s). A quantidade total não pode ser maior que {$maxPermitida}.",
+                ], 422);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Vagas livres no projeto (capacidade menos alocações já distribuídas).
+     */
+    private function quantidadeLivreProjeto(Projeto $projeto): int
+    {
+        $alocada = (int) VagaProjeto::where('projeto_id', $projeto->id)->sum('qnt_total');
+
+        return max(0, (int) $projeto->qnt_total - $alocada);
+    }
+
+    /**
+     * Máximo permitido na linha: não menor que preenchidas e não maior que livre do projeto.
+     */
+    private function quantidadeMaximaLinhaProjeto(Projeto $projeto, int $qntPreenchida = 0): int
+    {
+        return max($qntPreenchida, $this->quantidadeLivreProjeto($projeto));
+    }
+
+    /**
+     * Capacidade máxima desta vaga dentro do projeto, com base na configuração real do projeto.
+     * @deprecated Usar quantidadeMaximaLinhaProjeto()
+     */
+    private function quantidadeMaximaVagaProjeto(Projeto $projeto, ?int $vagaProjetoId = null, int $qntPreenchida = 0): int
+    {
+        return $this->quantidadeMaximaLinhaProjeto($projeto, $qntPreenchida);
+    }
+
+    /**
+     * Mantém qnt_total_restante coerente com a capacidade configurada do projeto.
+     */
+    private function sincronizarRestanteProjeto(int $projetoId): void
+    {
+        $projeto = Projeto::find($projetoId);
+
+        if (!$projeto) {
+            return;
+        }
+
+        $alocada = (int) VagaProjeto::where('projeto_id', $projetoId)->sum('qnt_total');
+
+        $projeto->update([
+            'qnt_total_restante' => max(0, (int) $projeto->qnt_total - $alocada),
+        ]);
     }
 }

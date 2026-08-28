@@ -14,15 +14,26 @@
             </div>
             <form v-if="!preloadAjax && (!cadastrado && !atualizado)" id="form" onsubmit="return false;">
 
+                <p class="mybp-campo-obrigatorio-legenda mb-3">
+                    Campos com <span class="text-danger">*</span> são obrigatórios.
+                </p>
+
                 <fieldset>
                     <legend>Sobre o cargo</legend>
                     <div class="row">
                         <div class="col-12 col-md-8">
                             <div class="form-group">
-                                <label>Título do cargo</label>
-                                <input type="text" class="form-control form-control-sm" v-model="form.nome"
+                                <label class="mybp-label" for="cargo-nome">
+                                    Título do cargo <span class="text-danger">*</span>
+                                </label>
+                                <input
+                                    id="cargo-nome"
+                                    type="text"
+                                    class="form-control form-control-sm"
+                                    v-model="form.nome"
                                     placeholder="Ex.: Analista de RH"
-                                    autocomplete="off">
+                                    autocomplete="off"
+                                >
                             </div>
                         </div>
                         <div class="col-12 col-md-4 d-flex align-items-end">
@@ -40,9 +51,9 @@
                 </fieldset>
 
                 <fieldset class="mt-3">
-                    <legend>CBO</legend>
+                    <legend>CBO <small class="text-muted font-weight-normal">(opcional)</small></legend>
                     <div class="form-group">
-                        <label>Buscar CBO por código, título ou família</label>
+                        <label class="mybp-label" :for="`cbo_${hash}`">Buscar CBO por código, título ou família</label>
                         <autocomplete :caminho="caminhoAutocompleteCbos()"
                                       :formsm="true"
                                       v-model="form.autocomplete_label_cbo"
@@ -75,51 +86,39 @@
                 </fieldset>
 
                 <fieldset class="mt-3">
-                    <legend>Treinamentos</legend>
+                    <legend>Treinamentos do cargo <small class="text-muted font-weight-normal">(somente leitura)</small></legend>
 
-                    <div class="form-group">
-                        <label>Padrão de Treinamento</label>
-                        <select class="form-control form-control-sm"
-                                v-model="form.segmento_treinamento_id"
-                                @change="mudouSegmentoTreinamento()">
-                            <option value="">Todos os padrões</option>
-                            <option v-for="segmento in segmentos" :key="segmento.id" :value="segmento.id">
-                                @{{segmento.nome}}
-                            </option>
-                        </select>
+                    <div class="alert alert-info border-0 py-2 mb-3" role="alert">
+                        <i class="fa fa-info-circle mr-1"></i>
+                        O vínculo treinamento ↔ cargo é gerenciado em
+                        <a :href="urlTreinamentoIndustria" target="_blank" rel="noopener">Treinamento Indústria</a>.
+                        Esta tela exibe apenas a leitura do que já está configurado.
                     </div>
 
-                    <div class="form-group">
-                        <label>Adicionar treinamento</label>
-                        <autocomplete :caminho="caminhoAutocompleteVencimentos()"
-                                      :formsm="true"
-                                      v-model="form.autocomplete_label_vencimento"
-                                      placeholder="Selecione um treinamento"
-                                      :id="`vencimento_${hash}`"
-                                      @onselect="selecionaVencimento"></autocomplete>
+                    <p class="mb-2"><strong>Resumo:</strong> @{{ resumoTreinamentosForm() }}</p>
+
+                    <div class="alert alert-warning py-2 mb-3" v-if="resumoTreinamentosForm() === 'Nenhum'">
+                        Nenhum treinamento aplicável a este cargo.
                     </div>
+
+                    <p v-else-if="form.treinamentos_globais_count > 0 && !form.vencimentos.length" class="text-muted small mb-2">
+                        Todos os treinamentos deste cargo vêm de &quot;vincular a todos os cargos&quot;.
+                    </p>
 
                     <div class="table-responsive" v-if="form.vencimentos.length > 0">
-                        <table class="table table-bordered table-hover table-condensed bg-white">
+                        <table class="table table-bordered table-hover table-condensed bg-white mb-0">
                             <thead>
                             <tr class="bg-default">
                                 <th class="text-center">#</th>
                                 <th>Treinamento</th>
                                 <th>Padrão de Treinamento</th>
-                                <th class="text-center">Remover</th>
                             </tr>
                             </thead>
                             <tbody>
                             <tr v-for="(vencimento, index) in form.vencimentos" :key="vencimento.id">
-                                <td class="text-center">@{{index + 1}}</td>
-                                <td>@{{vencimento.label}}</td>
-                                <td>@{{vencimento.segmento_nome || 'Geral'}}</td>
-                                <td class="text-center">
-                                    <a href="javascript://" class="btn btn-sm mr-1 btn-danger"
-                                       @click.prevent="removerVencimento(index)">
-                                        <i class="fa fa-times" aria-hidden="true"></i>
-                                    </a>
-                                </td>
+                                <td class="text-center">@{{ index + 1 }}</td>
+                                <td>@{{ vencimento.label }}</td>
+                                <td>@{{ vencimento.segmento_nome || 'Geral' }}</td>
                             </tr>
                             </tbody>
                         </table>
@@ -140,103 +139,169 @@
         </template>
     </modal>
 
-    <fieldset>
-        <legend>Filtro</legend>
-        <form class="row" @submit.prevent="$refs.componente.buscar()">
-            <div class="col-12 col-md-4">
-                <div class="form-group">
-                    <label>Buscar</label>
-                    <input type="text"
-                           placeholder="Buscar por nome"
-                           autocomplete="off"
-                           class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoBusca">
+    <div>
+        <filtro-listagem
+            @submit="onSubmitFiltro"
+            :mostrar-limpar-filtros="temFiltrosAtivos"
+            :desabilitado="controle.carregando"
+            @limpar="limparFiltros"
+        >
+            <template #filtros>
+                <div class="col-12 col-lg-6">
+                    <div class="form-group mb-2 mb-lg-0">
+                        <label class="mybp-label" for="vaga-filtro-busca">Buscar</label>
+                        <input
+                            id="vaga-filtro-busca"
+                            type="text"
+                            placeholder="Buscar por nome ou ID"
+                            autocomplete="off"
+                            class="form-control form-control-sm"
+                            :disabled="controle.carregando"
+                            v-model="controle.dados.campoBusca"
+                        />
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                    <div class="form-group mb-2 mb-lg-0">
+                        <label class="mybp-label" for="vaga-filtro-status">Status</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroStatus"
+                                instance-id="filtro-status"
+                                v-model="controle.dados.campoStatus"
+                                :options="filtroStatusOpcoes"
+                                :disabled="controle.carregando"
+                                input-id="vaga-filtro-status"
+                                placeholder-blur="Todos os status"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @opening="fecharOutrosComboboxes('filtro-status')"
+                                @select="onSelectFiltro"
+                            ></combobox-auto-complete>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template #acoes>
+                <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i> Atualizar
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-secondary"
+                    :disabled="controle.carregando"
+                    @click="formNovo(); $refs.janelaCadastrar?.abrirModal()"
+                >
+                    <i class="fa fa-plus"></i> Cadastrar Cargo
+                </button>
+            </template>
+        </filtro-listagem>
+
+        <div id="conteudo">
+            <preload class="text-center" v-if="controle.carregando"></preload>
+
+            <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length === 0">
+                <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+            </div>
+
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+                <div class="mybp-card" v-for="vaga in lista" :key="vaga.id">
+                    <div class="mybp-card-header-row">
+                        <div class="mybp-card-left">
+                            <span class="mybp-badge-id">#@{{ vaga.id }}</span>
+                            <div class="mybp-card-titulo">
+                                <strong>@{{ vaga.nome }}</strong>
+                            </div>
+                        </div>
+                        <div class="mybp-card-right">
+                            <bt-ativo
+                                :rota="`cadastro/vagas/${vaga.id}/ativa-desativa`"
+                                :model="vaga"
+                                @atualizou="atualizar()"
+                            ></bt-ativo>
+                            <div class="dropdown" :class="{ show: isDropdownOpen(vaga.id) }">
+                                <a
+                                    class="mybp-btn-acoes-compact"
+                                    href="#"
+                                    role="button"
+                                    aria-haspopup="true"
+                                    :aria-expanded="isDropdownOpen(vaga.id) ? 'true' : 'false'"
+                                    @click.prevent.stop="toggleDropdown(vaga.id)"
+                                >
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div
+                                    class="dropdown-menu mybp-dropdown-menu dropdown-menu-right"
+                                    :class="{ show: isDropdownOpen(vaga.id) }"
+                                    @click="fecharDropdown"
+                                >
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Editar"
+                                        @click.prevent="abrirEdicaoVaga(vaga.id)"
+                                    >
+                                        <i class="fa fa-edit mr-1"></i> Editar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mybp-card-conteudo">
+                        <div class="mybp-card-secoes-row">
+                            <div
+                                class="mybp-card-destaque mybp-card-destaque--primary"
+                                v-if="temCbo(vaga)"
+                            >
+                                <i class="fas fa-briefcase text-primary"></i>
+                                <div class="mybp-card-destaque-info">
+                                    <small class="mybp-card-destaque-etapa">
+                                        CBO @{{ vaga.cbo_codigo || '—' }}
+                                        <span v-if="vaga.cbo_codigo_familia"> · Família @{{ vaga.cbo_codigo_familia }}</span>
+                                    </small>
+                                    <strong class="mybp-card-destaque-valor mybp-card-destaque-valor--wrap">@{{ vaga.cbo_titulo }}</strong>
+                                    <small class="text-muted d-block mt-1" v-if="vaga.cbo_familia">@{{ vaga.cbo_familia }}</small>
+                                </div>
+                            </div>
+
+                            <div class="mybp-card-destaque" v-else>
+                                <i class="fas fa-briefcase text-muted"></i>
+                                <div class="mybp-card-destaque-info">
+                                    <small class="mybp-card-destaque-etapa">CBO</small>
+                                    <strong class="mybp-card-destaque-valor mybp-card-destaque-valor--wrap text-muted">
+                                        Não vinculado
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div class="mybp-card-destaque mybp-card-destaque--info">
+                                <i class="fas fa-graduation-cap text-info"></i>
+                                <div class="mybp-card-destaque-info">
+                                    <small class="mybp-card-destaque-etapa">Treinamentos do cargo</small>
+                                    <strong class="mybp-card-destaque-valor mybp-card-destaque-valor--wrap">
+                                        @{{ resumoTreinamentos(vaga) }}
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-12 col-md-4">
-                <div class="form-group">
-                    <label>Status</label>
-                    <select class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoStatus" @change="atualizar()">
-                        <option value="">Todos os Status</option>
-                        <option :value="true">Apenas Ativos</option>
-                        <option :value="false">Apenas Inativos</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="col-12 col-md-9">
-                <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
-                    <i
-                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>Atualizar
-                </button>
-                <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="controle.carregando"
-                        @click="formNovo(); $refs.janelaCadastrar?.abrirModal()">
-                    Cadastrar
-                </button>
-            </div>
-        </form>
-    </fieldset>
-
-    <p class="text-center" v-if="controle.carregando">
-        <i class="fa fa-spinner fa-pulse"></i> Carregando...
-    </p>
-
-    <div id="conteudo">
-        <div class="alert alert-warning" v-show="!controle.carregando && lista.length===0">
-            <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+            <controle-paginacao
+                class="d-flex justify-content-center mt-3"
+                id="controle"
+                ref="componente"
+                url="{{route('g.vagas.vagas.atualizar')}}"
+                :por-pagina="controle.dados.pages"
+                :dados="controle.dados"
+                v-on:carregou="carregou"
+                v-on:carregando="carregando">
+            </controle-paginacao>
         </div>
-
-        <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-            <table class="tabela">
-                <thead>
-                <tr class="bg-default">
-                    <th class="text-center">ID</th>
-                    <th>Nome</th>
-                    <th>CBO</th>
-                    <th>Ativo</th>
-                    <th>Ação</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="vaga in lista">
-                    <td class="text-center">
-                        @{{vaga.id}}
-                    </td>
-
-                    <td>
-                        @{{vaga.nome}}
-                    </td>
-
-                    <td>
-                        <span v-if="vaga.cbo_label">@{{ vaga.cbo_label }}</span>
-                        <span v-else class="text-muted">Não vinculado</span>
-                    </td>
-
-                    <td class="text-center">
-                        <bt-ativo :rota="`cadastro/vagas/${vaga.id}/ativa-desativa`" :model="vaga"></bt-ativo>
-                    </td>
-
-                    <td class="text-center">
-                        <a href="javascript://" class="btn btn-sm mr-1 btn-primary mb-1" title="Editar"
-                           @click.prevent="formAlterar(vaga.id); $refs.janelaCadastrar?.abrirModal()">
-                            <i class="fa fa-edit"></i>
-                        </a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <controle-paginacao
-            class="d-flex justify-content-center"
-            id="controle"
-            ref="componente"
-            url="{{route('g.vagas.vagas.atualizar')}}"
-            por-pagina="100"
-            :dados="controle.dados"
-            v-on:carregou="carregou"
-            v-on:carregando="carregando">
-        </controle-paginacao>
     </div>
 @stop
 @push('js')

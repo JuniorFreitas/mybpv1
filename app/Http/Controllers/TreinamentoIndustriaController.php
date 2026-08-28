@@ -224,22 +224,37 @@ class TreinamentoIndustriaController extends Controller
 
     public function atualizar(Request $request)
     {
-        $resultado = Vencimento::with('SegmentoTreinamento:id,nome,slug')->whereNotNull('label');
+        $porPagina = (int) $request->get('porPagina', $request->get('pages', 20));
+        $porPagina = $porPagina > 0 ? $porPagina : 20;
+
+        $resultado = Vencimento::with('SegmentoTreinamento:id,nome,slug')
+            ->withCount('Vagas')
+            ->whereNotNull('label');
 
         if ($request->filled('campoBusca')) {
-            $resultado->where('label', 'like', '%' . $request->campoBusca . '%');
+            $termo = trim((string) $request->campoBusca);
+            $resultado->where(function ($query) use ($termo) {
+                $query->where('label', 'like', '%' . $termo . '%')
+                    ->orWhere('descricao', 'like', '%' . $termo . '%');
+
+                if (is_numeric($termo)) {
+                    $query->orWhere('id', (int) $termo);
+                }
+            });
         }
 
         if ($request->filled('campoStatus')) {
-            $status = $request->campoStatus == 'true';
-            $resultado->whereAtivo($status);
+            $status = filter_var($request->campoStatus, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($status !== null) {
+                $resultado->whereAtivo($status);
+            }
         }
 
         if ($request->filled('segmento_treinamento_id')) {
             $resultado->where('segmento_treinamento_id', $request->segmento_treinamento_id);
         }
 
-        $resultado = $resultado->paginate($request->pages);
+        $resultado = $resultado->paginate($porPagina);
 
         return response()->json([
             'atual' => $resultado->currentPage(),

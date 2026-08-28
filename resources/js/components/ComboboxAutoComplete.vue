@@ -303,6 +303,42 @@ export default {
 </script>
 
 <style scoped>
+.combobox-ac-wrap {
+    width: 100%;
+}
+
+.ma-filtro-combo {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    width: 100%;
+}
+
+.ma-filtro-combo > .form-control.ma-select {
+    flex: 1 1 auto;
+    width: 1%;
+    min-width: 0;
+    border-radius: 8px 0 0 8px;
+    border-color: #dee2e6;
+}
+
+.input-group-append {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.ma-filtro-combo-toggle {
+    border-radius: 0 8px 8px 0 !important;
+    border-color: #dee2e6;
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+    line-height: 1.25;
+    height: auto;
+    align-self: stretch;
+    display: inline-flex;
+    align-items: center;
+}
+
 /* Painel no body (Teleport): fundo, borda, sombra e rolagem — escopo do filho */
 .ma-autocomplete-list.ma-autocomplete-list--portal {
     max-height: 280px;

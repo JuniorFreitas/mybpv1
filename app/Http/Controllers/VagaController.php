@@ -43,9 +43,7 @@ class VagaController extends Controller
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
         $dados['cbo_id'] = empty($dados['cbo_id']) ? null : (int) $dados['cbo_id'];
-        $vencimentoIds = $this->normalizeIds($dados['vencimento_ids'] ?? []);
         unset($dados['vencimento_ids']);
-        $vencimentoIds = $this->filtrarVencimentosSemVinculoTodosCargos($vencimentoIds);
 
         $dadosValidados = \Validator::make($dados, [
             'nome' => [
@@ -58,24 +56,6 @@ class VagaController extends Controller
             'cbo_id' => 'nullable|integer|exists:cbos,id',
         ]);
 
-        $vencimentosValidados = \Validator::make(
-            ['vencimento_ids' => $vencimentoIds],
-            [
-                'vencimento_ids' => 'nullable|array',
-                'vencimento_ids.*' => 'integer',
-                'vencimento_ids.*' => Rule::exists('vencimentos', 'id')->where(function ($query) {
-                    $query->whereAtivo(true);
-                }),
-            ]
-        );
-
-        if ($vencimentosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Vaga',
-                'erros' => $vencimentosValidados->errors(),
-            ], 400);
-        }
-
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao cadastrar Vaga',
@@ -86,7 +66,6 @@ class VagaController extends Controller
         try {
             DB::beginTransaction();
             $vaga = Vaga::create($dados);
-            $vaga->Vencimentos()->sync($vencimentoIds);
             DB::commit();
             return response()->json([], 201);
 
@@ -117,7 +96,12 @@ class VagaController extends Controller
      */
     public function edit(Vaga $vaga)
     {
-        $vaga->load('Vencimentos:id,label,segmento_treinamento_id', 'Vencimentos.SegmentoTreinamento:id,nome', 'Cbo:id,codigo,titulo,codigo_familia', 'Cbo.familia:codigo,titulo,descricao_sumaria');
+        $vaga->load(
+            'Vencimentos:id,label,segmento_treinamento_id,vinculo_todos_cargos',
+            'Vencimentos.SegmentoTreinamento:id,nome',
+            'Cbo:id,codigo,titulo,codigo_familia',
+            'Cbo.familia:codigo,titulo,descricao_sumaria'
+        );
         $vaga->vencimento_ids = $vaga->Vencimentos->pluck('id')->values();
         $vaga->autocomplete_label_cbo = $vaga->Cbo ? sprintf(
             '%s - %s - %s',
@@ -130,6 +114,11 @@ class VagaController extends Controller
         $vaga->cbo_titulo = $vaga->Cbo?->titulo;
         $vaga->cbo_familia = $vaga->Cbo?->familia?->titulo;
         $vaga->cbo_descricao_sumaria = $vaga->Cbo?->familia?->descricao_sumaria;
+        $vaga->treinamentos_globais_count = Vencimento::query()
+            ->whereAtivo(true)
+            ->where('vinculo_todos_cargos', true)
+            ->count();
+
         return $vaga;
     }
 
@@ -146,9 +135,7 @@ class VagaController extends Controller
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
         $dados['cbo_id'] = empty($dados['cbo_id']) ? null : (int) $dados['cbo_id'];
-        $vencimentoIds = $this->normalizeIds($dados['vencimento_ids'] ?? []);
         unset($dados['vencimento_ids']);
-        $vencimentoIds = $this->filtrarVencimentosSemVinculoTodosCargos($vencimentoIds);
 
         $dadosValidados = \Validator::make($dados, [
             'nome' => [
@@ -161,24 +148,6 @@ class VagaController extends Controller
             'cbo_id' => 'nullable|integer|exists:cbos,id',
         ]);
 
-        $vencimentosValidados = \Validator::make(
-            ['vencimento_ids' => $vencimentoIds],
-            [
-                'vencimento_ids' => 'nullable|array',
-                'vencimento_ids.*' => 'integer',
-                'vencimento_ids.*' => Rule::exists('vencimentos', 'id')->where(function ($query) {
-                    $query->whereAtivo(true);
-                }),
-            ]
-        );
-
-        if ($vencimentosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao atualizar Vaga',
-                'erros' => $vencimentosValidados->errors()
-            ], 400);
-        }
-
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao atualizar Vaga',
@@ -189,7 +158,6 @@ class VagaController extends Controller
         try {
             DB::beginTransaction();
             $vaga->update($dados);
-            $vaga->Vencimentos()->sync($vencimentoIds);
             DB::commit();
             return response()->json([], 201);
 
@@ -215,10 +183,19 @@ class VagaController extends Controller
     public function atualizar(Request $request)
     {
         $this->authorize('cadastro_vagas');
-        $resultado = Vaga::with('Cbo:id,codigo,titulo,codigo_familia', 'Cbo.familia:codigo,titulo')->orderBy('nome');
+
+        $resultado = Vaga::with(
+            'Cbo:id,codigo,titulo,codigo_familia',
+            'Cbo.familia:codigo,titulo',
+            'Vencimentos:id,label,segmento_treinamento_id,vinculo_todos_cargos',
+            'Vencimentos.SegmentoTreinamento:id,nome'
+        )->orderBy('nome');
         if ($request->filled('campoBusca')) {
-            $resultado->where('nome', 'like', '%' . $request->campoBusca . '%')
-                ->orWhere('id', $request->campoBusca);
+            $termo = $request->campoBusca;
+            $resultado->where(function ($query) use ($termo) {
+                $query->where('nome', 'like', '%' . $termo . '%')
+                    ->orWhere('id', $termo);
+            });
         }
         if ($request->filled('campoStatus')) {
             $status = $request->campoStatus == 'true';
@@ -226,13 +203,31 @@ class VagaController extends Controller
         }
 
         $resultado = $resultado->paginate(50);
-        $dados = collect($resultado->items())->map(function (Vaga $vaga) {
+        $treinamentosGlobaisCount = Vencimento::query()
+            ->whereAtivo(true)
+            ->where('vinculo_todos_cargos', true)
+            ->count();
+
+        $dados = collect($resultado->items())->map(function (Vaga $vaga) use ($treinamentosGlobaisCount) {
             $vaga->cbo_label = $vaga->Cbo ? sprintf(
                 '%s - %s - %s',
                 $vaga->Cbo->codigo,
                 $vaga->Cbo->titulo,
                 $vaga->Cbo->familia?->titulo ?? 'Família não informada'
             ) : null;
+            $vaga->cbo_codigo = $vaga->Cbo?->codigo;
+            $vaga->cbo_codigo_familia = $vaga->Cbo?->codigo_familia ?? $vaga->Cbo?->familia?->codigo;
+            $vaga->cbo_titulo = $vaga->Cbo?->titulo;
+            $vaga->cbo_familia = $vaga->Cbo?->familia?->titulo;
+            $vaga->cbo_vinculado = (bool) $vaga->Cbo;
+
+            $treinamentosVinculados = $vaga->Vencimentos->values();
+            $vaga->treinamentos_vinculados_count = $treinamentosVinculados->count();
+            $vaga->treinamentos_globais_count = $treinamentosGlobaisCount;
+            $vaga->treinamentos_total_count = $vaga->treinamentos_vinculados_count + $treinamentosGlobaisCount;
+
+            unset($vaga->Vencimentos);
+
             return $vaga;
         })->values();
 
@@ -269,19 +264,5 @@ class VagaController extends Controller
             ->unique()
             ->values()
             ->all();
-    }
-
-    /**
-     * Treinamentos com "vinculo a todos os cargos" nao usam a pivot por cargo.
-     */
-    private function filtrarVencimentosSemVinculoTodosCargos(array $ids): array
-    {
-        if ($ids === []) {
-            return [];
-        }
-
-        $excluir = Vencimento::whereIn('id', $ids)->where('vinculo_todos_cargos', true)->pluck('id')->all();
-
-        return collect($ids)->diff($excluir)->values()->all();
     }
 }

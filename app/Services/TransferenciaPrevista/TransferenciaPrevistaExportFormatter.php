@@ -26,12 +26,17 @@ class TransferenciaPrevistaExportFormatter
             'Centro de Custo Origem',
             'Centro de Custo Destino',
             'Data da Transferência',
-            'Gestor Aprovação',
+            'Gestor Origem',
+            'Gestor Destino',
             'Observação',
-            'Status',
-            'Quem Aprovou/Reprovou',
-            'Data da Aprovação/Reprovação',
-            'Observação Aprovação/Reprovação',
+            'Status Gestor Origem',
+            'Quem Aprovou Gestor Origem',
+            'Data Aprovação Gestor Origem',
+            'Observação Gestor Origem',
+            'Status Gestor Destino',
+            'Quem Aprovou Gestor Destino',
+            'Data Aprovação Gestor Destino',
+            'Observação Gestor Destino',
             "Status {$extra}",
             "Quem Aprovou {$extra}",
             "Data e Hora Aprovação {$extra}",
@@ -54,6 +59,11 @@ class TransferenciaPrevistaExportFormatter
             $dataAprovacaoRh = (new DataHora($row->data_aprovacao_rh))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao_rh))->horaCompleta(), 0, 5);
         }
 
+        $dataAprovacaoGestorDestino = '';
+        if (!empty($row->data_aprovacao_gestor_destino)) {
+            $dataAprovacaoGestorDestino = (new DataHora($row->data_aprovacao_gestor_destino))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao_gestor_destino))->horaCompleta(), 0, 5);
+        }
+
         return [
             $this->cleanText($row->UserCadastrou->nome ?? ''),
             $this->cleanText($row->created_at ? (new DataHora($row->created_at))->dataCompleta() . ' ' . substr((new DataHora($row->created_at))->horaCompleta(), 0, 5) : ''),
@@ -61,12 +71,17 @@ class TransferenciaPrevistaExportFormatter
             $this->cleanText($row->CentroCustoOrigem?->label ?? ''),
             $this->cleanText($row->CentroCustoDestino->label ?? ''),
             $this->cleanText($row->data_transferencia ? (new DataHora($row->data_transferencia))->dataCompleta() : ''),
-            $this->cleanText($row->GestorAprovacao->nome ?? ''),
+            $this->cleanText($row->GestorOrigem->nome ?? $row->GestorAprovacao->nome ?? ''),
+            $this->cleanText($row->GestorDestino->nome ?? ''),
             $this->cleanText($row->obs ?? ''),
             $this->cleanText($row->status_aprovacao ?: 'aberto'),
             $this->cleanText($row->QuemAprovou->nome ?? 'aguardando'),
             $this->cleanText($row->data_aprovacao ? (new DataHora($row->data_aprovacao))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao))->horaCompleta(), 0, 5) : ''),
             $this->cleanText($row->obs_aprovacao ?? ''),
+            $this->cleanText($row->exige_aprovacao_gestor_destino ? ($row->status_aprovacao_gestor_destino ?: 'aberto') : 'Não aplicável'),
+            $this->cleanText($row->QuemAprovouGestorDestino->nome ?? ''),
+            $this->cleanText($dataAprovacaoGestorDestino),
+            $this->cleanText($row->obs_aprovacao_gestor_destino ?? ''),
             $this->cleanText($row->status_aprovacao_extra ?? ''),
             $this->cleanText($row->UserAprovacaoExtra->nome ?? ''),
             $this->cleanText($dataHoraAprovacaoExtra),

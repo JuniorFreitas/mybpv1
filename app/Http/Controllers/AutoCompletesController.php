@@ -49,11 +49,20 @@ class AutoCompletesController extends Controller
         }
         $quantidade = $request->query('rows');
         $busca = $request->query('busca');
-        return VagasAbertas::whereAtivoSistema(true)->with('Vaga', 'Projetos.Projeto')
+        return VagasAbertas::whereAtivoSistema(true)
+            ->with('Vaga', 'Municipio', 'Projetos.Projeto')
             ->where('titulo', 'like', '%' . $busca . '%')->take($quantidade)
             ->get()
             ->map(function ($item) {
-                $item->label = $item->titulo . ' - ' . $item->Municipio->nome . ' - ' . $item->Municipio->uf;
+                $local = $item->Municipio
+                    ? "{$item->Municipio->nome} - {$item->Municipio->uf}"
+                    : 'Local não informado';
+                $cargo = $item->Vaga?->nome ?? 'Cargo não informado';
+                $item->label = "{$item->titulo} · {$local}";
+                $item->municipio_label = $item->Municipio
+                    ? "{$item->Municipio->nome} - {$item->Municipio->uf}"
+                    : null;
+
                 return $item;
             });
     }
@@ -150,6 +159,47 @@ class AutoCompletesController extends Controller
                     return $item;
                 });
         }
+    }
+
+    public function municipiosComVagasAbertas(Request $request)
+    {
+        $busca = $request->query('busca');
+        if ($busca == '') {
+            return response()->json([], 201);
+        }
+
+        $quantidade = (int) $request->query('rows', 20);
+        $municipioIds = VagasAbertas::query()
+            ->whereNotNull('municipio_id')
+            ->distinct()
+            ->pluck('municipio_id');
+
+        if ($municipioIds->isEmpty()) {
+            return response()->json([], 201);
+        }
+
+        $query = Municipio::query()->whereIn('id', $municipioIds);
+
+        if ($busca === '*') {
+            return $query
+                ->orderBy('nome')
+                ->get()
+                ->map(function ($item) {
+                    $item->label = $item->nome . ' - ' . $item->uf;
+                    return $item;
+                });
+        }
+
+        return $query
+            ->where('nome', 'like', '%' . $busca . '%')
+            ->orderByDesc('capital')
+            ->orderBy('nome')
+            ->take($quantidade)
+            ->get()
+            ->map(function ($item) {
+                $item->label = $item->nome . ' - ' . $item->uf;
+                return $item;
+            });
     }
 
     public function usuariosAtivos(Request $request)
@@ -341,17 +391,22 @@ class AutoCompletesController extends Controller
 
     public function vencimentosAtivos(Request $request)
     {
-        $busca = $request->query('busca');
-        if ($busca == '') {
+        $busca = trim((string) $request->query('busca', ''));
+        if ($busca === '') {
             return response()->json([], 201);
         }
 
-        $quantidade = $request->query('rows');
+        $quantidade = (int) $request->query('rows', 20);
+        $quantidade = $quantidade > 0 ? $quantidade : 20;
         $segmentoTreinamentoId = $request->query('segmento_treinamento_id');
 
         $query = Vencimento::with('SegmentoTreinamento:id,nome')
             ->whereAtivo(true)
             ->whereNotNull('label');
+
+        if ($request->boolean('somente_vinculo_por_cargo')) {
+            $query->where('vinculo_todos_cargos', false);
+        }
 
         if ($segmentoTreinamentoId) {
             $query->where(function ($q) use ($segmentoTreinamentoId) {
@@ -360,13 +415,20 @@ class AutoCompletesController extends Controller
             });
         }
 
-        return $query->where('label', 'like', '%' . $busca . '%')
+        return $query->where(function ($q) use ($busca) {
+                $q->where('label', 'like', '%' . $busca . '%')
+                    ->orWhere('label_reduzida', 'like', '%' . $busca . '%');
+            })
             ->orderBy('label')
             ->take($quantidade)
             ->get()
             ->map(function ($item) {
-                $item->label = $item->label;
                 $item->segmento_nome = optional($item->SegmentoTreinamento)->nome ?? 'Geral';
+                $item->vinculo_todos_cargos = (bool) $item->vinculo_todos_cargos;
+                if ($item->vinculo_todos_cargos) {
+                    $item->label = $item->label . ' — todos os cargos';
+                }
+
                 return $item;
             });
     }

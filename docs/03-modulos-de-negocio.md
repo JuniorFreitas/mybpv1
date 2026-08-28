@@ -161,6 +161,8 @@ n- fornecedores
 - `app/Models/RequisicaoVagaMovimentacao.php`
 - `app/Models/AprovacaoExtraConfig.php`
 
+**Documentação detalhada — transferência com aprovação automática de gestores CC:** [`TRANSFERENCIA_PREVISTA_APROVACAO_GESTORES_CC.md`](TRANSFERENCIA_PREVISTA_APROVACAO_GESTORES_CC.md)
+
 ### 8. Controle de exames e treinamentos
 
 **Responsabilidade confirmada**

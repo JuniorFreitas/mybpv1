@@ -87,6 +87,25 @@ class CentroCusto extends Model
         return $this->hasMany(CentroCustoFilial::class, 'centro_custo_id', 'id');
     }
 
+    public function Gestores()
+    {
+        return $this->hasMany(CentroCustoGestor::class, 'centro_custo_id', 'id');
+    }
+
+    public function GestorPrincipal()
+    {
+        return $this->hasOne(CentroCustoGestor::class, 'centro_custo_id', 'id')
+            ->where('tipo', CentroCustoGestor::TIPO_GESTOR_PRINCIPAL)
+            ->where('ativo', true);
+    }
+
+    public function GestorSubstituto()
+    {
+        return $this->hasOne(CentroCustoGestor::class, 'centro_custo_id', 'id')
+            ->where('tipo', CentroCustoGestor::TIPO_GESTOR_SUBSTITUTO)
+            ->where('ativo', true);
+    }
+
     /**
      * @param $empresaId
      * @return JsonResponse|Collection

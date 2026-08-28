@@ -10,7 +10,7 @@ class TransferenciaPrevistaOrigemOpcionalTest extends TestCase
 {
     public function test_normalizar_centro_custo_origem_id_converte_vazio_para_null(): void
     {
-        $controller = new TransferenciaPrevistaController();
+        $controller = app(TransferenciaPrevistaController::class);
         $method = new ReflectionMethod(TransferenciaPrevistaController::class, 'normalizarCentroCustoOrigemId');
         $method->setAccessible(true);
 

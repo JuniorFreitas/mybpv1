@@ -172,15 +172,20 @@
         </modal>
 
         <!-- Filtro -->
-        <fieldset>
-            <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
-                <div class="col-12 col-md-5">
-                    <div class="form-group">
-                        <label>Buscar</label>
+        <FiltroListagem
+            @submit="onSubmitFiltro"
+            :mostrar-limpar-filtros="temFiltrosAtivos"
+            :desabilitado="controle.carregando"
+            @limpar="limparFiltros"
+        >
+            <template #filtros>
+                <div class="col-12 col-lg-5">
+                    <div class="form-group mb-2 mb-lg-0">
+                        <label class="mybp-label" for="beneficio-filtro-busca">Buscar</label>
                         <input
+                            id="beneficio-filtro-busca"
                             type="text"
-                            placeholder="Buscar por nome"
+                            placeholder="Buscar por nome ou tipo"
                             autocomplete="off"
                             class="form-control form-control-sm"
                             :disabled="controle.carregando"
@@ -189,74 +194,129 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
-                        <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                        Atualizar
-                    </button>
-
-                    <button
-                        type="button"
-                        class="btn btn-sm mr-1 btn-primary"
-                        :disabled="controle.carregando"
-                        @click="formNovo(); $refs.modal_janelaFormBeneficio && $refs.modal_janelaFormBeneficio.abrirModal()"
-                    >
-                        <i class="fa fa-plus"></i> Cadastrar Benefício
-                    </button>
-
-                    <button type="button" class="btn btn-sm mr-1 btn-secondary" @click="$refs.modal_janelaFormTipoBeneficio && $refs.modal_janelaFormTipoBeneficio.abrirModal()">
-                        <i class="fa fa-plus"></i> Tipo de Benefício
-                    </button>
+                <div class="col-12 col-lg-4 mybp-combobox-wrap">
+                    <div class="form-group mb-2 mb-lg-0">
+                        <label class="mybp-label" for="beneficio-filtro-tipo-input">Tipo de benefício</label>
+                        <combobox-auto-complete
+                            ref="comboFiltroTipo"
+                            instance-id="filtro-tipo-beneficio"
+                            v-model="controle.dados.campoTipoBeneficio"
+                            :options="tipoBeneficioComboboxOpcoesFiltro"
+                            :disabled="controle.carregando || !tipos.length"
+                            input-id="beneficio-filtro-tipo-input"
+                            empty-message="Nenhum tipo encontrado."
+                            :max-results="50"
+                            @opening="fecharOutrosComboboxes('filtro-tipo-beneficio')"
+                            @select="onSelectFiltroTipo"
+                        />
+                    </div>
                 </div>
-            </form>
-        </fieldset>
+            </template>
+
+            <template #acoes>
+                <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
+                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i> Atualizar
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-secondary"
+                    @click="formNovo(); $refs.modal_janelaFormBeneficio && $refs.modal_janelaFormBeneficio.abrirModal()"
+                >
+                    <i class="fa fa-plus"></i> Cadastrar Benefício
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" @click="$refs.modal_janelaFormTipoBeneficio && $refs.modal_janelaFormTipoBeneficio.abrirModal()">
+                    <i class="fa fa-tags"></i> Tipo de Benefício
+                </button>
+            </template>
+        </FiltroListagem>
 
         <div id="conteudo">
-            <p class="mt-2 text-center" v-if="controle.carregando"><i class="fa fa-spinner fa-pulse"></i> Carregando...</p>
+            <preload class="text-center" v-if="controle.carregando"></preload>
 
             <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length === 0">
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-                <table class="tabela">
-                    <thead>
-                        <tr class="bg-default">
-                            <td class="text-center">Nº</td>
-                            <td class="text-center">Nome</td>
-                            <td class="text-center">Tipo do Beneficio</td>
-                            <td class="text-center">Valor do Benefício</td>
-                            <td class="text-center">Periodicidade</td>
-                            <td class="text-center">Opção Desconto</td>
-                            <td class="text-center">Valor Descontado</td>
-                            <td class="text-center">Opções</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(beneficio, index) in lista" :key="beneficio.id || index">
-                            <td class="text-center">{{ beneficio.id }}</td>
-                            <td class="text-center">{{ beneficio.nome }}</td>
-                            <td class="text-center">{{ beneficio.tipo_beneficio.nome }}</td>
-                            <td class="text-center">{{ 'R$ ' + beneficio.valor_format }}</td>
-                            <td class="text-center">{{ beneficio.periodicidade }}</td>
-                            <td class="text-center">{{ beneficio.opcao_desconto }}</td>
-                            <td class="text-center">{{ 'R$ ' + beneficio.valordescontado_format }}</td>
-                            <td class="text-center">
-                                <button
-                                    type="button"
-                                    class="btn btn-sm mr-1 btn-primary"
-                                    @click="alterarBeneficio(beneficio.id); $refs.modal_janelaFormBeneficio && $refs.modal_janelaFormBeneficio.abrirModal()"
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+                <div class="mybp-card" v-for="beneficio in lista" :key="beneficio.id">
+                    <div class="mybp-card-header-row">
+                        <div class="mybp-card-left">
+                            <span class="mybp-badge-id">#{{ beneficio.id }}</span>
+                            <div class="mybp-card-titulo">
+                                <strong>{{ beneficio.nome }}</strong>
+                            </div>
+                        </div>
+                        <div class="mybp-card-right">
+                            <div class="dropdown" :class="{ show: isDropdownOpen(beneficio.id) }">
+                                <a
+                                    class="mybp-btn-acoes-compact"
+                                    href="#"
+                                    role="button"
+                                    aria-haspopup="true"
+                                    :aria-expanded="isDropdownOpen(beneficio.id) ? 'true' : 'false'"
+                                    @click.prevent.stop="toggleDropdown(beneficio.id)"
                                 >
-                                    <i class="fa fa-edit"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div
+                                    class="dropdown-menu mybp-dropdown-menu dropdown-menu-right"
+                                    :class="{ show: isDropdownOpen(beneficio.id) }"
+                                    @click="fecharDropdown"
+                                >
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Editar"
+                                        @click.prevent="abrirEdicaoBeneficio(beneficio.id)"
+                                    >
+                                        <i class="fa fa-edit mr-1"></i> Editar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mybp-card-details-row">
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-tag text-muted"></i>
+                            <span class="mybp-detail-label">Tipo</span>
+                            <span class="mybp-detail-value">{{ nomeTipoBeneficio(beneficio) }}</span>
+                        </div>
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-money-bill-wave text-muted"></i>
+                            <span class="mybp-detail-label">Valor</span>
+                            <span class="mybp-detail-value">R$ {{ beneficio.valor_format }}</span>
+                        </div>
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-calendar-alt text-muted"></i>
+                            <span class="mybp-detail-label">Periodicidade</span>
+                            <span class="mybp-detail-value">{{ labelPeriodicidade(beneficio.periodicidade) }}</span>
+                        </div>
+                    </div>
+
+                    <div class="mybp-card-secoes-row">
+                        <div class="mybp-card-destaque mybp-card-destaque--primary">
+                            <i class="fas fa-calculator text-primary"></i>
+                            <div class="mybp-card-destaque-info">
+                                <small class="mybp-card-destaque-etapa">Aplicação</small>
+                                <strong class="mybp-card-destaque-valor">{{ labelAplicacao(beneficio.aplicacao) }}</strong>
+                            </div>
+                        </div>
+                        <div class="mybp-card-destaque mybp-card-destaque--info">
+                            <i class="fas fa-percent text-info"></i>
+                            <div class="mybp-card-destaque-info">
+                                <small class="mybp-card-destaque-etapa">Desconto</small>
+                                <strong class="mybp-card-destaque-valor">
+                                    {{ labelOpcaoDesconto(beneficio.opcao_desconto) }} — R$ {{ beneficio.valordescontado_format }}
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <controle-paginacao
-                class="d-flex justify-content-center"
+                class="d-flex justify-content-center mt-3"
                 id="controle"
                 ref="componente"
                 :url="urlPaginacao"
@@ -272,12 +332,19 @@
 <script>
 import controlePaginacao from '../../ControlePaginacao'
 import modal from '../../Modal'
+import FiltroListagem from '../../ui/FiltroListagem'
+import ComboboxAutoComplete from '../../ComboboxAutoComplete'
 import editor from '@tinymce/tinymce-vue'
+import { temFiltrosPreenchidos, limparFiltrosListagem } from '../../../utils/listagemQueryParams'
+
+const CAMPOS_FILTRO_URL = ['campoBusca', 'campoTipoBeneficio']
 
 export default {
     components: {
         modal,
         controlePaginacao,
+        FiltroListagem,
+        ComboboxAutoComplete,
         editor
     },
     props: {
@@ -311,6 +378,26 @@ export default {
         this.atualizar()
         this.formDefault = _.cloneDeep(this.form)
         this.formTipoDefault = _.cloneDeep(this.formTipo)
+        document.addEventListener('click', this.onClickOutside)
+    },
+
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
+    },
+
+    computed: {
+        tipoBeneficioComboboxOpcoesFiltro() {
+            const tipos = (this.tipos || []).map((tipo) => ({
+                value: tipo.id,
+                label: tipo.nome,
+                raw: tipo
+            }))
+
+            return [{ value: '', label: 'Todos os tipos' }, ...tipos]
+        },
+        temFiltrosAtivos() {
+            return temFiltrosPreenchidos(this.controle.dados, CAMPOS_FILTRO_URL)
+        }
     },
     data() {
         return {
@@ -353,18 +440,84 @@ export default {
             tiposAtivos: [],
             clientes: [],
             permissoes: [],
+            dropdownAbertoKey: null,
 
             urlPaginacao: `${URL_ADMIN}/cadastro/beneficios/atualizar`,
             controle: {
                 carregando: false,
                 dados: {
                     campoBusca: '',
-                    campoFiltro: ''
+                    campoTipoBeneficio: ''
                 }
             }
         }
     },
     methods: {
+        onSubmitFiltro() {
+            this.atualizar()
+        },
+        fecharOutrosComboboxes(manter) {
+            if (manter !== 'filtro-tipo-beneficio' && this.$refs.comboFiltroTipo?.close) {
+                this.$refs.comboFiltroTipo.close()
+            }
+        },
+        onSelectFiltroTipo() {
+            this.atualizar()
+        },
+        limparFiltros() {
+            limparFiltrosListagem(this.controle.dados, CAMPOS_FILTRO_URL)
+            this.fecharOutrosComboboxes(null)
+            this.atualizar()
+        },
+        onClickOutside(event) {
+            if (event?.target?.closest?.('.dropdown')) return
+            if (this.$refs.comboFiltroTipo?.containsTarget?.(event.target)) return
+            this.dropdownAbertoKey = null
+            this.fecharOutrosComboboxes(null)
+        },
+        toggleDropdown(beneficioId) {
+            if (!beneficioId) return
+            const key = `beneficio:${beneficioId}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(beneficioId) {
+            return this.dropdownAbertoKey === `beneficio:${beneficioId}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+        abrirEdicaoBeneficio(beneficioId) {
+            this.fecharDropdown()
+            this.alterarBeneficio(beneficioId)
+            this.$refs.modal_janelaFormBeneficio && this.$refs.modal_janelaFormBeneficio.abrirModal()
+        },
+        nomeTipoBeneficio(beneficio) {
+            return beneficio?.tipo_beneficio?.nome ?? beneficio?.TipoBeneficio?.nome ?? 'Não informado'
+        },
+        labelAplicacao(valor) {
+            const map = {
+                reais: 'Em Reais',
+                percentual: 'Percentual do Salário'
+            }
+            return map[valor] || valor || 'Não informado'
+        },
+        labelPeriodicidade(valor) {
+            const map = {
+                diario: 'Diário',
+                semanal: 'Semanal',
+                quinzenal: 'Quinzenal',
+                mensal: 'Mensal',
+                anual: 'Anual'
+            }
+            return map[valor] || valor || 'Não informado'
+        },
+        labelOpcaoDesconto(valor) {
+            const map = {
+                fixo: 'Valor Fixo',
+                percentual: 'Percentual do Salário'
+            }
+            return map[valor] || valor || 'Não informado'
+        },
         formNovo() {
             this.form = _.cloneDeep(this.formDefault) //copia
             this.titulo_janela_form_beneficio = 'Cadastro de Benefício'
@@ -440,7 +593,7 @@ export default {
 
             this.cadastrado = false
             this.editando = true
-            this.tituloJanela = 'Alterando Benefício'
+            this.titulo_janela_form_beneficio = 'Alterando Benefício'
             formReset()
 
             this.form = _.cloneDeep(this.formDefault) //copia
@@ -449,11 +602,10 @@ export default {
                 .get(`${URL_ADMIN}/cadastro/beneficios/${beneficio}/editar`)
                 .then((response) => {
                     Object.assign(this.form, response.data)
-                    // this.formTipo.nome = data.nome
                     this.editando = true
                     setupCampo()
                 })
-                .catch((error) => (this.preloadAjax = false))
+                .catch(() => (this.preloadAjax = false))
         },
         alterarformBeneficio() {
             formReset()

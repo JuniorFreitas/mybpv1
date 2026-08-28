@@ -109,16 +109,20 @@
             </template>
         </modal>
 
-        <!-- Filtro -->
-        <fieldset>
-            <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
-                <div class="col-12 col-md-4">
-                    <div class="form-group">
-                        <label>Buscar</label>
+        <FiltroListagem
+            @submit="onSubmitFiltro"
+            :mostrar-limpar-filtros="temFiltrosAtivos"
+            :desabilitado="controle.carregando"
+            @limpar="limparFiltros"
+        >
+            <template #filtros>
+                <div class="col-12 col-lg-6">
+                    <div class="form-group mb-2 mb-lg-0">
+                        <label class="mybp-label" for="empresa-exame-filtro-busca">Buscar</label>
                         <input
+                            id="empresa-exame-filtro-busca"
                             type="text"
-                            placeholder="Buscar por razão social"
+                            placeholder="Buscar por razão social, fantasia, CNPJ ou ID"
                             autocomplete="off"
                             class="form-control form-control-sm"
                             :disabled="controle.carregando"
@@ -127,27 +131,40 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
-                        <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                        Atualizar
-                    </button>
-
-                    <button
-                        type="button"
-                        class="btn btn-sm mr-1 btn-primary"
-                        :disabled="controle.carregando"
-                        @click="formNovo(); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
-                    >
-                        <i class="fa fa-plus"></i> Cadastrar
-                    </button>
-
-                    <button type="button" class="btn btn-sm mr-1 btn-secondary" v-if="pcmsoOpen" @click="$refs.modal_janelaPcmso && $refs.modal_janelaPcmso.abrirModal()">
-                        <i class="fa fa-plus"></i> PCMSO
-                    </button>
+                <div class="col-12 col-lg-6">
+                    <div class="form-group mb-2 mb-lg-0">
+                        <label class="mybp-label" for="empresa-exame-filtro-status">Status</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroStatus"
+                                instance-id="filtro-status"
+                                v-model="controle.dados.campoStatus"
+                                :options="filtroStatusOpcoes"
+                                :disabled="controle.carregando"
+                                input-id="empresa-exame-filtro-status"
+                                placeholder-blur="Todos os status"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @opening="fecharOutrosComboboxes('filtro-status')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
+                    </div>
                 </div>
-            </form>
-        </fieldset>
+            </template>
+
+            <template #acoes>
+                <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i> Atualizar
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" :disabled="controle.carregando" @click="abrirModalNovo">
+                    <i class="fa fa-plus"></i> Cadastrar
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" v-if="pcmsoOpen" @click="$refs.modal_janelaPcmso && $refs.modal_janelaPcmso.abrirModal()">
+                    <i class="fa fa-plus"></i> PCMSO
+                </button>
+            </template>
+        </FiltroListagem>
 
         <div id="conteudo">
             <p class="mt-2 text-center" v-if="controle.carregando">
@@ -158,37 +175,73 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-                <table class="tabela">
-                    <thead>
-                        <tr class="bg-default">
-                            <td class="text-center">Nº</td>
-                            <td class="text-center">Razão Social</td>
-                            <td class="text-center">Endereço</td>
-                            <td class="text-center">Ativo</td>
-                            <td class="text-center">Ação</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(item, index) in lista" :key="index">
-                            <td class="text-center">{{ item.id }}</td>
-                            <td class="text-center">{{ item.nome }}</td>
-                            <td class="text-center">{{ item.dados.endereco.endereco_completo }}</td>
-                            <td class="text-center">
-                                <bt-ativo :rota="`cadastro/empresa-exame/${item.id}/ativa-desativa`" :model="item"></bt-ativo>
-                            </td>
-                            <td class="text-center">
-                                <button
-                                    type="button"
-                                    class="btn btn-sm mr-1 btn-primary mb-1"
-                                    @click="alterarEmpresaExame(item.id); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+                <div class="mybp-card" v-for="item in lista" :key="item.id">
+                    <div class="mybp-card-header-row">
+                        <div class="mybp-card-left">
+                            <span class="mybp-badge-id">#{{ item.id }}</span>
+                            <div class="mybp-card-titulo">
+                                <strong>{{ item.nome }}</strong>
+                            </div>
+                        </div>
+                        <div class="mybp-card-right">
+                            <bt-ativo
+                                :rota="`cadastro/empresa-exame/${item.id}/ativa-desativa`"
+                                :model="item"
+                                @atualizou="atualizar()"
+                            ></bt-ativo>
+                            <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
+                                <a
+                                    class="mybp-btn-acoes-compact"
+                                    href="#"
+                                    role="button"
+                                    aria-haspopup="true"
+                                    :aria-expanded="isDropdownOpen(item.id) ? 'true' : 'false'"
+                                    @click.prevent.stop="toggleDropdown(item.id)"
                                 >
-                                    <i class="fa fa-edit"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div
+                                    class="dropdown-menu mybp-dropdown-menu dropdown-menu-right"
+                                    :class="{ show: isDropdownOpen(item.id) }"
+                                    @click="fecharDropdown"
+                                >
+                                    <a class="dropdown-item" href="javascript://" title="Editar" @click.prevent="abrirModalAlterar(item.id)">
+                                        <i class="fa fa-edit mr-1"></i> Editar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mybp-card-details-row">
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-id-card text-muted"></i>
+                            <span class="mybp-detail-label">CNPJ</span>
+                            <span class="mybp-detail-value">{{ cnpjEmpresa(item) }}</span>
+                        </div>
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-building text-muted"></i>
+                            <span class="mybp-detail-label">Fantasia</span>
+                            <span class="mybp-detail-value">{{ nomeFantasiaEmpresa(item) }}</span>
+                        </div>
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-envelope text-muted"></i>
+                            <span class="mybp-detail-label">E-mail</span>
+                            <span class="mybp-detail-value">{{ emailEmpresa(item) }}</span>
+                        </div>
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-phone text-muted"></i>
+                            <span class="mybp-detail-label">Telefone</span>
+                            <span class="mybp-detail-value">{{ telefoneEmpresa(item) }}</span>
+                        </div>
+                        <div class="mybp-detail-item mybp-detail-item--full">
+                            <i class="fas fa-map-marker-alt text-muted"></i>
+                            <span class="mybp-detail-label">Endereço</span>
+                            <span class="mybp-detail-value">{{ enderecoEmpresa(item) }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <controle-paginacao
@@ -196,7 +249,7 @@
                 id="controle"
                 ref="componente"
                 :url="urlPaginacao"
-                :por-pagina="qntPag"
+                :por-pagina="controle.dados.pages"
                 :dados="controle.dados"
                 v-on:carregou="carregou"
                 v-on:carregando="carregando"
@@ -210,13 +263,28 @@ import controlePaginacao from '../../ControlePaginacao'
 import Endereco from '../../Endereco'
 import modal from '../../Modal'
 import Pcmso from '../pcmso/Pcmso'
+import ComboboxAutoComplete from '../../ComboboxAutoComplete'
+import FiltroListagem from '../../ui/FiltroListagem'
+import {
+    lerFiltrosDaUrl,
+    lerPaginacaoDaUrl,
+    sincronizarFiltrosNaUrl,
+    montarExtrasPaginacao,
+    aplicarPaginaInicialListagem,
+    temFiltrosPreenchidos,
+    limparFiltrosListagem
+} from '../../../utils/listagemQueryParams'
+
+const CAMPOS_FILTRO_URL = ['campoBusca', 'campoStatus']
 
 export default {
     components: {
         Pcmso,
         modal,
         controlePaginacao,
-        Endereco
+        Endereco,
+        ComboboxAutoComplete,
+        FiltroListagem
     },
     props: {
         qntPag: {
@@ -237,8 +305,44 @@ export default {
         }
     },
     mounted() {
-        this.atualizar()
         this.formDefault = _.cloneDeep(this.form)
+        lerFiltrosDaUrl(this.controle.dados, CAMPOS_FILTRO_URL)
+        const paginaInicial = lerPaginacaoDaUrl(this.controle.dados, { pagesDefault: this.qntPag })
+        document.addEventListener('click', this.onClickOutside)
+        this.$nextTick(() => {
+            aplicarPaginaInicialListagem(this, paginaInicial)
+            this.buscarListagem(false)
+        })
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
+        if (this.syncUrlTimer) {
+            clearTimeout(this.syncUrlTimer)
+        }
+    },
+    computed: {
+        filtroStatusOpcoes() {
+            return [
+                { value: '', label: 'Todos os status' },
+                { value: 'true', label: 'Apenas ativos' },
+                { value: 'false', label: 'Apenas inativos' }
+            ]
+        },
+        temFiltrosAtivos() {
+            return temFiltrosPreenchidos(this.controle.dados, CAMPOS_FILTRO_URL)
+        }
+    },
+    watch: {
+        'controle.dados': {
+            handler() {
+                if (this.syncUrlTimer) {
+                    clearTimeout(this.syncUrlTimer)
+                }
+
+                this.syncUrlTimer = setTimeout(() => this.syncUrlFiltros(), 400)
+            },
+            deep: true
+        }
     },
     data() {
         return {
@@ -277,17 +381,92 @@ export default {
             formDefault: null,
 
             lista: [],
+            dropdownAbertoKey: null,
+            syncUrlTimer: null,
 
             urlPaginacao: `${URL_ADMIN}/cadastro/empresa-exame/atualizar`,
             controle: {
                 carregando: false,
                 dados: {
-                    campoBusca: ''
+                    campoBusca: '',
+                    campoStatus: '',
+                    pages: this.qntPag
                 }
             }
         }
     },
     methods: {
+        onSubmitFiltro() {
+            this.atualizar()
+        },
+        fecharOutrosComboboxes(manter) {
+            if (manter !== 'filtro-status' && this.$refs.comboFiltroStatus?.close) {
+                this.$refs.comboFiltroStatus.close()
+            }
+        },
+        onSelectFiltro() {
+            this.atualizar()
+        },
+        limparFiltros() {
+            limparFiltrosListagem(this.controle.dados, CAMPOS_FILTRO_URL)
+            this.fecharOutrosComboboxes(null)
+            this.atualizar()
+        },
+        syncUrlFiltros() {
+            sincronizarFiltrosNaUrl(
+                this.controle.dados,
+                CAMPOS_FILTRO_URL,
+                montarExtrasPaginacao(this, { pagesDefault: this.qntPag })
+            )
+        },
+        buscarListagem(resetPagina = true) {
+            if (resetPagina && this.$refs?.componente) {
+                this.$refs.componente.atual = 1
+            }
+
+            this.$refs?.componente?.buscar?.()
+        },
+        onClickOutside(event) {
+            if (event?.target?.closest?.('.dropdown')) return
+            if (this.$refs.comboFiltroStatus?.containsTarget?.(event.target)) return
+            this.dropdownAbertoKey = null
+            this.fecharOutrosComboboxes(null)
+        },
+        toggleDropdown(empresaExameId) {
+            if (!empresaExameId) return
+            const key = `empresa-exame:${empresaExameId}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(empresaExameId) {
+            return this.dropdownAbertoKey === `empresa-exame:${empresaExameId}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+        abrirModalNovo() {
+            this.formNovo()
+            this.$refs.modal_janelaCadastrar?.abrirModal?.()
+        },
+        abrirModalAlterar(empresaExameId) {
+            this.fecharDropdown()
+            this.alterarEmpresaExame(empresaExameId)
+            this.$refs.modal_janelaCadastrar?.abrirModal?.()
+        },
+        cnpjEmpresa(item) {
+            return item?.dados?.cnpj || 'Não informado'
+        },
+        nomeFantasiaEmpresa(item) {
+            return item?.dados?.nome_fantasia || 'Não informado'
+        },
+        emailEmpresa(item) {
+            return item?.dados?.email || 'Não informado'
+        },
+        telefoneEmpresa(item) {
+            return item?.dados?.telefone || 'Não informado'
+        },
+        enderecoEmpresa(item) {
+            return item?.dados?.endereco?.endereco_completo || 'Não informado'
+        },
         formNovo() {
             this.form = _.cloneDeep(this.formDefault) //copia
             this.titulo_janela = 'Empresa Exame'
@@ -365,65 +544,22 @@ export default {
                 .catch((error) => (this.preload = false))
         },
         carregou(dados) {
-            this.lista = dados.itens
-            this.permissoes = dados.permissoes
+            this.lista = dados.items || []
+            this.permissoes = dados.permissoes || {}
             this.pcmsoOpen = this.permissoes.pcmso
             this.controle.carregando = false
+            this.$nextTick(() => this.syncUrlFiltros())
         },
         carregando() {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.buscarListagem(true)
         }
     }
 }
 </script>
 
 <style scoped>
-.card {
-    border: none;
-    background: transparent;
-}
-
-ul.timeline {
-    list-style-type: none;
-    position: relative;
-}
-
-ul.timeline:before {
-    content: ' ';
-    background: #d4d9df;
-    display: inline-block;
-    position: absolute;
-    left: 29px;
-    width: 2px;
-    height: 100%;
-    z-index: 400;
-}
-
-ul.timeline > li {
-    margin: 20px 0;
-    padding-left: 20px;
-}
-
-ul.timeline > li:before {
-    content: ' ';
-    background: white;
-    display: inline-block;
-    position: absolute;
-    border-radius: 50%;
-    border: 3px solid #184056;
-    left: 20px;
-    width: 20px;
-    height: 20px;
-    z-index: 400;
-}
-
-.trackind {
-    padding: 0.5rem 0.8rem;
-    background-color: #f4f4f4;
-    border-radius: 0.5rem;
-}
+/* Estilos globais em resources/sass/_mybp-listagem-ui.scss - ver docs/PADRAO_UX_LISTAGEM_CADASTROS.md */
 </style>

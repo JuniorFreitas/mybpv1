@@ -167,6 +167,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::get('todos-gestores', [\App\Http\Controllers\AutoCompletesController::class, 'todosGestores'])->name('todos-gestores');
 
         Route::get('todos-municipios', [\App\Http\Controllers\AutoCompletesController::class, 'municipiosAll'])->name('municipiosAll');
+        Route::get('municipios-vagas-abertas', [\App\Http\Controllers\AutoCompletesController::class, 'municipiosComVagasAbertas'])->name('municipiosVagasAbertas');
         Route::get('todos-estados', function () {
             return response()->json(\App\Models\Municipio::todosEstados(), 200);
         });
@@ -515,6 +516,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::resource('vagas', \App\Http\Controllers\VagaController::class)->middleware('can:cadastro_vagas');
 
             Route::put('vagas-abertas/{vagas_aberta}/ativa-desativa', [\App\Http\Controllers\VagasAbertasController::class, 'ativaDesativa'])->name('vagas_abertas.ativaDesativa')->middleware('can:cadastro_vagas_abertas_update');
+            Route::put('vagas-abertas/{vagas_aberta}/ativa-desativa-sistema', [\App\Http\Controllers\VagasAbertasController::class, 'ativaDesativaSistema'])->name('vagas_abertas.ativaDesativaSistema')->middleware('can:cadastro_vagas_abertas_update');
             Route::post('vagas-abertas/atualizar', [\App\Http\Controllers\VagasAbertasController::class, 'atualizar'])->name('vagas_abertas.atualizar')->middleware('can:cadastro_vagas_abertas');
             Route::get('vagas-abertas/cargo/{vaga}/treinamentos', [\App\Http\Controllers\VagasAbertasController::class, 'treinamentosDoCargo'])->name('vagas_abertas.treinamentos_cargo')->middleware('can:cadastro_vagas_abertas');
             Route::get('vagas-abertas/prova/{simulado}/{vaga_aberta}', [\App\Http\Controllers\VagasAbertasController::class, 'vagaAbertaSimulado'])->name('vagas_abertas.vagaAbertaSimulado')->middleware('can:cadastro_vagas_abertas');
@@ -736,9 +738,11 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             });
 
             Route::group(['as' => 'solicitacao_transferencia.'], function () {
+                Route::get('centro-custo/{centrocusto}/gestor-responsavel', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'gestorResponsavel'])->name('centro-custo.gestor-responsavel');
                 Route::post('transferencia-prevista/atualizacao-status', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'atualizacaoStatus'])->name('transferencia-prevista.atualizacaoStatus');
                 Route::post('transferencia-prevista/atualizar', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('transferencia-prevista/{transferenciaPrevista}/aprovar', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovar'])->name('aprovar');
+                Route::put('transferencia-prevista/{transferenciaPrevista}/aprovar-gestor-destino', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovarGestorDestino'])->name('aprovarGestorDestino');
                 Route::put('transferencia-prevista/{transferenciaPrevista}/aprovar-extra', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovarExtra'])->name('aprovarExtra');
                 Route::put('transferencia-prevista/{transferenciaPrevista}/aprovarrh', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovarRH'])->name('aprovarRH');
                 Route::post('transferencia-prevista/export', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'export'])->name('transferencia-prevista.excel');

@@ -6,155 +6,214 @@
             </template>
         </modal>
 
-        <modal id="janelaCadastrar" :titulo="titulo_janela" :fechar="!preload" :size="90" ref="modal_janelaCadastrar">
+        <modal
+            id="janelaCadastrar"
+            :titulo="titulo_janela"
+            :fechar="!preload && !salvando"
+            :mostrar-botao-fechar-no-rodape="false"
+            :size="90"
+            ref="modal_janelaCadastrar"
+        >
             <template #conteudo>
-                <preload v-show="preload"></preload>
-                <div v-if="!preload && !cadastrado">
-                    <fieldset>
-                        <legend>Informações</legend>
-                        <div class="row">
-                            <div class="col-12 col-md-12">
-                                <div class="form-group">
-                                    <label>Nome</label>
-                                    <input
-                                        v-model="form.label"
-                                        class="form-control form-control-sm"
-                                        type="text"
-                                        placeholder="Informe o Nome"
-                                        onblur="valida_campo_vazio(this, 1)"
-                                    />
-                                </div>
-                            </div>
-                            <div class="col-12 mb-2">
-                                <div class="custom-control custom-switch">
-                                    <input type="checkbox" v-model="form.exibir_na_carteira" class="custom-control-input" id="exibir_na_carteira" />
-                                    <label class="custom-control-label" for="exibir_na_carteira">Exibir Carteira Treinamento</label>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-12" v-if="form.exibir_na_carteira">
-                                <div class="form-group">
-                                    <label>Nome Reduzido</label>
-                                    <input
-                                        v-model="form.label_reduzida"
-                                        class="form-control form-control-sm"
-                                        type="text"
-                                        placeholder="Informe o Nome reduzido"
-                                    />
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-12">
-                                <div class="form-group">
-                                    <label>A quem se destina</label>
-                                    <input
-                                        v-model="form.descricao"
-                                        class="form-control form-control-sm"
-                                        type="text"
-                                        placeholder="Informe para quem se destina"
-                                        onblur="valida_campo_vazio(this, 1)"
-                                    />
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <div class="form-group">
-                                    <label>Prazo fixo (dias para vencimento)</label>
-                                    <input v-model="form.prazo_fixo" class="form-control form-control-sm" type="number" placeholder="Ex: 365" min="1" />
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <div class="form-group">
-                                    <label>Ordem</label>
-                                    <input v-model="form.ordem" class="form-control form-control-sm" type="number" />
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-12">
-                                <div class="form-group">
-                                    <label>Segmento / Padrão de treinamento</label>
-                                    <select v-model="form.segmento_treinamento_id" class="form-control form-control-sm">
-                                        <option :value="null">Selecione o segmento</option>
-                                        <option v-for="s in segmentos" :key="s.id" :value="s.id">{{ s.nome }}</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-12 mb-2">
-                                <div class="custom-control custom-switch">
-                                    <input
-                                        type="checkbox"
-                                        v-model="form.vinculo_todos_cargos"
-                                        class="custom-control-input"
-                                        id="vinculo_todos_cargos"
-                                        @change="onToggleVinculoTodosCargos"
-                                    />
-                                    <label class="custom-control-label" for="vinculo_todos_cargos">Vincular a todos os cargos</label>
-                                </div>
-                                <small v-if="form.vinculo_todos_cargos" class="text-muted d-block">
-                                    Quando ativo, o treinamento vale para qualquer cargo, independentemente da lista abaixo.
-                                </small>
-                            </div>
-                            <div class="col-12 col-md-12" v-show="!form.vinculo_todos_cargos">
-                                <fieldset>
-                                    <legend>Cargos vinculados</legend>
-                                    <div class="form-group">
-                                        <label>Adicionar cargo</label>
-                                        <autocomplete
-                                            :caminho="`autocomplete/cargos_ativos`"
-                                            :formsm="true"
-                                            v-model="form.autocomplete_label_cargo"
-                                            placeholder="Selecione um cargo"
-                                            :id="`cargo_${hash}`"
-                                            @onselect="selecionaCargo"
-                                        ></autocomplete>
-                                    </div>
-
-                                    <div class="table-responsive" v-if="form.cargos.length > 0">
-                                        <table class="table table-bordered table-hover table-condensed bg-white">
-                                            <thead>
-                                                <tr class="bg-default">
-                                                    <th class="text-center">#</th>
-                                                    <th>Cargo</th>
-                                                    <th class="text-center">Remover</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr v-for="(cargo, index) in form.cargos" :key="cargo.id">
-                                                    <td class="text-center">{{ index + 1 }}</td>
-                                                    <td>{{ cargo.nome }}</td>
-                                                    <td class="text-center">
-                                                        <a href="javascript://" class="btn btn-sm mr-1 btn-danger" @click.prevent="removerCargo(index)">
-                                                            <i class="fa fa-times" aria-hidden="true"></i>
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </fieldset>
-                            </div>
-                            <div class="col-12 mt-2">
-                                <div class="custom-control custom-switch">
-                                    <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="ativo" />
-                                    <label class="custom-control-label" for="ativo">{{ form.ativo ? 'Ativo' : 'Inativo' }}</label>
-                                </div>
+                <preload class="text-center" v-if="preload"></preload>
+                <fieldset class="mt-0" v-if="!preload">
+                    <legend>Informações</legend>
+                    <p class="mybp-campo-obrigatorio-legenda mb-3">
+                        Campos com <span class="text-danger">*</span> são obrigatórios.
+                    </p>
+                    <div class="row">
+                        <div class="col-12 col-md-12">
+                            <div class="form-group">
+                                <label class="mybp-label" for="ti-form-nome">Nome <span class="text-danger">*</span></label>
+                                <input
+                                    id="ti-form-nome"
+                                    v-model="form.label"
+                                    class="form-control form-control-sm"
+                                    type="text"
+                                    placeholder="Informe o nome"
+                                    onblur="valida_campo_vazio(this, 1)"
+                                />
                             </div>
                         </div>
-                    </fieldset>
-                </div>
+                        <div class="col-12 mb-2">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" v-model="form.exibir_na_carteira" class="custom-control-input" id="exibir_na_carteira" />
+                                <label class="custom-control-label" for="exibir_na_carteira">Exibir Carteira Treinamento</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-12" v-if="form.exibir_na_carteira">
+                            <div class="form-group">
+                                <label class="mybp-label" for="ti-form-nome-reduzido">
+                                    Nome Reduzido <span class="text-danger">*</span>
+                                </label>
+                                <input
+                                    id="ti-form-nome-reduzido"
+                                    v-model="form.label_reduzida"
+                                    class="form-control form-control-sm"
+                                    type="text"
+                                    placeholder="Informe o nome reduzido"
+                                    onblur="valida_campo_vazio(this, 1)"
+                                />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-12">
+                            <div class="form-group">
+                                <label class="mybp-label" for="ti-form-descricao">A quem se destina <span class="text-danger">*</span></label>
+                                <input
+                                    id="ti-form-descricao"
+                                    v-model="form.descricao"
+                                    class="form-control form-control-sm"
+                                    type="text"
+                                    placeholder="Informe para quem se destina"
+                                    onblur="valida_campo_vazio(this, 1)"
+                                />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label class="mybp-label" for="ti-form-prazo-fixo">Prazo fixo (dias para vencimento)</label>
+                                <input
+                                    id="ti-form-prazo-fixo"
+                                    v-model="form.prazo_fixo"
+                                    class="form-control form-control-sm"
+                                    type="number"
+                                    placeholder="Ex: 365"
+                                    min="1"
+                                />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group">
+                                <label class="mybp-label" for="ti-form-ordem">Ordem</label>
+                                <input id="ti-form-ordem" v-model="form.ordem" class="form-control form-control-sm" type="number" />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-12 mybp-combobox-wrap">
+                            <div class="form-group">
+                                <label class="mybp-label" for="ti-form-segmento-input">Segmento / Padrão de treinamento</label>
+                                <combobox-auto-complete
+                                    ref="comboFormSegmento"
+                                    instance-id="form-segmento"
+                                    v-model="form.segmento_treinamento_id"
+                                    :options="segmentoComboboxOpcoesForm"
+                                    :disabled="preload || !segmentos.length"
+                                    input-id="ti-form-segmento-input"
+                                    placeholder-blur="Selecione o segmento"
+                                    empty-message="Nenhum segmento encontrado."
+                                    :max-results="50"
+                                    @opening="fecharOutrosComboboxes('form-segmento')"
+                                />
+                            </div>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <div class="custom-control custom-switch">
+                                <input
+                                    type="checkbox"
+                                    v-model="form.vinculo_todos_cargos"
+                                    class="custom-control-input"
+                                    id="vinculo_todos_cargos"
+                                    @change="onToggleVinculoTodosCargos"
+                                />
+                                <label class="custom-control-label" for="vinculo_todos_cargos">Vincular a todos os cargos</label>
+                            </div>
+                            <small v-if="form.vinculo_todos_cargos" class="text-muted d-block">
+                                Quando ativo, o treinamento vale para qualquer cargo, independentemente da lista abaixo.
+                            </small>
+                        </div>
+                        <div class="col-12 col-md-12" v-show="!form.vinculo_todos_cargos">
+                            <fieldset>
+                                <legend>Cargos vinculados</legend>
+                                <p class="text-muted small mb-2">
+                                    O mesmo vínculo é exibido no cadastro de Cargo (somente leitura).
+                                </p>
+                                <div class="form-group">
+                                    <label class="mybp-label" :for="`ti-form-cargo_${hash}`">Adicionar cargo</label>
+                                    <autocomplete
+                                        :caminho="`autocomplete/cargos_ativos`"
+                                        :formsm="true"
+                                        v-model="form.autocomplete_label_cargo"
+                                        placeholder="Selecione um cargo"
+                                        :id="`cargo_${hash}`"
+                                        @onselect="selecionaCargo"
+                                    ></autocomplete>
+                                </div>
+
+                                <div v-if="form.cargos.length > 0" class="mybp-cargos-vinculados-lista">
+                                    <div
+                                        class="mybp-cargo-vinculado-item"
+                                        v-for="(cargo, index) in form.cargos"
+                                        :key="cargo.id"
+                                    >
+                                        <span class="mybp-cargo-vinculado-nome">{{ cargo.nome }}</span>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            title="Remover cargo"
+                                            @click.prevent="removerCargo(index)"
+                                        >
+                                            <i class="fa fa-times" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <p v-else class="text-muted small mb-0">Nenhum cargo vinculado.</p>
+                            </fieldset>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="ativo" />
+                                <label class="custom-control-label" for="ativo">{{ form.ativo ? 'Ativo' : 'Inativo' }}</label>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando" @click="alterarformTreinamentoIndustria()">Salvar</button>
-                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando" @click="cadastrar()">Cadastrar</button>
+                <button type="button" class="btn btn-sm mr-1 btn-secondary" :disabled="preload" @click="fecharModal">
+                    <i class="fa fa-times"></i> Cancelar
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm mr-1 btn-primary"
+                    v-show="!cadastrado"
+                    :disabled="preload"
+                    @click="cadastrar()"
+                >
+                    <span v-if="salvando">
+                        <span class="spinner-border spinner-border-sm mr-1" role="status"></span>
+                        Salvando...
+                    </span>
+                    <span v-else><i class="fa fa-save"></i> Cadastrar</span>
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm mr-1 btn-primary"
+                    v-show="cadastrado"
+                    :disabled="preload"
+                    @click="alterarformTreinamentoIndustria()"
+                >
+                    <span v-if="salvando">
+                        <span class="spinner-border spinner-border-sm mr-1" role="status"></span>
+                        Salvando...
+                    </span>
+                    <span v-else><i class="fa fa-save"></i> Salvar</span>
+                </button>
             </template>
         </modal>
 
-        <!-- Filtro -->
-        <fieldset>
-            <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
-                <div class="col-12 col-md-5">
-                    <div class="form-group">
-                        <label>Buscar</label>
+        <FiltroListagem
+            @submit="onSubmitFiltro"
+            :mostrar-limpar-filtros="temFiltrosAtivos"
+            :desabilitado="controle.carregando"
+            @limpar="limparFiltros"
+        >
+            <template #filtros>
+                <div class="col-12 col-lg-4">
+                    <div class="form-group mb-2 mb-lg-0">
+                        <label class="mybp-label" for="treinamento-industria-filtro-busca">Buscar</label>
                         <input
+                            id="treinamento-industria-filtro-busca"
                             type="text"
-                            placeholder="Buscar por nome"
+                            placeholder="Buscar por nome, descrição ou ID"
                             autocomplete="off"
                             class="form-control form-control-sm"
                             :disabled="controle.carregando"
@@ -163,52 +222,61 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4">
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoStatus" @change="atualizar()">
-                            <option value="">Todos os Status</option>
-                            <option :value="true">Apenas Ativos</option>
-                            <option :value="false">Apenas Inativos</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-12 col-md-4">
-                    <div class="form-group">
-                        <label>Segmento</label>
-                        <select
-                            class="form-control form-control-sm"
-                            :disabled="controle.carregando"
-                            v-model="controle.dados.segmento_treinamento_id"
-                            @change="atualizar()"
-                        >
-                            <option value="">Todos os segmentos</option>
-                            <option v-for="s in segmentos" :key="s.id" :value="s.id">{{ s.nome }}</option>
-                        </select>
+                <div class="col-12 col-lg-3">
+                    <div class="form-group mb-2 mb-lg-0">
+                        <label class="mybp-label" for="treinamento-industria-filtro-status">Status</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroStatus"
+                                instance-id="filtro-status"
+                                v-model="controle.dados.campoStatus"
+                                :options="filtroStatusOpcoes"
+                                :disabled="controle.carregando"
+                                input-id="treinamento-industria-filtro-status"
+                                placeholder-blur="Todos os status"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @opening="fecharOutrosComboboxes('filtro-status')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
-                        <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                        Atualizar
-                    </button>
-
-                    <button
-                        type="button"
-                        class="btn btn-sm mr-1 btn-primary"
-                        :disabled="controle.carregando"
-                        @click="formNovo(); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
-                    >
-                        <i class="fa fa-plus"></i> Treinamento Indústria
-                    </button>
-
-                    <button type="button" class="btn btn-sm mr-1 btn-secondary" @click="$refs.modal_janelaAssinatura && $refs.modal_janelaAssinatura.abrirModal()">
-                        <i class="fa fa-plus"></i> Assinatura Carteira
-                    </button>
+                <div class="col-12 col-lg-5">
+                    <div class="form-group mb-2 mb-lg-0">
+                        <label class="mybp-label" for="treinamento-industria-filtro-segmento">Segmento</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroSegmento"
+                                instance-id="filtro-segmento"
+                                v-model="controle.dados.segmento_treinamento_id"
+                                :options="segmentoComboboxOpcoesFiltro"
+                                :disabled="controle.carregando || !segmentos.length"
+                                input-id="treinamento-industria-filtro-segmento"
+                                placeholder-blur="Todos os segmentos"
+                                empty-message="Nenhum segmento encontrado."
+                                :max-results="50"
+                                @opening="fecharOutrosComboboxes('filtro-segmento')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
+                    </div>
                 </div>
-            </form>
-        </fieldset>
+            </template>
+
+            <template #acoes>
+                <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i> Atualizar
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" :disabled="controle.carregando" @click="abrirModalNovo">
+                    <i class="fa fa-plus"></i> Treinamento Indústria
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" @click="$refs.modal_janelaAssinatura && $refs.modal_janelaAssinatura.abrirModal()">
+                    <i class="fa fa-plus"></i> Assinatura Carteira
+                </button>
+            </template>
+        </FiltroListagem>
 
         <div id="conteudo">
             <p class="mt-2 text-center" v-if="controle.carregando">
@@ -219,48 +287,82 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-                <table class="tabela">
-                    <thead>
-                        <tr class="bg-default">
-                            <td class="text-center">Nº</td>
-                            <td class="text-center">Nome</td>
-                            <td class="text-center">Padrão de Treinamento</td>
-                            <td class="text-center">Todos os cargos</td>
-                            <td class="text-center">A Quem se destina</td>
-                            <td class="text-center">Prazo fixo (dias)</td>
-                            <td class="text-center">Ordem</td>
-                            <td class="text-center">Ativo</td>
-                            <td class="text-center">Ação</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(item, index) in lista" :key="index">
-                            <td class="text-center">{{ item.id }}</td>
-                            <td class="text-center">{{ item.label }}</td>
-                            <td class="text-center">{{ item.segmento_treinamento ? item.segmento_treinamento.nome : '-' }}</td>
-                            <td class="text-center">
-                                <span v-if="item.vinculo_todos_cargos" class="badge badge-info">Sim</span>
-                                <span v-else class="text-muted">Não</span>
-                            </td>
-                            <td class="text-center">{{ item.descricao }}</td>
-                            <td class="text-center">{{ item.prazo_fixo }}</td>
-                            <td class="text-center">{{ item.ordem }}</td>
-                            <td class="text-center">
-                                <bt-ativo :rota="`cadastro/treinamentoindustria/${item.id}/ativa-desativa`" :model="item"></bt-ativo>
-                            </td>
-                            <td class="text-center">
-                                <button
-                                    type="button"
-                                    class="btn btn-sm mr-1 btn-primary mb-1"
-                                    @click="alterarTreinamentoIndustria(item.id); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+                <div class="mybp-card" v-for="item in lista" :key="item.id">
+                    <div class="mybp-card-header-row">
+                        <div class="mybp-card-left">
+                            <span class="mybp-badge-id">#{{ item.id }}</span>
+                            <div class="mybp-card-titulo">
+                                <strong>{{ item.label }}</strong>
+                            </div>
+                        </div>
+                        <div class="mybp-card-right">
+                            <bt-ativo
+                                :rota="`cadastro/treinamentoindustria/${item.id}/ativa-desativa`"
+                                :model="item"
+                                @atualizou="atualizar()"
+                            ></bt-ativo>
+                            <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
+                                <a
+                                    class="mybp-btn-acoes-compact"
+                                    href="#"
+                                    role="button"
+                                    aria-haspopup="true"
+                                    :aria-expanded="isDropdownOpen(item.id) ? 'true' : 'false'"
+                                    @click.prevent.stop="toggleDropdown(item.id)"
                                 >
-                                    <i class="fa fa-edit"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div
+                                    class="dropdown-menu mybp-dropdown-menu dropdown-menu-right"
+                                    :class="{ show: isDropdownOpen(item.id) }"
+                                    @click="fecharDropdown"
+                                >
+                                    <a class="dropdown-item" href="javascript://" title="Editar" @click.prevent="abrirModalAlterar(item.id)">
+                                        <i class="fa fa-edit mr-1"></i> Editar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mybp-card-details-row">
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-layer-group text-muted"></i>
+                            <span class="mybp-detail-label">Padrão</span>
+                            <span class="mybp-detail-value">{{ nomeSegmento(item) }}</span>
+                        </div>
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-briefcase text-muted"></i>
+                            <span class="mybp-detail-label">Cargos vinculados</span>
+                            <span class="mybp-detail-value">{{ resumoCargos(item) }}</span>
+                        </div>
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-calendar-alt text-muted"></i>
+                            <span class="mybp-detail-label">Prazo fixo</span>
+                            <span class="mybp-detail-value">{{ prazoFixoTreinamento(item) }}</span>
+                        </div>
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-sort-numeric-up text-muted"></i>
+                            <span class="mybp-detail-label">Ordem</span>
+                            <span class="mybp-detail-value">{{ valorOuNaoInformado(item.ordem) }}</span>
+                        </div>
+                        <div class="mybp-detail-item mybp-detail-item--full">
+                            <i class="fas fa-info-circle text-muted"></i>
+                            <span class="mybp-detail-label">A quem se destina</span>
+                            <span class="mybp-detail-value">{{ valorOuNaoInformado(item.descricao) }}</span>
+                        </div>
+                    </div>
+                    <div class="mybp-card-secoes-row mt-2" v-if="item.exibir_na_carteira || item.label_reduzida">
+                        <div class="mybp-card-destaque mybp-card-destaque--info">
+                            <i class="fas fa-id-badge text-info"></i>
+                            <div class="mybp-card-destaque-info">
+                                <small class="mybp-card-destaque-etapa">Carteira de Treinamento</small>
+                                <strong class="mybp-card-destaque-valor">{{ labelCarteira(item) }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <controle-paginacao
@@ -268,7 +370,7 @@
                 id="controle"
                 ref="componente"
                 :url="urlPaginacao"
-                :por-pagina="qntPag"
+                :por-pagina="controle.dados.pages"
                 :dados="controle.dados"
                 v-on:carregou="carregou"
                 v-on:carregando="carregando"
@@ -281,12 +383,27 @@
 import controlePaginacao from '../../ControlePaginacao'
 import modal from '../../Modal'
 import AssinaturaCarteira from './AssinaturaCarteira.vue'
+import ComboboxAutoComplete from '../../ComboboxAutoComplete'
+import FiltroListagem from '../../ui/FiltroListagem'
+import {
+    lerFiltrosDaUrl,
+    lerPaginacaoDaUrl,
+    sincronizarFiltrosNaUrl,
+    montarExtrasPaginacao,
+    aplicarPaginaInicialListagem,
+    temFiltrosPreenchidos,
+    limparFiltrosListagem
+} from '../../../utils/listagemQueryParams'
+
+const CAMPOS_FILTRO_URL = ['campoBusca', 'campoStatus', 'segmento_treinamento_id']
 
 export default {
     components: {
         modal,
         controlePaginacao,
-        AssinaturaCarteira
+        AssinaturaCarteira,
+        ComboboxAutoComplete,
+        FiltroListagem
     },
     props: {
         qntPag: {
@@ -308,8 +425,60 @@ export default {
     },
     mounted() {
         this.carregarSegmentos()
-        this.atualizar()
         this.formDefault = _.cloneDeep(this.form)
+        lerFiltrosDaUrl(this.controle.dados, CAMPOS_FILTRO_URL)
+        const paginaInicial = lerPaginacaoDaUrl(this.controle.dados, { pagesDefault: this.qntPag })
+        document.addEventListener('click', this.onClickOutside)
+        this.$nextTick(() => {
+            aplicarPaginaInicialListagem(this, paginaInicial)
+            this.buscarListagem(false)
+        })
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
+        if (this.syncUrlTimer) {
+            clearTimeout(this.syncUrlTimer)
+        }
+    },
+    computed: {
+        filtroStatusOpcoes() {
+            return [
+                { value: '', label: 'Todos os status' },
+                { value: 'true', label: 'Apenas ativos' },
+                { value: 'false', label: 'Apenas inativos' }
+            ]
+        },
+        segmentoComboboxOpcoesFiltro() {
+            const segmentos = (this.segmentos || []).map((segmento) => ({
+                value: segmento.id,
+                label: segmento.nome,
+                raw: segmento
+            }))
+
+            return [{ value: '', label: 'Todos os segmentos' }, ...segmentos]
+        },
+        segmentoComboboxOpcoesForm() {
+            return (this.segmentos || []).map((segmento) => ({
+                value: segmento.id,
+                label: segmento.nome,
+                raw: segmento
+            }))
+        },
+        temFiltrosAtivos() {
+            return temFiltrosPreenchidos(this.controle.dados, CAMPOS_FILTRO_URL)
+        }
+    },
+    watch: {
+        'controle.dados': {
+            handler() {
+                if (this.syncUrlTimer) {
+                    clearTimeout(this.syncUrlTimer)
+                }
+
+                this.syncUrlTimer = setTimeout(() => this.syncUrlFiltros(), 400)
+            },
+            deep: true
+        }
     },
     data() {
         return {
@@ -318,6 +487,7 @@ export default {
             titulo_janela_assinatura: 'Assinatura Carteira',
 
             preload: false,
+            salvando: false,
             editando: false,
             cadastrado: false,
 
@@ -341,6 +511,8 @@ export default {
             segmentos: [],
 
             lista: [],
+            dropdownAbertoKey: null,
+            syncUrlTimer: null,
 
             urlPaginacao: `${URL_ADMIN}/cadastro/treinamentoindustria/atualizar`,
             controle: {
@@ -348,12 +520,110 @@ export default {
                 dados: {
                     campoBusca: '',
                     campoStatus: '',
-                    segmento_treinamento_id: ''
+                    segmento_treinamento_id: '',
+                    pages: this.qntPag
                 }
             }
         }
     },
     methods: {
+        onSubmitFiltro() {
+            this.atualizar()
+        },
+        fecharOutrosComboboxes(manter) {
+            if (manter !== 'filtro-status' && this.$refs.comboFiltroStatus?.close) {
+                this.$refs.comboFiltroStatus.close()
+            }
+            if (manter !== 'filtro-segmento' && this.$refs.comboFiltroSegmento?.close) {
+                this.$refs.comboFiltroSegmento.close()
+            }
+            if (manter !== 'form-segmento' && this.$refs.comboFormSegmento?.close) {
+                this.$refs.comboFormSegmento.close()
+            }
+        },
+        onSelectFiltro() {
+            this.atualizar()
+        },
+        limparFiltros() {
+            limparFiltrosListagem(this.controle.dados, CAMPOS_FILTRO_URL)
+            this.fecharOutrosComboboxes(null)
+            this.atualizar()
+        },
+        syncUrlFiltros() {
+            sincronizarFiltrosNaUrl(
+                this.controle.dados,
+                CAMPOS_FILTRO_URL,
+                montarExtrasPaginacao(this, { pagesDefault: this.qntPag })
+            )
+        },
+        buscarListagem(resetPagina = true) {
+            if (resetPagina && this.$refs?.componente) {
+                this.$refs.componente.atual = 1
+            }
+
+            this.$refs?.componente?.buscar?.()
+        },
+        onClickOutside(event) {
+            if (event?.target?.closest?.('.dropdown')) return
+            if (event?.target?.closest?.('.mybp-combobox-wrap')) return
+            this.dropdownAbertoKey = null
+            this.fecharOutrosComboboxes(null)
+        },
+        toggleDropdown(treinamentoIndustriaId) {
+            if (!treinamentoIndustriaId) return
+            const key = `treinamento-industria:${treinamentoIndustriaId}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(treinamentoIndustriaId) {
+            return this.dropdownAbertoKey === `treinamento-industria:${treinamentoIndustriaId}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
+        abrirModalNovo() {
+            this.formNovo()
+            this.$refs.modal_janelaCadastrar?.abrirModal?.()
+        },
+        async abrirModalAlterar(treinamentoIndustriaId) {
+            this.fecharDropdown()
+            try {
+                await this.alterarTreinamentoIndustria(treinamentoIndustriaId)
+                this.$refs.modal_janelaCadastrar?.abrirModal?.()
+            } catch (error) {
+                // erro já tratado em alterarTreinamentoIndustria
+            }
+        },
+        fecharModal() {
+            this.$refs.modal_janelaCadastrar?.fecharModal?.()
+        },
+        nomeSegmento(item) {
+            return item?.segmento_treinamento?.nome || item?.SegmentoTreinamento?.nome || 'Não informado'
+        },
+        prazoFixoTreinamento(item) {
+            return item?.prazo_fixo ? `${item.prazo_fixo} dias` : 'Não informado'
+        },
+        resumoCargos(item) {
+            if (item?.vinculo_todos_cargos) {
+                return 'Todos os cargos'
+            }
+
+            const quantidade = item?.vagas_count ?? item?.vagas?.length ?? item?.Vagas?.length
+            if (typeof quantidade === 'number') {
+                return quantidade === 1 ? '1 cargo' : `${quantidade} cargos`
+            }
+
+            return 'Nenhum cargo'
+        },
+        labelCarteira(item) {
+            if (!item?.exibir_na_carteira) {
+                return 'Não exibido'
+            }
+
+            return item.label_reduzida || 'Exibido sem nome reduzido'
+        },
+        valorOuNaoInformado(valor) {
+            return valor === null || valor === undefined || valor === '' ? 'Não informado' : valor
+        },
         removerCargo(index) {
             this.form.cargos.splice(index, 1)
             this.form.cargo_ids = this.form.cargos.map((item) => item.id)
@@ -396,22 +666,32 @@ export default {
                 })
         },
         formNovo() {
-            this.form = _.cloneDeep(this.formDefault) //copia
+            this.form = _.cloneDeep(this.formDefault)
             this.titulo_janela = 'Treinamento Indústria'
             this.editando = false
             this.cadastrado = false
+            this.salvando = false
             this.preload = false
             formReset()
             setupCampo()
         },
 
-        cadastrar() {
+        validarFormularioModal() {
             $('#janelaCadastrar :input:visible').trigger('blur')
             if ($('#janelaCadastrar :input:visible.is-invalid').length) {
                 mostraErro('', 'Verificar os erros')
                 return false
             }
-            this.preload = true
+
+            return true
+        },
+
+        cadastrar() {
+            if (!this.validarFormularioModal()) {
+                return false
+            }
+
+            this.salvando = true
             const payload = {
                 ...this.form,
                 prazo_parada: null,
@@ -421,53 +701,59 @@ export default {
                 .post(`${URL_ADMIN}/cadastro/treinamentoindustria`, payload)
                 .then((res) => {
                     if (res.status === 201) {
-                        this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
+                        this.fecharModal()
                         mostraSucesso('', 'Treinamento Indústria cadastrado com sucesso')
-                        this.cadastrado = true
-                        this.preload = false
                         this.atualizar()
                     }
                 })
-                .catch((error) => {
-                    this.cadastrado = false
-                    this.preload = false
+                .catch(() => {
+                    // erro tratado globalmente
+                })
+                .finally(() => {
+                    this.salvando = false
                 })
         },
-        alterarTreinamentoIndustria(treinamentoindustria) {
-            this.cadastrado = false
+        async alterarTreinamentoIndustria(treinamentoindustria) {
+            this.cadastrado = true
             this.editando = true
             this.titulo_janela = 'Alterando Treinamento Indústria'
+            this.salvando = false
+            this.preload = true
             formReset()
+            this.form = _.cloneDeep(this.formDefault)
 
-            this.form = _.cloneDeep(this.formDefault) //copia
+            try {
+                const response = await axios.get(`${URL_ADMIN}/cadastro/treinamentoindustria/${treinamentoindustria}/editar`)
+                Object.assign(this.form, response.data)
 
-            axios
-                .get(`${URL_ADMIN}/cadastro/treinamentoindustria/${treinamentoindustria}/editar`)
-                .then((response) => {
-                    Object.assign(this.form, response.data)
-                    if (this.form.vinculo_todos_cargos) {
-                        this.form.cargos = []
-                        this.form.cargo_ids = []
-                    } else {
-                        this.form.cargos = response.data.vagas || []
-                        this.form.cargo_ids = this.form.cargos.map((item) => item.id)
-                    }
-                    this.form.autocomplete_label_cargo = ''
-                    this.editando = true
-                    setupCampo()
-                })
-                .catch((error) => (this.preloadAjax = false))
+                const vagas = response.data.vagas || response.data.Vagas || []
+                if (this.form.vinculo_todos_cargos) {
+                    this.form.cargos = []
+                    this.form.cargo_ids = []
+                } else {
+                    this.form.cargos = vagas.map((item) => ({
+                        id: item.id,
+                        nome: item.nome
+                    }))
+                    this.form.cargo_ids = this.form.cargos.map((item) => item.id)
+                }
+
+                this.form.autocomplete_label_cargo = ''
+                setupCampo()
+            } catch (error) {
+                mostraErro('', 'Não foi possível carregar o treinamento.')
+                throw error
+            } finally {
+                this.preload = false
+            }
         },
         alterarformTreinamentoIndustria() {
             formReset()
-            $('#janelaCadastrar :input:enabled').trigger('blur')
-
-            if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
-                mostraErro('', 'Verificar os erros')
+            if (!this.validarFormularioModal()) {
                 return false
             }
 
-            this.preload = true
+            this.salvando = true
             const payload = {
                 ...this.form,
                 prazo_parada: null,
@@ -475,73 +761,54 @@ export default {
             }
             axios
                 .put(`${URL_ADMIN}/cadastro/treinamentoindustria/${this.form.id}`, payload)
-                .then((response) => {
-                    this.$refs.modal_janelaCadastrar && this.$refs.modal_janelaCadastrar.fecharModal()
+                .then(() => {
+                    this.fecharModal()
                     mostraSucesso('', 'Treinamento Indústria atualizado com sucesso')
-                    this.preload = false
-                    this.atualizado = true
                     this.atualizar()
                 })
-                .catch((error) => (this.preload = false))
+                .catch(() => {
+                    // erro tratado globalmente
+                })
+                .finally(() => {
+                    this.salvando = false
+                })
         },
         carregou(dados) {
-            this.lista = dados.items
+            this.lista = dados.items || []
             this.controle.carregando = false
+            this.$nextTick(() => this.syncUrlFiltros())
         },
         carregando() {
             this.controle.carregando = true
         },
         atualizar() {
-            this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
-            this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+            this.buscarListagem(true)
         }
     }
 }
 </script>
 
 <style scoped>
-.card {
-    border: none;
-    background: transparent;
+.mybp-cargos-vinculados-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-ul.timeline {
-    list-style-type: none;
-    position: relative;
+.mybp-cargo-vinculado-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    background: #fff;
 }
 
-ul.timeline:before {
-    content: ' ';
-    background: #d4d9df;
-    display: inline-block;
-    position: absolute;
-    left: 29px;
-    width: 2px;
-    height: 100%;
-    z-index: 400;
-}
-
-ul.timeline > li {
-    margin: 20px 0;
-    padding-left: 20px;
-}
-
-ul.timeline > li:before {
-    content: ' ';
-    background: white;
-    display: inline-block;
-    position: absolute;
-    border-radius: 50%;
-    border: 3px solid #184056;
-    left: 20px;
-    width: 20px;
-    height: 20px;
-    z-index: 400;
-}
-
-.trackind {
-    padding: 0.5rem 0.8rem;
-    background-color: #f4f4f4;
-    border-radius: 0.5rem;
+.mybp-cargo-vinculado-nome {
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
 }
 </style>

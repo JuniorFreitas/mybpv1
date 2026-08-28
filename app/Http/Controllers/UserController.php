@@ -138,7 +138,7 @@ class UserController extends Controller
     public function edit(User $usuario)
     {
         $this->authorize('usuario_usuarios_update');
-        $usuario->load('papel:id,nome', 'Empresa', 'UserRecebeEmail');
+        $usuario->load('papel:id,nome', 'Empresa', 'UserRecebeEmail', 'GestorSuperior:id,nome');
         $usuario->setRelation(
             'telefones',
             TelefoneCurriculo::where('curriculo_id', $usuario->id)->get()
