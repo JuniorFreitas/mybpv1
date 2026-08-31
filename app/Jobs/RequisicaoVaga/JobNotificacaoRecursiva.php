@@ -66,7 +66,7 @@ class JobNotificacaoRecursiva implements ShouldQueue
                 ->where('empresa_id', $this->empresaId)
                 ->where('ativo', true)
                 ->where('tipo', '!=', 'Empresa')
-                ->where('login', '!=', 'sistema@mybp.com.br')
+                ->where('is_sistema', false)
                 ->get()
                 ->keyBy('id')
                 : collect();

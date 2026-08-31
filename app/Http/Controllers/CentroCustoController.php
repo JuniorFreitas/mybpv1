@@ -52,13 +52,15 @@ class CentroCustoController extends Controller
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true';
 
-        $regra = Rule::unique('centro_custos')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
+        $empresaAtivaId = auth()->user()->empresaAtivaId();
+
+        $regra = Rule::unique('centro_custos')->where(function ($query) use ($dados, $empresaAtivaId) {
+            return $query->whereEmpresaId($empresaAtivaId)
                 ->whereLabel($dados['label']);
         });
 
         $regras = ['label' => ['required', $regra]];
-        if ((new ClienteFilial())->temFilial()) {
+        if ((new ClienteFilial())->temFilial($empresaAtivaId)) {
             $regras['campoCnpj'] = ['required', 'string'];
         }
 
@@ -79,7 +81,7 @@ class CentroCustoController extends Controller
                     $dados['gestor_id'] ?? null,
                     $dados['gestor_substituto_id'] ?? null
                 );
-                $this->cnpjSyncService->sincronizar($centro, $dados['campoCnpj'] ?? null);
+                $this->cnpjSyncService->sincronizar($centro, $dados['campoCnpj'] ?? null, $empresaAtivaId);
                 DB::commit();
                 return response()->json([], 201);
 
@@ -122,7 +124,7 @@ class CentroCustoController extends Controller
         $centro->gestor_substituto_id = $centro->GestorSubstituto?->usuario_id ?? '';
         $centro->autocomplete_label_gestor_substituto_modal = $centro->GestorSubstituto?->Usuario?->nome ?? '';
         $centro->autocomplete_label_gestor_substituto_modal_anterior = $centro->autocomplete_label_gestor_substituto_modal;
-        $centro->campo_cnpj = $this->cnpjSyncService->resolverCampoCnpj($centro);
+        $centro->campo_cnpj = $this->cnpjSyncService->resolverCampoCnpj($centro, auth()->user()->empresaAtivaId());
 
         return $centro;
     }
@@ -141,13 +143,15 @@ class CentroCustoController extends Controller
         $centro = CentroCusto::find($id);
         $dados['ativo'] = $dados['ativo'] == 'true';
 
-        $regra = Rule::unique('centro_custos')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
+        $empresaAtivaId = auth()->user()->empresaAtivaId();
+
+        $regra = Rule::unique('centro_custos')->where(function ($query) use ($dados, $empresaAtivaId) {
+            return $query->whereEmpresaId($empresaAtivaId)
                 ->whereLabel($dados['label']);
         })->ignore($centro->id);
 
         $regras = ['label' => ['required', $regra]];
-        if ((new ClienteFilial())->temFilial()) {
+        if ((new ClienteFilial())->temFilial($empresaAtivaId)) {
             $regras['campoCnpj'] = ['required', 'string'];
         }
 
@@ -168,7 +172,7 @@ class CentroCustoController extends Controller
                     $dados['gestor_id'] ?? null,
                     $dados['gestor_substituto_id'] ?? null
                 );
-                $this->cnpjSyncService->sincronizar($centro, $dados['campoCnpj'] ?? null);
+                $this->cnpjSyncService->sincronizar($centro, $dados['campoCnpj'] ?? null, $empresaAtivaId);
                 DB::commit();
                 return response()->json([], 201);
 
@@ -230,9 +234,11 @@ class CentroCustoController extends Controller
             }
         }
 
+        $empresaAtivaId = auth()->user()->empresaAtivaId();
+
         $listaCcs = null;
         if ($request->filled('campoCnpj')) {
-            $listaCcs = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+            $listaCcs = (new CentroCusto())->listaCentroCustoPorCnpj($empresaAtivaId);
             $grupoCentros = $listaCcs['centros_custos'][$request->campoCnpj] ?? collect();
 
             if ($grupoCentros->isNotEmpty()) {
@@ -245,7 +251,7 @@ class CentroCustoController extends Controller
         $resultado = $resultado->paginate($porPagina);
 
         if ($listaCcs === null) {
-            $listaCcs = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+            $listaCcs = (new CentroCusto())->listaCentroCustoPorCnpj($empresaAtivaId);
         }
 
         return response()->json([
@@ -273,7 +279,7 @@ class CentroCustoController extends Controller
     public function getFiliais(Request $request)
     {
         $resposta = CentroCustoFilial::where('ativo', $request->ativo ?? true)
-            ->where('empresa_id', auth()->user()->empresa_id ?? $request->empresa_id)
+            ->where('empresa_id', auth()->user()->empresaAtivaId() ?? $request->empresa_id)
             ->with('Filial')
             ->get()->map(function ($item) {
                 return [
@@ -289,7 +295,7 @@ class CentroCustoController extends Controller
     {
 
         $resposta = CentroCustoFilial::where('ativo',true)->where('centro_custo_id', $request->centro_custo_id)
-            ->where('empresa_id', auth()->user()->empresa_id ?? $request->empresa_id)
+            ->where('empresa_id', auth()->user()->empresaAtivaId() ?? $request->empresa_id)
             ->with('Filial')
             ->get()->map(function ($item) {
                 return [

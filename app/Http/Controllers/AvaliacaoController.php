@@ -257,7 +257,7 @@ class AvaliacaoController extends Controller
         $avaliacoes_tipos = AvaliacaoTipo::whereAtivo(true)->where('tipo_pj', $request->tipo_pj)->get();
         $lista_tipos_avaliadores = AvaliacaoAvaliadoresTipos::whereAtivo(true)->where('tipo_pj', $request->tipo_pj)->get();
 
-        $listaAvaliacaoPorAno = (new Avaliacao())->listaTodasAvaliacoesAgrupadaAno(auth()->user()->empresa_id);
+        $listaAvaliacaoPorAno = (new Avaliacao())->listaTodasAvaliacoesAgrupadaAno(auth()->user()->empresaAtivaId());
 
         //o filtro da listaAvaliacaoPorAno deve pecorrer a collect $listaAvaliacaoPorAno e filtrar os anos que contem o tipo de pj
         $filtroListaAvaliacaoPorAnoComTipoPj = collect($listaAvaliacaoPorAno)->map(function ($avaliacoes, $ano) use ($request) {
@@ -383,7 +383,7 @@ class AvaliacaoController extends Controller
         $avaliacoesFeedbacks = collect($resultado->items());
         $feedbacksFluxoCompleto = $this->decorarFeedbacks($feedbacksFluxoCompleto);
 
-        $avaliacoes_ano = (new Avaliacao())->listaTodasAvaliacoesAgrupadaAno(auth()->user()->empresa_id);
+        $avaliacoes_ano = (new Avaliacao())->listaTodasAvaliacoesAgrupadaAno(auth()->user()->empresaAtivaId());
 
         $listaAvaliadores = $opcoesFiltroFeedbacks
             ->filter(fn($item) => $item->Avaliador)
@@ -731,7 +731,7 @@ class AvaliacaoController extends Controller
         }
 
         $feedbackCurriculo = FeedbackCurriculo::select(['id', 'curriculo_id', 'empresa_id'])->whereCurriculoId($avaliacaoFeedback->funcionario_id)
-            ->whereEmpresaId(auth()->user()->empresa_id)
+            ->whereEmpresaId(auth()->user()->empresaAtivaId())
             ->first();
 
 
@@ -972,7 +972,7 @@ class AvaliacaoController extends Controller
         }, []);
 
         $feedbackCurriculo = FeedbackCurriculo::whereCurriculoId($avaliacaoFeedback->funcionario_id)
-            ->whereEmpresaId(auth()->user()->empresa_id)
+            ->whereEmpresaId(auth()->user()->empresaAtivaId())
             ->first();
 
         $dadosDoFuncionario = [
@@ -998,7 +998,7 @@ class AvaliacaoController extends Controller
         }
 
         if (!$dadosEmpresa) {
-            $dadosEmpresa = Sistema::getEmpresa(auth()->user()->empresa_id);
+            $dadosEmpresa = Sistema::getEmpresa(auth()->user()->empresaAtivaId());
         }
 
         $total_questoes = collect($result_topico_agrupado)->collapse()->count();

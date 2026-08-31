@@ -56,12 +56,12 @@ class AniversariantesController extends Controller
 
         $dados = [
             'selecionados' => $request->selecionados,
-            'empresa_id' => auth()->user()->empresa_id
+            'empresa_id' => auth()->user()->empresaAtivaId()
         ];
 
         foreach ($request->selecionados as $selecionado) {
             ParabensEnviado::withoutGlobalScopes()->create([
-                'empresa_id' => auth()->user()->empresa_id,
+                'empresa_id' => auth()->user()->empresaAtivaId(),
                 'status' => ParabensEnviado::STATUS_ENVIANDO,
                 'curriculo_id' => $selecionado,
                 'ano' => (int)date('Y'),
@@ -187,7 +187,7 @@ class AniversariantesController extends Controller
         $view = 'pdf.relatorio.aniversariantes.aniversariantes';
         $nameArquivo = "relatorio_aniversariantes_" . (new DataHora())->nomeUnico() . ".pdf";
 
-        $usuario['empresa_id'] = auth()->user()->empresa_id;
+        $usuario['empresa_id'] = auth()->user()->empresaAtivaId();
         $usuario['id'] = auth()->user()->id;
         $usuario['nome'] = auth()->user()->nome;
         $usuario['logo'] = null;

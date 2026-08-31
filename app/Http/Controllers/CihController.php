@@ -100,7 +100,7 @@ class CihController extends Controller
             $dados['tag_id'] = $dados['tag_id'] > 0 ? $dados['tag_id'] : null;
             $dados['area_id'] = $dados['area_id'] > 0 ? $dados['area_id'] : null;
             $dados['centro_custo_id'] = $dados['centro_custo_id'] > 0 ? $dados['centro_custo_id'] : null;
-            $dados['empresa_id'] = auth()->user()->empresa_id;
+            $dados['empresa_id'] = auth()->user()->empresaAtivaId();
 
             if ($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
                 $centroDeCusto = CentroCusto::find($dados['centro_custo_id']);
@@ -136,8 +136,8 @@ class CihController extends Controller
 
             if ($dados['gestor_id']) {
                 $jobDados = [
-                    'empresa_id' => auth()->user()->empresa_id,
-                    'empresa' => Cliente::whereId(auth()->user()->empresa_id)->select(['id', 'razao_social', 'apelido'])->first(),
+                    'empresa_id' => auth()->user()->empresaAtivaId(),
+                    'empresa' => Cliente::whereId(auth()->user()->empresaAtivaId())->select(['id', 'razao_social', 'apelido'])->first(),
                     'nome_de' => auth()->user()->nome,
                     'email_de' => auth()->user()->login,
                     'varios_colaboradores' => count($dados['colaboradores']) > 1 ? 'Sim' : 'Não',
@@ -150,7 +150,7 @@ class CihController extends Controller
                     $gestor = $centroDeCusto->Gestor;
                     $jobDados['centro_de_custo'] = $centroDeCusto->label;
                 } else {
-                    $gestor = User::whereEmpresaId(auth()->user()->empresa_id)->whereId($dados['gestor_id'])->first();
+                    $gestor = User::whereEmpresaId(auth()->user()->empresaAtivaId())->whereId($dados['gestor_id'])->first();
                     $jobDados['area'] = $dados['area_id'] == 0 ? $dados['outra_area'] : AreaEtiqueta::find($dados['area_id'])->label;
                 }
 
@@ -239,8 +239,8 @@ class CihController extends Controller
                 DB::commit();
 
                 $jobDados = [
-                    'empresa_id' => auth()->user()->empresa_id,
-                    'empresa' => Cliente::whereId(auth()->user()->empresa_id)->select(['id', 'razao_social', 'apelido'])->first(),
+                    'empresa_id' => auth()->user()->empresaAtivaId(),
+                    'empresa' => Cliente::whereId(auth()->user()->empresaAtivaId())->select(['id', 'razao_social', 'apelido'])->first(),
                     'nome_de' => $cih->ResponsavelAprovacao->nome,
                     'email_de' => $cih->ResponsavelAprovacao->login,
                     'nome_para' => $cih->ResponsavelLancamento->nome,
@@ -270,8 +270,8 @@ class CihController extends Controller
                 DB::commit();
 
                 $jobDados = [
-                    'empresa_id' => auth()->user()->empresa_id,
-                    'empresa' => Cliente::whereId(auth()->user()->empresa_id)->select(['id', 'razao_social', 'apelido'])->first(),
+                    'empresa_id' => auth()->user()->empresaAtivaId(),
+                    'empresa' => Cliente::whereId(auth()->user()->empresaAtivaId())->select(['id', 'razao_social', 'apelido'])->first(),
                     'nome_de' => $cih->RhAprovacao->nome,
                     'email_de' => $cih->RhAprovacao->login,
                     'nome_para' => $cih->ResponsavelLancamento->nome,
@@ -396,7 +396,7 @@ class CihController extends Controller
                     'RhAprovacao:id,nome']
             );
         } elseif (auth()->user()->grupo_id == 113) { //pog para Montisol
-            $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+            $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresaAtivaId());
             $ccMatriz = collect($cc['centros_custos']['12557849000140'])->where('ativo', '=', true);
             $resultado = Cih::with(['Colaboradores.Demissao' => function ($query) {
                     $query->select('id', 'feedback_id', 'data_desmobilizacao', DB::raw('DATEDIFF(NOW(), data_desmobilizacao) AS dias'));
@@ -528,7 +528,7 @@ class CihController extends Controller
         $dados = $request->input();
 
         $regra = Rule::unique('cih_tags')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
+            return $query->whereEmpresaId(auth()->user()->empresaAtivaId())
                 ->whereLabel($dados['label']);
         });
 
@@ -578,7 +578,7 @@ class CihController extends Controller
         $dados = $request->input();
 
         $regra = Rule::unique('cih_tags')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
+            return $query->whereEmpresaId(auth()->user()->empresaAtivaId())
                 ->whereLabel($dados['label']);
         })->ignore($tipocih->id);
 
@@ -690,7 +690,7 @@ class CihController extends Controller
         $view = 'pdf.admissao.apontamento.cih';
         $nameArquivo = "relatorio_cih_" . (new DataHora())->nomeUnico() . ".pdf";
 
-        $usuario['empresa_id'] = auth()->user()->empresa_id;
+        $usuario['empresa_id'] = auth()->user()->empresaAtivaId();
         $usuario['id'] = auth()->user()->id;
         $usuario['nome'] = auth()->user()->nome;
         $usuario['logo'] = null;

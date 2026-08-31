@@ -78,8 +78,8 @@ class AvaliacaoNoventaService
             $admissao = $avaliacao->FeedbackCurriculo->Admissao ?? null;
             $centro = $admissao ? $admissao->CentroCusto : null;
             $gestor = $centro ? $centro->Gestor : null; // User com id,nome,login
-            if (!$gestor || !$gestor->ativo || $gestor->login === 'sistema@mybp.com.br') {
-                // Sem gestor, gestor inativo ou e-mail sistema: não enviar
+            if (!$gestor || !$gestor->ativo || $gestor->is_sistema) {
+                // Sem gestor, gestor inativo ou usuário sistema: não enviar
                 continue;
             }
 
@@ -122,7 +122,7 @@ class AvaliacaoNoventaService
         return User::query()
             ->where('empresa_id', $empresaId)
             ->where('ativo', true)
-            ->where('login', '!=', 'sistema@mybp.com.br')
+            ->where('is_sistema', false)
             ->select(['id', 'nome', 'login'])
             ->usuariosPrivilegioRh()
             ->orderBy('nome')

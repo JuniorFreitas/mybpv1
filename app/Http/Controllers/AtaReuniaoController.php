@@ -268,7 +268,7 @@ class AtaReuniaoController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'items' => $resultado->items(),
-                'empresa_id' => auth()->user()->empresa_id,
+                'empresa_id' => auth()->user()->empresaAtivaId(),
             ]
         ], 200);
 

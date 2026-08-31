@@ -31,7 +31,7 @@ class AvaliacaoPublicaController extends Controller
      */
     public function mostrarFormulario(string $token)
     {
-        $validacao = $this->avaliacaoService->validarTokenAvaliacao($token, auth()->user()->empresa_id);
+        $validacao = $this->avaliacaoService->validarTokenAvaliacao($token, auth()->user()->empresaAtivaId());
         
 
         if (!$validacao['valid']) {
@@ -80,7 +80,7 @@ class AvaliacaoPublicaController extends Controller
         $numeroAvaliacao = $qntAvaliacoes + 1;
 
         // Logo da empresa do usuário logado
-        $empresaId = auth()->user()->empresa_id ?? null;
+        $empresaId = auth()->user()->empresaAtivaId() ?? null;
         $dadosEmpresa = $empresaId ? Sistema::getEmpresa($empresaId) : [];
         $logo = $dadosEmpresa['logo'] ?? null;
 
@@ -119,7 +119,7 @@ class AvaliacaoPublicaController extends Controller
                     ->first();
                 Log::warning('Token inválido ao salvar Avaliação 90 dias', [
                     'token_prefix' => substr($token, 0, 10) . '...',
-                    'empresa_request' => auth()->user()->empresa_id ?? null,
+                    'empresa_request' => auth()->user()->empresaAtivaId() ?? null,
                     'existe' => (bool) $raw,
                     'empresa_token' => $raw && $raw->FeedbackCurriculo ? $raw->FeedbackCurriculo->empresa_id : null,
                     'expirado' => $raw && $raw->token_expiracao ? \Carbon\Carbon::parse($raw->token_expiracao)->isPast() : null,

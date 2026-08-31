@@ -307,7 +307,7 @@ class AvaliadorController extends Controller
 
         $resultado = User::select(['id', 'nome', 'login', 'tipo', 'ativo'])
             ->TiposGerenciais()
-            ->whereEmpresaId(auth()->user()->empresa_id)
+            ->whereEmpresaId(auth()->user()->empresaAtivaId())
             ->whereAtivo(true)
             ->where(function ($query) use ($request) {
                 $query->whereHas('Curriculo.FeedBack.Admissao', function ($q) use ($request) {

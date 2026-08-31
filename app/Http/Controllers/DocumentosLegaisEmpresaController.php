@@ -196,7 +196,7 @@ class DocumentosLegaisEmpresaController extends Controller
 
         $tiposDocumentos = TipoDocumento::orderBy('nome')->get();
 
-        $permite_envio_whatsapp = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
+        $permite_envio_whatsapp = ClienteConfig::whereClienteId(auth()->user()->empresaAtivaId())->first();
         $permite_envio_whatsapp = !empty($permite_envio_whatsapp) && $permite_envio_whatsapp->envia_whatsapp;
 
         $permissoes = [

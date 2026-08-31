@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Vaga;
 use App\Models\Vencimento;
+use App\Tenant\Scopes\ScopeEmpresaGrupo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -45,11 +46,13 @@ class VagaController extends Controller
         $dados['cbo_id'] = empty($dados['cbo_id']) ? null : (int) $dados['cbo_id'];
         unset($dados['vencimento_ids']);
 
+        $empresaIdsDoGrupo = ScopeEmpresaGrupo::empresaIdsDoGrupo(auth()->user()->empresaAtivaId());
+
         $dadosValidados = \Validator::make($dados, [
             'nome' => [
                 'required',
-                Rule::unique('vagas')->where(function ($query) use ($request) {
-                    return $query->whereNome($request->nome)->whereEmpresaId(auth()->user()->empresa_id);
+                Rule::unique('vagas')->where(function ($query) use ($request, $empresaIdsDoGrupo) {
+                    return $query->whereNome($request->nome)->whereIn('empresa_id', $empresaIdsDoGrupo);
                 }),
             ],
             'ativo' => 'required|boolean',
@@ -137,11 +140,13 @@ class VagaController extends Controller
         $dados['cbo_id'] = empty($dados['cbo_id']) ? null : (int) $dados['cbo_id'];
         unset($dados['vencimento_ids']);
 
+        $empresaIdsDoGrupo = ScopeEmpresaGrupo::empresaIdsDoGrupo(auth()->user()->empresaAtivaId());
+
         $dadosValidados = \Validator::make($dados, [
             'nome' => [
                 'required',
-                Rule::unique('vagas')->ignore($vaga->id)->where(function ($query) use ($request) {
-                    return $query->whereNome($request->nome)->whereEmpresaId(auth()->user()->empresa_id);
+                Rule::unique('vagas')->ignore($vaga->id)->where(function ($query) use ($request, $empresaIdsDoGrupo) {
+                    return $query->whereNome($request->nome)->whereIn('empresa_id', $empresaIdsDoGrupo);
                 }),
             ],
             'ativo' => 'required|boolean',

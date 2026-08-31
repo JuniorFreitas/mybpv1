@@ -768,13 +768,13 @@ class FeedbackCurriculo extends Model
     {
         $cliente = new Cliente();
         $centroCusto = new CentroCusto();
-        $semfilial = isset($cliente->findFiliarOuMatriz(auth()->user()->empresa_id)['matriz']);
+        $semfilial = isset($cliente->findFiliarOuMatriz(auth()->user()->empresaAtivaId())['matriz']);
 
-        $campoCnpj = $semfilial ? $cliente->findFiliarOuMatriz(auth()->user()->empresa_id)['cnpjkey'] : $request->campoCnpj;
+        $campoCnpj = $semfilial ? $cliente->findFiliarOuMatriz(auth()->user()->empresaAtivaId())['cnpjkey'] : $request->campoCnpj;
         $request->merge(['campoCnpj' => $campoCnpj]);
 
         return $query->when($request->filled('campoCnpj'), function ($query) use ($request, $centroCusto) {
-            $centros_custos = $centroCusto->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+            $centros_custos = $centroCusto->listaCentroCustoPorCnpj(auth()->user()->empresaAtivaId());
             if (!$request->filled('campoCentroCusto')) {
                 return $query->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
                     $cc = $centros_custos['centros_custos'][$request->campoCnpj];

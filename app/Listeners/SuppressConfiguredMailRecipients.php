@@ -8,14 +8,23 @@ use Symfony\Component\Mime\Email;
 
 class SuppressConfiguredMailRecipients
 {
+    /**
+     * Login sintético gerado pelo dedup de users.login (ver migrations
+     * 2026_08_29_100002/100003/100006): "joao+dup12345@gmail.com" nunca é um
+     * endereço real, mesmo quando a conta continua ativo=1. Filtrado aqui
+     * (e não em cada callsite) porque não há ativo-check consistente nos
+     * ~25 pontos que leem User->login para montar destinatários de e-mail.
+     */
+    private const PADRAO_LOGIN_DEDUP = '/\+dup\d+@/i';
+
+    /**
+     * Placeholder de conta sistema (migration 100001): "sistema+123@mybp.com.br".
+     */
+    private const PADRAO_LOGIN_SISTEMA = '/^sistema\+\d+@mybp\.com\.br$/i';
+
     public function handle(MessageSending $event): ?bool
     {
         $suppressed = config('mail.suppress_recipients', []);
-
-        if ($suppressed === []) {
-            return null;
-        }
-
         $blocked = array_map('strtolower', $suppressed);
         $message = $event->message;
 
@@ -42,7 +51,14 @@ class SuppressConfiguredMailRecipients
     private function filterAddresses(array $addresses, array $blocked): array
     {
         return array_values(array_filter($addresses, function (Address $address) use ($blocked) {
-            return ! in_array(strtolower($address->getAddress()), $blocked, true);
+            $endereco = strtolower($address->getAddress());
+
+            if (in_array($endereco, $blocked, true)) {
+                return false;
+            }
+
+            return ! preg_match(self::PADRAO_LOGIN_DEDUP, $endereco)
+                && ! preg_match(self::PADRAO_LOGIN_SISTEMA, $endereco);
         }));
     }
 

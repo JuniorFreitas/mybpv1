@@ -304,7 +304,7 @@ class DocumentosLegaisContratoController extends Controller
         if (!empty($contratoIds)) {
             $docs = DocumentoParaAssinatura::withoutGlobalScopes()
                 ->select(['id', 'token', 'status', 'arquivo_assinado_id', 'tipo_documento', 'documentable_id'])
-                ->where('empresa_id', auth()->user()->empresa_id)
+                ->where('empresa_id', auth()->user()->empresaAtivaId())
                 ->where('documentable_type', DocumentoContratos::class)
                 ->whereIn('documentable_id', $contratoIds)
                 ->orderBy('id', 'desc')
@@ -464,7 +464,7 @@ class DocumentosLegaisContratoController extends Controller
                 'ordem_assinatura' => 'nullable|in:sequencial,paralelo',
             ]);
 
-            $empresaId = auth()->user()->empresa_id;
+            $empresaId = auth()->user()->empresaAtivaId();
             DocumentoContratos::where('empresa_id', $empresaId)->findOrFail($request->contrato_id);
             app(\App\Services\AssinaturaDigital\AssinaturaCotaService::class)->validarDisponibilidadeOrFail($empresaId);
 

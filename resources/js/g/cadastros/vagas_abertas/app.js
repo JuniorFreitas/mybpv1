@@ -61,6 +61,7 @@ const app = createApp({
                 titulo: '',
                 requerimentos: '',
                 municipio_id: '',
+                empresa_id: null,
 
                 simulados: [],
                 simuladosDelete: [],
@@ -74,6 +75,7 @@ const app = createApp({
 
             formDefault: null,
             campoNome: null,
+            empresasDisponiveis: [],
 
             cadastrado: false,
             atualizado: false,
@@ -200,6 +202,7 @@ const app = createApp({
             buscarListagem(this, { resetPagina: false })
         })
         document.addEventListener('click', this.onClickOutside)
+        this.carregarEmpresasDisponiveis()
         // this.listaVagas();
     },
     beforeUnmount() {
@@ -209,6 +212,14 @@ const app = createApp({
         'controle.dados': criarWatchQueryParams(CAMPOS_FILTRO_URL, { pagesDefault: PAGES_DEFAULT })
     },
     methods: {
+        carregarEmpresasDisponiveis() {
+            axios
+                .get(`${URL_ADMIN}/cadastro/vagas-abertas/empresas-disponiveis`)
+                .then((response) => {
+                    this.empresasDisponiveis = response.data
+                })
+                .catch(() => {})
+        },
         urlParamGetFiltros() {
             lerFiltrosDaUrl(this.controle.dados, CAMPOS_FILTRO_URL)
         },

@@ -46,7 +46,7 @@ class ProjetoController extends Controller
         $dados = $request->input();
 
         $regra = Rule::unique('projetos')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
+            return $query->whereEmpresaId(auth()->user()->empresaAtivaId())
                 ->whereNome($dados['nome']);
         });
 
@@ -142,7 +142,7 @@ class ProjetoController extends Controller
         $projeto = Projeto::findOrFail($id);
 
         $regra = Rule::unique('projetos')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
+            return $query->whereEmpresaId(auth()->user()->empresaAtivaId())
                 ->whereNome($dados['nome']);
         })->ignore($projeto->id);
 

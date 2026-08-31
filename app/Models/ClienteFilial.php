@@ -133,13 +133,13 @@ class ClienteFilial extends Model
      */
     public function temFilial($empresa_id = null)
     {
-        $empresa_id = $empresa_id ?? auth()->user()->empresa_id;
+        $empresa_id = $empresa_id ?? auth()->user()->empresaAtivaId();
         return $this->where('empresa_id', $empresa_id)->where('ativo', true)->count() > 0;
     }
 
     public function getListaFilialAtiva($empresa_id = null)
     {
-        $empresa_id = $empresa_id ?? auth()->user()->empresa_id;
+        $empresa_id = $empresa_id ?? auth()->user()->empresaAtivaId();
         return $this->select(['id', 'dados', 'ativo'])->where('empresa_id', $empresa_id)->where('ativo', true)->orderBy('dados->razao_social')->get();
     }
 

@@ -163,6 +163,37 @@
                     </button>
                 </div>
 
+                <!-- Empresa ativa -->
+                <div class="dropdown ml-1" v-if="empresasDisponiveis.length > 1" ref="dropdownEmpresa">
+                    <button
+                        type="button"
+                        class="btn header-item waves-effect"
+                        aria-haspopup="true"
+                        :aria-expanded="mostrarSeletorEmpresa ? 'true' : 'false'"
+                        @click="mostrarSeletorEmpresa = !mostrarSeletorEmpresa"
+                    >
+                        <i class="bx bx-buildings text-white" />
+                        <span class="d-none d-xl-inline-block ml-1 text-left text-white">{{ empresaAtivaNome }}</span>
+                        <i class="mdi mdi-chevron-down text-white d-none d-xl-inline-block" />
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right" :class="{ show: mostrarSeletorEmpresa }">
+                        <span class="dropdown-item d-xl-inline-block ml-1">Trocar empresa</span>
+                        <a
+                            v-for="empresa in empresasDisponiveis"
+                            :key="empresa.id"
+                            class="dropdown-item"
+                            href="javascript://"
+                            @click.prevent="trocarEmpresa(empresa.id)"
+                        >
+                            <i
+                                class="bx font-size-16 align-middle mr-1"
+                                :class="empresa.id === empresaAtivaId ? 'bx-check-circle text-success' : 'bx-buildings'"
+                            />
+                            <span>{{ empresa.nome_fantasia }}</span>
+                        </a>
+                    </div>
+                </div>
+
                 <!-- Usuário -->
                 <div class="dropdown d-inline-block">
                     <button
@@ -248,20 +279,67 @@ export default {
             preloadDownload: true,
             downloads: [],
             full: false,
+            empresasDisponiveis: [],
+            empresaAtivaId: null,
+            mostrarSeletorEmpresa: false,
             URL_SITE,
             URL_ADMIN
+        }
+    },
+    computed: {
+        empresaAtivaNome() {
+            const empresa = this.empresasDisponiveis.find((e) => e.id === this.empresaAtivaId)
+            return empresa ? empresa.nome_fantasia : 'Empresa'
         }
     },
     mounted() {
         this.formDefault = _.cloneDeep(this.form)
         this.initDropdowns()
+        this.carregarEmpresasDisponiveis()
+        document.addEventListener('click', this.fecharSeletorEmpresaSeForaDoClique)
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.fecharSeletorEmpresaSeForaDoClique)
     },
     methods: {
+        fecharSeletorEmpresaSeForaDoClique(event) {
+            if (!this.mostrarSeletorEmpresa) {
+                return
+            }
+            const container = this.$refs.dropdownEmpresa
+            if (container && !container.contains(event.target)) {
+                this.mostrarSeletorEmpresa = false
+            }
+        },
         initDropdowns() {
             if (typeof $ === 'undefined' || !$.fn || !$.fn.dropdown) {
                 return
             }
             $(this.$el).find('[data-toggle="dropdown"]').dropdown()
+        },
+        carregarEmpresasDisponiveis() {
+            axios
+                .get(`${URL_ADMIN}/empresa-ativa`)
+                .then((response) => {
+                    this.empresasDisponiveis = response.data.empresas
+                    this.empresaAtivaId = response.data.empresa_ativa_id
+                })
+                .catch(() => {})
+        },
+        trocarEmpresa(empresaId) {
+            if (empresaId === this.empresaAtivaId) {
+                return
+            }
+
+            axios
+                .post(`${URL_ADMIN}/empresa-ativa`, { empresa_id: empresaId })
+                .then(() => {
+                    mostraSucesso('', 'Empresa ativa atualizada com sucesso!')
+                    setTimeout(function () {
+                        document.location.reload(true)
+                    }, 1000)
+                })
+                .catch(() => {})
         },
         notificacao(arryMensagensNovas) {
             this.quantidadeMensagensNovas = arryMensagensNovas.length

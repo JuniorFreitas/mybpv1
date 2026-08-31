@@ -138,6 +138,8 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
     Route::put('concordarTermos', [\App\Http\Controllers\HomeController::class, 'concordarTermos'])->name('concordarTermos');
     Route::get('nps/deve-exibir', [\App\Http\Controllers\NpsController::class, 'deveExibir'])->name('nps.deve-exibir');
     Route::get('usuario/telefone/deve-atualizar', [\App\Http\Controllers\UserController::class, 'telefoneDeveAtualizar'])->name('usuario.telefone.deve-atualizar');
+    Route::get('empresa-ativa', [\App\Http\Controllers\TrocaEmpresaController::class, 'listar'])->name('empresa-ativa.listar');
+    Route::post('empresa-ativa', [\App\Http\Controllers\TrocaEmpresaController::class, 'trocar'])->name('empresa-ativa.trocar');
     Route::put('usuario/telefone', [\App\Http\Controllers\UserController::class, 'atualizarTelefoneUsuario'])->name('usuario.telefone.atualizar');
     Route::get('usuario/whatsapp-preferencias', [\App\Http\Controllers\UserController::class, 'showWhatsappPreferencias'])->name('usuario.whatsapp-preferencias.show');
     Route::put('usuario/whatsapp-preferencias', [\App\Http\Controllers\UserController::class, 'updateWhatsappPreferencias'])->name('usuario.whatsapp-preferencias.update');
@@ -520,6 +522,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::post('vagas-abertas/atualizar', [\App\Http\Controllers\VagasAbertasController::class, 'atualizar'])->name('vagas_abertas.atualizar')->middleware('can:cadastro_vagas_abertas');
             Route::get('vagas-abertas/cargo/{vaga}/treinamentos', [\App\Http\Controllers\VagasAbertasController::class, 'treinamentosDoCargo'])->name('vagas_abertas.treinamentos_cargo')->middleware('can:cadastro_vagas_abertas');
             Route::get('vagas-abertas/prova/{simulado}/{vaga_aberta}', [\App\Http\Controllers\VagasAbertasController::class, 'vagaAbertaSimulado'])->name('vagas_abertas.vagaAbertaSimulado')->middleware('can:cadastro_vagas_abertas');
+            Route::get('vagas-abertas/empresas-disponiveis', [\App\Http\Controllers\VagasAbertasController::class, 'empresasDisponiveis'])->name('vagas_abertas.empresasDisponiveis')->middleware('can:cadastro_vagas_abertas');
             Route::resource('vagas-abertas', \App\Http\Controllers\VagasAbertasController::class)->middleware('can:cadastro_vagas_abertas');
         });
 

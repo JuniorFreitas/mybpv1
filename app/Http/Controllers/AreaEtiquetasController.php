@@ -32,7 +32,7 @@ class AreaEtiquetasController extends Controller
         $dados = $request->input();
 
         $regra = Rule::unique('area_etiquetas')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
+            return $query->whereEmpresaId(auth()->user()->empresaAtivaId())
                 ->whereLabel($dados['label']);
         });
 
@@ -97,7 +97,7 @@ class AreaEtiquetasController extends Controller
         $area = AreaEtiqueta::find($id);
 
         $regra = Rule::unique('area_etiquetas')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
+            return $query->whereEmpresaId(auth()->user()->empresaAtivaId())
                 ->whereLabel($dados['label']);
         })->ignore($area->id);
 
@@ -182,7 +182,7 @@ class AreaEtiquetasController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'items' => $items->values()->all(),
-                'empresa_id' => auth()->user()->empresa_id,
+                'empresa_id' => auth()->user()->empresaAtivaId(),
             ]
         ], 200);
     }

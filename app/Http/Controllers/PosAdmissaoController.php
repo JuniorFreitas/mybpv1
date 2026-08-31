@@ -429,11 +429,11 @@ class PosAdmissaoController extends Controller
         $motivosRescisoes = MotivoRescisao::whereAtivo(true)->get();
         $tipoRescisoes = TipoAviso::whereAtivo(true)->get();
         $classificacoesRescisoes = ClassificacaoRescisao::whereAtivo(true)->orderBy('classe')->get();
-        $formulario = Formulario::whereEmpresaId(auth()->user()->empresa_id)->whereTitulo('Formulario CheckList Pos Admissão')->first();
-        $formulario->load('Setores.Alternativas');
+        $formulario = Formulario::whereEmpresaId(auth()->user()->empresaAtivaId())->whereTitulo('Formulario CheckList Pos Admissão')->first();
+        $formulario?->load('Setores.Alternativas');
 
         $ids_form = array();
-        foreach ($formulario->Setores as $f) {
+        foreach ($formulario->Setores ?? [] as $f) {
             foreach ($f->alternativas as $a) {
                 $ids_form[$a->id] = false;
             }
@@ -443,7 +443,7 @@ class PosAdmissaoController extends Controller
 
         $resultado = $resultado->paginate($request->pages);
 
-        $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+        $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresaAtivaId());
         $items = collect($resultado->items())->transform(function ($item) use ($cc) {
             if ($item->admissao) {
                 $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $item->admissao->centro_custo_id)->first();
@@ -520,7 +520,7 @@ class PosAdmissaoController extends Controller
         }
 
 
-        $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+        $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresaAtivaId());
         $resultado = collect($resultado)->transform(function ($item) use ($cc) {
             $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $item->admissao->centro_custo_id)->first();
             $item->admissao->emp_cnpj = "";

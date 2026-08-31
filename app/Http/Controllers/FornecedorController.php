@@ -42,7 +42,7 @@ class FornecedorController extends Controller
 
         $dados = $request->input();
         $dados['cadastrou'] = auth()->id();
-        $dados['empresa_id'] = auth()->user()->empresa_id;
+        $dados['empresa_id'] = auth()->user()->empresaAtivaId();
 
         if (!isset($dados['telefones'])) {
             return response()->json(['msg' => 'É necessário informar pelo menos um número de telefone'], 400);

@@ -162,7 +162,7 @@ class AvaliacaoNoventaDiasController extends Controller
      */
     private function construirDadosRelatorio(): array
     {
-        $empresaId = auth()->user()->empresa_id;
+        $empresaId = auth()->user()->empresaAtivaId();
 
         $avaliacoes = $this->avaliacaoService->buscarAvaliacoesVencendoOuVencidas(
             $empresaId,

@@ -12,7 +12,7 @@ class EmpresaObserver
      */
     public function creating(Model $model)
     {
-        $empresa_id = auth()->check() ? auth()->user()->empresa_id : $model->empresa_id;
+        $empresa_id = auth()->check() ? auth()->user()->empresaAtivaId() : $model->empresa_id;
         $model->setAttribute('empresa_id', $empresa_id);
     }
 
@@ -22,7 +22,7 @@ class EmpresaObserver
      */
     public function updating(Model $model)
     {
-        $empresa_id = auth()->check() ? auth()->user()->empresa_id : $model->empresa_id;
+        $empresa_id = auth()->check() ? auth()->user()->empresaAtivaId() : $model->empresa_id;
         $model->setAttribute('empresa_id', $empresa_id);
     }
 }

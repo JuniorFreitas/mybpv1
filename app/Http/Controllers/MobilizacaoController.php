@@ -31,7 +31,7 @@ class MobilizacaoController extends Controller
 
     public function getprojetos()
     {
-        $projetos = Projeto::whereEmpresaId(auth()->user()->empresa_id)->with('VagasProjeto.VagaAberta.VagaSelecionada')->get()->map(function ($projeto) {
+        $projetos = Projeto::whereEmpresaId(auth()->user()->empresaAtivaId())->with('VagasProjeto.VagaAberta.VagaSelecionada')->get()->map(function ($projeto) {
             $projeto->text = $projeto->nome;
             return $projeto;
         });
@@ -65,13 +65,13 @@ class MobilizacaoController extends Controller
      */
     public function selecionaProjeto($projeto): Collection
     {
-        $projeto = Projeto::whereId($projeto)->whereEmpresaId(auth()->user()->empresa_id)->first();
+        $projeto = Projeto::whereId($projeto)->whereEmpresaId(auth()->user()->empresaAtivaId())->first();
 
         if (!$projeto) {
             return response()->json(['msg' => 'Sem autorização'], 403);
         }
 
-        $vagasProjeto = VagaProjeto::whereEmpresaId(auth()->user()->empresa_id)
+        $vagasProjeto = VagaProjeto::whereEmpresaId(auth()->user()->empresaAtivaId())
             ->whereProjetoId($projeto->id)
             ->with('VagaAberta:id,vaga_id,empresa_id,titulo', 'VagaAberta.Vaga:id,empresa_id,nome')
             ->get();

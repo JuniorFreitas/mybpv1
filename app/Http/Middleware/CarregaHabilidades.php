@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use App\Models\Habilidade;
-use App\Models\Papel;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
@@ -39,6 +38,8 @@ class CarregaHabilidades
 
     private function verificaSeGrupoEstaAtivo()
     {
-        return (bool)Papel::whereId(auth()->user()->grupo_id)->where('ativo', true)->first();
+        $papel = auth()->user()->papelAtivo();
+
+        return (bool) ($papel && $papel->ativo);
     }
 }

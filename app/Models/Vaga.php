@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-use App\Tenant\Traits\TenantTrait;
+use App\Tenant\Observers\EmpresaObserver;
+use App\Tenant\Scopes\ScopeEmpresaGrupo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
@@ -38,12 +39,25 @@ use App\Models\Concerns\HasActivitylogOptions;
  */
 class Vaga extends Model
 {
-    use HasFactory, LogsActivity, HasActivitylogOptions, TenantTrait;
+    use HasFactory, LogsActivity, HasActivitylogOptions;
 
     protected static $logFillable = true;
     protected static $logName = 'vaga';
     protected static $logOnlyDirty = true;
     protected static $submitEmptyLogs = false;
+
+    /**
+     * Cargo (Vaga) é compartilhado entre empresas do mesmo grupo — por isso
+     * usa ScopeEmpresaGrupo em vez do TenantTrait padrão (ScopeEmpresa),
+     * que isola por empresa única. Ver app/Tenant/Scopes/ScopeEmpresaGrupo.php.
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        static::addGlobalScope(new ScopeEmpresaGrupo());
+        static::observe(new EmpresaObserver());
+    }
 
     public function getDescriptionForEvent(string $eventName): string
     {

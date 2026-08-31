@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cliente;
 use App\Models\Municipio;
 use App\Models\Projeto;
 use App\Models\Simulado;
@@ -9,6 +10,7 @@ use App\Models\Vaga;
 use App\Models\VagaProjeto;
 use App\Models\VagasAbertas;
 use App\Models\Vencimento;
+use App\Tenant\Scopes\ScopeEmpresaGrupo;
 use Barryvdh\DomPDF\PDF;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +28,23 @@ class VagasAbertasController extends Controller
     {
         $this->authorize('cadastro_vagas_abertas');
         return view('g.cadastros.vagas_abertas.index');
+    }
+
+    /**
+     * Empresas do grupo pra escolher em qual delas abrir a vaga (cargo é
+     * compartilhado no grupo, mas o recrutamento em si é sempre pra 1
+     * empresa específica).
+     */
+    public function empresasDisponiveis()
+    {
+        $empresaIds = ScopeEmpresaGrupo::empresaIdsDoGrupo(auth()->user()->empresaAtivaId());
+
+        return response()->json(
+            Cliente::withoutGlobalScopes()
+                ->whereIn('id', $empresaIds)
+                ->orderBy('nome_fantasia')
+                ->get(['id', 'nome_fantasia'])
+        );
     }
 
     /**
@@ -51,9 +70,12 @@ class VagasAbertasController extends Controller
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
         $dados['ativo_sistema'] = $dados['ativo_sistema'] == 'true' ? true : false;
 
+        $empresaIdsDoGrupo = ScopeEmpresaGrupo::empresaIdsDoGrupo(auth()->user()->empresaAtivaId());
+
         $dadosValidados = \Validator::make($dados, [
             'vaga_id' => 'required',
-            'municipio_id' => 'required'
+            'municipio_id' => 'required',
+            'empresa_id' => ['nullable', 'integer', \Illuminate\Validation\Rule::in($empresaIdsDoGrupo)],
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
@@ -65,7 +87,15 @@ class VagasAbertasController extends Controller
             try {
                 DB::beginTransaction();
 
+                $empresaEscolhida = !empty($dados['empresa_id']) ? (int) $dados['empresa_id'] : null;
+                unset($dados['empresa_id']); // deixa o EmpresaObserver estampar a empresa ativa primeiro
+
                 $vagas_aberta = VagasAbertas::create($dados);
+
+                if ($empresaEscolhida && $empresaEscolhida !== $vagas_aberta->empresa_id) {
+                    $vagas_aberta->empresa_id = $empresaEscolhida;
+                    $vagas_aberta->saveQuietly();
+                }
 
                 if (isset($dados['simulados'])) {
                     foreach ($dados['simulados'] as $simulado) {
@@ -206,9 +236,12 @@ class VagasAbertasController extends Controller
         $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
         $dados['ativo_sistema'] = $dados['ativo_sistema'] == 'true' ? true : false;
 
+        $empresaIdsDoGrupo = ScopeEmpresaGrupo::empresaIdsDoGrupo(auth()->user()->empresaAtivaId());
+
         $dadosValidados = \Validator::make($dados, [
             'vaga_id' => 'required',
-            'municipio_id' => 'required'
+            'municipio_id' => 'required',
+            'empresa_id' => ['nullable', 'integer', \Illuminate\Validation\Rule::in($empresaIdsDoGrupo)],
         ]);
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
@@ -227,7 +260,16 @@ class VagasAbertasController extends Controller
 
             try {
                 DB::beginTransaction();
+
+                $empresaEscolhida = !empty($dados['empresa_id']) ? (int) $dados['empresa_id'] : null;
+                unset($dados['empresa_id']);
+
                 $vagas_aberta->update($dados);
+
+                if ($empresaEscolhida && $empresaEscolhida !== $vagas_aberta->empresa_id) {
+                    $vagas_aberta->empresa_id = $empresaEscolhida;
+                    $vagas_aberta->saveQuietly();
+                }
                 if (isset($dados['simuladosDelete'])) {
                     foreach ($dados['simuladosDelete'] as $id) {
                         $vagas_aberta->Simulados->find($id)->delete();

@@ -19,18 +19,18 @@ class ScopeEmpresa implements Scope
     {
         if ($model->hasCast('empresa_id')) { // pro nao aceitar Nome de classe statico, exemplo:  Curriculo:get();
             if(auth()->user()){
-                return $builder->where('empresa_id', auth()->user()->empresa_id);
+                return $builder->where('empresa_id', auth()->user()->empresaAtivaId());
             }
         }
 
       /*  if ($model->hasCast('cliente_id')) { // pro nao aceitar Nome de classe statico, exemplo:  Curriculo:get();
             if(auth()->user()){
-                return $builder->where('cliente_id', auth()->user()->empresa_id);
+                return $builder->where('cliente_id', auth()->user()->empresaAtivaId());
             }
         } */
         else {
             return $builder->whereHas('Pessoa', function ($query) {
-                $query->whereEmpresaId(auth()->user()->empresa_id);
+                $query->whereEmpresaId(auth()->user()->empresaAtivaId());
             });
         }
     }

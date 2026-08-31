@@ -14,6 +14,8 @@ use App\Models\Concerns\HasActivitylogOptions;
  * App\Models\Cliente
  *
  * @property int $id
+ * @property int|null $grupo_id
+ * @property bool $matriz
  * @property string $tipo_cliente
  * @property string|null $cnpj
  * @property string|null $cpf
@@ -141,6 +143,8 @@ class Cliente extends Model
 
     protected $fillable = [
         'id',
+        'grupo_id',
+        'matriz',
         'tipo_cliente',
         'cnpj',
         'cpf',
@@ -342,6 +346,16 @@ class Cliente extends Model
         return $this->hasOne(Area::class, 'id', 'area_id');
     }
 
+    public function Grupo()
+    {
+        return $this->belongsTo(Grupo::class, 'grupo_id', 'id');
+    }
+
+    public function EmpresasDoGrupo()
+    {
+        return $this->hasMany(Cliente::class, 'grupo_id', 'grupo_id')->where('id', '<>', $this->id);
+    }
+
     public function Telefones()
     {
         return $this->hasMany(ClienteTelefone::class, 'cliente_id', 'id');
@@ -464,7 +478,8 @@ class Cliente extends Model
         $cache_key = "cnpjs_{$idDaEmpresa}";
 
         if (is_null(cache()->get($cache_key))) {
-            $empresa = $this::where('id', $idDaEmpresa)
+            $empresa = $this::withoutGlobalScopes()
+                ->where('id', $idDaEmpresa)
                 ->with('Filiais')
                 ->first();
 
@@ -568,7 +583,7 @@ class Cliente extends Model
         });
 
         static::addGlobalScope('scopeCliente', function (Builder $builder) {
-            $builder->whereIn('id', auth()->user()->ClientesEmpresa->pluck('id'));
+            $builder->whereIn('clientes.id', auth()->user()->ClientesEmpresa->pluck('id'));
         });
     }
 

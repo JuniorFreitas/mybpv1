@@ -360,7 +360,14 @@ class Cih extends Model
 
     public function Colaboradores()
     {
+        // withoutGlobalScopes: mostrar quem é a pessoa do CIH não deve
+        // depender de qual empresa o cadastro dela (feedback_curriculos)
+        // está hoje — só exibição, não dá acesso a nada que o CIH já não
+        // mostrasse. Ver auditoria de dados ambíguos (pessoa com histórico
+        // em mais de uma empresa do grupo) antes de considerar reatribuir
+        // o dado em vez de só a exibição.
         return $this->belongsToMany(FeedbackCurriculo::class, 'cih_feedback', 'cih_id', 'feedback_id')
+            ->withoutGlobalScopes()
             ->select(['id', 'curriculo_id', 'vagas_abertas_id'])->with('Curriculo:id,nome,rg,orgao_expeditor,nascimento', 'Admissao:id,feedback_id,cargo,pis');
     }
 

@@ -975,7 +975,7 @@ class Sistema
 
         return cache()->remember('getFilial_' . $empresa_id . '_' . $centro_custo_filial_id, now()->addDays(120), function () use ($empresa_id, $centro_custo_filial_id) {
             $centroCustoFilial = CentroCustoFilial::withoutGlobalScopes()->with(['Filial' => function ($q) {
-                $q->select(['id', 'empresa_id', 'dados'])->withoutGlobalScopes();
+                $q->select(['id', 'empresa_id', 'dados', 'empresa_nova_id'])->withoutGlobalScopes();
             }])->find($centro_custo_filial_id);
 
             if (!$centroCustoFilial) {
@@ -983,6 +983,30 @@ class Sistema
             }
 
             $filial = $centroCustoFilial->Filial;
+
+            // Fase 5: filial já migrada vira uma empresa real (clientes/users,
+            // matriz=false) — usa esses dados estruturados em vez do JSON
+            // antigo. Mantém o mesmo "id" (cliente_filials.id) e "filial"=true
+            // de sempre, só troca a FONTE dos campos de exibição.
+            if ($filial->empresa_nova_id) {
+                $empresaNova = Cliente::withoutGlobalScopes()->find($filial->empresa_nova_id);
+
+                if ($empresaNova) {
+                    $logoArquivo = $empresaNova->Logo->first()?->urlThumb;
+
+                    return [
+                        'id' => $filial->id,
+                        'empresa_id' => $empresa_id,
+                        'razao_social' => $empresaNova->razao_social,
+                        'cnpj' => $empresaNova->cnpj,
+                        'nome_fantasia' => $empresaNova->nome_fantasia,
+                        'endereco_completo' => mb_strtoupper($empresaNova->endereco_completo),
+                        'logo' => $logoArquivo ? self::convertBase3($logoArquivo, true) : '',
+                        'filial' => true,
+                    ];
+                }
+            }
+
             $dados = (object)$filial->dados;
 
             if (isset($dados->logo)) {

@@ -145,6 +145,19 @@
                                   @onselect="selecionaMunicipioModal"></autocomplete>
                 </div>
 
+                <div class="form-group" v-if="empresasDisponiveis.length > 1">
+                    <label class="mybp-label" :for="`empresa_${hash}`">
+                        Empresa
+                    </label>
+                    <select :id="`empresa_${hash}`" class="form-control" v-model="form.empresa_id">
+                        <option :value="null">Empresa atual (padrão)</option>
+                        <option v-for="empresa in empresasDisponiveis" :key="empresa.id" :value="empresa.id">
+                            @{{ empresa.nome_fantasia }}
+                        </option>
+                    </select>
+                    <small class="text-muted">Pra qual empresa do grupo esse recrutamento é.</small>
+                </div>
+
                 <fieldset>
                     <legend>Projetos <small class="text-muted font-weight-normal">(opcional)</small></legend>
 

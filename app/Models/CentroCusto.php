@@ -125,7 +125,7 @@ class CentroCusto extends Model
         if (is_null(cache()->get($cache_key))) {
             $centrosDeCusto = $this->buscarCentrosDeCusto();
             $relatoriosCentroCustos = [];
-            $informacaoMatrizGeral = Cliente::select(['id', 'razao_social', 'nome_fantasia', 'cnpj'])->find($empresaId);
+            $informacaoMatrizGeral = Cliente::withoutGlobalScopes()->select(['id', 'razao_social', 'nome_fantasia', 'cnpj'])->find($empresaId);
 
             foreach ($centrosDeCusto as $centroDeCusto) {
                 $temFiliais = count($centroDeCusto->Filiais) > 0;
@@ -174,7 +174,7 @@ class CentroCusto extends Model
      */
     private function getEmpresaId($empresaId): ?int
     {
-        return !auth()->check() ? $empresaId : auth()->user()->empresa_id;
+        return !auth()->check() ? $empresaId : auth()->user()->empresaAtivaId();
     }
 
     /**

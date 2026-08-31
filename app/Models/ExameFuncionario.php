@@ -132,7 +132,11 @@ class ExameFuncionario extends Model
 
     public function Formulario()
     {
-        return $this->hasOne(Formulario::class, 'id', 'formulario_id');
+        // withoutGlobalScopes: Formulario tem setores/alternativas em
+        // cascata — duplicar por empresa-filial deixaria um checklist
+        // vazio (pior que o bug atual). É documento de referência
+        // compartilhado, só exibição, sem risco de misturar dado de pessoa.
+        return $this->hasOne(Formulario::class, 'id', 'formulario_id')->withoutGlobalScopes();
     }
 
     public function EmpresaExame()

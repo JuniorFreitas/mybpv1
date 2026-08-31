@@ -10,6 +10,7 @@ use App\Models\Arquivo;
 use App\Models\Cliente;
 use App\Models\ClienteConfig;
 use App\Models\ClienteFilial;
+use App\Models\EmpresaConfig;
 use App\Models\Curriculo;
 use App\Models\GrupoCloud;
 use App\Models\Papel;
@@ -247,43 +248,49 @@ class UserController extends Controller
         $cliente = auth()->user()->ClienteFuncionarios->first();
         //$cliente = auth()->user()->ClienteFuncionarios()->where('cliente_id',auth()->id())->first();
 
-        $whatsappLiberado = ClienteConfig::select('envia_whatsapp')->whereClienteId(auth()->user()->empresa_id)->first();
-        $temfilial = ClienteFilial::select('id')->whereEmpresaId(auth()->user()->empresa_id)->whereAtivo(true)->first();
+        // Empresa ATIVA (não a "de casa") — quem trocou pra uma filial precisa
+        // que temFilial/apelido/cnpjs/config_empresa reflitam essa escolha.
+        $empresaAtivaId = auth()->user()->empresaAtivaId();
+
+        $whatsappLiberado = ClienteConfig::select('envia_whatsapp')->whereClienteId($empresaAtivaId)->first();
+        $temfilial = ClienteFilial::select('id')->whereEmpresaId($empresaAtivaId)->whereAtivo(true)->first();
+        $configEmpresa = EmpresaConfig::where('empresa_id', $empresaAtivaId)->first();
+        $empresaConfiguracoes = ClienteConfig::where('cliente_id', $empresaAtivaId)->first();
 
         if ($cliente) {
             $usuario = [
-                'cliente_id' => auth()->user()->empresa_id,
+                'cliente_id' => $empresaAtivaId,
                 'area_id' => $cliente->Cliente->area_id,
-                'config_empresa' => auth()->user()->EmpresaPontoConfiguracoes,
-                'empresa_configuracoes' => auth()->user()->EmpresaConfiguracoes,
-                'empresa_id' => auth()->user()->empresa_id,
+                'config_empresa' => $configEmpresa,
+                'empresa_configuracoes' => $empresaConfiguracoes,
+                'empresa_id' => $empresaAtivaId,
                 'user_id' => auth()->id(),
                 'nome' => auth()->user()->nome,
                 'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
                 'podeConfigurarWhatsapp' => auth()->user()->can('configuracao_whatsapp') || auth()->user()->can('administracao_clientes'),
                 'podeConfigurarPreferenciasWhatsapp' => auth()->user()->can('preferencias_notificacao_whatsapp'),
                 'temFilial' => (bool)$temfilial,
-                'apelido' => Cliente::select('apelido')->whereId(auth()->user()->empresa_id)->first()->apelido,
-                'cnpjs' => (new Cliente())->Cnpjs(auth()->user()->empresa_id),
+                'apelido' => Cliente::withoutGlobalScopes()->select('apelido')->whereId($empresaAtivaId)->first()?->apelido,
+                'cnpjs' => (new Cliente())->Cnpjs($empresaAtivaId),
                 'gestao_rh' => auth()->user()->can('privilegio_gestao_rh')
             ];
 
         } else {
 //            $usuario = auth()->user()->ClientesEmpresa()->select(['id'])->with('Cliente:id,area_id')->get();
             $usuario = [
-                'cliente_id' => auth()->user()->empresa_id,
+                'cliente_id' => $empresaAtivaId,
                 'area_id' => 0,
-                'config_empresa' => auth()->user()->EmpresaPontoConfiguracoes,
-                'empresa_configuracoes' => auth()->user()->EmpresaConfiguracoes,
-                'empresa_id' => auth()->user()->empresa_id,
+                'config_empresa' => $configEmpresa,
+                'empresa_configuracoes' => $empresaConfiguracoes,
+                'empresa_id' => $empresaAtivaId,
                 'user_id' => auth()->id(),
                 'nome' => auth()->user()->nome,
                 'whatsappLiberado' => $whatsappLiberado ? $whatsappLiberado->envia_whatsapp : false,
                 'podeConfigurarWhatsapp' => auth()->user()->can('configuracao_whatsapp') || auth()->user()->can('administracao_clientes'),
                 'podeConfigurarPreferenciasWhatsapp' => auth()->user()->can('preferencias_notificacao_whatsapp'),
                 'temFilial' => (bool)$temfilial,
-                'apelido' => Cliente::select('apelido')->whereId(auth()->user()->empresa_id)->first()->apelido,
-                'cnpjs' => (new Cliente())->Cnpjs(auth()->user()->empresa_id),
+                'apelido' => Cliente::withoutGlobalScopes()->select('apelido')->whereId($empresaAtivaId)->first()?->apelido,
+                'cnpjs' => (new Cliente())->Cnpjs($empresaAtivaId),
                 'gestao_rh' => auth()->user()->can('privilegio_gestao_rh')
             ];
         }

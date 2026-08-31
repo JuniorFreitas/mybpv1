@@ -209,7 +209,7 @@ class Avaliacao extends Model
      */
     private function getEmpresaId($empresaId): ?int
     {
-        return !auth()->check() ? $empresaId : auth()->user()->empresa_id;
+        return !auth()->check() ? $empresaId : auth()->user()->empresaAtivaId();
     }
 
     public static function fluxoAvaliacao($avaliacao_id)

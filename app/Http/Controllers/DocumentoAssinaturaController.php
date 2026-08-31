@@ -38,7 +38,7 @@ class DocumentoAssinaturaController extends Controller
      */
     public function index(Request $request)
     {
-        $empresaId = auth()->user()->empresa_id;
+        $empresaId = auth()->user()->empresaAtivaId();
         $filtros = $request->only(['status', 'tipo_documento', 'solicitante_id', 'signatario', 'data_inicio', 'data_fim', 'id', 'per_page', 'page']);
         $filtros['per_page'] = $filtros['per_page'] ?? $request->get('porPagina', 15);
         $lista = $this->service->listar($empresaId, $filtros);
@@ -57,7 +57,7 @@ class DocumentoAssinaturaController extends Controller
 
     public function config()
     {
-        $empresaId = auth()->user()->empresa_id;
+        $empresaId = auth()->user()->empresaAtivaId();
         $resumo = $this->cotaService->obterResumoMensal($empresaId);
         $opcoes = $this->cotaService->listarUsuariosEGrupos($empresaId);
         $config = \App\Models\ClienteConfig::whereClienteId($empresaId)->first();
@@ -74,7 +74,7 @@ class DocumentoAssinaturaController extends Controller
 
     public function salvarConfig(Request $request)
     {
-        $empresaId = auth()->user()->empresa_id;
+        $empresaId = auth()->user()->empresaAtivaId();
         $dados = $request->validate([
             'limite_assinaturas_mensal' => 'nullable|integer|min:0',
             'assinatura_alerta_user_ids' => 'nullable|array',
@@ -97,7 +97,7 @@ class DocumentoAssinaturaController extends Controller
 
     public function exportarExtrato(Request $request)
     {
-        $empresaId = auth()->user()->empresa_id;
+        $empresaId = auth()->user()->empresaAtivaId();
         $userId = auth()->id();
         $dados = $request->validate([
             'formato' => 'required|in:xlsx,pdf',
@@ -142,7 +142,7 @@ class DocumentoAssinaturaController extends Controller
      */
     public function solicitantes()
     {
-        $empresaId = auth()->user()->empresa_id;
+        $empresaId = auth()->user()->empresaAtivaId();
         $ids = DocumentoParaAssinatura::where('empresa_id', $empresaId)
             ->whereNotNull('solicitante_id')
             ->distinct()
@@ -160,7 +160,7 @@ class DocumentoAssinaturaController extends Controller
      */
     public function show($idOrToken)
     {
-        $empresaId = auth()->user()->empresa_id;
+        $empresaId = auth()->user()->empresaAtivaId();
         $doc = DocumentoParaAssinatura::with(['signatarios', 'eventos', 'arquivo', 'arquivoAssinado', 'solicitante'])
             ->where('empresa_id', $empresaId)
             ->porIdOuToken($idOrToken)
@@ -175,7 +175,7 @@ class DocumentoAssinaturaController extends Controller
      */
     public function exportarEvidencias(Request $request, $idOrToken)
     {
-        $empresaId = auth()->user()->empresa_id;
+        $empresaId = auth()->user()->empresaAtivaId();
         $doc = DocumentoParaAssinatura::with(['signatarios', 'eventos', 'arquivo', 'arquivoAssinado', 'solicitante'])
             ->where('empresa_id', $empresaId)
             ->porIdOuToken($idOrToken)
@@ -272,7 +272,7 @@ class DocumentoAssinaturaController extends Controller
      */
     public function criarComArquivoExistente(Request $request)
     {
-        $empresaId = auth()->user()->empresa_id;
+        $empresaId = auth()->user()->empresaAtivaId();
         $payload = $request->validate([
             'arquivo_id' => 'required|integer',
             'tipo_documento' => 'required|string|max:80',
@@ -358,7 +358,7 @@ class DocumentoAssinaturaController extends Controller
      */
     public function downloadAssinado($idOrToken)
     {
-        $empresaId = auth()->user()->empresa_id;
+        $empresaId = auth()->user()->empresaAtivaId();
         $doc = DocumentoParaAssinatura::with('arquivoAssinado')
             ->where('empresa_id', $empresaId)
             ->porIdOuToken($idOrToken)
@@ -394,7 +394,7 @@ class DocumentoAssinaturaController extends Controller
      */
     public function cancelar(Request $request, $idOrToken)
     {
-        $empresaId = auth()->user()->empresa_id;
+        $empresaId = auth()->user()->empresaAtivaId();
         $doc = DocumentoParaAssinatura::where('empresa_id', $empresaId)->porIdOuToken($idOrToken)->first();
         if (!$doc) {
             return response()->json(['success' => false, 'message' => 'Documento não encontrado.'], 404);
@@ -410,7 +410,7 @@ class DocumentoAssinaturaController extends Controller
      */
     public function reenviarEmail($idOrToken)
     {
-        $empresaId = auth()->user()->empresa_id;
+        $empresaId = auth()->user()->empresaAtivaId();
         $doc = DocumentoParaAssinatura::where('empresa_id', $empresaId)->porIdOuToken($idOrToken)->first();
         if (!$doc) {
             return response()->json(['success' => false, 'message' => 'Documento não encontrado.'], 404);

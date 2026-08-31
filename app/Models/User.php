@@ -8,12 +8,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 use App\Models\Concerns\HasActivitylogOptions;
+use App\Tenant\Scopes\ScopeEmpresaGrupo;
 
 
 /**
@@ -28,6 +30,7 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @property string|null $uf
  * @property string|null $cep
  * @property string|null $login
+ * @property bool $is_sistema
  * @property string|null $password
  * @property string $tipo
  * @property int|null $grupo_id
@@ -43,6 +46,7 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @property string|null $device_token
  * @property string|null $api_token
  * @property int|null $empresa_id
+ * @property int|null $empresa_ativa_id
  * @property bool|null $gestor
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property bool $privilegio_gestor_area
@@ -253,6 +257,7 @@ class User extends Authenticatable
         'device_token' => 'string',
         'api_token' => 'string',
         'empresa_id' => 'int',
+        'empresa_ativa_id' => 'int',
         'gestor' => 'boolean',
         'gestor_superior_id' => 'int',
         'privilegio_gestor_area' => 'boolean',
@@ -310,10 +315,11 @@ class User extends Authenticatable
 
             //$habilidades = $papel->habilidades->pluck('nome');
 
-            if (!$this->papel) {
+            $papelAtivo = $this->papelAtivo();
+            if (!$papelAtivo) {
                 return [];
             }
-            $habilidades = $this->papel->habilidades->pluck('nome');
+            $habilidades = $papelAtivo->habilidades->pluck('nome');
             foreach ($habilidades as $habilidade) {
 
                 if ($lista->search($habilidade) === false) {
@@ -381,6 +387,78 @@ class User extends Authenticatable
         return $this->hasOne(Cliente::class, 'id', 'empresa_id');
     }
 
+    /**
+     * Fase 3 — todas as empresas às quais este usuário tem acesso (pivot
+     * user_empresas). empresa_id continua existindo como fallback/compat
+     * (aponta pra empresa "principal"/default do usuário), mas o acesso
+     * de verdade, incluindo a N empresas do mesmo grupo, é determinado
+     * por aqui.
+     */
+    public function Empresas()
+    {
+        // withoutGlobalScopes: Cliente::scopeCliente filtra pela carteira de
+        // clientes CRM da própria empresa do usuário (empresa_clientes) — um
+        // conceito de negócio diferente e sem relação com "a quais empresas
+        // este usuário tem login". Acesso aqui é definido só por user_empresas.
+        return $this->belongsToMany(Cliente::class, 'user_empresas', 'user_id', 'empresa_id')
+            ->withoutGlobalScopes()
+            ->wherePivot('ativo', true)
+            ->withTimestamps();
+    }
+
+    /**
+     * Acesso a uma empresa é automático dentro do mesmo grupo da empresa de
+     * casa — grupo é o limite real de multi-tenancy, não precisa de
+     * concessão manual em user_empresas pra isso (só pra acesso entre
+     * grupos diferentes, ex: alguém que também é Fornecedor de outra
+     * empresa sem relação nenhuma).
+     */
+    public function temAcessoEmpresa(int $empresaId): bool
+    {
+        if ($empresaId === $this->empresa_id) {
+            return true;
+        }
+
+        if (in_array($empresaId, ScopeEmpresaGrupo::empresaIdsDoGrupo($this->empresa_id), true)) {
+            return true;
+        }
+
+        return $this->Empresas()->where('clientes.id', $empresaId)->exists();
+    }
+
+    /**
+     * Todas as empresas que este usuário pode escolher no seletor: as do
+     * mesmo grupo da empresa de casa (automático) + concessões explícitas
+     * entre grupos diferentes (user_empresas).
+     */
+    public function empresasAcessiveis(): \Illuminate\Support\Collection
+    {
+        $idsDoGrupo = ScopeEmpresaGrupo::empresaIdsDoGrupo($this->empresa_id);
+
+        $doGrupo = Cliente::withoutGlobalScopes()
+            ->whereIn('id', $idsDoGrupo)
+            ->get(['id', 'nome_fantasia', 'matriz']);
+
+        $concedidas = $this->Empresas()->get(['clientes.id', 'clientes.nome_fantasia', 'clientes.matriz']);
+
+        return $doGrupo->merge($concedidas)->unique('id')->values();
+    }
+
+    /**
+     * Fase 4 — empresa que deve ser usada para escopar as queries desta
+     * sessão. Se o usuário tiver trocado de empresa ativa (empresa_ativa_id)
+     * E ainda tiver acesso a ela, usa essa; senão cai no empresa_id de
+     * sempre (fallback/compat — quem só tem 1 empresa nunca percebe isso).
+     */
+    public function empresaAtivaId(): ?int
+    {
+        if ($this->empresa_ativa_id && $this->temAcessoEmpresa($this->empresa_ativa_id)) {
+            return $this->empresa_ativa_id;
+        }
+
+        return $this->empresa_id;
+    }
+
     public function Fornecedor()
     {
         return $this->hasOne(Fornecedor::class, 'id', 'id');
@@ -390,6 +468,32 @@ class User extends Authenticatable
     public function Papel()
     {
         return $this->hasOne(Papel::class, 'id', 'grupo_id');
+    }
+
+    /**
+     * Papel a considerar para a empresa ativa atual. Cada vínculo em
+     * user_empresas pode ter seu próprio papel (permissões diferentes por
+     * empresa — ex: Gestor com Controle de Ponto numa, Administrador sem
+     * isso na outra). Sem papel específico pra essa empresa, cai no papel
+     * fixo do usuário (grupo_id) — comportamento de sempre, sem regressão
+     * pra quem tem uma única empresa ou nenhum papel específico definido.
+     */
+    public function papelAtivo(): ?Papel
+    {
+        $papelId = DB::table('user_empresas')
+            ->where('user_id', $this->id)
+            ->where('empresa_id', $this->empresaAtivaId())
+            ->where('ativo', true)
+            ->value('papel_id');
+
+        if ($papelId) {
+            $papel = Papel::find($papelId);
+            if ($papel) {
+                return $papel;
+            }
+        }
+
+        return $this->Papel;
     }
 
     public function GrupoCloud()

@@ -10,7 +10,7 @@ class CentroCustoCnpjSyncService
 {
     public function resolverCampoCnpj(CentroCusto $centro, ?int $empresaId = null): ?string
     {
-        $empresaId = $empresaId ?? auth()->user()->empresa_id;
+        $empresaId = $empresaId ?? auth()->user()->empresaAtivaId();
         $listaCcs = (new CentroCusto())->listaCentroCustoPorCnpj($empresaId);
 
         foreach ($listaCcs['centros_custos'] as $cnpjKey => $grupo) {
@@ -24,7 +24,7 @@ class CentroCustoCnpjSyncService
 
     public function resolverCampoCnpjMatriz(?int $empresaId = null): ?string
     {
-        $empresaId = $empresaId ?? auth()->user()->empresa_id;
+        $empresaId = $empresaId ?? auth()->user()->empresaAtivaId();
         $listaCcs = (new CentroCusto())->listaCentroCustoPorCnpj($empresaId);
 
         foreach ($listaCcs['cnpjs'] as $cnpjKey => $info) {
@@ -40,7 +40,7 @@ class CentroCustoCnpjSyncService
 
     public function sincronizar(CentroCusto $centro, ?string $campoCnpj, ?int $empresaId = null): void
     {
-        $empresaId = $empresaId ?? auth()->user()->empresa_id;
+        $empresaId = $empresaId ?? auth()->user()->empresaAtivaId();
         $clienteFilial = new ClienteFilial();
 
         if (!$clienteFilial->temFilial($empresaId)) {

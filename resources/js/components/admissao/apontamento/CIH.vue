@@ -138,10 +138,10 @@
                                                 <!--                                            <td class="text-center">{{ colaborador.curriculo.nome }}</td>
                                                                                         <td class="text-center">{{ colaborador.vaga_aberta.vaga.nome }}</td> -->
                                                 <td class="text-center">
-                                                    {{ !editando ? colaborador.label : colaborador.curriculo.nome }}
+                                                    {{ !editando ? colaborador.label : (colaborador.curriculo?.nome ?? '—') }}
                                                 </td>
                                                 <td class="text-center">
-                                                    {{ !editando ? colaborador.cargo : colaborador.vaga_aberta.vaga.nome }}
+                                                    {{ !editando ? colaborador.cargo : (colaborador.vaga_aberta?.vaga?.nome ?? '—') }}
                                                 </td>
                                                 <td class="text-center" v-if="!editando">
                                                     <a href="javascript://" class="btn btn-sm mr-1 btn-danger" @click.prevent="removerLIColaborador(index)">
@@ -481,13 +481,13 @@
                         <tr v-for="item in lista" :key="item.id">
                             <td class="text-center vertical-align-middle" v-text="item.id"></td>
                             <td class="text-center vertical-align-middle">
-                                {{ item.varios_colaboradores ? 'Varios colaboradores' : item.colaboradores[0].curriculo.nome }}
+                                {{ item.varios_colaboradores ? 'Varios colaboradores' : (item.colaboradores[0]?.curriculo?.nome ?? '—') }}
                             </td>
                             <td class="text-center vertical-align-middle">
                                 {{ item.tag ? item.tag.label : item.outra_tag }}
                             </td>
                             <td class="text-center vertical-align-middle" v-text="item.data_lancamento"></td>
-                            <td class="text-center vertical-align-middle">Lançado por {{ item.responsavel_lancamento.nome }} em<br />{{ item.created_at }}</td>
+                            <td class="text-center vertical-align-middle">Lançado por {{ item.responsavel_lancamento?.nome ?? '—' }} em<br />{{ item.created_at }}</td>
                             <td
                                 class="text-center font-weight-bold vertical-align-middle"
                                 :class="{
