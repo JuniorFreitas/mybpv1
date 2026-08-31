@@ -334,7 +334,6 @@ import controlePaginacao from '../../ControlePaginacao'
 import modal from '../../Modal'
 import FiltroListagem from '../../ui/FiltroListagem'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete'
-import editor from '@tinymce/tinymce-vue'
 import { temFiltrosPreenchidos, limparFiltrosListagem } from '../../../utils/listagemQueryParams'
 
 const CAMPOS_FILTRO_URL = ['campoBusca', 'campoTipoBeneficio']
@@ -344,8 +343,7 @@ export default {
         modal,
         controlePaginacao,
         FiltroListagem,
-        ComboboxAutoComplete,
-        editor
+        ComboboxAutoComplete
     },
     props: {
         qntPag: {

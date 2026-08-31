@@ -29,7 +29,7 @@
             <a class="nav-item nav-link" :class="aba_ativa === 'intermitente' ? 'active' : ''" id="nav-intermitente-tab" data-toggle="tab" href="#nav-intermitente" role="tab"
                v-if="permissoes_abas.intermitente"
                @click="trocaAba('intermitente')"
-               aria-controls="nav-intermitente" aria-selected="false">Mudança de Interminte p/ Fixo</a>
+               aria-controls="nav-intermitente" aria-selected="false">Mudança de Intermitente p/ Fixo</a>
             <a class="nav-item nav-link" :class="aba_ativa === 'transferencia' ? 'active' : ''" id="nav-transferencia-tab" data-toggle="tab" href="#nav-transferencia" role="tab"
                v-if="permissoes_abas.transferencia"
                @click="trocaAba('transferencia')"

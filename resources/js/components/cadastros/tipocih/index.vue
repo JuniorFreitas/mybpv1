@@ -114,13 +114,11 @@
 <script>
 import controlePaginacao from '../../ControlePaginacao'
 import modal from '../../Modal'
-import editor from '@tinymce/tinymce-vue'
 
 export default {
     components: {
         modal,
-        controlePaginacao,
-        editor
+        controlePaginacao
     },
     props: {
         qntPag: {

@@ -44,6 +44,7 @@ const components = {
     'telefone-usuario-modal': require('./components/TelefoneUsuarioModal.vue').default,
     'whatsapp-preferencias-usuario': require('./components/WhatsappPreferenciasUsuario.vue').default,
     'whatsapp-preview-modal': require('./components/configuracoes/whatsapp/WhatsappPreviewModal.vue').default,
+    'tiny-mce-editor': require('./components/TinyMceEditor.vue').default,
 }
 
 export function registerGlobals(app) {

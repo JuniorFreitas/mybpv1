@@ -80,7 +80,7 @@
 
                                         <div class="col-12 mt-2">
                                             <label>Enunciado</label>
-                                            <editor :api-key="tinyProva.key" v-model="objperg.enunciado" :init="tinyProva"></editor>
+                                            <tiny-mce-editor v-model="objperg.enunciado" preset="prova"></tiny-mce-editor>
                                         </div>
 
                                         <div class="col-12 mt-3 mb-3">
@@ -96,7 +96,7 @@
                                             <fieldset>
                                                 <legend>Opção {{ index + 1 }}</legend>
 
-                                                <editor :api-key="tinyProva.key" v-model="obj.resposta" :init="tinyProva"></editor>
+                                                <tiny-mce-editor v-model="obj.resposta" preset="prova"></tiny-mce-editor>
 
                                                 <div class="row">
                                                     <div class="form-group col-12 mt-3 mb-2">
@@ -160,7 +160,7 @@
 
                                         <div class="col-12 mt-2">
                                             <label>Enunciado</label>
-                                            <editor :api-key="tinyProva.key" v-model="objperg.enunciado" :init="tinyProva"></editor>
+                                            <tiny-mce-editor v-model="objperg.enunciado" preset="prova"></tiny-mce-editor>
                                         </div>
 
                                         <div class="col-12 mt-2">
@@ -284,15 +284,12 @@
 
 <script>
 import controlePaginacao from '../../ControlePaginacao'
-import editor from '@tinymce/tinymce-vue'
 import modal from '../../Modal'
-import { tinyProva } from '../../../utils'
 
 export default {
     components: {
         modal,
-        controlePaginacao,
-        editor
+        controlePaginacao
     },
     props: {
         qntPag: {
@@ -320,7 +317,6 @@ export default {
         return {
             hash: String(Math.random()).substr(2),
             titulo_janela: 'Montagem da Prova',
-            tinyProva,
 
             preload: false,
             editando: false,

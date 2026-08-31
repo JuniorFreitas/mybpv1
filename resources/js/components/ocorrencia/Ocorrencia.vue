@@ -175,7 +175,7 @@
                             <div class="col-12">
                                 <div class="form-group">
                                     <div class="input-group">
-                                        <editor :api-key="config.key" onblur="valida_campo_vazio(this, 1)" v-model="form.resposta" :init="config"></editor>
+                                        <tiny-mce-editor v-model="form.resposta" preset="" :init="config"></tiny-mce-editor>
                                     </div>
                                 </div>
                             </div>
@@ -577,7 +577,6 @@
 import controlePaginacao from '../ControlePaginacao'
 import modal from '../Modal'
 import upload from '../Upload'
-import editor from '@tinymce/tinymce-vue'
 import configTinyMCE from '../configTinyMCE'
 import autocomplete from '../AutoComplete'
 
@@ -586,7 +585,6 @@ export default {
         modal,
         controlePaginacao,
         upload,
-        editor,
         autocomplete
     },
     props: {

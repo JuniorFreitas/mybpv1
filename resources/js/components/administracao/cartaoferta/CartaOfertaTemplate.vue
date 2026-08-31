@@ -22,7 +22,7 @@
 
                 <div class="form-group">
                     <label>Conteudo da Carta Oferta</label>
-                    <editor v-model="form.conteudo_html" :init="configTinyMCE" />
+                    <tiny-mce-editor v-model="form.conteudo_html" preset="" :init="configTinyMCE" />
                 </div>
 
                 <div>
@@ -61,14 +61,10 @@
 </template>
 
 <script>
-import Editor from '@tinymce/tinymce-vue'
 import configTinyMCE from '../../configTinyMCE'
 
 export default {
     name: 'CartaOfertaTemplate',
-    components: {
-        Editor
-    },
     data() {
         return {
             salvando: false,

@@ -40,7 +40,7 @@
                             </div>
 
                             <div class="form-group">
-                                <editor :api-key='config.key' v-model="form.texto" :init="config"></editor>
+                                <tiny-mce-editor v-model="form.texto" preset="" :init="config"></tiny-mce-editor>
                             </div>
                         </div>
                     </div>

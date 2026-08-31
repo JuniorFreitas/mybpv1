@@ -59,8 +59,16 @@
                     >
                         <i class="fa fa-envelope"></i> Enviar Parabéns <span class="badge badge-light">{{ selecionadosMassa.length }}</span>
                     </button>
+                    <button type="button" class="btn btn-sm mr-1 btn-outline-secondary" :disabled="controle.carregando" @click="mostrarMensagem = !mostrarMensagem">
+                        <i class="fa fa-edit"></i> {{ mostrarMensagem ? 'Ocultar mensagem' : 'Mensagem de Aniversário' }}
+                    </button>
                 </div>
             </form>
+        </fieldset>
+
+        <fieldset v-if="mostrarMensagem" class="mt-3">
+            <legend>Mensagem de Aniversário</legend>
+            <aniversariante-mensagem></aniversariante-mensagem>
         </fieldset>
 
         <div id="conteudo">
@@ -118,11 +126,13 @@
 <script>
 import modal from '../../Modal'
 import DatePicker from '../../DatePicker'
+import AniversarianteMensagem from './AniversarianteMensagem.vue'
 
 export default {
     components: {
         DatePicker,
-        modal
+        modal,
+        AniversarianteMensagem
     },
     props: {
         qntPag: {
@@ -151,6 +161,7 @@ export default {
             selecionadosMassa: [],
             selecionaTudoMassa: false,
             niver_dia: 'todos',
+            mostrarMensagem: false,
 
             urlPaginacao: `${URL_ADMIN}/administracao/aniversariantes/atualizar`,
             controle: {

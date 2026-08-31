@@ -2,12 +2,10 @@ import { createApp } from 'vue'
 import { registerGlobals } from '../../../registerGlobals'
 import Upload from '../../../components/Upload'
 import configTinyMCE from '../../../components/configTinyMCE'
-import Editor from '@tinymce/tinymce-vue'
 
 const app = createApp({
     components: {
-        Upload,
-        Editor
+        Upload
     },
     data() {
         return {

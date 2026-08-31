@@ -1,8 +1,6 @@
 import { createApp } from 'vue'
 import { registerGlobals } from '../../../registerGlobals'
-import { tinyPadrao } from '../../../utils'
 import autocomplete from '../../../components/AutoComplete'
-import Editor from '@tinymce/tinymce-vue'
 import MixinConfig from '../../../mixins/Configuracoes'
 import ComboboxAutoComplete from '../../../components/ComboboxAutoComplete'
 import FiltroListagem from '../../../components/ui/FiltroListagem'
@@ -22,7 +20,6 @@ const PAGES_DEFAULT = 100
 const app = createApp({
     components: {
         autocomplete,
-        Editor,
         ComboboxAutoComplete
     },
     mixins: [MixinConfig],
@@ -45,7 +42,6 @@ const app = createApp({
             },
 
             hash: `mastertag_${parseInt(Math.random() * 999999)}`,
-            tinyPadrao,
             URL_SITE,
 
             form: {
