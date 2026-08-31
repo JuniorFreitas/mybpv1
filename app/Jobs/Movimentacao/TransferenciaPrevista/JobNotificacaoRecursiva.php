@@ -160,18 +160,18 @@ class JobNotificacaoRecursiva implements ShouldQueue
             return 'reprovado_rh';
         }
 
-        if (!$this->transferencia->status_aprovacao) {
+        if (!$this->transferencia->status_aprovacao && !$this->origemDispensada()) {
             return $this->transferencia->fluxo_gestores_automatico ? 'criacao_gestor_origem' : 'criacao';
         }
 
         if ($this->transferencia->fluxo_gestores_automatico
             && $this->transferencia->exige_aprovacao_gestor_destino
             && !$this->transferencia->status_aprovacao_gestor_destino
-            && $this->transferencia->status_aprovacao === 'aprovado') {
+            && $this->origemAprovadaOuDispensada()) {
             return 'criacao_gestor_destino';
         }
 
-        if ($this->transferencia->status_aprovacao === 'aprovado'
+        if ($this->origemAprovadaOuDispensada()
             && (!$this->transferencia->exige_aprovacao_gestor_destino || $this->transferencia->status_aprovacao_gestor_destino === 'aprovado')
             && !$this->transferencia->status_aprovacao_extra
             && !$this->transferencia->resposta_rh) {
@@ -187,6 +187,21 @@ class JobNotificacaoRecursiva implements ShouldQueue
         }
 
         return null;
+    }
+
+    private function origemDispensada(): bool
+    {
+        return (bool) $this->transferencia->fluxo_gestores_automatico
+            && !(int) ($this->transferencia->gestor_id ?? 0);
+    }
+
+    private function origemAprovadaOuDispensada(): bool
+    {
+        if ($this->origemDispensada()) {
+            return true;
+        }
+
+        return $this->transferencia->status_aprovacao === 'aprovado';
     }
 
     private function buscarEmailsRH(): array

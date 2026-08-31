@@ -60,16 +60,35 @@ class PublicoController extends Controller
 
     public function listaCentroCusto(Request $request)
     {
-        $centros = CentroCusto::select(['id', 'label'])->whereAtivo(true)
+        $incluirInativos = $request->boolean('incluir_inativos');
+
+        $query = CentroCusto::select(['id', 'label', 'ativo']);
+        if (!$incluirInativos) {
+            $query->whereAtivo(true);
+        }
+
+        $centros = $query
             ->with('Filiais', function ($query) {
                 $query->select(['id', 'centro_custo_id', 'cliente_filial_id', 'empresa_id'])
                     ->whereAtivo(true)
                     ->with('Filial:id,dados->razao_social as razao_social,dados->nome_fantasia as nome_fantasia');
             })
-            ->get()->transform(function ($item) {
+            ->get()
+            ->transform(function ($item) {
                 $item->text = $item->label;
+                if (!$item->ativo) {
+                    $item->label = $item->label . ' - (-- Inativo --)';
+                }
                 return $item;
             });
+
+        if ($incluirInativos) {
+            $centros = $centros
+                ->sortBy(fn ($item) => strtolower($item->label))
+                ->sortByDesc('ativo')
+                ->values();
+        }
+
         return ['centro_custos' => $centros];
     }
 
