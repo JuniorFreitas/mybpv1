@@ -2,7 +2,7 @@
 > Catálogo `dossie_tipos` com override por empresa
 
 Entry: `app/Http/Controllers/DossieTipoController.php`
-UI: `resources/js/components/cadastros/dossietipos/DossieTipos.vue`
+UI: `resources/js/components/cadastros/dossietipos/DossieTipos.vue` (`<script setup>`)
 Domain: `app/Services/Dossie/DossieTipoCadastroService.php`
 
 Flow: menu Cadastro → `/g/cadastro/dossietipos` → listagem mescla global + override da empresa (`DossieTipo::ativosOrdenados()` no dossiê do colaborador).

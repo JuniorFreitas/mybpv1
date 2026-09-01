@@ -1,16 +1,16 @@
 <template>
     <div id="componenteDossieTipos">
-        <modal
+        <ModalComponent
             id="janelaCadastrar"
             :titulo="titulo_janela"
-            :fechar="!preload && !salvando"
+            :fechar="!carregandoModal && !salvando"
             :mostrar-botao-fechar-no-rodape="false"
             :size="90"
             ref="modal_janelaCadastrar"
         >
             <template #conteudo>
-                <preload class="text-center" v-if="preload"></preload>
-                <fieldset class="mt-0" v-if="!preload">
+                <preload class="text-center" v-if="carregandoModal"></preload>
+                <fieldset class="mt-0" v-if="!carregandoModal">
                     <legend>Informações</legend>
                     <p class="mybp-campo-obrigatorio-legenda mb-3">
                         Campos com <span class="text-danger">*</span> são obrigatórios.
@@ -95,14 +95,14 @@
                 </fieldset>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm mr-1 btn-secondary" :disabled="preload || salvando" @click="fecharModal">
+                <button type="button" class="btn btn-sm mr-1 btn-secondary" :disabled="carregandoModal || salvando" @click="fecharModal">
                     <i class="fa fa-times"></i> Cancelar
                 </button>
                 <button
                     type="button"
                     class="btn btn-sm mr-1 btn-primary"
                     v-show="!cadastrado"
-                    :disabled="preload || salvando || anexoUploadAndamento"
+                    :disabled="carregandoModal || salvando || anexoUploadAndamento"
                     @click="cadastrar()"
                 >
                     <span v-if="salvando">
@@ -115,7 +115,7 @@
                     type="button"
                     class="btn btn-sm mr-1 btn-primary"
                     v-show="cadastrado"
-                    :disabled="preload || salvando || anexoUploadAndamento"
+                    :disabled="carregandoModal || salvando || anexoUploadAndamento"
                     @click="alterarForm()"
                 >
                     <span v-if="salvando">
@@ -125,7 +125,7 @@
                     <span v-else><i class="fa fa-save"></i> Salvar</span>
                 </button>
             </template>
-        </modal>
+        </ModalComponent>
 
         <FiltroListagem
             @submit="onSubmitFiltro"
@@ -301,9 +301,10 @@
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import controlePaginacao from '../../ControlePaginacao'
-import modal from '../../Modal'
+import ModalComponent from '../../Modal'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete'
 import FiltroListagem from '../../ui/FiltroListagem'
 import Upload from '../../Upload'
@@ -311,257 +312,290 @@ import {
     lerFiltrosDaUrl,
     lerPaginacaoDaUrl,
     sincronizarFiltrosNaUrl,
-    criarWatchQueryParams,
     montarExtrasPaginacao,
     aplicarPaginaInicialListagem,
-    buscarListagem,
     temFiltrosPreenchidos,
     limparFiltrosListagem
 } from '../../../utils/listagemQueryParams'
 
 const CAMPOS_FILTRO_URL = ['campoBusca', 'campoStatus', 'campoEscopo']
-const PAGES_DEFAULT = 20
 
-export default {
-    components: {
-        modal,
-        controlePaginacao,
-        ComboboxAutoComplete,
-        FiltroListagem,
-        Upload
+const props = defineProps({
+    qntPag: {
+        type: Number,
+        required: false,
+        default: 20
     },
-    props: {
-        qntPag: {
-            type: Number,
-            required: false,
-            default: 20
-        },
-        modal: {
-            type: String,
-            required: false,
-            default: ''
-        }
-    },
-    mounted() {
-        this.urlParamGetFiltros()
-        const paginaInicial = lerPaginacaoDaUrl(this.controle.dados, { pagesDefault: this.qntPag })
-        this.formDefault = _.cloneDeep(this.form)
-        document.addEventListener('click', this.onClickOutside)
-        this.$nextTick(() => {
-            aplicarPaginaInicialListagem(this, paginaInicial)
-            buscarListagem(this, { resetPagina: false })
-        })
-    },
-    beforeUnmount() {
-        document.removeEventListener('click', this.onClickOutside)
-    },
-    watch: {
-        'controle.dados': criarWatchQueryParams(CAMPOS_FILTRO_URL, { pagesDefault: PAGES_DEFAULT })
-    },
-    computed: {
-        temFiltrosAtivos() {
-            return temFiltrosPreenchidos(this.controle.dados, CAMPOS_FILTRO_URL)
-        },
-        filtroStatusOpcoes() {
-            return [
-                { value: '', label: 'Todos os status' },
-                { value: 'true', label: 'Apenas ativos' },
-                { value: 'false', label: 'Apenas inativos' }
-            ]
-        },
-        filtroEscopoOpcoes() {
-            return [
-                { value: '', label: 'Todos os escopos' },
-                { value: 'global', label: 'Padrão do sistema' },
-                { value: 'empresa', label: 'Da empresa' }
-            ]
-        },
-        editandoRegistroPadrao() {
-            return this.cadastrado && this.form.empresa_id == null
-        }
-    },
-    data() {
-        return {
-            titulo_janela: 'Tipo de Dossiê',
-            dropdownAbertoKey: null,
-            anexoUploadAndamento: false,
-            preload: false,
-            salvando: false,
-            editando: false,
-            cadastrado: false,
-            assinaturaDigitalHabilitada: typeof window !== 'undefined' ? !!window.MYBP_ASSINATURA_DIGITAL_HABILITADA : false,
-            form: {
-                label: '',
-                tipo: '',
-                chave: '',
-                tipo_modelo: '',
-                tipo_documento: '',
-                tem_modelo: false,
-                tem_modelo_sistema: false,
-                permite_assinatura: false,
-                ordem: 1,
-                ativo: true,
-                empresa_id: null,
-                modelo: [],
-                modeloDel: []
-            },
-            formDefault: null,
-            lista: [],
-            urlPaginacao: `${URL_ADMIN}/cadastro/dossietipos/atualizar`,
-            urlModeloUpload: `${URL_ADMIN}/cadastro/dossietipos/uploadAnexos`,
-            controle: {
-                carregando: false,
-                dados: {
-                    campoBusca: '',
-                    campoStatus: '',
-                    campoEscopo: '',
-                    pages: PAGES_DEFAULT
-                }
-            }
-        }
-    },
-    methods: {
-        urlParamGetFiltros() {
-            lerFiltrosDaUrl(this.controle.dados, CAMPOS_FILTRO_URL)
-        },
-        syncUrlFiltros() {
-            sincronizarFiltrosNaUrl(
-                this.controle.dados,
-                CAMPOS_FILTRO_URL,
-                montarExtrasPaginacao(this, { pagesDefault: this.qntPag })
-            )
-        },
-        onSubmitFiltro() {
-            this.atualizar()
-        },
-        onSelectFiltro() {
-            this.atualizar()
-        },
-        limparFiltros() {
-            limparFiltrosListagem(this.controle.dados, CAMPOS_FILTRO_URL)
-            this.fecharOutrosComboboxes(null)
-            this.atualizar()
-        },
-        fecharOutrosComboboxes(manter) {
-            const combos = [
-                ['filtro-status', 'comboFiltroStatus'],
-                ['filtro-escopo', 'comboFiltroEscopo']
-            ]
-            combos.forEach(([id, refName]) => {
-                if (id !== manter && this.$refs[refName]?.close) {
-                    this.$refs[refName].close()
-                }
-            })
-        },
-        onClickOutside(event) {
-            if (event?.target?.closest?.('.dropdown')) return
-            if (event?.target?.closest?.('.mybp-combobox-wrap')) return
-            this.dropdownAbertoKey = null
-            this.fecharOutrosComboboxes(null)
-        },
-        toggleDropdown(id) {
-            if (!id) return
-            const key = `dossie:${id}`
-            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
-        },
-        isDropdownOpen(id) {
-            return this.dropdownAbertoKey === `dossie:${id}`
-        },
-        fecharDropdown() {
-            this.dropdownAbertoKey = null
-        },
-        valorOuNaoInformado(valor) {
-            if (valor === 0) return '0'
-            return valor || 'Não informado'
-        },
-        abrirModalNovo() {
-            this.titulo_janela = 'Cadastrar tipo de dossiê'
-            this.preload = false
-            this.salvando = false
-            this.cadastrado = false
-            this.editando = false
-            this.form = _.cloneDeep(this.formDefault)
-            if (typeof formReset === 'function') formReset()
-            this.$refs.modal_janelaCadastrar?.abrirModal()
-        },
-        fecharModal() {
-            this.$refs.modal_janelaCadastrar?.fecharModal()
-        },
-        validarFormulario() {
-            $('#janelaCadastrar :input:visible').trigger('blur')
-            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
-                mostraErro('', 'Verificar os erros')
-                return false
-            }
-            return true
-        },
-        cadastrar() {
-            if (!this.validarFormulario()) return
-            this.salvando = true
-            axios
-                .post(`${URL_ADMIN}/cadastro/dossietipos`, this.form)
-                .then(() => {
-                    this.fecharModal()
-                    mostraSucesso('', 'Tipo de dossiê cadastrado com sucesso')
-                    this.$refs.componente?.buscar?.()
-                })
-                .finally(() => {
-                    this.salvando = false
-                })
-        },
-        abrirModalAlterar(id) {
-            this.fecharDropdown()
-            this.cadastrado = true
-            this.editando = true
-            this.titulo_janela = 'Alterar tipo de dossiê'
-            this.form = _.cloneDeep(this.formDefault)
-            if (typeof formReset === 'function') formReset()
-            this.preload = true
-            this.$refs.modal_janelaCadastrar?.abrirModal()
-            axios
-                .get(`${URL_ADMIN}/cadastro/dossietipos/${id}/editar`)
-                .then((response) => {
-                    Object.assign(this.form, response.data)
-                    if (!Array.isArray(this.form.modelo)) {
-                        this.form.modelo = []
-                    }
-                    if (!Array.isArray(this.form.modeloDel)) {
-                        this.form.modeloDel = []
-                    }
-                    if (typeof setupCampo === 'function') setupCampo()
-                })
-                .finally(() => {
-                    this.preload = false
-                })
-        },
-        alterarForm() {
-            if (!this.validarFormulario()) return
-            this.salvando = true
-            axios
-                .put(`${URL_ADMIN}/cadastro/dossietipos/${this.form.id}`, this.form)
-                .then(() => {
-                    this.fecharModal()
-                    mostraSucesso('', 'Tipo de dossiê alterado com sucesso')
-                    this.$refs.componente?.buscar?.()
-                })
-                .finally(() => {
-                    this.salvando = false
-                })
-        },
-        carregou(dados) {
-            this.lista = dados.items || []
-            if (dados.assinatura_digital_habilitada !== undefined) {
-                this.assinaturaDigitalHabilitada = !!dados.assinatura_digital_habilitada
-            }
-            this.controle.carregando = false
-            this.$nextTick(() => this.syncUrlFiltros())
-        },
-        carregando() {
-            this.controle.carregando = true
-        },
-        atualizar() {
-            buscarListagem(this, { resetPagina: true })
-        }
+    modal: {
+        type: String,
+        required: false,
+        default: ''
+    }
+})
+
+const titulo_janela = ref('Tipo de Dossiê')
+const dropdownAbertoKey = ref(null)
+const anexoUploadAndamento = ref(false)
+const carregandoModal = ref(false)
+const salvando = ref(false)
+const editando = ref(false)
+const cadastrado = ref(false)
+const assinaturaDigitalHabilitada = ref(
+    typeof window !== 'undefined' ? !!window.MYBP_ASSINATURA_DIGITAL_HABILITADA : false
+)
+const formDefault = ref(null)
+const lista = ref([])
+const modal_janelaCadastrar = ref(null)
+const componente = ref(null)
+const comboFiltroStatus = ref(null)
+const comboFiltroEscopo = ref(null)
+let syncUrlTimer = null
+
+const form = reactive({
+    label: '',
+    tipo: '',
+    chave: '',
+    tipo_modelo: '',
+    tipo_documento: '',
+    tem_modelo: false,
+    tem_modelo_sistema: false,
+    permite_assinatura: false,
+    ordem: 1,
+    ativo: true,
+    empresa_id: null,
+    modelo: [],
+    modeloDel: []
+})
+
+const urlPaginacao = `${URL_ADMIN}/cadastro/dossietipos/atualizar`
+const urlModeloUpload = `${URL_ADMIN}/cadastro/dossietipos/uploadAnexos`
+const controle = reactive({
+    carregando: false,
+    dados: {
+        campoBusca: '',
+        campoStatus: '',
+        campoEscopo: '',
+        pages: props.qntPag
+    }
+})
+
+const temFiltrosAtivos = computed(() => temFiltrosPreenchidos(controle.dados, CAMPOS_FILTRO_URL))
+
+const filtroStatusOpcoes = computed(() => [
+    { value: '', label: 'Todos os status' },
+    { value: 'true', label: 'Apenas ativos' },
+    { value: 'false', label: 'Apenas inativos' }
+])
+
+const filtroEscopoOpcoes = computed(() => [
+    { value: '', label: 'Todos os escopos' },
+    { value: 'global', label: 'Padrão do sistema' },
+    { value: 'empresa', label: 'Da empresa' }
+])
+
+const editandoRegistroPadrao = computed(() => cadastrado.value && form.empresa_id == null)
+
+function getPaginacaoVm() {
+    return {
+        controle,
+        $refs: { componente: componente.value }
     }
 }
+
+function resetarFormulario() {
+    Object.keys(form).forEach((key) => {
+        delete form[key]
+    })
+    Object.assign(form, _.cloneDeep(formDefault.value))
+}
+
+function urlParamGetFiltros() {
+    lerFiltrosDaUrl(controle.dados, CAMPOS_FILTRO_URL)
+}
+
+function syncUrlFiltros() {
+    sincronizarFiltrosNaUrl(
+        controle.dados,
+        CAMPOS_FILTRO_URL,
+        montarExtrasPaginacao(getPaginacaoVm(), { pagesDefault: props.qntPag })
+    )
+}
+
+function buscarListagemLocal(resetPagina = true) {
+    if (resetPagina && componente.value) {
+        componente.value.atual = 1
+    }
+
+    componente.value?.buscar?.()
+}
+
+function onSubmitFiltro() {
+    atualizar()
+}
+
+function onSelectFiltro() {
+    atualizar()
+}
+
+function limparFiltros() {
+    limparFiltrosListagem(controle.dados, CAMPOS_FILTRO_URL)
+    fecharOutrosComboboxes(null)
+    atualizar()
+}
+
+function fecharOutrosComboboxes(manter) {
+    if (manter !== 'filtro-status' && comboFiltroStatus.value?.close) {
+        comboFiltroStatus.value.close()
+    }
+    if (manter !== 'filtro-escopo' && comboFiltroEscopo.value?.close) {
+        comboFiltroEscopo.value.close()
+    }
+}
+
+function onClickOutside(event) {
+    if (event?.target?.closest?.('.dropdown')) return
+    if (event?.target?.closest?.('.mybp-combobox-wrap')) return
+    dropdownAbertoKey.value = null
+    fecharOutrosComboboxes(null)
+}
+
+function toggleDropdown(id) {
+    if (!id) return
+    const key = `dossie:${id}`
+    dropdownAbertoKey.value = dropdownAbertoKey.value === key ? null : key
+}
+
+function isDropdownOpen(id) {
+    return dropdownAbertoKey.value === `dossie:${id}`
+}
+
+function fecharDropdown() {
+    dropdownAbertoKey.value = null
+}
+
+function valorOuNaoInformado(valor) {
+    if (valor === 0) return '0'
+    return valor || 'Não informado'
+}
+
+function abrirModalNovo() {
+    titulo_janela.value = 'Cadastrar tipo de dossiê'
+    carregandoModal.value = false
+    salvando.value = false
+    cadastrado.value = false
+    editando.value = false
+    resetarFormulario()
+    if (typeof formReset === 'function') formReset()
+    modal_janelaCadastrar.value?.abrirModal?.()
+}
+
+function fecharModal() {
+    modal_janelaCadastrar.value?.fecharModal?.()
+}
+
+function validarFormulario() {
+    $('#janelaCadastrar :input:visible').trigger('blur')
+    if ($('#janelaCadastrar :input:visible.is-invalid').length) {
+        mostraErro('', 'Verificar os erros')
+        return false
+    }
+    return true
+}
+
+async function cadastrar() {
+    if (!validarFormulario()) return
+    salvando.value = true
+    try {
+        await axios.post(`${URL_ADMIN}/cadastro/dossietipos`, form)
+        fecharModal()
+        mostraSucesso('', 'Tipo de dossiê cadastrado com sucesso')
+        componente.value?.buscar?.()
+    } finally {
+        salvando.value = false
+    }
+}
+
+async function abrirModalAlterar(id) {
+    fecharDropdown()
+    cadastrado.value = true
+    editando.value = true
+    titulo_janela.value = 'Alterar tipo de dossiê'
+    resetarFormulario()
+    if (typeof formReset === 'function') formReset()
+    carregandoModal.value = true
+    modal_janelaCadastrar.value?.abrirModal?.()
+    try {
+        const response = await axios.get(`${URL_ADMIN}/cadastro/dossietipos/${id}/editar`)
+        Object.assign(form, response.data)
+        if (!Array.isArray(form.modelo)) {
+            form.modelo = []
+        }
+        if (!Array.isArray(form.modeloDel)) {
+            form.modeloDel = []
+        }
+        if (typeof setupCampo === 'function') setupCampo()
+    } finally {
+        carregandoModal.value = false
+    }
+}
+
+async function alterarForm() {
+    if (!validarFormulario()) return
+    salvando.value = true
+    try {
+        await axios.put(`${URL_ADMIN}/cadastro/dossietipos/${form.id}`, form)
+        fecharModal()
+        mostraSucesso('', 'Tipo de dossiê alterado com sucesso')
+        componente.value?.buscar?.()
+    } finally {
+        salvando.value = false
+    }
+}
+
+function carregou(dados) {
+    lista.value = dados.items || []
+    if (dados.assinatura_digital_habilitada !== undefined) {
+        assinaturaDigitalHabilitada.value = !!dados.assinatura_digital_habilitada
+    }
+    controle.carregando = false
+    nextTick(() => syncUrlFiltros())
+}
+
+function carregando() {
+    controle.carregando = true
+}
+
+function atualizar() {
+    buscarListagemLocal(true)
+}
+
+watch(
+    () => controle.dados,
+    () => {
+        if (syncUrlTimer) {
+            clearTimeout(syncUrlTimer)
+        }
+
+        syncUrlTimer = setTimeout(() => syncUrlFiltros(), 400)
+    },
+    { deep: true }
+)
+
+onMounted(() => {
+    urlParamGetFiltros()
+    const paginaInicial = lerPaginacaoDaUrl(controle.dados, { pagesDefault: props.qntPag })
+    formDefault.value = _.cloneDeep(form)
+    document.addEventListener('click', onClickOutside)
+    nextTick(() => {
+        aplicarPaginaInicialListagem(getPaginacaoVm(), paginaInicial)
+        buscarListagemLocal(false)
+    })
+})
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', onClickOutside)
+    if (syncUrlTimer) {
+        clearTimeout(syncUrlTimer)
+    }
+})
 </script>
