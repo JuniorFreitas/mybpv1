@@ -544,6 +544,16 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::resource('areas', \App\Http\Controllers\AreaEtiquetasController::class)->middleware('can:cadastro_areaetiqueta');
         });
 
+        Route::group(['as' => 'dossietipos.'], function () {
+            Route::post('dossietipos/atualizar', [\App\Http\Controllers\DossieTipoController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_dossie_tipos');
+            Route::put('dossietipos/{dossietipo}/ativa-desativa', [\App\Http\Controllers\DossieTipoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:cadastro_dossie_tipos');
+            Route::post('dossietipos/uploadAnexos', [\App\Http\Controllers\DossieTipoController::class, 'uploadAnexos'])->name('upload-anexos')->middleware('can:cadastro_dossie_tipos');
+            Route::get('dossietipos/anexo/{arquivo}', [\App\Http\Controllers\DossieTipoController::class, 'anexoShow'])->name('anexo-show')->middleware('can:cadastro_dossie_tipos');
+            Route::get('dossietipos/anexoDownload/{arquivo}', [\App\Http\Controllers\DossieTipoController::class, 'anexoDownload'])->name('anexo-download')->middleware('can:cadastro_dossie_tipos');
+            Route::delete('dossietipos/anexo/{arquivo}', [\App\Http\Controllers\DossieTipoController::class, 'anexoDelete'])->name('anexo-delete')->middleware('can:cadastro_dossie_tipos');
+            Route::resource('dossietipos', \App\Http\Controllers\DossieTipoController::class)->middleware('can:cadastro_dossie_tipos');
+        });
+
         Route::group(['as' => 'centrocusto.'], function () {
             Route::put('centrocusto/{centrocusto}/ativa-desativa', [\App\Http\Controllers\CentroCustoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:cadastro_centrocusto');
             Route::post('centrocusto/atualizar', [\App\Http\Controllers\CentroCustoController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_centrocusto');
