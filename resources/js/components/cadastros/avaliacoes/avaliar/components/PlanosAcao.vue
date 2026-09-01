@@ -37,7 +37,7 @@
                     <div class="form-group">
                         <label>Descrição do plano de ação</label>
                         <div v-if="podeEditar" :key="'editor-pdi-' + index + '-' + (item.id || 'novo')" class="ma-pdi-editor-wrap">
-                            <editor :api-key="editorPlanoInit.key" v-model="item.plano_de_acao" :init="editorPlanoInit" />
+                            <tiny-mce-editor v-model="item.plano_de_acao" preset="padrao" :init="{ height: 280 }" />
                         </div>
                         <div
                             v-else
@@ -75,16 +75,13 @@
 <script>
 import DatePicker from '../../../../DatePicker'
 import ComboboxAutoComplete from '../../../../ComboboxAutoComplete'
-import Editor from '@tinymce/tinymce-vue'
-import { tinyPadrao } from '../../../../../utils'
 import avaliacaoMixin from '../mixins/avaliacaoMixin'
 
 export default {
     name: 'PlanosAcao',
     components: {
         DatePicker,
-        ComboboxAutoComplete,
-        Editor
+        ComboboxAutoComplete
     },
     mixins: [avaliacaoMixin],
     props: {
@@ -107,16 +104,6 @@ export default {
         descricao: {
             type: String,
             default: 'Registre ações objetivas, prazos e responsáveis para apoiar o desenvolvimento nos pontos que precisam evoluir.'
-        }
-    },
-    data() {
-        return {
-            /** Mesmo preset de vagas abertas (`tinyPadrao`), altura menor para o modal do PDI. */
-            editorPlanoInit: {
-                ...tinyPadrao,
-                height: 280,
-                resize: true
-            }
         }
     },
     computed: {

@@ -600,8 +600,8 @@
                                 <div class="col-12">
                                     <div class="form-group">
                                         {{--                                <label style="font-size: 13px;"></label>--}}
-                                        <editor :api-key='config.key' v-model="form.parecer_tecnica.texto_livre"
-                                                :disabled="visualizar" :init="config"></editor>
+                                        <tiny-mce-editor v-model="form.parecer_tecnica.texto_livre"
+                                                :disabled="visualizar" preset="" :init="config"></tiny-mce-editor>
                                     </div>
                                 </div>
                             </div>

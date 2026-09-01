@@ -129,7 +129,7 @@
 
                 <div class="form-group">
                     <label class="mybp-label" for="vaga-aberta-descricao">Descrição</label>
-                    <editor :api-key='tinyPadrao.key' v-model="form.descricao" :init="tinyPadrao"></editor>
+                    <tiny-mce-editor v-model="form.descricao" preset="padrao"></tiny-mce-editor>
                 </div>
 
                 <div class="form-group">

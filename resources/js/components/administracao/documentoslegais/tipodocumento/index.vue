@@ -123,7 +123,6 @@
 <script>
 import controlePaginacao from '../../../ControlePaginacao'
 import modal from '../../../Modal'
-import editor from '@tinymce/tinymce-vue'
 import Validacoes from '../../../../mixins/Validacoes'
 
 export default {
@@ -132,8 +131,7 @@ export default {
 
     components: {
         modal,
-        controlePaginacao,
-        editor
+        controlePaginacao
     },
     props: {
         qntPag: {

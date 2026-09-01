@@ -289,15 +289,13 @@
 <script>
 import controlePaginacao from '../../ControlePaginacao'
 import modal from '../../Modal'
-import editor from '@tinymce/tinymce-vue'
 import DatePicker from '../../DatePicker'
 
 export default {
     components: {
         DatePicker,
         modal,
-        controlePaginacao,
-        editor
+        controlePaginacao
     },
     props: {
         qntPag: {

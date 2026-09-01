@@ -23,6 +23,7 @@ class DossieTipo extends Model
         'tipo_documento',
         'tem_modelo',
         'permite_assinatura',
+        'modelo_arquivo_id',
         'ordem',
         'ativo',
     ];
@@ -36,6 +37,7 @@ class DossieTipo extends Model
         'tipo_documento' => 'string',
         'tem_modelo' => 'boolean',
         'permite_assinatura' => 'boolean',
+        'modelo_arquivo_id' => 'int',
         'ordem' => 'int',
         'ativo' => 'boolean',
     ];
@@ -43,6 +45,11 @@ class DossieTipo extends Model
     public function empresa(): BelongsTo
     {
         return $this->belongsTo(Cliente::class, 'empresa_id');
+    }
+
+    public function modeloArquivo(): BelongsTo
+    {
+        return $this->belongsTo(Arquivo::class, 'modelo_arquivo_id');
     }
 
     public static function limparCache(): void

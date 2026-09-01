@@ -2,7 +2,9 @@
 
 namespace App\Services\Dossie;
 
+use App\Models\Arquivo;
 use App\Models\DossieTipo;
+use App\Models\Sistema;
 use Illuminate\Support\Collection;
 
 class DossieTipoService
@@ -15,16 +17,17 @@ class DossieTipoService
     public function listarSecoes(?int $empresaId = null): array
     {
         $empresaId = $this->resolverEmpresaId($empresaId);
+        $assinaturaEmpresa = $this->empresaComAssinaturaDigital($empresaId);
 
-        return $this->ativos($empresaId)->map(function (DossieTipo $tipo) {
+        return $this->ativos($empresaId)->map(function (DossieTipo $tipo) use ($assinaturaEmpresa) {
             return [
                 'tipo' => $tipo->tipo,
                 'chave' => $tipo->chave,
                 'label' => $tipo->label,
                 'tipo_modelo' => $tipo->tipo_modelo,
                 'tipo_documento' => $tipo->tipo_documento,
-                'tem_modelo' => (bool) $tipo->tem_modelo,
-                'permite_assinatura' => (bool) $tipo->permite_assinatura,
+                'tem_modelo' => (bool) $tipo->tem_modelo || (bool) $tipo->modelo_arquivo_id,
+                'permite_assinatura' => $assinaturaEmpresa && (bool) $tipo->permite_assinatura,
                 'ordem' => (int) $tipo->ordem,
                 'empresa_id' => $tipo->empresa_id,
                 'escopo' => $tipo->empresa_id ? 'empresa' : 'global',
@@ -76,7 +79,12 @@ class DossieTipoService
      */
     public function tiposModeloAssinatura(?int $empresaId = null): array
     {
-        return DossieTipo::tiposModeloAssinatura($this->resolverEmpresaId($empresaId));
+        $empresaId = $this->resolverEmpresaId($empresaId);
+        if (!$this->empresaComAssinaturaDigital($empresaId)) {
+            return [];
+        }
+
+        return DossieTipo::tiposModeloAssinatura($empresaId);
     }
 
     /**
@@ -84,7 +92,12 @@ class DossieTipoService
      */
     public function tiposDocumentoAssinatura(?int $empresaId = null): array
     {
-        return $this->ativos($this->resolverEmpresaId($empresaId))
+        $empresaId = $this->resolverEmpresaId($empresaId);
+        if (!$this->empresaComAssinaturaDigital($empresaId)) {
+            return [];
+        }
+
+        return $this->ativos($empresaId)
             ->filter(fn (DossieTipo $tipo) => $tipo->permite_assinatura && $tipo->tipo_documento)
             ->pluck('tipo_documento')
             ->unique()
@@ -108,20 +121,43 @@ class DossieTipoService
 
     public function permiteAssinatura(string $tipoModelo, ?int $empresaId = null): bool
     {
+        $empresaId = $this->resolverEmpresaId($empresaId);
+        if (!$this->empresaComAssinaturaDigital($empresaId)) {
+            return false;
+        }
+
         return in_array($tipoModelo, $this->tiposModeloAssinatura($empresaId), true);
     }
 
     public function labelPorTipoModelo(string $tipoModelo, ?int $empresaId = null): ?string
     {
-        $item = $this->ativos($this->resolverEmpresaId($empresaId))
-            ->first(fn (DossieTipo $tipo) => $tipo->tipo_modelo === $tipoModelo);
+        return $this->porTipoModelo($tipoModelo, $empresaId)?->label;
+    }
 
-        return $item?->label;
+    public function porTipoModelo(string $tipoModelo, ?int $empresaId = null): ?DossieTipo
+    {
+        return $this->ativos($this->resolverEmpresaId($empresaId))
+            ->first(fn (DossieTipo $tipo) => $tipo->tipo_modelo === $tipoModelo);
+    }
+
+    public function modeloArquivo(string $tipoModelo, ?int $empresaId = null): ?Arquivo
+    {
+        $tipo = $this->porTipoModelo($tipoModelo, $empresaId);
+        if (!$tipo?->modelo_arquivo_id) {
+            return null;
+        }
+
+        return Arquivo::query()->find($tipo->modelo_arquivo_id);
     }
 
     public function ativos(?int $empresaId = null): Collection
     {
         return DossieTipo::ativosOrdenados($this->resolverEmpresaId($empresaId));
+    }
+
+    public function empresaComAssinaturaDigital(?int $empresaId = null): bool
+    {
+        return Sistema::assinaturaDigitalHabilitada($this->resolverEmpresaId($empresaId));
     }
 
     protected function resolverEmpresaId(?int $empresaId = null): ?int

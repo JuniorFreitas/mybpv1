@@ -35,8 +35,8 @@ Solicitação criada
 
 ### Ordem das etapas
 
-1. **Gestor CC Origem** — sempre
-2. **Gestor CC Destino** — somente se o gestor resolvido for diferente do origem
+1. **Gestor CC Origem** — quando o CC origem tiver gestor; se não tiver, a etapa é dispensada e o fluxo segue
+2. **Gestor CC Destino** — obrigatório; bloqueia a criação se o CC destino não tiver gestor. Dispensada somente se o gestor resolvido for o mesmo da origem
 3. **Aprovação Extra** — se configurada em `AprovacaoExtraConfig`
 4. **RH**
 
@@ -52,6 +52,9 @@ Solicitação criada
 | **RN05** | Reprovação em qualquer etapa de gestor encerra o processo | `status_aprovacao` ou `status_aprovacao_gestor_destino = reprovado` |
 | **RN07** | Solicitante = gestor: cadeia substituto → superior → bloqueio | `CentroCustoGestorResolverService::resolverAprovador()` |
 | **RN09** | Alterar CC antes das aprovações recalcula gestores | `update()` detecta mudança de CC e reaplica fluxo se ainda pendente |
+| **RN10** | CC origem sem gestor: avisa e segue o fluxo | `resolverGestorOrigem()` retorna `null`; etapa origem dispensada |
+| **RN11** | CC destino sem gestor cadastrado: bloqueia salvar e pede contato com o Administrador | `MSG_GESTOR_DESTINO_AUSENTE` em `validarCentrosCusto()` / `resolverGestorDestino()` |
+| **RN12** | RH aprovado efetiva a transferência na admissão (`centro_custo_id` + filial) | `aprovarRH()` lê `resposta_rh` (campo da tela); `status_aprovacao_rh` só como fallback legado. Histórico: de CC origem para CC destino |
 
 ---
 
@@ -163,9 +166,9 @@ Orquestra o fluxo de aprovação da transferência.
 
 ```php
 validarCentrosCusto(?int $origemId, int $destinoId, int $empresaId): void
-resolverGestorOrigem(?int $origemId, int $solicitanteId): User
+resolverGestorOrigem(?int $origemId, int $solicitanteId): ?User
 resolverGestorDestino(int $destinoId, int $solicitanteId): User
-deveExigirAprovacaoGestorDestino(User $gestorOrigem, User $gestorDestino): bool
+deveExigirAprovacaoGestorDestino(?User $gestorOrigem, User $gestorDestino): bool
 montarDadosFluxoGestores(...): array
 aplicarFluxoGestores(TransferenciaPrevista $t, int $solicitanteId, bool $resetarEtapas = true): void
 etapaAtual(TransferenciaPrevista $t): string
@@ -193,7 +196,7 @@ isFluxoLegado(TransferenciaPrevista $t): bool
 | `aprovar()` | Aprovação gestor **origem** com `lockForUpdate()` e validação por usuário designado |
 | `aprovarGestorDestino()` | **Novo** — aprovação gestor destino com `lockForUpdate()` |
 | `aprovarExtra()` | Guard: gestores origem/destino devem estar concluídos |
-| `aprovarRH()` | Guard: gestores origem/destino devem estar concluídos |
+| `aprovarRH()` | Guard: gestores origem/destino devem estar concluídos. Se `resposta_rh === aprovado`, atualiza `admissao.centro_custo_id` (e filial, se houver) |
 | `gestorResponsavel()` | **Novo** — retorna gestor principal, substituto e resolvido para um CC |
 | `edit()` | Carrega labels de gestores e flags `pode_aprovar_gestor_origem/destino` |
 
@@ -281,8 +284,8 @@ Arquivo: `resources/js/components/planejamento/movimentacao/SolicitacaoTransfere
 
 **Visibilidade dos botões:**
 
-- "Aprovação Gestor Origem" — `gestor_id === usuarioLogado` e etapa pendente
-- "Aprovação Gestor Destino" — origem aprovada, `gestor_destino_id === usuarioLogado` e destino pendente
+- "Aprovação Gestor Origem" — `gestor_id === usuarioLogado` **ou privilégio RH** e etapa pendente
+- "Aprovação Gestor Destino" — origem concluída, (`gestor_destino_id === usuarioLogado` **ou privilégio RH**) e destino pendente
 
 ### Cadastro de Centro de Custo
 
@@ -411,9 +414,10 @@ npm run prod   # produção
 
 ## Observações técnicas
 
-- **CC origem obrigatório** no novo fluxo: necessário para resolver o gestor de origem automaticamente.
+- **CC origem obrigatório** no novo fluxo; o gestor de origem é opcional — sem gestor, a etapa é dispensada e o fluxo segue para destino. CC origem **inativo** é permitido e aparece como ` - (-- Inativo --)`.
+- **CC destino obrigatório**, ativo e com gestor responsável cadastrado; CC inativo não entra na lista de destino e não pode ser salvo.
 - **Concorrência:** `aprovar()` e `aprovarGestorDestino()` usam `lockForUpdate()` para evitar dupla aprovação.
-- **Segurança:** aprovação restrita ao usuário designado (`gestor_id` / `gestor_destino_id`), não apenas ao privilégio genérico de gestor.
+- **Segurança:** aprovação da etapa de gestor pelo usuário designado (`gestor_id` / `gestor_destino_id`) **ou** por privilégio RH (`privilegio_gestao_rh`, `privilegio_aprovar_por_rh`, `privilegio_aprovar_rh`).
 - **Testes com banco em memória:** testes de integração com `RefreshDatabase` podem falhar por incompatibilidade de migrations antigas com SQLite; os testes unitários atuais não dependem de banco.
 - **Horizon/fila:** e-mails dependem do worker de fila ativo.
 

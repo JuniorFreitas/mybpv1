@@ -148,9 +148,13 @@ class TransferenciaPrevistaController extends Controller
             $centroMudou = (int) $transferenciaPrevista->centro_custo_origem_id !== (int) ($dados['centro_custo_origem_id'] ?? 0)
                 || (int) $transferenciaPrevista->centro_custo_destino_id !== (int) ($dados['centro_custo_destino_id'] ?? 0);
 
+            $podeRecalcularGestores = !$transferenciaPrevista->status_aprovacao
+                && ((int) ($transferenciaPrevista->gestor_id ?? 0) > 0
+                    || !$transferenciaPrevista->status_aprovacao_gestor_destino);
+
             $transferenciaPrevista->fill($dados);
 
-            if ($transferenciaPrevista->fluxo_gestores_automatico && $centroMudou && !$transferenciaPrevista->status_aprovacao) {
+            if ($transferenciaPrevista->fluxo_gestores_automatico && $centroMudou && $podeRecalcularGestores) {
                 $this->fluxoAprovacaoService->aplicarFluxoGestores($transferenciaPrevista, (int) auth()->id());
             } elseif (!$transferenciaPrevista->fluxo_gestores_automatico && $centroMudou && !$transferenciaPrevista->status_aprovacao) {
                 $transferenciaPrevista->fluxo_gestores_automatico = true;
@@ -202,10 +206,20 @@ class TransferenciaPrevistaController extends Controller
                 return response()->json(['msg' => 'Você não tem permissão para aprovar esta etapa'], 403);
             }
 
+            $aprovador = auth()->user();
+            $obsAprovacao = $dados['obs_aprovacao'] ?? null;
+            if ($this->fluxoAprovacaoService->aprovacaoGestorViaRh(
+                $transferenciaPrevista,
+                $aprovador,
+                TransferenciaPrevistaFluxoAprovacaoService::ETAPA_GESTOR_ORIGEM
+            )) {
+                $obsAprovacao = $this->fluxoAprovacaoService->anexarRegistroAprovadorRh($obsAprovacao, $aprovador);
+            }
+
             $transferenciaPrevista->update([
-                'user_aprovacao_id' => auth()->id(),
+                'user_aprovacao_id' => $aprovador->id,
                 'data_aprovacao' => (new DataHora())->dataHoraInsert(),
-                'obs_aprovacao' => $dados['obs_aprovacao'] ?? null,
+                'obs_aprovacao' => $obsAprovacao,
                 'status_aprovacao' => $dados['status_aprovacao'],
             ]);
 
@@ -214,7 +228,12 @@ class TransferenciaPrevistaController extends Controller
 
             Log::info('transferencia.aprovacao_gestor_origem.' . $dados['status_aprovacao'], [
                 'transferencia_id' => $transferenciaPrevista->id,
-                'aprovador_id' => auth()->id(),
+                'aprovador_id' => $aprovador->id,
+                'via_rh' => $this->fluxoAprovacaoService->aprovacaoGestorViaRh(
+                    $transferenciaPrevista,
+                    $aprovador,
+                    TransferenciaPrevistaFluxoAprovacaoService::ETAPA_GESTOR_ORIGEM
+                ),
             ]);
 
             JobNotificacaoRecursiva::dispatch($transferenciaPrevista->id, $transferenciaPrevista->empresa_id);
@@ -249,10 +268,20 @@ class TransferenciaPrevistaController extends Controller
                 return response()->json(['msg' => 'Você não tem permissão para aprovar esta etapa'], 403);
             }
 
+            $aprovador = auth()->user();
+            $obsDestino = $dados['obs_aprovacao_gestor_destino'] ?? null;
+            if ($this->fluxoAprovacaoService->aprovacaoGestorViaRh(
+                $transferenciaPrevista,
+                $aprovador,
+                TransferenciaPrevistaFluxoAprovacaoService::ETAPA_GESTOR_DESTINO
+            )) {
+                $obsDestino = $this->fluxoAprovacaoService->anexarRegistroAprovadorRh($obsDestino, $aprovador);
+            }
+
             $transferenciaPrevista->update([
-                'user_aprovacao_gestor_destino_id' => auth()->id(),
+                'user_aprovacao_gestor_destino_id' => $aprovador->id,
                 'data_aprovacao_gestor_destino' => (new DataHora())->dataHoraInsert(),
-                'obs_aprovacao_gestor_destino' => $dados['obs_aprovacao_gestor_destino'] ?? null,
+                'obs_aprovacao_gestor_destino' => $obsDestino,
                 'status_aprovacao_gestor_destino' => $dados['status_aprovacao_gestor_destino'],
             ]);
 
@@ -261,7 +290,12 @@ class TransferenciaPrevistaController extends Controller
 
             Log::info('transferencia.aprovacao_gestor_destino.' . $dados['status_aprovacao_gestor_destino'], [
                 'transferencia_id' => $transferenciaPrevista->id,
-                'aprovador_id' => auth()->id(),
+                'aprovador_id' => $aprovador->id,
+                'via_rh' => $this->fluxoAprovacaoService->aprovacaoGestorViaRh(
+                    $transferenciaPrevista,
+                    $aprovador,
+                    TransferenciaPrevistaFluxoAprovacaoService::ETAPA_GESTOR_DESTINO
+                ),
             ]);
 
             JobNotificacaoRecursiva::dispatch($transferenciaPrevista->id, $transferenciaPrevista->empresa_id);
@@ -324,58 +358,30 @@ class TransferenciaPrevistaController extends Controller
         }
 
         $dados = $request->input();
+        $decisaoRh = $this->fluxoAprovacaoService->decisaoAprovacaoRh($dados);
         try {
             DB::beginTransaction();
             $transferenciaPrevista->update([
                 'user_rh_id' => auth()->id(),
-                'resposta_rh' => $dados['resposta_rh'],
-                'obs_rh' => $dados['obs_rh'],
+                'resposta_rh' => $decisaoRh,
+                'obs_rh' => $dados['obs_rh'] ?? null,
                 'data_aprovacao_rh' => (new DataHora())->dataHoraInsert(),
             ]);
 
-            if ($dados['status_aprovacao_rh'] === 'aprovado') {
-                $transferenciaPrevista->load([
-                    'Colaborador.Feedback.Admissao',
-                    'CentroCustoDestino' => function ($query) {
-                        $query->with(['Filiais' => function ($q) {
-                            $q->where('ativo', true);
-                        }]);
-                    }
-                ]);
-
-                if ($transferenciaPrevista->Colaborador &&
-                    $transferenciaPrevista->Colaborador->Feedback &&
-                    $transferenciaPrevista->Colaborador->Feedback->Admissao) {
-
-                    $admissao = $transferenciaPrevista->Colaborador->Feedback->Admissao;
-                    $centroCustoDestino = $transferenciaPrevista->CentroCustoDestino;
-                    $filiaisAtivas = $centroCustoDestino && $centroCustoDestino->Filiais ? $centroCustoDestino->Filiais : collect();
-                    $temFilial = $filiaisAtivas->count() > 0;
-
-                    $centroCustoFilialId = null;
-                    if ($temFilial) {
-                        if (isset($dados['centro_custo_filial_id']) && $dados['centro_custo_filial_id']) {
-                            $centroCustoFilialId = $dados['centro_custo_filial_id'];
-                        } else {
-                            $primeiraFilial = $filiaisAtivas->first();
-                            $centroCustoFilialId = $primeiraFilial ? $primeiraFilial->id : null;
-                        }
-                    }
-
-                    $admissao->update([
-                        'centro_custo_id' => $transferenciaPrevista->centro_custo_destino_id,
-                        'filial' => $temFilial,
-                        'centro_custo_filial_id' => $centroCustoFilialId,
-                    ]);
-                }
+            if ($decisaoRh === 'aprovado') {
+                $this->efetivarCentroCustoAdmissao($transferenciaPrevista, $dados);
             }
 
             $this->processarAnexos($transferenciaPrevista, $dados);
 
-            LogHistorico::createLog(
-                $transferenciaPrevista->Colaborador->Feedback->id,
-                'Solicitação foi ' . $dados['status_aprovacao_rh'] . ' pelo RH na mudança Centro de Custo na solicitação de transferência #' . $transferenciaPrevista->id
-            );
+            $transferenciaPrevista->loadMissing(['CentroCustoOrigem', 'CentroCustoDestino', 'Colaborador.Feedback']);
+
+            if ($transferenciaPrevista->Colaborador?->Feedback) {
+                LogHistorico::createLog(
+                    $transferenciaPrevista->Colaborador->Feedback->id,
+                    $this->fluxoAprovacaoService->mensagemHistoricoAprovacaoRh($transferenciaPrevista, $decisaoRh)
+                );
+            }
 
             DB::commit();
 
@@ -479,11 +485,24 @@ class TransferenciaPrevistaController extends Controller
 
             foreach ($request->selecionados[0] as $selecionado) {
                 $dados = TransferenciaPrevista::find($selecionado);
+                if (!$dados) {
+                    continue;
+                }
+
+                $aprovador = auth()->user();
+                $obsAprovacao = $request->obs_aprovacao;
+                if ($this->fluxoAprovacaoService->aprovacaoGestorViaRh(
+                    $dados,
+                    $aprovador,
+                    TransferenciaPrevistaFluxoAprovacaoService::ETAPA_GESTOR_ORIGEM
+                )) {
+                    $obsAprovacao = $this->fluxoAprovacaoService->anexarRegistroAprovadorRh($obsAprovacao, $aprovador);
+                }
 
                 $dados->update([
-                    'user_aprovacao_id' => auth()->id(),
+                    'user_aprovacao_id' => $aprovador->id,
                     'data_aprovacao' => (new DataHora())->dataHoraInsert(),
-                    'obs_aprovacao' => $request->obs_aprovacao,
+                    'obs_aprovacao' => $obsAprovacao,
                     'status_aprovacao' => $request->status_aprovacao,
                 ]);
             }
@@ -501,7 +520,8 @@ class TransferenciaPrevistaController extends Controller
     private function podeAprovarGestorOrigem(TransferenciaPrevista $transferenciaPrevista): bool
     {
         if ($this->fluxoAprovacaoService->isFluxoLegado($transferenciaPrevista)) {
-            return auth()->user()->can('privilegio_aprovar_por_gestor')
+            return ($this->fluxoAprovacaoService->usuarioTemPrivilegioRh(auth()->user())
+                    || auth()->user()->can('privilegio_aprovar_por_gestor'))
                 && !$transferenciaPrevista->status_aprovacao;
         }
 
@@ -524,6 +544,43 @@ class TransferenciaPrevistaController extends Controller
         }
 
         return $this->fluxoAprovacaoService->gestoresEtapasConcluidas($transferenciaPrevista);
+    }
+
+    private function efetivarCentroCustoAdmissao(TransferenciaPrevista $transferenciaPrevista, array $dados): void
+    {
+        $transferenciaPrevista->load([
+            'Colaborador.Feedback.Admissao',
+            'CentroCustoDestino' => function ($query) {
+                $query->with(['Filiais' => function ($q) {
+                    $q->where('ativo', true);
+                }]);
+            }
+        ]);
+
+        if (!$transferenciaPrevista->Colaborador?->Feedback?->Admissao) {
+            return;
+        }
+
+        $admissao = $transferenciaPrevista->Colaborador->Feedback->Admissao;
+        $centroCustoDestino = $transferenciaPrevista->CentroCustoDestino;
+        $filiaisAtivas = $centroCustoDestino && $centroCustoDestino->Filiais ? $centroCustoDestino->Filiais : collect();
+        $temFilial = $filiaisAtivas->count() > 0;
+
+        $centroCustoFilialId = null;
+        if ($temFilial) {
+            if (!empty($dados['centro_custo_filial_id'])) {
+                $centroCustoFilialId = $dados['centro_custo_filial_id'];
+            } else {
+                $primeiraFilial = $filiaisAtivas->first();
+                $centroCustoFilialId = $primeiraFilial ? $primeiraFilial->id : null;
+            }
+        }
+
+        $admissao->update([
+            'centro_custo_id' => $transferenciaPrevista->centro_custo_destino_id,
+            'filial' => $temFilial,
+            'centro_custo_filial_id' => $centroCustoFilialId,
+        ]);
     }
 
     private function processarAnexos(TransferenciaPrevista $transferenciaPrevista, array $dados): void

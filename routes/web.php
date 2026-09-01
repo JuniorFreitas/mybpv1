@@ -323,6 +323,15 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                 ->name('preview')->middleware('can:administracao_carta_oferta_template');
         });
 
+        Route::group(['as' => 'aniversariante-mensagem.', 'prefix' => 'aniversariante-mensagem'], function () {
+            Route::get('dados', [\App\Http\Controllers\AniversarianteMensagemController::class, 'dados'])
+                ->name('dados')->middleware('can:administracao_aniversariantes');
+            Route::post('salvar', [\App\Http\Controllers\AniversarianteMensagemController::class, 'salvar'])
+                ->name('salvar')->middleware('can:administracao_aniversariantes');
+            Route::post('preview', [\App\Http\Controllers\AniversarianteMensagemController::class, 'preview'])
+                ->name('preview')->middleware('can:administracao_aniversariantes');
+        });
+
         // Documentos para assinatura digital (gerenciamento)
         Route::group(['as' => 'documento-assinatura.', 'prefix' => 'documento-assinatura', 'middleware' => ['assinatura.digital.habilitada']], function () {
             Route::get('/', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'indexView'])->name('index')->middleware('can:administracao_documentos_legais');
@@ -533,6 +542,16 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::put('areas/{area}/ativa-desativa', [\App\Http\Controllers\AreaEtiquetasController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:cadastro_areaetiqueta');
             Route::post('areas/atualizar', [\App\Http\Controllers\AreaEtiquetasController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_areaetiqueta');
             Route::resource('areas', \App\Http\Controllers\AreaEtiquetasController::class)->middleware('can:cadastro_areaetiqueta');
+        });
+
+        Route::group(['as' => 'dossietipos.'], function () {
+            Route::post('dossietipos/atualizar', [\App\Http\Controllers\DossieTipoController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_dossie_tipos');
+            Route::put('dossietipos/{dossietipo}/ativa-desativa', [\App\Http\Controllers\DossieTipoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:cadastro_dossie_tipos');
+            Route::post('dossietipos/uploadAnexos', [\App\Http\Controllers\DossieTipoController::class, 'uploadAnexos'])->name('upload-anexos')->middleware('can:cadastro_dossie_tipos');
+            Route::get('dossietipos/anexo/{arquivo}', [\App\Http\Controllers\DossieTipoController::class, 'anexoShow'])->name('anexo-show')->middleware('can:cadastro_dossie_tipos');
+            Route::get('dossietipos/anexoDownload/{arquivo}', [\App\Http\Controllers\DossieTipoController::class, 'anexoDownload'])->name('anexo-download')->middleware('can:cadastro_dossie_tipos');
+            Route::delete('dossietipos/anexo/{arquivo}', [\App\Http\Controllers\DossieTipoController::class, 'anexoDelete'])->name('anexo-delete')->middleware('can:cadastro_dossie_tipos');
+            Route::resource('dossietipos', \App\Http\Controllers\DossieTipoController::class)->middleware('can:cadastro_dossie_tipos');
         });
 
         Route::group(['as' => 'centrocusto.'], function () {

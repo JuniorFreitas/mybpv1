@@ -2,6 +2,7 @@
 
 namespace App\Jobs\AssinaturaDigital;
 
+use App\Models\Arquivo;
 use App\Models\CartaOferta;
 use App\Models\CartaOfertaTemplate;
 use App\Models\Cliente;
@@ -22,6 +23,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use MasterTag\DataHora;
 use PDF;
@@ -364,15 +366,21 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
         }
 
         $usuarioSolicitante = User::select('nome')->find($this->solicitanteId);
-        $pdf = $dossiePdfService->gerar(
-            $colaborador,
-            $cliente,
-            $tipoModelo,
-            $usuarioSolicitante?->nome ?? 'Sistema'
-        );
-
-        $pdfContent = $pdf->output();
-        $nomeArquivo = $tipoModelo . '_' . Str::slug($colaborador->Curriculo->nome ?? 'documento') . '.pdf';
+        $arquivoModelo = $dossieTipoService->modeloArquivo($tipoModelo, $this->empresaId);
+        if ($arquivoModelo && $arquivoModelo->file) {
+            $disco = $arquivoModelo->disco ?: Arquivo::DISCO_DOSSIE;
+            $pdfContent = Storage::disk($disco)->get($arquivoModelo->file);
+            $nomeArquivo = ($arquivoModelo->nome ?: $tipoModelo) . '.pdf';
+        } else {
+            $pdf = $dossiePdfService->gerar(
+                $colaborador,
+                $cliente,
+                $tipoModelo,
+                $usuarioSolicitante?->nome ?? 'Sistema'
+            );
+            $pdfContent = $pdf->output();
+            $nomeArquivo = $tipoModelo . '_' . Str::slug($colaborador->Curriculo->nome ?? 'documento') . '.pdf';
+        }
 
         $service->criarEnvio(
             $this->empresaId,

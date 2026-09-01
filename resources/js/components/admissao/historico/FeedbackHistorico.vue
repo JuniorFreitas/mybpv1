@@ -13,14 +13,14 @@
                         </div>
                         <div class="col-12 mb-2">
                             <label>Descrição</label>
-                            <editor :api-key="tinySimples.key" v-model="form.descricao" :init="tinySimples"></editor>
+                            <tiny-mce-editor v-model="form.descricao" preset="simples"></tiny-mce-editor>
                         </div>
                         <div class="col-6">
                             <date-picker formsm label="Data" :max="max" v-model="form.data"></date-picker>
                         </div>
                         <div class="col-12 mb-2">
                             <label>Compromisso</label>
-                            <editor :api-key="tinySimples.key" v-model="form.compromisso" :init="tinySimples"></editor>
+                            <tiny-mce-editor v-model="form.compromisso" preset="simples"></tiny-mce-editor>
                         </div>
                     </div>
                 </fieldset>
@@ -69,7 +69,6 @@
 <script>
 import Utils from '../../../mixins/Utils'
 import Validacoes from '../../../mixins/Validacoes'
-import Editor from '@tinymce/tinymce-vue'
 import DatePicker from '../../DatePicker'
 
 export default {
@@ -89,8 +88,7 @@ export default {
         }
     },
     components: {
-        DatePicker,
-        Editor
+        DatePicker
     },
     data() {
         return {

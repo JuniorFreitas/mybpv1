@@ -3,7 +3,6 @@ import { registerGlobals } from '../../../registerGlobals'
 import endereco from '../../../components/Endereco'
 import datepicker from '../../../components/DatePicker'
 import DadosPessoais from '../../../components/entrevistas/DadosPessoaisTexto'
-import Editor from '@tinymce/tinymce-vue'
 import configTinyMCE from '../../../components/configEntrevistaTinyMCE'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 const app = createApp({
@@ -11,7 +10,6 @@ const app = createApp({
     components: {
         endereco,
         datepicker,
-        Editor,
         DadosPessoais
     },
     data() {

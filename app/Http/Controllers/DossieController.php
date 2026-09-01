@@ -247,6 +247,11 @@ class DossieController extends Controller
             abort(404, 'Empresa do colaborador não encontrada.');
         }
 
+        $arquivoModelo = $this->dossieTipoService->modeloArquivo($tipo_modelo, (int) $colaborador->empresa_id);
+        if ($arquivoModelo && $arquivoModelo->file) {
+            return Arquivo::anexoDownload($arquivoModelo->disco ?: Arquivo::DISCO_DOSSIE, $arquivoModelo->file);
+        }
+
         $solicitante = User::select('nome')->find(auth()->id());
         $pdf = $dossiePdfService->gerar(
             $colaborador,
