@@ -154,7 +154,7 @@
         </li>
     @endif
 
-    @if(\App\Models\Sistema::permitirLinks('cadastro_instrutor','cadastro_departamento','cadastro_vagas','cadastro_vagas_abertas','cadastro_treinamento_industria','cadastro_treinamento_sgi','cadastro_empresa_treinamento','cadastro_provas','cadastro_beneficio','cadastro_areaetiqueta','cadastro_dossie_tipos','cadastro_centrocusto','cadastro_empresa_temporaria', 'administracao_aprovacao_extra_config'))
+    @if(\App\Models\Sistema::permitirLinks('cadastro_instrutor','cadastro_departamento','cadastro_vagas','cadastro_vagas_abertas','cadastro_treinamento_industria','cadastro_treinamento_sgi','cadastro_empresa_treinamento','cadastro_provas','cadastro_beneficio','cadastro_areaetiqueta','cadastro_dossie_tipos','cadastro_documentos_preadmissao','cadastro_centrocusto','cadastro_empresa_temporaria', 'administracao_aprovacao_extra_config'))
         <li id="cadastro">
             <a href="javascript://" class="has-arrow waves-effect" parent="cadastro">
                 <i class="bx bx-briefcase-alt-2"></i>
@@ -172,6 +172,13 @@
                     <li>
                         <a href="{{route('g.dossietipos.dossietipos.index')}}" parent="cadastro" key="dossietipos">
                             Tipos de Dossiê
+                        </a>
+                    </li>
+                @endcan
+                @can('cadastro_documentos_preadmissao')
+                    <li>
+                        <a href="{{route('g.documentospreadmissao.documentos-preadmissao.index')}}" parent="cadastro" key="documentospreadmissao">
+                            Documentos da Pré-admissão
                         </a>
                     </li>
                 @endcan

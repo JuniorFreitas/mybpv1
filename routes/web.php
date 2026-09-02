@@ -554,6 +554,17 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::resource('dossietipos', \App\Http\Controllers\DossieTipoController::class)->middleware('can:cadastro_dossie_tipos');
         });
 
+        Route::group(['as' => 'documentospreadmissao.'], function () {
+            Route::post('documentos-preadmissao/atualizar', [\App\Http\Controllers\DocumentoPreadmissaoController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_documentos_preadmissao');
+            Route::put('documentos-preadmissao/{documento}/ativa-desativa', [\App\Http\Controllers\DocumentoPreadmissaoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware([
+                'can:cadastro_documentos_preadmissao',
+                'can:cadastro_documentos_preadmissao_update',
+            ]);
+            Route::resource('documentos-preadmissao', \App\Http\Controllers\DocumentoPreadmissaoController::class, [
+                'parameters' => ['documentos-preadmissao' => 'documento'],
+            ])->except(['destroy', 'show', 'create'])->middleware('can:cadastro_documentos_preadmissao');
+        });
+
         Route::group(['as' => 'centrocusto.'], function () {
             Route::put('centrocusto/{centrocusto}/ativa-desativa', [\App\Http\Controllers\CentroCustoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:cadastro_centrocusto');
             Route::post('centrocusto/atualizar', [\App\Http\Controllers\CentroCustoController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_centrocusto');

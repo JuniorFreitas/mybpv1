@@ -56,7 +56,9 @@ class DocumentosCurriculosCatAdmissaoEmpresa extends Model
         $activity->descricao = '';
     }
 
-    protected $table = 'documentos_curriculos_adm_empresa';
+    protected $table = 'documentos_curriculos_cat_adm_empresa';
+
+    public $timestamps = false;
 
     protected $fillable = [
         'empresa_id',
@@ -70,5 +72,10 @@ class DocumentosCurriculosCatAdmissaoEmpresa extends Model
         'label' => 'string',
         'ativo' => 'boolean',
     ];
+
+    public function documentos(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(DocumentosCurriculosAdmissaoEmpresa::class, 'categoria_id');
+    }
 
 }

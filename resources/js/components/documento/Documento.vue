@@ -28,7 +28,7 @@
 
             <div class="row">
                 <div class="col-md-12" v-for="doc in formUser.docs_curriculo_pre_adm" :key="doc.id || doc.tipo || doc.label">
-                    <fieldset v-if="!doc.configuracoes.sogestao">
+                    <fieldset v-if="!(doc.configuracoes && doc.configuracoes.sogestao)">
                         <legend>{{ doc.label }}</legend>
                         <p v-html="doc.descricao"></p>
                         <upload
@@ -37,13 +37,13 @@
                             :model="doc.docs_curriculo_anexos"
                             :model-delete="doc.docs_curriculo_anexosDelete"
                             :url="urlAnexoUpload"
-                            :apenas-imagens="doc.configuracoes.apenas_img"
-                            :apenas-pdf="doc.configuracoes.apenas_pdf"
-                            :apenas-pdf-img="doc.configuracoes.apenas_pdf_img"
+                            :apenas-imagens="(doc.configuracoes || {}).apenas_img"
+                            :apenas-pdf="(doc.configuracoes || {}).apenas_pdf"
+                            :apenas-pdf-img="(doc.configuracoes || {}).apenas_pdf_img"
                             @onprogresso="anexoUploadAndamento = true"
                             @onfinalizado="anexoUploadAndamento = false"
-                            :quantidade="doc.configuracoes.max"
-                            :multi="doc.configuracoes.multiple"
+                            :quantidade="(doc.configuracoes || {}).max || 1"
+                            :multi="(doc.configuracoes || {}).multiple"
                         ></upload>
                     </fieldset>
                 </div>

@@ -399,6 +399,10 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'cadastro_dossie_tipos_insert', 'descricao' => 'Inserir Cadastro Tipos de Dossiê'];
         $lista[] = ['nome' => 'cadastro_dossie_tipos_update', 'descricao' => 'Atualizar Cadastro Tipos de Dossiê'];
 
+        $lista[] = ['nome' => 'cadastro_documentos_preadmissao', 'descricao' => 'Acessar Cadastro Documentos da Pré-admissão'];
+        $lista[] = ['nome' => 'cadastro_documentos_preadmissao_insert', 'descricao' => 'Inserir Cadastro Documentos da Pré-admissão'];
+        $lista[] = ['nome' => 'cadastro_documentos_preadmissao_update', 'descricao' => 'Atualizar Cadastro Documentos da Pré-admissão'];
+
         $lista[] = ['nome' => 'cadastro_centrocusto', 'descricao' => 'Acessar a rota Centro de Custo'];
         $lista[] = ['nome' => 'cadastro_centrocusto_insert', 'descricao' => 'Pode criar uma nova centrocusto'];
         $lista[] = ['nome' => 'cadastro_centrocusto_update', 'descricao' => 'Pode editar um centrocusto'];

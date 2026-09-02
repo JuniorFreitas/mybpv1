@@ -6,9 +6,8 @@
 
 ## Handoff
 
-- Feature: mensagem-aniversariante
-- Phase: Execute done (sem commit)
-- Branch: feature/mensagem-aniversariante
-- Gate: 10 testes unitários OK
-- Next: UAT no menu Administração > Mensagem de Aniversário; commit se pedido
-- Note: stash `wip: coluna tipo no historico CIH` ficou em feature/melhoria-cih
+- Feature: cadastro-documentos-preadmissao
+- Phase: Execute done (Verifier em andamento); sem commit
+- Gate: 18 testes PHPUnit OK (13 unit + 5 feature)
+- Next: rodar `HabilidadesTableSeeder` para liberar o menu; UAT em Cadastro > Documentos da Pré-admissão
+- Note: commits só se o usuário pedir

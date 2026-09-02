@@ -62,12 +62,69 @@ export default {
         }
     },
     mounted() {
-        this.montarEditor()
+        this.$nextTick(() => this.agendarMontagem())
     },
     beforeUnmount() {
+        this.cancelarAgendamento()
         this.desmontarEditor()
     },
     methods: {
+        elementoVisivel(el) {
+            if (!el || !el.isConnected) {
+                return false
+            }
+            let node = el
+            while (node && node !== document.body) {
+                const style = window.getComputedStyle(node)
+                if (style.display === 'none' || style.visibility === 'hidden') {
+                    return false
+                }
+                node = node.parentElement
+            }
+            const style = window.getComputedStyle(el)
+            return el.offsetParent !== null || style.position === 'fixed'
+        },
+        cancelarAgendamento() {
+            if (this._visibilityObserver) {
+                this._visibilityObserver.disconnect()
+                this._visibilityObserver = null
+            }
+            if (this._visibilityInterval) {
+                clearInterval(this._visibilityInterval)
+                this._visibilityInterval = null
+            }
+        },
+        agendarMontagem() {
+            if (this.editor || !this.$refs.textarea) {
+                return
+            }
+            if (this.elementoVisivel(this.$refs.textarea)) {
+                this.montarEditor()
+                return
+            }
+            this.cancelarAgendamento()
+            this._visibilityObserver = new MutationObserver(() => {
+                if (this.elementoVisivel(this.$refs.textarea)) {
+                    this.cancelarAgendamento()
+                    this.montarEditor()
+                }
+            })
+            this._visibilityObserver.observe(document.body, {
+                attributes: true,
+                subtree: true,
+                attributeFilter: ['class', 'style', 'aria-hidden']
+            })
+            this._visibilityInterval = setInterval(() => {
+                if (!this.$refs.textarea) {
+                    this.cancelarAgendamento()
+                    return
+                }
+                if (this.elementoVisivel(this.$refs.textarea)) {
+                    this.cancelarAgendamento()
+                    this.montarEditor()
+                }
+            }, 150)
+        },
         emitContent() {
             if (!this.editor || this.syncingFromParent) {
                 return
@@ -80,7 +137,7 @@ export default {
         async montarEditor() {
             try {
                 const tinymce = await loadTinyMce()
-                if (!this.$refs.textarea) {
+                if (!this.$refs.textarea || !this.elementoVisivel(this.$refs.textarea)) {
                     return
                 }
 
