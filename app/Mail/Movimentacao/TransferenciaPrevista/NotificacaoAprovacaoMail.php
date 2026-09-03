@@ -34,6 +34,8 @@ class NotificacaoAprovacaoMail extends Mailable
         $nomeAprovacaoExtra = $this->dados['nome_aprovacao_extra'] ?? 'Aprovação Extra';
         $assuntos = [
             'criacao' => "Notificação — Transferência ({$colaborador}) — sua aprovação como gestor",
+            'criacao_gestor_unico' => "Notificação — Transferência ({$colaborador}) — sua aprovação como gestor aprovação",
+            'reprovado_gestor_unico' => "Notificação — Transferência ({$colaborador}) — reprovada pelo gestor aprovação",
             'pendente_aprovacao_extra' => "Notificação — Transferência ({$colaborador}) — aguardando aprovação de {$nomeAprovacaoExtra}",
             'pendente_aprovacao_rh' => "Notificação — Transferência ({$colaborador}) — aguardando aprovação do RH",
             'reprovado_gestor' => "Notificação — Transferência ({$colaborador}) — reprovada pelo gestor",

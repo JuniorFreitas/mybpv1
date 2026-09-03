@@ -71,9 +71,6 @@ const app = createApp({
             formDefault: null,
             campoNome: null,
 
-            cadastrado: false,
-            atualizado: false,
-
             lista: [],
             listaSimulados: [],
             listaProjetos: [],
@@ -920,8 +917,6 @@ const app = createApp({
         },
 
         formNovo() {
-            this.cadastrado = false
-            this.atualizado = false
             this.editando = false
 
             this.tituloJanela = 'Cadastrando Vaga Aberta'
@@ -973,7 +968,8 @@ const app = createApp({
                 .then((response) => {
                     if (response.status === 201) {
                         this.preloadAjax = false
-                        this.cadastrado = true
+                        this.$refs.janelaCadastrar?.fecharModal()
+                        mostraSucesso('', 'Vaga cadastrada com sucesso')
                         this.atualizar()
                     }
                 })
@@ -986,8 +982,6 @@ const app = createApp({
                 })
         },
         formAlterar(id) {
-            this.cadastrado = false
-            this.atualizado = false
             this.editando = false
             this.tituloJanela = 'Alterando Vaga'
             this.preloadAjax = true
@@ -1049,7 +1043,8 @@ const app = createApp({
                 .put(`${URL_ADMIN}/cadastro/vagas-abertas/${this.form.id}`, this.form)
                 .then((response) => {
                     this.preloadAjax = false
-                    this.atualizado = true
+                    this.$refs.janelaCadastrar?.fecharModal()
+                    mostraSucesso('', 'Vaga alterada com sucesso')
                     this.atualizar()
                 })
                 .catch((error) => {

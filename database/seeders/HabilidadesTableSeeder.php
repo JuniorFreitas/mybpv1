@@ -361,6 +361,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'administracao_aprovacao_extra_config_update', 'descricao' => 'Pode alterar uma Configuração de Aprovação Extra'];
         $lista[] = ['nome' => 'administracao_aprovacao_extra_config_delete', 'descricao' => 'Pode apagar uma Configuração de Aprovação Extra'];
         $lista[] = ['nome' => 'cadastro_customizacoes_aprovacao_extra', 'descricao' => 'Configurar Aprovações Extras (menu Customizações)'];
+        $lista[] = ['nome' => 'cadastro_customizacoes_gestor_aprovacao', 'descricao' => 'Configurar Gestor Aprovação (menu Customizações)'];
         $lista[] = ['nome' => 'configuracao_whatsapp', 'descricao' => 'Configurar templates e dados de contato WhatsApp (menu Customizações)'];
         $lista[] = ['nome' => 'preferencias_notificacao_whatsapp', 'descricao' => 'Escolher quais notificações WhatsApp deseja receber da empresa'];
 
@@ -398,6 +399,10 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'cadastro_dossie_tipos', 'descricao' => 'Acessar Cadastro Tipos de Dossiê'];
         $lista[] = ['nome' => 'cadastro_dossie_tipos_insert', 'descricao' => 'Inserir Cadastro Tipos de Dossiê'];
         $lista[] = ['nome' => 'cadastro_dossie_tipos_update', 'descricao' => 'Atualizar Cadastro Tipos de Dossiê'];
+
+        $lista[] = ['nome' => 'cadastro_documentos_preadmissao', 'descricao' => 'Acessar Cadastro Documentos da Pré-admissão'];
+        $lista[] = ['nome' => 'cadastro_documentos_preadmissao_insert', 'descricao' => 'Inserir Cadastro Documentos da Pré-admissão'];
+        $lista[] = ['nome' => 'cadastro_documentos_preadmissao_update', 'descricao' => 'Atualizar Cadastro Documentos da Pré-admissão'];
 
         $lista[] = ['nome' => 'cadastro_centrocusto', 'descricao' => 'Acessar a rota Centro de Custo'];
         $lista[] = ['nome' => 'cadastro_centrocusto_insert', 'descricao' => 'Pode criar uma nova centrocusto'];

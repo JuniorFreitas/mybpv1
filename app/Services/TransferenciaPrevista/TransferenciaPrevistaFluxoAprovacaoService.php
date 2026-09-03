@@ -4,15 +4,18 @@ namespace App\Services\TransferenciaPrevista;
 
 use App\Models\AprovacaoExtraConfig;
 use App\Models\CentroCusto;
+use App\Models\GestorAprovacaoConfig;
 use App\Models\TransferenciaPrevista;
 use App\Models\User;
 use App\Services\CentroCusto\CentroCustoGestorResolverService;
 use DomainException;
+use MasterTag\DataHora;
 
 class TransferenciaPrevistaFluxoAprovacaoService
 {
     public const ETAPA_GESTOR_ORIGEM = 'gestor_origem';
     public const ETAPA_GESTOR_DESTINO = 'gestor_destino';
+    public const ETAPA_GESTOR_UNICO = 'gestor_unico';
     public const ETAPA_EXTRA = 'extra';
     public const ETAPA_RH = 'rh';
     public const ETAPA_CONCLUIDO = 'concluido';
@@ -35,15 +38,44 @@ class TransferenciaPrevistaFluxoAprovacaoService
         }
 
         $destino = $this->buscarCentroCusto($destinoId, $empresaId, 'destino');
+
+        if ($this->modoAprovacaoEmpresa($empresaId) === TransferenciaPrevista::MODO_APROVACAO_GESTOR_UNICO) {
+            return;
+        }
+
         if (!$this->gestorResolver->getGestorPrincipal($destino->id)) {
             throw new DomainException(self::MSG_GESTOR_DESTINO_AUSENTE);
         }
     }
 
     /**
-     * Centro de custo origem sem gestor não bloqueia a solicitação.
-     *
-     * @throws DomainException quando existe gestor mas não há aprovador válido (autoaprovação)
+     * Config de "gestor aprovação" designado pela empresa para o processo de
+     * transferência (GestorAprovacaoConfig) — independente da AprovacaoExtraConfig.
+     */
+    private function configGestorUnico(int $empresaId): ?GestorAprovacaoConfig
+    {
+        return GestorAprovacaoConfig::getConfigAtiva($empresaId, 'transferencia');
+    }
+
+    public function modoAprovacaoEmpresa(int $empresaId): string
+    {
+        $config = $this->configGestorUnico($empresaId);
+
+        return ($config && $config->gestor_aprovacao_id)
+            ? TransferenciaPrevista::MODO_APROVACAO_GESTOR_UNICO
+            : TransferenciaPrevista::MODO_APROVACAO_PADRAO;
+    }
+
+    public function gestorAprovacaoUnicoId(int $empresaId): ?int
+    {
+        return $this->configGestorUnico($empresaId)?->gestor_aprovacao_id;
+    }
+
+    /**
+     * Centro de custo origem sem gestor não bloqueia a solicitação. Quando o único
+     * gestor disponível é o próprio solicitante (sem substituto/superior), a
+     * solicitação não é bloqueada: o gestor (o próprio solicitante) continua
+     * registrado na etapa, mas só o RH pode aprová-la (ver podeAprovarGestorOrigem).
      */
     public function resolverGestorOrigem(?int $origemId, int $solicitanteId): ?User
     {
@@ -51,23 +83,38 @@ class TransferenciaPrevistaFluxoAprovacaoService
             return null;
         }
 
-        if (!$this->gestorResolver->getGestorPrincipal($origemId)) {
+        $principal = $this->gestorResolver->getGestorPrincipal($origemId);
+        if (!$principal) {
             return null;
         }
 
-        return $this->gestorResolver->resolverAprovador($origemId, $solicitanteId);
+        try {
+            return $this->gestorResolver->resolverAprovador($origemId, $solicitanteId);
+        } catch (DomainException) {
+            return $principal;
+        }
     }
 
     /**
-     * @throws DomainException
+     * Quando o centro de custo destino não tem gestor algum, bloqueia (obrigatório
+     * ter um responsável). Quando o único gestor disponível é o próprio solicitante
+     * (sem substituto/superior), não bloqueia: mantém o gestor (o próprio
+     * solicitante) registrado, mas só o RH pode aprovar essa etapa.
+     *
+     * @throws DomainException quando o centro de custo destino não tem gestor algum
      */
     public function resolverGestorDestino(int $destinoId, int $solicitanteId): User
     {
-        if (!$this->gestorResolver->getGestorPrincipal($destinoId)) {
+        $principal = $this->gestorResolver->getGestorPrincipal($destinoId);
+        if (!$principal) {
             throw new DomainException(self::MSG_GESTOR_DESTINO_AUSENTE);
         }
 
-        return $this->gestorResolver->resolverAprovador($destinoId, $solicitanteId);
+        try {
+            return $this->gestorResolver->resolverAprovador($destinoId, $solicitanteId);
+        } catch (DomainException) {
+            return $principal;
+        }
     }
 
     public function deveExigirAprovacaoGestorDestino(?User $gestorOrigem, User $gestorDestino): bool
@@ -87,23 +134,63 @@ class TransferenciaPrevistaFluxoAprovacaoService
     {
         $this->validarCentrosCusto($origemId, $destinoId, $empresaId);
 
+        if ($this->modoAprovacaoEmpresa($empresaId) === TransferenciaPrevista::MODO_APROVACAO_GESTOR_UNICO) {
+            return [
+                'gestor_id' => null,
+                'gestor_destino_id' => null,
+                'exige_aprovacao_gestor_destino' => false,
+                'fluxo_gestores_automatico' => true,
+                'modo_aprovacao' => TransferenciaPrevista::MODO_APROVACAO_GESTOR_UNICO,
+                'gestor_aprovacao_id' => $this->gestorAprovacaoUnicoId($empresaId),
+                'status_aprovacao' => null,
+                'user_aprovacao_id' => null,
+                'data_aprovacao' => null,
+                'obs_aprovacao' => null,
+                'status_aprovacao_gestor_destino' => null,
+                'user_aprovacao_gestor_destino_id' => null,
+                'data_aprovacao_gestor_destino' => null,
+                'obs_aprovacao_gestor_destino' => null,
+                'status_aprovacao_gestor_unico' => null,
+                'user_aprovacao_gestor_unico_id' => null,
+                'data_aprovacao_gestor_unico' => null,
+                'obs_aprovacao_gestor_unico' => null,
+            ];
+        }
+
         $gestorOrigem = $this->resolverGestorOrigem($origemId, $solicitanteId);
         $gestorDestino = $this->resolverGestorDestino($destinoId, $solicitanteId);
         $exigeDestino = $this->deveExigirAprovacaoGestorDestino($gestorOrigem, $gestorDestino);
+
+        // Solicitante é o próprio gestor (de origem e/ou destino), sem substituto/
+        // superior disponível: a etapa já entra aprovada automaticamente, sem
+        // notificar pedindo autoaprovação — segue direto para a etapa seguinte.
+        $origemAutoaprovada = $gestorOrigem && (int) $gestorOrigem->id === $solicitanteId;
+        $destinoAutoaprovada = $exigeDestino && (int) $gestorDestino->id === $solicitanteId;
+        $dataHoraAtual = (new DataHora())->dataHoraInsert();
 
         return [
             'gestor_id' => $gestorOrigem?->id,
             'gestor_destino_id' => $exigeDestino ? $gestorDestino->id : null,
             'exige_aprovacao_gestor_destino' => $exigeDestino,
             'fluxo_gestores_automatico' => true,
-            'status_aprovacao' => null,
-            'user_aprovacao_id' => null,
-            'data_aprovacao' => null,
-            'obs_aprovacao' => null,
-            'status_aprovacao_gestor_destino' => null,
-            'user_aprovacao_gestor_destino_id' => null,
-            'data_aprovacao_gestor_destino' => null,
-            'obs_aprovacao_gestor_destino' => null,
+            'modo_aprovacao' => TransferenciaPrevista::MODO_APROVACAO_PADRAO,
+            'gestor_aprovacao_id' => null,
+            'status_aprovacao' => $origemAutoaprovada ? 'aprovado' : null,
+            'user_aprovacao_id' => $origemAutoaprovada ? $solicitanteId : null,
+            'data_aprovacao' => $origemAutoaprovada ? $dataHoraAtual : null,
+            'obs_aprovacao' => $origemAutoaprovada
+                ? 'Aprovação automática: solicitante é o próprio gestor responsável pelo centro de custo de origem, sem substituto disponível.'
+                : null,
+            'status_aprovacao_gestor_destino' => $destinoAutoaprovada ? 'aprovado' : null,
+            'user_aprovacao_gestor_destino_id' => $destinoAutoaprovada ? $solicitanteId : null,
+            'data_aprovacao_gestor_destino' => $destinoAutoaprovada ? $dataHoraAtual : null,
+            'obs_aprovacao_gestor_destino' => $destinoAutoaprovada
+                ? 'Aprovação automática: solicitante é o próprio gestor responsável pelo centro de custo de destino, sem substituto disponível.'
+                : null,
+            'status_aprovacao_gestor_unico' => null,
+            'user_aprovacao_gestor_unico_id' => null,
+            'data_aprovacao_gestor_unico' => null,
+            'obs_aprovacao_gestor_unico' => null,
         ];
     }
 
@@ -125,7 +212,11 @@ class TransferenciaPrevistaFluxoAprovacaoService
                 $dados['status_aprovacao_gestor_destino'],
                 $dados['user_aprovacao_gestor_destino_id'],
                 $dados['data_aprovacao_gestor_destino'],
-                $dados['obs_aprovacao_gestor_destino']
+                $dados['obs_aprovacao_gestor_destino'],
+                $dados['status_aprovacao_gestor_unico'],
+                $dados['user_aprovacao_gestor_unico_id'],
+                $dados['data_aprovacao_gestor_unico'],
+                $dados['obs_aprovacao_gestor_unico']
             );
         }
 
@@ -136,6 +227,7 @@ class TransferenciaPrevistaFluxoAprovacaoService
     {
         if ($transferencia->status_aprovacao === 'reprovado'
             || $transferencia->status_aprovacao_gestor_destino === 'reprovado'
+            || $transferencia->status_aprovacao_gestor_unico === 'reprovado'
             || $transferencia->status_aprovacao_extra === 'reprovado'
             || $transferencia->resposta_rh === 'reprovado') {
             return self::ETAPA_REPROVADO;
@@ -145,12 +237,18 @@ class TransferenciaPrevistaFluxoAprovacaoService
             return self::ETAPA_CONCLUIDO;
         }
 
-        if (!$transferencia->status_aprovacao && $this->exigeAprovacaoGestorOrigem($transferencia)) {
-            return self::ETAPA_GESTOR_ORIGEM;
-        }
+        if ($transferencia->modo_aprovacao === TransferenciaPrevista::MODO_APROVACAO_GESTOR_UNICO) {
+            if (!$transferencia->status_aprovacao_gestor_unico && !$this->gestorUnicoEhOSolicitante($transferencia)) {
+                return self::ETAPA_GESTOR_UNICO;
+            }
+        } else {
+            if (!$transferencia->status_aprovacao && $this->exigeAprovacaoGestorOrigem($transferencia)) {
+                return self::ETAPA_GESTOR_ORIGEM;
+            }
 
-        if ($transferencia->exige_aprovacao_gestor_destino && !$transferencia->status_aprovacao_gestor_destino) {
-            return self::ETAPA_GESTOR_DESTINO;
+            if ($transferencia->exige_aprovacao_gestor_destino && !$transferencia->status_aprovacao_gestor_destino) {
+                return self::ETAPA_GESTOR_DESTINO;
+            }
         }
 
         $config = AprovacaoExtraConfig::getConfigAtiva((int) $transferencia->empresa_id, 'transferencia');
@@ -179,6 +277,10 @@ class TransferenciaPrevistaFluxoAprovacaoService
             return true;
         }
 
+        if ($this->gestorEhOSolicitante($transferencia, $transferencia->gestor_id)) {
+            return false;
+        }
+
         return (int) $transferencia->gestor_id === (int) $user->id;
     }
 
@@ -196,7 +298,56 @@ class TransferenciaPrevistaFluxoAprovacaoService
             return true;
         }
 
+        if ($this->gestorEhOSolicitante($transferencia, $transferencia->gestor_destino_id)) {
+            return false;
+        }
+
         return (int) $transferencia->gestor_destino_id === (int) $user->id;
+    }
+
+    /**
+     * Verdadeiro quando o gestor designado para a etapa é o próprio solicitante —
+     * caso de autoaprovação sem substituto/superior disponível, resolvido em
+     * resolverGestorOrigem/resolverGestorDestino. Nesse caso só o RH pode aprovar
+     * (ver usuarioTemPrivilegioRh acima, que é checado antes desta chamada).
+     */
+    private function gestorEhOSolicitante(TransferenciaPrevista $transferencia, ?int $gestorId): bool
+    {
+        if ((int) ($gestorId ?? 0) <= 0) {
+            return false;
+        }
+
+        return (int) $gestorId === (int) $transferencia->user_id;
+    }
+
+    /**
+     * Quando o próprio solicitante é o gestor de aprovação designado pela empresa,
+     * a etapa é dispensada (evita autoaprovação): não bloqueia, não notifica, segue o fluxo.
+     */
+    public function gestorUnicoEhOSolicitante(TransferenciaPrevista $transferencia): bool
+    {
+        if ((int) ($transferencia->gestor_aprovacao_id ?? 0) <= 0) {
+            return false;
+        }
+
+        return (int) $transferencia->gestor_aprovacao_id === (int) $transferencia->user_id;
+    }
+
+    public function podeAprovarGestorUnico(TransferenciaPrevista $transferencia, User $user): bool
+    {
+        if ($this->etapaAtual($transferencia) !== self::ETAPA_GESTOR_UNICO) {
+            return false;
+        }
+
+        if (!$transferencia->gestor_aprovacao_id) {
+            return false;
+        }
+
+        if ($this->usuarioTemPrivilegioRh($user)) {
+            return true;
+        }
+
+        return (int) $transferencia->gestor_aprovacao_id === (int) $user->id;
     }
 
     public function usuarioTemPrivilegioRh(User $user): bool
@@ -212,9 +363,11 @@ class TransferenciaPrevistaFluxoAprovacaoService
             return false;
         }
 
-        $gestorId = $etapa === self::ETAPA_GESTOR_DESTINO
-            ? $transferencia->gestor_destino_id
-            : $transferencia->gestor_id;
+        $gestorId = match ($etapa) {
+            self::ETAPA_GESTOR_DESTINO => $transferencia->gestor_destino_id,
+            self::ETAPA_GESTOR_UNICO => $transferencia->gestor_aprovacao_id,
+            default => $transferencia->gestor_id,
+        };
 
         return (int) $aprovador->id !== (int) $gestorId;
     }
@@ -255,6 +408,14 @@ class TransferenciaPrevistaFluxoAprovacaoService
 
     public function gestoresEtapasConcluidas(TransferenciaPrevista $transferencia): bool
     {
+        if ($transferencia->modo_aprovacao === TransferenciaPrevista::MODO_APROVACAO_GESTOR_UNICO) {
+            if ($this->gestorUnicoEhOSolicitante($transferencia)) {
+                return true;
+            }
+
+            return $transferencia->status_aprovacao_gestor_unico === 'aprovado';
+        }
+
         if (!$this->origemEtapaConcluida($transferencia)) {
             return false;
         }

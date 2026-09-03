@@ -36,9 +36,13 @@ $kernel->bootstrap();
 ini_set('memory_limit', '-1');
 ini_set('max_execution_time', '-1');
 
-$empresa_id = 111969;
+$empresa_id = defined('IMPORTACAO_EMPRESA_ID') ? (int) IMPORTACAO_EMPRESA_ID : 111969;
 $user_id = $empresa_id;
-$planilha = base_path('scripts/importacao_CoimbraeRR_2026.xlsx');
+$nomeImportacao = defined('IMPORTACAO_NOME') ? (string) IMPORTACAO_NOME : 'Coimbra RR';
+$slugImportacao = defined('IMPORTACAO_SLUG') ? (string) IMPORTACAO_SLUG : 'coimbra_rr_111969';
+$arquivoPlanilha = defined('IMPORTACAO_PLANILHA') ? (string) IMPORTACAO_PLANILHA : 'importacao_CoimbraeRR_2026.xlsx';
+$municipioIdFixo = defined('IMPORTACAO_MUNICIPIO_ID') ? (int) IMPORTACAO_MUNICIPIO_ID : null;
+$planilha = base_path('scripts/' . $arquivoPlanilha);
 
 if (!is_readable($planilha)) {
     fwrite(STDERR, "Planilha não encontrada: {$planilha}\n");
@@ -51,16 +55,16 @@ $import = new Admissaoimport;
 Auth::loginUsingId($user_id);
 $count = 0;
 
-echo "Importação Coimbra RR | empresa_id={$empresa_id} | linhas={$import->dados->count()}\n";
+echo "Importação {$nomeImportacao} | empresa_id={$empresa_id} | linhas={$import->dados->count()}\n";
 
 $errosPrep = [];
-$dados = $import->dados->map(function ($line) use ($empresa_id, &$count, &$errosPrep) {
+$dados = $import->dados->map(function ($line) use ($empresa_id, $municipioIdFixo, &$count, &$errosPrep) {
     $count++;
     $linhaExcel = $count + 1;
     $nome = trim((string) ($line['nome'] ?? ''));
     $codVaga = trim((string) ($line['cod_vaga'] ?? ''));
     $centroCustoLabel = trim((string) ($line['centro_custo'] ?? ''));
-    $municipio_id = parseMunicipioIdVagaMun($line['vaga_mun'] ?? null);
+    $municipio_id = $municipioIdFixo ?: parseMunicipioIdVagaMun($line['vaga_mun'] ?? null);
 
     echo "Linha: {$count} - {$nome}\n";
 
@@ -233,8 +237,8 @@ if (!is_dir($logDir)) {
     mkdir($logDir, 0755, true);
 }
 $dataLog = (new \MasterTag\DataHora())->dataInsert();
-$outputFile = $logDir . '/' . $dataLog . '_importacao_coimbra_rr_111969_log.txt';
-$erroFile = $logDir . '/' . $dataLog . '_importacao_coimbra_rr_111969_erros.txt';
+$outputFile = $logDir . '/' . $dataLog . '_importacao_' . $slugImportacao . '_log.txt';
+$erroFile = $logDir . '/' . $dataLog . '_importacao_' . $slugImportacao . '_erros.txt';
 $outputHandle = fopen($outputFile, 'w');
 $erroHandle = null;
 
@@ -471,7 +475,7 @@ collect($dados)->chunk(200)->each(function ($records) use ($empresa_id, $outputH
                 $record['admissao']['admissao_encerramento']
             );
             AdmissaoAso::criarAtualizar($curriculo->Feedback->Admissao->id, $empresa_id, $record['admissao']['data_aso']);
-            criarOuAtualizarExameAsoCst(
+            criarOuAtualizarExameAsoImportacao(
                 $curriculo->Feedback->id,
                 $empresa_id,
                 $record['admissao']['data_aso'],
@@ -580,12 +584,15 @@ function firstOrCreateAreaEtiqueta($nome, $empresa_id, $centro_custo_id = null, 
     return $area;
 }
 
-function garantirInfraAsoCst(int $empresaId): array
+function garantirInfraAsoImportacao(int $empresaId): array
 {
     static $cache = null;
     if ($cache !== null) {
         return $cache;
     }
+
+    $slug = defined('IMPORTACAO_SLUG') ? (string) IMPORTACAO_SLUG : 'coimbra_rr_111969';
+    $nome = defined('IMPORTACAO_NOME') ? (string) IMPORTACAO_NOME : 'Coimbra RR';
 
     $formulario = \App\Models\Formulario::withoutGlobalScopes()
         ->where('empresa_id', $empresaId)
@@ -594,7 +601,7 @@ function garantirInfraAsoCst(int $empresaId): array
     if (!$formulario) {
         $formulario = \App\Models\Formulario::create([
             'titulo' => 'Exames',
-            'descricao' => 'Formulário de exames (importação CST)',
+            'descricao' => 'Formulário de exames (importação ' . $nome . ')',
             'empresa_id' => $empresaId,
         ]);
     }
@@ -610,16 +617,16 @@ function garantirInfraAsoCst(int $empresaId): array
 
     $clinica = \App\Models\EmpresaExame::withoutGlobalScopes()->where('empresa_id', $empresaId)->first();
     if (!$clinica) {
-        $clinica = \App\Models\EmpresaExame::withoutEvents(function () use ($empresaId) {
+        $clinica = \App\Models\EmpresaExame::withoutEvents(function () use ($empresaId, $slug, $nome) {
             return \App\Models\EmpresaExame::create([
                 'user_id' => $empresaId,
                 'empresa_id' => $empresaId,
-                'nome' => 'CLINICA IMPORTACAO CST',
+                'nome' => 'CLINICA IMPORTACAO ' . mb_strtoupper($nome),
                 'dados' => [
                     'cnpj' => '00.000.000/0000-00',
-                    'email' => 'clinica.cst.' . $empresaId . '@mybp.local',
+                    'email' => 'clinica.' . $slug . '.' . $empresaId . '@mybp.local',
                     'telefone' => '(00) 0000-0000',
-                    'nome_fantasia' => 'CLINICA CST',
+                    'nome_fantasia' => 'CLINICA ' . mb_strtoupper($nome),
                     'endereco' => [
                         'uf' => 'MA',
                         'cep' => '65000-000',
@@ -642,9 +649,9 @@ function garantirInfraAsoCst(int $empresaId): array
     ];
 }
 
-function criarOuAtualizarExameAsoCst(int $feedbackId, int $empresaId, string $dataAso, string $dataAdmissao): void
+function criarOuAtualizarExameAsoImportacao(int $feedbackId, int $empresaId, string $dataAso, string $dataAdmissao): void
 {
-    $infra = garantirInfraAsoCst($empresaId);
+    $infra = garantirInfraAsoImportacao($empresaId);
     $diffDias = \MasterTag\DataHora::diferencaDias($dataAdmissao, (new \MasterTag\DataHora())->dataInsert());
     $exameTipoId = $diffDias <= 547 ? 1 : 2;
 
@@ -780,7 +787,7 @@ function simNaoBool($valor): ?bool
 }
 
 /**
- * Converte SIM/NAO; se vazio, usa default (para CST admitidos: true).
+ * Converte SIM/NAO; se vazio, usa o default da importação.
  */
 function resolverEncaminhadoBool($valor, bool $defaultQuandoVazio): bool
 {

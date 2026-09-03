@@ -29,13 +29,7 @@
     <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :size="90">
         <template #conteudo>
             <div v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</div>
-            <div class="alert alert-success alert-dismissible" v-show="cadastrado">
-                <h4><i class="icon fa fa-check"></i>Vaga cadastrada com sucesso!</h4>
-            </div>
-            <div class="alert alert-success alert-dismissible" v-show="atualizado">
-                <h4><i class="icon fa fa-check"></i>Vaga alterada com sucesso!</h4>
-            </div>
-            <form v-if="!preloadAjax && (!cadastrado && !atualizado)" id="form" onsubmit="return false;">
+            <form v-if="!preloadAjax" id="form" onsubmit="return false;">
 
                 <p class="mybp-campo-obrigatorio-legenda mb-3">
                     Campos com <span class="text-danger">*</span> são obrigatórios.
@@ -398,11 +392,11 @@
             </form>
         </template>
         <template #rodape>
-            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !atualizado && !preloadAjax"
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !preloadAjax"
                     @click="alterar()">
                 Alterar
             </button>
-            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !cadastrado && !preloadAjax"
+            <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !preloadAjax"
                     @click="cadastrar()">
                 Cadastrar
             </button>

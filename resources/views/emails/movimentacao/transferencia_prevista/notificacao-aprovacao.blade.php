@@ -19,15 +19,25 @@ $nome_aprovacao_extra = $dados['nome_aprovacao_extra'];
 $url = $dados['url'];
 $has_aprovacao_extra = $dados['has_aprovacao_extra'] ?? false;
 
+$modo_gestor_unico = $transferencia->modo_aprovacao === 'gestor_unico';
+$gestor_unico_dispensado = $modo_gestor_unico
+    && (int) $transferencia->gestor_aprovacao_id > 0
+    && (int) $transferencia->gestor_aprovacao_id === (int) $transferencia->user_id;
+$gestor_unico_aprovado = $modo_gestor_unico
+    && ($transferencia->status_aprovacao_gestor_unico === 'aprovado' || $gestor_unico_dispensado);
+$gestor_unico_reprovado = $modo_gestor_unico && $transferencia->status_aprovacao_gestor_unico === 'reprovado';
+
 $titulos = [
 'criacao' => 'Nova solicitação de transferência — sua aprovação é necessária',
 'criacao_gestor_origem' => 'Nova transferência — aguardando aprovação do gestor de origem',
 'criacao_gestor_destino' => 'Nova transferência — aguardando aprovação do gestor de destino',
+'criacao_gestor_unico' => 'Nova transferência — sua aprovação é necessária',
 'pendente_aprovacao_extra' => "Transferência — aguardando aprovação de {$nome_aprovacao_extra}",
 'pendente_aprovacao_rh' => 'Transferência — aguardando aprovação do RH',
 'reprovado_gestor' => 'Solicitação de transferência reprovada pelo gestor',
 'reprovado_gestor_origem' => 'Solicitação de transferência reprovada pelo gestor de origem',
 'reprovado_gestor_destino' => 'Solicitação de transferência reprovada pelo gestor de destino',
+'reprovado_gestor_unico' => 'Solicitação de transferência reprovada pelo gestor aprovação',
 'reprovado_aprovacao_extra' => "Solicitação de transferência reprovada por {$nome_aprovacao_extra}",
 'reprovado_rh' => 'Solicitação de transferência reprovada pelo RH',
 'cancelado' => 'Solicitação de transferência cancelada',
@@ -38,11 +48,13 @@ $mensagens = [
 'criacao' => 'Uma nova solicitação de transferência foi registrada e está aguardando sua análise. Acesse o sistema para aprovar ou reprovar.',
 'criacao_gestor_origem' => 'Uma nova solicitação de transferência foi registrada e aguarda a aprovação do gestor do centro de custo de origem.',
 'criacao_gestor_destino' => 'A transferência para um centro de custo sob sua gestão necessita da sua aprovação como gestor de destino.',
+'criacao_gestor_unico' => 'Esta empresa usa um aprovador único para transferências. Uma nova solicitação foi registrada e aguarda sua análise.',
 'pendente_aprovacao_extra' => "Os gestores já aprovaram. A solicitação agora aguarda a análise de {$nome_aprovacao_extra}.",
 'pendente_aprovacao_rh' => 'Os gestores e a aprovação anterior já validaram a solicitação. Agora ela aguarda a análise do RH.',
 'reprovado_gestor' => 'A solicitação de transferência foi reprovada pelo gestor e o processo foi encerrado.',
 'reprovado_gestor_origem' => 'A solicitação de transferência foi reprovada pelo gestor de origem e o processo foi encerrado.',
 'reprovado_gestor_destino' => 'A solicitação de transferência foi reprovada pelo gestor de destino e o processo foi encerrado.',
+'reprovado_gestor_unico' => 'A solicitação de transferência foi reprovada pelo gestor aprovação e o processo foi encerrado.',
 'reprovado_aprovacao_extra' => "A solicitação de transferência foi reprovada por {$nome_aprovacao_extra} e o processo foi encerrado.",
 'reprovado_rh' => 'A solicitação de transferência foi reprovada pelo RH e o processo foi encerrado.',
 'cancelado' => 'A solicitação de transferência foi cancelada e o processo foi encerrado.',
@@ -55,7 +67,7 @@ $mensagem = $mensagens[$tipo] ?? '';
 
 <table border="0" cellpadding="0" width="100%" style="width: 100%;">
     <tr>
-        <td style="text-align: justify; padding: 30px;">
+        <td style="padding: 30px;">
             <h2 style="color: #072433; margin-top: 0;">{{ $titulo }}</h2>
             <p>{{ $mensagem }}</p>
 
@@ -72,16 +84,29 @@ $mensagem = $mensagens[$tipo] ?? '';
                         <td align="center" style="width: 5%;">→</td>
                         <td align="center" style="width: {{ $has_aprovacao_extra ? '25%' : '30%' }};">
                             <div style="text-align: center;">
-                                @if($transferencia->status_aprovacao === 'aprovado')
-                                <span style="font-size: 30px; color: #28a745;">✓</span>
-                                @elseif($transferencia->status_aprovacao === 'reprovado')
-                                <span style="font-size: 30px; color: #dc3545;">✗</span>
+                                @if($modo_gestor_unico)
+                                    @if($gestor_unico_reprovado)
+                                    <span style="font-size: 30px; color: #dc3545;">✗</span>
+                                    @elseif($gestor_unico_aprovado)
+                                    <span style="font-size: 30px; color: #28a745;">✓</span>
+                                    @else
+                                    <span style="font-size: 30px; color: #ffc107;">⏳</span>
+                                    @endif
+                                    <br>
+                                    <strong style="font-size: 12px;">Gestor Aprovação</strong><br>
+                                    <span style="font-size: 11px; color: #6c757d;">{{ $gestor_selecionado ?: 'Pendente' }}</span>
                                 @else
-                                <span style="font-size: 30px; color: #ffc107;">⏳</span>
+                                    @if($transferencia->status_aprovacao === 'aprovado')
+                                    <span style="font-size: 30px; color: #28a745;">✓</span>
+                                    @elseif($transferencia->status_aprovacao === 'reprovado')
+                                    <span style="font-size: 30px; color: #dc3545;">✗</span>
+                                    @else
+                                    <span style="font-size: 30px; color: #ffc107;">⏳</span>
+                                    @endif
+                                    <br>
+                                    <strong style="font-size: 12px;">Gestor Origem</strong><br>
+                                    <span style="font-size: 11px; color: #6c757d;">{{ $gestor ?: ($gestor_selecionado ?: 'Pendente') }}</span>
                                 @endif
-                                <br>
-                                <strong style="font-size: 12px;">Gestor Origem</strong><br>
-                                <span style="font-size: 11px; color: #6c757d;">{{ $gestor ?: ($gestor_selecionado ?: 'Pendente') }}</span>
                             </div>
                         </td>
                         @if($exige_gestor_destino)
@@ -194,7 +219,7 @@ $mensagem = $mensagens[$tipo] ?? '';
                         <td>{{ $solicitante }}</td>
                     </tr>
                     <tr>
-                        <td style="color: #555;"><strong>Gestor Origem:</strong></td>
+                        <td style="color: #555;"><strong>{{ $modo_gestor_unico ? 'Gestor Aprovação' : 'Gestor Origem' }}:</strong></td>
                         <td>{{ $gestor_selecionado }}</td>
                     </tr>
                     @if($exige_gestor_destino)
@@ -208,8 +233,14 @@ $mensagem = $mensagens[$tipo] ?? '';
                         <td>{{ $transferencia->created_at ? \Carbon\Carbon::parse($transferencia->created_at)->format('d/m/Y') : '' }}</td>
                     </tr>
                     <tr>
-                        <td style="color: #555;"><strong>Data Atualização Gestor Origem:</strong></td>
-                        <td>{{ $transferencia->data_aprovacao ? \Carbon\Carbon::parse($transferencia->data_aprovacao)->format('d/m/Y') : '' }}</td>
+                        <td style="color: #555;"><strong>Data Atualização {{ $modo_gestor_unico ? 'Gestor Aprovação' : 'Gestor Origem' }}:</strong></td>
+                        <td>
+                            @if($modo_gestor_unico)
+                                {{ $transferencia->data_aprovacao_gestor_unico ? \Carbon\Carbon::parse($transferencia->data_aprovacao_gestor_unico)->format('d/m/Y') : '' }}
+                            @else
+                                {{ $transferencia->data_aprovacao ? \Carbon\Carbon::parse($transferencia->data_aprovacao)->format('d/m/Y') : '' }}
+                            @endif
+                        </td>
                     </tr>
                     @if($exige_gestor_destino)
                     <tr style="background: #f8f9fa;">
@@ -241,6 +272,13 @@ $mensagem = $mensagens[$tipo] ?? '';
             <div style="background: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; margin: 20px 0; border-radius: 4px;">
                 <strong style="color: #721c24;">Motivo da Reprovação (Gestor):</strong>
                 <!-- <p style="margin: 10px 0 0 0; color: #721c24;">{{ $transferencia->obs_aprovacao }}</p> -->
+            </div>
+            @endif
+
+            @if($transferencia->obs_aprovacao_gestor_unico && $gestor_unico_reprovado)
+            <div style="background: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; margin: 20px 0; border-radius: 4px;">
+                <strong style="color: #721c24;">Motivo da Reprovação (Gestor Aprovação):</strong>
+                <!-- <p style="margin: 10px 0 0 0; color: #721c24;">{{ $transferencia->obs_aprovacao_gestor_unico }}</p> -->
             </div>
             @endif
 

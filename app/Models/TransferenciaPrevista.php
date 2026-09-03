@@ -133,6 +133,12 @@ class TransferenciaPrevista extends Model
         'resposta_rh',
         'obs_rh',
         'data_aprovacao_rh',
+        'modo_aprovacao',
+        'gestor_aprovacao_id',
+        'status_aprovacao_gestor_unico',
+        'user_aprovacao_gestor_unico_id',
+        'data_aprovacao_gestor_unico',
+        'obs_aprovacao_gestor_unico',
     ];
 
     protected $casts = [
@@ -167,7 +173,16 @@ class TransferenciaPrevista extends Model
         'resposta_rh' => 'string',
         'obs_rh' => 'string',
         'data_aprovacao_rh' => 'datetime:d/m/Y à\s H:i:s',
+        'modo_aprovacao' => 'string',
+        'gestor_aprovacao_id' => 'int',
+        'status_aprovacao_gestor_unico' => 'string',
+        'user_aprovacao_gestor_unico_id' => 'int',
+        'data_aprovacao_gestor_unico' => 'datetime:d/m/Y à\s H:i:s',
+        'obs_aprovacao_gestor_unico' => 'string',
     ];
+
+    public const MODO_APROVACAO_PADRAO = 'padrao';
+    public const MODO_APROVACAO_GESTOR_UNICO = 'gestor_unico';
 
     protected function serializeDate(DateTimeInterface $date)
     {
@@ -232,6 +247,16 @@ class TransferenciaPrevista extends Model
     public function QuemAprovouGestorDestino()
     {
         return $this->hasOne(User::class, 'id', 'user_aprovacao_gestor_destino_id')->select(['id', 'nome', 'login', 'ativo']);
+    }
+
+    public function GestorAprovacaoUnico()
+    {
+        return $this->hasOne(User::class, 'id', 'gestor_aprovacao_id')->select(['id', 'nome', 'login', 'ativo']);
+    }
+
+    public function QuemAprovouGestorUnico()
+    {
+        return $this->hasOne(User::class, 'id', 'user_aprovacao_gestor_unico_id')->select(['id', 'nome', 'login', 'ativo']);
     }
 
     public function UserAprovacao()

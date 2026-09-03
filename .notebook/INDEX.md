@@ -3,6 +3,7 @@
 
 Last updated: 2026-08-31
 
+- [documentos-preadmissao-catalogo](documentos-preadmissao-catalogo.md) — Catálogo pré-admissão por empresa | flow | preadmissao, documentos
 - [cadastro-dossie-tipos](cadastro-dossie-tipos.md) — Catálogo dossiê com override por empresa | flow | dossie, cadastro
 - [transferencia-gestor-origem-opcional](transferencia-gestor-origem-opcional.md) — Origem opcional; RH efetiva via `resposta_rh` | flow | transferencia, gestor, rh
 - [tinymce-selfhost](tinymce-selfhost.md) — Editor rico via public/tinymce, sem Cloud | gotcha | tinymce, frontend

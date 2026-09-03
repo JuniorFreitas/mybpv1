@@ -1,13 +1,15 @@
 <?php
 
 namespace App\Models;
+use App\Support\DocumentoPreadmissaoDescricaoSanitizer;
 use Spatie\Activitylog\Traits\LogsActivity;
 use App\Models\Concerns\HasActivitylogOptions;
 use Spatie\Activitylog\Models\Activity;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * App\Models\DocumentosCurriculosAdmissaoEmpresa
@@ -57,7 +59,12 @@ class DocumentosCurriculosAdmissaoEmpresa extends Model
         $activity->descricao = '';
     }
 
+    public const CACHE_KEY_PREFIX = 'docAdmEmpresa_';
+    public const CACHE_TTL_HORAS = 168;
+
     protected $table = 'documentos_curriculos_adm_empresa';
+
+    public $timestamps = false;
 
     protected $fillable = [
         'empresa_id',
@@ -88,28 +95,65 @@ class DocumentosCurriculosAdmissaoEmpresa extends Model
 
     public function getConfiguracoesAttribute($value)
     {
-        return json_decode($value, 1);
+        $configuracoes = json_decode($value, true);
+
+        return array_merge([
+            'obrigatorio' => false,
+            'apenas_img' => false,
+            'apenas_pdf' => false,
+            'apenas_pdf_img' => false,
+            'multiple' => false,
+            'min' => 1,
+            'max' => 1,
+            'sogestao' => false,
+        ], is_array($configuracoes) ? $configuracoes : []);
+    }
+
+    public function getDescricaoAttribute($value): ?string
+    {
+        return DocumentoPreadmissaoDescricaoSanitizer::sanitize($value);
+    }
+
+    public function categoria(): BelongsTo
+    {
+        return $this->belongsTo(DocumentosCurriculosCatAdmissaoEmpresa::class, 'categoria_id');
+    }
+
+    public static function cacheKey(int $empresaId): string
+    {
+        return self::CACHE_KEY_PREFIX . $empresaId;
+    }
+
+    public static function limparCache(int $empresaId): void
+    {
+        Cache::forget(self::cacheKey($empresaId));
     }
 
     public static function getDocumentoCurriculoAdmissaoEmpresa($empresa_id)
     {
-        $docAdmEmpresa = \Cache::forget('docAdmEmpresa_' . $empresa_id);
-        $docAdmEmpresa = \Cache::get('docAdmEmpresa_' . $empresa_id);
+        app(\App\Services\Preadmissao\DocumentoPreadmissaoCadastroService::class)
+            ->garantirPadraoSistema((int) $empresa_id);
+
+        $key = self::cacheKey((int) $empresa_id);
+        $docAdmEmpresa = Cache::get($key);
 
         if (!$docAdmEmpresa) {
-            $docAdmEmpresa = DocumentosCurriculosAdmissaoEmpresa::where('documentos_curriculos_adm_empresa.empresa_id', $empresa_id)
+            $docAdmEmpresa = self::query()
+                ->where('documentos_curriculos_adm_empresa.empresa_id', $empresa_id)
                 ->whereAtivo(true)
+                ->with('categoria')
                 ->orderBy('documentos_curriculos_adm_empresa.categoria_id')
                 ->orderBy('documentos_curriculos_adm_empresa.ordem')
                 ->get()
                 ->transform(function ($doc) {
-                    $doc->categoria = DB::table('documentos_curriculos_cat_adm_empresa')->select(['label'])->where('id', $doc->categoria_id)->first()->label;
+                    $labelCategoria = $doc->getRelation('categoria')?->label;
+                    $doc->unsetRelation('categoria');
+                    $doc->setAttribute('categoria', $labelCategoria);
                     return $doc;
                 });
-            \Cache::put('docAdmEmpresa_' . $empresa_id, $docAdmEmpresa, now()->addHours(168));
+            Cache::put($key, $docAdmEmpresa, now()->addHours(self::CACHE_TTL_HORAS));
         }
 
         return $docAdmEmpresa;
-
     }
 }

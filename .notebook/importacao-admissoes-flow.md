@@ -27,6 +27,7 @@ Importação em lote via planilha .xlsx (aba "Dados"), assíncrona por fila, com
 ## Gotchas
 - Lock falhou = job ignorado (não re-enfileira)
 - Legacy: `ImportJob`, scripts `scripts/0_IMPORTACAO*.php` — fluxo antigo separado
+- O entrypoint Engeko `scripts/0_IMPORTACAO_ENGEKO_103967.php` configura o script Coimbra por constantes; sua planilha não possui `vaga_mun`, então usa São Luís-MA (`municipio_id=2743`).
 - Outras importações no projeto: CBO (`ImportarCboCommand`), treinamentos (`ImportaTreinamento*`)
 
 ## Related
