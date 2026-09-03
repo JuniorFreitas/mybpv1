@@ -241,6 +241,9 @@ mix.js('resources/js/app.js', 'public/js')
     //Aprovação Extra Config
     .js('resources/js/g/administracao/aprovacao-extra-config/app.js', 'public/js/g/aprovacao-extra-config/')
 
+    //Gestor de Aprovação Config
+    .js('resources/js/g/administracao/gestor-aprovacao-config/app.js', 'public/js/g/gestor-aprovacao-config/')
+
     //Configurações WhatsApp
     .js('resources/js/g/configuracoes/whatsapp/app.js', 'public/js/g/configuracoes/whatsapp/')
 

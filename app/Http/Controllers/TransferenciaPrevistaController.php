@@ -77,6 +77,7 @@ class TransferenciaPrevistaController extends Controller
             return response()->json('', 201);
         } catch (DomainException $e) {
             DB::rollBack();
+            $this->logDomainException($e);
             return response()->json(['msg' => $e->getMessage()], 422);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -94,6 +95,8 @@ class TransferenciaPrevistaController extends Controller
             'GestorOrigem',
             'GestorDestino',
             'QuemAprovouGestorDestino',
+            'GestorAprovacaoUnico',
+            'QuemAprovouGestorUnico',
             'UserAprovacao',
         ]);
 
@@ -101,6 +104,7 @@ class TransferenciaPrevistaController extends Controller
         $transferenciaPrevista->autocomplete_label_colaborador_anterior = $transferenciaPrevista->autocomplete_label_colaborador;
         $transferenciaPrevista->label_gestor_origem = $transferenciaPrevista->GestorOrigem?->nome ?? 'Não informado';
         $transferenciaPrevista->label_gestor_destino = $transferenciaPrevista->GestorDestino?->nome ?? 'Não informado';
+        $transferenciaPrevista->label_gestor_aprovacao_unico = $transferenciaPrevista->GestorAprovacaoUnico?->nome ?? 'Não informado';
         $transferenciaPrevista->anexosDel = [];
 
         $admissao = $transferenciaPrevista->Colaborador?->Feedback?->Admissao;
@@ -112,6 +116,7 @@ class TransferenciaPrevistaController extends Controller
         $transferenciaPrevista->nome_aprovacao_extra = $config ? $config->nome_aprovacao : '';
         $transferenciaPrevista->pode_aprovar_gestor_origem = $this->podeAprovarGestorOrigem($transferenciaPrevista);
         $transferenciaPrevista->pode_aprovar_gestor_destino = $this->podeAprovarGestorDestino($transferenciaPrevista);
+        $transferenciaPrevista->pode_aprovar_gestor_unico = $this->podeAprovarGestorUnico($transferenciaPrevista);
 
         return $transferenciaPrevista;
     }
@@ -167,6 +172,7 @@ class TransferenciaPrevistaController extends Controller
             return response()->json('', 201);
         } catch (DomainException $e) {
             DB::rollBack();
+            $this->logDomainException($e);
             return response()->json(['msg' => $e->getMessage()], 422);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -174,6 +180,22 @@ class TransferenciaPrevistaController extends Controller
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
+    }
+
+    /**
+     * A mensagem exibida ao usuário fica clara e específica (via $e->getMessage());
+     * aqui só registramos o detalhe técnico/trace para investigação, sem poluir a
+     * resposta HTTP com stack trace.
+     */
+    private function logDomainException(DomainException $e): void
+    {
+        Log::warning('transferencia.regra_dominio_bloqueou_solicitacao', [
+            'mensagem' => $e->getMessage(),
+            'usuario_id' => auth()->id(),
+            'arquivo' => $e->getFile(),
+            'linha' => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+        ]);
     }
 
     private function normalizarCentroCustoOrigemId(mixed $valor): ?int
@@ -304,6 +326,68 @@ class TransferenciaPrevistaController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             $msg = "error ao aprovar gestor destino TRANSFERÊNCIA:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+        }
+    }
+
+    public function aprovarGestorUnico(Request $request, TransferenciaPrevista $transferenciaPrevista)
+    {
+        if (!$this->podeAprovarGestorUnico($transferenciaPrevista)) {
+            return response()->json(['msg' => 'Você não tem permissão para aprovar esta etapa'], 403);
+        }
+
+        $dados = $request->input();
+
+        try {
+            DB::beginTransaction();
+
+            $transferenciaPrevista = TransferenciaPrevista::query()
+                ->whereKey($transferenciaPrevista->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (!$this->podeAprovarGestorUnico($transferenciaPrevista)) {
+                DB::rollBack();
+                return response()->json(['msg' => 'Você não tem permissão para aprovar esta etapa'], 403);
+            }
+
+            $aprovador = auth()->user();
+            $obsGestorUnico = $dados['obs_aprovacao_gestor_unico'] ?? null;
+            if ($this->fluxoAprovacaoService->aprovacaoGestorViaRh(
+                $transferenciaPrevista,
+                $aprovador,
+                TransferenciaPrevistaFluxoAprovacaoService::ETAPA_GESTOR_UNICO
+            )) {
+                $obsGestorUnico = $this->fluxoAprovacaoService->anexarRegistroAprovadorRh($obsGestorUnico, $aprovador);
+            }
+
+            $transferenciaPrevista->update([
+                'user_aprovacao_gestor_unico_id' => $aprovador->id,
+                'data_aprovacao_gestor_unico' => (new DataHora())->dataHoraInsert(),
+                'obs_aprovacao_gestor_unico' => $obsGestorUnico,
+                'status_aprovacao_gestor_unico' => $dados['status_aprovacao_gestor_unico'],
+            ]);
+
+            $this->processarAnexos($transferenciaPrevista, $dados);
+            DB::commit();
+
+            Log::info('transferencia.aprovacao_gestor_unico.' . $dados['status_aprovacao_gestor_unico'], [
+                'transferencia_id' => $transferenciaPrevista->id,
+                'aprovador_id' => $aprovador->id,
+                'via_rh' => $this->fluxoAprovacaoService->aprovacaoGestorViaRh(
+                    $transferenciaPrevista,
+                    $aprovador,
+                    TransferenciaPrevistaFluxoAprovacaoService::ETAPA_GESTOR_UNICO
+                ),
+            ]);
+
+            JobNotificacaoRecursiva::dispatch($transferenciaPrevista->id, $transferenciaPrevista->empresa_id);
+
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $msg = "error ao aprovar gestor único TRANSFERÊNCIA:  {$e->getFile()}, {$e->getMessage()}, {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
@@ -454,6 +538,8 @@ class TransferenciaPrevistaController extends Controller
             'GestorOrigem:id,nome',
             'GestorDestino:id,nome',
             'QuemAprovouGestorDestino:id,nome',
+            'GestorAprovacaoUnico:id,nome',
+            'QuemAprovouGestorUnico:id,nome',
             'Colaborador',
             'UserAprovacao:id,nome',
             'UserAprovacaoExtra:id,nome',
@@ -535,6 +621,15 @@ class TransferenciaPrevistaController extends Controller
         }
 
         return $this->fluxoAprovacaoService->podeAprovarGestorDestino($transferenciaPrevista, auth()->user());
+    }
+
+    private function podeAprovarGestorUnico(TransferenciaPrevista $transferenciaPrevista): bool
+    {
+        if ($this->fluxoAprovacaoService->isFluxoLegado($transferenciaPrevista)) {
+            return false;
+        }
+
+        return $this->fluxoAprovacaoService->podeAprovarGestorUnico($transferenciaPrevista, auth()->user());
     }
 
     private function gestoresConcluidosParaProximasEtapas(TransferenciaPrevista $transferenciaPrevista): bool

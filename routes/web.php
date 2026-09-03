@@ -414,6 +414,18 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::put('/{id}/ativa-desativa', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'ativaDesativa'])->name('ativa-desativa')->middleware('can:cadastro_customizacoes_aprovacao_extra');
             Route::post('/pode-aprovar', [\App\Http\Controllers\AprovacaoExtraConfigController::class, 'podeAprovar'])->name('pode-aprovar')->middleware('can:cadastro_customizacoes_aprovacao_extra');
         });
+
+        Route::group(['as' => 'gestor-aprovacao-config.', 'prefix' => 'gestor-aprovacao-config'], function () {
+            Route::get('/', [\App\Http\Controllers\GestorAprovacaoConfigController::class, 'index'])->name('index')->middleware('can:cadastro_customizacoes_gestor_aprovacao');
+            Route::get('/listar', [\App\Http\Controllers\GestorAprovacaoConfigController::class, 'listar'])->name('listar')->middleware('can:cadastro_customizacoes_gestor_aprovacao');
+            Route::get('/tipos-processo', [\App\Http\Controllers\GestorAprovacaoConfigController::class, 'tiposProcesso'])->name('tipos-processo')->middleware('can:cadastro_customizacoes_gestor_aprovacao');
+            Route::get('/listar-usuarios', [\App\Http\Controllers\GestorAprovacaoConfigController::class, 'listarUsuarios'])->name('listar-usuarios')->middleware('can:cadastro_customizacoes_gestor_aprovacao');
+            Route::get('/buscar-por-tipo', [\App\Http\Controllers\GestorAprovacaoConfigController::class, 'buscarPorTipo'])->name('buscar-por-tipo')->middleware('can:cadastro_customizacoes_gestor_aprovacao');
+            Route::post('/', [\App\Http\Controllers\GestorAprovacaoConfigController::class, 'store'])->name('store')->middleware('can:cadastro_customizacoes_gestor_aprovacao');
+            Route::put('/{id}', [\App\Http\Controllers\GestorAprovacaoConfigController::class, 'update'])->name('update')->middleware('can:cadastro_customizacoes_gestor_aprovacao');
+            Route::delete('/{id}', [\App\Http\Controllers\GestorAprovacaoConfigController::class, 'destroy'])->name('destroy')->middleware('can:cadastro_customizacoes_gestor_aprovacao');
+            Route::put('/{id}/ativa-desativa', [\App\Http\Controllers\GestorAprovacaoConfigController::class, 'ativaDesativa'])->name('ativa-desativa')->middleware('can:cadastro_customizacoes_gestor_aprovacao');
+        });
     });
 
     // Configurações WhatsApp por empresa
@@ -773,6 +785,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                 Route::post('transferencia-prevista/atualizar', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('transferencia-prevista/{transferenciaPrevista}/aprovar', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovar'])->name('aprovar');
                 Route::put('transferencia-prevista/{transferenciaPrevista}/aprovar-gestor-destino', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovarGestorDestino'])->name('aprovarGestorDestino');
+                Route::put('transferencia-prevista/{transferenciaPrevista}/aprovar-gestor-unico', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovarGestorUnico'])->name('aprovarGestorUnico');
                 Route::put('transferencia-prevista/{transferenciaPrevista}/aprovar-extra', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovarExtra'])->name('aprovarExtra');
                 Route::put('transferencia-prevista/{transferenciaPrevista}/aprovarrh', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'aprovarRH'])->name('aprovarRH');
                 Route::post('transferencia-prevista/export', [\App\Http\Controllers\TransferenciaPrevistaController::class, 'export'])->name('transferencia-prevista.excel');

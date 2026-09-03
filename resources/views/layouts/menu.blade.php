@@ -368,7 +368,7 @@
                     </li>
                 @endcan
 
-                @if(\App\Models\Sistema::permitirLinks('cadastro_customizacoes_requisicao_vaga','cadastro_customizacoes_aprovacao_extra','configuracao_whatsapp'))
+                @if(\App\Models\Sistema::permitirLinks('cadastro_customizacoes_requisicao_vaga','cadastro_customizacoes_aprovacao_extra','cadastro_customizacoes_gestor_aprovacao','configuracao_whatsapp'))
                 <li id="customizacoes">
                         <a href="javascript://" class="has-arrow waves-effect" parent="cadastro">
                             Customizações</a>
@@ -386,6 +386,14 @@
                                     <a href="{{route('g.administracao.aprovacao-extra-config.index')}}"
                                     parent="customizacoes" key="aprovacao-extra-config">
                                         Aprovações Extras
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('cadastro_customizacoes_gestor_aprovacao')
+                                <li>
+                                    <a href="{{route('g.administracao.gestor-aprovacao-config.index')}}"
+                                    parent="customizacoes" key="gestor-aprovacao-config">
+                                        Gestor Aprovação
                                     </a>
                                 </li>
                             @endcan

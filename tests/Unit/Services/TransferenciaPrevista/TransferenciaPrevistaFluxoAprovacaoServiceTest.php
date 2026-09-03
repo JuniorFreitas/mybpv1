@@ -221,6 +221,89 @@ class TransferenciaPrevistaFluxoAprovacaoServiceTest extends TestCase
         $service->resolverGestorDestino(15, 99);
     }
 
+    public function test_resolver_gestor_origem_mantem_principal_quando_autoaprovacao_sem_fallback(): void
+    {
+        $principal = new User();
+        $principal->id = 30;
+
+        $resolver = $this->createMock(CentroCustoGestorResolverService::class);
+        $resolver->method('getGestorPrincipal')->willReturn($principal);
+        $resolver->method('resolverAprovador')->willThrowException(new DomainException('autoaprovação'));
+
+        $service = new TransferenciaPrevistaFluxoAprovacaoService($resolver);
+
+        $gestor = $service->resolverGestorOrigem(15, 30);
+
+        $this->assertNotNull($gestor);
+        $this->assertSame(30, $gestor->id);
+    }
+
+    public function test_resolver_gestor_destino_mantem_principal_quando_autoaprovacao_sem_fallback(): void
+    {
+        $principal = new User();
+        $principal->id = 30;
+
+        $resolver = $this->createMock(CentroCustoGestorResolverService::class);
+        $resolver->method('getGestorPrincipal')->willReturn($principal);
+        $resolver->method('resolverAprovador')->willThrowException(new DomainException('autoaprovação'));
+
+        $service = new TransferenciaPrevistaFluxoAprovacaoService($resolver);
+
+        $gestor = $service->resolverGestorDestino(15, 30);
+
+        $this->assertSame(30, $gestor->id);
+    }
+
+    public function test_pode_aprovar_gestor_origem_falso_quando_gestor_e_o_proprio_solicitante(): void
+    {
+        $gestorQueEhSolicitante = new User();
+        $gestorQueEhSolicitante->id = 30;
+
+        $transferencia = new TransferenciaPrevista([
+            'fluxo_gestores_automatico' => true,
+            'gestor_id' => 30,
+            'user_id' => 30,
+            'status_aprovacao' => null,
+            'empresa_id' => 1,
+        ]);
+
+        $this->assertFalse($this->service->podeAprovarGestorOrigem($transferencia, $gestorQueEhSolicitante));
+    }
+
+    public function test_rh_ainda_pode_aprovar_gestor_origem_quando_gestor_e_o_proprio_solicitante(): void
+    {
+        $rh = $this->usuarioComPrivilegioRh(5);
+
+        $transferencia = new TransferenciaPrevista([
+            'fluxo_gestores_automatico' => true,
+            'gestor_id' => 30,
+            'user_id' => 30,
+            'status_aprovacao' => null,
+            'empresa_id' => 1,
+        ]);
+
+        $this->assertTrue($this->service->podeAprovarGestorOrigem($transferencia, $rh));
+    }
+
+    public function test_pode_aprovar_gestor_destino_falso_quando_gestor_e_o_proprio_solicitante(): void
+    {
+        $gestorQueEhSolicitante = new User();
+        $gestorQueEhSolicitante->id = 30;
+
+        $transferencia = new TransferenciaPrevista([
+            'fluxo_gestores_automatico' => true,
+            'gestor_id' => null,
+            'exige_aprovacao_gestor_destino' => true,
+            'gestor_destino_id' => 30,
+            'user_id' => 30,
+            'status_aprovacao' => null,
+            'status_aprovacao_gestor_destino' => null,
+            'empresa_id' => 1,
+        ]);
+
+        $this->assertFalse($this->service->podeAprovarGestorDestino($transferencia, $gestorQueEhSolicitante));
+    }
+
     public function test_gestores_etapas_concluidas_quando_mesmo_gestor(): void
     {
         $transferencia = new TransferenciaPrevista([
@@ -236,6 +319,155 @@ class TransferenciaPrevistaFluxoAprovacaoServiceTest extends TestCase
     {
         $this->assertFalse($this->service->exigirCentroCustoAtivo('origem'));
         $this->assertTrue($this->service->exigirCentroCustoAtivo('destino'));
+    }
+
+    public function test_etapa_atual_gestor_unico_pendente(): void
+    {
+        $transferencia = new TransferenciaPrevista([
+            'fluxo_gestores_automatico' => true,
+            'modo_aprovacao' => 'gestor_unico',
+            'gestor_aprovacao_id' => 30,
+            'status_aprovacao_gestor_unico' => null,
+            'empresa_id' => 1,
+        ]);
+
+        $this->assertSame(
+            TransferenciaPrevistaFluxoAprovacaoService::ETAPA_GESTOR_UNICO,
+            $this->service->etapaAtual($transferencia)
+        );
+    }
+
+    public function test_etapa_atual_gestor_unico_reprovado(): void
+    {
+        $transferencia = new TransferenciaPrevista([
+            'fluxo_gestores_automatico' => true,
+            'modo_aprovacao' => 'gestor_unico',
+            'gestor_aprovacao_id' => 30,
+            'status_aprovacao_gestor_unico' => 'reprovado',
+            'empresa_id' => 1,
+        ]);
+
+        $this->assertSame(
+            TransferenciaPrevistaFluxoAprovacaoService::ETAPA_REPROVADO,
+            $this->service->etapaAtual($transferencia)
+        );
+    }
+
+    public function test_pode_aprovar_gestor_unico_apenas_para_gestor_designado(): void
+    {
+        $gestorDesignado = new User();
+        $gestorDesignado->id = 30;
+
+        $outro = new User();
+        $outro->id = 99;
+
+        $transferencia = new TransferenciaPrevista([
+            'fluxo_gestores_automatico' => true,
+            'modo_aprovacao' => 'gestor_unico',
+            'gestor_aprovacao_id' => 30,
+            'status_aprovacao_gestor_unico' => null,
+            'empresa_id' => 1,
+        ]);
+
+        $this->assertTrue($this->service->podeAprovarGestorUnico($transferencia, $gestorDesignado));
+        $this->assertFalse($this->service->podeAprovarGestorUnico($transferencia, $outro));
+    }
+
+    public function test_rh_pode_aprovar_gestor_unico(): void
+    {
+        $rh = $this->usuarioComPrivilegioRh(5);
+
+        $transferencia = new TransferenciaPrevista([
+            'fluxo_gestores_automatico' => true,
+            'modo_aprovacao' => 'gestor_unico',
+            'gestor_aprovacao_id' => 30,
+            'status_aprovacao_gestor_unico' => null,
+            'empresa_id' => 1,
+        ]);
+
+        $this->assertTrue($this->service->podeAprovarGestorUnico($transferencia, $rh));
+    }
+
+    public function test_gestoresEtapasConcluidas_modo_gestor_unico(): void
+    {
+        $pendente = new TransferenciaPrevista([
+            'modo_aprovacao' => 'gestor_unico',
+            'status_aprovacao_gestor_unico' => null,
+        ]);
+        $aprovado = new TransferenciaPrevista([
+            'modo_aprovacao' => 'gestor_unico',
+            'status_aprovacao_gestor_unico' => 'aprovado',
+        ]);
+
+        $this->assertFalse($this->service->gestoresEtapasConcluidas($pendente));
+        $this->assertTrue($this->service->gestoresEtapasConcluidas($aprovado));
+    }
+
+    public function test_aprovacao_gestor_unico_via_rh(): void
+    {
+        $rh = $this->usuarioComPrivilegioRh(5);
+        $rh->nome = 'Maria RH';
+
+        $transferencia = new TransferenciaPrevista([
+            'modo_aprovacao' => 'gestor_unico',
+            'gestor_aprovacao_id' => 30,
+        ]);
+
+        $this->assertTrue($this->service->aprovacaoGestorViaRh(
+            $transferencia,
+            $rh,
+            TransferenciaPrevistaFluxoAprovacaoService::ETAPA_GESTOR_UNICO
+        ));
+    }
+
+    public function test_gestor_unico_com_privilegio_rh_nao_registra_como_via_rh(): void
+    {
+        $gestor = $this->usuarioComPrivilegioRh(30);
+
+        $transferencia = new TransferenciaPrevista([
+            'modo_aprovacao' => 'gestor_unico',
+            'gestor_aprovacao_id' => 30,
+        ]);
+
+        $this->assertFalse($this->service->aprovacaoGestorViaRh(
+            $transferencia,
+            $gestor,
+            TransferenciaPrevistaFluxoAprovacaoService::ETAPA_GESTOR_UNICO
+        ));
+    }
+
+    public function test_gestor_unico_dispensado_quando_solicitante_e_o_proprio_gestor(): void
+    {
+        $transferencia = new TransferenciaPrevista([
+            'fluxo_gestores_automatico' => true,
+            'modo_aprovacao' => 'gestor_unico',
+            'gestor_aprovacao_id' => 30,
+            'user_id' => 30,
+            'status_aprovacao_gestor_unico' => null,
+            'empresa_id' => 1,
+        ]);
+
+        $this->assertTrue($this->service->gestorUnicoEhOSolicitante($transferencia));
+        $this->assertTrue($this->service->gestoresEtapasConcluidas($transferencia));
+    }
+
+    public function test_gestor_unico_nao_dispensado_quando_solicitante_e_outra_pessoa(): void
+    {
+        $transferencia = new TransferenciaPrevista([
+            'fluxo_gestores_automatico' => true,
+            'modo_aprovacao' => 'gestor_unico',
+            'gestor_aprovacao_id' => 30,
+            'user_id' => 99,
+            'status_aprovacao_gestor_unico' => null,
+            'empresa_id' => 1,
+        ]);
+
+        $this->assertFalse($this->service->gestorUnicoEhOSolicitante($transferencia));
+        $this->assertSame(
+            TransferenciaPrevistaFluxoAprovacaoService::ETAPA_GESTOR_UNICO,
+            $this->service->etapaAtual($transferencia)
+        );
+        $this->assertFalse($this->service->gestoresEtapasConcluidas($transferencia));
     }
 
     public function test_is_fluxo_legado_quando_flag_desligada(): void
