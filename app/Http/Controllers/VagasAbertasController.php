@@ -163,8 +163,7 @@ class VagasAbertasController extends Controller
                 ->where('id', '!=', $vagaProjeto->id)
                 ->sum('qnt_total');
 
-            $alocadaTotal = (int) VagaProjeto::where('projeto_id', $vagaProjeto->projeto_id)->sum('qnt_total');
-            $livreGlobal = max(0, (int) $projeto->qnt_total - $alocadaTotal);
+            $livreGlobal = max(0, (int) $projeto->qnt_total - $alocadaOutras);
 
             $vagaProjeto->qnt_alocada_outras = $alocadaOutras;
             $vagaProjeto->projeto_qnt_total = (int) $projeto->qnt_total;
@@ -674,11 +673,11 @@ class VagasAbertasController extends Controller
                     return response()->json(['msg' => "Projeto da linha #{$linha} não encontrado."], 422);
                 }
 
-                $maxPermitida = $this->quantidadeMaximaLinhaProjeto($projeto, $qntPreenchida);
+                $maxPermitida = $this->quantidadeMaximaLinhaProjeto($projeto, $qntPreenchida, $vagaProjeto->id);
 
                 if ($qntTotal > $maxPermitida) {
                     return response()->json([
-                        'msg' => "O projeto \"{$projeto->nome}\" possui {$this->quantidadeLivreProjeto($projeto)} vaga(s) livre(s). A quantidade total não pode ser maior que {$maxPermitida}.",
+                        'msg' => "O projeto \"{$projeto->nome}\" possui {$this->quantidadeLivreProjeto($projeto, $vagaProjeto->id)} vaga(s) livre(s). A quantidade total não pode ser maior que {$maxPermitida}.",
                     ], 422);
                 }
 
@@ -721,10 +720,13 @@ class VagasAbertasController extends Controller
 
     /**
      * Vagas livres no projeto (capacidade menos alocações já distribuídas).
+     * Ao editar um vínculo existente, informe $excludeVagaProjetoId para não descontar a própria linha.
      */
-    private function quantidadeLivreProjeto(Projeto $projeto): int
+    private function quantidadeLivreProjeto(Projeto $projeto, ?int $excludeVagaProjetoId = null): int
     {
-        $alocada = (int) VagaProjeto::where('projeto_id', $projeto->id)->sum('qnt_total');
+        $alocada = (int) VagaProjeto::where('projeto_id', $projeto->id)
+            ->when($excludeVagaProjetoId, fn ($query) => $query->where('id', '!=', $excludeVagaProjetoId))
+            ->sum('qnt_total');
 
         return max(0, (int) $projeto->qnt_total - $alocada);
     }
@@ -732,9 +734,9 @@ class VagasAbertasController extends Controller
     /**
      * Máximo permitido na linha: não menor que preenchidas e não maior que livre do projeto.
      */
-    private function quantidadeMaximaLinhaProjeto(Projeto $projeto, int $qntPreenchida = 0): int
+    private function quantidadeMaximaLinhaProjeto(Projeto $projeto, int $qntPreenchida = 0, ?int $excludeVagaProjetoId = null): int
     {
-        return max($qntPreenchida, $this->quantidadeLivreProjeto($projeto));
+        return max($qntPreenchida, $this->quantidadeLivreProjeto($projeto, $excludeVagaProjetoId));
     }
 
     /**
