@@ -20,6 +20,10 @@
 - `empresa_id` auto via `EmpresaObserver` quando há auth; em CLI/scripts passar explicitamente + Auth::loginUsingId
 - Unique de nome da Vaga é só na validação do controller (não constraint DB em `vagas`)
 - Sem unique DB em `vagas_abertas` (empresa+vaga+municipio)
+- Modal cadastro (`vagas_abertas/index.blade.php`): CBO do cargo e treinamentos usam `<details class="modal-collapsible-details">` fechado por padrão (sem `open`)
+- Update de provas: usar `tipo_prova` no payload (como no store); NÃO acessar `$simulado['simulado']['tipo_prova']` — quebra create/update
+- Ao salvar, NÃO usar `preloadAjax` (destrói TinyMCE/form antes do axios serializar); usar `salvandoFormulario` + `cloneDeep` do payload
+- TinyMCE no modal: `elementoVisivel` não deve depender de `offsetParent` (null em `position:fixed`)
 
 ## Related
 - Tags: vaga, vagas_abertas, municipio, recrutamento

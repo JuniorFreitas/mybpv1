@@ -703,6 +703,21 @@ class Sistema
             ->value('assinatura_digital_habilitada');
     }
 
+    public static function descricaoVagaIaHabilitada(?int $empresaId = null): bool
+    {
+        $empresaId = $empresaId ?: (auth()->check() ? auth()->user()->empresa_id : null);
+        if (!$empresaId) {
+            return false;
+        }
+
+        if (!Schema::hasColumn('cliente_configs', 'descricao_vaga_ia_habilitada')) {
+            return false;
+        }
+
+        return (bool) ClienteConfig::whereClienteId($empresaId)
+            ->value('descricao_vaga_ia_habilitada');
+    }
+
     public static function syncFuncionarios()
     {
         $Empresas = \App\Models\User::select('id', 'nome')->whereTipo(\App\Models\User::EMPRESA)->whereAtivo(true)->get();

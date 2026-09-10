@@ -355,7 +355,6 @@ class UserController extends Controller
 //        dd($resultado->toSql(), $resultado->getBindings());
         $empresa = auth()->user()->empresa_id;
 
-
         $tipo_email = TipoRecebeEmail::all();
 
         $ids_form = array();
@@ -369,8 +368,20 @@ class UserController extends Controller
 
         $lista_tipos = $empresa == User::MYBP_EMPRESA_ID ? User::TIPOS_USUARIOS_GERENCIAIS : User::TIPOS_USUARIOS_COMUNS;
 
-        $lista_grupos = Papel::whereEmpresaId($empresa)->where('master', false)
-            ->where('nome', 'not like', '% - Clinica Exame')->get();
+        // MyBP: grupos da empresa filtrada; demais empresas: grupos da própria empresa
+        $empresaGrupos = (int) $empresa;
+        if ((int) $empresa === User::MYBP_EMPRESA_ID && $request->filled('campoEmpresa')) {
+            $empresaGrupos = (int) $request->campoEmpresa;
+        }
+
+        $lista_grupos = collect();
+        if (!((int) $empresa === User::MYBP_EMPRESA_ID && !$request->filled('campoEmpresa'))) {
+            $lista_grupos = Papel::whereEmpresaId($empresaGrupos)
+                ->where('master', false)
+                ->where('nome', 'not like', '% - Clinica Exame')
+                ->orderBy('nome')
+                ->get();
+        }
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -391,9 +402,24 @@ class UserController extends Controller
 
     public function buscaGrupoEmpresa($empresa_id)
     {
-        $papeis = Papel::whereEmpresaId($empresa_id)->where('master', false)
-            ->where('nome', 'not like', '% - Clinica Exame')->get();
-        $grupo_cloud = GrupoCloud::whereEmpresaId($empresa_id)->get();
+        $empresaId = (int) $empresa_id;
+        $authEmpresaId = (int) auth()->user()->empresa_id;
+
+        // Só MyBP pode consultar grupos de outra empresa
+        if ($authEmpresaId !== User::MYBP_EMPRESA_ID && $empresaId !== $authEmpresaId) {
+            return response()->json(['msg' => 'Não autorizado'], 403);
+        }
+
+        $papeis = Papel::whereEmpresaId($empresaId)
+            ->where('master', false)
+            ->where('nome', 'not like', '% - Clinica Exame')
+            ->orderBy('nome')
+            ->get();
+
+        // GrupoCloud tem TenantTrait: sem withoutGlobalScopes só retorna a empresa logada
+        $grupo_cloud = GrupoCloud::withoutGlobalScopes()
+            ->where('empresa_id', $empresaId)
+            ->get();
 
         return response()->json(['papeis' => $papeis, 'cloud' => $grupo_cloud], 200);
     }

@@ -1,5 +1,5 @@
 <template>
-    <textarea :id="editorId" ref="textarea"></textarea>
+    <textarea :id="editorId" ref="textarea" :value="modelValue || ''"></textarea>
 </template>
 
 <script>
@@ -66,6 +66,13 @@ export default {
     },
     beforeUnmount() {
         this.cancelarAgendamento()
+        // Garante que o último conteúdo vá para o v-model antes de destruir (ex.: save com preload)
+        if (this.editor && !this.syncingFromParent) {
+            const html = this.editor.getContent()
+            if (html !== (this.modelValue || '')) {
+                this.$emit('update:modelValue', html)
+            }
+        }
         this.desmontarEditor()
     },
     methods: {
@@ -81,8 +88,8 @@ export default {
                 }
                 node = node.parentElement
             }
-            const style = window.getComputedStyle(el)
-            return el.offsetParent !== null || style.position === 'fixed'
+            // Não usar offsetParent: fica null dentro de modal position:fixed em vários browsers
+            return true
         },
         cancelarAgendamento() {
             if (this._visibilityObserver) {
@@ -161,7 +168,7 @@ export default {
                                 ed.setMode('readonly')
                             }
                         })
-                        ed.on('change keyup undo redo', () => this.emitContent())
+                        ed.on('change keyup undo redo input blur', () => this.emitContent())
                     }
                 })
             } catch (err) {

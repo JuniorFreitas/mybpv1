@@ -6,6 +6,7 @@ use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
 use App\Domain\Whatsapp\Services\WhatsappConfigService;
 use App\Models\EmpresaWhatsappConfig;
 use Illuminate\Support\Facades\Cache;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class WhatsappConfigServiceTest extends TestCase
@@ -85,9 +86,7 @@ class WhatsappConfigServiceTest extends TestCase
         return $casos;
     }
 
-    /**
-     * @dataProvider modulosWhatsappProvider
-     */
+    #[DataProvider('modulosWhatsappProvider')]
     public function testCadaModuloPodeSerDesabilitadoIndividualmente(string $modulo): void
     {
         $todosModulos = array_keys(self::modulosWhatsappProvider());

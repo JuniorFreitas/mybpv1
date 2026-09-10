@@ -8,19 +8,26 @@
 @push('css')
     <style>
         /* <details> no modal: esconde marcador nativo e mantém layout alinhado ao restante do formulário */
-        #janelaCadastrar .treinamentos-cargo-details > summary::-webkit-details-marker {
+        #janelaCadastrar .modal-collapsible-details > summary::-webkit-details-marker {
             display: none;
         }
 
-        #janelaCadastrar .treinamentos-cargo-details > summary {
+        #janelaCadastrar .modal-collapsible-details > summary {
             list-style: none;
+            background-color: #072433;
+            color: #fff;
         }
 
-        #janelaCadastrar .treinamentos-cargo-details > summary .treinamentos-cargo-chevron {
+        #janelaCadastrar .modal-collapsible-details > summary .modal-collapsible-chevron,
+        #janelaCadastrar .modal-collapsible-details > summary .text-muted {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        #janelaCadastrar .modal-collapsible-details > summary .modal-collapsible-chevron {
             transition: transform 0.2s ease;
         }
 
-        #janelaCadastrar .treinamentos-cargo-details[open] > summary .treinamentos-cargo-chevron {
+        #janelaCadastrar .modal-collapsible-details[open] > summary .modal-collapsible-chevron {
             transform: rotate(180deg);
         }
     </style>
@@ -28,8 +35,8 @@
 
     <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :size="90">
         <template #conteudo>
-            <div v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</div>
-            <form v-if="!preloadAjax" id="form" onsubmit="return false;">
+            <div v-show="preloadAjax || salvandoFormulario"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</div>
+            <form v-if="!preloadAjax" id="form" onsubmit="return false;" :class="{ 'd-none': salvandoFormulario }">
 
                 <p class="mybp-campo-obrigatorio-legenda mb-3">
                     Campos com <span class="text-danger">*</span> são obrigatórios.
@@ -49,43 +56,51 @@
                                   @onselect="selecionaVagaModal"></autocomplete>
                 </div>
 
-                <fieldset class="mt-2"
-                            v-if="form.vaga_id && (cargoCboResumo.cbo_codigo || cargoCboResumo.codigo_familia || cargoCboResumo.cbo_titulo || cargoCboResumo.cbo_familia || cargoCboResumo.cbo_descricao_sumaria)">
-                    <legend class="font-size-14 mb-0">CBO do cargo</legend>
-                    <div class="mt-2 p-3 border rounded bg-light">
-                        <div class="row">
-                            <div class="col-12 col-md-6">
-                                <div class="mb-1"><small class="text-uppercase text-muted">Código CBO</small></div>
-                                <div class="mb-2 font-weight-bold">@{{ cargoCboResumo.cbo_codigo || '—' }}</div>
+                <div class="form-group mt-2"
+                     v-if="form.vaga_id && (cargoCboResumo.cbo_codigo || cargoCboResumo.codigo_familia || cargoCboResumo.cbo_titulo || cargoCboResumo.cbo_familia || cargoCboResumo.cbo_descricao_sumaria)">
+                    {{-- <details>: abre/fecha nativo (fechado por padrão, sem atributo open). --}}
+                    <details class="modal-collapsible-details border rounded overflow-hidden bg-white">
+                        <summary
+                            class="d-flex justify-content-between align-items-center py-2 px-3 mb-0 text-left"
+                            style="cursor: pointer; box-shadow: none;">
+                            <span class="font-weight-bold">CBO do cargo</span>
+                            <i class="fa fa-fw fa-chevron-down modal-collapsible-chevron" aria-hidden="true"></i>
+                        </summary>
+                        <div class="border-top p-3 bg-light">
+                            <div class="row">
+                                <div class="col-12 col-md-6">
+                                    <div class="mb-1"><small class="text-uppercase text-muted">Código CBO</small></div>
+                                    <div class="mb-2 font-weight-bold">@{{ cargoCboResumo.cbo_codigo || '—' }}</div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="mb-1"><small class="text-uppercase text-muted">Código da família</small></div>
+                                    <div class="mb-2 font-weight-bold">@{{ cargoCboResumo.codigo_familia || '—' }}</div>
+                                </div>
                             </div>
-                            <div class="col-12 col-md-6">
-                                <div class="mb-1"><small class="text-uppercase text-muted">Código da família</small></div>
-                                <div class="mb-2 font-weight-bold">@{{ cargoCboResumo.codigo_familia || '—' }}</div>
-                            </div>
+
+                            <div class="mb-1"><small class="text-uppercase text-muted">Título</small></div>
+                            <div class="mb-2 font-weight-bold">@{{ cargoCboResumo.cbo_titulo || 'Não informado' }}</div>
+
+                            <div class="mb-1"><small class="text-uppercase text-muted">Família</small></div>
+                            <div class="mb-2">@{{ cargoCboResumo.cbo_familia || 'Não informada' }}</div>
+
+                            <div class="mb-1"><small class="text-uppercase text-muted">Descrição sumária</small></div>
+                            <div class="mb-0">@{{ cargoCboResumo.cbo_descricao_sumaria || 'Não informada' }}</div>
                         </div>
-
-                        <div class="mb-1"><small class="text-uppercase text-muted">Título</small></div>
-                        <div class="mb-2 font-weight-bold">@{{ cargoCboResumo.cbo_titulo || 'Não informado' }}</div>
-
-                        <div class="mb-1"><small class="text-uppercase text-muted">Família</small></div>
-                        <div class="mb-2">@{{ cargoCboResumo.cbo_familia || 'Não informada' }}</div>
-
-                        <div class="mb-1"><small class="text-uppercase text-muted">Descrição sumária</small></div>
-                        <div class="mb-0">@{{ cargoCboResumo.cbo_descricao_sumaria || 'Não informada' }}</div>
-                    </div>
-                </fieldset>
+                    </details>
+                </div>
 
                 <div class="form-group" v-if="treinamentosCargo.length > 0">
                     {{-- <details>: abre/fecha nativo no navegador (evita conflito Collapse Bootstrap + modal/Vue). Fechado: sem atributo open. --}}
-                    <details class="treinamentos-cargo-details border rounded overflow-hidden bg-white">
+                    <details class="modal-collapsible-details border rounded overflow-hidden bg-white">
                         <summary
-                            class="d-flex justify-content-between align-items-center bg-default py-2 px-3 mb-0 text-left"
+                            class="d-flex justify-content-between align-items-center py-2 px-3 mb-0 text-left"
                             style="cursor: pointer; box-shadow: none;">
                             <span>
                                 <span class="font-weight-bold">Treinamentos vinculados ao cargo</span>
                                 <small class="text-muted ml-1">(@{{ treinamentosCargo.length }})</small>
                             </span>
-                            <i class="fa fa-fw fa-chevron-down treinamentos-cargo-chevron" aria-hidden="true"></i>
+                            <i class="fa fa-fw fa-chevron-down modal-collapsible-chevron" aria-hidden="true"></i>
                         </summary>
                         <div class="border-top">
                             <div class="table-responsive">
@@ -122,8 +137,21 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="mybp-label" for="vaga-aberta-descricao">Descrição</label>
-                    <tiny-mce-editor v-model="form.descricao" preset="padrao"></tiny-mce-editor>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label class="mybp-label mb-0" for="vaga-aberta-descricao">Descrição</label>
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                v-if="descricaoVagaIaHabilitada"
+                                :disabled="!form.vaga_id || gerandoDescricaoIA"
+                                @click="gerarDescricaoComIA">
+                            <i class="fa" :class="gerandoDescricaoIA ? 'fa-spinner fa-pulse' : 'fa-magic'"></i>
+                            @{{ gerandoDescricaoIA ? 'Gerando...' : 'Gerar com IA' }}
+                        </button>
+                    </div>
+                    <tiny-mce-editor
+                        :key="'vaga-aberta-descricao-' + editorDescricaoKey"
+                        v-model="form.descricao"
+                        preset="padrao"
+                    ></tiny-mce-editor>
                 </div>
 
                 <div class="form-group">
@@ -307,7 +335,7 @@
                                         @change="selecionaSimulado(obj.simulado_id, index)"
                                         onblur="valida_campo_vazio(this, 1)" onchange="valida_campo_vazio(this, 1)">
                                     <option value="">Selecione...</option>
-                                    <option v-for="item in listaSimulados" :value="item.id">
+                                    <option v-for="item in listaSimulados" :key="item.id" :value="Number(item.id)">
                                         @{{ item.titulo }}
                                     </option>
                                 </select>
@@ -393,10 +421,12 @@
         </template>
         <template #rodape>
             <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="editando && !preloadAjax"
+                    :disabled="salvandoFormulario"
                     @click="alterar()">
                 Alterar
             </button>
             <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!editando && !preloadAjax"
+                    :disabled="salvandoFormulario"
                     @click="cadastrar()">
                 Cadastrar
             </button>
@@ -817,5 +847,8 @@
     </div>
 @stop
 @push('js')
+    <script>
+        window.DESCRICAO_VAGA_IA_HABILITADA = @json($descricaoVagaIaHabilitada);
+    </script>
     <script src="{{mix('js/g/vagas_abertas/app.js')}}"></script>
 @endpush

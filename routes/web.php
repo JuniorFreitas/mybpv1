@@ -541,6 +541,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::post('vagas-abertas/atualizar', [\App\Http\Controllers\VagasAbertasController::class, 'atualizar'])->name('vagas_abertas.atualizar')->middleware('can:cadastro_vagas_abertas');
             Route::get('vagas-abertas/cargo/{vaga}/treinamentos', [\App\Http\Controllers\VagasAbertasController::class, 'treinamentosDoCargo'])->name('vagas_abertas.treinamentos_cargo')->middleware('can:cadastro_vagas_abertas');
             Route::get('vagas-abertas/prova/{simulado}/{vaga_aberta}', [\App\Http\Controllers\VagasAbertasController::class, 'vagaAbertaSimulado'])->name('vagas_abertas.vagaAbertaSimulado')->middleware('can:cadastro_vagas_abertas');
+            Route::post('vagas-abertas/ai-descricao', [\App\Http\Controllers\AiController::class, 'gerarDescricaoVagaAberta'])->name('vagas_abertas.aiDescricao')->middleware(['can:cadastro_vagas_abertas', 'throttle:ai-vaga-descricao']);
             Route::resource('vagas-abertas', \App\Http\Controllers\VagasAbertasController::class)->middleware('can:cadastro_vagas_abertas');
         });
 

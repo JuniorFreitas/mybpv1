@@ -592,4 +592,24 @@ class TransferenciaPrevistaFluxoAprovacaoServiceTest extends TestCase
             $this->service->mensagemHistoricoAprovacaoRh($transferencia, 'reprovado')
         );
     }
+
+    public function test_get_config_exigir_aprovacao_origem_default_true(): void
+    {
+        $config = new \App\Models\ClienteConfig(['configuracoes' => []]);
+
+        $this->assertTrue(
+            filter_var($config->getConfig('transferencia_exigir_aprovacao_gestor_origem', true), FILTER_VALIDATE_BOOLEAN)
+        );
+    }
+
+    public function test_get_config_exigir_aprovacao_origem_pode_ser_false(): void
+    {
+        $config = new \App\Models\ClienteConfig([
+            'configuracoes' => ['transferencia_exigir_aprovacao_gestor_origem' => false],
+        ]);
+
+        $this->assertFalse(
+            filter_var($config->getConfig('transferencia_exigir_aprovacao_gestor_origem', true), FILTER_VALIDATE_BOOLEAN)
+        );
+    }
 }

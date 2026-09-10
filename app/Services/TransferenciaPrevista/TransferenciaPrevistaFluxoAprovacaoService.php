@@ -4,6 +4,7 @@ namespace App\Services\TransferenciaPrevista;
 
 use App\Models\AprovacaoExtraConfig;
 use App\Models\CentroCusto;
+use App\Models\ClienteConfig;
 use App\Models\GestorAprovacaoConfig;
 use App\Models\TransferenciaPrevista;
 use App\Models\User;
@@ -164,9 +165,19 @@ class TransferenciaPrevistaFluxoAprovacaoService
         // Solicitante é o próprio gestor (de origem e/ou destino), sem substituto/
         // superior disponível: a etapa já entra aprovada automaticamente, sem
         // notificar pedindo autoaprovação — segue direto para a etapa seguinte.
-        $origemAutoaprovada = $gestorOrigem && (int) $gestorOrigem->id === $solicitanteId;
+        // Também autoaprova origem quando a empresa não exige essa etapa.
+        $origemPorSolicitante = $gestorOrigem && (int) $gestorOrigem->id === $solicitanteId;
+        $origemPorConfigEmpresa = $gestorOrigem && !$this->empresaExigeAprovacaoGestorOrigem($empresaId);
+        $origemAutoaprovada = $origemPorSolicitante || $origemPorConfigEmpresa;
         $destinoAutoaprovada = $exigeDestino && (int) $gestorDestino->id === $solicitanteId;
         $dataHoraAtual = (new DataHora())->dataHoraInsert();
+
+        $obsOrigem = null;
+        if ($origemPorConfigEmpresa) {
+            $obsOrigem = 'Aprovação automática: empresa configurada para não exigir aprovação do gestor de origem.';
+        } elseif ($origemPorSolicitante) {
+            $obsOrigem = 'Aprovação automática: solicitante é o próprio gestor responsável pelo centro de custo de origem, sem substituto disponível.';
+        }
 
         return [
             'gestor_id' => $gestorOrigem?->id,
@@ -178,9 +189,7 @@ class TransferenciaPrevistaFluxoAprovacaoService
             'status_aprovacao' => $origemAutoaprovada ? 'aprovado' : null,
             'user_aprovacao_id' => $origemAutoaprovada ? $solicitanteId : null,
             'data_aprovacao' => $origemAutoaprovada ? $dataHoraAtual : null,
-            'obs_aprovacao' => $origemAutoaprovada
-                ? 'Aprovação automática: solicitante é o próprio gestor responsável pelo centro de custo de origem, sem substituto disponível.'
-                : null,
+            'obs_aprovacao' => $obsOrigem,
             'status_aprovacao_gestor_destino' => $destinoAutoaprovada ? 'aprovado' : null,
             'user_aprovacao_gestor_destino_id' => $destinoAutoaprovada ? $solicitanteId : null,
             'data_aprovacao_gestor_destino' => $destinoAutoaprovada ? $dataHoraAtual : null,
@@ -192,6 +201,26 @@ class TransferenciaPrevistaFluxoAprovacaoService
             'data_aprovacao_gestor_unico' => null,
             'obs_aprovacao_gestor_unico' => null,
         ];
+    }
+
+    /**
+     * Preferência por empresa: se false, a etapa do gestor origem nasce aprovada
+     * e não aparece nas notificações. Default true preserva o comportamento atual.
+     */
+    public function empresaExigeAprovacaoGestorOrigem(int $empresaId): bool
+    {
+        $config = ClienteConfig::query()
+            ->where('cliente_id', $empresaId)
+            ->first();
+
+        if (!$config) {
+            return true;
+        }
+
+        return filter_var(
+            $config->getConfig('transferencia_exigir_aprovacao_gestor_origem', true),
+            FILTER_VALIDATE_BOOLEAN
+        );
     }
 
     public function aplicarFluxoGestores(TransferenciaPrevista $transferencia, int $solicitanteId, bool $resetarEtapas = true): void

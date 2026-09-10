@@ -760,7 +760,7 @@ export default defineComponent({
             this.grupoempresa = false
             this.listaPapeis = []
             this.form.grupo_id = ''
-            if (!id || id === '100') return
+            if (!id || Number(id) === 100) return
             try {
                 const { data } = await api().get(API_PATHS.buscaGrupoEmpresa(id))
                 if (data) {
@@ -820,8 +820,8 @@ export default defineComponent({
             }
         },
 
-        onFiltroEmpresaChange() {
-            this.buscarGruposEmpresa(this.controle.dados.campoEmpresa)
+        async onFiltroEmpresaChange() {
+            await this.buscarGruposEmpresa(this.controle.dados.campoEmpresa)
             this.buscarPaginacao()
         },
 
@@ -839,11 +839,21 @@ export default defineComponent({
                 ? { ...dados.formulario_vazio }
                 : null
             this.lista_tipos = dados.lista_tipos || []
-            if (Number(this.empresa_id) !== 100) {
-                this.controle.dados.listaPapeis = dados.lista_grupos || []
+
+            // MyBP: grupos da empresa selecionada no filtro (não zerar ao paginar)
+            if (this.isMybpEmpresa) {
+                if (this.controle.dados.campoEmpresa) {
+                    this.controle.dados.listaPapeis = dados.lista_grupos || this.controle.dados.listaPapeis || []
+                    this.controle.showCampoGrupo = true
+                } else {
+                    this.controle.dados.listaPapeis = []
+                    this.controle.showCampoGrupo = false
+                    this.controle.dados.campoGrupo = ''
+                }
             } else {
-                this.controle.dados.listaPapeis = []
+                this.controle.dados.listaPapeis = dados.lista_grupos || []
             }
+
             this.form.user_recebe_email = this.user_recebe_emailDefault
                 ? { ...this.user_recebe_emailDefault }
                 : {}

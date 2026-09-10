@@ -8,6 +8,7 @@ use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
 use App\Jobs\JobSendNotificacaoWhatsApp;
 use Illuminate\Support\Facades\Queue;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class ZapNotificacaoGateTest extends TestCase
@@ -43,9 +44,7 @@ class ZapNotificacaoGateTest extends TestCase
         return $casos;
     }
 
-    /**
-     * @dataProvider tiposWhatsappProvider
-     */
+    #[DataProvider('tiposWhatsappProvider')]
     public function testBloqueiaEnvioDeQualquerTipoQuandoModuloDesabilitado(TipoMensagemWhatsapp $tipo): void
     {
         Queue::fake();

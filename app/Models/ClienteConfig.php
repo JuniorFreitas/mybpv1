@@ -23,10 +23,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $schedule_avaliacao_experiencia Habilitar (true) ou desabilitar (false) o schedule de Avaliação de Experiência para esta empresa
  * @property bool $schedule_treinamento_vencimento Habilitar (true) ou desabilitar (false) o schedule de Treinamento Vencimento para esta empresa
  * @property bool $assinatura_digital_habilitada Habilita a funcionalidade de assinatura digital para a empresa
+ * @property bool $descricao_vaga_ia_habilitada Habilita a geração de descrição de vaga aberta por IA para a empresa
  * @property int|null $limite_assinaturas_mensal Limite de documentos de assinatura digital por mês (null = sem limite)
  * @property array|null $assinatura_alerta_user_ids IDs de usuários que recebem alerta de cota
  * @property array|null $assinatura_alerta_grupo_ids IDs de grupos (papeis) que recebem alerta de cota
- * @property array|null $configuracoes Configurações adicionais em JSON (ex.: treinamento_fat_obrigatorio)
+ * @property array|null $configuracoes Configurações adicionais em JSON (ex.: treinamento_fat_obrigatorio, transferencia_notificar_gestor_origem, transferencia_exigir_aprovacao_gestor_origem)
  * @property-read \App\Models\Cliente|null $Cliente
  * @method mixed getConfig(string $key, mixed $default = null)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig newModelQuery()
@@ -80,6 +81,7 @@ class ClienteConfig extends Model
         'schedule_treinamento_vencimento',
         'treinamento_permitir_desmarcar_realizado',
         'assinatura_digital_habilitada',
+        'descricao_vaga_ia_habilitada',
         'limite_assinaturas_mensal',
         'assinatura_alerta_user_ids',
         'assinatura_alerta_grupo_ids',
@@ -99,6 +101,7 @@ class ClienteConfig extends Model
         'schedule_treinamento_vencimento' => 'boolean',
         'treinamento_permitir_desmarcar_realizado' => 'boolean',
         'assinatura_digital_habilitada' => 'boolean',
+        'descricao_vaga_ia_habilitada' => 'boolean',
         'limite_assinaturas_mensal' => 'int',
         'assinatura_alerta_user_ids' => 'array',
         'assinatura_alerta_grupo_ids' => 'array',

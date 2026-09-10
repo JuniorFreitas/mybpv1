@@ -250,12 +250,16 @@ Novos tipos de notificação:
 - Gestor origem **reprova** → gestor destino **não é notificado**
 - Gestor origem **aprova** + destino diferente → notifica gestor destino
 - Fluxo legado (`fluxo_gestores_automatico = false`) mantém tipo `criacao` original
+- Preferência por empresa (`transferencia_notificar_gestor_origem`, default `true`): quando `false`, **não** envia e-mail/WhatsApp ao gestor origem; a etapa de aprovação permanece pendente na UI
+- Preferência por empresa (`transferencia_exigir_aprovacao_gestor_origem`, default `true`): quando `false`, a origem **já nasce aprovada**, o fluxo segue para destino/extra/RH e a timeline do e-mail **não exibe** o passo Gestor Origem
+
+Configuração: Administração → Clientes → Notificações.
 
 ### Template de e-mail
 
 Arquivo: `resources/views/emails/movimentacao/transferencia_prevista/notificacao-aprovacao.blade.php`
 
-Timeline visual no e-mail:
+Timeline visual no e-mail (origem omitida se a empresa não exige):
 
 ```
 Solicitante → Gestor Origem → Gestor Destino → Extra → RH
