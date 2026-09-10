@@ -720,6 +720,10 @@ class ClientesController extends Controller
             $dados['assinatura_digital_habilitada'] = filter_var(($dadosConfig['assinatura_digital_habilitada'] ?? false), FILTER_VALIDATE_BOOLEAN);
         }
 
+        if (Schema::hasColumn('cliente_configs', 'descricao_vaga_ia_habilitada')) {
+            $dados['descricao_vaga_ia_habilitada'] = filter_var(($dadosConfig['descricao_vaga_ia_habilitada'] ?? false), FILTER_VALIDATE_BOOLEAN);
+        }
+
         if (Schema::hasColumn('cliente_configs', 'limite_assinaturas_mensal')) {
             $dados['limite_assinaturas_mensal'] = $this->parseLimiteAssinaturasMensal($dadosConfig['limite_assinaturas_mensal'] ?? null);
         }

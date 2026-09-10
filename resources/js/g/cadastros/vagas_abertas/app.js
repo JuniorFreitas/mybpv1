@@ -27,8 +27,12 @@ const app = createApp({
         return {
             tituloJanela: 'Cadastrando Vaga Aberta',
             preloadAjax: false,
+            salvandoFormulario: false,
+            editorDescricaoKey: 0,
             editando: false,
             apagado: false,
+            gerandoDescricaoIA: false,
+            descricaoVagaIaHabilitada: !!window.DESCRICAO_VAGA_IA_HABILITADA,
 
             pages: 10,
 
@@ -927,10 +931,35 @@ const app = createApp({
             this.form = _.cloneDeep(this.formDefault) //copia
             this.treinamentosCargo = []
             this.limparCargoCboResumo()
+            this.editorDescricaoKey += 1
             this.leitura = false
             if (!this.listaProjetos.length) {
                 this.atualizar()
             }
+        },
+        gerarDescricaoComIA() {
+            if (!this.form.vaga_id || this.gerandoDescricaoIA) {
+                return
+            }
+
+            this.gerandoDescricaoIA = true
+            axios
+                .post(`${URL_ADMIN}/cadastro/vagas-abertas/ai-descricao`, {
+                    vaga_id: this.form.vaga_id,
+                    municipio_id: this.form.municipio_id || null,
+                    titulo: this.form.titulo
+                })
+                .then((response) => {
+                    this.form.descricao = response.data.data.text
+                    mostraSucesso('', response.data.data.disclaimer)
+                })
+                .catch((error) => {
+                    const msg = error?.response?.data?.msg || 'Não foi possível gerar a descrição agora.'
+                    mostraErro('', msg)
+                })
+                .finally(() => {
+                    this.gerandoDescricaoIA = false
+                })
         },
         cadastrar() {
             formReset()
@@ -962,19 +991,20 @@ const app = createApp({
                 return false
             }
 
-            this.preloadAjax = true
+            const payload = _.cloneDeep(this.form)
+            this.salvandoFormulario = true
             axios
-                .post(`${URL_ADMIN}/cadastro/vagas-abertas`, this.form)
+                .post(`${URL_ADMIN}/cadastro/vagas-abertas`, payload)
                 .then((response) => {
                     if (response.status === 201) {
-                        this.preloadAjax = false
+                        this.salvandoFormulario = false
                         this.$refs.janelaCadastrar?.fecharModal()
                         mostraSucesso('', 'Vaga cadastrada com sucesso')
                         this.atualizar()
                     }
                 })
                 .catch((error) => {
-                    this.preloadAjax = false
+                    this.salvandoFormulario = false
                     const msg = error?.response?.data?.msg
                     if (msg) {
                         mostraErro('', msg)
@@ -994,25 +1024,35 @@ const app = createApp({
                 .get(`${URL_ADMIN}/cadastro/vagas-abertas/${id}/editar`)
                 .then((response) => {
                     Object.assign(this.form, response.data)
-                    this.form.simulados = response.data.simulados || response.data.Simulados || []
+                    this.form.descricao = response.data.descricao || ''
+                    this.form.simulados = this.normalizarSimuladosFormulario(
+                        response.data.simulados || response.data.Simulados || []
+                    )
                     this.form.simuladosDelete = []
                     this.form.projetos = response.data.projetos || response.data.Projetos || []
                     this.form.projetosDelete = []
-                    this.form.autocomplete_label_vaga_modal = response.data.vaga.nome
-                    this.form.autocomplete_label_vaga_modal_anterior = response.data.vaga.nome
 
-                    const vencimentos = response.data.vaga.vencimentos || []
+                    const vaga = response.data.vaga || response.data.Vaga || {}
+                    const municipio = response.data.municipio || response.data.Municipio || {}
+
+                    this.form.autocomplete_label_vaga_modal = vaga.nome || ''
+                    this.form.autocomplete_label_vaga_modal_anterior = vaga.nome || ''
+
+                    const vencimentos = vaga.vencimentos || vaga.Vencimentos || []
                     this.treinamentosCargo = vencimentos.map((v) => ({
                         id: v.id,
                         label: v.label,
-                        padrao_treinamento: v.segmento_treinamento && v.segmento_treinamento.nome ? v.segmento_treinamento.nome : 'Geral',
+                        padrao_treinamento: (v.segmento_treinamento || v.SegmentoTreinamento)?.nome || 'Geral',
                         todos_cargos: !!v.vinculo_todos_cargos
                     }))
 
-                    this.form.autocomplete_label_municipio_modal = response.data.municipio.nome + ' - ' + response.data.municipio.uf
-                    this.form.autocomplete_label_municipio_modal_anterior = response.data.municipio.nome + ' - ' + response.data.municipio.uf
-                    this.preencherCargoCboResumoDeVaga(response.data.vaga)
+                    this.form.autocomplete_label_municipio_modal = municipio.nome
+                        ? `${municipio.nome} - ${municipio.uf}`
+                        : ''
+                    this.form.autocomplete_label_municipio_modal_anterior = this.form.autocomplete_label_municipio_modal
+                    this.preencherCargoCboResumoDeVaga(vaga)
                     this.inicializarProjetosFormulario()
+                    this.editorDescricaoKey += 1
                     this.editando = true
                     this.preloadAjax = false
                     if (!this.listaProjetos.length) {
@@ -1021,6 +1061,19 @@ const app = createApp({
                     setupCampo()
                 })
                 .catch((error) => (this.preloadAjax = false))
+        },
+
+        normalizarSimuladosFormulario(simulados) {
+            return (simulados || []).map((item) => {
+                const simuladoRel = item.simulado || item.Simulado || {}
+                return {
+                    ...item,
+                    simulado_id: item.simulado_id != null && item.simulado_id !== '' ? Number(item.simulado_id) : '',
+                    tipo_prova: item.tipo_prova || simuladoRel.tipo_prova || '',
+                    online: !!item.online,
+                    ativo: !!item.ativo
+                }
+            })
         },
 
         alterar() {
@@ -1036,19 +1089,20 @@ const app = createApp({
                 return false
             }
 
-            this.form._method = 'PUT'
-            this.preloadAjax = true
+            const payload = _.cloneDeep(this.form)
+            payload._method = 'PUT'
+            this.salvandoFormulario = true
 
             axios
-                .put(`${URL_ADMIN}/cadastro/vagas-abertas/${this.form.id}`, this.form)
+                .put(`${URL_ADMIN}/cadastro/vagas-abertas/${payload.id}`, payload)
                 .then((response) => {
-                    this.preloadAjax = false
+                    this.salvandoFormulario = false
                     this.$refs.janelaCadastrar?.fecharModal()
                     mostraSucesso('', 'Vaga alterada com sucesso')
                     this.atualizar()
                 })
                 .catch((error) => {
-                    this.preloadAjax = false
+                    this.salvandoFormulario = false
                     const msg = error?.response?.data?.msg
                     if (msg) {
                         mostraErro('', msg)
@@ -1057,8 +1111,8 @@ const app = createApp({
         },
 
         selecionaSimulado(simulado_id, index) {
-            let simulado = _.find(this.listaSimulados, { id: simulado_id })
-            this.form.simulados[index].tipo_prova = simulado.tipo_prova
+            let simulado = _.find(this.listaSimulados, { id: Number(simulado_id) })
+            this.form.simulados[index].tipo_prova = simulado ? simulado.tipo_prova : ''
         },
 
         imprimeProva(simulado, vaga_aberta) {

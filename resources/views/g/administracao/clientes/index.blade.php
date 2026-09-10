@@ -873,6 +873,22 @@
                         </fieldset>
 
                         <fieldset>
+                            <legend class="text-uppercase">Inteligência Artificial</legend>
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-lg-4">
+                                    <div class="form-group">
+                                        <label>Descrição de vaga aberta por IA</label>
+                                        <select v-model="form.cliente_config.descricao_vaga_ia_habilitada" class="form-control">
+                                            <option :value="true">Habilitado</option>
+                                            <option :value="false">Desabilitado</option>
+                                        </select>
+                                        <small class="text-muted">Quando desabilitado, o botão "Gerar com IA" fica oculto no cadastro de Vagas Abertas.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset>
                             <legend class="text-uppercase">Parametrização - Módulos</legend>
                             <div class="container">
                                 <div class="row">

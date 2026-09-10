@@ -53,5 +53,11 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
         });
+
+        RateLimiter::for('ai-vaga-descricao', function (Request $request) {
+            $perMinute = app()->environment('local') ? 60 : 10;
+
+            return Limit::perMinute($perMinute)->by(optional($request->user())->id ?: $request->ip());
+        });
     }
 }

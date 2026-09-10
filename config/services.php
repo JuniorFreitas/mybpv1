@@ -42,4 +42,11 @@ return [
         'min_csv_bytes_for_cache' => (int) env('CBO_MIN_CSV_BYTES_FOR_CACHE', 2000),
     ],
 
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL'),
+        'models' => env('GEMINI_MODELS'),
+        'allowed_hosts' => array_filter(explode(',', (string) env('GEMINI_ALLOWED_HOSTS', 'generativelanguage.googleapis.com'))),
+    ],
+
 ];

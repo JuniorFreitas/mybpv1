@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Municipio;
 use App\Models\Projeto;
 use App\Models\Simulado;
+use App\Models\Sistema;
 use App\Models\Vaga;
 use App\Models\VagaProjeto;
 use App\Models\VagasAbertas;
@@ -25,7 +26,9 @@ class VagasAbertasController extends Controller
     public function index()
     {
         $this->authorize('cadastro_vagas_abertas');
-        return view('g.cadastros.vagas_abertas.index');
+        return view('g.cadastros.vagas_abertas.index', [
+            'descricaoVagaIaHabilitada' => Sistema::descricaoVagaIaHabilitada(),
+        ]);
     }
 
     /**
@@ -69,23 +72,28 @@ class VagasAbertasController extends Controller
 
                 if (isset($dados['simulados'])) {
                     foreach ($dados['simulados'] as $simulado) {
+                        $tipoProva = $simulado['tipo_prova']
+                            ?? data_get($simulado, 'simulado.tipo_prova')
+                            ?? data_get($simulado, 'Simulado.tipo_prova');
 
-
-                        if ($simulado['tipo_prova'] == 'subjetiva') {
+                        if ($tipoProva === 'subjetiva') {
                             $simulado['online'] = false;
                             $simulado['duracao'] = 0;
                         } else {
-                            $simulado['online'] = $simulado['online'] == 'true';
+                            $simulado['online'] = filter_var($simulado['online'] ?? false, FILTER_VALIDATE_BOOLEAN);
                         }
 
                         $simulado['data_inicio'] = (new DataHora())->dataHoraInsert();
                         $simulado['data_fim'] = (new DataHora())->dataHoraInsert();
-                        $simulado['ativo'] = $simulado['ativo'] == 'true';
+                        $simulado['ativo'] = filter_var($simulado['ativo'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-                        if (isset($simulado['novo'])) {
+                        if (!empty($simulado['novo'])) {
                             $vagas_aberta->Simulados()->create($simulado);
                         } else {
-                            $vagas_aberta->Simulados->find($simulado['id'])->update($simulado);
+                            $vinculo = $vagas_aberta->Simulados->find($simulado['id'] ?? null);
+                            if ($vinculo) {
+                                $vinculo->update($simulado);
+                            }
                         }
                     }
                 }
@@ -144,12 +152,12 @@ class VagasAbertasController extends Controller
             'Vaga.Cbo.familia',
             'Vaga.Vencimentos:id,label,segmento_treinamento_id,vinculo_todos_cargos',
             'Vaga.Vencimentos.SegmentoTreinamento:id,nome',
-            'Simulados',
+            'Simulados.Simulado:id,titulo,tipo_prova',
             'Projetos.Projeto:id,nome,qnt_total,qnt_total_restante'
         );
 
         $vagas_aberta->Simulados->transform(function ($item) {
-            $item->tipo_prova = $item->simulado->tipo_prova;
+            $item->tipo_prova = $item->Simulado?->tipo_prova ?? $item->simulado?->tipo_prova;
             return $item;
         });
 
@@ -235,22 +243,28 @@ class VagasAbertasController extends Controller
 
                 if (isset($dados['simulados'])) {
                     foreach ($dados['simulados'] as $simulado) {
+                        $tipoProva = $simulado['tipo_prova']
+                            ?? data_get($simulado, 'simulado.tipo_prova')
+                            ?? data_get($simulado, 'Simulado.tipo_prova');
 
-                        if ($simulado['simulado']['tipo_prova'] == 'subjetiva') {
+                        if ($tipoProva === 'subjetiva') {
                             $simulado['online'] = false;
                             $simulado['duracao'] = 0;
                         } else {
-                            $simulado['online'] = $simulado['online'] == 'true';
+                            $simulado['online'] = filter_var($simulado['online'] ?? false, FILTER_VALIDATE_BOOLEAN);
                         }
 
                         $simulado['data_inicio'] = (new DataHora())->dataHoraInsert();
                         $simulado['data_fim'] = (new DataHora())->dataHoraInsert();
-                        $simulado['ativo'] = $simulado['ativo'] == 'true';
+                        $simulado['ativo'] = filter_var($simulado['ativo'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-                        if (isset($simulado['novo'])) {
+                        if (!empty($simulado['novo'])) {
                             $vagas_aberta->Simulados()->create($simulado);
                         } else {
-                            $vagas_aberta->Simulados->find($simulado['id'])->update($simulado);
+                            $vinculo = $vagas_aberta->Simulados->find($simulado['id'] ?? null);
+                            if ($vinculo) {
+                                $vinculo->update($simulado);
+                            }
                         }
                     }
                 }

@@ -23,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
             \App\Contracts\IntegracaoSpa\VagaIntegracaoSpaQuery::class,
             \App\Services\IntegracaoSpa\VagaIntegracaoSpaEloquent::class
         );
+        $this->app->bind(\App\Domain\Ai\LlmClient::class, \App\Infrastructure\Ai\GeminiHttpClient::class);
+        $this->app->bind(\App\Domain\Ai\LlmProxy::class, \App\Infrastructure\Ai\FallbackLlmProxy::class);
 
         if ($this->app->isLocal()) {
             $this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
