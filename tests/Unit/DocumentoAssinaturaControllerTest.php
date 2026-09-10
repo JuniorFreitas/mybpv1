@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Mockery;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use Tests\TestCase;
 
 class DocumentoAssinaturaControllerTest extends TestCase
@@ -21,10 +23,8 @@ class DocumentoAssinaturaControllerTest extends TestCase
         parent::tearDown();
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function testExportarEvidenciasRegistraEventoEAplicaMascara(): void
     {
         $signatario = (object) [

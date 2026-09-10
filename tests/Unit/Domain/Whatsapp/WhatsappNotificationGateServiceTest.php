@@ -6,6 +6,7 @@ use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
 use App\Domain\Whatsapp\Services\WhatsappConfigService;
 use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class WhatsappNotificationGateServiceTest extends TestCase
@@ -29,9 +30,7 @@ class WhatsappNotificationGateServiceTest extends TestCase
         return $casos;
     }
 
-    /**
-     * @dataProvider tiposWhatsappProvider
-     */
+    #[DataProvider('tiposWhatsappProvider')]
     public function testBloqueiaQualquerTipoQuandoEmpresaSemWhatsappLiberado(
         TipoMensagemWhatsapp $tipo,
     ): void {
@@ -45,9 +44,7 @@ class WhatsappNotificationGateServiceTest extends TestCase
         $this->assertFalse($gate->podeEnviar($tipo, 104));
     }
 
-    /**
-     * @dataProvider tiposWhatsappProvider
-     */
+    #[DataProvider('tiposWhatsappProvider')]
     public function testBloqueiaQualquerTipoQuandoModuloDesabilitadoNaEmpresa(
         TipoMensagemWhatsapp $tipo,
         string $modulo,
@@ -65,9 +62,7 @@ class WhatsappNotificationGateServiceTest extends TestCase
         $this->assertFalse($gate->podeEnviar($tipo, 104, 10));
     }
 
-    /**
-     * @dataProvider tiposWhatsappProvider
-     */
+    #[DataProvider('tiposWhatsappProvider')]
     public function testPermiteQualquerTipoQuandoModuloHabilitado(
         TipoMensagemWhatsapp $tipo,
         string $modulo,

@@ -510,19 +510,27 @@ class TransferenciaPrevistaController extends Controller
         $resultado = $this->filtro($request)->paginate($request->pages);
         $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'transferencia');
         $userId = auth()->id();
+        $exigeAprovacaoGestorOrigem = app(\App\Services\TransferenciaPrevista\TransferenciaPrevistaFluxoAprovacaoService::class)
+            ->empresaExigeAprovacaoGestorOrigem((int) auth()->user()->empresa_id);
+
+        $itens = collect($resultado->items())->map(function ($item) use ($exigeAprovacaoGestorOrigem) {
+            $item->setAttribute('exige_aprovacao_gestor_origem', $exigeAprovacaoGestorOrigem);
+            return $item;
+        })->values();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'itens' => $resultado->items(),
+                'itens' => $itens,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
                 'aprovar_por_rh' => auth()->user()->can('privilegio_gestao_rh') || auth()->user()->can('privilegio_aprovar_por_rh') || auth()->user()->can('privilegio_aprovar_rh'),
                 'tem_aprovacao_extra' => (bool) $config,
                 'pode_aprovar_extra' => $config ? $config->podeAprovar($userId) : false,
                 'nome_aprovacao_extra' => $config ? $config->nome_aprovacao : '',
                 'usuario_logado_id' => $userId,
+                'exige_aprovacao_gestor_origem' => $exigeAprovacaoGestorOrigem,
             ]
         ]);
     }

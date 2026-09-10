@@ -1,11 +1,12 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-08-31
+Last updated: 2026-09-10
 
 - [documentos-preadmissao-catalogo](documentos-preadmissao-catalogo.md) — Catálogo pré-admissão por empresa | flow | preadmissao, documentos
 - [cadastro-dossie-tipos](cadastro-dossie-tipos.md) — Catálogo dossiê com override por empresa | flow | dossie, cadastro
 - [transferencia-gestor-origem-opcional](transferencia-gestor-origem-opcional.md) — Origem opcional; RH efetiva via `resposta_rh` | flow | transferencia, gestor, rh
+- [transferencia-notificacao-gestor-origem](transferencia-notificacao-gestor-origem.md) — Flags notificar/exigir aprovação gestor origem por empresa | flow | transferencia, notificacao, cliente_config
 - [tinymce-selfhost](tinymce-selfhost.md) — Editor rico via public/tinymce, sem Cloud | gotcha | tinymce, frontend
 - [aniversariante-mensagem](aniversariante-mensagem.md) — E-mail de aniversário customizável por empresa | flow | aniversariante, email
 - [fornecedor-pf-cpf](fornecedor-pf-cpf.md) — Cadastro PF + tipos (incl. Parceiro Externo) | flow | fornecedor, cpf

@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $limite_assinaturas_mensal Limite de documentos de assinatura digital por mês (null = sem limite)
  * @property array|null $assinatura_alerta_user_ids IDs de usuários que recebem alerta de cota
  * @property array|null $assinatura_alerta_grupo_ids IDs de grupos (papeis) que recebem alerta de cota
- * @property array|null $configuracoes Configurações adicionais em JSON (ex.: treinamento_fat_obrigatorio)
+ * @property array|null $configuracoes Configurações adicionais em JSON (ex.: treinamento_fat_obrigatorio, transferencia_notificar_gestor_origem, transferencia_exigir_aprovacao_gestor_origem)
  * @property-read \App\Models\Cliente|null $Cliente
  * @method mixed getConfig(string $key, mixed $default = null)
  * @method static \Illuminate\Database\Eloquent\Builder|ClienteConfig newModelQuery()

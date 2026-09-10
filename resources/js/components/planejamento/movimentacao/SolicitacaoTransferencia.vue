@@ -67,7 +67,7 @@
                                 ></datepicker>
                             </div>
 
-                            <div class="col-12 col-md-6" v-if="form.modo_aprovacao !== 'gestor_unico'">
+                            <div class="col-12 col-md-6" v-if="form.modo_aprovacao !== 'gestor_unico' && exigeAprovacaoGestorOrigem">
                                 <div class="form-group">
                                     <label>Gestor responsável pela origem</label>
                                     <input
@@ -124,7 +124,7 @@
 
                         <div class="alert alert-warning" v-if="aprovando && !form.data_aprovacao">Esta solicitação ainda não foi aprovada ou reprovada!</div>
 
-                        <fieldset v-if="(visualizar || aprovando) && form.modo_aprovacao !== 'gestor_unico'">
+                        <fieldset v-if="exigeAprovacaoGestorOrigem && (visualizar || aprovando) && form.modo_aprovacao !== 'gestor_unico' && (aprovando || form.status_aprovacao || form.gestor_id)">
                             <legend>Aprovação Gestor Origem</legend>
                             <div class="row">
                                 <div v-if="!aprovando && form.user_aprovacao" class="col-12">
@@ -582,7 +582,12 @@
                                 <span v-else-if="origemEtapaDispensada(item) && item.exige_aprovacao_gestor_destino">
                                     <i class="fas fa-clock"></i> AGUARDANDO GESTOR DESTINO
                                 </span>
-                                <span v-else-if="item.status_aprovacao === 'aprovado'">
+                                <span
+                                    v-else-if="origemEtapaOmitidaDoFluxo(item) && item.exige_aprovacao_gestor_destino && !item.status_aprovacao_gestor_destino && !itemReprovado(item)"
+                                >
+                                    <i class="fas fa-clock"></i> AGUARDANDO GESTOR DESTINO
+                                </span>
+                                <span v-else-if="exibeEtapaGestorOrigem(item) && item.status_aprovacao === 'aprovado'">
                                     <i class="fas fa-check-circle"></i> APROVADO GESTOR ORIGEM
                                 </span>
                                 <span v-else-if="item.modo_aprovacao === 'gestor_unico' && (item.status_aprovacao_gestor_unico === 'aprovado' || gestorUnicoDispensadoItem(item))">
@@ -616,7 +621,7 @@
                                         href="javascript://"
                                         title="Aprovação Gestor Origem"
                                         @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: false, aprovando: true, aprovandoGestorDestino: false, aprovandoExtra: false, aprovandoRh: false, podeanexar: true })"
-                                        v-if="!item.status_aprovacao && podeAprovarGestorOrigemItem(item)"
+                                        v-if="exibeEtapaGestorOrigem(item) && !item.status_aprovacao && podeAprovarGestorOrigemItem(item)"
                                     >
                                         Aprovação Gestor Origem
                                     </a>
@@ -720,10 +725,10 @@
                                 </div>
                             </div>
 
-                            <i class="fas fa-chevron-right text-muted mx-2"></i>
+                            <i class="fas fa-chevron-right text-muted mx-2" v-if="exibeEtapaGestorOrigem(item) || item.modo_aprovacao === 'gestor_unico'"></i>
 
                             <!-- Gestor Origem -->
-                            <div class="fluxo-step" v-if="item.modo_aprovacao !== 'gestor_unico'">
+                            <div class="fluxo-step" v-if="exibeEtapaGestorOrigem(item)">
                                 <i v-if="origemEtapaDispensada(item)" class="fas fa-minus-circle text-muted"></i>
                                 <i v-else-if="item.status_aprovacao === 'aprovado'" class="fas fa-check-circle text-success"></i>
                                 <i v-else-if="item.status_aprovacao === 'reprovado'" class="fas fa-times-circle text-danger"></i>
@@ -748,7 +753,7 @@
                             </div>
 
                             <!-- Gestor Aprovação (único) -->
-                            <div class="fluxo-step" v-else>
+                            <div class="fluxo-step" v-else-if="item.modo_aprovacao === 'gestor_unico'">
                                 <i v-if="gestorUnicoDispensadoItem(item) || item.status_aprovacao_gestor_unico === 'aprovado'" class="fas fa-check-circle text-success"></i>
                                 <i v-else-if="item.status_aprovacao_gestor_unico === 'reprovado'" class="fas fa-times-circle text-danger"></i>
                                 <i v-else class="fas fa-clock text-warning"></i>
@@ -989,6 +994,7 @@ export default defineComponent({
         const temAprovacaoExtra = ref(false)
         const podeAprovarExtra = ref(false)
         const nomeAprovacaoExtra = ref('')
+        const exigeAprovacaoGestorOrigem = ref(true)
         const preloadExportacao = ref(false)
         const anexoUploadAndamento = ref(false)
         const podeanexar = ref(false)
@@ -1266,7 +1272,23 @@ export default defineComponent({
             return item.fluxo_gestores_automatico !== false && !item.gestor_id && !item.status_aprovacao
         }
 
+        /** Empresa/config omitiu a etapa: origem não entra no fluxo visual. */
+        function origemEtapaOmitidaDoFluxo(item) {
+            if (!exigeAprovacaoGestorOrigem.value) return true
+            if (item && item.exige_aprovacao_gestor_origem === false) return true
+            const obs = item?.obs_aprovacao
+            return typeof obs === 'string' && obs.includes('não exigir aprovação do gestor de origem')
+        }
+
+        /** Empresa não exige aprovação do gestor origem: etapa some da UI (timeline/modal/badge). */
+        function exibeEtapaGestorOrigem(item) {
+            if (!item || item.modo_aprovacao === 'gestor_unico') return false
+            if (origemEtapaOmitidaDoFluxo(item)) return false
+            return true
+        }
+
         function origemEtapaConcluida(item) {
+            if (origemEtapaOmitidaDoFluxo(item)) return true
             if (origemEtapaDispensada(item)) return true
             return item.status_aprovacao === 'aprovado'
         }
@@ -1280,6 +1302,7 @@ export default defineComponent({
         }
 
         function podeAprovarGestorOrigemItem(item) {
+            if (origemEtapaOmitidaDoFluxo(item)) return false
             if (item.fluxo_gestores_automatico === false) {
                 return (aprovar_por_gestor.value || aprovar_por_rh.value) && !item.status_aprovacao
             }
@@ -1608,6 +1631,12 @@ export default defineComponent({
             podeAprovarExtra.value = dados.pode_aprovar_extra ?? false
             nomeAprovacaoExtra.value = dados.nome_aprovacao_extra ?? 'Aprovação Extra'
             usuarioLogadoId.value = dados.usuario_logado_id ?? null
+            if (dados && Object.prototype.hasOwnProperty.call(dados, 'exige_aprovacao_gestor_origem')) {
+                exigeAprovacaoGestorOrigem.value =
+                    dados.exige_aprovacao_gestor_origem === true ||
+                    dados.exige_aprovacao_gestor_origem === 1 ||
+                    dados.exige_aprovacao_gestor_origem === '1'
+            }
             controle.carregando = false
         }
 
@@ -1765,6 +1794,7 @@ export default defineComponent({
             temAprovacaoExtra,
             podeAprovarExtra,
             nomeAprovacaoExtra,
+            exigeAprovacaoGestorOrigem,
             preloadExportacao,
             urlExportacao,
             url_anexo,
@@ -1816,6 +1846,8 @@ export default defineComponent({
             labelAprovadorDestino,
             labelAprovadorGestorUnico,
             origemEtapaDispensada,
+            origemEtapaOmitidaDoFluxo,
+            exibeEtapaGestorOrigem,
             origemEtapaConcluida,
             gestoresConcluidosItem,
             itemReprovado,

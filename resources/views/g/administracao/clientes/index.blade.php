@@ -701,6 +701,26 @@
                                         </select>
                                     </div>
                                 </div>
+                                <div class="col-12 col-sm-6 col-lg-4">
+                                    <div class="form-group">
+                                        <label>Notificar gestor origem na transferência</label>
+                                        <select v-model="form.cliente_config.configuracoes.transferencia_notificar_gestor_origem" class="form-control">
+                                            <option :value="true">Sim</option>
+                                            <option :value="false">Não</option>
+                                        </select>
+                                        <small class="text-muted">Quando desabilitado, a solicitação de transferência não envia e-mail/WhatsApp ao gestor origem. A etapa de aprovação permanece.</small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-lg-4">
+                                    <div class="form-group">
+                                        <label>Exigir aprovação do gestor origem na transferência</label>
+                                        <select v-model="form.cliente_config.configuracoes.transferencia_exigir_aprovacao_gestor_origem" class="form-control">
+                                            <option :value="true">Sim</option>
+                                            <option :value="false">Não</option>
+                                        </select>
+                                        <small class="text-muted">Quando desabilitado, a etapa do gestor origem já nasce aprovada: o fluxo segue para destino/extra/RH e essa etapa não aparece nas notificações.</small>
+                                    </div>
+                                </div>
                             </div>
                         </fieldset>
 

@@ -99,7 +99,11 @@ const app = createApp({
                     schedule_avaliacao_experiencia: true,
                     schedule_treinamento_vencimento: true,
                     treinamento_permitir_desmarcar_realizado: false,
-                    configuracoes: { treinamento_fat_obrigatorio: false },
+                    configuracoes: {
+                        treinamento_fat_obrigatorio: false,
+                        transferencia_notificar_gestor_origem: true,
+                        transferencia_exigir_aprovacao_gestor_origem: true,
+                    },
                     assinatura_digital_habilitada: false,
                     descricao_vaga_ia_habilitada: false,
                     limite_assinaturas_mensal: '',
@@ -227,6 +231,7 @@ const app = createApp({
             setupCampo()
 
             this.form = _.cloneDeep(this.formDefault) //copia
+            this.garantirConfiguracoesCliente()
             this.leitura = false
             this.usuariosAlertaAssinatura = []
             this.gruposAlertaAssinatura = []
@@ -299,7 +304,11 @@ const app = createApp({
                             schedule_avaliacao_experiencia: true,
                             schedule_treinamento_vencimento: true,
                             treinamento_permitir_desmarcar_realizado: false,
-                            configuracoes: { treinamento_fat_obrigatorio: false },
+                            configuracoes: {
+                                treinamento_fat_obrigatorio: false,
+                                transferencia_notificar_gestor_origem: true,
+                                transferencia_exigir_aprovacao_gestor_origem: true,
+                            },
                             assinatura_digital_habilitada: false,
                             descricao_vaga_ia_habilitada: false,
                             limite_assinaturas_mensal: '',
@@ -307,8 +316,6 @@ const app = createApp({
                             assinatura_alerta_grupo_ids: []
                         }
                     } else {
-                        this.form.cliente_config.configuracoes = this.form.cliente_config.configuracoes || { treinamento_fat_obrigatorio: false }
-                        this.form.cliente_config.configuracoes.treinamento_fat_obrigatorio = !!this.form.cliente_config.configuracoes.treinamento_fat_obrigatorio
                         this.form.cliente_config.treinamento_permitir_desmarcar_realizado = !!this.form.cliente_config.treinamento_permitir_desmarcar_realizado
                         this.form.cliente_config.assinatura_digital_habilitada = !!this.form.cliente_config.assinatura_digital_habilitada
                         this.form.cliente_config.descricao_vaga_ia_habilitada = !!this.form.cliente_config.descricao_vaga_ia_habilitada
@@ -320,6 +327,7 @@ const app = createApp({
                             Number(id)
                         )
                     }
+                    this.garantirConfiguracoesCliente()
 
                     this.usuariosAlertaAssinatura = response.data.usuariosAlertaAssinatura || []
                     this.gruposAlertaAssinatura = response.data.gruposAlertaAssinatura || []
@@ -496,7 +504,30 @@ const app = createApp({
         },
         getGrupoAlerta(id) {
             return (this.gruposAlertaAssinatura || []).find((g) => Number(g.id) === Number(id)) || null
-        }
+        },
+        garantirConfiguracoesCliente() {
+            if (!this.form.cliente_config) {
+                this.form.cliente_config = _.cloneDeep(this.formDefault.cliente_config)
+            }
+
+            const atuais =
+                this.form.cliente_config.configuracoes && typeof this.form.cliente_config.configuracoes === 'object'
+                    ? this.form.cliente_config.configuracoes
+                    : {}
+
+            const notificarOrigem = atuais.transferencia_notificar_gestor_origem
+            const exigirOrigem = atuais.transferencia_exigir_aprovacao_gestor_origem
+
+            // Substitui o objeto inteiro para o select sempre ter boolean válido (padrão: Sim).
+            this.form.cliente_config.configuracoes = {
+                ...atuais,
+                treinamento_fat_obrigatorio: !!atuais.treinamento_fat_obrigatorio,
+                transferencia_notificar_gestor_origem:
+                    notificarOrigem === undefined || notificarOrigem === null ? true : !!notificarOrigem,
+                transferencia_exigir_aprovacao_gestor_origem:
+                    exigirOrigem === undefined || exigirOrigem === null ? true : !!exigirOrigem,
+            }
+        },
     }
 })
 

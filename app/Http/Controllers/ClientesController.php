@@ -326,6 +326,12 @@ class ClientesController extends Controller
         $todosMenu = array_unique(array_column($listaDeHabilidades->toArray(), 'menu'));
         $dadosAssinatura = (new AssinaturaCotaService())->listarUsuariosEGrupos((int) $cliente->id);
 
+        if ($cliente->ClienteConfig) {
+            $cliente->ClienteConfig->configuracoes = $this->normalizarConfiguracoes(
+                is_array($cliente->ClienteConfig->configuracoes) ? $cliente->ClienteConfig->configuracoes : []
+            );
+        }
+
         return response()->json([
             'cliente' => $cliente,
             'listaDeHabilidades' => $listaDeHabilidades,
@@ -709,6 +715,14 @@ class ClientesController extends Controller
     private function normalizarConfiguracoes(array $config): array
     {
         $config['treinamento_fat_obrigatorio'] = filter_var($config['treinamento_fat_obrigatorio'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $config['transferencia_notificar_gestor_origem'] = filter_var(
+            $config['transferencia_notificar_gestor_origem'] ?? true,
+            FILTER_VALIDATE_BOOLEAN
+        );
+        $config['transferencia_exigir_aprovacao_gestor_origem'] = filter_var(
+            $config['transferencia_exigir_aprovacao_gestor_origem'] ?? true,
+            FILTER_VALIDATE_BOOLEAN
+        );
         return $config;
     }
 

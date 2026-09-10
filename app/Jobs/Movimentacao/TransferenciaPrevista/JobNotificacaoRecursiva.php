@@ -7,6 +7,7 @@ use App\Jobs\Movimentacao\Concerns\EnviaWhatsappNotificacaoMovimentacao;
 use App\Mail\Movimentacao\TransferenciaPrevista\NotificacaoAprovacaoMail;
 use App\Models\AprovacaoExtraConfig;
 use App\Models\CentroCusto;
+use App\Models\ClienteConfig;
 use App\Models\Curriculo;
 use App\Models\TransferenciaPrevista;
 use App\Models\User;
@@ -31,6 +32,7 @@ class JobNotificacaoRecursiva implements ShouldQueue
     private $transferencia;
     private $cacheConfig;
     private $cacheEmailsRH;
+    private $cacheNotificarGestorOrigem;
     private static $usuariosCarregados = [];
 
     public function __construct(int $transferenciaId, int $empresaId)
@@ -169,6 +171,15 @@ class JobNotificacaoRecursiva implements ShouldQueue
         }
 
         if (!$this->transferencia->status_aprovacao && !$this->origemDispensada()) {
+            if (!$this->deveNotificarGestorOrigem()) {
+                Log::info('Notificação do gestor origem desabilitada para a empresa', [
+                    'transferencia_id' => $this->transferencia->id,
+                    'empresa_id' => $this->empresaId,
+                ]);
+
+                return null;
+            }
+
             return $this->transferencia->fluxo_gestores_automatico ? 'criacao_gestor_origem' : 'criacao';
         }
 
@@ -246,6 +257,41 @@ class JobNotificacaoRecursiva implements ShouldQueue
     }
 
     /**
+     * Preferência por empresa: se false, não envia e-mail/WhatsApp ao gestor origem.
+     * A etapa de aprovação permanece; default true preserva o comportamento atual.
+     */
+    private function deveNotificarGestorOrigem(): bool
+    {
+        if ($this->cacheNotificarGestorOrigem !== null) {
+            return $this->cacheNotificarGestorOrigem;
+        }
+
+        $config = ClienteConfig::query()
+            ->where('cliente_id', $this->empresaId)
+            ->first();
+
+        $this->cacheNotificarGestorOrigem = $config
+            ? filter_var($config->getConfig('transferencia_notificar_gestor_origem', true), FILTER_VALIDATE_BOOLEAN)
+            : true;
+
+        return $this->cacheNotificarGestorOrigem;
+    }
+
+    /**
+     * Se a empresa não exige aprovação do gestor origem, a etapa não entra na timeline
+     * das notificações (fluxo já nasce com origem aprovada).
+     */
+    private function exigeGestorOrigemNaNotificacao(): bool
+    {
+        if ($this->transferencia->modo_aprovacao === 'gestor_unico') {
+            return true;
+        }
+
+        return app(TransferenciaPrevistaFluxoAprovacaoService::class)
+            ->empresaExigeAprovacaoGestorOrigem((int) $this->empresaId);
+    }
+
+    /**
      * Quando o próprio solicitante é o gestor de aprovação designado, a etapa é
      * dispensada — não notifica pedindo autoaprovação, segue o fluxo direto.
      */
@@ -295,7 +341,9 @@ class JobNotificacaoRecursiva implements ShouldQueue
         switch ($tipo) {
             case 'criacao':
             case 'criacao_gestor_origem':
-                if ($this->transferencia->GestorOrigem && $this->transferencia->GestorOrigem->login) {
+                if ($this->deveNotificarGestorOrigem()
+                    && $this->transferencia->GestorOrigem
+                    && $this->transferencia->GestorOrigem->login) {
                     $destinatarios[] = $this->transferencia->GestorOrigem->login;
                 }
                 break;
@@ -460,6 +508,7 @@ class JobNotificacaoRecursiva implements ShouldQueue
             ]),
             'empresa_id' => $this->transferencia->empresa_id,
             'has_aprovacao_extra' => (bool) $this->cacheConfig,
+            'exige_gestor_origem' => $this->exigeGestorOrigemNaNotificacao(),
             'exige_gestor_destino' => (bool) $this->transferencia->exige_aprovacao_gestor_destino,
         ];
 
