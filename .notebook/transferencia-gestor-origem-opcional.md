@@ -23,9 +23,10 @@ UI: `SolicitacaoTransferencia.vue` — alertas ao selecionar CC
 Após RH: `aprovarRH()` → `decisaoAprovacaoRh()` → `efetivarCentroCustoAdmissao()` + `JobNotificacaoRecursiva` (`aprovado_final`)
 
 Gotcha: `status_aprovacao` fica `null` quando origem é dispensada — não tratar isso como “ainda na etapa origem”.
+Gotcha: filtro Status “Em aberto” em `TransferenciaPrevistaFilterApplier::applyCampoStatus()` deve excluir reprova em destino/único/extra/RH (não só `status_aprovacao IS NULL`). “Aprovado” = `resposta_rh=aprovado`; “Reprovado” = qualquer etapa.
 Gotcha: tela envia `resposta_rh`; `status_aprovacao_rh` é legado de outros módulos. Efetivação deve ler `resposta_rh`.
 Gotcha: `validarFormularioVisivel()` deve ignorar `:disabled`/`[readonly]` — blur em status origem vazio bloqueava RH.
 
 Docs: `docs/TRANSFERENCIA_PREVISTA_APROVACAO_GESTORES_CC.md` (RN10–RN12)
 
-Updated: 2026-08-31
+Updated: 2026-09-11

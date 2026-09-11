@@ -18,6 +18,7 @@ UI movimentação: aba Transferência + `SolicitacaoTransferencia.vue`
 3. Job determina `criacao_gestor_destino` / extra / RH (não `criacao_gestor_origem`)
 4. Payload do e-mail inclui `exige_gestor_origem=false`
 5. UI (`SolicitacaoTransferencia`): sem campo/etapa/badge “Gestor Origem”; badge passa a “AGUARDANDO GESTOR DESTINO”
+6. `exigeAprovacaoGestorOrigem()` / `etapaAtual()` também leem a config atual (e o marcador na obs) — senão registros com `gestor_id` + `status_aprovacao` null (criados antes da flag) ficam presos em origem e o `PUT aprovar-gestor-destino` devolve 403 enquanto a UI já libera o botão
 
 ## Quando origem NÃO é notificada / exigida
 - Flag notificar `false` → tipo `null` se ainda pendente
@@ -32,4 +33,4 @@ Testes: `JobNotificacaoRecursivaGestorOrigemTest`, `TransferenciaPrevistaFluxoAp
 - SolicitacaoTransferencia: timeline/badge/modal omitidos se flag false **ou** obs de autoaprovação por config (item não depende só do ref global)
 - Listagem anexa `exige_aprovacao_gestor_origem` em cada item
 
-Updated: 2026-09-10
+Updated: 2026-09-11
