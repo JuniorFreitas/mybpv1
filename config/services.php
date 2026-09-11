@@ -49,4 +49,12 @@ return [
         'allowed_hosts' => array_filter(explode(',', (string) env('GEMINI_ALLOWED_HOSTS', 'generativelanguage.googleapis.com'))),
     ],
 
+    'bp_chamados' => [
+        'enabled' => filter_var(env('BP_CHAMADOS_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
+        'api_base_url' => env('BP_CHAMADOS_API_BASE_URL'),
+        'application_id' => env('BP_CHAMADOS_APPLICATION_ID'),
+        'widget_secret' => env('BP_CHAMADOS_WIDGET_SECRET'),
+        'token_ttl' => (int) env('BP_CHAMADOS_TOKEN_TTL', 900),
+    ],
+
 ];

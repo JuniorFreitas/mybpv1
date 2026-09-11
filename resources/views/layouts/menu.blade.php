@@ -742,6 +742,14 @@
             </a>
         </li>
     @endif
+    @if(app(\App\Services\BpChamados\BpChamadosWidgetTokenService::class)->isEnabled())
+        <li>
+            <a href="{{ route('g.bp-chamados.index') }}" class="waves-effect">
+                <i class="bx bx-support"></i>
+                <span>CHAMADOS</span>
+            </a>
+        </li>
+    @endif
     @if(\App\Models\Sistema::permitirLinks('treinamento_portaria','treinamento_carteira-etiquetas','treinamento_certificado'))
         <li id="treinamento">
             <a href="javascript://" class="has-arrow waves-effect" parent="treinamento">

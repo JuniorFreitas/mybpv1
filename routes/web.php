@@ -63,6 +63,10 @@ Route::middleware(['auth'])->group(function () {
         ->name('avaliacao.publica.salvar');
     Route::get('avaliacao-de-experiencia/{token}/erro', [\App\Http\Controllers\AvaliacaoPublicaController::class, 'exibirErro'])
         ->name('avaliacao.publica.erro');
+
+    // JWT do widget BP Chamados (fora de /api/* para não colidir com {empresa_slug})
+    Route::get('g/bp-chamados/widget-token', \App\Http\Controllers\BpChamadosWidgetTokenController::class)
+        ->name('bp-chamados.widget-token');
 });
 
 Route::group(['prefix' => 'publico', 'as' => 'publico.'], function () {
@@ -1563,6 +1567,8 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::get('chat/{empresa}', [\App\Http\Controllers\ChatController::class, 'show'])->name('show');
         Route::get('chat', [\App\Http\Controllers\ChatController::class, 'index'])->name('index');
     });
+
+    Route::get('bp-chamados', [\App\Http\Controllers\BpChamadosController::class, 'index'])->name('bp-chamados.index');
 
     //Notificaçoes
     Route::group(['as' => 'notificacoes.'], function () {
