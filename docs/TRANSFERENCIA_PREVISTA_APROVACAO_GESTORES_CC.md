@@ -22,21 +22,19 @@ Solicitação → Gestor manual → Aprovação Extra (opcional) → RH → Efet
 
 ```
 Solicitação criada
-    → Aprovação Gestor CC Origem
+    → Aprovação Gestor CC Origem (se exigida / se houver gestor)
         → (reprovado) Processo encerrado
-        → (aprovado) Gestor origem ≠ gestor destino?
-            → (sim) Aprovação Gestor CC Destino
-                → (reprovado) Processo encerrado
-                → (aprovado) Aprovação Extra (se configurada)
-            → (não) Aprovação Extra (se configurada)
+        → (aprovado ou dispensada) Aprovação Gestor CC Destino (sempre, fluxo padrão)
+            → (reprovado) Processo encerrado
+            → (aprovado) Aprovação Extra (se configurada)
     → RH
     → Efetivação (atualiza admissao.centro_custo_id)
 ```
 
 ### Ordem das etapas
 
-1. **Gestor CC Origem** — quando o CC origem tiver gestor; se não tiver, a etapa é dispensada e o fluxo segue
-2. **Gestor CC Destino** — obrigatório; bloqueia a criação se o CC destino não tiver gestor. Dispensada somente se o gestor resolvido for o mesmo da origem
+1. **Gestor CC Origem** — quando o CC origem tiver gestor e a empresa exigir; sem gestor ou com flag da empresa desligada, a etapa é dispensada/autoaprovada e o fluxo segue
+2. **Gestor CC Destino** — **sempre obrigatório** no fluxo padrão (mesmo se for o mesmo gestor da origem); bloqueia a criação se o CC destino não tiver gestor
 3. **Aprovação Extra** — se configurada em `AprovacaoExtraConfig`
 4. **RH**
 
@@ -47,7 +45,7 @@ Solicitação criada
 | Regra | Descrição | Implementação |
 |-------|-----------|---------------|
 | **RN01** | Gestores resolvidos automaticamente via CC | `TransferenciaPrevistaFluxoAprovacaoService::aplicarFluxoGestores()` |
-| **RN02/RN03** | Mesmo gestor origem/destino = uma única etapa | `deveExigirAprovacaoGestorDestino()` retorna `false`; `gestor_destino_id = null` |
+| **RN02/RN03** | Gestor destino sempre aprova de forma independente (mesmo se for o gestor da origem) | `deveExigirAprovacaoGestorDestino()` retorna `true`; `gestor_destino_id` preenchido |
 | **RN04** | Extra/RH bloqueados enquanto gestor destino pendente | Guards em `aprovarExtra()` e `aprovarRH()` |
 | **RN05** | Reprovação em qualquer etapa de gestor encerra o processo | `status_aprovacao` ou `status_aprovacao_gestor_destino = reprovado` |
 | **RN07** | Solicitante = gestor: cadeia substituto → superior → bloqueio | `CentroCustoGestorResolverService::resolverAprovador()` |
@@ -341,8 +339,9 @@ docker compose exec mybpdp php artisan test \
 #### CT02/CT08 — Mesmo gestor
 
 1. CC Origem e Destino com mesmo gestor Maria
-2. Verificar: `exige_aprovacao_gestor_destino = false`, sem botão de destino
-3. Maria aprova uma vez → fluxo segue para Extra/RH
+2. Verificar: `exige_aprovacao_gestor_destino = true`, `gestor_destino_id = Maria`
+3. Se origem for exigida: Maria aprova origem → ainda aguarda destino
+4. Maria aprova destino → fluxo segue para Extra/RH
 
 #### CT04 — Reprovação
 

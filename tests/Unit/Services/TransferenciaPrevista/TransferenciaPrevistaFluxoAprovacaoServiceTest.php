@@ -30,24 +30,19 @@ class TransferenciaPrevistaFluxoAprovacaoServiceTest extends TestCase
         $this->assertTrue($this->service->deveExigirAprovacaoGestorDestino($origem, $destino));
     }
 
-    public function test_ct02_mesmo_gestor_nao_exige_aprovacao_destino(): void
+    public function test_ct02_mesmo_gestor_ainda_exige_aprovacao_destino(): void
     {
         $gestor = new User(['id' => 10]);
 
-        $this->assertFalse($this->service->deveExigirAprovacaoGestorDestino($gestor, $gestor));
+        $this->assertTrue($this->service->deveExigirAprovacaoGestorDestino($gestor, $gestor));
     }
 
-    public function test_ct08_mesmo_gestor_apenas_uma_etapa_no_fluxo_montado(): void
+    public function test_ct08_mesmo_gestor_mantem_etapa_destino_independente(): void
     {
-        $dados = [
-            'gestor_id' => 10,
-            'gestor_destino_id' => null,
-            'exige_aprovacao_gestor_destino' => false,
-            'fluxo_gestores_automatico' => true,
-        ];
-
-        $this->assertFalse($dados['exige_aprovacao_gestor_destino']);
-        $this->assertNull($dados['gestor_destino_id']);
+        $this->assertTrue($this->service->deveExigirAprovacaoGestorDestino(
+            new User(['id' => 10]),
+            new User(['id' => 10])
+        ));
     }
 
     public function test_etapa_atual_identifica_gestor_destino_pendente(): void
@@ -304,12 +299,27 @@ class TransferenciaPrevistaFluxoAprovacaoServiceTest extends TestCase
         $this->assertFalse($this->service->podeAprovarGestorDestino($transferencia, $gestorQueEhSolicitante));
     }
 
-    public function test_gestores_etapas_concluidas_quando_mesmo_gestor(): void
+    public function test_gestores_etapas_concluidas_exige_destino_mesmo_apos_origem_aprovada(): void
     {
         $transferencia = new TransferenciaPrevista([
             'fluxo_gestores_automatico' => true,
             'status_aprovacao' => 'aprovado',
-            'exige_aprovacao_gestor_destino' => false,
+            'exige_aprovacao_gestor_destino' => true,
+            'status_aprovacao_gestor_destino' => null,
+            'empresa_id' => 1,
+        ]);
+
+        $this->assertFalse($this->service->gestoresEtapasConcluidas($transferencia));
+    }
+
+    public function test_gestores_etapas_concluidas_quando_destino_aprovado(): void
+    {
+        $transferencia = new TransferenciaPrevista([
+            'fluxo_gestores_automatico' => true,
+            'status_aprovacao' => 'aprovado',
+            'exige_aprovacao_gestor_destino' => true,
+            'status_aprovacao_gestor_destino' => 'aprovado',
+            'empresa_id' => 1,
         ]);
 
         $this->assertTrue($this->service->gestoresEtapasConcluidas($transferencia));
