@@ -118,13 +118,14 @@ class TransferenciaPrevistaFluxoAprovacaoService
         }
     }
 
+    /**
+     * Etapa de gestor destino é sempre obrigatória no fluxo padrão,
+     * mesmo quando origem e destino compartilham o mesmo gestor.
+     * ($gestorOrigem mantido na assinatura por compatibilidade com chamadas existentes.)
+     */
     public function deveExigirAprovacaoGestorDestino(?User $gestorOrigem, User $gestorDestino): bool
     {
-        if ($gestorOrigem === null) {
-            return true;
-        }
-
-        return (int) $gestorOrigem->id !== (int) $gestorDestino->id;
+        return true;
     }
 
     /**

@@ -12,7 +12,7 @@ UI: `SolicitacaoTransferencia.vue` — alertas ao selecionar CC
 - Destino sem gestor → bloqueia salvar (front + HTTP 422). Mensagem: cadastrar o gestor e falar com o Administrador.
 - RH (`privilegio_gestao_rh` / `privilegio_aprovar_por_rh` / `privilegio_aprovar_rh`) pode aprovar etapa origem e destino
 - Se o RH não for o gestor/substituto do CC, grava `user_aprovacao_id` (ou destino) + obs `Registrado por RH: {nome}`
-- Mesmo gestor origem/destino continua dispensando etapa destino
+- Mesmo gestor origem/destino → etapa destino **continua obrigatória** (aprovação independente)
 - Notificação na criação sem origem: `criacao_gestor_destino` (não `criacao_gestor_origem`)
 - RH aprovado efetiva `admissao.centro_custo_id` (+ filial se houver) via `resposta_rh`
 - Histórico LOGS: `de {CC origem} para {CC destino}` (`mensagemHistoricoAprovacaoRh()`)
