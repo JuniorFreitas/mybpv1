@@ -91,8 +91,45 @@ class TransferenciaPrevistaFilterApplier
         if (!isset($this->filtros['campoStatus']) || $this->filtros['campoStatus'] === '') {
             return;
         }
-        $status = $this->filtros['campoStatus'] === 'aberto' ? null : $this->filtros['campoStatus'];
-        $query->where('status_aprovacao', $status);
+
+        $status = $this->filtros['campoStatus'];
+
+        // Em aberto: ainda em andamento (sem RH final) e sem reprovação em nenhuma etapa.
+        // Não basta status_aprovacao null — origem dispensada/omitida deixa null e a
+        // reprova pode estar em destino, gestor único, extra ou RH.
+        if ($status === 'aberto') {
+            $query->where(function ($q) {
+                $q->whereNull('resposta_rh')->orWhere('resposta_rh', '');
+            });
+            $this->whereNaoReprovado($query, 'status_aprovacao');
+            $this->whereNaoReprovado($query, 'status_aprovacao_gestor_destino');
+            $this->whereNaoReprovado($query, 'status_aprovacao_gestor_unico');
+            $this->whereNaoReprovado($query, 'status_aprovacao_extra');
+            return;
+        }
+
+        // Aprovado = efetivado pelo RH (badge final da timeline).
+        if ($status === 'aprovado') {
+            $query->where('resposta_rh', 'aprovado');
+            return;
+        }
+
+        if ($status === 'reprovado') {
+            $query->where(function ($q) {
+                $q->where('status_aprovacao', 'reprovado')
+                    ->orWhere('status_aprovacao_gestor_destino', 'reprovado')
+                    ->orWhere('status_aprovacao_gestor_unico', 'reprovado')
+                    ->orWhere('status_aprovacao_extra', 'reprovado')
+                    ->orWhere('resposta_rh', 'reprovado');
+            });
+        }
+    }
+
+    private function whereNaoReprovado(Builder $query, string $coluna): void
+    {
+        $query->where(function ($q) use ($coluna) {
+            $q->whereNull($coluna)->orWhere($coluna, '!=', 'reprovado');
+        });
     }
 
     private function applyPermissoes(Builder $query): void
