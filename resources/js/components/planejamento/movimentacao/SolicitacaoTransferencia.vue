@@ -1314,6 +1314,7 @@ export default defineComponent({
 
         function podeAprovarGestorDestinoItem(item) {
             if (!item.gestor_destino_id) return false
+            if (!origemEtapaConcluida(item)) return false
             if (aprovar_por_rh.value) return true
             if (gestorDestinoEhSolicitanteItem(item)) return false
             return item.gestor_destino_id === usuarioLogadoId.value

@@ -209,9 +209,14 @@ class TransferenciaPrevistaFluxoAprovacaoService
      */
     public function empresaExigeAprovacaoGestorOrigem(int $empresaId): bool
     {
-        $config = ClienteConfig::query()
-            ->where('cliente_id', $empresaId)
-            ->first();
+        try {
+            $config = ClienteConfig::query()
+                ->where('cliente_id', $empresaId)
+                ->first();
+        } catch (\Throwable) {
+            // Ambiente sem tabela/migrations (ex.: unitário em memória): default seguro.
+            return true;
+        }
 
         if (!$config) {
             return true;
@@ -423,7 +428,22 @@ class TransferenciaPrevistaFluxoAprovacaoService
             return true;
         }
 
-        return (int) ($transferencia->gestor_id ?? 0) > 0;
+        if ((int) ($transferencia->gestor_id ?? 0) <= 0) {
+            return false;
+        }
+
+        $obs = (string) ($transferencia->obs_aprovacao ?? '');
+        if ($obs !== '' && str_contains($obs, 'não exigir aprovação do gestor de origem')) {
+            return false;
+        }
+
+        // Preferência atual da empresa (mesma regra da UI): se não exige, a etapa
+        // não bloqueia — cobre registros criados antes da flag ou sem autoaprovação.
+        if (!$this->empresaExigeAprovacaoGestorOrigem((int) $transferencia->empresa_id)) {
+            return false;
+        }
+
+        return true;
     }
 
     public function origemEtapaConcluida(TransferenciaPrevista $transferencia): bool

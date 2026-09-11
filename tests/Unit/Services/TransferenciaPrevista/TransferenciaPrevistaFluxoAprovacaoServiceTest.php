@@ -612,4 +612,58 @@ class TransferenciaPrevistaFluxoAprovacaoServiceTest extends TestCase
             filter_var($config->getConfig('transferencia_exigir_aprovacao_gestor_origem', true), FILTER_VALIDATE_BOOLEAN)
         );
     }
+
+    public function test_pode_aprovar_destino_quando_empresa_nao_exige_origem_com_gestor_pendente(): void
+    {
+        $service = \Mockery::mock(
+            TransferenciaPrevistaFluxoAprovacaoService::class,
+            [new CentroCustoGestorResolverService()]
+        )->makePartial();
+
+        $service->shouldReceive('empresaExigeAprovacaoGestorOrigem')
+            ->with(40568)
+            ->andReturn(false);
+
+        $aprovador = new User();
+        $aprovador->id = 20;
+
+        $transferencia = new TransferenciaPrevista([
+            'fluxo_gestores_automatico' => true,
+            'gestor_id' => 10,
+            'status_aprovacao' => null,
+            'exige_aprovacao_gestor_destino' => true,
+            'gestor_destino_id' => 20,
+            'status_aprovacao_gestor_destino' => null,
+            'empresa_id' => 40568,
+            'user_id' => 99,
+        ]);
+
+        $this->assertFalse($service->exigeAprovacaoGestorOrigem($transferencia));
+        $this->assertTrue($service->origemEtapaConcluida($transferencia));
+        $this->assertSame(
+            TransferenciaPrevistaFluxoAprovacaoService::ETAPA_GESTOR_DESTINO,
+            $service->etapaAtual($transferencia)
+        );
+        $this->assertTrue($service->podeAprovarGestorDestino($transferencia, $aprovador));
+    }
+
+    public function test_exige_origem_false_quando_obs_marca_config_empresa(): void
+    {
+        $transferencia = new TransferenciaPrevista([
+            'fluxo_gestores_automatico' => true,
+            'gestor_id' => 10,
+            'status_aprovacao' => null,
+            'obs_aprovacao' => 'Aprovação automática: empresa configurada para não exigir aprovação do gestor de origem.',
+            'exige_aprovacao_gestor_destino' => true,
+            'gestor_destino_id' => 20,
+            'status_aprovacao_gestor_destino' => null,
+            'empresa_id' => 1,
+        ]);
+
+        $this->assertFalse($this->service->exigeAprovacaoGestorOrigem($transferencia));
+        $this->assertSame(
+            TransferenciaPrevistaFluxoAprovacaoService::ETAPA_GESTOR_DESTINO,
+            $this->service->etapaAtual($transferencia)
+        );
+    }
 }
