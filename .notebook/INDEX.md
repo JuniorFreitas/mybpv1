@@ -1,8 +1,10 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-09-10
+Last updated: 2026-09-16
 
+- [schedule-kernel-laravel12](schedule-kernel-laravel12.md) — Kernel schedule morto; usar withSchedule | gotcha | schedule, aniversariante
+- [aniversariante-mensagem](aniversariante-mensagem.md) — E-mail de aniversário customizável por empresa | flow | aniversariante, email
 - [bp-chamados-widget](bp-chamados-widget.md) — Página CHAMADOS no menu + JWT widget | flow | chamados, widget
 - [documentos-preadmissao-catalogo](documentos-preadmissao-catalogo.md) — Catálogo pré-admissão por empresa | flow | preadmissao, documentos
 - [cadastro-dossie-tipos](cadastro-dossie-tipos.md) — Catálogo dossiê com override por empresa | flow | dossie, cadastro
@@ -10,7 +12,6 @@ Last updated: 2026-09-10
 - [transferencia-notificacao-gestor-origem](transferencia-notificacao-gestor-origem.md) — Flags notificar/exigir aprovação gestor origem por empresa | flow | transferencia, notificacao, cliente_config
 - [transferencia-destino-mesmo-gestor-autoaprovacao](transferencia-destino-mesmo-gestor-autoaprovacao.md) — Destino sempre independente (fix RN02/RN03) | flow | transferencia, gestor-destino
 - [tinymce-selfhost](tinymce-selfhost.md) — Editor rico via public/tinymce, sem Cloud | gotcha | tinymce, frontend
-- [aniversariante-mensagem](aniversariante-mensagem.md) — E-mail de aniversário customizável por empresa | flow | aniversariante, email
 - [fornecedor-pf-cpf](fornecedor-pf-cpf.md) — Cadastro PF + tipos (incl. Parceiro Externo) | flow | fornecedor, cpf
 - [importacao-admissoes-flow](importacao-admissoes-flow.md) — Fluxo de importação de admissões | flow | importacao
 - [vaga-vagas-abertas-create](vaga-vagas-abertas-create.md) — Criação de vagas abertas | flow | vagas

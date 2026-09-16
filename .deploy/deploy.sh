@@ -1,0 +1,631 @@
+#!/bin/bash
+
+# Script de Deploy Interativo - BP Chamados
+# Build e Push de imagem Docker para ECS
+
+set -e  # Para o script se houver erro
+
+# Cores para output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Configurações padrão
+AWS_REGION="us-east-1"
+ECR_REGISTRY=""
+IMAGE_NAME="bpchamados/sistema"
+DEFAULT_TAG="latest"
+AUTO_CLEANUP_ECR=false  # true para limpeza automática sem confirmação
+DOCKER_PLATFORM="${DOCKER_PLATFORM:-linux/arm64}"
+
+# Função para exibir banner
+show_banner() {
+    echo -e "${BLUE}"
+    echo "=========================================="
+    echo "    BP Chamados - Script de Build e Deploy"
+    echo "=========================================="
+    echo -e "${NC}"
+}
+
+# Função para exibir menu de opções
+show_menu() {
+    echo -e "${YELLOW}Escolha o ambiente para build e deploy:${NC}"
+    echo ""
+    echo "1) Desenvolvimento (bpchamados-dev.bpin.com.br)"
+    echo "2) QA/Homologação (bpchamados-hml.bpin.com.br)"
+    echo "3) Produção (bpchamados.bpin.com.br)"
+    echo "4) Build customizado"
+    echo "5) Limpeza de imagens Docker"
+    echo "6) Configurar limpeza automática ECR"
+    echo "7) Sair"
+    echo ""
+    echo -e "${BLUE}Status atual:${NC}"
+    echo "  Limpeza automática ECR: $([ "$AUTO_CLEANUP_ECR" = true ] && echo "ATIVADA" || echo "DESATIVADA")"
+    echo "  Imagem ECR: ${IMAGE_NAME}"
+    echo ""
+}
+
+# Função para validar se o Docker está rodando
+check_docker() {
+    if ! docker info > /dev/null 2>&1; then
+        echo -e "${RED}Erro: Docker não está rodando ou não está instalado!${NC}"
+        exit 1
+    fi
+}
+
+# Função para obter o ECR registry
+get_ecr_registry() {
+    if [ -z "$ECR_REGISTRY" ]; then
+        echo -e "${GREEN}Obtendo ECR registry...${NC}"
+        ECR_REGISTRY=$(aws ecr describe-registry --region "${AWS_REGION}" --query 'registryId' --output text 2>/dev/null)
+        if [ -z "$ECR_REGISTRY" ] || [ "$ECR_REGISTRY" = "None" ]; then
+            echo -e "${RED}Erro: Não foi possível obter o ECR registry!${NC}"
+            echo "Verifique se o AWS CLI está configurado e se você tem permissões para acessar o ECR."
+            exit 1
+        fi
+        ECR_REGISTRY="${ECR_REGISTRY}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        echo "ECR Registry: ${ECR_REGISTRY}"
+    fi
+}
+
+# Função para validar se o Docker está logado no ECR
+check_ecr_login() {
+    if ! command -v aws &> /dev/null; then
+        echo -e "${RED}Erro: AWS CLI não está instalado!${NC}"
+        exit 1
+    fi
+    
+    if ! aws sts get-caller-identity &> /dev/null; then
+        echo -e "${RED}Erro: AWS CLI não está configurado ou credenciais inválidas!${NC}"
+        echo "Execute: aws configure"
+        exit 1
+    fi
+    
+    get_ecr_registry
+    
+    echo -e "${GREEN}Fazendo login no ECR...${NC}"
+    aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin "${ECR_REGISTRY}"
+}
+
+# Função para gerar tag baseada no ambiente e timestamp
+generate_tag() {
+    local environment=$1
+    local timestamp=$(date +"%Y%m%d-%H%M%S")
+    local git_commit=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+    echo "${environment}-${timestamp}-${git_commit}"
+}
+
+# Função para preparar assets
+prepare_assets() {
+    local environment=$1
+    
+    # Assets (Vite) são gerados no Dockerfile quando INSTALL_DEPS=true (default).
+    echo -e "${GREEN}Assets serão gerados no build Docker (ambiente: ${environment})...${NC}"
+}
+
+# Lê valor de .env (suporta ${VAR} simples apontando para outra chave do mesmo arquivo).
+read_dotenv_value() {
+    local key="$1"
+    local file="${2:-.env}"
+    if [[ ! -f "$file" ]]; then
+        return 0
+    fi
+    local line
+    line="$(grep -E "^${key}=" "$file" | tail -n1 || true)"
+    if [[ -z "$line" ]]; then
+        return 0
+    fi
+    local value="${line#*=}"
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    if [[ "$value" =~ ^\$\{([A-Za-z0-9_]+)\}$ ]]; then
+        value="$(read_dotenv_value "${BASH_REMATCH[1]}" "$file")"
+    fi
+    printf '%s' "$value"
+}
+
+resolve_vite_reverb_app_key() {
+    local key="${VITE_REVERB_APP_KEY:-${REVERB_APP_KEY:-}}"
+    if [[ -z "$key" ]]; then
+        key="$(read_dotenv_value VITE_REVERB_APP_KEY .env)"
+    fi
+    if [[ -z "$key" ]]; then
+        key="$(read_dotenv_value REVERB_APP_KEY .env)"
+    fi
+    printf '%s' "$key"
+}
+
+# Função para build da imagem Docker
+build_image() {
+    local app_url=$1
+    local tag=$2
+    local environment=$3
+    
+    get_ecr_registry
+    local full_image_name="${ECR_REGISTRY}/${IMAGE_NAME}:${tag}"
+    local vite_host="${app_url#https://}"
+    vite_host="${vite_host#http://}"
+    local vite_app_name="${VITE_APP_NAME:-BPChamados}"
+    local vite_reverb_port="${VITE_REVERB_PORT:-443}"
+    local vite_reverb_scheme="${VITE_REVERB_SCHEME:-https}"
+    local vite_reverb_app_key
+    vite_reverb_app_key="$(resolve_vite_reverb_app_key)"
+
+    if [[ -z "$vite_reverb_app_key" ]]; then
+        echo -e "${YELLOW}Aviso: VITE_REVERB_APP_KEY/REVERB_APP_KEY nao definidos — Echo/WebSocket pode falhar no browser.${NC}"
+    fi
+    
+    echo -e "${GREEN}Construindo imagem Docker...${NC}"
+    echo "APP_URL: ${app_url}"
+    echo "VITE_REVERB_HOST: ${vite_host}"
+    echo "Tag: ${tag}"
+    echo "Ambiente: ${environment}"
+    echo "Platform: ${DOCKER_PLATFORM}"
+    echo "Imagem: ${full_image_name}"
+    echo ""
+    
+    # Preparar assets antes do build
+    prepare_assets "${environment}"
+    
+    # Build ARM64 (Graviton/ECS). Em Mac Apple Silicon --load funciona;
+    # em amd64 com QEMU, prefira DOCKER_PUSH=1 ou o script CI.
+    local load_or_push=(--load)
+    if [[ "${DOCKER_PUSH:-0}" == "1" ]]; then
+        load_or_push=(--push)
+    fi
+
+    docker buildx build \
+        --platform "${DOCKER_PLATFORM}" \
+        --build-arg APP_URL="${app_url}" \
+        --build-arg VITE_APP_NAME="${vite_app_name}" \
+        --build-arg VITE_REVERB_HOST="${vite_host}" \
+        --build-arg VITE_REVERB_PORT="${vite_reverb_port}" \
+        --build-arg VITE_REVERB_SCHEME="${vite_reverb_scheme}" \
+        --build-arg VITE_REVERB_APP_KEY="${vite_reverb_app_key}" \
+        "${load_or_push[@]}" \
+        -t "${full_image_name}" \
+        -f docker/php/Dockerfile \
+        .
+    
+    echo -e "${GREEN}Build concluído!${NC}"
+    return 0
+}
+
+# Função para limpar imagens antigas do ECR
+cleanup_ecr_images() {
+    local tag=$1
+    local environment=$2
+    
+    get_ecr_registry
+    
+    echo -e "${YELLOW}Limpando imagens antigas do ECR...${NC}"
+    
+    # Gerar prefixo baseado no ambiente
+    local prefix=""
+    case $environment in
+        "dev")
+            prefix="dev-"
+            ;;
+        "homol")
+            prefix="homol-"
+            ;;
+        "prod")
+            prefix="prod-"
+            ;;
+        *)
+            prefix="custom-"
+            ;;
+    esac
+    
+    echo "Procurando imagens com prefixo: ${prefix}"
+    
+    # Listar imagens do ECR com o prefixo
+    # imageTag != null evita erro JMESPath em imagens sem tag (starts_with não aceita null)
+    local images_to_delete
+    local aws_response
+    local aws_exit=0
+    aws_response=$(aws ecr list-images \
+        --repository-name "${IMAGE_NAME}" \
+        --region "${AWS_REGION}" \
+        --query "imageIds[?imageTag != null && starts_with(imageTag, '${prefix}') && imageTag != '${tag}']" \
+        --output json) || aws_exit=$?
+    
+    # Verificar se a resposta do AWS é válida
+    if [ "$aws_exit" -ne 0 ] || [ -z "$aws_response" ]; then
+        echo -e "${YELLOW}Aviso: não foi possível listar imagens do ECR (exit ${aws_exit}). Seguindo sem limpeza.${NC}"
+        return 0
+    fi
+    
+    # Validar se a resposta é um JSON válido
+    if ! echo "$aws_response" | jq empty 2>/dev/null; then
+        echo -e "${YELLOW}Aviso: resposta inválida do AWS ECR. Seguindo sem limpeza.${NC}"
+        return 0
+    fi
+    
+    images_to_delete="$aws_response"
+    
+    # Verificar se há imagens para remover
+    local image_count=$(echo "$images_to_delete" | jq '. | length' 2>/dev/null || echo "0")
+    
+    if [ "$image_count" -gt 0 ]; then
+        echo "Encontradas ${image_count} imagens antigas para remover:"
+        echo "$images_to_delete" | jq -r '.[].imageTag' | while read -r image_tag; do
+            echo "  - ${image_tag}"
+        done
+        
+        echo ""
+        
+        if [ "$AUTO_CLEANUP_ECR" = true ]; then
+            echo "Modo automático ativado - removendo imagens antigas..."
+            echo "$images_to_delete" | jq -r '.[]' | while read -r image_id; do
+                # Validar se image_id é um JSON válido
+                if ! echo "$image_id" | jq empty 2>/dev/null; then
+                    echo "Aviso: ID de imagem inválido: $image_id"
+                    continue
+                fi
+                
+                local image_tag=$(echo "$image_id" | jq -r '.imageTag // empty' 2>/dev/null)
+                if [ -z "$image_tag" ]; then
+                    echo "Aviso: Não foi possível extrair tag da imagem: $image_id"
+                    continue
+                fi
+                
+                echo "Removendo: ${image_tag}"
+                if aws ecr batch-delete-image \
+                    --repository-name "${IMAGE_NAME}" \
+                    --region "${AWS_REGION}" \
+                    --image-ids "$image_id" \
+                    --output text > /dev/null 2>&1; then
+                    echo "✓ Removido com sucesso: ${image_tag}"
+                else
+                    echo "✗ Aviso: Não foi possível remover ${image_tag}"
+                fi
+            done
+            echo -e "${GREEN}Processo de remoção de imagens antigas concluído!${NC}"
+        else
+            read -p "Deseja remover essas imagens antigas do ECR? (y/N): " confirm
+            if [[ "$confirm" =~ ^[Yy]$ ]]; then
+                echo "Removendo imagens antigas..."
+                echo "$images_to_delete" | jq -r '.[]' | while read -r image_id; do
+                    # Validar se image_id é um JSON válido
+                    if ! echo "$image_id" | jq empty 2>/dev/null; then
+                        echo "Aviso: ID de imagem inválido: $image_id"
+                        continue
+                    fi
+                    
+                    local image_tag=$(echo "$image_id" | jq -r '.imageTag // empty' 2>/dev/null)
+                    if [ -z "$image_tag" ]; then
+                        echo "Aviso: Não foi possível extrair tag da imagem: $image_id"
+                        continue
+                    fi
+                    
+                    echo "Removendo: ${image_tag}"
+                    if aws ecr batch-delete-image \
+                        --repository-name "${IMAGE_NAME}" \
+                        --region "${AWS_REGION}" \
+                        --image-ids "$image_id" \
+                        --output text > /dev/null 2>&1; then
+                        echo "✓ Removido com sucesso: ${image_tag}"
+                    else
+                        echo "✗ Aviso: Não foi possível remover ${image_tag}"
+                    fi
+                done
+                echo -e "${GREEN}Processo de remoção de imagens antigas concluído!${NC}"
+            else
+                echo -e "${YELLOW}Remoção de imagens antigas cancelada.${NC}"
+            fi
+        fi
+    else
+        echo "Nenhuma imagem antiga encontrada com prefixo '${prefix}'"
+    fi
+    
+    echo ""
+}
+
+# Função para push da imagem
+push_image() {
+    local tag=$1
+    local environment=$2
+    
+    get_ecr_registry
+    local full_image_name="${ECR_REGISTRY}/${IMAGE_NAME}:${tag}"
+    
+    echo -e "${GREEN}Fazendo push da imagem...${NC}"
+    echo "Imagem: ${full_image_name}"
+    echo ""
+    
+    # Limpar imagens antigas do ECR antes do push
+    cleanup_ecr_images "${tag}" "${environment}"
+    
+    if [[ "${DOCKER_PUSH:-0}" == "1" ]]; then
+        echo "Imagem já enviada via buildx --push (DOCKER_PUSH=1). Pulando docker push."
+    else
+        docker push "${full_image_name}"
+    fi
+    
+    echo -e "${GREEN}Push concluído!${NC}"
+    return 0
+}
+
+# Função para limpar imagens Docker locais
+cleanup_local_images() {
+    local tag=$1
+    
+    get_ecr_registry
+    local full_image_name="${ECR_REGISTRY}/${IMAGE_NAME}:${tag}"
+    
+    echo -e "${YELLOW}Limpando imagens Docker locais...${NC}"
+    
+    # Remover imagem específica
+    if docker image inspect "${full_image_name}" > /dev/null 2>&1; then
+        echo "Removendo imagem: ${full_image_name}"
+        docker rmi "${full_image_name}" || echo "Aviso: Não foi possível remover ${full_image_name}"
+    fi
+    
+    # Limpeza geral de imagens órfãs (dangling images)
+    echo "Removendo imagens órfãs..."
+    docker image prune -f > /dev/null 2>&1 || echo "Aviso: Não foi possível limpar imagens órfãs"
+    
+    # Mostrar espaço liberado
+    echo -e "${GREEN}Limpeza concluída!${NC}"
+    echo "Espaço em disco atual:"
+    df -h . | tail -1
+}
+
+# Função para deploy de desenvolvimento
+deploy_dev() {
+    local app_url="https://bpchamados-dev.bpin.com.br"
+    local tag=$(generate_tag "dev")
+    local environment="dev"
+    
+    echo -e "${GREEN}Iniciando build e push para DESENVOLVIMENTO...${NC}"
+    
+    check_docker
+    check_ecr_login
+    
+    build_image "${app_url}" "${tag}" "${environment}"
+    push_image "${tag}" "${environment}"
+    cleanup_local_images "${tag}"
+    
+    echo -e "${GREEN}Deploy de desenvolvimento concluído!${NC}"
+    get_ecr_registry
+    echo "Imagem: ${ECR_REGISTRY}/${IMAGE_NAME}:${tag}"
+    echo "URL: ${app_url}"
+}
+
+# Função para deploy de QA/Homologação
+deploy_qa() {
+    local app_url="https://bpchamados-hml.bpin.com.br"
+    local tag=$(generate_tag "homol")
+    local environment="homol"
+    
+    echo -e "${GREEN}Iniciando build e push para QA/HOMOLOGAÇÃO...${NC}"
+    
+    check_docker
+    check_ecr_login
+    
+    build_image "${app_url}" "${tag}" "${environment}"
+    push_image "${tag}" "${environment}"
+    cleanup_local_images "${tag}"
+    
+    echo -e "${GREEN}Deploy de QA concluído!${NC}"
+    get_ecr_registry
+    echo "Imagem: ${ECR_REGISTRY}/${IMAGE_NAME}:${tag}"
+    echo "URL: ${app_url}"
+}
+
+# Função para deploy de produção
+deploy_prod() {
+    local app_url="https://bpchamados.bpin.com.br"
+    local tag=$(generate_tag "prod")
+    local environment="prod"
+    
+    echo -e "${RED}ATENÇÃO: Você está prestes a fazer deploy em PRODUÇÃO!${NC}"
+    echo "Tem certeza que deseja continuar? (digite 'CONFIRMAR' para prosseguir)"
+    read -r confirmation
+    
+    if [ "$confirmation" != "CONFIRMAR" ]; then
+        echo -e "${YELLOW}Deploy de produção cancelado.${NC}"
+        return 1
+    fi
+    
+    echo -e "${GREEN}Iniciando build e push para PRODUÇÃO...${NC}"
+    
+    check_docker
+    check_ecr_login
+    
+    build_image "${app_url}" "${tag}" "${environment}"
+    push_image "${tag}" "${environment}"
+    cleanup_local_images "${tag}"
+    
+    echo -e "${GREEN}Deploy de produção concluído!${NC}"
+    get_ecr_registry
+    echo "Imagem: ${ECR_REGISTRY}/${IMAGE_NAME}:${tag}"
+    echo "URL: ${app_url}"
+}
+
+# Função para build customizado
+deploy_custom() {
+    echo -e "${GREEN}Build customizado${NC}"
+    echo ""
+    
+    read -p "Digite a URL da aplicação: " app_url
+    read -p "Digite a tag da imagem (ou pressione Enter para usar timestamp): " custom_tag
+    read -p "Digite o ambiente (dev/homol/prod): " custom_env
+    
+    if [ -z "$custom_tag" ]; then
+        custom_tag=$(generate_tag "custom")
+    fi
+    
+    if [ -z "$custom_env" ]; then
+        custom_env="prod"
+    fi
+    
+    echo -e "${YELLOW}Configuração:${NC}"
+    echo "URL: ${app_url}"
+    echo "Tag: ${custom_tag}"
+    echo "Ambiente: ${custom_env}"
+    echo ""
+    
+    read -p "Deseja continuar? (y/N): " confirm
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        echo -e "${YELLOW}Build cancelado.${NC}"
+        return 1
+    fi
+    
+    check_docker
+    check_ecr_login
+    
+    build_image "${app_url}" "${custom_tag}" "${custom_env}"
+    
+    read -p "Deseja fazer push da imagem? (y/N): " push_confirm
+    if [[ "$push_confirm" =~ ^[Yy]$ ]]; then
+        push_image "${custom_tag}"
+        cleanup_local_images "${custom_tag}"
+    fi
+    
+    echo -e "${GREEN}Build customizado concluído!${NC}"
+    get_ecr_registry
+    echo "Imagem: ${ECR_REGISTRY}/${IMAGE_NAME}:${custom_tag}"
+}
+
+# Função para limpeza manual de imagens
+cleanup_manual() {
+    echo -e "${GREEN}Limpeza manual de imagens Docker${NC}"
+    echo ""
+    
+    echo "Escolha o tipo de limpeza:"
+    echo "1) Limpar todas as imagens BP Chamados"
+    echo "2) Limpar imagens órfãs (dangling)"
+    echo "3) Limpeza completa (todas as imagens não utilizadas)"
+    echo "4) Voltar"
+    echo ""
+    
+    read -p "Digite sua opção (1-4): " cleanup_choice
+    
+    case $cleanup_choice in
+        1)
+            echo -e "${YELLOW}Removendo todas as imagens BP Chamados...${NC}"
+            get_ecr_registry
+            docker images "${ECR_REGISTRY}/${IMAGE_NAME}" --format "table {{.Repository}}:{{.Tag}}" | tail -n +2 | while read image; do
+                if [ ! -z "$image" ]; then
+                    echo "Removendo: $image"
+                    docker rmi "$image" 2>/dev/null || echo "Aviso: Não foi possível remover $image"
+                fi
+            done
+            ;;
+        2)
+            echo -e "${YELLOW}Removendo imagens órfãs...${NC}"
+            docker image prune -f
+            ;;
+        3)
+            echo -e "${RED}ATENÇÃO: Isso removerá TODAS as imagens não utilizadas!${NC}"
+            read -p "Tem certeza? (digite 'CONFIRMAR'): " confirm
+            if [ "$confirm" = "CONFIRMAR" ]; then
+                docker system prune -a -f
+            else
+                echo "Limpeza cancelada."
+            fi
+            ;;
+        4)
+            return
+            ;;
+        *)
+            echo -e "${RED}Opção inválida!${NC}"
+            ;;
+    esac
+    
+    echo -e "${GREEN}Limpeza concluída!${NC}"
+    echo "Espaço em disco atual:"
+    df -h . | tail -1
+}
+
+# Função para configurar limpeza automática ECR
+configure_auto_cleanup() {
+    echo -e "${GREEN}Configuração de Limpeza Automática ECR${NC}"
+    echo ""
+    
+    echo "Status atual: $([ "$AUTO_CLEANUP_ECR" = true ] && echo "ATIVADA" || echo "DESATIVADA")"
+    echo ""
+    
+    echo "Opções:"
+    echo "1) Ativar limpeza automática (remove imagens antigas sem confirmação)"
+    echo "2) Desativar limpeza automática (solicita confirmação antes de remover)"
+    echo "3) Voltar"
+    echo ""
+    
+    read -p "Digite sua opção (1-3): " choice
+    
+    case $choice in
+        1)
+            AUTO_CLEANUP_ECR=true
+            echo -e "${GREEN}Limpeza automática ECR ATIVADA!${NC}"
+            echo "As imagens antigas serão removidas automaticamente antes do push."
+            ;;
+        2)
+            AUTO_CLEANUP_ECR=false
+            echo -e "${YELLOW}Limpeza automática ECR DESATIVADA!${NC}"
+            echo "Será solicitada confirmação antes de remover imagens antigas."
+            ;;
+        3)
+            return
+            ;;
+        *)
+            echo -e "${RED}Opção inválida!${NC}"
+            ;;
+    esac
+    
+    echo ""
+    echo "Configuração salva para esta sessão."
+    echo "Para tornar permanente, edite o arquivo deploy.sh e altere AUTO_CLEANUP_ECR."
+}
+
+# Função principal
+main() {
+    show_banner
+    
+    while true; do
+        show_menu
+        read -p "Digite sua opção (1-7): " choice
+        
+        case $choice in
+            1)
+                deploy_dev
+                break
+                ;;
+            2)
+                deploy_qa
+                break
+                ;;
+            3)
+                deploy_prod
+                break
+                ;;
+            4)
+                deploy_custom
+                break
+                ;;
+            5)
+                cleanup_manual
+                ;;
+            6)
+                configure_auto_cleanup
+                ;;
+            7)
+                echo -e "${YELLOW}Saindo...${NC}"
+                exit 0
+                ;;
+            *)
+                echo -e "${RED}Opção inválida! Tente novamente.${NC}"
+                echo ""
+                ;;
+        esac
+    done
+}
+
+# Executar função principal
+main "$@"

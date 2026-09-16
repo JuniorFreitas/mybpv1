@@ -1,0 +1,65 @@
+name: Deploy Homol
+
+# Deploy manual no ECS MyBP: mybpClusterHomol / homol-service
+# Sem build no CI: usa a imagem homol-* mais recente no ECR (ou tag informada).
+# Scripts: .deploy/ci-*.sh (alinhados a .deploy/scripts / deploy-full.sh)
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Tag ECR opcional (vazio = mais recente com prefixo homol-)"
+        required: false
+        default: ""
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-homol
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy ECR image → homol
+    runs-on: ubuntu-latest
+    environment: homol
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Configure AWS auth
+        uses: ./.github/actions/aws-auth
+        with:
+          auth-mode: ${{ vars.AWS_AUTH_MODE }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+          role-arn: ${{ vars.AWS_ROLE_ARN }}
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Resolve latest ECR image
+        id: image
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+          IMAGE_NAME: ${{ vars.IMAGE_NAME || 'mybp/sistema' }}
+          IMAGE_TAG: ${{ inputs.image_tag || '' }}
+        run: |
+          chmod +x .deploy/ci-resolve-latest-image.sh
+          .deploy/ci-resolve-latest-image.sh homol
+
+      - name: Deploy to ECS
+        id: deploy
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+          IMAGE_NAME: ${{ vars.IMAGE_NAME || 'mybp/sistema' }}
+        run: |
+          chmod +x .deploy/ci-deploy-ecs.sh
+          .deploy/ci-deploy-ecs.sh homol "${{ steps.image.outputs.image_tag }}"
+
+      - name: Cleanup old task definitions (keep 3)
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+          KEEP_COUNT: "3"
+        run: |
+          chmod +x .deploy/ci-cleanup-task-definitions.sh
+          .deploy/ci-cleanup-task-definitions.sh homol
