@@ -13,9 +13,8 @@ use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use MasterTag\DataHora;
-use mysql_xdevapi\Exception;
+use Throwable;
 
 class OcorrenciaController extends Controller
 {
@@ -65,6 +64,15 @@ class OcorrenciaController extends Controller
                         $fail('Setor não cadastrado.');
                     }
                 }],
+                'tag_id' => ['nullable', function ($attribute, $value, $fail) {
+                    if ($value === null || $value === '') {
+                        return;
+                    }
+                    $tag = Tag::whereId($value)->whereEmpresaId(auth()->user()->empresa_id)->count();
+                    if ($tag == 0) {
+                        $fail('Tag não cadastrada.');
+                    }
+                }],
                 'tipo' => 'required',
                 'resposta' => 'required',
             ]
@@ -96,7 +104,9 @@ class OcorrenciaController extends Controller
             $resposta = RespostaOcorrencia::create($dados);
             $dados['resposta_id'] = $resposta->id;
 
-            $ocorrencia->Tags()->attach($dados['tag_id']);
+            if (!empty($dados['tag_id'])) {
+                $ocorrencia->Tags()->attach($dados['tag_id']);
+            }
 
             if ($request->filled('anexos')) {
                 foreach ($dados['anexos'] as $item) {
@@ -214,7 +224,7 @@ class OcorrenciaController extends Controller
             ]);
             DB::commit();
             return response()->json([], 201);
-        } catch (Exception  $e) {
+        } catch (Throwable $e) {
             DB::rollback();
             $msg = "error mudar Setor OCORRÊNCIA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
             \Log::debug($msg);
@@ -308,9 +318,20 @@ class OcorrenciaController extends Controller
 
     public function listaSetoresTags(Request $request)
     {
-        $setores = OcorrenciaSetor::orderBy('nome')->get();
-        $tags = Tag::orderBy('nome')->get();
-        return response()->json(['setores' => $setores, 'tags' => $tags], 200);
+        $this->authorize('ocorrencia');
+
+        $setores = OcorrenciaSetor::query()
+            ->orderBy('nome')
+            ->get(['id', 'nome', 'empresa_id']);
+
+        $tags = Tag::query()
+            ->orderBy('nome')
+            ->get(['id', 'nome', 'empresa_id']);
+
+        return response()->json([
+            'setores' => $setores->values(),
+            'tags' => $tags->values(),
+        ], 200);
     }
 
     public function atualizar(Request $request)
@@ -335,7 +356,7 @@ class OcorrenciaController extends Controller
         //Busca por tag
         if ($request->filled('campoTag')) {
             $resultado->whereHas('Tags', function ($q) use ($request) {
-                $q->whereTagId($request->campoTag);
+                $q->where('tags.id', $request->campoTag);
             });
         }
         // se for um tipo Problema ou Anotação
@@ -414,17 +435,26 @@ class OcorrenciaController extends Controller
     public function cadastroTag(Request $request)
     {
         $this->authorize('ocorrencia');
-        $dados = $request->input();
-        $regra = Rule::unique('tags')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
-                ->whereNome($dados['nome']);
-        });
-        $dadosValidados = \Validator::make($dados,
-            [
-                'nome' => ['required', $regra],
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+        $nome = $this->normalizarNomeCadastro($request->input('nome'));
+        $dados = ['nome' => $nome];
+        $empresaId = auth()->user()->empresa_id;
+
+        $dadosValidados = \Validator::make($dados, [
+            'nome' => [
+                'required',
+                'min:1',
+                function ($attribute, $value, $fail) use ($empresaId) {
+                    $existe = Tag::query()
+                        ->where('empresa_id', $empresaId)
+                        ->whereRaw('LOWER(TRIM(nome)) = ?', [mb_strtolower($value, 'UTF-8')])
+                        ->exists();
+                    if ($existe) {
+                        $fail('Já existe uma tag com este nome para esta empresa.');
+                    }
+                },
+            ],
+        ]);
+        if ($dadosValidados->fails()) {
             return response()->json([
                 'msg' => 'Erro ao Cadastrar',
                 'erros' => $dadosValidados->errors()
@@ -447,17 +477,26 @@ class OcorrenciaController extends Controller
     public function cadastroSetor(Request $request)
     {
         $this->authorize('ocorrencia');
-        $dados['nome'] = $request->input('nome');
-        $regra = Rule::unique('ocorrencias_setores')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
-                ->whereNome($dados['nome']);
-        });
-        $dadosValidados = \Validator::make($dados,
-            [
-                'nome' => ['required', $regra],
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+        $nome = $this->normalizarNomeCadastro($request->input('nome'));
+        $dados = ['nome' => $nome];
+        $empresaId = auth()->user()->empresa_id;
+
+        $dadosValidados = \Validator::make($dados, [
+            'nome' => [
+                'required',
+                'min:1',
+                function ($attribute, $value, $fail) use ($empresaId) {
+                    $existe = OcorrenciaSetor::query()
+                        ->where('empresa_id', $empresaId)
+                        ->whereRaw('LOWER(TRIM(nome)) = ?', [mb_strtolower($value, 'UTF-8')])
+                        ->exists();
+                    if ($existe) {
+                        $fail('Já existe um setor com este nome para esta empresa.');
+                    }
+                },
+            ],
+        ]);
+        if ($dadosValidados->fails()) {
             return response()->json([
                 'msg' => 'Erro ao Cadastrar',
                 'erros' => $dadosValidados->errors()
@@ -475,6 +514,14 @@ class OcorrenciaController extends Controller
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
 
+    }
+
+    private function normalizarNomeCadastro(?string $nome): string
+    {
+        $nome = trim((string) $nome);
+        $nome = preg_replace('/\s+/u', ' ', $nome) ?? $nome;
+
+        return $nome;
     }
 
 }
