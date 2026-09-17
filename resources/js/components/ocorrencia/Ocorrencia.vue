@@ -139,12 +139,17 @@
                                         onchange="valida_campo_vazio(this, 1)"
                                         onblur="valida_campo_vazio(this, 1)"
                                         class="form-control form-control-sm"
+                                        :disabled="preloadListas"
                                     >
                                         <option value="">Selecione</option>
                                         <option v-for="item in setores" :value="item.id" :key="item.id">
                                             {{ item.nome }}
                                         </option>
                                     </select>
+                                    <small class="text-danger" v-if="!preloadListas && !setores.length">
+                                        Nenhum setor cadastrado para esta empresa.
+                                        <span v-if="permissaoSetor">Use "Cadastrar Setor".</span>
+                                    </small>
                                 </div>
                             </div>
                             <div v-show="!nova_mensagem" class="col-12 col-sm-4">
@@ -165,10 +170,14 @@
                             <div v-show="!nova_mensagem" class="col-12 col-sm-4">
                                 <div class="form-group">
                                     <label>Tag</label>
-                                    <select v-model="form.tag_id" class="form-control form-control-sm">
+                                    <select v-model="form.tag_id" class="form-control form-control-sm" :disabled="preloadListas">
                                         <option value="">Selecione</option>
                                         <option v-for="tag in tags" :value="tag.id" :key="tag.id">{{ tag.nome }}</option>
                                     </select>
+                                    <small class="text-danger" v-if="!preloadListas && !tags.length">
+                                        Nenhuma tag cadastrada para esta empresa.
+                                        <span v-if="permissaoTag">Use "Cadastrar Tag".</span>
+                                    </small>
                                 </div>
                             </div>
 
@@ -276,7 +285,7 @@
                                     type="button"
                                     class="btn btn-sm mr-1 btn-primary"
                                     :disabled="preloadMsg"
-                                    @click="formNovaMensagem; $refs.modal_janelaFormOcorrencia && $refs.modal_janelaFormOcorrencia.abrirModal()"
+                                    @click="formNovaMensagem(); $refs.modal_janelaFormOcorrencia && $refs.modal_janelaFormOcorrencia.abrirModal()"
                                 >
                                     Nova Mensagem
                                 </button>
@@ -324,7 +333,7 @@
                             type="button"
                             class="btn btn-sm mr-1 btn-secondary"
                             :disabled="finalizado"
-                            @click="formMudarSetor; $refs.modal_janelaMudaSetor && $refs.modal_janelaMudaSetor.abrirModal()"
+                            @click="formMudarSetor(); $refs.modal_janelaMudaSetor && $refs.modal_janelaMudaSetor.abrirModal()"
                         >
                             Mudar Setor
                         </button>
@@ -343,53 +352,111 @@
             <template #rodape> </template>
         </modal>
 
-        <modal :modal-pai="modal" :titulo="titulo_janela_form_tag" :fechar="!preloadTag" id="janelaFormTag" ref="modal_janelaFormTag">
+        <modal :modal-pai="modal" :titulo="titulo_janela_form_tag" :fechar="!preloadTag" id="janelaFormTag" ref="modal_janelaFormTag" :size="50">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preloadTag">
                     <preload></preload>
                 </p>
-                <div v-if="!preloadTag && !cadastrado">
+                <div v-if="!preloadTag">
                     <fieldset>
                         <legend>Cadastro de Tag</legend>
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label>Nome</label>
+                                    <label>Nome <span class="text-danger">*</span></label>
                                     <input class="form-control form-control-sm" type="text" onblur="valida_campo_vazio(this, 1)" v-model="formTag.nome" />
+                                    <small class="text-danger" v-if="tagNomeDuplicado">Já existe uma tag com este nome para esta empresa.</small>
                                 </div>
                             </div>
+                        </div>
+                    </fieldset>
+                    <fieldset class="mt-2">
+                        <legend>Tags cadastradas ({{ tags.length }})</legend>
+                        <div class="alert alert-warning text-center mb-2" v-if="!tags.length">
+                            Nenhuma tag cadastrada para esta empresa.
+                        </div>
+                        <div class="table-responsive" v-else style="max-height: 280px; overflow-y: auto">
+                            <table class="tabela table-sm mb-0">
+                                <thead>
+                                    <tr class="bg-default">
+                                        <td class="text-center" style="width: 70px">#</td>
+                                        <td>Nome</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(tag, index) in tags" :key="tag.id">
+                                        <td class="text-center">{{ index + 1 }}</td>
+                                        <td>{{ tag.nome }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </fieldset>
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!cadastrado && !preloadTag" @click="cadastraTag">
-                    <i class="fa fa-save"></i>Cadastrar
+                <button
+                    type="button"
+                    class="btn btn-sm mr-1 btn-primary"
+                    v-show="!preloadTag"
+                    :disabled="tagNomeDuplicado || !formTag.nome || !String(formTag.nome).trim()"
+                    @click="cadastraTag"
+                >
+                    <i class="fa fa-save"></i> Cadastrar
                 </button>
             </template>
         </modal>
 
-        <modal :modal-pai="modal" :titulo="titulo_janela_form_setor" :fechar="!preloadSetor" id="janelaFormSetor" ref="modal_janelaFormSetor">
+        <modal :modal-pai="modal" :titulo="titulo_janela_form_setor" :fechar="!preloadSetor" id="janelaFormSetor" ref="modal_janelaFormSetor" :size="50">
             <template #conteudo>
                 <p class="mt-2 text-center" v-if="preloadSetor">
                     <preload></preload>
                 </p>
-                <div v-if="!preloadSetor && !cadastrado">
+                <div v-if="!preloadSetor">
                     <fieldset>
                         <legend>Cadastro de Setor</legend>
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group">
-                                    <label>Nome</label>
+                                    <label>Nome <span class="text-danger">*</span></label>
                                     <input class="form-control form-control-sm" type="text" onblur="valida_campo_vazio(this, 1)" v-model="formSetor.nome" />
+                                    <small class="text-danger" v-if="setorNomeDuplicado">Já existe um setor com este nome para esta empresa.</small>
                                 </div>
                             </div>
+                        </div>
+                    </fieldset>
+                    <fieldset class="mt-2">
+                        <legend>Setores cadastrados ({{ setores.length }})</legend>
+                        <div class="alert alert-warning text-center mb-2" v-if="!setores.length">
+                            Nenhum setor cadastrado para esta empresa.
+                        </div>
+                        <div class="table-responsive" v-else style="max-height: 280px; overflow-y: auto">
+                            <table class="tabela table-sm mb-0">
+                                <thead>
+                                    <tr class="bg-default">
+                                        <td class="text-center" style="width: 70px">#</td>
+                                        <td>Nome</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(setor, index) in setores" :key="setor.id">
+                                        <td class="text-center">{{ index + 1 }}</td>
+                                        <td>{{ setor.nome }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </fieldset>
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm mr-1 btn-primary" v-show="!cadastrado && !preloadSetor" @click="cadastraSetor">
+                <button
+                    type="button"
+                    class="btn btn-sm mr-1 btn-primary"
+                    v-show="!preloadSetor"
+                    :disabled="setorNomeDuplicado || !formSetor.nome || !String(formSetor.nome).trim()"
+                    @click="cadastraSetor"
+                >
                     <i class="fa fa-save"></i> Cadastrar
                 </button>
             </template>
@@ -481,7 +548,7 @@
                         class="btn btn-sm mr-1 btn-secondary"
                         :disabled="controle.carregando"
                         v-if="permissaoTag"
-                        @click="formNovoTag; $refs.modal_janelaFormTag && $refs.modal_janelaFormTag.abrirModal()"
+                        @click="formNovoTag(); $refs.modal_janelaFormTag && $refs.modal_janelaFormTag.abrirModal()"
                     >
                         <i class="fa fa-plus"></i> Cadastrar Tag
                     </button>
@@ -491,7 +558,7 @@
                         class="btn btn-sm mr-1 btn-secondary"
                         :disabled="controle.carregando"
                         v-if="permissaoSetor"
-                        @click="formNovoSetor; $refs.modal_janelaFormSetor && $refs.modal_janelaFormSetor.abrirModal()"
+                        @click="formNovoSetor(); $refs.modal_janelaFormSetor && $refs.modal_janelaFormSetor.abrirModal()"
                     >
                         <i class="fa fa-plus"></i> Cadastrar Setor
                     </button>
@@ -637,6 +704,20 @@ export default {
         },
         permissaoSetor() {
             return this.permissoes.indexOf('ocorrencia_setor') > -1
+        },
+        tagNomeDuplicado() {
+            const nome = this.normalizarNomeCadastro(this.formTag && this.formTag.nome)
+            if (!nome) {
+                return false
+            }
+            return (this.tags || []).some((tag) => this.normalizarNomeCadastro(tag.nome) === nome)
+        },
+        setorNomeDuplicado() {
+            const nome = this.normalizarNomeCadastro(this.formSetor && this.formSetor.nome)
+            if (!nome) {
+                return false
+            }
+            return (this.setores || []).some((setor) => this.normalizarNomeCadastro(setor.nome) === nome)
         }
     },
 
@@ -661,7 +742,8 @@ export default {
             anexoUploadAndamento: false,
             urlAnexoUpload: `${URL_ADMIN}/ocorrencia/uploadAnexos`,
 
-            preload: true,
+            preload: false,
+            preloadListas: false,
             preloadMsg: true,
             preloadTag: true,
             preloadSetor: true,
@@ -752,17 +834,21 @@ export default {
     },
     methods: {
         listaSetoresTags() {
-            this.preload = true
-            axios
+            this.preloadListas = true
+            return axios
                 .get(`${URL_ADMIN}/ocorrencia/listaSetoresTags`)
                 .then((res) => {
-                    let data = res.data
-                    this.setores = data.setores
-                    this.tags = data.tags
-                    this.preload = false
+                    const data = res.data || {}
+                    this.setores = Array.isArray(data.setores) ? data.setores : []
+                    this.tags = Array.isArray(data.tags) ? data.tags : []
+                    this.preloadListas = false
+                    return data
                 })
-                .catch((error) => {
-                    this.preload = false
+                .catch(() => {
+                    this.preloadListas = false
+                    if (typeof mostraErro === 'function') {
+                        mostraErro('Erro', 'Não foi possível carregar Setores e Tags. Tente atualizar a página.')
+                    }
                 })
         },
 
@@ -828,6 +914,11 @@ export default {
             this.finalizado = false
             this.atualizado = false
             this.nova_mensagem = false
+            this.preload = false
+
+            if (!this.setores.length || !this.tags.length) {
+                this.listaSetoresTags()
+            }
 
             formReset()
             setupCampo()
@@ -859,10 +950,13 @@ export default {
 
         formNovoTag() {
             this.formTag = _.cloneDeep(this.formTagDefault) //copia
-            this.titulo_janela_form_tag = 'Nova Tag'
+            this.titulo_janela_form_tag = 'Cadastrar Tag'
             this.preloadTag = false
             this.cadastrado = false
             this.atualizado = false
+            if (!this.tags.length) {
+                this.listaSetoresTags()
+            }
             formReset()
         },
         cadastraTag() {
@@ -871,28 +965,41 @@ export default {
                 mostraErro('', 'Verificar os erros')
                 return false
             }
+            const nome = this.normalizarNomeCadastro(this.formTag.nome)
+            if (!nome) {
+                mostraErro('', 'Informe o nome da tag')
+                return false
+            }
+            if (this.tagNomeDuplicado) {
+                mostraErro('', 'Já existe uma tag com este nome para esta empresa')
+                return false
+            }
             this.preloadTag = true
             axios
-                .post(`${URL_ADMIN}/ocorrencia/cadastro-tag`, this.formTag)
-                .then((res) => {
-                    this.$refs.modal_janelaFormTag && this.$refs.modal_janelaFormTag.fecharModal()
+                .post(`${URL_ADMIN}/ocorrencia/cadastro-tag`, { nome })
+                .then(() => {
                     mostraSucesso('', 'Tag cadastrada com sucesso')
-                    this.cadastrado = true
+                    this.cadastrado = false
+                    this.formTag = _.cloneDeep(this.formTagDefault)
                     this.listaSetoresTags()
                     this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                     this.preloadTag = false
+                    formReset()
                 })
-                .catch((error) => {
+                .catch(() => {
                     this.cadastrado = false
                     this.preloadTag = false
                 })
         },
         formNovoSetor() {
             this.formSetor = _.cloneDeep(this.formSetorDefault)
-            this.titulo_janela_form_setor = 'Novo Setor'
+            this.titulo_janela_form_setor = 'Cadastrar Setor'
             this.preloadSetor = false
             this.cadastrado = false
             this.atualizado = false
+            if (!this.setores.length) {
+                this.listaSetoresTags()
+            }
             formReset()
         },
         cadastraSetor() {
@@ -901,26 +1008,42 @@ export default {
                 mostraErro('', 'Verificar os erros')
                 return false
             }
+            const nome = this.normalizarNomeCadastro(this.formSetor.nome)
+            if (!nome) {
+                mostraErro('', 'Informe o nome do setor')
+                return false
+            }
+            if (this.setorNomeDuplicado) {
+                mostraErro('', 'Já existe um setor com este nome para esta empresa')
+                return false
+            }
             this.preloadSetor = true
             axios
-                .post(`${URL_ADMIN}/ocorrencia/cadastro-setor`, this.formSetor)
+                .post(`${URL_ADMIN}/ocorrencia/cadastro-setor`, { nome })
                 .then((res) => {
                     if (res.status === 201) {
-                        this.$refs.modal_janelaFormSetor && this.$refs.modal_janelaFormSetor.fecharModal()
                         mostraSucesso('', 'Setor cadastrado com sucesso')
-                        this.cadastrado = true
+                        this.cadastrado = false
+                        this.formSetor = _.cloneDeep(this.formSetorDefault)
                         this.listaSetoresTags()
                         this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
                         this.preloadSetor = false
+                        formReset()
                     } else {
                         this.cadastrado = false
                         this.preloadSetor = false
                     }
                 })
-                .catch((error) => {
+                .catch(() => {
                     this.cadastrado = false
                     this.preloadSetor = false
                 })
+        },
+        normalizarNomeCadastro(valor) {
+            return String(valor || '')
+                .trim()
+                .replace(/\s+/g, ' ')
+                .toLocaleLowerCase('pt-BR')
         },
         formNovaMensagem() {
             this.form = _.cloneDeep(this.formDefault)

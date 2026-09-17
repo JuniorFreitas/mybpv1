@@ -1148,7 +1148,7 @@ export default defineComponent({
                         envia_whatsapp: this.form.envia_whatsapp,
                         pcmso_id: this.form.pcmso_id,
                         exame_tipo_id: this.form.exame_tipo_id,
-                        encaminhamento_data: this.form.encaminhamento_data
+                        encaminhamento_data: this.form.encaminhado_exame_data
                     })
                     mostraSucesso('', 'Exame cadastrado com sucesso!')
                     this.fecharModal(REFS_MODAL.JANELA_PARCER_ENTREVISTA)
@@ -1257,7 +1257,7 @@ export default defineComponent({
                 clinica_nome: empExame ? empExame.nome : '',
                 clinica_endereco: empExame?.dados?.endereco?.endereco_completo || '',
                 clinica_telefone: empExame?.dados?.telefone || '',
-                data_encaminhamento: this.form.encaminhamento_data || '',
+                data_encaminhamento: new Date().toLocaleString('pt-BR'),
                 data_realizacao: this.form.encaminhado_exame_data || '',
             }
             this.previewWhatsappTipo = 'exame_encaminhamento'
