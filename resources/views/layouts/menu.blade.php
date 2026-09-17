@@ -242,7 +242,7 @@
                     <li>
                         <a href="{{route('g.treinamentoindustria.treinamentoindustria.index')}}" parent="cadastro"
                            key="treinamentoindustria">
-                            Treinamentos Indústria
+                           Lista de Treinamentos
                         </a>
                     </li>
                     @if(Route::has('g.segmentostreinamento.segmentostreinamento.index') && (int) auth()->user()->empresa_id === \App\Http\Controllers\SegmentoTreinamentoController::EMPRESA_ID_CADASTRO_SEGMENTOS)
@@ -258,7 +258,7 @@
                     <li>
                         <a href="{{route('g.treinamentosgi.treinamentosgi.index')}}" parent="cadastro"
                            key="treinamentosgi">
-                            Treinamentos
+                            Certificados
                         </a>
                     </li>
                 @endcan

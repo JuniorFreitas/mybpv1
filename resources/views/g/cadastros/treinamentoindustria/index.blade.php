@@ -1,6 +1,6 @@
 @extends('layouts.sistema')
-@section('title', 'Treinamento Indústria')
-@section('content_header','Treinamento Indústria')
+@section('title', 'Lista de Treinamentos')
+@section('content_header','Lista de Treinamentos')
 @section('content')
     <treinamento-industria></treinamento-industria>
 @stop

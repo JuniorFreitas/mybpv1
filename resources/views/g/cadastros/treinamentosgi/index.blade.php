@@ -1,6 +1,6 @@
 @extends('layouts.sistema')
-@section('title', 'Treinamento')
-@section('content_header','Treinamento')
+@section('title', 'Certificados')
+@section('content_header','Certificados')
 @section('content')
     <treinamento-sgi></treinamento-sgi>
 @stop
