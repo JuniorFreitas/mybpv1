@@ -76,7 +76,9 @@ class ControleExameController extends Controller
             \DB::beginTransaction();
             $token = Sistema::uuid();
             $data_encaminhamento = (new DataHora())->dataHoraCompleta();
-            $data_realizacao = (new DataHora($request->encaminhamento_data))->dataCompleta();
+            $dataRealizacaoInformada = $request->encaminhado_exame_data ?? $request->encaminhamento_data;
+            $data_realizacao = (new DataHora($dataRealizacaoInformada))->dataCompleta();
+            $data_realizacao_insert = (new DataHora($dataRealizacaoInformada))->dataInsert();
 
             if ($request->tipo == 'store') {
                 $empExame = EmpresaExame::find($request->empresa_exame_id);
@@ -96,7 +98,7 @@ class ControleExameController extends Controller
                         'pcmso' => true,
                         'pcmso_id' => $pcmso_id,
                         'exame_tipo_id' => $exame_tipo_id,
-                        'encaminhamento_data' => (new DataHora($request->encaminhamento_data))->dataInsert()
+                        'encaminhamento_data' => $data_realizacao_insert
                     ]);
 
                     $tipoExame = ExameTipo::find($exame_tipo_id);
@@ -112,7 +114,7 @@ class ControleExameController extends Controller
                         'respostas' => $request->respostas,
                         'token' => $token,
                         'pcmso' => false,
-                        'encaminhamento_data' => (new DataHora($request->encaminhamento_data))->dataInsert(),
+                        'encaminhamento_data' => $data_realizacao_insert,
                         'exame_tipo_id' => (int)$tipoExame->value,
                     ]);
                 }

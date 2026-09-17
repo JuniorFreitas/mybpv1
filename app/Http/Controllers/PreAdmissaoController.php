@@ -218,7 +218,7 @@ class PreAdmissaoController extends Controller
             $exame_tipo_id = 1; // Admissional
             $data_encaminhamento_insert = (new DataHora())->dataHoraInsert();
             $data_encaminhamento = (new DataHora())->dataHoraCompleta();
-            $data_realizacao = (new DataHora($request->encaminhamento_data))->dataCompleta();
+            $data_realizacao = (new DataHora($request->encaminhado_exame_data ?? $request->encaminhamento_data))->dataCompleta();
 
             if (!$pcmso_id == "") {
                 $exame = ExameFuncionario::create([
