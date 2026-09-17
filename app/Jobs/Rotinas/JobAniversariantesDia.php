@@ -41,7 +41,7 @@ class JobAniversariantesDia implements ShouldQueue
     public function handle()
     {
         try {
-            $query = \DB::raw("select c.id, c.nome, c.email, DATE_FORMAT(c.nascimento, '%d/%m/%Y') as nascimento, u.empresa_id
+            $query = "select c.id, c.nome, c.email, DATE_FORMAT(c.nascimento, '%d/%m/%Y') as nascimento, u.empresa_id
                         from curriculos c
                                  inner join feedback_curriculos fc on c.id = fc.curriculo_id
                                  inner join users u on c.id = u.id
@@ -54,7 +54,7 @@ class JobAniversariantesDia implements ShouldQueue
                           and month(c.nascimento) = month(now())
                           and day(c.nascimento) = day(now())
                           and c.deleted_at is null
-                    ");
+                    ";
 
             $selecionados = \DB::select($query, [Admissao::STATUS_ADMISSAO_ADMITIDO]);
 

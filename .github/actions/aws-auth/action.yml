@@ -1,0 +1,110 @@
+name: AWS Auth
+description: Authenticate to AWS via OIDC or Access Keys based on AWS_AUTH_MODE
+inputs:
+  auth-mode:
+    description: "oidc or access_keys"
+    required: true
+  aws-region:
+    description: AWS region
+    required: false
+    default: us-east-1
+  role-arn:
+    description: IAM role ARN (required when auth-mode is oidc)
+    required: false
+    default: ""
+  access-key-id:
+    description: AWS access key id (required when auth-mode is access_keys)
+    required: false
+    default: ""
+  secret-access-key:
+    description: AWS secret access key (required when auth-mode is access_keys)
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve and validate auth mode
+      id: resolve
+      shell: bash
+      env:
+        AUTH_MODE: ${{ inputs.auth-mode }}
+        ROLE_ARN: ${{ inputs.role-arn }}
+        ACCESS_KEY_ID: ${{ inputs.access-key-id }}
+        SECRET_ACCESS_KEY: ${{ inputs.secret-access-key }}
+      run: |
+        set -euo pipefail
+        mode="$(printf '%s' "${AUTH_MODE}" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
+        if [[ "$mode" != "oidc" && "$mode" != "access_keys" ]]; then
+          echo "::error::AWS_AUTH_MODE inválido: '${AUTH_MODE}'. Use 'oidc' ou 'access_keys'."
+          exit 1
+        fi
+        if [[ "$mode" == "oidc" && -z "${ROLE_ARN}" ]]; then
+          echo "::error::AWS_ROLE_ARN é obrigatório quando AWS_AUTH_MODE=oidc."
+          exit 1
+        fi
+        if [[ "$mode" == "access_keys" ]]; then
+          if [[ -z "${ACCESS_KEY_ID}" || -z "${SECRET_ACCESS_KEY}" ]]; then
+            echo "::error::AWS_ACCESS_KEY_ID e AWS_SECRET_ACCESS_KEY são obrigatórios quando AWS_AUTH_MODE=access_keys."
+            exit 1
+          fi
+        fi
+        echo "mode=${mode}" >> "${GITHUB_OUTPUT}"
+        echo "Auth mode: ${mode}"
+
+    - name: Inspect OIDC token claims
+      if: ${{ steps.resolve.outputs.mode == 'oidc' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" || -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]]; then
+          echo "::error::OIDC token indisponível. Confirme permissions.id-token: write no workflow."
+          exit 1
+        fi
+        TOKEN="$(curl -sS -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+          "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" | jq -r '.value')"
+        if [[ -z "$TOKEN" || "$TOKEN" == "null" ]]; then
+          echo "::error::Falha ao obter id-token OIDC do GitHub."
+          exit 1
+        fi
+        PAYLOAD="$(printf '%s' "$TOKEN" | cut -d. -f2)"
+        PAD=$((4 - ${#PAYLOAD} % 4)); [[ $PAD -eq 4 ]] && PAD=0
+        PAYLOAD="${PAYLOAD}$(printf '%*s' "$PAD" '' | tr ' ' '=')"
+        CLAIMS="$(printf '%s' "$PAYLOAD" | tr '_-' '/+' | base64 -d 2>/dev/null || true)"
+        echo "OIDC claims (sem token completo):"
+        echo "$CLAIMS" | jq '{sub, aud, repository, repository_owner, ref, environment, job_workflow_ref, iss}'
+        SUB="$(echo "$CLAIMS" | jq -r '.sub // empty')"
+        AUD="$(echo "$CLAIMS" | jq -r 'if (.aud | type) == "array" then .aud[0] else .aud end // empty')"
+        ISS="$(echo "$CLAIMS" | jq -r '.iss // empty')"
+        echo ""
+        echo "=== Cole isto na trust da role (Condition) ==="
+        echo "sub: ${SUB}"
+        echo "aud: ${AUD}"
+        echo "iss: ${ISS}"
+        echo "Role a assumir: ${{ inputs.role-arn }}"
+        echo "Ex.: role github-actions-mybp — trust deve permitir repo:JuniorFreitas/mybpv1:*"
+        if [[ "$ISS" != "https://token.actions.githubusercontent.com" ]]; then
+          echo "::warning::Issuer inesperado (${ISS}). O OIDC provider na AWS precisa usar essa URL."
+        fi
+        if [[ "$SUB" != repo:JuniorFreitas/mybpv1:* ]]; then
+          echo "::warning::sub não casa com repo:JuniorFreitas/mybpv1:* — ajuste a trust policy para este sub exato: ${SUB}"
+        fi
+
+    - name: Configure AWS credentials (OIDC)
+      if: ${{ steps.resolve.outputs.mode == 'oidc' }}
+      uses: aws-actions/configure-aws-credentials@v6
+      with:
+        role-to-assume: ${{ inputs.role-arn }}
+        role-session-name: gha-mybp
+        aws-region: ${{ inputs.aws-region }}
+        audience: sts.amazonaws.com
+        # Default da action é 12 retries — parece "travado". Falha rápido com erro real.
+        retry-max-attempts: 2
+
+    - name: Configure AWS credentials (Access Keys)
+      if: ${{ steps.resolve.outputs.mode == 'access_keys' }}
+      uses: aws-actions/configure-aws-credentials@v6
+      with:
+        aws-access-key-id: ${{ inputs.access-key-id }}
+        aws-secret-access-key: ${{ inputs.secret-access-key }}
+        aws-region: ${{ inputs.aws-region }}

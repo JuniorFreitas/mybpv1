@@ -1,0 +1,389 @@
+{
+  "family": "mybp-prod",
+  "taskRoleArn": "arn:aws:iam::370996423139:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::370996423139:role/ecsTaskExecutionRole",
+  "networkMode": "bridge",
+  "containerDefinitions": [
+    {
+      "name": "mybp-prod",
+      "image": "370996423139.dkr.ecr.us-east-1.amazonaws.com/mybp/sistema:prod-TAG",
+      "cpu": 0,
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "hostPort": 0,
+          "protocol": "tcp",
+          "name": "mybp-prod-80-tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "APP_NAME",
+          "value": "MyBP - Seu negócio na sua mão"
+        },
+        {
+          "name": "APP_ENV",
+          "value": "production"
+        },
+        {
+          "name": "APP_DEBUG",
+          "value": "false"
+        },
+        {
+          "name": "APP_URL",
+          "value": "https://sistema.mybp.com.br"
+        },
+        {
+          "name": "AMBIENTE",
+          "value": "prod"
+        },
+        {
+          "name": "ACTIVITY_LOGGER_ENABLED",
+          "value": "true"
+        },
+        {
+          "name": "DEBUGBAR_ENABLED",
+          "value": "false"
+        },
+        {
+          "name": "LOG_CHANNEL",
+          "value": "custom"
+        },
+        {
+          "name": "LOG_LEVEL",
+          "value": "warning"
+        },
+        {
+          "name": "DB_CONNECTION",
+          "value": "mysql"
+        },
+        {
+          "name": "DB_PORT",
+          "value": "3306"
+        },
+        {
+          "name": "DB_DATABASE",
+          "value": "mybp"
+        },
+        {
+          "name": "CACHE_DRIVER",
+          "value": "redis"
+        },
+        {
+          "name": "QUEUE_CONNECTION",
+          "value": "redis"
+        },
+        {
+          "name": "SESSION_DRIVER",
+          "value": "redis"
+        },
+        {
+          "name": "SESSION_LIFETIME",
+          "value": "480"
+        },
+        {
+          "name": "REDIS_PORT",
+          "value": "6379"
+        },
+        {
+          "name": "REDIS_PREFIX",
+          "value": "mybp_prod_"
+        },
+        {
+          "name": "BROADCAST_DRIVER",
+          "value": "pusher"
+        },
+        {
+          "name": "FILESYSTEM_DRIVER",
+          "value": "s3"
+        },
+        {
+          "name": "AWS_DEFAULT_REGION",
+          "value": "us-east-1"
+        },
+        {
+          "name": "AWS_BUCKET",
+          "value": "mybp-prod"
+        },
+        {
+          "name": "AWS_URL",
+          "value": "https://mybp-prod.s3.amazonaws.com"
+        },
+        {
+          "name": "MAIL_MAILER",
+          "value": "ses"
+        },
+        {
+          "name": "MAIL_HOST",
+          "value": "email-smtp.us-east-1.amazonaws.com"
+        },
+        {
+          "name": "MAIL_PORT",
+          "value": "587"
+        },
+        {
+          "name": "MAIL_ENCRYPTION",
+          "value": "tls"
+        },
+        {
+          "name": "MAIL_FROM_ADDRESS",
+          "value": "naoresponda@mybp.com.br"
+        },
+        {
+          "name": "MAIL_FROM_NAME",
+          "value": "SISTEMA MyBP"
+        },
+        {
+          "name": "MAIL_SUPPRESS_RECIPIENTS",
+          "value": "sistema@mybp.com.br"
+        },
+        {
+          "name": "MIX_AMBIENTE",
+          "value": "prod"
+        },
+        {
+          "name": "MIX_URL_SITE",
+          "value": "https://sistema.mybp.com.br"
+        },
+        {
+          "name": "MIX_URL_ADMIN",
+          "value": "https://sistema.mybp.com.br/g"
+        },
+        {
+          "name": "MIX_URL_PUBLICO",
+          "value": "https://sistema.mybp.com.br/publico"
+        },
+        {
+          "name": "MIX_PUSHER_APP_CLUSTER",
+          "value": "mt1"
+        },
+        {
+          "name": "MIX_PUSHER_APP_TLS",
+          "value": "true"
+        },
+        {
+          "name": "PUSHER_APP_CLUSTER",
+          "value": "mt1"
+        },
+        {
+          "name": "PUSHER_APP_TLS",
+          "value": "true"
+        },
+        {
+          "name": "PUSHER_APP_ENCRYPTED",
+          "value": "true"
+        },
+        {
+          "name": "PUSHER_APP_HOST",
+          "value": ""
+        },
+        {
+          "name": "NPS_HABILITADO",
+          "value": "true"
+        },
+        {
+          "name": "NPS_EMPRESAS_EXCLUIDAS",
+          "value": "100"
+        },
+        {
+          "name": "NPS_EMPRESA_GERENCIAMENTO",
+          "value": "100"
+        },
+        {
+          "name": "NPS_MIN_ACESSOS_90_DIAS",
+          "value": "3"
+        },
+        {
+          "name": "BP_CHAMADOS_ENABLED",
+          "value": "true"
+        },
+        {
+          "name": "BP_CHAMADOS_API_BASE_URL",
+          "value": "https://bpchamados.bpin.com.br"
+        },
+        {
+          "name": "BP_CHAMADOS_TOKEN_TTL",
+          "value": "900"
+        },
+        {
+          "name": "CBO_DOWNLOAD_PAGE",
+          "value": "https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/cbo/servicos/downloads"
+        },
+        {
+          "name": "CBO_OCUPACOES_CSV_URL",
+          "value": "cbo2002-perfilocupacional.csv"
+        },
+        {
+          "name": "CBO_FAMILIAS_CSV_URL",
+          "value": "cbo2002-familia.csv"
+        },
+        {
+          "name": "ENABLE_CACHE_APP",
+          "value": "false"
+        },
+        {
+          "name": "ENABLE_HORIZON",
+          "value": "true"
+        },
+        {
+          "name": "ENABLE_SCHEDULE",
+          "value": "true"
+        },
+        {
+          "name": "ENABLE_SUPERVISOR_GUI",
+          "value": "true"
+        },
+        {
+          "name": "ENABLE_WEBSOCKETS",
+          "value": "false"
+        },
+        {
+          "name": "ENABLE_WORKER",
+          "value": "true"
+        },
+        {
+          "name": "MIGRATION",
+          "value": "producao"
+        },
+        {
+          "name": "SUPERVISORD_USER",
+          "value": "mybpprod"
+        },
+        {
+          "name": "CHAT_ID",
+          "value": "REPLACE_ME"
+        }
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "secrets": [
+        {
+          "name": "APP_KEY",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/APP_KEY"
+        },
+        {
+          "name": "DB_HOST",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/DB_HOST"
+        },
+        {
+          "name": "DB_USERNAME",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/DB_USERNAME"
+        },
+        {
+          "name": "DB_PASSWORD",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/DB_PASSWORD"
+        },
+        {
+          "name": "REDIS_HOST",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/REDIS_HOST"
+        },
+        {
+          "name": "REDIS_PASSWORD",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/REDIS_PASSWORD"
+        },
+        {
+          "name": "MAIL_USERNAME",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/MAIL_USERNAME"
+        },
+        {
+          "name": "MAIL_PASSWORD",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/MAIL_PASSWORD"
+        },
+        {
+          "name": "AWS_ACCESS_KEY_ID",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/AWS_ACCESS_KEY_ID"
+        },
+        {
+          "name": "AWS_SECRET_ACCESS_KEY",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/AWS_SECRET_ACCESS_KEY"
+        },
+        {
+          "name": "PUSHER_APP_ID",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/PUSHER_APP_ID"
+        },
+        {
+          "name": "PUSHER_APP_KEY",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/PUSHER_APP_KEY"
+        },
+        {
+          "name": "PUSHER_APP_SECRET",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/PUSHER_APP_SECRET"
+        },
+        {
+          "name": "MIX_PUSHER_APP_KEY",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/MIX_PUSHER_APP_KEY"
+        },
+        {
+          "name": "MIX_GOOGLE_MAPS_KEY",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/MIX_GOOGLE_MAPS_KEY"
+        },
+        {
+          "name": "MIX_TYNEKEY",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/MIX_TYNEKEY"
+        },
+        {
+          "name": "RECAPTCHA_SITE_KEY",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/RECAPTCHA_SITE_KEY"
+        },
+        {
+          "name": "RECAPTCHA_SECRET_KEY",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/RECAPTCHA_SECRET_KEY"
+        },
+        {
+          "name": "API_ZAPME",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/API_ZAPME"
+        },
+        {
+          "name": "SECRET_ZAPME",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/SECRET_ZAPME"
+        },
+        {
+          "name": "BOT_ID",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/BOT_ID"
+        },
+        {
+          "name": "X_API_TOKEN",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/X_API_TOKEN"
+        },
+        {
+          "name": "SUPERVISORD_PASS",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/SUPERVISORD_PASS"
+        },
+        {
+          "name": "BP_CHAMADOS_APPLICATION_ID",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/BP_CHAMADOS_APPLICATION_ID"
+        },
+        {
+          "name": "BP_CHAMADOS_WIDGET_SECRET",
+          "valueFrom": "arn:aws:ssm:us-east-1:370996423139:parameter/mybp/prod/BP_CHAMADOS_WIDGET_SECRET"
+        }
+      ],
+      "dockerLabels": {
+        "traefik.enable": "true",
+        "traefik.http.routers.mybp.entrypoints": "websecure",
+        "traefik.http.routers.mybp.rule": "Host(`sistema.mybp.com.br`)",
+        "traefik.http.routers.mybp.tls.certresolver": "mytls",
+        "traefik.http.services.mybp.loadbalancer.server.port": "80",
+        "traefik.http.services.mybp.loadbalancer.healthcheck.path": "/",
+        "traefik.http.services.mybp.loadbalancer.healthcheck.interval": "10s"
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/mybp-prod",
+          "awslogs-create-group": "true",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "systemControls": []
+    }
+  ],
+  "requiresCompatibilities": [
+    "EC2"
+  ],
+  "cpu": "800",
+  "memory": "800"
+}

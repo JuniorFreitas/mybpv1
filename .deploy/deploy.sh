@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script de Deploy Interativo - MyBP
+# Script de Deploy Interativo - BP Chamados
 # Build e Push de imagem Docker para ECS
 
 set -e  # Para o script se houver erro
@@ -15,15 +15,16 @@ NC='\033[0m' # No Color
 # Configurações padrão
 AWS_REGION="us-east-1"
 ECR_REGISTRY=""
-IMAGE_NAME="mybp/sistema"
+IMAGE_NAME="bpchamados/sistema"
 DEFAULT_TAG="latest"
 AUTO_CLEANUP_ECR=false  # true para limpeza automática sem confirmação
+DOCKER_PLATFORM="${DOCKER_PLATFORM:-linux/arm64}"
 
 # Função para exibir banner
 show_banner() {
     echo -e "${BLUE}"
     echo "=========================================="
-    echo "    MyBP - Script de Build e Deploy"
+    echo "    BP Chamados - Script de Build e Deploy"
     echo "=========================================="
     echo -e "${NC}"
 }
@@ -32,9 +33,9 @@ show_banner() {
 show_menu() {
     echo -e "${YELLOW}Escolha o ambiente para build e deploy:${NC}"
     echo ""
-    echo "1) Desenvolvimento (dev.mybp.com.br)"
-    echo "2) QA/Homologação (qa.mybp.com.br)"
-    echo "3) Produção (sistema.mybp.com.br)"
+    echo "1) Desenvolvimento (bpchamados-dev.bpin.com.br)"
+    echo "2) QA/Homologação (bpchamados-hml.bpin.com.br)"
+    echo "3) Produção (bpchamados.bpin.com.br)"
     echo "4) Build customizado"
     echo "5) Limpeza de imagens Docker"
     echo "6) Configurar limpeza automática ECR"
@@ -42,6 +43,7 @@ show_menu() {
     echo ""
     echo -e "${BLUE}Status atual:${NC}"
     echo "  Limpeza automática ECR: $([ "$AUTO_CLEANUP_ECR" = true ] && echo "ATIVADA" || echo "DESATIVADA")"
+    echo "  Imagem ECR: ${IMAGE_NAME}"
     echo ""
 }
 
@@ -99,56 +101,42 @@ generate_tag() {
 prepare_assets() {
     local environment=$1
     
-    echo -e "${GREEN}Preparando assets...${NC}"
-    
-    # Verificar se nvm está disponível
-    if command -v nvm &> /dev/null; then
-        echo "Usando nvm para definir versão do Node.js..."
-        nvm use
-    elif [ -f ~/.nvm/nvm.sh ]; then
-        echo "Carregando nvm..."
-        source ~/.nvm/nvm.sh
-        nvm use
-    else
-        echo -e "${YELLOW}Aviso: nvm não encontrado. Usando Node.js atual.${NC}"
-    fi
-    
-    # Verificar se node_modules existe
-    if [ ! -d "node_modules" ]; then
-        echo "Instalando dependências npm..."
-        npm install
-    fi
+    # Assets (Vite) são gerados no Dockerfile quando INSTALL_DEPS=true (default).
+    echo -e "${GREEN}Assets serão gerados no build Docker (ambiente: ${environment})...${NC}"
+}
 
-    # .env.prod / .env.homol são gitignored — gera a partir do SSM antes do webpack
-    case $environment in
-        "homol"|"prod")
-            echo "Gerando .env.${environment} a partir do SSM..."
-            chmod +x ./.deploy/generate-env-build.sh
-            ./.deploy/generate-env-build.sh "${environment}"
-            ;;
-    esac
-    
-    # Executar build baseado no ambiente
-    case $environment in
-        "dev")
-            echo "Executando npm run dev..."
-            npm run dev
-            ;;
-        "homol")
-            echo "Executando npm run homol..."
-            npm run homol
-            ;;
-        "prod")
-            echo "Executando npm run prod..."
-            npm run prod
-            ;;
-        *)
-            echo "Executando npm run dev (padrão)..."
-            npm run dev
-            ;;
-    esac
-    
-    echo -e "${GREEN}Assets preparados!${NC}"
+# Lê valor de .env (suporta ${VAR} simples apontando para outra chave do mesmo arquivo).
+read_dotenv_value() {
+    local key="$1"
+    local file="${2:-.env}"
+    if [[ ! -f "$file" ]]; then
+        return 0
+    fi
+    local line
+    line="$(grep -E "^${key}=" "$file" | tail -n1 || true)"
+    if [[ -z "$line" ]]; then
+        return 0
+    fi
+    local value="${line#*=}"
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    if [[ "$value" =~ ^\$\{([A-Za-z0-9_]+)\}$ ]]; then
+        value="$(read_dotenv_value "${BASH_REMATCH[1]}" "$file")"
+    fi
+    printf '%s' "$value"
+}
+
+resolve_vite_reverb_app_key() {
+    local key="${VITE_REVERB_APP_KEY:-${REVERB_APP_KEY:-}}"
+    if [[ -z "$key" ]]; then
+        key="$(read_dotenv_value VITE_REVERB_APP_KEY .env)"
+    fi
+    if [[ -z "$key" ]]; then
+        key="$(read_dotenv_value REVERB_APP_KEY .env)"
+    fi
+    printf '%s' "$key"
 }
 
 # Função para build da imagem Docker
@@ -159,22 +147,48 @@ build_image() {
     
     get_ecr_registry
     local full_image_name="${ECR_REGISTRY}/${IMAGE_NAME}:${tag}"
+    local vite_host="${app_url#https://}"
+    vite_host="${vite_host#http://}"
+    local vite_app_name="${VITE_APP_NAME:-BPChamados}"
+    local vite_reverb_port="${VITE_REVERB_PORT:-443}"
+    local vite_reverb_scheme="${VITE_REVERB_SCHEME:-https}"
+    local vite_reverb_app_key
+    vite_reverb_app_key="$(resolve_vite_reverb_app_key)"
+
+    if [[ -z "$vite_reverb_app_key" ]]; then
+        echo -e "${YELLOW}Aviso: VITE_REVERB_APP_KEY/REVERB_APP_KEY nao definidos — Echo/WebSocket pode falhar no browser.${NC}"
+    fi
     
     echo -e "${GREEN}Construindo imagem Docker...${NC}"
     echo "APP_URL: ${app_url}"
+    echo "VITE_REVERB_HOST: ${vite_host}"
     echo "Tag: ${tag}"
     echo "Ambiente: ${environment}"
+    echo "Platform: ${DOCKER_PLATFORM}"
     echo "Imagem: ${full_image_name}"
     echo ""
     
     # Preparar assets antes do build
     prepare_assets "${environment}"
     
-    # Build da imagem com buildx
+    # Build ARM64 (Graviton/ECS). Em Mac Apple Silicon --load funciona;
+    # em amd64 com QEMU, prefira DOCKER_PUSH=1 ou o script CI.
+    local load_or_push=(--load)
+    if [[ "${DOCKER_PUSH:-0}" == "1" ]]; then
+        load_or_push=(--push)
+    fi
+
     docker buildx build \
+        --platform "${DOCKER_PLATFORM}" \
         --build-arg APP_URL="${app_url}" \
-        --load \
+        --build-arg VITE_APP_NAME="${vite_app_name}" \
+        --build-arg VITE_REVERB_HOST="${vite_host}" \
+        --build-arg VITE_REVERB_PORT="${vite_reverb_port}" \
+        --build-arg VITE_REVERB_SCHEME="${vite_reverb_scheme}" \
+        --build-arg VITE_REVERB_APP_KEY="${vite_reverb_app_key}" \
+        "${load_or_push[@]}" \
         -t "${full_image_name}" \
+        -f docker/php/Dockerfile \
         .
     
     echo -e "${GREEN}Build concluído!${NC}"
@@ -210,24 +224,26 @@ cleanup_ecr_images() {
     echo "Procurando imagens com prefixo: ${prefix}"
     
     # Listar imagens do ECR com o prefixo
+    # imageTag != null evita erro JMESPath em imagens sem tag (starts_with não aceita null)
     local images_to_delete
     local aws_response
+    local aws_exit=0
     aws_response=$(aws ecr list-images \
         --repository-name "${IMAGE_NAME}" \
         --region "${AWS_REGION}" \
-        --query "imageIds[?starts_with(imageTag, '${prefix}') && imageTag != '${tag}']" \
-        --output json 2>/dev/null)
+        --query "imageIds[?imageTag != null && starts_with(imageTag, '${prefix}') && imageTag != '${tag}']" \
+        --output json) || aws_exit=$?
     
     # Verificar se a resposta do AWS é válida
-    if [ $? -ne 0 ] || [ -z "$aws_response" ]; then
-        echo "Erro ao listar imagens do ECR ou repositório vazio"
-        return 1
+    if [ "$aws_exit" -ne 0 ] || [ -z "$aws_response" ]; then
+        echo -e "${YELLOW}Aviso: não foi possível listar imagens do ECR (exit ${aws_exit}). Seguindo sem limpeza.${NC}"
+        return 0
     fi
     
     # Validar se a resposta é um JSON válido
     if ! echo "$aws_response" | jq empty 2>/dev/null; then
-        echo "Resposta inválida do AWS ECR: $aws_response"
-        return 1
+        echo -e "${YELLOW}Aviso: resposta inválida do AWS ECR. Seguindo sem limpeza.${NC}"
+        return 0
     fi
     
     images_to_delete="$aws_response"
@@ -325,8 +341,11 @@ push_image() {
     # Limpar imagens antigas do ECR antes do push
     cleanup_ecr_images "${tag}" "${environment}"
     
-    # Push da imagem
-    docker push "${full_image_name}"
+    if [[ "${DOCKER_PUSH:-0}" == "1" ]]; then
+        echo "Imagem já enviada via buildx --push (DOCKER_PUSH=1). Pulando docker push."
+    else
+        docker push "${full_image_name}"
+    fi
     
     echo -e "${GREEN}Push concluído!${NC}"
     return 0
@@ -359,7 +378,7 @@ cleanup_local_images() {
 
 # Função para deploy de desenvolvimento
 deploy_dev() {
-    local app_url="https://dev.mybp.com.br"
+    local app_url="https://bpchamados-dev.bpin.com.br"
     local tag=$(generate_tag "dev")
     local environment="dev"
     
@@ -380,7 +399,7 @@ deploy_dev() {
 
 # Função para deploy de QA/Homologação
 deploy_qa() {
-    local app_url="https://qa.mybp.com.br"
+    local app_url="https://bpchamados-hml.bpin.com.br"
     local tag=$(generate_tag "homol")
     local environment="homol"
     
@@ -401,7 +420,7 @@ deploy_qa() {
 
 # Função para deploy de produção
 deploy_prod() {
-    local app_url="https://sistema.mybp.com.br"
+    local app_url="https://bpchamados.bpin.com.br"
     local tag=$(generate_tag "prod")
     local environment="prod"
     
@@ -480,7 +499,7 @@ cleanup_manual() {
     echo ""
     
     echo "Escolha o tipo de limpeza:"
-    echo "1) Limpar todas as imagens MyBP"
+    echo "1) Limpar todas as imagens BP Chamados"
     echo "2) Limpar imagens órfãs (dangling)"
     echo "3) Limpeza completa (todas as imagens não utilizadas)"
     echo "4) Voltar"
@@ -490,7 +509,7 @@ cleanup_manual() {
     
     case $cleanup_choice in
         1)
-            echo -e "${YELLOW}Removendo todas as imagens MyBP...${NC}"
+            echo -e "${YELLOW}Removendo todas as imagens BP Chamados...${NC}"
             get_ecr_registry
             docker images "${ECR_REGISTRY}/${IMAGE_NAME}" --format "table {{.Repository}}:{{.Tag}}" | tail -n +2 | while read image; do
                 if [ ! -z "$image" ]; then
