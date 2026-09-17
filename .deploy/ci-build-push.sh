@@ -57,6 +57,10 @@ prepare_assets() {
         npm install
     fi
 
+    # .env.prod / .env.homol são gitignored — gera a partir do SSM
+    chmod +x .deploy/generate-env-build.sh
+    .deploy/generate-env-build.sh "${ENV_NAME}"
+
     npm run "${NPM_SCRIPT}"
     echo "Assets preparados."
 }

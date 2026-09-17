@@ -118,6 +118,15 @@ prepare_assets() {
         echo "Instalando dependências npm..."
         npm install
     fi
+
+    # .env.prod / .env.homol são gitignored — gera a partir do SSM antes do webpack
+    case $environment in
+        "homol"|"prod")
+            echo "Gerando .env.${environment} a partir do SSM..."
+            chmod +x ./.deploy/generate-env-build.sh
+            ./.deploy/generate-env-build.sh "${environment}"
+            ;;
+    esac
     
     # Executar build baseado no ambiente
     case $environment in
