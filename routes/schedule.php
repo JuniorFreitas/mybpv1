@@ -4,7 +4,6 @@ use App\Jobs\Admissao\Historico\AvaliacaoNoventaVencimento\AvaliacaoNoventaVenci
 use App\Jobs\controle_ponto\VerificaJornadasJob;
 use App\Jobs\Movimentacao\FeriasPrevista\VerificaSaidaFeriasJob;
 use App\Jobs\Movimentacao\FeriasPrevista\VerificaVencimentoFeriasJob;
-use App\Jobs\Rotinas\JobAniversariantesDia;
 use App\Jobs\Rotinas\JobCalculoAvos;
 use App\Jobs\Rotinas\JobConvocacaoIntermitente;
 use App\Jobs\Rotinas\JobCorrigePonto;
@@ -19,7 +18,7 @@ $schedule->call(new VerificaVencimentoFeriasJob)->monthly()->name('VerificaVenci
 $schedule->call(new VerificaSaidaFeriasJob)->monthly()->name('VerificaSaidaFeriasJob')->onOneServer();
 $schedule->call(new AvaliacaoNoventaVencimentoJob)->daily()->name('AvaliacaoNoventaVencimentoJob')->onOneServer();
 $schedule->command('mybp:limpar-exportacoes')->daily()->name('JobDeletaExportacaoExcel')->onOneServer();
-$schedule->call(new JobAniversariantesDia)->daily()->name('JobAniversariantesDia')->onOneServer();
+$schedule->command('mybp:aniversariantes')->daily()->name('JobAniversariantesDia')->onOneServer();
 $schedule->call(new JobConvocacaoIntermitente())->hourly()->name('JobConvocacaoIntermitente')->onOneServer();
 $schedule->call(new JobFerias())->daily()->name('JobFerias')->onOneServer();
 $schedule->call(new JobCalculoAvos())->weekly()->name('JobCalculoAvos')->onOneServer();

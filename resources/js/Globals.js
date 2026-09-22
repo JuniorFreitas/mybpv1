@@ -1,6 +1,8 @@
-window.URL_SITE = process.env.MIX_URL_SITE;
-window.URL_ADMIN = process.env.MIX_URL_ADMIN;
-window.URL_PUBLICO = process.env.MIX_URL_PUBLICO;
+const currentOrigin = window.location.origin
+
+window.URL_SITE = currentOrigin
+window.URL_ADMIN = new URL('/g', currentOrigin).href
+window.URL_PUBLICO = new URL('/publico', currentOrigin).href
 window.AMBIENTE = process.env.MIX_AMBIENTE;
 window.GOOGLE_MAPS_KEY = process.env.MIX_GOOGLE_MAPS_KEY;
 

@@ -1,9 +1,28 @@
 const GETAUTH = {}
-axios.get(`${URL_ADMIN}/usuario/autenticado/`)
-    .then(response => {
-        Object.assign(GETAUTH, response.data)
-    }).catch(error => {
-})
+
+function isGuestAuthRoute() {
+    if (typeof window === 'undefined') {
+        return false
+    }
+
+    const path = window.location.pathname.replace(/\/+$/, '')
+    return [
+        '/g/login',
+        '/g/register',
+        '/g/password/reset',
+        '/g/password/email',
+        '/g/password/confirm',
+        '/g/recupera-senha',
+        '/g/envia-recupera-senha'
+    ].some((route) => path === route || path.startsWith(`${route}/`))
+}
+
+if (!isGuestAuthRoute()) {
+    axios.get(`${URL_ADMIN}/usuario/autenticado/`)
+        .then(response => {
+            Object.assign(GETAUTH, response.data)
+        })
+}
 
 exports.ESTADOS = [
     'MA',

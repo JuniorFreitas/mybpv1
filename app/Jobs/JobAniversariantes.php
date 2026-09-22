@@ -39,7 +39,14 @@ class JobAniversariantes implements ShouldQueue
     {
         $selecionados = \DB::table('curriculos')
                            ->select(['id', 'nome', 'email', 'nascimento', 'rg', 'orgao_expeditor'])
-                           ->whereIn('id', $this->mail['selecionados'])->get();
+                           ->whereIn('id', $this->mail['selecionados'])
+                           ->whereExists(function ($query) {
+                               $query->select(\DB::raw(1))
+                                   ->from('clientes')
+                                   ->whereColumn('clientes.id', 'curriculos.id')
+                                   ->where('clientes.ativo', true);
+                           })
+                           ->get();
 
         foreach ($selecionados as $aniversariante) {
             \Mail::send(new AniversariantesMail([

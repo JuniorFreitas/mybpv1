@@ -151,12 +151,26 @@ class ClienteFilial extends Model
     protected static function booted()
     {
         static::created(function ($model) {
-            cache()->forget("lista_cc_{$model->empresa_id}");
-            (new CentroCusto())->listaCentroCustoPorCnpj($model->empresa_id);
+            $model->invalidarCachesRelacionados();
         });
         static::updated(function ($model) {
-            cache()->forget("lista_cc_{$model->empresa_id}");
-            (new CentroCusto())->listaCentroCustoPorCnpj($model->empresa_id);
+            $model->invalidarCachesRelacionados();
         });
+        static::deleted(function ($model) {
+            $model->invalidarCachesRelacionados();
+        });
+        static::restored(function ($model) {
+            $model->invalidarCachesRelacionados();
+        });
+    }
+
+    /**
+     * Invalida caches de CNPJs e centros de custo da empresa.
+     */
+    public function invalidarCachesRelacionados(): void
+    {
+        cache()->forget("cnpjs_{$this->empresa_id}");
+        cache()->forget("lista_cc_{$this->empresa_id}");
+        (new CentroCusto())->listaCentroCustoPorCnpj($this->empresa_id);
     }
 }
