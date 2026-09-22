@@ -1,8 +1,9 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-09-17
+Last updated: 2026-09-22
 
+- [filial-cache-cnpjs](filial-cache-cnpjs.md) — Criar filial limpa `cnpjs_*` + `lista_cc_*` | gotcha | filial, cache
 - [exame-data-realizacao-whatsapp](exame-data-realizacao-whatsapp.md) — Datepicker ≠ payload; DataHora(null)=hoje | gotcha | exame, whatsapp, data
 - [ocorrencia-setor-tag](ocorrencia-setor-tag.md) — Load Setor/Tag + ScopeEmpresa + Vue3 handlers | gotcha | ocorrencia, setor, tag
 - [schedule-kernel-laravel12](schedule-kernel-laravel12.md) — Kernel schedule morto; usar withSchedule | gotcha | schedule, aniversariante

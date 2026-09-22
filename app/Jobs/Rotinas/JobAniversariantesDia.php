@@ -46,14 +46,16 @@ class JobAniversariantesDia implements ShouldQueue
                                  inner join feedback_curriculos fc on c.id = fc.curriculo_id
                                  inner join users u on c.id = u.id
                                  inner join admissoes a on fc.id = a.feedback_id
-                        where not exists(select fc.id,d.feedback_id from demissaos d where fc.id = d.feedback_id)
-                          and not exists(select p.curriculo_id from parabens_enviados p where fc.curriculo_id = p.curriculo_id and p.ano = year(now()))
-                          and fc.deleted_at is null
-                          and a.status = ?
-                          and c.email != 'sistema@mybp.com.br'
-                          and month(c.nascimento) = month(now())
-                          and day(c.nascimento) = day(now())
-                          and c.deleted_at is null
+                                inner join clientes cl on u.empresa_id = cl.id
+                       where not exists(select fc.id,d.feedback_id from demissaos d where fc.id = d.feedback_id)
+                         and not exists(select p.curriculo_id from parabens_enviados p where fc.curriculo_id = p.curriculo_id and p.ano = year(now()))
+                         and fc.deleted_at is null
+                         and a.status = ?
+                         and c.email != 'sistema@mybp.com.br'
+                         and month(c.nascimento) = month(now())
+                         and day(c.nascimento) = day(now())
+                         and c.deleted_at is null
+                         and cl.ativo = true
                     ";
 
             $selecionados = \DB::select($query, [Admissao::STATUS_ADMISSAO_ADMITIDO]);

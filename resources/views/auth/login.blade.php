@@ -109,6 +109,7 @@
                                         <input id="login" type="text"
                                                class="form-control{{ $errors->has('login') ? ' is-invalid' : '' }}"
                                                name="login"
+                                               autocomplete="username"
                                                onblur="removeEspaco(this);validaEmailVazio(this);"
                                                onkeyup="removeEspaco(this);validaEmailVazio(this);"
                                                value="" required autofocus>
@@ -123,7 +124,9 @@
                                         <label for="password">Senha</label>
                                         <input id="password" type="password"
                                                class="form-control {{ $errors->has('password') ? ' is-invalid' : '' }}"
-                                               name="password" required>
+                                               name="password"
+                                               autocomplete="current-password"
+                                               required>
                                         @if($errors->has('password'))
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $errors->first('password') }}</strong>
