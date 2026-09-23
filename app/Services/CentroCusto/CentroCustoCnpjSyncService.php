@@ -4,6 +4,7 @@ namespace App\Services\CentroCusto;
 
 use App\Models\CentroCusto;
 use App\Models\CentroCustoFilial;
+use App\Models\Cliente;
 use App\Models\ClienteFilial;
 
 class CentroCustoCnpjSyncService
@@ -57,11 +58,7 @@ class CentroCustoCnpjSyncService
         $listaCcs = (new CentroCusto())->listaCentroCustoPorCnpj($empresaId);
         $info = $listaCcs['cnpjs'][$campoCnpj] ?? null;
 
-        if (!$info) {
-            throw new \InvalidArgumentException('CNPJ informado não encontrado.');
-        }
-
-        if (!empty($info['matriz'])) {
+        if ($this->ehCnpjMatriz($campoCnpj, $empresaId, $info)) {
             $this->desativarAssociacoes($centro->id, $empresaId);
             $this->invalidarCache($empresaId);
 
@@ -71,7 +68,7 @@ class CentroCustoCnpjSyncService
         $clienteFilialId = $this->resolverClienteFilialIdPorCnpj($campoCnpj, $empresaId);
 
         if (!$clienteFilialId) {
-            throw new \InvalidArgumentException('Filial não encontrada para o CNPJ informado.');
+            throw new \InvalidArgumentException('CNPJ informado não encontrado.');
         }
 
         $this->desativarAssociacoes($centro->id, $empresaId);
@@ -93,6 +90,23 @@ class CentroCustoCnpjSyncService
         }
 
         $this->invalidarCache($empresaId);
+    }
+
+    private function ehCnpjMatriz(string $campoCnpj, int $empresaId, $info): bool
+    {
+        if (is_array($info)) {
+            return !empty($info['matriz']);
+        }
+
+        $matriz = Cliente::query()->select(['id', 'cnpj'])->find($empresaId);
+        if (!$matriz?->cnpj) {
+            return false;
+        }
+
+        $campoDigits = preg_replace('/[^0-9]/', '', $campoCnpj);
+        $matrizDigits = preg_replace('/[^0-9]/', '', $matriz->cnpj);
+
+        return $campoDigits !== '' && $campoDigits === $matrizDigits;
     }
 
     private function desativarAssociacoes(int $centroCustoId, int $empresaId): void

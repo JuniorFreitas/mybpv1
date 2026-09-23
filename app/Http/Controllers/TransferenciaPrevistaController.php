@@ -47,6 +47,15 @@ class TransferenciaPrevistaController extends Controller
             ]
         );
         if ($dadosValidados->fails()) {
+            Log::warning('transferencia.validacao_falhou', [
+                'empresa_id' => auth()->user()->empresa_id,
+                'user_id' => auth()->id(),
+                'erros' => $dadosValidados->errors()->toArray(),
+                'centro_custo_origem_id' => $dados['centro_custo_origem_id'] ?? null,
+                'centro_custo_destino_id' => $dados['centro_custo_destino_id'] ?? null,
+                'colaborador_id' => $dados['colaborador_id'] ?? null,
+            ]);
+
             return response()->json([
                 'msg' => 'Erro ao Solicitar Transferência',
                 'erros' => $dadosValidados->errors()

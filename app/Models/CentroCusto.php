@@ -156,6 +156,9 @@ class CentroCusto extends Model
                 ];
             }
 
+            // Filiais cadastradas ainda sem centro de custo precisam aparecer no combo de CNPJ.
+            $this->mesclarFiliaisSemCentroCusto($cnpjs, $empresaId, $informacaoMatrizGeral);
+
             cache()->put($cache_key, collect([
                 'cnpjs' => $cnpjs,
                 'centros_custos' => $results,
@@ -166,6 +169,42 @@ class CentroCusto extends Model
         }
 
         return cache()->get($cache_key);
+    }
+
+    /**
+     * Inclui matriz e filiais ativas que ainda não têm centro de custo vinculado.
+     */
+    private function mesclarFiliaisSemCentroCusto(Collection $cnpjs, int $empresaId, $informacaoMatrizGeral): void
+    {
+        if ($informacaoMatrizGeral?->cnpj) {
+            $matrizKey = preg_replace('/[^0-9]/', '', $informacaoMatrizGeral->cnpj);
+            if ($matrizKey !== '' && !$cnpjs->has($matrizKey)) {
+                $cnpjs[$matrizKey] = [
+                    'cnpj' => $informacaoMatrizGeral->cnpj,
+                    'razao_social' => $informacaoMatrizGeral->razao_social,
+                    'nome_fantasia' => $informacaoMatrizGeral->nome_fantasia,
+                    'matriz' => true,
+                    'ativo' => true,
+                ];
+            }
+        }
+
+        foreach ((new ClienteFilial())->getListaFilialAtiva($empresaId) as $filial) {
+            $dados = $filial->dados;
+            $filialKey = preg_replace('/[^0-9]/', '', $dados->cnpj ?? '');
+
+            if ($filialKey === '' || $cnpjs->has($filialKey)) {
+                continue;
+            }
+
+            $cnpjs[$filialKey] = [
+                'cnpj' => $dados->cnpj ?? '',
+                'razao_social' => $dados->razao_social ?? '',
+                'nome_fantasia' => $dados->nome_fantasia ?? '',
+                'matriz' => false,
+                'ativo' => (bool) $filial->ativo,
+            ];
+        }
     }
 
     /**

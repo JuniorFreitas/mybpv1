@@ -1,17 +1,28 @@
-# Mensagem de aniversariante
+# Mensagem / envio de aniversariante
 
-Entry: tela Aniversariantes (`Aniversariantes.vue` + `AniversarianteMensagem.vue`)
-Menu: só Aniversariantes (sem item separado)
-API: `AniversarianteMensagemController` dados/salvar/preview
-Envio: `AniversariantesMail` → `AniversarianteMensagemResolver` + `AniversarianteMensagemRenderer`
-Fallback: `AniversarianteMensagemResolver::MENSAGEM_PADRAO` se não houver HTML da empresa
-Job automático: `JobAniversariantesDia` via `routes/schedule.php` + `withSchedule` (daily 00:00)
-Envio manual: `AniversariantesController::enviaEmail` → `JobAniversariantes` (fila) → funciona
-Registro: tabela `parabens_enviados` (status enviado/enviando; sem created_at)
-SQL do job: string em `DB::select` (não usar `DB::raw`)
-Permissão: `administracao_aniversariantes`
-Placeholders: `{{nome}}`, `{{empresa}}`
-Editor: `tiny-mce-editor` self-host (`public/tinymce`), preset `padrao` — sem Cloud
-Assunto: inalterado (`{empresa} - FELIZ ANIVERSÁRIO`)
+## Fluxo
+- Template: `AniversarianteMensagemController` + `AniversarianteMensagemResolver`/`Renderer`
+- Automático: `routes/schedule.php` → `mybp:aniversariantes` (00:05 + retry 08:00, TZ app)
+- Service: `AniversarianteEnvioDiaService` (job só orquestra)
+- Manual tela: `AniversariantesController::enviaEmail` → `JobAniversariantes`
+- Registro: `parabens_enviados` (sem timestamps): enviado | enviando | erro | não
 
-Updated: 2026-08-31
+## Gotchas (corrigidos 2026-09-22)
+1. Um e-mail inválido/vazio no meio do `foreach` abortava o lote inteiro.
+2. `NOT EXISTS` em qualquer status → `enviando` travava a pessoa o ano todo.
+3. `month/day(now())` no MySQL podia divergir do TZ `America/Fortaleza` → usar data do app.
+4. Catch engolia exceção sem marcar `erro`.
+
+## Ops
+```bash
+php artisan mybp:aniversariantes                 # dia (TZ app)
+php artisan mybp:aniversariantes --retentar-pendentes  # enviando/erro do ano
+php artisan mybp:aniversariantes --queue
+```
+Não marcar `enviado` via Mailtrap/local se for catch-up de produção.
+
+## Refs
+- `app/Services/Aniversariante/AniversarianteEnvioDiaService.php`
+- `app/Jobs/Rotinas/JobAniversariantesDia.php`
+- `app/Console/Commands/DispararAniversariantesCommand.php`
+- `routes/schedule.php`

@@ -3,11 +3,12 @@
 
 Last updated: 2026-09-22
 
-- [filial-cache-cnpjs](filial-cache-cnpjs.md) — Criar filial limpa `cnpjs_*` + `lista_cc_*` | gotcha | filial, cache
+- [cih-filtro-busca-id](cih-filtro-busca-id.md) — campoBusca nome/CÓD + combos no filtro/form | flow | cih, filtro, combobox
+- [aniversariante-mensagem](aniversariante-mensagem.md) — Envio robusto + retry 08:00 + --retentar-pendentes | flow | aniversariante, email
+- [filial-cache-cnpjs](filial-cache-cnpjs.md) — Filial sem CC entra em `lista_cc` + combo CC | gotcha | filial, cache, centrocusto
 - [exame-data-realizacao-whatsapp](exame-data-realizacao-whatsapp.md) — Datepicker ≠ payload; DataHora(null)=hoje | gotcha | exame, whatsapp, data
-- [ocorrencia-setor-tag](ocorrencia-setor-tag.md) — Load Setor/Tag + ScopeEmpresa + Vue3 handlers | gotcha | ocorrencia, setor, tag
 - [schedule-kernel-laravel12](schedule-kernel-laravel12.md) — Kernel schedule morto; usar withSchedule | gotcha | schedule, aniversariante
-- [aniversariante-mensagem](aniversariante-mensagem.md) — E-mail de aniversário customizável por empresa | flow | aniversariante, email
+- [ocorrencia-setor-tag](ocorrencia-setor-tag.md) — Load Setor/Tag + ScopeEmpresa + Vue3 handlers | gotcha | ocorrencia, setor, tag
 - [bp-chamados-widget](bp-chamados-widget.md) — Página CHAMADOS no menu + JWT widget | flow | chamados, widget
 - [documentos-preadmissao-catalogo](documentos-preadmissao-catalogo.md) — Catálogo pré-admissão por empresa | flow | preadmissao, documentos
 - [cadastro-dossie-tipos](cadastro-dossie-tipos.md) — Catálogo dossiê com override por empresa | flow | dossie, cadastro

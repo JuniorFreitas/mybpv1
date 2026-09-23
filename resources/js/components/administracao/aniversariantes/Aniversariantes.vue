@@ -101,7 +101,7 @@
                             }"
                         >
                             <td class="text-center">
-                                <label :for="aniversariantes.id" v-if="aniversariantes.enviado == 'Não' && aniversariantes.email != 'sistema@mybp.com.br'">
+                                <label :for="aniversariantes.id" v-if="aniversariantes.enviado == 'Não' && !aniversariantes.email_ignorado">
                                     <input
                                         type="checkbox"
                                         v-model="selecionadosMassa"
@@ -230,7 +230,7 @@ export default {
             if (this.selecionaTudoMassa) {
                 this.lista.map((item) => {
                     let id = item.id
-                    if (this.selecionadosMassa.indexOf(id) === -1 && item.enviado == 'Não' && item.email != 'sistema@mybp.com.br') {
+                    if (this.selecionadosMassa.indexOf(id) === -1 && item.enviado == 'Não' && !item.email_ignorado) {
                         this.selecionadosMassa.push(id)
                     }
                 })

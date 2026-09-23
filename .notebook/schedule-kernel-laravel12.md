@@ -9,10 +9,6 @@ Fix:
 
 Evidência: `php artisan schedule:list` lista as rotinas (JobAniversariantesDia, férias, ponto…).
 
-Bug extra no job: `JobAniversariantesDia` usava `DB::raw()` em `DB::select()` → TypeError; SQL passou a string pura.
+Aniversariantes (2026-09-22): `00:05` + retry `08:00` (TZ app) via `mybp:aniversariantes`.
 
-Catch-up aniversariantes do dia: rodar uma vez no ambiente com mail real  
-`(new \App\Jobs\Rotinas\JobAniversariantesDia())->handle();`  
-(não marcar enviado via Mailtrap/local — bloqueia o envio real)
-
-Updated: 2026-09-16
+Updated: 2026-09-22

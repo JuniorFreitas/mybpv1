@@ -58,7 +58,7 @@
                     </div>
                 </fieldset>
 
-                <fieldset v-if="!carregandoModal && temFilial && listaCcs?.cnpjs">
+                <fieldset v-if="!carregandoModal && temFilial && cnpjComboboxOpcoes.length">
                     <legend>CNPJ</legend>
                     <div class="row">
                         <div class="col-12 mybp-combobox-wrap">
@@ -362,15 +362,51 @@ const controle = reactive({
 
 const temFilial = computed(() => authconfiguracao.value?.temFilial ?? false)
 
-const cnpjComboboxOpcoes = computed(() => {
-    const cnpjs = listaCcs.value?.cnpjs ?? {}
+function cnpjDigits(cnpj) {
+    return String(cnpj || '').replace(/\D/g, '')
+}
 
-    return Object.entries(cnpjs).map(([key, item]) => ({
+function montarOpcaoCnpj(key, item, matriz = false) {
+    const nome = item.nome_fantasia || item.nome_fntasia || item.razao_social || 'CNPJ'
+    const cnpj = item.cnpj || key
+    const isMatriz = matriz || !!item.matriz
+
+    return {
         value: key,
-        label: `${item.nome_fantasia || item.razao_social || 'CNPJ'} - ${item.cnpj}`,
-        meta: item.matriz ? 'Matriz' : 'Filial',
-        raw: item
-    }))
+        label: `${nome} - ${cnpj}`,
+        meta: isMatriz ? 'Matriz' : 'Filial',
+        raw: { ...item, matriz: isMatriz }
+    }
+}
+
+const cnpjComboboxOpcoes = computed(() => {
+    const mapa = {}
+
+    Object.entries(listaCcs.value?.cnpjs ?? {}).forEach(([key, item]) => {
+        mapa[key] = montarOpcaoCnpj(key, item, !!item.matriz)
+    })
+
+    const authCnpjs = authconfiguracao.value?.cnpjs
+    if (authCnpjs) {
+        const matriz = authCnpjs.matriz
+        const matrizKey = cnpjDigits(matriz?.cnpj)
+        if (matrizKey && !mapa[matrizKey]) {
+            mapa[matrizKey] = montarOpcaoCnpj(matrizKey, matriz, true)
+        }
+
+        const filiais = Array.isArray(authCnpjs.filiais)
+            ? authCnpjs.filiais
+            : Object.values(authCnpjs.filiais || {})
+
+        filiais.forEach((filial) => {
+            if (filial?.ativo === false) return
+            const key = cnpjDigits(filial?.cnpj)
+            if (!key || mapa[key]) return
+            mapa[key] = montarOpcaoCnpj(key, filial, false)
+        })
+    }
+
+    return Object.values(mapa)
 })
 
 const cnpjComboboxOpcoesFiltro = computed(() => [{ value: '', label: 'Todos os CNPJs' }, ...cnpjComboboxOpcoes.value])
