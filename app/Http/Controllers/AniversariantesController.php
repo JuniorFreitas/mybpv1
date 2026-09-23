@@ -7,6 +7,7 @@ use App\Jobs\JobExportaExcel;
 use App\Jobs\JobExportaPdf;
 use App\Models\Curriculo;
 use App\Models\ParabensEnviado;
+use App\Services\Aniversariante\AniversarianteEnvioDiaService;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
 
@@ -50,25 +51,30 @@ class AniversariantesController extends Controller
 
     }
 
-    public function enviaEmail(Request $request)
+    public function enviaEmail(Request $request, AniversarianteEnvioDiaService $envioService)
     {
-//        dd($request->selecionados);
+        $ids = array_values(array_filter(array_map('intval', (array) $request->input('selecionados', []))));
 
-        $dados = [
-            'selecionados' => $request->selecionados,
-            'empresa_id' => auth()->user()->empresa_id
-        ];
-
-        foreach ($request->selecionados as $selecionado) {
-            ParabensEnviado::withoutGlobalScopes()->create([
-                'empresa_id' => auth()->user()->empresa_id,
-                'status' => ParabensEnviado::STATUS_ENVIANDO,
-                'curriculo_id' => $selecionado,
-                'ano' => (int)date('Y'),
-            ]);
+        if ($ids === []) {
+            return response()->json(['msg' => 'Nenhum aniversariante selecionado.'], 422);
         }
 
-        JobAniversariantes::dispatch($dados);
+        $empresaId = (int) auth()->user()->empresa_id;
+        $ano = (int) now()->format('Y');
+
+        foreach ($ids as $curriculoId) {
+            $envioService->marcarStatus(
+                $curriculoId,
+                $empresaId,
+                $ano,
+                ParabensEnviado::STATUS_ENVIANDO
+            );
+        }
+
+        JobAniversariantes::dispatch([
+            'selecionados' => $ids,
+            'empresa_id' => $empresaId,
+        ]);
 
         return response()->json('', 200);
     }
@@ -77,27 +83,32 @@ class AniversariantesController extends Controller
     {
         $this->authorize('administracao_aniversariantes');
         $dataHoje = new DataHora();
-        $ano = $dataHoje->ano();
-        $ano = intval($ano);
+        $ano = intval($dataHoje->ano());
+        $mes = (int) now()->format('m');
+        $diaHoje = (int) now()->format('d');
+        $envioService = app(AniversarianteEnvioDiaService::class);
 
         $funcionarios = Curriculo::select(['id', 'nome', 'email', 'nascimento', 'rg', 'orgao_expeditor'])
             ->whereHas('FeedBack', function ($q) {
                 $q->admitidos();
-            })->whereRaw('month(nascimento) = month(now())')
+            })->whereRaw('month(nascimento) = ?', [$mes])
             ->with('Parabens', function ($query) use ($ano) {
                 $query->where('ano', $ano);
             })->orderByRaw('day(nascimento)')->get()
-            ->map(function ($item) {
+            ->map(function ($item) use ($diaHoje, $envioService) {
                 $data_nascimento = new DataHora($item->nascimento);
-                $dia_nascimento = $data_nascimento->dia();
+                $dia_nascimento = (int) $data_nascimento->dia();
+                $email = $envioService->normalizarEmail($item->email);
+
                 return [
                     'idade' => $item->idade,
                     'nome' => $item->nome,
-                    'email' => $item->email,
+                    'email' => $email,
                     'id' => $item->id,
                     'aniversario' => $data_nascimento->dia() . '/' . $data_nascimento->mes(),
                     'enviado' => $item->Parabens->status ?? 'Não',
-                    'hoje' => date('d') == $dia_nascimento,
+                    'hoje' => $diaHoje === $dia_nascimento,
+                    'email_ignorado' => $envioService->emailIgnorado($email),
                 ];
             });
 
