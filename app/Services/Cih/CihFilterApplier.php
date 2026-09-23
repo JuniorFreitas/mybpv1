@@ -47,12 +47,19 @@ class CihFilterApplier
 
     private function applySearchFilter(Builder $query): void
     {
-        if (!isset($this->filtros['campoBusca']) || empty($this->filtros['campoBusca'])) {
+        if (empty($this->filtros['campoBusca'] ?? '')) {
             return;
         }
 
-        $query->whereHas('Colaboradores.Curriculo', function ($q) {
-            $q->where('nome', 'like', '%' . $this->filtros['campoBusca'] . '%');
+        $busca = trim((string) $this->filtros['campoBusca']);
+        if ($busca === '') {
+            return;
+        }
+
+        $query->where(function (Builder $q) use ($busca) {
+            $q->whereHas('Colaboradores.Curriculo', function ($c) use ($busca) {
+                $c->where('nome', 'like', '%' . $busca . '%');
+            })->orWhere('id', $busca);
         });
     }
 

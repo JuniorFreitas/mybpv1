@@ -201,11 +201,11 @@ export default {
             if (a === b) {
                 return true
             }
-            if (a === '' && (b === '' || b === null || b === undefined)) {
-                return true
-            }
-            if (b === '' && (a === '' || a === null || a === undefined)) {
-                return true
+            // '' / null / undefined NÃO equivalem a 0 (ex.: opção "Outro" no CIH)
+            const aVazio = a === '' || a === null || a === undefined
+            const bVazio = b === '' || b === null || b === undefined
+            if (aVazio || bVazio) {
+                return aVazio && bVazio
             }
             const na = Number(a)
             const nb = Number(b)

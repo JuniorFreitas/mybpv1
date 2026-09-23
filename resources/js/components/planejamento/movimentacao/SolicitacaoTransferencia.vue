@@ -23,36 +23,42 @@
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Centro de Custo Origem</label>
-                                    <select
-                                        v-model="form.centro_custo_origem_id"
-                                        class="form-control form-control-sm"
-                                        :disabled="visualizar || aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh || centroOrigemDesabilitadoPorColaborador"
-                                        onchange="valida_campo_vazio(this, 0)"
-                                        onblur="valida_campo_vazio(this, 0)"
-                                    >
-                                        <option value="">Selecione</option>
-                                        <option v-for="item in centro_custos" :key="item.id" :value="item.id">
-                                            {{ item.label }}
-                                        </option>
-                                    </select>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboCcOrigem"
+                                            instance-id="form-cc-origem"
+                                            v-model="form.centro_custo_origem_id"
+                                            :options="centroCustoOrigemOpcoes"
+                                            :disabled="emFluxoAprovacao || centroOrigemDesabilitadoPorColaborador || !centroCustoOrigemOpcoes.length"
+                                            :input-id="`transferencia-cc-origem-${hash}`"
+                                            placeholder-blur="Selecione o centro de custo origem"
+                                            placeholder-focus="Digite para filtrar…"
+                                            empty-message="Nenhum centro de custo encontrado."
+                                            :max-results="200"
+                                            @opening="fecharOutrosComboboxes('form-cc-origem')"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="col-12 col-md-4">
                                 <div class="form-group">
                                     <label>Centro de Custo Destino <span class="text-danger">*</span></label>
-                                    <select
-                                        v-model="form.centro_custo_destino_id"
-                                        class="form-control form-control-sm"
-                                        :disabled="visualizar || aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
-                                        onchange="valida_campo_vazio(this, 1)"
-                                        onblur="valida_campo_vazio(this, 1)"
-                                    >
-                                        <option value="">Selecione</option>
-                                        <option v-for="item in centroCustosDestino" :value="item.id" :key="item.id">
-                                            {{ item.label }}
-                                        </option>
-                                    </select>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboCcDestino"
+                                            instance-id="form-cc-destino"
+                                            v-model="form.centro_custo_destino_id"
+                                            :options="centroCustoDestinoOpcoes"
+                                            :disabled="emFluxoAprovacao || !centroCustoDestinoOpcoes.length"
+                                            :input-id="`transferencia-cc-destino-${hash}`"
+                                            placeholder-blur="Selecione o centro de custo destino"
+                                            placeholder-focus="Digite para filtrar…"
+                                            empty-message="Nenhum centro de custo encontrado."
+                                            :max-results="200"
+                                            @opening="fecharOutrosComboboxes('form-cc-destino')"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
@@ -906,6 +912,7 @@ import _ from 'lodash'
 import Upload from '../../Upload'
 import colaborador from '../../Colaborador'
 import DateRangeFilter from '../../DateRangeFilter'
+import ComboboxAutoComplete from '../../ComboboxAutoComplete.vue'
 import Validacoes from '../../../mixins/Validacoes'
 
 const BASE_URL = `${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista`
@@ -965,7 +972,7 @@ function createControleDados() {
 
 export default defineComponent({
     name: 'SolicitacaoTransferencia',
-    components: { colaborador, DateRangeFilter, Upload },
+    components: { colaborador, DateRangeFilter, Upload, ComboboxAutoComplete },
     mixins: [Validacoes],
     inject: {
         atualizarUrlMovimentacao: { default: () => () => {} }
@@ -1003,6 +1010,8 @@ export default defineComponent({
         const dropdownAbertoKey = ref(null)
         const lista = ref([])
         const centro_custos = ref([])
+        const comboCcOrigem = ref(null)
+        const comboCcDestino = ref(null)
         const preloadAtualizacao = ref(false)
         /** Inicia true (campo desabilitado). Só habilita quando colaborador não possui centro de custo. */
         const centroOrigemDesabilitadoPorColaborador = ref(true)
@@ -1050,6 +1059,20 @@ export default defineComponent({
                 .map((item) => item.id)
         )
         const centroCustosDestino = computed(() => centro_custos.value.filter((item) => centroCustoEstaAtivo(item)))
+        const centroCustoOrigemOpcoes = computed(() =>
+            centro_custos.value.map((item) => ({
+                value: item.id,
+                label: item.label || String(item.id),
+                raw: item
+            }))
+        )
+        const centroCustoDestinoOpcoes = computed(() =>
+            centroCustosDestino.value.map((item) => ({
+                value: item.id,
+                label: item.label || String(item.id),
+                raw: item
+            }))
+        )
         const por_pagina = computed(() => POR_PAGINA_OPCOES)
         const paramsExport = computed(() => controle.dados)
         const tudoMarcado = computed(() => {
@@ -1428,12 +1451,12 @@ export default defineComponent({
             if (!validarColaboradorEGestor() || !validarFormularioVisivel()) return
             preload.value = true
             try {
-                await axios.post(BASE_URL, form)
+                await axios.post(BASE_URL, form, { errorHandle: false })
                 fecharModalPrincipal()
                 if (typeof mostraSucesso === 'function') mostraSucesso('', 'Solicitação registrada com sucesso!')
                 recarregarLista()
             } catch (err) {
-                if (typeof mostraErro === 'function') mostraErro(err)
+                if (typeof mostraErro === 'function') mostraErro(err.response?.data || err)
             } finally {
                 preload.value = false
             }
@@ -1680,9 +1703,24 @@ export default defineComponent({
             dropdownAbertoKey.value = null
         }
 
+        function fecharOutrosComboboxes(manter) {
+            const combos = [
+                ['form-cc-origem', comboCcOrigem],
+                ['form-cc-destino', comboCcDestino]
+            ]
+            combos.forEach(([id, comboRef]) => {
+                if (id !== manter && comboRef.value?.close) {
+                    comboRef.value.close()
+                }
+            })
+        }
+
         function onClickOutside(event) {
             if (event?.target?.closest?.('.dropdown')) return
+            if (event?.target?.closest?.('.mybp-combobox-wrap')) return
+            if (event?.target?.closest?.('.ma-autocomplete-list')) return
             dropdownAbertoKey.value = null
+            fecharOutrosComboboxes(null)
         }
 
         function urlParamGet() {
@@ -1812,6 +1850,10 @@ export default defineComponent({
             lista,
             centro_custos,
             centroCustosDestino,
+            centroCustoOrigemOpcoes,
+            centroCustoDestinoOpcoes,
+            comboCcOrigem,
+            comboCcDestino,
             centroOrigemDesabilitadoPorColaborador,
             gestorOrigemAusente,
             gestorDestinoAusente,
@@ -1864,6 +1906,7 @@ export default defineComponent({
             toggleDropdown,
             isDropdownOpen,
             fecharDropdown,
+            fecharOutrosComboboxes,
             urlParamGet,
             syncUrlFiltros,
             selecionaTodos,

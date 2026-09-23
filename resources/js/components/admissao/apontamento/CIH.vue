@@ -29,17 +29,20 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Tipo</label>
-                                    <select
-                                        :disabled="visualizar || aprovandoRh || aprovando"
-                                        v-model="form.tag_id"
-                                        class="form-control form-control-sm validacampo"
-                                        @blur.prevent="valida_campo_vazio($event.target, 1)"
-                                        @change.prevent="valida_campo_vazio($event.target, 1)"
-                                    >
-                                        <option value="">Selecione...</option>
-                                        <option v-for="item in listaTags" :value="item.id" :key="item.id" v-text="item.label"></option>
-                                        <option :value="0">Outro</option>
-                                    </select>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormTipo"
+                                            instance-id="form-tipo"
+                                            v-model="form.tag_id"
+                                            :options="formTipoOpcoes"
+                                            :disabled="visualizar || aprovandoRh || aprovando"
+                                            input-id="cih-form-tipo"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhum tipo encontrado."
+                                            :max-results="100"
+                                            @opening="fecharOutrosComboboxes('form-tipo')"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
@@ -62,17 +65,20 @@
                             <div class="col-md-6" v-if="this.config_modelo_cih === 'area'">
                                 <div class="form-group">
                                     <label>Área</label>
-                                    <select
-                                        :disabled="visualizar || aprovandoRh || aprovando"
-                                        v-model="form.area_id"
-                                        @blur.prevent="valida_campo_vazio($event.target, 1)"
-                                        @change.prevent="valida_campo_vazio($event.target, 1)"
-                                        class="form-control form-control-sm validacampo"
-                                    >
-                                        <option value="">Selecione...</option>
-                                        <option v-for="item in listaAreas" :value="item.id" :key="item.id" v-text="item.label"></option>
-                                        <option :value="0">Outra</option>
-                                    </select>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormArea"
+                                            instance-id="form-area"
+                                            v-model="form.area_id"
+                                            :options="formAreaOpcoes"
+                                            :disabled="visualizar || aprovandoRh || aprovando"
+                                            input-id="cih-form-area"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma área encontrada."
+                                            :max-results="100"
+                                            @opening="fecharOutrosComboboxes('form-area')"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
@@ -93,18 +99,20 @@
                             <div class="col-md-6" v-if="this.config_modelo_cih === 'centro_de_custo'">
                                 <div class="form-group">
                                     <label>Centro de Custo</label>
-                                    <select
-                                        :disabled="visualizar || aprovandoRh || aprovando"
-                                        v-model="form.centro_custo_id"
-                                        @blur.prevent="valida_campo_vazio($event.target, 1)"
-                                        @change.prevent="valida_campo_vazio($event.target, 1)"
-                                        class="form-control form-control-sm validacampo"
-                                    >
-                                        <option value="">Selecione...</option>
-                                        <option v-for="item in centros_de_custo" :value="item.id" :key="item.id">
-                                            {{ item.gestor == null ? item.label + ' - Gestor não informado' : item.label + ' - ' + item.gestor.nome }}
-                                        </option>
-                                    </select>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormCentroCusto"
+                                            instance-id="form-centro-custo"
+                                            v-model="form.centro_custo_id"
+                                            :options="formCentroCustoOpcoes"
+                                            :disabled="visualizar || aprovandoRh || aprovando"
+                                            input-id="cih-form-centro-custo"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhum centro de custo encontrado."
+                                            :max-results="200"
+                                            @opening="fecharOutrosComboboxes('form-centro-custo')"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
@@ -234,17 +242,20 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Status</label>
-                                    <select
-                                        :disabled="!aprovando || aprovandoRh"
-                                        v-model="form.status"
-                                        @change.prevent="valida_campo_vazio($event.target, 1)"
-                                        onblur="valida_campo_vazio(this, 1)"
-                                        class="form-control form-control-sm validacampo"
-                                    >
-                                        <option value="">Selecione...</option>
-                                        <option value="aprovado">Aprovado</option>
-                                        <option value="reprovado">Reprovado</option>
-                                    </select>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormStatusGestor"
+                                            instance-id="form-status-gestor"
+                                            v-model="form.status"
+                                            :options="formStatusAprovacaoOpcoes"
+                                            :disabled="!aprovando || aprovandoRh"
+                                            input-id="cih-form-status-gestor"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-status-gestor')"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -280,17 +291,20 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label>Status</label>
-                                    <select
-                                        :disabled="visualizar && !aprovando && !aprovandoRh"
-                                        v-model="form.resposta_rh"
-                                        class="form-control form-control-sm validacampo"
-                                        @change.prevent="valida_campo_vazio($event.target, 1)"
-                                        onblur="valida_campo_vazio(this, 1)"
-                                    >
-                                        <option value="">Selecione...</option>
-                                        <option value="aprovado">Aprovado</option>
-                                        <option value="reprovado">Reprovado</option>
-                                    </select>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormStatusRh"
+                                            instance-id="form-status-rh"
+                                            v-model="form.resposta_rh"
+                                            :options="formStatusAprovacaoOpcoes"
+                                            :disabled="visualizar && !aprovando && !aprovandoRh"
+                                            input-id="cih-form-status-rh"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-status-rh')"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -333,7 +347,7 @@
                         <label>Buscar</label>
                         <input
                             type="text"
-                            placeholder="Buscar por nome"
+                            placeholder="Buscar por nome ou CÓD"
                             autocomplete="off"
                             class="form-control form-control-sm"
                             :disabled="controle.carregando"
@@ -345,48 +359,84 @@
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Status</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.campoStatus" @change="atualizar()" :disabled="controle.carregando">
-                            <option value="">Todos os Status</option>
-                            <option value="aberto">Em aberto</option>
-                            <option value="aprovado_gestor">Aprovado Gestor</option>
-                            <option value="aprovado_rh">Aprovado Rh</option>
-                            <option value="reprovado">Reprovado</option>
-                        </select>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroStatus"
+                                instance-id="filtro-status"
+                                v-model="controle.dados.campoStatus"
+                                :options="filtroStatusOpcoes"
+                                :disabled="controle.carregando"
+                                input-id="cih-filtro-status"
+                                placeholder-blur="Todos os Status"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @opening="fecharOutrosComboboxes('filtro-status')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
                     </div>
                 </div>
 
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Tipo</label>
-                        <select v-model="controle.dados.campoTags" :disabled="controle.carregando" @change="atualizar()" class="form-control form-control-sm">
-                            <option value="">Todos os tipos</option>
-                            <option v-for="item in listaTags" :value="item.id" :key="item.id" v-text="item.label"></option>
-                        </select>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroTipo"
+                                instance-id="filtro-tipo"
+                                v-model="controle.dados.campoTags"
+                                :options="filtroTipoOpcoes"
+                                :disabled="controle.carregando || !listaTags.length"
+                                input-id="cih-filtro-tipo"
+                                placeholder-blur="Todos os tipos"
+                                empty-message="Nenhum tipo encontrado."
+                                :max-results="100"
+                                @opening="fecharOutrosComboboxes('filtro-tipo')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
                     </div>
                 </div>
 
                 <div class="col-12 col-md-4" v-if="this.config_modelo_cih === 'area'">
                     <div class="form-group">
                         <label>Área</label>
-                        <select v-model="controle.dados.campoAreas" :disabled="controle.carregando" @change="atualizar()" class="form-control form-control-sm">
-                            <option value="">Todas as áreas</option>
-                            <option v-for="item in listaAreas" :value="item.id" :key="item.id" v-text="item.label"></option>
-                        </select>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroArea"
+                                instance-id="filtro-area"
+                                v-model="controle.dados.campoAreas"
+                                :options="filtroAreaOpcoes"
+                                :disabled="controle.carregando || !listaAreas.length"
+                                input-id="cih-filtro-area"
+                                placeholder-blur="Todas as áreas"
+                                empty-message="Nenhuma área encontrada."
+                                :max-results="100"
+                                @opening="fecharOutrosComboboxes('filtro-area')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
                     </div>
                 </div>
 
                 <div class="col-12 col-md-4" v-if="this.config_modelo_cih === 'centro_de_custo'">
                     <div class="form-group">
                         <label>Centros de Custo</label>
-                        <select
-                            v-model="controle.dados.campoCentrosDeCusto"
-                            :disabled="controle.carregando"
-                            @change="atualizar()"
-                            class="form-control form-control-sm"
-                        >
-                            <option value="">Todas os centros de custo</option>
-                            <option v-for="item in centros_de_custo" :value="item.id" :key="item.id" v-text="item.label"></option>
-                        </select>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroCentroCusto"
+                                instance-id="filtro-centro-custo"
+                                v-model="controle.dados.campoCentrosDeCusto"
+                                :options="filtroCentroCustoOpcoes"
+                                :disabled="controle.carregando || !centros_de_custo.length"
+                                input-id="cih-filtro-centro-custo"
+                                placeholder-blur="Todos os centros de custo"
+                                empty-message="Nenhum centro de custo encontrado."
+                                :max-results="200"
+                                @opening="fecharOutrosComboboxes('filtro-centro-custo')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -394,20 +444,21 @@
                 <div class="col-12 col-md-4">
                     <div class="form-group">
                         <label>Gestores</label>
-                        <select
-                            v-model="controle.dados.campoGestores"
-                            :disabled="controle.carregando"
-                            @change="atualizar()"
-                            class="form-control form-control-sm"
-                        >
-                            <option value="">Todas os gestores</option>
-                            <option
-                                v-for="item in gestores"
-                                :value="item.gestor_aprovacao.id"
-                                :key="item.gestor_aprovacao.id"
-                                v-text="item.gestor_aprovacao.nome"
-                            ></option>
-                        </select>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroGestor"
+                                instance-id="filtro-gestor"
+                                v-model="controle.dados.campoGestores"
+                                :options="filtroGestorOpcoes"
+                                :disabled="controle.carregando"
+                                input-id="cih-filtro-gestor"
+                                placeholder-blur="Todos os gestores"
+                                empty-message="Nenhum gestor encontrado."
+                                :max-results="100"
+                                @opening="fecharOutrosComboboxes('filtro-gestor')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -621,6 +672,7 @@ import DatePicker from '../../DatePicker'
 import Upload from '../../Upload'
 import ControlePaginacao from '../../ControlePaginacao'
 import DateRangeFilter from '../../DateRangeFilter.vue'
+import ComboboxAutoComplete from '../../ComboboxAutoComplete.vue'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 import Validacoes from '../../../mixins/Validacoes'
 
@@ -630,6 +682,7 @@ export default {
         autocomplete,
         DatePicker,
         DateRangeFilter,
+        ComboboxAutoComplete,
         Upload,
         ControlePaginacao,
         gestoraprovacao
@@ -782,27 +835,82 @@ export default {
         }
     },
     computed: {
-        // tudoMarcado() {
-        //     let totalItens = this.comTeste.length;
-        //     let totalEncontrado = 0;
-        //
-        //     if (totalItens === 0) {
-        //         return false;
-        //     }
-        //
-        //     this.comTeste.forEach(item => {
-        //         let id = item.curriculo_id;
-        //         if (this.selecionados.indexOf(id) >= 0) {
-        //             totalEncontrado++;
-        //             //faz nada
-        //         } else {
-        //             return false;
-        //         }
-        //     });
-        //     let resultado = totalItens === totalEncontrado;
-        //     this.selecionaTudo = resultado;
-        //     return resultado;
-        // }
+        filtroStatusOpcoes() {
+            return [
+                { value: '', label: 'Todos os Status' },
+                { value: 'aberto', label: 'Em aberto' },
+                { value: 'aprovado_gestor', label: 'Aprovado Gestor' },
+                { value: 'aprovado_rh', label: 'Aprovado Rh' },
+                { value: 'reprovado', label: 'Reprovado' }
+            ]
+        },
+        filtroTipoOpcoes() {
+            const opcoes = [{ value: '', label: 'Todos os tipos' }]
+            this.listaTags.forEach((item) => {
+                opcoes.push({ value: item.id, label: item.label || String(item.id), raw: item })
+            })
+            return opcoes
+        },
+        filtroAreaOpcoes() {
+            const opcoes = [{ value: '', label: 'Todas as áreas' }]
+            this.listaAreas.forEach((item) => {
+                opcoes.push({ value: item.id, label: item.label || String(item.id), raw: item })
+            })
+            return opcoes
+        },
+        filtroCentroCustoOpcoes() {
+            const opcoes = [{ value: '', label: 'Todos os centros de custo' }]
+            this.centros_de_custo.forEach((item) => {
+                opcoes.push({ value: item.id, label: item.label || String(item.id), raw: item })
+            })
+            return opcoes
+        },
+        filtroGestorOpcoes() {
+            const opcoes = [{ value: '', label: 'Todos os gestores' }]
+            this.gestores.forEach((item) => {
+                const gestor = item.gestor_aprovacao
+                if (!gestor || gestor.id == null) return
+                opcoes.push({ value: gestor.id, label: gestor.nome || String(gestor.id), raw: item })
+            })
+            return opcoes
+        },
+        formTipoOpcoes() {
+            const opcoes = this.listaTags.map((item) => ({
+                value: item.id,
+                label: item.label || String(item.id),
+                raw: item
+            }))
+            // value 0 = "Outro" (mesma regra do select antigo: form.tag_id === 0)
+            opcoes.push({ value: 0, label: 'Outro' })
+            return opcoes
+        },
+        formAreaOpcoes() {
+            const opcoes = this.listaAreas.map((item) => ({
+                value: item.id,
+                label: item.label || String(item.id),
+                raw: item
+            }))
+            // value 0 = "Outra" (mesma regra do select antigo: form.area_id === 0)
+            opcoes.push({ value: 0, label: 'Outra' })
+            return opcoes
+        },
+        formCentroCustoOpcoes() {
+            return this.centros_de_custo.map((item) => ({
+                value: item.id,
+                label:
+                    item.gestor == null
+                        ? `${item.label} - Gestor não informado`
+                        : `${item.label} - ${item.gestor.nome}`,
+                raw: item
+            }))
+        },
+        formStatusAprovacaoOpcoes() {
+            return [
+                { value: '', label: 'Selecione...' },
+                { value: 'aprovado', label: 'Aprovado' },
+                { value: 'reprovado', label: 'Reprovado' }
+            ]
+        },
         paramsExport() {
             return {
                 campoCentrosDeCusto: this.controle.dados.campoCentrosDeCusto,
@@ -816,6 +924,28 @@ export default {
         }
     },
     methods: {
+        onSelectFiltro() {
+            this.atualizar()
+        },
+        fecharOutrosComboboxes(manter) {
+            const combos = [
+                ['filtro-status', 'comboFiltroStatus'],
+                ['filtro-tipo', 'comboFiltroTipo'],
+                ['filtro-area', 'comboFiltroArea'],
+                ['filtro-centro-custo', 'comboFiltroCentroCusto'],
+                ['filtro-gestor', 'comboFiltroGestor'],
+                ['form-tipo', 'comboFormTipo'],
+                ['form-area', 'comboFormArea'],
+                ['form-centro-custo', 'comboFormCentroCusto'],
+                ['form-status-gestor', 'comboFormStatusGestor'],
+                ['form-status-rh', 'comboFormStatusRh']
+            ]
+            combos.forEach(([id, refName]) => {
+                if (id !== manter && this.$refs[refName] && typeof this.$refs[refName].close === 'function') {
+                    this.$refs[refName].close()
+                }
+            })
+        },
         toggleDropdown(itemId) {
             if (!itemId) {
                 return
@@ -833,7 +963,10 @@ export default {
             if (event && event.target && event.target.closest && event.target.closest('.dropdown')) {
                 return
             }
+            if (event?.target?.closest?.('.mybp-combobox-wrap')) return
+            if (event?.target?.closest?.('.ma-autocomplete-list')) return
             this.dropdownAbertoKey = null
+            this.fecharOutrosComboboxes(null)
         },
         syncPeriodoFromDates() {
             const d = this.controle.dados
@@ -980,6 +1113,22 @@ export default {
             this.$nextTick(() => {
                 $('#janelaCadastrar :input:enabled').trigger('blur')
                 if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
+                    this.mostraErro('', 'Existem campos obrigatórios não preenchidos')
+                    return false
+                }
+                // Combobox não usa validacampo: replica a obrigatoriedade do select antigo
+                if (this.form.tag_id === '' || this.form.tag_id === null || this.form.tag_id === undefined) {
+                    this.mostraErro('', 'Existem campos obrigatórios não preenchidos')
+                    return false
+                }
+                if (this.config_modelo_cih === 'area' && (this.form.area_id === '' || this.form.area_id === null || this.form.area_id === undefined)) {
+                    this.mostraErro('', 'Existem campos obrigatórios não preenchidos')
+                    return false
+                }
+                if (
+                    this.config_modelo_cih === 'centro_de_custo' &&
+                    (this.form.centro_custo_id === '' || this.form.centro_custo_id === null || this.form.centro_custo_id === undefined)
+                ) {
                     this.mostraErro('', 'Existem campos obrigatórios não preenchidos')
                     return false
                 }

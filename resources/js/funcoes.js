@@ -960,17 +960,32 @@ function number_format(number, decimals, dec_point, thousands_sep) {
 }
 
 function mostraErro(retornoLaravel, titulo = 'Ocorreu um erro', quantidade = 3) {
-    if (retornoLaravel === undefined) {
+    if (retornoLaravel === undefined || retornoLaravel === null) {
         return false
     }
+
+    // AxiosError: extrai o payload real da API (evita "Request failed with status code 400")
+    if (retornoLaravel && typeof retornoLaravel === 'object' && retornoLaravel.isAxiosError) {
+        retornoLaravel = retornoLaravel.response?.data || {
+            msg: titulo,
+            message: retornoLaravel.message || 'Ocorreu um erro'
+        }
+    }
+
+    if (typeof retornoLaravel === 'string') {
+        toastr.error(retornoLaravel, titulo)
+        return
+    }
+
     let mensagem = ''
     titulo = retornoLaravel.msg ? retornoLaravel.msg : titulo
-    let lista = _.keys(retornoLaravel.erros)
+    const erros = retornoLaravel.erros || retornoLaravel.errors || {}
+    let lista = _.keys(erros)
     if (lista.length) {
         mensagem += `<ul>`
         let total = 1
-        lista.every((key, item) => {
-            let descricao = retornoLaravel.erros[key][0]
+        lista.every((key) => {
+            let descricao = Array.isArray(erros[key]) ? erros[key][0] : erros[key]
             mensagem += `<li> <strong>${key}:</strong> ${descricao} </li>`
             total++
             if (total == quantidade) {
@@ -979,10 +994,10 @@ function mostraErro(retornoLaravel, titulo = 'Ocorreu um erro', quantidade = 3) 
         })
         mensagem += `</ul>`
     } else {
-        mensagem = retornoLaravel.message
+        mensagem = retornoLaravel.message || retornoLaravel.msg || ''
     }
 
-    toastr.error(mensagem, titulo)
+    toastr.error(mensagem || 'Ocorreu um erro', titulo)
 }
 
 function mostraSucesso(mensagem, titulo) {

@@ -3,6 +3,7 @@
 
 Last updated: 2026-09-22
 
+- [cih-filtro-busca-id](cih-filtro-busca-id.md) — campoBusca nome/CÓD + combos no filtro/form | flow | cih, filtro, combobox
 - [aniversariante-mensagem](aniversariante-mensagem.md) — Envio robusto + retry 08:00 + --retentar-pendentes | flow | aniversariante, email
 - [filial-cache-cnpjs](filial-cache-cnpjs.md) — Filial sem CC entra em `lista_cc` + combo CC | gotcha | filial, cache, centrocusto
 - [exame-data-realizacao-whatsapp](exame-data-realizacao-whatsapp.md) — Datepicker ≠ payload; DataHora(null)=hoje | gotcha | exame, whatsapp, data
