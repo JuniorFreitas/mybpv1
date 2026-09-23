@@ -18,7 +18,8 @@ $schedule->call(new VerificaVencimentoFeriasJob)->monthly()->name('VerificaVenci
 $schedule->call(new VerificaSaidaFeriasJob)->monthly()->name('VerificaSaidaFeriasJob')->onOneServer();
 $schedule->call(new AvaliacaoNoventaVencimentoJob)->daily()->name('AvaliacaoNoventaVencimentoJob')->onOneServer();
 $schedule->command('mybp:limpar-exportacoes')->daily()->name('JobDeletaExportacaoExcel')->onOneServer();
-$schedule->command('mybp:aniversariantes')->daily()->name('JobAniversariantesDia')->onOneServer();
+$schedule->command('mybp:aniversariantes')->dailyAt('00:05')->timezone(config('app.timezone'))->name('JobAniversariantesDia')->onOneServer();
+$schedule->command('mybp:aniversariantes')->dailyAt('08:00')->timezone(config('app.timezone'))->name('JobAniversariantesDiaRetry')->onOneServer();
 $schedule->call(new JobConvocacaoIntermitente())->hourly()->name('JobConvocacaoIntermitente')->onOneServer();
 $schedule->call(new JobFerias())->daily()->name('JobFerias')->onOneServer();
 $schedule->call(new JobCalculoAvos())->weekly()->name('JobCalculoAvos')->onOneServer();
