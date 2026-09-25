@@ -10,6 +10,7 @@ use App\Models\Quadro;
 use App\Models\Tarefa;
 use App\Models\TarefaComentario;
 use App\Services\WeeklyReport\AttachMentionedMembers;
+use App\Support\WeeklyReport\WeeklyReportEagerLoads;
 use App\Support\WeeklyReportHtml;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
@@ -17,6 +18,17 @@ use Illuminate\Support\Facades\Event;
 class TarefasComentarioController extends Controller
 {
     use GuardsWeeklyReportTenant;
+
+    public function index(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
+    {
+        $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa);
+
+        $page = max(1, (int) $request->input('page', 1));
+
+        return $tarefa->Comentarios()
+            ->with('Usuario:id,nome')
+            ->paginate(WeeklyReportEagerLoads::PAGE_SIZE, ['*'], 'page', $page);
+    }
 
     public function store(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
     {
@@ -188,7 +200,13 @@ class TarefasComentarioController extends Controller
 
             return response()->json([
                 'comentario' => $comentario,
-                'tarefa' => $tarefa->fresh(['Membros']),
+                'tarefa' => WeeklyReportEagerLoads::patchPayload(
+                    $tarefa->fresh()->load([
+                        'Membros' => function ($q) {
+                            $q->select(['users.id', 'users.nome']);
+                        },
+                    ])
+                ),
             ], 200);
         } catch (\Exception $e) {
             \DB::rollBack();

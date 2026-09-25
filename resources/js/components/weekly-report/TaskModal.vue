@@ -71,17 +71,53 @@
                         <h5 class="wr-modal__section-title">
                             <i class="fas fa-align-left"></i> Descrição
                         </h5>
-                        <div v-if="canUpdate" class="wr-rich-editor">
-                            <tiny-mce-editor
-                                :key="'desc-' + local.id"
-                                v-model="local.descricao"
-                                preset="basico"
-                                :init="tinyBasicoInit"
-                                :mentions-url="membrosSearchUrl"
-                                @update:modelValue="queueSaveDescricao"
-                                @mention="onEditorMention"
-                            />
-                        </div>
+                        <template v-if="canUpdate && editingDescricao">
+                            <div class="wr-rich-editor">
+                                <tiny-mce-editor
+                                    :key="'desc-edit-' + local.id + '-' + descricaoEditorKey"
+                                    v-model="descricaoDraft"
+                                    preset="basico"
+                                    :init="tinyBasicoInit"
+                                    :mentions-url="membrosSearchUrl"
+                                    @mention="onEditorMention"
+                                />
+                            </div>
+                            <div class="wr-desc-actions">
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-primary"
+                                    :disabled="busyDescricao"
+                                    @click="saveDescricao"
+                                >
+                                    <i v-if="busyDescricao" class="fa fa-spinner fa-pulse"></i>
+                                    <template v-else>Salvar</template>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-light"
+                                    :disabled="busyDescricao"
+                                    @click="cancelEditDescricao"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </template>
+                        <button
+                            v-else-if="canUpdate"
+                            type="button"
+                            class="wr-desc-preview"
+                            title="Clique para editar a descrição"
+                            @click="startEditDescricao"
+                        >
+                            <div
+                                v-if="!isEmptyHtml(local.descricao)"
+                                class="wr-richtext"
+                                v-html="local.descricao"
+                            ></div>
+                            <span v-else class="wr-desc-preview__placeholder">
+                                Adicionar uma descrição mais detalhada…
+                            </span>
+                        </button>
                         <div
                             v-else
                             class="wr-modal__readonly wr-richtext"
@@ -221,17 +257,21 @@
                                     <label class="custom-control-label" :for="'ckitem-' + item.id"></label>
                                 </div>
                                 <div class="wr-checklist__item-main">
-                                    <input
+                                    <textarea
                                         v-if="canUpdate"
                                         v-model="item.titulo"
                                         class="form-control form-control-sm wr-checklist__item-input"
                                         :class="{ 'texto-riscado': item.concluido }"
+                                        rows="1"
+                                        @input="autoSizeChecklistTextarea($event.target)"
+                                        @focus="autoSizeChecklistTextarea($event.target)"
                                         @blur="saveItem(ck, item)"
-                                        @keydown.enter.prevent="$event.target.blur()"
-                                    />
-                                    <span v-else class="wr-checklist__item-text" :class="{ 'texto-riscado': item.concluido }">
-                                        {{ item.titulo }}
-                                    </span>
+                                    ></textarea>
+                                    <span
+                                        v-else
+                                        class="wr-checklist__item-text"
+                                        :class="{ 'texto-riscado': item.concluido }"
+                                    >{{ item.titulo }}</span>
                                     <div
                                         v-if="item.datahora_entrega || dueEditorKey === dueKey('item', item.id)"
                                         class="wr-checklist__item-due"
@@ -341,13 +381,16 @@
                             </div>
                             <form v-if="canUpdate" class="wr-checklist__add" @submit.prevent="addItem(ck)">
                                 <i class="fas fa-plus text-muted"></i>
-                                <input
+                                <textarea
                                     :value="newItems[ck.id] || ''"
-                                    class="form-control form-control-sm"
-                                    placeholder="Adicionar item e pressionar Enter"
+                                    class="form-control form-control-sm wr-checklist__item-input wr-checklist__item-input--add"
+                                    rows="1"
+                                    placeholder="Adicionar item (Enter = nova linha, Ctrl+Enter = salvar)"
                                     :disabled="addingItemCkId === ck.id"
-                                    @input="setNewItem(ck.id, $event.target.value)"
-                                />
+                                    @input="onNewItemInput(ck.id, $event)"
+                                    @keydown.ctrl.enter.prevent="addItem(ck)"
+                                    @keydown.meta.enter.prevent="addItem(ck)"
+                                ></textarea>
                                 <button
                                     class="btn btn-sm btn-primary"
                                     type="submit"
@@ -408,8 +451,8 @@
                             >
                                 <i class="far fa-comment-dots"></i>
                                 Comentários
-                                <span v-if="(local.comentarios || []).length" class="badge badge-soft">
-                                    {{ local.comentarios.length }}
+                                <span v-if="comentariosTotal" class="badge badge-soft">
+                                    {{ comentariosTotal }}
                                 </span>
                             </button>
                             <button
@@ -497,6 +540,24 @@
                                     Sem comentários. Use para informar bloqueios ou dependências externas.
                                 </li>
                             </ul>
+                            <div v-if="hasMoreComentarios" class="wr-logs__more">
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-secondary btn-block"
+                                    :disabled="busyComentarios"
+                                    @click="loadMoreComentarios"
+                                >
+                                    <span v-if="busyComentarios">
+                                        <i class="fas fa-spinner fa-spin"></i> Carregando...
+                                    </span>
+                                    <span v-else>
+                                        Carregar mais
+                                        <small class="text-muted">
+                                            ({{ (local.comentarios || []).length }}/{{ comentariosMeta.total }})
+                                        </small>
+                                    </span>
+                                </button>
+                            </div>
                         </div>
 
                         <div v-show="feedTab === 'atividades'" class="wr-feed-tabs__panel" role="tabpanel">
@@ -675,7 +736,7 @@
 import autocomplete from '../AutoComplete'
 import datepicker from '../DatePicker'
 import upload from '../Upload'
-import { checklistUrl, comentariosUrl, formatDataHoraPicker, inicialNome, itemUrl, normalizeComentario, normalizeLog, normalizeLogsMeta, normalizeTarefa, tarefasUrl, toastErro, toastOk } from './api'
+import { checklistUrl, comentariosUrl, formatDataHoraPicker, inicialNome, itemUrl, normalizeComentario, normalizeComentariosMeta, normalizeLog, normalizeLogsMeta, normalizeTarefa, tarefasUrl, toastErro, toastOk } from './api'
 
 export default {
     name: 'TaskModal',
@@ -714,10 +775,15 @@ export default {
             busyComentario: false,
             deletingComentarioId: null,
             commentEditorKey: 0,
-            _descSaveTimer: null,
+            editingDescricao: false,
+            descricaoDraft: '',
+            descricaoEditorKey: 0,
+            busyDescricao: false,
             _descSavedSnapshot: null,
             logsMeta: null,
-            busyLogs: false
+            busyLogs: false,
+            comentariosMeta: null,
+            busyComentarios: false
         }
     },
     beforeUnmount() {
@@ -738,6 +804,14 @@ export default {
         hasMoreLogs() {
             if (!this.logsMeta) return false
             return Number(this.logsMeta.current_page) < Number(this.logsMeta.last_page)
+        },
+        comentariosTotal() {
+            if (this.comentariosMeta?.total != null) return Number(this.comentariosMeta.total)
+            return Number(this.local?.comentarios_count ?? (this.local?.comentarios || []).length ?? 0)
+        },
+        hasMoreComentarios() {
+            if (!this.comentariosMeta) return false
+            return Number(this.comentariosMeta.current_page) < Number(this.comentariosMeta.last_page)
         },
         editorImageUploadUrl() {
             if (!this.lista || !this.local?.id) return ''
@@ -778,6 +852,11 @@ export default {
                     this.loading = false
                     this.logsMeta = null
                     this.busyLogs = false
+                    this.comentariosMeta = null
+                    this.busyComentarios = false
+                    this.editingDescricao = false
+                    this.descricaoDraft = ''
+                    this.busyDescricao = false
                     return
                 }
                 if (Number(this.loadedId) === Number(id) && this.local) {
@@ -793,6 +872,11 @@ export default {
                 this.itemMembroBusca = ''
                 this.logsMeta = null
                 this.busyLogs = false
+                this.comentariosMeta = null
+                this.busyComentarios = false
+                this.editingDescricao = false
+                this.descricaoDraft = ''
+                this.busyDescricao = false
                 this._descSavedSnapshot = this.local?.descricao || ''
                 this.$nextTick(() => {
                     setTimeout(() => {
@@ -1081,15 +1165,51 @@ export default {
                 if (Number(this.loadedId) !== Number(requestId)) return
                 this.local = normalizeTarefa({ ...this.local, ...data })
                 this.logsMeta = normalizeLogsMeta(data.logs_meta ?? data.logsMeta)
+                this.comentariosMeta = normalizeComentariosMeta(data.comentarios_meta ?? data.comentariosMeta)
                 this._descSavedSnapshot = this.local.descricao || ''
                 // Só atualiza o card no quadro (não mexe na prop do modal)
                 this.$emit('updated', this.local)
+                this.$nextTick(() => this.resizeChecklistTextareas())
             } catch (e) {
                 /* keep local */
             } finally {
                 if (Number(this.loadedId) === Number(requestId)) {
                     this.loading = false
                 }
+            }
+        },
+        resizeChecklistTextareas() {
+            const root = this.$el
+            if (!root || typeof root.querySelectorAll !== 'function') return
+            root.querySelectorAll('.wr-checklist__item-input').forEach((el) => {
+                this.autoSizeChecklistTextarea(el)
+            })
+        },
+        async loadMoreComentarios() {
+            if (!this.hasMoreComentarios || this.busyComentarios || !this.local?.id || !this.lista?.id) return
+            const nextPage = Number(this.comentariosMeta.current_page) + 1
+            const requestId = this.local.id
+            this.busyComentarios = true
+            try {
+                const { data } = await axios.get(
+                    comentariosUrl(this.empresaId, this.quadroId, this.lista.id, this.local.id),
+                    { params: { page: nextPage } }
+                )
+                if (Number(this.loadedId) !== Number(requestId)) return
+                const items = (Array.isArray(data.data) ? data.data : []).map(normalizeComentario).filter(Boolean)
+                const existing = new Set((this.local.comentarios || []).map((c) => Number(c.id)))
+                const novos = items.filter((c) => !existing.has(Number(c.id)))
+                this.local.comentarios = [...(this.local.comentarios || []), ...novos]
+                this.comentariosMeta = normalizeComentariosMeta({
+                    current_page: data.current_page,
+                    last_page: data.last_page,
+                    per_page: data.per_page,
+                    total: data.total
+                })
+            } catch (e) {
+                toastErro(e?.response?.data?.msg || 'Erro ao carregar comentários')
+            } finally {
+                this.busyComentarios = false
             }
         },
         async loadMoreLogs() {
@@ -1138,8 +1258,21 @@ export default {
         syncComentarioCounts() {
             if (!this.local) return
             const list = this.local.comentarios || []
-            this.local.comentarios_count = list.length
-            this.local.bloqueios_count = list.filter((c) => c.tipo === 'bloqueio').length
+            const metaTotal = this.comentariosMeta?.total
+            this.local.comentarios_count =
+                metaTotal != null ? Number(metaTotal) : list.length
+            // bloqueios_count: mantém loadCount do show (lista paginada não representa o total)
+        },
+        bumpComentariosTotal(delta) {
+            if (!this.comentariosMeta) return
+            this.comentariosMeta = {
+                ...this.comentariosMeta,
+                total: Math.max(0, Number(this.comentariosMeta.total || 0) + delta)
+            }
+        },
+        bumpBloqueiosCount(delta) {
+            if (!this.local) return
+            this.local.bloqueios_count = Math.max(0, Number(this.local.bloqueios_count || 0) + delta)
         },
         applyComentario(e) {
             if (!this.local || !e) return
@@ -1147,11 +1280,21 @@ export default {
             const comentario = e.comentario ? normalizeComentario(e.comentario) : null
             const comentarioId = e.comentario_id || comentario?.id
             if (e.evento === 'delete' || (!comentario && comentarioId)) {
+                const removed = this.local.comentarios.find((c) => Number(c.id) === Number(comentarioId))
+                const before = this.local.comentarios.length
                 this.local.comentarios = this.local.comentarios.filter((c) => Number(c.id) !== Number(comentarioId))
+                if (this.local.comentarios.length < before) {
+                    this.bumpComentariosTotal(-1)
+                    if (removed?.tipo === 'bloqueio') this.bumpBloqueiosCount(-1)
+                }
             } else if (comentario) {
                 const idx = this.local.comentarios.findIndex((c) => Number(c.id) === Number(comentario.id))
                 if (idx >= 0) this.local.comentarios.splice(idx, 1, comentario)
-                else this.local.comentarios.unshift(comentario)
+                else {
+                    this.local.comentarios.unshift(comentario)
+                    this.bumpComentariosTotal(1)
+                    if (comentario.tipo === 'bloqueio') this.bumpBloqueiosCount(1)
+                }
             }
             this.syncComentarioCounts()
             this.$emit('updated', this.local)
@@ -1162,7 +1305,6 @@ export default {
             if (this.isEmptyHtml(texto) || this.busyComentario) return
 
             this.busyComentario = true
-            // Limpa o TinyMCE sem destruir (remount sumia o editor)
             const editorRef = this.$refs.commentEditor
             if (editorRef && typeof editorRef.clearContent === 'function') {
                 editorRef.clearContent()
@@ -1181,6 +1323,8 @@ export default {
                     if (!this.local.comentarios) this.local.comentarios = []
                     if (c?.id && !this.local.comentarios.some((x) => Number(x.id) === Number(c.id))) {
                         this.local.comentarios.unshift(c)
+                        this.bumpComentariosTotal(1)
+                        if (c.tipo === 'bloqueio') this.bumpBloqueiosCount(1)
                     }
                     this.applyMembrosFromTarefa(data.tarefa)
                     this.syncComentarioCounts()
@@ -1204,6 +1348,8 @@ export default {
             this.deletingComentarioId = c.id
             const snapshot = (this.local.comentarios || []).slice()
             this.local.comentarios = snapshot.filter((x) => Number(x.id) !== Number(c.id))
+            this.bumpComentariosTotal(-1)
+            if (c.tipo === 'bloqueio') this.bumpBloqueiosCount(-1)
             this.syncComentarioCounts()
             this.$emit('updated', this.local)
 
@@ -1212,6 +1358,8 @@ export default {
                 .catch((e) => {
                     if (e?.response?.status === 404) return
                     this.local.comentarios = snapshot
+                    this.bumpComentariosTotal(1)
+                    if (c.tipo === 'bloqueio') this.bumpBloqueiosCount(1)
                     this.syncComentarioCounts()
                     this.$emit('updated', this.local)
                     toastErro(e?.response?.data?.msg || 'Erro ao excluir comentário')
@@ -1228,23 +1376,40 @@ export default {
                 .then(() => this.$emit('updated', this.local))
                 .catch((e) => toastErro(e?.response?.data?.msg || 'Erro ao salvar título'))
         },
-        queueSaveDescricao() {
-            if (!this.canUpdate || !this.local?.id) return
-            if (this._descSaveTimer) clearTimeout(this._descSaveTimer)
-            this._descSaveTimer = setTimeout(() => this.saveDescricao(), 700)
+        startEditDescricao() {
+            if (!this.canUpdate || !this.local) return
+            this.descricaoDraft = this.local.descricao || ''
+            this._descSavedSnapshot = this.local.descricao || ''
+            this.descricaoEditorKey += 1
+            this.editingDescricao = true
+        },
+        cancelEditDescricao() {
+            this.editingDescricao = false
+            this.descricaoDraft = this._descSavedSnapshot || ''
+            this.busyDescricao = false
         },
         saveDescricao() {
-            if (!this.local?.id) return
-            const atual = this.local.descricao || ''
-            if (atual === this._descSavedSnapshot) return
+            if (!this.local?.id || this.busyDescricao) return
+            const atual = this.descricaoDraft || ''
+            if (atual === (this._descSavedSnapshot || '')) {
+                this.editingDescricao = false
+                return
+            }
+            this.busyDescricao = true
             axios
                 .put(this.base(), { descricao: atual })
                 .then(({ data }) => {
+                    this.local.descricao = atual
                     this._descSavedSnapshot = atual
+                    this.editingDescricao = false
                     this.applyMembrosFromTarefa(data?.tarefa)
                     this.$emit('updated', this.local)
+                    toastOk('Descrição salva')
                 })
-                .catch(() => {})
+                .catch((e) => toastErro(e?.response?.data?.msg || 'Erro ao salvar descrição'))
+                .finally(() => {
+                    this.busyDescricao = false
+                })
         },
         applyMembrosFromTarefa(tarefaPayload) {
             if (!this.local || !tarefaPayload) return
@@ -1546,6 +1711,15 @@ export default {
         },
         setNewItem(ckId, value) {
             this.newItems = { ...this.newItems, [ckId]: value }
+        },
+        onNewItemInput(ckId, event) {
+            this.setNewItem(ckId, event.target.value)
+            this.autoSizeChecklistTextarea(event.target)
+        },
+        autoSizeChecklistTextarea(el) {
+            if (!el) return
+            el.style.height = 'auto'
+            el.style.height = `${Math.max(el.scrollHeight, 28)}px`
         },
         addItem(ck) {
             const titulo = (this.newItems[ck.id] || '').trim()

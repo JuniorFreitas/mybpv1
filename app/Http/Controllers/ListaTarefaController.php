@@ -20,11 +20,13 @@ class ListaTarefaController extends Controller
         $this->assertWeeklyHierarchy($empresa, $quadro);
 
         return response()->json([
-            'lista' => $quadro->Listas()->orderBy('ordem')->with([
-                'Tarefas' => function ($q) {
-                    WeeklyReportEagerLoads::applyBoardTarefas($q);
-                },
-            ])->get(['id', 'quadro_id', 'titulo', 'ordem', 'user_id', 'created_at', 'updated_at']),
+            'lista' => WeeklyReportEagerLoads::finalizeBoardListas(
+                $quadro->Listas()->orderBy('ordem')->with([
+                    'Tarefas' => function ($q) {
+                        WeeklyReportEagerLoads::applyBoardTarefas($q);
+                    },
+                ])->get(['id', 'quadro_id', 'titulo', 'ordem', 'user_id', 'created_at', 'updated_at'])
+            ),
             'atividades' => $quadro->Logs()
                 ->with(['Usuario:id,nome'])
                 ->take(5)
@@ -134,11 +136,13 @@ class ListaTarefaController extends Controller
 
             return response()->json([
                 'msg' => $e->getMessage(),
-                'lista' => $quadro->Listas()->orderBy('ordem')->with([
-                    'Tarefas' => function ($q) {
-                        WeeklyReportEagerLoads::applyBoardTarefas($q);
-                    },
-                ])->get(['id', 'quadro_id', 'titulo', 'ordem', 'user_id', 'created_at', 'updated_at']),
+                'lista' => WeeklyReportEagerLoads::finalizeBoardListas(
+                    $quadro->Listas()->orderBy('ordem')->with([
+                        'Tarefas' => function ($q) {
+                            WeeklyReportEagerLoads::applyBoardTarefas($q);
+                        },
+                    ])->get(['id', 'quadro_id', 'titulo', 'ordem', 'user_id', 'created_at', 'updated_at'])
+                ),
             ], 400);
         }
     }

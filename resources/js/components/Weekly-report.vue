@@ -3,7 +3,7 @@
         <div v-if="loadError" class="alert alert-danger">
             {{ loadError }}
             <button type="button" class="btn btn-sm btn-outline-danger ml-2" @click="carregarQuadros">Tentar novamente</button>
-        </div>
+                </div>
 
         <BoardList
             v-if="!quadroAtivo"
@@ -23,7 +23,7 @@
             <div v-if="preloadBoard" class="text-center text-muted py-5">
                 <i class="fa fa-spinner fa-pulse fa-2x mb-2 d-block"></i>
                 Abrindo quadro...
-            </div>
+                                                </div>
             <KanbanBoard
                 v-else
                 :quadro="quadroAtivo"
@@ -46,7 +46,7 @@
                 @reorder-tarefas="reorderTarefas"
                 @open-tarefa="abrirTarefa"
             />
-        </div>
+                        </div>
 
         <TaskModal
             v-if="tarefaAtiva && listaAtiva && quadroAtivo"
@@ -70,13 +70,13 @@
                 <div class="alert alert-warning mb-0">
                     <i class="fas fa-exclamation-triangle"></i>
                     {{ confirmMsg }}
-                </div>
-            </template>
+                                                </div>
+                                            </template>
             <template #rodape>
                 <button type="button" class="btn btn-sm btn-danger" :disabled="confirmBusy" @click="confirmAction">
                     <i v-if="confirmBusy" class="fa fa-spinner fa-pulse"></i>
                     Confirmar
-                </button>
+                                                    </button>
             </template>
         </modal>
     </div>
@@ -126,14 +126,14 @@ export default {
             confirmFn: null,
             confirmBusy: false,
             perms: {
-                quadro_insert: false,
-                quadro_update: false,
-                quadro_delete: false,
-                lista_insert: false,
-                lista_update: false,
-                lista_delete: false,
-                tarefa_insert: false,
-                tarefa_update: false,
+            quadro_insert: false,
+            quadro_update: false,
+            quadro_delete: false,
+            lista_insert: false,
+            lista_update: false,
+            lista_delete: false,
+            tarefa_insert: false,
+            tarefa_update: false,
                 tarefa_delete: false
             },
             _skipUrlSync: false,
@@ -545,7 +545,7 @@ export default {
             // Payload real do ItemChecklistEvent — nunca reloadBoardSoft (era a lentidão)
             if (!e?.tarefa_id || !e?.checklist_id) return
 
-            this.arrayListas.forEach((lista) => {
+                this.arrayListas.forEach((lista) => {
                 const t = (lista.tarefas || []).find((x) => Number(x.id) === Number(e.tarefa_id))
                 if (!t) return
                 if (!t.checklists) t.checklists = []

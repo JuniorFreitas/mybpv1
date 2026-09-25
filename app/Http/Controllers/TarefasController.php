@@ -77,20 +77,19 @@ class TarefasController extends Controller
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa);
 
         WeeklyReportEagerLoads::loadShow($tarefa);
-        $logsPage = $tarefa->Logs()->paginate(20);
+        $logsPage = $tarefa->Logs()->paginate(WeeklyReportEagerLoads::PAGE_SIZE);
         $tarefa->setRelation('Logs', collect($logsPage->items()));
-        $tarefa->setAttribute('logs_meta', [
-            'current_page' => $logsPage->currentPage(),
-            'last_page' => $logsPage->lastPage(),
-            'per_page' => $logsPage->perPage(),
-            'total' => $logsPage->total(),
-        ]);
-        $tarefa->setRelation(
-            'Comentarios',
-            $tarefa->Comentarios()->with('Usuario:id,nome')->limit(100)->get()
-        );
+        $tarefa->setAttribute('logs_meta', WeeklyReportEagerLoads::pageMeta($logsPage));
+
+        $comentariosPage = $tarefa->Comentarios()
+            ->with('Usuario:id,nome')
+            ->paginate(WeeklyReportEagerLoads::PAGE_SIZE);
+        $tarefa->setRelation('Comentarios', collect($comentariosPage->items()));
+        $tarefa->setAttribute('comentarios_meta', WeeklyReportEagerLoads::pageMeta($comentariosPage));
+
         $tarefa->loadCount([
             'ComentariosBloqueio as bloqueios_count',
+            'Comentarios as comentarios_count',
             'Anexos as anexos_count',
         ]);
 
@@ -103,7 +102,7 @@ class TarefasController extends Controller
 
         $page = max(1, (int) $request->input('page', 1));
 
-        return $tarefa->Logs()->paginate(20, ['*'], 'page', $page);
+        return $tarefa->Logs()->paginate(WeeklyReportEagerLoads::PAGE_SIZE, ['*'], 'page', $page);
     }
 
     public function update(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
@@ -187,7 +186,9 @@ class TarefasController extends Controller
 
             Event::dispatch(new TarefaEvent($tarefa, TarefaEvent::UPDATE));
 
-            return response()->json(['tarefa' => $tarefa->fresh(['Membros'])], 200);
+            return response()->json([
+                'tarefa' => WeeklyReportEagerLoads::patchPayload($tarefa->fresh()),
+            ], 200);
         } catch (\Exception $e) {
             \DB::rollBack();
 
@@ -351,7 +352,13 @@ class TarefasController extends Controller
             }
         }
 
-        return response()->json(['tarefa' => $tarefa->fresh(['Membros'])], 200);
+        return response()->json([
+            'tarefa' => WeeklyReportEagerLoads::patchPayload($tarefa->fresh()->load([
+                'Membros' => function ($q) {
+                    $q->select(['users.id', 'users.nome']);
+                },
+            ])),
+        ], 200);
     }
 
     public function updateDataHoraInicio(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
@@ -394,7 +401,9 @@ class TarefasController extends Controller
                 ]);
             }
 
-            return response()->json(['tarefa' => $tarefa->fresh()], 200);
+            return response()->json([
+                'tarefa' => WeeklyReportEagerLoads::patchPayload($tarefa->fresh()),
+            ], 200);
         } catch (\Throwable $e) {
             return response()->json(['msg' => 'Erro ao atualizar data de início'], 400);
         }
@@ -447,7 +456,9 @@ class TarefasController extends Controller
                 ]);
             }
 
-            return response()->json(['tarefa' => $tarefa->fresh()], 200);
+            return response()->json([
+                'tarefa' => WeeklyReportEagerLoads::patchPayload($tarefa->fresh()),
+            ], 200);
         } catch (\Throwable $e) {
             return response()->json(['msg' => 'Erro ao atualizar data de entrega'], 400);
         }

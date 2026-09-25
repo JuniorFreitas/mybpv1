@@ -23,7 +23,7 @@
 - Atividade/histórico: `LogWeekly` precisa de `tarefa_id` para aparecer no modal. Relação `Tarefa::Logs()` sem `take()` (limit no `show`). Echo `.log` atualiza `TaskModal` via `prependLog` (não só `tarefaAtiva`).
 - Atividades no modal: paginação 20 (`show` traz `logs` + `logs_meta`; `GET .../tarefas/{id}/logs?page=` carrega mais).
 - Lembrete de entrega: select no sidebar grava código (`5m`…`2d`) → `tarefas.lembrete` datetime. Job `LembreteTarefaJob` a cada minuto em `routes/schedule.php` (Horizon). Dispara `NotificacaoEvent::LEMBRETE_TAREFA` + e-mail `LembreteTarefaMail` (fila) aos membros. Precisa de membros no card. `Request::exists('lembrete')` para limpar (não usar `has`).
-- Performance (DBA): sem `$with` global em Tarefa/Lista/Checklist/LogWeekly. Board usa `WeeklyReportEagerLoads::applyBoardTarefas` (sem descrição/anexos/membros de item). Show carrega completo. Job lembrete enxuto. Índices em `2026_09_25_160000_add_weekly_report_performance_indexes`.
+- Performance (DBA): sem `$with` global; board via `WeeklyReportEagerLoads`; show completo; job lembrete enxuto; PATCH via `patchPayload`; comentários/logs paginados (20); `membros_tarefa` unique; índices `2026_09_25_160000_*` + `170000_unique_membros`.
 - Prazo checklist/item: coluna `datahora_entrega` em `checklists_tarefas` e `checklists_tarefa_items`. Update via `acao=add|remove` + `datahora_entrega`. UI: ícone relógio no header/item.
 - Comentários: tabela `tarefas_comentarios` (tipos `comentario|bloqueio|dependencia`). Rotas nested `/comentarios`. Echo `weekly-report.tarefas.comentarios.{empresaId}`. Badge de bloqueio no card.
 - Descrição/comentários: TinyMCE `preset=basico` (formatação básica + imagem). HTML sanitizado via `WeeklyReportHtml`.

@@ -129,7 +129,7 @@ class Tarefa extends Model {
 
     public function Membros() {
         return $this->belongsToMany(User::class, 'membros_tarefa', 'tarefa_id', 'user_id')
-            ->select(['users.id', 'users.nome', 'users.login']);
+            ->select(['users.id', 'users.nome']);
     }
 
     public function Checklists() {

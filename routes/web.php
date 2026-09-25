@@ -1529,6 +1529,8 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::delete('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/anexo/{arquivo}', [\App\Http\Controllers\TarefasController::class, 'anexoDelete'])->name('anexo-tarefa.anexo-delete');
 
         // Comentários
+        Route::get('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/comentarios', [\App\Http\Controllers\TarefasComentarioController::class, 'index'])
+            ->name('comentarios.index');
         Route::post('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/comentarios', [\App\Http\Controllers\TarefasComentarioController::class, 'store'])
             ->name('comentarios.store')
             ->middleware('can:weekly_report_quadro_tarefa_update');

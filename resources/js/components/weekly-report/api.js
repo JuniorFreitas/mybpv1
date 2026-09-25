@@ -88,6 +88,10 @@ export function normalizeLogsMeta(raw) {
     }
 }
 
+export function normalizeComentariosMeta(raw) {
+    return normalizeLogsMeta(raw)
+}
+
 export function normalizeComentario(raw) {
     if (!raw) return null
     const usuario = raw.usuario ?? raw.Usuario ?? null

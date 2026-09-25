@@ -4,13 +4,17 @@ namespace App\Support\WeeklyReport;
 
 use App\Models\Tarefa;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Collection;
 
 /**
  * Eager loads explícitos por contexto — evita $with global e over-fetch.
  */
 final class WeeklyReportEagerLoads
 {
+    public const PAGE_SIZE = 20;
+
     /** Colunas do card no kanban (sem descrição/lembrete/anexos). */
     public const TAREFA_BOARD_COLUMNS = [
         'id',
@@ -38,7 +42,6 @@ final class WeeklyReportEagerLoads
                 'Membros' => function ($q) {
                     $q->select(['users.id', 'users.nome']);
                 },
-                // Progresso do card: só concluído dos itens (sem título/membros)
                 'Checklists' => function ($q) {
                     $q->select(['id', 'tarefa_id', 'ordem'])->orderBy('ordem');
                 },
@@ -46,6 +49,19 @@ final class WeeklyReportEagerLoads
                     $q->select(['id', 'checklist_id', 'concluido', 'ordem'])->orderBy('ordem');
                 },
             ]);
+    }
+
+    /** Remove appends/atributos que o board não usa. */
+    public static function finalizeBoardListas(Collection|EloquentCollection $listas): Collection|EloquentCollection
+    {
+        foreach ($listas as $lista) {
+            foreach ($lista->Tarefas ?? [] as $tarefa) {
+                $tarefa->setAppends(['emAtraso']);
+                $tarefa->makeHidden(['lembrete', 'descricao', 'lembreteText']);
+            }
+        }
+
+        return $listas;
     }
 
     public static function loadShow(Tarefa $tarefa): Tarefa
@@ -90,5 +106,40 @@ final class WeeklyReportEagerLoads
                     $q->select(['id', 'titulo']);
                 },
             ]);
+    }
+
+    /** Payload mínimo após PATCH (não reidrata anexos/checklist). */
+    public static function patchPayload(Tarefa $tarefa, array $extra = []): array
+    {
+        $base = [
+            'id' => $tarefa->id,
+            'lista_id' => $tarefa->lista_id,
+            'titulo' => $tarefa->titulo,
+            'descricao' => $tarefa->descricao,
+            'concluido' => (bool) $tarefa->concluido,
+            'datahora_inicio' => $tarefa->datahora_inicio,
+            'datahora_entrega' => $tarefa->datahora_entrega,
+            'emAtraso' => (bool) $tarefa->emAtraso,
+            'lembreteText' => $tarefa->lembreteText,
+        ];
+
+        if ($tarefa->relationLoaded('Membros')) {
+            $base['membros'] = $tarefa->Membros->map(fn ($u) => [
+                'id' => $u->id,
+                'nome' => $u->nome,
+            ])->values()->all();
+        }
+
+        return array_merge($base, $extra);
+    }
+
+    public static function pageMeta($paginator): array
+    {
+        return [
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'per_page' => $paginator->perPage(),
+            'total' => $paginator->total(),
+        ];
     }
 }
