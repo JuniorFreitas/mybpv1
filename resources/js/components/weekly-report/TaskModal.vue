@@ -2,7 +2,7 @@
     <modal
         id="wrJanelaTarefa"
         :titulo="local?.titulo || 'Tarefa'"
-        size="g"
+        :size="95"
         topo
         :fechar="!busy"
         ref="modal"
