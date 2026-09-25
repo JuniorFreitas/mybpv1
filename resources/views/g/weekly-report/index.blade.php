@@ -6,7 +6,7 @@
 @endsection
 @section('content')
 
-    <weekly-report :id="{{auth()->user()->empresa_id}}"></weekly-report>
+    <weekly-report :id="{{auth()->user()->empresa_id}}" :user-id="{{auth()->id()}}"></weekly-report>
 
 @stop
 @push('js')

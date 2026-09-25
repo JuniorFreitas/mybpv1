@@ -1504,13 +1504,10 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
     //Weekley report
     Route::group(['as' => 'weekly-report.'], function () {
 
-        //Anexos s3
-        Route::get('weekly-report/anexo/{arquivo}', [\App\Http\Controllers\TarefasController::class, 'anexoShow'])->name('anexo-tarefa.anexo-show');
-        Route::get('weekly-report/anexoDownload/{arquivo}', [\App\Http\Controllers\TarefasController::class, 'download'])->name('anexo-tarefa.anexo-download');
-        Route::delete('weekly-report/anexo/{arquivo}', [\App\Http\Controllers\TarefasController::class, 'anexoDelete'])->name('anexo-tarefa.anexo-delete');
-
-
         //Itens
+        Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/checklist/{checklist}/item/{item}/updateMembro', [\App\Http\Controllers\ChecklistsTarefaItemController::class, 'updateMembro'])
+            ->name('item.updateMembro')
+            ->middleware('can:weekly_report_quadro_tarefa_update');
         Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/checklist/{checklist}/item/{item}', [\App\Http\Controllers\ChecklistsTarefaItemController::class, 'update'])->name('update');
         Route::delete('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/checklist/{checklist}/item/{item}', [\App\Http\Controllers\ChecklistsTarefaItemController::class, 'destroy'])->name('destroy');
         Route::post('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/checklist/{checklist}/item', [\App\Http\Controllers\ChecklistsTarefaItemController::class, 'store'])->name('store');
@@ -1523,10 +1520,26 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
 
         // Anexos
         Route::post('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/uploadAnexos', [\App\Http\Controllers\TarefasController::class, 'uploadAnexos'])->name('anexo-tarefa.upload-anexos');
+        Route::post('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/uploadEditorImage', [\App\Http\Controllers\TarefasController::class, 'uploadEditorImage'])
+            ->name('anexo-tarefa.upload-editor-image')
+            ->middleware('can:weekly_report_quadro_tarefa_update');
         Route::get('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/anexo/{arquivo}', [\App\Http\Controllers\TarefasController::class, 'anexoShow'])->name('anexo-tarefa.anexo-show');
-        Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/anexo/{arquivo}', [\App\Http\Controllers\TarefasController::class, 'anexoUpdate'])->name('anexo-tarefa.anexo-show');
+        Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/anexo/{arquivo}', [\App\Http\Controllers\TarefasController::class, 'anexoUpdate'])->name('anexo-tarefa.anexo-update');
         Route::get('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/anexoDownload/{arquivo}', [\App\Http\Controllers\TarefasController::class, 'download'])->name('anexo-tarefa.anexo-download');
         Route::delete('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/anexo/{arquivo}', [\App\Http\Controllers\TarefasController::class, 'anexoDelete'])->name('anexo-tarefa.anexo-delete');
+
+        // Comentários
+        Route::get('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/comentarios', [\App\Http\Controllers\TarefasComentarioController::class, 'index'])
+            ->name('comentarios.index');
+        Route::post('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/comentarios', [\App\Http\Controllers\TarefasComentarioController::class, 'store'])
+            ->name('comentarios.store')
+            ->middleware('can:weekly_report_quadro_tarefa_update');
+        Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/comentarios/{comentario}', [\App\Http\Controllers\TarefasComentarioController::class, 'update'])
+            ->name('comentarios.update')
+            ->middleware('can:weekly_report_quadro_tarefa_update');
+        Route::delete('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/comentarios/{comentario}', [\App\Http\Controllers\TarefasComentarioController::class, 'destroy'])
+            ->name('comentarios.destroy')
+            ->middleware('can:weekly_report_quadro_tarefa_update');
 
         //Tarefa
 
@@ -1536,6 +1549,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/updateMembro', [\App\Http\Controllers\TarefasController::class, 'updateMembro'])->name('updateMembro');
         Route::get('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/buscarMembros', [\App\Http\Controllers\AutoCompletesController::class, 'buscarMembros'])->name('buscarMembros');
 
+        Route::get('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/logs', [\App\Http\Controllers\TarefasController::class, 'logs'])->name('tarefa.logs');
         Route::delete('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}', [\App\Http\Controllers\TarefasController::class, 'destroy'])->name('delete')->middleware('can:weekly_report_quadro_tarefa_delete');
         Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}', [\App\Http\Controllers\TarefasController::class, 'update'])->name('update')->middleware('can:weekly_report_quadro_tarefa_update');
         Route::get('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}', [\App\Http\Controllers\TarefasController::class, 'show'])->name('show');

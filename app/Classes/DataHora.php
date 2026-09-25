@@ -272,10 +272,45 @@ class DataHora
 
     public static function converterDatePicker($valor)
     {
-        $partes = explode(" às ", $valor);
-        if (count($partes) == 2) {
-            return $partes[0] . " " . $partes[1];
+        if ($valor === null || $valor === '') {
+            return null;
         }
+
+        $valor = trim((string) $valor);
+
+        // "24/09/2026 às 18:00" (DatePicker MyBP)
+        if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})\s+às\s+(\d{2}:\d{2})(?::\d{2})?$/iu', $valor, $m)) {
+            $dia = (int) $m[1];
+            $mes = (int) $m[2];
+            if ($dia < 1 || $dia > 31 || $mes < 1 || $mes > 12) {
+                return null;
+            }
+
+            return $m[1] . '/' . $m[2] . '/' . $m[3] . ' ' . $m[4] . ':00';
+        }
+
+        // "24/09/2026 18:00" / "24/09/2026 18:00:00"
+        if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2})(?::\d{2})?$/', $valor, $m)) {
+            $dia = (int) $m[1];
+            $mes = (int) $m[2];
+            if ($dia < 1 || $dia > 31 || $mes < 1 || $mes > 12) {
+                return null;
+            }
+
+            return $m[1] . '/' . $m[2] . '/' . $m[3] . ' ' . $m[4] . ':00';
+        }
+
+        // ISO / banco: "2026-09-24 18:00:00"
+        if (preg_match('/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})(?::\d{2})?/', $valor, $m)) {
+            return $m[1] . ' ' . $m[2] . ':00';
+        }
+
+        $partes = preg_split('/\s+às\s+/iu', $valor);
+        if (is_array($partes) && count($partes) === 2) {
+            return trim($partes[0]) . ' ' . trim($partes[1]);
+        }
+
+        return null;
     }
 
     //METODOS

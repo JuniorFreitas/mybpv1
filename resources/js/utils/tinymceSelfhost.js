@@ -106,6 +106,41 @@ const TINYMCE_PRESETS = {
                 ed.execCommand('fontSize', false, '12pt')
             })
         }
+    },
+    basico: {
+        toolbar: ['undo redo | bold italic underline | bullist numlist | link image'],
+        menubar: false,
+        statusbar: false,
+        schema: 'html5',
+        height: 160,
+        resize: true,
+        branding: false,
+        plugins: 'paste lists link autolink image',
+        paste_data_images: true,
+        automatic_uploads: true,
+        images_reuse_filename: false,
+        file_picker_types: 'image',
+        image_description: false,
+        image_dimensions: false,
+        image_class_list: [{ title: 'Responsiva', value: 'img-fluid' }],
+        paste_auto_cleanup_on_paste: true,
+        paste_remove_styles: true,
+        paste_remove_styles_if_webkit: true,
+        paste_strip_class_attributes: true,
+        default_link_target: '_blank',
+        link_assume_external_targets: true,
+        auto_focus: false,
+        extended_valid_elements: 'span[class|contenteditable|data-user-id|data-nome]',
+        content_style:
+            'body { font-size: 13px; font-family: Arial, Helvetica, sans-serif; line-height: 1.45; margin: 8px; }' +
+            ' img { max-width: 100%; height: auto; }' +
+            ' .wr-mention { display: inline-block; background: #e8f1f6; color: #174257; border-radius: 4px;' +
+            ' padding: 0 4px; font-weight: 600; white-space: nowrap; }',
+        setup: function (ed) {
+            ed.on('init', function () {
+                ed.execCommand('fontName', false, 'Arial')
+            })
+        }
     }
 }
 

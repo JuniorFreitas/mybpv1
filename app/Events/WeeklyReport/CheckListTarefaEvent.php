@@ -52,23 +52,36 @@ class CheckListTarefaEvent implements ShouldBroadcastNow {
         switch ($this->evento) {
             case self::INSERT:
                 return [
-                    'checklists' => $this->obj->Tarefa->Checklists()->with('Itens')->orderBy('ordem')->get(),
+                    'checklists' => $this->obj->Tarefa->Checklists()
+                        ->with(['Itens.Membros'])
+                        ->orderBy('ordem')
+                        ->get(),
                     'tarefa_id' => $this->obj->Tarefa->id,
                     'lista_id' => $this->obj->Tarefa->lista_id,
                 ];
                 break;
             case self::UPDATE:
                 return [
-                    'checklists' => $this->obj->Tarefa->Checklists()->with('Itens')->orderBy('ordem')->get(),
+                    'checklists' => $this->obj->Tarefa->Checklists()
+                        ->with(['Itens.Membros'])
+                        ->orderBy('ordem')
+                        ->get(),
                     'tarefa_id' => $this->obj->Tarefa->id,
                     'lista_id' => $this->obj->Tarefa->lista_id,
                 ];
                 break;
             case self::DELETE:
+                $tarefaId = data_get($this->obj, 'tarefa_id')
+                    ?? data_get($this->obj, 'Tarefa.id')
+                    ?? data_get($this->obj, 'tarefa.id');
+                $listaId = data_get($this->obj, 'lista_id')
+                    ?? data_get($this->obj, 'Tarefa.lista_id')
+                    ?? data_get($this->obj, 'tarefa.lista_id');
+
                 return [
-                    'checklist_id' => $this->obj->id,
-                    'tarefa_id' => $this->obj->Tarefa->id,
-                    'lista_id' => $this->obj->Tarefa->lista_id,
+                    'checklist_id' => $this->idDelete ?? data_get($this->obj, 'id'),
+                    'tarefa_id' => $tarefaId,
+                    'lista_id' => $listaId,
                 ];
                 break;
             case self::ORDENAR_ITENS:

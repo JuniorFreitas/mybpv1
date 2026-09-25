@@ -211,24 +211,30 @@ export default {
     },
 
     updated() {
-        this.emitUpdate(this.el.value)
-        if (this.range) {
-            let texto = this.el.value.trim()
-            let datas = texto.replace(this.separador + ' ', '#')
-            datas = datas.split('#')
-            if (datas.length > 1) {
-                $(this.el).data('daterangepicker').setStartDate(datas[0])
-                $(this.el).data('daterangepicker').setEndDate(datas[1])
+        if (!this.el) return
+        const picker = $(this.el).data('daterangepicker')
+        if (!picker) return
+
+        const texto = (this.el.value || '').trim()
+        if (!texto) return
+
+        try {
+            this.emitUpdate(this.el.value)
+            if (this.range) {
+                let datas = texto.replace(this.separador + ' ', '#').split('#')
+                if (datas.length < 2) {
+                    datas = texto.replace(this.separador, '#').split('#')
+                }
+                if (datas.length > 1 && datas[0] && datas[1]) {
+                    picker.setStartDate(datas[0])
+                    picker.setEndDate(datas[1])
+                }
             } else {
-                let datas = texto.replace(this.separador, '#')
-                datas = datas.split('#')
-                $(this.el).data('daterangepicker').setStartDate(datas[0])
-                $(this.el).data('daterangepicker').setEndDate(datas[1])
+                picker.setStartDate(texto)
+                picker.setEndDate(texto)
             }
-        } else {
-            let texto = this.el.value.trim()
-            $(this.el).data('daterangepicker').setStartDate(texto)
-            $(this.el).data('daterangepicker').setEndDate(texto)
+        } catch (e) {
+            // evita quebrar o modal quando o valor ainda não está no formato do picker
         }
     },
     mounted() {
@@ -288,6 +294,7 @@ export default {
             })
 
             $(this.el).on('hide.daterangepicker', function (ev, picker) {
+                if (!picker || !picker.startDate) return
                 if (ref.hora) {
                     $(this).val(picker.startDate.format('L [às] HH:mm') + ref.separador + picker.endDate.format('L [às] HH:mm'))
                     ref.emitUpdate(ref.el.value)
@@ -341,6 +348,7 @@ export default {
             })
 
             $(this.el).on('hide.daterangepicker', function (ev, picker) {
+                if (!picker || !picker.startDate) return
                 if (ref.hora) {
                     $(this).val(picker.startDate.format('L [às] HH:mm'))
                 } else {
@@ -352,7 +360,10 @@ export default {
             })
         }
 
-        this.emitUpdate(this.el.value)
+        // Só propaga valor inicial se o campo já tinha data (evita inventar data no mount)
+        if (valueInicial) {
+            this.emitUpdate(this.el.value)
+        }
     }
 }
 </script>

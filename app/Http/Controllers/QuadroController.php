@@ -3,155 +3,122 @@
 namespace App\Http\Controllers;
 
 use App\Events\WeeklyReport\QuadroEvent;
-use App\Models\Arquivo;
-use App\Models\LogWeekly;
+use App\Http\Controllers\Concerns\GuardsWeeklyReportTenant;
 use App\Models\Quadro;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 
-class QuadroController extends Controller {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index() {
+class QuadroController extends Controller
+{
+    use GuardsWeeklyReportTenant;
+
+    public function index()
+    {
         return view('g.weekly-report.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create() {
-        //
-    }
+    public function store(Request $request, int $empresa)
+    {
+        $this->assertWeeklyEmpresaId($empresa);
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request,User $empresa) {
         $dadosValidados = \Validator::make($request->all(), [
             'titulo' => 'required|min:1',
         ]);
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+        if ($dadosValidados->fails()) {
             return response()->json([
                 'msg' => 'Erro ao criar o quadro',
-                'erros' => $dadosValidados->errors()
+                'erros' => $dadosValidados->errors(),
             ], 400);
         }
+
         try {
             \DB::beginTransaction();
 
-            $quadro = Quadro::create($request->input());
+            $quadro = Quadro::create([
+                'titulo' => $request->input('titulo'),
+            ]);
+
             \DB::commit();
 
-            Event::dispatch(new QuadroEvent($quadro,QuadroEvent::INSERT));
+            Event::dispatch(new QuadroEvent($quadro, QuadroEvent::INSERT));
 
-            return response()->json([], 201);
-
+            return response()->json(['quadro' => $quadro], 201);
         } catch (\Exception $e) {
             \DB::rollBack();
+
             return response()->json(['msg' => $e->getMessage()], 400);
         }
     }
 
-    /**
-     * @param Request $request
-     * @param User $empresa
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function show(Request $request,  User $empresa) {
+    public function show(Request $request, int $empresa)
+    {
+        $this->assertWeeklyEmpresaId($empresa);
+
         return response()->json([
-            'lista' => Quadro::all(),
+            'lista' => Quadro::query()->orderBy('titulo')->get(),
             'quadro_insert' => auth()->user()->can('weekly_report_quadro_insert'),
             'quadro_update' => auth()->user()->can('weekly_report_quadro_update'),
             'quadro_delete' => auth()->user()->can('weekly_report_quadro_delete'),
-            'lista_insert' => auth()->user()->can('weekly_report_quadro_lista_quadro_insert'),
-            'lista_update' => auth()->user()->can('weekly_report_quadro_lista_quadro_update'),
-            'lista_delete' => auth()->user()->can('weekly_report_quadro_lista_quadro_delete'),
+            'lista_insert' => auth()->user()->can('weekly_report_quadro_lista_insert'),
+            'lista_update' => auth()->user()->can('weekly_report_quadro_lista_update'),
+            'lista_delete' => auth()->user()->can('weekly_report_quadro_lista_delete'),
             'tarefa_insert' => auth()->user()->can('weekly_report_quadro_tarefa_insert'),
             'tarefa_update' => auth()->user()->can('weekly_report_quadro_tarefa_update'),
             'tarefa_delete' => auth()->user()->can('weekly_report_quadro_tarefa_delete'),
         ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param \App\Models\Quadro $quadro
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Quadro $quadro) {
-        //
-    }
+    public function update(Request $request, int $empresa, Quadro $quadro)
+    {
+        $this->assertWeeklyHierarchy($empresa, $quadro);
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Quadro $quadro
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, User $empresa, Quadro $quadro) {
         $dadosValidados = \Validator::make($request->all(), [
             'titulo' => 'required|min:1',
         ]);
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+        if ($dadosValidados->fails()) {
             return response()->json([
                 'msg' => 'Erro ao atualizar o quadro',
-                'erros' => $dadosValidados->errors()
+                'erros' => $dadosValidados->errors(),
             ], 400);
         }
+
         try {
             \DB::beginTransaction();
-            $quadro->update($request->input());
-
+            $quadro->update($request->only(['titulo']));
             \DB::commit();
 
-            Event::dispatch(new QuadroEvent($quadro,QuadroEvent::UPDATE));
+            Event::dispatch(new QuadroEvent($quadro, QuadroEvent::UPDATE));
 
-            return response()->json([], 201);
-
+            return response()->json(['quadro' => $quadro], 200);
         } catch (\Exception $e) {
             \DB::rollBack();
+
             return response()->json(['msg' => $e->getMessage()], 400);
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param \App\Models\Quadro $quadro
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Request $request, User $empresa, Quadro $quadro) {
+    public function destroy(Request $request, int $empresa, Quadro $quadro)
+    {
+        $this->assertWeeklyHierarchy($empresa, $quadro);
+
         try {
             \DB::beginTransaction();
             $idDelete = $quadro->id;
             $quadro->delete();
-
             \DB::commit();
 
-            Event::dispatch(new QuadroEvent($idDelete,QuadroEvent::DELETE));
+            Event::dispatch(new QuadroEvent($idDelete, QuadroEvent::DELETE));
 
-            return response()->json([], 201);
-
+            return response()->json([], 200);
         } catch (\Exception $e) {
             \DB::rollBack();
+
             return response()->json([
                 'msg' => $e->getMessage(),
-                'lista' => Quadro::all()
+                'lista' => Quadro::query()->orderBy('titulo')->get(),
             ], 400);
         }
-
-
     }
 }

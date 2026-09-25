@@ -51,6 +51,7 @@ class ListaTarefa extends Model
         'titulo',
         'quadro_id',
         'ordem',
+        'user_id',
     ];
     protected $casts = [
         'id' => 'int',
@@ -66,11 +67,7 @@ class ListaTarefa extends Model
     }
 
 
-    protected $with=[
-        'Tarefas.Membros',
-        'Tarefas.Checklists.Itens',
-        //'Tarefas.Logs',
-    ];
+    protected $with = [];
 
     protected static function booted()
     {

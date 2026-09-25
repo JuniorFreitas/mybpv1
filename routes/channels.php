@@ -20,50 +20,41 @@ use Illuminate\Support\Facades\Broadcast;
 
 // Weekly report ===============================================================================================
 //Quadros
-Broadcast::channel('weekly-report.quadros.{empresa}', function (User $user, User $empresa) {
-    if($user->empresa_id === $empresa->id){
-        return $user;
-    }
+Broadcast::channel('weekly-report.quadros.{empresaId}', function (User $user, int $empresaId) {
+    return (int) $user->empresa_id === (int) $empresaId ? $user : false;
 });
 // Listas de tarefas
-Broadcast::channel('weekly-report.listas.{empresa}', function (User $user, User $empresa) {
-    if($user->empresa_id === $empresa->id){
-        return $user;
-    }
+Broadcast::channel('weekly-report.listas.{empresaId}', function (User $user, int $empresaId) {
+    return (int) $user->empresa_id === (int) $empresaId ? $user : false;
 });
 
 
 // Tarefas > Checklists > Itens
-Broadcast::channel('weekly-report.tarefas.checklists.itens.{empresa}', function (User $user, User $empresa) {
-    if($user->empresa_id === $empresa->id){
-        return $user;
-    }
+Broadcast::channel('weekly-report.tarefas.checklists.itens.{empresaId}', function (User $user, int $empresaId) {
+    return (int) $user->empresa_id === (int) $empresaId ? $user : false;
 });
 
 // Tarefas > Checklists
-Broadcast::channel('weekly-report.tarefas.checklists.{empresa}', function (User $user, User $empresa) {
-    if($user->empresa_id === $empresa->id){
-        return $user;
-    }
+Broadcast::channel('weekly-report.tarefas.checklists.{empresaId}', function (User $user, int $empresaId) {
+    return (int) $user->empresa_id === (int) $empresaId ? $user : false;
+});
+
+// Tarefas > Comentários
+Broadcast::channel('weekly-report.tarefas.comentarios.{empresaId}', function (User $user, int $empresaId) {
+    return (int) $user->empresa_id === (int) $empresaId ? $user : false;
 });
 
 // Anexos das tarefas
-Broadcast::channel('weekly-report.tarefas.anexos.{empresa}', function (User $user, User $empresa) {
-    if($user->empresa_id === $empresa->id){
-        return $user;
-    }
+Broadcast::channel('weekly-report.tarefas.anexos.{empresaId}', function (User $user, int $empresaId) {
+    return (int) $user->empresa_id === (int) $empresaId ? $user : false;
 });
 // Tarefas
-Broadcast::channel('weekly-report.tarefas.{empresa}', function (User $user, User $empresa) {
-    if($user->empresa_id === $empresa->id){
-        return $user;
-    }
+Broadcast::channel('weekly-report.tarefas.{empresaId}', function (User $user, int $empresaId) {
+    return (int) $user->empresa_id === (int) $empresaId ? $user : false;
 });
 //logs
-Broadcast::channel('weekly-report.log.{empresa}', function (User $user, User $empresa) {
-    if($user->empresa_id === $empresa->id){
-        return $user;
-    }
+Broadcast::channel('weekly-report.log.{empresaId}', function (User $user, int $empresaId) {
+    return (int) $user->empresa_id === (int) $empresaId ? $user : false;
 });
 
 // Chat ===============================================================================================

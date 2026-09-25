@@ -19,7 +19,7 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $empresa_id
- * @property-read \App\Models\User|null $Empresa
+ * @property-read \App\Models\Cliente|null $Empresa
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ListaTarefa> $Listas
  * @property-read int|null $listas_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LogWeekly> $Logs
@@ -49,6 +49,8 @@ class Quadro extends Model {
     protected $table = 'quadros';
     protected $fillable = [
         'titulo',
+        'empresa_id',
+        'user_id',
     ];
     protected $casts = [
         'id' => 'int',
@@ -65,8 +67,10 @@ class Quadro extends Model {
 
     protected static function booted() {
         static::creating(function ($model) {
-            $model->empresa_id = auth()->user()->empresa_id;
-            $model->user_id = auth()->user()->id;
+            if (auth()->user()) {
+                $model->empresa_id = auth()->user()->empresa_id;
+                $model->user_id = auth()->user()->id;
+            }
         });
 
         static::addGlobalScope(new ScopeEmpresa());
@@ -81,7 +85,7 @@ class Quadro extends Model {
     }
 
     public function Empresa() {
-        return $this->hasOne(User::class, 'id', 'empresa_id');
+        return $this->hasOne(Cliente::class, 'id', 'empresa_id');
     }
 
     public function Usuario() {

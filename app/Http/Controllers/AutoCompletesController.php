@@ -485,7 +485,7 @@ class AutoCompletesController extends Controller
         $busca = $request->query('busca');
         return User::whereAtivo(true)
             ->where('nome', 'like', '%' . $busca . '%')
-            ->whereTipo(User::ADMINISTRADOR)
+            ->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS)
             ->whereEmpresaId(auth()->user()->empresa_id)
             ->take($quantidade)
             ->get()

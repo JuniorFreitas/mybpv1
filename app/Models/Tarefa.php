@@ -85,6 +85,7 @@ class Tarefa extends Model {
         'lembrete',
         'ordem',
         'concluido',
+        'user_id',
     ];
 
     protected $casts = [
@@ -107,12 +108,7 @@ class Tarefa extends Model {
         return $date->format('Y-m-d H:i:s');
     }
 
-    protected $with = [
-        'Membros',
-        'Anexos',
-        'Checklists.Itens',
-        //'Logs'
-    ];
+    protected $with = [];
 
     protected $appends = [
         'emAtraso',
@@ -132,7 +128,8 @@ class Tarefa extends Model {
     }
 
     public function Membros() {
-        return $this->belongsToMany(User::class, 'membros_tarefa', 'tarefa_id', 'user_id');
+        return $this->belongsToMany(User::class, 'membros_tarefa', 'tarefa_id', 'user_id')
+            ->select(['users.id', 'users.nome']);
     }
 
     public function Checklists() {
@@ -149,8 +146,18 @@ class Tarefa extends Model {
 
     public function Logs() {
         return $this->hasMany(LogWeekly::class, 'tarefa_id', 'id')
-            ->with('Usuario:id,nome')->take(5)
+            ->with('Usuario:id,nome')
             ->orderByDesc('created_at');
+    }
+
+    public function Comentarios() {
+        return $this->hasMany(TarefaComentario::class, 'tarefa_id', 'id')
+            ->orderByDesc('created_at');
+    }
+
+    public function ComentariosBloqueio() {
+        return $this->hasMany(TarefaComentario::class, 'tarefa_id', 'id')
+            ->where('tipo', TarefaComentario::TIPO_BLOQUEIO);
     }
 
     public function getDataHoraInicioFormatadaAttribute() {
@@ -162,111 +169,125 @@ class Tarefa extends Model {
 
     }
 
-    public function setLembreteAttribute($value) {
-        if($value==null){
-            $this->attributes['lembrete']=null;
-            return $this->attributes['lembrete'];
-        }
-        if ($this->datahora_entrega) {
-            $dataLembrete = new DataHora($this->datahora_entrega);
-            $dataLembrete->setSegundo(0);
-            switch ($value){
-                case '5m':
-                    $dataLembrete->subtrairMinuto(5);
-                    $this->attributes['lembrete'] = $dataLembrete->dataHoraInsert();
-                    break;
-                case '10m':
-                    $dataLembrete->subtrairMinuto(10);
-                    $this->attributes['lembrete'] = $dataLembrete->dataHoraInsert();
-                    break;
-                case '15m':
-                    $dataLembrete->subtrairMinuto(15);
-                    $this->attributes['lembrete'] = $dataLembrete->dataHoraInsert();
-                    break;
-                case '1H':
-                    $dataLembrete->subtrairHora(1);
-                    $this->attributes['lembrete'] = $dataLembrete->dataHoraInsert();
-                    break;
-                case '2H':
-                    $dataLembrete->subtrairHora(2);
-                    $this->attributes['lembrete'] = $dataLembrete->dataHoraInsert();
-                    break;
-                case '1d':
-                    $dataLembrete->subtrairDia(1);
-                    $this->attributes['lembrete'] = $dataLembrete->dataHoraInsert();
-                    break;
-                case '2d':
-                    $dataLembrete->subtrairDia(2);
-                    $this->attributes['lembrete'] = $dataLembrete->dataHoraInsert();
-                    break;
-                default:
-                    /*$novo = new DataHora($value);
-                    $this->attributes['lembrete'] = $novo->dataHoraInsert();*/
-                    break;
-            }
-        }else{
-            $this->attributes['lembrete']=null;
+    public function setLembreteAttribute($value)
+    {
+        if ($value === null || $value === '' || $value === 'null') {
+            $this->attributes['lembrete'] = null;
+
+            return;
         }
 
+        $entregaRaw = $this->attributes['datahora_entrega'] ?? null;
+        if ($entregaRaw instanceof \DateTimeInterface) {
+            $entregaRaw = $entregaRaw->format('Y-m-d H:i:s');
+        } elseif (is_string($entregaRaw) && $entregaRaw !== '') {
+            $convertida = DataHora::converterDatePicker($entregaRaw) ?: $entregaRaw;
+            $entregaRaw = $convertida;
+        } else {
+            $this->attributes['lembrete'] = null;
+
+            return;
+        }
+
+        $dataLembrete = new DataHora($entregaRaw);
+        $dataLembrete->setSegundo(0);
+
+        switch ((string) $value) {
+            case '5m':
+                $dataLembrete->subtrairMinuto(5);
+                $this->attributes['lembrete'] = $dataLembrete->dataHoraInsert();
+                break;
+            case '10m':
+                $dataLembrete->subtrairMinuto(10);
+                $this->attributes['lembrete'] = $dataLembrete->dataHoraInsert();
+                break;
+            case '15m':
+                $dataLembrete->subtrairMinuto(15);
+                $this->attributes['lembrete'] = $dataLembrete->dataHoraInsert();
+                break;
+            case '1H':
+                $dataLembrete->subtrairHora(1);
+                $this->attributes['lembrete'] = $dataLembrete->dataHoraInsert();
+                break;
+            case '2H':
+                $dataLembrete->subtrairHora(2);
+                $this->attributes['lembrete'] = $dataLembrete->dataHoraInsert();
+                break;
+            case '1d':
+                $dataLembrete->subtrairDia(1);
+                $this->attributes['lembrete'] = $dataLembrete->dataHoraInsert();
+                break;
+            case '2d':
+                $dataLembrete->subtrairDia(2);
+                $this->attributes['lembrete'] = $dataLembrete->dataHoraInsert();
+                break;
+            default:
+                $this->attributes['lembrete'] = null;
+                break;
+        }
     }
 
-    public function getLembreteTextAttribute() {
-        $lembrete = new DataHora($this->lembrete);
+    public function getLembreteTextAttribute()
+    {
+        $lembreteRaw = $this->attributes['lembrete'] ?? null;
+        $entregaRaw = $this->attributes['datahora_entrega'] ?? null;
+        if (!$lembreteRaw || !$entregaRaw) {
+            return null;
+        }
+
+        if ($entregaRaw instanceof \DateTimeInterface) {
+            $entregaRaw = $entregaRaw->format('Y-m-d H:i:s');
+        }
+        if ($lembreteRaw instanceof \DateTimeInterface) {
+            $lembreteRaw = $lembreteRaw->format('Y-m-d H:i:s');
+        }
+
+        $lembrete = new DataHora($lembreteRaw);
         $lembrete->setSegundo(0);
-        if ($this->datahora_entrega) {
-            //5 minutos
-            $dataLembrete = new DataHora($this->datahora_entrega);
+
+        $map = [
+            '5m' => 5,
+            '10m' => 10,
+            '15m' => 15,
+        ];
+        foreach ($map as $code => $minutos) {
+            $dataLembrete = new DataHora($entregaRaw);
             $dataLembrete->setSegundo(0);
-            $dataLembrete->subtrairMinuto(5);
+            $dataLembrete->subtrairMinuto($minutos);
             if ($dataLembrete->toTimeStamp() === $lembrete->toTimeStamp()) {
-                return '5m';
+                return $code;
             }
-            //10 minutos
-            $dataLembrete = new DataHora($this->datahora_entrega);
-            $dataLembrete->setSegundo(0);
-            $dataLembrete->subtrairMinuto(10);
-            if ($dataLembrete->toTimeStamp() === $lembrete->toTimeStamp()) {
-                return '10m';
-            }
-            //15 minutos
-            $dataLembrete = new DataHora($this->datahora_entrega);
-            $dataLembrete->setSegundo(0);
-            $dataLembrete->subtrairMinuto(15);
-            if ($dataLembrete->toTimeStamp() === $lembrete->toTimeStamp()) {
-                return '15m';
-            }
-            //1 hora
-            $dataLembrete = new DataHora($this->datahora_entrega);
-            $dataLembrete->setSegundo(0);
-            $dataLembrete->subtrairHora(1);
-            if ($dataLembrete->toTimeStamp() === $lembrete->toTimeStamp()) {
-                return '1H';
-            }
-            //2 hora
-            $dataLembrete = new DataHora($this->datahora_entrega);
-            $dataLembrete->setSegundo(0);
-            $dataLembrete->subtrairHora(2);
-            if ($dataLembrete->toTimeStamp() === $lembrete->toTimeStamp()) {
-                return '2H';
-            }
-            //1 Dia
-            $dataLembrete = new DataHora($this->datahora_entrega);
-            $dataLembrete->setSegundo(0);
-            $dataLembrete->subtrairDia(1);
-            if ($dataLembrete->toTimeStamp() === $lembrete->toTimeStamp()) {
-                return '1d';
-            }
-            //2 Dia
-            $dataLembrete = new DataHora($this->datahora_entrega);
-            $dataLembrete->setSegundo(0);
-            $dataLembrete->subtrairDia(2);
-            if ($dataLembrete->toTimeStamp() === $lembrete->toTimeStamp()) {
-                return '2d';
-            }
+        }
+
+        $dataLembrete = new DataHora($entregaRaw);
+        $dataLembrete->setSegundo(0);
+        $dataLembrete->subtrairHora(1);
+        if ($dataLembrete->toTimeStamp() === $lembrete->toTimeStamp()) {
+            return '1H';
+        }
+
+        $dataLembrete = new DataHora($entregaRaw);
+        $dataLembrete->setSegundo(0);
+        $dataLembrete->subtrairHora(2);
+        if ($dataLembrete->toTimeStamp() === $lembrete->toTimeStamp()) {
+            return '2H';
+        }
+
+        $dataLembrete = new DataHora($entregaRaw);
+        $dataLembrete->setSegundo(0);
+        $dataLembrete->subtrairDia(1);
+        if ($dataLembrete->toTimeStamp() === $lembrete->toTimeStamp()) {
+            return '1d';
+        }
+
+        $dataLembrete = new DataHora($entregaRaw);
+        $dataLembrete->setSegundo(0);
+        $dataLembrete->subtrairDia(2);
+        if ($dataLembrete->toTimeStamp() === $lembrete->toTimeStamp()) {
+            return '2d';
         }
 
         return null;
-
     }
 
     public function getDataHoraEntregaFormatadaAttribute() {
@@ -278,18 +299,24 @@ class Tarefa extends Model {
         return null;
     }
 
-    public function getEmAtrasoAttribute() {
-
-        if ($this->datahora_entrega) {
-            $agora = new DataHora();
-            $dataDeEntrega = new DataHora($this->datahora_entrega);
-            if ((int)$agora->toTimeStamp() > (int)$dataDeEntrega->toTimeStamp()) {
-                return true;
-            } else {
-                return false;
-            }
+    public function getEmAtrasoAttribute()
+    {
+        if (!empty($this->concluido)) {
+            return false;
         }
-        return false;
+
+        $entregaRaw = $this->attributes['datahora_entrega'] ?? null;
+        if (!$entregaRaw) {
+            return false;
+        }
+        if ($entregaRaw instanceof \DateTimeInterface) {
+            $entregaRaw = $entregaRaw->format('Y-m-d H:i:s');
+        }
+
+        $agora = new DataHora();
+        $dataDeEntrega = new DataHora($entregaRaw);
+
+        return (int) $agora->toTimeStamp() > (int) $dataDeEntrega->toTimeStamp();
     }
 
 
