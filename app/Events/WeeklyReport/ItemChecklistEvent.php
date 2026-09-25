@@ -58,6 +58,8 @@ class ItemChecklistEvent implements ShouldBroadcastNow {
                 ];
                 break;
             case self::UPDATE:
+                $this->obj->loadMissing('Membros');
+
                 return [
                     'item' => $this->obj,
                     'item_id' => $this->obj->id,
@@ -68,10 +70,12 @@ class ItemChecklistEvent implements ShouldBroadcastNow {
                 break;
             case self::DELETE:
                 return [
-                    'item_id' => $this->obj->id,
-                    'checklist_id' => $this->obj->checklist_id,
-                    'tarefa_id' => $this->obj->CheckList->tarefa_id,
-                    'lista_id' => $this->obj->CheckList->Tarefa->lista_id,
+                    'item_id' => $this->idDelete ?? data_get($this->obj, 'id'),
+                    'checklist_id' => data_get($this->obj, 'checklist_id'),
+                    'tarefa_id' => data_get($this->obj, 'tarefa_id')
+                        ?? data_get($this->obj, 'CheckList.tarefa_id'),
+                    'lista_id' => data_get($this->obj, 'lista_id')
+                        ?? data_get($this->obj, 'CheckList.Tarefa.lista_id'),
                 ];
                 break;
         }

@@ -65,10 +65,17 @@ class CheckListTarefaEvent implements ShouldBroadcastNow {
                 ];
                 break;
             case self::DELETE:
+                $tarefaId = data_get($this->obj, 'tarefa_id')
+                    ?? data_get($this->obj, 'Tarefa.id')
+                    ?? data_get($this->obj, 'tarefa.id');
+                $listaId = data_get($this->obj, 'lista_id')
+                    ?? data_get($this->obj, 'Tarefa.lista_id')
+                    ?? data_get($this->obj, 'tarefa.lista_id');
+
                 return [
-                    'checklist_id' => $this->obj->id,
-                    'tarefa_id' => $this->obj->Tarefa->id,
-                    'lista_id' => $this->obj->Tarefa->lista_id,
+                    'checklist_id' => $this->idDelete ?? data_get($this->obj, 'id'),
+                    'tarefa_id' => $tarefaId,
+                    'lista_id' => $listaId,
                 ];
                 break;
             case self::ORDENAR_ITENS:

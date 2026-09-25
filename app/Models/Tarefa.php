@@ -85,6 +85,7 @@ class Tarefa extends Model {
         'lembrete',
         'ordem',
         'concluido',
+        'user_id',
     ];
 
     protected $casts = [
@@ -149,8 +150,18 @@ class Tarefa extends Model {
 
     public function Logs() {
         return $this->hasMany(LogWeekly::class, 'tarefa_id', 'id')
-            ->with('Usuario:id,nome')->take(5)
+            ->with('Usuario:id,nome')
             ->orderByDesc('created_at');
+    }
+
+    public function Comentarios() {
+        return $this->hasMany(TarefaComentario::class, 'tarefa_id', 'id')
+            ->orderByDesc('created_at');
+    }
+
+    public function ComentariosBloqueio() {
+        return $this->hasMany(TarefaComentario::class, 'tarefa_id', 'id')
+            ->where('tipo', TarefaComentario::TIPO_BLOQUEIO);
     }
 
     public function getDataHoraInicioFormatadaAttribute() {

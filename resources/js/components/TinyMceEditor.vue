@@ -1,9 +1,11 @@
 <template>
-    <textarea :id="editorId" ref="textarea" :value="modelValue || ''"></textarea>
+    <!-- Host estável: TinyMCE não pode substituir o root do Vue (quebra insertBefore/__vnode) -->
+    <div ref="host" class="tiny-mce-host"></div>
 </template>
 
 <script>
 import tinymceSelfhost from '../utils/tinymceSelfhost'
+import { attachWeeklyMentions } from './weekly-report/tinyMentions'
 
 const selfhost = tinymceSelfhost && tinymceSelfhost.loadTinyMce ? tinymceSelfhost : (tinymceSelfhost && tinymceSelfhost.default) || tinymceSelfhost
 const { getTinyMceInit, loadTinyMce } = selfhost
@@ -12,7 +14,7 @@ let instanceSeq = 0
 
 export default {
     name: 'TinyMceEditor',
-    emits: ['update:modelValue'],
+    emits: ['update:modelValue', 'mention'],
     props: {
         modelValue: {
             type: String,
@@ -33,26 +35,48 @@ export default {
         id: {
             type: String,
             default: ''
+        },
+        mentionsUrl: {
+            type: String,
+            default: ''
         }
     },
     data() {
         return {
             editorId: this.id || `tiny-mce-${++instanceSeq}-${Date.now().toString(36)}`,
             editor: null,
-            syncingFromParent: false
+            syncingFromParent: false,
+            forceContentSync: false,
+            lastEmitted: null,
+            detachMentions: null,
+            _mounting: false,
+            _textarea: null
         }
     },
     watch: {
         modelValue(val) {
-            if (!this.editor) {
+            if (!this.editor || this.syncingFromParent) {
                 return
             }
             const next = val || ''
-            if (next === this.editor.getContent()) {
+            if (next === this.lastEmitted) {
+                return
+            }
+            const current = this.editor.getContent()
+            if (next === current) {
+                this.lastEmitted = next
+                return
+            }
+            if (
+                !this.forceContentSync &&
+                typeof this.editor.hasFocus === 'function' &&
+                this.editor.hasFocus()
+            ) {
                 return
             }
             this.syncingFromParent = true
             this.editor.setContent(next)
+            this.lastEmitted = next
             this.syncingFromParent = false
         },
         disabled(val) {
@@ -66,7 +90,6 @@ export default {
     },
     beforeUnmount() {
         this.cancelarAgendamento()
-        // Garante que o último conteúdo vá para o v-model antes de destruir (ex.: save com preload)
         if (this.editor && !this.syncingFromParent) {
             const html = this.editor.getContent()
             if (html !== (this.modelValue || '')) {
@@ -76,6 +99,29 @@ export default {
         this.desmontarEditor()
     },
     methods: {
+        clearContent() {
+            this.forceContentSync = true
+            this.lastEmitted = ''
+            this.syncingFromParent = true
+            if (this.editor) {
+                this.editor.setContent('')
+            }
+            this.syncingFromParent = false
+            this.forceContentSync = false
+            this.$emit('update:modelValue', '')
+        },
+        setContentHtml(html) {
+            const next = html || ''
+            this.forceContentSync = true
+            this.lastEmitted = next
+            this.syncingFromParent = true
+            if (this.editor) {
+                this.editor.setContent(next)
+            }
+            this.syncingFromParent = false
+            this.forceContentSync = false
+            this.$emit('update:modelValue', next)
+        },
         elementoVisivel(el) {
             if (!el || !el.isConnected) {
                 return false
@@ -88,7 +134,6 @@ export default {
                 }
                 node = node.parentElement
             }
-            // Não usar offsetParent: fica null dentro de modal position:fixed em vários browsers
             return true
         },
         cancelarAgendamento() {
@@ -102,16 +147,16 @@ export default {
             }
         },
         agendarMontagem() {
-            if (this.editor || !this.$refs.textarea) {
+            if (this.editor || this._mounting || !this.$refs.host) {
                 return
             }
-            if (this.elementoVisivel(this.$refs.textarea)) {
+            if (this.elementoVisivel(this.$refs.host)) {
                 this.montarEditor()
                 return
             }
             this.cancelarAgendamento()
             this._visibilityObserver = new MutationObserver(() => {
-                if (this.elementoVisivel(this.$refs.textarea)) {
+                if (this.$refs.host && this.elementoVisivel(this.$refs.host)) {
                     this.cancelarAgendamento()
                     this.montarEditor()
                 }
@@ -122,11 +167,11 @@ export default {
                 attributeFilter: ['class', 'style', 'aria-hidden']
             })
             this._visibilityInterval = setInterval(() => {
-                if (!this.$refs.textarea) {
+                if (!this.$refs.host) {
                     this.cancelarAgendamento()
                     return
                 }
-                if (this.elementoVisivel(this.$refs.textarea)) {
+                if (this.elementoVisivel(this.$refs.host)) {
                     this.cancelarAgendamento()
                     this.montarEditor()
                 }
@@ -138,13 +183,45 @@ export default {
             }
             const html = this.editor.getContent()
             if (html !== (this.modelValue || '')) {
+                this.lastEmitted = html
                 this.$emit('update:modelValue', html)
+            } else {
+                this.lastEmitted = html
             }
         },
+        criarTextarea() {
+            const host = this.$refs.host
+            if (!host) return null
+            host.innerHTML = ''
+            const textarea = document.createElement('textarea')
+            textarea.id = this.editorId
+            textarea.setAttribute('rows', '4')
+            host.appendChild(textarea)
+            this._textarea = textarea
+            return textarea
+        },
         async montarEditor() {
+            if (this.editor || this._mounting) {
+                return
+            }
+            this._mounting = true
             try {
                 const tinymce = await loadTinyMce()
-                if (!this.$refs.textarea || !this.elementoVisivel(this.$refs.textarea)) {
+                const host = this.$refs.host
+                if (!host) {
+                    return
+                }
+                if (!this.elementoVisivel(host)) {
+                    this._mounting = false
+                    this.agendarMontagem()
+                    return
+                }
+                if (this.editor) {
+                    return
+                }
+
+                const textarea = this.criarTextarea()
+                if (!textarea) {
                     return
                 }
 
@@ -153,16 +230,24 @@ export default {
 
                 await tinymce.init({
                     ...merged,
-                    target: this.$refs.textarea,
+                    target: textarea,
                     readonly: this.disabled,
                     setup: (ed) => {
                         this.editor = ed
                         if (typeof originalSetup === 'function') {
                             originalSetup(ed)
                         }
+                        if (this.mentionsUrl) {
+                            this.detachMentions = attachWeeklyMentions(ed, {
+                                searchUrl: this.mentionsUrl,
+                                onSelect: (user) => this.$emit('mention', user)
+                            })
+                        }
                         ed.on('init', () => {
                             this.syncingFromParent = true
-                            ed.setContent(this.modelValue || '')
+                            const initial = this.modelValue || ''
+                            ed.setContent(initial)
+                            this.lastEmitted = ed.getContent()
                             this.syncingFromParent = false
                             if (this.disabled && ed.setMode) {
                                 ed.setMode('readonly')
@@ -175,12 +260,29 @@ export default {
                 if (typeof console !== 'undefined' && console.error) {
                     console.error('TinyMCE self-host:', err)
                 }
+                if (!this.editor) {
+                    this.$nextTick(() => this.agendarMontagem())
+                }
+            } finally {
+                this._mounting = false
             }
         },
         desmontarEditor() {
+            if (typeof this.detachMentions === 'function') {
+                this.detachMentions()
+                this.detachMentions = null
+            }
             if (this.editor) {
-                this.editor.remove()
+                try {
+                    this.editor.remove()
+                } catch (e) {
+                    /* ignore */
+                }
                 this.editor = null
+            }
+            this._textarea = null
+            if (this.$refs.host) {
+                this.$refs.host.innerHTML = ''
             }
         }
     }

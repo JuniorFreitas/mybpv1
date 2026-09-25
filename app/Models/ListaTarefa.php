@@ -51,6 +51,7 @@ class ListaTarefa extends Model
         'titulo',
         'quadro_id',
         'ordem',
+        'user_id',
     ];
     protected $casts = [
         'id' => 'int',

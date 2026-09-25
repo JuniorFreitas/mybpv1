@@ -5,6 +5,7 @@ namespace App\Models;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
 use App\Models\Concerns\HasActivitylogOptions;
@@ -17,21 +18,14 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @property string $titulo
  * @property bool $concluido
  * @property int $ordem
+ * @property \Illuminate\Support\Carbon|null $datahora_entrega
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $datahora_entrega_br
+ * @property-read mixed $em_atraso
  * @property-read \App\Models\ChecklistsTarefa|null $CheckList
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder|ChecklistsTarefaItem newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|ChecklistsTarefaItem newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|ChecklistsTarefaItem query()
- * @method static \Illuminate\Database\Eloquent\Builder|ChecklistsTarefaItem whereChecklistId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ChecklistsTarefaItem whereConcluido($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ChecklistsTarefaItem whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ChecklistsTarefaItem whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ChecklistsTarefaItem whereOrdem($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ChecklistsTarefaItem whereTitulo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ChecklistsTarefaItem whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 class ChecklistsTarefaItem extends Model
@@ -49,6 +43,7 @@ class ChecklistsTarefaItem extends Model
         'titulo',
         'concluido',
         'ordem',
+        'datahora_entrega',
     ];
     protected $casts = [
         'id' => 'int',
@@ -56,8 +51,14 @@ class ChecklistsTarefaItem extends Model
         'titulo' => 'string',
         'concluido' => 'boolean',
         'ordem' => 'int',
+        'datahora_entrega' => 'datetime:d/m/Y à\s H:i',
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s',
+    ];
+
+    protected $appends = [
+        'datahora_entrega_br',
+        'em_atraso',
     ];
 
     protected function serializeDate(DateTimeInterface $date) {
@@ -74,7 +75,38 @@ class ChecklistsTarefaItem extends Model
         $activity->descricao = "";
     }
 
+    public function getDatahoraEntregaBrAttribute()
+    {
+        if (!$this->datahora_entrega) {
+            return null;
+        }
+        $datahora = new DataHora($this->datahora_entrega);
+
+        return $datahora->dataCompleta() . ' às ' . $datahora->hora() . ':' . $datahora->minuto();
+    }
+
+    public function getEmAtrasoAttribute()
+    {
+        if (!$this->datahora_entrega || $this->concluido) {
+            return false;
+        }
+        $agora = new DataHora();
+        $entrega = new DataHora($this->datahora_entrega);
+
+        return (int) $agora->toTimeStamp() > (int) $entrega->toTimeStamp();
+    }
+
     public function CheckList(){
         return $this->hasOne(ChecklistsTarefa::class,'id','checklist_id');
+    }
+
+    public function Membros()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'checklists_tarefa_items_membros',
+            'checklists_tarefa_item_id',
+            'user_id'
+        )->select(['users.id', 'users.nome']);
     }
 }

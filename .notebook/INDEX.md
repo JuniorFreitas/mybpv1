@@ -1,8 +1,9 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-09-22
+Last updated: 2026-09-25
 
+- [weekly-report-kanban](weekly-report-kanban.md) — Kanban Trello + tenant empresa_id + Echo | flow | weekly-report, kanban, multitenant
 - [contrato-customizado-apelido](contrato-customizado-apelido.md) — Blade dossiê por apelido (contrato + checklist Coimbra) | flow | dossie, contrato, checklist
 - [cih-filtro-busca-id](cih-filtro-busca-id.md) — campoBusca nome/CÓD + combos no filtro/form | flow | cih, filtro, combobox
 - [aniversariante-mensagem](aniversariante-mensagem.md) — Envio robusto + retry 08:00 + --retentar-pendentes | flow | aniversariante, email

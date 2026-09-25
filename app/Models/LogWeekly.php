@@ -58,7 +58,7 @@ class LogWeekly extends Model
     protected $fillable = [
         'quadro_id',
         'tarefa_id',
-        //'user_id',
+        'user_id',
         'descricao',
     ];
     protected $casts = [
