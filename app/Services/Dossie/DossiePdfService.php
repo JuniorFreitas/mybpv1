@@ -59,6 +59,11 @@ class DossiePdfService
         $viewData = compact('dados', 'cliente');
 
         if ($tipoModelo !== self::MODELO_CONTRATO_TRABALHO) {
+            $viewCustomizada = "pdf.historico.dossie.customizado.{$cliente->apelido}.{$tipoModelo}";
+            if ($cliente->apelido && view()->exists($viewCustomizada)) {
+                return [$viewCustomizada, $viewData];
+            }
+
             return ['pdf.historico.dossie.' . $tipoModelo, $viewData];
         }
 
