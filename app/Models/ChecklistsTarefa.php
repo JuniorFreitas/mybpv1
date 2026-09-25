@@ -64,9 +64,7 @@ class ChecklistsTarefa extends Model
     protected function serializeDate(DateTimeInterface $date) {
         return $date->format('Y-m-d H:i:s');
     }
-    protected $with=[
-        'Itens'
-    ];
+    protected $with = [];
 
     public function getDescriptionForEvent(string $eventName): string
     {
@@ -101,7 +99,6 @@ class ChecklistsTarefa extends Model
 
     public function Itens(){
         return $this->hasMany(ChecklistsTarefaItem::class,'checklist_id','id')
-            ->with('Membros')
             ->orderBy('ordem');
     }
 

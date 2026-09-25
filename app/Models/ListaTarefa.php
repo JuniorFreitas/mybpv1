@@ -67,11 +67,7 @@ class ListaTarefa extends Model
     }
 
 
-    protected $with=[
-        'Tarefas.Membros',
-        'Tarefas.Checklists.Itens',
-        //'Tarefas.Logs',
-    ];
+    protected $with = [];
 
     protected static function booted()
     {

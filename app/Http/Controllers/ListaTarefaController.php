@@ -7,6 +7,7 @@ use App\Http\Controllers\Concerns\GuardsWeeklyReportTenant;
 use App\Models\ListaTarefa;
 use App\Models\LogWeekly;
 use App\Models\Quadro;
+use App\Support\WeeklyReport\WeeklyReportEagerLoads;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 
@@ -21,16 +22,13 @@ class ListaTarefaController extends Controller
         return response()->json([
             'lista' => $quadro->Listas()->orderBy('ordem')->with([
                 'Tarefas' => function ($q) {
-                    $q->orderBy('ordem')->withCount([
-                        'ComentariosBloqueio as bloqueios_count',
-                        'Comentarios as comentarios_count',
-                    ]);
+                    WeeklyReportEagerLoads::applyBoardTarefas($q);
                 },
-                'Tarefas.Membros:id,nome',
-                'Tarefas.Anexos',
-                'Tarefas.Checklists.Itens',
-            ])->get(),
-            'atividades' => $quadro->Logs()->take(5)->get(),
+            ])->get(['id', 'quadro_id', 'titulo', 'ordem', 'user_id', 'created_at', 'updated_at']),
+            'atividades' => $quadro->Logs()
+                ->with(['Usuario:id,nome'])
+                ->take(5)
+                ->get(['id', 'quadro_id', 'tarefa_id', 'user_id', 'descricao', 'created_at']),
         ], 200);
     }
 
@@ -137,9 +135,10 @@ class ListaTarefaController extends Controller
             return response()->json([
                 'msg' => $e->getMessage(),
                 'lista' => $quadro->Listas()->orderBy('ordem')->with([
-                    'Tarefas.Membros',
-                    'Tarefas.Checklists.Itens',
-                ])->get(),
+                    'Tarefas' => function ($q) {
+                        WeeklyReportEagerLoads::applyBoardTarefas($q);
+                    },
+                ])->get(['id', 'quadro_id', 'titulo', 'ordem', 'user_id', 'created_at', 'updated_at']),
             ], 400);
         }
     }

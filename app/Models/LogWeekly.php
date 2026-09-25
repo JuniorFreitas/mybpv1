@@ -71,7 +71,7 @@ class LogWeekly extends Model
         'updated_at' => 'datetime:d/m/Y à\s H:i:s',
     ];
 
-    protected $with=['Usuario'];
+    protected $with = [];
 
     protected function serializeDate(DateTimeInterface $date) {
         return $date->format('Y-m-d H:i:s');
@@ -93,7 +93,7 @@ class LogWeekly extends Model
     }
 
     public function Usuario(){
-        return $this->hasOne(User::class,'id','user_id');
+        return $this->hasOne(User::class,'id','user_id')->select(['users.id', 'users.nome']);
     }
 
 }

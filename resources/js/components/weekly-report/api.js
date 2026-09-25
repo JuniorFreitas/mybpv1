@@ -120,6 +120,9 @@ export function normalizeTarefa(raw) {
     const comentarios = t.comentarios ?? t.Comentarios
     t.membros = Array.isArray(membros) ? membros : []
     t.anexos = Array.isArray(anexos) ? anexos : []
+    t.anexos_count = Number(
+        t.anexos_count ?? t.anexosCount ?? (Array.isArray(t.anexos) ? t.anexos.length : 0)
+    )
     t.logs = (Array.isArray(logs) ? logs : []).map(normalizeLog).filter(Boolean)
     t.comentarios = (Array.isArray(comentarios) ? comentarios : []).map(normalizeComentario).filter(Boolean)
     t.bloqueios_count = Number(t.bloqueios_count ?? t.bloqueiosCount ?? 0)

@@ -52,14 +52,20 @@ class CheckListTarefaEvent implements ShouldBroadcastNow {
         switch ($this->evento) {
             case self::INSERT:
                 return [
-                    'checklists' => $this->obj->Tarefa->Checklists()->with('Itens')->orderBy('ordem')->get(),
+                    'checklists' => $this->obj->Tarefa->Checklists()
+                        ->with(['Itens.Membros'])
+                        ->orderBy('ordem')
+                        ->get(),
                     'tarefa_id' => $this->obj->Tarefa->id,
                     'lista_id' => $this->obj->Tarefa->lista_id,
                 ];
                 break;
             case self::UPDATE:
                 return [
-                    'checklists' => $this->obj->Tarefa->Checklists()->with('Itens')->orderBy('ordem')->get(),
+                    'checklists' => $this->obj->Tarefa->Checklists()
+                        ->with(['Itens.Membros'])
+                        ->orderBy('ordem')
+                        ->get(),
                     'tarefa_id' => $this->obj->Tarefa->id,
                     'lista_id' => $this->obj->Tarefa->lista_id,
                 ];

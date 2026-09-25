@@ -51,7 +51,10 @@ class ItemChecklistEvent implements ShouldBroadcastNow {
         switch ($this->evento) {
             case self::INSERT:
                 return [
-                    'itens' => $this->obj->CheckList->Itens()->orderBy('ordem')->get(),
+                    'itens' => $this->obj->CheckList->Itens()
+                        ->with('Membros')
+                        ->orderBy('ordem')
+                        ->get(),
                     'checklist_id' => $this->obj->checklist_id,
                     'tarefa_id' => $this->obj->CheckList->tarefa_id,
                     'lista_id' => $this->obj->CheckList->Tarefa->lista_id,

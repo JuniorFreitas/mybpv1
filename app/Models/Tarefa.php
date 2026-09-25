@@ -108,12 +108,7 @@ class Tarefa extends Model {
         return $date->format('Y-m-d H:i:s');
     }
 
-    protected $with = [
-        'Membros',
-        'Anexos',
-        'Checklists.Itens',
-        //'Logs'
-    ];
+    protected $with = [];
 
     protected $appends = [
         'emAtraso',
@@ -133,7 +128,8 @@ class Tarefa extends Model {
     }
 
     public function Membros() {
-        return $this->belongsToMany(User::class, 'membros_tarefa', 'tarefa_id', 'user_id');
+        return $this->belongsToMany(User::class, 'membros_tarefa', 'tarefa_id', 'user_id')
+            ->select(['users.id', 'users.nome', 'users.login']);
     }
 
     public function Checklists() {

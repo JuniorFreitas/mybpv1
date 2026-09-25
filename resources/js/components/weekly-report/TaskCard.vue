@@ -29,9 +29,9 @@
                     <i class="fas fa-check-square"></i>
                     {{ progress.done }}/{{ progress.total }}
                 </span>
-                <span v-if="tarefa.anexos && tarefa.anexos.length" class="badge badge-pill badge-soft mr-1 mb-1">
+                <span v-if="anexosCount" class="badge badge-pill badge-soft mr-1 mb-1">
                     <i class="fas fa-paperclip"></i>
-                    {{ tarefa.anexos.length }}
+                    {{ anexosCount }}
                 </span>
                 <span v-if="tarefa.bloqueios_count" class="badge badge-pill badge-danger mr-1 mb-1" title="Bloqueios">
                     <i class="fas fa-ban"></i>
@@ -87,11 +87,19 @@ export default {
             const m = moment(value, ['DD/MM/YYYY [às] HH:mm', 'YYYY-MM-DD HH:mm:ss', 'DD/MM/YYYY HH:mm'], true)
             return m.isValid() && m.isBefore(moment())
         },
+        anexosCount() {
+            return Number(
+                this.tarefa.anexos_count ??
+                    this.tarefa.anexosCount ??
+                    (this.tarefa.anexos && this.tarefa.anexos.length) ??
+                    0
+            )
+        },
         temMeta() {
             return (
                 !!this.tarefa.datahora_entrega ||
                 !!this.progress.total ||
-                !!(this.tarefa.anexos && this.tarefa.anexos.length) ||
+                !!this.anexosCount ||
                 !!this.tarefa.bloqueios_count ||
                 !!this.tarefa.comentarios_count ||
                 !!this.tarefa.concluido

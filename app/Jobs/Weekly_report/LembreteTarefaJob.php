@@ -6,6 +6,7 @@ use App\Events\Notificacoes\NotificacaoEvent;
 use App\Mail\Weekly_report\LembreteTarefaMail;
 use App\Models\Sistema;
 use App\Models\Tarefa;
+use App\Support\WeeklyReport\WeeklyReportEagerLoads;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -40,12 +41,12 @@ class LembreteTarefaJob implements ShouldQueue
         $agora->setSegundo(59);
         $fim = $agora->dataHoraInsert();
 
-        $tarefas = Tarefa::query()
-            ->whereBetween('lembrete', [$inicio, $fim])
-            ->where('concluido', false)
-            ->whereHas('Membros')
-            ->with(['Membros', 'Lista'])
-            ->get();
+        $tarefas = WeeklyReportEagerLoads::applyLembrete(
+            Tarefa::query()
+                ->whereBetween('lembrete', [$inicio, $fim])
+                ->where('concluido', false)
+                ->whereHas('Membros')
+        )->get();
 
         foreach ($tarefas as $tarefa) {
             foreach ($tarefa->Membros as $usuario) {

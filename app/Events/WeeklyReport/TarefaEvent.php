@@ -2,13 +2,12 @@
 
 namespace App\Events\WeeklyReport;
 
+use App\Support\WeeklyReport\WeeklyReportEagerLoads;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use MasterTag\DataHora;
 
 class TarefaEvent implements ShouldBroadcastNow
 {
@@ -61,42 +60,45 @@ class TarefaEvent implements ShouldBroadcastNow
         switch ($this->evento){
             case self::INSERT:
                 return [
-                    'tarefas' => $this->obj->Lista->Tarefas()->orderBy('ordem')->get()
+                    'tarefas' => WeeklyReportEagerLoads::applyBoardTarefas(
+                        $this->obj->Lista->Tarefas()
+                    )->get(),
                 ];
-                break;
             case self::UPDATE:
                 return [
                     'tarefa' => $this->obj
                 ];
-                break;
             case self::DELETE:
                 return [
-                    'tarefas' => $this->obj->Tarefas()->orderBy('ordem')->get(),
+                    'tarefas' => WeeklyReportEagerLoads::applyBoardTarefas(
+                        $this->obj->Tarefas()
+                    )->get(),
                     'idDelete' => $this->idDelete,
                 ];
-                break;
             case self::ORDENAR:
-                $agora = new DataHora();
                 return [
-                    'tarefas' => $this->obj->Tarefas()->orderBy('ordem')->get(),
+                    'tarefas' => WeeklyReportEagerLoads::applyBoardTarefas(
+                        $this->obj->Tarefas()
+                    )->get(),
                     'lista_id' => $this->obj->id // aqui chega o objeto Lista
                 ];
-                break;
             case self::ORDENAR_CHECKLIST:
                 return [
-                    'checklists' => $this->obj->Checklists()->orderBy('ordem')->get(),
+                    'checklists' => $this->obj->Checklists()
+                        ->with(['Itens' => function ($q) {
+                            $q->orderBy('ordem');
+                        }])
+                        ->orderBy('ordem')
+                        ->get(),
                     'tarafa_id' => $this->obj->id,
                     'lista_id' => $this->obj->Lista->id,
                 ];
-                break;
-
             case self::UPDATE_MEMBROS:
                 return [
-                    'membros' => $this->obj->Membros()->get(),
+                    'membros' => $this->obj->Membros()->get(['users.id', 'users.nome']),
                     'tarefa_id' => $this->obj->id,
                     'acao' => $this->acao,
                 ];
-                break;
             case self::UPDATE_DATAHORA_ENTREGA:
                 return [
                     'datahora_entrega' => $this->obj->dataHoraEntregaFormatada,
@@ -105,14 +107,12 @@ class TarefaEvent implements ShouldBroadcastNow
                     'emAtraso' => $this->obj->emAtraso,
                     'acao' => $this->acao,
                 ];
-                break;
             case self::UPDATE_DATAHORA_INICIO:
                 return [
                     'datahora_inicio' => $this->obj->dataHoraInicioFormatada,
                     'tarefa_id' => $this->obj->id,
                     'acao' => $this->acao,
                 ];
-                break;
         }
     }
 }

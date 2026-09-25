@@ -15,8 +15,9 @@ use App\Models\Quadro;
 use App\Models\Sistema;
 use App\Models\Tarefa;
 use App\Models\User;
-use App\Support\WeeklyReportHtml;
 use App\Services\WeeklyReport\AttachMentionedMembers;
+use App\Support\WeeklyReport\WeeklyReportEagerLoads;
+use App\Support\WeeklyReportHtml;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
@@ -75,7 +76,7 @@ class TarefasController extends Controller
     {
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa);
 
-        $tarefa->load(['Membros', 'Anexos', 'Checklists.Itens']);
+        WeeklyReportEagerLoads::loadShow($tarefa);
         $logsPage = $tarefa->Logs()->paginate(20);
         $tarefa->setRelation('Logs', collect($logsPage->items()));
         $tarefa->setAttribute('logs_meta', [
@@ -90,6 +91,7 @@ class TarefasController extends Controller
         );
         $tarefa->loadCount([
             'ComentariosBloqueio as bloqueios_count',
+            'Anexos as anexos_count',
         ]);
 
         return $tarefa;
