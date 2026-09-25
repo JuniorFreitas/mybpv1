@@ -8,6 +8,7 @@ use App\Jobs\Rotinas\JobCalculoAvos;
 use App\Jobs\Rotinas\JobConvocacaoIntermitente;
 use App\Jobs\Rotinas\JobCorrigePonto;
 use App\Jobs\Rotinas\JobFerias;
+use App\Jobs\Weekly_report\LembreteTarefaJob;
 use Illuminate\Console\Scheduling\Schedule;
 
 /** @var Schedule $schedule */
@@ -24,6 +25,14 @@ $schedule->call(new JobConvocacaoIntermitente())->hourly()->name('JobConvocacaoI
 $schedule->call(new JobFerias())->daily()->name('JobFerias')->onOneServer();
 $schedule->call(new JobCalculoAvos())->weekly()->name('JobCalculoAvos')->onOneServer();
 $schedule->call(new JobCorrigePonto())->daily()->name('JobCorrigePonto')->onOneServer();
+
+// Lembretes de entrega do Weekly Report (janela de 1 minuto no campo tarefas.lembrete)
+$schedule->job(new LembreteTarefaJob)
+    ->everyMinute()
+    ->timezone(config('app.timezone'))
+    ->name('LembreteTarefaJob')
+    ->onOneServer()
+    ->withoutOverlapping(5);
 
 // Comandos Artisan com execução em apenas um servidor
 $schedule->command('horizon:snapshot')->everyFiveMinutes()->name('horizon_snapshot')->onOneServer();

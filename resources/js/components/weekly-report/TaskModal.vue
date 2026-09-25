@@ -6,6 +6,7 @@
         topo
         :fechar="!busy"
         ref="modal"
+        @abriu="onModalAbriu"
         @fechou="$emit('close')"
     >
         <template #topo>
@@ -421,8 +422,8 @@
                             >
                                 <i class="fas fa-history"></i>
                                 Atividade
-                                <span v-if="(local.logs || []).length" class="badge badge-soft">
-                                    {{ local.logs.length }}
+                                <span v-if="logsTotal" class="badge badge-soft">
+                                    {{ logsTotal }}
                                 </span>
                             </button>
                         </div>
@@ -512,6 +513,24 @@
                                     Sem atividades ainda.
                                 </li>
                             </ul>
+                            <div v-if="hasMoreLogs" class="wr-logs__more">
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-secondary btn-block"
+                                    :disabled="busyLogs"
+                                    @click="loadMoreLogs"
+                                >
+                                    <span v-if="busyLogs">
+                                        <i class="fas fa-spinner fa-spin"></i> Carregando...
+                                    </span>
+                                    <span v-else>
+                                        Carregar mais
+                                        <small class="text-muted">
+                                            ({{ (local.logs || []).length }}/{{ logsMeta.total }})
+                                        </small>
+                                    </span>
+                                </button>
+                            </div>
                         </div>
                     </section>
                 </div>
@@ -618,6 +637,9 @@
                                 <option value="1d">1 dia antes</option>
                                 <option value="2d">2 dias antes</option>
                             </select>
+                            <small class="text-muted d-block mt-1">
+                                Notifica os membros do card (alerta + e-mail) no horário escolhido.
+                            </small>
                         </div>
 
                         <label class="wr-concluido" :class="{ 'wr-concluido--on': local.concluido }">
@@ -653,7 +675,7 @@
 import autocomplete from '../AutoComplete'
 import datepicker from '../DatePicker'
 import upload from '../Upload'
-import { checklistUrl, comentariosUrl, formatDataHoraPicker, inicialNome, itemUrl, normalizeComentario, normalizeLog, normalizeTarefa, tarefasUrl, toastErro } from './api'
+import { checklistUrl, comentariosUrl, formatDataHoraPicker, inicialNome, itemUrl, normalizeComentario, normalizeLog, normalizeLogsMeta, normalizeTarefa, tarefasUrl, toastErro, toastOk } from './api'
 
 export default {
     name: 'TaskModal',
@@ -693,12 +715,29 @@ export default {
             deletingComentarioId: null,
             commentEditorKey: 0,
             _descSaveTimer: null,
-            _descSavedSnapshot: null
+            _descSavedSnapshot: null,
+            logsMeta: null,
+            busyLogs: false
+        }
+    },
+    beforeUnmount() {
+        clearTimeout(this._justOpenedTimer)
+        if (this._onFocusInScroll) {
+            document.removeEventListener('focusin', this._onFocusInScroll)
+            this._onFocusInScroll = null
         }
     },
     computed: {
         hasComentarioTexto() {
             return !this.isEmptyHtml(this.novoComentario)
+        },
+        logsTotal() {
+            if (this.logsMeta?.total != null) return Number(this.logsMeta.total)
+            return (this.local?.logs || []).length
+        },
+        hasMoreLogs() {
+            if (!this.logsMeta) return false
+            return Number(this.logsMeta.current_page) < Number(this.logsMeta.last_page)
         },
         editorImageUploadUrl() {
             if (!this.lista || !this.local?.id) return ''
@@ -737,6 +776,8 @@ export default {
                     this.local = null
                     this.loadedId = null
                     this.loading = false
+                    this.logsMeta = null
+                    this.busyLogs = false
                     return
                 }
                 if (Number(this.loadedId) === Number(id) && this.local) {
@@ -750,18 +791,66 @@ export default {
                 this.novoComentarioTipo = 'comentario'
                 this.memberEditorItemId = null
                 this.itemMembroBusca = ''
+                this.logsMeta = null
+                this.busyLogs = false
                 this._descSavedSnapshot = this.local?.descricao || ''
                 this.$nextTick(() => {
                     setTimeout(() => {
                         if (this.$refs.modal) this.$refs.modal.abrirModal()
+                        this.scrollModalTopo()
                     }, 30)
-                    this.loadShow()
+                    this.loadShow().finally(() => {
+                        this.$nextTick(() => {
+                            this.scrollModalTopo()
+                            // TinyMCE monta depois e às vezes rouba o scroll
+                            setTimeout(() => this.scrollModalTopo(), 200)
+                            setTimeout(() => this.scrollModalTopo(), 500)
+                        })
+                    })
                 })
             }
         }
     },
     methods: {
         inicial: inicialNome,
+        onModalAbriu() {
+            this._justOpened = true
+            this.scrollModalTopo()
+            clearTimeout(this._justOpenedTimer)
+            this._justOpenedTimer = setTimeout(() => {
+                this._justOpened = false
+                this.scrollModalTopo()
+            }, 700)
+            this.bindScrollGuard()
+        },
+        bindScrollGuard() {
+            if (this._onFocusInScroll) return
+            this._onFocusInScroll = (e) => {
+                if (!this._justOpened) return
+                const modal = document.getElementById('wrJanelaTarefa')
+                if (!modal || !modal.contains(e.target)) return
+                this.scrollModalTopo()
+            }
+            document.addEventListener('focusin', this._onFocusInScroll)
+        },
+        scrollModalTopo() {
+            const modal = document.getElementById('wrJanelaTarefa')
+            if (!modal) return
+            const y = modal.style.overflowY
+            modal.style.overflowY = 'hidden'
+            modal.scrollTop = 0
+            const body = modal.querySelector('.modal-body')
+            if (body) body.scrollTop = 0
+            const dialog = modal.querySelector('.modal-dialog')
+            if (dialog) dialog.scrollTop = 0
+            const content = modal.querySelector('.modal-content')
+            if (content) content.scrollTop = 0
+            requestAnimationFrame(() => {
+                modal.style.overflowY = y || 'auto'
+                modal.scrollTop = 0
+                if (body) body.scrollTop = 0
+            })
+        },
         isEmptyHtml(html) {
             if (!html) return true
             if (/<img\b/i.test(String(html))) return false
@@ -774,6 +863,7 @@ export default {
             return {
                 ...extra,
                 paste_data_images: true,
+                auto_focus: false,
                 automatic_uploads: true,
                 images_upload_credentials: true,
                 file_picker_types: 'image',
@@ -990,6 +1080,7 @@ export default {
                 const { data } = await axios.get(this.base())
                 if (Number(this.loadedId) !== Number(requestId)) return
                 this.local = normalizeTarefa({ ...this.local, ...data })
+                this.logsMeta = normalizeLogsMeta(data.logs_meta ?? data.logsMeta)
                 this._descSavedSnapshot = this.local.descricao || ''
                 // Só atualiza o card no quadro (não mexe na prop do modal)
                 this.$emit('updated', this.local)
@@ -1001,6 +1092,30 @@ export default {
                 }
             }
         },
+        async loadMoreLogs() {
+            if (!this.hasMoreLogs || this.busyLogs || !this.local?.id || !this.lista?.id) return
+            const nextPage = Number(this.logsMeta.current_page) + 1
+            const requestId = this.local.id
+            this.busyLogs = true
+            try {
+                const { data } = await axios.get(`${this.base()}/logs`, { params: { page: nextPage } })
+                if (Number(this.loadedId) !== Number(requestId)) return
+                const items = (Array.isArray(data.data) ? data.data : []).map(normalizeLog).filter(Boolean)
+                const existing = new Set((this.local.logs || []).map((l) => Number(l.id)))
+                const novos = items.filter((l) => !existing.has(Number(l.id)))
+                this.local.logs = [...(this.local.logs || []), ...novos]
+                this.logsMeta = normalizeLogsMeta({
+                    current_page: data.current_page,
+                    last_page: data.last_page,
+                    per_page: data.per_page,
+                    total: data.total
+                })
+            } catch (e) {
+                toastErro(e?.response?.data?.msg || 'Erro ao carregar atividades')
+            } finally {
+                this.busyLogs = false
+            }
+        },
         prependLog(raw) {
             if (!this.local || !raw) return
             const log = normalizeLog(raw)
@@ -1008,6 +1123,12 @@ export default {
             if (!this.local.logs) this.local.logs = []
             if (this.local.logs.some((l) => Number(l.id) === Number(log.id))) return
             this.local.logs.unshift(log)
+            if (this.logsMeta) {
+                this.logsMeta = {
+                    ...this.logsMeta,
+                    total: Number(this.logsMeta.total || 0) + 1
+                }
+            }
         },
         canManageComentario(c) {
             if (!this.canUpdate || !c) return false
@@ -1159,10 +1280,20 @@ export default {
                 .catch(() => {})
         },
         saveLembrete() {
+            const valor = this.local.lembreteText || null
+            this.local.lembreteText = valor
             axios
-                .put(this.base(), { lembrete: this.local.lembreteText })
-                .then(() => this.$emit('updated', this.local))
-                .catch(() => {})
+                .put(this.base(), { lembrete: valor })
+                .then(({ data }) => {
+                    if (data.tarefa) {
+                        this.local = normalizeTarefa({ ...this.local, ...data.tarefa })
+                    }
+                    this.$emit('updated', this.local)
+                    toastOk(valor ? 'Lembrete salvo' : 'Lembrete removido')
+                })
+                .catch((e) => {
+                    toastErro(e?.response?.data?.msg || 'Erro ao salvar lembrete')
+                })
         },
         setDataInicio() {
             this.definirDataInicio()

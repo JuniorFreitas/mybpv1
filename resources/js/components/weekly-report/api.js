@@ -76,6 +76,18 @@ export function normalizeLog(raw) {
     }
 }
 
+export function normalizeLogsMeta(raw) {
+    if (!raw || typeof raw !== 'object') {
+        return { current_page: 1, last_page: 1, per_page: 20, total: 0 }
+    }
+    return {
+        current_page: Number(raw.current_page ?? raw.currentPage ?? 1),
+        last_page: Number(raw.last_page ?? raw.lastPage ?? 1),
+        per_page: Number(raw.per_page ?? raw.perPage ?? 20),
+        total: Number(raw.total ?? 0)
+    }
+}
+
 export function normalizeComentario(raw) {
     if (!raw) return null
     const usuario = raw.usuario ?? raw.Usuario ?? null

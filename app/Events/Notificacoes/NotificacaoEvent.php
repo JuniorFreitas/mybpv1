@@ -16,6 +16,7 @@ class NotificacaoEvent implements ShouldBroadcastNow
 
     const MEMBRO_TAREFA_ADD = 'membro_tarefa_add';
     const MEMBRO_TAREFA_REMOVE = 'membro_tarefa_remove';
+    const LEMBRETE_TAREFA = 'lembrete_tarefa';
     const EXPORTACAO_EXCEL = 'exportacao_excel';
     const EXPORTACAO_PDF = 'exportacao_pdf';
     const IMPORTACAO_ADMISSOES_CONCLUIDA = 'importacao_admissoes_concluida';
@@ -86,6 +87,23 @@ class NotificacaoEvent implements ShouldBroadcastNow
                     'payload' => $saida,
                     'user_id' => $this->dados['user_id'],
                     'visto' => false
+                ]);
+                return $notificacao->toArray();
+
+            case self::LEMBRETE_TAREFA:
+                $tarefa = $this->dados['tarefa'];
+                $listaTitulo = $tarefa->Lista->titulo ?? 'lista';
+                $entrega = $tarefa->DataHoraEntregaFormatada ?: 'em breve';
+                $saida = [
+                    'icone' => 'far fa-bell',
+                    'titulo' => 'Lembrete de tarefa',
+                    'descricao' => "A tarefa {$tarefa->titulo} da lista {$listaTitulo} deve ser entregue até {$entrega}",
+                ];
+                $notificacao = Notificacao::create([
+                    'tipo' => $this->tipo,
+                    'payload' => $saida,
+                    'user_id' => $this->dados['user_id'],
+                    'visto' => false,
                 ]);
                 return $notificacao->toArray();
 

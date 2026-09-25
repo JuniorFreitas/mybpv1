@@ -1547,6 +1547,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/updateMembro', [\App\Http\Controllers\TarefasController::class, 'updateMembro'])->name('updateMembro');
         Route::get('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/buscarMembros', [\App\Http\Controllers\AutoCompletesController::class, 'buscarMembros'])->name('buscarMembros');
 
+        Route::get('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}/logs', [\App\Http\Controllers\TarefasController::class, 'logs'])->name('tarefa.logs');
         Route::delete('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}', [\App\Http\Controllers\TarefasController::class, 'destroy'])->name('delete')->middleware('can:weekly_report_quadro_tarefa_delete');
         Route::put('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}', [\App\Http\Controllers\TarefasController::class, 'update'])->name('update')->middleware('can:weekly_report_quadro_tarefa_update');
         Route::get('weekly-report/{empresa}/quadros/{quadro}/listas/{lista}/tarefas/{tarefa}', [\App\Http\Controllers\TarefasController::class, 'show'])->name('show');

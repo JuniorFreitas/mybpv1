@@ -2,49 +2,36 @@
 
 namespace App\Mail\Weekly_report;
 
-use App\Events\WeeklyReport\TarefaEvent;
-use App\Models\Tarefa;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class LembreteTarefaMail extends Mailable {
+class LembreteTarefaMail extends Mailable
+{
     use Queueable, SerializesModels;
 
-    /**
-     * Create a new message instance.
-     *
-     * @return void
-     */
     public $tries = 3;
-    public $de;
     public $para;
-    public $acao;
     public $tarefa;
     public $assunto;
-    public $mensagem;
 
-    public function __construct($dados) {
-
-        //$this->de = $dados['de'];
+    public function __construct($dados)
+    {
         $this->para = $dados['para'];
         $this->tarefa = $dados['modelTarefa'];
-        $this->subject='Lembrete de tarefa';
+        $this->assunto = 'Lembrete de tarefa';
+        $this->subject = $this->assunto;
 
         $this->to($this->para->login, $this->para->nome);
-        $this->from(env('MAIL_FROM_ADDRESS'), env('APP_NAME'));
-        $this->replyTo($this->para->login, $this->para->nome);
-
-
+        $this->from(config('mail.from.address'), config('mail.from.name', config('app.name')));
     }
 
-    /**
-     * Build the message.
-     *
-     * @return $this
-     */
-    public function build() {
+    public function build()
+    {
+        if ($this->tarefa && !$this->tarefa->relationLoaded('Lista')) {
+            $this->tarefa->load('Lista');
+        }
+
         return $this->view('email.weekly-report.lembreteTarefa');
     }
 }

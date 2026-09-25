@@ -129,6 +129,7 @@ const TINYMCE_PRESETS = {
         paste_strip_class_attributes: true,
         default_link_target: '_blank',
         link_assume_external_targets: true,
+        auto_focus: false,
         extended_valid_elements: 'span[class|contenteditable|data-user-id|data-nome]',
         content_style:
             'body { font-size: 13px; font-family: Arial, Helvetica, sans-serif; line-height: 1.45; margin: 8px; }' +

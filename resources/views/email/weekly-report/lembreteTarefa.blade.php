@@ -8,7 +8,7 @@
             <td style="text-align: justify">
 
                 Olá, <strong>{{ $para->nome }}</strong>,<br><br>
-                A tarefa <strong>{{$tarefa->titulo}}</strong> da lista <strong>{{$tarefa->Lista->titulo}}</strong> deve ser entregue até {{$tarefa->DataHoraEntregaFormatada}}
+                A tarefa <strong>{{$tarefa->titulo}}</strong>@if($tarefa->Lista) da lista <strong>{{$tarefa->Lista->titulo}}</strong>@endif deve ser entregue até {{$tarefa->DataHoraEntregaFormatada ?? 'a data definida'}}
 
                 <br><br>
             </td>

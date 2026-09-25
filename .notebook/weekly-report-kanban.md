@@ -21,6 +21,8 @@
 - Datas: DatePicker sem valor inventava data no `mounted`/`emitUpdate`. No modal, datepicker só aparece com data definida; senão botão "Definir …".
 - Backend datas: `DataHora::converterDatePicker` exige `DD/MM/YYYY às HH:mm`; formatos inválidos → 422 (não 500).
 - Atividade/histórico: `LogWeekly` precisa de `tarefa_id` para aparecer no modal. Relação `Tarefa::Logs()` sem `take()` (limit no `show`). Echo `.log` atualiza `TaskModal` via `prependLog` (não só `tarefaAtiva`).
+- Atividades no modal: paginação 20 (`show` traz `logs` + `logs_meta`; `GET .../tarefas/{id}/logs?page=` carrega mais).
+- Lembrete de entrega: select no sidebar grava código (`5m`…`2d`) → `tarefas.lembrete` datetime. Job `LembreteTarefaJob` a cada minuto em `routes/schedule.php` (Horizon). Dispara `NotificacaoEvent::LEMBRETE_TAREFA` + e-mail `LembreteTarefaMail` (fila) aos membros. Precisa de membros no card. `Request::exists('lembrete')` para limpar (não usar `has`).
 - Prazo checklist/item: coluna `datahora_entrega` em `checklists_tarefas` e `checklists_tarefa_items`. Update via `acao=add|remove` + `datahora_entrega`. UI: ícone relógio no header/item.
 - Comentários: tabela `tarefas_comentarios` (tipos `comentario|bloqueio|dependencia`). Rotas nested `/comentarios`. Echo `weekly-report.tarefas.comentarios.{empresaId}`. Badge de bloqueio no card.
 - Descrição/comentários: TinyMCE `preset=basico` (formatação básica + imagem). HTML sanitizado via `WeeklyReportHtml`.
@@ -40,4 +42,7 @@
 - Tiny: descrição e comentários com toolbar básica; HTML preservado ao salvar/exibir.
 - Item: ícone user-plus → buscar membro e avatares no item.
 - Digitar `@nome` na descrição/comentário → menu de menções e chip `@Nome`.
+- Query params (histórico + F5): `?quadro=&lista=&tarefa=` em `weekly-report/queryParams.js`. Restore valida quadro do tenant; tarefa via board ou GET show (403/404 limpa URL). Ações continuam pelos `perms.*`.
+- Lembrete: definir entrega + membros + lembrete (ex. 5m) → no horário, notificação in-app + e-mail; card atrasado fica vermelho.
+
 - Menção → avatar aparece em Membros da tarefa; mencionado recebe notificação/e-mail (fluxo updateMembro).

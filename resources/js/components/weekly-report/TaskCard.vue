@@ -5,7 +5,7 @@
         tabindex="0"
         :class="{
             'wr-task-card--done': tarefa.concluido,
-            'wr-task-card--late': tarefa.emAtraso && !tarefa.concluido
+            'wr-task-card--late': isLate
         }"
         @click="$emit('open', tarefa, lista)"
         @keydown.enter.prevent="$emit('open', tarefa, lista)"
@@ -20,7 +20,7 @@
                 <span
                     v-if="tarefa.datahora_entrega"
                     class="badge badge-pill mr-1 mb-1"
-                    :class="tarefa.emAtraso && !tarefa.concluido ? 'badge-danger' : 'badge-soft'"
+                    :class="isLate ? 'badge-danger' : 'badge-soft'"
                 >
                     <i class="far fa-clock"></i>
                     {{ formatData(tarefa.datahora_entrega) }}
@@ -78,6 +78,14 @@ export default {
     computed: {
         progress() {
             return checklistProgress(this.tarefa)
+        },
+        isLate() {
+            if (this.tarefa.concluido || !this.tarefa.datahora_entrega) return false
+            if (this.tarefa.emAtraso || this.tarefa.em_atraso) return true
+            const value = this.tarefa.datahora_entrega
+            if (typeof moment === 'undefined') return false
+            const m = moment(value, ['DD/MM/YYYY [às] HH:mm', 'YYYY-MM-DD HH:mm:ss', 'DD/MM/YYYY HH:mm'], true)
+            return m.isValid() && m.isBefore(moment())
         },
         temMeta() {
             return (

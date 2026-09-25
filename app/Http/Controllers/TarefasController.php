@@ -76,10 +76,14 @@ class TarefasController extends Controller
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa);
 
         $tarefa->load(['Membros', 'Anexos', 'Checklists.Itens']);
-        $tarefa->setRelation(
-            'Logs',
-            $tarefa->Logs()->limit(40)->get()
-        );
+        $logsPage = $tarefa->Logs()->paginate(20);
+        $tarefa->setRelation('Logs', collect($logsPage->items()));
+        $tarefa->setAttribute('logs_meta', [
+            'current_page' => $logsPage->currentPage(),
+            'last_page' => $logsPage->lastPage(),
+            'per_page' => $logsPage->perPage(),
+            'total' => $logsPage->total(),
+        ]);
         $tarefa->setRelation(
             'Comentarios',
             $tarefa->Comentarios()->with('Usuario:id,nome')->limit(100)->get()
@@ -89,6 +93,15 @@ class TarefasController extends Controller
         ]);
 
         return $tarefa;
+    }
+
+    public function logs(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
+    {
+        $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa);
+
+        $page = max(1, (int) $request->input('page', 1));
+
+        return $tarefa->Logs()->paginate(20, ['*'], 'page', $page);
     }
 
     public function update(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
@@ -117,7 +130,7 @@ class TarefasController extends Controller
             if ($request->filled('descricao')) {
                 $dados['descricao'] = WeeklyReportHtml::sanitize($dados['descricao']);
             }
-            if ($request->has('lembrete')) {
+            if ($request->exists('lembrete')) {
                 $tarefa->lembrete = $dados['lembrete'];
                 unset($dados['lembrete']);
             }
@@ -395,12 +408,13 @@ class TarefasController extends Controller
                 if (!$convertida) {
                     return response()->json(['msg' => 'Data/hora de entrega inválida'], 422);
                 }
+                $codigoLembrete = $request->exists('lembrete')
+                    ? $request->input('lembrete')
+                    : $tarefa->lembrete_text;
+
                 $dataHora = new DataHora($convertida);
                 $tarefa->datahora_entrega = $dataHora->dataHoraInsert();
-
-                if ($request->has('lembrete')) {
-                    $tarefa->lembrete = $request->lembrete;
-                }
+                $tarefa->lembrete = $codigoLembrete;
                 $tarefa->save();
 
                 $evento = new TarefaEvent($tarefa, TarefaEvent::UPDATE_DATAHORA_ENTREGA);

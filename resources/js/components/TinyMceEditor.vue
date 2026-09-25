@@ -252,6 +252,18 @@ export default {
                             if (this.disabled && ed.setMode) {
                                 ed.setMode('readonly')
                             }
+                            // Evita scrollIntoView do iframe no meio do modal
+                            try {
+                                if (typeof ed.hasFocus === 'function' && ed.hasFocus()) {
+                                    ed.fire('blur')
+                                }
+                                const active = document.activeElement
+                                if (active && this.$el && this.$el.contains(active)) {
+                                    active.blur()
+                                }
+                            } catch (e) {
+                                /* ignore */
+                            }
                         })
                         ed.on('change keyup undo redo input blur', () => this.emitContent())
                     }

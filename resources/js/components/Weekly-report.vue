@@ -87,6 +87,7 @@ import BoardList from './weekly-report/BoardList.vue'
 import KanbanBoard from './weekly-report/KanbanBoard.vue'
 import TaskModal from './weekly-report/TaskModal.vue'
 import { joinWeeklyChannels } from './weekly-report/echo'
+import { escreverWeeklyQueryParams, lerWeeklyQueryParams } from './weekly-report/queryParams'
 import {
     listasUrl,
     normalizeComentario,
@@ -134,11 +135,19 @@ export default {
                 tarefa_insert: false,
                 tarefa_update: false,
                 tarefa_delete: false
-            }
+            },
+            _skipUrlSync: false,
+            _restoringUrl: false
         }
     },
     mounted() {
+        this._onPopState = () => this.restaurarDaUrl({ fromPopState: true })
+        window.addEventListener('popstate', this._onPopState)
+
         this.carregarQuadros()
+            .then(() => this.restaurarDaUrl({ replace: true }))
+            .catch(() => {})
+
         try {
             this.leaveEcho = joinWeeklyChannels(Number(this.id), {
                 onLog: this.onLog,
@@ -180,9 +189,146 @@ export default {
         }
     },
     beforeUnmount() {
+        if (this._onPopState) {
+            window.removeEventListener('popstate', this._onPopState)
+        }
         if (this.leaveEcho) this.leaveEcho()
     },
     methods: {
+        syncUrl({ replace = false } = {}) {
+            if (this._skipUrlSync) return
+            escreverWeeklyQueryParams(
+                {
+                    quadro: this.quadroAtivo?.id || null,
+                    lista: this.listaAtiva?.id || null,
+                    tarefa: this.tarefaAtiva?.id || null
+                },
+                { replace }
+            )
+        },
+        async restaurarDaUrl({ replace = true, fromPopState = false } = {}) {
+            if (this._restoringUrl) return
+            this._restoringUrl = true
+            this._skipUrlSync = true
+            try {
+                const { quadro, lista, tarefa } = lerWeeklyQueryParams()
+
+                if (!quadro) {
+                    if (this.quadroAtivo) {
+                        this.quadroAtivo = null
+                        this.arrayListas = []
+                        this.atividades = []
+                        this.tarefaAtiva = null
+                        this.listaAtiva = null
+                    }
+                    return
+                }
+
+                const quadroObj = this.listaQuadros.find((q) => Number(q.id) === Number(quadro))
+                if (!quadroObj) {
+                    toastErro('Quadro não encontrado ou sem permissão de acesso')
+                    escreverWeeklyQueryParams({}, { replace: true })
+                    this.quadroAtivo = null
+                    this.arrayListas = []
+                    this.atividades = []
+                    this.tarefaAtiva = null
+                    this.listaAtiva = null
+                    return
+                }
+
+                const mesmoQuadro = this.quadroAtivo && Number(this.quadroAtivo.id) === Number(quadroObj.id)
+                if (!mesmoQuadro) {
+                    this.quadroAtivo = { ...quadroObj }
+                    this.preloadBoard = true
+                    this.tarefaAtiva = null
+                    this.listaAtiva = null
+                    try {
+                        await this.reloadBoard()
+                    } catch (e) {
+                        toastErro(e?.response?.data?.msg || 'Erro ao abrir quadro')
+                        this.quadroAtivo = null
+                        escreverWeeklyQueryParams({}, { replace: true })
+                        return
+                    } finally {
+                        this.preloadBoard = false
+                    }
+                } else if (!this.arrayListas.length) {
+                    await this.reloadBoard().catch(() => {})
+                }
+
+                if (!tarefa) {
+                    this.tarefaAtiva = null
+                    this.listaAtiva = null
+                    return
+                }
+
+                let listaObj = lista
+                    ? this.arrayListas.find((l) => Number(l.id) === Number(lista))
+                    : null
+                let tarefaObj = null
+
+                if (listaObj) {
+                    tarefaObj = (listaObj.tarefas || []).find((t) => Number(t.id) === Number(tarefa))
+                }
+                if (!tarefaObj) {
+                    for (const l of this.arrayListas) {
+                        const found = (l.tarefas || []).find((t) => Number(t.id) === Number(tarefa))
+                        if (found) {
+                            listaObj = l
+                            tarefaObj = found
+                            break
+                        }
+                    }
+                }
+
+                if (!tarefaObj && lista) {
+                    try {
+                        const { data } = await axios.get(tarefasUrl(this.id, quadro, lista, tarefa))
+                        tarefaObj = normalizeTarefa(data)
+                        listaObj =
+                            this.arrayListas.find((l) => Number(l.id) === Number(lista)) || {
+                                id: lista,
+                                titulo: 'Lista',
+                                tarefas: []
+                            }
+                    } catch (e) {
+                        const status = e?.response?.status
+                        toastErro(
+                            status === 403
+                                ? 'Sem permissão para abrir esta tarefa'
+                                : e?.response?.data?.msg || 'Tarefa não encontrada'
+                        )
+                        escreverWeeklyQueryParams({ quadro }, { replace: true })
+                        this.tarefaAtiva = null
+                        this.listaAtiva = null
+                        return
+                    }
+                }
+
+                if (tarefaObj && listaObj) {
+                    this.tarefaAtiva = normalizeTarefa(JSON.parse(JSON.stringify(tarefaObj)))
+                    this.listaAtiva = listaObj
+                    if (replace || fromPopState) {
+                        escreverWeeklyQueryParams(
+                            {
+                                quadro: quadroObj.id,
+                                lista: listaObj.id,
+                                tarefa: tarefaObj.id
+                            },
+                            { replace: true }
+                        )
+                    }
+                } else {
+                    toastErro('Tarefa não encontrada neste quadro')
+                    escreverWeeklyQueryParams({ quadro: quadroObj.id }, { replace: true })
+                    this.tarefaAtiva = null
+                    this.listaAtiva = null
+                }
+            } finally {
+                this._skipUrlSync = false
+                this._restoringUrl = false
+            }
+        },
         onListasUpdate(listas) {
             this.arrayListas = listas
         },
@@ -197,6 +343,7 @@ export default {
                 })
             } catch (e) {
                 this.loadError = e?.response?.data?.msg || 'Não foi possível carregar os quadros.'
+                throw e
             } finally {
                 this.preload = false
             }
@@ -233,6 +380,9 @@ export default {
                 try {
                     await axios.delete(quadroUrl(this.id, quadro.id))
                     this.listaQuadros = this.listaQuadros.filter((q) => q.id !== quadro.id)
+                    if (this.quadroAtivo?.id === quadro.id) {
+                        this.voltarQuadros()
+                    }
                     this.$refs.confirmModal.fecharModal()
                     toastOk('Quadro excluído')
                 } catch (e) {
@@ -243,24 +393,27 @@ export default {
             }
             this.$nextTick(() => this.$refs.confirmModal && this.$refs.confirmModal.abrirModal())
         },
-        async abrirQuadro(quadro) {
+        async abrirQuadro(quadro, { syncUrl = true } = {}) {
             this.quadroAtivo = { ...quadro }
             this.preloadBoard = true
-            this.fecharTarefa()
+            this.fecharTarefa({ syncUrl: false })
             try {
                 await this.reloadBoard()
+                if (syncUrl) this.syncUrl({ replace: false })
             } catch (e) {
                 toastErro(e?.response?.data?.msg || 'Erro ao abrir quadro')
                 this.quadroAtivo = null
+                if (syncUrl) this.syncUrl({ replace: false })
             } finally {
                 this.preloadBoard = false
             }
         },
-        voltarQuadros() {
+        voltarQuadros({ syncUrl = true } = {}) {
             this.quadroAtivo = null
             this.arrayListas = []
             this.atividades = []
-            this.fecharTarefa()
+            this.fecharTarefa({ syncUrl: false })
+            if (syncUrl) this.syncUrl({ replace: false })
         },
         async reloadBoard() {
             if (!this.quadroAtivo) return
@@ -303,6 +456,9 @@ export default {
                 try {
                     await axios.delete(listasUrl(this.id, this.quadroAtivo.id, lista.id))
                     this.arrayListas = this.arrayListas.filter((l) => l.id !== lista.id)
+                    if (this.listaAtiva?.id === lista.id) {
+                        this.fecharTarefa()
+                    }
                     this.$refs.confirmModal.fecharModal()
                     toastOk('Lista excluída')
                 } catch (e) {
@@ -335,13 +491,15 @@ export default {
                 })
                 .catch(() => this.reloadBoardSoft())
         },
-        abrirTarefa(tarefa, lista) {
+        abrirTarefa(tarefa, lista, { syncUrl = true } = {}) {
             this.tarefaAtiva = normalizeTarefa(JSON.parse(JSON.stringify(tarefa)))
             this.listaAtiva = lista
+            if (syncUrl) this.syncUrl({ replace: false })
         },
-        fecharTarefa() {
+        fecharTarefa({ syncUrl = true } = {}) {
             this.tarefaAtiva = null
             this.listaAtiva = null
+            if (syncUrl) this.syncUrl({ replace: false })
         },
         pedirDeleteTarefa(tarefa) {
             this.confirmMsg = `Excluir o card "${tarefa.titulo}"?`
@@ -508,6 +666,9 @@ export default {
                         lista.tarefas = lista.tarefas.filter((t) => t.id !== e.idDelete)
                     }
                 })
+                if (Number(this.tarefaAtiva?.id) === Number(e.idDelete)) {
+                    this.fecharTarefa()
+                }
             }
             if (Array.isArray(e.tarefas)) {
                 const listaId = e.lista_id || (e.tarefas[0] && e.tarefas[0].lista_id)
