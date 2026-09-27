@@ -1,8 +1,12 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-09-25
+Last updated: 2026-09-27
 
+- [relatorio-ferias](relatorio-ferias.md) — Férias: CNPJ/CC + abas Lista/Gráficos via FeriasController::show | flow | ferias, cnpj, graficos
+- [filtro-compacto-operacional](filtro-compacto-operacional.md) — Filtros densos + DateRange blur + Mais filtros animado | pattern | filtro, ux, daterange
+- [relatorio-vencimento-aso](relatorio-vencimento-aso.md) — Regra única tela/Excel/e-mail via AsoVencimentoRelatorioService | flow | aso, vencimento
+- [relatorio-treinamento-vencimento](relatorio-treinamento-vencimento.md) — Tela/export vs e-mail: Admitidos≠ADMITIDO, períodos e DIAS_ALERTA=45 | gotcha | treinamento, vencimento
 - [weekly-report-kanban](weekly-report-kanban.md) — Kanban Trello + tenant empresa_id + Echo | flow | weekly-report, kanban, multitenant
 - [contrato-customizado-apelido](contrato-customizado-apelido.md) — Blade dossiê por apelido (contrato + checklist Coimbra) | flow | dossie, contrato, checklist
 - [cih-filtro-busca-id](cih-filtro-busca-id.md) — campoBusca nome/CÓD + combos no filtro/form | flow | cih, filtro, combobox

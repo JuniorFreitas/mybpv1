@@ -13,6 +13,7 @@ use App\Models\FeedbackCurriculo;
 use App\Models\ResultadoIntegrado;
 use App\Models\Sistema;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EfetivoController extends Controller
 {
@@ -99,15 +100,15 @@ class EfetivoController extends Controller
     public static function filtro(Request $request)
     {
         $resultado = Admissao::admitidos()
-            ->where('admissoes.status',Admissao::STATUS_ADMISSAO_ADMITIDO)
+            ->where('admissoes.status', Admissao::STATUS_ADMISSAO_ADMITIDO)
             ->whereHas('Feedback')
-            ->select(['id', 'label', 'empresa_id'])
             ->join('feedback_curriculos as feedback', 'feedback.id', '=', 'admissoes.feedback_id')
             ->join('curriculos as curriculo', 'curriculo.id', '=', 'feedback.curriculo_id')
-            ->with(['Feedback:id,curriculo_id,vagas_abertas_id',
-                    'Feedback.Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
-                    'CentroCusto.Filiais',
-                    'CentroCusto',
+            ->with([
+                'Feedback:id,curriculo_id,vagas_abertas_id',
+                'Feedback.Curriculo:id,nome,cpf,rg,orgao_expeditor,nascimento,logradouro,complemento,bairro,municipio,uf,cep,formacao,pcd,email,municipio_id,uf_vaga',
+                'CentroCusto.Filiais',
+                'CentroCusto',
             ])
             ->select([
                 'admissoes.id',
@@ -120,17 +121,206 @@ class EfetivoController extends Controller
                 'admissoes.filial',
                 'admissoes.status',
                 'admissoes.data_admissao'
-            ])->orderBy('curriculo.nome');
+            ])
+            ->orderBy('admissoes.centro_custo_id')
+            ->orderBy('curriculo.nome');
 
-        if ($request->filled('campoCentrosDeCusto')) {
-            if($request->campoCentrosDeCusto == 'nenhum'){
-                $resultado->whereNull('centro_custo_id');
-            }else{
-                $resultado->whereCentroCustoId($request->campoCentrosDeCusto);
+        if ($request->filled('campoCnpj') || $request->filled('campoCentroCusto')) {
+            self::aplicarFiltroCnpjCentroCusto($resultado, $request);
+        }
+
+        if ($request->filled('campoBusca')) {
+            $busca = trim((string) $request->campoBusca);
+            $resultado->where(function ($q) use ($busca) {
+                $q->where('curriculo.nome', 'like', '%' . $busca . '%');
+                if (ctype_digit($busca)) {
+                    $q->orWhere('curriculo.id', (int) $busca);
+                }
+            });
+        }
+
+        if ($request->filled('campoTipoAdmissao')) {
+            $resultado->where('admissoes.tipo_admissao', $request->campoTipoAdmissao);
+        }
+
+        if ($request->filled('campoCargo')) {
+            $cargo = trim((string) $request->campoCargo);
+            $resultado->where('admissoes.cargo', 'like', '%' . $cargo . '%');
+        }
+
+        $periodoAtivo = filter_var($request->input('campoPeriodo'), FILTER_VALIDATE_BOOLEAN)
+            || $request->input('campoPeriodo') === '1'
+            || $request->input('campoPeriodo') === 1;
+
+        if ($periodoAtivo && $request->filled('dataInicio') && $request->filled('dataFim')) {
+            $inicio = self::normalizarDataFiltro($request->dataInicio);
+            $fim = self::normalizarDataFiltro($request->dataFim);
+            if ($inicio && $fim) {
+                $resultado->whereDate('admissoes.data_admissao', '>=', $inicio)
+                    ->whereDate('admissoes.data_admissao', '<=', $fim);
             }
         }
 
         return $resultado;
+    }
+
+    /**
+     * Mesma regra de Treinamentos / AdmissaoController (CNPJ + centro de custo).
+     */
+    protected static function aplicarFiltroCnpjCentroCusto($resultado, Request $request): void
+    {
+        $temCnpj = $request->filled('campoCnpj');
+        $temCentroCusto = $request->filled('campoCentroCusto');
+
+        if ($temCnpj) {
+            $centros_custos = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+            $cnpjKey = preg_replace('/[^0-9]/', '', (string) $request->campoCnpj);
+            $cc = $centros_custos['centros_custos'][$request->campoCnpj]
+                ?? $centros_custos['centros_custos'][$cnpjKey]
+                ?? null;
+
+            if (!$cc || !isset($cc[0])) {
+                $resultado->whereRaw('1 = 0');
+                return;
+            }
+
+            $cc = collect($cc);
+
+            if (!$temCentroCusto) {
+                if ($cc[0]['matriz']) {
+                    $resultado->where(function ($query) use ($cc) {
+                        $query->whereIn('admissoes.centro_custo_id', $cc->pluck('id')->toArray())
+                            ->orWhereNull('admissoes.centro_custo_id');
+                    })->where('admissoes.filial', false);
+                } else {
+                    $resultado->where(function ($query) use ($cc) {
+                        $query->whereIn('admissoes.centro_custo_filial_id', $cc->pluck('filial_id')->toArray())
+                            ->orWhereNull('admissoes.centro_custo_filial_id');
+                    })->where('admissoes.filial', true);
+                }
+                return;
+            }
+
+            $campoCentroCusto = $request->campoCentroCusto != '--naoinformado--'
+                ? $request->campoCentroCusto
+                : null;
+
+            if ($cc[0]['matriz']) {
+                $resultado->where('admissoes.centro_custo_id', $campoCentroCusto)
+                    ->where('admissoes.filial', false);
+            } else {
+                $resultado->where('admissoes.centro_custo_filial_id', $campoCentroCusto)
+                    ->where('admissoes.filial', true);
+            }
+            return;
+        }
+
+        if ($temCentroCusto) {
+            if ($request->campoCentroCusto === '--naoinformado--') {
+                $resultado->where(function ($q) {
+                    $q->whereNull('admissoes.centro_custo_id')
+                        ->whereNull('admissoes.centro_custo_filial_id');
+                });
+            } else {
+                $resultado->where(function ($q) use ($request) {
+                    $q->where('admissoes.centro_custo_id', $request->campoCentroCusto)
+                        ->orWhere('admissoes.centro_custo_filial_id', $request->campoCentroCusto);
+                });
+            }
+        }
+    }
+
+    /**
+     * Aceita Y-m-d ou d/m/Y.
+     */
+    protected static function normalizarDataFiltro($valor): ?string
+    {
+        $valor = trim((string) $valor);
+        if ($valor === '') {
+            return null;
+        }
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $valor)) {
+            return $valor;
+        }
+        if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $valor, $m)) {
+            return $m[3] . '-' . $m[2] . '-' . $m[1];
+        }
+        return null;
+    }
+
+    /**
+     * Agregações do universo filtrado completo (não paginado) para os gráficos.
+     */
+    protected static function montarGraficos(Request $request): array
+    {
+        $base = self::filtro($request);
+        $base->getQuery()->orders = null;
+        $base->setEagerLoads([]);
+
+        $tiposQuery = clone $base;
+        $tipos = $tiposQuery
+            ->select([
+                DB::raw("COALESCE(NULLIF(TRIM(admissoes.tipo_admissao), ''), 'Não informado') as label"),
+                DB::raw('COUNT(admissoes.id) as total'),
+            ])
+            ->groupBy(DB::raw("COALESCE(NULLIF(TRIM(admissoes.tipo_admissao), ''), 'Não informado')"))
+            ->orderByDesc('total')
+            ->get()
+            ->map(fn ($row) => [
+                'label' => (string) $row->label,
+                'total' => (int) $row->total,
+            ])
+            ->values()
+            ->all();
+
+        $cargosQuery = clone $base;
+        $cargos = $cargosQuery
+            ->select([
+                DB::raw("COALESCE(NULLIF(TRIM(admissoes.cargo), ''), 'Não informado') as label"),
+                DB::raw('COUNT(admissoes.id) as total'),
+            ])
+            ->groupBy(DB::raw("COALESCE(NULLIF(TRIM(admissoes.cargo), ''), 'Não informado')"))
+            ->orderByDesc('total')
+            ->limit(12)
+            ->get()
+            ->map(fn ($row) => [
+                'label' => (string) $row->label,
+                'total' => (int) $row->total,
+            ])
+            ->values()
+            ->all();
+
+        $centrosQuery = clone $base;
+        $centrosRaw = $centrosQuery
+            ->select([
+                'admissoes.centro_custo_id',
+                DB::raw('COUNT(admissoes.id) as total'),
+            ])
+            ->groupBy('admissoes.centro_custo_id')
+            ->orderByDesc('total')
+            ->limit(15)
+            ->get();
+
+        $labelsCc = CentroCusto::query()
+            ->whereIn('id', $centrosRaw->pluck('centro_custo_id')->filter()->all())
+            ->pluck('label', 'id');
+
+        $centros = $centrosRaw
+            ->map(function ($row) use ($labelsCc) {
+                $id = $row->centro_custo_id;
+                return [
+                    'label' => $id ? (string) ($labelsCc[$id] ?? ('#' . $id)) : 'SEM CENTRO DE CUSTO',
+                    'total' => (int) $row->total,
+                ];
+            })
+            ->values()
+            ->all();
+
+        return [
+            'tipos' => $tipos,
+            'cargos' => $cargos,
+            'centros' => $centros,
+        ];
     }
 
     /**
@@ -139,12 +329,10 @@ class EfetivoController extends Controller
      */
     public function atualizar(Request $request)
     {
-        $resultado = self::filtro($request)->paginate($request->porPag ?: 100);
-        $centros_de_custo = CentroCusto::whereAtivo(true)->orderBy('label')->get();
-        $filial = new ClienteFilial();
-        if ($filial->temFilial()) {
-            $listaFilial = $filial->getListaFilialAtiva();
-        }
+        $porPagina = (int) ($request->input('porPagina') ?: $request->input('porPag') ?: $request->input('pages') ?: 100);
+        $resultado = self::filtro($request)->paginate(max(1, $porPagina));
+        $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+        $graficos = self::montarGraficos($request);
         $itens = collect($resultado->items())->transform(function ($item) {
             $item->data_admissao = $item->data_admissao ?: 'NÃO INFORMADA';
             $item->salario = $item->salario ?: '0,00';
@@ -160,8 +348,9 @@ class EfetivoController extends Controller
             'total' => $resultado->total(),
             'dados' => [
                 'itens' => $itens,
-                'listaFilial' => $listaFilial ?? null,
-                'centros_de_custo' => $centros_de_custo
+                'cc' => $cc,
+                'total_geral' => $resultado->total(),
+                'graficos' => $graficos,
             ]
         ], 200);
     }

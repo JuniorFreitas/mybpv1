@@ -536,252 +536,480 @@
     </template>
 </modal>
 
-<fieldset>
-    <legend class="text-uppercase">Filtro</legend>
-    <div class="row align-items-end filtro-toolbar-compact">
-        <div class="col-12 col-md-4 mb-2">
-            <label>Busca rápida</label>
-            <input type="text"
-                placeholder="Nome do colaborador"
-                autocomplete="off"
-                class="form-control form-control-sm"
-                :disabled="controle.carregando"
-                v-model="controle.dados.campoBusca"
-                @keyup.enter="atualizar">
-        </div>
-        <div class="col-12 col-md-3 mb-2">
-            <label>CPF</label>
-            <input type="text"
-                placeholder="CPF"
-                autocomplete="mastertag"
-                v-mascara:cpf
-                class="form-control form-control-sm"
-                :disabled="controle.carregando"
-                v-model="controle.dados.campoCPF"
-                @keyup.enter="atualizar">
-        </div>
-        <div class="col-12 col-md-5 mb-2 d-flex flex-wrap gap-compact">
-            <button type="button" class="btn btn-sm btn-success mb-1 mr-1"
-                :disabled="controle.carregando"
-                @click="atualizar">
-                <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
-                Buscar
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary mb-1 mr-1"
-                :disabled="controle.carregando"
-                @click="limparFiltros">
-                <i class="fa fa-eraser"></i>
-                Limpar filtros
-            </button>
-            <button type="button"
-                class="btn btn-sm btn-outline-primary mb-1"
-                :disabled="controle.carregando"
-                @click="filtrosAvancadosAbertos = !filtrosAvancadosAbertos">
-                <i class="fa" :class="filtrosAvancadosAbertos ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                {{ filtrosAvancadosAbertos ? 'Ocultar filtros avançados' : 'Mostrar filtros avançados' }}
-                <span class="badge badge-light ml-1">{{ totalFiltrosAtivos }}</span>
-            </button>
-        </div>
-    </div>
-    <div class="row mb-1" v-if="activeFilterChips.length">
-        <div class="col-12">
-            <div class="d-flex flex-wrap">
-                <span class="badge badge-light border mr-2 mb-2 px-2 py-1" v-for="chip in activeFilterChips" :key="chip.key">
-                    {{ chip.label }}
-                    <a href="javascript://" class="ml-1 text-danger" @click.prevent="limparFiltroAtivo(chip.key)">
-                        <i class="fa fa-times"></i>
-                    </a>
-                </span>
-            </div>
-        </div>
-    </div>
-    <div class="row mt-2" v-show="filtrosAvancadosAbertos">
-        <div class="col-12">
-            <h6 class="filtro-section-title">Períodos</h6>
-        </div>
-        <date-range-filter v-model:enabled="controle.dados.campoVencimento" v-model:start-date="controle.dados.dataInicioVencimento"
-            v-model:end-date="controle.dados.dataFimVencimento" :disabled="controle.carregando" :id-suffix="'vencimento-' + hash"
-            label="Período de vencimento" wrapper-class="col-12 col-lg-4"
-            @update:startDate="atualizarVencimentoString" @update:endDate="atualizarVencimentoString"
-            @update:enabled="atualizarVencimentoString">
-        </date-range-filter>
-
-        <date-range-filter v-model:enabled="controle.dados.campoPeriodoTreinado" v-model:start-date="controle.dados.dataInicioPeriodoTreinado"
-            v-model:end-date="controle.dados.dataFimPeriodoTreinado" :disabled="controle.carregando" :id-suffix="'periodo-treinado-' + hash"
-            label="Período treinado" wrapper-class="col-12 col-lg-4"
-            @update:startDate="atualizarPeriodoTreinadoString" @update:endDate="atualizarPeriodoTreinadoString"
-            @update:enabled="atualizarPeriodoTreinadoString">
-        </date-range-filter>
-
-        <div class="col-12 col-md-6 col-lg-4 mb-3">
-            <label>Treinados</label>
-            <select class="custom-select custom-select-sm" @change="selecionaTreinados($event.target.value)"
-                :disabled="controle.carregando" v-model="controle.dados.campo_treinados">
-                <option value="">Sem filtro</option>
-                <option value="S">Sim</option>
-                <option value="N">Não</option>
-            </select>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-4 mb-3">
-            <label>Padrão de treinamento</label>
-            <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                v-model="controle.dados.segmento_treinamento_id">
-                <option value="">Todos</option>
-                <option v-for="s in segmentosTreinamento" :key="s.id" :value="String(s.id)">
-                    {{ s.nome }}
-                </option>
-            </select>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-4 mb-3">
-            <label>Admitidos</label>
-            <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoAdmitido">
-                <option value="">Geral</option>
-                <option value="S">Sim</option>
-                <option value="N">Não</option>
-            </select>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-4 mb-3">
-            <label>Por demitido</label>
-            <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoDemitido">
-                <option :value="false">Não</option>
-                <option :value="true">Sim</option>
-            </select>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-4 mb-3">
-            <label>Foto 3x4</label>
-            <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoFoto">
-                <option value="">Geral</option>
-                <option :value="true">Sim</option>
-                <option :value="false">Não</option>
-            </select>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-4 mb-3">
-            <label>Nº Crachá</label>
-            <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoCracha">
-                <option value="">Geral</option>
-                <option value="S">Sim</option>
-                <option value="N">Não</option>
-            </select>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-4 mb-3" v-if="lista_ccs && AUTENTICADO.temFilial">
-            <label>CNPJ</label>
-            <select class="form-control form-control-sm" @change="changeCnpj" :disabled="controle.carregando" v-model="controle.dados.campoCnpj">
-                <option value="">Todos</option>
-                <option v-for="(item, key) in lista_ccs.cnpjs" :value="key" :keys="key">
-                    {{item.nome_fantasia}} - {{item.cnpj}}
-                </option>
-            </select>
-        </div>
-
-        <div class="col-12 mb-3" :class="AUTENTICADO.temFilial ? 'col-lg-4' : 'col-lg-6'" v-if="lista_ccs">
-            <label>Centro de Custo</label>
-            <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoCentroCusto">
-                <option value="">Todos</option>
-                <option :title="item.label" v-for="(item, key) in filtroListaCentroCustoCnpj"
-                    :value="item.matriz ? item.id : item.filial_id" :keys="key">
-                    {{item.label}}
-                </option>
-                <option value="--naoinformado--">--- Não Informado ---</option>
-            </select>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-4 mb-3">
-            <label>Cargo</label>
-            <input type="text"
-                placeholder="Buscar por cargo"
-                autocomplete="off"
-                class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoCargo">
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-4 mb-3">
-            <label>Por vaga</label>
-            <autocomplete :disabled="controle.carregando" :caminho="controle.dados.caminho_autocomplete"
-                :valido="controle.dados.campoVaga !== ''" v-model="controle.dados.autocomplete_label"
-                placeholder="Por vaga" @onblur="resetaCampo" @onselect="selecionaVaga"></autocomplete>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-4 mb-3">
-            <label>Estado</label>
-            <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando" v-model="controle.dados.campoUf">
-                <option value="">Todos</option>
-                <option value="AC">AC</option>
-                <option value="AL">AL</option>
-                <option value="AP">AP</option>
-                <option value="AM">AM</option>
-                <option value="BA">BA</option>
-                <option value="CE">CE</option>
-                <option value="DF">DF</option>
-                <option value="ES">ES</option>
-                <option value="GO">GO</option>
-                <option value="MA">MA</option>
-                <option value="MT">MT</option>
-                <option value="MS">MS</option>
-                <option value="MG">MG</option>
-                <option value="PA">PA</option>
-                <option value="PB">PB</option>
-                <option value="PR">PR</option>
-                <option value="PE">PE</option>
-                <option value="PI">PI</option>
-                <option value="RJ">RJ</option>
-                <option value="RN">RN</option>
-                <option value="RS">RS</option>
-                <option value="RO">RO</option>
-                <option value="RR">RR</option>
-                <option value="SC">SC</option>
-                <option value="SP">SP</option>
-                <option value="SE">SE</option>
-                <option value="TO">TO</option>
-            </select>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-4 mb-3">
-            <label>Exibir</label>
-            <select class="custom-select custom-select-sm" @change="atualizar" :disabled="controle.carregando"
-                v-model="controle.dados.pages">
-                <option value="20">20</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-                <option value="500">500</option>
-            </select>
-        </div>
-
-        <div class="col-12">
-            <h6 class="filtro-section-title">Treinamentos Específicos</h6>
-        </div>
-        <div class="col-12 col-lg-8 mb-3">
-            <select class="custom-select custom-select-sm" @change="addTreinamento($event.target.value)"
-                :disabled="controle.carregando"
-                v-model="controle.dados.treinamentos">
-                <option value="">Selecionar ...</option>
-                <option value="todos">---- ADICIONAR TODOS ----</option>
-                <option v-for="treinamento in listaTodosTreinamentos" :value="treinamento.label">
-                    {{ treinamento.label }}
-                </option>
-                <option value="rm">---- REMOVER TODOS ----</option>
-            </select>
-
-        </div>
-
-        <div class="col-12 mt-1">
-            <div class="p-2" style="border: 1px dashed #cccbcb">
-                <h6>TREINAMENTOS ESPECÍFICOS SELECIONADOS:</h6>
-                <div class="row">
-                    <small class="p-2 ml-2 mb-2 table-secondary text-dark rounded"
-                        v-for="(item, ind) in controle.dados.treinamentos_selecionados">
-                        {{ item }} <a href="javascript://" @click.prevent="removeTreinamento(ind)"><i
-                                class="fa fa-times ml-1"></i></a>
-                    </small>
+<FiltroListagem
+    class="mt-2 trn-carteira-filtros mybp-filtros-compactos"
+    :mostrar-limpar-filtros="totalFiltrosAtivos > 0"
+    :desabilitado="controle.carregando"
+    @submit="atualizar"
+    @limpar="limparFiltros"
+>
+    <template #filtros>
+        <!-- Linha 1 -->
+        <date-range-filter
+            v-model:enabled="controle.dados.campoVencimento"
+            v-model:start-date="controle.dados.dataInicioVencimento"
+            v-model:end-date="controle.dados.dataFimVencimento"
+            :disabled="controle.carregando"
+            :id-suffix="'vencimento-' + hash"
+            label="Período de vencimento"
+            wrapper-class="col-12 col-md-4 trn-carteira-periodo mybp-filtro-periodo"
+            @change="atualizarVencimentoString"
+        />
+        <date-range-filter
+            v-model:enabled="controle.dados.campoPeriodoTreinado"
+            v-model:start-date="controle.dados.dataInicioPeriodoTreinado"
+            v-model:end-date="controle.dados.dataFimPeriodoTreinado"
+            :disabled="controle.carregando"
+            :id-suffix="'periodo-treinado-' + hash"
+            label="Período treinado"
+            wrapper-class="col-12 col-md-4 trn-carteira-periodo mybp-filtro-periodo"
+            @change="atualizarPeriodoTreinadoString"
+        />
+        <div class="col-12 col-md-4">
+            <div class="form-group trn-carteira-filtro-campo mybp-filtro-campo">
+                <label class="mybp-label" for="trn-carteira-treinados">Treinados</label>
+                <div class="mybp-combobox-wrap">
+                    <combobox-auto-complete
+                        ref="comboFiltroTreinados"
+                        input-id="trn-carteira-treinados"
+                        instance-id="trn-carteira-treinados"
+                        :disabled="controle.carregando"
+                        :options="opcoesTreinados"
+                        placeholder-blur="Todos"
+                        empty-message="Nenhuma opção encontrada."
+                        :max-results="10"
+                        v-model="controle.dados.campo_treinados"
+                        @opening="fecharOutrosComboboxes('trn-carteira-treinados')"
+                        @select="onSelectTreinados"
+                    />
                 </div>
             </div>
         </div>
 
-    </div>
+        <!-- Linha 2 -->
+        <div class="col-12 col-md-4">
+            <div class="form-group trn-carteira-filtro-campo mybp-filtro-campo">
+                <label class="mybp-label" for="trn-carteira-busca">
+                    Colaborador / CPF
+                    <span v-if="buscaUnificadaEhCpf" class="trn-carteira-filtro-hint">CPF</span>
+                </label>
+                <input
+                    id="trn-carteira-busca"
+                    type="text"
+                    placeholder="Nome ou CPF"
+                    autocomplete="off"
+                    inputmode="search"
+                    class="form-control form-control-sm"
+                    :disabled="controle.carregando"
+                    :value="campoBuscaUnificada"
+                    @input="onInputBuscaUnificada"
+                />
+            </div>
+        </div>
+        <div class="col-12 col-md-4" v-if="lista_ccs && AUTENTICADO.temFilial">
+            <div class="form-group trn-carteira-filtro-campo mybp-filtro-campo">
+                <label class="mybp-label" for="trn-carteira-cnpj">CNPJ</label>
+                <div class="mybp-combobox-wrap">
+                    <combobox-auto-complete
+                        ref="comboFiltroCnpj"
+                        input-id="trn-carteira-cnpj"
+                        instance-id="trn-carteira-cnpj"
+                        :disabled="controle.carregando"
+                        :options="opcoesCnpj"
+                        placeholder-blur="Todos"
+                        empty-message="Nenhum CNPJ encontrado."
+                        :max-results="50"
+                        v-model="controle.dados.campoCnpj"
+                        @opening="fecharOutrosComboboxes('trn-carteira-cnpj')"
+                        @select="onSelectCnpj"
+                    />
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4" v-if="lista_ccs">
+            <div class="form-group trn-carteira-filtro-campo mybp-filtro-campo">
+                <label class="mybp-label" for="trn-carteira-cc">Centro de custo</label>
+                <div class="mybp-combobox-wrap">
+                    <combobox-auto-complete
+                        ref="comboFiltroCc"
+                        input-id="trn-carteira-cc"
+                        instance-id="trn-carteira-cc"
+                        :disabled="controle.carregando || !opcoesCentroCusto.length"
+                        :options="opcoesCentroCusto"
+                        placeholder-blur="Todos"
+                        empty-message="Nenhum centro encontrado."
+                        :max-results="80"
+                        v-model="controle.dados.campoCentroCusto"
+                        @opening="fecharOutrosComboboxes('trn-carteira-cc')"
+                        @select="onSelectFiltro"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Linha 3 -->
+        <div class="col-12 col-md-4">
+            <div class="form-group trn-carteira-filtro-campo mybp-filtro-campo">
+                <label class="mybp-label">Vaga</label>
+                <autocomplete
+                    :disabled="controle.carregando"
+                    :caminho="controle.dados.caminho_autocomplete"
+                    :valido="controle.dados.campoVaga !== ''"
+                    v-model="controle.dados.autocomplete_label"
+                    placeholder="Buscar vaga"
+                    @onblur="resetaCampo"
+                    @onselect="selecionaVaga"
+                />
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="form-group trn-carteira-filtro-campo mybp-filtro-campo">
+                <label class="mybp-label" for="trn-carteira-cargo">Cargo</label>
+                <input
+                    id="trn-carteira-cargo"
+                    type="text"
+                    placeholder="Cargo"
+                    autocomplete="off"
+                    class="form-control form-control-sm"
+                    :disabled="controle.carregando"
+                    v-model="controle.dados.campoCargo"
+                />
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="form-group trn-carteira-filtro-campo mybp-filtro-campo">
+                <label class="mybp-label" for="trn-carteira-situacao">Situação</label>
+                <div class="mybp-combobox-wrap">
+                    <combobox-auto-complete
+                        ref="comboFiltroSituacao"
+                        input-id="trn-carteira-situacao"
+                        instance-id="trn-carteira-situacao"
+                        :disabled="controle.carregando"
+                        :options="opcoesSituacaoColaborador"
+                        placeholder-blur="Ativos"
+                        empty-message="Nenhuma opção encontrada."
+                        :max-results="10"
+                        v-model="campoSituacaoCombo"
+                        @opening="fecharOutrosComboboxes('trn-carteira-situacao')"
+                        @select="onSelectFiltro"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Linha 4 -->
+        <div class="col-12">
+            <div class="form-group trn-carteira-filtro-campo mybp-filtro-campo">
+                <label class="mybp-label" for="trn-carteira-treino">
+                    Treinamentos específicos
+                    <span v-if="controle.dados.treinamentos_selecionados.length" class="trn-carteira-filtro-hint">
+                        {{ controle.dados.treinamentos_selecionados.length }}
+                    </span>
+                </label>
+                <div class="mybp-combobox-wrap">
+                    <combobox-auto-complete
+                        ref="comboFiltroTreinamento"
+                        input-id="trn-carteira-treino"
+                        instance-id="trn-carteira-treino"
+                        :disabled="controle.carregando || !opcoesTreinamentoDisponiveis.length"
+                        :options="opcoesTreinamentoDisponiveis"
+                        placeholder-blur="Buscar treinamento"
+                        placeholder-focus="Digite para filtrar…"
+                        empty-message="Nenhum treinamento disponível."
+                        :max-results="80"
+                        v-model="comboTreinamento"
+                        @opening="fecharOutrosComboboxes('trn-carteira-treino')"
+                        @select="onSelectTreinamentoEspecifico"
+                    />
+                </div>
+            </div>
+            <div
+                class="trn-carteira-treino-badges"
+                v-if="controle.dados.treinamentos_selecionados.length"
+                role="list"
+                aria-label="Treinamentos selecionados"
+            >
+                <span
+                    v-for="(item, ind) in controle.dados.treinamentos_selecionados"
+                    :key="`${item}-${ind}`"
+                    class="trn-carteira-treino-badge"
+                    role="listitem"
+                >
+                    <span class="trn-carteira-treino-badge__text">{{ item }}</span>
+                    <button
+                        type="button"
+                        class="trn-carteira-treino-badge__remove"
+                        :aria-label="`Remover ${item}`"
+                        @click="removeTreinamento(ind)"
+                    >
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                    </button>
+                </span>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-link px-1 py-0"
+                    :disabled="controle.carregando"
+                    @click="limparTreinamentosSelecionados"
+                >
+                    Limpar
+                </button>
+            </div>
+        </div>
+
+        <div class="col-12" v-if="advancedFilterChips.length && !filtrosAvancadosAbertos">
+            <div class="trn-carteira-chips" role="list" aria-label="Filtros avançados ativos">
+                <span
+                    v-for="chip in advancedFilterChips"
+                    :key="chip.key"
+                    class="trn-carteira-chip"
+                    role="listitem"
+                >
+                    <span class="trn-carteira-chip__text">{{ chip.label }}</span>
+                    <button
+                        type="button"
+                        class="trn-carteira-chip__remove"
+                        :aria-label="`Remover filtro ${chip.label}`"
+                        @click="limparFiltroAtivo(chip.key)"
+                    >
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                    </button>
+                </span>
+            </div>
+        </div>
+
+        <div
+            class="col-12 mybp-filtros-avancados-shell"
+            :class="{ 'is-open': filtrosAvancadosAbertos }"
+            :aria-hidden="filtrosAvancadosAbertos ? 'false' : 'true'"
+        >
+            <div class="mybp-filtros-avancados-shell__inner">
+            <div class="trn-carteira-avancados mybp-filtros-avancados">
+                <div class="trn-carteira-avancados__grid">
+                    <div class="trn-carteira-avancados__block mybp-filtros-avancados__block">
+                        <p class="trn-carteira-avancados__title mybp-filtros-avancados__title">Outros filtros</p>
+                        <div class="row">
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <div class="form-group trn-carteira-filtro-campo mybp-filtro-campo">
+                                    <label class="mybp-label" for="trn-carteira-segmento">Padrão</label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFiltroSegmento"
+                                            input-id="trn-carteira-segmento"
+                                            instance-id="trn-carteira-segmento"
+                                            :disabled="controle.carregando"
+                                            :options="opcoesSegmento"
+                                            placeholder-blur="Todos"
+                                            empty-message="Nenhum padrão encontrado."
+                                            :max-results="30"
+                                            v-model="controle.dados.segmento_treinamento_id"
+                                            @opening="fecharOutrosComboboxes('trn-carteira-segmento')"
+                                            @select="onSelectFiltro"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <div class="form-group trn-carteira-filtro-campo mybp-filtro-campo">
+                                    <label class="mybp-label" for="trn-carteira-foto">Foto 3x4</label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFiltroFoto"
+                                            input-id="trn-carteira-foto"
+                                            instance-id="trn-carteira-foto"
+                                            :disabled="controle.carregando"
+                                            :options="opcoesFoto"
+                                            placeholder-blur="Geral"
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            v-model="campoFotoCombo"
+                                            @opening="fecharOutrosComboboxes('trn-carteira-foto')"
+                                            @select="onSelectFiltro"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <div class="form-group trn-carteira-filtro-campo mybp-filtro-campo">
+                                    <label class="mybp-label" for="trn-carteira-cracha">Crachá</label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFiltroCracha"
+                                            input-id="trn-carteira-cracha"
+                                            instance-id="trn-carteira-cracha"
+                                            :disabled="controle.carregando"
+                                            :options="opcoesSimNaoGeral"
+                                            placeholder-blur="Geral"
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            v-model="controle.dados.campoCracha"
+                                            @opening="fecharOutrosComboboxes('trn-carteira-cracha')"
+                                            @select="onSelectFiltro"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <div class="form-group trn-carteira-filtro-campo mybp-filtro-campo">
+                                    <label class="mybp-label" for="trn-carteira-pcd">PCD</label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFiltroPcd"
+                                            input-id="trn-carteira-pcd"
+                                            instance-id="trn-carteira-pcd"
+                                            :disabled="controle.carregando"
+                                            :options="opcoesFoto"
+                                            placeholder-blur="Geral"
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            v-model="campoPcdCombo"
+                                            @opening="fecharOutrosComboboxes('trn-carteira-pcd')"
+                                            @select="onSelectFiltro"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <div class="form-group trn-carteira-filtro-campo mybp-filtro-campo">
+                                    <label class="mybp-label" for="trn-carteira-uf">UF</label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFiltroUf"
+                                            input-id="trn-carteira-uf"
+                                            instance-id="trn-carteira-uf"
+                                            :disabled="controle.carregando"
+                                            :options="opcoesUf"
+                                            placeholder-blur="Todos"
+                                            empty-message="Nenhum estado encontrado."
+                                            :max-results="30"
+                                            v-model="controle.dados.campoUf"
+                                            @opening="fecharOutrosComboboxes('trn-carteira-uf')"
+                                            @select="onSelectFiltro"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <div class="form-group trn-carteira-filtro-campo mybp-filtro-campo">
+                                    <label class="mybp-label" for="trn-carteira-pages">Por página</label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFiltroPages"
+                                            input-id="trn-carteira-pages"
+                                            instance-id="trn-carteira-pages"
+                                            :disabled="controle.carregando"
+                                            :options="opcoesPages"
+                                            placeholder-blur="50"
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            v-model="campoPagesCombo"
+                                            @opening="fecharOutrosComboboxes('trn-carteira-pages')"
+                                            @select="onSelectFiltro"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </template>
+
+    <template #acoes>
+        <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+            <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
+            Buscar
+        </button>
+        <button
+            type="button"
+            class="btn btn-sm mybp-btn-mais-filtros"
+            :class="filtrosAvancadosAbertos ? 'btn-primary is-open' : 'btn-outline-primary'"
+            :disabled="controle.carregando"
+            :aria-expanded="filtrosAvancadosAbertos ? 'true' : 'false'"
+            @click="filtrosAvancadosAbertos = !filtrosAvancadosAbertos"
+        >
+            <i class="fa" :class="filtrosAvancadosAbertos ? 'fa-chevron-up' : 'fa-sliders-h'"></i>
+            {{ filtrosAvancadosAbertos ? 'Menos filtros' : 'Mais filtros' }}
+            <span class="badge badge-light ml-1" v-if="totalFiltrosAtivosAvancados">{{ totalFiltrosAtivosAvancados }}</span>
+        </button>
+        <div class="dropdown dropdown-carteira-etiquetas" :class="{ show: isDropdownOpen('carteira') }">
+            <button
+                class="btn btn-sm btn-primary dropdown-toggle"
+                type="button"
+                id="dropdownCarteira"
+                aria-haspopup="true"
+                :aria-expanded="isDropdownOpen('carteira') ? 'true' : 'false'"
+                :disabled="!selecionados.length"
+                @click.prevent.stop="toggleDropdown('carteira')"
+            >
+                <i class="fa fa-id-card"></i>
+                Gerar carteira
+                <span class="badge badge-light ml-1" v-if="selecionados.length">{{ selecionados.length }}</span>
+            </button>
+            <div
+                class="dropdown-menu"
+                :class="{ show: isDropdownOpen('carteira') }"
+                aria-labelledby="dropdownCarteira"
+                @click.stop="fecharDropdown"
+            >
+                <button
+                    type="button"
+                    class="dropdown-item"
+                    :disabled="!selecionados.length"
+                    @click.prevent="gerarCarteiras('treinamento')"
+                >
+                    <i class="fas fa-graduation-cap mr-2"></i>Treinamento
+                </button>
+                <button
+                    type="button"
+                    class="dropdown-item"
+                    :disabled="!selecionados.length"
+                    @click.prevent="gerarCarteiras('bloqueio')"
+                >
+                    <i class="fas fa-ban mr-2"></i>Bloqueio
+                </button>
+                <button
+                    type="button"
+                    class="dropdown-item"
+                    :disabled="!selecionados.length"
+                    @click.prevent="gerarCarteiras('treinamento_bloqueio')"
+                >
+                    <i class="fas fa-list mr-2"></i>Treinamento/Bloqueio
+                </button>
+            </div>
+        </div>
+        <button
+            type="button"
+            class="btn btn-sm btn-success"
+            :disabled="controle.carregando || preloadExportacao || lista.length === 0"
+            @click.prevent="exportaExcel()"
+        >
+            <i :class="preloadExportacao ? 'fa fa-sync fa-spin' : 'fas fa-file-excel'"></i>
+            Exportar Excel
+            <span class="badge badge-light ml-1" v-if="selecionados.length > 0">{{ selecionados.length }}</span>
+        </button>
+        <button
+            class="btn btn-sm btn-primary"
+            v-if="false"
+            :disabled="!selecionadosMassa.length"
+            @click.pre.prevent="abrirFormMassa()"
+        >
+            <i class="fa fa-plus"></i>
+            Atualizar em massa
+            <span class="badge badge-light ml-1">{{ selecionadosMassa.length }}</span>
+        </button>
+        <button
+            class="btn btn-sm btn-outline-primary"
+            v-if="false"
+            :disabled="!selecionadosMassa.length"
+            @click="selecionadosMassa = []"
+        >
+            <i class="fa fa-times"></i>
+            Limpar seleção em massa
+        </button>
+    </template>
+</FiltroListagem>
 
     <div class="row" v-if="false">
         <div class="col-12 col-sm-6 col-md-6 col-lg-3">
@@ -995,79 +1223,6 @@
         </div>
     </div>
 
-    <div class="col-12">
-        <div class="row mt-2">
-            <button type="button" class="btn btn-sm mr-1 btn-success mb-1 mr-1" :disabled="controle.carregando"
-                :style="controle.carregando ? 'cursor: not-allowed' : 'cursor: pointer'" @click="atualizar">
-                <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                Atualizar
-            </button>
-
-            <div class="dropdown dropdown-carteira-etiquetas" :class="{ show: isDropdownOpen('carteira') }">
-                <button class="btn btn-sm mr-1 btn-primary dropdown-toggle mr-1"
-                    type="button"
-                    id="dropdownCarteira"
-                    aria-haspopup="true"
-                    :aria-expanded="isDropdownOpen('carteira') ? 'true' : 'false'"
-                    :style="!selecionados.length ? 'cursor: not-allowed' : 'cursor: pointer'"
-                    :disabled="!selecionados.length"
-                    @click.prevent.stop="toggleDropdown('carteira')">
-                    Gerar Carteira <span class="badge badge-light">{{ selecionados.length }}</span>
-                </button>
-
-                <div class="dropdown-menu" :class="{ show: isDropdownOpen('carteira') }" aria-labelledby="dropdownCarteira" @click.stop="fecharDropdown">
-                    <button type="button"
-                        class="dropdown-item"
-                        :disabled="!selecionados.length"
-                        @click.prevent="gerarCarteiras('treinamento')">
-                        <i class="fas fa-graduation-cap mr-2"></i>Treinamento
-                    </button>
-                    <button type="button"
-                        class="dropdown-item"
-                        :disabled="!selecionados.length"
-                        @click.prevent="gerarCarteiras('bloqueio')">
-                        <i class="fas fa-ban mr-2"></i>Bloqueio
-                    </button>
-                    <button type="button"
-                        class="dropdown-item"
-                        :disabled="!selecionados.length"
-                        @click.prevent="gerarCarteiras('treinamento_bloqueio')">
-                        <i class="fas fa-list mr-2"></i>Treinamento/Bloqueio
-                    </button>
-                </div>
-            </div>
-
-            <button class="btn btn-sm mr-1 btn-danger mb-1 mr-1"
-                :style="!selecionados.length ? 'cursor: not-allowed' : 'cursor: pointer'"
-                :disabled="!selecionados.length" @click="selecionados = []">
-                <i class="fa fa-times"></i> Limpar seleção
-            </button>
-
-            <button class="btn btn-sm mr-1 btn-primary mb-1 mr-1" v-if="false"
-                :style="!selecionadosMassa.length ? 'cursor: not-allowed' : 'cursor: pointer'"
-                @click.pre.prevent="abrirFormMassa()"
-                :disabled="!selecionadosMassa.length">
-                <i class="fa fa-plus"></i> Atualizar em massa <span class="badge badge-light">{{ selecionadosMassa.length }}</span>
-            </button>
-
-            <button class="btn btn-sm mr-1 btn-danger mb-1 mr-1" v-if="false"
-                :style="!selecionadosMassa.length ? 'cursor: not-allowed' : 'cursor: pointer'"
-                :disabled="!selecionadosMassa.length" @click="selecionadosMassa = []">
-                <i class="fa fa-times"></i> Limpar seleção em massa
-            </button>
-
-            <button type="button" class="btn btn-sm mr-1 btn-primary mb-1 mr-1"
-                @click.prevent="exportaExcel()"
-                :disabled="controle.carregando || preloadExportacao || lista.length===0">
-                <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
-                    v-show="selecionados.length > 0">{{ selecionados.length }}</span>
-            </button>
-
-        </div>
-    </div>
-
-</fieldset>
-
 <p class="text-center" v-if="controle.carregando">
     <i class="fa fa-spinner fa-pulse"></i> Carregando...
 </p>
@@ -1083,12 +1238,24 @@
             <div class="card-body py-2">
                 <div class="row align-items-center">
                     <div class="col-auto">
-                        <div class="custom-control custom-checkbox mr-3">
-                            <input type="checkbox" class="custom-control-input" id="checkAllMain"
-                                :style="!emTreinamentos.length ? 'cursor: not-allowed' : 'cursor: pointer'"
-                                :disabled="!emTreinamentos.length" :checked="tudoMarcado"
-                                @click="selecionaTodos">
-                            <label class="custom-control-label" for="checkAllMain">Selecionar todos</label>
+                        <div class="d-flex align-items-center flex-wrap" style="gap: 0.5rem;">
+                            <div class="custom-control custom-checkbox mb-0">
+                                <input type="checkbox" class="custom-control-input" id="checkAllMain"
+                                    :style="!emTreinamentos.length ? 'cursor: not-allowed' : 'cursor: pointer'"
+                                    :disabled="!emTreinamentos.length" :checked="tudoMarcado"
+                                    @click="selecionaTodos">
+                                <label class="custom-control-label" for="checkAllMain">Selecionar todos</label>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-primary trn-carteira-btn mybp-btn-acao-compact"
+                                v-if="selecionados.length"
+                                @click="selecionados = []"
+                            >
+                                <i class="fa fa-times"></i>
+                                Limpar seleção
+                                <span class="badge badge-light ml-1">{{ selecionados.length }}</span>
+                            </button>
                         </div>
                     </div>
 
@@ -1109,9 +1276,15 @@
                     </div>
 
                     <div class="col text-right">
-                        <button class="btn btn-sm mr-1 btn-primary" content="Mostrar e Ocultar Treinamentos" v-tippy
-                            @click.prevent="abrirModal(refsModal.MODAL_FILTRO_COLUNAS)">
-                            <i class="bx bxs-filter-alt" aria-hidden="true"></i> Filtrar treinamentos
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-primary trn-carteira-btn mybp-btn-acao-compact"
+                            content="Mostrar e Ocultar Treinamentos"
+                            v-tippy
+                            @click.prevent="abrirModal(refsModal.MODAL_FILTRO_COLUNAS)"
+                        >
+                            <i class="fa fa-filter" aria-hidden="true"></i>
+                            Filtrar treinamentos
                         </button>
                     </div>
                 </div>
@@ -1191,7 +1364,7 @@
 
                     <div class="card-body py-2">
                         <div class="row text-left colab-meta">
-                            <div class="col-md-3 col-6 mb-2">
+                            <div class="col-12 col-md-4">
                                 <div class="meta-item">
                                     <div class="meta-icon">
                                         <i class="fa fa-building"></i>
@@ -1208,13 +1381,13 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3 col-6 mb-2">
+                            <div class="col-12 col-md-4">
                                 <div class="meta-item">
                                     <div class="meta-icon">
                                         <i class="fa fa-sitemap"></i>
                                     </div>
                                     <div class="meta-content">
-                                        <div class="meta-label">Centro de Custo</div>
+                                        <div class="meta-label">Centro de custo</div>
                                         <div class="meta-value">
                                             <span v-if="item.admissao && item.admissao.emp_centro_custo">
                                                 {{item.admissao.emp_centro_custo}}
@@ -1224,13 +1397,13 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3 col-6 mb-2">
+                            <div class="col-12 col-md-4">
                                 <div class="meta-item">
                                     <div class="meta-icon">
                                         <i class="fa fa-graduation-cap"></i>
                                     </div>
                                     <div class="meta-content">
-                                        <div class="meta-label">Padrão de Treinamento</div>
+                                        <div class="meta-label">Padrão de treinamento</div>
                                         <div class="meta-value">
                                             <span v-if="item.admissao && (item.admissao.segmento_treinamento || item.admissao.segmento_treinamento_nome)">
                                                 {{ (item.admissao.segmento_treinamento && item.admissao.segmento_treinamento.nome) ? item.admissao.segmento_treinamento.nome : item.admissao.segmento_treinamento_nome }}
@@ -1313,6 +1486,13 @@ import DateRangeFilter from '../DateRangeFilter.vue'
 import Modal from '../Modal.vue'
 import ModalAuditoriaTermoResponsabilidade from '../ModalAuditoriaTermoResponsabilidade.vue'
 import ControlePaginacao from '../ControlePaginacao.vue'
+import ComboboxAutoComplete from '../ComboboxAutoComplete.vue'
+import FiltroListagem from '../ui/FiltroListagem.vue'
+
+const UF_OPTIONS = [
+    'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
+    'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+]
 
 export default defineComponent({
     name: 'TreinamentosCarteiraEtiquetas',
@@ -1323,7 +1503,9 @@ export default defineComponent({
         DateRangeFilter,
         Modal,
         ModalAuditoriaTermoResponsabilidade,
-        ControlePaginacao
+        ControlePaginacao,
+        ComboboxAutoComplete,
+        FiltroListagem
     },
     data() {
         return {
@@ -1337,6 +1519,7 @@ export default defineComponent({
             visualizar: false,
             disabled: true,
             preloadExportacao: false,
+            comboTreinamento: '',
 
             URL_ADMIN,
             AUTENTICADO,
@@ -1422,7 +1605,7 @@ export default defineComponent({
                 }
             },
             formMassaDefault: null,
-            filtrosAvancadosAbertos: true,
+            filtrosAvancadosAbertos: false,
             initialPage: null,
 
             vencimentos: [],
@@ -1635,13 +1818,164 @@ export default defineComponent({
             return dados
         },
         filtroListaCentroCustoCnpj() {
+            if (!this.lista_ccs) return []
             if (this.controle.dados.campoCnpj !== '' && this.AUTENTICADO.temFilial) {
-                return this.lista_ccs.centros_custos[this.controle.dados.campoCnpj]
+                return this.lista_ccs.centros_custos[this.controle.dados.campoCnpj] || []
             }
-            if (!this.AUTENTICADO.temFilial && this.lista_ccs) {
-                return this.lista_ccs.centros_custos[Object.keys(this.lista_ccs.centros_custos)[0]]
+            if (!this.AUTENTICADO.temFilial) {
+                const keys = Object.keys(this.lista_ccs.centros_custos || {})
+                return keys.length ? this.lista_ccs.centros_custos[keys[0]] || [] : []
             }
-            return []
+            const all = []
+            Object.values(this.lista_ccs.centros_custos || {}).forEach((lista) => {
+                ;(lista || []).forEach((item) => all.push(item))
+            })
+            return all
+        },
+        opcoesTreinados() {
+            return [
+                { value: '', label: 'Sem filtro' },
+                { value: 'S', label: 'Sim' },
+                { value: 'N', label: 'Não' }
+            ]
+        },
+        opcoesSimNaoGeral() {
+            return [
+                { value: '', label: 'Geral' },
+                { value: 'S', label: 'Sim' },
+                { value: 'N', label: 'Não' }
+            ]
+        },
+        opcoesSituacaoColaborador() {
+            return [
+                { value: 'ativos', label: 'Ativos' },
+                { value: 'admitidos', label: 'Admitidos' },
+                { value: 'nao_admitidos', label: 'Não admitidos' },
+                { value: 'demitidos', label: 'Demitidos' }
+            ]
+        },
+        opcoesFoto() {
+            return [
+                { value: '', label: 'Geral' },
+                { value: 'true', label: 'Sim' },
+                { value: 'false', label: 'Não' }
+            ]
+        },
+        opcoesSegmento() {
+            const opts = [{ value: '', label: 'Todos os padrões' }]
+            ;(this.segmentosTreinamento || []).forEach((s) => {
+                opts.push({ value: String(s.id), label: s.nome })
+            })
+            return opts
+        },
+        opcoesCnpj() {
+            const opts = [{ value: '', label: 'Todos os CNPJs' }]
+            if (!this.lista_ccs || !this.lista_ccs.cnpjs) return opts
+            Object.keys(this.lista_ccs.cnpjs).forEach((key) => {
+                const item = this.lista_ccs.cnpjs[key]
+                opts.push({
+                    value: key,
+                    label: `${item.nome_fantasia} - ${item.cnpj}`,
+                    meta: item.cnpj
+                })
+            })
+            return opts
+        },
+        opcoesCentroCusto() {
+            const opts = [
+                { value: '', label: 'Todos os centros' },
+                { value: '--naoinformado--', label: 'Não informado' }
+            ]
+            ;(this.filtroListaCentroCustoCnpj || []).forEach((item) => {
+                const value = item.matriz ? item.id : item.filial_id
+                opts.push({
+                    value,
+                    label: item.label,
+                    meta: item.matriz ? 'Matriz' : 'Filial'
+                })
+            })
+            return opts
+        },
+        opcoesUf() {
+            return [{ value: '', label: 'Todos os estados' }, ...UF_OPTIONS.map((uf) => ({ value: uf, label: uf }))]
+        },
+        opcoesPages() {
+            return [
+                { value: '20', label: '20' },
+                { value: '50', label: '50' },
+                { value: '100', label: '100' },
+                { value: '500', label: '500' }
+            ]
+        },
+        opcoesTreinamentoDisponiveis() {
+            const selecionados = new Set(this.controle.dados.treinamentos_selecionados || [])
+            const opts = [{ value: 'todos', label: 'Adicionar todos' }]
+            ;(this.listaTodosTreinamentos || []).forEach((item) => {
+                if (!selecionados.has(item.label)) {
+                    opts.push({ value: item.label, label: item.label })
+                }
+            })
+            return opts
+        },
+        campoSituacaoCombo: {
+            get() {
+                const d = this.controle.dados
+                if (d.campoDemitido === true) return 'demitidos'
+                if (d.campoAdmitido === 'S') return 'admitidos'
+                if (d.campoAdmitido === 'N') return 'nao_admitidos'
+                return 'ativos'
+            },
+            set(valor) {
+                const d = this.controle.dados
+                switch (valor) {
+                    case 'demitidos':
+                        d.campoDemitido = true
+                        d.campoAdmitido = ''
+                        break
+                    case 'admitidos':
+                        d.campoDemitido = false
+                        d.campoAdmitido = 'S'
+                        break
+                    case 'nao_admitidos':
+                        d.campoDemitido = false
+                        d.campoAdmitido = 'N'
+                        break
+                    default:
+                        d.campoDemitido = false
+                        d.campoAdmitido = ''
+                        break
+                }
+            }
+        },
+        campoFotoCombo: {
+            get() {
+                const v = this.controle.dados.campoFoto
+                if (v === '' || v === null || v === undefined) return ''
+                return v === true || v === 'true' ? 'true' : 'false'
+            },
+            set(valor) {
+                if (valor === '') this.controle.dados.campoFoto = ''
+                else this.controle.dados.campoFoto = valor === 'true'
+            }
+        },
+        campoPcdCombo: {
+            get() {
+                const v = this.controle.dados.campoPcd
+                if (v === '' || v === null || v === undefined) return ''
+                return v === true || v === 'true' ? 'true' : 'false'
+            },
+            set(valor) {
+                if (valor === '') this.controle.dados.campoPcd = ''
+                else this.controle.dados.campoPcd = valor === 'true'
+            }
+        },
+        campoPagesCombo: {
+            get() {
+                return String(this.controle.dados.pages || 50)
+            },
+            set(valor) {
+                this.controle.dados.pages = parseInt(valor, 10) || 50
+            }
         },
 
         treinamentosFiltrados() {
@@ -1711,7 +2045,6 @@ export default defineComponent({
                 d.campoNr_trinta_tres,
                 d.campoNr_trinta_cinco,
                 d.campoNr_ebtv,
-                d.campoAdmitido,
                 d.campoCracha,
                 d.campoFoto,
                 d.campoPcd,
@@ -1719,36 +2052,85 @@ export default defineComponent({
                 d.campoCentroCusto
             ]
             let total = lista.filter((v) => v !== '' && v !== null && v !== undefined).length
-            if (d.campoDemitido === true) total++
+            if (d.campoDemitido === true || d.campoAdmitido === 'S' || d.campoAdmitido === 'N') total++
             if (d.campoVencimento && d.dataInicioVencimento && d.dataFimVencimento) total++
             if (d.campoPeriodoTreinado && d.dataInicioPeriodoTreinado && d.dataFimPeriodoTreinado) total++
             if (Array.isArray(d.treinamentos_selecionados) && d.treinamentos_selecionados.length > 0) total++
             return total
         },
+        totalFiltrosAtivosAvancados() {
+            const d = this.controle.dados
+            const lista = [
+                d.segmento_treinamento_id,
+                d.campoUf,
+                d.campoArea,
+                d.campoCracha,
+                d.campoFoto,
+                d.campoPcd
+            ]
+            let total = lista.filter((v) => v !== '' && v !== null && v !== undefined).length
+            if (String(d.pages) !== '50') total++
+            return total
+        },
+        campoBuscaUnificada() {
+            const d = this.controle.dados
+            if (d.campoCPF) return d.campoCPF
+            return d.campoBusca || ''
+        },
+        buscaUnificadaEhCpf() {
+            return !!this.controle.dados.campoCPF
+        },
         activeFilterChips() {
             const d = this.controle.dados
             const segmentoSelecionado = this.segmentosTreinamento.find((s) => String(s.id) === String(d.segmento_treinamento_id))
             const chips = []
-            if (d.campoBusca) chips.push({ key: 'campoBusca', label: `Busca: ${d.campoBusca}` })
-            if (d.campoCPF) chips.push({ key: 'campoCPF', label: `CPF: ${d.campoCPF}` })
-            if (d.segmento_treinamento_id) chips.push({ key: 'segmento_treinamento_id', label: `Padrão: ${segmentoSelecionado ? segmentoSelecionado.nome : d.segmento_treinamento_id}` })
-            if (d.campo_treinados) chips.push({ key: 'campo_treinados', label: `Treinados: ${d.campo_treinados === 'S' ? 'Sim' : 'Não'}` })
-            if (d.campoAdmitido) chips.push({ key: 'campoAdmitido', label: `Admitidos: ${d.campoAdmitido === 'S' ? 'Sim' : 'Não'}` })
-            if (d.campoDemitido === true) chips.push({ key: 'campoDemitido', label: 'Demitidos: Sim' })
-            if (d.campoCnpj) chips.push({ key: 'campoCnpj', label: 'CNPJ selecionado' })
-            if (d.campoCentroCusto) chips.push({ key: 'campoCentroCusto', label: 'Centro de custo selecionado' })
-            if (d.campoVaga) chips.push({ key: 'campoVaga', label: 'Vaga selecionada' })
-            if (d.campoCargo) chips.push({ key: 'campoCargo', label: `Cargo: ${d.campoCargo}` })
+            if (d.campoCPF) chips.push({ key: 'campoCPF', label: `CPF: ${d.campoCPF}`, primario: true })
+            else if (d.campoBusca) chips.push({ key: 'campoBusca', label: `Busca: ${d.campoBusca}`, primario: true })
+            if (d.campo_treinados) chips.push({ key: 'campo_treinados', label: `Treinados: ${d.campo_treinados === 'S' ? 'Sim' : 'Não'}`, primario: true })
+            if (d.campoDemitido === true) {
+                chips.push({ key: 'campoSituacao', label: 'Situação: Demitidos', primario: true })
+            } else if (d.campoAdmitido === 'S') {
+                chips.push({ key: 'campoSituacao', label: 'Situação: Admitidos', primario: true })
+            } else if (d.campoAdmitido === 'N') {
+                chips.push({ key: 'campoSituacao', label: 'Situação: Não admitidos', primario: true })
+            }
+            if (d.campoCnpj) chips.push({ key: 'campoCnpj', label: 'CNPJ selecionado', primario: true })
+            if (d.campoCargo) chips.push({ key: 'campoCargo', label: `Cargo: ${d.campoCargo}`, primario: true })
+            if (d.campoVaga) chips.push({ key: 'campoVaga', label: 'Vaga selecionada', primario: true })
+            if (d.campoCentroCusto) chips.push({ key: 'campoCentroCusto', label: 'Centro de custo selecionado', primario: true })
+            if (d.campoVencimento && d.dataInicioVencimento && d.dataFimVencimento) {
+                chips.push({
+                    key: 'campoVencimento',
+                    label: `Vencimento: ${this.formatarDataFiltro(d.dataInicioVencimento)} até ${this.formatarDataFiltro(d.dataFimVencimento)}`,
+                    primario: true
+                })
+            }
+            if (d.campoPeriodoTreinado && d.dataInicioPeriodoTreinado && d.dataFimPeriodoTreinado) {
+                chips.push({
+                    key: 'campoPeriodoTreinado',
+                    label: `Período treinado: ${this.formatarDataFiltro(d.dataInicioPeriodoTreinado)} até ${this.formatarDataFiltro(d.dataFimPeriodoTreinado)}`,
+                    primario: true
+                })
+            }
+            if (Array.isArray(d.treinamentos_selecionados) && d.treinamentos_selecionados.length > 0) {
+                chips.push({ key: 'treinamentos_selecionados', label: `Treinamentos: ${d.treinamentos_selecionados.length}`, primario: true })
+            }
+            if (d.segmento_treinamento_id) {
+                chips.push({
+                    key: 'segmento_treinamento_id',
+                    label: `Padrão: ${segmentoSelecionado ? segmentoSelecionado.nome : d.segmento_treinamento_id}`
+                })
+            }
             if (d.campoUf) chips.push({ key: 'campoUf', label: `UF: ${d.campoUf}` })
             if (d.campoFoto !== '') chips.push({ key: 'campoFoto', label: `Foto 3x4: ${d.campoFoto ? 'Sim' : 'Não'}` })
-            if (d.campoCracha) chips.push({ key: 'campoCracha', label: `Crachá: ${d.campoCracha}` })
-            if (d.campoVencimento && d.dataInicioVencimento && d.dataFimVencimento) chips.push({ key: 'campoVencimento', label: `Vencimento: ${d.dataInicioVencimento} até ${d.dataFimVencimento}` })
-            if (d.campoPeriodoTreinado && d.dataInicioPeriodoTreinado && d.dataFimPeriodoTreinado) chips.push({ key: 'campoPeriodoTreinado', label: `Período treinado: ${d.dataInicioPeriodoTreinado} até ${d.dataFimPeriodoTreinado}` })
-            if (Array.isArray(d.treinamentos_selecionados) && d.treinamentos_selecionados.length > 0) {
-                chips.push({ key: 'treinamentos_selecionados', label: `Treinamentos: ${d.treinamentos_selecionados.length}` })
-            }
+            if (d.campoPcd !== '') chips.push({ key: 'campoPcd', label: `PCD: ${d.campoPcd ? 'Sim' : 'Não'}` })
+            if (d.campoCracha) chips.push({ key: 'campoCracha', label: `Crachá: ${d.campoCracha === 'S' ? 'Sim' : 'Não'}` })
+            if (String(d.pages) !== '50') chips.push({ key: 'pages', label: `Por página: ${d.pages}` })
             return chips
-        }
+        },
+        advancedFilterChips() {
+            return this.activeFilterChips.filter((chip) => !chip.primario)
+        },
     },
     watch: {
         'controle.dados': {
@@ -1780,6 +2162,7 @@ export default defineComponent({
             if (urlParams.get('campo_treinados')) d.campo_treinados = urlParams.get('campo_treinados')
             if (urlParams.get('campoAdmitido')) d.campoAdmitido = urlParams.get('campoAdmitido')
             d.campoDemitido = this.boolFromParam(urlParams.get('campoDemitido'), false)
+            if (d.campoDemitido === true) d.campoAdmitido = ''
             const campoFoto = this.boolFromParam(urlParams.get('campoFoto'), '')
             if (campoFoto !== '') d.campoFoto = campoFoto
             if (urlParams.get('campoCracha')) d.campoCracha = urlParams.get('campoCracha')
@@ -1802,16 +2185,16 @@ export default defineComponent({
             if (urlParams.get('dataInicioPeriodoTreinado')) d.dataInicioPeriodoTreinado = urlParams.get('dataInicioPeriodoTreinado')
             if (urlParams.get('dataFimPeriodoTreinado')) d.dataFimPeriodoTreinado = urlParams.get('dataFimPeriodoTreinado')
             if (d.campoVencimento && d.dataInicioVencimento && d.dataFimVencimento) {
-                d.vencimento = d.dataInicioVencimento + ' até ' + d.dataFimVencimento
+                d.vencimento = `${this.formatarDataFiltro(d.dataInicioVencimento)} até ${this.formatarDataFiltro(d.dataFimVencimento)}`
             }
             if (d.campoPeriodoTreinado && d.dataInicioPeriodoTreinado && d.dataFimPeriodoTreinado) {
-                d.periodoTreinado = d.dataInicioPeriodoTreinado + ' até ' + d.dataFimPeriodoTreinado
+                d.periodoTreinado = `${this.formatarDataFiltro(d.dataInicioPeriodoTreinado)} até ${this.formatarDataFiltro(d.dataFimPeriodoTreinado)}`
             }
             if (urlParams.get('page')) {
                 const p = parseInt(urlParams.get('page'), 10)
                 if (p >= 1) this.initialPage = p
             }
-            if (this.totalFiltrosAtivos > 0) this.filtrosAvancadosAbertos = true
+            if (this.totalFiltrosAtivosAvancados > 0) this.filtrosAvancadosAbertos = true
         },
         syncUrlFiltros() {
             const d = this.controle.dados
@@ -2037,11 +2420,89 @@ export default defineComponent({
             this.controle.dados.campoCentroCusto = ''
             this.atualizar()
         },
+        onSelectCnpj() {
+            this.changeCnpj()
+        },
+        onSelectFiltro() {
+            this.atualizar()
+        },
+        onSelectTreinados(opt) {
+            const valor = opt && opt.value != null ? String(opt.value) : ''
+            this.selecionaTreinados(valor)
+        },
+        fecharOutrosComboboxes(excetoId) {
+            const mapa = {
+                'trn-carteira-treinados': 'comboFiltroTreinados',
+                'trn-carteira-segmento': 'comboFiltroSegmento',
+                'trn-carteira-situacao': 'comboFiltroSituacao',
+                'trn-carteira-foto': 'comboFiltroFoto',
+                'trn-carteira-pcd': 'comboFiltroPcd',
+                'trn-carteira-cracha': 'comboFiltroCracha',
+                'trn-carteira-cnpj': 'comboFiltroCnpj',
+                'trn-carteira-cc': 'comboFiltroCc',
+                'trn-carteira-uf': 'comboFiltroUf',
+                'trn-carteira-pages': 'comboFiltroPages',
+                'trn-carteira-treino': 'comboFiltroTreinamento'
+            }
+            Object.keys(mapa).forEach((id) => {
+                if (id === excetoId) return
+                const ref = this.$refs[mapa[id]]
+                if (ref && typeof ref.close === 'function') ref.close()
+            })
+        },
+        formatarCpfDigitos(digitos) {
+            const d = String(digitos || '').replace(/\D/g, '').slice(0, 11)
+            if (d.length <= 3) return d
+            if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`
+            if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`
+            return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`
+        },
+        parecePadraoCpf(valor) {
+            const raw = String(valor || '').trim()
+            if (!raw) return false
+            if (!/^[\d.\-\s]+$/.test(raw)) return false
+            const digitos = raw.replace(/\D/g, '')
+            return digitos.length > 0 && digitos.length <= 11
+        },
+        onInputBuscaUnificada(event) {
+            const valor = event && event.target ? event.target.value : ''
+            const d = this.controle.dados
+            if (!valor) {
+                d.campoBusca = ''
+                d.campoCPF = ''
+                return
+            }
+            if (this.parecePadraoCpf(valor)) {
+                const mascarado = this.formatarCpfDigitos(valor)
+                d.campoCPF = mascarado
+                d.campoBusca = ''
+                if (event.target && event.target.value !== mascarado) {
+                    event.target.value = mascarado
+                }
+                return
+            }
+            d.campoBusca = valor
+            d.campoCPF = ''
+        },
+        limparBuscaUnificada() {
+            this.controle.dados.campoBusca = ''
+            this.controle.dados.campoCPF = ''
+        },
         selecionaTreinados(valor) {
             if (valor !== 'S') {
                 this.controle.dados.treinamentos_selecionados = []
             }
             this.atualizar()
+        },
+        onSelectTreinamentoEspecifico(opt) {
+            const valor = opt && opt.value != null ? String(opt.value) : ''
+            this.addTreinamento(valor)
+            this.$nextTick(() => {
+                this.comboTreinamento = ''
+            })
+        },
+        limparTreinamentosSelecionados() {
+            this.addTreinamento('rm')
         },
         addTreinamento(valor) {
             if (valor !== '') {
@@ -2574,16 +3035,26 @@ export default defineComponent({
         limparFiltroAtivo(key) {
             const d = this.controle.dados
             const resetMap = {
-                campoBusca: () => (d.campoBusca = ''),
-                campoCPF: () => (d.campoCPF = ''),
+                campoBusca: () => this.limparBuscaUnificada(),
+                campoCPF: () => this.limparBuscaUnificada(),
                 segmento_treinamento_id: () => (d.segmento_treinamento_id = ''),
                 campo_treinados: () => {
                     d.campo_treinados = ''
                     d.treinamentos = ''
                     d.treinamentos_selecionados = []
                 },
-                campoAdmitido: () => (d.campoAdmitido = ''),
-                campoDemitido: () => (d.campoDemitido = false),
+                campoAdmitido: () => {
+                    d.campoAdmitido = ''
+                    d.campoDemitido = false
+                },
+                campoDemitido: () => {
+                    d.campoAdmitido = ''
+                    d.campoDemitido = false
+                },
+                campoSituacao: () => {
+                    d.campoAdmitido = ''
+                    d.campoDemitido = false
+                },
                 campoCnpj: () => {
                     d.campoCnpj = ''
                     d.campoCentroCusto = ''
@@ -2597,7 +3068,9 @@ export default defineComponent({
                 campoCargo: () => (d.campoCargo = ''),
                 campoUf: () => (d.campoUf = ''),
                 campoFoto: () => (d.campoFoto = ''),
+                campoPcd: () => (d.campoPcd = ''),
                 campoCracha: () => (d.campoCracha = ''),
+                pages: () => (d.pages = 50),
                 campoVencimento: () => {
                     d.campoVencimento = false
                     d.dataInicioVencimento = ''
@@ -2623,7 +3096,7 @@ export default defineComponent({
         atualizarVencimentoString() {
             const d = this.controle.dados
             if (d.campoVencimento && d.dataInicioVencimento && d.dataFimVencimento) {
-                d.vencimento = d.dataInicioVencimento + ' até ' + d.dataFimVencimento
+                d.vencimento = `${this.formatarDataFiltro(d.dataInicioVencimento)} até ${this.formatarDataFiltro(d.dataFimVencimento)}`
             } else {
                 d.vencimento = ''
             }
@@ -2633,11 +3106,22 @@ export default defineComponent({
         atualizarPeriodoTreinadoString() {
             const d = this.controle.dados
             if (d.campoPeriodoTreinado && d.dataInicioPeriodoTreinado && d.dataFimPeriodoTreinado) {
-                d.periodoTreinado = d.dataInicioPeriodoTreinado + ' até ' + d.dataFimPeriodoTreinado
+                d.periodoTreinado = `${this.formatarDataFiltro(d.dataInicioPeriodoTreinado)} até ${this.formatarDataFiltro(d.dataFimPeriodoTreinado)}`
             } else {
                 d.periodoTreinado = ''
             }
             this.atualizar()
+        },
+
+        formatarDataFiltro(valor) {
+            const raw = (valor || '').trim()
+            if (!raw) return ''
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw)) return raw
+            if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+                const [y, m, d] = raw.split('-')
+                return `${d}/${m}/${y}`
+            }
+            return raw
         },
 
         togglePanel(index) {
@@ -2736,24 +3220,364 @@ export default defineComponent({
 })
 </script>
 <style scoped>
-/* Garante que o dropdown aberto fique acima do card e que o menu seja visível */
-.filtro-toolbar-compact {
-    padding: 0.25rem 0 0.5rem;
-    border-bottom: 1px dashed #d7dde3;
-    margin-bottom: 0.25rem;
+.trn-carteira-filtros {
+    --trn-ctrl-h: 1.625rem;
+    --trn-ctrl-fs: 0.6875rem;
+    --trn-label-fs: 0.7rem;
+    --trn-gap: 0.45rem;
 }
-.gap-compact {
-    gap: 0.35rem;
+
+.trn-carteira-filtros :deep(.mybp-filtros-form) {
+    align-items: start;
+    row-gap: 0;
 }
-.filtro-section-title {
-    font-size: 0.78rem;
+
+.trn-carteira-filtros :deep(.mybp-filtros-form > [class*='col-']) {
+    margin-bottom: var(--trn-gap);
+}
+
+.trn-carteira-filtros :deep(.mybp-filtros-acoes-row) {
+    margin-top: 0.15rem;
+}
+
+.trn-carteira-filtros :deep(.mybp-filtros-botoes .btn) {
+    padding: 0.2rem 0.55rem;
+    font-size: 0.8125rem;
+    line-height: 1.3;
+    border-radius: 8px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.trn-carteira-filtros :deep(.mybp-filtros-botoes .btn .badge) {
+    font-size: 0.68rem;
+    font-weight: 700;
+    vertical-align: middle;
+}
+
+.trn-carteira-filtros :deep(.mybp-filtros-botoes .dropdown-toggle::after) {
+    margin-left: 0.35rem;
+}
+
+.trn-carteira-btn {
+    padding: 0.2rem 0.55rem;
+    font-size: 0.8125rem;
+    line-height: 1.3;
+    border-radius: 8px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.colab-meta {
+    margin: 0 -0.35rem;
+}
+
+.colab-meta > [class*='col-'] {
+    padding-left: 0.35rem;
+    padding-right: 0.35rem;
+    margin-bottom: 0.35rem;
+}
+
+.colab-meta .meta-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    height: 100%;
+    padding: 0.45rem 0.55rem;
+    background: #f8f9fb;
+    border: 1px solid #eef1f4;
+    border-radius: 6px;
+}
+
+.colab-meta .meta-icon {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(23, 66, 87, 0.1);
+    color: var(--primary, #174257);
+    font-size: 0.72rem;
+}
+
+.colab-meta .meta-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.colab-meta .meta-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #6c757d;
+    line-height: 1.2;
+    margin-bottom: 0.15rem;
+}
+
+.colab-meta .meta-value {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #212529;
+    line-height: 1.3;
+    word-break: break-word;
+}
+
+.trn-carteira-filtro-campo {
+    width: 100%;
+    margin-bottom: 0 !important;
+    display: flex;
+    flex-direction: column;
+}
+
+.trn-carteira-filtro-campo > .mybp-label {
+    display: flex;
+    align-items: center;
+    min-height: 1rem;
+    margin-bottom: 0.15rem;
+    line-height: 1.15;
+    font-size: var(--trn-label-fs);
+    font-weight: 600;
+}
+
+.trn-carteira-filtro-hint {
+    margin-left: 0.3rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--primary, #174257);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.trn-carteira-filtro-campo > .form-control,
+.trn-carteira-filtro-campo > .form-control-sm,
+.trn-carteira-filtro-campo :deep(.form-control),
+.trn-carteira-filtro-campo :deep(.form-control-sm),
+.trn-carteira-filtro-campo :deep(.combobox-ac-wrap .form-control),
+.trn-carteira-filtro-campo :deep(.ma-select),
+.trn-carteira-filtro-campo :deep(.ma-filtro-combo-toggle),
+.trn-carteira-filtro-campo :deep(input),
+.trn-carteira-periodo :deep(.form-control),
+.trn-carteira-periodo :deep(.input-group-text),
+.trn-carteira-periodo :deep(input) {
+    height: var(--trn-ctrl-h) !important;
+    min-height: var(--trn-ctrl-h) !important;
+    max-height: var(--trn-ctrl-h) !important;
+    padding: 0.15rem 0.45rem !important;
+    font-size: var(--trn-ctrl-fs) !important;
+    line-height: 1.25 !important;
+    border-radius: 6px !important;
+    border-color: #dee2e6 !important;
+    box-sizing: border-box !important;
+}
+
+.trn-carteira-filtro-campo :deep(.ma-filtro-combo > .form-control.ma-select),
+.trn-carteira-filtro-campo :deep(.ma-filtro-combo > input.form-control) {
+    border-radius: 6px 0 0 6px !important;
+}
+
+.trn-carteira-filtro-campo :deep(.ma-filtro-combo-toggle) {
+    border-radius: 0 6px 6px 0 !important;
+    border-left-width: 0 !important;
+}
+
+.trn-carteira-filtro-campo :deep(input::placeholder),
+.trn-carteira-filtro-campo :deep(.form-control::placeholder),
+.trn-carteira-filtro-campo :deep(.ma-select::placeholder),
+.trn-carteira-periodo :deep(input::placeholder) {
+    font-size: var(--trn-ctrl-fs) !important;
+    opacity: 0.75;
+}
+
+.trn-carteira-filtro-campo > .form-control,
+.trn-carteira-filtro-campo > .form-control-sm {
+    width: 100%;
+}
+
+.trn-carteira-filtro-campo :deep(.ma-filtro-combo-toggle) {
+    width: auto;
+    padding-left: 0.4rem !important;
+    padding-right: 0.4rem !important;
+    font-size: 0.7rem !important;
+}
+
+.trn-carteira-filtro-campo :deep(.mybp-combobox-wrap),
+.trn-carteira-filtro-campo :deep(.combobox-ac-wrap) {
+    width: 100%;
+    display: block;
+}
+
+.trn-carteira-filtro-campo :deep(.ma-filtro-combo),
+.trn-carteira-filtro-campo :deep(.input-group) {
+    width: 100%;
+    height: var(--trn-ctrl-h);
+}
+
+.trn-carteira-periodo {
+    display: flex;
+    flex-direction: column;
+}
+
+.trn-carteira-periodo :deep(.form-check) {
+    display: flex;
+    align-items: center;
+    min-height: 1rem;
+    margin-bottom: 0.15rem;
+    padding-left: 1.15rem;
+}
+
+.trn-carteira-periodo :deep(.form-check-input) {
+    margin-top: 0;
+    width: 0.85rem;
+    height: 0.85rem;
+}
+
+.trn-carteira-periodo :deep(.form-check-label) {
+    font-size: var(--trn-label-fs);
+    font-weight: 600;
+    line-height: 1.15;
+    margin-bottom: 0;
+}
+
+.trn-carteira-periodo :deep(.input-group) {
+    width: 100%;
+    height: var(--trn-ctrl-h);
+    flex-wrap: nowrap;
+}
+
+.trn-carteira-periodo :deep(.input-group-text) {
+    width: auto;
+    padding-left: 0.35rem !important;
+    padding-right: 0.35rem !important;
+    border-radius: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    font-size: 0.75rem !important;
+}
+
+.trn-carteira-periodo :deep(.input-group > .form-control:first-child) {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+.trn-carteira-periodo :deep(.input-group > .form-control:last-child) {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+
+.trn-carteira-avancados {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #f8f9fb;
+    padding: 0.5rem 0.6rem 0.25rem;
+    max-height: min(34vh, 240px);
+    overflow: auto;
+}
+
+.trn-carteira-avancados__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.trn-carteira-avancados__block {
+    background: #fff;
+    border: 1px solid #eef1f4;
+    border-radius: 6px;
+    padding: 0.4rem 0.55rem 0.1rem;
+}
+
+.trn-carteira-avancados__title {
+    font-size: 0.65rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: #6c757d;
-    margin: 0.4rem 0 0.35rem;
-    border-bottom: 1px solid #eef1f4;
-    padding-bottom: 0.35rem;
+    margin: 0 0 0.35rem;
 }
+
+.trn-carteira-avancados :deep(.mybp-label) {
+    font-size: var(--trn-label-fs);
+    margin-bottom: 0.15rem;
+    min-height: 1rem;
+}
+
+.trn-carteira-avancados :deep([class*='col-']) {
+    margin-bottom: var(--trn-gap);
+}
+
+.trn-carteira-chips,
+.trn-carteira-treino-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+.trn-carteira-chips {
+    max-height: 3.6rem;
+    overflow: auto;
+    padding: 0.1rem 0;
+}
+
+.trn-carteira-treino-badges {
+    margin-top: 0.3rem;
+    min-height: var(--trn-ctrl-h);
+    padding: 0.1rem 0;
+}
+
+.trn-carteira-chip,
+.trn-carteira-treino-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    max-width: 100%;
+    padding: 0.1rem 0.25rem 0.1rem 0.4rem;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid rgba(23, 66, 87, 0.18);
+    color: var(--primary, #174257);
+    font-size: 0.68rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.trn-carteira-chip__text,
+.trn-carteira-treino-badge__text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+}
+
+.trn-carteira-chip__remove,
+.trn-carteira-treino-badge__remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.9rem;
+    height: 0.9rem;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(23, 66, 87, 0.12);
+    color: var(--primary, #174257);
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    flex-shrink: 0;
+    font-size: 0.6rem;
+}
+
+.trn-carteira-chip__remove:hover,
+.trn-carteira-treino-badge__remove:hover {
+    background: var(--primary, #174257);
+    color: #fff;
+}
+
 .dropdown-carteira-etiquetas.show {
     position: relative;
     z-index: 1040;

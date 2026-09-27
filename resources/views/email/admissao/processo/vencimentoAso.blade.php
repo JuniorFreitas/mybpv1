@@ -24,7 +24,7 @@
                         <tr>
                             <td style="text-align: center">{{ $i++ }}</td>
                             <td style="text-align: center">{{ $vencimento['colaborador'] }}</td>
-                            <td style="text-align: center">{{ $vencimento['data_aso'] }}</td>
+                            <td style="text-align: center">{{ $vencimento['data_aso'] ?? '—' }}</td>
                             <td style="text-align: center">{{ $vencimento['data_vencimento'] }}</td>
                         </tr>
                     @endforeach

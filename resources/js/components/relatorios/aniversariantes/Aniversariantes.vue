@@ -1,41 +1,55 @@
 <template>
     <div id="componenteAniversariante">
-        <fieldset>
-            <legend>Filtro</legend>
-            <form class="row" @submit.prevent="$refs.componente && $refs.componente.buscar ? $refs.componente.buscar() : null">
-                <div class="col-12 col-md-3">
-                    <div class="form-group">
-                        <label>Aniversariantes do Mês</label>
-                        <select v-model="controle.dados.campoMes" @change="atualizar()" class="custom-select custom-select-sm" :disabled="controle.carregando">
-                            <option v-for="(item, index) in listaMeses" :key="item" :value="index">{{ item }}</option>
-                        </select>
+        <FiltroListagem
+            class="mt-2 mybp-filtros-compactos"
+            :mostrar-limpar-filtros="false"
+            :desabilitado="controle.carregando"
+            @submit="atualizar"
+        >
+            <template #filtros>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="aniversariantes-mes">Aniversariantes do mês</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroMes"
+                                input-id="aniversariantes-mes"
+                                instance-id="aniversariantes-mes"
+                                :disabled="controle.carregando"
+                                :options="opcoesMeses"
+                                placeholder-blur="Selecione o mês"
+                                empty-message="Nenhum mês encontrado."
+                                :max-results="12"
+                                v-model="campoMesCombo"
+                                @select="atualizar"
+                            />
+                        </div>
                     </div>
                 </div>
-
-                <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
-                        <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                        Atualizar
-                    </button>
-                    <button
-                        type="button"
-                        class="btn btn-sm mr-1 btn-primary"
-                        @click.prevent="exportaPdf()"
-                        :disabled="controle.carregando || preloadExportacao || (!controle.carregando && lista.length === 0)"
-                    >
-                        <i class="fas fa-file-pdf"></i> EXPORTAR PDF
-                    </button>
-                    <button
-                        type="button"
-                        class="btn btn-sm mr-1 btn-primary"
-                        @click.prevent="exportaExcel()"
-                        :disabled="controle.carregando || preloadExportacao || (!controle.carregando && !lista.length)"
-                    >
-                        <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
-                    </button>
-                </div>
-            </form>
-        </fieldset>
+            </template>
+            <template #acoes>
+                <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
+                    Buscar
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-success"
+                    @click.prevent="exportaPdf()"
+                    :disabled="controle.carregando || preloadExportacao || (!controle.carregando && lista.length === 0)"
+                >
+                    <i class="fas fa-file-pdf"></i> Exportar PDF
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-success"
+                    @click.prevent="exportaExcel()"
+                    :disabled="controle.carregando || preloadExportacao || (!controle.carregando && !lista.length)"
+                >
+                    <i class="fas fa-file-excel"></i> Exportar Excel
+                </button>
+            </template>
+        </FiltroListagem>
 
         <div id="conteudo">
             <p class="mt-2 text-center" v-if="controle.carregando"><i class="fa fa-spinner fa-pulse"></i> Carregando...</p>
@@ -69,8 +83,12 @@
 
 <script>
 import ExportacaoMixin from '../../../mixins/Exportacoes'
+import ComboboxAutoComplete from '../../ComboboxAutoComplete.vue'
+import FiltroListagem from '../../ui/FiltroListagem.vue'
+
 export default {
     mixins: [ExportacaoMixin],
+    components: { ComboboxAutoComplete, FiltroListagem },
     props: {
         filtro: {
             type: Boolean,
@@ -79,15 +97,13 @@ export default {
         }
     },
     data() {
-        let dataAtual = new Date()
-        let mesAtual = dataAtual.getMonth() + 1
-
-        // console.log(MesAtual);
+        const dataAtual = new Date()
+        const mesAtual = dataAtual.getMonth() + 1
 
         return {
             preload: false,
             lista: [],
-            listaMeses: [],
+            listaMeses: {},
             urlPaginacao: `${URL_ADMIN}/relatorios/aniversariantes/atualizar`,
             urlPdf: `${URL_ADMIN}/relatorios/aniversariantes/pdf`,
             urlExportacao: `${URL_ADMIN}/relatorios/aniversariantes/export`,
@@ -102,6 +118,27 @@ export default {
     mounted() {
         this.atualizar()
     },
+    computed: {
+        paramsExport() {
+            return this.controle.dados
+        },
+        campoMesCombo: {
+            get() {
+                return this.controle.dados.campoMes === '' || this.controle.dados.campoMes == null
+                    ? ''
+                    : String(this.controle.dados.campoMes)
+            },
+            set(val) {
+                this.controle.dados.campoMes = val === '' || val == null ? '' : Number(val)
+            }
+        },
+        opcoesMeses() {
+            const meses = this.listaMeses || {}
+            return Object.keys(meses)
+                .map((key) => ({ value: String(key), label: meses[key] }))
+                .sort((a, b) => Number(a.value) - Number(b.value))
+        }
+    },
     methods: {
         atualizar() {
             this.controle.carregando = true
@@ -112,14 +149,9 @@ export default {
                     this.listaMeses = data.dados.lista_meses
                     this.controle.carregando = false
                 })
-                .catch()
-        }
-    },
-    computed: {
-        paramsExport() {
-            return {
-                campoMes: this.controle.dados.campoMes
-            }
+                .catch(() => {
+                    this.controle.carregando = false
+                })
         }
     }
 }

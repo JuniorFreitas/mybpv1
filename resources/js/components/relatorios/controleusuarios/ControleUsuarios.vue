@@ -1,54 +1,70 @@
 <template>
     <div>
         <div v-if="!preload">
-            <fieldset>
-                <legend>Informações</legend>
-                <div class="row">
-                    <div class="col-6">
-                        <div class="form-group">
-                            <label>Usuário</label>
-                            <autocomplete :caminho="caminho_usuario_autocomplete"
-                                          :valido="form.usuario_id !== ''"
-                                          v-model="form.autocomplete_label_usuario_modal"
-                                          placeholder="Digite o nome do usuário"
-                                          @onblur="resetaCampoUsuario"
-                                          @onselect="selecionaUsuario"></autocomplete>
+            <FiltroListagem
+                class="mt-2 mybp-filtros-compactos"
+                :mostrar-limpar-filtros="temFiltrosAtivos"
+                :desabilitado="preload"
+                @submit="gerarDados"
+                @limpar="limparFiltros"
+            >
+                <template #filtros>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Usuário</label>
+                            <autocomplete
+                                :caminho="caminho_usuario_autocomplete"
+                                :valido="form.usuario_id !== ''"
+                                v-model="form.autocomplete_label_usuario_modal"
+                                placeholder="Digite o nome do usuário"
+                                @onblur="resetaCampoUsuario"
+                                @onselect="selecionaUsuario"
+                            />
                         </div>
                     </div>
-                    <div class="col-6">
-                        <label>Tipo de Busca</label>
-                        <select class="form-control-sm form-control" v-model="form.tipo"
-                                onchange="valida_campo_vazio(this,1)" onblur="valida_campo_vazio(this,1)">
-                            <option value="">Selecione</option>
-                            <option value="curriculos_abertos">Curriculos Abertos</option>
-                            <option value="curriculos_feedback">Curriculos Feedback</option>
-                            <option value="admissao">Admissao</option>
-                            <option value="parecer_rh">Parecer RH</option>
-                            <option value="parecer_rota">Parecer Rota</option>
-                            <option value="parecer_tecnica">Parecer Tecnica</option>
-                            <option value="parecer_teste">Parecer Teste</option>
-                            <option value="resultado_integrado">Resultado Integrado</option>
-                            <option value="treinamentos">Treinamentos</option>
-                        </select>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label" for="ctrl-usuarios-tipo">Tipo de busca</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    ref="comboFiltroTipo"
+                                    input-id="ctrl-usuarios-tipo"
+                                    instance-id="ctrl-usuarios-tipo"
+                                    :disabled="preload"
+                                    :options="opcoesTipo"
+                                    placeholder-blur="Selecione"
+                                    empty-message="Nenhuma opção encontrada."
+                                    :max-results="30"
+                                    v-model="form.tipo"
+                                />
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-6">
-                        <date-picker formsm label="Data Início" v-model="form.data_inicio"></date-picker>
-                    </div>
-                    <div class="col-6">
-                        <date-picker formsm label="Data Fim" v-model="form.data_fim"></date-picker>
-                    </div>
-                </div>
-                <div>
-                    <button class="btn btn-sm mr-1 btn-primary" @click="gerarDados()" type="button">
-                        Buscar
+                    <date-range-filter
+                        v-model:enabled="filtroPeriodo"
+                        v-model:start-date="dataInicioIso"
+                        v-model:end-date="dataFimIso"
+                        :disabled="preload"
+                        id-suffix="ctrl-usuarios"
+                        label="Por período"
+                        wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                        @change="onPeriodoChange"
+                    />
+                </template>
+                <template #acoes>
+                    <button class="btn btn-sm btn-success" type="submit" :disabled="preload">
+                        <i class="fa fa-search"></i> Buscar
                     </button>
-                    <button class="btn btn-sm mr-1 btn-primary" v-if="!preload && dados != null"
-                            @click="divPdf(usuario_nome, tipo)"
-                            type="button">
-                        Imprimir
+                    <button
+                        class="btn btn-sm btn-success"
+                        v-if="!preload && dados != null"
+                        @click.prevent="divPdf(usuario_nome, tipo)"
+                        type="button"
+                    >
+                        <i class="fa fa-print"></i> Imprimir
                     </button>
-                </div>
-            </fieldset>
+                </template>
+            </FiltroListagem>
         </div>
 
         <p class=" mt-2 text-center" v-if="preload">
@@ -310,12 +326,15 @@
 </template>
 
 <script>
-    import DatePicker from "../../DatePicker";
+    import ComboboxAutoComplete from '../../ComboboxAutoComplete.vue';
+    import DateRangeFilter from '../../DateRangeFilter.vue';
+    import FiltroListagem from '../../ui/FiltroListagem.vue';
 
     export default {
         components: {
-            DatePicker,
-
+            ComboboxAutoComplete,
+            DateRangeFilter,
+            FiltroListagem,
         },
         data() {
             return {
@@ -323,6 +342,9 @@
 
                 preload: false,
                 tabela: false,
+                filtroPeriodo: false,
+                dataInicioIso: '',
+                dataFimIso: '',
 
                 form: {
                     tipo: '',
@@ -343,10 +365,58 @@
 
             }
         },
+        computed: {
+            temFiltrosAtivos() {
+                return !!(this.form.tipo || this.form.usuario_id || this.filtroPeriodo);
+            },
+            opcoesTipo() {
+                return [
+                    { value: '', label: 'Selecione' },
+                    { value: 'curriculos_abertos', label: 'Curriculos Abertos' },
+                    { value: 'curriculos_feedback', label: 'Curriculos Feedback' },
+                    { value: 'admissao', label: 'Admissao' },
+                    { value: 'parecer_rh', label: 'Parecer RH' },
+                    { value: 'parecer_rota', label: 'Parecer Rota' },
+                    { value: 'parecer_tecnica', label: 'Parecer Tecnica' },
+                    { value: 'parecer_teste', label: 'Parecer Teste' },
+                    { value: 'resultado_integrado', label: 'Resultado Integrado' },
+                    { value: 'treinamentos', label: 'Treinamentos' },
+                ];
+            },
+        },
         mounted() {
             this.formDefault = _.cloneDeep(this.form);
         },
         methods: {
+            formatarDataFiltro(valor) {
+                const raw = (valor || '').trim();
+                if (!raw) return '';
+                if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw)) return raw;
+                if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+                    const [y, m, d] = raw.split('-');
+                    return `${d}/${m}/${y}`;
+                }
+                return raw;
+            },
+            syncPeriodoForm() {
+                if (this.filtroPeriodo && this.dataInicioIso && this.dataFimIso) {
+                    this.form.data_inicio = this.formatarDataFiltro(this.dataInicioIso);
+                    this.form.data_fim = this.formatarDataFiltro(this.dataFimIso);
+                } else {
+                    this.form.data_inicio = '';
+                    this.form.data_fim = '';
+                }
+            },
+            onPeriodoChange() {
+                this.syncPeriodoForm();
+            },
+            limparFiltros() {
+                this.form = _.cloneDeep(this.formDefault);
+                this.filtroPeriodo = false;
+                this.dataInicioIso = '';
+                this.dataFimIso = '';
+                this.dados = null;
+            },
             selecionaUsuario(obj) {
                 this.form.usuario_id = obj.id;
                 this.form.autocomplete_label_usuario_modal = obj.label;
@@ -370,6 +440,7 @@
 
             },
             async gerarDados() {
+                this.syncPeriodoForm();
                 this.preload = true;
                 try {
                     const res = await axios.post(`${URL_ADMIN}/relatorios/controleusuarios/dados`, this.form);

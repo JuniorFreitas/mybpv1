@@ -3,135 +3,124 @@
 namespace App\Http\Controllers\Relatorios;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\Relatorios\VencimentoAso\JobExportarExcel;
-use App\Models\Admissao;
-use App\Models\CentroCusto;
-use App\Models\ClienteConfig;
-use App\Models\Examesesmt;
+use App\Jobs\JobExportaExcel;
 use App\Models\ExameTipo;
-use App\Models\FeedbackCurriculo;
-use App\Models\User;
+use App\Services\Relatorios\AsoVencimentoRelatorioService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use MasterTag\DataHora;
 
 class VencimentoAsosController extends Controller
 {
-
     public function index()
     {
         return view('g.relatorios.vencimentoasos.index');
     }
 
-    public static function filtro($empresa_id, $dados, $request)
-    {
-        $Empresa = User::find($empresa_id);
-        $config = $Empresa?->EmpresaConfiguracoes;
-        $vencimentoAso = $config->vencimento_aso ?? null;
-        if (!$config || !isset(ClienteConfig::LISTA_VENCIMENTOS[$vencimentoAso])) {
-            return [];
-        }
-        $periodo_vencimento = (int) preg_replace("/[^0-9]/", "", ClienteConfig::LISTA_VENCIMENTOS[$vencimentoAso]);
-        $data = (new DataHora())->addDia($periodo_vencimento);
-        $cc = (new CentroCusto())->listaCentroCustoPorCnpj($empresa_id);
-
-        $examesFuncionarios = FeedbackCurriculo::select([
-            'id', 'curriculo_id', 'empresa_id', 'vaga_id', 'vagas_abertas_id'
-        ])
-            ->admitidos()->whereHas('Admissao', function ($query) use ($data) {
-                $query->whereIn('status', [
-                    Admissao::STATUS_ADMISSAO_ADMITIDO,
-                    Admissao::STATUS_ADMISSAO_PRONTOPARAADMISSAO,
-                ]);
-            })
-            ->filtrarPorCnpjECentroCusto($request)
-            ->filtrarPorUltimoAso($dados)
-            ->filtrarPorTipoExame($dados)
-            ->with([
-                'UltimoAso.ExameFuncionario:id,feedback_id,exame_tipo_id',
-                'UltimoAso.ExameFuncionario.ExameTipo:id,label',
-                'Admissao:id,feedback_id,data_admissao,matricula,funcao,numero_cracha,status,cargo,centro_custo_filial_id,centro_custo_id,filial',
-                'Curriculo:id,nome,nascimento,rg,orgao_expeditor',
-                'VagaAberta:id,vaga_id,titulo,municipio_id,empresa_id'
-            ])
-            ->filtrarPorNome($dados)
-            ->groupBy('id')
-            ->get();
-
-        $examesFuncionarios = $examesFuncionarios->map(function ($item) use ($cc, $periodo_vencimento) {
-            $item = (new self())->prepararAdmissao($item, $cc);
-            $ultimoAso = $item->UltimoAso;
-            $exameFuncionario = $ultimoAso->ExameFuncionario->first();
-            $exameTipoLabel = $exameFuncionario?->ExameTipo?->label ?? '—';
-            $cargo = $item->Admissao?->cargo ?? $item->VagaAberta?->VagaSelecionada?->nome ?? '—';
-            return [
-                'emp_cnpj' => $item->Admissao?->emp_cnpj ?? null,
-                'emp_nome_fantasia' => $item->Admissao?->emp_nome_fantasia ?? null,
-                'emp_centro_custo' => $item->Admissao?->emp_centro_custo ?? null,
-                'emp_tipo' => $item->Admissao?->emp_tipo ?? null,
-                'feedback_id' => $item->id,
-                'atual' => $ultimoAso->atual,
-                'colaborador' => $item->Curriculo?->nome ?? '—',
-                'cargo' => $cargo,
-                'data_admissao' => $item->Admissao?->data_admissao ?? 'Não informada',
-                'exame_tipo' => $exameTipoLabel,
-                'data_aso' => $ultimoAso->data_realizacao,
-                'data_vencimento' => $ultimoAso->data_vencimento,
-                'dias_vencer' => DataHora::diferencaDias((new DataHora())->dataInsert() . ' 00:00:00', (new DataHora($ultimoAso->data_vencimento))->dataInsert() . ' 23:59:59'),
-            ];
-        });
-
-        return $examesFuncionarios->sortBy('dias_vencer')->values()->all();
-    }
-
-    private function prepararAdmissao($item, $cc)
-    {
-        if ($item->Admissao && ! empty($cc['centros_custos'])) {
-            $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $item->Admissao->centro_custo_id)->first();
-            $item->Admissao->emp_cnpj = null;
-            $item->Admissao->emp_nome_fantasia = null;
-            $item->Admissao->emp_centro_custo = null;
-            $item->Admissao->emp_tipo = null;
-
-            if ($cc_colaborador) {
-                $item->Admissao->emp_cnpj = $cc_colaborador['cnpj_format'];
-                $item->Admissao->emp_nome_fantasia = $cc_colaborador['nome_fantasia'];
-                $item->Admissao->emp_centro_custo = $cc_colaborador['label'];
-                $item->Admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
-            }
-        }
-        return $item;
-    }
-
-    public function show(Request $request)
+    /**
+     * Mantido para compatibilidade (Job antigo). Preferir o service.
+     */
+    public static function filtro($empresa_id, $dados, $request = null)
     {
         $user = auth()->user();
-        $config = $user->EmpresaConfiguracoes;
-        if (!$config || !isset(ClienteConfig::LISTA_VENCIMENTOS[$config->vencimento_aso ?? null])) {
-            return response()->json([
-                'dados' => [],
-                'periodo_vencimento_numero' => 90,
-                'periodo_vencimento_extenso' => '90 dias',
-                'cc' => (new CentroCusto())->listaCentroCustoPorCnpj($user->empresa_id),
-            ]);
+        if (!$user || (int) $user->empresa_id !== (int) $empresa_id) {
+            $user = \App\Models\User::withoutGlobalScopes()
+                ->where('empresa_id', $empresa_id)
+                ->where('ativo', true)
+                ->whereNotNull('login')
+                ->first();
+            if ($user) {
+                auth()->login($user);
+            }
         }
 
-        $empresa_id = $user->empresa_id;
-        $cc = (new CentroCusto())->listaCentroCustoPorCnpj($empresa_id);
-        $examesFuncionarios = self::filtro($empresa_id, $request->input(), $request);
-        $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[$config->vencimento_aso];
-        $periodo_vencimento_num = (int) preg_replace("/[^0-9]/", "", $periodo_vencimento);
+        if (!$user) {
+            return [];
+        }
+
+        $request = $request ?? Request::create('/', 'POST', is_array($dados) ? $dados : []);
+        $resultado = app(AsoVencimentoRelatorioService::class)->listarParaTela($user, $request);
+
+        return $resultado['dados'];
+    }
+
+    public function show(Request $request, AsoVencimentoRelatorioService $service)
+    {
+        $resultado = $service->listarParaTela(auth()->user(), $request);
 
         return response()->json([
-            'dados' => $examesFuncionarios,
-            'periodo_vencimento_numero' => $periodo_vencimento_num,
-            'periodo_vencimento_extenso' => $periodo_vencimento,
-            'cc' => $cc,
+            'dados' => $resultado['dados'],
+            'periodo_vencimento_numero' => $resultado['periodo_vencimento_numero'],
+            'periodo_vencimento_extenso' => $resultado['periodo_vencimento_extenso'],
+            'cc' => $resultado['cc'],
+            'regra_unica' => true,
         ]);
     }
 
+    public function exportExcel(Request $request, AsoVencimentoRelatorioService $service)
+    {
+        $resultado = $service->listarParaTela(auth()->user(), $request);
+        $dados = $resultado['dados'];
+
+        $head = [
+            'Nome',
+            'Cargo',
+            'CNPJ da Empresa',
+            'Empresa',
+            'Centro de Custo',
+            'Data da Admissão',
+            'Tipo do Exame',
+            'Data do ASO',
+            'Vencimento ASO',
+            'Dias',
+            'Status',
+        ];
+
+        $rows = [];
+        foreach ($dados as $row) {
+            $dias = (int) ($row['dias_vencer'] ?? 0);
+            $rows[] = [
+                $row['colaborador'] ?? '',
+                $row['cargo'] ?? '',
+                $row['emp_cnpj'] ?? '',
+                $row['emp_nome_fantasia'] ?? '',
+                $row['emp_centro_custo'] ?? '',
+                $row['data_admissao'] ?? '',
+                $row['exame_tipo'] ?? '',
+                $this->formatarDataExport($row['data_aso'] ?? null),
+                $this->formatarDataExport($row['data_vencimento'] ?? null),
+                $dias,
+                $dias < 0 ? 'VENCIDO' : 'A VENCER',
+            ];
+        }
+
+        $nameArquivo = 'vencimento_asos_' . Str::slug('ASO') . rand(1000, 9999) . '_' . date('YmdHis') . '.xlsx';
+        JobExportaExcel::dispatch(auth()->id(), 'Vencimento ASO', $head, $rows, $nameArquivo);
+
+        return response()->json([
+            'msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.',
+            'regra_unica' => true,
+        ]);
+    }
 
     public function tiposExames()
     {
         return ExameTipo::whereAtivo(true)->get();
+    }
+
+    private function formatarDataExport($data): string
+    {
+        if (!$data) {
+            return '';
+        }
+        if (is_string($data) && str_contains($data, '/')) {
+            return $data;
+        }
+
+        try {
+            return (new DataHora($data))->dataCompleta();
+        } catch (\Throwable $e) {
+            return (string) $data;
+        }
     }
 }

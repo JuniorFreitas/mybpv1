@@ -20,7 +20,7 @@
                 class="form-control"
                 :disabled="!inputsEnabled || disabled"
                 :value="localStartDate"
-                @input="onStartInput"
+                @blur="onStartBlur"
             />
             <span class="input-group-text bg-light">até</span>
             <input
@@ -28,15 +28,18 @@
                 class="form-control"
                 :disabled="!inputsEnabled || disabled"
                 :value="localEndDate"
-                @input="onEndInput"
+                @blur="onEndBlur"
             />
         </div>
     </div>
 </template>
 
 <script>
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
 export default {
     name: 'DateRangeFilter',
+    emits: ['update:enabled', 'update:startDate', 'update:endDate', 'change'],
     props: {
         enabled: {
             type: Boolean,
@@ -82,6 +85,8 @@ export default {
             localEnabled: false,
             localStartDate: '',
             localEndDate: '',
+            lastEmittedStart: '',
+            lastEmittedEnd: '',
         };
     },
     watch: {
@@ -89,20 +94,39 @@ export default {
             this.localEnabled = val;
         },
         startDate(val) {
-            this.localStartDate = val || '';
+            this.localStartDate = this.normalizeDate(val);
+            this.lastEmittedStart = this.localStartDate;
             this.ensureAdjusted();
         },
         endDate(val) {
-            this.localEndDate = val || '';
+            this.localEndDate = this.normalizeDate(val);
+            this.lastEmittedEnd = this.localEndDate;
             this.ensureAdjusted();
         },
     },
     mounted() {
         this.localEnabled = this.enabled;
-        this.localStartDate = this.startDate || '';
-        this.localEndDate = this.endDate || '';
+        this.localStartDate = this.normalizeDate(this.startDate);
+        this.localEndDate = this.normalizeDate(this.endDate);
+        this.lastEmittedStart = this.localStartDate;
+        this.lastEmittedEnd = this.localEndDate;
     },
     methods: {
+        normalizeDate(value) {
+            const raw = (value || '').trim();
+            if (!raw) {
+                return '';
+            }
+            if (!ISO_DATE.test(raw)) {
+                return '';
+            }
+            const [y, m, d] = raw.split('-').map(Number);
+            const dt = new Date(y, m - 1, d);
+            if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) {
+                return '';
+            }
+            return raw;
+        },
         onToggle(event) {
             const checked = event.target.checked;
             this.localEnabled = checked;
@@ -110,27 +134,62 @@ export default {
             if (!checked) {
                 this.localStartDate = '';
                 this.localEndDate = '';
+                this.lastEmittedStart = '';
+                this.lastEmittedEnd = '';
                 this.$emit('update:startDate', '');
                 this.$emit('update:endDate', '');
+                this.$emit('change');
                 return;
             }
             const today = this.getToday();
-            this.localStartDate = this.startDate || today;
-            this.localEndDate = this.endDate || today;
+            this.localStartDate = this.normalizeDate(this.startDate) || today;
+            this.localEndDate = this.normalizeDate(this.endDate) || today;
+            this.lastEmittedStart = this.localStartDate;
+            this.lastEmittedEnd = this.localEndDate;
             this.$emit('update:startDate', this.localStartDate);
             this.$emit('update:endDate', this.localEndDate);
+            this.$emit('change');
         },
-        onStartInput(event) {
-            const value = event.target.value;
+        onStartBlur(event) {
+            const raw = event.target.value || '';
+            const value = this.normalizeDate(raw);
+
+            // incompleto/inválido: restaura a última válida e não dispara busca
+            if (raw && !value) {
+                event.target.value = this.lastEmittedStart || '';
+                this.localStartDate = this.lastEmittedStart || '';
+                return;
+            }
+
+            if (value === this.lastEmittedStart) {
+                return;
+            }
+
             this.localStartDate = value;
+            this.lastEmittedStart = value;
             this.$emit('update:startDate', value);
             this.ensureOrder(value, this.localEndDate);
+            this.$emit('change');
         },
-        onEndInput(event) {
-            const value = event.target.value;
+        onEndBlur(event) {
+            const raw = event.target.value || '';
+            const value = this.normalizeDate(raw);
+
+            if (raw && !value) {
+                event.target.value = this.lastEmittedEnd || '';
+                this.localEndDate = this.lastEmittedEnd || '';
+                return;
+            }
+
+            if (value === this.lastEmittedEnd) {
+                return;
+            }
+
             this.localEndDate = value;
+            this.lastEmittedEnd = value;
             this.$emit('update:endDate', value);
             this.ensureOrder(this.localStartDate, value);
+            this.$emit('change');
         },
         isAfter(start, end) {
             return new Date(start) > new Date(end);
@@ -143,6 +202,8 @@ export default {
                 this.notifyInvalid();
                 this.localStartDate = end;
                 this.localEndDate = start;
+                this.lastEmittedStart = end;
+                this.lastEmittedEnd = start;
                 this.$emit('update:startDate', end);
                 this.$emit('update:endDate', start);
             }
@@ -151,8 +212,8 @@ export default {
             if (this.isAdjusting) {
                 return;
             }
-            const start = this.localStartDate || this.startDate;
-            const end = this.localEndDate || this.endDate;
+            const start = this.localStartDate || this.normalizeDate(this.startDate);
+            const end = this.localEndDate || this.normalizeDate(this.endDate);
             if (!start || !end) {
                 return;
             }
@@ -161,6 +222,8 @@ export default {
                 this.notifyInvalid();
                 this.localStartDate = end;
                 this.localEndDate = start;
+                this.lastEmittedStart = end;
+                this.lastEmittedEnd = start;
                 this.$emit('update:startDate', end);
                 this.$emit('update:endDate', start);
                 this.$nextTick(() => {

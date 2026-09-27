@@ -72,6 +72,7 @@ Guia para modelos de IA atuarem com seguranca, qualidade e performance no projet
 - Sempre usar **Vue 3** no frontend.
 - Preferir **componentes Vue** ao inves de concentrar logica/layout direto em Blade.
 - **Listagens de cadastro (filtros + cards):** seguir `docs/PADRAO_UX_LISTAGEM_CADASTROS.md` e skill `.cursor/skills/mybp-front-cardlist/SKILL.md` — `FiltroListagem`, cards `mybp-*`, combobox nos filtros, query params (`resources/js/utils/listagemQueryParams.js`: filtros + `page`/`pages`).
+- **Filtros compactos (operacional/carteira):** seguir `docs/PADRAO_UX_FILTROS_COMPACTOS.md` e skill `.cursor/skills/mybp-filtros-compactos/SKILL.md` — classe `mybp-filtros-compactos`, grade `col-md-4`, `DateRangeFilter` (commit no blur), Mais filtros com shell animado, ações densas (`resources/sass/_mybp-filtros-compactos.scss`).
 - **Dividir componentes** da melhor forma possivel para manutencao e codigo mais leve.
 - Em qualquer componente, considerar **performance, seguranca e otimizacao** desde o inicio.
 - O objetivo e manter o frontend modular para permitir **migracao futura** sem reescrever tudo.
@@ -159,3 +160,5 @@ Guia para modelos de IA atuarem com seguranca, qualidade e performance no projet
 - DBA Senior (performance/seguranca DB): `agents/dba-senior/README.md` e `.cursor/skills/dba-senior/SKILL.md`
 - Migracao frontend (Composition API + Services): `docs/PLANO_MIGRACAO_COMPOSITION_API_SERVICES.md`, agente `agents/migracao-frontend/README.md`
 - Listagem cadastros (card list + filtros + query params): `docs/PADRAO_UX_LISTAGEM_CADASTROS.md` e `.cursor/skills/mybp-front-cardlist/SKILL.md` (util: `resources/js/utils/listagemQueryParams.js`, estilos: `resources/sass/_mybp-listagem-ui.scss`)
+- Filtros compactos operacionais: `docs/PADRAO_UX_FILTROS_COMPACTOS.md` e `.cursor/skills/mybp-filtros-compactos/SKILL.md` (CSS: `resources/sass/_mybp-filtros-compactos.scss`, ref: `TreinamentosCarteiraEtiquetas.vue`)
+- Relatorio usabilidade + admissao por cliente: `.cursor/skills/relatorio-cliente-usabilidade/SKILL.md` (`php artisan mybp:relatorio-cliente-usabilidade {cliente_id}` · recrutamento: `mybp:relatorio-cliente-recrutamento`)
