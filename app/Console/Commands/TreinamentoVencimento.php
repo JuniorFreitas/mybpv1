@@ -202,11 +202,7 @@ class TreinamentoVencimento extends Command
         $service = app(TreinamentoVencimentoRelatorioService::class);
 
         try {
-            $usuarioTemp = User::withoutGlobalScopes()
-                ->where('empresa_id', $empresaId)
-                ->where('ativo', true)
-                ->whereNotNull('login')
-                ->first();
+            $usuarioTemp = User::usuarioContextoEmpresa((int) $empresaId);
 
             if (!$usuarioTemp) {
                 $this->warn('Nenhum usuário encontrado para login temporário. Pulando empresa...');
@@ -381,15 +377,9 @@ class TreinamentoVencimento extends Command
 
     private function buscarUsuariosEmail(int $empresaId): \Illuminate\Database\Eloquent\Collection
     {
-        $idTipoRecebeEmail = TipoRecebeEmail::whereNome(TipoRecebeEmail::VENCIMENTO_TREINAMENTO)->first()->id;
-
         return User::withoutGlobalScopes()
-            ->join('user_recebe_email as ure', 'ure.user_id', '=', 'users.id')
-            ->whereEmpresaId($empresaId)
-            ->where('users.ativo', true)
-            ->where('ure.tipo_email_id', $idTipoRecebeEmail)
-            ->where('ure.ativo', true)
-            ->select(['users.id', 'users.nome', 'login as email', 'users.empresa_id'])
+            ->paraNotificacaoEmail(TipoRecebeEmail::VENCIMENTO_TREINAMENTO, $empresaId)
+            ->select(['users.id', 'users.nome', 'users.login as email', 'users.empresa_id'])
             ->get();
     }
 

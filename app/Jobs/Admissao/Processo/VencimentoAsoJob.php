@@ -59,11 +59,7 @@ class VencimentoAsoJob implements ShouldQueue
 
     private function processarEmpresa(AsoVencimentoRelatorioService $service, int $empresaId): void
     {
-        $usuarioTemp = User::withoutGlobalScopes()
-            ->where('empresa_id', $empresaId)
-            ->where('ativo', true)
-            ->whereNotNull('login')
-            ->first();
+        $usuarioTemp = User::usuarioContextoEmpresa($empresaId);
 
         if (!$usuarioTemp) {
             Log::info("Vencimento ASO: sem usuário para login temporário - empresa {$empresaId}");
@@ -73,13 +69,8 @@ class VencimentoAsoJob implements ShouldQueue
         Auth::login($usuarioTemp);
 
         $usuarios = User::withoutGlobalScopes()
-            ->where('empresa_id', $empresaId)
-            ->where('ativo', true)
-            ->whereHas('UserRecebeEmail', function ($q) {
-                $q->where('tipo_recebe_email.nome', TipoRecebeEmail::VENCIMENTO_ASO)
-                    ->where('user_recebe_email.ativo', true);
-            })
-            ->select(['id', 'nome', 'login', 'empresa_id'])
+            ->paraNotificacaoEmail(TipoRecebeEmail::VENCIMENTO_ASO, $empresaId)
+            ->select(['users.id', 'users.nome', 'users.login', 'users.empresa_id'])
             ->get();
 
         if ($usuarios->isEmpty()) {

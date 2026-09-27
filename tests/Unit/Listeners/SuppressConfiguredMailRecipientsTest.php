@@ -4,6 +4,7 @@ namespace Tests\Unit\Listeners;
 
 use App\Listeners\SuppressConfiguredMailRecipients;
 use Illuminate\Mail\Events\MessageSending;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Tests\TestCase;
 
@@ -54,5 +55,23 @@ class SuppressConfiguredMailRecipientsTest extends TestCase
         $result = $listener->handle(new MessageSending($email));
 
         $this->assertFalse($result);
+    }
+
+    public function test_substitui_remetente_suprimido(): void
+    {
+        config(['mail.suppress_recipients' => ['sistema@mybp.com.br']]);
+
+        $email = (new Email)
+            ->from(new Address('sistema@mybp.com.br', 'Sistema'))
+            ->to('gestor@example.com')
+            ->text('corpo');
+
+        $listener = new SuppressConfiguredMailRecipients;
+        $result = $listener->handle(new MessageSending($email));
+
+        $this->assertNull($result);
+        $this->assertSame('naoresponda@mybp.com.br', $email->getFrom()[0]->getAddress());
+        $this->assertSame('Sistema', $email->getFrom()[0]->getName());
+        $this->assertSame('gestor@example.com', $email->getTo()[0]->getAddress());
     }
 }

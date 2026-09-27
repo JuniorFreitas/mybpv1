@@ -33,15 +33,10 @@ try {
         $data = new DataHora();
         $data->addDia($periodo_vencimento);
 
-        $usuarios = User::whereEmpresaId($empresa_id)
-            ->select(['id', 'nome', 'login'])
-            ->whereAtivo(true)
-            ->whereHas('UserRecebeEmail', function ($q) {
-                $q->where('nome', TipoRecebeEmail::VENCIMENTO_ASO)->where('ativo', true);
-            })
-            ->with(['UserRecebeEmail' => function ($q) {
-                $q->where('nome', TipoRecebeEmail::VENCIMENTO_ASO)->where('ativo', true);
-            }])->get();
+        $usuarios = User::withoutGlobalScopes()
+            ->paraNotificacaoEmail(TipoRecebeEmail::VENCIMENTO_ASO, (int) $empresa_id)
+            ->select(['users.id', 'users.nome', 'users.login'])
+            ->get();
 
         foreach ($usuarios as $usuario) {
             $AdmissoesAso = AdmissaoAso::whereAtivo(true)->whereEmpresaId($empresa_id)

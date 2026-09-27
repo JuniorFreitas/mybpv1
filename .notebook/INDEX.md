@@ -3,6 +3,7 @@
 
 Last updated: 2026-09-27
 
+- [notificacao-email-optin](notificacao-email-optin.md) — E-mail só com check + ativo; sistema@ não recebe nem envia | flow | email, notificacao, optin
 - [relatorio-ferias](relatorio-ferias.md) — Férias: CNPJ/CC + abas Lista/Gráficos via FeriasController::show | flow | ferias, cnpj, graficos
 - [filtro-compacto-operacional](filtro-compacto-operacional.md) — Filtros densos + DateRange blur + Mais filtros animado | pattern | filtro, ux, daterange
 - [relatorio-vencimento-aso](relatorio-vencimento-aso.md) — Regra única tela/Excel/e-mail via AsoVencimentoRelatorioService | flow | aso, vencimento

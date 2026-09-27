@@ -8,6 +8,8 @@ use Symfony\Component\Mime\Email;
 
 class SuppressConfiguredMailRecipients
 {
+    private const FALLBACK_FROM = 'naoresponda@mybp.com.br';
+
     public function handle(MessageSending $event): ?bool
     {
         $suppressed = config('mail.suppress_recipients', []);
@@ -16,8 +18,15 @@ class SuppressConfiguredMailRecipients
             return null;
         }
 
-        $blocked = array_map('strtolower', $suppressed);
+        $blocked = array_map(function ($email) {
+            $email = strtolower(trim((string) $email));
+
+            return preg_replace('/\s+/', '', $email) ?: '';
+        }, $suppressed);
+        $blocked = array_values(array_filter($blocked));
         $message = $event->message;
+
+        $this->substituirRemetenteBloqueado($message, $blocked);
 
         $to = $this->filterAddresses($message->getTo(), $blocked);
         $cc = $this->filterAddresses($message->getCc(), $blocked);
@@ -42,8 +51,31 @@ class SuppressConfiguredMailRecipients
     private function filterAddresses(array $addresses, array $blocked): array
     {
         return array_values(array_filter($addresses, function (Address $address) use ($blocked) {
-            return ! in_array(strtolower($address->getAddress()), $blocked, true);
+            $email = strtolower($address->getAddress());
+            $email = preg_replace('/\s+/', '', $email) ?: $email;
+
+            return ! in_array($email, $blocked, true);
         }));
+    }
+
+    /**
+     * @param  array<int, string>  $blocked
+     */
+    private function substituirRemetenteBloqueado(Email $message, array $blocked): void
+    {
+        $from = $message->getFrom();
+        if ($from === []) {
+            return;
+        }
+
+        $endereco = strtolower($from[0]->getAddress());
+        $endereco = preg_replace('/\s+/', '', $endereco) ?: $endereco;
+        if (! in_array($endereco, $blocked, true)) {
+            return;
+        }
+
+        $nome = $from[0]->getName() ?: 'MyBP';
+        $message->from(new Address(self::FALLBACK_FROM, $nome));
     }
 
     /**

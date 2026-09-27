@@ -419,6 +419,79 @@ class User extends Authenticatable
         return $this->belongsToMany(TipoRecebeEmail::class, 'user_recebe_email', 'user_id', 'tipo_email_id')->withPivot(['ativo']);;
     }
 
+    /**
+     * Destinatários de e-mail operacional: ativos, com o check do tipo ligado,
+     * e fora da lista que não pode receber (ex.: sistema@mybp.com.br).
+     */
+    public function scopeParaNotificacaoEmail($query, string $tipoEmail, ?int $empresaId = null)
+    {
+        $bloqueados = self::loginsBloqueadosNotificacao();
+        $placeholders = implode(',', array_fill(0, count($bloqueados), '?'));
+
+        $query->where('users.ativo', true)
+            ->whereNull('users.deleted_at')
+            ->whereNotNull('users.login')
+            ->where('users.login', '!=', '')
+            ->whereRaw(
+                "REPLACE(LOWER(users.login), ' ', '') NOT IN ({$placeholders})",
+                $bloqueados
+            )
+            ->whereHas('UserRecebeEmail', function ($q) use ($tipoEmail) {
+                $q->where('tipo_recebe_email.nome', $tipoEmail)
+                    ->where('user_recebe_email.ativo', true);
+            });
+
+        if ($empresaId !== null) {
+            $query->where('users.empresa_id', $empresaId);
+        }
+
+        return $query;
+    }
+
+    public static function loginsBloqueadosNotificacao(): array
+    {
+        $lista = config('mail.suppress_recipients', [Sistema::EMAILPADRAO]);
+        $lista[] = Sistema::EMAILPADRAO;
+
+        $normalizados = array_map(function ($email) {
+            $email = strtolower(trim((string) $email));
+
+            return preg_replace('/\s+/', '', $email) ?: null;
+        }, $lista);
+
+        return array_values(array_unique(array_filter($normalizados)));
+    }
+
+    public static function elegivelParaNotificacaoEmail(int $userId, string $tipoEmail): bool
+    {
+        return static::withoutGlobalScopes()
+            ->where('users.id', $userId)
+            ->paraNotificacaoEmail($tipoEmail)
+            ->exists();
+    }
+
+    /**
+     * Usuário da empresa para escopo de consulta. Evita autenticar como o e-mail de sistema.
+     */
+    public static function usuarioContextoEmpresa(int $empresaId): ?self
+    {
+        $base = static::withoutGlobalScopes()
+            ->where('empresa_id', $empresaId)
+            ->where('ativo', true)
+            ->whereNull('deleted_at')
+            ->whereNotNull('login')
+            ->where('login', '!=', '');
+
+        $bloqueados = self::loginsBloqueadosNotificacao();
+        $placeholders = implode(',', array_fill(0, count($bloqueados), '?'));
+
+        $usuario = $base->clone()
+            ->whereRaw("REPLACE(LOWER(login), ' ', '') NOT IN ({$placeholders})", $bloqueados)
+            ->first();
+
+        return $usuario ?: $base->clone()->first();
+    }
+
     public function ClientesLogo()
     {
         return $this->belongsToMany(Arquivo::class, 'cliente_logotipo', 'cliente_id', 'arquivo_id', 'empresa_id');
