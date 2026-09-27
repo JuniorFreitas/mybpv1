@@ -1,71 +1,128 @@
 <template>
     <div>
-        <div>
-            <fieldset>
-                <legend>Ações</legend>
-                <form class="row" @submit.prevent="buscarDados()">
-                
-                    <div class="col-12 col-sm-6 col-md-6 col-lg-3">
-                        <label>Buscar</label>
+        <FiltroListagem
+            class="mt-2 mybp-filtros-compactos"
+            :mostrar-limpar-filtros="temFiltrosAtivos"
+            :desabilitado="preload"
+            @submit="buscarDados"
+            @limpar="limparFiltros"
+        >
+            <template #filtros>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="venc-ferias-busca">Buscar</label>
                         <input
+                            id="venc-ferias-busca"
                             type="text"
                             placeholder="Buscar por nome"
-                            autocomplete="mastertag"
+                            autocomplete="off"
                             class="form-control form-control-sm"
                             :disabled="preload"
                             v-model="filtrar.campoBusca"
                         />
                     </div>
+                </div>
 
-                    <div class="col-12 col-sm-6 col-md-6 col-lg-3">
-                        <label>Cargo</label>
-                        <select class="form-control form-control-sm" @change.prevent="buscarDados()" :disabled="preload" v-model="filtrar.campoCargo">
-                            <option value="">Todos</option>
-                            <option v-for="item in lista_cargos" :value="item" :key="item" v-text="item"></option>
-                        </select>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="venc-ferias-cargo">Cargo</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroCargo"
+                                input-id="venc-ferias-cargo"
+                                instance-id="venc-ferias-cargo"
+                                :disabled="preload"
+                                :options="opcoesCargo"
+                                placeholder-blur="Todos"
+                                empty-message="Nenhum cargo encontrado."
+                                :max-results="80"
+                                v-model="filtrar.campoCargo"
+                                @opening="fecharOutrosComboboxes('venc-ferias-cargo')"
+                                @select="buscarDados"
+                            />
+                        </div>
                     </div>
+                </div>
 
-                    <div class="col-12 col-sm-6 col-md-6 col-lg-3">
-                        <label>Situação</label>
-                        <select class="form-control form-control-sm" @change.prevent="buscarDados()" :disabled="preload" v-model="filtrar.campoSituacao">
-                            <option value="">Todas</option>
-                            <option value="Saldo insuficiente">Saldo insuficiente</option>
-                            <option value="Solicitada">Solicitada</option>
-                            <option value="Disponivel">Disponivel</option>
-                            <option value="Gozada">Gozada</option>
-                        </select>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="venc-ferias-situacao">Situação</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroSituacao"
+                                input-id="venc-ferias-situacao"
+                                instance-id="venc-ferias-situacao"
+                                :disabled="preload"
+                                :options="opcoesSituacao"
+                                placeholder-blur="Todas"
+                                empty-message="Nenhuma situação encontrada."
+                                :max-results="20"
+                                v-model="filtrar.campoSituacao"
+                                @opening="fecharOutrosComboboxes('venc-ferias-situacao')"
+                                @select="buscarDados"
+                            />
+                        </div>
                     </div>
+                </div>
 
-                    <div class="col-12 col-sm-6 col-md-6 col-lg-3">
-                        <label>Periodo</label>
-                        <select class="form-control form-control-sm" @change.prevent="buscarDados()" :disabled="preload" v-model="filtrar.campoPeriodoVencido">
-                            <option value="">Todos os periodos</option>
-                            <option value="apartirdoperiodoconcessivel">Do período concessível à 1 ano e 6 meses</option>
-                            <option value="1anoseismesesate1anoe8meses">De 1 ano e 6 meses até 1 ano e 8 meses</option>
-                            <option value="1anoe8meseisesuperior">Maior que 1 ano e 8 meses</option>
-                        </select>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="venc-ferias-periodo">Período</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroPeriodo"
+                                input-id="venc-ferias-periodo"
+                                instance-id="venc-ferias-periodo"
+                                :disabled="preload"
+                                :options="opcoesPeriodo"
+                                placeholder-blur="Todos os períodos"
+                                empty-message="Nenhum período encontrado."
+                                :max-results="20"
+                                v-model="filtrar.campoPeriodoVencido"
+                                @opening="fecharOutrosComboboxes('venc-ferias-periodo')"
+                                @select="buscarDados"
+                            />
+                        </div>
                     </div>
+                </div>
 
-                    <div class="col-12 col-sm-6 col-md-6 col-lg-3">
-                        <label>Centro de Custo</label>
-                        <select class="form-control form-control-sm" @change.prevent="buscarDados()" :disabled="preload" v-model="filtrar.campoCentroCusto">
-                            <option value="">Todos</option>
-                            <option v-for="item in lista_centro_custos" :value="item" :key="item" v-text="item"></option>
-                        </select>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="venc-ferias-cc">Centro de custo</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroCc"
+                                input-id="venc-ferias-cc"
+                                instance-id="venc-ferias-cc"
+                                :disabled="preload"
+                                :options="opcoesCentroCusto"
+                                placeholder-blur="Todos"
+                                empty-message="Nenhum centro encontrado."
+                                :max-results="80"
+                                v-model="filtrar.campoCentroCusto"
+                                @opening="fecharOutrosComboboxes('venc-ferias-cc')"
+                                @select="buscarDados"
+                            />
+                        </div>
                     </div>
+                </div>
+            </template>
+            <template #acoes>
+                <button type="submit" class="btn btn-sm btn-success" :disabled="preload">
+                    <i :class="preload ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
+                    Buscar
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-success"
+                    :disabled="preload || !dados.length"
+                    @click.prevent="gerarArquivoXls()"
+                >
+                    <i class="fas fa-file-excel"></i> Exportar Excel
+                </button>
+            </template>
+        </FiltroListagem>
 
-                    <div class="clearfix"></div>
-
-                    <div class="col-12 mt-2">
-                        <button class="btn btn-sm mr-1 btn-primary" :disabled="preload" @click.prevent="buscarDados()" type="button">
-                            <i class="fa fa-search"></i> Buscar
-                        </button>
-                        <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="preload || !dados.length" @click.prevent="gerarArquivoXls()">
-                            <i class="fas fa-file-excel"></i> Exportar Excel
-                        </button>
-                    </div>
-                </form>
-            </fieldset>
             <preload v-if="preload" />
             <template v-if="!preload">
                 <div class="alert alert-warning" v-show="!dados.length"><i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado</div>
@@ -79,7 +136,7 @@
                                         <th
                                             :rowspan="item.todos_periodos.length + 3"
                                             :class="item.pintar"
-                                            style="display: table-cell; vertical-align: middle; text-align: center; /* Não necessário */"
+                                            style="display: table-cell; vertical-align: middle; text-align: center"
                                         >
                                             {{ index + 1 }}
                                         </th>
@@ -126,15 +183,17 @@
                     </div>
                 </div>
             </template>
-        </div>
     </div>
 </template>
 <script>
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 import XLSX from '@e965/xlsx'
+import ComboboxAutoComplete from '../../ComboboxAutoComplete.vue'
+import FiltroListagem from '../../ui/FiltroListagem.vue'
 
 export default {
     mixins: [ExportacaoMixin],
+    components: { ComboboxAutoComplete, FiltroListagem },
     data() {
         return {
             preload: false,
@@ -158,16 +217,66 @@ export default {
     },
     async mounted() {
         await this.periodosAquisitivosList()
-
-        // this.filtrar.periodo = this.filtro.periodo_aquisitivo[1].id
         await this.buscarDados()
     },
     computed: {
         paramsExport() {
             return this.filtrar
+        },
+        temFiltrosAtivos() {
+            const f = this.filtrar
+            return !!(f.campoBusca || f.campoCargo || f.campoSituacao || f.campoCentroCusto || f.campoPeriodoVencido)
+        },
+        opcoesCargo() {
+            const opts = [{ value: '', label: 'Todos' }]
+            ;(this.lista_cargos || []).forEach((item) => opts.push({ value: item, label: item }))
+            return opts
+        },
+        opcoesSituacao() {
+            return [
+                { value: '', label: 'Todas' },
+                { value: 'Saldo insuficiente', label: 'Saldo insuficiente' },
+                { value: 'Solicitada', label: 'Solicitada' },
+                { value: 'Disponivel', label: 'Disponivel' },
+                { value: 'Gozada', label: 'Gozada' }
+            ]
+        },
+        opcoesPeriodo() {
+            return [
+                { value: '', label: 'Todos os períodos' },
+                { value: 'apartirdoperiodoconcessivel', label: 'Do período concessível à 1 ano e 6 meses' },
+                { value: '1anoseismesesate1anoe8meses', label: 'De 1 ano e 6 meses até 1 ano e 8 meses' },
+                { value: '1anoe8meseisesuperior', label: 'Maior que 1 ano e 8 meses' }
+            ]
+        },
+        opcoesCentroCusto() {
+            const opts = [{ value: '', label: 'Todos' }]
+            ;(this.lista_centro_custos || []).forEach((item) => opts.push({ value: item, label: item }))
+            return opts
         }
     },
     methods: {
+        fecharOutrosComboboxes(excetoId) {
+            const mapa = {
+                'venc-ferias-cargo': 'comboFiltroCargo',
+                'venc-ferias-situacao': 'comboFiltroSituacao',
+                'venc-ferias-periodo': 'comboFiltroPeriodo',
+                'venc-ferias-cc': 'comboFiltroCc'
+            }
+            Object.keys(mapa).forEach((id) => {
+                if (id === excetoId) return
+                const ref = this.$refs[mapa[id]]
+                if (ref && typeof ref.close === 'function') ref.close()
+            })
+        },
+        async limparFiltros() {
+            this.filtrar.campoBusca = ''
+            this.filtrar.campoCargo = ''
+            this.filtrar.campoSituacao = ''
+            this.filtrar.campoCentroCusto = ''
+            this.filtrar.campoPeriodoVencido = ''
+            await this.buscarDados()
+        },
         async gerarArquivoXls() {
             const dataHoraAtual = new Date()
                 .toLocaleString('en-US', {

@@ -804,8 +804,8 @@ class FeedbackCurriculo extends Model
                     $dataInicio = new DataHora(trim($periodo[0]) . ' 00:00:00');
                     $dataFim = new DataHora(trim($periodo[1]) . ' 23:59:59');
                     $q->whereBetween('data_vencimento', [
-                        $dataInicio->dataHoraInsert(),
-                        $dataFim->dataHoraInsert(),
+                        $dataInicio->dataInsert(),
+                        $dataFim->dataInsert(),
                     ]);
                 }
             }
@@ -817,19 +817,25 @@ class FeedbackCurriculo extends Model
 
     public function scopeFiltrarPorTipoExame($query, $dados)
     {
-        return $query->whereHas('UltimoAso.ExameFuncionario', function ($q) use ($dados) {
-            if (!is_null($dados['campoTipoExame'])) {
-                $q->where('exame_tipo_id', $dados['campoTipoExame']);
-            }
+        $tipoExame = $dados['campoTipoExame'] ?? null;
+        if ($tipoExame === null || $tipoExame === '') {
+            return $query;
+        }
+
+        return $query->whereHas('UltimoAso.ExameFuncionario', function ($q) use ($tipoExame) {
+            $q->where('exame_tipo_id', $tipoExame);
         });
     }
 
     function scopeFiltrarPorNome($query, $dados)
     {
-        return $query->whereHas('Curriculo', function ($q) use ($dados) {
-            if (!is_null($dados['campoBusca'])) {
-                $q->where('nome', 'like', '%' . $dados['campoBusca'] . '%');
-            }
+        $busca = $dados['campoBusca'] ?? null;
+        if ($busca === null || $busca === '') {
+            return $query;
+        }
+
+        return $query->whereHas('Curriculo', function ($q) use ($busca) {
+            $q->where('nome', 'like', '%' . $busca . '%');
         });
     }
 

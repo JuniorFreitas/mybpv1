@@ -6,9 +6,8 @@ use App\Events\Notificacoes\NotificacaoEvent;
 use App\Models\Arquivo;
 use App\Models\CentroCusto;
 use App\Models\Exportacao;
-use App\Models\FeedbackCurriculo;
 use App\Models\User;
-use App\Services\Treinamento\FeedbackCurriculoFilter;
+use App\Services\Relatorios\TreinamentoVencimentoRelatorioService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -120,76 +119,30 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
     }
 
     /**
-     * Processa os dados de vencimento usando a mesma lógica do TreinamentoController
+     * Processa os dados de vencimento com a mesma regra da tela (serviço único).
      */
     private function processVencimentoData(User $user): void
     {
-        // Definir período padrão se não fornecido - igual ao TreinamentoController
-        $periodoInput = $this->requestData['periodo'] ?? date('Y-m-d') . ' até ' . date('Y-m-d', strtotime('+30 days'));
-        
-        $periodo = explode(' até ', $periodoInput);
-        if (count($periodo) < 2) {
-            $periodo = [date('Y-m-d'), date('Y-m-d', strtotime('+30 days'))];
-        }
-        
-        $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
-        $dataFim = new DataHora($periodo[1] . ' 23:59:59');
+        $service = app(TreinamentoVencimentoRelatorioService::class);
+        $periodo = $service->resolverPeriodo($this->requestData['periodo'] ?? null);
 
-        \Log::info("Processando vencimento - Período: {$periodo[0]} até {$periodo[1]}");
+        $filtros = $this->requestData;
+        $filtros['periodo'] = $periodo['periodo_input'];
+        $filtros['vencimento'] = $periodo['inicio_str'] . ' até ' . $periodo['fim_str'];
+        $filtros['campoDemitido'] = false;
+        $filtros['campoVencimento'] = 'true';
 
-        // Usar FeedbackCurriculoFilter corrigido - igual ao TreinamentoController
+        \Log::info("Processando vencimento - Período: {$periodo['inicio_str']} até {$periodo['fim_str']}");
+
         try {
-            $filter = FeedbackCurriculoFilter::forUser($user->id);
-            
-            // Preparar filtros para o período de vencimento - igual ao TreinamentoController
-            $filtros = [
-                'campoDemitido' => false, // Apenas admitidos
-                'campoVencimento' => 'true',
-                'vencimento' => $periodo[0] . ' até ' . $periodo[1]
-            ];
-
-            // Adicionar filtros de CNPJ e Centro de Custo se fornecidos
-            if (!empty($this->requestData['campoCnpj'])) {
-                $filtros['campoCnpj'] = $this->requestData['campoCnpj'];
-            }
-            
-            if (!empty($this->requestData['campoCentroCusto'])) {
-                $filtros['campoCentroCusto'] = $this->requestData['campoCentroCusto'];
-            }
-
-            \Log::info('Aplicando filtros para vencimento:', $filtros);
-
-            $filter->apply($filtros);
-            
-            // Obter dados filtrados com relationships - igual ao TreinamentoController
-            $baseQuery = $filter->getQuery();
-
-            if (!empty($this->requestData['segmento_treinamento_id'])) {
-                $segmentoId = $this->requestData['segmento_treinamento_id'];
-                $baseQuery->whereHas('Admissao', function ($q) use ($segmentoId) {
-                    $q->where('segmento_treinamento_id', $segmentoId);
-                });
-            }
-
-            $baseQuery = $baseQuery->with([
-                'Treinamento.Vencimentos' => function($q) use ($dataInicio, $dataFim) {
-                    $q->whereBetween('treinamento_vencimento.data_vencimento', [$dataInicio->dataInsert(), $dataFim->dataInsert()]);
-                },
-                'Admissao.SegmentoTreinamento:id,nome,slug',
-                'VagaSelecionada',
-                'Curriculo'
-            ]);
-
-            \Log::info('Query preparada - iniciando processamento');
-            
+            $baseQuery = $service->montarQuery($user, $filtros, $periodo['inicio'], $periodo['fim']);
+            \Log::info('Query preparada - iniciando processamento (regra única Excel/tela)');
         } catch (\Exception $e) {
-            \Log::error('Erro no FeedbackCurriculoFilter para vencimento: ' . $e->getMessage());
+            \Log::error('Erro ao montar query de vencimento: ' . $e->getMessage());
             throw $e;
         }
 
-        // Obter informações de centro de custo - igual ao TreinamentoController
-        $empresa_id = $user->empresa_id;
-        $cc = (new CentroCusto())->listaCentroCustoPorCnpj($empresa_id);
+        $cc = (new CentroCusto())->listaCentroCustoPorCnpj($user->empresa_id);
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -235,69 +188,17 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
         $totalProcessed = 0;
 
         // Processar dados em chunks - otimização de memória
-        $baseQuery->chunk(self::CHUNK_QNT, function ($dados) use ($sheet, &$currentRow, &$totalProcessed, $cc, $dataInicio, $dataFim) {
+        $baseQuery->chunk(self::CHUNK_QNT, function ($dados) use ($sheet, &$currentRow, &$totalProcessed, $cc, $service) {
             $rows = [];
-            
+
             foreach ($dados as $feedback) {
                 try {
-                    // Aplicar exatamente a mesma lógica do TreinamentoController
-                    if (!$feedback->Treinamento || !$feedback->Treinamento->Vencimentos->isNotEmpty()) {
-                        continue;
-                    }
+                    foreach ($service->mapearLinhasExcel($feedback, $cc) as $linha) {
+                        $treinamento = $linha['treinamento'];
+                        $baseData = $linha['base'];
 
-                    $segmentoId = $feedback->Admissao
-                        ? ($feedback->Admissao->segmento_treinamento_id ?? \App\Models\SegmentoTreinamento::getIdAlumar())
-                        : \App\Models\SegmentoTreinamento::getIdAlumar();
-                    $vencimentos = collect();
-
-                    foreach ($feedback->Treinamento->Vencimentos as $vencimento) {
-                        if ($segmentoId && $vencimento->segmento_treinamento_id !== null && (int) $vencimento->segmento_treinamento_id !== (int) $segmentoId) {
-                            continue;
-                        }
-                        $diasVencer = DataHora::diferencaDias((new DataHora())->dataInsert(), $vencimento->pivot->data_vencimento);
-                        
-                        $vencimentos->push([
-                            'label' => $vencimento->label ?? 'Treinamento não encontrado',
-                            'descricao' => $vencimento->descricao ?? '',
-                            'data_treinamento' => $vencimento->pivot->data_treinamento,
-                            'data_vencimento' => $vencimento->pivot->data_vencimento,
-                            'dias_vencer' => $diasVencer,
-                            'pintar' => $diasVencer <= 30
-                        ]);
-                    }
-
-                    if ($vencimentos->isNotEmpty()) {
-                        // Obter informações de centro de custo - igual ao TreinamentoController
-                        $cc_colaborador = null;
-                        if ($feedback->Admissao && $feedback->Admissao->centro_custo_id) {
-                            $cc_colaborador = collect($cc['centros_custos'])->collapse()
-                                ->where('id', $feedback->Admissao->centro_custo_id)->first();
-                        }
-
-                        $segmentoNome = $feedback->Admissao && $feedback->Admissao->SegmentoTreinamento
-                            ? $feedback->Admissao->SegmentoTreinamento->nome
-                            : '--';
-
-                        $baseData = [
-                            'nome' => $feedback->Curriculo->nome ?? 'Nome não encontrado',
-                            'cargo' => $feedback->VagaSelecionada->nome ?? ($feedback->Admissao->cargo ?? 'NÃO ENCONTRADO'),
-                            'emp_cnpj' => $cc_colaborador['cnpj_format'] ?? '--',
-                            'emp_nome_fantasia' => $cc_colaborador['nome_fantasia'] ?? '--',
-                            'emp_centro_custo' => $cc_colaborador['label'] ?? '--',
-                            'emp_tipo' => ($cc_colaborador['matriz'] ?? false) ? 'Matriz' : 'Filial',
-                            'segmento' => $segmentoNome,
-                            'tipo' => $feedback->tipo ?? 'N/A'
-                        ];
-
-                        // Para cada vencimento, criar uma linha com pintura baseada no status
-                        foreach ($vencimentos as $treinamento) {
-                            $diasVencer = $treinamento['dias_vencer'];
-                            $status = $diasVencer < 0 ? 'Vencido' : 'A vencer';
-                            
-                            // Determinar categoria para pintura
-                            $categoria = $this->determinarCategoria($diasVencer);
-                            
-                            $rowData = [
+                        $rows[] = [
+                            'data' => [
                                 $baseData['nome'],
                                 $baseData['cargo'],
                                 $baseData['emp_cnpj'],
@@ -309,22 +210,14 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
                                 $treinamento['descricao'],
                                 $treinamento['data_treinamento'] ? (new DataHora($treinamento['data_treinamento']))->dataCompleta() : '',
                                 $treinamento['data_vencimento'] ? (new DataHora($treinamento['data_vencimento']))->dataCompleta() : '',
-                                $diasVencer,
-                                $status
-                            ];
-                            
-                            $rows[] = [
-                                'data' => $rowData,
-                                'categoria' => $categoria
-                            ];
-                        }
+                                $treinamento['dias_vencer'],
+                                $linha['status'],
+                            ],
+                            'categoria' => $linha['categoria'],
+                        ];
                     }
-                    
+
                     $totalProcessed++;
-                    
-                    // Liberar memória
-                    unset($vencimentos, $cc_colaborador, $baseData);
-                    
                 } catch (\Exception $e) {
                     \Log::error("Erro ao processar feedback {$feedback->id}: " . $e->getMessage());
                     continue;
@@ -563,22 +456,6 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
             \Log::warning("Não foi possível aplicar estilo ao cabeçalho: {$e->getMessage()}");
             // Aplicar estilo básico como fallback
             $sheet->getStyle("A{$linha}:M{$linha}")->getFont()->setBold(true);
-        }
-    }
-
-    /**
-     * Determina a categoria baseada nos dias para vencer - baseado no comando TreinamentoVencimento
-     */
-    private function determinarCategoria(int $diasVencer): string
-    {
-        if ($diasVencer < 0) {
-            return 'VENCIDO';
-        } elseif ($diasVencer <= 30) {
-            return 'PROXIMO';
-        } elseif ($diasVencer <= 60) {
-            return 'ATENCAO';
-        } else {
-            return 'REGULAR';
         }
     }
 

@@ -3,11 +3,9 @@
 namespace App\Jobs\Movimentacao\FeriasPrevista;
 
 use App\Mail\Movimentacao\FeriasPrevista\SaidaMail;
-use App\Mail\Movimentacao\FeriasPrevista\VencimentoMail;
-use App\Mail\Weekly_report\LembreteTarefaMail;
 use App\Models\FeriasPrevista;
 use App\Models\Sistema;
-use App\Models\Tarefa;
+use App\Models\TipoRecebeEmail;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -68,28 +66,22 @@ class VerificaSaidaFeriasJob implements ShouldQueue
                     $q->withoutGlobalScopes();
                 }])->get();
 
-            $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
-                ->select(['id', 'nome', 'login'])
-                ->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS)
-                ->whereHas('UserRecebeEmail', function ($q) {
-                    $q->where('nome', 'Vencimento Férias');
-                    $q->where('ativo', true);
-                })
-                ->with(['UserRecebeEmail' => function ($q) {
-                    $q->where('nome', 'Vencimento Férias');
-                    $q->where('ativo', true);
-                }]);
+            if ($tarefaParaLembrar->isEmpty()) {
+                continue;
+            }
+
+            $usuarios = User::withoutGlobalScopes()
+                ->paraNotificacaoEmail(TipoRecebeEmail::VENCIMENTO_FERIAS, (int) $empresa_id)
+                ->select(['users.id', 'users.nome', 'users.login'])
+                ->get();
 
             foreach ($usuarios as $usuario) {
-                if (!empty($tarefaParaLembrar)) {
-                    Mail::send(new SaidaMail([
-                        'usuario' => $usuario,
-                        'vencimento' => $tarefaParaLembrar,
-                        'empresa_id' => $empresa_id
-                    ]));
-                    \Log::info("E-mail de Verificar Saida de Ferias enviado com sucesso - {$usuario['nome']} - {$empresa_id} horario: {$agora}");
-
-                }
+                Mail::send(new SaidaMail([
+                    'usuario' => $usuario,
+                    'vencimento' => $tarefaParaLembrar,
+                    'empresa_id' => $empresa_id
+                ]));
+                \Log::info("E-mail de Verificar Saida de Ferias enviado com sucesso - {$usuario['nome']} - {$empresa_id} horario: {$agora}");
             }
         }
         } catch (\Exception $e) {

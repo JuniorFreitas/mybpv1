@@ -3,10 +3,9 @@
 namespace App\Jobs\Admissao\Historico\AvaliacaoNoventaVencimento;
 
 use App\Mail\Admissao\Historico\AvaliacaoNoventaVencimento\AvaliacaoNoventaVencimentoMail;
-use App\Mail\Movimentacao\FeriasPrevista\VencimentoMail;
 use App\Models\AvaliacaoNoventaVencimento;
-use App\Models\FeedbackCurriculo;
 use App\Models\Sistema;
+use App\Models\TipoRecebeEmail;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -62,17 +61,10 @@ class AvaliacaoNoventaVencimentoJob implements ShouldQueue
                     $qu->withoutGlobalScopes();
                 }])->get();
 
-                $usuarios = User::withoutGlobalScopes()->whereEmpresaId($empresa_id)
-                    ->select(['id', 'nome', 'login'])
-                    ->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS)
-                    ->whereHas('UserRecebeEmail', function ($q) {
-                        $q->where('nome', 'Avaliação 90 Dias');
-                        $q->where('ativo', true);
-                    })
-                    ->with(['UserRecebeEmail' => function ($q) {
-                        $q->where('nome', 'Avaliação 90 Dias');
-                        $q->where('ativo', true);
-                    }]);
+                $usuarios = User::withoutGlobalScopes()
+                    ->paraNotificacaoEmail(TipoRecebeEmail::AVALIACAO_90_DIAS, (int) $empresa_id)
+                    ->select(['users.id', 'users.nome', 'users.login'])
+                    ->get();
 
                 foreach ($usuarios as $usuario) {
                     $vencimentos = array();

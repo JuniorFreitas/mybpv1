@@ -23,7 +23,7 @@ class FeedbackCurriculoFilter
     {
         $this->authenticateUser($idUser, $autoLogin);
         $this->query = FeedbackCurriculo::select([
-            'id', 'curriculo_id', 'telefone_id', 'vaga_id', 'vagas_abertas_id', 'vaga_projeto_id'
+            'id', 'curriculo_id', 'telefone_id', 'vaga_id', 'vagas_abertas_id', 'vaga_projeto_id', 'empresa_id'
         ])->with(
             'Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
             'Curriculo.FotoTres:id',
@@ -286,8 +286,11 @@ class FeedbackCurriculoFilter
                 $dataFim = new DataHora($periodo[1] . ' 23:59:59');
                 $this->query->whereHas('Treinamento', function ($query) use ($dataInicio, $dataFim) {
                     $query->whereHas('Vencimentos', function ($q) use ($dataInicio, $dataFim) {
-                        $q->where('data_vencimento', '>=', $dataInicio->dataHoraInsert())
-                            ->where('data_vencimento', '<=', $dataFim->dataHoraInsert());
+                        // Coluna DATE no pivot — usar dataInsert (igual eager load tela/Excel)
+                        $q->whereBetween('treinamento_vencimento.data_vencimento', [
+                            $dataInicio->dataInsert(),
+                            $dataFim->dataInsert(),
+                        ]);
                     });
                 });
             }

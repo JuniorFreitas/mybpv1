@@ -1,117 +1,232 @@
 <template>
     <div class="avaliacao-experiencia">
-        <fieldset class="mt-2">
-            <legend>Filtro</legend>
-            <form class="row" @submit.prevent="atualizar">
-                <div class="col-md-2">
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.status" :disabled="controle.carregando"
-                                @change="atualizar">
-                            <option value="">Todos</option>
-                            <option value="VENCIDO">Vencido</option>
-                            <option value="VENCE HOJE">Vence Hoje</option>
-                            <option value="A VENCER">A Vencer</option>
-                            <option value="COMPLETA">Completa</option>
-                        </select>
+        <FiltroListagem
+            class="mt-2 mybp-filtros-compactos"
+            :mostrar-limpar-filtros="temFiltrosAtivos"
+            :desabilitado="controle.carregando"
+            @submit="atualizar"
+            @limpar="limparFiltros"
+        >
+            <template #filtros>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="ae-status">Status</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroStatus"
+                                input-id="ae-status"
+                                instance-id="ae-status"
+                                :disabled="controle.carregando"
+                                :options="opcoesStatus"
+                                placeholder-blur="Todos"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="20"
+                                v-model="controle.dados.status"
+                                @opening="fecharOutrosComboboxes('ae-status')"
+                                @select="atualizar"
+                            />
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>Colaborador</label>
-                        <input type="text" class="form-control form-control-sm" v-model="controle.dados.nome" placeholder="Digite o nome..." :disabled="controle.carregando"
-                               @keyup.enter="atualizar">
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="ae-nome">Colaborador</label>
+                        <input
+                            id="ae-nome"
+                            type="text"
+                            class="form-control form-control-sm"
+                            v-model="controle.dados.nome"
+                            placeholder="Digite o nome..."
+                            :disabled="controle.carregando"
+                            @keyup.enter="atualizar"
+                        />
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>Centro de Custo</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.centroCusto" :disabled="controle.carregando"
-                                @change="atualizar">
-                            <option value="">Todos</option>
-                            <option value="__SEM_CENTRO__">Sem Centro de Custo</option>
-                            <option v-for="cc in centrosCusto" :key="cc" :value="cc">{{ cc }}</option>
-                        </select>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="ae-cc">Centro de custo</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroCc"
+                                input-id="ae-cc"
+                                instance-id="ae-cc"
+                                :disabled="controle.carregando"
+                                :options="opcoesCentroCusto"
+                                placeholder-blur="Todos"
+                                empty-message="Nenhum centro encontrado."
+                                :max-results="80"
+                                v-model="controle.dados.centroCusto"
+                                @opening="fecharOutrosComboboxes('ae-cc')"
+                                @select="atualizar"
+                            />
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <div class="form-group">
-                        <label>Gestor</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.gestor" :disabled="controle.carregando"
-                                @change="atualizar">
-                            <option value="">Todos</option>
-                            <option value="__SEM_GESTOR__">Sem Gestor</option>
-                            <option v-for="g in gestores" :key="g.id" :value="String(g.id)">{{ g.nome }}</option>
-                        </select>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="ae-gestor">Gestor</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroGestor"
+                                input-id="ae-gestor"
+                                instance-id="ae-gestor"
+                                :disabled="controle.carregando"
+                                :options="opcoesGestor"
+                                placeholder-blur="Todos"
+                                empty-message="Nenhum gestor encontrado."
+                                :max-results="80"
+                                v-model="controle.dados.gestor"
+                                @opening="fecharOutrosComboboxes('ae-gestor')"
+                                @select="atualizar"
+                            />
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <div class="form-group">
-                        <label>Avaliações</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.avaliacoes" :disabled="controle.carregando"
-                                @change="atualizar">
-                            <option value="">Todas</option>
-                            <option value="0">Sem Avaliação</option>
-                            <option value="1">Uma Avaliação</option>
-                            <option value="2">Duas Avaliações</option>
-                        </select>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="ae-avaliacoes">Avaliações</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroAvaliacoes"
+                                input-id="ae-avaliacoes"
+                                instance-id="ae-avaliacoes"
+                                :disabled="controle.carregando"
+                                :options="opcoesAvaliacoes"
+                                placeholder-blur="Todas"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                v-model="controle.dados.avaliacoes"
+                                @opening="fecharOutrosComboboxes('ae-avaliacoes')"
+                                @select="atualizar"
+                            />
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <div class="form-group">
-                        <label>Exibir</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.pages" :disabled="controle.carregando"
-                                @change="atualizar">
-                            <option v-for="n in por_pagina" :key="n" :value="n">{{ n }}</option>
-                        </select>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="ae-cargo">Cargo</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroCargo"
+                                input-id="ae-cargo"
+                                instance-id="ae-cargo"
+                                :disabled="controle.carregando"
+                                :options="opcoesCargo"
+                                placeholder-blur="Todos"
+                                empty-message="Nenhum cargo encontrado."
+                                :max-results="80"
+                                v-model="controle.dados.cargo"
+                                @opening="fecharOutrosComboboxes('ae-cargo')"
+                                @select="atualizar"
+                            />
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>Cargo</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.cargo" :disabled="controle.carregando"
-                                @change="atualizar">
-                            <option value="">Todos</option>
-                            <option v-for="c in cargos" :key="c" :value="c">{{ c }}</option>
-                        </select>
+
+                <div
+                    class="col-12 mybp-filtros-avancados-shell"
+                    :class="{ 'is-open': filtrosAvancadosAbertos }"
+                    :aria-hidden="filtrosAvancadosAbertos ? 'false' : 'true'"
+                >
+                    <div class="mybp-filtros-avancados-shell__inner">
+                        <div class="mybp-filtros-avancados">
+                            <div class="mybp-filtros-avancados__block">
+                                <p class="mybp-filtros-avancados__title">Outros filtros</p>
+                                <div class="row">
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-group mybp-filtro-campo">
+                                            <label class="mybp-label" for="ae-funcao">Função</label>
+                                            <div class="mybp-combobox-wrap">
+                                                <combobox-auto-complete
+                                                    ref="comboFiltroFuncao"
+                                                    input-id="ae-funcao"
+                                                    instance-id="ae-funcao"
+                                                    :disabled="controle.carregando"
+                                                    :options="opcoesFuncao"
+                                                    placeholder-blur="Todos"
+                                                    empty-message="Nenhuma função encontrada."
+                                                    :max-results="80"
+                                                    v-model="controle.dados.funcao"
+                                                    @opening="fecharOutrosComboboxes('ae-funcao')"
+                                                    @select="atualizar"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-group mybp-filtro-campo">
+                                            <label class="mybp-label" for="ae-definicao">Definição</label>
+                                            <div class="mybp-combobox-wrap">
+                                                <combobox-auto-complete
+                                                    ref="comboFiltroDefinicao"
+                                                    input-id="ae-definicao"
+                                                    instance-id="ae-definicao"
+                                                    :disabled="controle.carregando"
+                                                    :options="opcoesDefinicao"
+                                                    placeholder-blur="Todas"
+                                                    empty-message="Nenhuma opção encontrada."
+                                                    :max-results="10"
+                                                    v-model="controle.dados.definicaoContrato"
+                                                    @opening="fecharOutrosComboboxes('ae-definicao')"
+                                                    @select="atualizar"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="form-group mybp-filtro-campo">
+                                            <label class="mybp-label" for="ae-pages">Exibir</label>
+                                            <div class="mybp-combobox-wrap">
+                                                <combobox-auto-complete
+                                                    ref="comboFiltroPages"
+                                                    input-id="ae-pages"
+                                                    instance-id="ae-pages"
+                                                    :disabled="controle.carregando"
+                                                    :options="opcoesPages"
+                                                    placeholder-blur="20"
+                                                    empty-message="Nenhuma opção encontrada."
+                                                    :max-results="10"
+                                                    v-model="campoPagesCombo"
+                                                    @opening="fecharOutrosComboboxes('ae-pages')"
+                                                    @select="atualizar"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>Função</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.funcao" :disabled="controle.carregando"
-                                @change="atualizar">
-                            <option value="">Todos</option>
-                            <option v-for="f in funcoes" :key="f" :value="f">{{ f }}</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-group">
-                        <label>Definição</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.definicaoContrato" :disabled="controle.carregando"
-                                @change="atualizar">
-                            <option value="">Todas</option>
-                            <option value="prorroga">Prorroga o contrato</option>
-                            <option value="finaliza">Finaliza o contrato</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-12 d-flex flex-wrap">
-                    <button type="button" class="btn btn-sm mr-1 btn-success mr-1" :disabled="controle.carregando" @click="atualizar">
-                        <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i> Atualizar
-                    </button>
-                    <button type="button" class="btn btn-sm mr-1 btn-outline-secondary mr-1" :disabled="controle.carregando" @click="limparFiltros">
-                        <i class="fas fa-eraser"></i> Limpar Filtros
-                    </button>
-                    <button type="button" class="btn btn-sm mr-1 btn-primary mr-1"
-                            :disabled="controle.carregando || preloadExportacao"
-                            @click.prevent="exportaExcel">
-                        <i :class="preloadExportacao ? 'fa fa-spinner fa-spin' : 'fas fa-file-excel'"></i> Exportar Excel
-                    </button>
-                </div>
-            </form>
-        </fieldset>
+            </template>
+            <template #acoes>
+                <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
+                    Buscar
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm mybp-btn-mais-filtros"
+                    :class="filtrosAvancadosAbertos ? 'btn-primary is-open' : 'btn-outline-primary'"
+                    :disabled="controle.carregando"
+                    :aria-expanded="filtrosAvancadosAbertos ? 'true' : 'false'"
+                    @click="filtrosAvancadosAbertos = !filtrosAvancadosAbertos"
+                >
+                    <i class="fa" :class="filtrosAvancadosAbertos ? 'fa-chevron-up' : 'fa-sliders-h'"></i>
+                    {{ filtrosAvancadosAbertos ? 'Menos filtros' : 'Mais filtros' }}
+                    <span class="badge badge-light ml-1" v-if="totalFiltrosAtivosAvancados">{{ totalFiltrosAtivosAvancados }}</span>
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-success"
+                    :disabled="controle.carregando || preloadExportacao"
+                    @click.prevent="exportaExcel"
+                >
+                    <i :class="preloadExportacao ? 'fa fa-spinner fa-spin' : 'fas fa-file-excel'"></i>
+                    Exportar Excel
+                </button>
+            </template>
+        </FiltroListagem>
 
         <preload v-show="controle.carregando" class="text-center"></preload>
      
@@ -402,13 +517,17 @@
 <script>
 import preload from '../preload.vue';
 import ControlePaginacao from '../ControlePaginacao.vue';
+import ComboboxAutoComplete from '../ComboboxAutoComplete.vue';
+import FiltroListagem from '../ui/FiltroListagem.vue';
 
 export default {
     name: 'AvaliacaoExperiencia',
 
     components: {
         preload,
-        ControlePaginacao
+        ControlePaginacao,
+        ComboboxAutoComplete,
+        FiltroListagem
     },
 
     inject: {
@@ -429,6 +548,7 @@ export default {
     data() {
         return {
             urlPaginacao: '',
+            filtrosAvancadosAbertos: false,
             resumo: {
                 total: 0,
                 vencidos: 0,
@@ -473,6 +593,89 @@ export default {
         por_pagina() {
             return [20, 50, 100, 150];
         },
+        campoPagesCombo: {
+            get() {
+                return String(this.controle.dados.pages || 20);
+            },
+            set(val) {
+                this.controle.dados.pages = val === '' || val == null ? 20 : Number(val);
+            }
+        },
+        temFiltrosAtivos() {
+            const d = this.controle.dados;
+            return !!(
+                d.status ||
+                (d.nome || '').trim() ||
+                d.centroCusto ||
+                d.gestor ||
+                d.avaliacoes !== '' ||
+                d.cargo ||
+                d.funcao ||
+                d.definicaoContrato ||
+                String(d.pages) !== '20'
+            );
+        },
+        totalFiltrosAtivosAvancados() {
+            const d = this.controle.dados;
+            let total = 0;
+            if (d.funcao) total++;
+            if (d.definicaoContrato) total++;
+            if (String(d.pages) !== '20') total++;
+            return total;
+        },
+        opcoesStatus() {
+            return [
+                { value: '', label: 'Todos' },
+                { value: 'VENCIDO', label: 'Vencido' },
+                { value: 'VENCE HOJE', label: 'Vence Hoje' },
+                { value: 'A VENCER', label: 'A Vencer' },
+                { value: 'COMPLETA', label: 'Completa' }
+            ];
+        },
+        opcoesCentroCusto() {
+            const opts = [
+                { value: '', label: 'Todos' },
+                { value: '__SEM_CENTRO__', label: 'Sem Centro de Custo' }
+            ];
+            (this.centrosCusto || []).forEach((cc) => opts.push({ value: cc, label: cc }));
+            return opts;
+        },
+        opcoesGestor() {
+            const opts = [
+                { value: '', label: 'Todos' },
+                { value: '__SEM_GESTOR__', label: 'Sem Gestor' }
+            ];
+            (this.gestores || []).forEach((g) => opts.push({ value: String(g.id), label: g.nome }));
+            return opts;
+        },
+        opcoesAvaliacoes() {
+            return [
+                { value: '', label: 'Todas' },
+                { value: '0', label: 'Sem Avaliação' },
+                { value: '1', label: 'Uma Avaliação' },
+                { value: '2', label: 'Duas Avaliações' }
+            ];
+        },
+        opcoesCargo() {
+            const opts = [{ value: '', label: 'Todos' }];
+            (this.cargos || []).forEach((c) => opts.push({ value: c, label: c }));
+            return opts;
+        },
+        opcoesFuncao() {
+            const opts = [{ value: '', label: 'Todos' }];
+            (this.funcoes || []).forEach((f) => opts.push({ value: f, label: f }));
+            return opts;
+        },
+        opcoesDefinicao() {
+            return [
+                { value: '', label: 'Todas' },
+                { value: 'prorroga', label: 'Prorroga o contrato' },
+                { value: 'finaliza', label: 'Finaliza o contrato' }
+            ];
+        },
+        opcoesPages() {
+            return this.por_pagina.map((n) => ({ value: String(n), label: String(n) }));
+        },
         podeGerarLinks() {
             return this.userCanGestaoRh || this.isGestorGlobal;
         }
@@ -503,6 +706,23 @@ export default {
     },
 
     methods: {
+        fecharOutrosComboboxes(excetoId) {
+            const mapa = {
+                'ae-status': 'comboFiltroStatus',
+                'ae-cc': 'comboFiltroCc',
+                'ae-gestor': 'comboFiltroGestor',
+                'ae-avaliacoes': 'comboFiltroAvaliacoes',
+                'ae-cargo': 'comboFiltroCargo',
+                'ae-funcao': 'comboFiltroFuncao',
+                'ae-definicao': 'comboFiltroDefinicao',
+                'ae-pages': 'comboFiltroPages'
+            };
+            Object.keys(mapa).forEach((id) => {
+                if (id === excetoId) return;
+                const ref = this.$refs[mapa[id]];
+                if (ref && typeof ref.close === 'function') ref.close();
+            });
+        },
         urlParamGet() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('pages')) this.controle.dados.pages = parseInt(urlParams.get('pages'), 10) || 20;
@@ -514,6 +734,7 @@ export default {
             if (urlParams.get('cargo')) this.controle.dados.cargo = urlParams.get('cargo');
             if (urlParams.get('funcao')) this.controle.dados.funcao = urlParams.get('funcao');
             if (urlParams.get('definicaoContrato')) this.controle.dados.definicaoContrato = urlParams.get('definicaoContrato');
+            if (this.totalFiltrosAtivosAvancados > 0) this.filtrosAvancadosAbertos = true;
         },
         syncUrlFiltros() {
             const d = this.controle.dados;
@@ -720,6 +941,8 @@ export default {
             this.controle.dados.cargo = '';
             this.controle.dados.funcao = '';
             this.controle.dados.definicaoContrato = '';
+            this.controle.dados.pages = 20;
+            this.filtrosAvancadosAbertos = false;
             this.atualizar();
         },
 

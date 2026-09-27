@@ -5,7 +5,7 @@
                 :id="inputId"
                 ref="inputEl"
                 type="text"
-                class="form-control ma-select"
+                class="form-control form-control-sm ma-select"
                 role="combobox"
                 aria-autocomplete="list"
                 :aria-expanded="aberto ? 'true' : 'false'"
@@ -312,14 +312,22 @@ export default {
     flex-wrap: nowrap;
     align-items: stretch;
     width: 100%;
+    height: calc(1.8125rem + 2px);
 }
 
 .ma-filtro-combo > .form-control.ma-select {
     flex: 1 1 auto;
     width: 1%;
     min-width: 0;
-    border-radius: 8px 0 0 8px;
+    height: calc(1.8125rem + 2px);
+    min-height: calc(1.8125rem + 2px);
+    max-height: calc(1.8125rem + 2px);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    border-radius: 8px 0 0 8px !important;
     border-color: #dee2e6;
+    box-sizing: border-box;
 }
 
 .input-group-append {
@@ -330,13 +338,14 @@ export default {
 .ma-filtro-combo-toggle {
     border-radius: 0 8px 8px 0 !important;
     border-color: #dee2e6;
-    padding-left: 0.65rem;
-    padding-right: 0.65rem;
-    line-height: 1.25;
-    height: auto;
+    padding: 0 0.55rem;
+    line-height: 1;
+    height: calc(1.8125rem + 2px);
+    font-size: 0.875rem;
     align-self: stretch;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
 }
 
 /* Painel no body (Teleport): fundo, borda, sombra e rolagem — escopo do filho */
@@ -356,16 +365,16 @@ export default {
 }
 .ma-autocomplete-item--empty {
     cursor: default;
-    font-size: 0.82rem;
+    font-size: 0.72rem;
 }
 .ma-autocomplete-item--empty:hover {
     background: transparent !important;
 }
 .ma-autocomplete-item {
-    padding: 0.45rem 0.65rem;
+    padding: 0.3rem 0.55rem;
     cursor: pointer;
-    font-size: 0.85rem;
-    line-height: 1.3;
+    font-size: 0.75rem;
+    line-height: 1.25;
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 .ma-autocomplete-item:last-child {
@@ -377,8 +386,9 @@ export default {
 :deep(.ma-autocomplete-titulo) {
     font-weight: 600;
     color: #212529;
+    font-size: 0.75rem;
 }
 :deep(.ma-autocomplete-meta) {
-    font-size: 0.78rem;
+    font-size: 0.68rem;
 }
 </style>

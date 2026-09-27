@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Jobs\EnviarEmailAvaliacaoNoventaDiasJob;
 use App\Models\Sistema;
+use App\Models\TipoRecebeEmail;
 use App\Models\User;
 use App\Services\AvaliacaoNoventaService;
 use Illuminate\Console\Command;
@@ -276,6 +277,11 @@ class Aval90dias extends Command
         if (!$usuario) {
             $this->error("❌ Usuário {$usuarioId} não encontrado");
             return Command::FAILURE;
+        }
+
+        if (!User::elegivelParaNotificacaoEmail($usuario->id, TipoRecebeEmail::AVALIACAO_90_DIAS)) {
+            $this->warn('Usuário inativo, sem o check de Avaliação 90 Dias ou com e-mail bloqueado. Nada enviado.');
+            return Command::SUCCESS;
         }
 
         // Regra dos 180 dias: somente colaboradores com até 180 dias de admissão

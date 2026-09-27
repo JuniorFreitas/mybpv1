@@ -1,60 +1,82 @@
 <template>
     <div>
-        <fieldset class="mt-2">
-            <legend>Filtro</legend>
-            <form class="row" @submit.prevent="aplicarFiltros">
+        <FiltroListagem
+            class="mt-2 mybp-filtros-compactos"
+            :mostrar-limpar-filtros="temFiltrosAtivos"
+            :desabilitado="controle.carregando"
+            @submit="aplicarFiltros"
+            @limpar="limparFiltros"
+        >
+            <template #filtros>
                 <date-range-filter
                     v-model:enabled="controle.dados.filtroPeriodo"
                     v-model:start-date="controle.dados.dataInicio"
                     v-model:end-date="controle.dados.dataFim"
                     :disabled="controle.carregando"
                     :id-suffix="hash"
-                    wrapper-class="col-12 col-md-3">
-                </date-range-filter>
+                    label="Por período"
+                    wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                />
 
-                <div class="col-12 col-md-2">
-                    <div class="form-group">
-                        <label>Ciclo</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.ciclo_id"
-                                :disabled="controle.carregando">
-                            <option value="">Todos</option>
-                            <option v-for="c in ciclos" :key="c.id" :value="c.id">{{ c.nome }}</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="col-12 col-md-2">
-                    <div class="form-group">
-                        <label>Empresa</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.empresa_id"
-                                :disabled="controle.carregando">
-                            <option value="">Todas</option>
-                            <option v-for="e in empresas" :key="e.id" :value="e.id">{{ e.nome }}</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="col-12 col-md-3">
-                    <div class="form-group">
-                        <label>&nbsp;</label>
-                        <div>
-                            <button type="submit" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando">
-                                <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i> Filtrar
-                            </button>
-                            <button type="button" class="btn btn-sm mr-1 btn-outline-secondary ml-1" @click="limparFiltros">
-                                Limpar
-                            </button>
-                            <button type="button" class="btn btn-sm mr-1 btn-primary ml-1" @click="abrirModalCiclo">
-                                <i class="fa fa-plus"></i> Novo ciclo
-                            </button>
-                            <button type="button" class="btn btn-sm mr-1 btn-outline-success ml-1" @click="exportarExcel" :disabled="controle.exportando">
-                                <i :class="controle.exportando ? 'fa fa-spinner fa-spin' : 'fa fa-file-excel-o'"></i> Exportar Excel
-                            </button>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="nps-filtro-ciclo">Ciclo</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroCiclo"
+                                input-id="nps-filtro-ciclo"
+                                instance-id="nps-filtro-ciclo"
+                                :disabled="controle.carregando"
+                                :options="opcoesCiclo"
+                                placeholder-blur="Todos"
+                                empty-message="Nenhum ciclo encontrado."
+                                :max-results="50"
+                                v-model="controle.dados.ciclo_id"
+                                @opening="fecharOutrosComboboxes('nps-filtro-ciclo')"
+                            />
                         </div>
                     </div>
                 </div>
-            </form>
-        </fieldset>
+
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="nps-filtro-empresa">Empresa</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroEmpresa"
+                                input-id="nps-filtro-empresa"
+                                instance-id="nps-filtro-empresa"
+                                :disabled="controle.carregando"
+                                :options="opcoesEmpresa"
+                                placeholder-blur="Todas"
+                                empty-message="Nenhuma empresa encontrada."
+                                :max-results="50"
+                                v-model="controle.dados.empresa_id"
+                                @opening="fecharOutrosComboboxes('nps-filtro-empresa')"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </template>
+            <template #acoes>
+                <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
+                    Buscar
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" @click="abrirModalCiclo">
+                    <i class="fa fa-plus"></i> Novo ciclo
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-success"
+                    @click="exportarExcel"
+                    :disabled="controle.exportando"
+                >
+                    <i :class="controle.exportando ? 'fa fa-spinner fa-spin' : 'fa fa-file-excel-o'"></i>
+                    Exportar Excel
+                </button>
+            </template>
+        </FiltroListagem>
 
         <Modal
             ref="modalCiclo"
@@ -200,6 +222,8 @@
 
 <script>
 import DateRangeFilter from '../../DateRangeFilter.vue';
+import ComboboxAutoComplete from '../../ComboboxAutoComplete.vue';
+import FiltroListagem from '../../ui/FiltroListagem.vue';
 import Modal from '../../Modal.vue';
 
 function brToIso(br) {
@@ -234,6 +258,8 @@ export default {
     name: 'NpsRelatorio',
     components: {
         DateRangeFilter,
+        ComboboxAutoComplete,
+        FiltroListagem,
         Modal,
     },
     data() {
@@ -265,10 +291,41 @@ export default {
             },
         };
     },
+    computed: {
+        temFiltrosAtivos() {
+            const d = this.controle.dados;
+            return !!(d.filtroPeriodo || d.empresa_id || d.ciclo_id);
+        },
+        opcoesCiclo() {
+            const opts = [{ value: '', label: 'Todos' }];
+            (this.ciclos || []).forEach((c) => {
+                opts.push({ value: String(c.id), label: c.nome });
+            });
+            return opts;
+        },
+        opcoesEmpresa() {
+            const opts = [{ value: '', label: 'Todas' }];
+            (this.empresas || []).forEach((e) => {
+                opts.push({ value: String(e.id), label: e.nome });
+            });
+            return opts;
+        },
+    },
     mounted() {
         this.buscarDados();
     },
     methods: {
+        fecharOutrosComboboxes(excetoId) {
+            const mapa = {
+                'nps-filtro-ciclo': 'comboFiltroCiclo',
+                'nps-filtro-empresa': 'comboFiltroEmpresa',
+            };
+            Object.keys(mapa).forEach((id) => {
+                if (id === excetoId) return;
+                const ref = this.$refs[mapa[id]];
+                if (ref && typeof ref.close === 'function') ref.close();
+            });
+        },
         formatMedia(val) {
             if (val == null) return '—';
             return Number(val).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });

@@ -7,6 +7,7 @@ use App\Jobs\Excel\Relatorios\JobExportaFeriasExcel;
 use App\Jobs\Excel\Relatorios\JobExportaVencimentoFeriasExcel;
 use App\Jobs\Relatorios\Ferias\Vencimento\JobExportarExcel;
 use App\Models\Admissao;
+use App\Models\CentroCusto;
 use App\Models\ClienteConfig;
 use App\Models\Ferias;
 use App\Models\FeriasCalculoAvos;
@@ -621,11 +622,17 @@ class FeriasController extends Controller
         $config = $user->EmpresaConfiguracoes;
         $verificaMes = $config->verifica_mes_vencimento ?? null;
         if (!$config || !isset(ClienteConfig::LISTA_VENCIMENTOS[$verificaMes])) {
-            return ['dados' => []];
+            return [
+                'dados' => [],
+                'cc' => (new CentroCusto())->listaCentroCustoPorCnpj($user->empresa_id),
+                'total' => 0,
+                'graficos' => ['status' => [], 'centros' => []],
+            ];
         }
 
         $periodo_vencimento = ClienteConfig::LISTA_VENCIMENTOS[$verificaMes];
         $periodo_vencimento = (int) preg_replace("/[^0-9]/", "", $periodo_vencimento);
+        $cc = (new CentroCusto())->listaCentroCustoPorCnpj($user->empresa_id);
 
         $dataInicio = null;
         $dataFim = null;
@@ -643,16 +650,36 @@ class FeriasController extends Controller
             'GestorAprovacao:id,nome',
             'RhAprovacao:id,nome',
             'Solicitante:id,nome',
-            'Admissao:id,centro_custo_id,cargo,funcao,data_admissao,feedback_id',
-            'Admissao.CentroCusto',
+            'Admissao:id,centro_custo_id,centro_custo_filial_id,filial,cargo,funcao,data_admissao,feedback_id',
+            'Admissao.CentroCusto:id,label',
             'Admissao.Feedback:id,curriculo_id,vagas_abertas_id',
             'Admissao.Feedback.VagaSelecionada',
-            'Admissao.Feedback.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
-            'Admissao.CentroCusto:id,label',
+            'Admissao.Feedback.Curriculo:id,nome,cpf,nascimento,rg,orgao_expeditor',
             'FeriasPrevista:id,centro_custo_id',
             'FeriasPrevista.CentroCusto:id,label',
-        )->whereHas('Admissao', function ($query) {
+        )->whereHas('Admissao', function ($query) use ($request) {
             $query->admitidos();
+            $this->aplicarFiltroCnpjCentroCusto($query, $request);
+
+            if ($request->filled('campoBusca')) {
+                $busca = trim((string) $request->campoBusca);
+                $query->whereHas('Feedback.Curriculo', function ($cq) use ($busca) {
+                    $cq->where(function ($q) use ($busca) {
+                        $q->where('nome', 'like', '%' . $busca . '%')
+                            ->orWhere('cpf', 'like', '%' . $busca . '%');
+                        if (ctype_digit($busca)) {
+                            $q->orWhere('id', (int) $busca);
+                        }
+                    });
+                });
+            }
+
+            if ($request->filled('campoCPF')) {
+                $cpf = trim((string) $request->campoCPF);
+                $query->whereHas('Feedback.Curriculo', function ($cq) use ($cpf) {
+                    $cq->whereCpf($cpf);
+                });
+            }
         });
 
         if ($request->filled('tipo')) {
@@ -669,58 +696,70 @@ class FeriasController extends Controller
             $queryResult->whereIn('status_ferias', Ferias::LISTA_RELATORIO_VENCIMENTO_FERIAS);
         }
 
-        $queryResult = $queryResult->get()->toArray();
-
         $resultado = collect();
 
-        foreach ($queryResult as $ferias) {
-            $admissao = $ferias['admissao'] ?? null;
+        foreach ($queryResult->get() as $ferias) {
+            $admissao = $ferias->Admissao;
             if (!$admissao) {
                 continue;
             }
-            $feedback = $admissao['feedback'] ?? null;
-            $curriculo = $feedback['curriculo'] ?? null;
+            $feedback = $admissao->Feedback;
+            $curriculo = $feedback?->Curriculo;
+            $ccInfo = $this->resolverCentroCusto($admissao, $cc);
 
-            $dias_vencer = DataHora::diferencaDias((new DataHora())->dataInsert(), $ferias['data_saida']);
-            $centro_custo = 'NÃO INFORMADO';
-            if (!empty($admissao['centro_custo_id']) && !empty($admissao['centro_custo']['label'])) {
-                $centro_custo = $admissao['centro_custo']['label'];
-            }
+            $dias_vencer = DataHora::diferencaDias((new DataHora())->dataInsert(), $ferias->data_saida);
+            $centro_custo = $ccInfo['label']
+                ?? $admissao->CentroCusto?->label
+                ?? 'NÃO INFORMADO';
 
             $resultado->push([
                 'dias_vencer' => $dias_vencer,
                 'pintar' => $dias_vencer <= $periodo_vencimento / 2,
-                'aprovado_via_script' => $ferias['aprovado_via_script'] ? 'Sim' : 'Não',
-                'ferias_id' => $ferias['id'],
-                'status' => $ferias['status_ferias'],
-                'nome' => $curriculo['nome'] ?? '—',
-                'cargo' => $admissao['cargo'] ?? '—',
-                'funcao' => $admissao['funcao'] ?? '—',
-                'data_admissao' => $admissao['data_admissao'] ?? '—',
-                'gestor' => $ferias['gestor_aprovacao']['nome'] ?? '---',
-                'quem_aprovou' => $ferias['gestor']['nome'] ?? '---',
-                'status_aprovacao' => $ferias['status_aprovacao_gestor'],
-                'data_aprovacao' => !empty($ferias['data_aprovacao_gestor']) ? (new DataHora($ferias['data_aprovacao_gestor']))->dataCompleta() : '',
+                'aprovado_via_script' => $ferias->aprovado_via_script ? 'Sim' : 'Não',
+                'ferias_id' => $ferias->id,
+                'status' => $ferias->status_ferias,
+                'nome' => $curriculo?->nome ?? '—',
+                'cargo' => $admissao->cargo ?? '—',
+                'funcao' => $admissao->funcao ?? '—',
+                'data_admissao' => $admissao->data_admissao ?? '—',
+                'gestor' => $ferias->GestorAprovacao?->nome ?? '---',
+                'quem_aprovou' => $ferias->Gestor?->nome ?? '---',
+                'status_aprovacao' => $ferias->status_aprovacao_gestor,
+                'data_aprovacao' => !empty($ferias->data_aprovacao_gestor)
+                    ? (new DataHora($ferias->data_aprovacao_gestor))->dataCompleta()
+                    : '',
                 'centro_custo' => $centro_custo,
-                'qnt_dias' => $ferias['qnt_dias'],
-                'dias_saldo' => $ferias['dias_saldo'],
-                'tem_faltas' => $ferias['tem_faltas'] ? 'Sim' : 'Não',
-                'qnt_faltas' => $ferias['qnt_faltas'],
-                'periodo_aquisitivo' => $ferias['periodo_aquisitivo']['label'] ?? '—',
-                'data_saida' => $ferias['data_saida'],
-                'data_retorno' => $ferias['data_retorno'],
-                'ultima_data' => $ferias['ultima_data'] ?? '',
-                'usuario_cadastrou' => $ferias['solicitante']['nome'] ?? '—',
-                'resposta_rh' => strlen(trim($ferias['status_aprovacao_rh'] ?? '')) > 0 ? $ferias['status_aprovacao_rh'] : '---',
-                'data_aprovacao_rh' => !empty($ferias['data_aprovacao_rh']) ? (new DataHora($ferias['data_aprovacao_rh']))->dataCompleta() : '',
-                'rh' => $ferias['aprovado_via_script'] ? 'POR AUTOMAÇÃO' : ($ferias['rh_aprovacao']['nome'] ?? ''),
+                'emp_cnpj' => $ccInfo['cnpj_format'] ?? null,
+                'emp_nome_fantasia' => $ccInfo['nome_fantasia'] ?? null,
+                'qnt_dias' => $ferias->qnt_dias,
+                'dias_saldo' => $ferias->dias_saldo,
+                'tem_faltas' => $ferias->tem_faltas ? 'Sim' : 'Não',
+                'qnt_faltas' => $ferias->qnt_faltas,
+                'periodo_aquisitivo' => $ferias->PeriodoAquisitivo?->label ?? '—',
+                'data_saida' => $ferias->data_saida,
+                'data_retorno' => $ferias->data_retorno,
+                'ultima_data' => $ferias->ultima_data ?? '',
+                'usuario_cadastrou' => $ferias->Solicitante?->nome ?? '—',
+                'resposta_rh' => strlen(trim((string) ($ferias->status_aprovacao_rh ?? ''))) > 0
+                    ? $ferias->status_aprovacao_rh
+                    : '---',
+                'data_aprovacao_rh' => !empty($ferias->data_aprovacao_rh)
+                    ? (new DataHora($ferias->data_aprovacao_rh))->dataCompleta()
+                    : '',
+                'rh' => $ferias->aprovado_via_script
+                    ? 'POR AUTOMAÇÃO'
+                    : ($ferias->RhAprovacao?->nome ?? ''),
             ]);
         }
 
-        return [
-            'dados' => $resultado->sortBy('dias_vencer')->values()->all(),
-        ];
+        $dados = $resultado->sortBy('dias_vencer')->values()->all();
 
+        return [
+            'dados' => $dados,
+            'cc' => $cc,
+            'total' => count($dados),
+            'graficos' => $this->montarGraficosFerias($dados),
+        ];
     }
 
     public function exportExcel(Request $request)
@@ -748,5 +787,156 @@ class FeriasController extends Controller
     {
         $empresa_id = auth()->user()->empresa_id;
         return "relatorio_vencimento_ferias_{$empresa_id}";
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $itens
+     * @return array{status: array<int, array{label: string, total: int}>, centros: array<int, array{label: string, total: int}>}
+     */
+    protected function montarGraficosFerias(array $itens): array
+    {
+        $status = [];
+        $centros = [];
+
+        foreach ($itens as $item) {
+            $st = $item['status'] ?? 'Não informado';
+            $cc = $item['centro_custo'] ?? 'Não informado';
+            $status[$st] = ($status[$st] ?? 0) + 1;
+            $centros[$cc] = ($centros[$cc] ?? 0) + 1;
+        }
+
+        $ordenar = function (array $mapa, int $limit = 0): array {
+            arsort($mapa);
+            if ($limit > 0) {
+                $mapa = array_slice($mapa, 0, $limit, true);
+            }
+            $out = [];
+            foreach ($mapa as $label => $total) {
+                $out[] = ['label' => (string) $label, 'total' => (int) $total];
+            }
+            return $out;
+        };
+
+        return [
+            'status' => $ordenar($status),
+            'centros' => $ordenar($centros, 15),
+        ];
+    }
+
+    /**
+     * @param  array|\Illuminate\Support\Collection  $cc
+     * @return array|mixed|null
+     */
+    protected function resolverCentroCusto($admissao, $cc)
+    {
+        if (!$admissao) {
+            return null;
+        }
+
+        $centros = is_array($cc) ? ($cc['centros_custos'] ?? []) : ($cc['centros_custos'] ?? []);
+        $todos = collect($centros)->collapse();
+
+        if ($admissao->filial && $admissao->centro_custo_filial_id) {
+            $encontrado = $todos->first(function ($item) use ($admissao) {
+                return (int) ($item['filial_id'] ?? 0) === (int) $admissao->centro_custo_filial_id
+                    || (int) ($item['id'] ?? 0) === (int) $admissao->centro_custo_filial_id;
+            });
+            if ($encontrado) {
+                return $encontrado;
+            }
+        }
+
+        if ($admissao->centro_custo_id) {
+            return $todos->where('id', $admissao->centro_custo_id)->first();
+        }
+
+        return null;
+    }
+
+    protected function centrosSelecionadosIds(Request $request): array
+    {
+        $raw = $request->input('campoCentrosCusto', $request->input('centros_selecionados'));
+
+        if ($raw === null || $raw === '') {
+            $single = $request->input('campoCentroCusto');
+            $raw = filled($single) ? [$single] : [];
+        }
+
+        if (is_string($raw)) {
+            $raw = preg_split('/[|,]/', $raw) ?: [];
+        }
+
+        if (!is_array($raw)) {
+            return [];
+        }
+
+        return collect($raw)
+            ->map(function ($item) {
+                if (is_array($item)) {
+                    return $item['value'] ?? $item['id'] ?? null;
+                }
+                return $item;
+            })
+            ->filter(fn ($value) => $value !== null && $value !== '' && $value !== 'todos')
+            ->map(fn ($value) => (string) $value)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    protected function aplicarFiltroCnpjCentroCusto($query, Request $request): void
+    {
+        $temCnpj = $request->filled('campoCnpj');
+        $idsSelecionados = $this->centrosSelecionadosIds($request);
+        $temCentros = !empty($idsSelecionados);
+
+        if (!$temCnpj && !$temCentros) {
+            return;
+        }
+
+        if ($temCnpj) {
+            $centros_custos = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+            $cnpjKey = preg_replace('/[^0-9]/', '', (string) $request->campoCnpj);
+            $cc = $centros_custos['centros_custos'][$request->campoCnpj]
+                ?? $centros_custos['centros_custos'][$cnpjKey]
+                ?? null;
+
+            if (!$cc || !isset($cc[0])) {
+                $query->whereRaw('1 = 0');
+                return;
+            }
+
+            $cc = collect($cc);
+
+            if (!$temCentros) {
+                if ($cc[0]['matriz']) {
+                    $query->where(function ($q) use ($cc) {
+                        $q->whereIn('centro_custo_id', $cc->pluck('id')->toArray())
+                            ->orWhereNull('centro_custo_id');
+                    })->where('filial', false);
+                } else {
+                    $query->where(function ($q) use ($cc) {
+                        $q->whereIn('centro_custo_filial_id', $cc->pluck('filial_id')->toArray())
+                            ->orWhereNull('centro_custo_filial_id');
+                    })->where('filial', true);
+                }
+                return;
+            }
+
+            if ($cc[0]['matriz']) {
+                $query->whereIn('centro_custo_id', $idsSelecionados)->where('filial', false);
+            } else {
+                $query->where(function ($q) use ($idsSelecionados) {
+                    $q->whereIn('centro_custo_id', $idsSelecionados)
+                        ->orWhereIn('centro_custo_filial_id', $idsSelecionados);
+                })->where('filial', true);
+            }
+            return;
+        }
+
+        $query->where(function ($q) use ($idsSelecionados) {
+            $q->whereIn('centro_custo_id', $idsSelecionados)
+                ->orWhereIn('centro_custo_filial_id', $idsSelecionados);
+        });
     }
 }

@@ -3,7 +3,8 @@
 namespace App\Jobs;
 
 use App\Mail\Admissao\Processo\VencimentoAsoMail;
-use App\Mail\RecuperaSenhaMail;
+use App\Models\TipoRecebeEmail;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -35,6 +36,16 @@ class JobMailVencimentoAso implements ShouldQueue
      */
     public function handle()
     {
+        $usuario = $this->mail['usuario'] ?? null;
+        $usuarioId = (int) ($usuario->id ?? 0);
+        if ($usuarioId === 0 || !User::elegivelParaNotificacaoEmail($usuarioId, TipoRecebeEmail::VENCIMENTO_ASO)) {
+            \Log::info('E-mail de Vencimento ASO não enviado: usuário sem check, inativo ou bloqueado', [
+                'usuario_id' => $usuarioId,
+            ]);
+
+            return;
+        }
+
         \Mail::send(new VencimentoAsoMail($this->mail));
     }
 }

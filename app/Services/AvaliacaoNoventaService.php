@@ -68,6 +68,13 @@ class AvaliacaoNoventaService
     public function montarVencimentosPorGestor(Collection $avaliacoes, string $dataAtual): Collection
     {
         $grupos = [];
+        $empresaId = (int) ($avaliacoes->first()?->FeedbackCurriculo?->empresa_id ?? 0);
+        $elegiveis = $empresaId > 0
+            ? User::withoutGlobalScopes()
+                ->paraNotificacaoEmail(TipoRecebeEmail::AVALIACAO_90_DIAS, $empresaId)
+                ->pluck('id')
+                ->flip()
+            : collect();
 
         foreach ($avaliacoes as $avaliacao) {
             $resultado = $this->verificarVencimento($avaliacao, $dataAtual);
@@ -78,8 +85,7 @@ class AvaliacaoNoventaService
             $admissao = $avaliacao->FeedbackCurriculo->Admissao ?? null;
             $centro = $admissao ? $admissao->CentroCusto : null;
             $gestor = $centro ? $centro->Gestor : null; // User com id,nome,login
-            if (!$gestor || !$gestor->ativo || $gestor->login === 'sistema@mybp.com.br') {
-                // Sem gestor, gestor inativo ou e-mail sistema: não enviar
+            if (!$gestor || !$elegiveis->has($gestor->id)) {
                 continue;
             }
 
@@ -117,33 +123,23 @@ class AvaliacaoNoventaService
 
     public function buscarUsuariosParaNotificacao(int $empresaId): Collection
     {
-        // Usuários que devem receber as notificações completas:
-        // somente quem possui a habilidade "privilegio_gestao_rh" e está ativo
-        return User::query()
-            ->where('empresa_id', $empresaId)
-            ->where('ativo', true)
-            ->where('login', '!=', 'sistema@mybp.com.br')
-            ->select(['id', 'nome', 'login'])
-            ->usuariosPrivilegioRh()
-            ->orderBy('nome')
+        return User::withoutGlobalScopes()
+            ->paraNotificacaoEmail(TipoRecebeEmail::AVALIACAO_90_DIAS, $empresaId)
+            ->select(['users.id', 'users.nome', 'users.login'])
+            ->orderBy('users.nome')
             ->get();
     }
 
     public function buscarGestoresParaNotificacao(int $empresaId): Collection
     {
-        return User::query()
-            ->where('empresa_id', $empresaId)
-            ->select(['id', 'nome', 'login'])
+        return User::withoutGlobalScopes()
+            ->paraNotificacaoEmail(TipoRecebeEmail::AVALIACAO_90_DIAS, $empresaId)
             ->where(function ($q) {
-                $q->where('tipo', User::GESTOR)
-                    ->orWhere('gestor', true);
+                $q->where('users.tipo', User::GESTOR)
+                    ->orWhere('users.gestor', true);
             })
-            ->whereHas('UserRecebeEmail', function ($query) {
-                $query->where('nome', TipoRecebeEmail::AVALIACAO_90_DIAS)
-                    ->where('ativo', true);
-            })
-            ->where('ativo', true)
-            ->orderBy('nome')
+            ->select(['users.id', 'users.nome', 'users.login'])
+            ->orderBy('users.nome')
             ->get();
     }
 
@@ -416,6 +412,15 @@ class AvaliacaoNoventaService
 
     public function enviarEmailVencimentos(User $usuario, array $vencimentos, int $empresaId, ?array $arquivoS3 = null): bool
     {
+        if (!User::elegivelParaNotificacaoEmail((int) $usuario->id, TipoRecebeEmail::AVALIACAO_90_DIAS)) {
+            Log::info('E-mail de Avaliação de Experiência não enviado: usuário sem check, inativo ou bloqueado', [
+                'usuario_id' => $usuario->id,
+                'empresa_id' => $empresaId,
+            ]);
+
+            return false;
+        }
+
         try {
             $logoEmpresa = $this->obterLogoEmpresaUrl($empresaId);
 
