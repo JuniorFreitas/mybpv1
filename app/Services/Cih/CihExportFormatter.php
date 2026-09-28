@@ -116,7 +116,7 @@ class CihExportFormatter
             $this->cleanText($cih->id),
             $this->cleanText($colaborador->Curriculo->nome ?? ''),
             $this->cleanText($colaborador->Admissao->pis ?? ''),
-            $this->cleanText($colaborador->VagaAberta->Vaga->nome ?? ''),
+            $this->cleanText($colaborador->Admissao->cargo ?? $colaborador->VagaAberta->Vaga->nome ?? ''),
             $this->cleanText($cih->CentroDeCusto->label ?? ''),
         ];
 
@@ -146,7 +146,7 @@ class CihExportFormatter
             $this->cleanText($cih->id),
             $this->cleanText($colaborador->Curriculo->nome ?? ''),
             $this->cleanText($colaborador->Admissao->pis ?? ''),
-            $this->cleanText($colaborador->VagaAberta->Vaga->nome ?? ''),
+            $this->cleanText($colaborador->Admissao->cargo ?? $colaborador->VagaAberta->Vaga->nome ?? ''),
             $this->cleanText($cih->area_id ? ($cih->Area->label ?? '') : ($cih->outra_area ?? '')),
             $this->cleanText($colaborador->Admissao->CentroCusto->label ?? ''),
         ];

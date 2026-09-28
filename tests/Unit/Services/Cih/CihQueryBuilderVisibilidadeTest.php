@@ -78,6 +78,23 @@ class CihQueryBuilderVisibilidadeTest extends TestCase
         $this->assertStringNotContainsString('colaboradores_avulso', $sql);
     }
 
+    public function test_exportacao_seleciona_apenas_colunas_necessarias(): void
+    {
+        $user = $this->usuarioComHabilidades(['admissao_cih_ver_todas'], 7);
+        $this->actingAs($user);
+
+        $sql = strtolower(CihQueryBuilder::forExport($user)->toSql());
+
+        $this->assertStringContainsString('data_lancamento', $sql);
+        $this->assertStringContainsString('acao', $sql);
+        $this->assertStringNotContainsString('obs_lancamento', $sql);
+        $this->assertStringNotContainsString('obs_aprovacao', $sql);
+        $this->assertStringNotContainsString('obs_rh', $sql);
+        $this->assertStringNotContainsString('colaboradores_avulso', $sql);
+        $this->assertStringNotContainsString('varios_colaboradores', $sql);
+        $this->assertStringNotContainsString('gestor_id', $sql);
+    }
+
     /**
      * @param list<string> $habilidades
      */

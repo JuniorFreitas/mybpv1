@@ -16,7 +16,6 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 class JobExportaCihCsvFinal implements ShouldQueue
 {
@@ -264,135 +263,24 @@ class JobExportaCihCsvFinal implements ShouldQueue
     }
 
     /**
-     * Construir query baseada nos filtros
+     * Construir query baseada nos filtros (escopo + selects enxutos via CihQueryBuilder).
      */
     private function buildQuery()
     {
         try {
-            $user = \App\Models\User::find($this->usuario);
-            \Log::info('Usuário: ' . json_encode($user));
+            $user = User::find($this->usuario);
             if (!$user) {
                 \Log::error('Usuário não encontrado: ' . $this->usuario);
                 throw new \Exception("Usuário não encontrado: {$this->usuario}");
             }
 
             auth()->login($user);
-            \Log::info('Autenticado: ' . json_encode($user));
 
-            // Aplicar filtros diretamente sem usar o método filtro() do controller
-            $query = $this->buildQueryDirectly($user);
-
-            return $query;
+            return \App\Services\Cih\CihQueryBuilder::forExport($user, $this->filtros);
         } catch (\Exception $e) {
-            \Log::error("Erro ao construir query no JobExportaCihCsv: " . $e->getMessage());
+            \Log::error('Erro ao construir query no JobExportaCihCsvFinal: ' . $e->getMessage());
             throw $e;
         }
-    }
-
-    /**
-     * Construir query diretamente sem depender de permissões
-     */
-    private function buildQueryDirectly($user)
-    {
-        \Log::info("Usuário: " . json_encode($user->toArray()));
-
-        // Base query com relacionamentos
-        $query = \App\Models\Cih::with([
-            'colaboradores.Curriculo',
-            'colaboradores.Admissao',
-            'colaboradores.Admissao.CentroCusto',
-            'colaboradores.VagaAberta.Vaga',
-            'CentroDeCusto',
-            'Area',
-            'Tag',
-            'ResponsavelLancamento',
-            'ResponsavelAprovacao',
-            'RhAprovacao'
-        ])->where('empresa_id', $user->empresa_id);
-
-        // Aplicar filtros de período se existirem
-        if (isset($this->filtros['filtroPeriodo']) && $this->filtros['filtroPeriodo']) {
-            if (isset($this->filtros['periodo'])) {
-                $periodo = explode(' até ', $this->filtros['periodo']);
-                if (count($periodo) == 2) {
-                    $dataInicio = new \MasterTag\DataHora($periodo[0] . ' 00:00:00');
-                    $dataFim = new \MasterTag\DataHora($periodo[1] . ' 23:59:59');
-                    $query->where('data_lancamento', '>=', $dataInicio->dataHoraInsert())
-                        ->where('data_lancamento', '<=', $dataFim->dataHoraInsert());
-                }
-            }
-        }
-
-        // Aplicar outros filtros
-        if (isset($this->filtros['campoBusca']) && !empty($this->filtros['campoBusca'])) {
-            $query->whereHas('colaboradores.Curriculo', function ($q) {
-                $q->where('nome', 'like', '%' . $this->filtros['campoBusca'] . '%');
-            });
-        }
-
-        if (isset($this->filtros['campoStatus']) && !empty($this->filtros['campoStatus'])) {
-            $status = $this->filtros['campoStatus'];
-            switch ($status) {
-                case 'aberto':
-                    $query->where('status', 'aberto');
-                    break;
-                case 'aprovado_gestor':
-                    $query->where('status', 'aprovado')->whereNull('resposta_rh');
-                    break;
-                case 'aprovado_rh':
-                    $query->where('resposta_rh', 'aprovado');
-                    break;
-                case 'reprovado':
-                    $query->where(function ($q) {
-                        $q->where('status', 'reprovado')->orWhere('resposta_rh', 'reprovado');
-                    });
-                    break;
-            }
-        }
-
-        if (isset($this->filtros['campoTags']) && !empty($this->filtros['campoTags'])) {
-            $query->whereHas('Tag', function ($q) {
-                $q->where('id', $this->filtros['campoTags']);
-            });
-        }
-
-        if (isset($this->filtros['campoAreas']) && !empty($this->filtros['campoAreas'])) {
-            $query->whereHas('Area', function ($q) {
-                $q->where('id', $this->filtros['campoAreas']);
-            });
-        }
-
-        if (!empty($this->filtros['campoCnpj'] ?? '') && empty($this->filtros['campoCentrosDeCusto'] ?? '')) {
-            $lista = (new \App\Models\CentroCusto())->listaCentroCustoPorCnpj($user->empresa_id);
-            $ids = collect($lista['centros_custos'][$this->filtros['campoCnpj']] ?? [])
-                ->pluck('id')
-                ->filter()
-                ->values()
-                ->all();
-
-            if ($ids === []) {
-                $query->whereRaw('1 = 0');
-            } else {
-                $query->whereIn('centro_custo_id', $ids);
-            }
-        }
-
-        if (isset($this->filtros['campoCentrosDeCusto']) && !empty($this->filtros['campoCentrosDeCusto'])) {
-            $query->whereHas('CentroDeCusto', function ($q) {
-                $q->where('id', $this->filtros['campoCentrosDeCusto']);
-            });
-        }
-
-        if (isset($this->filtros['campoGestores']) && !empty($this->filtros['campoGestores'])) {
-            $query->whereHas('GestorAprovacao', function ($q) {
-                $q->where('id', $this->filtros['campoGestores']);
-            });
-        }
-
-        \Log::info("Query: " . $query->toSql());
-        \Log::info("Bindings: " . json_encode($query->getBindings()));
-
-        return $query->orderByDesc('created_at');
     }
 
     /**
@@ -453,12 +341,16 @@ class JobExportaCihCsvFinal implements ShouldQueue
             }
         };
 
+        $cargo = $colaborador->Admissao->cargo
+            ?? $colaborador->VagaAberta->Vaga->nome
+            ?? '';
+
         if ($this->modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
             $row = [
                 $cleanText($cih->id ?? ''),
                 $cleanText($colaborador->Curriculo->nome ?? ''),
                 $cleanText($colaborador->Admissao->pis ?? ''),
-                $cleanText($colaborador->VagaAberta->Vaga->nome ?? ''),
+                $cleanText($cargo),
                 $cleanText($cih->CentroDeCusto->label ?? ''),
             ];
             if ($this->temFilial) {
@@ -484,7 +376,7 @@ class JobExportaCihCsvFinal implements ShouldQueue
             $cleanText($cih->id ?? ''),
             $cleanText($colaborador->Curriculo->nome ?? ''),
             $cleanText($colaborador->Admissao->pis ?? ''),
-            $cleanText($colaborador->VagaAberta->Vaga->nome ?? ''),
+            $cleanText($cargo),
             $cleanText($cih->area_id ? ($cih->Area->label ?? '') : ($cih->outra_area ?? '')),
             $cleanText($colaborador->Admissao->CentroCusto->label ?? ''),
         ];

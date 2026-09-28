@@ -110,7 +110,7 @@
                                 v-if="config_modelo_cih === 'centro_de_custo' && lista_ccs && AUTENTICADO.temFilial"
                             >
                                 <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">CNPJ <span class="text-danger">*</span></label>
+                                    <label class="mybp-label">Lotação <span class="text-danger">*</span></label>
                                     <div class="mybp-combobox-wrap">
                                         <combobox-auto-complete
                                             ref="comboFormCnpj"
@@ -119,8 +119,8 @@
                                             :options="filtroCnpjOpcoes"
                                             :disabled="visualizar || aprovandoRh || aprovando"
                                             input-id="cih-form-cnpj"
-                                            placeholder-blur="Selecione o CNPJ..."
-                                            empty-message="Nenhum CNPJ encontrado."
+                                            placeholder-blur="Selecione a lotação..."
+                                            empty-message="Nenhuma lotação encontrada."
                                             :max-results="50"
                                             @opening="fecharOutrosComboboxes('form-cnpj')"
                                             @select="onSelectFormCnpj"
@@ -462,7 +462,7 @@
 
                 <div class="col-12 col-md-4" v-if="lista_ccs && AUTENTICADO.temFilial">
                     <div class="form-group mybp-filtro-campo">
-                        <label class="mybp-label" for="cih-filtro-cnpj">CNPJ</label>
+                        <label class="mybp-label" for="cih-filtro-cnpj">Lotação</label>
                         <div class="mybp-combobox-wrap">
                             <combobox-auto-complete
                                 ref="comboFiltroCnpj"
@@ -471,8 +471,8 @@
                                 :options="filtroCnpjOpcoes"
                                 :disabled="controle.carregando"
                                 input-id="cih-filtro-cnpj"
-                                placeholder-blur="Todos os CNPJs"
-                                empty-message="Nenhum CNPJ encontrado."
+                                placeholder-blur="Todas as lotações"
+                                empty-message="Nenhuma lotação encontrada."
                                 :max-results="50"
                                 @opening="fecharOutrosComboboxes('filtro-cnpj')"
                                 @select="onSelectCnpj"
@@ -690,7 +690,7 @@
                             <div class="cih-card-row">
                                 <div class="cih-card-campo" v-if="AUTENTICADO.temFilial">
                                     <span class="cih-card-campo__label">
-                                        <i class="fas fa-building" aria-hidden="true"></i> Empresa
+                                        <i class="fas fa-building" aria-hidden="true"></i> Lotação
                                     </span>
                                     <span class="cih-card-campo__valor">{{ labelLotacaoLista(item) || 'Não informado' }}</span>
                                 </div>
@@ -958,7 +958,7 @@ export default {
             return opcoes
         },
         filtroCnpjOpcoes() {
-            const opcoes = [{ value: '', label: 'Todos os CNPJs' }]
+            const opcoes = [{ value: '', label: 'Todas as lotações' }]
             if (!this.lista_ccs || !this.lista_ccs.cnpjs) return opcoes
             Object.keys(this.lista_ccs.cnpjs).forEach((key) => {
                 const item = this.lista_ccs.cnpjs[key]
@@ -1213,7 +1213,7 @@ export default {
                 this.campoFormVazio(this.form.campoCnpj)
             ) {
                 this.marcarInputInvalido('#cih-form-cnpj', true)
-                mensagem = 'Selecione o CNPJ para buscar o centro de custo'
+                mensagem = 'Selecione a lotação para buscar o centro de custo'
                 valido = false
             }
 

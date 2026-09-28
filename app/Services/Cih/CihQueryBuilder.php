@@ -31,6 +31,27 @@ class CihQueryBuilder
         'empresa_id',
     ];
 
+    /** Colunas usadas na exportação CSV/Excel. */
+    private const EXPORT_COLUMNS = [
+        'id',
+        'tag_id',
+        'outra_tag',
+        'area_id',
+        'outra_area',
+        'centro_custo_id',
+        'status',
+        'resposta_rh',
+        'user_aprovacao_id',
+        'user_rh_id',
+        'user_lancamento_id',
+        'data_lancamento',
+        'data_aprovacao',
+        'data_aprovacao_rh',
+        'acao',
+        'created_at',
+        'empresa_id',
+    ];
+
     private User $user;
     private array $filtros;
     private bool $isExport;
@@ -50,21 +71,17 @@ class CihQueryBuilder
 
         $this->applyFilters($query);
 
-        if (!$this->isExport) {
-            $query->select(self::LISTING_COLUMNS);
-        }
+        $query->select($this->isExport ? self::EXPORT_COLUMNS : self::LISTING_COLUMNS);
 
         return $query->orderByDesc('created_at');
     }
 
     private function getBaseQueryWithPermissions(): Builder
     {
-        $query = $this->acessoService->queryBaseComEscopo(
+        return $this->acessoService->queryBaseComEscopo(
             $this->user,
             $this->isExport ? $this->getExportRelationships() : $this->getListingRelationships()
         );
-
-        return $query;
     }
 
     /**
@@ -97,31 +114,26 @@ class CihQueryBuilder
     }
 
     /**
-     * Relacionamentos para exportação (precisa PIS, cargo, currículo completo leve).
+     * Relacionamentos mínimos para exportação CSV (sem Demissao/Gestor — não saem no Excel).
      */
     private function getExportRelationships(): array
     {
         return [
             'Colaboradores' => function ($query) {
-                $query->select(['feedback_curriculos.id', 'feedback_curriculos.curriculo_id', 'feedback_curriculos.vagas_abertas_id']);
+                $query->select([
+                    'feedback_curriculos.id',
+                    'feedback_curriculos.curriculo_id',
+                    'feedback_curriculos.vagas_abertas_id',
+                ]);
             },
             'Colaboradores.Curriculo:id,nome',
             'Colaboradores.Admissao:id,feedback_id,cargo,pis,centro_custo_id',
             'Colaboradores.Admissao.CentroCusto:id,label',
             'Colaboradores.VagaAberta:id,vaga_id',
             'Colaboradores.VagaAberta.Vaga:id,nome',
-            'Colaboradores.Demissao' => function ($query) {
-                $query->select(
-                    'id',
-                    'feedback_id',
-                    'data_desmobilizacao',
-                    DB::raw('DATEDIFF(NOW(), data_desmobilizacao) AS dias')
-                );
-            },
             'Tag:id,label',
             'Area:id,label',
             'CentroDeCusto:id,label',
-            'GestorAprovacao:id,nome',
             'ResponsavelLancamento:id,nome',
             'ResponsavelAprovacao:id,nome',
             'RhAprovacao:id,nome',
