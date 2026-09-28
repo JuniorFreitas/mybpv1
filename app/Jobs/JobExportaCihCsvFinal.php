@@ -4,7 +4,10 @@ namespace App\Jobs;
 
 use App\Events\Notificacoes\NotificacaoEvent;
 use App\Models\Cih;
+use App\Models\ClienteFilial;
 use App\Models\Exportacao;
+use App\Models\User;
+use App\Services\Cih\CihLotacaoResolver;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -30,6 +33,8 @@ class JobExportaCihCsvFinal implements ShouldQueue
     protected $modelo_cih_config;
     protected $lockKey;
     protected $lockTimeout = 1200; // 20 minutos
+    protected bool $temFilial = false;
+    protected ?CihLotacaoResolver $lotacaoResolver = null;
 
     const CHUNK_SIZE = 1000; // Chunk maior para reduzir requisições
 
@@ -64,6 +69,14 @@ class JobExportaCihCsvFinal implements ShouldQueue
             \Log::info('Iniciando exportação CIH CSV final');
             \Log::info('Lock adquirido com sucesso. Lock key: ' . $this->lockKey);
             \Log::info('Filtros: ' . json_encode($this->filtros));
+
+            $user = User::find($this->usuario);
+            if (!$user) {
+                throw new \Exception("Usuário não encontrado: {$this->usuario}");
+            }
+
+            $this->temFilial = (new ClienteFilial())->temFilial($user->empresa_id);
+            $this->lotacaoResolver = new CihLotacaoResolver((int) $user->empresa_id);
 
             $headers = $this->getHeaders();
             \Log::info('Cabeçalhos: ' . json_encode($headers));
@@ -104,45 +117,57 @@ class JobExportaCihCsvFinal implements ShouldQueue
     private function getHeaders()
     {
         if ($this->modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
-            return [
-                "CIH ID",
-                "Colaborador",
-                "PIS",
-                "Cargo",
-                "Centro de Custo",
-                "Data Ocorrência",
-                "Ocorrência",
-                "Responsável Lançamento",
-                'Data Lançamento',
-                "Ação",
-                "Status Aprovação Gestor",
-                "Data Aprovação Gestor",
-                "Responsável Aprovação Gestor",
-                "Status Aprovação RH",
-                "Data Aprovação RH",
-                "Responsável Aprovação RH"
+            $headers = [
+                'CIH ID',
+                'Colaborador',
+                'PIS',
+                'Cargo',
+                'Centro de Custo',
             ];
+            if ($this->temFilial) {
+                $headers[] = 'Lotação';
+            }
+
+            return array_merge($headers, [
+                'Data Ocorrência',
+                'Ocorrência',
+                'Responsável Lançamento',
+                'Data Lançamento',
+                'Ação',
+                'Status Aprovação Gestor',
+                'Data Aprovação Gestor',
+                'Responsável Aprovação Gestor',
+                'Status Aprovação RH',
+                'Data Aprovação RH',
+                'Responsável Aprovação RH',
+            ]);
         }
 
-        return [
-            "CIH ID",
-            "Colaborador",
-            "PIS",
-            "Cargo",
-            "Área",
-            "Centro de Custo",
-            "Data Ocorrência",
-            "Ocorrência",
-            "Responsável Lançamento",
-            'Data Lançamento',
-            "Ação",
-            "Status Aprovação Gestor",
-            "Data Aprovação Gestor",
-            "Responsável Aprovação Gestor",
-            "Status Aprovação RH",
-            "Data Aprovação RH",
-            "Responsável Aprovação RH"
+        $headers = [
+            'CIH ID',
+            'Colaborador',
+            'PIS',
+            'Cargo',
+            'Área',
+            'Centro de Custo',
         ];
+        if ($this->temFilial) {
+            $headers[] = 'Lotação';
+        }
+
+        return array_merge($headers, [
+            'Data Ocorrência',
+            'Ocorrência',
+            'Responsável Lançamento',
+            'Data Lançamento',
+            'Ação',
+            'Status Aprovação Gestor',
+            'Data Aprovação Gestor',
+            'Responsável Aprovação Gestor',
+            'Status Aprovação RH',
+            'Data Aprovação RH',
+            'Responsável Aprovação RH',
+        ]);
     }
 
     /**
@@ -429,13 +454,18 @@ class JobExportaCihCsvFinal implements ShouldQueue
         };
 
         if ($this->modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
-            // 17 colunas, na mesma ordem do getHeaders() para CONFIG_CENTRO_DE_CUSTO (sem colunas data_iso extras)
-            return [
+            $row = [
                 $cleanText($cih->id ?? ''),
                 $cleanText($colaborador->Curriculo->nome ?? ''),
                 $cleanText($colaborador->Admissao->pis ?? ''),
                 $cleanText($colaborador->VagaAberta->Vaga->nome ?? ''),
                 $cleanText($cih->CentroDeCusto->label ?? ''),
+            ];
+            if ($this->temFilial) {
+                $row[] = $cleanText($this->resolverLotacaoColaborador($colaborador, $cih));
+            }
+
+            return array_merge($row, [
                 $cleanText($formatDateBrOnly($cih->data_lancamento ?? '')),
                 $cleanText($cih->Tag ? $cih->Tag->label : $cih->outra_tag ?? ''),
                 $cleanText($cih->ResponsavelLancamento ? $cih->ResponsavelLancamento->nome : ''),
@@ -447,16 +477,22 @@ class JobExportaCihCsvFinal implements ShouldQueue
                 $cleanText($cih->resposta_rh ?? ""),
                 $cleanText($cih->data_aprovacao_rh ?? ''),
                 $cleanText($cih->RhAprovacao ? $cih->RhAprovacao->nome : ''),
-            ];
+            ]);
         }
 
-        return [
+        $row = [
             $cleanText($cih->id ?? ''),
             $cleanText($colaborador->Curriculo->nome ?? ''),
             $cleanText($colaborador->Admissao->pis ?? ''),
             $cleanText($colaborador->VagaAberta->Vaga->nome ?? ''),
             $cleanText($cih->area_id ? ($cih->Area->label ?? '') : ($cih->outra_area ?? '')),
-            $cleanText($colaborador->Admissao->CentroDeCusto->label ?? ''),
+            $cleanText($colaborador->Admissao->CentroCusto->label ?? ''),
+        ];
+        if ($this->temFilial) {
+            $row[] = $cleanText($this->resolverLotacaoColaborador($colaborador, $cih));
+        }
+
+        return array_merge($row, [
             $cleanText($formatDateBrOnly($cih->data_lancamento ?? '')),
             $cleanText($cih->Tag ? $cih->Tag->label : $cih->outra_tag ?? ''),
             $cleanText($cih->ResponsavelLancamento ? $cih->ResponsavelLancamento->nome : ''),
@@ -468,7 +504,20 @@ class JobExportaCihCsvFinal implements ShouldQueue
             $cleanText($cih->resposta_rh ?? ""),
             $cleanText($cih->data_aprovacao_rh ?? ''),
             $cleanText($cih->RhAprovacao ? $cih->RhAprovacao->nome : ''),
-        ];
+        ]);
+    }
+
+    private function resolverLotacaoColaborador($colaborador, $cih): string
+    {
+        if (!$this->lotacaoResolver) {
+            return '';
+        }
+
+        $centroId = $colaborador->Admissao->centro_custo_id
+            ?? $cih->centro_custo_id
+            ?? null;
+
+        return $this->lotacaoResolver->format($centroId !== null ? (int) $centroId : null);
     }
 
 

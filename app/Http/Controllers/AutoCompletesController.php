@@ -311,7 +311,9 @@ class AutoCompletesController extends Controller
         $quantidade = (int) ($request->query('rows') ?: 20);
         $empresaId = auth()->user()?->empresa_id;
         $centroCustoIds = $this->resolverCentroCustoIdsCih($request);
-        $mapaLotacao = $this->mapaLotacaoPorCentroCustoCih($empresaId);
+        $mapaLotacao = $empresaId
+            ? (new \App\Services\Cih\CihLotacaoResolver((int) $empresaId))->mapa()
+            : [];
 
         // Ativos (sem demissão) + demitidos há até 90 dias — query única (sem UNION).
         $consulta = DB::table('feedback_curriculos as fc')
@@ -361,50 +363,6 @@ class AutoCompletesController extends Controller
 
                 return $item;
             });
-    }
-
-    /**
-     * Mapa centro_custo_id => "Nome - CNPJ (Matriz|Filial)" para o autocomplete CIH.
-     *
-     * @return array<int, string>
-     */
-    private function mapaLotacaoPorCentroCustoCih(?int $empresaId): array
-    {
-        if (!$empresaId) {
-            return [];
-        }
-
-        $lista = (new \App\Models\CentroCusto())->listaCentroCustoPorCnpj($empresaId);
-        if ($lista instanceof \Illuminate\Http\JsonResponse) {
-            return [];
-        }
-
-        $mapa = [];
-        $cnpjs = collect($lista['cnpjs'] ?? []);
-        foreach (collect($lista['centros_custos'] ?? []) as $cnpjKey => $centros) {
-            $info = $cnpjs[$cnpjKey] ?? [];
-            foreach (collect($centros) as $centro) {
-                $centro = (object) $centro;
-                $id = (int) ($centro->id ?? 0);
-                if ($id <= 0) {
-                    continue;
-                }
-
-                $tipo = !empty($centro->matriz) ? 'Matriz' : 'Filial';
-                $nome = $info['nome_fantasia'] ?? $info['razao_social'] ?? $centro->nome_fantasia ?? $centro->razao_social ?? null;
-                $cnpj = $info['cnpj'] ?? $centro->cnpj_format ?? null;
-
-                if ($nome && $cnpj) {
-                    $mapa[$id] = "{$nome} - {$cnpj} ({$tipo})";
-                } elseif ($nome) {
-                    $mapa[$id] = "{$nome} ({$tipo})";
-                } else {
-                    $mapa[$id] = $tipo;
-                }
-            }
-        }
-
-        return $mapa;
     }
 
     /**
