@@ -1599,7 +1599,7 @@ export default {
                 }
                 return 'Vários colaboradores'
             }
-            return item.colaboradores?.[0]?.curriculo?.nome || 'Não informado'
+            return item.colaboradores?.[0]?.nome || item.colaboradores?.[0]?.curriculo?.nome || 'Não informado'
         },
         qtdColaboradoresLista(item) {
             return Array.isArray(item?.colaboradores) ? item.colaboradores.length : 0
@@ -1678,22 +1678,16 @@ export default {
             if (!colaborador) {
                 return ''
             }
-            if (!this.editando) {
-                return colaborador.nome || colaborador.label || ''
-            }
-            return colaborador.curriculo?.nome || colaborador.nome || ''
+            return colaborador.nome || colaborador.curriculo?.nome || colaborador.label || ''
         },
         labelCargoColaboradorModal(colaborador) {
             if (!colaborador) {
                 return ''
             }
-            if (!this.editando) {
-                return colaborador.cargo || ''
-            }
             return (
+                colaborador.cargo ||
                 colaborador.admissao?.cargo ||
                 colaborador.vaga_aberta?.vaga?.nome ||
-                colaborador.cargo ||
                 ''
             )
         },
@@ -1701,10 +1695,11 @@ export default {
             if (!colaborador) {
                 return 'Não informado'
             }
-            if (colaborador.centro_custo) {
-                return colaborador.centro_custo
-            }
-            return colaborador.admissao?.centro_custo?.label || 'Não informado'
+            return (
+                colaborador.centro_custo ||
+                colaborador.admissao?.centro_custo?.label ||
+                'Não informado'
+            )
         },
         labelLotacaoColaboradorModal(colaborador) {
             if (!colaborador) {

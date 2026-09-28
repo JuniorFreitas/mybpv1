@@ -32,11 +32,11 @@ class CihQueryBuilderVisibilidadeTest extends TestCase
         $user = $this->usuarioComHabilidades(['admissao_cih_ver_todas'], 7);
         $this->actingAs($user);
 
-        $sql = CihQueryBuilder::forListing($user)->toSql();
+        $sql = strtolower(CihQueryBuilder::forListing($user)->toSql());
 
-        $this->assertStringNotContainsString('gestor_id', $sql);
-        $this->assertStringNotContainsString('user_lancamento_id', $sql);
-        $this->assertStringNotContainsString('user_aprovacao_id', $sql);
+        $this->assertStringNotContainsString('user_lancamento_id` = ?', $sql);
+        $this->assertStringNotContainsString('"user_lancamento_id" = ?', $sql);
+        $this->assertStringNotContainsString('or ', $sql);
     }
 
     public function test_com_privilegio_adm_nao_aplica_filtro_vinculados(): void
@@ -44,11 +44,11 @@ class CihQueryBuilderVisibilidadeTest extends TestCase
         $user = $this->usuarioComHabilidades(['admissao_cih_privilegio_adm'], 7);
         $this->actingAs($user);
 
-        $sql = CihQueryBuilder::forListing($user)->toSql();
+        $sql = strtolower(CihQueryBuilder::forListing($user)->toSql());
 
-        $this->assertStringNotContainsString('gestor_id', $sql);
-        $this->assertStringNotContainsString('user_lancamento_id', $sql);
-        $this->assertStringNotContainsString('user_aprovacao_id', $sql);
+        $this->assertStringNotContainsString('user_lancamento_id` = ?', $sql);
+        $this->assertStringNotContainsString('"user_lancamento_id" = ?', $sql);
+        $this->assertStringNotContainsString('or ', $sql);
     }
 
     public function test_sem_ver_todas_aplica_filtro_vinculados(): void
@@ -56,11 +56,26 @@ class CihQueryBuilderVisibilidadeTest extends TestCase
         $user = $this->usuarioComHabilidades([], 7);
         $this->actingAs($user);
 
-        $sql = CihQueryBuilder::forListing($user)->toSql();
+        $sql = strtolower(CihQueryBuilder::forListing($user)->toSql());
 
         $this->assertStringContainsString('gestor_id', $sql);
         $this->assertStringContainsString('user_lancamento_id', $sql);
         $this->assertStringContainsString('user_aprovacao_id', $sql);
+        $this->assertStringContainsString('or ', $sql);
+    }
+
+    public function test_listagem_seleciona_apenas_colunas_necessarias(): void
+    {
+        $user = $this->usuarioComHabilidades(['admissao_cih_ver_todas'], 7);
+        $this->actingAs($user);
+
+        $sql = strtolower(CihQueryBuilder::forListing($user)->toSql());
+
+        $this->assertStringContainsString('acao', $sql);
+        $this->assertStringNotContainsString('obs_lancamento', $sql);
+        $this->assertStringNotContainsString('obs_aprovacao', $sql);
+        $this->assertStringNotContainsString('obs_rh', $sql);
+        $this->assertStringNotContainsString('colaboradores_avulso', $sql);
     }
 
     /**

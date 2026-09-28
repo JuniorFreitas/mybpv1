@@ -16,6 +16,7 @@ use App\Models\ClienteConfig;
 use App\Models\FeedbackCurriculo;
 use App\Models\User;
 use App\Services\Cih\CihAcessoService;
+use App\Services\Cih\CihColaboradorPayloadMapper;
 use App\Services\Cih\CihQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -188,16 +189,33 @@ class CihController extends Controller
 
         $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
 
-        $cih->load(['Colaboradores.Demissao' => function ($query) {
-            $query->select('id', 'feedback_id', 'data_desmobilizacao', DB::raw('DATEDIFF(NOW(), data_desmobilizacao) AS dias'));
-        }, 'Anexos', 'Tag', 'ResponsavelLancamento:id,nome', 'ResponsavelAprovacao:id,nome', 'RhAprovacao:id,nome']);
+        $cih->load([
+            'Colaboradores' => function ($query) {
+                $query->select(['feedback_curriculos.id', 'feedback_curriculos.curriculo_id']);
+            },
+            'Colaboradores.Curriculo:id,nome',
+            'Colaboradores.Admissao:id,feedback_id,cargo,centro_custo_id',
+            'Colaboradores.Admissao.CentroCusto:id,label',
+            'Colaboradores.Demissao:id,feedback_id',
+            'Anexos',
+            'Tag:id,label,anexo_obrigatorio',
+            'GestorAprovacao:id,nome',
+            'ResponsavelLancamento:id,nome',
+            'ResponsavelAprovacao:id,nome',
+            'RhAprovacao:id,nome',
+        ]);
 
-        $modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO ? $cih->load('CentroDeCusto') : $cih->load('Area');
+        if ($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
+            $cih->load('CentroDeCusto:id,label');
+        } else {
+            $cih->load('Area:id,label');
+        }
 
-        $cih->Colaboradores->each(function ($colaborador) {
-            $colaborador->curriculo->nome = isset($colaborador->Demissao) ? $colaborador->curriculo->nome . ' - Demitido(a)' : $colaborador->curriculo->nome;
-            $colaborador->demitido = isset($colaborador->Demissao);
-        });
+        $cih->setAttribute(
+            'colaboradores',
+            (new CihColaboradorPayloadMapper())->mapForModal($cih->Colaboradores)
+        );
+        $cih->unsetRelation('Colaboradores');
 
         return $cih;
     }
@@ -331,24 +349,45 @@ class CihController extends Controller
      */
     public function atualizar(Request $request)
     {
-//        $resultado = CihQueryBuilder::forListing(auth()->user(), $request->all())->paginate($request->input('per_page', 100));
         $resultado = $this->filtro($request)->paginate($request->pages ?? 100);
+        $usuario = auth()->user();
 
-//        $periodo = Cih::get();
-        $tags = CihTag::orderBy('label')->whereAtivo(true)->get();
-        $areas = AreaEtiqueta::orderBy('label')->whereAtivo(true)->get();
-        $centros_de_custo = CentroCusto::with('Gestor')->orderBy('label')->whereAtivo(true)->get();
-        $gestores = Cih::select('gestor_id')->with('GestorAprovacao')->whereNotNull('gestor_id')->distinct()->get();
+        $tags = CihTag::query()
+            ->select(['id', 'label', 'anexo_obrigatorio'])
+            ->orderBy('label')
+            ->whereAtivo(true)
+            ->get();
+
+        $areas = AreaEtiqueta::query()
+            ->select(['id', 'label'])
+            ->orderBy('label')
+            ->whereAtivo(true)
+            ->get();
+
+        $centros_de_custo = [];
+        if ($usuario->EmpresaConfiguracoes->modelo_cih == ClienteConfig::CENTRO_DE_CUSTO) {
+            $centros_de_custo = CentroCusto::query()
+                ->select(['id', 'label', 'gestor_id'])
+                ->with('Gestor:id,nome')
+                ->orderBy('label')
+                ->whereAtivo(true)
+                ->get();
+        }
+
+        $gestores = Cih::query()
+            ->select('gestor_id')
+            ->with('GestorAprovacao:id,nome')
+            ->whereNotNull('gestor_id')
+            ->distinct()
+            ->get();
+
         $data = new DataHora();
         $intervalo = $data->dataCompleta() . ' até ' . $data->addDia(7);
 
-        $usuario = auth()->user();
-
-        $items = collect($resultado->items())->transform(function ($item) {
-            $item->colaboradores = $item->Colaboradores->map(function ($colaborador) {
-                $colaborador->curriculo->nome = isset($colaborador->Demissao) ? $colaborador->curriculo->nome . ' - Demitido(a)' : $colaborador->curriculo->nome;
-                return $colaborador;
-            });
+        $mapper = new CihColaboradorPayloadMapper();
+        $items = collect($resultado->items())->transform(function ($item) use ($mapper) {
+            $item->setAttribute('colaboradores', $mapper->mapForModal($item->Colaboradores));
+            $item->unsetRelation('Colaboradores');
             return $item;
         });
 
@@ -359,7 +398,6 @@ class CihController extends Controller
             'dados' => [
                 'itens' => $items,
                 'tags' => $tags,
-//                'periodo' => $periodo,
                 'intervalo' => $intervalo,
                 'config_modelo_cih' => $usuario->EmpresaConfiguracoes->modelo_cih,
                 'usuario_logado_id' => auth()->id(),
@@ -373,7 +411,7 @@ class CihController extends Controller
                 ],
                 'areas' => $areas,
                 'gestores' => $gestores,
-                'centros_de_custo' => $usuario->EmpresaConfiguracoes->modelo_cih == ClienteConfig::CENTRO_DE_CUSTO ? $centros_de_custo : '',
+                'centros_de_custo' => $centros_de_custo,
                 'cc' => (new CentroCusto())->listaCentroCustoPorCnpj($usuario->empresa_id),
                 'hoje' => (new DataHora())->dataCompleta()
             ]
