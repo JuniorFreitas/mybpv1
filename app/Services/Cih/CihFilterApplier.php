@@ -21,6 +21,7 @@ class CihFilterApplier
         $this->applyStatusFilter($query);
         $this->applyTagFilter($query);
         $this->applyAreaFilter($query);
+        $this->applyCnpjFilter($query);
         $this->applyCostCenterFilter($query);
         $this->applyManagerFilter($query);
     }
@@ -93,6 +94,34 @@ class CihFilterApplier
         }
 
         $query->whereHas('Area', fn($q) => $q->whereId($this->filtros['campoAreas']));
+    }
+
+    private function applyCnpjFilter(Builder $query): void
+    {
+        if (empty($this->filtros['campoCnpj'] ?? '')) {
+            return;
+        }
+
+        // CC específico já restringe; CNPJ só amplia o conjunto quando CC não veio.
+        if (!empty($this->filtros['campoCentrosDeCusto'] ?? '')) {
+            return;
+        }
+
+        $empresaId = auth()->user()?->empresa_id;
+        if (!$empresaId) {
+            return;
+        }
+
+        $lista = (new \App\Models\CentroCusto())->listaCentroCustoPorCnpj($empresaId);
+        $grupo = collect($lista['centros_custos'][$this->filtros['campoCnpj']] ?? []);
+        $ids = $grupo->pluck('id')->filter()->values()->all();
+
+        if ($ids === []) {
+            $query->whereRaw('1 = 0');
+            return;
+        }
+
+        $query->whereIn('centro_custo_id', $ids);
     }
 
     private function applyCostCenterFilter(Builder $query): void

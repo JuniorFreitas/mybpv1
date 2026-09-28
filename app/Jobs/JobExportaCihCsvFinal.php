@@ -337,6 +337,21 @@ class JobExportaCihCsvFinal implements ShouldQueue
             });
         }
 
+        if (!empty($this->filtros['campoCnpj'] ?? '') && empty($this->filtros['campoCentrosDeCusto'] ?? '')) {
+            $lista = (new \App\Models\CentroCusto())->listaCentroCustoPorCnpj($user->empresa_id);
+            $ids = collect($lista['centros_custos'][$this->filtros['campoCnpj']] ?? [])
+                ->pluck('id')
+                ->filter()
+                ->values()
+                ->all();
+
+            if ($ids === []) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->whereIn('centro_custo_id', $ids);
+            }
+        }
+
         if (isset($this->filtros['campoCentrosDeCusto']) && !empty($this->filtros['campoCentrosDeCusto'])) {
             $query->whereHas('CentroDeCusto', function ($q) {
                 $q->where('id', $this->filtros['campoCentrosDeCusto']);

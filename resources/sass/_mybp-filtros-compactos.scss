@@ -69,7 +69,7 @@
 .mybp-filtros-compactos .mybp-filtro-campo .combobox-ac-wrap .form-control,
 .mybp-filtros-compactos .mybp-filtro-campo .ma-select,
 .mybp-filtros-compactos .mybp-filtro-campo .ma-filtro-combo-toggle,
-.mybp-filtros-compactos .mybp-filtro-campo input,
+.mybp-filtros-compactos .mybp-filtro-campo input:not([type='checkbox']):not([type='radio']):not([type='hidden']),
 .mybp-filtros-compactos .mybp-filtro-periodo .form-control,
 .mybp-filtros-compactos .mybp-filtro-periodo .input-group-text,
 .mybp-filtros-compactos .mybp-filtro-periodo input {
@@ -82,6 +82,16 @@
     border-radius: var(--mybp-fc-radius) !important;
     border-color: #dee2e6 !important;
     box-sizing: border-box !important;
+}
+
+.mybp-filtros-compactos .mybp-filtro-campo textarea.form-control,
+.mybp-filtros-compactos .mybp-filtro-campo textarea.form-control-sm {
+    height: auto !important;
+    min-height: calc(var(--mybp-fc-ctrl-h) * 3.2) !important;
+    max-height: none !important;
+    padding: 0.35rem 0.45rem !important;
+    line-height: 1.35 !important;
+    resize: vertical;
 }
 
 .mybp-filtros-compactos .mybp-filtro-campo .ma-filtro-combo > .form-control.ma-select,

@@ -1,6 +1,7 @@
-# CIH — busca por CÓD no filtro
+# CIH — filtro compacto + busca
 
-- Filtro `campoBusca` em `CihFilterApplier::applySearchFilter()`: nome do curriculo (like) **ou** `cihs.id`.
-- UI: placeholder "Buscar por nome ou CÓD" em `resources/js/components/admissao/apontamento/CIH.vue`.
-- Filtros e formulário: selects → `ComboboxAutoComplete` (status, tipo, área, CC, gestores + modal).
-- Exportação usa o mesmo applier via listagem.
+- UI: `FiltroListagem` + `mybp-filtros-compactos` em `CIH.vue` (todos os campos na tela)
+- Campos: período, busca nome/CÓD, status, tipo, CNPJ (`temFilial`), área/CC, gestor
+- CNPJ: `lista_ccs` via `atualizar` → `CentroCusto::listaCentroCustoPorCnpj`; filtra CC e query `centro_custo_id`
+- Backend: `CihFilterApplier::applyCnpjFilter()` (+ export CSV final)
+- Busca: nome curriculo **ou** `cihs.id`
