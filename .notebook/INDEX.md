@@ -4,6 +4,7 @@
 Last updated: 2026-09-28
 
 - [cih-visibilidade-aprovacao](cih-visibilidade-aprovacao.md) — ver_todas ≠ aprovar; ADM override gestor | domain | cih, permissao, habilidades
+- [cih-autocomplete-cnpj](cih-autocomplete-cnpj.md) — Autocomplete colaborador filtra por CNPJ/CC do modal | flow | cih, autocomplete, cnpj
 - [cih-filtro-busca-id](cih-filtro-busca-id.md) — Filtro compacto CIH + busca nome/CÓD + combos | flow | cih, filtro, compactos
 - [filtro-compacto-operacional](filtro-compacto-operacional.md) — Filtros densos + DateRange blur + Mais filtros animado | pattern | filtro, ux, daterange
 - [notificacao-email-optin](notificacao-email-optin.md) — E-mail só com check + ativo; sistema@ não recebe nem envia | flow | email, notificacao, optin

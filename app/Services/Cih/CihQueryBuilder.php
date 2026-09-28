@@ -58,6 +58,7 @@ class CihQueryBuilder
             'Tag:id,label',
             'Area',
             'CentroDeCusto',
+            'GestorAprovacao:id,nome',
             'ResponsavelLancamento:id,nome',
             'ResponsavelAprovacao:id,nome',
             'RhAprovacao:id,nome',

@@ -159,12 +159,13 @@
                                 <div class="form-group mybp-filtro-campo">
                                     <label class="mybp-label">Colaborador(es) <span class="text-danger">*</span></label>
                                     <autocomplete
-                                        :caminho="colaborador_ativo"
+                                        :key="colaboradorCihCaminho"
+                                        :caminho="colaboradorCihCaminho"
                                         formsm
                                         :valido="form.feedback_id !== ''"
                                         v-model="form.autocomplete_label_colaborador"
                                         placeholder="Selecione um(a) colaborador(a)"
-                                        :disabled="aprovando || aprovandoRh || visualizar"
+                                        :disabled="aprovando || aprovandoRh || visualizar || colaboradorCihDesabilitado"
                                         :id="`colaborador_${hash}`"
                                         @onselect="selecionaColaborador"
                                         v-if="!editando"
@@ -175,18 +176,26 @@
                                     <table class="table table-bordered table-hover table-sm bg-white cih-modal-table mb-0">
                                         <thead>
                                             <tr>
-                                                <th width="50%">Nome</th>
-                                                <th width="40%">Cargo</th>
+                                                <th>Nome</th>
+                                                <th>Cargo</th>
+                                                <th>Centro de Custo</th>
+                                                <th>Lotação</th>
                                                 <th class="text-center" width="10%" v-if="!editando">Remover</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr v-for="(colaborador, index) in form.colaboradores" :key="colaborador.id || index">
                                                 <td>
-                                                    {{ !editando ? colaborador.label : colaborador.curriculo.nome }}
+                                                    {{ labelNomeColaboradorModal(colaborador) }}
                                                 </td>
                                                 <td>
-                                                    {{ !editando ? colaborador.cargo : colaborador.vaga_aberta.vaga.nome }}
+                                                    {{ labelCargoColaboradorModal(colaborador) }}
+                                                </td>
+                                                <td>
+                                                    {{ labelCentroCustoColaboradorModal(colaborador) }}
+                                                </td>
+                                                <td>
+                                                    {{ labelLotacaoColaboradorModal(colaborador) }}
                                                 </td>
                                                 <td class="text-center" v-if="!editando">
                                                     <a
@@ -570,12 +579,12 @@
             </template>
         </FiltroListagem>
 
-        <div class="mb-2 mt-2 pt-1 pb-1 border-bottom bg-white" v-show="!controle.carregando && lista.length > 0">
-            <span class="text-right ml-2">
-                Legenda:
-                <i class="fas fa-circle text-light ml-2"></i> Em aberto <i class="fas fa-circle text-warning ml-2"></i> Aprovado pelo Gestor
-                <i class="fas fa-circle text-success ml-2"></i> Aprovado pelo RH <i class="fas fa-circle text-danger ml-2"></i> Reprovado
-            </span>
+        <div class="cih-lista-legenda" v-show="!controle.carregando && lista.length > 0">
+            <span class="cih-lista-legenda__label">Legenda:</span>
+            <span class="cih-status-badge cih-status-badge--aberto">Em aberto</span>
+            <span class="cih-status-badge cih-status-badge--gestor">Aprovado pelo Gestor</span>
+            <span class="cih-status-badge cih-status-badge--rh">Aprovado pelo RH</span>
+            <span class="cih-status-badge cih-status-badge--reprovado">Reprovado</span>
         </div>
 
         <preload v-if="controle.carregando"></preload>
@@ -585,144 +594,173 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="table-responsive" v-show="!controle.carregando && lista.length">
-                <table class="table table-centered bg-white">
-                    <thead>
-                        <tr>
-                            <th class="text-center">CÓD</th>
-                            <th class="text-center">Colaborador</th>
-                            <th class="text-center">Tipo</th>
-                            <th class="text-center">Data Ocorrência</th>
-                            <th class="text-center">Lançamento</th>
-                            <th class="text-center">Status</th>
-                            <th class="text-center"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="item in lista" :key="item.id">
-                            <td class="text-center vertical-align-middle" v-text="item.id"></td>
-                            <td class="text-center vertical-align-middle">
-                                {{ item.varios_colaboradores ? 'Varios colaboradores' : item.colaboradores[0].curriculo.nome }}
-                            </td>
-                            <td class="text-center vertical-align-middle">
-                                {{ item.tag ? item.tag.label : item.outra_tag }}
-                            </td>
-                            <td class="text-center vertical-align-middle" v-text="item.data_lancamento"></td>
-                            <td class="text-center vertical-align-middle">Lançado por {{ item.responsavel_lancamento.nome }} em<br />{{ item.created_at }}</td>
-                            <td
-                                class="text-center font-weight-bold vertical-align-middle"
-                                :class="{
-                                    'bg-danger text-white': item.status === 'reprovado' || item.resposta_rh === 'reprovado',
-                                    'bg-success': item.status === 'aprovado' || item.resposta_rh === 'aprovado',
-                                    'bg-warning': item.status === 'aprovado' && item.resposta_rh === null,
-                                    'bg-light': item.status === 'aberto' && item.resposta_rh === null
-                                }"
-                            >
-                                <span class="text-capitalize" v-if="item.responsavel_aprovacao || item.rh_aprovacao">
-                                    <span v-if="item.status === 'aprovado' && item.resposta_rh === null">
-                                        {{ item.status }} em <br />{{ item.data_aprovacao }}<br />
-                                        Por gestor(a): {{ item.responsavel_aprovacao.nome }}
-                                    </span>
-                                    <span v-if="item.resposta_rh === 'aprovado'">
-                                        {{ item.status }} em <br />{{ item.data_aprovacao_rh }}<br />
-                                        Por RH: {{ item.rh_aprovacao.nome }}
-                                    </span>
-                                    <span v-if="item.status === 'reprovado' && item.resposta_rh === null">
-                                        {{ item.status }} em <br />{{ item.data_aprovacao }}<br />
-                                        Por gestor(a): {{ item.responsavel_aprovacao.nome }}
-                                    </span>
-                                    <span v-if="item.resposta_rh === 'reprovado'">
-                                        {{ item.resposta_rh }} em <br />{{ item.data_aprovacao_rh }}<br />
-                                        Por RH: {{ item.rh_aprovacao.nome }}
-                                    </span>
-                                </span>
-                                <span class="text-capitalize" v-else> EM ABERTO </span>
-                            </td>
-                            <td class="text-center vertical-align-middle">
-                                <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length">
+                <div class="mybp-card" v-for="item in lista" :key="item.id">
+                    <div class="mybp-card-header-row">
+                        <div class="mybp-card-left">
+                            <span class="mybp-badge-id">#{{ item.id }}</span>
+                            <div class="mybp-card-titulo">
+                                <strong>{{ nomeColaboradorLista(item) }}</strong>
+                            </div>
+                        </div>
+                        <div class="mybp-card-right">
+                            <span class="cih-status-badge" :class="classeStatusLista(item)">
+                                {{ textoStatusLista(item) }}
+                            </span>
+                            <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
+                                <a
+                                    class="mybp-btn-acoes-compact"
+                                    href="#"
+                                    role="button"
+                                    :id="`dropdownMenuLink_${item.id}`"
+                                    aria-haspopup="true"
+                                    :aria-expanded="isDropdownOpen(item.id) ? 'true' : 'false'"
+                                    @click.prevent.stop="toggleDropdown(item.id)"
+                                >
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div
+                                    class="dropdown-menu mybp-dropdown-menu dropdown-menu-right"
+                                    :class="{ show: isDropdownOpen(item.id) }"
+                                    :aria-labelledby="`dropdownMenuLink_${item.id}`"
+                                    @click="fecharDropdown"
+                                >
                                     <a
-                                        class="btn btn-secondary dropdown-toggle"
-                                        href="#"
-                                        role="button"
-                                        :id="`dropdownMenuLink_${item.id}`"
-                                        aria-haspopup="true"
-                                        :aria-expanded="isDropdownOpen(item.id) ? 'true' : 'false'"
-                                        @click.prevent.stop="toggleDropdown(item.id)"
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Aprovação Gestor"
+                                        @click.prevent="formAprovar(item.id); visualizar = false; aprovando = true; aprovandoRh = false; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
+                                        v-if="podeAprovarComoGestor(item)"
                                     >
-                                        <i class="fas fa-ellipsis-v"></i>
+                                        <i class="fa fa-user-check mr-1"></i> Aprovação Gestor
                                     </a>
-
-                                    <div
-                                        class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
-                                        :class="{ show: isDropdownOpen(item.id) }"
-                                        :aria-labelledby="`dropdownMenuLink_${item.id}`"
-                                        @click="fecharDropdown"
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Aprovação RH"
+                                        @click.prevent="formAprovar(item.id); visualizar = false; aprovando = false; aprovandoRh = true; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
+                                        v-if="item.status === 'aprovado' && item.user_rh_id === null && aprovaRh"
                                     >
-                                        <a
-                                            class="dropdown-item"
-                                            href="javascript://"
-                                            title="Aprovação Gestor"
-                                            @click.prevent="formAprovar(item.id); visualizar = false; aprovando = true; aprovandoRh = false; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
-                                            v-if="podeAprovarComoGestor(item)"
-                                        >
-                                            Aprovação Gestor
-                                        </a>
-
-                                        <a
-                                            class="dropdown-item"
-                                            href="javascript://"
-                                            title="Aprovação RH"
-                                            @click.prevent="formAprovar(item.id); visualizar = false; aprovando = false; aprovandoRh = true; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
-                                            v-if="item.status === 'aprovado' && item.user_rh_id === null && aprovaRh"
-                                        >
-                                            Aprovação Rh
-                                        </a>
-
-                                        <a
-                                            class="dropdown-item"
-                                            href="javascript://"
-                                            title="Visualizar"
-                                            @click.prevent="formAprovar(item.id); visualizar = true; aprovando = false; aprovandoRh = false; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
-                                        >
-                                            Visualizar
-                                        </a>
-                                    </div>
+                                        <i class="fa fa-users mr-1"></i> Aprovação RH
+                                    </a>
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        title="Visualizar"
+                                        @click.prevent="formAprovar(item.id); visualizar = true; aprovando = false; aprovandoRh = false; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
+                                    >
+                                        <i class="fa fa-search mr-1"></i> Visualizar
+                                    </a>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                <!--                            <a-->
-                                <!--                                v-if="permissoes.admissao_cih_aprovar"-->
-                                <!--                                v-show="item.status.includes('aberto')"-->
-                                <!--                                href="javascript://"-->
-                                <!--                                class="btn btn-sm mr-1 btn-primary"-->
-                                <!--                                content="Aprovar/Reprovar"-->
-                                <!--                                v-tippy-->
-                                <!--                                @click.prevent="formAprovar(item.id); leitura = false"-->
-                                <!--                                data-toggle="modal"-->
-                                <!---- @click="$refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()">
-                                <!--                            >-->
-                                <!--                                <i class="fa fa-check"></i>-->
-                                <!--                            </a>-->
+                    <div class="cih-card-corpo" :class="classeBordaStatusLista(item)">
+                        <section class="cih-card-secao">
+                            <div class="cih-card-row">
+                                <div class="cih-card-campo">
+                                    <span class="cih-card-campo__label">
+                                        <i class="fas fa-tag" aria-hidden="true"></i> Tipo
+                                    </span>
+                                    <span class="cih-card-campo__valor cih-card-campo__valor--forte">{{ labelTipoLista(item) }}</span>
+                                </div>
+                                <div class="cih-card-campo">
+                                    <span class="cih-card-campo__label">
+                                        <i class="fas fa-calendar-day" aria-hidden="true"></i> Data da ocorrência
+                                    </span>
+                                    <span class="cih-card-campo__valor">{{ item.data_lancamento || 'Não informado' }}</span>
+                                </div>
+                                <div class="cih-card-campo">
+                                    <span class="cih-card-campo__label">
+                                        <i class="fas fa-user-edit" aria-hidden="true"></i> Lançamento
+                                    </span>
+                                    <span class="cih-card-campo__valor">
+                                        {{ item.responsavel_lancamento?.nome || 'Não informado' }}
+                                        <template v-if="item.created_at">
+                                            <br />
+                                            <span class="cih-card-campo__meta">{{ item.created_at }}</span>
+                                        </template>
+                                    </span>
+                                </div>
+                            </div>
+                        </section>
 
-                                <!--                            <a-->
-                                <!--                                v-show="item.status.includes('aprovado') || item.status.includes('reprovado')"-->
-                                <!--                                href="javascript://"-->
-                                <!--                                class="btn btn-sm mr-1 btn-primary"-->
-                                <!--                                content="Visualizar"-->
-                                <!--                                v-tippy-->
-                                <!--                                @click.prevent="formAprovar(item.id); leitura = true"-->
-                                <!--                                data-toggle="modal"-->
-                                <!---- @click="$refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()">
-                                <!--                            >-->
-                                <!--                                <i class="fa fa-search"></i>-->
-                                <!--                            </a>-->
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                        <section class="cih-card-secao" v-if="mostrarLinhaEscopoLista(item)">
+                            <div class="cih-card-row">
+                                <div class="cih-card-campo" v-if="AUTENTICADO.temFilial">
+                                    <span class="cih-card-campo__label">
+                                        <i class="fas fa-building" aria-hidden="true"></i> Empresa
+                                    </span>
+                                    <span class="cih-card-campo__valor">{{ labelLotacaoLista(item) || 'Não informado' }}</span>
+                                </div>
+                                <div class="cih-card-campo" v-if="config_modelo_cih === 'centro_de_custo'">
+                                    <span class="cih-card-campo__label">
+                                        <i class="fas fa-sitemap" aria-hidden="true"></i> Centro de Custo
+                                    </span>
+                                    <span class="cih-card-campo__valor">{{ labelCentroCustoLista(item) || 'Não informado' }}</span>
+                                </div>
+                                <div class="cih-card-campo" v-if="config_modelo_cih === 'area'">
+                                    <span class="cih-card-campo__label">
+                                        <i class="fas fa-map-marker-alt" aria-hidden="true"></i> Área
+                                    </span>
+                                    <span class="cih-card-campo__valor">{{ labelAreaLista(item) || 'Não informado' }}</span>
+                                </div>
+                                <div class="cih-card-campo" v-if="item.gestor_aprovacao?.nome || config_modelo_cih === 'area'">
+                                    <span class="cih-card-campo__label">
+                                        <i class="fas fa-user-tie" aria-hidden="true"></i> Gestor responsável
+                                    </span>
+                                    <span class="cih-card-campo__valor">{{ item.gestor_aprovacao?.nome || 'Não informado' }}</span>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="cih-card-secao cih-card-secao--acao" v-if="item.acao">
+                            <div class="cih-card-campo cih-card-campo--full">
+                                <span class="cih-card-campo__label">
+                                    <i class="fas fa-bolt" aria-hidden="true"></i> Ação
+                                </span>
+                                <span class="cih-card-campo__valor cih-card-campo__valor--acao">{{ resumoAcaoLista(item) }}</span>
+                            </div>
+                        </section>
+
+                        <section class="cih-card-secao cih-card-secao--historico">
+                            <div class="cih-card-secao__titulo">
+                                <i class="fas fa-history" aria-hidden="true"></i> Histórico de aprovação
+                            </div>
+                            <div class="cih-card-row cih-card-row--historico">
+                                <div class="cih-card-campo">
+                                    <span class="cih-card-campo__label">
+                                        <i class="fas fa-user-check" aria-hidden="true"></i> Aprovação gestor
+                                    </span>
+                                    <span
+                                        class="cih-card-campo__valor cih-card-campo__valor--meta cih-card-campo__valor--linhas"
+                                        :class="{
+                                            'cih-card-campo__valor--negativo': aprovacaoGestorNegativaLista(item),
+                                            'cih-card-campo__valor--positivo': aprovacaoGestorPositivaLista(item)
+                                        }"
+                                    >{{ detalheAprovacaoGestorLista(item) }}</span>
+                                </div>
+                                <div class="cih-card-campo">
+                                    <span class="cih-card-campo__label">
+                                        <i class="fas fa-users" aria-hidden="true"></i> Aprovação RH
+                                    </span>
+                                    <span
+                                        class="cih-card-campo__valor cih-card-campo__valor--meta cih-card-campo__valor--linhas"
+                                        :class="{
+                                            'cih-card-campo__valor--negativo': aprovacaoRhNegativaLista(item),
+                                            'cih-card-campo__valor--positivo': aprovacaoRhPositivaLista(item)
+                                        }"
+                                    >{{ detalheAprovacaoRhLista(item) }}</span>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
             </div>
 
             <controle-paginacao
-                class="d-flex justify-content-center"
+                class="d-flex justify-content-center mt-3"
                 id="controle"
                 ref="componente"
                 :url="urlAtualizar"
@@ -915,6 +953,8 @@ export default {
             this.listaTags.forEach((item) => {
                 opcoes.push({ value: item.id, label: item.label || String(item.id), raw: item })
             })
+            // value 0 = "Outro" (mesma regra do formulário: tag_id nulo + outra_tag)
+            opcoes.push({ value: 0, label: 'Outro' })
             return opcoes
         },
         filtroCnpjOpcoes() {
@@ -1038,6 +1078,27 @@ export default {
                 !this.form.campoCnpj
             )
         },
+        colaboradorCihDesabilitado() {
+            return !!(
+                this.config_modelo_cih === 'centro_de_custo' &&
+                this.AUTENTICADO?.temFilial &&
+                this.lista_ccs &&
+                !this.form.campoCnpj
+            )
+        },
+        colaboradorCihCaminho() {
+            const base = this.colaborador_ativo || 'autocomplete/colaboradorCih'
+
+            if (
+                this.config_modelo_cih === 'centro_de_custo' &&
+                this.AUTENTICADO?.temFilial &&
+                this.form.campoCnpj
+            ) {
+                return `${base}?campoCnpj=${encodeURIComponent(this.form.campoCnpj)}`
+            }
+
+            return base
+        },
         anexoObrigatorioAtual() {
             if (this.form.tag_id === '' || this.form.tag_id === null || this.form.tag_id === 0) {
                 return false
@@ -1076,6 +1137,10 @@ export default {
         },
         onSelectFormCnpj() {
             this.form.centro_custo_id = ''
+            this.form.colaboradores = []
+            this.form.autocomplete_label_colaborador = ''
+            this.form.autocomplete_label_colaborador_anterior = ''
+            this.form.feedback_id = ''
             this.marcarInputInvalido('#cih-form-cnpj', false)
             this.marcarInputInvalido('#cih-form-centro-custo', false)
         },
@@ -1523,6 +1588,235 @@ export default {
 
             return Number(item.gestor_id) === Number(this.usuarioLogadoId)
         },
+        nomeColaboradorLista(item) {
+            if (!item) {
+                return 'Não informado'
+            }
+            if (item.varios_colaboradores) {
+                const qtd = this.qtdColaboradoresLista(item)
+                if (qtd > 1) {
+                    return `Vários colaboradores (${qtd})`
+                }
+                return 'Vários colaboradores'
+            }
+            return item.colaboradores?.[0]?.curriculo?.nome || 'Não informado'
+        },
+        qtdColaboradoresLista(item) {
+            return Array.isArray(item?.colaboradores) ? item.colaboradores.length : 0
+        },
+        labelTipoLista(item) {
+            if (!item) {
+                return 'Não informado'
+            }
+            if (item.tag?.label) {
+                return item.tag.label
+            }
+            const outra = (item.outra_tag || '').toString().trim()
+            if (outra && outra !== '0') {
+                return `${outra} (OUTRO)`
+            }
+            return 'OUTRO'
+        },
+        labelAreaLista(item) {
+            if (!item) {
+                return ''
+            }
+            return item.area?.label || item.outra_area || ''
+        },
+        labelCentroCustoLista(item) {
+            if (!item) {
+                return ''
+            }
+            return item.centro_de_custo?.label || item.centro_custo_outro || ''
+        },
+        mostrarLinhaEscopoLista(item) {
+            if (!item) {
+                return false
+            }
+            if (this.AUTENTICADO?.temFilial) {
+                return true
+            }
+            if (this.config_modelo_cih === 'centro_de_custo') {
+                return true
+            }
+            if (this.config_modelo_cih === 'area') {
+                return true
+            }
+            return !!(item.gestor_aprovacao?.nome)
+        },
+        formatLotacaoPorCentroCustoId(centroCustoId) {
+            if (!centroCustoId || !this.lista_ccs?.centros_custos) {
+                return ''
+            }
+            for (const [cnpjKey, centros] of Object.entries(this.lista_ccs.centros_custos)) {
+                const encontrado = (centros || []).find((centro) => Number(centro.id) === Number(centroCustoId))
+                if (!encontrado) {
+                    continue
+                }
+                const info = this.lista_ccs.cnpjs?.[cnpjKey] ?? {}
+                const tipo = encontrado.matriz ? 'Matriz' : 'Filial'
+                const nome = info.nome_fantasia || info.razao_social || encontrado.nome_fantasia || encontrado.razao_social
+                const cnpj = info.cnpj || encontrado.cnpj_format
+                if (nome && cnpj) {
+                    return `${nome} - ${cnpj} (${tipo})`
+                }
+                if (nome) {
+                    return `${nome} (${tipo})`
+                }
+                return tipo
+            }
+            return ''
+        },
+        labelLotacaoColaborador(colaborador) {
+            const centroId = colaborador?.admissao?.centro_custo_id || colaborador?.centro_custo_id
+            if (centroId) {
+                return this.formatLotacaoPorCentroCustoId(centroId)
+            }
+            return colaborador?.lotacao || ''
+        },
+        labelNomeColaboradorModal(colaborador) {
+            if (!colaborador) {
+                return ''
+            }
+            if (!this.editando) {
+                return colaborador.nome || colaborador.label || ''
+            }
+            return colaborador.curriculo?.nome || colaborador.nome || ''
+        },
+        labelCargoColaboradorModal(colaborador) {
+            if (!colaborador) {
+                return ''
+            }
+            if (!this.editando) {
+                return colaborador.cargo || ''
+            }
+            return (
+                colaborador.admissao?.cargo ||
+                colaborador.vaga_aberta?.vaga?.nome ||
+                colaborador.cargo ||
+                ''
+            )
+        },
+        labelCentroCustoColaboradorModal(colaborador) {
+            if (!colaborador) {
+                return 'Não informado'
+            }
+            if (colaborador.centro_custo) {
+                return colaborador.centro_custo
+            }
+            return colaborador.admissao?.centro_custo?.label || 'Não informado'
+        },
+        labelLotacaoColaboradorModal(colaborador) {
+            if (!colaborador) {
+                return 'Não informado'
+            }
+            if (colaborador.lotacao) {
+                return colaborador.lotacao
+            }
+            return this.labelLotacaoColaborador(colaborador) || 'Não informado'
+        },
+        labelLotacaoLista(item) {
+            if (!this.AUTENTICADO?.temFilial || !item) {
+                return ''
+            }
+            const colaboradores = Array.isArray(item.colaboradores) ? item.colaboradores : []
+            const labels = [
+                ...new Set(colaboradores.map((colaborador) => this.labelLotacaoColaborador(colaborador)).filter(Boolean))
+            ]
+            if (!labels.length) {
+                return this.formatLotacaoPorCentroCustoId(item.centro_custo_id) || ''
+            }
+            if (labels.length === 1) {
+                return labels[0]
+            }
+            return labels.join(' · ')
+        },
+        resumoAcaoLista(item) {
+            const acao = (item?.acao || '').trim()
+            if (!acao) {
+                return 'Não informado'
+            }
+            if (acao.length <= 220) {
+                return acao
+            }
+            return `${acao.slice(0, 217).trim()}...`
+        },
+        chaveStatusLista(item) {
+            if (!item) {
+                return 'aberto'
+            }
+            if (item.resposta_rh === 'reprovado' || item.status === 'reprovado') {
+                return 'reprovado'
+            }
+            if (item.resposta_rh === 'aprovado') {
+                return 'rh'
+            }
+            if (item.status === 'aprovado' && item.resposta_rh === null) {
+                return 'gestor'
+            }
+            return 'aberto'
+        },
+        classeStatusLista(item) {
+            return `cih-status-badge--${this.chaveStatusLista(item)}`
+        },
+        classeBordaStatusLista(item) {
+            return `cih-card-corpo--${this.chaveStatusLista(item)}`
+        },
+        textoStatusLista(item) {
+            const chave = this.chaveStatusLista(item)
+            if (chave === 'reprovado') {
+                return 'Reprovado'
+            }
+            if (chave === 'rh') {
+                return 'Aprovado RH'
+            }
+            if (chave === 'gestor') {
+                return 'Aprovado Gestor'
+            }
+            return 'Em aberto'
+        },
+        detalheAprovacaoGestorLista(item) {
+            if (!item || !item.responsavel_aprovacao) {
+                return 'Pendente'
+            }
+            const status = item.status === 'reprovado' ? 'Reprovado' : item.status === 'aprovado' ? 'Aprovado' : item.status
+            const linhas = [status]
+            if (item.data_aprovacao) {
+                linhas.push(item.data_aprovacao)
+            }
+            linhas.push(item.responsavel_aprovacao.nome)
+            return linhas.join('\n')
+        },
+        detalheAprovacaoRhLista(item) {
+            if (item?.status === 'reprovado' && !item.resposta_rh) {
+                return 'Cancelado'
+            }
+            if (!item || !item.rh_aprovacao || !item.resposta_rh) {
+                return 'Pendente'
+            }
+            const status = item.resposta_rh === 'reprovado' ? 'Reprovado' : item.resposta_rh === 'aprovado' ? 'Aprovado' : item.resposta_rh
+            const linhas = [status]
+            if (item.data_aprovacao_rh) {
+                linhas.push(item.data_aprovacao_rh)
+            }
+            linhas.push(item.rh_aprovacao.nome)
+            return linhas.join('\n')
+        },
+        aprovacaoGestorNegativaLista(item) {
+            return item?.status === 'reprovado'
+        },
+        aprovacaoGestorPositivaLista(item) {
+            return item?.status === 'aprovado' && !!item?.responsavel_aprovacao
+        },
+        aprovacaoRhNegativaLista(item) {
+            if (item?.status === 'reprovado' && !item.resposta_rh) {
+                return true
+            }
+            return item?.resposta_rh === 'reprovado'
+        },
+        aprovacaoRhPositivaLista(item) {
+            return item?.resposta_rh === 'aprovado'
+        },
         carregou(dados) {
             this.lista = dados.itens
             this.listaTags = dados.tags
@@ -1642,5 +1936,209 @@ export default {
     border-radius: 4px;
     padding: 0.45rem 0.6rem;
     background-color: #fff8f8;
+}
+
+.cih-lista-legenda {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.55rem;
+    margin: 0.65rem 0 0.45rem;
+    padding: 0.35rem 0;
+}
+
+.cih-lista-legenda__label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #6c757d;
+    margin-right: 0.15rem;
+}
+
+.cih-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.18rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+
+.cih-status-badge--aberto {
+    background: #f1f3f5;
+    color: #495057;
+    border-color: #dee2e6;
+}
+
+.cih-status-badge--gestor {
+    background: #fff3cd;
+    color: #856404;
+    border-color: #ffeeba;
+}
+
+.cih-status-badge--rh {
+    background: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.cih-status-badge--reprovado {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+.cih-card-corpo {
+    margin-top: 0.15rem;
+    border: 1px solid #e4e8ec;
+    border-radius: 8px;
+    border-left: 4px solid #adb5bd;
+    background: #fff;
+    overflow: hidden;
+}
+
+.cih-card-corpo--aberto {
+    border-left-color: #adb5bd;
+}
+
+.cih-card-corpo--gestor {
+    border-left-color: #ffc107;
+}
+
+.cih-card-corpo--rh {
+    border-left-color: #28a745;
+}
+
+.cih-card-corpo--reprovado {
+    border-left-color: #dc3545;
+}
+
+.cih-card-secao {
+    padding: 0.7rem 0.85rem;
+}
+
+.cih-card-secao + .cih-card-secao {
+    border-top: 1px solid #eef1f4;
+}
+
+.cih-card-secao--acao {
+    background: #f5f9fc;
+}
+
+.cih-card-secao--historico {
+    background: #fafbfc;
+}
+
+.cih-card-secao__titulo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #4e4f4f;
+    margin-bottom: 0.45rem;
+}
+
+.cih-card-secao__titulo i {
+    font-size: 0.7rem;
+    opacity: 0.85;
+}
+
+.cih-card-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem 1.25rem;
+}
+
+.cih-card-row--historico {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.cih-card-campo {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.cih-card-campo--full {
+    width: 100%;
+}
+
+.cih-card-campo__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    color: #4e4f4f;
+}
+
+.cih-card-campo__label i {
+    font-size: 0.7rem;
+    width: 0.85rem;
+    text-align: center;
+    opacity: 0.9;
+}
+
+.cih-card-campo__valor {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: #212529;
+    word-break: break-word;
+}
+
+.cih-card-campo__valor--forte {
+    font-weight: 600;
+    color: #174257;
+}
+
+.cih-card-campo__valor--acao {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: #212529;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cih-card-campo__valor--meta {
+    font-size: 0.78rem;
+    color: #495057;
+}
+
+.cih-card-campo__valor--linhas {
+    white-space: pre-line;
+}
+
+.cih-card-campo__valor--negativo {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.cih-card-campo__valor--positivo {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.cih-card-campo__meta {
+    font-size: 0.75rem;
+    color: #8a939b;
+    font-weight: 400;
+}
+
+@media (max-width: 767.98px) {
+    .cih-card-row,
+    .cih-card-row--historico {
+        grid-template-columns: 1fr;
+        gap: 0.65rem;
+    }
 }
 </style>

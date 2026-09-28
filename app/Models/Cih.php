@@ -361,7 +361,13 @@ class Cih extends Model
     public function Colaboradores()
     {
         return $this->belongsToMany(FeedbackCurriculo::class, 'cih_feedback', 'cih_id', 'feedback_id')
-            ->select(['id', 'curriculo_id', 'vagas_abertas_id'])->with('Curriculo:id,nome,rg,orgao_expeditor,nascimento', 'Admissao:id,feedback_id,cargo,pis');
+            ->select(['id', 'curriculo_id', 'vagas_abertas_id'])
+            ->with(
+                'Curriculo:id,nome,rg,orgao_expeditor,nascimento',
+                'Admissao:id,feedback_id,cargo,pis,centro_custo_id',
+                'Admissao.CentroCusto:id,label',
+                'VagaAberta.Vaga:id,nome'
+            );
     }
 
     public function CihFeedbacks()

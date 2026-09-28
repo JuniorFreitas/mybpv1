@@ -80,7 +80,13 @@ class CihFilterApplier
 
     private function applyTagFilter(Builder $query): void
     {
-        if (!isset($this->filtros['campoTags']) || empty($this->filtros['campoTags'])) {
+        if (!isset($this->filtros['campoTags']) || $this->filtros['campoTags'] === '' || $this->filtros['campoTags'] === null) {
+            return;
+        }
+
+        // 0 / "0" = tipo "Outro" (lançamentos sem tag_id)
+        if ((string) $this->filtros['campoTags'] === '0') {
+            $query->whereNull('tag_id');
             return;
         }
 

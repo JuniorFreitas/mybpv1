@@ -308,45 +308,168 @@ class AutoCompletesController extends Controller
             return response()->json([], 201);
         }
         $quantidade = $request->query('rows');
-
-        $busca = $request->query('busca');
+        $centroCustoIds = $this->resolverCentroCustoIdsCih($request);
+        $mapaLotacao = $this->mapaLotacaoPorCentroCustoCih(auth()->user()?->empresa_id);
 
         $consulta = DB::table('feedback_curriculos as fc')
-            ->select('fc.id', 'c.nome', 'a.cargo', 'd2.data_desmobilizacao', DB::raw('DATEDIFF(NOW(), d2.data_desmobilizacao) AS dias'))
+            ->select(
+                'fc.id',
+                'c.nome',
+                'a.cargo',
+                'a.centro_custo_id',
+                'cc.label as centro_custo',
+                'd2.data_desmobilizacao',
+                DB::raw('DATEDIFF(NOW(), d2.data_desmobilizacao) AS dias')
+            )
             ->join('curriculos as c', 'fc.curriculo_id', '=', 'c.id')
             ->join('admissoes as a', function ($join) {
                 $join->on('fc.id', '=', 'a.feedback_id')
                     ->where('a.status', Admissao::STATUS_ADMISSAO_ADMITIDO)
                     ->whereNull('a.deleted_at');
             })
+            ->leftJoin('centro_custos as cc', 'a.centro_custo_id', '=', 'cc.id')
             ->leftJoin('demissaos as d2', 'fc.id', '=', 'd2.feedback_id')
             ->whereNull('fc.deleted_at')
             ->where('fc.empresa_id', '=', auth()->user()->empresa_id)
             ->where('c.nome', 'like', '%' . $busca . '%')
-            ->whereRaw('DATEDIFF(NOW(), d2.data_desmobilizacao) <= 90')->union(function ($query) use ($busca) {
-                $query->select('fc.id', 'c.nome', 'a.cargo', DB::raw('NULL AS data_desmobilizacao'), DB::raw('NULL AS dias'))
-                    ->from('feedback_curriculos as fc')
-                    ->join('curriculos as c', 'fc.curriculo_id', '=', 'c.id')
-                    ->join('admissoes as a', function ($join) {
-                        $join->on('fc.id', '=', 'a.feedback_id')
-                            ->where('a.status', Admissao::STATUS_ADMISSAO_ADMITIDO)
-                            ->whereNull('a.deleted_at');
-                    })
-                    ->whereNull('fc.deleted_at')
-                    ->where('c.nome', 'like', '%' . $busca . '%')
-                    ->where('fc.empresa_id', '=', auth()->user()->empresa_id)
-                    ->whereNotExists(function ($subquery) {
-                        $subquery->select('fc.id', 'd.feedback_id')
-                            ->from('demissaos as d')
-                            ->whereRaw('fc.id = d.feedback_id');
-                    });
-            })->take($quantidade)->get()->map(function ($item) {
-                $demitido = $item->dias ? ' - DEMITIDO(A)' : '';
-                $item->label = "{$item->nome} - {$item->cargo} {$demitido}";
-                return $item;
-            });
+            ->whereRaw('DATEDIFF(NOW(), d2.data_desmobilizacao) <= 90');
 
-        return $consulta;
+        $this->aplicarFiltroCentroCustoCih($consulta, $centroCustoIds);
+
+        $consulta->union(function ($query) use ($busca, $centroCustoIds) {
+            $query->select(
+                'fc.id',
+                'c.nome',
+                'a.cargo',
+                'a.centro_custo_id',
+                'cc.label as centro_custo',
+                DB::raw('NULL AS data_desmobilizacao'),
+                DB::raw('NULL AS dias')
+            )
+                ->from('feedback_curriculos as fc')
+                ->join('curriculos as c', 'fc.curriculo_id', '=', 'c.id')
+                ->join('admissoes as a', function ($join) {
+                    $join->on('fc.id', '=', 'a.feedback_id')
+                        ->where('a.status', Admissao::STATUS_ADMISSAO_ADMITIDO)
+                        ->whereNull('a.deleted_at');
+                })
+                ->leftJoin('centro_custos as cc', 'a.centro_custo_id', '=', 'cc.id')
+                ->whereNull('fc.deleted_at')
+                ->where('c.nome', 'like', '%' . $busca . '%')
+                ->where('fc.empresa_id', '=', auth()->user()->empresa_id)
+                ->whereNotExists(function ($subquery) {
+                    $subquery->select('fc.id', 'd.feedback_id')
+                        ->from('demissaos as d')
+                        ->whereRaw('fc.id = d.feedback_id');
+                });
+
+            $this->aplicarFiltroCentroCustoCih($query, $centroCustoIds);
+        });
+
+        return $consulta->take($quantidade)->get()->map(function ($item) use ($mapaLotacao) {
+            $item->centro_custo = $item->centro_custo ?: '';
+            $item->lotacao = $mapaLotacao[(int) ($item->centro_custo_id ?? 0)] ?? '';
+
+            $demitido = $item->dias ? ' - DEMITIDO(A)' : '';
+            $partes = array_filter([
+                $item->nome,
+                $item->cargo,
+                $item->centro_custo ?: null,
+                $item->lotacao ?: null,
+            ]);
+            $item->label = implode(' - ', $partes) . $demitido;
+
+            return $item;
+        });
+    }
+
+    /**
+     * Mapa centro_custo_id => "Nome - CNPJ (Matriz|Filial)" para o autocomplete CIH.
+     *
+     * @return array<int, string>
+     */
+    private function mapaLotacaoPorCentroCustoCih(?int $empresaId): array
+    {
+        if (!$empresaId) {
+            return [];
+        }
+
+        $lista = (new \App\Models\CentroCusto())->listaCentroCustoPorCnpj($empresaId);
+        if ($lista instanceof \Illuminate\Http\JsonResponse) {
+            return [];
+        }
+
+        $mapa = [];
+        $cnpjs = collect($lista['cnpjs'] ?? []);
+        foreach (collect($lista['centros_custos'] ?? []) as $cnpjKey => $centros) {
+            $info = $cnpjs[$cnpjKey] ?? [];
+            foreach (collect($centros) as $centro) {
+                $centro = (object) $centro;
+                $id = (int) ($centro->id ?? 0);
+                if ($id <= 0) {
+                    continue;
+                }
+
+                $tipo = !empty($centro->matriz) ? 'Matriz' : 'Filial';
+                $nome = $info['nome_fantasia'] ?? $info['razao_social'] ?? $centro->nome_fantasia ?? $centro->razao_social ?? null;
+                $cnpj = $info['cnpj'] ?? $centro->cnpj_format ?? null;
+
+                if ($nome && $cnpj) {
+                    $mapa[$id] = "{$nome} - {$cnpj} ({$tipo})";
+                } elseif ($nome) {
+                    $mapa[$id] = "{$nome} ({$tipo})";
+                } else {
+                    $mapa[$id] = $tipo;
+                }
+            }
+        }
+
+        return $mapa;
+    }
+
+    /**
+     * Resolve IDs de centro de custo do CNPJ para o autocomplete CIH.
+     * Filtra apenas por campoCnpj (não restringe por CC específico).
+     *
+     * @return list<int>|null null = sem filtro; [] = nenhum CC válido
+     */
+    private function resolverCentroCustoIdsCih(Request $request): ?array
+    {
+        $campoCnpj = $request->query('campoCnpj');
+        if ($campoCnpj === null || $campoCnpj === '') {
+            return null;
+        }
+
+        $empresaId = auth()->user()?->empresa_id;
+        if (!$empresaId) {
+            return [];
+        }
+
+        $lista = (new \App\Models\CentroCusto())->listaCentroCustoPorCnpj($empresaId);
+        if ($lista instanceof \Illuminate\Http\JsonResponse) {
+            return [];
+        }
+
+        return collect($lista['centros_custos'][$campoCnpj] ?? [])
+            ->pluck('id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+    }
+
+    private function aplicarFiltroCentroCustoCih($query, ?array $centroCustoIds): void
+    {
+        if ($centroCustoIds === null) {
+            return;
+        }
+
+        if ($centroCustoIds === []) {
+            $query->whereRaw('1 = 0');
+            return;
+        }
+
+        $query->whereIn('a.centro_custo_id', $centroCustoIds);
     }
 
     public function colaboradorIntermitente(Request $request)
