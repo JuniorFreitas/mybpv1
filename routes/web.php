@@ -496,6 +496,37 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::resource('empresa-exame', \App\Http\Controllers\EmpresaExameController::class)->middleware('can:cadastro_empresa_exame');
         });
 
+        // Hub Admin Exames (tipos, formulários, catálogo)
+        // Permissão base: cadastro_empresa_exame (já atribuída aos papéis existentes).
+        // Habilidades específicas (cadastro_exame_*) ficam disponíveis para granularidade futura.
+        Route::group(['as' => 'exames_admin.', 'middleware' => ['can:cadastro_empresa_exame']], function () {
+            Route::get('exames-admin', [\App\Http\Controllers\ExamesAdminController::class, 'index'])->name('index');
+
+            Route::post('exame-tipos/atualizar', [\App\Http\Controllers\ExameTipoController::class, 'atualizar'])->name('exame_tipos.atualizar');
+            Route::get('exame-tipos/ativos', [\App\Http\Controllers\ExameTipoController::class, 'listarAtivos'])->name('exame_tipos.ativos');
+            Route::put('exame-tipos/{id}/ativa-desativa', [\App\Http\Controllers\ExameTipoController::class, 'ativaDesativa'])->name('exame_tipos.ativaDesativa');
+            Route::put('exame-tipos/{id}/vincular-formularios', [\App\Http\Controllers\ExameTipoController::class, 'vincularFormularios'])->name('exame_tipos.vincular');
+            Route::resource('exame-tipos', \App\Http\Controllers\ExameTipoController::class);
+
+            Route::post('exame-catalogo/atualizar', [\App\Http\Controllers\ExameCatalogoController::class, 'atualizar'])->name('exame_catalogo.atualizar');
+            Route::get('exame-catalogo/ativos', [\App\Http\Controllers\ExameCatalogoController::class, 'listarAtivos'])->name('exame_catalogo.ativos');
+            Route::put('exame-catalogo/{id}/ativa-desativa', [\App\Http\Controllers\ExameCatalogoController::class, 'ativaDesativa'])->name('exame_catalogo.ativaDesativa');
+            Route::resource('exame-catalogo', \App\Http\Controllers\ExameCatalogoController::class)->only(['store', 'edit', 'update']);
+
+            Route::get('formularios-exame', [\App\Http\Controllers\ExameFormularioBuilderController::class, 'index'])->name('formularios.index');
+            Route::post('formularios-exame', [\App\Http\Controllers\ExameFormularioBuilderController::class, 'store'])->name('formularios.store');
+            Route::get('formularios-exame/por-tipo/{exameTipo}', [\App\Http\Controllers\ExameFormularioBuilderController::class, 'porTipo'])->name('formularios.porTipo');
+            Route::get('formularios-exame/{formulario}', [\App\Http\Controllers\ExameFormularioBuilderController::class, 'show'])->name('formularios.show');
+            Route::put('formularios-exame/{formulario}', [\App\Http\Controllers\ExameFormularioBuilderController::class, 'update'])->name('formularios.update');
+            Route::post('formularios-exame/{formulario}/setores', [\App\Http\Controllers\ExameFormularioBuilderController::class, 'storeSetor'])->name('formularios.setores.store');
+            Route::put('formularios-exame/setores/{setor}', [\App\Http\Controllers\ExameFormularioBuilderController::class, 'updateSetor'])->name('formularios.setores.update');
+            Route::post('formularios-exame/{formulario}/setores/reorder', [\App\Http\Controllers\ExameFormularioBuilderController::class, 'reorderSetores'])->name('formularios.setores.reorder');
+            Route::post('formularios-exame/setores/{setor}/campos', [\App\Http\Controllers\ExameFormularioBuilderController::class, 'storeCampo'])->name('formularios.campos.store');
+            Route::put('formularios-exame/campos/{alternativa}', [\App\Http\Controllers\ExameFormularioBuilderController::class, 'updateCampo'])->name('formularios.campos.update');
+            Route::post('formularios-exame/setores/{setor}/campos/reorder', [\App\Http\Controllers\ExameFormularioBuilderController::class, 'reorderCampos'])->name('formularios.campos.reorder');
+            Route::delete('formularios-exame/setores/{setor}/campos/{alternativa}', [\App\Http\Controllers\ExameFormularioBuilderController::class, 'destroyCampo'])->name('formularios.campos.destroy');
+        });
+
         //PCMSO
         Route::group(['as' => 'pcmsos.'], function () {
             Route::put('pcmso/{pcmso}/ativa-desativa', [\App\Http\Controllers\PcmsoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:cadastro_empresa_pcmso_update');

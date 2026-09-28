@@ -3,6 +3,8 @@
 
 Last updated: 2026-09-27
 
+- [admin-exames-hub](admin-exames-hub.md) — Hub tipos/forms/catálogo SESMT; motor Formulario; fallback + compat | flow | exames, formulario, admin
+- [controle-exames-dominio](controle-exames-dominio.md) — Form DB+JSON respostas; sem CRUD tipos/forms; TenantTrait | flow | exame, aso, formulario
 - [notificacao-email-optin](notificacao-email-optin.md) — E-mail só com check + ativo; sistema@ não recebe nem envia | flow | email, notificacao, optin
 - [relatorio-ferias](relatorio-ferias.md) — Férias: CNPJ/CC + abas Lista/Gráficos via FeriasController::show | flow | ferias, cnpj, graficos
 - [filtro-compacto-operacional](filtro-compacto-operacional.md) — Filtros densos + DateRange blur + Mais filtros animado | pattern | filtro, ux, daterange

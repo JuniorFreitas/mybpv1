@@ -92,6 +92,37 @@
                         </div>
 
                         <div class="col-12">
+                            <div class="form-group mb-2">
+                                <label class="mb-1">Exames solicitados</label>
+                                <small class="text-muted d-block mb-2">
+                                    Lista de Cadastros → Exames (tipo Admissional + gerais).
+                                </small>
+                                <div class="border rounded p-2 bg-white" style="max-height: 160px; overflow-y: auto;">
+                                    <div v-if="carregandoExamesCatalogo" class="text-muted small">Carregando exames...</div>
+                                    <div v-else-if="!listaExamesCatalogo.length" class="text-muted small">
+                                        Nenhum exame cadastrado. Cadastre em Cadastros → Exames → Lista de exames.
+                                    </div>
+                                    <div
+                                        v-for="exame in listaExamesCatalogo"
+                                        :key="exame.id"
+                                        class="custom-control custom-checkbox mb-1"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            class="custom-control-input"
+                                            :id="'preadm-exame-' + exame.id"
+                                            :value="exame.id"
+                                            v-model="formFinalizar.exame_ids"
+                                        />
+                                        <label class="custom-control-label" :for="'preadm-exame-' + exame.id">
+                                            @{{ exame.label }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
                             <div class="custom-control custom-switch float-left">
                                 <input type="checkbox" v-model="formFinalizar.envia_email" class="custom-control-input"
                                        id="envia_email">

@@ -3,6 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Classes\ZapNotificacao;
+use App\Domain\Exames\Services\ExameCatalogoService;
+use App\Domain\Exames\Services\ExameFormularioPayloadNormalizer;
+use App\Domain\Exames\Services\ExameFormularioResolver;
+use App\Domain\Exames\Services\ExameResultadoCompatService;
+use App\Domain\Exames\Services\ExameTipoAdminService;
 use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
 use App\Domain\Whatsapp\Services\WhatsappCurriculoTelefoneResolver;
 use App\Domain\Whatsapp\Services\WhatsappMessageFactory;
@@ -52,12 +57,15 @@ class ControleExameController extends Controller
                 }
                 $item->encaminhamento_data = is_null($item->encaminhamento_data) ? (new DataHora($item->created_at))->dataCompleta() : (new DataHora($item->encaminhamento_data))->dataCompleta();
                 $item->pcmso_label = $item->pcmso ? $item->PcmsoDados->label : 'Não se aplica';
+                $item->exames_catalogo_labels = collect($item->exames_catalogo ?? [])->pluck('label')->filter()->implode(', ');
                 $item->resultado = Examesesmt::whereExameFuncionarioId($item->id)->first();
                 return $item;
             });
 
             $pcmos = Pcmso::whereAtivo(true)->get();
-            $exame_tipos = ExameTipo::whereAtivo(true)->get();
+            $exame_tipos = app(ExameTipoAdminService::class)->listarAtivosParaOperacional(
+                auth()->user()->empresa_id ? (int) auth()->user()->empresa_id : null
+            );
 
             return [
                 'tipo' => 'cadastrar',
@@ -83,10 +91,16 @@ class ControleExameController extends Controller
             if ($request->tipo == 'store') {
                 $empExame = EmpresaExame::find($request->empresa_exame_id);
                 $pcmso_id = $request->pcmso_id;
+                $empresaId = (int) auth()->user()->empresa_id;
+                $examesCatalogo = app(ExameCatalogoService::class)->montarSnapshot(
+                    $empresaId,
+                    (array) ($request->exame_ids ?? $request->exames_catalogo_ids ?? [])
+                );
 
-                // Select se tem
+                // Select se tem PCMSO (bug legado: !$pcmso_id == "" era sempre true)
+                $temPcmso = $pcmso_id !== null && $pcmso_id !== '' && $pcmso_id !== false;
 
-                if (!$pcmso_id == "") {
+                if ($temPcmso) {
                     $exame_tipo_id = $request->exame_tipo_id;
 
                     $exame = ExameFuncionario::create([
@@ -98,38 +112,52 @@ class ControleExameController extends Controller
                         'pcmso' => true,
                         'pcmso_id' => $pcmso_id,
                         'exame_tipo_id' => $exame_tipo_id,
+                        'exames_catalogo' => $examesCatalogo,
                         'encaminhamento_data' => $data_realizacao_insert
                     ]);
 
                     $tipoExame = ExameTipo::find($exame_tipo_id);
                 } else {
-                    $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')->whereEmpresaId(auth()->user()->empresa_id)->first();
-                    $tipoExame = RespostaAlternativas::whereValue($request->respostas['alternativa_id_' . $tipoOrdem['id']]['valor'])->first();
+                    $exame_tipo_id = $request->exame_tipo_id;
+                    $tipoExame = $exame_tipo_id ? ExameTipo::find($exame_tipo_id) : null;
 
+                    if (!$tipoExame) {
+                        $tipoOrdem = AlternativaFormulario::whereNome('Tipo de ordem')
+                            ->whereEmpresaId(auth()->user()->empresa_id)
+                            ->first();
+                        if ($tipoOrdem && isset($request->respostas['alternativa_id_' . $tipoOrdem->id]['valor'])) {
+                            $tipoExame = RespostaAlternativas::whereValue(
+                                $request->respostas['alternativa_id_' . $tipoOrdem->id]['valor']
+                            )->first();
+                            $exame_tipo_id = $tipoExame ? (int) $tipoExame->value : null;
+                        }
+                    }
 
                     $exame = ExameFuncionario::create([
                         'feedback_id' => $request->feedback_id,
                         'empresa_exame_id' => $request->empresa_exame_id,
                         'formulario_id' => $request->formulario_id,
-                        'respostas' => $request->respostas,
+                        'respostas' => $request->respostas ?? (object)[],
                         'token' => $token,
                         'pcmso' => false,
                         'encaminhamento_data' => $data_realizacao_insert,
-                        'exame_tipo_id' => (int)$tipoExame->value,
+                        'exame_tipo_id' => $exame_tipo_id ? (int) $exame_tipo_id : null,
+                        'exames_catalogo' => $examesCatalogo,
                     ]);
                 }
 
                 $colaborador = FeedbackCurriculo::select(['curriculo_id', 'id', 'telefone_id'])->find($request->feedback_id);
+                $tipoExameLabel = $tipoExame->label ?? 'Exame';
 
                 if ($request->envia_email) {
                     $dtEmailClinica = [
                         'clinica' => $empExame->nome,
                         'email' => trim(mb_strtolower($empExame->dados['email'])),
-                        'assunto' => "Encaminhamento de Exame {$tipoExame->label} colaborador {$colaborador->Curriculo->nome}",
+                        'assunto' => "Encaminhamento de Exame {$tipoExameLabel} colaborador {$colaborador->Curriculo->nome}",
                         'colaborador' => $colaborador->Curriculo->nome,
                         'colaborador_email' => trim(mb_strtolower($colaborador->Curriculo->email)),
                         'idade' => $colaborador->Curriculo->idade,
-                        'tipoExame' => $tipoExame->label,
+                        'tipoExame' => $tipoExameLabel,
                         'empresa_id' => $empExame->empresa_id,
                         'encaminhamento_data' => $data_encaminhamento,
                         'data_realizacao' => $data_realizacao,
@@ -139,9 +167,9 @@ class ControleExameController extends Controller
                     $dtEmailColaborador = [
                         'clinica' => $empExame,
                         'email' => trim(mb_strtolower($colaborador->Curriculo->email)),
-                        'assunto' => "Encaminhamento de Exame {$tipoExame->label}",
+                        'assunto' => "Encaminhamento de Exame {$tipoExameLabel}",
                         'colaborador' => $colaborador->Curriculo->nome,
-                        'tipoExame' => $tipoExame->label,
+                        'tipoExame' => $tipoExameLabel,
                         'empresa_id' => $empExame->empresa_id,
                         'encaminhamento_data' => $data_encaminhamento,
                         'data_realizacao' => $data_realizacao,
@@ -173,7 +201,7 @@ class ControleExameController extends Controller
                             (int) auth()->user()->empresa_id,
                             [
                                 'nome_destinatario' => $colaborador->Curriculo->nome,
-                                'tipo_exame' => $tipoExame->label,
+                                'tipo_exame' => $tipoExameLabel,
                                 'clinica_nome' => $empExame->nome,
                                 'clinica_endereco' => $empExame->dados['endereco']['endereco_completo'] ?? '',
                                 'clinica_telefone' => $empExame->dados['telefone'] ?? '',
@@ -215,16 +243,43 @@ class ControleExameController extends Controller
 
     public function getResultado(Request $request, $exame)
     {
-//        $feedback->load(['Afastamentos' => function($query){
-//            $query->with('Anexos')->orderBy('id', 'desc');
-//        }]);
-
+        $exameFuncionario = ExameFuncionario::find($exame);
         $Examesesmt = Examesesmt::whereExameFuncionarioId($exame)->with('Anexos')->first();
+
+        $resolver = app(ExameFormularioResolver::class);
+        $normalizer = app(ExameFormularioPayloadNormalizer::class);
+        $compat = app(ExameResultadoCompatService::class);
+
+        $formResultado = $exameFuncionario
+            ? $resolver->resolverResultado($exameFuncionario->exame_tipo_id ? (int) $exameFuncionario->exame_tipo_id : null)
+            : null;
+        $formPayload = $normalizer->toFrontend($formResultado);
+
         if ($Examesesmt) {
             $Examesesmt->cadastrando = false;
+            $leitura = $compat->prepararParaLeitura(
+                is_array($Examesesmt->resultado) ? $Examesesmt->resultado : (array) $Examesesmt->resultado
+            );
+            $Examesesmt->resultado_formato = $leitura['formato'];
+            $Examesesmt->resultado = $leitura['resultado'];
+            $Examesesmt->respostas_resultado = $leitura['respostas'];
+            $Examesesmt->formulario_resultado = $formPayload;
+
             return $Examesesmt;
         }
-        return '';
+
+        return [
+            'cadastrando' => true,
+            'exame_funcionario_id' => (int) $exame,
+            'exame_realizado' => true,
+            'resultado' => $compat->prepararParaLeitura([])['resultado'],
+            'respostas_resultado' => [],
+            'resultado_formato' => $formPayload ? 'dinamico' : 'legado',
+            'formulario_resultado' => $formPayload,
+            'anexos' => [],
+            'anexosDel' => [],
+            'id' => 0,
+        ];
     }
 
     public function salvaResultado(Request $request)
@@ -236,20 +291,20 @@ class ControleExameController extends Controller
         $dados['data_vencimento'] = (new DataHora($dados['data_realizacao']))->addAno(1);
         $dados['vencido'] = false;
 
-        $feedback_id = ExameFuncionario::find($dados['exame_funcionario_id'])->feedback_id;
+        $exameFuncionario = ExameFuncionario::find($dados['exame_funcionario_id']);
+        $feedback_id = $exameFuncionario->feedback_id;
         $dados['feedback_id'] = $feedback_id;
+
+        $dados = $this->normalizarPayloadResultado($dados, $exameFuncionario);
 
         $dadosValidados = \Validator::make($dados, []);
 
         if ($dados['exame_realizado']) {
             $dadosValidados = \Validator::make($dados, [
                 'data_realizacao' => 'required_if:exame_realizado,1|date_format:d/m/Y',
-                'resultado.result' => 'required_if:exame_realizado,1|in:Apto,Apto com Restrição,Inapto',
-                'resultado.pendencias' => 'required_if:exame_realizado,1|in:Sim,Não',
-                'resultado.pendencias_quais' => 'required_if:resultado.pendencias,Sim',
+                'resultado.result' => 'required_if:exame_realizado,1',
+                'resultado.pendencias' => 'required_if:exame_realizado,1',
                 'resultado.aprovado' => 'required_if:exame_realizado,1',
-                'resultado.trabalho_altura' => 'required_if:exame_realizado,1|in:Sim,Não,Não se aplica',
-                'resultado.observacao' => 'max:500',
             ]);
         }
 
@@ -262,9 +317,10 @@ class ControleExameController extends Controller
 
         try {
             \DB::beginTransaction();
+            unset($dados['respostas_resultado'], $dados['formulario_resultado'], $dados['resultado_formato']);
             $Examesesmt = Examesesmt::create($dados);
 
-            if ($dados['resultado']['aprovado'] == "Sim") {
+            if (($dados['resultado']['aprovado'] ?? null) == "Sim" || ($dados['resultado']['aprovado'] ?? null) === true) {
                 Examesesmt::whereFeedbackId($feedback_id)->update([
                     'atual' => 0
                 ]);
@@ -274,7 +330,7 @@ class ControleExameController extends Controller
                 ]);
             }
 
-            foreach ($dados['anexos'] as $item) {
+            foreach ($dados['anexos'] ?? [] as $item) {
                 $Examesesmt->Anexos()->attach($item['id']);
                 $Examesesmt->Anexos()->where('id', $item['id'])
                     ->where('temporario', true)
@@ -299,18 +355,17 @@ class ControleExameController extends Controller
     public function updateResultado(Request $request, Examesesmt $resultado)
     {
         $dados = $request->input();
+        $exameFuncionario = ExameFuncionario::find($resultado->exame_funcionario_id);
+        $dados = $this->normalizarPayloadResultado($dados, $exameFuncionario);
 
         $dadosValidados = \Validator::make($dados, []);
 
         if ($dados['exame_realizado']) {
             $dadosValidados = \Validator::make($dados, [
                 'data_realizacao' => 'required_if:exame_realizado,1|date_format:d/m/Y',
-                'resultado.result' => 'required_if:exame_realizado,1|in:Apto,Apto com Restrição,Inapto',
-                'resultado.pendencias' => 'required_if:exame_realizado,1|in:Sim,Não',
-                'resultado.pendencias_quais' => 'required_if:resultado.pendencias,Sim',
+                'resultado.result' => 'required_if:exame_realizado,1',
+                'resultado.pendencias' => 'required_if:exame_realizado,1',
                 'resultado.aprovado' => 'required_if:exame_realizado,1',
-                'resultado.trabalho_altura' => 'required_if:exame_realizado,1|in:Sim,Não,Não se aplica',
-                'resultado.observacao' => 'max:500',
             ]);
         }
 
@@ -347,9 +402,10 @@ class ControleExameController extends Controller
                 }
             }
 
+            unset($dados['respostas_resultado'], $dados['formulario_resultado'], $dados['resultado_formato']);
             $resultado->update($dados);
 
-            if ($dados['resultado']['aprovado'] == "Sim") {
+            if (($dados['resultado']['aprovado'] ?? null) == "Sim" || ($dados['resultado']['aprovado'] ?? null) === true) {
 
                 Examesesmt::whereFeedbackId($resultado->feedback_id)->update([
                     'atual' => 0
@@ -366,7 +422,6 @@ class ControleExameController extends Controller
             \DB::rollback();
             $msg = "Erro ao Atualizar o resultado do exame para exame:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
             \Log::debug($msg);
-//            return response()->json($msg, 400);
             return response()->json(['msg' => 'Houve um erro ao atualizar o resultado do exame!'], 400);
         }
     }
@@ -605,5 +660,28 @@ class ControleExameController extends Controller
     public function download(Request $request, $arquivo)
     {
         return Arquivo::anexoDownload(Arquivo::DISCO_CONTROLE_EXAMES_RESULTADO, $arquivo);
+    }
+
+    private function normalizarPayloadResultado(array $dados, ?ExameFuncionario $exameFuncionario): array
+    {
+        $compat = app(ExameResultadoCompatService::class);
+        $resolver = app(ExameFormularioResolver::class);
+
+        $form = null;
+        if ($exameFuncionario) {
+            $form = $resolver->resolverResultado(
+                $exameFuncionario->exame_tipo_id ? (int) $exameFuncionario->exame_tipo_id : null
+            );
+        }
+
+        $resultado = is_array($dados['resultado'] ?? null) ? $dados['resultado'] : [];
+        $respostasDinamicas = is_array($dados['respostas_resultado'] ?? null) ? $dados['respostas_resultado'] : [];
+
+        $dados['resultado'] = $compat->normalizarParaGravacao(
+            array_merge($resultado, $respostasDinamicas),
+            $form
+        );
+
+        return $dados;
     }
 }

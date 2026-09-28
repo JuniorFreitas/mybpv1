@@ -45,8 +45,15 @@ class AlternativaFormulario extends Model
     }
 
     protected $table = 'alternativa_formularios';
-    protected $fillable = ['nome', 'tipo'];
-    protected $casts = ['id' => 'int', 'nome' => 'string', 'tipo' => 'string'];
+    protected $fillable = ['empresa_id', 'nome', 'tipo', 'ativo', 'chave_canonica'];
+    protected $casts = [
+        'id' => 'int',
+        'empresa_id' => 'int',
+        'nome' => 'string',
+        'tipo' => 'string',
+        'ativo' => 'boolean',
+        'chave_canonica' => 'string',
+    ];
 
     public $timestamps = false;
 

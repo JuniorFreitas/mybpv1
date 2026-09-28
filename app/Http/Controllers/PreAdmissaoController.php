@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Classes\ZapNotificacao;
+use App\Domain\Exames\Services\ExameCatalogoService;
 use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
 use App\Domain\Whatsapp\Services\WhatsappCurriculoTelefoneResolver;
 use App\Domain\Whatsapp\Services\WhatsappMessageFactory;
@@ -219,6 +220,10 @@ class PreAdmissaoController extends Controller
             $data_encaminhamento_insert = (new DataHora())->dataHoraInsert();
             $data_encaminhamento = (new DataHora())->dataHoraCompleta();
             $data_realizacao = (new DataHora($request->encaminhado_exame_data ?? $request->encaminhamento_data))->dataCompleta();
+            $examesCatalogo = app(ExameCatalogoService::class)->montarSnapshot(
+                (int) auth()->user()->empresa_id,
+                (array) ($request->exame_ids ?? [])
+            );
 
             if (!$pcmso_id == "") {
                 $exame = ExameFuncionario::create([
@@ -230,6 +235,7 @@ class PreAdmissaoController extends Controller
                     'pcmso' => true,
                     'pcmso_id' => $pcmso_id,
                     'exame_tipo_id' => $exame_tipo_id,
+                    'exames_catalogo' => $examesCatalogo,
                     'encaminhamento_data' => $data_encaminhamento_insert
                 ]);
 
@@ -248,6 +254,7 @@ class PreAdmissaoController extends Controller
                     'pcmso' => false,
                     'encaminhamento_data' => $data_encaminhamento_insert,
                     'exame_tipo_id' => (int)$tipoExame->value,
+                    'exames_catalogo' => $examesCatalogo,
                 ]);
             }
 

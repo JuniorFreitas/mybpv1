@@ -43,8 +43,8 @@ class SetoresFormulario extends Model
     }
 
     protected $table = 'setores_formularios';
-    protected $fillable = ['nome'];
-    protected $casts = ['id' => 'int', 'nome' => 'string'];
+    protected $fillable = ['empresa_id', 'nome'];
+    protected $casts = ['id' => 'int', 'empresa_id' => 'int', 'nome' => 'string'];
 
     public function usesTimestamps(): bool
     {

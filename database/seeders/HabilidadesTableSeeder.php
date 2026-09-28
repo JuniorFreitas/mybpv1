@@ -459,6 +459,20 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'cadastro_empresa_pcmso_insert', 'descricao' => 'Pode cadastrar um PCMSO'];
         $lista[] = ['nome' => 'cadastro_empresa_pcmso_update', 'descricao' => 'Pode alterar um PCMSO'];
 
+        //ADMIN EXAMES (tipos / formulários / catálogo)------------------------------
+        $lista[] = ['nome' => 'cadastro_exame_tipo', 'descricao' => 'Acessar tipos de exame'];
+        $lista[] = ['nome' => 'cadastro_exame_tipo_insert', 'descricao' => 'Pode cadastrar tipo de exame'];
+        $lista[] = ['nome' => 'cadastro_exame_tipo_update', 'descricao' => 'Pode alterar tipo de exame'];
+        $lista[] = ['nome' => 'cadastro_exame_tipo_delete', 'descricao' => 'Pode desativar tipo de exame'];
+        $lista[] = ['nome' => 'cadastro_exame_formulario', 'descricao' => 'Acessar formulários de exame'];
+        $lista[] = ['nome' => 'cadastro_exame_formulario_insert', 'descricao' => 'Pode criar formulário/campo de exame'];
+        $lista[] = ['nome' => 'cadastro_exame_formulario_update', 'descricao' => 'Pode alterar formulário/campo de exame'];
+        $lista[] = ['nome' => 'cadastro_exame_formulario_delete', 'descricao' => 'Pode desativar campo de exame'];
+        $lista[] = ['nome' => 'cadastro_exame_catalogo', 'descricao' => 'Acessar catálogo de exames clínicos'];
+        $lista[] = ['nome' => 'cadastro_exame_catalogo_insert', 'descricao' => 'Pode cadastrar exame clínico'];
+        $lista[] = ['nome' => 'cadastro_exame_catalogo_update', 'descricao' => 'Pode alterar exame clínico'];
+        $lista[] = ['nome' => 'cadastro_exame_catalogo_delete', 'descricao' => 'Pode desativar exame clínico'];
+
         //EMPRESA TEMPORARIA------------------------------
         $lista[] = ['nome' => 'cadastro_empresa_temporaria', 'descricao' => 'Acessar rota/menu empresa_temporaria'];
         $lista[] = ['nome' => 'cadastro_empresa_temporaria_insert', 'descricao' => 'Pode cadastrar empresa_temporaria'];

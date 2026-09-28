@@ -115,6 +115,42 @@
                                     </div>
                                 </div>
 
+                                <div class="col-12" v-if="form.exame_tipo_id">
+                                    <div class="form-group mb-2">
+                                        <label class="mb-1">Exames solicitados</label>
+                                        <small class="text-muted d-block mb-2">
+                                            Lista cadastrada em Cadastros → Exames → Lista de exames
+                                            (filtrada pelo tipo selecionado).
+                                        </small>
+                                        <div class="border rounded p-2 bg-white" style="max-height: 180px; overflow-y: auto;">
+                                            <div v-if="carregandoExamesCatalogo" class="text-muted small">Carregando exames...</div>
+                                            <div v-else-if="!listaExamesCatalogo.length" class="text-muted small">
+                                                Nenhum exame cadastrado para este tipo.
+                                                Cadastre em <strong>Cadastros → Exames → Lista de exames</strong>.
+                                            </div>
+                                            <div
+                                                v-for="exame in listaExamesCatalogo"
+                                                :key="exame.id"
+                                                class="custom-control custom-checkbox mb-1"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    class="custom-control-input"
+                                                    :id="'exame-cat-' + exame.id"
+                                                    :value="exame.id"
+                                                    v-model="form.exame_ids"
+                                                />
+                                                <label class="custom-control-label" :for="'exame-cat-' + exame.id">
+                                                    {{ exame.label }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted" v-if="form.exame_ids.length">
+                                            {{ form.exame_ids.length }} selecionado(s)
+                                        </small>
+                                    </div>
+                                </div>
+
                                 <div class="col-12">
                                     <div class="custom-control custom-switch float-left">
                                         <input type="checkbox" v-model="form.envia_email" class="custom-control-input"
@@ -145,9 +181,12 @@
                         </fieldset>
 
 
-                        <formulario :model='form' :formulario_id='form.formulario.id' v-show="false"
-                                    v-if='form.formulario && form.pcmso_id.length===0'
-                                    :mostra_titulo='false'></formulario>
+                        <formulario
+                            :model='form'
+                            :formulario_id='form.formulario && form.formulario.id'
+                            v-show="mostrarFormularioDinamico"
+                            v-if='form.formulario && mostrarFormularioDinamico'
+                            :mostra_titulo='false'></formulario>
                     </div>
 
                     <div class="tab-pane fade" :class="{ 'show active': nav === 'encaminhados' }" id="nav-encaminhados" role="tabpanel"
@@ -162,6 +201,7 @@
                             <tr class="bg-default">
                                 <th>CÓD</th>
                                 <th>Tipo de exame</th>
+                                <th>Exames</th>
                                 <th>Clinica</th>
                                 <th>PCSMO</th>
                                 <th>Encaminhado Por</th>
@@ -173,6 +213,10 @@
                             <tr style="background: white !important; border-bottom: none">
                                 <td>{{ item.id }}</td>
                                 <td>{{ item.tipo_exame }}</td>
+                                <td>
+                                    <span v-if="item.exames_catalogo_labels">{{ item.exames_catalogo_labels }}</span>
+                                    <span v-else class="text-muted">—</span>
+                                </td>
                                 <td>{{ item.empresa_exame.nome }}</td>
                                 <td>{{ item.pcmso_label }}</td>
                                 <td>{{ item.quem_encaminhou.nome }}</td>
@@ -564,12 +608,6 @@
 
                     <template v-if="abasesmt.form.exame_realizado">
                         <div class="col-12 col-md-6">
-                            
-                            
-                            
-                            
-                            
-
                             <datepicker
                                 label="DATA DO EXAME"
                                 :disabled="visualizar"
@@ -577,6 +615,11 @@
                             ></datepicker>
                         </div>
 
+                        <div class="col-12" v-if="abasesmt.usarFormularioDinamico && abasesmt.formModel.formulario">
+                            <formulario :model="abasesmt.formModel" :mostra_titulo="false"></formulario>
+                        </div>
+
+                        <template v-else>
                         <div class="col-12 col-md-6">
                             <div class="form-group">
                                 <label for="">RESULTADO DO EXAME</label>
@@ -672,6 +715,7 @@
                                 </textarea>
                             </div>
                         </div>
+                        </template>
 
                         <div class="col-12">
                             <fieldset>
@@ -931,6 +975,11 @@ export default defineComponent({
             abasesmt: {
                 tituloJanela: 'Resultado',
                 preload: false,
+                usarFormularioDinamico: false,
+                formModel: {
+                    formulario: null,
+                    respostas: {}
+                },
                 form: {
                     id: 0,
                     exame_funcionario_id: '',
@@ -945,6 +994,9 @@ export default defineComponent({
                         espacao_confinado: null,
                         observacoes: ''
                     },
+                    respostas_resultado: {},
+                    formulario_resultado: null,
+                    resultado_formato: 'legado',
                     tipo: '',
                     anexos: [],
                     anexosDel: [],
@@ -963,6 +1015,7 @@ export default defineComponent({
                 envia_whatsapp: false,
                 pcmso_id: '',
                 exame_tipo_id: '',
+                exame_ids: [],
                 encaminhamento_data: '',
                 encaminhado_exame_data: ''
             },
@@ -982,6 +1035,8 @@ export default defineComponent({
             historico: [],
             listaPcmsos: [],
             listaExameTipos: [],
+            listaExamesCatalogo: [],
+            carregandoExamesCatalogo: false,
             previewWhatsappAberto: false,
             previewWhatsappTipo: 'exame_encaminhamento',
             previewWhatsappContexto: {},
@@ -1042,6 +1097,21 @@ export default defineComponent({
         },
         filtroStatusDemitidoOuAdmitido() {
             return ['admitidos', 'demitidos'].includes(this.controle.dados.status)
+        },
+        mostrarFormularioDinamico() {
+            const semPcmso = !this.form.pcmso_id || this.form.pcmso_id.length === 0
+            const temCampos = !!(this.form.formulario && this.form.formulario.setores && this.form.formulario.setores.length)
+            return semPcmso && temCampos
+        }
+    },
+    watch: {
+        'form.exame_tipo_id'(val) {
+            this.form.exame_ids = []
+            this.listaExamesCatalogo = []
+            if (val) {
+                this.carregaFormularioPorTipo(val)
+                this.carregaExamesCatalogo(val)
+            }
         }
     },
     methods: {
@@ -1066,10 +1136,60 @@ export default defineComponent({
         },
         async carregaFormulario() {
             try {
+                if (this.form.exame_tipo_id) {
+                    await this.carregaFormularioPorTipo(this.form.exame_tipo_id)
+                    return
+                }
                 const response = await axios.get(`${URL_ADMIN}/formulario/buscaFormulario/${this.tipo}`)
-                this.form.formulario = response.data
-                this.formulario_id = response.data.id
+                this.aplicarFormularioPayload(response.data)
             } catch (e) {}
+        },
+        async carregaFormularioPorTipo(exameTipoId) {
+            try {
+                const response = await axios.get(`${URL_ADMIN}/cadastro/formularios-exame/por-tipo/${exameTipoId}`, {
+                    params: { contexto: 'encaminhamento' }
+                })
+                this.aplicarFormularioPayload(response.data)
+            } catch (e) {
+                // fallback legado
+                try {
+                    const response = await axios.get(`${URL_ADMIN}/formulario/buscaFormulario/${this.tipo}`)
+                    this.aplicarFormularioPayload(response.data)
+                } catch (err) {}
+            }
+        },
+        async carregaExamesCatalogo(exameTipoId) {
+            if (!exameTipoId) {
+                this.listaExamesCatalogo = []
+                return
+            }
+            this.carregandoExamesCatalogo = true
+            try {
+                const { data } = await axios.get(`${URL_ADMIN}/cadastro/exame-catalogo/ativos`, {
+                    params: { exame_tipo_id: exameTipoId }
+                })
+                this.listaExamesCatalogo = Array.isArray(data) ? data : []
+            } catch (e) {
+                this.listaExamesCatalogo = []
+            } finally {
+                this.carregandoExamesCatalogo = false
+            }
+        },
+        aplicarFormularioPayload(data) {
+            if (!data) return
+            // Normaliza Setores (API legado) → setores (FormularioDefault)
+            if (!data.setores && data.Setores) {
+                data.setores = (data.Setores || []).map((s) => ({
+                    ...s,
+                    alternativas: (s.Alternativas || s.alternativas || []).map((a) => ({
+                        ...a,
+                        opcoes: a.Opcoes || a.opcoes || [],
+                        pivot: a.pivot || { obrigatorio: false }
+                    }))
+                }))
+            }
+            this.form.formulario = data
+            this.formulario_id = data.id
         },
         async initForm() {
             await this.carregaFormulario()
@@ -1148,6 +1268,7 @@ export default defineComponent({
                         envia_whatsapp: this.form.envia_whatsapp,
                         pcmso_id: this.form.pcmso_id,
                         exame_tipo_id: this.form.exame_tipo_id,
+                        exame_ids: this.form.exame_ids || [],
                         encaminhamento_data: this.form.encaminhado_exame_data
                     })
                     mostraSucesso('', 'Exame cadastrado com sucesso!')
@@ -1169,15 +1290,46 @@ export default defineComponent({
         },
         async formResultado(id) {
             this.abasesmt.form = _.cloneDeep(this.abasesmt.formDefault)
+            this.abasesmt.usarFormularioDinamico = false
+            this.abasesmt.formModel = { formulario: null, respostas: {} }
             this.abasesmt.tituloJanela = `Resultado do exame de ${this.dados.nome}`
             this.abasesmt.preload = true
             try {
                 const response = await axios.get(`${URL_ADMIN}/${API_PATHS.resultado}/${id}`)
                 const data = response.data
-                this.abasesmt.form.cadastrando = false
-                this.abasesmt.form = data !== '' ? data : _.cloneDeep(this.abasesmt.formDefault)
-                this.abasesmt.form.exame_funcionario_id = id
-                this.abasesmt.form.anexosDel = []
+                if (data && typeof data === 'object') {
+                    this.abasesmt.form = Object.assign(_.cloneDeep(this.abasesmt.formDefault), data)
+                    this.abasesmt.form.exame_funcionario_id = id
+                    this.abasesmt.form.anexosDel = this.abasesmt.form.anexosDel || []
+                    this.abasesmt.form.anexos = this.abasesmt.form.anexos || []
+                    if (!this.abasesmt.form.resultado) {
+                        this.abasesmt.form.resultado = _.cloneDeep(this.abasesmt.formDefault.resultado)
+                    }
+                    const formRes = data.formulario_resultado
+                    const temSetores = formRes && formRes.setores && formRes.setores.length
+                    this.abasesmt.usarFormularioDinamico = !!(temSetores && data.resultado_formato === 'dinamico')
+                        || !!(temSetores && (!data.resultado || data.resultado_formato !== 'legado' || data.cadastrando))
+                    // Preferir dinâmico quando há formulário configurado e não há resultado legado puro
+                    if (temSetores && data.resultado_formato !== 'legado') {
+                        this.abasesmt.usarFormularioDinamico = true
+                    }
+                    if (temSetores && !data.id) {
+                        this.abasesmt.usarFormularioDinamico = true
+                    }
+                    // Se formato legado com dados antigos, manter UI legada
+                    if (data.resultado_formato === 'legado' && data.id) {
+                        this.abasesmt.usarFormularioDinamico = false
+                    }
+                    if (this.abasesmt.usarFormularioDinamico) {
+                        this.abasesmt.formModel = {
+                            formulario: formRes,
+                            respostas: data.respostas_resultado || {}
+                        }
+                    }
+                } else {
+                    this.abasesmt.form = _.cloneDeep(this.abasesmt.formDefault)
+                    this.abasesmt.form.exame_funcionario_id = id
+                }
             } catch (e) {}
             finally {
                 this.abasesmt.preload = false
@@ -1192,6 +1344,7 @@ export default defineComponent({
                 this.abasesmt.form.exame_funcionario_id = exame_funcionario_id
                 this.abasesmt.form.exame_realizado = false
                 this.abasesmt.form.id = id
+                this.abasesmt.usarFormularioDinamico = false
             }
         },
         async salvarResultado() {
@@ -1204,15 +1357,19 @@ export default defineComponent({
             await this.$nextTick()
             this.abasesmt.preload = true
             const URL = `${URL_ADMIN}/${API_PATHS.salvaResultado}`
+            const payload = _.cloneDeep(this.abasesmt.form)
+            if (this.abasesmt.usarFormularioDinamico) {
+                payload.respostas_resultado = this.abasesmt.formModel.respostas || {}
+            }
             try {
-                if (this.abasesmt.form.id === 0) {
-                    await axios.post(URL, this.abasesmt.form)
+                if (!payload.id || payload.id === 0) {
+                    await axios.post(URL, payload)
                     mostraSucesso('', 'Exame cadastrado com sucesso!')
                     this.fecharModal(REFS_MODAL.MODAL_VALIDA_SESMT)
                     await this.carregaFormularioResposta()
                     this.$refs?.componente?.buscar?.()
                 } else {
-                    await axios.put(`${URL}/${this.abasesmt.form.id}`, this.abasesmt.form)
+                    await axios.put(`${URL}/${payload.id}`, payload)
                     mostraSucesso('', 'Exame atualizado com sucesso!')
                     this.fecharModal(REFS_MODAL.MODAL_VALIDA_SESMT)
                     await this.carregaFormularioResposta()

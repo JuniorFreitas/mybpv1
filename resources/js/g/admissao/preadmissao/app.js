@@ -66,6 +66,7 @@ const app = createApp({
                 empresa_exame_id: '',
                 encaminhado_exame_data: '',
                 pcmso_id: '',
+                exame_ids: [],
                 envia_email: true,
                 envia_whatsapp: true
             },
@@ -74,6 +75,7 @@ const app = createApp({
                 empresa_exame_id: '',
                 encaminhado_exame_data: '',
                 pcmso_id: '',
+                exame_ids: [],
                 envia_email: true,
                 envia_whatsapp: true
             },
@@ -81,6 +83,8 @@ const app = createApp({
             lista: [],
             listaPcmsos: [],
             listaEmpresasExames: [],
+            listaExamesCatalogo: [],
+            carregandoExamesCatalogo: false,
             dadosFinalizar: [],
             vagas: [],
             areasEtiquetas: [],
@@ -228,10 +232,26 @@ const app = createApp({
                     this.listaEmpresasExames = data.empresas_exames
                     this.tituloJanelaFinalizar = `Finalizar Pré-admissão - ${this.dadosFinalizar.curriculo.nome}`
                     this.preloadFinalizar = false
+                    this.carregaExamesCatalogoPreadmissao()
                 })
                 .catch((error) => {
                     this.preloadFinalizar = false
                 })
+        },
+
+        async carregaExamesCatalogoPreadmissao() {
+            this.carregandoExamesCatalogo = true
+            try {
+                // Pré-admissão usa tipo Admissional (id 1 no fluxo legado)
+                const { data } = await axios.get(`${URL_ADMIN}/cadastro/exame-catalogo/ativos`, {
+                    params: { exame_tipo_id: 1 }
+                })
+                this.listaExamesCatalogo = Array.isArray(data) ? data : []
+            } catch (e) {
+                this.listaExamesCatalogo = []
+            } finally {
+                this.carregandoExamesCatalogo = false
+            }
         },
 
         formEnviarEmail(id) {

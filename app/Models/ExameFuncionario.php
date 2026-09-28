@@ -87,6 +87,7 @@ class ExameFuncionario extends Model
         "pcmso",
         "pcmso_id",
         "exame_tipo_id",
+        "exames_catalogo",
         "encaminhamento_data",
     ];
 
@@ -104,6 +105,7 @@ class ExameFuncionario extends Model
         "pcmso" => 'boolean',
         "pcmso_id" => 'int',
         "exame_tipo_id" => 'int',
+        "exames_catalogo" => 'array',
         'encaminhamento_data' => 'date:d/m/Y',
     ];
 

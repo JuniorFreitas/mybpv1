@@ -22,6 +22,21 @@
         </span>
     </h5>
 
+    @php
+        $examesCatalogo = collect($ExameFuncionario->exames_catalogo ?? []);
+    @endphp
+    @if($examesCatalogo->isNotEmpty())
+        <div class="h5" style="margin-top: 0.4cm;">
+            <strong>Exames solicitados:</strong>
+            <div style='width: 100%; padding: 0.3cm 0 0 0.3cm; border: 1px solid #555555; line-height: 0.45cm; margin-top: 0.2cm;'>
+                @foreach($examesCatalogo as $exameItem)
+                    (X) {{ is_array($exameItem) ? ($exameItem['label'] ?? '') : ($exameItem->label ?? '') }}
+                    <br>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     @if(!$ExameFuncionario->pcmso)
         <div class="h5">
             @foreach($ExameFuncionario->Formulario->Setores as $setor)

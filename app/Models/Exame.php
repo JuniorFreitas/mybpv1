@@ -5,6 +5,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use App\Models\Concerns\HasActivitylogOptions;
 use Spatie\Activitylog\Models\Activity;
 
+use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -34,7 +35,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Exame extends Model
 {
-    use LogsActivity, HasActivitylogOptions, HasFactory;
+    use LogsActivity, HasActivitylogOptions, HasFactory, TenantTrait;
 
     protected static $logName = 'Exame';
 
@@ -48,19 +49,25 @@ class Exame extends Model
         $activity->descricao = '';
     }
 
+    protected $table = 'exames';
+
     protected $fillable = [
         'empresa_id',
         'exame_tipo_id',
         'label',
-        'ativo'
+        'ativo',
     ];
+
     protected $casts = [
         'id' => 'int',
         'empresa_id' => 'int',
         'exame_tipo_id' => 'int',
         'label' => 'string',
-        'ativo' => 'boolean'
+        'ativo' => 'boolean',
     ];
 
-
+    public function Tipo()
+    {
+        return $this->belongsTo(ExameTipo::class, 'exame_tipo_id');
+    }
 }

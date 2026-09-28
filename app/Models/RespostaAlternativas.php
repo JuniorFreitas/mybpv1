@@ -52,13 +52,17 @@ class RespostaAlternativas extends Model
         'alternativa_id',
         'label',
         'selecionado',
-        'value'
+        'value',
+        'ordem',
     ];
 
     protected $casts = [
         'alternativa_id' => 'int',
         'label' => 'string',
         'selecionado' => 'boolean',
-        'value' => 'int'
+        'value' => 'int',
+        'ordem' => 'int',
     ];
+
+    public $timestamps = false;
 }

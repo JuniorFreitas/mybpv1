@@ -226,7 +226,7 @@
                 @endcan
                 @can('cadastro_empresa_exame')
                     <li>
-                        <a href="{{route('g.empresaexame.empresa-exame.index')}}" parent="cadastro" key="empresaexame">
+                        <a href="{{route('g.exames_admin.index')}}" parent="cadastro" key="exames_admin">
                             Exames
                         </a>
                     </li>
