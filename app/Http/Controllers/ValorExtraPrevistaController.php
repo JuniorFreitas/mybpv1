@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Jobs\Movimentacao\ValorExtraPrevista\JobNotificacaoRecursiva;
 use App\Jobs\Movimentacao\ValorExtraPrevista\JobValorExtraPrevistaExportaExcel;
 use App\Models\Arquivo;
+use App\Models\CentroCusto;
 use App\Models\LogHistorico;
 use App\Models\ValorExtraPrevista;
+use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
+use App\Services\ValorExtraPrevista\ValorExtraPrevistaEditPayloadMapper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use MasterTag\DataHora;
@@ -81,20 +84,24 @@ class ValorExtraPrevistaController extends Controller
      */
     public function edit(ValorExtraPrevista $valorExtraPrevista)
     {
-        $valorExtraPrevista->autocomplete_label_colaborador = $valorExtraPrevista->Colaborador ? $valorExtraPrevista->Colaborador->nome : '';
-        $valorExtraPrevista->autocomplete_label_colaborador_anterior = $valorExtraPrevista->Colaborador ? $valorExtraPrevista->Colaborador->nome : '';
+        $mapper = new ValorExtraPrevistaEditPayloadMapper();
 
-        $valorExtraPrevista->autocomplete_label_gestor_modal = $valorExtraPrevista->GestorAprovacao ? $valorExtraPrevista->GestorAprovacao->nome : '';
-        $valorExtraPrevista->autocomplete_label_gestor_modal_anterior = $valorExtraPrevista->GestorAprovacao ? $valorExtraPrevista->GestorAprovacao->nome : '';
-        $valorExtraPrevista->anexosDel = [];
-        $valorExtraPrevista->user_aprovacao = $valorExtraPrevista->UserAprovacao ? $valorExtraPrevista->UserAprovacao->nome : '';
-        $valorExtraPrevista->rh_aprovacao = $valorExtraPrevista->RhAprovacao ? $valorExtraPrevista->RhAprovacao->nome : '';
-        $valorExtraPrevista->aprovacao_extra_nome = $valorExtraPrevista->AprovacaoExtra ? $valorExtraPrevista->AprovacaoExtra->nome : '';
-        $valorExtraPrevista->status_aprovacao = $valorExtraPrevista->status_aprovacao ?: '';
-        $valorExtraPrevista->status_aprovacao_extra = $valorExtraPrevista->status_aprovacao_extra ?: '';
-        $valorExtraPrevista->status_aprovacao_rh = $valorExtraPrevista->status_aprovacao_rh ?: '';
-        $valorExtraPrevista->load('Anexos');
-        return $valorExtraPrevista;
+        $item = ValorExtraPrevista::query()
+            ->select(ValorExtraPrevistaEditPayloadMapper::VALOR_EXTRA_COLUMNS)
+            ->with([
+                'Colaborador:' . implode(',', ValorExtraPrevistaEditPayloadMapper::USER_COLUMNS),
+                'GestorAprovacao:' . implode(',', ValorExtraPrevistaEditPayloadMapper::USER_COLUMNS),
+                'UserAprovacao:' . implode(',', ValorExtraPrevistaEditPayloadMapper::USER_COLUMNS),
+                'RhAprovacao:' . implode(',', ValorExtraPrevistaEditPayloadMapper::USER_COLUMNS),
+                'AprovacaoExtra:' . implode(',', ValorExtraPrevistaEditPayloadMapper::USER_COLUMNS),
+                'Anexos' => function ($query) {
+                    $query->select(ValorExtraPrevistaEditPayloadMapper::ANEXO_COLUMNS);
+                },
+            ])
+            ->whereKey($valorExtraPrevista->id)
+            ->firstOrFail();
+
+        return response()->json($mapper->map($item));
     }
 
     /**
@@ -255,6 +262,16 @@ class ValorExtraPrevistaController extends Controller
     {
 
         $resultado = $this->filtro($request)->paginate($request->pages);
+        $empresaMatriz = auth()->user()->Empresa;
+        $itens = collect($resultado->items())->map(function ($item) use ($empresaMatriz) {
+            $item->lotacao = LotacaoLabelResolver::forCentroCustoFilialFlags(
+                $item->filial,
+                $item->CentroCustoFilial,
+                $empresaMatriz
+            );
+
+            return $item;
+        })->values();
 
         // Busca configuração de aprovação extra ativa
         $config = \App\Models\AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'valor_extra');
@@ -271,13 +288,14 @@ class ValorExtraPrevistaController extends Controller
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'itens' => $resultado->items(),
+                'itens' => $itens,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
                 'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
                 'pode_aprovar_extra' => $podeAprovarExtra,
                 'tem_aprovacao_extra' => $config ? true : false,
                 'nome_aprovacao_extra' => $nomeAprovacaoExtra,
-                'mimes' => Arquivo::MIMEAPENASIMAGENSPDF
+                'mimes' => Arquivo::MIMEAPENASIMAGENSPDF,
+                'cc' => (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id),
             ]
         ]);
     }
@@ -285,18 +303,41 @@ class ValorExtraPrevistaController extends Controller
     public function filtro(Request $request)
     {
         $user = auth()->user();
-        $resultado = ValorExtraPrevista::with(
-            'CentroCusto',
-            'UserCadastrou:id,nome',
-            'Colaborador:id,nome,login,tipo,ativo',
-            'Colaborador.FeedBack:id,curriculo_id,vagas_abertas_id,vaga_id',
-            'Colaborador.FeedBack.Admissao:id,feedback_id,data_admissao',
-            'Colaborador.FeedBack.VagaSelecionada',
-            'GestorAprovacao:id,nome',
-            'UserAprovacao:id,nome',
-            'RhAprovacao:id,nome',
-            'AprovacaoExtra:id,nome'
-        )->where('empresa_id', $user->empresa_id);
+        $resultado = ValorExtraPrevista::query()
+            ->select([
+                'id',
+                'colaborador_id',
+                'centro_custo_id',
+                'filial',
+                'centro_custo_filial_id',
+                'tipo',
+                'periodo_dias',
+                'status_aprovacao',
+                'status_aprovacao_rh',
+                'status_aprovacao_extra',
+                'data_aprovacao',
+                'data_aprovacao_rh',
+                'data_aprovacao_extra',
+                'user_id',
+                'user_aprovacao_id',
+                'aprovacao_extra_id',
+                'rh_aprovacao_id',
+                'aprovado_via_script',
+                'created_at',
+                'updated_at',
+                'empresa_id',
+            ])
+            ->with([
+                'CentroCusto:id,label',
+                'CentroCustoFilial:id,cliente_filial_id',
+                'CentroCustoFilial.Filial:id,dados',
+                'Colaborador:id,nome',
+                'UserCadastrou:id,nome',
+                'UserAprovacao:id,nome',
+                'UserAprovacaoExtra:id,nome',
+                'RhAprovacao:id,nome',
+            ])
+            ->where('empresa_id', $user->empresa_id);
 
         $filterApplier = new \App\Services\ValorExtraPrevista\ValorExtraPrevistaFilterApplier($request->all(), $user);
         $filterApplier->apply($resultado);

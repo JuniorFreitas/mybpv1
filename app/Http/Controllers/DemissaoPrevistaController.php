@@ -7,8 +7,13 @@ use App\Jobs\Movimentacao\DemissaoPrevista\JobNotificacaoRecursiva;
 use App\Jobs\AssinaturaDigital\JobProcessarEnvioAssinatura;
 use App\Models\AprovacaoExtraConfig;
 use App\Models\Arquivo;
+use App\Models\CentroCusto;
 use App\Models\DemissaoPrevista;
+use App\Models\Cliente;
 use App\Models\DocumentoParaAssinatura;
+use App\Services\DemissaoPrevista\DemissaoPrevistaEditPayloadMapper;
+use App\Services\DemissaoPrevista\DemissaoPrevistaFilterApplier;
+use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -84,24 +89,24 @@ class DemissaoPrevistaController extends Controller
      */
     public function edit(DemissaoPrevista $demissaoPrevista)
     {
-        $demissaoPrevista->autocomplete_label_colaborador = $demissaoPrevista->Colaborador ? $demissaoPrevista->Colaborador->nome : '';
-        $demissaoPrevista->autocomplete_label_colaborador_anterior = $demissaoPrevista->Colaborador ? $demissaoPrevista->Colaborador->nome : '';
+        $mapper = new DemissaoPrevistaEditPayloadMapper();
 
-        $demissaoPrevista->autocomplete_label_gestor_modal = $demissaoPrevista->GestorAprovacao ? $demissaoPrevista->GestorAprovacao->nome : '';
-        $demissaoPrevista->autocomplete_label_gestor_modal_anterior = $demissaoPrevista->GestorAprovacao ? $demissaoPrevista->GestorAprovacao->nome : '';
-        $demissaoPrevista->anexosDel = [];
-        $demissaoPrevista->user_aprovacao = $demissaoPrevista->UserAprovacao ? $demissaoPrevista->UserAprovacao->nome : '';
-        $demissaoPrevista->rh_aprovacao = $demissaoPrevista->RhAprovacao ? $demissaoPrevista->RhAprovacao->nome : '';
-        $demissaoPrevista->aprovacao_extra = $demissaoPrevista->AprovacaoExtra ? [
-            'nome' => $demissaoPrevista->AprovacaoExtra->nome,
-            'id' => $demissaoPrevista->AprovacaoExtra->id
-        ] : null;
-        $demissaoPrevista->aprovacao_extra_nome = $demissaoPrevista->AprovacaoExtra ? $demissaoPrevista->AprovacaoExtra->nome : null;
-        $demissaoPrevista->status_aprovacao = $demissaoPrevista->status_aprovacao ?: '';
-        $demissaoPrevista->status_aprovacao_rh = $demissaoPrevista->status_aprovacao_rh ?: '';
-        $demissaoPrevista->load('Anexos');
+        $item = DemissaoPrevista::query()
+            ->select(DemissaoPrevistaEditPayloadMapper::DEMISSAO_COLUMNS)
+            ->with([
+                'Colaborador:' . implode(',', DemissaoPrevistaEditPayloadMapper::USER_COLUMNS),
+                'GestorAprovacao:' . implode(',', DemissaoPrevistaEditPayloadMapper::USER_COLUMNS),
+                'UserAprovacao:' . implode(',', DemissaoPrevistaEditPayloadMapper::USER_COLUMNS),
+                'RhAprovacao:' . implode(',', DemissaoPrevistaEditPayloadMapper::USER_COLUMNS),
+                'AprovacaoExtra:' . implode(',', DemissaoPrevistaEditPayloadMapper::USER_COLUMNS),
+                'Anexos' => function ($query) {
+                    $query->select(DemissaoPrevistaEditPayloadMapper::ANEXO_COLUMNS);
+                },
+            ])
+            ->whereKey($demissaoPrevista->id)
+            ->firstOrFail();
 
-        return $demissaoPrevista;
+        return response()->json($mapper->map($item));
     }
 
     /**
@@ -192,8 +197,26 @@ class DemissaoPrevistaController extends Controller
             }
         }
 
-        $itens = $itens->map(function ($item) use ($docsByDemissaoId) {
+        $empresaId = (int) auth()->user()->empresa_id;
+        $empresa = Cliente::query()
+            ->select(['id', 'nome_fantasia', 'razao_social', 'cnpj'])
+            ->find($empresaId);
+
+        $filialMap = LotacaoLabelResolver::filiaisByCentroCustoFilialIds(
+            $itens->pluck('centro_custo_filial_id')->all()
+        );
+
+        $itens = $itens->map(function ($item) use ($docsByDemissaoId, $empresa, $filialMap) {
             $item->documento_para_assinatura = $docsByDemissaoId[$item->id] ?? null;
+
+            $ccfId = (int) ($item->centro_custo_filial_id ?? 0);
+            $ehFilial = filter_var($item->filial ?? false, FILTER_VALIDATE_BOOLEAN);
+            $item->lotacao = LotacaoLabelResolver::resolve(
+                $ehFilial,
+                $filialMap[$ccfId] ?? null,
+                $empresa
+            );
+
             return $item;
         })->values();
 
@@ -218,7 +241,8 @@ class DemissaoPrevistaController extends Controller
                 'pode_aprovar_extra' => $podeAprovarExtra,
                 'tem_aprovacao_extra' => $config ? true : false,
                 'nome_aprovacao_extra' => $nomeAprovacaoExtra,
-                'mimes' => Arquivo::MIMEAPENASIMAGENSPDF
+                'mimes' => Arquivo::MIMEAPENASIMAGENSPDF,
+                'cc' => (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id),
             ]
         ]);
     }
@@ -229,7 +253,6 @@ class DemissaoPrevistaController extends Controller
             ->select(
                 'dp.id',
                 'us.nome as solicitante_nome',
-                'dp.empresa_id',
                 'dp.colaborador_id',
                 DB::raw('COALESCE(c.nome, u.nome) as colaborador_nome'),
                 'c.email as colaborador_email',
@@ -238,30 +261,21 @@ class DemissaoPrevistaController extends Controller
                 'cc.label as centro_custo',
                 'dp.filial',
                 'dp.centro_custo_filial_id',
-                'dp.data_aprovacao',
-                'dp.data_aprovacao_rh',
-                'dp.data_aprovacao_extra',
-                DB::raw("DATE_FORMAT(d.data_desmobilizacao, '%d/%m/%Y') as data_desmobilizacao"),
-                DB::raw("DATE_FORMAT(a.data_admissao, '%d/%m/%Y') as data_admissao"),
                 DB::raw("DATE_FORMAT(dp.data_demissao, '%d/%m/%Y') as data_demissao"),
                 DB::raw("DATE_FORMAT(dp.created_at, '%d/%m/%Y às %H:%i:%s') as data_solicitacao"),
+                DB::raw("DATE_FORMAT(dp.updated_at, '%d/%m/%Y às %H:%i:%s') as updated_at"),
                 DB::raw("DATE_FORMAT(dp.data_aprovacao_rh, '%d/%m/%Y às %H:%i:%s') as data_aprovacao_rh"),
                 DB::raw("DATE_FORMAT(dp.data_aprovacao, '%d/%m/%Y às %H:%i:%s') as data_aprovacao"),
                 DB::raw("DATE_FORMAT(dp.data_aprovacao_extra, '%d/%m/%Y às %H:%i:%s') as data_aprovacao_extra"),
                 'a.cargo',
                 'dp.tipo_aviso',
                 'dp.aprovado_via_script',
-                'dp.status',
                 'dp.status_aprovacao',
                 'dp.status_aprovacao_rh',
                 'dp.status_aprovacao_extra',
-                'ugestor.nome as gestor_nome',
                 'usa.nome as user_aprovacao_nome',
                 'urh.nome as rh_aprovacao_nome',
-                'uextra.nome as aprovacao_extra_nome',
-                'dp.created_at',
-                'dp.obs',
-                'dp.obs_rh'
+                'uextra.nome as aprovacao_extra_nome'
             )
             ->leftJoin('users as u', 'dp.colaborador_id', '=', 'u.id')
             ->leftJoin('users as us', 'dp.user_id', '=', 'us.id')
@@ -277,15 +291,9 @@ class DemissaoPrevistaController extends Controller
                     ->whereRaw('a.id = (SELECT MAX(id) FROM admissoes WHERE feedback_id = fc.id AND admissoes.deleted_at IS NULL)');
             })
             ->leftjoin('centro_custos as cc', 'dp.centro_custo_id', '=', 'cc.id')
-            ->leftjoin('centro_custo_filials as ccf', 'dp.centro_custo_filial_id', '=', 'ccf.id')
-            ->leftjoin('users as ugestor', 'ugestor.id', '=', 'dp.gestor_id')
             ->leftjoin('users as urh', 'urh.id', '=', 'dp.rh_aprovacao_id')
             ->leftjoin('users as usa', 'dp.user_aprovacao_id', '=', 'usa.id')
             ->leftjoin('users as uextra', 'dp.aprovacao_extra_id', '=', 'uextra.id')
-            ->leftjoin('demissaos as d', function ($join) {
-                $join->on('fc.id', '=', 'd.feedback_id')
-                    ->whereRaw('d.id = (SELECT MAX(id) FROM demissaos WHERE feedback_id = fc.id)');
-            })
             ->where('dp.empresa_id', '=', auth()->user()->empresa_id)
             ->whereNull('dp.deleted_at');
 
@@ -333,6 +341,16 @@ class DemissaoPrevistaController extends Controller
             });
         }
 
+        if ($request->filled('campoCPF')) {
+            $cpfDigits = preg_replace('/\D/', '', (string) $request->campoCPF);
+            if ($cpfDigits !== '') {
+                $resultado->where(function ($r) use ($cpfDigits) {
+                    $r->where('c.cpf', 'like', '%' . $cpfDigits . '%')
+                        ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(c.cpf,''), '.', ''), '-', ''), '/', ''), ' ', '') LIKE ?", ['%' . $cpfDigits . '%']);
+                });
+            }
+        }
+
         if ($request->filled('campoStatusAprovacao')) {
             $resultado->when($request->campoStatusAprovacao == 'aberto', function ($query) {
                 return $query->whereNull('dp.status_aprovacao');
@@ -357,6 +375,14 @@ class DemissaoPrevistaController extends Controller
                     });
                 });
         }
+
+        DemissaoPrevistaFilterApplier::applyCnpjCentroCusto(
+            $resultado,
+            $request->input('campoCnpj'),
+            $request->input('campoCentroCusto'),
+            'dp',
+            auth()->user()->empresa_id
+        );
 
         if (!auth()->user()->temPrivilegioGestaoRh()) {
             $resultado->where(function ($query) {

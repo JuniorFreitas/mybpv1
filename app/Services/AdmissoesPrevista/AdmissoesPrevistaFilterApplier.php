@@ -4,6 +4,7 @@ namespace App\Services\AdmissoesPrevista;
 
 use App\Models\AdmissoesPrevista;
 use App\Models\User;
+use App\Services\DemissaoPrevista\DemissaoPrevistaFilterApplier;
 use Illuminate\Database\Eloquent\Builder;
 use MasterTag\DataHora;
 
@@ -26,8 +27,16 @@ class AdmissoesPrevistaFilterApplier
         $this->applyToken($query);
         $this->applyPeriodo($query);
         $this->applyCampoBusca($query);
+        $this->applyCampoCpf($query);
         $this->applyCampoStatusAprovacao($query);
         $this->applyTipoContrato($query);
+        DemissaoPrevistaFilterApplier::applyCnpjCentroCusto(
+            $query,
+            $this->filtros['campoCnpj'] ?? null,
+            $this->filtros['campoCentroCusto'] ?? null,
+            'admissoes_previstas',
+            $this->user->empresa_id
+        );
         $this->applyPermissoes($query);
         $this->applyOrdenacao($query);
     }
@@ -85,9 +94,32 @@ class AdmissoesPrevistaFilterApplier
         }
         $busca = $this->filtros['campoBusca'];
         $query->where(function ($q) use ($busca) {
-            $q->whereHas('Cargo', function ($c) use ($busca) {
-                $c->where('nome', 'like', '%' . $busca . '%')->orWhere('id', $busca);
-            })->orWhere('id', $busca);
+            $q->where('admissoes_previstas.nome_pessoa', 'like', '%' . $busca . '%')
+                ->orWhere('admissoes_previstas.id', $busca)
+                ->orWhereHas('Colaborador', function ($c) use ($busca) {
+                    $c->where('nome', 'like', '%' . $busca . '%')
+                        ->orWhere('id', $busca);
+                });
+        });
+    }
+
+    private function applyCampoCpf(Builder $query): void
+    {
+        if (empty($this->filtros['campoCPF'] ?? '')) {
+            return;
+        }
+        $cpfDigits = preg_replace('/\D/', '', (string) $this->filtros['campoCPF']);
+        if ($cpfDigits === '') {
+            return;
+        }
+        $query->whereHas('Colaborador', function ($colaborador) use ($cpfDigits) {
+            $colaborador->whereHas('Curriculo', function ($curriculo) use ($cpfDigits) {
+                $curriculo->where('cpf', 'like', '%' . $cpfDigits . '%')
+                    ->orWhereRaw(
+                        "REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(cpf,''), '.', ''), '-', ''), '/', ''), ' ', '') LIKE ?",
+                        ['%' . $cpfDigits . '%']
+                    );
+            });
         });
     }
 
@@ -98,21 +130,31 @@ class AdmissoesPrevistaFilterApplier
         }
         $status = $this->filtros['campoStatusAprovacao'];
         if ($status === 'aberto') {
-            $query->whereNull('status_aprovacao');
+            $query->whereNull('admissoes_previstas.status_aprovacao');
             return;
         }
         if ($status === 'aprovado_gestor') {
-            $query->where('status_aprovacao', AdmissoesPrevista::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
+            $query->where('admissoes_previstas.status_aprovacao', AdmissoesPrevista::STATUS_APROVADO)
+                ->whereNull('admissoes_previstas.status_aprovacao_extra')
+                ->whereNull('admissoes_previstas.status_aprovacao_rh');
+            return;
+        }
+        if ($status === 'aprovado_extra') {
+            $query->where('admissoes_previstas.status_aprovacao_extra', AdmissoesPrevista::STATUS_APROVADO)
+                ->whereNull('admissoes_previstas.status_aprovacao_rh');
             return;
         }
         if ($status === 'aprovado_rh') {
-            $query->where('status_aprovacao_rh', AdmissoesPrevista::STATUS_APROVADO);
+            $query->where('admissoes_previstas.status_aprovacao_rh', AdmissoesPrevista::STATUS_APROVADO);
             return;
         }
-        $query->where(function ($q) {
-            $q->where('status_aprovacao', AdmissoesPrevista::STATUS_REPROVADO)
-                ->orWhere('status_aprovacao_rh', AdmissoesPrevista::STATUS_REPROVADO);
-        });
+        if ($status === 'reprovado') {
+            $query->where(function ($q) {
+                $q->where('admissoes_previstas.status_aprovacao', AdmissoesPrevista::STATUS_REPROVADO)
+                    ->orWhere('admissoes_previstas.status_aprovacao_extra', AdmissoesPrevista::STATUS_REPROVADO)
+                    ->orWhere('admissoes_previstas.status_aprovacao_rh', AdmissoesPrevista::STATUS_REPROVADO);
+            });
+        }
     }
 
     private function applyTipoContrato(Builder $query): void

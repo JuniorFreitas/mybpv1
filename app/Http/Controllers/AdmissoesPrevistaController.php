@@ -8,6 +8,10 @@ use App\Models\Admissao;
 use App\Models\AdmissoesPrevista;
 use App\Models\AprovacaoExtraConfig;
 use App\Models\Arquivo;
+use App\Models\CentroCusto;
+use App\Services\AdmissoesPrevista\AdmissoesPrevistaEditPayloadMapper;
+use App\Services\AdmissoesPrevista\AdmissoesPrevistaFilterApplier;
+use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use MasterTag\DataHora;
@@ -76,32 +80,24 @@ class AdmissoesPrevistaController extends Controller
      */
     public function edit(AdmissoesPrevista $admissoesPrevista)
     {
-        // Normaliza tipo_contrato para o mesmo padrão do processo de admissão (tipo_admissao)
-        $tipo = $admissoesPrevista->tipo_contrato;
-        if ($tipo !== null && $tipo !== '') {
-            $map = ['Fixo' => Admissao::TIPO_ADMISSAO_FIXO, 'Intermitente' => Admissao::TIPO_ADMISSAO_INTERMITENTE, 'Aprendiz' => Admissao::TIPO_ADMISSAO_APRENDIZ];
-            $admissoesPrevista->tipo_contrato = $map[$tipo] ?? (in_array($tipo, Admissao::TODOS_TIPOS_ADMISSAO, true) ? $tipo : Admissao::TIPO_ADMISSAO_FIXO);
-        }
+        $mapper = new AdmissoesPrevistaEditPayloadMapper();
 
-        $admissoesPrevista->autocomplete_label_gestor_modal = $admissoesPrevista->GestorAprovacao ? $admissoesPrevista->GestorAprovacao->nome : '';
-        $admissoesPrevista->autocomplete_label_gestor_modal_anterior = $admissoesPrevista->GestorAprovacao ? $admissoesPrevista->GestorAprovacao->nome : '';
+        $item = AdmissoesPrevista::query()
+            ->select(AdmissoesPrevistaEditPayloadMapper::ADMISSAO_COLUMNS)
+            ->with([
+                'GestorAprovacao:' . implode(',', AdmissoesPrevistaEditPayloadMapper::USER_COLUMNS),
+                'UserAprovacao:' . implode(',', AdmissoesPrevistaEditPayloadMapper::USER_COLUMNS),
+                'UserAprovacaoExtra:' . implode(',', AdmissoesPrevistaEditPayloadMapper::USER_COLUMNS),
+                'RhAprovacao:' . implode(',', AdmissoesPrevistaEditPayloadMapper::USER_COLUMNS),
+                'Cargo:' . implode(',', AdmissoesPrevistaEditPayloadMapper::CARGO_COLUMNS),
+                'Anexos' => function ($query) {
+                    $query->select(AdmissoesPrevistaEditPayloadMapper::ANEXO_COLUMNS);
+                },
+            ])
+            ->whereKey($admissoesPrevista->id)
+            ->firstOrFail();
 
-        $admissoesPrevista->autocomplete_label_cargo = $admissoesPrevista->Cargo ? $admissoesPrevista->Cargo->nome : '';
-        $admissoesPrevista->autocomplete_label_cargo_anterior = $admissoesPrevista->Cargo ? $admissoesPrevista->Cargo->nome : '';
-
-        $admissoesPrevista->anexosDel = [];
-        $admissoesPrevista->load('Anexos');
-
-        $admissoesPrevista->user_aprovacao = $admissoesPrevista->UserAprovacao ? $admissoesPrevista->UserAprovacao->nome : '';
-        $admissoesPrevista->rh_aprovacao = $admissoesPrevista->RhAprovacao ? $admissoesPrevista->RhAprovacao->nome : '';
-        $admissoesPrevista->status_aprovacao = $admissoesPrevista->status_aprovacao ?: '';
-        $admissoesPrevista->status_aprovacao_rh = $admissoesPrevista->status_aprovacao_rh ?: '';
-
-        // Aprovação Extra
-        $admissoesPrevista->aprovacao_extra_nome = $admissoesPrevista->UserAprovacaoExtra ? $admissoesPrevista->UserAprovacaoExtra->nome : '';
-        $admissoesPrevista->status_aprovacao_extra = $admissoesPrevista->status_aprovacao_extra ?: '';
-
-        return $admissoesPrevista;
+        return response()->json($mapper->map($item));
     }
 
     /**
@@ -255,6 +251,16 @@ class AdmissoesPrevistaController extends Controller
     public function atualizar(Request $request)
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
+        $empresaMatriz = auth()->user()->Empresa;
+        $itens = collect($resultado->items())->map(function ($item) use ($empresaMatriz) {
+            $item->lotacao = LotacaoLabelResolver::forCentroCustoFilialFlags(
+                $item->filial,
+                $item->CentroCustoFilial,
+                $empresaMatriz
+            );
+
+            return $item;
+        })->values();
 
         // Busca configuração de aprovação extra ativa
         $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, 'admissao');
@@ -271,12 +277,13 @@ class AdmissoesPrevistaController extends Controller
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'itens' => $resultado->items(),
+                'itens' => $itens,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
                 'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
                 'pode_aprovar_extra' => $podeAprovarExtra,
                 'tem_aprovacao_extra' => $config ? true : false,
                 'nome_aprovacao_extra' => $nomeAprovacaoExtra,
+                'cc' => (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id),
             ]
         ]);
     }
@@ -311,18 +318,45 @@ class AdmissoesPrevistaController extends Controller
     public function filtro(Request $request)
     {
         $user = auth()->user();
-        $resultado = AdmissoesPrevista::with(
-            'Cargo',
-            'CentroCusto',
-            'CentroCustoFilial',
-            'UserCadastrou:id,nome',
-            'GestorAprovacao:id,nome',
-            'UserAprovacao:id,nome',
-            'UserAprovacaoExtra:id,nome',
-            'RhAprovacao:id,nome'
-        )->where('empresa_id', $user->empresa_id);
+        $resultado = AdmissoesPrevista::query()
+            ->select([
+                'id',
+                'nome_pessoa',
+                'cargo_id',
+                'centro_custo_id',
+                'filial',
+                'centro_custo_filial_id',
+                'data_admissao',
+                'tipo_contrato',
+                'salario',
+                'status_aprovacao',
+                'status_aprovacao_rh',
+                'status_aprovacao_extra',
+                'data_aprovacao',
+                'data_aprovacao_rh',
+                'data_aprovacao_extra',
+                'user_id',
+                'user_aprovacao_id',
+                'aprovacao_extra_id',
+                'rh_aprovacao_id',
+                'aprovado_via_script',
+                'created_at',
+                'updated_at',
+                'empresa_id',
+            ])
+            ->with([
+                'Cargo:id,nome',
+                'CentroCusto:id,label',
+                'CentroCustoFilial:id,cliente_filial_id',
+                'CentroCustoFilial.Filial:id,dados',
+                'UserCadastrou:id,nome',
+                'UserAprovacao:id,nome',
+                'UserAprovacaoExtra:id,nome',
+                'RhAprovacao:id,nome',
+            ])
+            ->where('empresa_id', $user->empresa_id);
 
-        $filterApplier = new \App\Services\AdmissoesPrevista\AdmissoesPrevistaFilterApplier($request->all(), $user);
+        $filterApplier = new AdmissoesPrevistaFilterApplier($request->all(), $user);
         $filterApplier->apply($resultado);
 
         return $resultado;

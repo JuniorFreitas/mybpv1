@@ -7,11 +7,15 @@ use App\Jobs\Movimentacao\FeriasPrevista\JobNotificacaoRecursiva;
 use App\Models\Admissao;
 use App\Models\AprovacaoExtraConfig;
 use App\Models\Arquivo;
+use App\Models\CentroCusto;
 use App\Models\Cliente;
 use App\Models\Ferias;
 use App\Models\FeriasPrevista;
 use App\Models\PeriodoAquisitivo;
 use App\Models\Sistema;
+use App\Services\FeriasPrevista\FeriasPrevistaEditPayloadMapper;
+use App\Services\FeriasPrevista\FeriasPrevistaFilterApplier;
+use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
 use DB;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
@@ -181,44 +185,29 @@ class FeriasPrevistaController extends Controller
      */
     public function edit(Ferias $ferias)
     {
-        $admissao = $ferias->Admissao;
-        $curriculo = optional($admissao->Feedback->Curriculo);
-        $gestor = optional($ferias->Gestor);
-        $centroCusto = optional($admissao->CentroCusto);
-        $rhAprovacao = optional($ferias->RhAprovacao);
-        $solicitante = optional($ferias->Solicitante);
+        $mapper = new FeriasPrevistaEditPayloadMapper();
 
-        $ferias->autocomplete_label_colaborador = $curriculo->nome ?? '';
-        $ferias->autocomplete_label_colaborador_anterior = $curriculo->nome ?? '';
-        $ferias->colaborador_id = $curriculo->id ?? '';
-        $ferias->autocomplete_label_gestor_modal = $gestor->nome ?? '';
-        $ferias->autocomplete_label_gestor_modal_anterior = $gestor->nome ?? '';
-        $ferias->gestor_aprovacao = $ferias->GestorAprovacao ? [
-            'nome' => $ferias->GestorAprovacao->nome,
-            'id' => $ferias->GestorAprovacao->id
-        ] : null;
-        $ferias->centro_custo_id = $admissao ? $admissao->centro_custo_id : $ferias->FeriasPrevista->centro_custo_id;
-        $ferias->centro_custo = $centroCusto ?? '';
-        $ferias->rh_aprovacao = $rhAprovacao ? [
-            'nome' => $rhAprovacao->nome,
-            'id' => $rhAprovacao->id
-        ] : null;
-        $ferias->aprovacao_extra = $ferias->AprovacaoExtra ? [
-            'nome' => $ferias->AprovacaoExtra->nome,
-            'id' => $ferias->AprovacaoExtra->id
-        ] : null;
-        $ferias->aprovacao_extra_nome = $ferias->AprovacaoExtra ? $ferias->AprovacaoExtra->nome : null;
-        $ferias->solicitante = $solicitante->nome ?? '';
-        $ferias->gestor_id = $ferias->gestor_id ?? '';
-        $ferias->data_admissao = $admissao->data_admissao ?? '';
-        $ferias->status_aprovacao_gestor = $ferias->status_aprovacao_gestor ?? '';
-        $ferias->status_aprovacao_extra = $ferias->status_aprovacao_extra ?? '';
-        $ferias->status_aprovacao_rh = $ferias->status_aprovacao_rh ?? '';
-        $ferias->periodo_label = $ferias->PeriodoAquisitivo->label ?? '';
-        $ferias->anexosDel = [];
-        $ferias->load('Anexos');
+        $item = Ferias::query()
+            ->select(FeriasPrevistaEditPayloadMapper::FERIAS_COLUMNS)
+            ->with([
+                'Gestor:' . implode(',', FeriasPrevistaEditPayloadMapper::USER_COLUMNS),
+                'GestorAprovacao:' . implode(',', FeriasPrevistaEditPayloadMapper::USER_COLUMNS),
+                'AprovacaoExtra:' . implode(',', FeriasPrevistaEditPayloadMapper::USER_COLUMNS),
+                'RhAprovacao:' . implode(',', FeriasPrevistaEditPayloadMapper::USER_COLUMNS),
+                'Solicitante:' . implode(',', FeriasPrevistaEditPayloadMapper::USER_COLUMNS),
+                'PeriodoAquisitivo:id,label',
+                'FeriasPrevista:id,centro_custo_id',
+                'Admissao:id,centro_custo_id,data_admissao,feedback_id',
+                'Admissao.Feedback:id,curriculo_id',
+                'Admissao.Feedback.Curriculo:id,nome',
+                'Anexos' => function ($query) {
+                    $query->select(FeriasPrevistaEditPayloadMapper::ANEXO_COLUMNS);
+                },
+            ])
+            ->whereKey($ferias->id)
+            ->firstOrFail();
 
-        return response()->json($ferias);
+        return response()->json($mapper->map($item));
     }
 
     /**
@@ -511,7 +500,10 @@ class FeriasPrevistaController extends Controller
 
         $resultado = $this->filtro($request)->paginate($request->pages);
 
-        $periodo = PeriodoAquisitivo::whereIn('ano_inicial', [date('Y'), date('Y') - 1, date('Y') - 2, date('Y') - 3])->get();
+        $periodo = PeriodoAquisitivo::query()
+            ->select(['id', 'label', 'ano_inicial'])
+            ->whereIn('ano_inicial', [date('Y'), date('Y') - 1, date('Y') - 2, date('Y') - 3])
+            ->get();
 
         $permissoes = [
             'update' => auth()->user()->can('planejamento_movimentacao_ferias_editar'),
@@ -528,10 +520,26 @@ class FeriasPrevistaController extends Controller
             $nomeAprovacaoExtra = $config->nome_aprovacao;
         }
 
-        // Adiciona o nome do aprovador extra em cada item
+        $empresa = Cliente::query()
+            ->select(['id', 'nome_fantasia', 'razao_social', 'cnpj'])
+            ->find(auth()->user()->empresa_id);
+
         $itens = $resultado->items();
+        $filialMap = LotacaoLabelResolver::filiaisByCentroCustoFilialIds(
+            collect($itens)->map(fn ($item) => $item->Admissao?->centro_custo_filial_id)->all()
+        );
+
         foreach ($itens as $item) {
             $item->aprovacao_extra_nome = $item->AprovacaoExtra ? $item->AprovacaoExtra->nome : null;
+
+            $admissao = $item->Admissao;
+            $ccfId = (int) ($admissao?->centro_custo_filial_id ?? 0);
+            $ehFilial = (bool) ($admissao?->filial ?? false);
+            $item->lotacao = LotacaoLabelResolver::resolve(
+                $ehFilial,
+                $filialMap[$ccfId] ?? null,
+                $empresa
+            );
         }
 
         return response()->json([
@@ -547,7 +555,8 @@ class FeriasPrevistaController extends Controller
                 'pode_aprovar_extra' => $podeAprovarExtra,
                 'tem_aprovacao_extra' => $config ? true : false,
                 'nome_aprovacao_extra' => $nomeAprovacaoExtra,
-                'mimes' => Arquivo::MIMEAPENASIMAGENSPDF
+                'mimes' => Arquivo::MIMEAPENASIMAGENSPDF,
+                'cc' => (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id),
             ]
         ]);
     }
@@ -555,24 +564,44 @@ class FeriasPrevistaController extends Controller
     public function filtro(Request $request)
     {
         $user = auth()->user();
-        $resultado = Ferias::with(
-            'PeriodoAquisitivo',
-            'Gestor:id,nome',
-            'GestorAprovacao:id,nome',
-            'AprovacaoExtra:id,nome',
-            'RhAprovacao:id,nome',
-            'Solicitante:id,nome',
-            'Admissao:id,centro_custo_id,cargo,funcao,data_admissao,feedback_id',
-            'Admissao.CentroCusto',
-            'Admissao.Feedback:id,curriculo_id,vagas_abertas_id',
-            'Admissao.Feedback.VagaSelecionada',
-            'Admissao.Feedback.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
-            'Admissao.CentroCusto:id,label',
-            'FeriasPrevista:id,centro_custo_id',
-            'FeriasPrevista.CentroCusto:id,label',
-        )->where('empresa_id', $user->empresa_id);
+        $resultado = Ferias::query()
+            ->select([
+                'id',
+                'admissao_id',
+                'periodo_aquisitivo_id',
+                'solicitante_id',
+                'data_saida',
+                'data_retorno',
+                'ultima_data',
+                'qnt_dias',
+                'dias_saldo',
+                'data_solicitacao',
+                'updated_at',
+                'gestor_aprovacao_id',
+                'aprovado_via_script',
+                'status_aprovacao_gestor',
+                'status_aprovacao_extra',
+                'status_aprovacao_rh',
+                'rh_aprovacao_id',
+                'aprovacao_extra_id',
+                'data_aprovacao_gestor',
+                'data_aprovacao_extra',
+                'data_aprovacao_rh',
+            ])
+            ->with([
+                'PeriodoAquisitivo:id,label',
+                'GestorAprovacao:id,nome',
+                'AprovacaoExtra:id,nome',
+                'RhAprovacao:id,nome',
+                'Solicitante:id,nome',
+                'Admissao:id,centro_custo_id,data_admissao,feedback_id,filial,centro_custo_filial_id',
+                'Admissao.CentroCusto:id,label',
+                'Admissao.Feedback:id,curriculo_id',
+                'Admissao.Feedback.Curriculo:id,nome',
+            ])
+            ->where('empresa_id', $user->empresa_id);
 
-        $filterApplier = new \App\Services\FeriasPrevista\FeriasPrevistaFilterApplier($request->all(), $user);
+        $filterApplier = new FeriasPrevistaFilterApplier($request->all(), $user);
         $filterApplier->apply($resultado);
 
         return $resultado;

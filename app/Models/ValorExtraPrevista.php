@@ -220,6 +220,11 @@ class ValorExtraPrevista extends Model
         return $this->hasOne(User::class, 'id', 'aprovacao_extra_id');
     }
 
+    public function UserAprovacaoExtra()
+    {
+        return $this->hasOne(User::class, 'id', 'aprovacao_extra_id');
+    }
+
     public function Anexos()
     {
         return $this->belongsToMany(Arquivo::class, 'valor_extra_previstas_anexos', 'valor_extra_prevista_id', 'arquivo_id');

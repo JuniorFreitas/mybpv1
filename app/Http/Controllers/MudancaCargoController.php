@@ -7,10 +7,13 @@ use App\Jobs\Movimentacao\MudancaCargo\JobNotificacaoRecursiva;
 use App\Models\Admissao;
 use App\Models\AprovacaoExtraConfig;
 use App\Models\Arquivo;
+use App\Models\CentroCusto;
+use App\Models\Cliente;
 use App\Models\LogHistorico;
 use App\Models\MudancaCargo;
 use App\Models\PeriodoAquisitivo;
 use App\Models\Sistema;
+use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
 use DB;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
@@ -564,9 +567,23 @@ class MudancaCargoController extends Controller
             ]);
         }
 
-        // Mapear itens com dados mínimos de aprovadores (id,nome já vêm do filtro) e nomes/datas para o frontend
-        $itens = collect($resultado->items())->map(function ($item) {
+        $empresa = Cliente::query()
+            ->select(['id', 'nome_fantasia', 'razao_social', 'cnpj'])
+            ->find(auth()->user()->empresa_id);
+
+        $paginaItens = $resultado->items();
+        $filialMap = LotacaoLabelResolver::filiaisByCentroCustoFilialIds(
+            collect($paginaItens)->map(function ($item) {
+                return filter_var($item->mantem_centro_custo ?? true, FILTER_VALIDATE_BOOLEAN)
+                    ? $item->anterior_centro_custo_filial_id
+                    : $item->novo_centro_custo_filial_id;
+            })->all()
+        );
+
+        $itens = collect($paginaItens)->map(function ($item) use ($filialMap, $empresa) {
             $item->aprovacao_extra_nome = $item->AprovacaoExtra ? $item->AprovacaoExtra->nome : '';
+            $item->lotacao = LotacaoLabelResolver::forMudancaCargo($item, $filialMap, $empresa);
+
             return $item;
         })->toArray();
 
@@ -582,7 +599,8 @@ class MudancaCargoController extends Controller
                 'pode_aprovar_extra' => $podeAprovarExtra,
                 'tem_aprovacao_extra' => $config ? true : false,
                 'nome_aprovacao_extra' => $nomeAprovacaoExtra,
-                'mimes' => Arquivo::MIMEAPENASIMAGENSPDF
+                'mimes' => Arquivo::MIMEAPENASIMAGENSPDF,
+                'cc' => (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id),
             ]
         ]);
     }
@@ -590,22 +608,40 @@ class MudancaCargoController extends Controller
     public function filtro(Request $request)
     {
         $user = auth()->user();
-        $resultado = MudancaCargo::with(
-            'CentroCustoAnterior',
-            'CentroCustoNovo',
-            'CentroCustoFilialAnterior',
-            'CentroCustoFilialNovo',
-            'VagaAbertaAnterior',
-            'VagaAbertaNova',
-            'Solicitante:id,nome',
-            'GestorAprovacao:id,nome',
-            'Gestor:id,nome',
-            'AprovacaoExtra:id,nome',
-            'RhAprovacao:id,nome',
-            'QuemDeletou:id,nome',
-            'VagaAbertaNova',
-            'Colaborador:id,nome,login,tipo,ativo'
-        )->where('empresa_id', $user->empresa_id);
+        $resultado = MudancaCargo::query()
+            ->select([
+                'id',
+                'colaborador_id',
+                'mantem_centro_custo',
+                'mantem_cargo',
+                'mantem_funcao',
+                'mantem_salario',
+                'anterior_filial',
+                'novo_filial',
+                'anterior_centro_custo_filial_id',
+                'novo_centro_custo_filial_id',
+                'gestor_aprovacao_id',
+                'aprovacao_extra_id',
+                'rh_aprovacao_id',
+                'aprovado_via_script',
+                'status_aprovacao_gestor',
+                'status_aprovacao_extra',
+                'status_aprovacao_rh',
+                'data_aprovacao_gestor',
+                'data_aprovacao_extra',
+                'data_aprovacao_rh',
+                'solicitante_id',
+                'created_at',
+                'updated_at',
+            ])
+            ->with([
+                'Solicitante:id,nome',
+                'GestorAprovacao:id,nome',
+                'AprovacaoExtra:id,nome',
+                'RhAprovacao:id,nome',
+                'Colaborador:id,nome',
+            ])
+            ->where('empresa_id', $user->empresa_id);
 
         $filterApplier = new \App\Services\MudancaCargo\MudancaCargoFilterApplier($request->all(), $user);
         $filterApplier->apply($resultado);

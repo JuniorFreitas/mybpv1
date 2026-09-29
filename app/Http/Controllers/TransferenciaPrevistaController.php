@@ -7,9 +7,13 @@ use App\Jobs\Movimentacao\TransferenciaPrevista\JobTransferenciaPrevistaExportaE
 use App\Models\AprovacaoExtraConfig;
 use App\Models\Arquivo;
 use App\Models\CentroCusto;
+use App\Models\Cliente;
 use App\Models\LogHistorico;
 use App\Models\TransferenciaPrevista;
+use App\Services\Cih\CihLotacaoResolver;
 use App\Services\CentroCusto\CentroCustoGestorResolverService;
+use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
+use App\Services\TransferenciaPrevista\TransferenciaPrevistaEditPayloadMapper;
 use App\Services\TransferenciaPrevista\TransferenciaPrevistaFluxoAprovacaoService;
 use DomainException;
 use Illuminate\Http\Request;
@@ -98,36 +102,40 @@ class TransferenciaPrevistaController extends Controller
 
     public function edit(TransferenciaPrevista $transferenciaPrevista)
     {
-        $transferenciaPrevista->loadMissing([
-            'Anexos',
-            'Colaborador.Feedback.Admissao',
-            'GestorOrigem',
-            'GestorDestino',
-            'QuemAprovouGestorDestino',
-            'GestorAprovacaoUnico',
-            'QuemAprovouGestorUnico',
-            'UserAprovacao',
-        ]);
+        $mapper = new TransferenciaPrevistaEditPayloadMapper();
 
-        $transferenciaPrevista->autocomplete_label_colaborador = $transferenciaPrevista->Colaborador ? $transferenciaPrevista->Colaborador->nome : '';
-        $transferenciaPrevista->autocomplete_label_colaborador_anterior = $transferenciaPrevista->autocomplete_label_colaborador;
-        $transferenciaPrevista->label_gestor_origem = $transferenciaPrevista->GestorOrigem?->nome ?? 'Não informado';
-        $transferenciaPrevista->label_gestor_destino = $transferenciaPrevista->GestorDestino?->nome ?? 'Não informado';
-        $transferenciaPrevista->label_gestor_aprovacao_unico = $transferenciaPrevista->GestorAprovacaoUnico?->nome ?? 'Não informado';
-        $transferenciaPrevista->anexosDel = [];
+        $item = TransferenciaPrevista::query()
+            ->select(TransferenciaPrevistaEditPayloadMapper::TRANSFERENCIA_COLUMNS)
+            ->with([
+                'Colaborador:' . implode(',', TransferenciaPrevistaEditPayloadMapper::USER_COLUMNS),
+                'Colaborador.FeedBack:id,curriculo_id',
+                'Colaborador.FeedBack.Admissao:id,feedback_id,centro_custo_id',
+                'GestorOrigem:' . implode(',', TransferenciaPrevistaEditPayloadMapper::USER_COLUMNS),
+                'GestorDestino:' . implode(',', TransferenciaPrevistaEditPayloadMapper::USER_COLUMNS),
+                'QuemAprovouGestorDestino:' . implode(',', TransferenciaPrevistaEditPayloadMapper::USER_COLUMNS),
+                'GestorAprovacaoUnico:' . implode(',', TransferenciaPrevistaEditPayloadMapper::USER_COLUMNS),
+                'QuemAprovouGestorUnico:' . implode(',', TransferenciaPrevistaEditPayloadMapper::USER_COLUMNS),
+                'UserAprovacao:' . implode(',', TransferenciaPrevistaEditPayloadMapper::USER_COLUMNS),
+                'AprovacaoExtra:' . implode(',', TransferenciaPrevistaEditPayloadMapper::USER_COLUMNS),
+                'RhAprovacao:' . implode(',', TransferenciaPrevistaEditPayloadMapper::USER_COLUMNS),
+                'Anexos' => function ($query) {
+                    $query->select(TransferenciaPrevistaEditPayloadMapper::ANEXO_COLUMNS);
+                },
+            ])
+            ->whereKey($transferenciaPrevista->id)
+            ->firstOrFail();
 
-        $admissao = $transferenciaPrevista->Colaborador?->Feedback?->Admissao;
-        $transferenciaPrevista->centro_custo_id = $admissao?->centro_custo_id;
+        $payload = $mapper->map($item);
 
-        $config = AprovacaoExtraConfig::getConfigAtiva($transferenciaPrevista->empresa_id, 'transferencia');
-        $transferenciaPrevista->tem_aprovacao_extra = (bool) $config;
-        $transferenciaPrevista->pode_aprovar_extra = $config ? $config->podeAprovar(auth()->id()) : false;
-        $transferenciaPrevista->nome_aprovacao_extra = $config ? $config->nome_aprovacao : '';
-        $transferenciaPrevista->pode_aprovar_gestor_origem = $this->podeAprovarGestorOrigem($transferenciaPrevista);
-        $transferenciaPrevista->pode_aprovar_gestor_destino = $this->podeAprovarGestorDestino($transferenciaPrevista);
-        $transferenciaPrevista->pode_aprovar_gestor_unico = $this->podeAprovarGestorUnico($transferenciaPrevista);
+        $config = AprovacaoExtraConfig::getConfigAtiva($item->empresa_id, 'transferencia');
+        $payload['tem_aprovacao_extra'] = (bool) $config;
+        $payload['pode_aprovar_extra'] = $config ? $config->podeAprovar(auth()->id()) : false;
+        $payload['nome_aprovacao_extra'] = $config ? $config->nome_aprovacao : '';
+        $payload['pode_aprovar_gestor_origem'] = $this->podeAprovarGestorOrigem($item);
+        $payload['pode_aprovar_gestor_destino'] = $this->podeAprovarGestorDestino($item);
+        $payload['pode_aprovar_gestor_unico'] = $this->podeAprovarGestorUnico($item);
 
-        return $transferenciaPrevista;
+        return response()->json($payload);
     }
 
     public function update(Request $request, TransferenciaPrevista $transferenciaPrevista)
@@ -522,8 +530,22 @@ class TransferenciaPrevistaController extends Controller
         $exigeAprovacaoGestorOrigem = app(\App\Services\TransferenciaPrevista\TransferenciaPrevistaFluxoAprovacaoService::class)
             ->empresaExigeAprovacaoGestorOrigem((int) auth()->user()->empresa_id);
 
-        $itens = collect($resultado->items())->map(function ($item) use ($exigeAprovacaoGestorOrigem) {
+        $empresaId = (int) auth()->user()->empresa_id;
+        $empresa = Cliente::query()
+            ->select(['id', 'nome_fantasia', 'razao_social', 'cnpj'])
+            ->find($empresaId);
+        $lotacaoResolver = new CihLotacaoResolver($empresaId);
+
+        $itens = collect($resultado->items())->map(function ($item) use ($exigeAprovacaoGestorOrigem, $empresaId, $empresa, $lotacaoResolver) {
             $item->setAttribute('exige_aprovacao_gestor_origem', $exigeAprovacaoGestorOrigem);
+            $item->lotacao = LotacaoLabelResolver::fromCentroCustoId(
+                $empresaId,
+                $item->centro_custo_destino_id ? (int) $item->centro_custo_destino_id : null,
+                $empresa,
+                $item->CentroCustoDestino?->label,
+                $lotacaoResolver
+            );
+
             return $item;
         })->values();
 
@@ -540,6 +562,8 @@ class TransferenciaPrevistaController extends Controller
                 'nome_aprovacao_extra' => $config ? $config->nome_aprovacao : '',
                 'usuario_logado_id' => $userId,
                 'exige_aprovacao_gestor_origem' => $exigeAprovacaoGestorOrigem,
+                'mimes' => Arquivo::MIMEAPENASIMAGENSPDF,
+                'cc' => (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id),
             ]
         ]);
     }
@@ -547,21 +571,23 @@ class TransferenciaPrevistaController extends Controller
     public function filtro(Request $request)
     {
         $user = auth()->user();
-        $resultado = TransferenciaPrevista::with(
-            'CentroCustoOrigem',
-            'CentroCustoDestino',
-            'QuemAprovou:id,nome',
-            'UserCadastrou:id,nome',
-            'GestorOrigem:id,nome',
-            'GestorDestino:id,nome',
-            'QuemAprovouGestorDestino:id,nome',
-            'GestorAprovacaoUnico:id,nome',
-            'QuemAprovouGestorUnico:id,nome',
-            'Colaborador',
-            'UserAprovacao:id,nome',
-            'UserAprovacaoExtra:id,nome',
-            'RhAprovacao:id,nome'
-        )->where('empresa_id', $user->empresa_id);
+        $resultado = TransferenciaPrevista::query()
+            ->with([
+                'CentroCustoOrigem:id,label',
+                'CentroCustoDestino:id,label',
+                'QuemAprovou:id,nome',
+                'UserCadastrou:id,nome',
+                'GestorOrigem:id,nome',
+                'GestorDestino:id,nome',
+                'QuemAprovouGestorDestino:id,nome',
+                'GestorAprovacaoUnico:id,nome',
+                'QuemAprovouGestorUnico:id,nome',
+                'Colaborador:id,nome',
+                'UserAprovacao:id,nome',
+                'UserAprovacaoExtra:id,nome',
+                'RhAprovacao:id,nome',
+            ])
+            ->where('empresa_id', $user->empresa_id);
 
         $filterApplier = new \App\Services\TransferenciaPrevista\TransferenciaPrevistaFilterApplier($request->all(), $user);
         $filterApplier->apply($resultado);

@@ -433,91 +433,159 @@
                 </div>
             </template>
         </modal>
-        <fieldset class="mt-0">
-            <legend>Filtro</legend>
-            <form class="row" @submit.prevent="buscarFiltro">
-                <!-- <div class="col-12 col-md-3">
-                    <div class="form-check" style="margin-bottom: -11px;">
-                        <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
-                               :id="`filtroIntervalo_${hash}`"
-                               v-model="controle.dados.filtroPeriodo">
-                        <label class="form-check-label cursor-pointer" :for="`filtroIntervalo_${hash}`">Por
-                            período</label>
-                    </div>
-                    <div class="form-group">
-                        <datepicker range formsm label=""
-                                    :disabled="controle.carregando || !controle.dados.filtroPeriodo"
-                                    v-model="controle.dados.periodo"></datepicker>
-                    </div>
-                </div> -->
-
+        <FiltroListagem
+            class="mt-2 mybp-filtros-compactos"
+            :mostrar-limpar-filtros="totalFiltrosAtivos > 0"
+            :desabilitado="controle.carregando"
+            @submit="atualizar"
+            @limpar="limparFiltros"
+        >
+            <template #filtros>
                 <date-range-filter
                     v-model:enabled="controle.dados.filtroPeriodo"
                     v-model:start-date="controle.dados.dataInicio"
                     v-model:end-date="controle.dados.dataFim"
                     :disabled="controle.carregando"
-                    :id-suffix="hash"
-                    wrapper-class="col-12 col-md-3"
+                    :id-suffix="'transferencia-' + hash"
+                    label="Período"
+                    wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                    @change="atualizar"
                 />
 
-                <div class="col-12 col-md-5">
-                    <div class="form-group">
-                        <label>Pesquisar</label>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="transferencia-filtro-busca">
+                            Colaborador / CPF
+                            <span v-if="buscaUnificadaEhCpf" class="transferencia-filtro-hint">CPF</span>
+                        </label>
                         <input
+                            id="transferencia-filtro-busca"
                             type="text"
-                            placeholder="Buscar por colaborador"
+                            placeholder="Nome ou CPF"
                             autocomplete="off"
+                            inputmode="search"
                             class="form-control form-control-sm"
                             :disabled="controle.carregando"
-                            v-model="controle.dados.campoBusca"
+                            :value="campoBuscaUnificada"
+                            @input="onInputBuscaUnificada"
                         />
                     </div>
                 </div>
 
-                <div class="col-12 col-md-3">
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.campoStatus" :disabled="controle.carregando" @change="atualizar()">
-                            <option value="">Todos os Status</option>
-                            <option value="aberto">Em aberto</option>
-                            <option value="aprovado">Aprovado</option>
-                            <option value="reprovado">Reprovado</option>
-                        </select>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="transferencia-filtro-status">Status</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroStatus"
+                                instance-id="transferencia-status"
+                                input-id="transferencia-filtro-status"
+                                v-model="controle.dados.campoStatus"
+                                :options="opcoesStatus"
+                                :disabled="controle.carregando"
+                                placeholder-blur="Todos os status"
+                                empty-message="Nenhum status encontrado."
+                                :max-results="20"
+                                @opening="fecharOutrosComboboxes('transferencia-status')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-12 col-md-2">
-                    <div class="form-group">
-                        <label>Ordenar por</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.ordenacao" :disabled="controle.carregando" @change="atualizar()">
-                            <option value="created_at_desc">Mais recente</option>
-                            <option value="created_at_asc">Mais antigo</option>
-                            <option value="updated_at_desc">Última modificação</option>
-                        </select>
+                <div class="col-12 col-md-4" v-if="lista_ccs && temFilial">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="transferencia-filtro-cnpj">Lotação (CNPJ)</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroCnpj"
+                                instance-id="transferencia-cnpj"
+                                input-id="transferencia-filtro-cnpj"
+                                v-model="controle.dados.campoCnpj"
+                                :options="opcoesCnpj"
+                                :disabled="controle.carregando"
+                                placeholder-blur="Todas as lotações"
+                                empty-message="Nenhuma lotação encontrada."
+                                :max-results="50"
+                                @opening="fecharOutrosComboboxes('transferencia-cnpj')"
+                                @select="onSelectCnpj"
+                            />
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-12 col-md-2">
-                    <div class="form-group">
-                        <label for="">Exibir</label>
-                        <select class="form-control form-control-sm" @change="atualizar()" :disabled="controle.carregando" v-model="controle.dados.pages">
-                            <option v-for="(item, index) in por_pagina" :value="item" :key="index">{{ item }}</option>
-                        </select>
+                <div v-if="lista_ccs" :class="temFilial ? 'col-12 col-md-8' : 'col-12'">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="transferencia-filtro-cc">Centro de custo</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroCc"
+                                instance-id="transferencia-cc"
+                                input-id="transferencia-filtro-cc"
+                                v-model="controle.dados.campoCentroCusto"
+                                :options="opcoesCentroCusto"
+                                :disabled="controle.carregando || !opcoesCentroCusto.length"
+                                placeholder-blur="Todos os centros"
+                                empty-message="Nenhum centro de custo encontrado."
+                                :max-results="200"
+                                @opening="fecharOutrosComboboxes('transferencia-cc')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-12"></div>
-            </form>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="transferencia-filtro-ordenacao">Ordenar por</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroOrdenacao"
+                                instance-id="transferencia-ordenacao"
+                                input-id="transferencia-filtro-ordenacao"
+                                v-model="controle.dados.ordenacao"
+                                :options="opcoesOrdenacao"
+                                :disabled="controle.carregando"
+                                placeholder-blur="Mais recentes"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @opening="fecharOutrosComboboxes('transferencia-ordenacao')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
+                    </div>
+                </div>
 
-            <div class="col-12 col-md-9">
-                <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
-                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                    Atualizar
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="transferencia-filtro-pages">Por página</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroPages"
+                                instance-id="transferencia-pages"
+                                input-id="transferencia-filtro-pages"
+                                v-model="campoPagesCombo"
+                                :options="opcoesPages"
+                                :disabled="controle.carregando"
+                                placeholder-blur="50"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @opening="fecharOutrosComboboxes('transferencia-pages')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template #acoes>
+                <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
+                    Buscar
                 </button>
-
                 <button
                     type="button"
-                    class="btn btn-sm mr-1 btn-primary"
+                    class="btn btn-sm btn-primary"
                     :disabled="controle.carregando"
                     @click.prevent="abrirModalSolicitar"
                 >
@@ -525,25 +593,23 @@
                 </button>
                 <button
                     type="button"
-                    class="btn btn-sm mr-1 btn-primary mr-1"
+                    class="btn btn-sm btn-outline-primary"
                     @click.prevent="exportaExcel()"
                     :disabled="controle.carregando || preloadExportacao || (!controle.carregando && !lista.length)"
                 >
-                    <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
+                    <i class="fas fa-file-excel"></i> Exportar Excel
                 </button>
-
                 <button
                     type="button"
-                    class="btn btn-sm mr-1 btn-primary mr-1"
+                    class="btn btn-sm btn-primary"
                     v-show="selecionados.length > 0"
-                    :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                     :disabled="selecionados.length === 0"
                     @click.prevent="abrirModalAtualizarStatus"
                 >
                     Atualizar Status <span class="badge badge-light">{{ selecionados.length }}</span>
                 </button>
-            </div>
-        </fieldset>
+            </template>
+        </FiltroListagem>
 
         <preload class="text-center" v-if="controle.carregando"></preload>
 
@@ -701,6 +767,11 @@
                             <i class="fas fa-calendar text-muted"></i>
                             <span class="detail-label">Data Transferência:</span>
                             <span class="detail-value">{{ item.data_transferencia }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-map-marker-alt text-muted"></i>
+                            <span class="detail-label">Lotação:</span>
+                            <span class="detail-value">{{ item.lotacao || 'Não informado' }}</span>
                         </div>
                     </div>
                     <div class="card-details-row">
@@ -913,7 +984,9 @@ import Upload from '../../Upload'
 import colaborador from '../../Colaborador'
 import DateRangeFilter from '../../DateRangeFilter'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete.vue'
+import FiltroListagem from '../../ui/FiltroListagem.vue'
 import Validacoes from '../../../mixins/Validacoes'
+import configuracoes from '../../../mixins/Configuracoes'
 
 const BASE_URL = `${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista`
 const POR_PAGINA_OPCOES = [20, 50, 100, 150]
@@ -963,7 +1036,10 @@ function createControleDados() {
     dataInicio: '',
     dataFim: '',
     campoBusca: '',
+    campoCPF: '',
     campoStatus: '',
+    campoCnpj: '',
+    campoCentroCusto: '',
     pages: 50,
     token: '',
     ordenacao: 'created_at_desc'
@@ -972,8 +1048,8 @@ function createControleDados() {
 
 export default defineComponent({
     name: 'SolicitacaoTransferencia',
-    components: { colaborador, DateRangeFilter, Upload, ComboboxAutoComplete },
-    mixins: [Validacoes],
+    components: { colaborador, DateRangeFilter, Upload, ComboboxAutoComplete, FiltroListagem },
+    mixins: [Validacoes, configuracoes],
     inject: {
         atualizarUrlMovimentacao: { default: () => () => {} }
     },
@@ -1009,9 +1085,17 @@ export default defineComponent({
         const selecionaTudo = ref(false)
         const dropdownAbertoKey = ref(null)
         const lista = ref([])
+        const lista_ccs = ref(null)
         const centro_custos = ref([])
         const comboCcOrigem = ref(null)
         const comboCcDestino = ref(null)
+        const comboFiltroStatus = ref(null)
+        const comboFiltroCnpj = ref(null)
+        const comboFiltroCc = ref(null)
+        const comboFiltroOrdenacao = ref(null)
+        const comboFiltroPages = ref(null)
+        const vueInstance = getCurrentInstance()
+        const temFilial = computed(() => vueInstance?.proxy?.temFilial ?? false)
         const preloadAtualizacao = ref(false)
         /** Inicia true (campo desabilitado). Só habilita quando colaborador não possui centro de custo. */
         const centroOrigemDesabilitadoPorColaborador = ref(true)
@@ -1081,6 +1165,94 @@ export default defineComponent({
             const encontrados = naoAprovados.value.filter((id) => selecionados.value.indexOf(id) >= 0).length
             selecionaTudo.value = total === encontrados
             return total === encontrados
+        })
+
+        const totalFiltrosAtivos = computed(() => {
+            const d = controle.dados
+            let total = [d.campoBusca, d.campoCPF, d.campoStatus, d.campoCentroCusto].filter(
+                (v) => v !== '' && v !== null && v !== undefined
+            ).length
+            if (temFilial.value && d.campoCnpj) total++
+            if (d.filtroPeriodo && d.dataInicio && d.dataFim) total++
+            if (d.ordenacao && d.ordenacao !== 'created_at_desc') total++
+            if (Number(d.pages) !== 50) total++
+            return total
+        })
+
+        const campoBuscaUnificada = computed(() => {
+            const d = controle.dados
+            if (d.campoCPF) return d.campoCPF
+            return d.campoBusca || ''
+        })
+
+        const buscaUnificadaEhCpf = computed(() => !!controle.dados.campoCPF)
+
+        const filtroListaCentroCustoCnpj = computed(() => {
+            if (!lista_ccs.value) return []
+            if (controle.dados.campoCnpj !== '' && temFilial.value) {
+                return lista_ccs.value.centros_custos[controle.dados.campoCnpj] || []
+            }
+            if (!temFilial.value) {
+                const keys = Object.keys(lista_ccs.value.centros_custos || {})
+                return keys.length ? lista_ccs.value.centros_custos[keys[0]] || [] : []
+            }
+            const all = []
+            Object.values(lista_ccs.value.centros_custos || {}).forEach((lista) => {
+                ;(lista || []).forEach((item) => all.push(item))
+            })
+            return all
+        })
+
+        const opcoesCnpj = computed(() => {
+            const opts = [{ value: '', label: 'Todas as lotações' }]
+            if (!lista_ccs.value || !lista_ccs.value.cnpjs) return opts
+            Object.keys(lista_ccs.value.cnpjs).forEach((key) => {
+                const item = lista_ccs.value.cnpjs[key]
+                opts.push({
+                    value: key,
+                    label: `${item.nome_fantasia} - ${item.cnpj}`,
+                    meta: item.cnpj
+                })
+            })
+            return opts
+        })
+
+        const opcoesCentroCusto = computed(() => {
+            const opts = [{ value: '', label: 'Todos os centros' }]
+            ;(filtroListaCentroCustoCnpj.value || []).forEach((item) => {
+                const value = item.matriz ? item.id : item.filial_id
+                if (value == null || value === '') return
+                opts.push({
+                    value: String(value),
+                    label: item.label,
+                    meta: item.matriz ? 'Matriz' : 'Filial'
+                })
+            })
+            return opts
+        })
+
+        const opcoesStatus = computed(() => [
+            { value: '', label: 'Todos os status' },
+            { value: 'aberto', label: 'Em aberto' },
+            { value: 'aprovado', label: 'Aprovado' },
+            { value: 'reprovado', label: 'Reprovado' }
+        ])
+
+        const opcoesOrdenacao = computed(() => [
+            { value: 'created_at_desc', label: 'Mais recentes' },
+            { value: 'created_at_asc', label: 'Mais antigos' },
+            { value: 'updated_at_desc', label: 'Última modificação' }
+        ])
+
+        const opcoesPages = computed(() => por_pagina.value.map((n) => ({ value: String(n), label: String(n) })))
+
+        const campoPagesCombo = computed({
+            get() {
+                return String(controle.dados.pages || 50)
+            },
+            set(valor) {
+                controle.dados.pages = parseInt(valor, 10) || 50
+            }
         })
 
         function fecharModalPrincipal() {
@@ -1661,6 +1833,12 @@ export default defineComponent({
                     dados.exige_aprovacao_gestor_origem === 1 ||
                     dados.exige_aprovacao_gestor_origem === '1'
             }
+            if (dados.cc) {
+                lista_ccs.value = dados.cc
+            }
+            if (dados.mimes) {
+                mimes.value = dados.mimes
+            }
             controle.carregando = false
         }
 
@@ -1704,15 +1882,91 @@ export default defineComponent({
         }
 
         function fecharOutrosComboboxes(manter) {
-            const combos = [
-                ['form-cc-origem', comboCcOrigem],
-                ['form-cc-destino', comboCcDestino]
-            ]
-            combos.forEach(([id, comboRef]) => {
-                if (id !== manter && comboRef.value?.close) {
-                    comboRef.value.close()
-                }
+            const mapa = {
+                'form-cc-origem': comboCcOrigem,
+                'form-cc-destino': comboCcDestino,
+                'transferencia-status': comboFiltroStatus,
+                'transferencia-cnpj': comboFiltroCnpj,
+                'transferencia-cc': comboFiltroCc,
+                'transferencia-ordenacao': comboFiltroOrdenacao,
+                'transferencia-pages': comboFiltroPages
+            }
+            Object.keys(mapa).forEach((id) => {
+                if (id === manter) return
+                const comboRef = mapa[id]
+                if (comboRef?.value?.close) comboRef.value.close()
             })
+        }
+
+        function limparFiltros() {
+            const d = controle.dados
+            d.campoBusca = ''
+            d.campoCPF = ''
+            d.campoStatus = ''
+            d.campoCentroCusto = ''
+            d.filtroPeriodo = false
+            d.dataInicio = ''
+            d.dataFim = ''
+            d.ordenacao = 'created_at_desc'
+            d.pages = 50
+            d.token = ''
+            if (temFilial.value) {
+                d.campoCnpj = ''
+            } else if (lista_ccs.value && lista_ccs.value.cnpjs) {
+                const keys = Object.keys(lista_ccs.value.cnpjs)
+                d.campoCnpj = keys[0] || ''
+            } else {
+                d.campoCnpj = ''
+            }
+            atualizar()
+        }
+
+        function formatarCpfDigitos(valor) {
+            const digitos = String(valor || '')
+                .replace(/\D/g, '')
+                .slice(0, 11)
+            if (digitos.length <= 3) return digitos
+            if (digitos.length <= 6) return `${digitos.slice(0, 3)}.${digitos.slice(3)}`
+            if (digitos.length <= 9) return `${digitos.slice(0, 3)}.${digitos.slice(3, 6)}.${digitos.slice(6)}`
+            return `${digitos.slice(0, 3)}.${digitos.slice(3, 6)}.${digitos.slice(6, 9)}-${digitos.slice(9)}`
+        }
+
+        function parecePadraoCpf(valor) {
+            const raw = String(valor || '').trim()
+            if (!raw) return false
+            if (!/^[\d.\-\s]+$/.test(raw)) return false
+            const digitos = raw.replace(/\D/g, '')
+            return digitos.length > 0 && digitos.length <= 11
+        }
+
+        function onInputBuscaUnificada(event) {
+            const valor = event && event.target ? event.target.value : ''
+            const d = controle.dados
+            if (!valor) {
+                d.campoBusca = ''
+                d.campoCPF = ''
+                return
+            }
+            if (parecePadraoCpf(valor)) {
+                const mascarado = formatarCpfDigitos(valor)
+                d.campoCPF = mascarado
+                d.campoBusca = ''
+                if (event.target && event.target.value !== mascarado) {
+                    event.target.value = mascarado
+                }
+                return
+            }
+            d.campoBusca = valor
+            d.campoCPF = ''
+        }
+
+        function onSelectCnpj() {
+            controle.dados.campoCentroCusto = ''
+            atualizar()
+        }
+
+        function onSelectFiltro() {
+            atualizar()
         }
 
         function onClickOutside(event) {
@@ -1732,8 +1986,14 @@ export default defineComponent({
             if (ordenacao) controle.dados.ordenacao = ordenacao
             const campoBusca = urlParams.get('campoBusca')
             if (campoBusca) controle.dados.campoBusca = campoBusca
+            const campoCPF = urlParams.get('campoCPF')
+            if (campoCPF) controle.dados.campoCPF = campoCPF
             const campoStatus = urlParams.get('campoStatus')
             if (campoStatus) controle.dados.campoStatus = campoStatus
+            const campoCnpj = urlParams.get('campoCnpj')
+            if (campoCnpj) controle.dados.campoCnpj = campoCnpj
+            const campoCentroCusto = urlParams.get('campoCentroCusto')
+            if (campoCentroCusto) controle.dados.campoCentroCusto = campoCentroCusto
             const dataInicio = urlParams.get('dataInicio')
             if (dataInicio) controle.dados.dataInicio = dataInicio
             const dataFim = urlParams.get('dataFim')
@@ -1746,7 +2006,10 @@ export default defineComponent({
             const d = controle.dados
             const params = { pages: d.pages || 50, ordenacao: d.ordenacao || 'created_at_desc' }
             if (d.campoBusca) params.campoBusca = d.campoBusca
+            if (d.campoCPF) params.campoCPF = d.campoCPF
             if (d.campoStatus) params.campoStatus = d.campoStatus
+            if (d.campoCnpj) params.campoCnpj = d.campoCnpj
+            if (d.campoCentroCusto) params.campoCentroCusto = d.campoCentroCusto
             if (d.filtroPeriodo && d.dataInicio) params.dataInicio = d.dataInicio
             if (d.filtroPeriodo && d.dataFim) params.dataFim = d.dataFim
             if (d.token) params.token = d.token
@@ -1848,6 +2111,26 @@ export default defineComponent({
             formDefault,
             formConfirmacaoDefault,
             lista,
+            lista_ccs,
+            temFilial,
+            totalFiltrosAtivos,
+            campoBuscaUnificada,
+            buscaUnificadaEhCpf,
+            opcoesCnpj,
+            opcoesCentroCusto,
+            opcoesStatus,
+            opcoesOrdenacao,
+            opcoesPages,
+            campoPagesCombo,
+            comboFiltroStatus,
+            comboFiltroCnpj,
+            comboFiltroCc,
+            comboFiltroOrdenacao,
+            comboFiltroPages,
+            limparFiltros,
+            onInputBuscaUnificada,
+            onSelectCnpj,
+            onSelectFiltro,
             centro_custos,
             centroCustosDestino,
             centroCustoOrigemOpcoes,

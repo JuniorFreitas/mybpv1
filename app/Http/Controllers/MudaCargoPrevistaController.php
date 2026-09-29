@@ -7,7 +7,14 @@ use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaAprovar;
 use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaAprovarRH;
 use App\Jobs\Movimentacao\MudaCargoPrevista\JobMudaCargoPrevistaExportaExcel;
 use App\Models\Arquivo;
+use App\Models\AprovacaoExtraConfig;
+use App\Models\CentroCusto;
+use App\Models\Cliente;
 use App\Models\MudaCargoPrevista;
+use App\Services\Cih\CihLotacaoResolver;
+use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
+use App\Services\MudaCargoPrevista\MudaCargoPrevistaEditPayloadMapper;
+use App\Services\MudaCargoPrevista\MudaCargoPrevistaFilterApplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use MasterTag\DataHora;
@@ -83,20 +90,25 @@ class MudaCargoPrevistaController extends Controller
      */
     public function edit(MudaCargoPrevista $mudaCargoPrevista)
     {
-        $mudaCargoPrevista->autocomplete_label_colaborador = $mudaCargoPrevista->Colaborador ? $mudaCargoPrevista->Colaborador->nome : '';
-        $mudaCargoPrevista->autocomplete_label_colaborador_anterior = $mudaCargoPrevista->Colaborador ? $mudaCargoPrevista->Colaborador->nome : '';
+        $mapper = new MudaCargoPrevistaEditPayloadMapper();
 
-        $mudaCargoPrevista->autocomplete_label_gestor_modal = $mudaCargoPrevista->GestorAprovacao ? $mudaCargoPrevista->GestorAprovacao->nome : '';
-        $mudaCargoPrevista->autocomplete_label_gestor_modal_anterior = $mudaCargoPrevista->GestorAprovacao ? $mudaCargoPrevista->GestorAprovacao->nome : '';
+        $item = MudaCargoPrevista::query()
+            ->select(MudaCargoPrevistaEditPayloadMapper::MUDA_CARGO_COLUMNS)
+            ->with([
+                'Colaborador:' . implode(',', MudaCargoPrevistaEditPayloadMapper::USER_COLUMNS),
+                'GestorAprovacao:' . implode(',', MudaCargoPrevistaEditPayloadMapper::USER_COLUMNS),
+                'UserAprovacao:' . implode(',', MudaCargoPrevistaEditPayloadMapper::USER_COLUMNS),
+                'AprovacaoExtra:' . implode(',', MudaCargoPrevistaEditPayloadMapper::USER_COLUMNS),
+                'CargoAnterior:' . implode(',', MudaCargoPrevistaEditPayloadMapper::VAGA_COLUMNS),
+                'NovoCargo:' . implode(',', MudaCargoPrevistaEditPayloadMapper::VAGA_COLUMNS),
+                'Anexos' => function ($query) {
+                    $query->select(MudaCargoPrevistaEditPayloadMapper::ANEXO_COLUMNS);
+                },
+            ])
+            ->whereKey($mudaCargoPrevista->id)
+            ->firstOrFail();
 
-        $mudaCargoPrevista->autocomplete_label_cargoanterior = $mudaCargoPrevista->CargoAnterior ? $mudaCargoPrevista->CargoAnterior->nome : '';
-        $mudaCargoPrevista->autocomplete_label_cargoanterior_anterior = $mudaCargoPrevista->CargoAnterior ? $mudaCargoPrevista->CargoAnterior->nome : '';
-
-        $mudaCargoPrevista->autocomplete_label_novo_cargo = $mudaCargoPrevista->NovoCargo ? $mudaCargoPrevista->NovoCargo->nome : '';
-        $mudaCargoPrevista->autocomplete_label_novo_cargo_anterior = $mudaCargoPrevista->NovoCargo ? $mudaCargoPrevista->NovoCargo->nome : '';
-        $mudaCargoPrevista->anexosDel = [];
-        $mudaCargoPrevista->load('Anexos');
-        return $mudaCargoPrevista;
+        return response()->json($mapper->map($item));
     }
 
     /**
@@ -246,58 +258,99 @@ class MudaCargoPrevistaController extends Controller
     {
         $resultado = $this->filtro($request)->paginate($request->pages);
 
+        $config = AprovacaoExtraConfig::getConfigAtiva(auth()->user()->empresa_id, AprovacaoExtraConfig::TIPO_MUDANCA_CARGO);
+        $podeAprovarExtra = false;
+        $nomeAprovacaoExtra = '';
+
+        if ($config) {
+            $podeAprovarExtra = $config->podeAprovar(auth()->id());
+            $nomeAprovacaoExtra = $config->nome_aprovacao;
+        }
+
+        $empresaId = (int) auth()->user()->empresa_id;
+        $empresa = Cliente::query()
+            ->select(['id', 'nome_fantasia', 'razao_social', 'cnpj'])
+            ->find($empresaId);
+        $lotacaoResolver = new CihLotacaoResolver($empresaId);
+
+        $itens = $resultado->items();
+        foreach ($itens as $item) {
+            $item->lotacao = LotacaoLabelResolver::fromCentroCustoId(
+                $empresaId,
+                $item->centro_custo_id ? (int) $item->centro_custo_id : null,
+                $empresa,
+                $item->CentroCusto?->label,
+                $lotacaoResolver
+            );
+        }
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'itens' => $resultado->items(),
+                'itens' => $itens,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
+                'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
+                'pode_aprovar_extra' => $podeAprovarExtra,
+                'tem_aprovacao_extra' => $config ? true : false,
+                'nome_aprovacao_extra' => $nomeAprovacaoExtra,
+                'mimes' => Arquivo::MIMEAPENASIMAGENSPDF,
+                'cc' => (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id),
             ]
         ]);
     }
 
     public function filtro(Request $request)
     {
-        $resultado = MudaCargoPrevista::with(
-            'CentroCusto',
-            'CargoAnterior',
-            'NovoCargo',
-            'UserCadastrou:id,nome',
-            'Colaborador:id,nome,login,tipo,ativo','GestorAprovacao:id,nome','UserAprovacao:id,nome');
+        $user = auth()->user();
+        $resultado = MudaCargoPrevista::query()
+            ->select([
+                'id',
+                'centro_custo_id',
+                'colaborador_id',
+                'cargo_anterior_id',
+                'novo_cargo_id',
+                'salario_anterior',
+                'novo_salario',
+                'user_id',
+                'gestor_id',
+                'user_aprovacao_id',
+                'status_aprovacao',
+                'data_aprovacao',
+                'created_at',
+                'updated_at',
+            ])
+            ->with([
+                'CentroCusto:id,label',
+                'CargoAnterior:id,nome',
+                'NovoCargo:id,nome',
+                'UserCadastrou:id,nome',
+                'Colaborador:id,nome',
+                'GestorAprovacao:id,nome',
+                'UserAprovacao:id,nome',
+            ]);
 
-        $filtroPeriodo = $request->filtroPeriodo == 'true';
+        (new MudaCargoPrevistaFilterApplier($request->all(), $user))->apply($resultado);
 
-        if ($filtroPeriodo) {
-            $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0].' 00:00:00');
-            $dataFim = new DataHora($periodo[1].' 23:59:59');
-            $resultado->where('created_at', '>=', $dataInicio->dataHoraInsert())
-                ->where('created_at', '<=', $dataFim->dataHoraInsert());
-        }
-
-        if ($request->filled('campoBusca')) {
-            $resultado->whereHas('Colaborador', function ($q) use ($request) {
-                $q->where('nome', 'like', '%' . $request->campoBusca . '%')
-                    ->orWhere('id', $request->campoBusca);
-            });
-        }
-
-        if ($request->filled('campoStatus')) {
-            $status = $request->campoStatus == "aberto" ? null : $request->campoStatus;
-            $resultado->whereStatusAprovacao($status);
-        }
-
-        if (!auth()->user()->can('privilegio_gestao_rh')){
-            $resultado->whereUserId(auth()->user()->id)->orWhere('gestor_id', auth()->user()->id);
-        }
-
-        return $resultado->orderByDesc('created_at');
+        return $resultado;
     }
 
     public function export(Request $request)
     {
-        JobMudaCargoPrevistaExportaExcel::dispatch(auth()->user(),$this->filtro($request));
+        $filtros = $request->all();
+        $filtros['_full_export_access'] = auth()->user()->can('privilegio_gestao_rh')
+            || auth()->user()->can('privilegio_aprovar_por_rh')
+            || auth()->user()->can('privilegio_aprovar_rh');
+
+        $nomeArquivo = 'muda_cargo_prevista_' . rand(1000, 9999) . '_' . date('YmdHis') . '.csv';
+        JobMudaCargoPrevistaExportaExcel::dispatch(
+            auth()->id(),
+            'Planejamento - Movimentação - Mudança de Cargo Prevista',
+            $nomeArquivo,
+            $filtros
+        );
+
         return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
     }
     public function atualizacaoStatus(Request $request)

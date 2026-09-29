@@ -214,7 +214,7 @@
                                 </div>
                             </div>
                             <div class="col-12 col-md-4 mt-4 mb-4" v-if="visualizar">
-                                <legend>Solicitação feita por: {{ form.solicitante !== null ? form.solicitante.nome : '' }} {{ form.data_solicitacao }}</legend>
+                                <legend>Solicitação feita por: {{ form.solicitante || '' }} {{ form.data_solicitacao }}</legend>
                             </div>
                         </div>
 
@@ -403,35 +403,44 @@
             </template>
         </modal>
 
-        <fieldset class="mt-0">
-            <legend>Filtro</legend>
-            <form
-                class="row"
-                @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null"
-            >
-                <div class="col-12 col-md-3">
-                    <div class="form-group">
-                        <label>Período Aquisitivo</label>
-                        <select
-                            class="form-control form-control-sm"
-                            v-model="controle.dados.filtroPeriodoAquisitivo"
-                            :disabled="controle.carregando"
-                            @change="atualizar()"
-                        >
-                            <option value="">Últimos 3 períodos</option>
-                            <option v-for="item in periodos" :value="item.id" :key="item.id" v-text="item.label"></option>
-                        </select>
+        <FiltroListagem
+            class="mt-2 mybp-filtros-compactos"
+            :mostrar-limpar-filtros="totalFiltrosAtivos > 0"
+            :desabilitado="controle.carregando"
+            @submit="atualizar"
+            @limpar="limparFiltros"
+        >
+            <template #filtros>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="ferias-filtro-periodo-aquisitivo">Período aquisitivo</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroPeriodoAquisitivo"
+                                instance-id="ferias-periodo-aquisitivo"
+                                input-id="ferias-filtro-periodo-aquisitivo"
+                                v-model="controle.dados.filtroPeriodoAquisitivo"
+                                :options="opcoesPeriodoAquisitivo"
+                                :disabled="controle.carregando"
+                                placeholder-blur="Últimos 3 períodos"
+                                empty-message="Nenhum período encontrado."
+                                :max-results="50"
+                                @opening="fecharOutrosComboboxes('ferias-periodo-aquisitivo')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
                     </div>
                 </div>
+
                 <date-range-filter
                     v-model:enabled="controle.dados.filtroPeriodo"
                     v-model:start-date="controle.dados.dataInicio"
                     v-model:end-date="controle.dados.dataFim"
                     :disabled="controle.carregando || controle.dados.filtroVencimento || controle.dados.filtroInicioFerias"
                     :id-suffix="`cadastrado_${hash}`"
-                    label="Por período cadastrado"
-                    @change="atualizar()"
-                    wrapper-class="col-12 col-md-3"
+                    label="Período cadastrado"
+                    wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                    @change="atualizar"
                 />
 
                 <date-range-filter
@@ -440,9 +449,9 @@
                     v-model:end-date="controle.dados.dataFimVencimento"
                     :disabled="controle.carregando || controle.dados.filtroPeriodo || controle.dados.filtroInicioFerias"
                     :id-suffix="`vencimento_${hash}`"
-                    label="Por período de vencimento"
-                    @change="atualizar()"
-                    wrapper-class="col-12 col-md-3"
+                    label="Período de vencimento"
+                    wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                    @change="atualizar"
                 />
 
                 <date-range-filter
@@ -451,102 +460,169 @@
                     v-model:end-date="controle.dados.dataFimFerias"
                     :disabled="controle.carregando || controle.dados.filtroVencimento || controle.dados.filtroPeriodo"
                     :id-suffix="`inicioferias_${hash}`"
-                    label="Por período de início das férias"
-                    @change="atualizar()"
-                    wrapper-class="col-12 col-md-3"
+                    label="Início das férias"
+                    wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                    @change="atualizar"
                 />
 
-                <div class="col-12 col-md-6">
-                    <div class="form-group">
-                        <label>Pesquisar</label>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="ferias-filtro-busca">
+                            Colaborador / CPF
+                            <span v-if="buscaUnificadaEhCpf" class="ferias-filtro-hint">CPF</span>
+                        </label>
                         <input
+                            id="ferias-filtro-busca"
                             type="text"
-                            placeholder="Buscar por colaborador"
+                            placeholder="Nome ou CPF"
                             autocomplete="off"
+                            inputmode="search"
                             class="form-control form-control-sm"
                             :disabled="controle.carregando"
-                            v-model="controle.dados.campoBusca"
+                            :value="campoBuscaUnificada"
+                            @input="onInputBuscaUnificada"
                         />
                     </div>
                 </div>
 
-                <div class="col-12 col-md-3">
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select
-                            class="form-control form-control-sm"
-                            v-model="controle.dados.campoStatusAprovacao"
-                            :disabled="controle.carregando"
-                            @change="atualizar()"
-                        >
-                            <option value="">Todos os Status</option>
-                            <option value="aberto">Em aberto</option>
-                            <option value="aprovado_gestor">Aprovado Gestor</option>
-                            <option value="aprovado_rh">Aprovado Rh</option>
-                            <option value="reprovado">Reprovado</option>
-                        </select>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="ferias-filtro-status">Status</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroStatus"
+                                instance-id="ferias-status"
+                                input-id="ferias-filtro-status"
+                                v-model="controle.dados.campoStatusAprovacao"
+                                :options="opcoesStatus"
+                                :disabled="controle.carregando"
+                                placeholder-blur="Todos os status"
+                                empty-message="Nenhum status encontrado."
+                                :max-results="20"
+                                @opening="fecharOutrosComboboxes('ferias-status')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-12 col-md-2">
-                    <div class="form-group">
-                        <label>Ordenar por</label>
-                        <select class="form-control form-control-sm" v-model="controle.dados.ordenacao" :disabled="controle.carregando" @change="atualizar()">
-                            <option value="created_at_desc">Mais recente</option>
-                            <option value="created_at_asc">Mais antigo</option>
-                            <option value="updated_at_desc">Última modificação</option>
-                        </select>
+                <div class="col-12 col-md-4" v-if="lista_ccs && temFilial">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="ferias-filtro-cnpj">Lotação (CNPJ)</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroCnpj"
+                                instance-id="ferias-cnpj"
+                                input-id="ferias-filtro-cnpj"
+                                v-model="controle.dados.campoCnpj"
+                                :options="opcoesCnpj"
+                                :disabled="controle.carregando"
+                                placeholder-blur="Todas as lotações"
+                                empty-message="Nenhuma lotação encontrada."
+                                :max-results="50"
+                                @opening="fecharOutrosComboboxes('ferias-cnpj')"
+                                @select="onSelectCnpj"
+                            />
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-12 col-md-2">
-                    <div class="form-group">
-                        <label for="">Exibir</label>
-                        <select class="form-control form-control-sm" @change="atualizar()" :disabled="controle.carregando" v-model="controle.dados.pages">
-                            <option v-for="(item, index) in por_pagina" :value="item" :key="index">{{ item }}</option>
-                        </select>
+                <div v-if="lista_ccs" :class="temFilial ? 'col-12 col-md-8' : 'col-12'">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="ferias-filtro-cc">Centro de custo</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroCc"
+                                instance-id="ferias-cc"
+                                input-id="ferias-filtro-cc"
+                                v-model="controle.dados.campoCentroCusto"
+                                :options="opcoesCentroCusto"
+                                :disabled="controle.carregando || !opcoesCentroCusto.length"
+                                placeholder-blur="Todos os centros"
+                                empty-message="Nenhum centro de custo encontrado."
+                                :max-results="200"
+                                @opening="fecharOutrosComboboxes('ferias-cc')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
                     </div>
                 </div>
 
-                <div class="col-12"></div>
-            </form>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="ferias-filtro-ordenacao">Ordenar por</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroOrdenacao"
+                                instance-id="ferias-ordenacao"
+                                input-id="ferias-filtro-ordenacao"
+                                v-model="controle.dados.ordenacao"
+                                :options="opcoesOrdenacao"
+                                :disabled="controle.carregando"
+                                placeholder-blur="Mais recentes"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @opening="fecharOutrosComboboxes('ferias-ordenacao')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
+                    </div>
+                </div>
 
-            <div class="d-flex">
-                <button type="button" class="btn btn-sm mr-1 btn-success mr-1" :disabled="controle.carregando" @click="atualizar">
-                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                    Atualizar
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="ferias-filtro-pages">Por página</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroPages"
+                                instance-id="ferias-pages"
+                                input-id="ferias-filtro-pages"
+                                v-model="campoPagesCombo"
+                                :options="opcoesPages"
+                                :disabled="controle.carregando"
+                                placeholder-blur="50"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @opening="fecharOutrosComboboxes('ferias-pages')"
+                                @select="onSelectFiltro"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template #acoes>
+                <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
+                    Buscar
                 </button>
-
                 <button
                     type="button"
-                    class="btn btn-sm mr-1 btn-primary mr-1"
+                    class="btn btn-sm btn-primary"
                     :disabled="controle.carregando"
                     @click.prevent="formNovo(); $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
                 >
                     Solicitar
                 </button>
-
                 <button
                     type="button"
-                    class="btn btn-sm mr-1 btn-primary mr-1"
+                    class="btn btn-sm btn-outline-primary"
                     @click.prevent="exportaExcel()"
                     :disabled="controle.carregando || preloadExportacao || (!controle.carregando && !lista.length)"
                 >
-                    <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
+                    <i class="fas fa-file-excel"></i> Exportar Excel
                 </button>
-
                 <button
-                    type="submit"
-                    class="btn btn-sm mr-1 btn-primary mr-1"
+                    type="button"
+                    class="btn btn-sm btn-primary"
                     v-show="selecionados.length > 0"
-                    :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
                     :disabled="selecionados.length === 0"
-                        @click.prevent="$refs.modal_janelaAtualizaStatus && $refs.modal_janelaAtualizaStatus.abrirModal()"
+                    @click.prevent="$refs.modal_janelaAtualizaStatus && $refs.modal_janelaAtualizaStatus.abrirModal()"
                 >
                     Atualizar Status <span class="badge badge-light">{{ selecionados.length }}</span>
                 </button>
-            </div>
-        </fieldset>
+            </template>
+        </FiltroListagem>
 
         <preload class="text-center" v-if="controle.carregando"></preload>
 
@@ -740,6 +816,11 @@
                             <span class="detail-value">{{ item.admissao.centro_custo ? item.admissao.centro_custo.label : '' }}</span>
                         </div>
                         <div class="detail-item">
+                            <i class="fas fa-map-marker-alt text-muted"></i>
+                            <span class="detail-label">Lotação:</span>
+                            <span class="detail-value">{{ item.lotacao || 'Não informado' }}</span>
+                        </div>
+                        <div class="detail-item">
                             <i class="fas fa-calendar-alt text-primary"></i>
                             <span class="detail-label">Admissão:</span>
                             <span class="detail-value">{{ item.admissao.data_admissao }}</span>
@@ -899,12 +980,15 @@ import configselect2 from '../../../components/Select2/mixSelec2'
 import Select2 from '../../../components/Select2/Select2'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 import Utils from '../../../mixins/Utils'
+import configuracoes from '../../../mixins/Configuracoes'
 import Upload from '../../Upload'
 import Validacoes from '../../../mixins/Validacoes'
 import DateRangeFilter from '../../DateRangeFilter.vue'
+import ComboboxAutoComplete from '../../ComboboxAutoComplete'
+import FiltroListagem from '../../ui/FiltroListagem.vue'
 
 export default {
-    mixins: [configselect2, ExportacaoMixin, Utils, Validacoes],
+    mixins: [configselect2, ExportacaoMixin, Utils, Validacoes, configuracoes],
     inject: {
         atualizarUrlMovimentacao: { default: () => () => {} }
     },
@@ -971,7 +1055,7 @@ export default {
                 dias_saldo: '',
                 tem_faltas: false,
                 qnt_faltas: 0,
-                solicitante: null,
+                solicitante: '',
                 obs_solicitante: '',
                 data_solicitacao: '',
                 gestor_aprovacao: null,
@@ -993,6 +1077,8 @@ export default {
                 autocomplete_label_gestor_modal: '',
                 autocomplete_label_gestor_modal_anterior: '',
                 centro_custo: null,
+                centro_custo_id: '',
+                data_admissao: '',
                 anexos: [],
                 anexosDel: []
             },
@@ -1003,6 +1089,7 @@ export default {
             ultimaData: '',
             periodo_label: '',
             centro_custos: [],
+            lista_ccs: null,
 
             /**
              *
@@ -1021,7 +1108,10 @@ export default {
                     dataInicio: '',
                     dataFim: '',
                     campoBusca: '',
+                    campoCPF: '',
                     campoStatusAprovacao: '',
+                    campoCnpj: '',
+                    campoCentroCusto: '',
                     pages: 50,
                     filtroVencimento: false,
                     dataInicioVencimento: '',
@@ -1040,7 +1130,9 @@ export default {
         gestoraprovacao,
         Select2,
         Upload,
-        DateRangeFilter
+        DateRangeFilter,
+        ComboboxAutoComplete,
+        FiltroListagem
     },
     mounted() {
         this.urlParamGet()
@@ -1132,6 +1224,111 @@ export default {
         },
         paramsExport() {
             return this.controle.dados
+        },
+        totalFiltrosAtivos() {
+            const d = this.controle.dados
+            let total = [d.campoBusca, d.campoCPF, d.campoStatusAprovacao, d.campoCentroCusto, d.filtroPeriodoAquisitivo].filter(
+                (v) => v !== '' && v !== null && v !== undefined
+            ).length
+            if (this.temFilial && d.campoCnpj) total++
+            if (d.filtroPeriodo && d.dataInicio && d.dataFim) total++
+            if (d.filtroVencimento && d.dataInicioVencimento && d.dataFimVencimento) total++
+            if (d.filtroInicioFerias && d.dataInicioFerias && d.dataFimFerias) total++
+            if (d.ordenacao && d.ordenacao !== 'created_at_desc') total++
+            if (Number(d.pages) !== 50) total++
+            return total
+        },
+        campoBuscaUnificada() {
+            const d = this.controle.dados
+            if (d.campoCPF) return d.campoCPF
+            return d.campoBusca || ''
+        },
+        buscaUnificadaEhCpf() {
+            return !!this.controle.dados.campoCPF
+        },
+        filtroListaCentroCustoCnpj() {
+            if (!this.lista_ccs) return []
+            if (this.controle.dados.campoCnpj !== '' && this.temFilial) {
+                return this.lista_ccs.centros_custos[this.controle.dados.campoCnpj] || []
+            }
+            if (!this.temFilial) {
+                const keys = Object.keys(this.lista_ccs.centros_custos || {})
+                return keys.length ? this.lista_ccs.centros_custos[keys[0]] || [] : []
+            }
+            const all = []
+            Object.values(this.lista_ccs.centros_custos || {}).forEach((lista) => {
+                ;(lista || []).forEach((item) => all.push(item))
+            })
+            return all
+        },
+        opcoesCnpj() {
+            const opts = [{ value: '', label: 'Todas as lotações' }]
+            if (!this.lista_ccs || !this.lista_ccs.cnpjs) return opts
+            Object.keys(this.lista_ccs.cnpjs).forEach((key) => {
+                const item = this.lista_ccs.cnpjs[key]
+                opts.push({
+                    value: key,
+                    label: `${item.nome_fantasia} - ${item.cnpj}`,
+                    meta: item.cnpj
+                })
+            })
+            return opts
+        },
+        opcoesCentroCusto() {
+            const opts = [{ value: '', label: 'Todos os centros' }]
+            ;(this.filtroListaCentroCustoCnpj || []).forEach((item) => {
+                const value = item.matriz ? item.id : item.filial_id
+                if (value == null || value === '') return
+                opts.push({
+                    value: String(value),
+                    label: item.label,
+                    meta: item.matriz ? 'Matriz' : 'Filial'
+                })
+            })
+            return opts
+        },
+        opcoesPeriodoAquisitivo() {
+            const opts = [{ value: '', label: 'Últimos 3 períodos' }]
+            ;(this.periodos || []).forEach((item) => {
+                opts.push({ value: String(item.id), label: item.label })
+            })
+            return opts
+        },
+        opcoesStatus() {
+            const opts = [
+                { value: '', label: 'Todos os status' },
+                { value: 'aberto', label: 'Em aberto' },
+                { value: 'aprovado_gestor', label: 'Aprovado Gestor' }
+            ]
+            if (this.temAprovacaoExtra) {
+                opts.push({
+                    value: 'aprovado_extra',
+                    label: `Aprovado ${this.nomeAprovacaoExtra || 'Extra'}`
+                })
+            }
+            opts.push(
+                { value: 'aprovado_rh', label: 'Aprovado Rh' },
+                { value: 'reprovado', label: 'Reprovado' }
+            )
+            return opts
+        },
+        opcoesOrdenacao() {
+            return [
+                { value: 'created_at_desc', label: 'Mais recentes' },
+                { value: 'created_at_asc', label: 'Mais antigos' },
+                { value: 'updated_at_desc', label: 'Última modificação' }
+            ]
+        },
+        opcoesPages() {
+            return this.por_pagina.map((n) => ({ value: String(n), label: String(n) }))
+        },
+        campoPagesCombo: {
+            get() {
+                return String(this.controle.dados.pages || 50)
+            },
+            set(valor) {
+                this.controle.dados.pages = parseInt(valor, 10) || 50
+            }
         }
     },
     methods: {
@@ -1160,7 +1357,10 @@ export default {
             if (urlParams.get('pages')) this.controle.dados.pages = parseInt(urlParams.get('pages'), 10) || 50
             if (urlParams.get('ordenacao')) this.controle.dados.ordenacao = urlParams.get('ordenacao')
             if (urlParams.get('campoBusca')) this.controle.dados.campoBusca = urlParams.get('campoBusca')
+            if (urlParams.get('campoCPF')) this.controle.dados.campoCPF = urlParams.get('campoCPF')
             if (urlParams.get('campoStatusAprovacao')) this.controle.dados.campoStatusAprovacao = urlParams.get('campoStatusAprovacao')
+            if (urlParams.get('campoCnpj')) this.controle.dados.campoCnpj = urlParams.get('campoCnpj')
+            if (urlParams.get('campoCentroCusto')) this.controle.dados.campoCentroCusto = urlParams.get('campoCentroCusto')
             if (urlParams.get('filtroPeriodoAquisitivo')) this.controle.dados.filtroPeriodoAquisitivo = urlParams.get('filtroPeriodoAquisitivo')
             if (urlParams.get('dataInicio')) this.controle.dados.dataInicio = urlParams.get('dataInicio')
             if (urlParams.get('dataFim')) this.controle.dados.dataFim = urlParams.get('dataFim')
@@ -1183,7 +1383,10 @@ export default {
             const d = this.controle.dados
             const params = { pages: d.pages || 50, ordenacao: d.ordenacao || 'created_at_desc' }
             if (d.campoBusca) params.campoBusca = d.campoBusca
+            if (d.campoCPF) params.campoCPF = d.campoCPF
             if (d.campoStatusAprovacao) params.campoStatusAprovacao = d.campoStatusAprovacao
+            if (d.campoCnpj) params.campoCnpj = d.campoCnpj
+            if (d.campoCentroCusto) params.campoCentroCusto = d.campoCentroCusto
             if (d.filtroPeriodoAquisitivo) params.filtroPeriodoAquisitivo = d.filtroPeriodoAquisitivo
             if (d.filtroPeriodo) params.filtroPeriodo = 1
             if (d.filtroPeriodo && d.dataInicio) params.dataInicio = d.dataInicio
@@ -1196,6 +1399,10 @@ export default {
             if (d.filtroInicioFerias && d.dataFimFerias) params.dataFimFerias = d.dataFimFerias
             if (d.token) params.token = d.token
             this.atualizarUrlMovimentacao(params)
+        },
+        limparTokenFiltroListagem() {
+            this.controle.dados.token = ''
+            this.syncUrlFiltros()
         },
         //apagar férias
         formApagarFerias(id) {
@@ -1344,7 +1551,9 @@ export default {
             formReset()
             this.form = _.cloneDeep(this.formDefault) //copia
             this.form.centro_custo_id = ''
+            this.limparTokenFiltroListagem()
             this.listaCentroCusto()
+            this.ultimaData = ''
         },
 
         cadastrar() {
@@ -1518,21 +1727,127 @@ export default {
             this.podeAprovarExtra = dados.pode_aprovar_extra || false
             this.temAprovacaoExtra = dados.tem_aprovacao_extra || false
             this.nomeAprovacaoExtra = dados.nome_aprovacao_extra || ''
-            this.controle.carregando = false
             this.permissoes = dados.permissoes
+            this.mimes = dados.mimes || this.mimes
+            if (dados.cc) {
+                this.lista_ccs = dados.cc
+                if (!this.temFilial && dados.cc.cnpjs) {
+                    const keys = Object.keys(dados.cc.cnpjs)
+                    if (keys.length && !this.controle.dados.campoCnpj) {
+                        this.controle.dados.campoCnpj = keys[0]
+                    }
+                }
+            }
+            this.controle.carregando = false
+            this.$nextTick(() => this.syncUrlFiltros())
         },
         carregando() {
             this.controle.carregando = true
         },
         atualizar() {
+            this.syncUrlFiltros()
             this.$refs && this.$refs && this.$refs.componente && (this.$refs.componente.atual = 1)
             this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
+        },
+        limparFiltros() {
+            const d = this.controle.dados
+            d.campoBusca = ''
+            d.campoCPF = ''
+            d.campoStatusAprovacao = ''
+            d.campoCentroCusto = ''
+            d.filtroPeriodoAquisitivo = ''
+            d.filtroPeriodo = false
+            d.dataInicio = ''
+            d.dataFim = ''
+            d.filtroVencimento = false
+            d.dataInicioVencimento = ''
+            d.dataFimVencimento = ''
+            d.filtroInicioFerias = false
+            d.dataInicioFerias = ''
+            d.dataFimFerias = ''
+            d.ordenacao = 'created_at_desc'
+            d.pages = 50
+            d.token = ''
+            if (this.temFilial) {
+                d.campoCnpj = ''
+            } else if (this.lista_ccs && this.lista_ccs.cnpjs) {
+                const keys = Object.keys(this.lista_ccs.cnpjs)
+                d.campoCnpj = keys[0] || ''
+            } else {
+                d.campoCnpj = ''
+            }
+            this.atualizar()
+        },
+        formatarCpfDigitos(valor) {
+            const d = String(valor || '').replace(/\D/g, '').slice(0, 11)
+            if (d.length <= 3) return d
+            if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`
+            if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`
+            return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`
+        },
+        parecePadraoCpf(valor) {
+            const raw = String(valor || '').trim()
+            if (!raw) return false
+            if (!/^[\d.\-\s]+$/.test(raw)) return false
+            const digitos = raw.replace(/\D/g, '')
+            return digitos.length > 0 && digitos.length <= 11
+        },
+        onInputBuscaUnificada(event) {
+            const valor = event && event.target ? event.target.value : ''
+            const d = this.controle.dados
+            if (!valor) {
+                d.campoBusca = ''
+                d.campoCPF = ''
+                return
+            }
+            if (this.parecePadraoCpf(valor)) {
+                const mascarado = this.formatarCpfDigitos(valor)
+                d.campoCPF = mascarado
+                d.campoBusca = ''
+                if (event.target && event.target.value !== mascarado) {
+                    event.target.value = mascarado
+                }
+                return
+            }
+            d.campoBusca = valor
+            d.campoCPF = ''
+        },
+        onSelectCnpj() {
+            this.controle.dados.campoCentroCusto = ''
+            this.atualizar()
+        },
+        onSelectFiltro() {
+            this.atualizar()
+        },
+        fecharOutrosComboboxes(excetoId) {
+            const mapa = {
+                'ferias-periodo-aquisitivo': 'comboFiltroPeriodoAquisitivo',
+                'ferias-status': 'comboFiltroStatus',
+                'ferias-cnpj': 'comboFiltroCnpj',
+                'ferias-cc': 'comboFiltroCc',
+                'ferias-ordenacao': 'comboFiltroOrdenacao',
+                'ferias-pages': 'comboFiltroPages'
+            }
+            Object.keys(mapa).forEach((id) => {
+                if (id === excetoId) return
+                const ref = this.$refs[mapa[id]]
+                if (ref && typeof ref.close === 'function') ref.close()
+            })
         }
     }
 }
 </script>
 
 <style scoped>
+.ferias-filtro-hint {
+    margin-left: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #0d6efd;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
 /* Checkbox Geral */
 .checkbox-geral-container {
     background: #fff;

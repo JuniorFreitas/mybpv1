@@ -4,6 +4,7 @@ namespace App\Services\FeriasPrevista;
 
 use App\Models\Ferias;
 use App\Models\User;
+use App\Services\DemissaoPrevista\DemissaoPrevistaFilterApplier;
 use Illuminate\Database\Eloquent\Builder;
 use MasterTag\DataHora;
 
@@ -28,7 +29,9 @@ class FeriasPrevistaFilterApplier
         $this->applyFiltroVencimento($query);
         $this->applyFiltroInicioFerias($query);
         $this->applyCampoBusca($query);
+        $this->applyCampoCpf($query);
         $this->applyCampoStatusAprovacao($query);
+        $this->applyCnpjCentroCusto($query);
         $this->applyPermissoes($query);
         $this->applyPeriodoAquisitivo($query);
         $this->applyOrdenacao($query);
@@ -145,6 +148,46 @@ class FeriasPrevistaFilterApplier
         });
     }
 
+    private function applyCampoCpf(Builder $query): void
+    {
+        if (empty($this->filtros['campoCPF'] ?? '')) {
+            return;
+        }
+        $cpfDigits = preg_replace('/\D/', '', (string) $this->filtros['campoCPF']);
+        if ($cpfDigits === '') {
+            return;
+        }
+        $query->whereHas('Admissao.Feedback.Curriculo', function ($c) use ($cpfDigits) {
+            $c->where('cpf', 'like', '%' . $cpfDigits . '%')
+                ->orWhereRaw(
+                    "REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(cpf,''), '.', ''), '-', ''), '/', ''), ' ', '') LIKE ?",
+                    ['%' . $cpfDigits . '%']
+                );
+        });
+    }
+
+    private function applyCnpjCentroCusto(Builder $query): void
+    {
+        $campoCnpj = $this->filtros['campoCnpj'] ?? null;
+        $campoCentroCusto = $this->filtros['campoCentroCusto'] ?? null;
+        $temCnpj = $campoCnpj !== null && $campoCnpj !== '';
+        $temCentro = $campoCentroCusto !== null && $campoCentroCusto !== '' && $campoCentroCusto !== 'todos';
+
+        if (!$temCnpj && !$temCentro) {
+            return;
+        }
+
+        $query->whereHas('Admissao', function ($q) use ($campoCnpj, $campoCentroCusto) {
+            DemissaoPrevistaFilterApplier::applyCnpjCentroCusto(
+                $q,
+                $campoCnpj,
+                $campoCentroCusto,
+                'admissoes',
+                $this->user->empresa_id
+            );
+        });
+    }
+
     private function applyCampoStatusAprovacao(Builder $query): void
     {
         if (!isset($this->filtros['campoStatusAprovacao']) || $this->filtros['campoStatusAprovacao'] === '') {
@@ -156,7 +199,14 @@ class FeriasPrevistaFilterApplier
             return;
         }
         if ($status === 'aprovado_gestor') {
-            $query->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
+            $query->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)
+                ->whereNull('status_aprovacao_extra')
+                ->whereNull('status_aprovacao_rh');
+            return;
+        }
+        if ($status === 'aprovado_extra') {
+            $query->where('status_aprovacao_extra', Ferias::STATUS_APROVADO)
+                ->whereNull('status_aprovacao_rh');
             return;
         }
         if ($status === 'aprovado_rh') {
@@ -165,6 +215,7 @@ class FeriasPrevistaFilterApplier
         }
         $query->where(function ($q) {
             $q->where('status_aprovacao_gestor', Ferias::STATUS_REPROVADO)
+                ->orWhere('status_aprovacao_extra', Ferias::STATUS_REPROVADO)
                 ->orWhere('status_aprovacao_rh', Ferias::STATUS_REPROVADO);
         });
     }

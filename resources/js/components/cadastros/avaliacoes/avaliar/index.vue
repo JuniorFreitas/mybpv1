@@ -408,13 +408,18 @@
         </modal>
 
         <div id="conteudo" class="ma-conteudo">
-            <div class="card ma-card ma-filtros shadow border-0 mb-3">
-                <div class="card-body py-3 ma-filtros-card-body">
-                    <h6 class="ma-card-title text-uppercase mb-3"><i class="fa fa-sliders-h mr-2 text-primary"></i>Filtros</h6>
-                    <form class="row align-items-end ma-filtros-form" @submit.prevent="buscarComFiltros()">
-                        <div class="col-12 col-md-4 col-lg-2 ma-filtro-ano-col">
-                            <div class="form-group mb-2 mb-md-0 ma-filtro-ano-wrap">
-                                <label class="ma-label" for="ma-filtro-ano-input">Ano</label>
+            <FiltroListagem
+                class="mt-2 mybp-filtros-compactos"
+                :mostrar-limpar-filtros="totalFiltrosAtivos > 0"
+                :desabilitado="controle.carregando"
+                @submit="buscarComFiltros"
+                @limpar="limparFiltros"
+            >
+                <template #filtros>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label" for="ma-filtro-ano-input">Ano</label>
+                            <div class="mybp-combobox-wrap">
                                 <combobox-auto-complete
                                     ref="comboAno"
                                     instance-id="ano"
@@ -430,10 +435,12 @@
                                 />
                             </div>
                         </div>
+                    </div>
 
-                        <div class="col-12 col-md-7 col-lg-7 ma-filtro-avaliacao-col">
-                            <div class="form-group mb-2 mb-md-0 ma-filtro-avaliacao-wrap">
-                                <label class="ma-label" for="ma-filtro-avaliacao-input">Avaliação</label>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label" for="ma-filtro-avaliacao-input">Avaliação</label>
+                            <div class="mybp-combobox-wrap">
                                 <combobox-auto-complete
                                     ref="comboAvaliacao"
                                     instance-id="avaliacao"
@@ -453,10 +460,12 @@
                                 </combobox-auto-complete>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="col-12 col-md-6 col-lg-3 mt-2 mt-lg-0">
-                            <div class="form-group mb-2 mb-md-0">
-                                <label class="ma-label" for="ma-filtro-legenda-input">Fluxo da avaliação</label>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label" for="ma-filtro-legenda-input">Fluxo da avaliação</label>
+                            <div class="mybp-combobox-wrap">
                                 <combobox-auto-complete
                                     ref="comboLegenda"
                                     instance-id="legenda"
@@ -470,10 +479,12 @@
                                 />
                             </div>
                         </div>
+                    </div>
 
-                        <div class="col-12 col-md-6 col-lg-3 mt-2 mt-lg-0">
-                            <div class="form-group mb-2 mb-md-0">
-                                <label class="ma-label" for="ma-filtro-avaliador-input">Avaliador</label>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label" for="ma-filtro-avaliador-input">Avaliador</label>
+                            <div class="mybp-combobox-wrap">
                                 <combobox-auto-complete
                                     ref="comboAvaliador"
                                     instance-id="avaliador"
@@ -488,10 +499,12 @@
                                 />
                             </div>
                         </div>
+                    </div>
 
-                        <div class="col-12 col-md-6 col-lg-3 mt-2 mt-lg-0">
-                            <div class="form-group mb-2 mb-md-0">
-                                <label class="ma-label" for="ma-filtro-colaborador-input">Colaborador</label>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label" for="ma-filtro-colaborador-input">Colaborador</label>
+                            <div class="mybp-combobox-wrap">
                                 <combobox-auto-complete
                                     ref="comboColaborador"
                                     instance-id="colaborador"
@@ -506,10 +519,12 @@
                                 />
                             </div>
                         </div>
+                    </div>
 
-                        <div class="col-12 col-md-6 col-lg-3 mt-2 mt-lg-0">
-                            <div class="form-group mb-2 mb-md-0">
-                                <label class="ma-label" for="ma-filtro-como-input">Como</label>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label" for="ma-filtro-como-input">Como</label>
+                            <div class="mybp-combobox-wrap">
                                 <combobox-auto-complete
                                     ref="comboComo"
                                     instance-id="como"
@@ -524,37 +539,26 @@
                                 />
                             </div>
                         </div>
+                    </div>
+                </template>
 
-                        <div class="col-12 col-lg-12 mt-3 d-flex flex-wrap justify-content-start">
-                            <button type="button" class="btn btn-sm btn-primary ma-btn-atualizar px-3" :disabled="controle.carregando" @click="atualizar">
-                                <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                                Atualizar lista
-                            </button>
-
-                            <button
-                                type="button"
-                                class="btn btn-sm btn-outline-secondary ma-btn-limpar px-3 ml-2"
-                                :disabled="controle.carregando"
-                                @click="limparFiltros"
-                            >
-                                <i class="fa fa-eraser mr-1"></i>
-                                Limpar filtros
-                            </button>
-
-                            <button
-                                v-if="tem_privilegio_gestao_rh && selecionadaAvaliacao && selecionadaAvaliacao.status === 'Aberta'"
-                                type="button"
-                                class="btn btn-sm btn-primary ma-btn-atualizar px-3 ml-2"
-                                :disabled="controle.carregando || notificandoPendentes"
-                                @click="notificarPendentes"
-                            >
-                                <i :class="notificandoPendentes ? 'fa fa-bell fa-spin mr-1' : 'fa fa-bell mr-1'"></i>
-                                Notificar pendentes
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                <template #acoes>
+                    <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                        <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
+                        Buscar
+                    </button>
+                    <button
+                        v-if="tem_privilegio_gestao_rh && selecionadaAvaliacao && selecionadaAvaliacao.status === 'Aberta'"
+                        type="button"
+                        class="btn btn-sm btn-primary"
+                        :disabled="controle.carregando || notificandoPendentes"
+                        @click="notificarPendentes"
+                    >
+                        <i :class="notificandoPendentes ? 'fa fa-bell fa-spin mr-1' : 'fa fa-bell mr-1'"></i>
+                        Notificar pendentes
+                    </button>
+                </template>
+            </FiltroListagem>
 
             <div
                 class="card ma-card ma-legenda shadow border-0 mb-3"
@@ -875,6 +879,7 @@ import modal from '../../../Modal'
 import DatePicker from '../../../DatePicker'
 import RadarChart from '../../../Charts/Radar'
 import ComboboxAutoComplete from '../../../ComboboxAutoComplete'
+import FiltroListagem from '../../../ui/FiltroListagem.vue'
 import PlanosAcao from './components/PlanosAcao.vue'
 import validacoes from '../../../../mixins/Validacoes'
 
@@ -885,6 +890,7 @@ export default {
         DatePicker,
         RadarChart,
         ComboboxAutoComplete,
+        FiltroListagem,
         PlanosAcao
     },
     mixins: [validacoes],
@@ -1151,6 +1157,12 @@ export default {
         },
         comoComboboxOpcoes() {
             return [{ value: '', label: 'Todos os tipos' }, ...(this.lista_como_filtro || [])]
+        },
+        totalFiltrosAtivos() {
+            const d = this.controle.dados
+            return [d.campoLegenda, d.campoAvaliador, d.campoColaborador, d.campoComo].filter(
+                (v) => v !== '' && v !== null && v !== undefined
+            ).length
         },
         /** Etapas do fluxo (mesma regra de Avaliacao::fluxoAvaliacao) para exibir na tela Minhas avaliações */
         fluxoEtapasExibicao() {

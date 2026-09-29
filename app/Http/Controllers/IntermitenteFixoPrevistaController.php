@@ -7,9 +7,14 @@ use App\Jobs\Movimentacao\MudaIntermitenteFixoPrevista\JobNotificacaoRecursiva;
 use App\Models\Admissao;
 use App\Models\AprovacaoExtraConfig;
 use App\Models\Arquivo;
+use App\Models\CentroCusto;
+use App\Models\Cliente;
 use App\Models\IntermitenteFixoPrevista;
+use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
 use App\Models\LogHistorico;
 use App\Models\VagasAbertas;
+use App\Services\IntermitenteFixoPrevista\IntermitenteFixoPrevistaEditPayloadMapper;
+use App\Services\IntermitenteFixoPrevista\IntermitenteFixoPrevistaFilterApplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use MasterTag\DataHora;
@@ -89,26 +94,27 @@ class IntermitenteFixoPrevistaController extends Controller
      */
     public function edit(IntermitenteFixoPrevista $intermitenteFixoPrevista)
     {
-        $intermitenteFixoPrevista->autocomplete_label_colaborador = $intermitenteFixoPrevista->Colaborador ? $intermitenteFixoPrevista->Colaborador->nome : '';
-        $intermitenteFixoPrevista->autocomplete_label_colaborador_anterior = $intermitenteFixoPrevista->Colaborador ? $intermitenteFixoPrevista->Colaborador->nome : '';
+        $mapper = new IntermitenteFixoPrevistaEditPayloadMapper();
 
-        $intermitenteFixoPrevista->autocomplete_label_cargoanterior = $intermitenteFixoPrevista->CargoAnterior ? $intermitenteFixoPrevista->CargoAnterior->nome : '';
-        $intermitenteFixoPrevista->autocomplete_label_cargoanterior_anterior = $intermitenteFixoPrevista->CargoAnterior ? $intermitenteFixoPrevista->CargoAnterior->nome : '';
+        $item = IntermitenteFixoPrevista::query()
+            ->select(IntermitenteFixoPrevistaEditPayloadMapper::INTERMITENTE_COLUMNS)
+            ->with([
+                'Colaborador:' . implode(',', IntermitenteFixoPrevistaEditPayloadMapper::USER_COLUMNS),
+                'CargoAnterior:' . implode(',', IntermitenteFixoPrevistaEditPayloadMapper::VAGA_COLUMNS),
+                'NovoCargo:' . implode(',', IntermitenteFixoPrevistaEditPayloadMapper::VAGA_COLUMNS),
+                'VagaAbertaAnterior:' . implode(',', IntermitenteFixoPrevistaEditPayloadMapper::VAGA_ABERTA_COLUMNS),
+                'VagaAbertaNova:' . implode(',', IntermitenteFixoPrevistaEditPayloadMapper::VAGA_ABERTA_COLUMNS),
+                'GestorAprovacao:' . implode(',', IntermitenteFixoPrevistaEditPayloadMapper::USER_COLUMNS),
+                'UserAprovacao:' . implode(',', IntermitenteFixoPrevistaEditPayloadMapper::USER_COLUMNS),
+                'RhAprovacao:' . implode(',', IntermitenteFixoPrevistaEditPayloadMapper::USER_COLUMNS),
+                'Anexos' => function ($query) {
+                    $query->select(IntermitenteFixoPrevistaEditPayloadMapper::ANEXO_COLUMNS);
+                },
+            ])
+            ->whereKey($intermitenteFixoPrevista->id)
+            ->firstOrFail();
 
-        $intermitenteFixoPrevista->autocomplete_label_novo_cargo = $intermitenteFixoPrevista->NovoCargo ? $intermitenteFixoPrevista->NovoCargo->nome : '';
-        $intermitenteFixoPrevista->autocomplete_label_novo_cargo_anterior = $intermitenteFixoPrevista->NovoCargo ? $intermitenteFixoPrevista->NovoCargo->nome : '';
-        $intermitenteFixoPrevista->autocomplete_label_vaga_anterior = $intermitenteFixoPrevista->VagaAbertaAnterior ? $intermitenteFixoPrevista->VagaAbertaAnterior->titulo : '';
-        $intermitenteFixoPrevista->autocomplete_label_vaga_nova = $intermitenteFixoPrevista->VagaAbertaNova ? $intermitenteFixoPrevista->VagaAbertaNova->titulo : '';
-
-        $intermitenteFixoPrevista->status_aprovacao = $intermitenteFixoPrevista->status_aprovacao ?: '';
-        $intermitenteFixoPrevista->status_aprovacao_rh = $intermitenteFixoPrevista->status_aprovacao_rh ?: '';
-
-        $intermitenteFixoPrevista->autocomplete_label_gestor_modal = $intermitenteFixoPrevista->GestorAprovacao ? $intermitenteFixoPrevista->GestorAprovacao->nome : '';
-        $intermitenteFixoPrevista->autocomplete_label_gestor_modal_anterior = $intermitenteFixoPrevista->GestorAprovacao ? $intermitenteFixoPrevista->GestorAprovacao->nome : '';
-        $intermitenteFixoPrevista->user_aprovacao = $intermitenteFixoPrevista->UserAprovacao;
-        $intermitenteFixoPrevista->anexosDel = [];
-        $intermitenteFixoPrevista->load('Anexos');
-        return $intermitenteFixoPrevista;
+        return response()->json($mapper->map($item));
     }
 
     /**
@@ -340,17 +346,37 @@ class IntermitenteFixoPrevistaController extends Controller
             $nomeAprovacaoExtra = $config->nome_aprovacao;
         }
 
+        $empresa = Cliente::query()
+            ->select(['id', 'nome_fantasia', 'razao_social', 'cnpj'])
+            ->find(auth()->user()->empresa_id);
+
+        $itens = $resultado->items();
+        $filialMap = LotacaoLabelResolver::filiaisByCentroCustoFilialIds(
+            collect($itens)->pluck('centro_custo_filial_id')->all()
+        );
+
+        foreach ($itens as $item) {
+            $ccfId = (int) ($item->centro_custo_filial_id ?? 0);
+            $item->lotacao = LotacaoLabelResolver::resolve(
+                (bool) ($item->filial ?? false),
+                $filialMap[$ccfId] ?? null,
+                $empresa
+            );
+        }
+
         return response()->json([
             'atual' => $resultado->currentPage(),
             'ultima' => $resultado->lastPage(),
             'total' => $resultado->total(),
             'dados' => [
-                'itens' => $resultado->items(),
+                'itens' => $itens,
                 'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
                 'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
                 'pode_aprovar_extra' => $podeAprovarExtra,
                 'tem_aprovacao_extra' => $config ? true : false,
                 'nome_aprovacao_extra' => $nomeAprovacaoExtra,
+                'mimes' => Arquivo::MIMEAPENASIMAGENSPDF,
+                'cc' => (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id),
             ]
         ]);
     }
@@ -358,24 +384,45 @@ class IntermitenteFixoPrevistaController extends Controller
     public function filtro(Request $request)
     {
         $user = auth()->user();
-        $resultado = IntermitenteFixoPrevista::with(
-            'CentroCusto',
-            'CargoAnterior',
-            'CentroCustoFilial',
-            'AreaEtiqueta',
-            'NovoCargo',
-            'VagaAbertaAnterior',
-            'VagaAbertaNova',
-            'UserAprovacao:id,nome',
-            'UserAprovacaoExtra:id,nome',
-            'Solicitante:id,nome',
-            'GestorAprovacao:id,nome',
-            'RhAprovacao:id,nome',
-            'QuemDeletou:id,nome',
-            'Colaborador:id,nome,login,tipo,ativo'
-        )->where('empresa_id', $user->empresa_id);
+        $resultado = IntermitenteFixoPrevista::query()
+            ->select([
+                'id',
+                'colaborador_id',
+                'centro_custo_id',
+                'filial',
+                'centro_custo_filial_id',
+                'salario_anterior',
+                'novo_salario',
+                'user_id',
+                'user_aprovacao_id',
+                'aprovacao_extra_id',
+                'rh_aprovacao_id',
+                'aprovado_via_script',
+                'status_aprovacao',
+                'status_aprovacao_extra',
+                'status_aprovacao_rh',
+                'data_aprovacao',
+                'data_aprovacao_extra',
+                'data_aprovacao_rh',
+                'created_at',
+                'updated_at',
+                'anterior_vaga_aberta_id',
+                'nova_vaga_aberta_id',
+            ])
+            ->with([
+                'CentroCusto:id,label',
+                'VagaAbertaAnterior:id,titulo',
+                'VagaAbertaNova:id,titulo',
+                'UserAprovacao:id,nome',
+                'UserAprovacaoExtra:id,nome',
+                'Solicitante:id,nome',
+                'GestorAprovacao:id,nome',
+                'RhAprovacao:id,nome',
+                'Colaborador:id,nome',
+            ])
+            ->where('empresa_id', $user->empresa_id);
 
-        $filterApplier = new \App\Services\IntermitenteFixoPrevista\IntermitenteFixoPrevistaFilterApplier($request->all(), $user);
+        $filterApplier = new IntermitenteFixoPrevistaFilterApplier($request->all(), $user);
         $filterApplier->apply($resultado);
 
         return $resultado;

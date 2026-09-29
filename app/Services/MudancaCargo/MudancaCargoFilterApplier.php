@@ -4,6 +4,7 @@ namespace App\Services\MudancaCargo;
 
 use App\Models\MudancaCargo;
 use App\Models\User;
+use App\Services\DemissaoPrevista\DemissaoPrevistaFilterApplier;
 use Illuminate\Database\Eloquent\Builder;
 use MasterTag\DataHora;
 
@@ -23,7 +24,9 @@ class MudancaCargoFilterApplier
         $this->applyToken($query);
         $this->applyPeriodo($query);
         $this->applyCampoBusca($query);
+        $this->applyCampoCpf($query);
         $this->applyCampoStatusAprovacao($query);
+        $this->applyCnpjCentroCusto($query);
         $this->applyPermissoes($query);
         $this->applyOrdenacao($query);
     }
@@ -81,9 +84,95 @@ class MudancaCargoFilterApplier
         }
         $busca = $this->filtros['campoBusca'];
         $query->where(function ($q) use ($busca) {
-            $q->whereHas('Colaborador', function ($c) use ($busca) {
+            $q->whereHas('Admissao.Feedback.Curriculo', function ($c) use ($busca) {
                 $c->where('nome', 'like', '%' . $busca . '%')->orWhere('id', $busca);
-            })->orWhere('id', $busca);
+            })
+                ->orWhereHas('Colaborador', function ($c) use ($busca) {
+                    $c->where('nome', 'like', '%' . $busca . '%')->orWhere('id', $busca);
+                })
+                ->orWhere('mudanca_cargo.id', $busca);
+        });
+    }
+
+    private function applyCampoCpf(Builder $query): void
+    {
+        if (empty($this->filtros['campoCPF'] ?? '')) {
+            return;
+        }
+        $cpfDigits = preg_replace('/\D/', '', (string) $this->filtros['campoCPF']);
+        if ($cpfDigits === '') {
+            return;
+        }
+        $query->whereHas('Admissao.Feedback.Curriculo', function ($c) use ($cpfDigits) {
+            $c->where('cpf', 'like', '%' . $cpfDigits . '%')
+                ->orWhereRaw(
+                    "REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(cpf,''), '.', ''), '-', ''), '/', ''), ' ', '') LIKE ?",
+                    ['%' . $cpfDigits . '%']
+                );
+        });
+    }
+
+    private function applyCnpjCentroCusto(Builder $query): void
+    {
+        $campoCnpj = $this->filtros['campoCnpj'] ?? null;
+        $campoCentroCusto = $this->filtros['campoCentroCusto'] ?? null;
+        $temCnpj = $campoCnpj !== null && $campoCnpj !== '';
+        $temCentro = $campoCentroCusto !== null && $campoCentroCusto !== '' && $campoCentroCusto !== 'todos';
+
+        if (!$temCnpj && !$temCentro) {
+            return;
+        }
+
+        $query->where(function ($q) use ($campoCnpj, $campoCentroCusto, $temCnpj, $temCentro) {
+            $q->where(function ($sub) use ($campoCnpj, $campoCentroCusto, $temCnpj, $temCentro) {
+                $sub->where('mantem_centro_custo', true)
+                    ->orWhereNull('novo_centro_custo_id');
+                $sub->whereHas('Admissao', function ($adm) use ($campoCnpj, $campoCentroCusto) {
+                    DemissaoPrevistaFilterApplier::applyCnpjCentroCusto(
+                        $adm,
+                        $campoCnpj,
+                        $campoCentroCusto,
+                        'admissoes',
+                        $this->user->empresa_id
+                    );
+                });
+            })->orWhere(function ($sub) use ($campoCnpj, $campoCentroCusto, $temCentro) {
+                $sub->where('mantem_centro_custo', false)
+                    ->whereNotNull('novo_centro_custo_id');
+                if ($temCentro) {
+                    $id = (int) $campoCentroCusto;
+                    $sub->where(function ($inner) use ($id) {
+                        $inner->where('novo_centro_custo_id', $id)
+                            ->orWhere('novo_centro_custo_filial_id', $id);
+                    });
+                    return;
+                }
+                if ($campoCnpj !== null && $campoCnpj !== '') {
+                    $centros = (new \App\Models\CentroCusto())->listaCentroCustoPorCnpj($this->user->empresa_id);
+                    if ($centros instanceof \Illuminate\Http\JsonResponse) {
+                        $sub->whereRaw('1 = 0');
+                        return;
+                    }
+                    $cnpjKey = preg_replace('/[^0-9]/', '', (string) $campoCnpj);
+                    $cc = $centros['centros_custos'][$campoCnpj]
+                        ?? $centros['centros_custos'][$cnpjKey]
+                        ?? null;
+                    if (!$cc) {
+                        $sub->whereRaw('1 = 0');
+                        return;
+                    }
+                    $ccIds = collect($cc)->pluck('id')->filter()->map(fn ($v) => (int) $v)->values()->all();
+                    $filialIds = collect($cc)->pluck('filial_id')->filter()->map(fn ($v) => (int) $v)->values()->all();
+                    $sub->where(function ($inner) use ($ccIds, $filialIds) {
+                        if ($ccIds !== []) {
+                            $inner->whereIn('novo_centro_custo_id', $ccIds);
+                        }
+                        if ($filialIds !== []) {
+                            $inner->orWhereIn('novo_centro_custo_filial_id', $filialIds);
+                        }
+                    });
+                }
+            });
         });
     }
 
@@ -98,17 +187,27 @@ class MudancaCargoFilterApplier
             return;
         }
         if ($status === 'aprovado_gestor') {
-            $query->where('status_aprovacao_gestor', MudancaCargo::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
+            $query->where('status_aprovacao_gestor', MudancaCargo::STATUS_APROVADO)
+                ->whereNull('status_aprovacao_extra')
+                ->whereNull('status_aprovacao_rh');
+            return;
+        }
+        if ($status === 'aprovado_extra') {
+            $query->where('status_aprovacao_extra', MudancaCargo::STATUS_APROVADO)
+                ->whereNull('status_aprovacao_rh');
             return;
         }
         if ($status === 'aprovado_rh') {
             $query->where('status_aprovacao_rh', MudancaCargo::STATUS_APROVADO);
             return;
         }
-        $query->where(function ($q) {
-            $q->where('status_aprovacao_gestor', MudancaCargo::STATUS_REPROVADO)
-                ->orWhere('status_aprovacao_rh', MudancaCargo::STATUS_REPROVADO);
-        });
+        if ($status === 'reprovado') {
+            $query->where(function ($q) {
+                $q->where('status_aprovacao_gestor', MudancaCargo::STATUS_REPROVADO)
+                    ->orWhere('status_aprovacao_extra', MudancaCargo::STATUS_REPROVADO)
+                    ->orWhere('status_aprovacao_rh', MudancaCargo::STATUS_REPROVADO);
+            });
+        }
     }
 
     private function applyPermissoes(Builder $query): void

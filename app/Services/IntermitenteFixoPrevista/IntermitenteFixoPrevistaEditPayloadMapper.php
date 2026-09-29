@@ -1,0 +1,164 @@
+<?php
+
+namespace App\Services\IntermitenteFixoPrevista;
+
+use App\Models\Arquivo;
+use App\Models\IntermitenteFixoPrevista;
+use App\Models\User;
+
+/**
+ * Monta payload enxuto do modal editar/visualizar/aprovar Intermitente Fixo Prevista.
+ */
+class IntermitenteFixoPrevistaEditPayloadMapper
+{
+    public const INTERMITENTE_COLUMNS = [
+        'id',
+        'colaborador_id',
+        'centro_custo_id',
+        'filial',
+        'centro_custo_filial_id',
+        'cargo_anterior_id',
+        'salario_anterior',
+        'novo_cargo_id',
+        'novo_salario',
+        'gestor_id',
+        'motivos',
+        'user_aprovacao_id',
+        'obs_aprovacao',
+        'data_aprovacao',
+        'status_aprovacao',
+        'aprovacao_extra_id',
+        'status_aprovacao_extra',
+        'obs_aprovacao_extra',
+        'data_aprovacao_extra',
+        'rh_aprovacao_id',
+        'obs_rh',
+        'status_aprovacao_rh',
+        'data_aprovacao_rh',
+        'anterior_vaga_aberta_id',
+        'nova_vaga_aberta_id',
+        'area_etiqueta_id',
+        'aprovado_via_script',
+        'empresa_id',
+    ];
+
+    public const USER_COLUMNS = ['id', 'nome'];
+
+    public const VAGA_ABERTA_COLUMNS = ['id', 'titulo'];
+
+    public const VAGA_COLUMNS = ['id', 'nome'];
+
+    public const ANEXO_COLUMNS = [
+        'arquivos.id',
+        'arquivos.nome',
+        'arquivos.file',
+        'arquivos.disco',
+        'arquivos.imagem',
+        'arquivos.thumb',
+        'arquivos.extensao',
+        'arquivos.bytes',
+        'arquivos.chave',
+        'arquivos.temporario',
+    ];
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function map(IntermitenteFixoPrevista $item): array
+    {
+        $colaboradorNome = $item->Colaborador?->nome ?? '';
+        $gestorNome = $item->GestorAprovacao?->nome ?? '';
+        $cargoAnteriorNome = $item->CargoAnterior?->nome ?? '';
+        $novoCargoNome = $item->NovoCargo?->nome ?? '';
+        $vagaAnteriorTitulo = $item->VagaAbertaAnterior?->titulo ?? '';
+        $vagaNovaTitulo = $item->VagaAbertaNova?->titulo ?? '';
+
+        return [
+            'id' => (int) $item->id,
+            'colaborador_id' => $item->colaborador_id,
+            'autocomplete_label_colaborador' => $colaboradorNome,
+            'autocomplete_label_colaborador_anterior' => $colaboradorNome,
+            'centro_custo_id' => $item->centro_custo_id,
+            'filial' => (bool) $item->filial,
+            'centro_custo_filial_id' => $item->centro_custo_filial_id,
+            'cargo_anterior_id' => $item->cargo_anterior_id,
+            'autocomplete_label_cargoanterior' => $cargoAnteriorNome,
+            'autocomplete_label_cargoanterior_anterior' => $cargoAnteriorNome,
+            'salario_anterior_format' => $item->salario_anterior_format,
+            'novo_cargo_id' => $item->novo_cargo_id,
+            'autocomplete_label_novo_cargo' => $novoCargoNome,
+            'autocomplete_label_novo_cargo_anterior' => $novoCargoNome,
+            'novo_salario_format' => $item->novo_salario_format,
+            'anterior_vaga_aberta_id' => $item->anterior_vaga_aberta_id,
+            'autocomplete_label_vaga_anterior' => $vagaAnteriorTitulo,
+            'nova_vaga_aberta_id' => $item->nova_vaga_aberta_id,
+            'autocomplete_label_vaga_nova' => $vagaNovaTitulo,
+            'area_etiqueta_id' => $item->area_etiqueta_id,
+            'gestor_id' => $item->gestor_id,
+            'autocomplete_label_gestor_modal' => $gestorNome,
+            'autocomplete_label_gestor_modal_anterior' => $gestorNome,
+            'motivos' => $item->motivos,
+            'anexos' => $this->mapAnexos($item),
+            'anexosDel' => [],
+            'data_aprovacao' => $item->data_aprovacao,
+            'obs_aprovacao' => $item->obs_aprovacao,
+            'status_aprovacao' => $item->status_aprovacao ?: '',
+            'user_aprovacao' => $this->mapUserResumo($item->UserAprovacao),
+            'data_aprovacao_extra' => $item->data_aprovacao_extra,
+            'obs_aprovacao_extra' => $item->obs_aprovacao_extra,
+            'status_aprovacao_extra' => $item->status_aprovacao_extra ?: '',
+            'aprovacao_extra_id' => $item->aprovacao_extra_id,
+            'data_aprovacao_rh' => $item->data_aprovacao_rh,
+            'obs_rh' => $item->obs_rh,
+            'status_aprovacao_rh' => $item->status_aprovacao_rh ?: '',
+            'rh_aprovacao' => $this->mapUserResumo($item->RhAprovacao),
+            'rh_aprovacao_id' => $item->rh_aprovacao_id,
+            'aprovado_via_script' => (bool) $item->aprovado_via_script,
+            'empresa_id' => $item->empresa_id,
+        ];
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function mapAnexos(IntermitenteFixoPrevista $item): array
+    {
+        if (!$item->relationLoaded('Anexos')) {
+            return [];
+        }
+
+        return $item->Anexos->map(function (Arquivo $arquivo) {
+            return [
+                'id' => (int) $arquivo->id,
+                'nome' => $arquivo->nome,
+                'file' => $arquivo->file,
+                'disco' => $arquivo->disco,
+                'imagem' => (bool) $arquivo->imagem,
+                'thumb' => $arquivo->thumb,
+                'extensao' => $arquivo->extensao,
+                'bytes' => $arquivo->bytes,
+                'chave' => $arquivo->chave,
+                'temporario' => (bool) $arquivo->temporario,
+                'url' => $arquivo->url,
+                'urlThumb' => $arquivo->urlThumb,
+                'urlDownload' => $arquivo->urlDownload,
+                'urlDelete' => $arquivo->urlDelete,
+            ];
+        })->values()->all();
+    }
+
+    /**
+     * @return array{id:int,nome:string}|null
+     */
+    private function mapUserResumo(?User $user): ?array
+    {
+        if (!$user) {
+            return null;
+        }
+
+        return [
+            'id' => (int) $user->id,
+            'nome' => (string) $user->nome,
+        ];
+    }
+}

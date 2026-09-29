@@ -2,8 +2,10 @@
 
 namespace App\Services\TransferenciaPrevista;
 
+use App\Models\CentroCusto;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use MasterTag\DataHora;
 
 class TransferenciaPrevistaFilterApplier
@@ -22,7 +24,9 @@ class TransferenciaPrevistaFilterApplier
         $this->applyToken($query);
         $this->applyPeriodo($query);
         $this->applyCampoBusca($query);
+        $this->applyCampoCpf($query);
         $this->applyCampoStatus($query);
+        $this->applyCnpjCentroCusto($query);
         $this->applyPermissoes($query);
         $this->applyOrdenacao($query);
     }
@@ -86,13 +90,101 @@ class TransferenciaPrevistaFilterApplier
         });
     }
 
-    private function applyCampoStatus(Builder $query): void
+    private function applyCampoCpf(Builder $query): void
     {
-        if (!isset($this->filtros['campoStatus']) || $this->filtros['campoStatus'] === '') {
+        if (empty($this->filtros['campoCPF'] ?? '')) {
+            return;
+        }
+        $cpfDigits = preg_replace('/\D/', '', (string) $this->filtros['campoCPF']);
+        if ($cpfDigits === '') {
+            return;
+        }
+        $query->whereHas('Colaborador', function ($c) use ($cpfDigits) {
+            $c->where('cpf', 'like', '%' . $cpfDigits . '%')
+                ->orWhereRaw(
+                    "REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(cpf,''), '.', ''), '-', ''), '/', ''), ' ', '') LIKE ?",
+                    ['%' . $cpfDigits . '%']
+                );
+        });
+    }
+
+    private function applyCnpjCentroCusto(Builder $query): void
+    {
+        $campoCnpj = $this->filtros['campoCnpj'] ?? null;
+        $campoCentroCusto = $this->filtros['campoCentroCusto'] ?? null;
+        $temCnpj = $campoCnpj !== null && $campoCnpj !== '';
+        $temCentro = $campoCentroCusto !== null && $campoCentroCusto !== '' && $campoCentroCusto !== 'todos';
+
+        if (!$temCnpj && !$temCentro) {
             return;
         }
 
-        $status = $this->filtros['campoStatus'];
+        if ($temCentro && !$temCnpj) {
+            $id = (int) $campoCentroCusto;
+            $query->where(function ($q) use ($id) {
+                $q->where('centro_custo_origem_id', $id)
+                    ->orWhere('centro_custo_destino_id', $id);
+            });
+
+            return;
+        }
+
+        $centrosCustos = (new CentroCusto())->listaCentroCustoPorCnpj($this->user->empresa_id);
+        if ($centrosCustos instanceof JsonResponse) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $cnpjKey = preg_replace('/[^0-9]/', '', (string) $campoCnpj);
+        $ccLista = $centrosCustos['centros_custos'][$campoCnpj]
+            ?? $centrosCustos['centros_custos'][$cnpjKey]
+            ?? null;
+
+        if (!$ccLista || !isset($ccLista[0])) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $cc = collect($ccLista);
+
+        if ($temCentro) {
+            $id = (int) $campoCentroCusto;
+            $query->where(function ($q) use ($id) {
+                $q->where('centro_custo_origem_id', $id)
+                    ->orWhere('centro_custo_destino_id', $id);
+            });
+
+            return;
+        }
+
+        $ids = $cc->map(function (array $item) {
+            if (!empty($item['matriz'])) {
+                return (int) $item['id'];
+            }
+
+            return (int) ($item['filial_id'] ?? $item['id'] ?? 0);
+        })->filter()->unique()->values()->all();
+
+        if ($ids === []) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $query->where(function ($q) use ($ids) {
+            $q->whereIn('centro_custo_origem_id', $ids)
+                ->orWhereIn('centro_custo_destino_id', $ids);
+        });
+    }
+
+    private function applyCampoStatus(Builder $query): void
+    {
+        $status = $this->filtros['campoStatus'] ?? $this->filtros['campoStatusAprovacao'] ?? null;
+        if ($status === null || $status === '') {
+            return;
+        }
 
         // Em aberto: ainda em andamento (sem RH final) e sem reprovação em nenhuma etapa.
         // Não basta status_aprovacao null — origem dispensada/omitida deixa null e a

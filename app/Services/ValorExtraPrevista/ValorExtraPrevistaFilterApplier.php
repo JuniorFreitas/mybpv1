@@ -4,6 +4,7 @@ namespace App\Services\ValorExtraPrevista;
 
 use App\Models\User;
 use App\Models\ValorExtraPrevista;
+use App\Services\DemissaoPrevista\DemissaoPrevistaFilterApplier;
 use Illuminate\Database\Eloquent\Builder;
 use MasterTag\DataHora;
 
@@ -23,7 +24,15 @@ class ValorExtraPrevistaFilterApplier
         $this->applyToken($query);
         $this->applyPeriodo($query);
         $this->applyCampoBusca($query);
+        $this->applyCampoCpf($query);
         $this->applyCampoStatusAprovacao($query);
+        DemissaoPrevistaFilterApplier::applyCnpjCentroCusto(
+            $query,
+            $this->filtros['campoCnpj'] ?? null,
+            $this->filtros['campoCentroCusto'] ?? null,
+            'valor_extra_previstas',
+            $this->user->empresa_id
+        );
         $this->applyPermissoes($query);
         $this->applyOrdenacao($query);
     }
@@ -59,8 +68,8 @@ class ValorExtraPrevistaFilterApplier
         if ($dataInicio && $dataFim) {
             $inicio = new DataHora($dataInicio . ' 00:00:00');
             $fim = new DataHora($dataFim . ' 23:59:59');
-            $query->where('created_at', '>=', $inicio->dataHoraInsert())
-                ->where('created_at', '<=', $fim->dataHoraInsert());
+            $query->where('valor_extra_previstas.created_at', '>=', $inicio->dataHoraInsert())
+                ->where('valor_extra_previstas.created_at', '<=', $fim->dataHoraInsert());
             return;
         }
         if (!empty($this->filtros['periodo'])) {
@@ -68,8 +77,8 @@ class ValorExtraPrevistaFilterApplier
             if (count($periodo) === 2) {
                 $inicio = new DataHora(trim($periodo[0]) . ' 00:00:00');
                 $fim = new DataHora(trim($periodo[1]) . ' 23:59:59');
-                $query->where('created_at', '>=', $inicio->dataHoraInsert())
-                    ->where('created_at', '<=', $fim->dataHoraInsert());
+                $query->where('valor_extra_previstas.created_at', '>=', $inicio->dataHoraInsert())
+                    ->where('valor_extra_previstas.created_at', '<=', $fim->dataHoraInsert());
             }
         }
     }
@@ -83,7 +92,25 @@ class ValorExtraPrevistaFilterApplier
         $query->where(function ($q) use ($busca) {
             $q->whereHas('Colaborador', function ($c) use ($busca) {
                 $c->where('nome', 'like', '%' . $busca . '%')->orWhere('id', $busca);
-            })->orWhere('id', $busca);
+            })->orWhere('valor_extra_previstas.id', $busca);
+        });
+    }
+
+    private function applyCampoCpf(Builder $query): void
+    {
+        if (empty($this->filtros['campoCPF'] ?? '')) {
+            return;
+        }
+        $cpfDigits = preg_replace('/\D/', '', (string) $this->filtros['campoCPF']);
+        if ($cpfDigits === '') {
+            return;
+        }
+        $query->whereHas('Colaborador.Curriculo', function ($c) use ($cpfDigits) {
+            $c->where('cpf', 'like', '%' . $cpfDigits . '%')
+                ->orWhereRaw(
+                    "REPLACE(REPLACE(REPLACE(REPLACE(COALESCE(cpf,''), '.', ''), '-', ''), '/', ''), ' ', '') LIKE ?",
+                    ['%' . $cpfDigits . '%']
+                );
         });
     }
 
@@ -94,21 +121,31 @@ class ValorExtraPrevistaFilterApplier
         }
         $status = $this->filtros['campoStatusAprovacao'];
         if ($status === 'aberto') {
-            $query->whereNull('status_aprovacao');
+            $query->whereNull('valor_extra_previstas.status_aprovacao');
             return;
         }
         if ($status === 'aprovado_gestor') {
-            $query->where('status_aprovacao', ValorExtraPrevista::STATUS_APROVADO)->whereNull('status_aprovacao_rh');
+            $query->where('valor_extra_previstas.status_aprovacao', ValorExtraPrevista::STATUS_APROVADO)
+                ->whereNull('valor_extra_previstas.status_aprovacao_extra')
+                ->whereNull('valor_extra_previstas.status_aprovacao_rh');
+            return;
+        }
+        if ($status === 'aprovado_extra') {
+            $query->where('valor_extra_previstas.status_aprovacao_extra', ValorExtraPrevista::STATUS_APROVADO)
+                ->whereNull('valor_extra_previstas.status_aprovacao_rh');
             return;
         }
         if ($status === 'aprovado_rh') {
-            $query->where('status_aprovacao_rh', ValorExtraPrevista::STATUS_APROVADO);
+            $query->where('valor_extra_previstas.status_aprovacao_rh', ValorExtraPrevista::STATUS_APROVADO);
             return;
         }
-        $query->where(function ($q) {
-            $q->where('status_aprovacao', ValorExtraPrevista::STATUS_REPROVADO)
-                ->orWhere('status_aprovacao_rh', ValorExtraPrevista::STATUS_REPROVADO);
-        });
+        if ($status === 'reprovado') {
+            $query->where(function ($q) {
+                $q->where('valor_extra_previstas.status_aprovacao', ValorExtraPrevista::STATUS_REPROVADO)
+                    ->orWhere('valor_extra_previstas.status_aprovacao_extra', ValorExtraPrevista::STATUS_REPROVADO)
+                    ->orWhere('valor_extra_previstas.status_aprovacao_rh', ValorExtraPrevista::STATUS_REPROVADO);
+            });
+        }
     }
 
     private function applyPermissoes(Builder $query): void
@@ -116,11 +153,12 @@ class ValorExtraPrevistaFilterApplier
         if (!empty($this->filtros['_full_export_access'])) {
             return;
         }
-        if ($this->user->can('privilegio_gestao_rh') || $this->user->can('privilegio_aprovar_por_rh') || $this->user->can('privilegio_aprovar_rh')) {
+        if ($this->user->temPrivilegioGestaoRh() || $this->user->can('privilegio_aprovar_por_rh') || $this->user->can('privilegio_aprovar_rh')) {
             return;
         }
         $query->where(function ($q) {
-            $q->where('user_id', $this->user->id)->orWhere('gestor_id', $this->user->id);
+            $q->where('valor_extra_previstas.user_id', $this->user->id)
+                ->orWhere('valor_extra_previstas.gestor_id', $this->user->id);
         });
     }
 
@@ -129,13 +167,13 @@ class ValorExtraPrevistaFilterApplier
         $ordenacao = $this->filtros['ordenacao'] ?? 'created_at_desc';
         switch ($ordenacao) {
             case 'created_at_asc':
-                $query->orderBy('created_at', 'asc');
+                $query->orderBy('valor_extra_previstas.created_at', 'asc');
                 break;
             case 'updated_at_desc':
-                $query->orderByDesc('updated_at');
+                $query->orderByDesc('valor_extra_previstas.updated_at');
                 break;
             default:
-                $query->orderByDesc('created_at');
+                $query->orderByDesc('valor_extra_previstas.created_at');
         }
     }
 }
