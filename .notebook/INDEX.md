@@ -1,16 +1,20 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-09-27
+Last updated: 2026-09-28
 
+- [cih-visibilidade-aprovacao](cih-visibilidade-aprovacao.md) — ver_todas ≠ aprovar; ADM override gestor | domain | cih, permissao, habilidades
+- [cih-autocomplete-cnpj](cih-autocomplete-cnpj.md) — Autocomplete colaborador filtra por CNPJ/CC do modal | flow | cih, autocomplete, cnpj
+- [cih-dba-payload-enxuto](cih-dba-payload-enxuto.md) — Listagem/edit/autocomplete CIH só com colunas necessárias | perf | cih, query, dba
+- [cih-export-query-enxuta](cih-export-query-enxuta.md) — Job Excel CIH via CihQueryBuilder::forExport | perf | cih, export, dba
+- [cih-filtro-busca-id](cih-filtro-busca-id.md) — Filtro compacto CIH + busca nome/CÓD + combos | flow | cih, filtro, compactos
+- [filtro-compacto-operacional](filtro-compacto-operacional.md) — Filtros densos + DateRange blur + Mais filtros animado | pattern | filtro, ux, daterange
 - [notificacao-email-optin](notificacao-email-optin.md) — E-mail só com check + ativo; sistema@ não recebe nem envia | flow | email, notificacao, optin
 - [relatorio-ferias](relatorio-ferias.md) — Férias: CNPJ/CC + abas Lista/Gráficos via FeriasController::show | flow | ferias, cnpj, graficos
-- [filtro-compacto-operacional](filtro-compacto-operacional.md) — Filtros densos + DateRange blur + Mais filtros animado | pattern | filtro, ux, daterange
 - [relatorio-vencimento-aso](relatorio-vencimento-aso.md) — Regra única tela/Excel/e-mail via AsoVencimentoRelatorioService | flow | aso, vencimento
 - [relatorio-treinamento-vencimento](relatorio-treinamento-vencimento.md) — Tela/export vs e-mail: Admitidos≠ADMITIDO, períodos e DIAS_ALERTA=45 | gotcha | treinamento, vencimento
 - [weekly-report-kanban](weekly-report-kanban.md) — Kanban Trello + tenant empresa_id + Echo | flow | weekly-report, kanban, multitenant
 - [contrato-customizado-apelido](contrato-customizado-apelido.md) — Blade dossiê por apelido (contrato + checklist Coimbra) | flow | dossie, contrato, checklist
-- [cih-filtro-busca-id](cih-filtro-busca-id.md) — campoBusca nome/CÓD + combos no filtro/form | flow | cih, filtro, combobox
 - [aniversariante-mensagem](aniversariante-mensagem.md) — Envio robusto + retry 08:00 + --retentar-pendentes | flow | aniversariante, email
 - [filial-cache-cnpjs](filial-cache-cnpjs.md) — Filial sem CC entra em `lista_cc` + combo CC | gotcha | filial, cache, centrocusto
 - [exame-data-realizacao-whatsapp](exame-data-realizacao-whatsapp.md) — Datepicker ≠ payload; DataHora(null)=hoje | gotcha | exame, whatsapp, data

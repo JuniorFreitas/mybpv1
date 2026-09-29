@@ -1,7 +1,7 @@
 <template>
     <div class="col-12">
-        <div class="form-group">
-            <label>{{ label }}</label>
+        <div class="form-group mybp-filtro-campo">
+            <label class="mybp-label">{{ label }} <span v-if="obrigatorio" class="text-danger">*</span></label>
             <autocomplete :caminho="`autocomplete/todos-gestores-ativos/`"
                           :formsm="formsm"
                           :valido="model.gestor_id !== ''"

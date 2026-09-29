@@ -15,6 +15,8 @@ use App\Models\Cliente;
 use App\Models\ClienteConfig;
 use App\Models\FeedbackCurriculo;
 use App\Models\User;
+use App\Services\Cih\CihAcessoService;
+use App\Services\Cih\CihColaboradorPayloadMapper;
 use App\Services\Cih\CihQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -187,16 +189,33 @@ class CihController extends Controller
 
         $modelo_cih_config = auth()->user()->EmpresaConfiguracoes->modelo_cih;
 
-        $cih->load(['Colaboradores.Demissao' => function ($query) {
-            $query->select('id', 'feedback_id', 'data_desmobilizacao', DB::raw('DATEDIFF(NOW(), data_desmobilizacao) AS dias'));
-        }, 'Anexos', 'Tag', 'ResponsavelLancamento:id,nome', 'ResponsavelAprovacao:id,nome', 'RhAprovacao:id,nome']);
+        $cih->load([
+            'Colaboradores' => function ($query) {
+                $query->select(['feedback_curriculos.id', 'feedback_curriculos.curriculo_id']);
+            },
+            'Colaboradores.Curriculo:id,nome',
+            'Colaboradores.Admissao:id,feedback_id,cargo,centro_custo_id',
+            'Colaboradores.Admissao.CentroCusto:id,label',
+            'Colaboradores.Demissao:id,feedback_id',
+            'Anexos',
+            'Tag:id,label,anexo_obrigatorio',
+            'GestorAprovacao:id,nome',
+            'ResponsavelLancamento:id,nome',
+            'ResponsavelAprovacao:id,nome',
+            'RhAprovacao:id,nome',
+        ]);
 
-        $modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO ? $cih->load('CentroDeCusto') : $cih->load('Area');
+        if ($modelo_cih_config == Cih::CONFIG_CENTRO_DE_CUSTO) {
+            $cih->load('CentroDeCusto:id,label');
+        } else {
+            $cih->load('Area:id,label');
+        }
 
-        $cih->Colaboradores->each(function ($colaborador) {
-            $colaborador->curriculo->nome = isset($colaborador->Demissao) ? $colaborador->curriculo->nome . ' - Demitido(a)' : $colaborador->curriculo->nome;
-            $colaborador->demitido = isset($colaborador->Demissao);
-        });
+        $cih->setAttribute(
+            'colaboradores',
+            (new CihColaboradorPayloadMapper())->mapForModal($cih->Colaboradores)
+        );
+        $cih->unsetRelation('Colaboradores');
 
         return $cih;
     }
@@ -218,6 +237,12 @@ class CihController extends Controller
         try {
             DB::beginTransaction();
             if (is_null($dados['resposta_rh'])) {
+                if (!(new CihAcessoService())->podeAprovarComoGestor(auth()->user(), $cih)) {
+                    return response()->json([
+                        'msg' => 'Você só pode aprovar CIH sob sua responsabilidade.',
+                    ], 403);
+                }
+
                 $dadosValidados = \Validator::make($dados, [
                     'status' => 'required',
                 ]);
@@ -324,24 +349,45 @@ class CihController extends Controller
      */
     public function atualizar(Request $request)
     {
-//        $resultado = CihQueryBuilder::forListing(auth()->user(), $request->all())->paginate($request->input('per_page', 100));
         $resultado = $this->filtro($request)->paginate($request->pages ?? 100);
+        $usuario = auth()->user();
 
-//        $periodo = Cih::get();
-        $tags = CihTag::orderBy('label')->whereAtivo(true)->get();
-        $areas = AreaEtiqueta::orderBy('label')->whereAtivo(true)->get();
-        $centros_de_custo = CentroCusto::with('Gestor')->orderBy('label')->whereAtivo(true)->get();
-        $gestores = Cih::select('gestor_id')->with('GestorAprovacao')->whereNotNull('gestor_id')->distinct()->get();
+        $tags = CihTag::query()
+            ->select(['id', 'label', 'anexo_obrigatorio'])
+            ->orderBy('label')
+            ->whereAtivo(true)
+            ->get();
+
+        $areas = AreaEtiqueta::query()
+            ->select(['id', 'label'])
+            ->orderBy('label')
+            ->whereAtivo(true)
+            ->get();
+
+        $centros_de_custo = [];
+        if ($usuario->EmpresaConfiguracoes->modelo_cih == ClienteConfig::CENTRO_DE_CUSTO) {
+            $centros_de_custo = CentroCusto::query()
+                ->select(['id', 'label', 'gestor_id'])
+                ->with('Gestor:id,nome')
+                ->orderBy('label')
+                ->whereAtivo(true)
+                ->get();
+        }
+
+        $gestores = Cih::query()
+            ->select('gestor_id')
+            ->with('GestorAprovacao:id,nome')
+            ->whereNotNull('gestor_id')
+            ->distinct()
+            ->get();
+
         $data = new DataHora();
         $intervalo = $data->dataCompleta() . ' até ' . $data->addDia(7);
 
-        $usuario = auth()->user();
-
-        $items = collect($resultado->items())->transform(function ($item) {
-            $item->colaboradores = $item->Colaboradores->map(function ($colaborador) {
-                $colaborador->curriculo->nome = isset($colaborador->Demissao) ? $colaborador->curriculo->nome . ' - Demitido(a)' : $colaborador->curriculo->nome;
-                return $colaborador;
-            });
+        $mapper = new CihColaboradorPayloadMapper();
+        $items = collect($resultado->items())->transform(function ($item) use ($mapper) {
+            $item->setAttribute('colaboradores', $mapper->mapForModal($item->Colaboradores));
+            $item->unsetRelation('Colaboradores');
             return $item;
         });
 
@@ -352,19 +398,21 @@ class CihController extends Controller
             'dados' => [
                 'itens' => $items,
                 'tags' => $tags,
-//                'periodo' => $periodo,
                 'intervalo' => $intervalo,
                 'config_modelo_cih' => $usuario->EmpresaConfiguracoes->modelo_cih,
+                'usuario_logado_id' => auth()->id(),
                 'permissoes' => [
                     'admissao_cih_lancar' => auth()->user()->can('admissao_cih_lancar'),
                     'admissao_cih_aprovar' => auth()->user()->can('admissao_cih_aprovar'),
                     'admissao_cih_privilegio_adm' => auth()->user()->can('admissao_cih_privilegio_adm'),
+                    'admissao_cih_ver_todas' => auth()->user()->can('admissao_cih_ver_todas'),
                     'aprovar_por_gestor' => auth()->user()->can('privilegio_aprovar_por_gestor'),
                     'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh')
                 ],
                 'areas' => $areas,
                 'gestores' => $gestores,
-                'centros_de_custo' => $usuario->EmpresaConfiguracoes->modelo_cih == ClienteConfig::CENTRO_DE_CUSTO ? $centros_de_custo : '',
+                'centros_de_custo' => $centros_de_custo,
+                'cc' => (new CentroCusto())->listaCentroCustoPorCnpj($usuario->empresa_id),
                 'hoje' => (new DataHora())->dataCompleta()
             ]
         ]);
@@ -385,107 +433,7 @@ class CihController extends Controller
      */
     public function filtro(Request $request)
     {
-        if (auth()->user()->can('admissao_cih_privilegio_adm')) {
-            $resultado = Cih::with(['Colaboradores.Demissao' => function ($query) {
-                    $query->select('id', 'feedback_id', 'data_desmobilizacao', DB::raw('DATEDIFF(NOW(), data_desmobilizacao) AS dias'));
-                }, 'Tag:id,label',
-                    'Area',
-                    'CentroDeCusto',
-                    'ResponsavelLancamento:id,nome',
-                    'ResponsavelAprovacao:id,nome',
-                    'RhAprovacao:id,nome']
-            );
-        } elseif (auth()->user()->grupo_id == 113) { //pog para Montisol
-            $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
-            $ccMatriz = collect($cc['centros_custos']['12557849000140'])->where('ativo', '=', true);
-            $resultado = Cih::with(['Colaboradores.Demissao' => function ($query) {
-                    $query->select('id', 'feedback_id', 'data_desmobilizacao', DB::raw('DATEDIFF(NOW(), data_desmobilizacao) AS dias'));
-                }, 'Tag:id,label',
-                    'Area',
-                    'CentroDeCusto',
-                    'ResponsavelLancamento:id,nome',
-                    'ResponsavelAprovacao:id,nome',
-                    'RhAprovacao:id,nome']
-            )->whereHas('CentroDeCusto', function ($query) use ($ccMatriz) {
-                $query->whereIn('id', $ccMatriz->pluck('id')->toArray());
-            });
-        } else {
-            $resultado = Cih::vinculados()->with(
-                ['Colaboradores.Demissao' => function ($query) {
-                    $query->select('id', 'feedback_id', 'data_desmobilizacao', DB::raw('DATEDIFF(NOW(), data_desmobilizacao) AS dias'));
-                }, 'Tag:id,label',
-                    'Area',
-                    'CentroDeCusto',
-                    'ResponsavelLancamento:id,nome',
-                    'ResponsavelAprovacao:id,nome',
-                    'RhAprovacao:id,nome']
-            );
-        }
-
-        $filtroPeriodo = $request->filtroPeriodo;
-
-        if ($filtroPeriodo) {
-            $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
-            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
-            $resultado->where('data_lancamento', '>=', $dataInicio->dataHoraInsert())
-                ->where('data_lancamento', '<=', $dataFim->dataHoraInsert());
-        }
-
-        if ($request->filled('campoBusca')) {
-            $resultado->whereHas('Colaboradores.Curriculo', function ($q) use ($request) {
-                $q->where('nome', 'like', '%' . $request->campoBusca . '%');
-            });
-        }
-
-        if ($request->filled('campoStatus')) {
-            $status = $request->campoStatus;
-            $resultado->when($status == 'aberto', function ($query) {
-                return $query->whereStatus('aberto');
-            })->when($status == 'aprovado_gestor', function ($query) {
-                return $query->where('status', 'aprovado')->whereNull('resposta_rh');
-            })
-                ->when($status == 'aprovado_rh', function ($query) {
-                    return $query->where('resposta_rh', 'aprovado');
-                })
-                ->when($status == 'reprovado', function ($query) {
-                    return $query->where(function ($q) {
-                        $q->where('status', 'reprovado')->orWhere('resposta_rh', 'reprovado');
-                    });
-
-                });
-        }
-
-        if ($request->filled('campoTags')) {
-            $resultado->whereHas('Tag', function ($q) use ($request) {
-                $q->whereId($request->campoTags);
-            });
-        }
-
-        if ($request->filled('campoAreas')) {
-            $resultado->whereHas('Area', function ($q) use ($request) {
-                $q->whereId($request->campoAreas);
-            });
-        }
-        if ($request->filled('campoCentrosDeCusto')) {
-            $resultado->whereHas('CentroDeCusto', function ($q) use ($request) {
-                $q->whereId($request->campoCentrosDeCusto);
-            });
-        }
-        if ($request->filled('campoGestores')) {
-            $resultado->whereHas('GestorAprovacao', function ($q) use ($request) {
-                $q->whereId($request->campoGestores);
-            });
-        }
-
-        $resultado->with('Colaboradores.Admissao:id,feedback_id,data_admissao,pis,centro_custo_id',
-            'Colaboradores.Admissao.CentroCusto:id,label'
-        );
-
-        return $resultado->orderByDesc('created_at');
-
-//        return CihQueryBuilder::forListing(auth()->user(), $request->all());
-
+        return CihQueryBuilder::forListing(auth()->user(), $request->all());
     }
 
     /**

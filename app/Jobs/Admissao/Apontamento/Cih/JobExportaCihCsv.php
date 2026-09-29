@@ -40,7 +40,9 @@ class JobExportaCihCsv implements ShouldQueue
             \Log::info('Modelo config: ' . $this->modeloCihConfig);
 
             $user = $this->authenticateUser();
-            $formatter = new CihExportFormatter($this->modeloCihConfig);
+            $temFilial = (new \App\Models\ClienteFilial())->temFilial($user->empresa_id);
+            $lotacaoResolver = new \App\Services\Cih\CihLotacaoResolver((int) $user->empresa_id);
+            $formatter = new CihExportFormatter($this->modeloCihConfig, $temFilial, $lotacaoResolver);
             $fileManager = new CsvFileManager();
 
             // Criar arquivo e escrever dados

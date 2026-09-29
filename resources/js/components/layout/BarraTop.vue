@@ -124,7 +124,7 @@
                 </div>
 
                 <button type="button" class="btn btn-sm mr-1 px-3 font-size-16 header-item waves-effect" @click="verticalMenu">
-                    <i class="fa fa-fw fa-bars text-white" />
+                    <i :class="menuColapsado ? 'fa fa-fw fa-bars text-white' : 'fa fa-fw fa-times text-white'" />
                 </button>
             </div>
 
@@ -248,6 +248,7 @@ export default {
             preloadDownload: true,
             downloads: [],
             full: false,
+            menuColapsado: false,
             URL_SITE,
             URL_ADMIN
         }
@@ -255,6 +256,7 @@ export default {
     mounted() {
         this.formDefault = _.cloneDeep(this.form)
         this.initDropdowns()
+        this.restaurarMenuColapsado()
     },
     methods: {
         initDropdowns() {
@@ -267,12 +269,33 @@ export default {
             this.quantidadeMensagensNovas = arryMensagensNovas.length
         },
 
+        restaurarMenuColapsado() {
+            if (window.innerWidth < 992) {
+                this.menuColapsado = !document.body.classList.contains('sidebar-enable')
+                return
+            }
+
+            const colapsado = localStorage.getItem('mybp_menu_colapsado') === '1'
+            document.body.classList.toggle('vertical-collpsed', colapsado)
+            if (colapsado) {
+                document.body.classList.add('sidebar-enable')
+            }
+            this.menuColapsado = colapsado
+        },
+
+        salvarMenuColapsado(colapsado) {
+            localStorage.setItem('mybp_menu_colapsado', colapsado ? '1' : '0')
+        },
+
         verticalMenu() {
             $('body').toggleClass('sidebar-enable')
             if ($(window).width() >= 992) {
                 $('body').toggleClass('vertical-collpsed')
+                this.menuColapsado = document.body.classList.contains('vertical-collpsed')
+                this.salvarMenuColapsado(this.menuColapsado)
             } else {
                 $('body').removeClass('vertical-collpsed')
+                this.menuColapsado = !document.body.classList.contains('sidebar-enable')
             }
         },
         fullscreen() {

@@ -471,8 +471,8 @@
 
     @if(\App\Models\Sistema::permitirLinks('entrevista_parecer_rh', 'entrevista_parecer_rota', 'entrevista_parecer_teste_pratico', 'entrevista_parecer_entrevista', 'entrevista_resultado_integrado','entrevista_rh_cliente','entrevista_gestor_cliente'))
         <li id="entrevistas">
-            <a href="javascript://" class="has-arrow waves-effect"><i class="mdi mdi-clipboard-list-outline"
-                                                                      parent="entrevistas"></i>
+            <a href="javascript://" class="has-arrow waves-effect" parent="entrevistas">
+                <i class="mdi mdi-clipboard-list-outline"></i>
                 <span>ENTREVISTAS</span>
             </a>
             <ul aria-expanded="false">
@@ -914,9 +914,6 @@
                         </a>
                     </li>
                 @endcan
-            </ul>
-
-            <ul aria-expanded="false">
                 @can('relatorio_asos')
                     <li>
                         <a href="{{route('g.relatorios.vencimentoasos.index')}}" parent="relatorios"
@@ -925,9 +922,6 @@
                         </a>
                     </li>
                 @endcan
-            </ul>
-
-            <ul aria-expanded="false">
                 @can('relatorio_treinamento')
                     <li>
                         <a href="{{route('g.relatorios.vencimentotreinamento.index')}}" parent="relatorios"
@@ -936,9 +930,6 @@
                         </a>
                     </li>
                 @endcan
-            </ul>
-
-            <ul aria-expanded="false">
                 @can('relatorio_ferias')
                     <li>
                         <a href="{{route('g.relatorios.ferias.index')}}" parent="relatorios"
@@ -947,9 +938,6 @@
                         </a>
                     </li>
                 @endcan
-            </ul>
-
-            <ul aria-expanded="false">
                 @can('relatorio_ferias')
                     <li>
                         <a href="{{route('g.relatorios.vencimentoferias.indexVencimentoFerias')}}" parent="relatorios"
@@ -958,9 +946,6 @@
                         </a>
                     </li>
                 @endcan
-            </ul>
-
-            <ul aria-expanded="false">
                 @can('relatorio_medidas_administrativas')
                     <li>
                         <a href="{{route('g.relatorios.medidasadministrativas.index')}}" parent="relatorios"
@@ -969,9 +954,6 @@
                         </a>
                     </li>
                 @endcan
-
-            </ul>
-            <ul aria-expanded="false">
                 @can('relatorio_centro_de_custo')
                     <li>
                         <a href="{{route('g.relatorios.centrodecusto.index')}}" parent="relatorios" key="centrodecusto">
@@ -979,9 +961,6 @@
                         </a>
                     </li>
                 @endcan
-            </ul>
-
-            <ul aria-expanded="false">
                 @can('relatorio_efetivo')
                     <li>
                         <a href="{{route('g.relatorios.efetivo.index')}}" parent="relatorios" key="efetivo">
@@ -989,17 +968,13 @@
                         </a>
                     </li>
                 @endcan
-            </ul>
-            <ul aria-expanded="false">
                 @can('relatorio_avaliacao_90_dias')
                     <li>
                         <a href="{{ route('g.relatorios.avaliacaoExperiencia.index') }}" parent="relatorios" key="avaliacao_experiencia">
-                        Avaliação de Experiência
+                            Avaliação de Experiência
                         </a>
                     </li>
-                 @endcan
-            </ul>
-            <ul aria-expanded="false">
+                @endcan
                 @can('relatorio_aniversariantes')
                     <li>
                         <a href="{{route('g.relatorios.aniversariantes.relatorioNivers')}}" parent="relatorios"
@@ -1008,16 +983,14 @@
                         </a>
                     </li>
                 @endcan
+                @if(auth()->user()->empresa_id === \App\Models\User::MYBP_EMPRESA_ID)
+                    <li>
+                        <a href="{{ route('g.relatorios.nps.index') }}" parent="relatorios" key="relatorio_nps">
+                            NPS (Resultados)
+                        </a>
+                    </li>
+                @endif
             </ul>
-            @if(auth()->user()->empresa_id === \App\Models\User::MYBP_EMPRESA_ID)
-            <ul aria-expanded="false">
-                <li>
-                    <a href="{{ route('g.relatorios.nps.index') }}" parent="relatorios" key="relatorio_nps">
-                        NPS (Resultados)
-                    </a>
-                </li>
-            </ul>
-            @endif
         </li>
     @endif
 

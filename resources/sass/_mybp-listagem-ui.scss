@@ -91,8 +91,8 @@
 }
 
 .mybp-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
-    border-color: #007bff;
+    box-shadow: 0 4px 12px rgba($primary, 0.15);
+    border-color: $primary;
     transform: translateY(-2px);
 }
 
@@ -168,13 +168,13 @@
 
 .mybp-card-link-publico-url {
     font-size: 0.813rem;
-    color: #007bff;
+    color: $primary;
     word-break: break-all;
     line-height: 1.4;
 }
 
 .mybp-card-link-publico-url:hover {
-    color: #0056b3;
+    color: darken($primary, 8%);
     text-decoration: underline;
 }
 
@@ -805,8 +805,8 @@
 }
 
 .mybp-btn-acoes-compact:hover {
-    background: #007bff;
-    border-color: #007bff;
+    background: $primary;
+    border-color: $primary;
     color: white;
     transform: rotate(90deg);
 }
@@ -825,8 +825,8 @@
 }
 
 .mybp-dropdown-menu .dropdown-item:hover {
-    background: #f8f9fa;
-    color: #007bff;
+    background: rgba($primary, 0.08);
+    color: $primary;
     padding-left: 1.5rem;
 }
 

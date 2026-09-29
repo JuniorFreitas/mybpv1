@@ -195,15 +195,34 @@
 
     .navbar-brand-box {
         width: $sidebar-collapsed-width !important;
+        padding: 0 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .logo {
+        line-height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+
         span.logo-lg {
             display: none;
         }
 
         span.logo-sm {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            line-height: 1;
+
+            img {
+                display: block;
+                margin: 0 auto;
+            }
         }
     }
 
@@ -211,10 +230,14 @@
     .vertical-menu {
         position: absolute;
         width: $sidebar-collapsed-width !important;
-        z-index: 5;
+        // Acima de filtros/combobox da página (z ~20), abaixo de modal Bootstrap (1050/1040)
+        z-index: 1030;
 
+        // Sem overflow:visible no wrapper, o flyout do menu colapsado
+        // fica clipado (largura 70px) e os filtros da página pintam por cima.
         .simplebar-mask,
-        .simplebar-content-wrapper {
+        .simplebar-content-wrapper,
+        .simplebar-wrapper {
             overflow: visible !important;
         }
 
@@ -227,11 +250,14 @@
         }
 
         // Sidebar Menu
+        // Observação: itens reais ficam em `#side-menu > #system-menu > li`
+        // (não em `#side-menu > li`), então o seletor precisa incluir os dois.
         #sidebar-menu {
 
             .menu-title,
             .badge,
-            .collapse.in {
+            .collapse.in,
+            li .form-group {
                 display: none !important;
             }
 
@@ -239,21 +265,26 @@
                 height: inherit !important;
             }
 
-            .has-arrow {
+            // Esconde caret só nos itens de 1º nível (ícone); no flyout o caret volta.
+            > ul > li > a.has-arrow,
+            > ul > #system-menu > li > a.has-arrow {
                 &:after {
                     display: none;
                 }
             }
 
             > ul {
-                > li {
+                > li,
+                > #system-menu > li {
                     position: relative;
                     white-space: nowrap;
 
                     > a {
-                        padding: 15px 20px;
+                        padding: 15px 0;
                         min-height: 55px;
                         transition: none;
+                        overflow: hidden;
+                        text-align: center;
                         
                         &:hover,
                         &:active,
@@ -263,11 +294,15 @@
 
                         i {
                             font-size: 1.45rem;
-                            margin-left: 4px;
+                            margin-left: 0;
+                            display: inline-block;
+                            min-width: auto;
+                            width: 100%;
+                            text-align: center;
                         }
 
                         span {
-                            display: none;
+                            display: none !important;
                             padding-left: 25px;
                         }
                     }
@@ -279,13 +314,20 @@
                             color: $primary;
                             background-color: darken($sidebar-bg, 4%);
                             transition: none;
+                            text-align: left;
+                            padding: 15px 20px;
+                            overflow: visible;
 
                             i{
                                 color: $primary;
+                                width: auto;
+                                min-width: 1.75rem;
+                                margin-left: 4px;
+                                text-align: left;
                             }
 
                             span {
-                                display: inline;
+                                display: inline !important;
                             }
                         }
 
@@ -296,21 +338,52 @@
                             width: 190px;
                             height: auto !important;
                             box-shadow: 3px 5px 10px 0 rgba(54, 61, 71, .1);
+                            // Acima de filtros/combobox (~20 / 10000 no dropdown),
+                            // abaixo de modal Bootstrap (1050) via contexto do .vertical-menu (1030).
+                            z-index: 1031;
+                            isolation: isolate;
+                            transform: translateZ(0);
+                            white-space: normal;
 
                             ul {
                                 box-shadow: 3px 5px 10px 0 rgba(54, 61, 71, .1);
+                                z-index: 1032;
                             }
 
                             a {
                                 box-shadow: none;
-                                padding: 8px 20px;
+                                padding: 8px 28px 8px 20px;
                                 position: relative;
                                 width: 190px;
-                                z-index: 6;
+                                z-index: 1031;
                                 color: $sidebar-menu-sub-item-color;
+                                text-align: left;
+                                overflow: visible;
+                                white-space: normal;
+                                word-break: break-word;
+                                line-height: 1.35;
+                                height: auto;
+                                min-height: 36px;
 
                                 &:hover {
                                     color: $sidebar-menu-item-hover-color;
+                                }
+
+                                // Caret à direita quando há submenu aninhado
+                                &.has-arrow {
+                                    &:after {
+                                        content: "\F0142"; // mdi-chevron-right
+                                        font-family: 'Material Design Icons';
+                                        display: block !important;
+                                        float: none;
+                                        position: absolute;
+                                        right: 12px;
+                                        top: 50%;
+                                        transform: translateY(-50%);
+                                        font-size: 1rem;
+                                        line-height: 1;
+                                        transition: none;
+                                    }
                                 }
                             }
                         }
@@ -319,17 +392,20 @@
 
                 ul {
                     padding: 5px 0;
-                    z-index: 9999;
+                    z-index: 1031;
                     display: none;
                     background-color: $sidebar-bg;
 
                     li {
+                        position: relative;
+
                         &:hover {
                             >ul {
                                 display: block;
-                                left: 190px;
+                                left: 100%;
+                                top: 0;
                                 height: auto !important;
-                                margin-top: -36px;
+                                margin-top: 0;
                                 position: absolute;
                                 width: 190px;
                             }
@@ -408,7 +484,8 @@ body[data-sidebar="dark"] {
             #sidebar-menu {
 
                 > ul {
-                    > li {
+                    > li,
+                    > #system-menu > li {
                         
                         &:hover {
                             > a {
@@ -538,7 +615,8 @@ body[data-sidebar-size="small"] {
             #sidebar-menu{
                 text-align: left;
                 >ul{
-                    >li{
+                    >li,
+                    > #system-menu > li {
                         >a {
                             i{
                                 display: inline-block;
@@ -628,7 +706,8 @@ body[data-sidebar="colored"] {
         .vertical-menu {
             #sidebar-menu{
                 >ul{
-                    >li{
+                    >li,
+                    > #system-menu > li {
                         &:hover>a{
                             background-color: lighten($primary, 2%);
                             color: $white;
