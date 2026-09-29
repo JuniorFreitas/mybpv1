@@ -2,6 +2,7 @@
 
 namespace App\Services\Cih;
 
+use App\Models\Cih;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -78,9 +79,17 @@ class CihQueryBuilder
 
     private function getBaseQueryWithPermissions(): Builder
     {
+        // Exportação: empresa + filtros da tela (comportamento histórico do JobExportaCihCsvFinal).
+        // Listagem: escopo de visibilidade (ver_todas / Montisol / vinculados).
+        if ($this->isExport) {
+            return Cih::query()
+                ->with($this->getExportRelationships())
+                ->where('empresa_id', $this->user->empresa_id);
+        }
+
         return $this->acessoService->queryBaseComEscopo(
             $this->user,
-            $this->isExport ? $this->getExportRelationships() : $this->getListingRelationships()
+            $this->getListingRelationships()
         );
     }
 

@@ -95,6 +95,19 @@ class CihQueryBuilderVisibilidadeTest extends TestCase
         $this->assertStringNotContainsString('gestor_id', $sql);
     }
 
+    public function test_exportacao_usa_empresa_e_nao_escopo_vinculados(): void
+    {
+        $user = $this->usuarioComHabilidades([], 7);
+        $this->actingAs($user);
+
+        $sql = strtolower(CihQueryBuilder::forExport($user)->toSql());
+
+        $this->assertStringContainsString('empresa_id', $sql);
+        $this->assertStringNotContainsString('user_lancamento_id` = ?', $sql);
+        $this->assertStringNotContainsString('"user_lancamento_id" = ?', $sql);
+        $this->assertStringNotContainsString('or ', $sql);
+    }
+
     /**
      * @param list<string> $habilidades
      */
