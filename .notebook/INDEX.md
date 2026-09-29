@@ -3,6 +3,7 @@
 
 Last updated: 2026-09-28
 
+- [cloud-multi-move-drag](cloud-multi-move-drag.md) — Multi-seleção + drag para pasta no Cloud | flow | cloud, drag, move
 - [cih-visibilidade-aprovacao](cih-visibilidade-aprovacao.md) — ver_todas ≠ aprovar; ADM override gestor | domain | cih, permissao, habilidades
 - [cih-autocomplete-cnpj](cih-autocomplete-cnpj.md) — Autocomplete colaborador filtra por CNPJ/CC do modal | flow | cih, autocomplete, cnpj
 - [cih-dba-payload-enxuto](cih-dba-payload-enxuto.md) — Listagem/edit/autocomplete CIH só com colunas necessárias | perf | cih, query, dba

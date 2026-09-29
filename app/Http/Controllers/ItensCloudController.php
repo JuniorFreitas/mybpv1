@@ -379,37 +379,168 @@ class ItensCloudController extends Controller
     {
         Cloud::encontrarAutorizadoOuAbortar($item->cloud_id);
 
-        if ($request->filled('pasta')) {
+        $pastaDestino = $request->filled('pasta') ? (int) $request->pasta : null;
+        $inicial = $request->has('inicial') ? $request->inicial : $item->pertence;
+
+        try {
+            DB::beginTransaction();
+            $this->moverItem($item, $pastaDestino, $inicial !== null && $inicial !== '' ? (int) $inicial : null);
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['msg' => $e->getMessage()], 400);
+        }
+    }
+
+    public function moverVarios(Request $request)
+    {
+        $dados = $request->validate([
+            'itens' => ['required', 'array', 'min:1'],
+            'itens.*' => ['integer'],
+            'pasta' => ['nullable', 'integer'],
+            'cloud_id' => ['required', 'integer'],
+        ]);
+
+        $cloud = Cloud::encontrarAutorizadoOuAbortar($dados['cloud_id']);
+        $pastaDestino = array_key_exists('pasta', $dados) && $dados['pasta'] !== null
+            ? (int) $dados['pasta']
+            : null;
+
+        $ids = array_values(array_unique(array_map('intval', $dados['itens'])));
+        $itens = ItensCloud::query()
+            ->where('cloud_id', $cloud->id)
+            ->whereIn('id', $ids)
+            ->get()
+            ->keyBy('id');
+
+        $movidos = [];
+        $erros = [];
+
+        try {
+            DB::beginTransaction();
+
+            if ($pastaDestino !== null) {
+                $destino = ItensCloud::query()
+                    ->where('cloud_id', $cloud->id)
+                    ->whereKey($pastaDestino)
+                    ->where('tipo', 'pasta')
+                    ->first();
+                if (!$destino) {
+                    throw new \InvalidArgumentException('Pasta de destino inválida neste Cloud');
+                }
+            }
+
+            foreach ($ids as $id) {
+                $item = $itens->get($id);
+                if (!$item) {
+                    $erros[] = ['id' => $id, 'msg' => 'Item não encontrado neste Cloud'];
+                    continue;
+                }
+
+                try {
+                    $this->moverItem($item, $pastaDestino, $item->pertence);
+                    $movidos[] = $id;
+                } catch (\Exception $e) {
+                    $erros[] = ['id' => $id, 'msg' => $e->getMessage()];
+                }
+            }
+
+            if (count($movidos) === 0) {
+                DB::rollBack();
+                return response()->json([
+                    'msg' => 'Nenhum item foi movido',
+                    'movidos' => [],
+                    'erros' => $erros,
+                ], 400);
+            }
+
+            DB::commit();
+            return response()->json([
+                'movidos' => $movidos,
+                'erros' => $erros,
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['msg' => $e->getMessage(), 'movidos' => [], 'erros' => $erros], 400);
+        }
+    }
+
+    /**
+     * Move um item para a pasta destino (null = raiz).
+     *
+     * @param  int|null  $inicial  Parent esperado (optimistic lock); null = raiz
+     * @throws \Exception
+     */
+    private function moverItem(ItensCloud $item, ?int $pastaDestino, $inicial = null): void
+    {
+        if ($pastaDestino !== null) {
             $destino = ItensCloud::query()
                 ->where('cloud_id', $item->cloud_id)
-                ->whereKey($request->pasta)
+                ->whereKey($pastaDestino)
                 ->where('tipo', 'pasta')
                 ->first();
             if (!$destino) {
-                return response()->json(['msg' => 'Pasta de destino inválida neste Cloud'], 404);
+                throw new \InvalidArgumentException('Pasta de destino inválida neste Cloud');
+            }
+
+            if ((int) $item->id === (int) $pastaDestino) {
+                throw new \InvalidArgumentException("Não é possível mover \"{$item->label}\" para dentro de si mesma");
+            }
+
+            if ($item->tipo === 'pasta' && $this->pastaEhDescendenteDe($pastaDestino, (int) $item->id, (int) $item->cloud_id)) {
+                throw new \InvalidArgumentException("Não é possível mover \"{$item->label}\" para uma subpasta dela");
             }
         }
 
-        try {
-            $agora = new DataHora();
-            if ($item->pertence == $request->inicial) {
-                DB::beginTransaction();
-                $dados = [
-                    'pertence' => $request->pasta,
-                    'quem_moveu' => auth()->id(),
-                    'pertence_anterior' => $request->inicial,
-                    'data_movido' => $agora->dataHoraInsert()
-                ];
-                $item->update($dados);
-                DB::commit();
-                return response()->json([], 201);
-            } else {
-                return response()->json(['msg' => "Não foi possível mover o arquivo ({$item->label}), pois foi movido por {$item->Moveu->nome} em {$item->data_movido}"], 400);
-            }
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response($e->getMessage(), 400);
+        $rawPertence = $item->getAttributes()['pertence'] ?? null;
+        $pertenceAtual = ($rawPertence === null || $rawPertence === '') ? null : (int) $rawPertence;
+        $inicialNormalizado = ($inicial === null || $inicial === '') ? null : (int) $inicial;
+
+        if ($pertenceAtual === $pastaDestino) {
+            return; // já está no destino
         }
+
+        if ($pertenceAtual !== $inicialNormalizado) {
+            $quem = optional($item->Moveu)->nome ?: 'outro usuário';
+            $quando = $item->data_movido ?: '';
+            throw new \RuntimeException(
+                "Não foi possível mover ({$item->label}), pois foi movido por {$quem}" . ($quando ? " em {$quando}" : '')
+            );
+        }
+
+        $agora = new DataHora();
+        $item->update([
+            'pertence' => $pastaDestino,
+            'quem_moveu' => auth()->id(),
+            'pertence_anterior' => $pertenceAtual,
+            'data_movido' => $agora->dataHoraInsert(),
+            'movido' => true,
+        ]);
+    }
+
+    /**
+     * Verifica se $candidatoId está na árvore abaixo de $ancestralId (subindo pelos pais de $candidatoId).
+     */
+    private function pastaEhDescendenteDe(int $candidatoId, int $ancestralId, int $cloudId): bool
+    {
+        $atual = $candidatoId;
+        $vistos = [];
+        while ($atual) {
+            if ($atual === $ancestralId) {
+                return true;
+            }
+            if (isset($vistos[$atual])) {
+                break;
+            }
+            $vistos[$atual] = true;
+            $pai = ItensCloud::query()
+                ->where('cloud_id', $cloudId)
+                ->whereKey($atual)
+                ->value('pertence');
+            $atual = $pai !== null ? (int) $pai : 0;
+        }
+        return false;
     }
 
     // Anexos-------------------------------------------------

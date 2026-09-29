@@ -333,7 +333,7 @@
                 </div>
             </template>
         </modal>
-        <modal id="janelaMover" titulo="Mover Arquivo" @fechou="resetEstadoMover" :fechar="!preloadMover" ref="modal_janelaMover">
+        <modal id="janelaMover" :titulo="tituloModalMover" @fechou="resetEstadoMover" :fechar="!preloadMover" ref="modal_janelaMover">
             <template #conteudo>
                 <pasta
                     :model="mover"
@@ -530,6 +530,22 @@
             </div>
         </div>
 
+        <div class="cloud-selecao-bar" v-if="podeSelecionarItens && selecionados.length">
+            <span class="cloud-selecao-count">
+                <strong>{{ selecionados.length }}</strong>
+                {{ selecionados.length === 1 ? 'item selecionado' : 'itens selecionados' }}
+            </span>
+            <button type="button" class="btn btn-sm btn-primary" :disabled="preload || movendoLote" @click="abrirMoverSelecionados">
+                <i class="fas fa-arrows-alt-v"></i> Mover
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" :disabled="preload || movendoLote" @click="limparSelecao">
+                Limpar
+            </button>
+            <span class="text-muted small" v-if="movendoLote">
+                <i class="fas fa-circle-notch fa-spin"></i> Movendo...
+            </span>
+        </div>
+
         <!--Caminho de Rato-->
         <div class="row" v-if="!modoBusca">
             <div class="col-12">
@@ -569,6 +585,16 @@
                     <table class="table table-hover bg-white">
                         <thead>
                             <tr class="bg-default">
+                                <th v-if="podeSelecionarItens" class="cloud-col-check text-center" style="width: 36px">
+                                    <input
+                                        type="checkbox"
+                                        class="cloud-check"
+                                        :checked="todosVisiveisSelecionados"
+                                        :disabled="preload || !itensSelecionaveis.length"
+                                        title="Selecionar todos"
+                                        @change="alternarSelecionarTodos($event.target.checked)"
+                                    />
+                                </th>
                                 <th>Nome</th>
                                 <!--                            <th class="text-center">Tamanho</th>-->
                                 <th class="text-center">Data de Criação</th>
@@ -580,12 +606,12 @@
                         </thead>
                         <tbody>
                             <tr v-if="preload">
-                                <td colspan="6">
+                                <td :colspan="colunasTabela">
                                     <preload></preload>
                                 </td>
                             </tr>
                             <tr v-if="!preload && itemBusca && !modoBusca">
-                                <td colspan="6">
+                                <td :colspan="colunasTabela">
                                     <button
                                         class="btn btn-sm mr-1 btn-outline-dark border-0"
                                         :disabled="preload"
@@ -596,12 +622,34 @@
                                 </td>
                             </tr>
                             <tr v-if="!preload && modoBusca && lista.length === 0">
-                                <td colspan="6" class="text-center text-muted py-4">
+                                <td :colspan="colunasTabela" class="text-center text-muted py-4">
                                     Nenhum arquivo ou pasta encontrado com permissão para “{{ termoBuscaAtivo }}”.
                                 </td>
                             </tr>
-                            <template v-for="(item, index) in lista" :key="index">
-                            <tr v-if="!preload && lista.length > 0 && item.TemPermissao">
+                            <template v-for="(item, index) in lista" :key="item.id || index">
+                            <tr
+                                v-if="!preload && lista.length > 0 && item.TemPermissao"
+                                :class="{
+                                    'cloud-row-selecionado': estaSelecionado(item.id),
+                                    'cloud-row-drop-alvo': pastaDropAlvo === item.id,
+                                    'cloud-row-arrastando': arrastandoIds.includes(item.id)
+                                }"
+                                :draggable="podeArrastarItem(item)"
+                                @dragstart="onItemDragStart($event, item)"
+                                @dragend="onItemDragEnd"
+                                @dragover="onPastaDragOver($event, item)"
+                                @dragleave="onPastaDragLeave($event, item)"
+                                @drop="onPastaDrop($event, item)"
+                            >
+                                <td v-if="podeSelecionarItens" class="cloud-col-check text-center" @click.stop>
+                                    <input
+                                        type="checkbox"
+                                        class="cloud-check"
+                                        :checked="estaSelecionado(item.id)"
+                                        :disabled="preload || movendoLote"
+                                        @change="alternarSelecao(item.id, $event.target.checked)"
+                                    />
+                                </td>
                                 <td>
                                     <div v-if="item.tipo === 'pasta'">
                                         <button
@@ -778,7 +826,7 @@
             </template>
             <template v-else-if="dropdownTipo === 'pasta'">
                 <button
-                    v-if="dropdownItem.pertence && temHabilidade('Mover')"
+                    v-if="temHabilidade('Mover')"
                     type="button"
                     class="cloud-acoes-item"
                     @click="execAcaoPasta('mover')"
@@ -925,6 +973,10 @@ export default {
             janelaMover: false,
             movido: false,
             mover: {},
+            selecionados: [],
+            arrastandoIds: [],
+            pastaDropAlvo: null,
+            movendoLote: false,
             dropdownAberto: null,
             dropdownItem: null,
             dropdownTipo: null,
@@ -963,6 +1015,26 @@ export default {
         },
         podeUploadArrastar() {
             return !this.forbidden && this.itemBusca !== '' && !this.preload && !this.modoBusca
+        },
+        podeSelecionarItens() {
+            return this.temHabilidade('Mover') && !this.modoBusca && !this.forbidden
+        },
+        itensSelecionaveis() {
+            return (this.lista || []).filter((item) => item && item.TemPermissao && item.id)
+        },
+        todosVisiveisSelecionados() {
+            const ids = this.itensSelecionaveis.map((item) => item.id)
+            return ids.length > 0 && ids.every((id) => this.selecionados.includes(id))
+        },
+        colunasTabela() {
+            return this.podeSelecionarItens ? 7 : 6
+        },
+        tituloModalMover() {
+            const qtd = (this.mover && this.mover.arquivos && this.mover.arquivos.length) || 0
+            if (qtd > 1) {
+                return `Mover ${qtd} itens`
+            }
+            return 'Mover item'
         }
     },
     mounted() {
@@ -1124,6 +1196,7 @@ export default {
 
                 this.lista = data.lista || []
                 this.habilidades = data.habilidades || this.habilidades
+                this.limparSelecao()
                 if (this.habilidades.length && this.habilidades[0].pivot) {
                     this.meu_grupo = this.habilidades[0].pivot.grupo_cloud_id
                 }
@@ -1397,16 +1470,26 @@ export default {
         },
         /*--------MOVER----------*/
         pastaAtual(dados) {
-            this.removeMover = !(dados.atual === dados.inicial || dados.atual === dados.arquivo || !dados.atual)
+            const ids = Array.isArray(dados.arquivos) && dados.arquivos.length
+                ? dados.arquivos.map((id) => Number(id))
+                : (dados.arquivo != null && dados.arquivo !== '' ? [Number(dados.arquivo)] : [])
+            const atual = dados.atual == null || dados.atual === '' ? null : Number(dados.atual)
+            const inicial = dados.inicial == null || dados.inicial === '' ? null : Number(dados.inicial)
+            const emOrigem = atual === inicial
+            const eItemSendoMovido = atual != null && ids.includes(atual)
+            this.removeMover = !(emOrigem || eItemSendoMovido || atual == null)
         },
         pastaMover(arquivo) {
+            const ids = Array.isArray(arquivo) ? arquivo : [arquivo]
+            const limpos = ids.map((id) => Number(id)).filter((id) => id > 0)
             this.movido = false
             this.preloadMover = false
             this.removeMover = false
             this.mover = {
                 cloud: this.cloud,
                 item: this.itemBusca,
-                arquivo: arquivo
+                arquivo: limpos[0] || null,
+                arquivos: limpos
             }
             this.janelaMover = true
         },
@@ -1417,8 +1500,135 @@ export default {
             }, 10)
         },
         movidoItem() {
+            this.limparSelecao()
             this.atualizar()
             this.movido = true
+        },
+        estaSelecionado(id) {
+            return this.selecionados.includes(Number(id))
+        },
+        alternarSelecao(id, marcado) {
+            const num = Number(id)
+            if (!num) return
+            if (marcado) {
+                if (!this.selecionados.includes(num)) {
+                    this.selecionados.push(num)
+                }
+            } else {
+                this.selecionados = this.selecionados.filter((itemId) => itemId !== num)
+            }
+        },
+        alternarSelecionarTodos(marcado) {
+            if (marcado) {
+                const ids = this.itensSelecionaveis.map((item) => Number(item.id))
+                this.selecionados = Array.from(new Set([...this.selecionados, ...ids]))
+            } else {
+                const visiveis = new Set(this.itensSelecionaveis.map((item) => Number(item.id)))
+                this.selecionados = this.selecionados.filter((id) => !visiveis.has(id))
+            }
+        },
+        limparSelecao() {
+            this.selecionados = []
+            this.arrastandoIds = []
+            this.pastaDropAlvo = null
+        },
+        abrirMoverSelecionados() {
+            if (!this.selecionados.length) return
+            this.pastaMover([...this.selecionados])
+            this.$refs.modal_janelaMover && this.$refs.modal_janelaMover.abrirModal()
+        },
+        podeArrastarItem(item) {
+            return this.podeSelecionarItens && !!item && !!item.TemPermissao && !this.preload && !this.movendoLote
+        },
+        isDragInterno(evento) {
+            const types = Array.from((evento.dataTransfer && evento.dataTransfer.types) || [])
+            return types.includes('application/x-mybp-cloud-itens')
+        },
+        isDragArquivosExternos(evento) {
+            const types = Array.from((evento.dataTransfer && evento.dataTransfer.types) || [])
+            return types.includes('Files') && !types.includes('application/x-mybp-cloud-itens')
+        },
+        onItemDragStart(evento, item) {
+            if (!this.podeArrastarItem(item)) {
+                evento.preventDefault()
+                return
+            }
+            const id = Number(item.id)
+            let ids = [id]
+            if (this.selecionados.includes(id) && this.selecionados.length > 1) {
+                ids = [...this.selecionados]
+            }
+            this.arrastandoIds = ids
+            evento.dataTransfer.setData('application/x-mybp-cloud-itens', JSON.stringify(ids))
+            evento.dataTransfer.effectAllowed = 'move'
+            this.fecharDropdown()
+        },
+        onItemDragEnd() {
+            this.arrastandoIds = []
+            this.pastaDropAlvo = null
+        },
+        onPastaDragOver(evento, item) {
+            if (!item || item.tipo !== 'pasta' || !this.isDragInterno(evento)) {
+                return
+            }
+            if (this.arrastandoIds.includes(Number(item.id))) {
+                return
+            }
+            evento.preventDefault()
+            evento.stopPropagation()
+            if (evento.dataTransfer) {
+                evento.dataTransfer.dropEffect = 'move'
+            }
+            this.pastaDropAlvo = Number(item.id)
+        },
+        onPastaDragLeave(evento, item) {
+            if (this.pastaDropAlvo === Number(item.id)) {
+                this.pastaDropAlvo = null
+            }
+        },
+        onPastaDrop(evento, item) {
+            if (!item || item.tipo !== 'pasta' || !this.isDragInterno(evento)) {
+                return
+            }
+            evento.preventDefault()
+            evento.stopPropagation()
+            this.pastaDropAlvo = null
+            let ids = []
+            try {
+                ids = JSON.parse(evento.dataTransfer.getData('application/x-mybp-cloud-itens') || '[]')
+            } catch (e) {
+                ids = [...this.arrastandoIds]
+            }
+            ids = (ids || []).map((id) => Number(id)).filter((id) => id > 0)
+            ids = ids.filter((id) => id !== Number(item.id))
+            if (!ids.length) {
+                return
+            }
+            this.executarMoverVarios(ids, Number(item.id))
+        },
+        async executarMoverVarios(ids, pastaDestino) {
+            if (!ids.length || this.movendoLote) {
+                return
+            }
+            this.movendoLote = true
+            try {
+                await axios.post(`${URL_ADMIN}/itenscloud/mover-varios`, {
+                    cloud_id: this.cloud,
+                    pasta: pastaDestino,
+                    itens: ids,
+                })
+                this.limparSelecao()
+                this.atualizar()
+            } catch (error) {
+                const movidos = error.response && error.response.data && error.response.data.movidos
+                if (movidos && movidos.length) {
+                    this.limparSelecao()
+                    this.atualizar()
+                }
+            } finally {
+                this.movendoLote = false
+                this.arrastandoIds = []
+            }
         },
 
         /*--------UPLOADS--------*/
@@ -1429,17 +1639,14 @@ export default {
             return (ext || 'FILE').slice(0, 4)
         },
         onCloudDragEnter(evento) {
-            if (!this.podeUploadArrastar) {
-                return
-            }
-            if (!evento.dataTransfer || !Array.from(evento.dataTransfer.types || []).includes('Files')) {
+            if (!this.podeUploadArrastar || !this.isDragArquivosExternos(evento)) {
                 return
             }
             this.contadorCloudArrasto += 1
             this.cloudArrastando = true
         },
         onCloudDragOver(evento) {
-            if (!this.podeUploadArrastar) {
+            if (!this.podeUploadArrastar || !this.isDragArquivosExternos(evento)) {
                 return
             }
             if (evento.dataTransfer) {
@@ -1456,6 +1663,9 @@ export default {
         onCloudDrop(evento) {
             this.contadorCloudArrasto = 0
             this.cloudArrastando = false
+            if (this.isDragInterno(evento)) {
+                return
+            }
             if (!this.podeUploadArrastar) {
                 return
             }
@@ -1919,6 +2129,7 @@ export default {
                     this.forbidden = false
                     let data = response.data
                     this.lista = data.lista
+                    this.limparSelecao()
                     //Nivel de Pastas
                     if (this.lista.length >= 1) {
                         if (!this.lista[0].pertence) {
@@ -2353,6 +2564,59 @@ export default {
     width: 110px;
     flex: 0 0 110px;
     height: 31px;
+}
+
+.cloud-selecao-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.5rem 0 0;
+    padding: 0.45rem 0.75rem;
+    background: #f0f6f9;
+    border: 1px solid rgba(23, 66, 87, 0.18);
+    border-radius: 6px;
+}
+
+.cloud-selecao-count {
+    margin-right: 0.25rem;
+    color: #174257;
+    font-size: 0.875rem;
+}
+
+.cloud-col-check {
+    width: 36px;
+    vertical-align: middle !important;
+}
+
+.cloud-check {
+    cursor: pointer;
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    vertical-align: middle;
+}
+
+.cloud-row-selecionado > td {
+    background: rgba(23, 66, 87, 0.06);
+}
+
+.cloud-row-drop-alvo > td {
+    background: rgba(238, 205, 109, 0.35) !important;
+    outline: 2px dashed #c9a227;
+    outline-offset: -2px;
+}
+
+.cloud-row-arrastando {
+    opacity: 0.55;
+}
+
+tr[draggable='true'] {
+    cursor: grab;
+}
+
+tr[draggable='true']:active {
+    cursor: grabbing;
 }
 </style>
 

@@ -1232,6 +1232,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::post('itenscloud/uploadAtualizarAnexos', [\App\Http\Controllers\ItensCloudController::class, 'uploadAtualizarAnexos'])->name('uploadAtualizarAnexos');
 
         Route::post('itenscloud/mover/{item}', [\App\Http\Controllers\ItensCloudController::class, 'moverArquivo']);
+        Route::post('itenscloud/mover-varios', [\App\Http\Controllers\ItensCloudController::class, 'moverVarios']);
         Route::get('itenscloud/estrutura-mover/{cloud}/{id?}', [\App\Http\Controllers\ItensCloudController::class, 'moverEstruturaPasta']);
 
         Route::put('itenscloud/{item}/revisar', [\App\Http\Controllers\ItensCloudController::class, 'revisar']);
