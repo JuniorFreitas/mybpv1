@@ -47,6 +47,15 @@
     @stack('css')
 </head>
 <body data-sidebar="dark">
+<script>
+    (function () {
+        try {
+            if (window.innerWidth >= 992 && localStorage.getItem('mybp_menu_colapsado') === '1') {
+                document.body.classList.add('vertical-collpsed', 'sidebar-enable');
+            }
+        } catch (e) {}
+    })();
+</script>
 <div id="app" v-cloak>
 
     <div class="layout-wrapper">
