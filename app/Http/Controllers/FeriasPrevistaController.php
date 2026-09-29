@@ -534,7 +534,7 @@ class FeriasPrevistaController extends Controller
 
             $admissao = $item->Admissao;
             $ccfId = (int) ($admissao?->centro_custo_filial_id ?? 0);
-            $ehFilial = (bool) ($admissao?->filial ?? false);
+            $ehFilial = filter_var($admissao?->filial ?? false, FILTER_VALIDATE_BOOLEAN);
             $item->lotacao = LotacaoLabelResolver::resolve(
                 $ehFilial,
                 $filialMap[$ccfId] ?? null,

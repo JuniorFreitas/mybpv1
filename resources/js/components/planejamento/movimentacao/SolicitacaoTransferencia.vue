@@ -768,7 +768,7 @@
                             <span class="detail-label">Data Transferência:</span>
                             <span class="detail-value">{{ item.data_transferencia }}</span>
                         </div>
-                        <div class="detail-item">
+                        <div class="detail-item" v-if="temFilial">
                             <i class="fas fa-map-marker-alt text-muted"></i>
                             <span class="detail-label">Lotação:</span>
                             <span class="detail-value">{{ item.lotacao || 'Não informado' }}</span>
@@ -1095,7 +1095,8 @@ export default defineComponent({
         const comboFiltroOrdenacao = ref(null)
         const comboFiltroPages = ref(null)
         const vueInstance = getCurrentInstance()
-        const temFilial = computed(() => vueInstance?.proxy?.temFilial ?? false)
+        // Não usar proxy.temFilial: o return do setup sobrescreve o mixin e criaria ciclo (sempre false).
+        const temFilial = computed(() => !!vueInstance?.proxy?.authconfiguracao?.temFilial)
         const preloadAtualizacao = ref(false)
         /** Inicia true (campo desabilitado). Só habilita quando colaborador não possui centro de custo. */
         const centroOrigemDesabilitadoPorColaborador = ref(true)
@@ -1910,14 +1911,7 @@ export default defineComponent({
             d.ordenacao = 'created_at_desc'
             d.pages = 50
             d.token = ''
-            if (temFilial.value) {
-                d.campoCnpj = ''
-            } else if (lista_ccs.value && lista_ccs.value.cnpjs) {
-                const keys = Object.keys(lista_ccs.value.cnpjs)
-                d.campoCnpj = keys[0] || ''
-            } else {
-                d.campoCnpj = ''
-            }
+            d.campoCnpj = ''
             atualizar()
         }
 
@@ -1990,8 +1984,6 @@ export default defineComponent({
             if (campoCPF) controle.dados.campoCPF = campoCPF
             const campoStatus = urlParams.get('campoStatus')
             if (campoStatus) controle.dados.campoStatus = campoStatus
-            const campoCnpj = urlParams.get('campoCnpj')
-            if (campoCnpj) controle.dados.campoCnpj = campoCnpj
             const campoCentroCusto = urlParams.get('campoCentroCusto')
             if (campoCentroCusto) controle.dados.campoCentroCusto = campoCentroCusto
             const dataInicio = urlParams.get('dataInicio')

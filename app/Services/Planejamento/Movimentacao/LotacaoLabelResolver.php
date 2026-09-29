@@ -58,29 +58,38 @@ class LotacaoLabelResolver
 
     /**
      * Resolve lotação a partir de flags matriz/filial + relações já carregadas.
+     *
+     * Se existe ClienteFilial vinculada, a lotação dela sempre prevalece
+     * (nunca substitui pela matriz).
      */
     public static function resolve(
         bool $ehFilial,
         ?ClienteFilial $filial,
         ?Cliente $empresaMatriz
     ): string {
-        if ($ehFilial) {
+        if ($filial !== null) {
             $label = self::fromFilial($filial);
             if ($label !== 'Não informado') {
                 return $label;
             }
         }
 
+        if ($ehFilial) {
+            return 'Não informado';
+        }
+
         return self::fromEmpresa($empresaMatriz);
     }
 
     public static function forCentroCustoFilialFlags(
-        bool|int|null $filial,
+        bool|int|string|null $filial,
         ?CentroCustoFilial $centroCustoFilial,
         ?Cliente $empresaMatriz
     ): string {
+        $ehFilial = filter_var($filial, FILTER_VALIDATE_BOOLEAN);
+
         return self::resolve(
-            (bool) $filial,
+            $ehFilial,
             $centroCustoFilial?->Filial,
             $empresaMatriz
         );
@@ -89,7 +98,10 @@ class LotacaoLabelResolver
     public static function forMudancaCargo(MudancaCargo $item, array $filialMap, ?Cliente $empresaMatriz): string
     {
         $mantemCentro = filter_var($item->mantem_centro_custo ?? true, FILTER_VALIDATE_BOOLEAN);
-        $ehFilial = (bool) ($mantemCentro ? $item->anterior_filial : $item->novo_filial);
+        $ehFilial = filter_var(
+            $mantemCentro ? $item->anterior_filial : $item->novo_filial,
+            FILTER_VALIDATE_BOOLEAN
+        );
         $ccfId = (int) ($mantemCentro ? $item->anterior_centro_custo_filial_id : $item->novo_centro_custo_filial_id);
 
         return self::resolve($ehFilial, $filialMap[$ccfId] ?? null, $empresaMatriz);
@@ -176,11 +188,14 @@ class LotacaoLabelResolver
 
     private static function dadosField(mixed $dados, string $field): ?string
     {
-        if (!is_object($dados) || !isset($dados->{$field})) {
+        if (is_array($dados)) {
+            $value = $dados[$field] ?? null;
+        } elseif (is_object($dados)) {
+            $value = $dados->{$field} ?? null;
+        } else {
             return null;
         }
 
-        $value = $dados->{$field};
         if ($value === null || $value === '') {
             return null;
         }

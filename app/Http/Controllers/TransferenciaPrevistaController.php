@@ -538,12 +538,15 @@ class TransferenciaPrevistaController extends Controller
 
         $itens = collect($resultado->items())->map(function ($item) use ($exigeAprovacaoGestorOrigem, $empresaId, $empresa, $lotacaoResolver) {
             $item->setAttribute('exige_aprovacao_gestor_origem', $exigeAprovacaoGestorOrigem);
-            $item->lotacao = LotacaoLabelResolver::fromCentroCustoId(
-                $empresaId,
-                $item->centro_custo_destino_id ? (int) $item->centro_custo_destino_id : null,
-                $empresa,
-                $item->CentroCustoDestino?->label,
-                $lotacaoResolver
+            $item->setAttribute(
+                'lotacao',
+                LotacaoLabelResolver::fromCentroCustoId(
+                    $empresaId,
+                    $item->centro_custo_destino_id ? (int) $item->centro_custo_destino_id : null,
+                    $empresa,
+                    $item->CentroCustoDestino?->label,
+                    $lotacaoResolver
+                )
             );
 
             return $item;

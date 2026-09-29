@@ -909,7 +909,7 @@
                             <span class="detail-label">Salário:</span>
                             <span class="detail-value">{{ item.mantem_salario ? 'Não mudou' : 'Mudou' }}</span>
                         </div>
-                        <div class="detail-item">
+                        <div class="detail-item" v-if="temFilial">
                             <i class="fas fa-map-marker-alt text-muted"></i>
                             <span class="detail-label">Lotação:</span>
                             <span class="detail-value">{{ item.lotacao || 'Não informado' }}</span>
@@ -1409,7 +1409,6 @@ export default {
             if (urlParams.get('campoBusca')) this.controle.dados.campoBusca = urlParams.get('campoBusca')
             if (urlParams.get('campoCPF')) this.controle.dados.campoCPF = urlParams.get('campoCPF')
             if (urlParams.get('campoStatusAprovacao')) this.controle.dados.campoStatusAprovacao = urlParams.get('campoStatusAprovacao')
-            if (urlParams.get('campoCnpj')) this.controle.dados.campoCnpj = urlParams.get('campoCnpj')
             if (urlParams.get('campoCentroCusto')) this.controle.dados.campoCentroCusto = urlParams.get('campoCentroCusto')
             if (urlParams.get('dataInicio')) this.controle.dados.dataInicio = urlParams.get('dataInicio')
             if (urlParams.get('dataFim')) this.controle.dados.dataFim = urlParams.get('dataFim')
@@ -1799,12 +1798,6 @@ export default {
             this.nomeAprovacaoExtra = dados.nome_aprovacao_extra || 'Aprovação Extra'
             if (dados.cc) {
                 this.lista_ccs = dados.cc
-                if (!this.temFilial && dados.cc.cnpjs) {
-                    const keys = Object.keys(dados.cc.cnpjs)
-                    if (keys.length && !this.controle.dados.campoCnpj) {
-                        this.controle.dados.campoCnpj = keys[0]
-                    }
-                }
             }
             this.controle.carregando = false
             this.$nextTick(() => this.syncUrlFiltros())
@@ -1829,14 +1822,7 @@ export default {
             d.ordenacao = 'created_at_desc'
             d.pages = 20
             d.token = ''
-            if (this.temFilial) {
-                d.campoCnpj = ''
-            } else if (this.lista_ccs && this.lista_ccs.cnpjs) {
-                const keys = Object.keys(this.lista_ccs.cnpjs)
-                d.campoCnpj = keys[0] || ''
-            } else {
-                d.campoCnpj = ''
-            }
+            d.campoCnpj = ''
             this.atualizar()
         },
         limparTokenFiltroListagem() {

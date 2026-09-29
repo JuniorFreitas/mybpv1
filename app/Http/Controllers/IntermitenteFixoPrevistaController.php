@@ -358,7 +358,7 @@ class IntermitenteFixoPrevistaController extends Controller
         foreach ($itens as $item) {
             $ccfId = (int) ($item->centro_custo_filial_id ?? 0);
             $item->lotacao = LotacaoLabelResolver::resolve(
-                (bool) ($item->filial ?? false),
+                filter_var($item->filial ?? false, FILTER_VALIDATE_BOOLEAN),
                 $filialMap[$ccfId] ?? null,
                 $empresa
             );
