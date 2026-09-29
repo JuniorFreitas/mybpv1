@@ -116,6 +116,7 @@ class Arquivo extends Model
     const MIME_JPG = "image/jpg";
     const MIME_JPEG = "image/jpeg";
     const MIME_PNG = "image/png";
+    const MIME_WEBP = "image/webp";
     const MIME_PDF = "application/pdf";
     const MIME_DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     const MIME_DOC = "application/msword";
@@ -126,6 +127,28 @@ class Arquivo extends Model
     const MIME_PPS = "application/vnd.ms-powerpoint";
     const MIME_PPSX = "application/vnd.openxmlformats-officedocument.presentationml.slideshow";
     const MIME_TXT = "text/plain";
+    const MIME_CSV = "text/csv";
+    const MIME_CSV2 = "text/comma-separated-values";
+    const MIME_CSV3 = "application/csv";
+    const MIME_MD = "text/markdown";
+    const MIME_MD2 = "text/x-markdown";
+    const MIME_MP3 = "audio/mpeg";
+    const MIME_MP3B = "audio/mpeg3";
+    const MIME_MP3C = "audio/x-mpeg-3";
+    const MIME_MP3D = "audio/mp3";
+    const MIME_MP4 = "video/mp4";
+    const MIME_MP4B = "application/mp4";
+    const MIME_MP4C = "video/x-m4v";
+    const MIME_EPS = "application/postscript";
+    const MIME_EPS2 = "application/eps";
+    const MIME_EPS3 = "image/x-eps";
+    const MIME_EPS4 = "application/x-eps";
+    const MIME_AI = "application/illustrator";
+    const MIME_AI2 = "application/vnd.adobe.illustrator";
+    const MIME_PSD = "image/vnd.adobe.photoshop";
+    const MIME_PSD2 = "image/x-photoshop";
+    const MIME_PSD3 = "application/x-photoshop";
+    const MIME_PSD4 = "application/photoshop";
     const MIME_RAR = "application/x-rar-compressed";
     const MIME_RAR2 = "application/x-rar";
     const MIME_ZIP = "application/zip";
@@ -136,6 +159,7 @@ class Arquivo extends Model
         self::MIME_JPEG,
         self::MIME_GIF,
         self::MIME_PNG,
+        self::MIME_WEBP,
     ];
 
     const MIMEAPENASIMAGENSPDF = [
@@ -143,6 +167,7 @@ class Arquivo extends Model
         self::MIME_JPEG,
         self::MIME_GIF,
         self::MIME_PNG,
+        self::MIME_WEBP,
         self::MIME_PDF,
     ];
 
@@ -172,6 +197,7 @@ class Arquivo extends Model
         self::MIME_JPEG,
         self::MIME_GIF,
         self::MIME_PNG,
+        self::MIME_WEBP,
     ];
 
     const MIMESTODOS = [
@@ -179,6 +205,7 @@ class Arquivo extends Model
         self::MIME_JPG,
         self::MIME_JPEG,
         self::MIME_PNG,
+        self::MIME_WEBP,
         self::MIME_PDF,
         self::MIME_DOCX,
         self::MIME_DOC,
@@ -189,6 +216,28 @@ class Arquivo extends Model
         self::MIME_PPS,
         self::MIME_PPSX,
         self::MIME_TXT,
+        self::MIME_CSV,
+        self::MIME_CSV2,
+        self::MIME_CSV3,
+        self::MIME_MD,
+        self::MIME_MD2,
+        self::MIME_MP3,
+        self::MIME_MP3B,
+        self::MIME_MP3C,
+        self::MIME_MP3D,
+        self::MIME_MP4,
+        self::MIME_MP4B,
+        self::MIME_MP4C,
+        self::MIME_EPS,
+        self::MIME_EPS2,
+        self::MIME_EPS3,
+        self::MIME_EPS4,
+        self::MIME_AI,
+        self::MIME_AI2,
+        self::MIME_PSD,
+        self::MIME_PSD2,
+        self::MIME_PSD3,
+        self::MIME_PSD4,
         self::MIME_RAR,
         self::MIME_RAR2,
         self::MIME_ZIP,

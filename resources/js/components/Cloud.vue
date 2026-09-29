@@ -1,5 +1,18 @@
 <template>
-    <div>
+    <div
+        class="cloud-root"
+        :class="{ 'cloud-root-arrastando': cloudArrastando && podeUploadArrastar }"
+        @dragenter.prevent="onCloudDragEnter"
+        @dragover.prevent="onCloudDragOver"
+        @dragleave.prevent="onCloudDragLeave"
+        @drop.prevent="onCloudDrop"
+    >
+        <div v-if="cloudArrastando && podeUploadArrastar" class="cloud-drop-overlay">
+            <div class="cloud-drop-overlay-box">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <strong>Solte os arquivos para enviar</strong>
+            </div>
+        </div>
         <modal id="janelaCadastrarPasta" :titulo="tituloNovaPasta" size="g" :fechar="!preload_pasta" ref="modal_janelaCadastrarPasta" @fechou="resetEstadoPasta">
             <template #conteudo>
                 <div class="alert alert-success text-center" v-show="cadastrado">
@@ -477,6 +490,7 @@
 
             <div class="cloud-toolbar-upload" v-show="itemBusca !== '' && !preload && !modoBusca">
                 <upload
+                    ref="uploadCloud"
                     label="Upload"
                     :model="arquivosUpload"
                     :url="urlArquivoUpload"
@@ -484,6 +498,7 @@
                     @onprogressogeral="(info) => {; pctGeral = info.pct; }"
                     @onfinalizado="uploadFinalizado"
                     :simples="true"
+                    :somente-botao="true"
                     :dados-ajax="{ cloud_id: cloud, pertence_id: itemBusca }"
                 />
             </div>
@@ -600,69 +615,39 @@
                                         </div>
                                         <br v-if="!modoBusca" />
                                     </div>
-                                    <div v-if="item.tipo === 'arquivo'">
-                                        <svg
-                                            version="1.1"
-                                            id="Layer_1"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            v-if="!item.arquivo.imagem"
-                                            xmlns:xlink="http://www.w3.org/1999/xlink"
-                                            x="0px"
-                                            y="0px"
-                                            viewBox="0 0 512 512"
-                                            style="enable-background: new 0 0 512 512; height: 45px"
-                                            xml:space="preserve"
-                                        >
-                                            <path
-                                                style="fill: #e2e5e7"
-                                                d="M128,0c-17.6,0-32,14.4-32,32v448c0,17.6,14.4,32,32,32h320c17.6,0,32-14.4,32-32V128L352,0H128z"
+                                    <div v-if="item.tipo === 'arquivo'" class="cloud-file-row">
+                                        <div class="cloud-file-icon" :class="{ 'cloud-file-icon-img': item.arquivo.imagem }">
+                                            <img
+                                                v-if="item.arquivo.imagem"
+                                                :src="item.arquivo.urlThumb"
+                                                alt=""
+                                                class="cloud-file-thumb"
                                             />
-                                            <path style="fill: #b0b7bd" d="M384,128h96L352,0v96C352,113.6,366.4,128,384,128z" />
-                                            <polygon style="fill: #cad1d8" points="480,224 384,128 480,128 " />
-                                            <path
-                                                style="fill: #184056"
-                                                d="M416,416c0,8.8-7.2,16-16,16H48c-8.8,0-16-7.2-16-16V256c0-8.8,7.2-16,16-16h352c8.8,0,16,7.2,16,16 V416z"
-                                            />
-                                            <g>
-                                                <text x="45" y="380" style="font-size: 130px; fill: #ffffff">
-                                                    {{ item.arquivo.extensao }}
-                                                </text>
-                                            </g>
-                                            <path style="fill: #cad1d8" d="M400,432H96v16h304c8.8,0,16-7.2,16-16v-16C416,424.8,408.8,432,400,432z" />
-                                            <g></g>
-                                            <g></g>
-                                            <g></g>
-                                            <g></g>
-                                            <g></g>
-                                            <g></g>
-                                            <g></g>
-                                            <g></g>
-                                            <g></g>
-                                            <g></g>
-                                            <g></g>
-                                            <g></g>
-                                            <g></g>
-                                            <g></g>
-                                            <g></g>
-                                        </svg>
-
-                                        <img :src="item.arquivo.urlThumb" alt="" style="width: 45px" v-if="item.arquivo.imagem" />
-                                        <button
-                                            v-if="item.TemPermissao"
-                                            type="button"
-                                            :class="{
-                                                'marcador cloud-dropdown-btn': !item.revisado && !item.aprovado,
-                                                'marcadorRevisado cloud-dropdown-btn': item.revisado && !item.aprovado,
-                                                'normal cloud-dropdown-btn': (item.revisado && item.aprovado) || (!item.revisado && item.aprovado)
-                                            }"
-                                            aria-haspopup="true"
-                                            :aria-expanded="isDropdownAberto(item, 'arquivo')"
-                                            @click.prevent.stop="toggleDropdown(item, 'arquivo', $event)"
-                                        >
-                                            {{ item.label }}{{ item.arquivo.extensao }}
-                                        </button>
-                                        <div class="small text-muted pl-1" v-if="modoBusca">
-                                            {{ formatarCaminhoResultado(item) }}
+                                            <template v-else>
+                                                <i class="fas fa-file-alt cloud-file-icon-fa"></i>
+                                                <span class="cloud-file-ext">{{ rotuloExtensaoArquivo(item.arquivo) }}</span>
+                                            </template>
+                                        </div>
+                                        <div class="cloud-file-meta">
+                                            <button
+                                                v-if="item.TemPermissao"
+                                                type="button"
+                                                class="cloud-file-name"
+                                                :class="{
+                                                    'marcador cloud-dropdown-btn': !item.revisado && !item.aprovado,
+                                                    'marcadorRevisado cloud-dropdown-btn': item.revisado && !item.aprovado,
+                                                    'normal cloud-dropdown-btn': (item.revisado && item.aprovado) || (!item.revisado && item.aprovado)
+                                                }"
+                                                :title="`${item.label}${item.arquivo.extensao || ''}`"
+                                                aria-haspopup="true"
+                                                :aria-expanded="isDropdownAberto(item, 'arquivo')"
+                                                @click.prevent.stop="toggleDropdown(item, 'arquivo', $event)"
+                                            >
+                                                {{ item.label }}{{ item.arquivo.extensao }}
+                                            </button>
+                                            <div class="small text-muted cloud-file-path" v-if="modoBusca">
+                                                {{ formatarCaminhoResultado(item) }}
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
@@ -914,6 +899,8 @@ export default {
             urlArquivoUpload: `${URL_ADMIN}/itenscloud/uploadAnexos`,
             pctGeral: 0,
             arquivoUploadAtual: null,
+            cloudArrastando: false,
+            contadorCloudArrasto: 0,
 
             //AtualizarArquivo
             arquivosAtualizarUpload: [],
@@ -973,6 +960,9 @@ export default {
                 maxHeight: `${this.dropdownPosicao.maxHeight}px`,
                 zIndex: 2000
             }
+        },
+        podeUploadArrastar() {
+            return !this.forbidden && this.itemBusca !== '' && !this.preload && !this.modoBusca
         }
     },
     mounted() {
@@ -1432,6 +1422,48 @@ export default {
         },
 
         /*--------UPLOADS--------*/
+        rotuloExtensaoArquivo(arquivo) {
+            const ext = String((arquivo && arquivo.extensao) || '')
+                .replace(/^\./, '')
+                .toUpperCase()
+            return (ext || 'FILE').slice(0, 4)
+        },
+        onCloudDragEnter(evento) {
+            if (!this.podeUploadArrastar) {
+                return
+            }
+            if (!evento.dataTransfer || !Array.from(evento.dataTransfer.types || []).includes('Files')) {
+                return
+            }
+            this.contadorCloudArrasto += 1
+            this.cloudArrastando = true
+        },
+        onCloudDragOver(evento) {
+            if (!this.podeUploadArrastar) {
+                return
+            }
+            if (evento.dataTransfer) {
+                evento.dataTransfer.dropEffect = 'copy'
+            }
+            this.cloudArrastando = true
+        },
+        onCloudDragLeave() {
+            this.contadorCloudArrasto = Math.max(0, this.contadorCloudArrasto - 1)
+            if (this.contadorCloudArrasto === 0) {
+                this.cloudArrastando = false
+            }
+        },
+        onCloudDrop(evento) {
+            this.contadorCloudArrasto = 0
+            this.cloudArrastando = false
+            if (!this.podeUploadArrastar) {
+                return
+            }
+            const arquivos = evento.dataTransfer && evento.dataTransfer.files ? evento.dataTransfer.files : null
+            if (arquivos && arquivos.length && this.$refs.uploadCloud) {
+                this.$refs.uploadCloud.receberArquivos(arquivos)
+            }
+        },
         uploadFinalizado() {
             this.arquivosUpload = []
             this.arquivoUploadAtual = null
@@ -2119,6 +2151,145 @@ export default {
 
 .chip-svg:hover {
     color: #666666;
+}
+
+.cloud-file-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.65rem;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.cloud-file-icon {
+    position: relative;
+    flex: 0 0 36px;
+    width: 36px;
+    height: 40px;
+    border-radius: 6px;
+    background: #f1f3f5;
+    border: 1px solid #dee2e6;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.cloud-file-icon-img {
+    padding: 0;
+    background: #fff;
+}
+
+.cloud-file-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.cloud-file-icon-fa {
+    color: #174257;
+    font-size: 1rem;
+    opacity: 0.85;
+    margin-bottom: 4px;
+}
+
+.cloud-file-ext {
+    position: absolute;
+    left: 50%;
+    bottom: 3px;
+    transform: translateX(-50%);
+    min-width: 1.6rem;
+    padding: 0 3px;
+    border-radius: 3px;
+    background: #174257;
+    color: #fff;
+    font-size: 0.55rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: 0.02em;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.cloud-file-meta {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.1rem;
+    padding-bottom: 1px;
+}
+
+.cloud-file-name {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+    border: 0;
+    border-radius: 4px;
+    padding: 0.15rem 0.35rem;
+    margin: 0;
+    line-height: 1.25;
+    font-size: 0.75rem;
+    vertical-align: bottom;
+}
+
+.cloud-file-name.marcador,
+.cloud-file-name.marcadorRevisado {
+    color: #ffffff;
+}
+
+.cloud-file-path {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-left: 0.25rem;
+}
+
+.cloud-root {
+    position: relative;
+}
+
+.cloud-root-arrastando {
+    outline: 2px dashed #174257;
+    outline-offset: -2px;
+}
+
+.cloud-drop-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    background: rgba(23, 66, 87, 0.12);
+    border-radius: 8px;
+}
+
+.cloud-drop-overlay-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.25rem 1.75rem;
+    background: #ffffff;
+    border: 1px solid rgba(23, 66, 87, 0.28);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(23, 66, 87, 0.18);
+    color: #174257;
+
+    i {
+        font-size: 1.75rem;
+    }
+
+    strong {
+        font-size: 0.95rem;
+    }
 }
 
 .cloud-toolbar {

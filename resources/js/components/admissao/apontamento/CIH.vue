@@ -253,6 +253,8 @@
                                         :leitura="!!form.id"
                                         :url="url_anexo"
                                         label="Selecionar"
+                                        titulo="Selecione ou arraste a evidência"
+                                        ajuda="PDF, imagens ou documentos · arraste ou clique em Escolher"
                                         @onProgresso="anexoUploadAndamento = true"
                                         @onFinalizado="onAnexoFinalizado"
                                     ></upload>
