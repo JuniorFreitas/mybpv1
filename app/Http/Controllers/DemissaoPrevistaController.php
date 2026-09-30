@@ -35,12 +35,18 @@ class DemissaoPrevistaController extends Controller
         $dados = $request->input();
         $dados['valor'] = $dados['valor_format'];
         $dados['user_id'] = auth()->user()->id;
+        $dados['centro_custo_id'] = $this->normalizarCentroCustoId($dados['centro_custo_id'] ?? null);
+
+        if ($dados['centro_custo_id'] === null) {
+            $dados['filial'] = false;
+            $dados['centro_custo_filial_id'] = null;
+        }
 
         $dadosValidados = \Validator::make(
             $dados,
             [
-                'centro_custo_id' => 'required',
-                'centro_custo_filial_id' => 'required_if:filial,true',
+                'centro_custo_id' => 'nullable|integer|exists:centro_custos,id',
+                'centro_custo_filial_id' => 'nullable|required_if:filial,true|integer',
                 'colaborador_id' => 'required',
                 'valor_format' => 'required',
             ]
@@ -121,11 +127,17 @@ class DemissaoPrevistaController extends Controller
     {
         $dados = $request->input();
         $dados['valor'] = $dados['valor_format'];
+        $dados['centro_custo_id'] = $this->normalizarCentroCustoId($dados['centro_custo_id'] ?? null);
+
+        if ($dados['centro_custo_id'] === null) {
+            $dados['filial'] = false;
+            $dados['centro_custo_filial_id'] = null;
+        }
 
         $dadosValidados = \Validator::make(
             $dados,
             [
-                'centro_custo_id' => 'required',
+                'centro_custo_id' => 'nullable|integer|exists:centro_custos,id',
                 'colaborador_id' => 'required',
                 'valor_format' => 'required',
             ]
@@ -612,5 +624,16 @@ class DemissaoPrevistaController extends Controller
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
+    }
+
+    private function normalizarCentroCustoId(mixed $valor): ?int
+    {
+        if ($valor === null || $valor === '' || $valor === false) {
+            return null;
+        }
+
+        $id = (int) $valor;
+
+        return $id > 0 ? $id : null;
     }
 }

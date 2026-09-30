@@ -9,138 +9,145 @@
                 <div class="alert alert-success alert-dismissible" v-show="atualizado">
                     <h4><i class="icon fa fa-check"></i>Solicitação alterada com sucesso!</h4>
                 </div>
-                <form v-if="!preload && !cadastrado && !atualizado" :id="`form_${hash}`" onsubmit="return false">
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0"><i class="fas fa-info-circle"></i> Informações da Solicitação</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-12 col-md-12">
-                                    <div class="form-group">
-                                        <label class="font-weight-bold"><i class="fas fa-user"></i> Colaborador <span class="text-danger">*</span></label>
-                                        <autocomplete
-                                            :caminho="`autocomplete/colaboradores`"
-                                            :formsm="true"
-                                            :valido="form.colaborador_id !== ''"
-                                            v-model="form.autocomplete_label_colaborador"
-                                            placeholder="Selecione um(a) colaborador(a)"
-                                            :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
-                                            :id="`colaborador_${hash}`"
-                                            @onblur="resetaCampoColaborador"
-                                            @onselect="selecionaColaborador"
-                                        ></autocomplete>
-                                    </div>
+                <form
+                    v-if="!preload && !cadastrado && !atualizado"
+                    :id="`form_${hash}`"
+                    class="demissao-modal-form mybp-filtros-compactos"
+                    onsubmit="return false"
+                >
+                    <p class="mybp-campo-obrigatorio-legenda demissao-modal-legenda">
+                        Campos com <span class="text-danger">*</span> são obrigatórios.
+                    </p>
+
+                    <fieldset>
+                        <legend>Informações da Solicitação</legend>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`colaborador_${hash}`">
+                                        Colaborador <span class="text-danger">*</span>
+                                    </label>
+                                    <autocomplete
+                                        :caminho="`autocomplete/colaboradores`"
+                                        :formsm="true"
+                                        :valido="form.colaborador_id !== ''"
+                                        v-model="form.autocomplete_label_colaborador"
+                                        placeholder="Digite o nome do(a) colaborador(a)"
+                                        :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
+                                        :id="`colaborador_${hash}`"
+                                        @onblur="resetaCampoColaborador"
+                                        @onselect="selecionaColaborador"
+                                    ></autocomplete>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-12 col-md-6">
-                                    <div class="form-group">
-                                        <label class="font-weight-bold"><i class="fas fa-building"></i> Centro de Custo Atual</label>
-                                        <select v-model="form.centro_custo_id" class="form-control form-control-sm" disabled>
-                                            <option value="">Selecione</option>
-                                            <option v-for="item in centro_custos" :value="item.id" :key="item.id">
-                                                {{ item.label }}
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-12 col-md-2" v-if="centroCustoTemFilial">
-                                    <div class="form-group">
-                                        <label class="font-weight-bold"><i class="fas fa-file-alt"></i> CNPJ Atual</label>
-                                        <select v-model="form.filial" class="form-control form-control-sm" @change.p.prevent="changeCnpj()" disabled>
-                                            <option :value="false">Matriz</option>
-                                            <option :value="true">Filial</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-12 col-md-4" v-if="temFilial && form.filial">
-                                    <div class="form-group">
-                                        <label class="font-weight-bold"><i class="fas fa-map-marker-alt"></i> Filial</label>
-                                        <select v-model="form.centro_custo_filial_id" class="form-control" disabled>
-                                            <option value="">Selecione</option>
-                                            <option v-for="item in centroCustoSelecionado" :value="item.id" :key="item.id">
-                                                {{ item.filial.razao_social }}
-                                            </option>
-                                        </select>
-                                    </div>
+
+                            <div class="col-12 col-md-6">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Centro de Custo Atual</label>
+                                    <input
+                                        type="text"
+                                        class="form-control form-control-sm"
+                                        :value="labelCentroCustoAtual || (form.colaborador_id ? 'Colaborador sem centro de custo' : 'Preenchido ao selecionar o colaborador')"
+                                        disabled
+                                    />
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-12 col-md-6">
-                                    <label class="font-weight-bold"
-                                        ><i class="fas fa-calendar-alt"></i> Data da Demissão <span class="text-danger">*</span></label
-                                    >
+
+                            <div class="col-12 col-md-6">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Lotação</label>
+                                    <input
+                                        type="text"
+                                        class="form-control form-control-sm"
+                                        :value="labelLotacaoAtual || (form.colaborador_id ? 'Não informado' : 'Preenchido ao selecionar o colaborador')"
+                                        disabled
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="col-12" v-if="colaboradorSemCentroCusto">
+                                <div class="alert alert-warning py-2 mb-0" role="alert">
+                                    <i class="fa fa-exclamation-triangle"></i>
+                                    Este colaborador está sem centro de custo. A solicitação pode ser registrada mesmo assim.
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <div class="form-group mybp-filtro-campo demissao-modal-campo-data">
+                                    <label class="mybp-label">Data da Demissão <span class="text-danger">*</span></label>
                                     <datepicker
+                                        :id="`demissao-data-${hash}`"
                                         label=""
                                         class="corrigiDatepicker"
                                         formsm
                                         v-model="form.data_demissao"
                                         :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
+                                        @onselect="onSelectDataDemissao"
                                     ></datepicker>
                                 </div>
+                            </div>
 
-                                <div class="col-12 col-md-6">
-                                    <div class="form-group">
-                                        <label class="font-weight-bold"><i class="fas fa-bell"></i> Tipo de Aviso <span class="text-danger">*</span></label>
-                                        <select
+                            <div class="col-12 col-md-6">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`demissao-tipo-aviso-${hash}`">
+                                        Tipo de Aviso <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormTipoAviso"
+                                            instance-id="form-tipo-aviso"
+                                            :input-id="`demissao-tipo-aviso-${hash}`"
                                             v-model="form.tipo_aviso"
-                                            class="form-control form-control-sm"
+                                            :options="formTipoAvisoOpcoes"
                                             :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
-                                            onchange="valida_campo_vazio(this, 1)"
-                                            onblur="valida_campo_vazio(this, 1)"
-                                        >
-                                            <option value="">Selecione</option>
-                                            <option value="Trabalhado">Trabalhado</option>
-                                            <option value="Indenizado">Indenizado</option>
-                                            <option value="NA">NA</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <gestoraprovacao
-                                    label="Gestor Aprovação *"
-                                    :model="form"
-                                    :verifica="visualizar || aprovando || aprovandoExtra || aprovandoRh"
-                                    :hash="hash"
-                                ></gestoraprovacao>
-
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label class="font-weight-bold"><i class="fas fa-comment-alt"></i> Observação</label>
-                                        <textarea
-                                            class="form-control"
-                                            v-model="form.obs"
-                                            cols="5"
-                                            rows="5"
-                                            placeholder="Adicione informações relevantes sobre a demissão..."
-                                            :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
-                                        ></textarea>
-                                    </div>
-                                </div>
-
-                                <div class="col-12">
-                                    <div class="card border-info">
-                                        <div class="card-header bg-light">
-                                            <h6 class="mb-0 text-info"><i class="fas fa-paperclip"></i> Anexos</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <upload
-                                                :model="form.anexos"
-                                                :model-delete="form.anexosDel"
-                                                :url="url_anexo"
-                                                :tipos="mimes"
-                                                :leitura="!podeanexar"
-                                                label="Selecionar"
-                                                @onProgresso="anexoUploadAndamento = true"
-                                                @onFinalizado="anexoUploadAndamento = false"
-                                            ></upload>
-                                        </div>
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-tipo-aviso')"
+                                        />
                                     </div>
                                 </div>
                             </div>
+
+                            <gestoraprovacao
+                                label="Gestor Aprovação"
+                                :obrigatorio="true"
+                                :model="form"
+                                :verifica="visualizar || aprovando || aprovandoExtra || aprovandoRh"
+                                :hash="hash"
+                            ></gestoraprovacao>
+
+                            <div class="col-12">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Observação</label>
+                                    <textarea
+                                        class="form-control form-control-sm"
+                                        v-model="form.obs"
+                                        rows="4"
+                                        placeholder="Informações relevantes sobre a demissão"
+                                        :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
+                                    ></textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Anexos</label>
+                                    <upload
+                                        :model="form.anexos"
+                                        :model-delete="form.anexosDel"
+                                        :url="url_anexo"
+                                        :tipos="mimes"
+                                        :leitura="!podeanexar"
+                                        label="Selecionar"
+                                        @onProgresso="anexoUploadAndamento = true"
+                                        @onFinalizado="anexoUploadAndamento = false"
+                                    ></upload>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </fieldset>
+
                     <div class="alert alert-warning" v-if="!form.data_aprovacao && !cadastrando">
                         Esta solicitação ainda não foi aprovada ou reprovada pelo gestor!
                     </div>
@@ -148,37 +155,43 @@
                     <fieldset v-if="visualizar || aprovando">
                         <legend>Aprovação Gestor</legend>
                         <div class="row">
-                            <div v-if="!aprovando && form.user_aprovacao" class="col-12">
-                                <legend>{{ form.status_aprovacao }} por: {{ form.user_aprovacao.nome }} em {{ form.data_aprovacao }}</legend>
+                            <div v-if="!aprovando && form.user_aprovacao" class="col-12 mb-2">
+                                <p class="mb-0 text-muted">
+                                    {{ form.status_aprovacao }} por: {{ form.user_aprovacao.nome }} em {{ form.data_aprovacao }}
+                                </p>
                             </div>
 
                             <div class="col-12">
-                                <div class="form-group">
-                                    <label>Observação</label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Observação</label>
                                     <textarea
                                         class="form-control form-control-sm"
                                         :disabled="!aprovando || aprovandoExtra || aprovandoRh"
                                         v-model="form.obs_aprovacao"
-                                        cols="5"
-                                        rows="5"
+                                        rows="4"
                                     ></textarea>
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Status</label>
-                                    <select
-                                        :disabled="!aprovando || aprovandoExtra || aprovandoRh"
-                                        v-model="form.status_aprovacao"
-                                        class="form-control form-control-sm validacampo"
-                                        onchange="valida_campo_vazio(this, 1)"
-                                        onblur="valida_campo_vazio(this, 1)"
-                                    >
-                                        <option value="">Selecione...</option>
-                                        <option value="aprovado">Aprovar</option>
-                                        <option value="reprovado">Reprovar</option>
-                                    </select>
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`demissao-status-gestor-${hash}`">
+                                        Status <span class="text-danger" v-if="aprovando">*</span>
+                                    </label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormStatusGestor"
+                                            instance-id="form-status-gestor"
+                                            :input-id="`demissao-status-gestor-${hash}`"
+                                            v-model="form.status_aprovacao"
+                                            :options="formStatusAprovacaoOpcoes"
+                                            :disabled="!aprovando || aprovandoExtra || aprovandoRh"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-status-gestor')"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -195,37 +208,44 @@
 
                         <legend v-if="temAprovacaoExtra">{{ nomeAprovacaoExtra }}</legend>
                         <div class="row" v-if="temAprovacaoExtra">
-                            <div v-if="!aprovandoExtra && form.aprovacao_extra" class="col-12">
-                                <legend>{{ form.status_aprovacao_extra }} por: {{ form.aprovacao_extra.nome }} em {{ form.data_aprovacao_extra }}</legend>
+                            <div v-if="!aprovandoExtra && form.aprovacao_extra" class="col-12 mb-2">
+                                <p class="mb-0 text-muted">
+                                    {{ form.status_aprovacao_extra }} por: {{ form.aprovacao_extra.nome }} em
+                                    {{ form.data_aprovacao_extra }}
+                                </p>
                             </div>
 
                             <div class="col-12">
-                                <div class="form-group">
-                                    <label>Observação</label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Observação</label>
                                     <textarea
                                         class="form-control form-control-sm"
                                         :disabled="!aprovandoExtra || aprovandoRh"
                                         v-model="form.obs_aprovacao_extra"
-                                        cols="5"
-                                        rows="5"
+                                        rows="4"
                                     ></textarea>
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Status</label>
-                                    <select
-                                        :disabled="!aprovandoExtra || aprovandoRh"
-                                        v-model="form.status_aprovacao_extra"
-                                        class="form-control form-control-sm validacampo"
-                                        onchange="valida_campo_vazio(this, 1)"
-                                        onblur="valida_campo_vazio(this, 1)"
-                                    >
-                                        <option value="">Selecione...</option>
-                                        <option value="aprovado">Aprovar</option>
-                                        <option value="reprovado">Reprovar</option>
-                                    </select>
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`demissao-status-extra-${hash}`">
+                                        Status <span class="text-danger" v-if="aprovandoExtra">*</span>
+                                    </label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormStatusExtra"
+                                            instance-id="form-status-extra"
+                                            :input-id="`demissao-status-extra-${hash}`"
+                                            v-model="form.status_aprovacao_extra"
+                                            :options="formStatusAprovacaoOpcoes"
+                                            :disabled="!aprovandoExtra || aprovandoRh"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-status-extra')"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -236,31 +256,43 @@
                     <fieldset v-if="visualizar || aprovandoRh">
                         <legend>Aprovação RH</legend>
                         <div class="row">
-                            <div v-if="!aprovandoRh && form.rh_aprovacao" class="col-12">
-                                <legend>{{ form.status_aprovacao_rh }} por: {{ form.rh_aprovacao.nome }} em {{ form.data_aprovacao_rh }}</legend>
+                            <div v-if="!aprovandoRh && form.rh_aprovacao" class="col-12 mb-2">
+                                <p class="mb-0 text-muted">
+                                    {{ form.status_aprovacao_rh }} por: {{ form.rh_aprovacao.nome }} em {{ form.data_aprovacao_rh }}
+                                </p>
                             </div>
 
                             <div class="col-12">
-                                <div class="form-group">
-                                    <label>Observação</label>
-                                    <textarea class="form-control form-control-sm" :disabled="!aprovandoRh" v-model="form.obs_rh" cols="5" rows="5"></textarea>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Observação</label>
+                                    <textarea
+                                        class="form-control form-control-sm"
+                                        :disabled="!aprovandoRh"
+                                        v-model="form.obs_rh"
+                                        rows="4"
+                                    ></textarea>
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Status</label>
-                                    <select
-                                        :disabled="!aprovandoRh"
-                                        v-model="form.status_aprovacao_rh"
-                                        class="form-control form-control-sm validacampo"
-                                        onchange="valida_campo_vazio(this, 1)"
-                                        onblur="valida_campo_vazio(this, 1)"
-                                    >
-                                        <option value="">Selecione...</option>
-                                        <option value="aprovado">Aprovar</option>
-                                        <option value="reprovado">Reprovar</option>
-                                    </select>
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`demissao-status-rh-${hash}`">
+                                        Status <span class="text-danger" v-if="aprovandoRh">*</span>
+                                    </label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormStatusRh"
+                                            instance-id="form-status-rh"
+                                            :input-id="`demissao-status-rh-${hash}`"
+                                            v-model="form.status_aprovacao_rh"
+                                            :options="formStatusAprovacaoOpcoes"
+                                            :disabled="!aprovandoRh"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-status-rh')"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1134,6 +1166,93 @@ export default {
             set(valor) {
                 this.controle.dados.pages = parseInt(valor, 10) || 20
             }
+        },
+        formTipoAvisoOpcoes() {
+            return [
+                { value: '', label: 'Selecione...' },
+                { value: 'Trabalhado', label: 'Trabalhado' },
+                { value: 'Indenizado', label: 'Indenizado' },
+                { value: 'NA', label: 'NA' }
+            ]
+        },
+        formStatusAprovacaoOpcoes() {
+            return [
+                { value: '', label: 'Selecione...' },
+                { value: 'aprovado', label: 'Aprovar' },
+                { value: 'reprovado', label: 'Reprovar' }
+            ]
+        },
+        labelCentroCustoAtual() {
+            if ([undefined, null, ''].includes(this.form.centro_custo_id)) {
+                return ''
+            }
+            const item = _.find(this.centro_custos, { id: this.form.centro_custo_id })
+            return item && item.label ? item.label : ''
+        },
+        colaboradorSemCentroCusto() {
+            return !!this.form.colaborador_id && [undefined, null, '', 0, '0'].includes(this.form.centro_custo_id)
+        },
+        labelLotacaoAtual() {
+            if ([undefined, null, ''].includes(this.form.colaborador_id) && [undefined, null, ''].includes(this.form.centro_custo_id)) {
+                return ''
+            }
+
+            const formatLotacao = (nomeFantasia, razaoSocial, cnpj) => {
+                const nome = String(nomeFantasia || razaoSocial || '').trim()
+                const doc = String(cnpj || '').trim()
+                if (!nome && !doc) return ''
+                if (!nome) return doc
+                if (!doc) return nome
+                return `${nome} - ${doc}`
+            }
+
+            const ehFilial =
+                this.form.filial === true || this.form.filial === 1 || this.form.filial === '1'
+            const filiaisAuth =
+                (this.authconfiguracao && this.authconfiguracao.cnpjs && this.authconfiguracao.cnpjs.filiais) || []
+
+            if (ehFilial && this.form.centro_custo_filial_id) {
+                const vinculo = _.find(this.centroCustoSelecionado, { id: this.form.centro_custo_filial_id })
+                const filialRel = vinculo && (vinculo.filial || vinculo.Filial)
+                if (filialRel) {
+                    let viaRel = formatLotacao(filialRel.nome_fantasia, filialRel.razao_social, filialRel.cnpj)
+                    if (viaRel && String(filialRel.cnpj || '').trim()) return viaRel
+
+                    const clienteFilialId = vinculo.cliente_filial_id
+                    if (clienteFilialId != null && clienteFilialId !== '') {
+                        const cf = _.find(filiaisAuth, { id: clienteFilialId })
+                        if (cf) {
+                            const viaAuth = formatLotacao(cf.nome_fantasia || cf.nome_fntasia, cf.razao_social, cf.cnpj)
+                            if (viaAuth) return viaAuth
+                        }
+                    }
+
+                    if (viaRel) return viaRel
+                }
+
+                if (vinculo && vinculo.cliente_filial_id != null && vinculo.cliente_filial_id !== '') {
+                    const cf = _.find(filiaisAuth, { id: vinculo.cliente_filial_id })
+                    if (cf) {
+                        const viaAuth = formatLotacao(cf.nome_fantasia || cf.nome_fntasia, cf.razao_social, cf.cnpj)
+                        if (viaAuth) return viaAuth
+                    }
+                }
+            }
+
+            const matrizAuth = this.authconfiguracao && this.authconfiguracao.cnpjs && this.authconfiguracao.cnpjs.matriz
+            if (matrizAuth) {
+                const viaMatriz = formatLotacao(matrizAuth.nome_fantasia, matrizAuth.razao_social, matrizAuth.cnpj)
+                if (viaMatriz) return viaMatriz
+            }
+
+            if (this.lista_ccs && this.lista_ccs.cnpjs) {
+                const matrizLista = Object.values(this.lista_ccs.cnpjs).find((item) => item && item.matriz)
+                if (matrizLista) {
+                    return formatLotacao(matrizLista.nome_fantasia, matrizLista.razao_social, matrizLista.cnpj)
+                }
+            }
+
+            return ''
         }
     },
     methods: {
@@ -1296,6 +1415,8 @@ export default {
         },
 
         cadastrar() {
+            this.sincronizarDataDemissaoDoInput()
+
             if (this.form.colaborador_id === '') {
                 valida_campo_vazio($(`#colaborador_${this.hash}`), 1)
                 $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur')
@@ -1310,6 +1431,23 @@ export default {
                 this.resetaCampoGestor()
                 return false
             }
+            if (!this.form.data_demissao || this.form.data_demissao === 'Invalid date') {
+                mostraErro('', 'Campo DATA DA DEMISSÃO não pode ficar vazio')
+                return false
+            }
+            if (!this.form.tipo_aviso) {
+                mostraErro('', 'Campo TIPO DE AVISO não pode ficar vazio')
+                return false
+            }
+
+            if (this.colaboradorSemCentroCusto) {
+                const ok = confirm(
+                    'O colaborador selecionado está sem centro de custo. Deseja continuar com a solicitação mesmo assim?'
+                )
+                if (!ok) {
+                    return false
+                }
+            }
 
             $(`#${this.hash} :input:visible`).trigger('blur')
             if ($(`#${this.hash} :input:visible.is-invalid`).length) {
@@ -1317,10 +1455,11 @@ export default {
                 return false
             }
 
+            const payload = this.montarPayloadDemissao()
             this.preload = true
 
             axios
-                .post(`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista`, this.form)
+                .post(`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista`, payload)
                 .then((response) => {
                     if (response.status === 201) {
                         this.limparTokenFiltroListagem()
@@ -1619,9 +1758,8 @@ export default {
         },
 
         aprovarGestor() {
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
+            if (!this.form.status_aprovacao) {
+                mostraErro('', 'Selecione o status da aprovação')
                 return false
             }
 
@@ -1641,9 +1779,8 @@ export default {
                 })
         },
         aprovarExtra() {
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
+            if (!this.form.status_aprovacao_extra) {
+                mostraErro('', 'Selecione o status da aprovação')
                 return false
             }
             this.preload = true
@@ -1662,9 +1799,8 @@ export default {
                 })
         },
         aprovarRh() {
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
+            if (!this.form.status_aprovacao_rh) {
+                mostraErro('', 'Selecione o status da aprovação')
                 return false
             }
             this.preload = true
@@ -1683,12 +1819,49 @@ export default {
                 })
         },
         selecionaColaborador(obj) {
+            const admissao = (obj && obj.admissao) || {}
             this.form.colaborador_id = obj.curriculo_id
             this.form.autocomplete_label_colaborador = obj.label
             this.form.autocomplete_label_colaborador_anterior = obj.label
-            this.form.centro_custo_id = obj.admissao.centro_custo_id
-            this.form.filial = obj.admissao.filial
-            this.form.centro_custo_filial_id = this.form.filial ? obj.admissao.centro_custo_filial_id : null
+            this.form.centro_custo_id = admissao.centro_custo_id || ''
+            this.form.filial = !!admissao.filial
+            this.form.centro_custo_filial_id = this.form.filial ? admissao.centro_custo_filial_id || null : null
+
+            if (this.colaboradorSemCentroCusto && typeof mostraWarning === 'function') {
+                mostraWarning(
+                    'O colaborador selecionado está sem centro de custo. A solicitação poderá ser registrada mesmo assim.',
+                    'Atenção'
+                )
+            }
+        },
+        montarPayloadDemissao() {
+            const payload = _.cloneDeep(this.form)
+            if ([undefined, null, '', 0, '0'].includes(payload.centro_custo_id)) {
+                payload.centro_custo_id = null
+                payload.filial = false
+                payload.centro_custo_filial_id = null
+            }
+            return payload
+        },
+        onSelectDataDemissao(valor) {
+            const texto = typeof valor === 'string' ? valor : valor && valor.value ? valor.value : ''
+            this.form.data_demissao = String(texto || '').trim()
+        },
+        sincronizarDataDemissaoDoInput() {
+            const seletor = `#demissao-data-${this.hash}`
+            let valor = ''
+            const input = document.querySelector(seletor)
+            if (input && input.value) {
+                valor = String(input.value).trim()
+            } else {
+                const fallback = $(`#${this.hash} .demissao-modal-campo-data input:text`).first()
+                if (fallback.length) {
+                    valor = String(fallback.val() || '').trim()
+                }
+            }
+            if (valor && valor !== 'Invalid date') {
+                this.form.data_demissao = valor
+            }
         },
         resetaCampoColaborador() {
             if (this.form.autocomplete_label_colaborador_anterior !== this.form.autocomplete_label_colaborador) {
@@ -1793,7 +1966,11 @@ export default {
                 'demissao-cnpj': 'comboFiltroCnpj',
                 'demissao-cc': 'comboFiltroCc',
                 'demissao-ordenacao': 'comboFiltroOrdenacao',
-                'demissao-pages': 'comboFiltroPages'
+                'demissao-pages': 'comboFiltroPages',
+                'form-tipo-aviso': 'comboFormTipoAviso',
+                'form-status-gestor': 'comboFormStatusGestor',
+                'form-status-extra': 'comboFormStatusExtra',
+                'form-status-rh': 'comboFormStatusRh'
             }
             Object.keys(mapa).forEach((id) => {
                 if (id === excetoId) return
@@ -1806,6 +1983,59 @@ export default {
 </script>
 
 <style scoped>
+/* Modal no mesmo padrão visual dos filtros compactos (altura/fonte/borda) */
+.demissao-modal-form {
+    margin-top: 0.15rem;
+    --mybp-fc-gap: 0.75rem;
+}
+
+.demissao-modal-legenda {
+    margin-bottom: 0.65rem;
+    font-size: var(--mybp-fc-label-fs, 0.7rem);
+    color: #6c757d;
+}
+
+.demissao-modal-form .row > [class*='col-'] {
+    margin-bottom: var(--mybp-fc-gap, 0.75rem);
+}
+
+.demissao-modal-form :deep(.form-group > .form-group) {
+    margin-bottom: 0;
+}
+
+.demissao-modal-form :deep(.mybp-filtro-campo .form-group) {
+    margin-bottom: 0;
+}
+
+.demissao-modal-form :deep(.mybp-filtro-campo .form-group > div > label:empty),
+.demissao-modal-form :deep(.form-group > .form-group > div > label:empty) {
+    display: none;
+    margin: 0;
+    padding: 0;
+    height: 0;
+    line-height: 0;
+}
+
+.demissao-modal-form :deep(.demissao-modal-campo-data .corrigiDatepicker),
+.demissao-modal-form :deep(.corrigiDatepicker) {
+    margin-top: 0;
+}
+
+/* Autocomplete / DatePicker herdam altura compacta do filtro */
+.demissao-modal-form :deep(.mybp-filtro-campo .autocomplete input),
+.demissao-modal-form :deep(.mybp-filtro-campo input.form-control),
+.demissao-modal-form :deep(.demissao-modal-campo-data .form-control),
+.demissao-modal-form :deep(.demissao-modal-campo-data .form-control-sm) {
+    height: var(--mybp-fc-ctrl-h, 1.625rem) !important;
+    min-height: var(--mybp-fc-ctrl-h, 1.625rem) !important;
+    max-height: var(--mybp-fc-ctrl-h, 1.625rem) !important;
+    padding: 0.15rem 0.45rem !important;
+    font-size: var(--mybp-fc-ctrl-fs, 0.6875rem) !important;
+    line-height: 1.25 !important;
+    border-radius: var(--mybp-fc-radius, 6px) !important;
+    box-sizing: border-box !important;
+}
+
 /* ==================== LAYOUT DE CARDS COMPACTOS ==================== */
 
 /* Checkbox Geral */
@@ -2140,295 +2370,6 @@ export default {
         flex-direction: column;
         align-items: flex-start;
     }
-}
-
-/* ==================== CARDS E ESTILOS ORIGINAIS ==================== */
-
-/* Cards com transição suave */
-.card {
-    transition: all 0.3s ease;
-    border-radius: 8px;
-}
-
-.card:hover {
-    transform: translateY(-2px);
-}
-
-/* Headers de card com gradiente sutil */
-.card-header {
-    border-radius: 8px 8px 0 0 !important;
-    padding: 1rem 1.25rem;
-    border: none;
-}
-
-.card-header h5 {
-    color: #fff !important;
-}
-
-.card-header.bg-primary {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
-}
-
-.card-header.bg-success {
-    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
-}
-
-.card-header.bg-danger {
-    background: linear-gradient(135deg, #dc3545 0%, #bd2130 100%) !important;
-}
-
-.card-header.bg-info {
-    background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%) !important;
-}
-
-/* Labels modernos */
-label {
-    font-size: 0.875rem;
-    letter-spacing: 0.3px;
-    margin-bottom: 0.5rem;
-    color: #495057;
-}
-
-/* Inputs com foco melhorado */
-.form-control:focus,
-.form-control-sm:focus {
-    border-color: #80bdff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
-    transform: translateY(-1px);
-    transition: all 0.2s ease;
-}
-
-.form-control,
-.form-control-sm {
-    border-radius: 6px;
-    border: 1.5px solid #ced4da;
-    transition: all 0.2s ease;
-}
-
-.form-control:hover:not(:disabled),
-.form-control-sm:hover:not(:disabled) {
-    border-color: #80bdff;
-}
-
-/* Textarea melhorado */
-textarea.form-control {
-    resize: vertical;
-    min-height: 100px;
-}
-
-/* Select estilizado */
-select.form-control,
-select.form-control-sm {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 16px 12px;
-    padding-right: 2.5rem;
-}
-
-/* Badges modernos */
-.badge {
-    padding: 0.4rem 0.8rem;
-    font-weight: 500;
-    font-size: 0.75rem;
-    border-radius: 20px;
-    letter-spacing: 0.3px;
-}
-
-.badge-success {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-}
-
-.badge-danger {
-    background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
-}
-
-.badge-warning {
-    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-    color: #212529;
-}
-
-.badge-secondary {
-    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
-}
-
-/* Ícones com animação */
-.fas,
-.far {
-    transition: transform 0.2s ease;
-}
-
-.card-header .fas {
-    margin-right: 0.5rem;
-}
-
-/* Alertas modernizados */
-.alert {
-    border-radius: 8px;
-    border-left: 4px solid;
-    padding: 1rem 1.25rem;
-}
-
-.alert-warning {
-    background-color: #fff3cd;
-    border-left-color: #ffc107;
-}
-
-.alert-success {
-    background-color: #d4edda;
-    border-left-color: #28a745;
-}
-
-.alert-info {
-    background-color: #d1ecf1;
-    border-left-color: #17a2b8;
-}
-
-/* Setas do fluxo com animação */
-.fa-arrow-right,
-.fa-chevron-right {
-    animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%,
-    100% {
-        opacity: 0.6;
-    }
-    50% {
-        opacity: 1;
-    }
-}
-
-/* Cards do fluxo com hover */
-.card.border-success:hover {
-    border-color: #28a745 !important;
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
-}
-
-.card.border-primary:hover {
-    border-color: #007bff !important;
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
-}
-
-.card.border-danger:hover {
-    border-color: #dc3545 !important;
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
-}
-
-/* Ícones do fluxo com hover */
-.fas.fa-check-circle,
-.fas.fa-times-circle,
-.fas.fa-clock,
-.fas.fa-circle {
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.fas.fa-check-circle:hover,
-.fas.fa-times-circle:hover,
-.fas.fa-clock:hover {
-    transform: scale(1.15);
-}
-
-/* Melhorias no card de anexos */
-.card.border-info {
-    border-width: 2px;
-}
-
-.card.border-info .card-header {
-    background-color: #f8f9fa !important;
-}
-
-/* Espaçamento entre seções */
-.card + .card {
-    margin-top: 1.5rem;
-}
-
-/* Botões com melhor feedback */
-.btn {
-    font-weight: 500;
-    transition: all 0.2s ease;
-    letter-spacing: 0.3px;
-}
-
-.btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.btn:active {
-    transform: translateY(0);
-}
-
-/* Form groups com melhor espaçamento */
-.form-group {
-    margin-bottom: 1.25rem;
-}
-
-/* Row com melhor espaçamento */
-.row {
-    margin-bottom: 0.75rem;
-}
-
-/* Títulos h5 modernos */
-h5 {
-    font-weight: 600;
-    font-size: 1.1rem;
-    letter-spacing: 0.3px;
-}
-
-/* Small text melhorado */
-small {
-    font-size: 0.8rem;
-    line-height: 1.4;
-}
-
-/* Status legend melhorado */
-legend {
-    font-weight: 500;
-    border-bottom: 2px solid #e9ecef;
-    margin-bottom: 1rem;
-}
-
-/* Asterisco obrigatório */
-.text-danger {
-    font-weight: 700;
-}
-
-/* Responsividade melhorada */
-@media (max-width: 768px) {
-    .card-header h5 {
-        font-size: 1rem;
-    }
-
-    .badge {
-        font-size: 0.7rem;
-        padding: 0.3rem 0.6rem;
-    }
-
-    .fa-arrow-right {
-        font-size: 18px !important;
-    }
-}
-
-/* Estados disabled com melhor visual */
-.form-control:disabled,
-.form-control-sm:disabled {
-    background-color: #f8f9fa;
-    border-color: #e9ecef;
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
-/* Card body com padding consistente */
-.card-body {
-    padding: 1.5rem;
-}
-
-/* Shadow consistente */
-.shadow-sm {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
 }
 
 .demissao-filtro-hint {

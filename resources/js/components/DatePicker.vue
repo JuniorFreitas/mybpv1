@@ -195,8 +195,9 @@ export default {
     },
     methods: {
         emitUpdate(value) {
-            this.$emit('update:modelValue', value)
-            this.$emit('input', value)
+            const texto = value === 'Invalid date' ? '' : value
+            this.$emit('update:modelValue', texto)
+            this.$emit('input', texto)
         },
         onBlur($event) {
             this.event = $event
@@ -204,9 +205,9 @@ export default {
                 this.$emit('onblur', $event)
             }, 100)
         },
-        onChange() {
-            // Let's warn the parent that a change was made
-            //this.emitUpdate(this.el.value);
+        onChange($event) {
+            const valor = $event && $event.target ? $event.target.value : this.el ? this.el.value : ''
+            this.emitUpdate(valor)
         }
     },
 
@@ -337,14 +338,14 @@ export default {
             })
 
             $(this.el).on('apply.daterangepicker', function (ev, picker) {
-                /*if(ref.hora){
-                    $(this).val(picker.startDate.format('L [às] HH:mm'));
-                }else{
-                    $(this).val(picker.startDate.format('DD/MM/YYYY'));
+                if (!picker || !picker.startDate) return
+                if (ref.hora) {
+                    $(this).val(picker.startDate.format('L [às] HH:mm'))
+                } else {
+                    $(this).val(picker.startDate.format('DD/MM/YYYY'))
                 }
-
-                ref.emitUpdate(ref.el.value);
-                ref.$emit('onselect', ref.el.value);*/
+                ref.emitUpdate(ref.el.value)
+                ref.$emit('onselect', ref.el.value)
             })
 
             $(this.el).on('hide.daterangepicker', function (ev, picker) {
@@ -360,8 +361,10 @@ export default {
             })
         }
 
-        // Só propaga valor inicial se o campo já tinha data (evita inventar data no mount)
-        if (valueInicial) {
+        // Sem valor inicial: limpa o "hoje" que o daterangepicker grava no input
+        if (!valueInicial) {
+            $(this.el).val('')
+        } else {
             this.emitUpdate(this.el.value)
         }
     }
