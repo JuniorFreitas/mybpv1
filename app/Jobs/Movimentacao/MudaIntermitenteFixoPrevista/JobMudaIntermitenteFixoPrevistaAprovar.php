@@ -32,7 +32,7 @@ class JobMudaIntermitenteFixoPrevistaAprovar implements ShouldQueue
             'id' => $mudaIntermitentePrevista->id,
             'cargo_anterior' => $mudaIntermitentePrevista->VagaAbertaAnterior->titulo,
             'cargo_novo' => $mudaIntermitentePrevista->VagaAbertaNova->titulo,
-            'colaborador' => $mudaIntermitentePrevista->Colaborador->nome,
+            'colaborador' => '',
             'empresa_id' => auth()->user()->empresa_id
         ];
 

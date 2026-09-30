@@ -164,7 +164,6 @@ Prezado(a) *{{nome_destinatario}}*,
 {{mensagem_notificacao}}
 
 *Módulo:* {{modulo_movimentacao}}
-*Colaborador:* {{colaborador}}
 
 Acesse o sistema: {{url_sistema}}
 
@@ -228,7 +227,6 @@ TXT,
                 'titulo_notificacao',
                 'mensagem_notificacao',
                 'modulo_movimentacao',
-                'colaborador',
                 'url_sistema',
                 'assinatura',
                 'rodape_mybp',

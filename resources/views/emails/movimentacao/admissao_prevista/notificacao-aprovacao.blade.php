@@ -4,7 +4,6 @@
 @php
 $tipo = $dados['tipo'];
 $admissao = $dados['admissao'];
-$nome_pessoa = $dados['nome_pessoa'] ?? '';
 $cargo = $dados['cargo'];
 $centro_custo = $dados['centro_custo'];
 $tipo_contrato = $dados['tipo_contrato'];
@@ -142,13 +141,7 @@ $mensagem = $mensagens[$tipo] ?? '';
                         <td width="40%" style="color: #555;"><strong>CÓD:</strong></td>
                         <td>#{{ $admissao->id }}</td>
                     </tr>
-                    @if($nome_pessoa)
                     <tr style="background: #f8f9fa;">
-                        <td style="color: #555;"><strong>Nome do Colaborador:</strong></td>
-                        <td>{{ $nome_pessoa }}</td>
-                    </tr>
-                    @endif
-                    <tr style="background: {{ $nome_pessoa ? '#ffffff' : '#f8f9fa' }};">
                         <td style="color: #555;"><strong>Cargo:</strong></td>
                         <td>{{ $cargo }}</td>
                     </tr>

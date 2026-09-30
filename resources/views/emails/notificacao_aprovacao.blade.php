@@ -4,7 +4,6 @@
 @php
 $tipo = $dados['tipo'];
 $intermitente = $dados['intermitente'];
-$colaborador = $dados['colaborador'];
 $cargo_anterior = $dados['cargo_anterior'];
 $novo_cargo = $dados['novo_cargo'];
 $centro_custo = $dados['centro_custo'];
@@ -141,10 +140,6 @@ $mensagem = $mensagens[$tipo] ?? '';
                     <tr>
                         <td width="40%" style="color: #555;"><strong>ID:</strong></td>
                         <td>#{{ $intermitente->id }}</td>
-                    </tr>
-                    <tr style="background: #f8f9fa;">
-                        <td style="color: #555;"><strong>Colaborador:</strong></td>
-                        <td>{{ $colaborador }}</td>
                     </tr>
                     <tr>
                         <td style="color: #555;"><strong>Cargo Anterior:</strong></td>

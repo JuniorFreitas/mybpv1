@@ -21,7 +21,6 @@
             <br>
             <strong>Detalhes da Solicitação:</strong><br>
             Cód: <strong>{{ $dados['ferias_id'] }}</strong><br>
-            Colaborador: <strong>{{ $dados['colaborador'] }}</strong><br>
             Etapa: <strong>{{ $dados['etapa'] }}</strong><br>
 
             <br><br>

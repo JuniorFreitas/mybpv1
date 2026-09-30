@@ -4,12 +4,15 @@ namespace App\Services\IntermitenteFixoPrevista;
 
 use App\Models\IntermitenteFixoPrevista;
 use App\Models\User;
+use App\Services\Concerns\AppliesApprovalFlowStatusFilter;
 use App\Services\DemissaoPrevista\DemissaoPrevistaFilterApplier;
 use Illuminate\Database\Eloquent\Builder;
 use MasterTag\DataHora;
 
 class IntermitenteFixoPrevistaFilterApplier
 {
+    use AppliesApprovalFlowStatusFilter;
+
     private array $filtros;
     private User $user;
 
@@ -118,36 +121,18 @@ class IntermitenteFixoPrevistaFilterApplier
 
     private function applyCampoStatusAprovacao(Builder $query): void
     {
-        if (!isset($this->filtros['campoStatusAprovacao']) || $this->filtros['campoStatusAprovacao'] === '') {
-            return;
-        }
-        $status = $this->filtros['campoStatusAprovacao'];
-        if ($status === 'aberto') {
-            $query->whereNull(self::TABLE . '.status_aprovacao');
-            return;
-        }
-        if ($status === 'aprovado_gestor') {
-            $query->where(self::TABLE . '.status_aprovacao', IntermitenteFixoPrevista::STATUS_APROVADO)
-                ->whereNull(self::TABLE . '.status_aprovacao_extra')
-                ->whereNull(self::TABLE . '.status_aprovacao_rh');
-            return;
-        }
-        if ($status === 'aprovado_extra') {
-            $query->where(self::TABLE . '.status_aprovacao_extra', IntermitenteFixoPrevista::STATUS_APROVADO)
-                ->whereNull(self::TABLE . '.status_aprovacao_rh');
-            return;
-        }
-        if ($status === 'aprovado_rh') {
-            $query->where(self::TABLE . '.status_aprovacao_rh', IntermitenteFixoPrevista::STATUS_APROVADO);
-            return;
-        }
-        if ($status === 'reprovado') {
-            $query->where(function ($q) {
-                $q->where(self::TABLE . '.status_aprovacao', IntermitenteFixoPrevista::STATUS_REPROVADO)
-                    ->orWhere(self::TABLE . '.status_aprovacao_extra', IntermitenteFixoPrevista::STATUS_REPROVADO)
-                    ->orWhere(self::TABLE . '.status_aprovacao_rh', IntermitenteFixoPrevista::STATUS_REPROVADO);
-            });
-        }
+        $this->applyApprovalFlowStatusFilter(
+            $query,
+            isset($this->filtros['campoStatusAprovacao']) ? (string) $this->filtros['campoStatusAprovacao'] : null,
+            [
+                'gestor' => self::TABLE . '.status_aprovacao',
+                'extra' => self::TABLE . '.status_aprovacao_extra',
+                'rh' => self::TABLE . '.status_aprovacao_rh',
+            ],
+            IntermitenteFixoPrevista::STATUS_APROVADO,
+            IntermitenteFixoPrevista::STATUS_REPROVADO,
+            'intermitente_fixo'
+        );
     }
 
     private function applyPermissoes(Builder $query): void

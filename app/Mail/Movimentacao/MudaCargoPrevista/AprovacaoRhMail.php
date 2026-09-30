@@ -24,7 +24,7 @@ class AprovacaoRhMail extends Mailable
         $this->dados = $dados;
         $this->to($this->dados['email_para'], $this->dados['nome_para']);
         $this->from('naoresponda@mybp.com.br', $this->dados['nome_empresa']);
-        $this->subject = "ATUALIZAÇÃO MOVIMENTAÇÃO DE CARGOS  - COLABORADOR {$this->dados['colaborador']}  CÓD - ". $this->dados['mudanca_cargo_id'];
+        $this->subject = "ATUALIZAÇÃO MOVIMENTAÇÃO DE CARGOS - CÓD - ". $this->dados['mudanca_cargo_id'];
         $this->assunto = $this->subject;
     }
 

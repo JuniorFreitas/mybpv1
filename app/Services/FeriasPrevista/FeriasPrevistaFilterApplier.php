@@ -4,6 +4,7 @@ namespace App\Services\FeriasPrevista;
 
 use App\Models\Ferias;
 use App\Models\User;
+use App\Services\Concerns\AppliesApprovalFlowStatusFilter;
 use App\Services\DemissaoPrevista\DemissaoPrevistaFilterApplier;
 use Illuminate\Database\Eloquent\Builder;
 use MasterTag\DataHora;
@@ -13,6 +14,8 @@ use MasterTag\DataHora;
  */
 class FeriasPrevistaFilterApplier
 {
+    use AppliesApprovalFlowStatusFilter;
+
     private array $filtros;
     private User $user;
 
@@ -190,34 +193,18 @@ class FeriasPrevistaFilterApplier
 
     private function applyCampoStatusAprovacao(Builder $query): void
     {
-        if (!isset($this->filtros['campoStatusAprovacao']) || $this->filtros['campoStatusAprovacao'] === '') {
-            return;
-        }
-        $status = $this->filtros['campoStatusAprovacao'];
-        if ($status === 'aberto') {
-            $query->whereNull('status_aprovacao_gestor');
-            return;
-        }
-        if ($status === 'aprovado_gestor') {
-            $query->where('status_aprovacao_gestor', Ferias::STATUS_APROVADO)
-                ->whereNull('status_aprovacao_extra')
-                ->whereNull('status_aprovacao_rh');
-            return;
-        }
-        if ($status === 'aprovado_extra') {
-            $query->where('status_aprovacao_extra', Ferias::STATUS_APROVADO)
-                ->whereNull('status_aprovacao_rh');
-            return;
-        }
-        if ($status === 'aprovado_rh') {
-            $query->where('status_aprovacao_rh', Ferias::STATUS_APROVADO);
-            return;
-        }
-        $query->where(function ($q) {
-            $q->where('status_aprovacao_gestor', Ferias::STATUS_REPROVADO)
-                ->orWhere('status_aprovacao_extra', Ferias::STATUS_REPROVADO)
-                ->orWhere('status_aprovacao_rh', Ferias::STATUS_REPROVADO);
-        });
+        $this->applyApprovalFlowStatusFilter(
+            $query,
+            isset($this->filtros['campoStatusAprovacao']) ? (string) $this->filtros['campoStatusAprovacao'] : null,
+            [
+                'gestor' => 'status_aprovacao_gestor',
+                'extra' => 'status_aprovacao_extra',
+                'rh' => 'status_aprovacao_rh',
+            ],
+            Ferias::STATUS_APROVADO,
+            Ferias::STATUS_REPROVADO,
+            'ferias'
+        );
     }
 
     private function applyPermissoes(Builder $query): void

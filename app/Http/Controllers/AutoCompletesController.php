@@ -296,6 +296,10 @@ class AutoCompletesController extends Controller
         })->with('Feedback.Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'Feedback.VagaAberta.Municipio', 'Feedback.VagaSelecionada:id,nome')->take($quantidade)
             ->get()->map(function ($item) {
                 $item->curriculo_id = $item->Feedback->Curriculo->id;
+                $item->feedback_id = $item->feedback_id;
+                $item->centro_custo_id = $item->centro_custo_id;
+                $item->filial = (bool) $item->filial;
+                $item->centro_custo_filial_id = $item->centro_custo_filial_id;
                 $item->label = "{$item->Feedback->Curriculo->nome} - {$item->Feedback->VagaAberta->VagaSelecionada->nome} - {$item->Feedback->VagaAberta->Municipio->nome} - {$item->Feedback->VagaAberta->Municipio->uf}";
                 return $item;
             });

@@ -167,7 +167,7 @@ class AdmissoesPrevista extends Model
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s',
         'user_aprovacao_id' => 'int',
-        'data_aprovacao' => 'date:d/m/Y',
+        'data_aprovacao' => 'datetime:d/m/Y à\s H:i:s',
         'obs_aprovacao' => 'string',
         'status_aprovacao' => 'string',
         'aprovacao_extra_id' => 'int',

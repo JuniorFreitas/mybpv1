@@ -4,12 +4,15 @@ namespace App\Services\ValorExtraPrevista;
 
 use App\Models\User;
 use App\Models\ValorExtraPrevista;
+use App\Services\Concerns\AppliesApprovalFlowStatusFilter;
 use App\Services\DemissaoPrevista\DemissaoPrevistaFilterApplier;
 use Illuminate\Database\Eloquent\Builder;
 use MasterTag\DataHora;
 
 class ValorExtraPrevistaFilterApplier
 {
+    use AppliesApprovalFlowStatusFilter;
+
     private array $filtros;
     private User $user;
 
@@ -116,36 +119,18 @@ class ValorExtraPrevistaFilterApplier
 
     private function applyCampoStatusAprovacao(Builder $query): void
     {
-        if (!isset($this->filtros['campoStatusAprovacao']) || $this->filtros['campoStatusAprovacao'] === '') {
-            return;
-        }
-        $status = $this->filtros['campoStatusAprovacao'];
-        if ($status === 'aberto') {
-            $query->whereNull('valor_extra_previstas.status_aprovacao');
-            return;
-        }
-        if ($status === 'aprovado_gestor') {
-            $query->where('valor_extra_previstas.status_aprovacao', ValorExtraPrevista::STATUS_APROVADO)
-                ->whereNull('valor_extra_previstas.status_aprovacao_extra')
-                ->whereNull('valor_extra_previstas.status_aprovacao_rh');
-            return;
-        }
-        if ($status === 'aprovado_extra') {
-            $query->where('valor_extra_previstas.status_aprovacao_extra', ValorExtraPrevista::STATUS_APROVADO)
-                ->whereNull('valor_extra_previstas.status_aprovacao_rh');
-            return;
-        }
-        if ($status === 'aprovado_rh') {
-            $query->where('valor_extra_previstas.status_aprovacao_rh', ValorExtraPrevista::STATUS_APROVADO);
-            return;
-        }
-        if ($status === 'reprovado') {
-            $query->where(function ($q) {
-                $q->where('valor_extra_previstas.status_aprovacao', ValorExtraPrevista::STATUS_REPROVADO)
-                    ->orWhere('valor_extra_previstas.status_aprovacao_extra', ValorExtraPrevista::STATUS_REPROVADO)
-                    ->orWhere('valor_extra_previstas.status_aprovacao_rh', ValorExtraPrevista::STATUS_REPROVADO);
-            });
-        }
+        $this->applyApprovalFlowStatusFilter(
+            $query,
+            isset($this->filtros['campoStatusAprovacao']) ? (string) $this->filtros['campoStatusAprovacao'] : null,
+            [
+                'gestor' => 'valor_extra_previstas.status_aprovacao',
+                'extra' => 'valor_extra_previstas.status_aprovacao_extra',
+                'rh' => 'valor_extra_previstas.status_aprovacao_rh',
+            ],
+            ValorExtraPrevista::STATUS_APROVADO,
+            ValorExtraPrevista::STATUS_REPROVADO,
+            'valor_extra'
+        );
     }
 
     private function applyPermissoes(Builder $query): void

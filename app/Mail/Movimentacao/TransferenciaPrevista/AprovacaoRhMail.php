@@ -24,7 +24,7 @@ class AprovacaoRhMail extends Mailable
         $this->dados = $dados;
         $this->to($this->dados['email_para'], $this->dados['nome_para']);
         $this->from('naoresponda@mybp.com.br', 'BPSE-BUSINESS PARTNERS SERVIÇOS EMPRESARIAIS');
-        $this->subject = "CONFIRMAÇÃO RH PARA TRANSFERÊNCIA PREVISTA  - COLABORADOR {$this->dados['colaborador']}  CÓD - ". $this->dados['ferias_id'];
+        $this->subject = "CONFIRMAÇÃO RH PARA TRANSFERÊNCIA PREVISTA - CÓD - ". $this->dados['ferias_id'];
         $this->assunto = $this->subject;
     }
 

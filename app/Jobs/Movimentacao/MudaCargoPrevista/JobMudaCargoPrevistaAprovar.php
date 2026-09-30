@@ -32,7 +32,7 @@ class JobMudaCargoPrevistaAprovar implements ShouldQueue
             'id' => $mudaCargoPrevista->id,
             'cargo_anterior' => $mudaCargoPrevista->CargoAnterior->nome,
             'cargo_novo' => $mudaCargoPrevista->NovoCargo->nome,
-            'colaborador' => $mudaCargoPrevista->Colaborador->nome,
+            'colaborador' => '',
             'empresa_id' => auth()->user()->empresa_id
         ];
 

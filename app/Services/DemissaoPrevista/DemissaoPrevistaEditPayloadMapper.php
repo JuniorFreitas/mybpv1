@@ -5,6 +5,8 @@ namespace App\Services\DemissaoPrevista;
 use App\Models\Arquivo;
 use App\Models\DemissaoPrevista;
 use App\Models\User;
+use DateTimeInterface;
+use MasterTag\DataHora;
 
 /**
  * Monta payload enxuto do modal editar/visualizar/aprovar Demissão Prevista.
@@ -69,7 +71,7 @@ class DemissaoPrevistaEditPayloadMapper
             'centro_custo_id' => $item->centro_custo_id,
             'filial' => (bool) $item->filial,
             'centro_custo_filial_id' => $item->centro_custo_filial_id,
-            'data_demissao' => $item->data_demissao,
+            'data_demissao' => $this->formatDateBr($item->data_demissao),
             'tipo_aviso' => $item->tipo_aviso,
             'valor' => $item->valor,
             'valor_format' => $item->valor_format,
@@ -79,16 +81,16 @@ class DemissaoPrevistaEditPayloadMapper
             'obs' => $item->obs,
             'anexos' => $this->mapAnexos($item),
             'anexosDel' => [],
-            'data_aprovacao' => $item->data_aprovacao,
+            'data_aprovacao' => $this->formatDateBr($item->data_aprovacao),
             'obs_aprovacao' => $item->obs_aprovacao,
             'status_aprovacao' => $item->status_aprovacao ?: '',
             'user_aprovacao' => $this->mapUserResumo($item->UserAprovacao),
-            'data_aprovacao_extra' => $item->data_aprovacao_extra,
+            'data_aprovacao_extra' => $this->formatDateTimeBr($item->data_aprovacao_extra),
             'obs_aprovacao_extra' => $item->obs_aprovacao_extra,
             'status_aprovacao_extra' => $item->status_aprovacao_extra ?: '',
             'aprovacao_extra' => $this->mapUserResumo($item->AprovacaoExtra),
             'aprovacao_extra_id' => $item->aprovacao_extra_id,
-            'data_aprovacao_rh' => $item->data_aprovacao_rh,
+            'data_aprovacao_rh' => $this->formatDateTimeBr($item->data_aprovacao_rh),
             'obs_rh' => $item->obs_rh,
             'status_aprovacao_rh' => $item->status_aprovacao_rh ?: '',
             'rh_aprovacao' => $this->mapUserResumo($item->RhAprovacao),
@@ -96,6 +98,58 @@ class DemissaoPrevistaEditPayloadMapper
             'aprovado_via_script' => (bool) $item->aprovado_via_script,
             'empresa_id' => $item->empresa_id,
         ];
+    }
+
+    /**
+     * DatePicker e labels do modal esperam d/m/Y (não ISO/Carbon).
+     */
+    private function formatDateBr(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        if ($value instanceof DateTimeInterface) {
+            return $value->format('d/m/Y');
+        }
+
+        $texto = trim((string) $value);
+        if ($texto === '') {
+            return '';
+        }
+
+        if (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $texto)) {
+            return $texto;
+        }
+
+        return (new DataHora($texto))->dataCompleta();
+    }
+
+    /**
+     * Datas de aprovação no modal: d/m/Y às H:i:s (padrão da listagem).
+     */
+    private function formatDateTimeBr(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        if ($value instanceof DateTimeInterface) {
+            return $value->format('d/m/Y \à\s H:i:s');
+        }
+
+        $texto = trim((string) $value);
+        if ($texto === '') {
+            return '';
+        }
+
+        if (preg_match('/^\d{2}\/\d{2}\/\d{4}/', $texto)) {
+            return $texto;
+        }
+
+        $data = new DataHora($texto);
+
+        return $data->dataCompleta() . ' às ' . $data->hora() . ':' . $data->minuto() . ':' . $data->segundo();
     }
 
     /**

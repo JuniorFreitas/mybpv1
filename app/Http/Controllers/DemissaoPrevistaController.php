@@ -35,12 +35,18 @@ class DemissaoPrevistaController extends Controller
         $dados = $request->input();
         $dados['valor'] = $dados['valor_format'];
         $dados['user_id'] = auth()->user()->id;
+        $dados['centro_custo_id'] = $this->normalizarCentroCustoId($dados['centro_custo_id'] ?? null);
+
+        if ($dados['centro_custo_id'] === null) {
+            $dados['filial'] = false;
+            $dados['centro_custo_filial_id'] = null;
+        }
 
         $dadosValidados = \Validator::make(
             $dados,
             [
-                'centro_custo_id' => 'required',
-                'centro_custo_filial_id' => 'required_if:filial,true',
+                'centro_custo_id' => 'nullable|integer|exists:centro_custos,id',
+                'centro_custo_filial_id' => 'nullable|required_if:filial,true|integer',
                 'colaborador_id' => 'required',
                 'valor_format' => 'required',
             ]
@@ -121,11 +127,17 @@ class DemissaoPrevistaController extends Controller
     {
         $dados = $request->input();
         $dados['valor'] = $dados['valor_format'];
+        $dados['centro_custo_id'] = $this->normalizarCentroCustoId($dados['centro_custo_id'] ?? null);
+
+        if ($dados['centro_custo_id'] === null) {
+            $dados['filial'] = false;
+            $dados['centro_custo_filial_id'] = null;
+        }
 
         $dadosValidados = \Validator::make(
             $dados,
             [
-                'centro_custo_id' => 'required',
+                'centro_custo_id' => 'nullable|integer|exists:centro_custos,id',
                 'colaborador_id' => 'required',
                 'valor_format' => 'required',
             ]
@@ -275,7 +287,8 @@ class DemissaoPrevistaController extends Controller
                 'dp.status_aprovacao_extra',
                 'usa.nome as user_aprovacao_nome',
                 'urh.nome as rh_aprovacao_nome',
-                'uextra.nome as aprovacao_extra_nome'
+                'uextra.nome as aprovacao_extra_nome',
+                'ug.nome as gestor_nome'
             )
             ->leftJoin('users as u', 'dp.colaborador_id', '=', 'u.id')
             ->leftJoin('users as us', 'dp.user_id', '=', 'us.id')
@@ -294,6 +307,7 @@ class DemissaoPrevistaController extends Controller
             ->leftjoin('users as urh', 'urh.id', '=', 'dp.rh_aprovacao_id')
             ->leftjoin('users as usa', 'dp.user_aprovacao_id', '=', 'usa.id')
             ->leftjoin('users as uextra', 'dp.aprovacao_extra_id', '=', 'uextra.id')
+            ->leftJoin('users as ug', 'dp.gestor_id', '=', 'ug.id')
             ->where('dp.empresa_id', '=', auth()->user()->empresa_id)
             ->whereNull('dp.deleted_at');
 
@@ -352,28 +366,12 @@ class DemissaoPrevistaController extends Controller
         }
 
         if ($request->filled('campoStatusAprovacao')) {
-            $resultado->when($request->campoStatusAprovacao == 'aberto', function ($query) {
-                return $query->whereNull('dp.status_aprovacao');
-            })
-                ->when($request->campoStatusAprovacao == 'aprovado_gestor', function ($query) {
-                    return $query->where('dp.status_aprovacao', DemissaoPrevista::STATUS_APROVADO)
-                        ->whereNull('dp.status_aprovacao_extra')
-                        ->whereNull('dp.status_aprovacao_rh');
-                })
-                ->when($request->campoStatusAprovacao == 'aprovado_extra', function ($query) {
-                    return $query->where('dp.status_aprovacao_extra', DemissaoPrevista::STATUS_APROVADO)
-                        ->whereNull('dp.status_aprovacao_rh');
-                })
-                ->when($request->campoStatusAprovacao == 'aprovado_rh', function ($query) {
-                    return $query->where('dp.status_aprovacao_rh', DemissaoPrevista::STATUS_APROVADO);
-                })
-                ->when($request->campoStatusAprovacao == 'reprovado', function ($query) {
-                    return $query->where(function ($query) {
-                        $query->where('dp.status_aprovacao', DemissaoPrevista::STATUS_REPROVADO)
-                            ->orWhere('dp.status_aprovacao_extra', DemissaoPrevista::STATUS_REPROVADO)
-                            ->orWhere('dp.status_aprovacao_rh', DemissaoPrevista::STATUS_REPROVADO);
-                    });
-                });
+            (new DemissaoPrevistaFilterApplier($request->all(), auth()->user()))
+                ->applyStatusWithColumns($resultado, [
+                    'gestor' => 'dp.status_aprovacao',
+                    'extra' => 'dp.status_aprovacao_extra',
+                    'rh' => 'dp.status_aprovacao_rh',
+                ]);
         }
 
         DemissaoPrevistaFilterApplier::applyCnpjCentroCusto(
@@ -612,5 +610,16 @@ class DemissaoPrevistaController extends Controller
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
+    }
+
+    private function normalizarCentroCustoId(mixed $valor): ?int
+    {
+        if ($valor === null || $valor === '' || $valor === false) {
+            return null;
+        }
+
+        $id = (int) $valor;
+
+        return $id > 0 ? $id : null;
     }
 }

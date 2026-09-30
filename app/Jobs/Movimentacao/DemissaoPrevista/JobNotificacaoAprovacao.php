@@ -78,15 +78,6 @@ class JobNotificacaoAprovacao implements ShouldQueue
             return;
         }
 
-        // Busca currículo diretamente sem query extra do colaborador
-        $curriculo = \App\Models\Curriculo::withoutGlobalScope(\App\Scopes\ScopeEmpresa::class)
-            ->select('id', 'nome')
-            ->where('id', $demissao->colaborador_id)
-            ->first();
-
-        if (!$curriculo) {
-            return;
-        }
 
         $dados = [
             'nome_de' => $usuarioDe->nome,
@@ -94,7 +85,7 @@ class JobNotificacaoAprovacao implements ShouldQueue
             'email_para' => $usuario->login,
             'etapa' => $this->etapa,
             'demissao_id' => $demissao->id,
-            'colaborador' => $curriculo->nome,
+            'colaborador' => '',
             'empresa_id' => $this->empresaId
         ];
 

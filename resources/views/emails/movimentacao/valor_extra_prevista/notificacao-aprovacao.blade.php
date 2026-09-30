@@ -4,7 +4,6 @@
 @php
 $tipo = $dados['tipo'];
 $valorExtra = $dados['valor_extra'];
-$colaborador = $dados['colaborador'];
 $centro_custo = $dados['centro_custo'];
 $tipo_valor = $dados['tipo_valor'];
 $periodo_dias = $dados['periodo_dias'];
@@ -139,10 +138,6 @@ $mensagem = $mensagens[$tipo] ?? '';
                     <tr>
                         <td width="40%" style="color: #555;"><strong>CÓD:</strong></td>
                         <td>#{{ $valorExtra->id }}</td>
-                    </tr>
-                    <tr style="background: #f8f9fa;">
-                        <td style="color: #555;"><strong>Colaborador:</strong></td>
-                        <td>{{ $colaborador }}</td>
                     </tr>
                     <tr>
                         <td style="color: #555;"><strong>Centro de Custo:</strong></td>

@@ -21,7 +21,6 @@
             <br>
             <strong>Detalhes da Solicitação:</strong><br>
             Cód: <strong>{{ $dados['valor_extra_id'] }}</strong><br>
-            Colaborador: <strong>{{ $dados['colaborador'] }}</strong><br>
             Tipo: <strong>{{ $dados['tipo_valor'] }}</strong><br>
             Período: <strong>{{ $dados['periodo_dias'] }} dias</strong><br>
             Etapa: <strong>{{ $dados['etapa'] }}</strong><br>

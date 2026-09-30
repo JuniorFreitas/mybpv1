@@ -4,12 +4,15 @@ namespace App\Services\MudancaCargo;
 
 use App\Models\MudancaCargo;
 use App\Models\User;
+use App\Services\Concerns\AppliesApprovalFlowStatusFilter;
 use App\Services\DemissaoPrevista\DemissaoPrevistaFilterApplier;
 use Illuminate\Database\Eloquent\Builder;
 use MasterTag\DataHora;
 
 class MudancaCargoFilterApplier
 {
+    use AppliesApprovalFlowStatusFilter;
+
     private array $filtros;
     private User $user;
 
@@ -178,36 +181,18 @@ class MudancaCargoFilterApplier
 
     private function applyCampoStatusAprovacao(Builder $query): void
     {
-        if (!isset($this->filtros['campoStatusAprovacao']) || $this->filtros['campoStatusAprovacao'] === '') {
-            return;
-        }
-        $status = $this->filtros['campoStatusAprovacao'];
-        if ($status === 'aberto') {
-            $query->whereNull('status_aprovacao_gestor');
-            return;
-        }
-        if ($status === 'aprovado_gestor') {
-            $query->where('status_aprovacao_gestor', MudancaCargo::STATUS_APROVADO)
-                ->whereNull('status_aprovacao_extra')
-                ->whereNull('status_aprovacao_rh');
-            return;
-        }
-        if ($status === 'aprovado_extra') {
-            $query->where('status_aprovacao_extra', MudancaCargo::STATUS_APROVADO)
-                ->whereNull('status_aprovacao_rh');
-            return;
-        }
-        if ($status === 'aprovado_rh') {
-            $query->where('status_aprovacao_rh', MudancaCargo::STATUS_APROVADO);
-            return;
-        }
-        if ($status === 'reprovado') {
-            $query->where(function ($q) {
-                $q->where('status_aprovacao_gestor', MudancaCargo::STATUS_REPROVADO)
-                    ->orWhere('status_aprovacao_extra', MudancaCargo::STATUS_REPROVADO)
-                    ->orWhere('status_aprovacao_rh', MudancaCargo::STATUS_REPROVADO);
-            });
-        }
+        $this->applyApprovalFlowStatusFilter(
+            $query,
+            isset($this->filtros['campoStatusAprovacao']) ? (string) $this->filtros['campoStatusAprovacao'] : null,
+            [
+                'gestor' => 'status_aprovacao_gestor',
+                'extra' => 'status_aprovacao_extra',
+                'rh' => 'status_aprovacao_rh',
+            ],
+            MudancaCargo::STATUS_APROVADO,
+            MudancaCargo::STATUS_REPROVADO,
+            'mudanca_cargo'
+        );
     }
 
     private function applyPermissoes(Builder $query): void

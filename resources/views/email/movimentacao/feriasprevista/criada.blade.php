@@ -7,7 +7,6 @@
                 Olá, <strong>{{ $dados['nome_para'] }}</strong>!<br><br>
                 <strong>{{ $dados['nome_de'] }}</strong>, criou e marcou você em uma férias prevista. <br>
                 ID: <strong>{{$dados['ferias_id']}}</strong>. <br>
-                Colaborador: <strong>{{$dados['colaborador']}}</strong>. <br>
                 <br><br>
                 Para visualizar acesse o sistema <a href="{{ route('g.movimentacao.index') }}">clique aqui</a> .
 

@@ -489,7 +489,7 @@ class JobNotificacaoRecursiva implements ShouldQueue
         $dados = [
             'tipo' => $tipo,
             'transferencia' => $this->transferencia,
-            'colaborador' => $this->transferencia->Colaborador ? $this->transferencia->Colaborador->nome : '',
+            'colaborador' => '',
             'centro_custo_origem' => $this->transferencia->CentroCustoOrigem ? $this->transferencia->CentroCustoOrigem->label : '',
             'centro_custo_destino' => $this->transferencia->CentroCustoDestino ? $this->transferencia->CentroCustoDestino->label : '',
             'solicitante' => $this->transferencia->Solicitante ? $this->transferencia->Solicitante->nome : '',

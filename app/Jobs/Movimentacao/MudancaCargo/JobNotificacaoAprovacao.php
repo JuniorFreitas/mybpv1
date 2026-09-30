@@ -80,7 +80,7 @@ class JobNotificacaoAprovacao implements ShouldQueue
 
             $dados = [
                 'mudanca_cargo_id' => $mudanca_cargo->id,
-                'colaborador' => $mudanca_cargo->Colaborador ? $mudanca_cargo->Colaborador->nome : 'N/A',
+                'colaborador' => '',
                 'cargo_anterior' => ($mudanca_cargo->VagaAbertaAnterior && $mudanca_cargo->VagaAbertaAnterior->Vaga) ? $mudanca_cargo->VagaAbertaAnterior->Vaga->nome : 'N/A',
                 'cargo_novo' => ($mudanca_cargo->VagaAbertaNova && $mudanca_cargo->VagaAbertaNova->Vaga) ? $mudanca_cargo->VagaAbertaNova->Vaga->nome : 'Não mudou de cargo',
                 'empresa_id' => $mudanca_cargo->empresa_id,

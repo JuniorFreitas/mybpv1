@@ -4,7 +4,9 @@ namespace App\Services\DemissaoPrevista;
 
 use App\Models\DemissaoPrevista;
 use App\Models\User;
+use App\Services\Concerns\AppliesApprovalFlowStatusFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use MasterTag\DataHora;
 
 /**
@@ -13,6 +15,8 @@ use MasterTag\DataHora;
  */
 class DemissaoPrevistaFilterApplier
 {
+    use AppliesApprovalFlowStatusFilter;
+
     private array $filtros;
     private User $user;
 
@@ -174,38 +178,31 @@ class DemissaoPrevistaFilterApplier
         });
     }
 
+    /**
+     * Status na listagem (Query Builder com alias `dp`) e na exportação Eloquent.
+     *
+     * @param  Builder|QueryBuilder  $query
+     * @param  array{gestor: string, extra: string, rh: string}  $columns
+     */
+    public function applyStatusWithColumns(Builder|QueryBuilder $query, array $columns): void
+    {
+        $this->applyApprovalFlowStatusFilter(
+            $query,
+            isset($this->filtros['campoStatusAprovacao']) ? (string) $this->filtros['campoStatusAprovacao'] : null,
+            $columns,
+            DemissaoPrevista::STATUS_APROVADO,
+            DemissaoPrevista::STATUS_REPROVADO,
+            'demissao'
+        );
+    }
+
     private function applyCampoStatusAprovacao(Builder $query): void
     {
-        if (!isset($this->filtros['campoStatusAprovacao']) || $this->filtros['campoStatusAprovacao'] === '') {
-            return;
-        }
-        $status = $this->filtros['campoStatusAprovacao'];
-        if ($status === 'aberto') {
-            $query->whereNull('demissao_previstas.status_aprovacao');
-            return;
-        }
-        if ($status === 'aprovado_gestor') {
-            $query->where('demissao_previstas.status_aprovacao', DemissaoPrevista::STATUS_APROVADO)
-                ->whereNull('demissao_previstas.status_aprovacao_extra')
-                ->whereNull('demissao_previstas.status_aprovacao_rh');
-            return;
-        }
-        if ($status === 'aprovado_extra') {
-            $query->where('demissao_previstas.status_aprovacao_extra', DemissaoPrevista::STATUS_APROVADO)
-                ->whereNull('demissao_previstas.status_aprovacao_rh');
-            return;
-        }
-        if ($status === 'aprovado_rh') {
-            $query->where('demissao_previstas.status_aprovacao_rh', DemissaoPrevista::STATUS_APROVADO);
-            return;
-        }
-        if ($status === 'reprovado') {
-            $query->where(function ($q) {
-                $q->where('demissao_previstas.status_aprovacao', DemissaoPrevista::STATUS_REPROVADO)
-                    ->orWhere('demissao_previstas.status_aprovacao_extra', DemissaoPrevista::STATUS_REPROVADO)
-                    ->orWhere('demissao_previstas.status_aprovacao_rh', DemissaoPrevista::STATUS_REPROVADO);
-            });
-        }
+        $this->applyStatusWithColumns($query, [
+            'gestor' => 'demissao_previstas.status_aprovacao',
+            'extra' => 'demissao_previstas.status_aprovacao_extra',
+            'rh' => 'demissao_previstas.status_aprovacao_rh',
+        ]);
     }
 
     private function applyPermissoes(Builder $query): void

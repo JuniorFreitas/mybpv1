@@ -60,7 +60,7 @@ class FeriasPrevistaController extends Controller
         $dadosValidados = \Validator::make(
             $dados,
             [
-                'centro_custo_id' => 'required',
+                'centro_custo_id' => 'nullable',
                 'qnt_dias' => 'required',
                 'dias_saldo' => 'required',
                 'periodo_aquisitivo_id' => 'required',
@@ -134,8 +134,14 @@ class FeriasPrevistaController extends Controller
             $dados['data_solicitacao'] = (new DataHora())->dataHoraInsert();
             $dados['solicitante_id'] = auth()->user()->id;
 
+            $centroCustoId = $dados['centro_custo_id'] ?? null;
+            if ($centroCustoId === '' || $centroCustoId === 0 || $centroCustoId === '0') {
+                $centroCustoId = null;
+            }
+            $dados['centro_custo_id'] = $centroCustoId;
+
             Admissao::find($dados['admissao_id'])->update([
-                'centro_custo_id' => $dados['centro_custo_id']
+                'centro_custo_id' => $centroCustoId
             ]);
 
             $feriasPrevista = Ferias::create($dados);
@@ -197,7 +203,7 @@ class FeriasPrevistaController extends Controller
                 'Solicitante:' . implode(',', FeriasPrevistaEditPayloadMapper::USER_COLUMNS),
                 'PeriodoAquisitivo:id,label',
                 'FeriasPrevista:id,centro_custo_id',
-                'Admissao:id,centro_custo_id,data_admissao,feedback_id',
+                'Admissao:id,centro_custo_id,data_admissao,feedback_id,filial,centro_custo_filial_id',
                 'Admissao.Feedback:id,curriculo_id',
                 'Admissao.Feedback.Curriculo:id,nome',
                 'Anexos' => function ($query) {
@@ -248,6 +254,11 @@ class FeriasPrevistaController extends Controller
             }
         }
 
+        // Payload de edição pode omitir solicitante_id (mapper antigo); preserva o existente.
+        if (empty($dados['solicitante_id'])) {
+            $dados['solicitante_id'] = $ferias->solicitante_id ?: auth()->id();
+        }
+
         // Validar os dados
         $dadosValidados = \Validator::make($dados, [
             'periodo_aquisitivo_id' => 'required',
@@ -274,8 +285,13 @@ class FeriasPrevistaController extends Controller
             DB::beginTransaction();
 
             // Atualizar informações relacionadas à admissão
+            $centroCustoId = $dados['centro_custo_id'] ?? null;
+            if ($centroCustoId === '' || $centroCustoId === 0 || $centroCustoId === '0') {
+                $centroCustoId = null;
+            }
+
             Admissao::find($dados['admissao_id'])->update([
-                'centro_custo_id' => $dados['centro_custo_id']
+                'centro_custo_id' => $centroCustoId
             ]);
 
             // Atualizar informações da solicitação de férias

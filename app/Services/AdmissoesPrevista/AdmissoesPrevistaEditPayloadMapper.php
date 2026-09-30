@@ -6,6 +6,8 @@ use App\Models\Admissao;
 use App\Models\AdmissoesPrevista;
 use App\Models\Arquivo;
 use App\Models\User;
+use DateTimeInterface;
+use MasterTag\DataHora;
 
 /**
  * Monta payload enxuto do modal editar/visualizar/aprovar Admissão Prevista.
@@ -82,7 +84,7 @@ class AdmissoesPrevistaEditPayloadMapper
             'cargo_id' => $item->cargo_id,
             'autocomplete_label_cargo' => $cargoNome,
             'autocomplete_label_cargo_anterior' => $cargoNome,
-            'data_admissao' => $item->data_admissao,
+            'data_admissao' => $this->formatDateBr($item->data_admissao),
             'salario' => $item->salario,
             'salario_format' => $item->salario_format,
             'gestor_id' => $item->gestor_id,
@@ -91,18 +93,18 @@ class AdmissoesPrevistaEditPayloadMapper
             'obs' => $item->obs,
             'anexos' => $this->mapAnexos($item),
             'anexosDel' => [],
-            'data_aprovacao' => $item->data_aprovacao,
+            'data_aprovacao' => $this->formatDateTimeBr($item->data_aprovacao),
             'obs_aprovacao' => $item->obs_aprovacao,
             'status_aprovacao' => $statusGestor,
             'status_aprovacao_gestor' => $statusGestor !== '' ? ucfirst($statusGestor) : '',
             'user_aprovacao' => $this->mapUserResumo($item->UserAprovacao),
-            'data_aprovacao_extra' => $item->data_aprovacao_extra,
+            'data_aprovacao_extra' => $this->formatDateTimeBr($item->data_aprovacao_extra),
             'obs_aprovacao_extra' => $item->obs_aprovacao_extra,
             'status_aprovacao_extra' => $item->status_aprovacao_extra ?: '',
             'aprovacao_extra_id' => $item->aprovacao_extra_id,
             'aprovacao_extra' => $this->mapUserResumo($aprovacaoExtraUser),
             'aprovacao_extra_nome' => $aprovacaoExtraUser?->nome ?? '',
-            'data_aprovacao_rh' => $item->data_aprovacao_rh,
+            'data_aprovacao_rh' => $this->formatDateTimeBr($item->data_aprovacao_rh),
             'obs_rh' => $item->obs_rh,
             'status_aprovacao_rh' => $item->status_aprovacao_rh ?: '',
             'rh_aprovacao' => $this->mapUserResumo($item->RhAprovacao),
@@ -110,6 +112,52 @@ class AdmissoesPrevistaEditPayloadMapper
             'aprovado_via_script' => (bool) $item->aprovado_via_script,
             'empresa_id' => $item->empresa_id,
         ];
+    }
+
+    private function formatDateBr(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        if ($value instanceof DateTimeInterface) {
+            return $value->format('d/m/Y');
+        }
+
+        $texto = trim((string) $value);
+        if ($texto === '' || $texto === 'Invalid date') {
+            return '';
+        }
+
+        if (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $texto)) {
+            return $texto;
+        }
+
+        return (new DataHora($texto))->dataCompleta();
+    }
+
+    private function formatDateTimeBr(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        if ($value instanceof DateTimeInterface) {
+            return $value->format('d/m/Y \à\s H:i:s');
+        }
+
+        $texto = trim((string) $value);
+        if ($texto === '') {
+            return '';
+        }
+
+        if (preg_match('/^\d{2}\/\d{2}\/\d{4}/', $texto)) {
+            return $texto;
+        }
+
+        $data = new DataHora($texto);
+
+        return $data->dataCompleta() . ' às ' . $data->hora() . ':' . $data->minuto() . ':' . $data->segundo();
     }
 
     private function normalizeTipoContrato(?string $tipo): string

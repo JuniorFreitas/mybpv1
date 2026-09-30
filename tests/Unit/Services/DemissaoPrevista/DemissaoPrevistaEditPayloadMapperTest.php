@@ -73,6 +73,8 @@ class DemissaoPrevistaEditPayloadMapperTest extends TestCase
         $this->assertSame(10, $payload['colaborador_id']);
         $this->assertSame('Ana Silva', $payload['autocomplete_label_colaborador']);
         $this->assertSame('Carlos Gestor', $payload['autocomplete_label_gestor_modal']);
+        $this->assertSame('01/02/2026', $payload['data_demissao']);
+        $this->assertSame('02/02/2026', $payload['data_aprovacao']);
         $this->assertSame(['id' => 30, 'nome' => 'Beatriz Aprovadora'], $payload['user_aprovacao']);
         $this->assertNull($payload['rh_aprovacao']);
         $this->assertNull($payload['aprovacao_extra']);
@@ -84,5 +86,31 @@ class DemissaoPrevistaEditPayloadMapperTest extends TestCase
         $this->assertArrayNotHasKey('solicitante', $payload);
         $this->assertArrayNotHasKey('created_at', $payload);
         $this->assertArrayNotHasKey('Colaborador', $payload);
+    }
+
+    public function test_map_formata_data_demissao_em_d_m_y_quando_carbon(): void
+    {
+        $item = new DemissaoPrevista([
+            'colaborador_id' => 1,
+            'centro_custo_id' => 1,
+            'data_demissao' => '15/03/2026',
+            'tipo_aviso' => 'NA',
+            'valor' => '0,00',
+            'gestor_id' => 1,
+            'empresa_id' => 1,
+        ]);
+        $item->id = 1;
+        $item->setRelation('Colaborador', null);
+        $item->setRelation('GestorAprovacao', null);
+        $item->setRelation('UserAprovacao', null);
+        $item->setRelation('RhAprovacao', null);
+        $item->setRelation('AprovacaoExtra', null);
+        $item->setRelation('Anexos', collect());
+
+        $payload = (new DemissaoPrevistaEditPayloadMapper())->map($item);
+
+        $this->assertSame('15/03/2026', $payload['data_demissao']);
+        $this->assertIsString($payload['data_demissao']);
+        $this->assertDoesNotMatchRegularExpression('/T|\d{4}-\d{2}-\d{2}/', $payload['data_demissao']);
     }
 }

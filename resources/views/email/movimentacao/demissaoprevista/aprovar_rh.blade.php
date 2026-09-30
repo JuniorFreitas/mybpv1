@@ -12,7 +12,6 @@
                 <br>
                 <strong>Detalhes da Solicitação:</strong><br>
                 ID: <strong>{{ $dados['id'] }}</strong><br>
-                Colaborador: <strong>{{ $dados['colaborador'] }}</strong><br>
 
                 <br><br>
                 Para visualizar, acesse o sistema <a href="{{ route('g.movimentacao.index') }}" style="color: #007bff; text-decoration: none; font-weight: bold;">clicando aqui</a>.

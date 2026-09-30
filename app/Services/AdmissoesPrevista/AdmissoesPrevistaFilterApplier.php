@@ -4,6 +4,7 @@ namespace App\Services\AdmissoesPrevista;
 
 use App\Models\AdmissoesPrevista;
 use App\Models\User;
+use App\Services\Concerns\AppliesApprovalFlowStatusFilter;
 use App\Services\DemissaoPrevista\DemissaoPrevistaFilterApplier;
 use Illuminate\Database\Eloquent\Builder;
 use MasterTag\DataHora;
@@ -13,6 +14,8 @@ use MasterTag\DataHora;
  */
 class AdmissoesPrevistaFilterApplier
 {
+    use AppliesApprovalFlowStatusFilter;
+
     private array $filtros;
     private User $user;
 
@@ -125,36 +128,18 @@ class AdmissoesPrevistaFilterApplier
 
     private function applyCampoStatusAprovacao(Builder $query): void
     {
-        if (!isset($this->filtros['campoStatusAprovacao']) || $this->filtros['campoStatusAprovacao'] === '') {
-            return;
-        }
-        $status = $this->filtros['campoStatusAprovacao'];
-        if ($status === 'aberto') {
-            $query->whereNull('admissoes_previstas.status_aprovacao');
-            return;
-        }
-        if ($status === 'aprovado_gestor') {
-            $query->where('admissoes_previstas.status_aprovacao', AdmissoesPrevista::STATUS_APROVADO)
-                ->whereNull('admissoes_previstas.status_aprovacao_extra')
-                ->whereNull('admissoes_previstas.status_aprovacao_rh');
-            return;
-        }
-        if ($status === 'aprovado_extra') {
-            $query->where('admissoes_previstas.status_aprovacao_extra', AdmissoesPrevista::STATUS_APROVADO)
-                ->whereNull('admissoes_previstas.status_aprovacao_rh');
-            return;
-        }
-        if ($status === 'aprovado_rh') {
-            $query->where('admissoes_previstas.status_aprovacao_rh', AdmissoesPrevista::STATUS_APROVADO);
-            return;
-        }
-        if ($status === 'reprovado') {
-            $query->where(function ($q) {
-                $q->where('admissoes_previstas.status_aprovacao', AdmissoesPrevista::STATUS_REPROVADO)
-                    ->orWhere('admissoes_previstas.status_aprovacao_extra', AdmissoesPrevista::STATUS_REPROVADO)
-                    ->orWhere('admissoes_previstas.status_aprovacao_rh', AdmissoesPrevista::STATUS_REPROVADO);
-            });
-        }
+        $this->applyApprovalFlowStatusFilter(
+            $query,
+            isset($this->filtros['campoStatusAprovacao']) ? (string) $this->filtros['campoStatusAprovacao'] : null,
+            [
+                'gestor' => 'admissoes_previstas.status_aprovacao',
+                'extra' => 'admissoes_previstas.status_aprovacao_extra',
+                'rh' => 'admissoes_previstas.status_aprovacao_rh',
+            ],
+            AdmissoesPrevista::STATUS_APROVADO,
+            AdmissoesPrevista::STATUS_REPROVADO,
+            'admissao'
+        );
     }
 
     private function applyTipoContrato(Builder $query): void
