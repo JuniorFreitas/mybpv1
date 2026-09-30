@@ -9,13 +9,22 @@
                 <div class="alert alert-success alert-dismissible" v-show="atualizado">
                     <h4><i class="icon fa fa-check"></i>Solicitação alterada com sucesso!</h4>
                 </div>
-                <form v-if="!preload && !cadastrado && !atualizado" :id="`form_${hash}`" onsubmit="return false">
-                    <fieldset>
-                        <legend>Para qual colaborador?</legend>
+                <form
+                    v-if="!preload && !cadastrado && !atualizado"
+                    :id="`form_${hash}`"
+                    class="mybp-modal-form mybp-filtros-compactos"
+                    onsubmit="return false"
+                >
+                    <p class="mybp-campo-obrigatorio-legenda mybp-modal-legenda">
+                        Campos com <span class="text-danger">*</span> são obrigatórios.
+                    </p>
+
+                    <fieldset class="mybp-modal-secao">
+                        <legend>Colaborador</legend>
                         <div class="row">
                             <div class="col-12 col-md-12">
-                                <div class="form-group">
-                                    <label>Colaborador <span class="text-danger">*</span></label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Colaborador <span class="text-danger">*</span></label>
                                     <autocomplete
                                         :caminho="`autocomplete/colaboradores`"
                                         :formsm="true"
@@ -31,43 +40,80 @@
                             </div>
                         </div>
                     </fieldset>
-                    <fieldset v-if="form.colaborador_id">
-                        <legend>Dados Atuais</legend>
+                    <fieldset v-if="form.colaborador_id" class="mybp-modal-secao">
+                        <legend>Dados atuais</legend>
                         <div class="row">
+                            <div class="col-12" v-if="labelLotacaoAtual">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Lotação</label>
+                                    <input
+                                        type="text"
+                                        class="form-control form-control-sm"
+                                        :value="labelLotacaoAtual"
+                                        disabled
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`mudacargo-cc-atual-${hash}`">Centro de Custo Atual</label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormCcAtual"
+                                            instance-id="form-mudacargo-cc-atual"
+                                            :input-id="`mudacargo-cc-atual-${hash}`"
+                                            v-model="formAnteriorCcCombo"
+                                            :options="formAnteriorCcOpcoes"
+                                            :disabled="true"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="50"
+                                            @opening="fecharOutrosComboboxes('form-mudacargo-cc-atual')"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-2" v-if="centroCustoTemFilial">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`mudacargo-cnpj-atual-${hash}`">CNPJ Atual</label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormCnpjAtual"
+                                            instance-id="form-mudacargo-cnpj-atual"
+                                            :input-id="`mudacargo-cnpj-atual-${hash}`"
+                                            v-model="formAnteriorFilialCombo"
+                                            :options="formMatrizFilialOpcoes"
+                                            :disabled="true"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-mudacargo-cnpj-atual')"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4" v-if="temFilial && form.anterior_filial">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`mudacargo-filial-atual-${hash}`">Filial</label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormFilialAtual"
+                                            instance-id="form-mudacargo-filial-atual"
+                                            :input-id="`mudacargo-filial-atual-${hash}`"
+                                            v-model="formAnteriorFilialIdCombo"
+                                            :options="formAnteriorFilialOpcoes"
+                                            :disabled="true"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="50"
+                                            @opening="fecharOutrosComboboxes('form-mudacargo-filial-atual')"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                             <div class="col-12 col-md-3">
-                                <div class="form-group">
-                                    <label>Centro de Custo Atual</label>
-                                    <select v-model="form.anterior_centro_custo_id" class="form-control form-control-sm" disabled>
-                                        <option value="">Selecione</option>
-                                        <option v-for="item in centro_custos" :value="item.id" :key="item.id">
-                                            {{ item.label }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-1" v-if="centroCustoTemFilial">
-                                <div class="form-group">
-                                    <label>CNPJ Atual</label>
-                                    <select v-model="form.anterior_filial" class="form-control form-control-sm" @change.p.prevent="changeCnpj()" disabled>
-                                        <option :value="false">Matriz</option>
-                                        <option :value="true">Filial</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-5" v-if="temFilial && form.anterior_filial">
-                                <div class="form-group">
-                                    <label>Filial</label>
-                                    <select v-model="form.anterior_centro_custo_filial_id" class="form-control" disabled>
-                                        <option value="">Selecione</option>
-                                        <option v-for="item in centroCustoSelecionado" :value="item.id" :key="item.id">
-                                            {{ item.filial.razao_social }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-3">
-                                <div class="form-group">
-                                    <label>Cargo Atual</label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Cargo Atual</label>
                                     <autocomplete
                                         :disabled="true"
                                         :caminho="caminho_autocomplete_vagas"
@@ -80,8 +126,8 @@
                                 </div>
                             </div>
                             <div class="col-12 col-md-3">
-                                <div class="form-group">
-                                    <label>Função Atual</label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Função Atual</label>
                                     <input
                                         type="text"
                                         class="form-control form-control-sm"
@@ -92,99 +138,118 @@
                                 </div>
                             </div>
                             <div class="col-12 col-md-2">
-                                <div class="form-group">
-                                    <label>Salário Atual R$</label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Salário Atual R$</label>
                                     <input type="text" class="form-control form-control-sm" v-mascara:dinheiro v-model="form.anterior_salario" disabled />
                                 </div>
                             </div>
                         </div>
                     </fieldset>
-                    <fieldset v-if="form.colaborador_id">
-                        <legend>Sobre Centro de Custo</legend>
+                    <fieldset v-if="form.colaborador_id" class="mybp-modal-secao">
+                        <legend>Centro de custo</legend>
                         <div class="row">
-                            <div class="col-12 col-md-2">
-                                <div class="form-group">
-                                    <label>Mantém Centro de Custo</label>
-                                    <select
-                                        class="form-control form-control-sm"
-                                        @change.p.prevent="changeMantemCentroDeCusto()"
-                                        :disabled="visualizar || aprovandoRh || aprovando"
-                                        v-model="form.mantem_centro_custo"
-                                    >
-                                        <option :value="true">Sim</option>
-                                        <option :value="false">Não</option>
-                                    </select>
+                            <div class="col-12 col-md-3">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`mudacargo-mantem-cc-${hash}`">Mantém Centro de Custo</label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormMantemCc"
+                                            instance-id="form-mudacargo-mantem-cc"
+                                            :input-id="`mudacargo-mantem-cc-${hash}`"
+                                            v-model="formMantemCcCombo"
+                                            :options="formSimNaoOpcoes"
+                                            :disabled="visualizar || aprovandoRh || aprovando"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-mudacargo-mantem-cc')"
+                                            @select="changeMantemCentroDeCusto"
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-4" v-if="!form.mantem_centro_custo">
-                                <div class="form-group">
-                                    <label>Novo Centro de Custo <span class="text-danger">*</span></label>
-                                    <select
-                                        v-model="form.novo_centro_custo_id"
-                                        class="form-control form-control-sm"
-                                        @change.prevent="changeCentroCusto()"
-                                        onchange="valida_campo_vazio(this, 1)"
-                                        onblur="valida_campo_vazio(this, 1)"
-                                        :disabled="visualizar || aprovandoRh || aprovando"
-                                    >
-                                        <option value="">Selecione</option>
-                                        <option v-for="item in centro_custos" :value="item.id" :key="item.id">
-                                            {{ item.label }}
-                                        </option>
-                                    </select>
+
+                            <div class="col-12 col-md-5" v-if="!form.mantem_centro_custo && lista_ccs && temFilial">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`mudacargo-lotacao-nova-${hash}`">
+                                        Lotação (CNPJ) <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormLotacaoNova"
+                                            instance-id="form-mudacargo-lotacao-nova"
+                                            :input-id="`mudacargo-lotacao-nova-${hash}`"
+                                            v-model="formLotacaoCnpjNovo"
+                                            :options="formLotacaoNovaOpcoes"
+                                            :disabled="visualizar || aprovandoRh || aprovando"
+                                            placeholder-blur="Selecione a lotação..."
+                                            empty-message="Nenhuma lotação encontrada."
+                                            :max-results="50"
+                                            @opening="fecharOutrosComboboxes('form-mudacargo-lotacao-nova')"
+                                            @select="onSelectFormLotacaoNova"
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-2" v-if="centroCustoTemFilialNovo && !form.mantem_centro_custo">
-                                <div class="form-group">
-                                    <label>Novo CNPJ</label>
-                                    <select
-                                        v-model="form.novo_filial"
-                                        class="form-control form-control-sm"
-                                        @change.p.prevent="changeCnpj()"
-                                        :disabled="visualizar || aprovandoRh || aprovando"
-                                    >
-                                        <option :value="false">Matriz</option>
-                                        <option :value="true">Filial</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-4" v-if="temFilial && form.novo_filial && !form.mantem_centro_custo">
-                                <div class="form-group">
-                                    <label>Nova Filial</label>
-                                    <select
-                                        v-model="form.novo_centro_custo_filial_id"
-                                        class="form-control form-control-sm"
-                                        :disabled="visualizar || aprovandoRh || aprovando"
-                                    >
-                                        <option value="">Selecione</option>
-                                        <option v-for="item in centroCustoSelecionadoNovo" :value="item.id" :key="item.id">
-                                            {{ item.filial.razao_social }}
-                                        </option>
-                                    </select>
+
+                            <div
+                                v-if="!form.mantem_centro_custo"
+                                :class="temFilial ? 'col-12 col-md-5' : 'col-12 col-md-6'"
+                            >
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`mudacargo-cc-novo-${hash}`">
+                                        Novo Centro de Custo <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormCcNovo"
+                                            instance-id="form-mudacargo-cc-novo"
+                                            :input-id="`mudacargo-cc-novo-${hash}`"
+                                            v-model="formCentroCustoNovoCombo"
+                                            :options="formCentroCustoNovoOpcoes"
+                                            :disabled="
+                                                visualizar ||
+                                                aprovandoRh ||
+                                                aprovando ||
+                                                (temFilial && !formLotacaoCnpjNovo)
+                                            "
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhum centro de custo para esta lotação."
+                                            :max-results="50"
+                                            @opening="fecharOutrosComboboxes('form-mudacargo-cc-novo')"
+                                            @select="onSelectFormCentroCustoNovo"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </fieldset>
-                    <fieldset v-if="form.colaborador_id">
-                        <legend>Sobre a Função</legend>
+                    <fieldset v-if="form.colaborador_id" class="mybp-modal-secao">
+                        <legend>Função</legend>
                         <div class="row">
-                            <div class="col-12 col-md-2" v-if="form.anterior_funcao">
-                                <div class="form-group">
-                                    <label>Mantém Função</label>
-                                    <select
-                                        class="form-control form-control-sm"
-                                        @change.p.prevent="changeMantemFuncao()"
-                                        v-model="form.mantem_funcao"
-                                        :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
-                                    >
-                                        <option :value="true">Sim</option>
-                                        <option :value="false">Não</option>
-                                    </select>
+                            <div class="col-12 col-md-3" v-if="form.anterior_funcao">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`mudacargo-mantem-funcao-${hash}`">Mantém Função</label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormMantemFuncao"
+                                            instance-id="form-mudacargo-mantem-funcao"
+                                            :input-id="`mudacargo-mantem-funcao-${hash}`"
+                                            v-model="formMantemFuncaoCombo"
+                                            :options="formSimNaoOpcoes"
+                                            :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-mudacargo-mantem-funcao')"
+                                            @select="changeMantemFuncao"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-12 col-md-6" v-if="!form.mantem_funcao">
-                                <div class="form-group">
-                                    <label>Nova Função</label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Nova Função</label>
                                     <input
                                         type="text"
                                         class="form-control form-control-sm"
@@ -196,44 +261,54 @@
                             </div>
                         </div>
                     </fieldset>
-                    <fieldset v-if="form.colaborador_id">
-                        <legend>Treinamento/Certificado</legend>
+                    <fieldset v-if="form.colaborador_id" class="mybp-modal-secao">
+                        <legend>Treinamento / certificado</legend>
                         <div class="row">
-                            <div class="col-12 col-md-2">
-                                <div class="form-group">
-                                    <label>Treinamento na Função</label>
-                                    <select
-                                        class="form-control form-control-sm"
-                                        @change.p.prevent="changeTreinamentoFuncao()"
-                                        v-model="form.treinamento_funcao"
-                                        :disabled="visualizar || aprovandoRh || aprovando"
-                                    >
-                                        <option :value="false">Não</option>
-                                        <option :value="true">Sim</option>
-                                    </select>
+                            <div class="col-12 col-md-3">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`mudacargo-treinamento-${hash}`">Treinamento na Função</label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormTreinamento"
+                                            instance-id="form-mudacargo-treinamento"
+                                            :input-id="`mudacargo-treinamento-${hash}`"
+                                            v-model="formTreinamentoCombo"
+                                            :options="formSimNaoOpcoes"
+                                            :disabled="visualizar || aprovandoRh || aprovando"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-mudacargo-treinamento')"
+                                            @select="changeTreinamentoFuncao"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-12 col-md-3" v-if="form.treinamento_funcao">
-                                <div class="form-group">
-                                    <label>Data Início</label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Data Início</label>
                                     <datepicker
+                                        :id="`mudacargo-trein-inicio-${hash}`"
                                         formsm
                                         label=""
                                         class="corrigiDatepicker"
                                         v-model="form.treinamento_data_inicio"
                                         :disabled="visualizar || aprovandoRh || aprovando"
+                                        @onselect="limparCampoDataInvalido('mudacargo-trein-inicio-' + hash)"
                                     ></datepicker>
                                 </div>
                             </div>
                             <div class="col-12 col-md-3" v-if="form.treinamento_funcao">
-                                <div class="form-group">
-                                    <label>Data Fim</label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Data Fim</label>
                                     <datepicker
+                                        :id="`mudacargo-trein-fim-${hash}`"
                                         formsm
                                         label=""
                                         class="corrigiDatepicker"
                                         v-model="form.treinamento_data_fim"
                                         :disabled="visualizar || aprovandoRh || aprovando"
+                                        @onselect="limparCampoDataInvalido('mudacargo-trein-fim-' + hash)"
                                     ></datepicker>
                                 </div>
                             </div>
@@ -279,27 +354,34 @@
                             </div>
                         </div>
                     </fieldset>
-                    <fieldset v-if="form.colaborador_id">
-                        <legend>Sobre o Cargo</legend>
+                    <fieldset v-if="form.colaborador_id" class="mybp-modal-secao">
+                        <legend>Cargo</legend>
                         <div class="row">
-                            <div class="col-12 col-md-2">
-                                <div class="form-group">
-                                    <label>Mantém Cargo</label>
-                                    <select
-                                        class="form-control form-control-sm"
-                                        @change.p.prevent="changeMantemCargo()"
-                                        v-model="form.mantem_cargo"
-                                        :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
-                                    >
-                                        <option :value="true">Sim</option>
-                                        <option :value="false">Não</option>
-                                    </select>
+                            <div class="col-12 col-md-3">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`mudacargo-mantem-cargo-${hash}`">Mantém Cargo</label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormMantemCargo"
+                                            instance-id="form-mudacargo-mantem-cargo"
+                                            :input-id="`mudacargo-mantem-cargo-${hash}`"
+                                            v-model="formMantemCargoCombo"
+                                            :options="formSimNaoOpcoes"
+                                            :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-mudacargo-mantem-cargo')"
+                                            @select="changeMantemCargo"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-12 col-md-6" v-if="!form.mantem_cargo">
-                                <div class="form-group">
-                                    <label>Novo Cargo <span class="text-danger">*</span></label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Novo Cargo <span class="text-danger">*</span></label>
                                     <autocomplete
+                                        :id="`novo_cargo_${hash}`"
                                         :caminho="caminho_autocomplete_vagas"
                                         :valido="form.autocomplete_label_vaga_nova !== ''"
                                         v-model="form.autocomplete_label_vaga_nova"
@@ -311,26 +393,32 @@
                             </div>
                         </div>
                     </fieldset>
-                    <fieldset v-if="form.colaborador_id">
-                        <legend>Sobre o Salário</legend>
+                    <fieldset v-if="form.colaborador_id" class="mybp-modal-secao">
+                        <legend>Salário</legend>
                         <div class="row">
-                            <div class="col-12 col-md-2">
-                                <div class="form-group">
-                                    <label>Mantém Salário</label>
-                                    <select
-                                        class="form-control form-control-sm"
-                                        @change.p.prevent="changeMantemSalario()"
-                                        v-model="form.mantem_salario"
-                                        :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
-                                    >
-                                        <option :value="true">Sim</option>
-                                        <option :value="false">Não</option>
-                                    </select>
+                            <div class="col-12 col-md-3">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`mudacargo-mantem-salario-${hash}`">Mantém Salário</label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormMantemSalario"
+                                            instance-id="form-mudacargo-mantem-salario"
+                                            :input-id="`mudacargo-mantem-salario-${hash}`"
+                                            v-model="formMantemSalarioCombo"
+                                            :options="formSimNaoOpcoes"
+                                            :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-mudacargo-mantem-salario')"
+                                            @select="changeMantemSalario"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-12 col-md-3" v-if="!form.mantem_salario">
-                                <div class="form-group">
-                                    <label>Novo Salário R$</label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Novo Salário R$</label>
                                     <input
                                         type="text"
                                         class="form-control form-control-sm"
@@ -342,27 +430,26 @@
                             </div>
                         </div>
                     </fieldset>
-                    <fieldset v-if="form.colaborador_id">
-                        <legend>Gestor Responsável</legend>
+                    <fieldset v-if="form.colaborador_id" class="mybp-modal-secao">
+                        <legend>Gestor responsável</legend>
                         <div class="row">
                             <gestoraprovacao
-                                label="Gestor Aprovação *"
+                                label="Gestor Aprovação"
                                 formsm
                                 :model="form"
                                 :verifica="visualizar || aprovandoRh || aprovandoExtra || aprovando"
                                 :hash="hash_gestor"
-                                obrigatorio
-                                :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
+                                :obrigatorio="true"
                             >
                             </gestoraprovacao>
                         </div>
                     </fieldset>
-                    <fieldset v-if="form.colaborador_id">
-                        <legend>Informações Extras</legend>
+                    <fieldset v-if="form.colaborador_id" class="mybp-modal-secao">
+                        <legend>Informações extras</legend>
                         <div class="row">
                             <div class="col-12 col-md-12">
-                                <div class="form-group">
-                                    <label>Observação</label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Observação</label>
                                     <textarea
                                         class="form-control form-control-sm"
                                         v-model="form.obs_solicitante"
@@ -382,8 +469,8 @@
                         Esta solicitação ainda não foi aprovada ou reprovada pelo gestor!
                     </div>
 
-                    <fieldset v-if="visualizar || aprovando">
-                        <legend>Aprovação Gestor</legend>
+                    <fieldset v-if="visualizar || aprovando" class="mybp-modal-secao">
+                        <legend>Aprovação gestor</legend>
                         <div class="row">
                             <div
                                 v-if="!aprovando && form.gestor_aprovacao && (form.gestor_aprovacao.nome || typeof form.gestor_aprovacao === 'string')"
@@ -398,8 +485,8 @@
                             </div>
 
                             <div class="col-12">
-                                <div class="form-group">
-                                    <label>Observação</label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Observação</label>
                                     <textarea
                                         class="form-control form-control-sm"
                                         :disabled="!aprovando"
@@ -410,20 +497,26 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Status</label>
-                                    <select
-                                        :disabled="!aprovando"
-                                        v-model="form.status_aprovacao_gestor"
-                                        class="form-control form-control-sm validacampo"
-                                        onchange="valida_campo_vazio(this, 1)"
-                                        onblur="valida_campo_vazio(this, 1)"
-                                    >
-                                        <option value="">Selecione...</option>
-                                        <option value="aprovado">Aprovar</option>
-                                        <option value="reprovado">Reprovar</option>
-                                    </select>
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`mudacargo-status-gestor-${hash}`">
+                                        Status <span class="text-danger" v-if="aprovando">*</span>
+                                    </label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormStatusGestor"
+                                            instance-id="form-mudacargo-status-gestor"
+                                            :input-id="`mudacargo-status-gestor-${hash}`"
+                                            v-model="form.status_aprovacao_gestor"
+                                            :options="formStatusAprovacaoOpcoes"
+                                            :disabled="!aprovando"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-mudacargo-status-gestor')"
+                                            @select="limparComboboxInvalido('mudacargo-status-gestor-' + hash)"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -433,7 +526,7 @@
                         Esta solicitação ainda não foi aprovada ou reprovada pela {{ nomeAprovacaoExtra }}!
                     </div>
 
-                    <fieldset v-if="visualizar || aprovandoExtra">
+                    <fieldset v-if="visualizar || aprovandoExtra" class="mybp-modal-secao">
                         <div v-if="!temAprovacaoExtra" class="alert alert-info">
                             <i class="fa fa-info-circle"></i> Esta empresa não possui aprovação extra configurada.
                         </div>
@@ -445,8 +538,8 @@
                             </div>
 
                             <div class="col-12">
-                                <div class="form-group">
-                                    <label>Observação</label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Observação</label>
                                     <textarea
                                         class="form-control form-control-sm"
                                         :disabled="!aprovandoExtra"
@@ -457,20 +550,26 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Status</label>
-                                    <select
-                                        :disabled="!aprovandoExtra"
-                                        v-model="form.status_aprovacao_extra"
-                                        class="form-control form-control-sm validacampo"
-                                        onchange="valida_campo_vazio(this, 1)"
-                                        onblur="valida_campo_vazio(this, 1)"
-                                    >
-                                        <option value="">Selecione...</option>
-                                        <option value="aprovado">Aprovar</option>
-                                        <option value="reprovado">Reprovar</option>
-                                    </select>
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`mudacargo-status-extra-${hash}`">
+                                        Status <span class="text-danger" v-if="aprovandoExtra">*</span>
+                                    </label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormStatusExtra"
+                                            instance-id="form-mudacargo-status-extra"
+                                            :input-id="`mudacargo-status-extra-${hash}`"
+                                            v-model="form.status_aprovacao_extra"
+                                            :options="formStatusAprovacaoOpcoes"
+                                            :disabled="!aprovandoExtra"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-mudacargo-status-extra')"
+                                            @select="limparComboboxInvalido('mudacargo-status-extra-' + hash)"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -478,7 +577,7 @@
 
                     <div class="alert alert-warning" v-if="aprovandoRh">Esta solicitação ainda não foi aprovada ou reprovada!</div>
 
-                    <fieldset v-if="visualizar || aprovandoRh">
+                    <fieldset v-if="visualizar || aprovandoRh" class="mybp-modal-secao">
                         <legend>Aprovação RH</legend>
                         <div class="row">
                             <div v-if="!aprovandoRh && form.rh_aprovacao && (form.rh_aprovacao.nome || typeof form.rh_aprovacao === 'string')" class="col-12">
@@ -489,32 +588,38 @@
                             </div>
 
                             <div class="col-12">
-                                <div class="form-group">
-                                    <label>Observação</label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Observação</label>
                                     <textarea class="form-control form-control-sm" :disabled="!aprovandoRh" v-model="form.obs_rh" cols="5" rows="5"></textarea>
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Status</label>
-                                    <select
-                                        :disabled="!aprovandoRh"
-                                        v-model="form.status_aprovacao_rh"
-                                        class="form-control form-control-sm validacampo"
-                                        onchange="valida_campo_vazio(this, 1)"
-                                        onblur="valida_campo_vazio(this, 1)"
-                                    >
-                                        <option value="">Selecione...</option>
-                                        <option value="aprovado">Aprovar</option>
-                                        <option value="reprovado">Reprovar</option>
-                                    </select>
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`mudacargo-status-rh-${hash}`">
+                                        Status <span class="text-danger" v-if="aprovandoRh">*</span>
+                                    </label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormStatusRh"
+                                            instance-id="form-mudacargo-status-rh"
+                                            :input-id="`mudacargo-status-rh-${hash}`"
+                                            v-model="form.status_aprovacao_rh"
+                                            :options="formStatusAprovacaoOpcoes"
+                                            :disabled="!aprovandoRh"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-mudacargo-status-rh')"
+                                            @select="limparComboboxInvalido('mudacargo-status-rh-' + hash)"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </fieldset>
 
-                    <fieldset v-if="form.colaborador_id">
+                    <fieldset v-if="form.colaborador_id" class="mybp-modal-secao">
                         <legend>Anexos</legend>
                         <upload
                             :model="form.anexos"
@@ -741,78 +846,23 @@
                 </label>
             </div> -->
 
-            <!-- Cards Compactos -->
-            <div class="cards-lista" v-show="!controle.carregando && lista.length > 0">
-                <div class="solicitacao-card" v-for="item in lista" :key="item.id">
-                    <!-- Cabeçalho do Card -->
-                    <div class="card-header-row">
-                        <div class="card-left">
-                            <!-- <label class="checkbox-inline">
-                                <input type="checkbox"
-                                       class="custom-checkbox"
-                                       :value="item.id"
-                                       v-model="selecionados">
-                            </label> -->
-                            <span class="badge-id">#{{ item.id }}</span>
-                            <div class="colaborador-principal">
-                                <i class="fas fa-user-circle text-primary mr-1"></i>
-                                <strong>{{ item.colaborador ? item.colaborador.nome : '' }}</strong>
-                            </div>
-                            <div class="data-info ml-3">
-                                <i class="fas fa-calendar-plus text-muted" style="font-size: 0.75rem"></i>
-                                <small class="text-muted">{{ item.created_at }}</small>
-                                <span v-if="item.updated_at && item.updated_at !== item.created_at" class="mx-2 text-muted">|</span>
-                                <template v-if="item.updated_at && item.updated_at !== item.created_at">
-                                    <i class="fas fa-calendar-check text-info" style="font-size: 0.75rem"></i>
-                                    <small class="text-info">{{ item.updated_at }}</small>
-                                </template>
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+                <div class="mybp-card" v-for="item in lista" :key="item.id">
+                    <div class="mybp-card-header-row">
+                        <div class="mybp-card-left">
+                            <span class="mybp-badge-id">#{{ item.id }}</span>
+                            <div class="mybp-card-titulo">
+                                <strong>{{ tituloCardLista(item) }}</strong>
                             </div>
                         </div>
-                        <div class="card-right">
-                            <span
-                                class="status-badge"
-                                :class="{
-                                    'status-reprovado':
-                                        item.status_aprovacao_gestor === 'reprovado' ||
-                                        item.status_aprovacao_extra === 'reprovado' ||
-                                        item.status_aprovacao_rh === 'reprovado',
-                                    'status-aprovado':
-                                        item.status_aprovacao_rh === 'aprovado' ||
-                                        (item.status_aprovacao_gestor === 'aprovado' && item.status_aprovacao_rh === null && item.aprovado_via_script),
-                                    'status-aprovado-gestor':
-                                        item.status_aprovacao_gestor === 'aprovado' &&
-                                        item.status_aprovacao_rh === null &&
-                                        !item.aprovado_via_script &&
-                                        (!temAprovacaoExtra || item.status_aprovacao_extra === 'aprovado'),
-                                    'status-aprovado-extra':
-                                        temAprovacaoExtra &&
-                                        item.status_aprovacao_gestor === 'aprovado' &&
-                                        item.status_aprovacao_extra === 'aprovado' &&
-                                        !item.status_aprovacao_rh,
-                                    'status-pendente': !item.status_aprovacao_gestor
-                                }"
-                            >
-                                <span
-                                    v-if="
-                                        item.status_aprovacao_gestor === 'reprovado' ||
-                                        item.status_aprovacao_extra === 'reprovado' ||
-                                        item.status_aprovacao_rh === 'reprovado'
-                                    "
-                                >
-                                    <i class="fas fa-times-circle"></i> REPROVADO
-                                </span>
-                                <span v-else-if="item.status_aprovacao_rh === 'aprovado'"> <i class="fas fa-check-circle"></i> APROVADO RH </span>
-                                <span v-else-if="temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado' && !item.status_aprovacao_rh">
-                                    <i class="fas fa-check-circle"></i> APROVADO {{ nomeAprovacaoExtra.toUpperCase() }}
-                                </span>
-                                <span v-else-if="item.status_aprovacao_gestor === 'aprovado' && !item.status_aprovacao_rh">
-                                    <i class="fas fa-check-circle"></i> APROVADO GESTOR
-                                </span>
-                                <span v-else> <i class="fas fa-clock"></i> EM ABERTO </span>
-                            </span>
+                        <div class="mybp-card-right">
+                            <mybp-status-badge
+                                :variante="chaveStatusLista(item)"
+                                :texto="textoStatusLista(item)"
+                            />
                             <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
                                 <a
-                                    class="btn-actions-compact"
+                                    class="mybp-btn-acoes-compact"
                                     href="#"
                                     role="button"
                                     :id="`dropdownMenuLink_${item.id}`"
@@ -822,9 +872,8 @@
                                 >
                                     <i class="fas fa-ellipsis-v"></i>
                                 </a>
-
                                 <div
-                                    class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                    class="dropdown-menu mybp-dropdown-menu dropdown-menu-right"
                                     :class="{ show: isDropdownOpen(item.id) }"
                                     :aria-labelledby="`dropdownMenuLink_${item.id}`"
                                     @click="fecharDropdown"
@@ -836,9 +885,8 @@
                                         @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = true; aprovandoExtra = false; aprovandoRh = false; podeanexar = true; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
                                         v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor"
                                     >
-                                        Aprovação Gestor
+                                        <i class="fa fa-user-check mr-1"></i> Aprovação Gestor
                                     </a>
-
                                     <a
                                         class="dropdown-item"
                                         href="javascript://"
@@ -853,9 +901,8 @@
                                             !item.rh_aprovacao_id
                                         "
                                     >
-                                        {{ nomeAprovacaoExtra || 'Aprovação Extra' }}
+                                        <i class="fa fa-user-check mr-1"></i> {{ nomeAprovacaoExtra || 'Aprovação Extra' }}
                                     </a>
-
                                     <a
                                         class="dropdown-item"
                                         href="javascript://"
@@ -869,160 +916,64 @@
                                             aprovaRh
                                         "
                                     >
-                                        Aprovação Rh
+                                        <i class="fa fa-users mr-1"></i> Aprovação RH
                                     </a>
-
                                     <a
                                         class="dropdown-item"
                                         href="javascript://"
                                         title="Visualizar"
                                         @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = false; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
                                     >
-                                        Visualizar
+                                        <i class="fa fa-search mr-1"></i> Visualizar
                                     </a>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Detalhes do Card -->
-                    <div class="card-details-row">
-                        <div class="detail-item">
-                            <i class="fas fa-exchange-alt text-muted"></i>
-                            <span class="detail-label">Centro Custo:</span>
-                            <span class="detail-value">{{ item.mantem_centro_custo ? 'Não mudou' : 'Mudou' }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-briefcase text-muted"></i>
-                            <span class="detail-label">Cargo:</span>
-                            <span class="detail-value">{{ item.mantem_cargo ? 'Não mudou' : 'Mudou' }}</span>
-                        </div>
-                    </div>
-                    <div class="card-details-row">
-                        <div class="detail-item">
-                            <i class="fas fa-tasks text-muted"></i>
-                            <span class="detail-label">Função:</span>
-                            <span class="detail-value">{{ item.mantem_funcao ? 'Não mudou' : 'Mudou' }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-dollar-sign text-success"></i>
-                            <span class="detail-label">Salário:</span>
-                            <span class="detail-value">{{ item.mantem_salario ? 'Não mudou' : 'Mudou' }}</span>
-                        </div>
-                        <div class="detail-item" v-if="temFilial">
-                            <i class="fas fa-map-marker-alt text-muted"></i>
-                            <span class="detail-label">Lotação:</span>
-                            <span class="detail-value">{{ item.lotacao || 'Não informado' }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Fluxo de Aprovação -->
-                    <div class="card-aprovacao-row">
-                        <div class="fluxo-icons">
-                            <div class="fluxo-step">
-                                <i class="fas fa-check-circle text-success"></i>
-                                <div class="fluxo-info">
-                                    <small class="fluxo-etapa">Solicitante</small>
-                                    <small class="fluxo-aprovador text-success">
-                                        {{ item.solicitante.nome }}
-                                    </small>
-                                    <small class="fluxo-data">{{ item.created_at }}</small>
-                                </div>
+                    <div class="mybp-card-corpo" :class="classeBordaStatusLista(item)">
+                        <section class="mybp-card-secao">
+                            <div class="mybp-card-row">
+                                <mybp-card-campo
+                                    icon="fas fa-building"
+                                    label="Lotação"
+                                    :valor="item.lotacao || 'Não informado'"
+                                />
+                                <mybp-card-campo
+                                    icon="fas fa-sitemap"
+                                    label="Centro de custo"
+                                    :valor="centroCustoLista(item)"
+                                />
+                                <mybp-card-campo
+                                    icon="fas fa-exchange-alt"
+                                    label="Alterações"
+                                    :valor="cargoResumoLista(item)"
+                                    forte
+                                />
                             </div>
-                            <i class="fas fa-chevron-right text-muted mx-2"></i>
-                            <!-- Gestor -->
-                            <div class="fluxo-step">
-                                <i v-if="item.status_aprovacao_gestor === 'aprovado'" class="fas fa-check-circle text-success"></i>
-                                <i v-else-if="item.status_aprovacao_gestor === 'reprovado'" class="fas fa-times-circle text-danger"></i>
-                                <i v-else class="fas fa-clock text-muted"></i>
-                                <div class="fluxo-info">
-                                    <small class="fluxo-etapa">Gestor</small>
-                                    <small v-if="item.status_aprovacao_gestor === 'aprovado'" class="fluxo-aprovador text-success">
-                                        {{ item.gestor_aprovacao.nome || '' }}
-                                    </small>
-                                    <small v-else-if="item.status_aprovacao_gestor === 'reprovado'" class="fluxo-aprovador text-danger">
-                                        {{ (item.gestor_aprovacao && item.gestor_aprovacao.nome) || item.gestor_aprovacao || '' }}
-                                    </small>
-                                    <small v-else class="fluxo-status text-warning">Aguardando</small>
-                                    <small v-if="item.data_aprovacao_gestor" class="fluxo-data">{{ item.data_aprovacao_gestor }}</small>
-                                </div>
+                        </section>
+
+                        <section class="mybp-card-secao">
+                            <div class="mybp-card-row">
+                                <mybp-card-campo
+                                    icon="fas fa-user-edit"
+                                    label="Solicitante"
+                                    :valor="solicitanteLista(item)"
+                                />
+                                <mybp-card-campo
+                                    icon="fas fa-calendar-plus"
+                                    label="Datas"
+                                    :valor="datasLista(item)"
+                                />
                             </div>
+                        </section>
 
-                            <i class="fas fa-chevron-right text-muted mx-2"></i>
-
-                            <!-- Aprovação Extra (se configurada) -->
-                            <div class="fluxo-step" v-if="temAprovacaoExtra">
-                                <i v-if="item.status_aprovacao_gestor === 'reprovado'" class="fas fa-ban text-secondary"></i>
-                                <i v-else-if="item.status_aprovacao_extra === 'aprovado'" class="fas fa-check-circle text-success"></i>
-                                <i v-else-if="item.status_aprovacao_extra === 'reprovado'" class="fas fa-times-circle text-danger"></i>
-                                <i
-                                    v-else-if="item.status_aprovacao_gestor === 'aprovado' && !item.status_aprovacao_extra"
-                                    class="fas fa-clock text-warning"
-                                ></i>
-                                <i v-else class="fas fa-circle text-muted"></i>
-                                <div class="fluxo-info">
-                                    <small class="fluxo-etapa">{{ nomeAprovacaoExtra }}</small>
-                                    <small v-if="item.status_aprovacao_gestor === 'reprovado'" class="fluxo-status text-secondary"> Cancelada </small>
-                                    <small v-else-if="item.status_aprovacao_extra === 'aprovado'" class="fluxo-aprovador text-success">
-                                        {{ item.aprovacao_extra_nome || '' }}
-                                    </small>
-                                    <small v-else-if="item.status_aprovacao_extra === 'reprovado'" class="fluxo-aprovador text-danger">
-                                        {{ item.aprovacao_extra_nome || '' }}
-                                    </small>
-                                    <small v-else-if="item.status_aprovacao_gestor === 'aprovado'" class="fluxo-status text-warning"> Aguardando </small>
-                                    <small v-else class="fluxo-status">Pendente</small>
-                                    <small v-if="item.data_aprovacao_extra" class="fluxo-data">{{ item.data_aprovacao_extra }}</small>
-                                </div>
+                        <section class="mybp-card-secao mybp-card-secao--fluxo">
+                            <div class="mybp-card-secao__titulo">
+                                <i class="fas fa-project-diagram" aria-hidden="true"></i> Fluxo de aprovação
                             </div>
-
-                            <i class="fas fa-chevron-right text-muted mx-2" v-if="temAprovacaoExtra"></i>
-
-                            <!-- RH -->
-                            <div class="fluxo-step">
-                                <i
-                                    v-if="item.status_aprovacao_gestor === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')"
-                                    class="fas fa-ban text-secondary"
-                                ></i>
-                                <i v-else-if="item.status_aprovacao_rh === 'aprovado'" class="fas fa-check-circle text-success"></i>
-                                <i v-else-if="item.status_aprovacao_rh === 'reprovado'" class="fas fa-times-circle text-danger"></i>
-                                <i
-                                    v-else-if="
-                                        (temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') ||
-                                        (!temAprovacaoExtra && item.status_aprovacao_gestor === 'aprovado')
-                                    "
-                                    class="fas fa-clock text-warning"
-                                ></i>
-                                <i v-else class="fas fa-circle text-muted"></i>
-                                <div class="fluxo-info">
-                                    <small class="fluxo-etapa">RH</small>
-                                    <small
-                                        v-if="
-                                            item.status_aprovacao_gestor === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')
-                                        "
-                                        class="fluxo-status text-secondary"
-                                    >
-                                        Cancelada
-                                    </small>
-                                    <small v-else-if="item.status_aprovacao_rh === 'aprovado'" class="fluxo-aprovador text-success">
-                                        {{ item.rh_aprovacao.nome || '' }}
-                                    </small>
-                                    <small v-else-if="item.status_aprovacao_rh === 'reprovado'" class="fluxo-aprovador text-danger">
-                                        {{ (item.rh_aprovacao && item.rh_aprovacao.nome) || item.rh_aprovacao || '' }}
-                                    </small>
-                                    <small
-                                        v-else-if="
-                                            (temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') ||
-                                            (!temAprovacaoExtra && item.status_aprovacao_gestor === 'aprovado')
-                                        "
-                                        class="fluxo-status text-warning"
-                                    >
-                                        Aguardando
-                                    </small>
-                                    <small v-else class="fluxo-status">Pendente</small>
-                                    <small v-if="item.data_aprovacao_rh" class="fluxo-data">{{ item.data_aprovacao_rh }}</small>
-                                </div>
-                            </div>
-                        </div>
+                            <mybp-fluxo-aprovacao :steps="fluxoStepsLista(item)" />
+                        </section>
                     </div>
                 </div>
             </div>
@@ -1051,9 +1002,14 @@ import configuracoes from '../../../mixins/Configuracoes'
 import DateRangeFilter from '../../DateRangeFilter'
 import FiltroListagem from '../../ui/FiltroListagem.vue'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete'
+import MybpCardCampo from '../../ui/MybpCardCampo.vue'
+import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
+import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
+import ComboboxValidation from '../../../mixins/ComboboxValidation'
+import { buildOpcoesStatusFluxoAprovacao } from '../../../utils/opcoesStatusFluxoAprovacao'
 
 export default {
-    mixins: [ExportacaoMixin, Utils, configuracoes],
+    mixins: [ExportacaoMixin, Utils, configuracoes, ComboboxValidation],
     inject: {
         atualizarUrlMovimentacao: {
             default: () => () => {}
@@ -1065,7 +1021,10 @@ export default {
         gestoraprovacao,
         Upload,
         FiltroListagem,
-        ComboboxAutoComplete
+        ComboboxAutoComplete,
+        MybpCardCampo,
+        MybpFluxoAprovacao,
+        MybpStatusBadge
     },
     data() {
         return {
@@ -1185,6 +1144,7 @@ export default {
             centro_custos: [],
             filiais_centro_custos: [],
             lista_ccs: null,
+            formLotacaoCnpjNovo: '',
 
             urlPaginacao: `${URL_ADMIN}/planejamento/movimentacao/mudanca-cargo/atualizar`,
             controle: {
@@ -1281,6 +1241,232 @@ export default {
         centroCustoTemFilialNovo() {
             return this.temFilial && this.centroCustoSelecionadoNovo.length > 0
         },
+        labelLotacaoAtual() {
+            if ([undefined, null, ''].includes(this.form.anterior_centro_custo_id)) {
+                return ''
+            }
+
+            const formatLotacao = (nomeFantasia, razaoSocial, cnpj) => {
+                const nome = String(nomeFantasia || razaoSocial || '').trim()
+                const doc = String(cnpj || '').trim()
+                if (!nome && !doc) return ''
+                if (!nome) return doc
+                if (!doc) return nome
+                return `${nome} - ${doc}`
+            }
+
+            const ehFilial =
+                this.form.anterior_filial === true ||
+                this.form.anterior_filial === 1 ||
+                this.form.anterior_filial === '1'
+            const filiaisAuth =
+                (this.authconfiguracao && this.authconfiguracao.cnpjs && this.authconfiguracao.cnpjs.filiais) || []
+
+            if (ehFilial && this.form.anterior_centro_custo_filial_id) {
+                const ccfId = String(this.form.anterior_centro_custo_filial_id)
+                const vinculo = _.find(this.centroCustoSelecionado, (v) => String(v.id) === ccfId)
+                const filialRel = vinculo && (vinculo.filial || vinculo.Filial)
+                if (filialRel) {
+                    let viaRel = formatLotacao(filialRel.nome_fantasia, filialRel.razao_social, filialRel.cnpj)
+                    if (viaRel && String(filialRel.cnpj || '').trim()) return viaRel
+
+                    const clienteFilialId = vinculo.cliente_filial_id
+                    if (clienteFilialId != null && clienteFilialId !== '') {
+                        const cf = _.find(filiaisAuth, { id: clienteFilialId })
+                        if (cf) {
+                            const viaAuth = formatLotacao(cf.nome_fantasia || cf.nome_fntasia, cf.razao_social, cf.cnpj)
+                            if (viaAuth) return viaAuth
+                        }
+                    }
+                    if (viaRel) return viaRel
+                }
+            }
+
+            if (this.lista_ccs && this.lista_ccs.cnpjs) {
+                const viaLista = this.resolverLabelLotacaoViaListaCcs(
+                    this.form.anterior_centro_custo_id,
+                    ehFilial ? this.form.anterior_centro_custo_filial_id : null,
+                    ehFilial
+                )
+                if (viaLista) return viaLista
+            }
+
+            const matrizAuth = this.authconfiguracao && this.authconfiguracao.cnpjs && this.authconfiguracao.cnpjs.matriz
+            if (matrizAuth) {
+                const viaMatriz = formatLotacao(matrizAuth.nome_fantasia, matrizAuth.razao_social, matrizAuth.cnpj)
+                if (viaMatriz) return viaMatriz
+            }
+
+            return ''
+        },
+        formListaCentroCustoLotacaoNova() {
+            if (!this.lista_ccs) return []
+            if (this.temFilial) {
+                if (!this.formLotacaoCnpjNovo) return []
+                return this.lista_ccs.centros_custos[this.formLotacaoCnpjNovo] || []
+            }
+            const keys = Object.keys(this.lista_ccs.centros_custos || {})
+            return keys.length ? this.lista_ccs.centros_custos[keys[0]] || [] : []
+        },
+        formLotacaoNovaOpcoes() {
+            const opts = [{ value: '', label: 'Selecione a lotação...' }]
+            if (!this.lista_ccs || !this.lista_ccs.cnpjs) return opts
+            Object.keys(this.lista_ccs.cnpjs).forEach((key) => {
+                const item = this.lista_ccs.cnpjs[key]
+                opts.push({
+                    value: key,
+                    label: `${item.nome_fantasia} - ${item.cnpj}`,
+                    meta: item.matriz ? 'Matriz' : 'Filial'
+                })
+            })
+            return opts
+        },
+        formCentroCustoNovoOpcoes() {
+            const opts = [{ value: '', label: 'Selecione...' }]
+            ;(this.formListaCentroCustoLotacaoNova || []).forEach((item) => {
+                const value = item.matriz ? item.id : item.filial_id
+                if (value == null || value === '') return
+                opts.push({
+                    value: String(value),
+                    label: item.label,
+                    meta: item.matriz ? 'Matriz' : 'Filial'
+                })
+            })
+            return opts
+        },
+        formCentroCustoNovoCombo: {
+            get() {
+                if (
+                    this.form.novo_filial === true ||
+                    this.form.novo_filial === 1 ||
+                    this.form.novo_filial === '1'
+                ) {
+                    return this.form.novo_centro_custo_filial_id != null &&
+                        this.form.novo_centro_custo_filial_id !== ''
+                        ? String(this.form.novo_centro_custo_filial_id)
+                        : ''
+                }
+                return this.form.novo_centro_custo_id != null && this.form.novo_centro_custo_id !== ''
+                    ? String(this.form.novo_centro_custo_id)
+                    : ''
+            },
+            set(valor) {
+                if (valor == null || valor === '') {
+                    this.limparFormCentroCustoNovo()
+                    return
+                }
+                this.aplicarCentroCustoNovoPorValorCombo(String(valor))
+            }
+        },
+        formSimNaoOpcoes() {
+            return [
+                { value: '1', label: 'Sim' },
+                { value: '0', label: 'Não' }
+            ]
+        },
+        formStatusAprovacaoOpcoes() {
+            return [
+                { value: '', label: 'Selecione...' },
+                { value: 'aprovado', label: 'Aprovar' },
+                { value: 'reprovado', label: 'Reprovar' }
+            ]
+        },
+        formMatrizFilialOpcoes() {
+            return [
+                { value: '0', label: 'Matriz' },
+                { value: '1', label: 'Filial' }
+            ]
+        },
+        formAnteriorCcOpcoes() {
+            const opts = [{ value: '', label: 'Selecione...' }]
+            ;(this.centro_custos || []).forEach((item) => {
+                if (item == null || item.id == null || item.id === '') return
+                opts.push({ value: String(item.id), label: item.label || String(item.id) })
+            })
+            return opts
+        },
+        formAnteriorFilialOpcoes() {
+            const opts = [{ value: '', label: 'Selecione...' }]
+            ;(this.centroCustoSelecionado || []).forEach((item) => {
+                if (item == null || item.id == null || item.id === '') return
+                const nome = item.filial?.razao_social || item.filial?.nome_fantasia || item.label || String(item.id)
+                opts.push({ value: String(item.id), label: nome })
+            })
+            return opts
+        },
+        formAnteriorCcCombo: {
+            get() {
+                return this.form.anterior_centro_custo_id != null && this.form.anterior_centro_custo_id !== ''
+                    ? String(this.form.anterior_centro_custo_id)
+                    : ''
+            },
+            set(valor) {
+                this.form.anterior_centro_custo_id = valor == null || valor === '' ? '' : String(valor)
+            }
+        },
+        formAnteriorFilialCombo: {
+            get() {
+                return this.form.anterior_filial === true ||
+                    this.form.anterior_filial === 1 ||
+                    this.form.anterior_filial === '1'
+                    ? '1'
+                    : '0'
+            },
+            set(valor) {
+                this.form.anterior_filial = valor === true || valor === 1 || valor === '1'
+            }
+        },
+        formAnteriorFilialIdCombo: {
+            get() {
+                return this.form.anterior_centro_custo_filial_id != null &&
+                    this.form.anterior_centro_custo_filial_id !== ''
+                    ? String(this.form.anterior_centro_custo_filial_id)
+                    : ''
+            },
+            set(valor) {
+                this.form.anterior_centro_custo_filial_id = valor == null || valor === '' ? '' : String(valor)
+            }
+        },
+        formMantemCcCombo: {
+            get() {
+                return this.boolToCombo(this.form.mantem_centro_custo)
+            },
+            set(valor) {
+                this.form.mantem_centro_custo = this.comboToBool(valor)
+            }
+        },
+        formMantemFuncaoCombo: {
+            get() {
+                return this.boolToCombo(this.form.mantem_funcao)
+            },
+            set(valor) {
+                this.form.mantem_funcao = this.comboToBool(valor)
+            }
+        },
+        formTreinamentoCombo: {
+            get() {
+                return this.boolToCombo(this.form.treinamento_funcao)
+            },
+            set(valor) {
+                this.form.treinamento_funcao = this.comboToBool(valor)
+            }
+        },
+        formMantemCargoCombo: {
+            get() {
+                return this.boolToCombo(this.form.mantem_cargo)
+            },
+            set(valor) {
+                this.form.mantem_cargo = this.comboToBool(valor)
+            }
+        },
+        formMantemSalarioCombo: {
+            get() {
+                return this.boolToCombo(this.form.mantem_salario)
+            },
+            set(valor) {
+                this.form.mantem_salario = this.comboToBool(valor)
+            }
+        },
         paramsExport() {
             return this.controle.dados
         },
@@ -1345,22 +1531,10 @@ export default {
             return opts
         },
         opcoesStatus() {
-            const opts = [
-                { value: '', label: 'Todos os status' },
-                { value: 'aberto', label: 'Em aberto' },
-                { value: 'aprovado_gestor', label: 'Aprovado Gestor' }
-            ]
-            if (this.temAprovacaoExtra) {
-                opts.push({
-                    value: 'aprovado_extra',
-                    label: `Aprovado ${this.nomeAprovacaoExtra || 'Extra'}`
-                })
-            }
-            opts.push(
-                { value: 'aprovado_rh', label: 'Aprovado Rh' },
-                { value: 'reprovado', label: 'Reprovado' }
-            )
-            return opts
+            return buildOpcoesStatusFluxoAprovacao({
+                temAprovacaoExtra: this.temAprovacaoExtra,
+                nomeAprovacaoExtra: this.nomeAprovacaoExtra
+            })
         },
         opcoesOrdenacao() {
             return [
@@ -1388,6 +1562,141 @@ export default {
             }
             const key = `mov_mudacargo:${itemId}`
             this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        tituloCardLista(item) {
+            return item?.colaborador?.nome || 'Colaborador não informado'
+        },
+        centroCustoLista(item) {
+            if (!item) return 'Não informado'
+            if (item.mantem_centro_custo) {
+                return 'Mantém centro de custo atual'
+            }
+            return 'Alteração de centro de custo'
+        },
+        cargoResumoLista(item) {
+            if (!item) return 'Não informado'
+            const partes = []
+            if (!item.mantem_centro_custo) partes.push('CC')
+            if (!item.mantem_cargo) partes.push('Cargo')
+            if (!item.mantem_funcao) partes.push('Função')
+            if (!item.mantem_salario) partes.push('Salário')
+            if (!partes.length) return 'Sem alteração registrada'
+            return partes.join(' · ')
+        },
+        solicitanteLista(item) {
+            return item?.solicitante?.nome || 'Não informado'
+        },
+        datasLista(item) {
+            if (!item?.created_at) return 'Não informado'
+            if (item.updated_at && item.updated_at !== item.created_at) {
+                return `${item.created_at} · atualizado ${item.updated_at}`
+            }
+            return item.created_at
+        },
+        chaveStatusLista(item) {
+            if (!item) return 'aberto'
+            if (
+                item.status_aprovacao_gestor === 'reprovado' ||
+                item.status_aprovacao_extra === 'reprovado' ||
+                item.status_aprovacao_rh === 'reprovado'
+            ) {
+                return 'reprovado'
+            }
+            if (item.status_aprovacao_rh === 'aprovado') return 'rh'
+            if (this.temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') return 'extra'
+            if (item.status_aprovacao_gestor === 'aprovado') return 'gestor'
+            return 'aberto'
+        },
+        classeBordaStatusLista(item) {
+            return `mybp-card-corpo--${this.chaveStatusLista(item)}`
+        },
+        textoStatusLista(item) {
+            const chave = this.chaveStatusLista(item)
+            if (chave === 'reprovado') return 'Reprovado'
+            if (chave === 'rh') return 'Aprovado RH'
+            if (chave === 'extra') return `Aprovado ${this.nomeAprovacaoExtra || 'Extra'}`
+            if (chave === 'gestor') return 'Aprovado Gestor'
+            return 'Em aberto'
+        },
+        fluxoStepsLista(item) {
+            if (!item) return []
+            const steps = [
+                {
+                    key: 'solicitante',
+                    label: 'Solicitante',
+                    status: 'aprovado',
+                    nome: item.solicitante?.nome,
+                    data: item.created_at
+                },
+                {
+                    key: 'gestor',
+                    label: 'Gestor',
+                    status:
+                        item.status_aprovacao_gestor === 'aprovado'
+                            ? 'aprovado'
+                            : item.status_aprovacao_gestor === 'reprovado'
+                              ? 'reprovado'
+                              : 'aguardando',
+                    nome: item.gestor_aprovacao?.nome,
+                    data: item.data_aprovacao_gestor
+                }
+            ]
+
+            if (this.temAprovacaoExtra) {
+                let statusExtra = 'pendente'
+                if (item.status_aprovacao_gestor === 'reprovado') {
+                    statusExtra = 'cancelado'
+                } else if (item.status_aprovacao_extra === 'aprovado') {
+                    statusExtra = 'aprovado'
+                } else if (item.status_aprovacao_extra === 'reprovado') {
+                    statusExtra = 'reprovado'
+                } else if (item.status_aprovacao_gestor === 'aprovado') {
+                    statusExtra = 'aguardando'
+                }
+                steps.push({
+                    key: 'extra',
+                    label: this.nomeAprovacaoExtra || 'Extra',
+                    status: statusExtra,
+                    nome: item.aprovacao_extra_nome,
+                    data: item.data_aprovacao_extra,
+                    statusTexto: statusExtra === 'cancelado' ? 'Cancelada' : undefined
+                })
+            }
+
+            let statusRh = 'pendente'
+            if (
+                item.status_aprovacao_gestor === 'reprovado' ||
+                (this.temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')
+            ) {
+                statusRh = 'cancelado'
+            } else if (item.status_aprovacao_rh === 'aprovado') {
+                statusRh = 'aprovado'
+            } else if (item.status_aprovacao_rh === 'reprovado') {
+                statusRh = 'reprovado'
+            } else if (
+                (this.temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') ||
+                (!this.temAprovacaoExtra && item.status_aprovacao_gestor === 'aprovado')
+            ) {
+                statusRh = 'aguardando'
+            }
+
+            steps.push({
+                key: 'rh',
+                label: 'RH',
+                status: statusRh,
+                nome: item.rh_aprovacao?.nome,
+                data: item.data_aprovacao_rh,
+                statusTexto: statusRh === 'cancelado' ? 'Cancelada' : undefined
+            })
+
+            return steps
+        },
+        sovizualiza(soVisualizar) {
+            if (soVisualizar) {
+                setTimeout(() => {
+                    $(`#${this.hash} .mybp-modal-form :input`).attr('disabled', 'true')
+                }, 100)
+            }
         },
         isDropdownOpen(itemId) {
             return this.dropdownAbertoKey === `mov_mudacargo:${itemId}`
@@ -1432,10 +1741,120 @@ export default {
             this.form.novo_filial = false
             this.form.novo_centro_custo_filial_id = ''
         },
-        changeMantemCentroDeCusto() {
-            this.form.novo_centro_custo_filial_id = ''
+        boolToCombo(valor) {
+            return valor === true || valor === 1 || valor === '1' ? '1' : '0'
+        },
+        comboToBool(valor) {
+            return valor === true || valor === 1 || valor === '1'
+        },
+        limparFormCentroCustoNovo() {
             this.form.novo_centro_custo_id = ''
-            this.form.novo_filial = ''
+            this.form.novo_filial = false
+            this.form.novo_centro_custo_filial_id = ''
+        },
+        onSelectFormLotacaoNova() {
+            this.limparFormCentroCustoNovo()
+            this.limparComboboxInvalido(`mudacargo-lotacao-nova-${this.hash}`)
+        },
+        aplicarCentroCustoNovoPorValorCombo(valor) {
+            const lista = this.formListaCentroCustoLotacaoNova || []
+            const item = _.find(lista, (cc) => {
+                const chave = cc.matriz ? String(cc.id) : String(cc.filial_id)
+                return chave === String(valor)
+            })
+            if (!item) {
+                this.limparFormCentroCustoNovo()
+                return
+            }
+            this.form.novo_centro_custo_id = String(item.id)
+            if (item.matriz) {
+                this.form.novo_filial = false
+                this.form.novo_centro_custo_filial_id = ''
+            } else {
+                this.form.novo_filial = true
+                this.form.novo_centro_custo_filial_id = String(item.filial_id)
+            }
+        },
+        onSelectFormCentroCustoNovo() {
+            if (this.formCentroCustoNovoCombo) {
+                this.aplicarCentroCustoNovoPorValorCombo(this.formCentroCustoNovoCombo)
+            } else {
+                this.limparFormCentroCustoNovo()
+            }
+            this.limparComboboxInvalido(`mudacargo-cc-novo-${this.hash}`)
+        },
+        resolverLabelLotacaoViaListaCcs(centroCustoId, centroCustoFilialId, ehFilial) {
+            if (!this.lista_ccs || !this.lista_ccs.centros_custos || !this.lista_ccs.cnpjs) return ''
+            const ccId = centroCustoId != null ? String(centroCustoId) : ''
+            const ccfId = centroCustoFilialId != null ? String(centroCustoFilialId) : ''
+            let cnpjKey = ''
+            Object.keys(this.lista_ccs.centros_custos).some((key) => {
+                const lista = this.lista_ccs.centros_custos[key] || []
+                const encontrado = _.find(lista, (item) => {
+                    if (ehFilial) return String(item.filial_id) === ccfId
+                    return item.matriz && String(item.id) === ccId
+                })
+                if (encontrado) {
+                    cnpjKey = key
+                    return true
+                }
+                return false
+            })
+            if (!cnpjKey || !this.lista_ccs.cnpjs[cnpjKey]) return ''
+            const info = this.lista_ccs.cnpjs[cnpjKey]
+            const nome = String(info.nome_fantasia || info.razao_social || '').trim()
+            const doc = String(info.cnpj || '').trim()
+            if (!nome && !doc) return ''
+            if (!nome) return doc
+            if (!doc) return nome
+            return `${nome} - ${doc}`
+        },
+        resolverLotacaoNovaDoForm() {
+            this.formLotacaoCnpjNovo = ''
+            if (this.form.mantem_centro_custo || !this.lista_ccs || !this.lista_ccs.centros_custos) {
+                if (!this.temFilial && !this.form.mantem_centro_custo && this.lista_ccs?.centros_custos) {
+                    const keys = Object.keys(this.lista_ccs.centros_custos || {})
+                    this.formLotacaoCnpjNovo = keys[0] || ''
+                }
+                return
+            }
+
+            const ehFilial =
+                this.form.novo_filial === true ||
+                this.form.novo_filial === 1 ||
+                this.form.novo_filial === '1'
+            const ccId = this.form.novo_centro_custo_id != null ? String(this.form.novo_centro_custo_id) : ''
+            const ccfId =
+                this.form.novo_centro_custo_filial_id != null
+                    ? String(this.form.novo_centro_custo_filial_id)
+                    : ''
+
+            if (!this.temFilial) {
+                const keys = Object.keys(this.lista_ccs.centros_custos || {})
+                this.formLotacaoCnpjNovo = keys[0] || ''
+                return
+            }
+
+            Object.keys(this.lista_ccs.centros_custos).some((cnpjKey) => {
+                const lista = this.lista_ccs.centros_custos[cnpjKey] || []
+                const encontrado = _.find(lista, (item) => {
+                    if (ehFilial) return String(item.filial_id) === ccfId
+                    return item.matriz && String(item.id) === ccId
+                })
+                if (encontrado) {
+                    this.formLotacaoCnpjNovo = cnpjKey
+                    return true
+                }
+                return false
+            })
+        },
+        changeMantemCentroDeCusto() {
+            this.limparFormCentroCustoNovo()
+            this.formLotacaoCnpjNovo = ''
+            if (!this.form.mantem_centro_custo && !this.temFilial && this.lista_ccs?.centros_custos) {
+                const keys = Object.keys(this.lista_ccs.centros_custos || {})
+                this.formLotacaoCnpjNovo = keys[0] || ''
+            }
         },
         changeMantemFuncao() {
             this.form.nova_funcao = ''
@@ -1587,6 +2006,7 @@ export default {
 
             this.tituloJanela = 'Solicitação de Mudança de Cargo'
             this.form = _.cloneDeep(this.formDefault) //copia
+            this.formLotacaoCnpjNovo = ''
             formReset()
             setupCampo()
             this.listaCentroCusto()
@@ -1597,13 +2017,22 @@ export default {
                 return true
             }
 
-            if (!this.form.treinamento_data_inicio || this.form.treinamento_data_inicio.trim() === '') {
-                mostraErro('', 'A data de início do treinamento é obrigatória')
+            const inicioId = `mudacargo-trein-inicio-${this.hash}`
+            const fimId = `mudacargo-trein-fim-${this.hash}`
+
+            if (
+                !this.exigirCampoData(this.form.treinamento_data_inicio, inicioId, {
+                    toastMsg: 'A data de início do treinamento é obrigatória'
+                })
+            ) {
                 return false
             }
 
-            if (!this.form.treinamento_data_fim || this.form.treinamento_data_fim.trim() === '') {
-                mostraErro('', 'A data de fim do treinamento é obrigatória')
+            if (
+                !this.exigirCampoData(this.form.treinamento_data_fim, fimId, {
+                    toastMsg: 'A data de fim do treinamento é obrigatória'
+                })
+            ) {
                 return false
             }
 
@@ -1636,23 +2065,7 @@ export default {
             return true
         },
         async cadastrar() {
-            if (this.form.colaborador_id === '') {
-                valida_campo_vazio($(`#colaborador_${this.hash}`), 1)
-                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur')
-                this.resetaCampoColaborador()
-                return false
-            }
-
-            if (this.form.gestor_id === '') {
-                valida_campo_vazio($(`#gestor_${this.hash_gestor}`), 1)
-                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo GESTOR não pode ficar vazio')
-                return false
-            }
-
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
+            if (!this.validarCamposSolicitacao()) {
                 return false
             }
 
@@ -1661,7 +2074,6 @@ export default {
                 return false
             }
 
-            // Validações de treinamento
             if (!this.validarTreinamento()) {
                 return false
             }
@@ -1676,6 +2088,60 @@ export default {
             } finally {
                 this.preload = false
             }
+        },
+
+        validarCamposSolicitacao() {
+            const bloqueados = this.visualizar || this.aprovando || this.aprovandoExtra || this.aprovandoRh
+            if (bloqueados) {
+                return true
+            }
+
+            if (!this.form.colaborador_id) {
+                valida_campo_vazio($(`#colaborador_${this.hash}`), 1)
+                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur')
+                this.resetaCampoColaborador()
+                return false
+            }
+
+            if (!this.form.gestor_id) {
+                valida_campo_vazio($(`#gestor_${this.hash_gestor}`), 1)
+                $(`#gestor_${this.hash_gestor}`).focus().trigger('blur')
+                mostraErro('', 'Campo GESTOR não pode ficar vazio')
+                return false
+            }
+
+            if (!this.form.mantem_centro_custo) {
+                if (this.temFilial) {
+                    if (
+                        !this.exigirCombobox(this.formLotacaoCnpjNovo, `mudacargo-lotacao-nova-${this.hash}`, {
+                            toastMsg: 'Selecione a lotação'
+                        })
+                    ) {
+                        return false
+                    }
+                }
+                if (
+                    !this.exigirCombobox(
+                        this.form.novo_centro_custo_id || this.formCentroCustoNovoCombo,
+                        `mudacargo-cc-novo-${this.hash}`,
+                        { toastMsg: 'Selecione o novo centro de custo' }
+                    )
+                ) {
+                    return false
+                }
+                if (this.form.novo_filial && !this.form.novo_centro_custo_filial_id) {
+                    mostraErro('', 'Centro de custo de filial inválido')
+                    return false
+                }
+            }
+
+            if (!this.form.mantem_cargo && !this.form.novo_cargo_id) {
+                valida_campo_vazio($(`#novo_cargo_${this.hash}`), 1)
+                mostraErro('', 'Campo NOVO CARGO não pode ficar vazio')
+                return false
+            }
+
+            return this.validarInputsAtivosVisiveis(this.hash)
         },
 
         async formOpen(id) {
@@ -1701,6 +2167,30 @@ export default {
                 Object.assign(this.form, data)
                 await this.listaCentroCusto()
 
+                this.form.mantem_centro_custo = !!(
+                    data.mantem_centro_custo === true ||
+                    data.mantem_centro_custo === 1 ||
+                    data.mantem_centro_custo === '1'
+                )
+                this.form.novo_filial = !!(
+                    data.novo_filial === true || data.novo_filial === 1 || data.novo_filial === '1'
+                )
+                if (data.novo_centro_custo_id != null && data.novo_centro_custo_id !== '') {
+                    this.form.novo_centro_custo_id = String(data.novo_centro_custo_id)
+                } else {
+                    this.form.novo_centro_custo_id = ''
+                }
+                if (
+                    this.form.novo_filial &&
+                    data.novo_centro_custo_filial_id != null &&
+                    data.novo_centro_custo_filial_id !== ''
+                ) {
+                    this.form.novo_centro_custo_filial_id = String(data.novo_centro_custo_filial_id)
+                } else {
+                    this.form.novo_centro_custo_filial_id = ''
+                }
+                this.resolverLotacaoNovaDoForm()
+
                 this.tituloJanela = `#${id} Solicitação de Mudança de Cargo`
                 this.form.status_aprovacao_gestor = data.status_aprovacao_gestor ?? ''
                 this.form.status_aprovacao_extra = data.status_aprovacao_extra ?? ''
@@ -1710,6 +2200,9 @@ export default {
                 this.form.obs_rh = data.obs_rh
                 this.form.aprovacao_extra_nome = data.aprovacao_extra?.nome ?? ''
                 this.form.data_aprovacao_extra = data.data_aprovacao_extra ?? ''
+                this.sovizualiza(
+                    this.visualizar && !this.aprovando && !this.aprovandoExtra && !this.aprovandoRh
+                )
             } catch {
                 // Erro tratado pelo interceptor ou feedback visual
             } finally {
@@ -1729,6 +2222,14 @@ export default {
             this.$refs?.componente?.buscar?.()
         },
         async aprovarGestor() {
+            const statusId = `mudacargo-status-gestor-${this.hash}`
+            if (
+                !this.exigirCombobox(this.form.status_aprovacao_gestor, statusId, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
+            }
             if (!this.validarFormularioAprovacao() || !this.validarTreinamento()) return
 
             this.preload = true
@@ -1746,6 +2247,14 @@ export default {
             }
         },
         async aprovarExtra() {
+            const statusId = `mudacargo-status-extra-${this.hash}`
+            if (
+                !this.exigirCombobox(this.form.status_aprovacao_extra, statusId, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
+            }
             if (!this.validarFormularioAprovacao() || !this.validarTreinamento()) return
 
             this.preload = true
@@ -1765,6 +2274,14 @@ export default {
             }
         },
         async aprovarRh() {
+            const statusId = `mudacargo-status-rh-${this.hash}`
+            if (
+                !this.exigirCombobox(this.form.status_aprovacao_rh, statusId, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
+            }
             if (!this.validarFormularioAprovacao()) return
 
             this.preload = true
@@ -1876,7 +2393,20 @@ export default {
                 'mudacargo-cnpj': 'comboFiltroCnpj',
                 'mudacargo-cc': 'comboFiltroCc',
                 'mudacargo-ordenacao': 'comboFiltroOrdenacao',
-                'mudacargo-pages': 'comboFiltroPages'
+                'mudacargo-pages': 'comboFiltroPages',
+                'form-mudacargo-lotacao-nova': 'comboFormLotacaoNova',
+                'form-mudacargo-cc-novo': 'comboFormCcNovo',
+                'form-mudacargo-cc-atual': 'comboFormCcAtual',
+                'form-mudacargo-cnpj-atual': 'comboFormCnpjAtual',
+                'form-mudacargo-filial-atual': 'comboFormFilialAtual',
+                'form-mudacargo-mantem-cc': 'comboFormMantemCc',
+                'form-mudacargo-mantem-funcao': 'comboFormMantemFuncao',
+                'form-mudacargo-treinamento': 'comboFormTreinamento',
+                'form-mudacargo-mantem-cargo': 'comboFormMantemCargo',
+                'form-mudacargo-mantem-salario': 'comboFormMantemSalario',
+                'form-mudacargo-status-gestor': 'comboFormStatusGestor',
+                'form-mudacargo-status-extra': 'comboFormStatusExtra',
+                'form-mudacargo-status-rh': 'comboFormStatusRh'
             }
             Object.keys(mapa).forEach((id) => {
                 if (id === excetoId) return
@@ -1896,335 +2426,5 @@ export default {
     color: #0d6efd;
     text-transform: uppercase;
     letter-spacing: 0.02em;
-}
-
-/* Container de Cards */
-.cards-lista {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-/* Checkbox Geral */
-.checkbox-geral-container {
-    background: #fff;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e9ecef;
-}
-
-.checkbox-geral-label {
-    display: flex;
-    align-items: center;
-    margin: 0;
-    cursor: pointer;
-    font-weight: 500;
-    color: #495057;
-}
-
-/* Card Individual */
-.solicitacao-card {
-    background: #fff;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 1rem;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.solicitacao-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
-    border-color: #007bff;
-    transform: translateY(-2px);
-}
-
-/* Header do Card */
-.card-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid #f1f3f5;
-    margin-bottom: 0.75rem;
-}
-
-.card-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex: 1;
-    overflow: hidden;
-}
-
-.data-info {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.card-right {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.checkbox-inline {
-    margin: 0;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-}
-
-.custom-checkbox {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: #174257;
-}
-
-.badge-id {
-    background: #174257;
-    color: white;
-    padding: 0.25rem 0.625rem;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 0.75rem;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.colaborador-principal {
-    display: flex;
-    align-items: center;
-    font-size: 0.938rem;
-    color: #212529;
-    overflow: hidden;
-}
-
-.colaborador-principal strong {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Status Badge */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    white-space: nowrap;
-}
-
-.status-reprovado {
-    background: #dc3545;
-    color: white;
-}
-
-.status-aprovado {
-    background: #28a745;
-    color: white;
-}
-
-.status-aprovado-gestor {
-    background: #ffc107;
-    color: #212529;
-}
-
-.status-aprovado-extra {
-    background: #17a2b8;
-    color: white;
-}
-
-.status-pendente {
-    background: #e9ecef;
-    color: #495057;
-}
-
-/* Botão de ações compacto */
-.btn-actions-compact {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    color: #495057;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    flex-shrink: 0;
-}
-
-.btn-actions-compact:hover {
-    background: #007bff;
-    border-color: #007bff;
-    color: white;
-    transform: rotate(90deg);
-}
-
-/* Detalhes do Card */
-.card-details-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid #f1f3f5;
-    margin-bottom: 0.75rem;
-}
-
-.detail-item {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.813rem;
-    min-width: 0;
-}
-
-.detail-item i {
-    flex-shrink: 0;
-    font-size: 0.875rem;
-}
-
-.detail-label {
-    font-weight: 500;
-    color: #6c757d;
-    white-space: nowrap;
-}
-
-.detail-value {
-    color: #212529;
-    font-weight: 400;
-}
-
-/* Fluxo de Aprovação */
-.card-aprovacao-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-}
-
-.fluxo-label {
-    font-size: 0.813rem;
-    font-weight: 500;
-    color: #495057;
-    white-space: nowrap;
-    padding-top: 0.25rem;
-}
-
-.fluxo-icons {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    flex: 1;
-}
-
-.fluxo-step {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: #f8f9fa;
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    border: 1px solid #e9ecef;
-}
-
-.fluxo-step i {
-    font-size: 1.125rem;
-    margin-top: 0.125rem;
-    flex-shrink: 0;
-}
-
-.fluxo-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-    min-width: 0;
-}
-
-.fluxo-etapa {
-    font-size: 0.688rem;
-    font-weight: 600;
-    color: #495057;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-}
-
-.fluxo-aprovador {
-    font-size: 0.75rem;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.fluxo-status {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: #6c757d;
-}
-
-.fluxo-data {
-    font-size: 0.688rem;
-    color: #6c757d;
-    white-space: nowrap;
-}
-
-/* Dropdown */
-.dropdown-menu-custom {
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border: none;
-    padding: 0.5rem 0;
-}
-
-.dropdown-menu-custom .dropdown-item {
-    padding: 0.625rem 1.25rem;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-}
-
-.dropdown-menu-custom .dropdown-item:hover {
-    background: #f8f9fa;
-    color: #007bff;
-    padding-left: 1.5rem;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-    .card-header-row {
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-
-    .card-left {
-        width: 100%;
-    }
-
-    .card-right {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .card-details-row {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .card-aprovacao-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
 }
 </style>

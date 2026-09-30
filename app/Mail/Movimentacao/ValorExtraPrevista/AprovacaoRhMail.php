@@ -24,7 +24,7 @@ class AprovacaoRhMail extends Mailable
         $this->dados = $dados;
         $this->to($this->dados['email_para'], $this->dados['nome_para']);
         $this->from('naoresponda@mybp.com.br', 'MyBP - SISTEMA INTEGRADO DE SOLUÇÕES EM GESTÃO');
-        $this->subject = "CONFIRMAÇÃO RH NA LIDERANÇA DE PESSOAL E VALOR EXTRA PREVISTA  - COLABORADOR {$this->dados['colaborador']}  CÓD - ". $this->dados['id'];
+        $this->subject = "CONFIRMAÇÃO RH NA LIDERANÇA DE PESSOAL E VALOR EXTRA PREVISTA - CÓD - ". $this->dados['id'];
         $this->assunto = $this->subject;
     }
 

@@ -29,22 +29,21 @@ class NotificacaoAprovacaoMail extends Mailable
     private function gerarAssunto(): string
     {
         $tipo = $this->dados['tipo'];
-        $colaborador = $this->dados['colaborador'] ?? '';
 
         $nomeAprovacaoExtra = $this->dados['nome_aprovacao_extra'] ?? 'Aprovação Extra';
         $assuntos = [
-            'criacao' => "Notificação — Transferência ({$colaborador}) — sua aprovação como gestor",
-            'criacao_gestor_unico' => "Notificação — Transferência ({$colaborador}) — sua aprovação como gestor aprovação",
-            'reprovado_gestor_unico' => "Notificação — Transferência ({$colaborador}) — reprovada pelo gestor aprovação",
-            'pendente_aprovacao_extra' => "Notificação — Transferência ({$colaborador}) — aguardando aprovação de {$nomeAprovacaoExtra}",
-            'pendente_aprovacao_rh' => "Notificação — Transferência ({$colaborador}) — aguardando aprovação do RH",
-            'reprovado_gestor' => "Notificação — Transferência ({$colaborador}) — reprovada pelo gestor",
-            'reprovado_aprovacao_extra' => "Notificação — Transferência ({$colaborador}) — reprovada por {$nomeAprovacaoExtra}",
-            'reprovado_rh' => "Notificação — Transferência ({$colaborador}) — reprovada pelo RH",
-            'cancelado' => "Notificação — Transferência ({$colaborador}) — cancelada",
-            'aprovado_final' => "Notificação — Transferência ({$colaborador}) — aprovada em todas as etapas",
+            'criacao' => "Notificação — Transferência — sua aprovação como gestor",
+            'criacao_gestor_unico' => "Notificação — Transferência — sua aprovação como gestor aprovação",
+            'reprovado_gestor_unico' => "Notificação — Transferência — reprovada pelo gestor aprovação",
+            'pendente_aprovacao_extra' => "Notificação — Transferência — aguardando aprovação de {$nomeAprovacaoExtra}",
+            'pendente_aprovacao_rh' => "Notificação — Transferência — aguardando aprovação do RH",
+            'reprovado_gestor' => "Notificação — Transferência — reprovada pelo gestor",
+            'reprovado_aprovacao_extra' => "Notificação — Transferência — reprovada por {$nomeAprovacaoExtra}",
+            'reprovado_rh' => "Notificação — Transferência — reprovada pelo RH",
+            'cancelado' => "Notificação — Transferência — cancelada",
+            'aprovado_final' => "Notificação — Transferência — aprovada em todas as etapas",
         ];
 
-        return $assuntos[$tipo] ?? "Notificação — Transferência {$colaborador}";
+        return $assuntos[$tipo] ?? "Notificação — Transferência";
     }
 }

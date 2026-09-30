@@ -95,6 +95,7 @@ class FeriasPrevistaEditPayloadMapper
             'autocomplete_label_gestor_modal' => $gestorNome,
             'autocomplete_label_gestor_modal_anterior' => $gestorNome,
             'obs_solicitante' => $item->obs_solicitante,
+            'solicitante_id' => $item->solicitante_id,
             'solicitante' => $item->Solicitante?->nome ?? '',
             'data_solicitacao' => $item->data_solicitacao,
             'anexos' => $this->mapAnexos($item),

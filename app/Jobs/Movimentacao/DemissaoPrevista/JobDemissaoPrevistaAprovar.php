@@ -31,7 +31,7 @@ class JobDemissaoPrevistaAprovar implements ShouldQueue
             'email_para' => $demissaoPrevista->UserCadastrou->login,
             'status_aprovacao' => $demissaoPrevista->status_aprovacao,
             'demissao_id' => $demissaoPrevista->id,
-            'colaborador' => $demissaoPrevista->Colaborador->nome,
+            'colaborador' => '',
             'empresa_id' => auth()->user()->empresa_id
         ];
 

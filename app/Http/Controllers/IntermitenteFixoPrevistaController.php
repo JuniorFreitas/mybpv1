@@ -107,6 +107,7 @@ class IntermitenteFixoPrevistaController extends Controller
                 'GestorAprovacao:' . implode(',', IntermitenteFixoPrevistaEditPayloadMapper::USER_COLUMNS),
                 'UserAprovacao:' . implode(',', IntermitenteFixoPrevistaEditPayloadMapper::USER_COLUMNS),
                 'RhAprovacao:' . implode(',', IntermitenteFixoPrevistaEditPayloadMapper::USER_COLUMNS),
+                'UserAprovacaoExtra:' . implode(',', IntermitenteFixoPrevistaEditPayloadMapper::USER_COLUMNS),
                 'Anexos' => function ($query) {
                     $query->select(IntermitenteFixoPrevistaEditPayloadMapper::ANEXO_COLUMNS);
                 },

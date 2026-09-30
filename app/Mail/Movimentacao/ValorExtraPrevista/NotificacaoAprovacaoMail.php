@@ -39,20 +39,19 @@ class NotificacaoAprovacaoMail extends Mailable
     private function gerarAssunto(): string
     {
         $tipo = $this->dados['tipo'];
-        $colaborador = $this->dados['colaborador'] ?? '';
         $nomeAprovacaoExtra = $this->dados['nome_aprovacao_extra'] ?? 'Aprovação Extra';
 
         $assuntos = [
-            'criacao' => "Notificação — Valor extra ({$colaborador}) — sua aprovação como gestor",
-            'pendente_aprovacao_extra' => "Notificação — Valor extra ({$colaborador}) — aguardando aprovação de {$nomeAprovacaoExtra}",
-            'pendente_aprovacao_rh' => "Notificação — Valor extra ({$colaborador}) — aguardando aprovação do RH",
-            'reprovado_gestor' => "Notificação — Valor extra ({$colaborador}) — reprovado pelo gestor",
-            'reprovado_aprovacao_extra' => "Notificação — Valor extra ({$colaborador}) — reprovado por {$nomeAprovacaoExtra}",
-            'reprovado_rh' => "Notificação — Valor extra ({$colaborador}) — reprovado pelo RH",
-            'cancelado' => "Notificação — Valor extra ({$colaborador}) — cancelado",
-            'aprovado_final' => "Notificação — Valor extra ({$colaborador}) — aprovado em todas as etapas",
+            'criacao' => "Notificação — Valor extra — sua aprovação como gestor",
+            'pendente_aprovacao_extra' => "Notificação — Valor extra — aguardando aprovação de {$nomeAprovacaoExtra}",
+            'pendente_aprovacao_rh' => "Notificação — Valor extra — aguardando aprovação do RH",
+            'reprovado_gestor' => "Notificação — Valor extra — reprovado pelo gestor",
+            'reprovado_aprovacao_extra' => "Notificação — Valor extra — reprovado por {$nomeAprovacaoExtra}",
+            'reprovado_rh' => "Notificação — Valor extra — reprovado pelo RH",
+            'cancelado' => "Notificação — Valor extra — cancelado",
+            'aprovado_final' => "Notificação — Valor extra — aprovado em todas as etapas",
         ];
 
-        return $assuntos[$tipo] ?? "Notificação — Valor extra {$colaborador}";
+        return $assuntos[$tipo] ?? "Notificação — Valor extra";
     }
 }

@@ -30,7 +30,7 @@ class JobValorExtraPrevistaStore implements ShouldQueue
             'nome_para' => $valorExtraPrevista->GestorAprovacao->nome,
             'email_para' => $valorExtraPrevista->GestorAprovacao->login,
             'id' => $valorExtraPrevista->id,
-            'colaborador' => $valorExtraPrevista->Colaborador->nome,
+            'colaborador' => '',
             'empresa_id' => auth()->user()->empresa_id
         ];
 

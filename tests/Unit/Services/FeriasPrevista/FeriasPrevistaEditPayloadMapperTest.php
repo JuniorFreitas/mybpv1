@@ -112,6 +112,7 @@ class FeriasPrevistaEditPayloadMapperTest extends TestCase
         $this->assertNull($payload['centro_custo_filial_id']);
         $this->assertSame('2024/2025', $payload['periodo_label']);
         $this->assertSame('Maria Solicitante', $payload['solicitante']);
+        $this->assertSame(21, $payload['solicitante_id']);
         $this->assertSame(['id' => 30, 'nome' => 'Beatriz Aprovadora'], $payload['gestor_aprovacao']);
         $this->assertNull($payload['rh_aprovacao']);
         $this->assertNull($payload['aprovacao_extra']);

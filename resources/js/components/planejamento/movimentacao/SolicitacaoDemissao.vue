@@ -109,6 +109,7 @@
                                             empty-message="Nenhuma opção encontrada."
                                             :max-results="10"
                                             @opening="fecharOutrosComboboxes('form-tipo-aviso')"
+                                            @select="limparComboboxInvalido('demissao-tipo-aviso-' + hash)"
                                         />
                                     </div>
                                 </div>
@@ -188,6 +189,7 @@
                                             empty-message="Nenhuma opção encontrada."
                                             :max-results="10"
                                             @opening="fecharOutrosComboboxes('form-status-gestor')"
+                                            @select="limparComboboxInvalido('demissao-status-gestor-' + hash)"
                                         />
                                     </div>
                                 </div>
@@ -242,6 +244,7 @@
                                             empty-message="Nenhuma opção encontrada."
                                             :max-results="10"
                                             @opening="fecharOutrosComboboxes('form-status-extra')"
+                                            @select="limparComboboxInvalido('demissao-status-extra-' + hash)"
                                         />
                                     </div>
                                 </div>
@@ -289,6 +292,7 @@
                                             empty-message="Nenhuma opção encontrada."
                                             :max-results="10"
                                             @opening="fecharOutrosComboboxes('form-status-rh')"
+                                            @select="limparComboboxInvalido('demissao-status-rh-' + hash)"
                                         />
                                     </div>
                                 </div>
@@ -750,9 +754,11 @@ import MybpCardCampo from '../../ui/MybpCardCampo.vue'
 import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import AcaoAssinaturaDocumento from '../../administracao/documentoassinatura/AcaoAssinaturaDocumento.vue'
+import ComboboxValidation from '../../../mixins/ComboboxValidation'
+import { buildOpcoesStatusFluxoAprovacao } from '../../../utils/opcoesStatusFluxoAprovacao'
 
 export default {
-    mixins: [ExportacaoMixin, Utils, configuracoes],
+    mixins: [ExportacaoMixin, Utils, configuracoes, ComboboxValidation],
     inject: {
         atualizarUrlMovimentacao: { default: () => () => {} }
     },
@@ -1011,22 +1017,10 @@ export default {
             return opts
         },
         opcoesStatus() {
-            const opts = [
-                { value: '', label: 'Todos os status' },
-                { value: 'aberto', label: 'Em aberto' },
-                { value: 'aprovado_gestor', label: 'Aprovado Gestor' }
-            ]
-            if (this.temAprovacaoExtra) {
-                opts.push({
-                    value: 'aprovado_extra',
-                    label: `Aprovado ${this.nomeAprovacaoExtra || 'Extra'}`
-                })
-            }
-            opts.push(
-                { value: 'aprovado_rh', label: 'Aprovado Rh' },
-                { value: 'reprovado', label: 'Reprovado' }
-            )
-            return opts
+            return buildOpcoesStatusFluxoAprovacao({
+                temAprovacaoExtra: this.temAprovacaoExtra,
+                nomeAprovacaoExtra: this.nomeAprovacaoExtra
+            })
         },
         opcoesOrdenacao() {
             return [
@@ -1389,28 +1383,7 @@ export default {
         },
 
         cadastrar() {
-            this.sincronizarDataDemissaoDoInput()
-
-            if (this.form.colaborador_id === '') {
-                valida_campo_vazio($(`#colaborador_${this.hash}`), 1)
-                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo COLABORADOR não pode ficar vazio')
-                this.resetaCampoColaborador()
-                return false
-            }
-            if (this.form.gestor_id === '') {
-                valida_campo_vazio($(`#gestor_${this.hash}`), 1)
-                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo GESTOR não pode ficar vazio')
-                this.resetaCampoGestor()
-                return false
-            }
-            if (!this.form.data_demissao || this.form.data_demissao === 'Invalid date') {
-                mostraErro('', 'Campo DATA DA DEMISSÃO não pode ficar vazio')
-                return false
-            }
-            if (!this.form.tipo_aviso) {
-                mostraErro('', 'Campo TIPO DE AVISO não pode ficar vazio')
+            if (!this.validarCamposSolicitacao()) {
                 return false
             }
 
@@ -1421,12 +1394,6 @@ export default {
                 if (!ok) {
                     return false
                 }
-            }
-
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
-                return false
             }
 
             const payload = this.montarPayloadDemissao()
@@ -1694,24 +1661,7 @@ export default {
         },
 
         alterar() {
-            if (this.form.colaborador_id === '') {
-                valida_campo_vazio($(`#colaborador_${this.hash}`), 1)
-                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo COLABORADOR não pode ficar vazio')
-                this.resetaCampoColaborador()
-                return false
-            }
-            if (this.form.gestor_id === '') {
-                valida_campo_vazio($(`#gestor_${this.hash}`), 1)
-                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo GESTOR não pode ficar vazio')
-                this.resetaCampoGestor()
-                return false
-            }
-
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
+            if (!this.validarCamposSolicitacao()) {
                 return false
             }
 
@@ -1731,10 +1681,68 @@ export default {
                 })
         },
 
-        aprovarGestor() {
-            if (!this.form.status_aprovacao) {
-                mostraErro('', 'Selecione o status da aprovação')
+        /**
+         * Validação da solicitação (cadastro/edição): só campos obrigatórios ativos.
+         * Combobox via exigirCombobox; data via marca visual no datepicker.
+         */
+        validarCamposSolicitacao() {
+            this.sincronizarDataDemissaoDoInput()
+
+            const camposBloqueados =
+                this.visualizar || this.aprovando || this.aprovandoExtra || this.aprovandoRh
+
+            if (camposBloqueados) {
+                return true
+            }
+
+            if (!this.form.colaborador_id) {
+                valida_campo_vazio($(`#colaborador_${this.hash}`), 1)
+                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur')
+                mostraErro('', 'Campo COLABORADOR não pode ficar vazio')
+                this.resetaCampoColaborador()
                 return false
+            }
+
+            const dataId = `demissao-data-${this.hash}`
+            if (
+                !this.exigirCampoData(this.form.data_demissao, dataId, {
+                    toastMsg: 'Campo DATA DA DEMISSÃO não pode ficar vazio'
+                })
+            ) {
+                if (!this.form.data_demissao || this.form.data_demissao === 'Invalid date') {
+                    this.form.data_demissao = ''
+                }
+                return false
+            }
+
+            const tipoId = `demissao-tipo-aviso-${this.hash}`
+            if (
+                !this.exigirCombobox(this.form.tipo_aviso, tipoId, {
+                    toastMsg: 'Selecione o tipo de aviso'
+                })
+            ) {
+                return false
+            }
+
+            if (!this.form.gestor_id) {
+                valida_campo_vazio($(`#gestor_${this.hash}`), 1)
+                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur')
+                mostraErro('', 'Campo GESTOR não pode ficar vazio')
+                this.resetaCampoGestor()
+                return false
+            }
+
+            return this.validarInputsAtivosVisiveis(this.hash, { preservarIds: [dataId] })
+        },
+
+        aprovarGestor() {
+            const statusId = `demissao-status-gestor-${this.hash}`
+            if (
+                !this.exigirCombobox(this.form.status_aprovacao, statusId, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
             }
 
             this.preload = true
@@ -1753,9 +1761,13 @@ export default {
                 })
         },
         aprovarExtra() {
-            if (!this.form.status_aprovacao_extra) {
-                mostraErro('', 'Selecione o status da aprovação')
-                return false
+            const statusId = `demissao-status-extra-${this.hash}`
+            if (
+                !this.exigirCombobox(this.form.status_aprovacao_extra, statusId, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
             }
             this.preload = true
 
@@ -1773,9 +1785,13 @@ export default {
                 })
         },
         aprovarRh() {
-            if (!this.form.status_aprovacao_rh) {
-                mostraErro('', 'Selecione o status da aprovação')
-                return false
+            const statusId = `demissao-status-rh-${this.hash}`
+            if (
+                !this.exigirCombobox(this.form.status_aprovacao_rh, statusId, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
             }
             this.preload = true
 
@@ -1820,6 +1836,7 @@ export default {
         onSelectDataDemissao(valor) {
             const texto = typeof valor === 'string' ? valor : valor && valor.value ? valor.value : ''
             this.form.data_demissao = String(texto || '').trim()
+            this.limparCampoDataInvalido(`demissao-data-${this.hash}`)
         },
         sincronizarDataDemissaoDoInput() {
             const seletor = `#demissao-data-${this.hash}`

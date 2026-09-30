@@ -74,15 +74,6 @@ class JobMudaIntermitenteFixoPrevistaStore implements ShouldQueue
             return;
         }
 
-        // Busca currículo diretamente sem query extra do colaborador
-        $curriculo = \App\Models\Curriculo::withoutGlobalScope(\App\Scopes\ScopeEmpresa::class)
-            ->select('id', 'nome')
-            ->where('id', $intermitente->colaborador_id)
-            ->first();
-
-        if (!$curriculo) {
-            return;
-        }
 
         // Usa DB::table para query simples sem hidratar modelo completo
         $empresa = DB::table('clientes')
@@ -97,7 +88,7 @@ class JobMudaIntermitenteFixoPrevistaStore implements ShouldQueue
             'etapa' => 'Gestor',
             'tipo' => 'criacao',
             'intermitente_id' => $intermitente->id,
-            'colaborador' => $curriculo->nome,
+            'colaborador' => '',
             'empresa_id' => $this->empresaId,
             'nome_empresa' => $empresa ? $empresa->nome_fantasia : 'MyBP seu negócio na sua mão',
         ];

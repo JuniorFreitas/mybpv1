@@ -32,7 +32,7 @@ class JobMudaCargoPrevistaStore implements ShouldQueue
             'id' => $mudaCargoPrevista->id,
             'cargo_anterior' => $mudaCargoPrevista->VagaAbertaAnterior->Vaga->nome,
             'cargo_novo' => is_null($mudaCargoPrevista->nova_vaga_aberta_id) ? "Não mudou de cargo" : $mudaCargoPrevista->VagaAbertaNova->Vaga->nome,
-            'colaborador' => $mudaCargoPrevista->Colaborador->nome,
+            'colaborador' => '',
             'empresa_id' => auth()->user()->empresa_id
         ];
 

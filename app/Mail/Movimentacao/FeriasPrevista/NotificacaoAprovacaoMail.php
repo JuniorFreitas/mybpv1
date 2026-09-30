@@ -39,20 +39,19 @@ class NotificacaoAprovacaoMail extends Mailable
     private function gerarAssunto(): string
     {
         $tipo = $this->dados['tipo'];
-        $colaborador = $this->dados['colaborador'] ?? '';
         $nomeAprovacaoExtra = $this->dados['nome_aprovacao_extra'] ?? 'Aprovação Extra';
 
         $assuntos = [
-            'criacao' => "Notificação — Férias ({$colaborador}) — sua aprovação como gestor",
-            'pendente_aprovacao_extra' => "Notificação — Férias ({$colaborador}) — aguardando aprovação de {$nomeAprovacaoExtra}",
-            'pendente_aprovacao_rh' => "Notificação — Férias ({$colaborador}) — aguardando aprovação do RH",
-            'reprovado_gestor' => "Notificação — Férias ({$colaborador}) — reprovadas pelo gestor",
-            'reprovado_aprovacao_extra' => "Notificação — Férias ({$colaborador}) — reprovadas por {$nomeAprovacaoExtra}",
-            'reprovado_rh' => "Notificação — Férias ({$colaborador}) — reprovadas pelo RH",
-            'cancelado' => "Notificação — Férias ({$colaborador}) — canceladas",
-            'aprovado_final' => "Notificação — Férias ({$colaborador}) — aprovadas em todas as etapas",
+            'criacao' => "Notificação — Férias — sua aprovação como gestor",
+            'pendente_aprovacao_extra' => "Notificação — Férias — aguardando aprovação de {$nomeAprovacaoExtra}",
+            'pendente_aprovacao_rh' => "Notificação — Férias — aguardando aprovação do RH",
+            'reprovado_gestor' => "Notificação — Férias — reprovadas pelo gestor",
+            'reprovado_aprovacao_extra' => "Notificação — Férias — reprovadas por {$nomeAprovacaoExtra}",
+            'reprovado_rh' => "Notificação — Férias — reprovadas pelo RH",
+            'cancelado' => "Notificação — Férias — canceladas",
+            'aprovado_final' => "Notificação — Férias — aprovadas em todas as etapas",
         ];
 
-        return $assuntos[$tipo] ?? "Notificação — Férias {$colaborador}";
+        return $assuntos[$tipo] ?? "Notificação — Férias";
     }
 }

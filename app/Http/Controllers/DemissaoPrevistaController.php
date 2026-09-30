@@ -366,28 +366,12 @@ class DemissaoPrevistaController extends Controller
         }
 
         if ($request->filled('campoStatusAprovacao')) {
-            $resultado->when($request->campoStatusAprovacao == 'aberto', function ($query) {
-                return $query->whereNull('dp.status_aprovacao');
-            })
-                ->when($request->campoStatusAprovacao == 'aprovado_gestor', function ($query) {
-                    return $query->where('dp.status_aprovacao', DemissaoPrevista::STATUS_APROVADO)
-                        ->whereNull('dp.status_aprovacao_extra')
-                        ->whereNull('dp.status_aprovacao_rh');
-                })
-                ->when($request->campoStatusAprovacao == 'aprovado_extra', function ($query) {
-                    return $query->where('dp.status_aprovacao_extra', DemissaoPrevista::STATUS_APROVADO)
-                        ->whereNull('dp.status_aprovacao_rh');
-                })
-                ->when($request->campoStatusAprovacao == 'aprovado_rh', function ($query) {
-                    return $query->where('dp.status_aprovacao_rh', DemissaoPrevista::STATUS_APROVADO);
-                })
-                ->when($request->campoStatusAprovacao == 'reprovado', function ($query) {
-                    return $query->where(function ($query) {
-                        $query->where('dp.status_aprovacao', DemissaoPrevista::STATUS_REPROVADO)
-                            ->orWhere('dp.status_aprovacao_extra', DemissaoPrevista::STATUS_REPROVADO)
-                            ->orWhere('dp.status_aprovacao_rh', DemissaoPrevista::STATUS_REPROVADO);
-                    });
-                });
+            (new DemissaoPrevistaFilterApplier($request->all(), auth()->user()))
+                ->applyStatusWithColumns($resultado, [
+                    'gestor' => 'dp.status_aprovacao',
+                    'extra' => 'dp.status_aprovacao_extra',
+                    'rh' => 'dp.status_aprovacao_rh',
+                ]);
         }
 
         DemissaoPrevistaFilterApplier::applyCnpjCentroCusto(

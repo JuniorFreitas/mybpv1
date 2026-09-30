@@ -11,7 +11,6 @@
                 <br>
                 <strong>Detalhes da Solicitação:</strong><br>
                 Cód: <strong>{{ $dados['demissao_id'] }}</strong><br>
-                Colaborador: <strong>{{ $dados['colaborador'] }}</strong><br>
                 Etapa: <strong>Gestor</strong><br>
 
                 <br><br>

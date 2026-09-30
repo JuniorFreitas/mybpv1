@@ -9,13 +9,24 @@
                 <div class="alert alert-success alert-dismissible" v-show="atualizado">
                     <h4><i class="icon fa fa-check"></i>Solicitação alterada com sucesso!</h4>
                 </div>
-                <form v-if="!preload && !cadastrado && !atualizado" :id="`form_${hash}`" onsubmit="return false">
-                    <fieldset>
-                        <legend>Informações</legend>
+                <form
+                    v-if="!preload && !cadastrado && !atualizado"
+                    :id="`form_${hash}`"
+                    class="mybp-modal-form mybp-filtros-compactos"
+                    onsubmit="return false"
+                >
+                    <p class="mybp-campo-obrigatorio-legenda mybp-modal-legenda">
+                        Campos com <span class="text-danger">*</span> são obrigatórios.
+                    </p>
+
+                    <fieldset class="mybp-modal-secao">
+                        <legend>Colaborador</legend>
                         <div class="row">
-                            <div class="col-12 col-md-12">
-                                <div class="form-group">
-                                    <label>Colaborador <span class="text-danger">*</span></label>
+                            <div class="col-12">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`colaborador_${hash}`">
+                                        Colaborador <span class="text-danger">*</span>
+                                    </label>
                                     <autocomplete
                                         :caminho="`autocomplete/colaboradores`"
                                         :formsm="true"
@@ -30,10 +41,25 @@
                                 </div>
                             </div>
                         </div>
+                    </fieldset>
+
+                    <fieldset class="mybp-modal-secao">
+                        <legend>Lotação / Centro de custo</legend>
                         <div class="row">
-                            <div class="col-12 col-md-6">
-                                <div class="form-group">
-                                    <label>Centro de Custo</label>
+                            <div class="col-12 col-md-6" v-if="temFilial">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Lotação</label>
+                                    <input
+                                        type="text"
+                                        class="form-control form-control-sm"
+                                        :value="labelLotacaoAtual || (form.colaborador_id ? 'Não informado' : 'Preenchido ao selecionar o colaborador')"
+                                        disabled
+                                    />
+                                </div>
+                            </div>
+                            <div :class="temFilial ? 'col-12 col-md-6' : 'col-12'">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Centro de Custo</label>
                                     <select v-model="form.centro_custo_id" class="form-control form-control-sm" disabled>
                                         <option value="">Selecione</option>
                                         <option v-for="item in centro_custos" :value="item.id" :key="item.id">
@@ -42,19 +68,19 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-2" v-if="centroCustoTemFilial">
-                                <div class="form-group">
-                                    <label>CNPJ Atual</label>
+                            <div class="col-12 col-md-4" v-if="centroCustoTemFilial">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">CNPJ Atual</label>
                                     <select v-model="form.filial" class="form-control form-control-sm" @change.p.prevent="changeCnpj()" disabled>
                                         <option :value="false">Matriz</option>
                                         <option :value="true">Filial</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-4" v-if="temFilial && form.filial">
-                                <div class="form-group">
-                                    <label>Filial</label>
-                                    <select v-model="form.centro_custo_filial_id" class="form-control" disabled>
+                            <div class="col-12 col-md-8" v-if="temFilial && form.filial">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Filial</label>
+                                    <select v-model="form.centro_custo_filial_id" class="form-control form-control-sm" disabled>
                                         <option value="">Selecione</option>
                                         <option v-for="item in centroCustoSelecionado" :value="item.id" :key="item.id">
                                             {{ item.filial.razao_social }}
@@ -63,11 +89,18 @@
                                 </div>
                             </div>
                         </div>
+                    </fieldset>
+
+                    <fieldset class="mybp-modal-secao">
+                        <legend>Solicitação</legend>
                         <div class="row">
                             <div class="col-12 col-md-4">
-                                <div class="form-group">
-                                    <label>Tipo <span class="text-danger">*</span></label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">
+                                        Tipo <span class="text-danger">*</span>
+                                    </label>
                                     <input
+                                        :id="`valor-extra-tipo-${hash}`"
                                         type="text"
                                         class="form-control form-control-sm"
                                         v-model="form.tipo"
@@ -76,185 +109,207 @@
                                     />
                                 </div>
                             </div>
-
                             <div class="col-12 col-md-4">
-                                <label>Período em dias <span class="text-danger">*</span></label>
-                                <input
-                                    type="number"
-                                    class="form-control form-control-sm"
-                                    v-model="form.periodo_dias"
-                                    step=".5"
-                                    onblur="valida_campo_vazio(this, 1)"
-                                    :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
-                                />
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">
+                                        Período em dias <span class="text-danger">*</span>
+                                    </label>
+                                    <input
+                                        :id="`valor-extra-periodo-${hash}`"
+                                        type="number"
+                                        class="form-control form-control-sm"
+                                        v-model="form.periodo_dias"
+                                        step=".5"
+                                        onblur="valida_campo_vazio(this, 1)"
+                                        :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
+                                    />
+                                </div>
                             </div>
-
                             <gestoraprovacao
-                                label="Gestor Aprovação *"
+                                label="Gestor Aprovação"
+                                :obrigatorio="true"
                                 :model="form"
                                 :verifica="visualizar || aprovando || aprovandoExtra || aprovandoRh"
                                 :hash="hash"
                             ></gestoraprovacao>
+                        </div>
+                    </fieldset>
 
+                    <fieldset class="mybp-modal-secao">
+                        <legend>Detalhes</legend>
+                        <div class="row">
                             <div class="col-12">
-                                <div class="form-group">
-                                    <label>Observação</label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Observação</label>
                                     <textarea
                                         class="form-control form-control-sm"
                                         v-model="form.obs"
-                                        cols="5"
-                                        rows="5"
+                                        rows="3"
                                         :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
                                     ></textarea>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="col-12">
-                            <fieldset>
-                                <legend>Anexos</legend>
-                                <upload
-                                    :model="form.anexos"
-                                    :model-delete="form.anexosDel"
-                                    :url="url_anexo"
-                                    :tipos="mimes"
-                                    :leitura="!podeanexar"
-                                    label="Selecionar"
-                                    @onProgresso="anexoUploadAndamento = true"
-                                    @onFinalizado="anexoUploadAndamento = false"
-                                ></upload>
-                            </fieldset>
-                        </div>
-                        <div class="alert alert-warning" v-if="!form.data_aprovacao && !cadastrando">
-                            Esta solicitação ainda não foi aprovada ou reprovada pelo gestor!
-                        </div>
-
-                        <fieldset v-if="visualizar || aprovando">
-                            <legend>Aprovação Gestor</legend>
-                            <div class="row">
-                                <div v-if="!aprovando && form.user_aprovacao" class="col-12">
-                                    <legend>{{ form.status_aprovacao }} por: {{ form.user_aprovacao.nome }} em {{ form.data_aprovacao }}</legend>
+                            <div class="col-12">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Anexos</label>
+                                    <upload
+                                        :model="form.anexos"
+                                        :model-delete="form.anexosDel"
+                                        :url="url_anexo"
+                                        :tipos="mimes"
+                                        :leitura="!podeanexar"
+                                        label="Selecionar"
+                                        @onProgresso="anexoUploadAndamento = true"
+                                        @onFinalizado="anexoUploadAndamento = false"
+                                    ></upload>
                                 </div>
+                            </div>
+                        </div>
+                    </fieldset>
 
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label>Observação</label>
-                                        <textarea
-                                            class="form-control form-control-sm"
-                                            :disabled="!aprovando || aprovandoExtra || aprovandoRh"
-                                            v-model="form.obs_aprovacao"
-                                            cols="5"
-                                            rows="5"
-                                        ></textarea>
-                                    </div>
-                                </div>
+                    <div class="alert alert-warning" v-if="!form.data_aprovacao && !cadastrando">
+                        Esta solicitação ainda não foi aprovada ou reprovada pelo gestor!
+                    </div>
 
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Status</label>
-                                        <select
-                                            :disabled="!aprovando || aprovandoExtra || aprovandoRh"
+                    <fieldset v-if="visualizar || aprovando" class="mybp-modal-secao">
+                        <legend>Aprovação Gestor</legend>
+                        <div class="row">
+                            <div v-if="!aprovando && form.user_aprovacao" class="col-12 mb-2">
+                                <p class="mb-0 text-muted">
+                                    {{ form.status_aprovacao }} por: {{ form.user_aprovacao.nome }} em {{ form.data_aprovacao }}
+                                </p>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`valorextra-status-gestor-${hash}`">
+                                        Status <span class="text-danger" v-if="aprovando">*</span>
+                                    </label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormStatusGestor"
+                                            instance-id="form-valorextra-status-gestor"
+                                            :input-id="`valorextra-status-gestor-${hash}`"
                                             v-model="form.status_aprovacao"
-                                            class="form-control form-control-sm validacampo"
-                                            onchange="valida_campo_vazio(this, 1)"
-                                            onblur="valida_campo_vazio(this, 1)"
-                                        >
-                                            <option value="">Selecione...</option>
-                                            <option value="aprovado">Aprovar</option>
-                                            <option value="reprovado">Reprovar</option>
-                                        </select>
+                                            :options="formStatusAprovacaoOpcoes"
+                                            :disabled="!aprovando || aprovandoExtra || aprovandoRh"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-valorextra-status-gestor')"
+                                            @select="limparComboboxInvalido('valorextra-status-gestor-' + hash)"
+                                        />
                                     </div>
                                 </div>
                             </div>
-                        </fieldset>
-
-                        <div class="alert alert-warning" v-if="aprovandoExtra">
-                            Esta solicitação ainda não foi aprovada ou reprovada pela {{ nomeAprovacaoExtra }}!
+                            <div class="col-12 col-md-8">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Observação</label>
+                                    <textarea
+                                        class="form-control form-control-sm"
+                                        :disabled="!aprovando || aprovandoExtra || aprovandoRh"
+                                        v-model="form.obs_aprovacao"
+                                        rows="2"
+                                    ></textarea>
+                                </div>
+                            </div>
                         </div>
+                    </fieldset>
 
-                        <fieldset v-if="visualizar || aprovandoExtra">
-                            <div v-if="!temAprovacaoExtra" class="alert alert-info">
-                                <i class="fa fa-info-circle"></i> Esta empresa não possui aprovação extra configurada.
+                    <div class="alert alert-warning" v-if="aprovandoExtra">
+                        Esta solicitação ainda não foi aprovada ou reprovada pela {{ nomeAprovacaoExtra }}!
+                    </div>
+
+                    <fieldset v-if="visualizar || aprovandoExtra" class="mybp-modal-secao">
+                        <div v-if="!temAprovacaoExtra" class="alert alert-info">
+                            <i class="fa fa-info-circle"></i> Esta empresa não possui aprovação extra configurada.
+                        </div>
+                        <legend v-if="temAprovacaoExtra">{{ nomeAprovacaoExtra }}</legend>
+                        <div class="row" v-if="temAprovacaoExtra">
+                            <div v-if="!aprovandoExtra && form.aprovacao_extra_nome" class="col-12 mb-2">
+                                <p class="mb-0 text-muted">
+                                    {{ form.status_aprovacao_extra }} por: {{ form.aprovacao_extra_nome }} em {{ form.data_aprovacao_extra }}
+                                </p>
                             </div>
-
-                            <legend v-if="temAprovacaoExtra">{{ nomeAprovacaoExtra }}</legend>
-                            <div class="row" v-if="temAprovacaoExtra">
-                                <div v-if="!aprovandoExtra && form.aprovacao_extra_nome" class="col-12">
-                                    <legend>{{ form.status_aprovacao_extra }} por: {{ form.aprovacao_extra_nome }} em {{ form.data_aprovacao_extra }}</legend>
-                                </div>
-
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label>Observação</label>
-                                        <textarea
-                                            class="form-control form-control-sm"
-                                            :disabled="!aprovandoExtra || aprovandoRh"
-                                            v-model="form.obs_aprovacao_extra"
-                                            cols="5"
-                                            rows="5"
-                                        ></textarea>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Status</label>
-                                        <select
-                                            :disabled="!aprovandoExtra || aprovandoRh"
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`valorextra-status-extra-${hash}`">
+                                        Status <span class="text-danger" v-if="aprovandoExtra">*</span>
+                                    </label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormStatusExtra"
+                                            instance-id="form-valorextra-status-extra"
+                                            :input-id="`valorextra-status-extra-${hash}`"
                                             v-model="form.status_aprovacao_extra"
-                                            class="form-control form-control-sm validacampo"
-                                            onchange="valida_campo_vazio(this, 1)"
-                                            onblur="valida_campo_vazio(this, 1)"
-                                        >
-                                            <option value="">Selecione...</option>
-                                            <option value="aprovado">Aprovar</option>
-                                            <option value="reprovado">Reprovar</option>
-                                        </select>
+                                            :options="formStatusAprovacaoOpcoes"
+                                            :disabled="!aprovandoExtra || aprovandoRh"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-valorextra-status-extra')"
+                                            @select="limparComboboxInvalido('valorextra-status-extra-' + hash)"
+                                        />
                                     </div>
                                 </div>
                             </div>
-                        </fieldset>
-
-                        <div class="alert alert-warning" v-if="aprovandoRh">Esta solicitação ainda não foi aprovada ou reprovada!</div>
-
-                        <fieldset v-if="visualizar || aprovandoRh">
-                            <legend>Aprovação RH</legend>
-                            <div class="row">
-                                <div v-if="!aprovandoRh && form.rh_aprovacao" class="col-12">
-                                    <legend>{{ form.status_aprovacao_rh }} por: {{ form.rh_aprovacao.nome }} em {{ form.data_aprovacao_rh }}</legend>
+                            <div class="col-12 col-md-8">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Observação</label>
+                                    <textarea
+                                        class="form-control form-control-sm"
+                                        :disabled="!aprovandoExtra || aprovandoRh"
+                                        v-model="form.obs_aprovacao_extra"
+                                        rows="2"
+                                    ></textarea>
                                 </div>
+                            </div>
+                        </div>
+                    </fieldset>
 
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label>Observação</label>
-                                        <textarea
-                                            class="form-control form-control-sm"
-                                            :disabled="visualizar && !aprovando && !aprovandoRh"
-                                            v-model="form.obs_rh"
-                                            cols="5"
-                                            rows="5"
-                                        ></textarea>
-                                    </div>
-                                </div>
+                    <div class="alert alert-warning" v-if="aprovandoRh">Esta solicitação ainda não foi aprovada ou reprovada!</div>
 
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Status</label>
-                                        <select
-                                            :disabled="visualizar && !aprovando && !aprovandoRh"
+                    <fieldset v-if="visualizar || aprovandoRh" class="mybp-modal-secao">
+                        <legend>Aprovação RH</legend>
+                        <div class="row">
+                            <div v-if="!aprovandoRh && form.rh_aprovacao" class="col-12 mb-2">
+                                <p class="mb-0 text-muted">
+                                    {{ form.status_aprovacao_rh }} por: {{ form.rh_aprovacao.nome }} em {{ form.data_aprovacao_rh }}
+                                </p>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`valorextra-status-rh-${hash}`">
+                                        Status <span class="text-danger" v-if="aprovandoRh">*</span>
+                                    </label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormStatusRh"
+                                            instance-id="form-valorextra-status-rh"
+                                            :input-id="`valorextra-status-rh-${hash}`"
                                             v-model="form.status_aprovacao_rh"
-                                            class="form-control form-control-sm validacampo"
-                                            onchange="valida_campo_vazio(this, 1)"
-                                            onblur="valida_campo_vazio(this, 1)"
-                                        >
-                                            <option value="">Selecione...</option>
-                                            <option value="aprovado">Aprovar</option>
-                                            <option value="reprovado">Reprovar</option>
-                                        </select>
+                                            :options="formStatusAprovacaoOpcoes"
+                                            :disabled="!aprovandoRh"
+                                            placeholder-blur="Selecione..."
+                                            empty-message="Nenhuma opção encontrada."
+                                            :max-results="10"
+                                            @opening="fecharOutrosComboboxes('form-valorextra-status-rh')"
+                                            @select="limparComboboxInvalido('valorextra-status-rh-' + hash)"
+                                        />
                                     </div>
                                 </div>
                             </div>
-                        </fieldset>
+                            <div class="col-12 col-md-8">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Observação</label>
+                                    <textarea
+                                        class="form-control form-control-sm"
+                                        :disabled="visualizar && !aprovando && !aprovandoRh"
+                                        v-model="form.obs_rh"
+                                        rows="2"
+                                    ></textarea>
+                                </div>
+                            </div>
+                        </div>
                     </fieldset>
                 </form>
             </template>
@@ -485,71 +540,23 @@
                 </label>
             </div> -->
 
-            <!-- Cards Compactos -->
-            <div class="cards-lista" v-show="!controle.carregando && lista.length > 0">
-                <div class="solicitacao-card" v-for="item in lista" :key="item.id">
-                    <!-- Cabeçalho do Card -->
-                    <div class="card-header-row">
-                        <div class="card-left">
-                            <!-- <label class="checkbox-inline">
-                                <input type="checkbox"
-                                       class="custom-checkbox"
-                                       :value="item.id"
-                                       v-model="selecionados">
-                            </label> -->
-                            <span class="badge-id">#{{ item.id }}</span>
-                            <div class="colaborador-principal">
-                                <i class="fas fa-user-circle text-primary mr-1"></i>
-                                <strong>{{ item.colaborador ? item.colaborador.nome : '' }}</strong>
-                            </div>
-                            <div class="data-info ml-3">
-                                <i class="fas fa-calendar-plus text-muted" style="font-size: 0.75rem"></i>
-                                <small class="text-muted">{{ item.created_at }}</small>
-                                <span v-if="item.updated_at && item.updated_at !== item.created_at" class="mx-2 text-muted">|</span>
-                                <template v-if="item.updated_at && item.updated_at !== item.created_at">
-                                    <i class="fas fa-calendar-check text-info" style="font-size: 0.75rem"></i>
-                                    <small class="text-info">{{ item.updated_at }}</small>
-                                </template>
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+                <div class="mybp-card" v-for="item in lista" :key="item.id">
+                    <div class="mybp-card-header-row">
+                        <div class="mybp-card-left">
+                            <span class="mybp-badge-id">#{{ item.id }}</span>
+                            <div class="mybp-card-titulo">
+                                <strong>{{ tituloCardLista(item) }}</strong>
                             </div>
                         </div>
-                        <div class="card-right">
-                            <span
-                                class="status-badge"
-                                :class="{
-                                    'status-reprovado':
-                                        item.status_aprovacao === 'reprovado' ||
-                                        item.status_aprovacao_extra === 'reprovado' ||
-                                        item.status_aprovacao_rh === 'reprovado',
-                                    'status-aprovado': item.status_aprovacao_rh === 'aprovado',
-                                    'status-aprovado-extra': temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado' && !item.status_aprovacao_rh,
-                                    'status-aprovado-gestor':
-                                        item.status_aprovacao === 'aprovado' &&
-                                        !item.status_aprovacao_rh &&
-                                        (!temAprovacaoExtra || !item.status_aprovacao_extra),
-                                    'status-pendente': !item.status_aprovacao
-                                }"
-                            >
-                                <span
-                                    v-if="
-                                        item.status_aprovacao === 'reprovado' ||
-                                        item.status_aprovacao_extra === 'reprovado' ||
-                                        item.status_aprovacao_rh === 'reprovado'
-                                    "
-                                >
-                                    <i class="fas fa-times-circle"></i> REPROVADO
-                                </span>
-                                <span v-else-if="item.status_aprovacao_rh === 'aprovado'"> <i class="fas fa-check-circle"></i> APROVADO RH </span>
-                                <span v-else-if="temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado' && !item.status_aprovacao_rh">
-                                    <i class="fas fa-check-circle"></i> APROVADO {{ nomeAprovacaoExtra.toUpperCase() }}
-                                </span>
-                                <span v-else-if="item.status_aprovacao === 'aprovado' && !item.status_aprovacao_rh">
-                                    <i class="fas fa-check-circle"></i> APROVADO GESTOR
-                                </span>
-                                <span v-else> <i class="fas fa-clock"></i> EM ABERTO </span>
-                            </span>
+                        <div class="mybp-card-right">
+                            <mybp-status-badge
+                                :variante="chaveStatusLista(item)"
+                                :texto="textoStatusLista(item)"
+                            />
                             <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
                                 <a
-                                    class="btn-actions-compact"
+                                    class="mybp-btn-acoes-compact"
                                     href="#"
                                     role="button"
                                     :id="`dropdownMenuLink_${item.id}`"
@@ -559,9 +566,8 @@
                                 >
                                     <i class="fas fa-ellipsis-v"></i>
                                 </a>
-
                                 <div
-                                    class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                    class="dropdown-menu mybp-dropdown-menu dropdown-menu-right"
                                     :class="{ show: isDropdownOpen(item.id) }"
                                     :aria-labelledby="`dropdownMenuLink_${item.id}`"
                                     @click="fecharDropdown"
@@ -573,9 +579,8 @@
                                         @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = true; aprovandoExtra = false; aprovandoRh = false; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
                                         v-if="item.user_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor"
                                     >
-                                        Aprovação Gestor
+                                        <i class="fa fa-user-check mr-1"></i> Aprovação Gestor
                                     </a>
-
                                     <a
                                         class="dropdown-item"
                                         href="javascript://"
@@ -583,9 +588,8 @@
                                         @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = false; aprovandoExtra = true; aprovandoRh = false; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
                                         v-if="temAprovacaoExtra && item.status_aprovacao === 'aprovado' && !item.status_aprovacao_extra && aprovaExtra"
                                     >
-                                        {{ nomeAprovacaoExtra }}
+                                        <i class="fa fa-user-check mr-1"></i> {{ nomeAprovacaoExtra }}
                                     </a>
-
                                     <a
                                         class="dropdown-item"
                                         href="javascript://"
@@ -599,157 +603,64 @@
                                             aprovaRh
                                         "
                                     >
-                                        Aprovação Rh
+                                        <i class="fa fa-users mr-1"></i> Aprovação RH
                                     </a>
-
                                     <a
                                         class="dropdown-item"
                                         href="javascript://"
                                         title="Visualizar"
                                         @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = false; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"
                                     >
-                                        Visualizar
+                                        <i class="fa fa-search mr-1"></i> Visualizar
                                     </a>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Detalhes do Card -->
-                    <div class="card-details-row">
-                        <div class="detail-item">
-                            <i class="fas fa-building text-muted"></i>
-                            <span class="detail-label">Centro Custo:</span>
-                            <span class="detail-value">{{ item.centro_custo.label }}</span>
-                        </div>
-                        <div class="detail-item" v-if="temFilial">
-                            <i class="fas fa-map-marker-alt text-muted"></i>
-                            <span class="detail-label">Lotação:</span>
-                            <span class="detail-value">{{ item.lotacao || 'Não informado' }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-tag text-muted"></i>
-                            <span class="detail-label">Tipo:</span>
-                            <span class="detail-value">{{ item.tipo }}</span>
-                        </div>
-                    </div>
-                    <div class="card-details-row">
-                        <div class="detail-item">
-                            <i class="fas fa-calendar-alt text-muted"></i>
-                            <span class="detail-label">Período:</span>
-                            <span class="detail-value">{{ item.periodo_dias }} dias</span>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-user text-muted"></i>
-                            <span class="detail-label">Solicitante:</span>
-                            <span class="detail-value">{{ item.user_cadastrou.nome }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Fluxo de Aprovação -->
-                    <div class="card-aprovacao-row">
-                        <div class="fluxo-icons">
-                            <div class="fluxo-step">
-                                <i class="fas fa-check-circle text-success"></i>
-                                <div class="fluxo-info">
-                                    <small class="fluxo-etapa">Solicitante</small>
-                                    <small class="fluxo-aprovador text-success">
-                                        {{ item.user_cadastrou.nome }}
-                                    </small>
-                                    <small class="fluxo-data">{{ item.created_at }}</small>
-                                </div>
+                    <div class="mybp-card-corpo" :class="classeBordaStatusLista(item)">
+                        <section class="mybp-card-secao">
+                            <div class="mybp-card-row">
+                                <mybp-card-campo
+                                    icon="fas fa-user"
+                                    label="Colaborador"
+                                    :valor="item.colaborador ? item.colaborador.nome : 'Não informado'"
+                                    forte
+                                />
+                                <mybp-card-campo icon="fas fa-tag" label="Tipo" :valor="item.tipo" />
+                                <mybp-card-campo
+                                    icon="fas fa-calendar-alt"
+                                    label="Período"
+                                    :valor="item.periodo_dias != null && item.periodo_dias !== '' ? `${item.periodo_dias} dias` : 'Não informado'"
+                                />
                             </div>
-                            <i class="fas fa-chevron-right text-muted mx-2"></i>
-                            <!-- Gestor -->
-                            <div class="fluxo-step">
-                                <i v-if="item.status_aprovacao === 'aprovado'" class="fas fa-check-circle text-success"></i>
-                                <i v-else-if="item.status_aprovacao === 'reprovado'" class="fas fa-times-circle text-danger"></i>
-                                <i v-else class="fas fa-clock text-muted"></i>
-                                <div class="fluxo-info">
-                                    <small class="fluxo-etapa">Gestor</small>
-                                    <small v-if="item.status_aprovacao === 'aprovado'" class="fluxo-aprovador text-success">
-                                        {{ item.user_aprovacao?.nome || '' }}
-                                    </small>
-                                    <small v-else-if="item.status_aprovacao === 'reprovado'" class="fluxo-aprovador text-danger">
-                                        {{ item.user_aprovacao?.nome || '' }}
-                                    </small>
-                                    <small v-else class="fluxo-status text-warning">Aguardando</small>
-                                    <small v-if="item.data_aprovacao" class="fluxo-data">{{ item.data_aprovacao }}</small>
-                                </div>
+                        </section>
+                        <section class="mybp-card-secao">
+                            <div class="mybp-card-row">
+                                <mybp-card-campo
+                                    v-if="temFilial"
+                                    icon="fas fa-building"
+                                    label="Lotação"
+                                    :valor="item.lotacao || 'Não informado'"
+                                />
+                                <mybp-card-campo
+                                    icon="fas fa-sitemap"
+                                    label="Centro de custo"
+                                    :valor="centroCustoLista(item)"
+                                />
+                                <mybp-card-campo
+                                    icon="fas fa-user-edit"
+                                    label="Solicitante"
+                                    :valor="solicitanteLista(item)"
+                                />
                             </div>
-
-                            <template v-if="temAprovacaoExtra">
-                                <i class="fas fa-chevron-right text-muted mx-2"></i>
-
-                                <!-- Aprovação Extra -->
-                                <div class="fluxo-step">
-                                    <i v-if="item.status_aprovacao === 'reprovado'" class="fas fa-ban text-secondary"></i>
-                                    <i v-else-if="item.status_aprovacao_extra === 'aprovado'" class="fas fa-check-circle text-success"></i>
-                                    <i v-else-if="item.status_aprovacao_extra === 'reprovado'" class="fas fa-times-circle text-danger"></i>
-                                    <i v-else-if="item.status_aprovacao === 'aprovado' && !item.status_aprovacao_extra" class="fas fa-clock text-warning"></i>
-                                    <i v-else class="fas fa-circle text-muted"></i>
-                                    <div class="fluxo-info">
-                                        <small class="fluxo-etapa">{{ nomeAprovacaoExtra }}</small>
-                                        <small v-if="item.status_aprovacao === 'reprovado'" class="fluxo-status text-secondary"> Cancelada </small>
-                                        <small v-else-if="item.status_aprovacao_extra === 'aprovado'" class="fluxo-aprovador text-success">
-                                            {{ item.user_aprovacao_extra?.nome || '' }}
-                                        </small>
-                                        <small v-else-if="item.status_aprovacao_extra === 'reprovado'" class="fluxo-aprovador text-danger">
-                                            {{ item.user_aprovacao_extra?.nome || '' }}
-                                        </small>
-                                        <small v-else-if="item.status_aprovacao === 'aprovado'" class="fluxo-status text-warning"> Aguardando </small>
-                                        <small v-else class="fluxo-status">Pendente</small>
-                                        <small v-if="item.data_aprovacao_extra" class="fluxo-data">{{ item.data_aprovacao_extra }}</small>
-                                    </div>
-                                </div>
-                            </template>
-
-                            <i class="fas fa-chevron-right text-muted mx-2"></i>
-
-                            <!-- RH -->
-                            <div class="fluxo-step">
-                                <i
-                                    v-if="item.status_aprovacao === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')"
-                                    class="fas fa-ban text-secondary"
-                                ></i>
-                                <i v-else-if="item.status_aprovacao_rh === 'aprovado'" class="fas fa-check-circle text-success"></i>
-                                <i v-else-if="item.status_aprovacao_rh === 'reprovado'" class="fas fa-times-circle text-danger"></i>
-                                <i
-                                    v-else-if="
-                                        (temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') ||
-                                        (!temAprovacaoExtra && item.status_aprovacao === 'aprovado')
-                                    "
-                                    class="fas fa-clock text-warning"
-                                ></i>
-                                <i v-else class="fas fa-circle text-muted"></i>
-                                <div class="fluxo-info">
-                                    <small class="fluxo-etapa">RH</small>
-                                    <small
-                                        v-if="item.status_aprovacao === 'reprovado' || (temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')"
-                                        class="fluxo-status text-secondary"
-                                    >
-                                        Cancelada
-                                    </small>
-                                    <small v-else-if="item.status_aprovacao_rh === 'aprovado'" class="fluxo-aprovador text-success">
-                                        {{ item.rh_aprovacao?.nome || '' }}
-                                    </small>
-                                    <small v-else-if="item.status_aprovacao_rh === 'reprovado'" class="fluxo-aprovador text-danger">
-                                        {{ item.rh_aprovacao?.nome || '' }}
-                                    </small>
-                                    <small
-                                        v-else-if="
-                                            (temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') ||
-                                            (!temAprovacaoExtra && item.status_aprovacao === 'aprovado')
-                                        "
-                                        class="fluxo-status text-warning"
-                                    >
-                                        Aguardando
-                                    </small>
-                                    <small v-else class="fluxo-status">Pendente</small>
-                                    <small v-if="item.data_aprovacao_rh" class="fluxo-data">{{ item.data_aprovacao_rh }}</small>
-                                </div>
+                        </section>
+                        <section class="mybp-card-secao mybp-card-secao--fluxo">
+                            <div class="mybp-card-secao__titulo">
+                                <i class="fas fa-project-diagram" aria-hidden="true"></i> Fluxo de aprovação
                             </div>
-                        </div>
+                            <mybp-fluxo-aprovacao :steps="fluxoStepsLista(item)" />
+                        </section>
                     </div>
                 </div>
             </div>
@@ -777,9 +688,14 @@ import configuracoes from '../../../mixins/Configuracoes'
 import DateRangeFilter from '../../DateRangeFilter.vue'
 import FiltroListagem from '../../ui/FiltroListagem.vue'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete'
+import MybpCardCampo from '../../ui/MybpCardCampo.vue'
+import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
+import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
+import ComboboxValidation from '../../../mixins/ComboboxValidation'
+import { buildOpcoesStatusFluxoAprovacao } from '../../../utils/opcoesStatusFluxoAprovacao'
 
 export default {
-    mixins: [ExportacaoMixin, Utils, configuracoes],
+    mixins: [ExportacaoMixin, Utils, configuracoes, ComboboxValidation],
     inject: {
         atualizarUrlMovimentacao: { default: () => () => {} }
     },
@@ -788,7 +704,10 @@ export default {
         DateRangeFilter,
         Upload,
         FiltroListagem,
-        ComboboxAutoComplete
+        ComboboxAutoComplete,
+        MybpCardCampo,
+        MybpFluxoAprovacao,
+        MybpStatusBadge
     },
     data() {
         return {
@@ -918,6 +837,13 @@ export default {
         }
     },
     computed: {
+        formStatusAprovacaoOpcoes() {
+            return [
+                { value: '', label: 'Selecione...' },
+                { value: 'aprovado', label: 'Aprovar' },
+                { value: 'reprovado', label: 'Reprovar' }
+            ]
+        },
         naoAprovados() {
             return this.lista.filter((item) => {
                 if (item.status_aprovacao === null) {
@@ -1027,22 +953,10 @@ export default {
             return opts
         },
         opcoesStatus() {
-            const opts = [
-                { value: '', label: 'Todos os status' },
-                { value: 'aberto', label: 'Em aberto' },
-                { value: 'aprovado_gestor', label: 'Aprovado Gestor' }
-            ]
-            if (this.temAprovacaoExtra) {
-                opts.push({
-                    value: 'aprovado_extra',
-                    label: `Aprovado ${this.nomeAprovacaoExtra || 'Extra'}`
-                })
-            }
-            opts.push(
-                { value: 'aprovado_rh', label: 'Aprovado Rh' },
-                { value: 'reprovado', label: 'Reprovado' }
-            )
-            return opts
+            return buildOpcoesStatusFluxoAprovacao({
+                temAprovacaoExtra: this.temAprovacaoExtra,
+                nomeAprovacaoExtra: this.nomeAprovacaoExtra
+            })
         },
         opcoesOrdenacao() {
             return [
@@ -1061,9 +975,178 @@ export default {
             set(valor) {
                 this.controle.dados.pages = parseInt(valor, 10) || 20
             }
+        },
+        labelLotacaoAtual() {
+            if ([undefined, null, ''].includes(this.form.colaborador_id) && [undefined, null, ''].includes(this.form.centro_custo_id)) {
+                return ''
+            }
+
+            const formatLotacao = (nomeFantasia, razaoSocial, cnpj) => {
+                const nome = String(nomeFantasia || razaoSocial || '').trim()
+                const doc = String(cnpj || '').trim()
+                if (!nome && !doc) return ''
+                if (!nome) return doc
+                if (!doc) return nome
+                return `${nome} - ${doc}`
+            }
+
+            const ehFilial =
+                this.form.filial === true || this.form.filial === 1 || this.form.filial === '1'
+            const filiaisAuth =
+                (this.authconfiguracao && this.authconfiguracao.cnpjs && this.authconfiguracao.cnpjs.filiais) || []
+
+            if (ehFilial && this.form.centro_custo_filial_id) {
+                const vinculo = _.find(this.centroCustoSelecionado, { id: this.form.centro_custo_filial_id })
+                const filialRel = vinculo && (vinculo.filial || vinculo.Filial)
+                if (filialRel) {
+                    let viaRel = formatLotacao(filialRel.nome_fantasia, filialRel.razao_social, filialRel.cnpj)
+                    if (viaRel && String(filialRel.cnpj || '').trim()) return viaRel
+
+                    const clienteFilialId = vinculo.cliente_filial_id
+                    if (clienteFilialId != null && clienteFilialId !== '') {
+                        const cf = _.find(filiaisAuth, { id: clienteFilialId })
+                        if (cf) {
+                            const viaAuth = formatLotacao(cf.nome_fantasia || cf.nome_fntasia, cf.razao_social, cf.cnpj)
+                            if (viaAuth) return viaAuth
+                        }
+                    }
+
+                    if (viaRel) return viaRel
+                }
+
+                if (vinculo && vinculo.cliente_filial_id != null && vinculo.cliente_filial_id !== '') {
+                    const cf = _.find(filiaisAuth, { id: vinculo.cliente_filial_id })
+                    if (cf) {
+                        const viaAuth = formatLotacao(cf.nome_fantasia || cf.nome_fntasia, cf.razao_social, cf.cnpj)
+                        if (viaAuth) return viaAuth
+                    }
+                }
+            }
+
+            const matrizAuth = this.authconfiguracao && this.authconfiguracao.cnpjs && this.authconfiguracao.cnpjs.matriz
+            if (matrizAuth) {
+                const viaMatriz = formatLotacao(matrizAuth.nome_fantasia, matrizAuth.razao_social, matrizAuth.cnpj)
+                if (viaMatriz) return viaMatriz
+            }
+
+            if (this.lista_ccs && this.lista_ccs.cnpjs) {
+                const matrizLista = Object.values(this.lista_ccs.cnpjs).find((item) => item && item.matriz)
+                if (matrizLista) {
+                    return formatLotacao(matrizLista.nome_fantasia, matrizLista.razao_social, matrizLista.cnpj)
+                }
+            }
+
+            return ''
         }
     },
     methods: {
+        tituloCardLista(item) {
+            return item?.colaborador?.nome || 'Colaborador não informado'
+        },
+        centroCustoLista(item) {
+            return item?.centro_custo?.label || 'Não informado'
+        },
+        solicitanteLista(item) {
+            return item?.user_cadastrou?.nome || 'Não informado'
+        },
+        chaveStatusLista(item) {
+            if (!item) return 'aberto'
+            if (
+                item.status_aprovacao === 'reprovado' ||
+                item.status_aprovacao_extra === 'reprovado' ||
+                item.status_aprovacao_rh === 'reprovado'
+            ) {
+                return 'reprovado'
+            }
+            if (item.status_aprovacao_rh === 'aprovado') return 'rh'
+            if (this.temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') return 'extra'
+            if (item.status_aprovacao === 'aprovado') return 'gestor'
+            return 'aberto'
+        },
+        classeBordaStatusLista(item) {
+            return `mybp-card-corpo--${this.chaveStatusLista(item)}`
+        },
+        textoStatusLista(item) {
+            const chave = this.chaveStatusLista(item)
+            if (chave === 'reprovado') return 'Reprovado'
+            if (chave === 'rh') return 'Aprovado RH'
+            if (chave === 'extra') return `Aprovado ${this.nomeAprovacaoExtra || 'Extra'}`
+            if (chave === 'gestor') return 'Aprovado Gestor'
+            return 'Em aberto'
+        },
+        fluxoStepsLista(item) {
+            if (!item) return []
+            const steps = [
+                {
+                    key: 'solicitante',
+                    label: 'Solicitante',
+                    status: 'aprovado',
+                    nome: item.user_cadastrou?.nome,
+                    data: item.created_at
+                },
+                {
+                    key: 'gestor',
+                    label: 'Gestor',
+                    status:
+                        item.status_aprovacao === 'aprovado'
+                            ? 'aprovado'
+                            : item.status_aprovacao === 'reprovado'
+                              ? 'reprovado'
+                              : 'aguardando',
+                    nome: item.user_aprovacao?.nome,
+                    data: item.data_aprovacao
+                }
+            ]
+
+            if (this.temAprovacaoExtra) {
+                let statusExtra = 'pendente'
+                if (item.status_aprovacao === 'reprovado') {
+                    statusExtra = 'cancelado'
+                } else if (item.status_aprovacao_extra === 'aprovado') {
+                    statusExtra = 'aprovado'
+                } else if (item.status_aprovacao_extra === 'reprovado') {
+                    statusExtra = 'reprovado'
+                } else if (item.status_aprovacao === 'aprovado') {
+                    statusExtra = 'aguardando'
+                }
+                steps.push({
+                    key: 'extra',
+                    label: this.nomeAprovacaoExtra || 'Extra',
+                    status: statusExtra,
+                    nome: item.aprovacao_extra_nome || item.user_aprovacao_extra?.nome,
+                    data: item.data_aprovacao_extra,
+                    statusTexto: statusExtra === 'cancelado' ? 'Cancelada' : undefined
+                })
+            }
+
+            let statusRh = 'pendente'
+            if (
+                item.status_aprovacao === 'reprovado' ||
+                (this.temAprovacaoExtra && item.status_aprovacao_extra === 'reprovado')
+            ) {
+                statusRh = 'cancelado'
+            } else if (item.status_aprovacao_rh === 'aprovado') {
+                statusRh = 'aprovado'
+            } else if (item.status_aprovacao_rh === 'reprovado') {
+                statusRh = 'reprovado'
+            } else if (
+                (this.temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') ||
+                (!this.temAprovacaoExtra && item.status_aprovacao === 'aprovado')
+            ) {
+                statusRh = 'aguardando'
+            }
+
+            steps.push({
+                key: 'rh',
+                label: 'RH',
+                status: statusRh,
+                nome: item.rh_aprovacao?.nome,
+                data: item.data_aprovacao_rh,
+                statusTexto: statusRh === 'cancelado' ? 'Cancelada' : undefined
+            })
+
+            return steps
+        },
         toggleDropdown(itemId) {
             if (!itemId) {
                 return
@@ -1242,24 +1325,7 @@ export default {
         },
 
         cadastrar() {
-            if (this.form.colaborador_id === '') {
-                valida_campo_vazio($(`#colaborador_${this.hash}`), 1)
-                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo COLABORADOR não pode ficar vazio')
-                this.resetaCampoColaborador()
-                return false
-            }
-            if (this.form.gestor_id === '') {
-                valida_campo_vazio($(`#gestor_${this.hash}`), 1)
-                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo GESTOR não pode ficar vazio')
-                this.resetaCampoGestor()
-                return false
-            }
-
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
+            if (!this.validarCamposSolicitacao()) {
                 return false
             }
 
@@ -1314,31 +1380,25 @@ export default {
                     this.editando = true
 
                     this.preload = false
+                    this.$nextTick(() => {
+                        this.sovizualiza(this.visualizar && !this.aprovando && !this.aprovandoExtra && !this.aprovandoRh)
+                    })
                 })
                 .catch((error) => {
                     this.preload = false
                 })
         },
 
-        alterar() {
-            if (this.form.colaborador_id === '') {
-                valida_campo_vazio($(`#colaborador_${this.hash}`), 1)
-                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo COLABORADOR não pode ficar vazio')
-                this.resetaCampoColaborador()
-                return false
+        sovizualiza(so_visualizar) {
+            if (so_visualizar) {
+                setTimeout(() => {
+                    $(`#${this.hash} .mybp-modal-form :input`).attr('disabled', 'true')
+                }, 100)
             }
-            if (this.form.gestor_id === '') {
-                valida_campo_vazio($(`#gestor_${this.hash}`), 1)
-                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo GESTOR não pode ficar vazio')
-                this.resetaCampoGestor()
-                return false
-            }
+        },
 
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
+        alterar() {
+            if (!this.validarCamposSolicitacao()) {
                 return false
             }
 
@@ -1358,11 +1418,51 @@ export default {
                 })
         },
 
-        aprovarGestor() {
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
+        validarCamposSolicitacao() {
+            const bloqueados = this.visualizar || this.aprovando || this.aprovandoExtra || this.aprovandoRh
+            if (bloqueados) {
+                return true
+            }
+
+            if (!this.form.colaborador_id) {
+                valida_campo_vazio($(`#colaborador_${this.hash}`), 1)
+                $(`#${this.hash} #colaborador_${this.hash}`).focus().trigger('blur')
+                mostraErro('', 'Campo COLABORADOR não pode ficar vazio')
+                this.resetaCampoColaborador()
                 return false
+            }
+
+            if (!this.form.tipo) {
+                valida_campo_vazio($(`#valor-extra-tipo-${this.hash}`), 1)
+                mostraErro('', 'Campo TIPO não pode ficar vazio')
+                return false
+            }
+
+            if (this.form.periodo_dias === '' || this.form.periodo_dias === null || this.form.periodo_dias === undefined) {
+                valida_campo_vazio($(`#valor-extra-periodo-${this.hash}`), 1)
+                mostraErro('', 'Campo PERÍODO EM DIAS não pode ficar vazio')
+                return false
+            }
+
+            if (!this.form.gestor_id) {
+                valida_campo_vazio($(`#gestor_${this.hash}`), 1)
+                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur')
+                mostraErro('', 'Campo GESTOR não pode ficar vazio')
+                this.resetaCampoGestor()
+                return false
+            }
+
+            return this.validarInputsAtivosVisiveis(this.hash)
+        },
+
+        aprovarGestor() {
+            const statusId = `valorextra-status-gestor-${this.hash}`
+            if (
+                !this.exigirCombobox(this.form.status_aprovacao, statusId, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
             }
 
             this.preload = true
@@ -1381,10 +1481,13 @@ export default {
         },
 
         aprovarExtra() {
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
-                return false
+            const statusId = `valorextra-status-extra-${this.hash}`
+            if (
+                !this.exigirCombobox(this.form.status_aprovacao_extra, statusId, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
             }
 
             this.preload = true
@@ -1403,10 +1506,13 @@ export default {
         },
 
         aprovarRh() {
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
-                return false
+            const statusId = `valorextra-status-rh-${this.hash}`
+            if (
+                !this.exigirCombobox(this.form.status_aprovacao_rh, statusId, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
             }
             this.preload = true
 
@@ -1522,151 +1628,6 @@ export default {
 </script>
 
 <style scoped>
-/* Container de Cards */
-.cards-lista {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-/* Checkbox Geral */
-.checkbox-geral-container {
-    background: #fff;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e9ecef;
-}
-
-.checkbox-geral-label {
-    display: flex;
-    align-items: center;
-    margin: 0;
-    cursor: pointer;
-    font-weight: 500;
-    color: #495057;
-}
-
-/* Card Individual */
-.solicitacao-card {
-    background: #fff;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 1rem;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.solicitacao-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
-    border-color: #007bff;
-    transform: translateY(-2px);
-}
-
-/* Header do Card */
-.card-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid #f1f3f5;
-    margin-bottom: 0.75rem;
-}
-
-.card-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex: 1;
-    overflow: hidden;
-}
-
-.card-right {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.checkbox-inline {
-    margin: 0;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-}
-
-.custom-checkbox {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: #174257;
-}
-
-.badge-id {
-    background: #174257;
-    color: white;
-    padding: 0.25rem 0.625rem;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 0.75rem;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.colaborador-principal {
-    display: flex;
-    align-items: center;
-    font-size: 0.938rem;
-    color: #212529;
-    overflow: hidden;
-}
-
-.colaborador-principal strong {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Status Badge */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    white-space: nowrap;
-}
-
-.status-reprovado {
-    background: #dc3545;
-    color: white;
-}
-
-.status-aprovado {
-    background: #28a745;
-    color: white;
-}
-
-.status-aprovado-gestor {
-    background: #ffc107;
-    color: #212529;
-}
-
-.status-aprovado-extra {
-    background: #17a2b8;
-    color: white;
-}
-
-.status-pendente {
-    background: #e9ecef;
-    color: #495057;
-}
-
 .valorextra-filtro-hint {
     display: inline-flex;
     align-items: center;
@@ -1680,184 +1641,5 @@ export default {
     font-size: 0.65rem;
     font-weight: 600;
     vertical-align: middle;
-}
-
-/* Botão de ações compacto */
-.btn-actions-compact {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    color: #495057;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    flex-shrink: 0;
-}
-
-.btn-actions-compact:hover {
-    background: #007bff;
-    border-color: #007bff;
-    color: white;
-    transform: rotate(90deg);
-}
-
-/* Detalhes do Card */
-.card-details-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid #f1f3f5;
-    margin-bottom: 0.75rem;
-}
-
-.detail-item {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.813rem;
-    min-width: 0;
-}
-
-.detail-item i {
-    flex-shrink: 0;
-    font-size: 0.875rem;
-}
-
-.detail-label {
-    font-weight: 500;
-    color: #6c757d;
-    white-space: nowrap;
-}
-
-.detail-value {
-    color: #212529;
-    font-weight: 400;
-}
-
-/* Fluxo de Aprovação */
-.card-aprovacao-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-}
-
-.fluxo-label {
-    font-size: 0.813rem;
-    font-weight: 500;
-    color: #495057;
-    white-space: nowrap;
-    padding-top: 0.25rem;
-}
-
-.fluxo-icons {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    flex: 1;
-}
-
-.fluxo-step {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: #f8f9fa;
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    border: 1px solid #e9ecef;
-}
-
-.fluxo-step i {
-    font-size: 1.125rem;
-    margin-top: 0.125rem;
-    flex-shrink: 0;
-}
-
-.fluxo-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-    min-width: 0;
-}
-
-.fluxo-etapa {
-    font-size: 0.688rem;
-    font-weight: 600;
-    color: #495057;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-}
-
-.fluxo-aprovador {
-    font-size: 0.75rem;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.fluxo-status {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: #6c757d;
-}
-
-.fluxo-data {
-    font-size: 0.688rem;
-    color: #6c757d;
-    white-space: nowrap;
-}
-
-/* Dropdown */
-.dropdown-menu-custom {
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border: none;
-    padding: 0.5rem 0;
-}
-
-.dropdown-menu-custom .dropdown-item {
-    padding: 0.625rem 1.25rem;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-}
-
-.dropdown-menu-custom .dropdown-item:hover {
-    background: #f8f9fa;
-    color: #007bff;
-    padding-left: 1.5rem;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-    .card-header-row {
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-
-    .card-left {
-        width: 100%;
-    }
-
-    .card-right {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .card-details-row {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .card-aprovacao-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
 }
 </style>

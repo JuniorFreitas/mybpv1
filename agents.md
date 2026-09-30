@@ -163,5 +163,6 @@ Guia para modelos de IA atuarem com seguranca, qualidade e performance no projet
 - Migracao frontend (Composition API + Services): `docs/PLANO_MIGRACAO_COMPOSITION_API_SERVICES.md`, agente `agents/migracao-frontend/README.md`
 - Listagem cadastros (card list + filtros + query params): `docs/PADRAO_UX_LISTAGEM_CADASTROS.md` e `.cursor/skills/mybp-front-cardlist/SKILL.md` (util: `resources/js/utils/listagemQueryParams.js`, estilos: `resources/sass/_mybp-listagem-ui.scss`)
 - Filtros compactos operacionais: `docs/PADRAO_UX_FILTROS_COMPACTOS.md` e `.cursor/skills/mybp-filtros-compactos/SKILL.md` (CSS: `resources/sass/_mybp-filtros-compactos.scss`, ref: `TreinamentosCarteiraEtiquetas.vue`)
+- Validação ComboboxAutoComplete: `docs/PADRAO_VALIDACAO_COMBOBOX.md` · util `resources/js/utils/comboboxValidation.js` · mixin `ComboboxValidation` (não usar `valida_campo_vazio` no combo)
 - Card detalhe operacional: `docs/PADRAO_UX_CARD_DETALHE.md` e `.cursor/skills/mybp-card-detalhe/SKILL.md` (CSS: `resources/sass/_mybp-card-detalhe.scss`, ref: `SolicitacaoDemissao.vue`)
 - Relatorio usabilidade + admissao por cliente: `.cursor/skills/relatorio-cliente-usabilidade/SKILL.md` (`php artisan mybp:relatorio-cliente-usabilidade {cliente_id}` · recrutamento: `mybp:relatorio-cliente-recrutamento`)

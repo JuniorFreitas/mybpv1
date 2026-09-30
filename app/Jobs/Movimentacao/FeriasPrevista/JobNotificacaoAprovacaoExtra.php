@@ -72,17 +72,6 @@ class JobNotificacaoAprovacaoExtra implements ShouldQueue
             return;
         }
 
-        // Busca nome do colaborador usando query builder direto
-        $nomeColaborador = DB::table('admissoes as a')
-            ->join('feedback_curriculos as f', 'a.feedback_id', '=', 'f.id')
-            ->join('curriculos as c', 'f.curriculo_id', '=', 'c.id')
-            ->where('a.id', $ferias->admissao_id)
-            ->value('c.nome');
-
-        if (!$nomeColaborador) {
-            return;
-        }
-
         // Busca empresa
         $empresa = DB::table('clientes')
             ->select('nome_fantasia')
@@ -100,7 +89,7 @@ class JobNotificacaoAprovacaoExtra implements ShouldQueue
             'emails_bcc' => $this->emailsExtra, // Emails restantes vão como BCC
             'etapa' => $this->etapa,
             'ferias_id' => $ferias->id,
-            'colaborador' => $nomeColaborador,
+            'colaborador' => '',
             'empresa_id' => $this->empresaId,
             'nome_empresa' => $empresa ? $empresa->nome_fantasia : 'MyBP seu negócio na sua mão',
         ];

@@ -77,15 +77,6 @@ class JobNotificacaoAprovacao implements ShouldQueue
             return;
         }
 
-        // Busca currículo diretamente
-        $curriculo = \App\Models\Curriculo::withoutGlobalScope(\App\Scopes\ScopeEmpresa::class)
-            ->select('id', 'nome')
-            ->where('id', $valorExtra->colaborador_id)
-            ->first();
-
-        if (!$curriculo) {
-            return;
-        }
 
         // Busca empresa
         $empresa = DB::table('clientes')
@@ -100,7 +91,7 @@ class JobNotificacaoAprovacao implements ShouldQueue
             'email_para' => $usuarioPara->login,
             'etapa' => $this->etapa,
             'valor_extra_id' => $valorExtra->id,
-            'colaborador' => $curriculo->nome,
+            'colaborador' => '',
             'tipo_valor' => $valorExtra->tipo,
             'periodo_dias' => $valorExtra->periodo_dias,
             'empresa_id' => $this->empresaId,

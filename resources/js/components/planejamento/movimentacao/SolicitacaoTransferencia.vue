@@ -9,70 +9,144 @@
                 <div class="alert alert-success alert-dismissible" v-show="atualizado">
                     <h4><i class="icon fa fa-check"></i>Solicitação alterada com sucesso!</h4>
                 </div>
-                <form v-if="!preload && !cadastrado && !atualizado" :id="`form_${hash}`" onsubmit="return false">
-                    <fieldset>
-                        <legend>Informações</legend>
+                <form
+                    v-if="!preload && !cadastrado && !atualizado"
+                    :id="`form_${hash}`"
+                    class="mybp-modal-form mybp-filtros-compactos"
+                    onsubmit="return false"
+                >
+                    <p class="mybp-campo-obrigatorio-legenda mybp-modal-legenda">
+                        Campos com <span class="text-danger">*</span> são obrigatórios.
+                    </p>
+
+                    <fieldset class="mybp-modal-secao">
+                        <legend>Colaborador e centros de custo</legend>
                         <div class="row">
                             <colaborador
-                                label="Colaborador *"
+                                label="Colaborador"
+                                :obrigatorio="true"
                                 :model="form"
                                 :verifica="visualizar || aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
                                 :hash="hash"
                                 @evtseleciona="onColaboradorSelecionado"
                             ></colaborador>
-                            <div class="col-12 col-md-4">
-                                <div class="form-group">
-                                    <label>Centro de Custo Origem</label>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6" v-if="lista_ccs && temFilial">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`transferencia-lotacao-origem-${hash}`">
+                                        Lotação origem (CNPJ) <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormLotacaoOrigem"
+                                            instance-id="form-transferencia-lotacao-origem"
+                                            :input-id="`transferencia-lotacao-origem-${hash}`"
+                                            v-model="formLotacaoOrigemCnpj"
+                                            :options="formLotacaoOpcoes"
+                                            :disabled="emFluxoAprovacao || centroOrigemDesabilitadoPorColaborador"
+                                            placeholder-blur="Selecione a lotação origem..."
+                                            empty-message="Nenhuma lotação encontrada."
+                                            :max-results="50"
+                                            @opening="fecharOutrosComboboxes('form-transferencia-lotacao-origem')"
+                                            @select="onSelectFormLotacaoOrigem"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div :class="temFilial ? 'col-12 col-md-6' : 'col-12 col-md-6'">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`transferencia-cc-origem-${hash}`">
+                                        Centro de Custo Origem <span class="text-danger">*</span>
+                                    </label>
                                     <div class="mybp-combobox-wrap">
                                         <combobox-auto-complete
                                             ref="comboCcOrigem"
                                             instance-id="form-cc-origem"
                                             v-model="form.centro_custo_origem_id"
                                             :options="centroCustoOrigemOpcoes"
-                                            :disabled="emFluxoAprovacao || centroOrigemDesabilitadoPorColaborador || !centroCustoOrigemOpcoes.length"
+                                            :disabled="emFluxoAprovacao || centroOrigemDesabilitadoPorColaborador || !centroCustoOrigemOpcoes.length || (temFilial && !formLotacaoOrigemCnpj)"
                                             :input-id="`transferencia-cc-origem-${hash}`"
                                             placeholder-blur="Selecione o centro de custo origem"
                                             placeholder-focus="Digite para filtrar…"
-                                            empty-message="Nenhum centro de custo encontrado."
+                                            empty-message="Nenhum centro de custo para esta lotação."
                                             :max-results="200"
                                             @opening="fecharOutrosComboboxes('form-cc-origem')"
+                                            @select="limparComboboxInvalido(`transferencia-cc-origem-${hash}`)"
                                         />
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="col-12 col-md-4">
-                                <div class="form-group">
-                                    <label>Centro de Custo Destino <span class="text-danger">*</span></label>
+                        <div class="row">
+                            <div class="col-12 col-md-6" v-if="lista_ccs && temFilial">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`transferencia-lotacao-destino-${hash}`">
+                                        Lotação destino (CNPJ) <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="mybp-combobox-wrap">
+                                        <combobox-auto-complete
+                                            ref="comboFormLotacaoDestino"
+                                            instance-id="form-transferencia-lotacao-destino"
+                                            :input-id="`transferencia-lotacao-destino-${hash}`"
+                                            v-model="formLotacaoDestinoCnpj"
+                                            :options="formLotacaoOpcoes"
+                                            :disabled="emFluxoAprovacao"
+                                            placeholder-blur="Selecione a lotação destino..."
+                                            empty-message="Nenhuma lotação encontrada."
+                                            :max-results="50"
+                                            @opening="fecharOutrosComboboxes('form-transferencia-lotacao-destino')"
+                                            @select="onSelectFormLotacaoDestino"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div :class="temFilial ? 'col-12 col-md-6' : 'col-12 col-md-6'">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" :for="`transferencia-cc-destino-${hash}`">
+                                        Centro de Custo Destino <span class="text-danger">*</span>
+                                    </label>
                                     <div class="mybp-combobox-wrap">
                                         <combobox-auto-complete
                                             ref="comboCcDestino"
                                             instance-id="form-cc-destino"
                                             v-model="form.centro_custo_destino_id"
                                             :options="centroCustoDestinoOpcoes"
-                                            :disabled="emFluxoAprovacao || !centroCustoDestinoOpcoes.length"
+                                            :disabled="emFluxoAprovacao || !centroCustoDestinoOpcoes.length || (temFilial && !formLotacaoDestinoCnpj)"
                                             :input-id="`transferencia-cc-destino-${hash}`"
                                             placeholder-blur="Selecione o centro de custo destino"
                                             placeholder-focus="Digite para filtrar…"
-                                            empty-message="Nenhum centro de custo encontrado."
+                                            empty-message="Nenhum centro de custo para esta lotação."
                                             :max-results="200"
                                             @opening="fecharOutrosComboboxes('form-cc-destino')"
+                                            @select="limparComboboxInvalido(`transferencia-cc-destino-${hash}`)"
                                         />
                                     </div>
                                 </div>
                             </div>
 
                             <div class="col-12 col-md-4">
-                                <label>Data para transferência <span class="text-danger">*</span></label>
-                                <datepicker
-                                    formsm
-                                    label=""
-                                    class="corrigiDatepicker"
-                                    v-model="form.data_transferencia"
-                                    :disabled="visualizar || aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
-                                ></datepicker>
+                                <div class="form-group mybp-filtro-campo mybp-modal-campo-data">
+                                    <label class="mybp-label">Data para transferência <span class="text-danger">*</span></label>
+                                    <datepicker
+                                        :id="`transferencia-data-${hash}`"
+                                        formsm
+                                        label=""
+                                        class="corrigiDatepicker"
+                                        v-model="form.data_transferencia"
+                                        :disabled="visualizar || aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
+                                        @onselect="limparCampoDataInvalido(`transferencia-data-${hash}`)"
+                                    ></datepicker>
+                                </div>
                             </div>
+                        </div>
+                    </fieldset>
 
+                    <fieldset v-if="form.modo_aprovacao !== 'gestor_unico'" class="mybp-modal-secao">
+                        <legend>Gestores responsáveis</legend>
+                        <div class="row">
                             <div class="col-12 col-md-6" v-if="form.modo_aprovacao !== 'gestor_unico' && exigeAprovacaoGestorOrigem">
                                 <div class="form-group">
                                     <label>Gestor responsável pela origem</label>
@@ -106,32 +180,62 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-12" v-if="form.modo_aprovacao === 'gestor_unico'">
+                        </div>
+                    </fieldset>
+
+                    <fieldset v-if="form.modo_aprovacao === 'gestor_unico'" class="mybp-modal-secao">
+                        <legend>Aprovador único</legend>
+                        <div class="row">
+                            <div class="col-12">
                                 <div class="alert alert-info mb-0" role="alert">
                                     <i class="fa fa-info-circle"></i> Esta empresa usa aprovador único para transferências —
                                     gestor de origem e destino não participam deste fluxo.
                                     <strong v-if="form.label_gestor_aprovacao_unico">Aprovador: {{ form.label_gestor_aprovacao_unico }}</strong>
                                 </div>
                             </div>
+                        </div>
+                    </fieldset>
 
+                    <fieldset class="mybp-modal-secao">
+                        <legend>Detalhes</legend>
+                        <div class="row">
                             <div class="col-12">
-                                <div class="form-group">
-                                    <label>Observação</label>
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Observação</label>
                                     <textarea
                                         class="form-control form-control-sm"
                                         v-model="form.obs"
-                                        cols="5"
-                                        rows="5"
+                                        rows="3"
+                                        placeholder="Informações relevantes sobre a transferência"
                                         :disabled="visualizar || aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
                                     ></textarea>
                                 </div>
                             </div>
+                            <div class="col-12">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Anexos</label>
+                                    <upload
+                                        :model="form.anexos"
+                                        :model-delete="form.anexosDel"
+                                        :url="url_anexo"
+                                        :tipos="mimes"
+                                        :leitura="!podeanexar"
+                                        label="Selecionar"
+                                        @onProgresso="anexoUploadAndamento = true"
+                                        @onFinalizado="anexoUploadAndamento = false"
+                                    ></upload>
+                                </div>
+                            </div>
                         </div>
+                    </fieldset>
 
-                        <div class="alert alert-warning" v-if="aprovando && !form.data_aprovacao">Esta solicitação ainda não foi aprovada ou reprovada!</div>
+                    <div class="alert alert-warning" v-if="aprovando && !form.data_aprovacao">Esta solicitação ainda não foi aprovada ou reprovada!</div>
 
-                        <fieldset v-if="exigeAprovacaoGestorOrigem && (visualizar || aprovando) && form.modo_aprovacao !== 'gestor_unico' && (aprovando || form.status_aprovacao || form.gestor_id)">
-                            <legend>Aprovação Gestor Origem</legend>
+                    <fieldset
+                        v-if="exigeAprovacaoGestorOrigem && (visualizar || aprovando) && form.modo_aprovacao !== 'gestor_unico' && (aprovando || form.status_aprovacao || form.gestor_id)"
+                        class="mybp-modal-secao"
+                    >
+                        <legend>Aprovação Gestor Origem</legend>
                             <div class="row">
                                 <div v-if="!aprovando && form.user_aprovacao" class="col-12">
                                     <legend>
@@ -154,25 +258,33 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Status</label>
-                                        <select
-                                            :disabled="!aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
-                                            v-model="form.status_aprovacao"
-                                            class="form-control form-control-sm validacampo"
-                                            onchange="valida_campo_vazio(this, 1)"
-                                            onblur="valida_campo_vazio(this, 1)"
-                                        >
-                                            <option value="">Selecione...</option>
-                                            <option value="aprovado">Aprovar</option>
-                                            <option value="reprovado">Reprovar</option>
-                                        </select>
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" :for="`transferencia-status-origem-${hash}`">
+                                            Status <span class="text-danger" v-if="aprovando">*</span>
+                                        </label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="form-transferencia-status-origem"
+                                                :input-id="`transferencia-status-origem-${hash}`"
+                                                v-model="form.status_aprovacao"
+                                                :options="formStatusAprovacaoOpcoes"
+                                                :disabled="!aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma opção encontrada."
+                                                :max-results="10"
+                                                @opening="fecharOutrosComboboxes('form-transferencia-status-origem')"
+                                                @select="limparComboboxInvalido('transferencia-status-origem-' + hash)"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </fieldset>
 
-                        <fieldset v-if="(visualizar || aprovandoGestorDestino) && form.exige_aprovacao_gestor_destino">
+                        <fieldset
+                            v-if="(visualizar || aprovandoGestorDestino) && form.exige_aprovacao_gestor_destino"
+                            class="mybp-modal-secao"
+                        >
                             <legend>Aprovação Gestor Destino</legend>
                             <div class="row">
                                 <div v-if="!aprovandoGestorDestino && form.quem_aprovou_gestor_destino" class="col-12">
@@ -196,19 +308,24 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Status</label>
-                                        <select
-                                            :disabled="!aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
-                                            v-model="form.status_aprovacao_gestor_destino"
-                                            class="form-control form-control-sm validacampo"
-                                            onchange="valida_campo_vazio(this, 1)"
-                                            onblur="valida_campo_vazio(this, 1)"
-                                        >
-                                            <option value="">Selecione...</option>
-                                            <option value="aprovado">Aprovar</option>
-                                            <option value="reprovado">Reprovar</option>
-                                        </select>
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" :for="`transferencia-status-destino-${hash}`">
+                                            Status <span class="text-danger" v-if="aprovandoGestorDestino">*</span>
+                                        </label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="form-transferencia-status-destino"
+                                                :input-id="`transferencia-status-destino-${hash}`"
+                                                v-model="form.status_aprovacao_gestor_destino"
+                                                :options="formStatusAprovacaoOpcoes"
+                                                :disabled="!aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma opção encontrada."
+                                                :max-results="10"
+                                                @opening="fecharOutrosComboboxes('form-transferencia-status-destino')"
+                                                @select="limparComboboxInvalido('transferencia-status-destino-' + hash)"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -218,7 +335,10 @@
                             Esta solicitação ainda não foi aprovada ou reprovada!
                         </div>
 
-                        <fieldset v-if="(visualizar || aprovandoGestorUnico) && form.modo_aprovacao === 'gestor_unico'">
+                        <fieldset
+                            v-if="(visualizar || aprovandoGestorUnico) && form.modo_aprovacao === 'gestor_unico'"
+                            class="mybp-modal-secao"
+                        >
                             <legend>Aprovação Gestor Aprovação</legend>
                             <div class="row">
                                 <div v-if="!aprovandoGestorUnico && form.quem_aprovou_gestor_unico" class="col-12">
@@ -242,19 +362,24 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Status</label>
-                                        <select
-                                            :disabled="!aprovandoGestorUnico || aprovandoExtra || aprovandoRh"
-                                            v-model="form.status_aprovacao_gestor_unico"
-                                            class="form-control form-control-sm validacampo"
-                                            onchange="valida_campo_vazio(this, 1)"
-                                            onblur="valida_campo_vazio(this, 1)"
-                                        >
-                                            <option value="">Selecione...</option>
-                                            <option value="aprovado">Aprovar</option>
-                                            <option value="reprovado">Reprovar</option>
-                                        </select>
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" :for="`transferencia-status-gestor-unico-${hash}`">
+                                            Status <span class="text-danger" v-if="aprovandoGestorUnico">*</span>
+                                        </label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="form-transferencia-status-gestor-unico"
+                                                :input-id="`transferencia-status-gestor-unico-${hash}`"
+                                                v-model="form.status_aprovacao_gestor_unico"
+                                                :options="formStatusAprovacaoOpcoes"
+                                                :disabled="!aprovandoGestorUnico || aprovandoExtra || aprovandoRh"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma opção encontrada."
+                                                :max-results="10"
+                                                @opening="fecharOutrosComboboxes('form-transferencia-status-gestor-unico')"
+                                                @select="limparComboboxInvalido('transferencia-status-gestor-unico-' + hash)"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -264,7 +389,7 @@
                             Esta solicitação ainda não foi aprovada ou reprovada por {{ nomeAprovacaoExtra }}!
                         </div>
 
-                        <fieldset v-if="visualizar || aprovandoExtra">
+                        <fieldset v-if="visualizar || aprovandoExtra" class="mybp-modal-secao">
                             <div v-if="!temAprovacaoExtra" class="alert alert-info">
                                 <i class="fa fa-info-circle"></i> Esta empresa não possui aprovação extra configurada.
                             </div>
@@ -292,19 +417,24 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Status</label>
-                                        <select
-                                            :disabled="!aprovandoExtra || aprovandoRh"
-                                            v-model="form.status_aprovacao_extra"
-                                            class="form-control form-control-sm validacampo"
-                                            onchange="valida_campo_vazio(this, 1)"
-                                            onblur="valida_campo_vazio(this, 1)"
-                                        >
-                                            <option value="">Selecione...</option>
-                                            <option value="aprovado">Aprovar</option>
-                                            <option value="reprovado">Reprovar</option>
-                                        </select>
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" :for="`transferencia-status-extra-${hash}`">
+                                            Status <span class="text-danger" v-if="aprovandoExtra">*</span>
+                                        </label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="form-transferencia-status-extra"
+                                                :input-id="`transferencia-status-extra-${hash}`"
+                                                v-model="form.status_aprovacao_extra"
+                                                :options="formStatusAprovacaoOpcoes"
+                                                :disabled="!aprovandoExtra || aprovandoRh"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma opção encontrada."
+                                                :max-results="10"
+                                                @opening="fecharOutrosComboboxes('form-transferencia-status-extra')"
+                                                @select="limparComboboxInvalido('transferencia-status-extra-' + hash)"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -312,7 +442,7 @@
 
                         <div class="alert alert-warning" v-if="aprovandoRh">Esta solicitação ainda não foi aprovada ou reprovada!</div>
 
-                        <fieldset v-if="visualizar || aprovandoRh">
+                        <fieldset v-if="visualizar || aprovandoRh" class="mybp-modal-secao">
                             <legend>Aprovação RH</legend>
                             <div class="row">
                                 <div v-if="!aprovandoRh && form.rh_aprovacao" class="col-12">
@@ -333,38 +463,28 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Status</label>
-                                        <select
-                                            :disabled="visualizar && !aprovando && !aprovandoRh"
-                                            v-model="form.resposta_rh"
-                                            class="form-control form-control-sm validacampo"
-                                            onchange="valida_campo_vazio(this, 1)"
-                                            onblur="valida_campo_vazio(this, 1)"
-                                        >
-                                            <option value="">Selecione...</option>
-                                            <option value="aprovado">Aprovar</option>
-                                            <option value="reprovado">Reprovar</option>
-                                        </select>
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" :for="`transferencia-status-rh-${hash}`">
+                                            Status <span class="text-danger" v-if="aprovandoRh">*</span>
+                                        </label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="form-transferencia-status-rh"
+                                                :input-id="`transferencia-status-rh-${hash}`"
+                                                v-model="form.resposta_rh"
+                                                :options="formStatusAprovacaoOpcoes"
+                                                :disabled="!aprovandoRh"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma opção encontrada."
+                                                :max-results="10"
+                                                @opening="fecharOutrosComboboxes('form-transferencia-status-rh')"
+                                                @select="limparComboboxInvalido('transferencia-status-rh-' + hash)"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </fieldset>
-
-                        <fieldset>
-                            <legend>Anexos</legend>
-                            <upload
-                                :model="form.anexos"
-                                :model-delete="form.anexosDel"
-                                :url="url_anexo"
-                                :tipos="mimes"
-                                :leitura="!podeanexar"
-                                label="Selecionar"
-                                @onProgresso="anexoUploadAndamento = true"
-                                @onFinalizado="anexoUploadAndamento = false"
-                            ></upload>
-                        </fieldset>
-                    </fieldset>
                 </form>
             </template>
             <template #rodape>
@@ -618,61 +738,23 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <!-- Cards Compactos -->
-            <div class="cards-lista" v-show="!controle.carregando && lista.length > 0">
-                <div class="solicitacao-card" v-for="item in lista" :key="item.id">
-                    <!-- Cabeçalho do Card -->
-                    <div class="card-header-row">
-                        <div class="card-left">
-                            <span class="badge-id">#{{ item.id }}</span>
-                            <div class="colaborador-principal">
-                                <i class="fas fa-user text-primary mr-1"></i>
-                                <strong>{{ item.colaborador ? item.colaborador.nome : '' }}</strong>
-                            </div>
-                            <div class="data-info ml-3">
-                                <i class="fas fa-calendar-plus text-muted" style="font-size: 0.75rem"></i>
-                                <small class="text-muted">{{ item.created_at }}</small>
-                                <span v-if="item.updated_at && item.updated_at !== item.created_at" class="mx-2 text-muted">|</span>
-                                <template v-if="item.updated_at && item.updated_at !== item.created_at">
-                                    <i class="fas fa-calendar-check text-info" style="font-size: 0.75rem"></i>
-                                    <small class="text-info">{{ item.updated_at }}</small>
-                                </template>
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+                <div class="mybp-card" v-for="item in lista" :key="item.id">
+                    <div class="mybp-card-header-row">
+                        <div class="mybp-card-left">
+                            <span class="mybp-badge-id">#{{ item.id }}</span>
+                            <div class="mybp-card-titulo">
+                                <strong>{{ tituloCardLista(item) }}</strong>
                             </div>
                         </div>
-                        <div class="card-right">
-                            <span class="status-badge" :class="classeStatusBadge(item)">
-                                <span v-if="itemReprovado(item)">
-                                    <i class="fas fa-times-circle"></i> REPROVADO
-                                </span>
-                                <span v-else-if="item.resposta_rh === 'aprovado'"> <i class="fas fa-check-circle"></i> APROVADO RH </span>
-                                <span v-else-if="temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado'">
-                                    <i class="fas fa-check-circle"></i> APROVADO {{ nomeAprovacaoExtra.toUpperCase() }}
-                                </span>
-                                <span v-else-if="item.exige_aprovacao_gestor_destino && item.status_aprovacao_gestor_destino === 'aprovado'">
-                                    <i class="fas fa-check-circle"></i> APROVADO GESTOR DESTINO
-                                </span>
-                                <span v-else-if="origemEtapaDispensada(item) && item.exige_aprovacao_gestor_destino">
-                                    <i class="fas fa-clock"></i> AGUARDANDO GESTOR DESTINO
-                                </span>
-                                <span
-                                    v-else-if="origemEtapaOmitidaDoFluxo(item) && item.exige_aprovacao_gestor_destino && !item.status_aprovacao_gestor_destino && !itemReprovado(item)"
-                                >
-                                    <i class="fas fa-clock"></i> AGUARDANDO GESTOR DESTINO
-                                </span>
-                                <span v-else-if="exibeEtapaGestorOrigem(item) && item.status_aprovacao === 'aprovado'">
-                                    <i class="fas fa-check-circle"></i> APROVADO GESTOR ORIGEM
-                                </span>
-                                <span v-else-if="item.modo_aprovacao === 'gestor_unico' && (item.status_aprovacao_gestor_unico === 'aprovado' || gestorUnicoDispensadoItem(item))">
-                                    <i class="fas fa-check-circle"></i> APROVADO GESTOR APROVAÇÃO
-                                </span>
-                                <span v-else-if="item.modo_aprovacao === 'gestor_unico'">
-                                    <i class="fas fa-clock"></i> AGUARDANDO GESTOR APROVAÇÃO
-                                </span>
-                                <span v-else> <i class="fas fa-clock"></i> EM ABERTO </span>
-                            </span>
+                        <div class="mybp-card-right">
+                            <mybp-status-badge
+                                :variante="chaveStatusLista(item)"
+                                :texto="textoStatusLista(item)"
+                            />
                             <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
                                 <a
-                                    class="btn-actions-compact"
+                                    class="mybp-btn-acoes-compact"
                                     href="#"
                                     role="button"
                                     :id="`dropdownMenuLink_${item.id}`"
@@ -683,7 +765,7 @@
                                     <i class="fas fa-ellipsis-v"></i>
                                 </a>
                                 <div
-                                    class="dropdown-menu dropdown-menu-custom dropdown-menu-right"
+                                    class="dropdown-menu mybp-dropdown-menu dropdown-menu-right"
                                     :class="{ show: isDropdownOpen(item.id) }"
                                     :aria-labelledby="`dropdownMenuLink_${item.id}`"
                                     @click="fecharDropdown"
@@ -751,213 +833,54 @@
                         </div>
                     </div>
 
-                    <!-- Detalhes do Card -->
-                    <div class="card-details-row">
-                        <div class="detail-item">
-                            <i class="fas fa-building text-muted"></i>
-                            <span class="detail-label">Centro Custo Origem:</span>
-                            <span class="detail-value">{{ item.centro_custo_origem?.label ?? 'Não informado' }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-building text-muted"></i>
-                            <span class="detail-label">Centro Custo Destino:</span>
-                            <span class="detail-value">{{ item.centro_custo_destino.label }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-calendar text-muted"></i>
-                            <span class="detail-label">Data Transferência:</span>
-                            <span class="detail-value">{{ item.data_transferencia }}</span>
-                        </div>
-                        <div class="detail-item" v-if="temFilial">
-                            <i class="fas fa-map-marker-alt text-muted"></i>
-                            <span class="detail-label">Lotação:</span>
-                            <span class="detail-value">{{ item.lotacao || 'Não informado' }}</span>
-                        </div>
-                    </div>
-                    <div class="card-details-row">
-                        <div class="detail-item">
-                            <i class="fas fa-user text-muted"></i>
-                            <span class="detail-label">Solicitante:</span>
-                            <span class="detail-value">{{ item.user_cadastrou.nome }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <i class="fas fa-clock text-muted"></i>
-                            <span class="detail-label">Criado em:</span>
-                            <span class="detail-value">{{ item.created_at }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Fluxo de Aprovação -->
-                    <div class="card-aprovacao-row">
-                        <div class="fluxo-icons">
-                            <!-- Solicitante -->
-                            <div class="fluxo-step">
-                                <i class="fas fa-check-circle text-primary"></i>
-                                <div class="fluxo-info">
-                                    <small class="fluxo-etapa">Solicitante</small>
-                                    <small class="fluxo-aprovador text-primary">
-                                        {{ item.user_cadastrou.nome }}
-                                    </small>
-                                    <small v-if="item.created_at" class="fluxo-data">{{ item.created_at }}</small>
-                                </div>
+                    <div class="mybp-card-corpo" :class="classeBordaStatusLista(item)">
+                        <section class="mybp-card-secao">
+                            <div class="mybp-card-row">
+                                <mybp-card-campo
+                                    icon="fas fa-building"
+                                    label="Centro de custo origem"
+                                    :valor="ccOrigemLista(item)"
+                                />
+                                <mybp-card-campo
+                                    icon="fas fa-building"
+                                    label="Centro de custo destino"
+                                    :valor="ccDestinoLista(item)"
+                                />
+                                <mybp-card-campo
+                                    icon="fas fa-calendar"
+                                    label="Data transferência"
+                                    :valor="formatarDataBr(item.data_transferencia)"
+                                    forte
+                                />
                             </div>
-
-                            <i class="fas fa-chevron-right text-muted mx-2" v-if="exibeEtapaGestorOrigem(item) || item.modo_aprovacao === 'gestor_unico'"></i>
-
-                            <!-- Gestor Origem -->
-                            <div class="fluxo-step" v-if="exibeEtapaGestorOrigem(item)">
-                                <i v-if="origemEtapaDispensada(item)" class="fas fa-minus-circle text-muted"></i>
-                                <i v-else-if="item.status_aprovacao === 'aprovado'" class="fas fa-check-circle text-success"></i>
-                                <i v-else-if="item.status_aprovacao === 'reprovado'" class="fas fa-times-circle text-danger"></i>
-                                <i v-else class="fas fa-clock text-warning"></i>
-                                <div class="fluxo-info">
-                                    <small class="fluxo-etapa">Gestor Origem</small>
-                                    <small v-if="origemEtapaDispensada(item)" class="fluxo-status text-muted">
-                                        Sem gestor
-                                    </small>
-                                    <small v-else-if="item.status_aprovacao === 'aprovado' && item.user_aprovacao" class="fluxo-aprovador text-success">
-                                        {{ labelAprovadorOrigem(item) }}
-                                    </small>
-                                    <small v-else-if="item.status_aprovacao === 'reprovado' && item.user_aprovacao" class="fluxo-aprovador text-danger">
-                                        {{ labelAprovadorOrigem(item) }}
-                                    </small>
-                                    <small v-else-if="item.gestor_origem" class="fluxo-aprovador text-muted">
-                                        {{ item.gestor_origem.nome }}
-                                    </small>
-                                    <small v-else class="fluxo-status text-warning">Aguardando</small>
-                                    <small v-if="item.data_aprovacao" class="fluxo-data">{{ item.data_aprovacao }}</small>
-                                </div>
+                        </section>
+                        <section class="mybp-card-secao">
+                            <div class="mybp-card-row">
+                                <mybp-card-campo
+                                    v-if="temFilial"
+                                    icon="fas fa-map-marker-alt"
+                                    label="Lotação origem"
+                                    :valor="item.lotacao_origem || 'Não informado'"
+                                />
+                                <mybp-card-campo
+                                    v-if="temFilial"
+                                    icon="fas fa-map-marker-alt"
+                                    label="Lotação destino"
+                                    :valor="item.lotacao || item.lotacao_destino || 'Não informado'"
+                                />
+                                <mybp-card-campo
+                                    icon="fas fa-user-edit"
+                                    label="Solicitante"
+                                    :valor="solicitanteLista(item)"
+                                />
                             </div>
-
-                            <!-- Gestor Aprovação (único) -->
-                            <div class="fluxo-step" v-else-if="item.modo_aprovacao === 'gestor_unico'">
-                                <i v-if="gestorUnicoDispensadoItem(item) || item.status_aprovacao_gestor_unico === 'aprovado'" class="fas fa-check-circle text-success"></i>
-                                <i v-else-if="item.status_aprovacao_gestor_unico === 'reprovado'" class="fas fa-times-circle text-danger"></i>
-                                <i v-else class="fas fa-clock text-warning"></i>
-                                <div class="fluxo-info">
-                                    <small class="fluxo-etapa">Gestor Aprovação</small>
-                                    <small v-if="gestorUnicoDispensadoItem(item)" class="fluxo-aprovador text-success">
-                                        {{ item.gestor_aprovacao_unico?.nome }}
-                                    </small>
-                                    <small
-                                        v-else-if="item.status_aprovacao_gestor_unico === 'aprovado' && item.quem_aprovou_gestor_unico"
-                                        class="fluxo-aprovador text-success"
-                                    >
-                                        {{ labelAprovadorGestorUnico(item) }}
-                                    </small>
-                                    <small
-                                        v-else-if="item.status_aprovacao_gestor_unico === 'reprovado' && item.quem_aprovou_gestor_unico"
-                                        class="fluxo-aprovador text-danger"
-                                    >
-                                        {{ labelAprovadorGestorUnico(item) }}
-                                    </small>
-                                    <small v-else-if="item.gestor_aprovacao_unico" class="fluxo-aprovador text-muted">
-                                        {{ item.gestor_aprovacao_unico.nome }}
-                                    </small>
-                                    <small v-else class="fluxo-status text-warning">Aguardando</small>
-                                    <small v-if="item.data_aprovacao_gestor_unico" class="fluxo-data">{{ item.data_aprovacao_gestor_unico }}</small>
-                                    <small v-else-if="gestorUnicoDispensadoItem(item) && item.created_at" class="fluxo-data">{{ item.created_at }}</small>
-                                </div>
+                        </section>
+                        <section class="mybp-card-secao mybp-card-secao--fluxo">
+                            <div class="mybp-card-secao__titulo">
+                                <i class="fas fa-project-diagram" aria-hidden="true"></i> Fluxo de aprovação
                             </div>
-
-                            <template v-if="item.modo_aprovacao !== 'gestor_unico'">
-                                <i class="fas fa-chevron-right text-muted mx-2"></i>
-
-                                <!-- Gestor Destino -->
-                                <div class="fluxo-step">
-                                    <i v-if="item.status_aprovacao === 'reprovado'" class="fas fa-ban text-secondary"></i>
-                                    <i v-else-if="!item.exige_aprovacao_gestor_destino" class="fas fa-check-circle" :class="item.status_aprovacao === 'aprovado' ? 'text-success' : 'text-warning'"></i>
-                                    <i v-else-if="item.status_aprovacao_gestor_destino === 'aprovado'" class="fas fa-check-circle text-success"></i>
-                                    <i v-else-if="item.status_aprovacao_gestor_destino === 'reprovado'" class="fas fa-times-circle text-danger"></i>
-                                    <i v-else-if="origemEtapaConcluida(item)" class="fas fa-clock text-warning"></i>
-                                    <i v-else class="fas fa-circle text-muted"></i>
-                                    <div class="fluxo-info">
-                                        <small class="fluxo-etapa">Gestor Destino</small>
-                                        <small v-if="item.status_aprovacao === 'reprovado'" class="fluxo-status text-secondary">Cancelada</small>
-                                        <small v-else-if="!item.exige_aprovacao_gestor_destino && item.status_aprovacao === 'aprovado'" class="fluxo-aprovador text-success">
-                                            {{ labelAprovadorOrigem(item) }}
-                                        </small>
-                                        <small v-else-if="!item.exige_aprovacao_gestor_destino && item.gestor_origem" class="fluxo-aprovador text-warning">
-                                            {{ item.gestor_origem.nome }}
-                                        </small>
-                                        <small
-                                            v-else-if="item.status_aprovacao_gestor_destino === 'aprovado' && item.quem_aprovou_gestor_destino"
-                                            class="fluxo-aprovador text-success"
-                                        >
-                                            {{ labelAprovadorDestino(item) }}
-                                        </small>
-                                        <small
-                                            v-else-if="item.status_aprovacao_gestor_destino === 'reprovado' && item.quem_aprovou_gestor_destino"
-                                            class="fluxo-aprovador text-danger"
-                                        >
-                                            {{ labelAprovadorDestino(item) }}
-                                        </small>
-                                        <small v-else-if="origemEtapaConcluida(item) && item.gestor_destino" class="fluxo-aprovador text-warning">
-                                            {{ item.gestor_destino.nome }}
-                                        </small>
-                                        <small v-else-if="origemEtapaConcluida(item)" class="fluxo-status text-warning">Aguardando</small>
-                                        <small v-else class="fluxo-status">Pendente</small>
-                                        <small v-if="!item.exige_aprovacao_gestor_destino && item.data_aprovacao" class="fluxo-data">{{ item.data_aprovacao }}</small>
-                                        <small v-else-if="item.data_aprovacao_gestor_destino" class="fluxo-data">{{ item.data_aprovacao_gestor_destino }}</small>
-                                    </div>
-                                </div>
-                            </template>
-
-                            <template v-if="temAprovacaoExtra">
-                                <i class="fas fa-chevron-right text-muted mx-2"></i>
-                                <!-- Aprovação Extra -->
-                                <div class="fluxo-step">
-                                    <i v-if="fluxoCanceladoAntesExtra(item)" class="fas fa-ban text-secondary"></i>
-                                    <i v-else-if="item.status_aprovacao_extra === 'aprovado'" class="fas fa-check-circle text-success"></i>
-                                    <i v-else-if="item.status_aprovacao_extra === 'reprovado'" class="fas fa-times-circle text-danger"></i>
-                                    <i v-else-if="gestoresConcluidosItem(item) && !item.status_aprovacao_extra" class="fas fa-clock text-warning"></i>
-                                    <i v-else class="fas fa-circle text-muted"></i>
-                                    <div class="fluxo-info">
-                                        <small class="fluxo-etapa">{{ nomeAprovacaoExtra }}</small>
-                                        <small v-if="fluxoCanceladoAntesExtra(item)" class="fluxo-status text-secondary">Cancelada</small>
-                                        <small
-                                            v-else-if="item.status_aprovacao_extra === 'aprovado' && item.user_aprovacao_extra"
-                                            class="fluxo-aprovador text-success"
-                                        >
-                                            {{ item.user_aprovacao_extra.nome }}
-                                        </small>
-                                        <small
-                                            v-else-if="item.status_aprovacao_extra === 'reprovado' && item.user_aprovacao_extra"
-                                            class="fluxo-aprovador text-danger"
-                                        >
-                                            {{ item.user_aprovacao_extra.nome }}
-                                        </small>
-                                        <small v-else-if="gestoresConcluidosItem(item)" class="fluxo-status text-warning">Aguardando</small>
-                                        <small v-else class="fluxo-status">Pendente</small>
-                                        <small v-if="item.data_aprovacao_extra" class="fluxo-data">{{ item.data_aprovacao_extra }}</small>
-                                    </div>
-                                </div>
-                            </template>
-
-                            <i class="fas fa-chevron-right text-muted mx-2"></i>
-
-                            <!-- RH -->
-                            <div class="fluxo-step">
-                                <i v-if="fluxoCanceladoAntesRh(item)" class="fas fa-ban text-secondary"></i>
-                                <i v-else-if="item.resposta_rh === 'aprovado'" class="fas fa-check-circle text-success"></i>
-                                <i v-else-if="item.resposta_rh === 'reprovado'" class="fas fa-times-circle text-danger"></i>
-                                <i v-else-if="etapaRhAguardandoItem(item)" class="fas fa-clock text-warning"></i>
-                                <i v-else class="fas fa-circle text-muted"></i>
-                                <div class="fluxo-info">
-                                    <small class="fluxo-etapa">RH</small>
-                                    <small v-if="fluxoCanceladoAntesRh(item)" class="fluxo-status text-secondary">Cancelada</small>
-                                    <small v-else-if="item.resposta_rh === 'aprovado' && item.rh_aprovacao" class="fluxo-aprovador text-success">
-                                        {{ item.rh_aprovacao.nome }}
-                                    </small>
-                                    <small v-else-if="item.resposta_rh === 'reprovado' && item.rh_aprovacao" class="fluxo-aprovador text-danger">
-                                        {{ item.rh_aprovacao.nome }}
-                                    </small>
-                                    <small v-else-if="etapaRhAguardandoItem(item)" class="fluxo-status text-warning">Aguardando</small>
-                                    <small v-else class="fluxo-status">Pendente</small>
-                                    <small v-if="item.data_aprovacao_rh" class="fluxo-data">{{ item.data_aprovacao_rh }}</small>
-                                </div>
-                            </div>
-                        </div>
+                            <mybp-fluxo-aprovacao :steps="fluxoStepsLista(item)" />
+                        </section>
                     </div>
                 </div>
             </div>
@@ -985,8 +908,12 @@ import colaborador from '../../Colaborador'
 import DateRangeFilter from '../../DateRangeFilter'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete.vue'
 import FiltroListagem from '../../ui/FiltroListagem.vue'
+import MybpCardCampo from '../../ui/MybpCardCampo.vue'
+import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
+import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import Validacoes from '../../../mixins/Validacoes'
 import configuracoes from '../../../mixins/Configuracoes'
+import { exigirCombobox, limparComboboxInvalido, exigirCampoData, limparCampoDataInvalido, validarInputsAtivosVisiveis } from '../../../utils/comboboxValidation'
 
 const BASE_URL = `${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista`
 const POR_PAGINA_OPCOES = [20, 50, 100, 150]
@@ -1048,7 +975,16 @@ function createControleDados() {
 
 export default defineComponent({
     name: 'SolicitacaoTransferencia',
-    components: { colaborador, DateRangeFilter, Upload, ComboboxAutoComplete, FiltroListagem },
+    components: {
+        colaborador,
+        DateRangeFilter,
+        Upload,
+        ComboboxAutoComplete,
+        FiltroListagem,
+        MybpCardCampo,
+        MybpFluxoAprovacao,
+        MybpStatusBadge
+    },
     mixins: [Validacoes, configuracoes],
     inject: {
         atualizarUrlMovimentacao: { default: () => () => {} }
@@ -1059,7 +995,12 @@ export default defineComponent({
         const modalStatusRef = ref(null)
         const componenteRef = ref(null)
         const hash = `mybp_${Math.floor(Math.random() * 999999)}`
-        const tituloJanela = ref('Solicitacao de admissão')
+        const formStatusAprovacaoOpcoes = [
+            { value: '', label: 'Selecione...' },
+            { value: 'aprovado', label: 'Aprovar' },
+            { value: 'reprovado', label: 'Reprovar' }
+        ]
+        const tituloJanela = ref('Solicitação de transferência')
         const preload = ref(false)
         const editando = ref(false)
         const cadastrado = ref(false)
@@ -1086,6 +1027,8 @@ export default defineComponent({
         const dropdownAbertoKey = ref(null)
         const lista = ref([])
         const lista_ccs = ref(null)
+        const formLotacaoOrigemCnpj = ref('')
+        const formLotacaoDestinoCnpj = ref('')
         const centro_custos = ref([])
         const comboCcOrigem = ref(null)
         const comboCcDestino = ref(null)
@@ -1144,17 +1087,50 @@ export default defineComponent({
                 .map((item) => item.id)
         )
         const centroCustosDestino = computed(() => centro_custos.value.filter((item) => centroCustoEstaAtivo(item)))
+
+        function listaCcPorLotacao(cnpjKey, { somenteAtivos = false } = {}) {
+            if (!lista_ccs.value) return []
+            let lista = []
+            if (temFilial.value) {
+                if (!cnpjKey) return []
+                lista = lista_ccs.value.centros_custos?.[cnpjKey] || []
+            } else {
+                const keys = Object.keys(lista_ccs.value.centros_custos || {})
+                lista = keys.length ? lista_ccs.value.centros_custos[keys[0]] || [] : []
+            }
+            if (somenteAtivos) {
+                lista = lista.filter((item) => centroCustoEstaAtivo(item))
+            }
+            return lista
+        }
+
+        const formLotacaoOpcoes = computed(() => {
+            const opts = [{ value: '', label: 'Selecione a lotação...' }]
+            if (!lista_ccs.value || !lista_ccs.value.cnpjs) return opts
+            Object.keys(lista_ccs.value.cnpjs).forEach((key) => {
+                const item = lista_ccs.value.cnpjs[key]
+                opts.push({
+                    value: key,
+                    label: `${item.nome_fantasia} - ${item.cnpj}`,
+                    meta: item.matriz ? 'Matriz' : 'Filial'
+                })
+            })
+            return opts
+        })
+
         const centroCustoOrigemOpcoes = computed(() =>
-            centro_custos.value.map((item) => ({
-                value: item.id,
+            listaCcPorLotacao(formLotacaoOrigemCnpj.value).map((item) => ({
+                value: String(item.id),
                 label: item.label || String(item.id),
+                meta: item.matriz ? 'Matriz' : 'Filial',
                 raw: item
             }))
         )
         const centroCustoDestinoOpcoes = computed(() =>
-            centroCustosDestino.value.map((item) => ({
-                value: item.id,
+            listaCcPorLotacao(formLotacaoDestinoCnpj.value, { somenteAtivos: true }).map((item) => ({
+                value: String(item.id),
                 label: item.label || String(item.id),
+                meta: item.matriz ? 'Matriz' : 'Filial',
                 raw: item
             }))
         )
@@ -1232,12 +1208,42 @@ export default defineComponent({
             return opts
         })
 
-        const opcoesStatus = computed(() => [
-            { value: '', label: 'Todos os status' },
-            { value: 'aberto', label: 'Em aberto' },
-            { value: 'aprovado', label: 'Aprovado' },
-            { value: 'reprovado', label: 'Reprovado' }
-        ])
+        const opcoesStatus = computed(() => {
+            const opts = [
+                { value: '', label: 'Todos os status' },
+                { value: 'aberto', label: 'Em aberto' }
+            ]
+            if (exigeAprovacaoGestorOrigem.value) {
+                opts.push(
+                    { value: 'pendente_gestor_origem', label: 'Pendente Gestor Origem' },
+                    { value: 'aprovado_gestor_origem', label: 'Aprovado Gestor Origem' },
+                    { value: 'reprovado_gestor_origem', label: 'Reprovado Gestor Origem' }
+                )
+            }
+            opts.push(
+                { value: 'pendente_gestor_destino', label: 'Pendente Gestor Destino' },
+                { value: 'aprovado_gestor_destino', label: 'Aprovado Gestor Destino' },
+                { value: 'reprovado_gestor_destino', label: 'Reprovado Gestor Destino' },
+                { value: 'pendente_gestor_unico', label: 'Pendente Gestor Aprovação' },
+                { value: 'aprovado_gestor_unico', label: 'Aprovado Gestor Aprovação' },
+                { value: 'reprovado_gestor_unico', label: 'Reprovado Gestor Aprovação' }
+            )
+            if (temAprovacaoExtra.value) {
+                const nomeExtra = nomeAprovacaoExtra.value || 'Extra'
+                opts.push(
+                    { value: 'pendente_extra', label: `Pendente ${nomeExtra}` },
+                    { value: 'aprovado_extra', label: `Aprovado ${nomeExtra}` },
+                    { value: 'reprovado_extra', label: `Reprovado ${nomeExtra}` }
+                )
+            }
+            opts.push(
+                { value: 'pendente_rh', label: 'Pendente RH' },
+                { value: 'aprovado', label: 'Aprovado RH' },
+                { value: 'reprovado_rh', label: 'Reprovado RH' },
+                { value: 'reprovado', label: 'Reprovado (qualquer etapa)' }
+            )
+            return opts
+        })
 
         const opcoesOrdenacao = computed(() => [
             { value: 'created_at_desc', label: 'Mais recentes' },
@@ -1338,6 +1344,13 @@ export default defineComponent({
             if (typeof setupCampo === 'function') setupCampo()
             Object.assign(form, _.cloneDeep(formDefault))
             form.centro_custo_id = ''
+            formLotacaoOrigemCnpj.value = ''
+            formLotacaoDestinoCnpj.value = ''
+            if (!temFilial.value && lista_ccs.value?.centros_custos) {
+                const keys = Object.keys(lista_ccs.value.centros_custos || {})
+                formLotacaoOrigemCnpj.value = keys[0] || ''
+                formLotacaoDestinoCnpj.value = keys[0] || ''
+            }
             centroOrigemDesabilitadoPorColaborador.value = true
             gestorOrigemAusente.value = false
             gestorDestinoAusente.value = false
@@ -1345,40 +1358,81 @@ export default defineComponent({
             listaCentroCusto()
         }
 
-        function limparValidacaoCamposIgnorados() {
-            $(`#${hash} :input:disabled, #${hash} :input[readonly]`).each(function () {
-                $(this).removeClass('is-invalid')
-                $(this).siblings('div.invalid-feedback').remove()
+        function validarFormularioVisivel() {
+            if (typeof $ === 'undefined') return true
+            return validarInputsAtivosVisiveis(hash, {
+                preservarIds: [`transferencia-data-${hash}`]
             })
         }
 
-        function validarFormularioVisivel() {
-            if (typeof $ === 'undefined') return true
-            limparValidacaoCamposIgnorados()
-            const seletor = `#${hash} :input:visible:not(:disabled):not([readonly])`
-            $(seletor).trigger('blur')
-            const invalidos = $(`${seletor}.is-invalid`).length
-            if (invalidos > 0) {
-                if (typeof mostraErro === 'function') mostraErro('', 'Verifique os campos marcados')
-                return false
+        /** DatePicker espera d/m/Y; API pode mandar ISO/Y-m-d. */
+        function formatarDataBr(valor) {
+            if (valor == null || valor === '') return 'Não informado'
+            const texto = String(valor).trim()
+            if (!texto || texto === 'Invalid date') return 'Não informado'
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(texto)) return texto
+            const iso = texto.match(/^(\d{4})-(\d{2})-(\d{2})/)
+            if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`
+            if (typeof moment === 'function') {
+                const m = moment(texto)
+                if (m.isValid()) return m.format('DD/MM/YYYY')
             }
-            return true
+            return texto
+        }
+
+        function normalizarDataTransferenciaForm(valor) {
+            if (valor == null || valor === '') return ''
+            const texto = String(valor).trim()
+            if (!texto || texto === 'Invalid date') return ''
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(texto)) return texto
+            const iso = texto.match(/^(\d{4})-(\d{2})-(\d{2})/)
+            if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`
+            if (typeof moment === 'function') {
+                const m = moment(texto)
+                if (m.isValid()) return m.format('DD/MM/YYYY')
+            }
+            return ''
         }
 
         function validarColaboradorEGestor() {
             if (!form.colaborador_id) {
-                if (typeof valida_campo_vazio === 'function') valida_campo_vazio($(`#colaborador_${hash}`), 1)
-                $(`#${hash} #colaborador_${hash}`).focus().trigger('blur')
+                const inputId = `colaborador_${hash}`
+                if (typeof valida_campo_vazio === 'function') valida_campo_vazio($(`#${inputId}`), 1)
+                $(`#${inputId}`).focus().trigger('blur')
                 if (typeof mostraErro === 'function') mostraErro('', 'Campo COLABORADOR não pode ficar vazio')
                 resetaCampoColaborador()
                 return false
             }
-            if (!form.centro_custo_origem_id) {
-                if (typeof mostraErro === 'function') mostraErro('', 'Campo CENTRO DE CUSTO ORIGEM não pode ficar vazio')
+            if (temFilial.value) {
+                if (
+                    !exigirCombobox(formLotacaoOrigemCnpj.value, `transferencia-lotacao-origem-${hash}`, {
+                        toastMsg: 'Selecione a lotação de origem'
+                    })
+                ) {
+                    return false
+                }
+            }
+            if (
+                !exigirCombobox(form.centro_custo_origem_id, `transferencia-cc-origem-${hash}`, {
+                    toastMsg: 'Campo CENTRO DE CUSTO ORIGEM não pode ficar vazio'
+                })
+            ) {
                 return false
             }
-            if (!form.centro_custo_destino_id) {
-                if (typeof mostraErro === 'function') mostraErro('', 'Campo CENTRO DE CUSTO DESTINO não pode ficar vazio')
+            if (temFilial.value) {
+                if (
+                    !exigirCombobox(formLotacaoDestinoCnpj.value, `transferencia-lotacao-destino-${hash}`, {
+                        toastMsg: 'Selecione a lotação de destino'
+                    })
+                ) {
+                    return false
+                }
+            }
+            if (
+                !exigirCombobox(form.centro_custo_destino_id, `transferencia-cc-destino-${hash}`, {
+                    toastMsg: 'Campo CENTRO DE CUSTO DESTINO não pode ficar vazio'
+                })
+            ) {
                 return false
             }
             const destinoSelecionado = centro_custos.value.find((item) => Number(item.id) === Number(form.centro_custo_destino_id))
@@ -1387,6 +1441,13 @@ export default defineComponent({
                     mostraErro('', 'O centro de custo de destino está inativo. Selecione um centro de custo ativo.')
                 }
                 form.centro_custo_destino_id = ''
+                return false
+            }
+            if (
+                !exigirCampoData(form.data_transferencia, `transferencia-data-${hash}`, {
+                    toastMsg: 'Informe a data para transferência'
+                })
+            ) {
                 return false
             }
             if (gestorDestinoCarregando.value) {
@@ -1409,7 +1470,46 @@ export default defineComponent({
             form.autocomplete_label_colaborador_anterior = ''
             form.colaborador_id = ''
             form.centro_custo_origem_id = ''
+            formLotacaoOrigemCnpj.value = !temFilial.value && lista_ccs.value?.centros_custos
+                ? Object.keys(lista_ccs.value.centros_custos || {})[0] || ''
+                : ''
             centroOrigemDesabilitadoPorColaborador.value = true
+        }
+
+        function resolverLotacaoPorCentroCustoId(centroCustoId) {
+            if (!lista_ccs.value?.centros_custos || centroCustoId == null || centroCustoId === '') {
+                return ''
+            }
+            const ccId = String(centroCustoId)
+            if (!temFilial.value) {
+                const keys = Object.keys(lista_ccs.value.centros_custos || {})
+                return keys[0] || ''
+            }
+            let encontrado = ''
+            Object.keys(lista_ccs.value.centros_custos).some((cnpjKey) => {
+                const lista = lista_ccs.value.centros_custos[cnpjKey] || []
+                const hit = _.find(lista, (item) => String(item.id) === ccId)
+                if (hit) {
+                    encontrado = cnpjKey
+                    return true
+                }
+                return false
+            })
+            return encontrado
+        }
+
+        function onSelectFormLotacaoOrigem() {
+            form.centro_custo_origem_id = ''
+            form.label_gestor_origem = ''
+            gestorOrigemAusente.value = false
+            limparComboboxInvalido(`transferencia-lotacao-origem-${hash}`)
+        }
+
+        function onSelectFormLotacaoDestino() {
+            form.centro_custo_destino_id = ''
+            form.label_gestor_destino = ''
+            gestorDestinoAusente.value = false
+            limparComboboxInvalido(`transferencia-lotacao-destino-${hash}`)
         }
 
         /**
@@ -1419,9 +1519,10 @@ export default defineComponent({
         function onColaboradorSelecionado(model) {
             if (!cadastrando.value) return
             const centroOrigem = model.centro_custo_id ?? ''
-            form.centro_custo_origem_id = centroOrigem
+            form.centro_custo_origem_id = centroOrigem ? String(centroOrigem) : ''
+            formLotacaoOrigemCnpj.value = resolverLotacaoPorCentroCustoId(form.centro_custo_origem_id)
             centroOrigemDesabilitadoPorColaborador.value = !!centroOrigem
-            carregarGestorResponsavel('origem', centroOrigem)
+            carregarGestorResponsavel('origem', form.centro_custo_origem_id)
         }
 
         async function carregarGestorResponsavel(tipo, centroCustoId) {
@@ -1470,8 +1571,8 @@ export default defineComponent({
 
         /** Empresa/config omitiu a etapa: origem não entra no fluxo visual. */
         function origemEtapaOmitidaDoFluxo(item) {
-            if (!exigeAprovacaoGestorOrigem.value) return true
             if (item && item.exige_aprovacao_gestor_origem === false) return true
+            if (!exigeAprovacaoGestorOrigem.value) return true
             const obs = item?.obs_aprovacao
             return typeof obs === 'string' && obs.includes('não exigir aprovação do gestor de origem')
         }
@@ -1587,20 +1688,6 @@ export default defineComponent({
             )
         }
 
-        function classeStatusBadge(item) {
-            if (itemReprovado(item)) return 'status-reprovado'
-            if (item.resposta_rh === 'aprovado') return 'status-aprovado'
-            if (temAprovacaoExtra.value && item.status_aprovacao_extra === 'aprovado') return 'status-aprovado-extra'
-            if (item.modo_aprovacao === 'gestor_unico' && (item.status_aprovacao_gestor_unico === 'aprovado' || gestorUnicoDispensadoItem(item))) {
-                return 'status-aprovado-gestor-destino'
-            }
-            if (item.exige_aprovacao_gestor_destino && item.status_aprovacao_gestor_destino === 'aprovado') {
-                return 'status-aprovado-gestor-destino'
-            }
-            if (item.status_aprovacao === 'aprovado') return 'status-aprovado-gestor'
-            return 'status-pendente'
-        }
-
         function fluxoCanceladoAntesExtra(item) {
             if (item.modo_aprovacao === 'gestor_unico') {
                 return item.status_aprovacao_gestor_unico === 'reprovado'
@@ -1618,6 +1705,230 @@ export default defineComponent({
                 return item.status_aprovacao_extra === 'aprovado' && !item.resposta_rh
             }
             return gestoresConcluidosItem(item) && !item.resposta_rh
+        }
+
+        function tituloCardLista(item) {
+            return item?.colaborador?.nome || 'Colaborador não informado'
+        }
+
+        function ccOrigemLista(item) {
+            return item?.centro_custo_origem?.label ?? 'Não informado'
+        }
+
+        function ccDestinoLista(item) {
+            return item?.centro_custo_destino?.label ?? 'Não informado'
+        }
+
+        function solicitanteLista(item) {
+            return item?.user_cadastrou?.nome ?? 'Não informado'
+        }
+
+        function chaveStatusLista(item) {
+            if (!item) return 'aberto'
+            if (itemReprovado(item)) return 'reprovado'
+            if (item.resposta_rh === 'aprovado') return 'rh'
+            if (temAprovacaoExtra.value && item.status_aprovacao_extra === 'aprovado') return 'extra'
+            if (
+                item.modo_aprovacao === 'gestor_unico' &&
+                (item.status_aprovacao_gestor_unico === 'aprovado' || gestorUnicoDispensadoItem(item))
+            ) {
+                return 'gestor'
+            }
+            if (item.exige_aprovacao_gestor_destino && item.status_aprovacao_gestor_destino === 'aprovado') {
+                return 'gestor'
+            }
+            if (exibeEtapaGestorOrigem(item) && item.status_aprovacao === 'aprovado') return 'gestor'
+            return 'aberto'
+        }
+
+        function classeBordaStatusLista(item) {
+            return `mybp-card-corpo--${chaveStatusLista(item)}`
+        }
+
+        function textoStatusLista(item) {
+            if (itemReprovado(item)) return 'Reprovado'
+            if (item.resposta_rh === 'aprovado') return 'Aprovado RH'
+            if (temAprovacaoExtra.value && item.status_aprovacao_extra === 'aprovado') {
+                return `Aprovado ${nomeAprovacaoExtra.value || 'Extra'}`
+            }
+            if (item.exige_aprovacao_gestor_destino && item.status_aprovacao_gestor_destino === 'aprovado') {
+                return 'Aprovado Gestor Destino'
+            }
+            if (origemEtapaDispensada(item) && item.exige_aprovacao_gestor_destino) {
+                return 'Aguardando Gestor Destino'
+            }
+            if (
+                origemEtapaOmitidaDoFluxo(item) &&
+                item.exige_aprovacao_gestor_destino &&
+                !item.status_aprovacao_gestor_destino &&
+                !itemReprovado(item)
+            ) {
+                return 'Aguardando Gestor Destino'
+            }
+            if (exibeEtapaGestorOrigem(item) && item.status_aprovacao === 'aprovado') {
+                return 'Aprovado Gestor Origem'
+            }
+            if (
+                item.modo_aprovacao === 'gestor_unico' &&
+                (item.status_aprovacao_gestor_unico === 'aprovado' || gestorUnicoDispensadoItem(item))
+            ) {
+                return 'Aprovado Gestor Aprovação'
+            }
+            if (item.modo_aprovacao === 'gestor_unico') {
+                return 'Aguardando Gestor Aprovação'
+            }
+            return 'Em aberto'
+        }
+
+        function fluxoStepsLista(item) {
+            if (!item) return []
+
+            const steps = [
+                {
+                    key: 'solicitante',
+                    label: 'Solicitante',
+                    status: 'aprovado',
+                    nome: item.user_cadastrou?.nome,
+                    data: item.created_at
+                }
+            ]
+
+            if (exibeEtapaGestorOrigem(item)) {
+                let statusOrigem = 'aguardando'
+                let nomeOrigem = ''
+                let dataOrigem = item.data_aprovacao
+                let statusTextoOrigem
+
+                if (origemEtapaDispensada(item)) {
+                    statusOrigem = 'aprovado'
+                    statusTextoOrigem = 'Sem gestor'
+                    dataOrigem = undefined
+                } else if (item.status_aprovacao === 'aprovado') {
+                    statusOrigem = 'aprovado'
+                    nomeOrigem = labelAprovadorOrigem(item)
+                } else if (item.status_aprovacao === 'reprovado') {
+                    statusOrigem = 'reprovado'
+                    nomeOrigem = labelAprovadorOrigem(item)
+                }
+
+                steps.push({
+                    key: 'gestor-origem',
+                    label: 'Gestor Origem',
+                    status: statusOrigem,
+                    nome: nomeOrigem,
+                    data: dataOrigem,
+                    statusTexto: statusTextoOrigem
+                })
+            } else if (item.modo_aprovacao === 'gestor_unico') {
+                let statusUnico = 'aguardando'
+                let nomeUnico = ''
+                let dataUnico = item.data_aprovacao_gestor_unico
+
+                if (gestorUnicoDispensadoItem(item) || item.status_aprovacao_gestor_unico === 'aprovado') {
+                    statusUnico = 'aprovado'
+                    nomeUnico = gestorUnicoDispensadoItem(item)
+                        ? item.gestor_aprovacao_unico?.nome
+                        : labelAprovadorGestorUnico(item)
+                    if (gestorUnicoDispensadoItem(item) && !dataUnico) {
+                        dataUnico = item.created_at
+                    }
+                } else if (item.status_aprovacao_gestor_unico === 'reprovado') {
+                    statusUnico = 'reprovado'
+                    nomeUnico = labelAprovadorGestorUnico(item)
+                }
+
+                steps.push({
+                    key: 'gestor-unico',
+                    label: 'Gestor Aprovação',
+                    status: statusUnico,
+                    nome: nomeUnico,
+                    data: dataUnico
+                })
+            }
+
+            if (item.modo_aprovacao !== 'gestor_unico') {
+                let statusDestino = 'pendente'
+                let nomeDestino = ''
+                let dataDestino = item.data_aprovacao_gestor_destino
+                let statusTextoDestino
+
+                if (item.status_aprovacao === 'reprovado') {
+                    statusDestino = 'cancelado'
+                    statusTextoDestino = 'Cancelada'
+                } else if (!item.exige_aprovacao_gestor_destino && item.status_aprovacao === 'aprovado') {
+                    statusDestino = 'aprovado'
+                    nomeDestino = labelAprovadorOrigem(item)
+                    dataDestino = item.data_aprovacao
+                } else if (!item.exige_aprovacao_gestor_destino && item.gestor_origem) {
+                    statusDestino = 'aguardando'
+                    statusTextoDestino = item.gestor_origem?.nome || 'Aguardando'
+                } else if (item.status_aprovacao_gestor_destino === 'aprovado') {
+                    statusDestino = 'aprovado'
+                    nomeDestino = labelAprovadorDestino(item)
+                } else if (item.status_aprovacao_gestor_destino === 'reprovado') {
+                    statusDestino = 'reprovado'
+                    nomeDestino = labelAprovadorDestino(item)
+                } else if (origemEtapaConcluida(item)) {
+                    statusDestino = 'aguardando'
+                }
+
+                steps.push({
+                    key: 'gestor-destino',
+                    label: 'Gestor Destino',
+                    status: statusDestino,
+                    nome: nomeDestino,
+                    data: dataDestino,
+                    statusTexto: statusTextoDestino
+                })
+            }
+
+            if (temAprovacaoExtra.value) {
+                let statusExtra = 'pendente'
+                let statusTextoExtra
+                if (fluxoCanceladoAntesExtra(item)) {
+                    statusExtra = 'cancelado'
+                    statusTextoExtra = 'Cancelada'
+                } else if (item.status_aprovacao_extra === 'aprovado') {
+                    statusExtra = 'aprovado'
+                } else if (item.status_aprovacao_extra === 'reprovado') {
+                    statusExtra = 'reprovado'
+                } else if (gestoresConcluidosItem(item) && !item.status_aprovacao_extra) {
+                    statusExtra = 'aguardando'
+                }
+
+                steps.push({
+                    key: 'extra',
+                    label: nomeAprovacaoExtra.value || 'Extra',
+                    status: statusExtra,
+                    nome: item.user_aprovacao_extra?.nome,
+                    data: item.data_aprovacao_extra,
+                    statusTexto: statusTextoExtra
+                })
+            }
+
+            let statusRh = 'pendente'
+            let statusTextoRh
+            if (fluxoCanceladoAntesRh(item)) {
+                statusRh = 'cancelado'
+                statusTextoRh = 'Cancelada'
+            } else if (item.resposta_rh === 'aprovado') {
+                statusRh = 'aprovado'
+            } else if (item.resposta_rh === 'reprovado') {
+                statusRh = 'reprovado'
+            } else if (etapaRhAguardandoItem(item)) {
+                statusRh = 'aguardando'
+            }
+
+            steps.push({
+                key: 'rh',
+                label: 'RH',
+                status: statusRh,
+                nome: item.rh_aprovacao?.nome,
+                data: item.data_aprovacao_rh,
+                statusTexto: statusTextoRh
+            })
+
+            return steps
         }
 
         async function cadastrar() {
@@ -1660,6 +1971,17 @@ export default defineComponent({
                 Object.assign(form, data)
                 form.anexos = Array.isArray(form.anexos) ? form.anexos : []
                 form.anexosDel = Array.isArray(form.anexosDel) ? form.anexosDel : []
+                form.data_transferencia = normalizarDataTransferenciaForm(data.data_transferencia)
+                form.centro_custo_origem_id =
+                    data.centro_custo_origem_id != null && data.centro_custo_origem_id !== ''
+                        ? String(data.centro_custo_origem_id)
+                        : ''
+                form.centro_custo_destino_id =
+                    data.centro_custo_destino_id != null && data.centro_custo_destino_id !== ''
+                        ? String(data.centro_custo_destino_id)
+                        : ''
+                formLotacaoOrigemCnpj.value = resolverLotacaoPorCentroCustoId(form.centro_custo_origem_id)
+                formLotacaoDestinoCnpj.value = resolverLotacaoPorCentroCustoId(form.centro_custo_destino_id)
                 await listaCentroCusto()
                 form.centro_custo_id = data.centro_custo_id ?? ''
                 tituloJanela.value = `#${id} Solicitação de transferência`
@@ -1732,7 +2054,13 @@ export default defineComponent({
         }
 
         async function aprovar() {
-            if (!validarFormularioVisivel()) return
+            if (
+                !exigirCombobox(form.status_aprovacao, `transferencia-status-origem-${hash}`, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
+            }
             preload.value = true
             try {
                 await axios.put(`${BASE_URL}/${form.id}/aprovar`, form)
@@ -1747,7 +2075,13 @@ export default defineComponent({
         }
 
         async function aprovarExtra() {
-            if (!validarFormularioVisivel()) return
+            if (
+                !exigirCombobox(form.status_aprovacao_extra, `transferencia-status-extra-${hash}`, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
+            }
             preload.value = true
             try {
                 await axios.put(`${BASE_URL}/${form.id}/aprovar-extra`, form)
@@ -1762,7 +2096,13 @@ export default defineComponent({
         }
 
         async function aprovarGestorDestino() {
-            if (!validarFormularioVisivel()) return
+            if (
+                !exigirCombobox(form.status_aprovacao_gestor_destino, `transferencia-status-destino-${hash}`, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
+            }
             preload.value = true
             try {
                 await axios.put(`${BASE_URL}/${form.id}/aprovar-gestor-destino`, form)
@@ -1777,7 +2117,13 @@ export default defineComponent({
         }
 
         async function aprovarGestorUnico() {
-            if (!validarFormularioVisivel()) return
+            if (
+                !exigirCombobox(form.status_aprovacao_gestor_unico, `transferencia-status-gestor-unico-${hash}`, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
+            }
             preload.value = true
             try {
                 await axios.put(`${BASE_URL}/${form.id}/aprovar-gestor-unico`, form)
@@ -1792,7 +2138,13 @@ export default defineComponent({
         }
 
         async function aprovarRH() {
-            if (!validarFormularioVisivel()) return
+            if (
+                !exigirCombobox(form.resposta_rh, `transferencia-status-rh-${hash}`, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
+            }
             preload.value = true
             try {
                 await axios.put(`${BASE_URL}/${form.id}/aprovarrh`, form)
@@ -2071,6 +2423,9 @@ export default defineComponent({
             modal_janelaAtualizaStatus: modalStatusRef,
             componente: componenteRef,
             hash,
+            formStatusAprovacaoOpcoes,
+            limparComboboxInvalido,
+            limparCampoDataInvalido,
             tituloJanela,
             preload,
             editando,
@@ -2104,6 +2459,11 @@ export default defineComponent({
             formConfirmacaoDefault,
             lista,
             lista_ccs,
+            formLotacaoOrigemCnpj,
+            formLotacaoDestinoCnpj,
+            formLotacaoOpcoes,
+            onSelectFormLotacaoOrigem,
+            onSelectFormLotacaoDestino,
             temFilial,
             totalFiltrosAtivos,
             campoBuscaUnificada,
@@ -2169,7 +2529,15 @@ export default defineComponent({
             origemEtapaConcluida,
             gestoresConcluidosItem,
             itemReprovado,
-            classeStatusBadge,
+            tituloCardLista,
+            ccOrigemLista,
+            ccDestinoLista,
+            solicitanteLista,
+            formatarDataBr,
+            chaveStatusLista,
+            classeBordaStatusLista,
+            textoStatusLista,
+            fluxoStepsLista,
             fluxoCanceladoAntesExtra,
             fluxoCanceladoAntesRh,
             etapaRhAguardandoItem,
@@ -2199,279 +2567,18 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* Container de Cards */
-.cards-lista {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-/* Card Individual */
-.solicitacao-card {
-    background: #fff;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 1rem;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.solicitacao-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
-    border-color: #007bff;
-    transform: translateY(-2px);
-}
-
-/* Header do Card */
-.card-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid #f1f3f5;
-    margin-bottom: 0.75rem;
-}
-
-.card-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex: 1;
-    overflow: hidden;
-}
-
-.card-right {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.badge-id {
-    background: #174257;
-    color: white;
-    padding: 0.25rem 0.625rem;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 0.75rem;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.colaborador-principal {
-    display: flex;
-    align-items: center;
-    font-size: 0.938rem;
-    color: #212529;
-    overflow: hidden;
-}
-
-.colaborador-principal strong {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.status-badge {
+.transferencia-filtro-hint {
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    white-space: nowrap;
-}
-
-.status-reprovado {
-    background: #dc3545;
-    color: white;
-}
-
-.status-aprovado {
-    background: #28a745;
-    color: white;
-}
-
-.status-aprovado-extra {
-    background: #17a2b8;
-    color: white;
-}
-
-.status-aprovado-gestor {
-    background: #ffc107;
-    color: #212529;
-}
-
-.status-aprovado-gestor-destino {
-    background: #fd7e14;
-    color: white;
-}
-
-.status-pendente {
-    background: #e9ecef;
-    color: #495057;
-}
-
-/* Detalhes do Card */
-.card-details-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid #f1f3f5;
-    margin-bottom: 0.75rem;
-}
-
-.detail-item {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.813rem;
-    min-width: 0;
-}
-
-.detail-item i {
-    flex-shrink: 0;
-    font-size: 0.875rem;
-}
-
-.detail-label {
-    font-weight: 500;
-    color: #6c757d;
-    white-space: nowrap;
-}
-
-.detail-value {
-    color: #212529;
-    font-weight: 400;
-}
-
-/* Fluxo de Aprovação */
-.card-aprovacao-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-}
-
-.fluxo-icons {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    flex: 1;
-}
-
-.fluxo-step {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: #f8f9fa;
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    border: 1px solid #e9ecef;
-}
-
-.fluxo-step i {
-    font-size: 1.125rem;
-    margin-top: 0.125rem;
-    flex-shrink: 0;
-}
-
-.fluxo-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-}
-
-.fluxo-etapa {
-    font-weight: 600;
-    color: #495057;
-    font-size: 0.688rem;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-}
-
-.fluxo-aprovador,
-.fluxo-status {
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.fluxo-data {
-    font-size: 0.688rem;
-    color: #6c757d;
-}
-
-/* Botão de ações compacto */
-.btn-actions-compact {
-    display: flex;
-    align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    color: #495057;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    flex-shrink: 0;
-}
-
-.btn-actions-compact:hover {
-    background: #007bff;
-    border-color: #007bff;
-    color: white;
-    transform: rotate(90deg);
-}
-
-/* Dropdown */
-.dropdown-menu-custom {
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border: none;
-    padding: 0.5rem 0;
-}
-
-.dropdown-menu-custom .dropdown-item {
-    padding: 0.625rem 1.25rem;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-}
-
-.dropdown-menu-custom .dropdown-item:hover {
-    background: #f8f9fa;
-    color: #007bff;
-    padding-left: 1.5rem;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-    .card-header-row {
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-
-    .card-left {
-        width: 100%;
-    }
-
-    .card-right {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .card-details-row {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .card-aprovacao-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+    min-width: 1.25rem;
+    margin-left: 0.35rem;
+    padding: 0.05rem 0.35rem;
+    border-radius: 999px;
+    background: rgba(23, 66, 87, 0.12);
+    color: var(--primary, #174257);
+    font-size: 0.65rem;
+    font-weight: 600;
+    vertical-align: middle;
 }
 </style>

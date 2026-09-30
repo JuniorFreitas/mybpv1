@@ -39,20 +39,19 @@ class NotificacaoAprovacaoMail extends Mailable
     private function gerarAssunto(): string
     {
         $tipo = $this->dados['tipo'];
-        $colaborador = $this->dados['colaborador'] ?? '';
         $nomeAprovacaoExtra = $this->dados['nome_aprovacao_extra'] ?? 'Aprovação Extra';
 
         $assuntos = [
-            'criacao' => "Notificação — Demissão ({$colaborador}) — sua aprovação como gestor",
-            'pendente_aprovacao_extra' => "Notificação — Demissão ({$colaborador}) — aguardando aprovação de {$nomeAprovacaoExtra}",
-            'pendente_aprovacao_rh' => "Notificação — Demissão ({$colaborador}) — aguardando aprovação do RH",
-            'reprovado_gestor' => "Notificação — Demissão ({$colaborador}) — reprovada pelo gestor",
-            'reprovado_aprovacao_extra' => "Notificação — Demissão ({$colaborador}) — reprovada por {$nomeAprovacaoExtra}",
-            'reprovado_rh' => "Notificação — Demissão ({$colaborador}) — reprovada pelo RH",
-            'cancelado' => "Notificação — Demissão ({$colaborador}) — cancelada",
-            'aprovado_final' => "Notificação — Demissão ({$colaborador}) — aprovada em todas as etapas",
+            'criacao' => "Notificação — Demissão — sua aprovação como gestor",
+            'pendente_aprovacao_extra' => "Notificação — Demissão — aguardando aprovação de {$nomeAprovacaoExtra}",
+            'pendente_aprovacao_rh' => "Notificação — Demissão — aguardando aprovação do RH",
+            'reprovado_gestor' => "Notificação — Demissão — reprovada pelo gestor",
+            'reprovado_aprovacao_extra' => "Notificação — Demissão — reprovada por {$nomeAprovacaoExtra}",
+            'reprovado_rh' => "Notificação — Demissão — reprovada pelo RH",
+            'cancelado' => "Notificação — Demissão — cancelada",
+            'aprovado_final' => "Notificação — Demissão — aprovada em todas as etapas",
         ];
 
-        return $assuntos[$tipo] ?? "Notificação — Demissão {$colaborador}";
+        return $assuntos[$tipo] ?? "Notificação — Demissão";
     }
 }

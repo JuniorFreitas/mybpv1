@@ -3,10 +3,13 @@
 
 Last updated: 2026-09-30
 
+- [transferencia-lotacao-cnpj](transferencia-lotacao-cnpj.md) — Modal Lotação→CC origem/destino + cards lotação | flow | transferencia, lotacao, cnpj
+- [filtro-status-fluxo-aprovacao](filtro-status-fluxo-aprovacao.md) — Pendente/Aprovado/Reprovado por etapa nas movimentações | pattern | filtro, status, aprovacao
+- [combobox-validacao-visual](combobox-validacao-visual.md) — Validar ComboboxAutoComplete sem esmagar layout (`exigirCombobox`) | pattern | combobox, validacao, ux
 - [admissao-modal-card-padrao-ux](admissao-modal-card-padrao-ux.md) — Modal + cards admissão no padrão Card detalhe / mybp-modal-form | pattern | admissao, modal, card-detalhe
 - [demissao-modal-padrao-ux](demissao-modal-padrao-ux.md) — Modal + cards demissão no padrão Card detalhe (`MybpFluxoAprovacao`) | pattern | demissao, modal, card-detalhe
-- [card-detalhe-operacional](card-detalhe-operacional.md) — Padrão reutilizável corpo do card + fluxo aprovação (Demissão, Férias, Admissão) | pattern | card, fluxo, ux
-- [modal-operacional-mybp](modal-operacional-mybp.md) — Modal fieldset + mybp-modal-form + combobox (Demissão/Férias/Admissão) | pattern | modal, ux
+- [card-detalhe-operacional](card-detalhe-operacional.md) — Card detalhe + fluxo (Demissão/Férias/Admissão/Liderança/Cargo/Intermitente/Transferência) | pattern | card, fluxo, ux
+- [modal-operacional-mybp](modal-operacional-mybp.md) — Modal mybp-modal-form nas movimentações (incl. Liderança, Cargo, Intermitente, Transferência) | pattern | modal, ux
 - [cloud-multi-move-drag](cloud-multi-move-drag.md) — Multi-seleção + drag para pasta no Cloud | flow | cloud, drag, move
 - [cih-visibilidade-aprovacao](cih-visibilidade-aprovacao.md) — ver_todas ≠ aprovar; ADM override gestor | domain | cih, permissao, habilidades
 - [cih-autocomplete-cnpj](cih-autocomplete-cnpj.md) — Autocomplete colaborador filtra por CNPJ/CC do modal | flow | cih, autocomplete, cnpj

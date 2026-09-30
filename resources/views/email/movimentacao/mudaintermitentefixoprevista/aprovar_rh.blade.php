@@ -7,7 +7,6 @@
                 Olá, <strong>{{ $dados['nome_para'] }}</strong>!<br><br>
                 <strong>{{ $dados['nome_de'] }}</strong>, mudou o status da mudança de intermitente para fixo. <br>
                 ID: <strong>{{$dados['id']}}</strong>. <br>
-                Colaborador: <strong>{{$dados['colaborador']}}</strong>. <br>
                 <br><br>
                 Para visualizar acesse o sistema <a href="{{ route('g.movimentacao.index') }}">clique aqui</a> .
 

@@ -20,10 +20,6 @@
         <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9;"><strong>Código:</strong></td>
         <td style="padding: 8px; border: 1px solid #ddd;">{{ $dados['mudanca_cargo_id'] }}</td>
     </tr>
-    <tr>
-        <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9;"><strong>Colaborador:</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd;">{{ $dados['colaborador'] ?? 'N/A' }}</td>
-    </tr>
     @if(isset($dados['data_solicitacao']))
     <tr>
         <td style="padding: 8px; border: 1px solid #ddd; background-color: #f9f9f9;"><strong>Data da Solicitação:</strong></td>

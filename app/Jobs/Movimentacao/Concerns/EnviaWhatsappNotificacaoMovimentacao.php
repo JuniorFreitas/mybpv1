@@ -17,7 +17,6 @@ trait EnviaWhatsappNotificacaoMovimentacao
             $destinatarios,
             $modulo,
             (string) ($dados['tipo'] ?? ''),
-            (string) ($dados['colaborador'] ?? ''),
             (string) ($dados['url'] ?? route('g.movimentacao.index')),
             (string) ($dados['nome_aprovacao_extra'] ?? 'Aprovação Extra'),
         );

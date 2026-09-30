@@ -8,7 +8,6 @@
                 Olá, <strong>{{ $dados['nome_para'] }}</strong>!<br><br>
                 <strong>{{ $dados['nome_de'] }}</strong>, criou e marcou você em uma mudança de cargo prevista. <br>
                 ID: <strong>{{$dados['id']}}</strong>. <br>
-                Colaborador: <strong>{{$dados['colaborador']}}</strong>. <br>
                 Cargo Anterior: <strong>{{$dados['cargo_anterior']}}</strong>. <br>
                 Cargo Novo: <strong>{{$dados['cargo_novo']}}</strong>. <br>
                 <br><br>

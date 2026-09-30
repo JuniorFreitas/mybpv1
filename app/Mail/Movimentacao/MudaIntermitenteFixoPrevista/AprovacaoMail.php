@@ -23,7 +23,7 @@ class AprovacaoMail extends Mailable
         $this->dados = $dados;
         $this->to($this->dados['email_para'], $this->dados['nome_para']);
         $this->from('naoresponda@mybp.com.br', 'BPSE-BUSINESS PARTNERS SERVIÇOS EMPRESARIAIS');
-        $this->subject = "ATUALIZAÇÃO NA MUDANÇA DE INTERMITENTE P/ FIXO - COLABORADOR ".$this->dados['colaborador']." - CÓD: ".$this->dados['id'];
+        $this->subject = "ATUALIZAÇÃO NA MUDANÇA DE INTERMITENTE P/ FIXO - CÓD: ".$this->dados['id'];
         $this->assunto = $this->subject;
     }
 

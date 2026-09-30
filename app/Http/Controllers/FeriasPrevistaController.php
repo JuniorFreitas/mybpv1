@@ -254,6 +254,11 @@ class FeriasPrevistaController extends Controller
             }
         }
 
+        // Payload de edição pode omitir solicitante_id (mapper antigo); preserva o existente.
+        if (empty($dados['solicitante_id'])) {
+            $dados['solicitante_id'] = $ferias->solicitante_id ?: auth()->id();
+        }
+
         // Validar os dados
         $dadosValidados = \Validator::make($dados, [
             'periodo_aquisitivo_id' => 'required',
@@ -284,6 +289,7 @@ class FeriasPrevistaController extends Controller
             if ($centroCustoId === '' || $centroCustoId === 0 || $centroCustoId === '0') {
                 $centroCustoId = null;
             }
+
             Admissao::find($dados['admissao_id'])->update([
                 'centro_custo_id' => $centroCustoId
             ]);

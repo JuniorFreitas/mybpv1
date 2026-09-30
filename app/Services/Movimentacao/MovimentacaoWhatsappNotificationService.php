@@ -23,7 +23,6 @@ class MovimentacaoWhatsappNotificationService
         array $destinatariosEmails,
         string $modulo,
         string $tipo,
-        string $colaborador,
         string $url,
         string $nomeAprovacaoExtra = 'Aprovação Extra'
     ): void {
@@ -83,7 +82,6 @@ class MovimentacaoWhatsappNotificationService
                     'titulo_notificacao' => $textos['titulo'],
                     'mensagem_notificacao' => $textos['mensagem'],
                     'modulo_movimentacao' => $modulo,
-                    'colaborador' => $colaborador,
                     'url_sistema' => $url,
                 ]
             );

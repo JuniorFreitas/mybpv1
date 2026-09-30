@@ -130,6 +130,7 @@
                                             empty-message="Nenhuma opção encontrada."
                                             :max-results="50"
                                             @opening="fecharOutrosComboboxes('form-ferias-periodo')"
+                                            @select="limparComboboxInvalido('ferias-periodo-' + hash)"
                                         />
                                     </div>
                                 </div>
@@ -207,6 +208,7 @@
                                             empty-message="Nenhuma opção encontrada."
                                             :max-results="40"
                                             @opening="fecharOutrosComboboxes('form-ferias-qnt-dias')"
+                                            @select="limparComboboxInvalido('ferias-qnt-dias-' + hash)"
                                         />
                                     </div>
                                 </div>
@@ -222,6 +224,7 @@
                                         class="corrigiDatepicker"
                                         v-model="form.data_saida"
                                         :disabled="modalCamposBloqueados"
+                                        @onselect="limparCampoDataInvalido('ferias-data-saida-' + hash)"
                                     ></datepicker>
                                 </div>
                             </div>
@@ -362,6 +365,7 @@
                                             empty-message="Nenhuma opção encontrada."
                                             :max-results="10"
                                             @opening="fecharOutrosComboboxes('form-ferias-status-gestor')"
+                                            @select="limparComboboxInvalido('ferias-status-gestor-' + hash)"
                                         />
                                     </div>
                                 </div>
@@ -415,6 +419,7 @@
                                             empty-message="Nenhuma opção encontrada."
                                             :max-results="10"
                                             @opening="fecharOutrosComboboxes('form-ferias-status-extra')"
+                                            @select="limparComboboxInvalido('ferias-status-extra-' + hash)"
                                         />
                                     </div>
                                 </div>
@@ -462,6 +467,7 @@
                                             empty-message="Nenhuma opção encontrada."
                                             :max-results="10"
                                             @opening="fecharOutrosComboboxes('form-ferias-status-rh')"
+                                            @select="limparComboboxInvalido('ferias-status-rh-' + hash)"
                                         />
                                     </div>
                                 </div>
@@ -951,9 +957,11 @@ import FiltroListagem from '../../ui/FiltroListagem.vue'
 import MybpCardCampo from '../../ui/MybpCardCampo.vue'
 import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
+import ComboboxValidation from '../../../mixins/ComboboxValidation'
+import { buildOpcoesStatusFluxoAprovacao } from '../../../utils/opcoesStatusFluxoAprovacao'
 
 export default {
-    mixins: [configselect2, ExportacaoMixin, Utils, Validacoes, configuracoes],
+    mixins: [configselect2, ExportacaoMixin, Utils, Validacoes, configuracoes, ComboboxValidation],
     inject: {
         atualizarUrlMovimentacao: { default: () => () => {} }
     },
@@ -1020,6 +1028,7 @@ export default {
                 dias_saldo: '',
                 tem_faltas: false,
                 qnt_faltas: 0,
+                solicitante_id: '',
                 solicitante: '',
                 obs_solicitante: '',
                 data_solicitacao: '',
@@ -1265,22 +1274,10 @@ export default {
             return opts
         },
         opcoesStatus() {
-            const opts = [
-                { value: '', label: 'Todos os status' },
-                { value: 'aberto', label: 'Em aberto' },
-                { value: 'aprovado_gestor', label: 'Aprovado Gestor' }
-            ]
-            if (this.temAprovacaoExtra) {
-                opts.push({
-                    value: 'aprovado_extra',
-                    label: `Aprovado ${this.nomeAprovacaoExtra || 'Extra'}`
-                })
-            }
-            opts.push(
-                { value: 'aprovado_rh', label: 'Aprovado Rh' },
-                { value: 'reprovado', label: 'Reprovado' }
-            )
-            return opts
+            return buildOpcoesStatusFluxoAprovacao({
+                temAprovacaoExtra: this.temAprovacaoExtra,
+                nomeAprovacaoExtra: this.nomeAprovacaoExtra
+            })
         },
         opcoesOrdenacao() {
             return [
@@ -1845,24 +1842,7 @@ export default {
         },
 
         cadastrar() {
-            if (!this.form.colaborador_id) {
-                mostraErro('', 'Selecione o colaborador')
-                return false
-            }
-            if (!this.form.periodo_aquisitivo_id) {
-                mostraErro('', 'Selecione o período aquisitivo')
-                return false
-            }
-            if (!this.form.qnt_dias) {
-                mostraErro('', 'Selecione a quantidade de dias de férias')
-                return false
-            }
-            if (!this.form.data_saida) {
-                mostraErro('', 'Informe a data de saída')
-                return false
-            }
-            if (!this.form.gestor_id) {
-                mostraErro('', 'Selecione o gestor de aprovação')
+            if (!this.validarCamposSolicitacao()) {
                 return false
             }
 
@@ -1894,16 +1874,7 @@ export default {
         },
 
         editar() {
-            if (!this.form.periodo_aquisitivo_id) {
-                mostraErro('', 'Selecione o período aquisitivo')
-                return false
-            }
-            if (!this.form.qnt_dias) {
-                mostraErro('', 'Selecione a quantidade de dias de férias')
-                return false
-            }
-            if (!this.form.data_saida) {
-                mostraErro('', 'Informe a data de saída')
+            if (!this.validarCamposSolicitacao({ exigirColaborador: false })) {
                 return false
             }
 
@@ -1994,10 +1965,65 @@ export default {
                 })
         },
 
-        aprovarGestor() {
-            if (!this.form.status_aprovacao_gestor) {
-                mostraErro('', 'Selecione o status da aprovação')
+        validarCamposSolicitacao(opts = {}) {
+            const exigirColaborador = opts.exigirColaborador !== false
+
+            if (this.modalCamposBloqueados) {
+                return true
+            }
+
+            if (exigirColaborador && !this.form.colaborador_id) {
+                if (typeof valida_campo_vazio === 'function') {
+                    valida_campo_vazio($(`#colaborador_${this.hash}`), 1)
+                }
+                mostraErro('', 'Selecione o colaborador')
                 return false
+            }
+
+            if (
+                !this.exigirCombobox(this.form.periodo_aquisitivo_id, `ferias-periodo-${this.hash}`, {
+                    toastMsg: 'Selecione o período aquisitivo'
+                })
+            ) {
+                return false
+            }
+
+            if (
+                !this.exigirCombobox(this.form.qnt_dias, `ferias-qnt-dias-${this.hash}`, {
+                    toastMsg: 'Selecione a quantidade de dias de férias'
+                })
+            ) {
+                return false
+            }
+
+            const dataId = `ferias-data-saida-${this.hash}`
+            if (
+                !this.exigirCampoData(this.form.data_saida, dataId, {
+                    toastMsg: 'Informe a data de saída'
+                })
+            ) {
+                return false
+            }
+
+            if (!this.form.gestor_id) {
+                if (typeof valida_campo_vazio === 'function') {
+                    valida_campo_vazio($(`#gestor_${this.hash}`), 1)
+                }
+                mostraErro('', 'Selecione o gestor de aprovação')
+                return false
+            }
+
+            return this.validarInputsAtivosVisiveis(this.hash, { preservarIds: [dataId] })
+        },
+
+        aprovarGestor() {
+            const statusId = `ferias-status-gestor-${this.hash}`
+            if (
+                !this.exigirCombobox(this.form.status_aprovacao_gestor, statusId, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
             }
 
             this.preload = true
@@ -2017,9 +2043,13 @@ export default {
         },
 
         aprovarExtra() {
-            if (!this.form.status_aprovacao_extra) {
-                mostraErro('', 'Selecione o status da aprovação')
-                return false
+            const statusId = `ferias-status-extra-${this.hash}`
+            if (
+                !this.exigirCombobox(this.form.status_aprovacao_extra, statusId, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
             }
 
             this.preload = true
@@ -2042,9 +2072,13 @@ export default {
         },
 
         aprovarRh() {
-            if (!this.form.status_aprovacao_rh) {
-                mostraErro('', 'Selecione o status da aprovação')
-                return false
+            const statusId = `ferias-status-rh-${this.hash}`
+            if (
+                !this.exigirCombobox(this.form.status_aprovacao_rh, statusId, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
             }
             this.preload = true
 

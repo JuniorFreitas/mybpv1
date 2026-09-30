@@ -80,6 +80,7 @@ class TransferenciaPrevistaEditPayloadMapperTest extends TestCase
         $this->assertSame(10, $payload['colaborador_id']);
         $this->assertSame('ANA SILVA', $payload['autocomplete_label_colaborador']);
         $this->assertSame(8, $payload['centro_custo_id']);
+        $this->assertSame('01/03/2026', $payload['data_transferencia']);
         $this->assertSame('Gestor Origem', $payload['label_gestor_origem']);
         $this->assertSame('Gestor Destino', $payload['label_gestor_destino']);
         $this->assertSame(['id' => 30, 'nome' => 'Beatriz Aprovadora'], $payload['user_aprovacao']);

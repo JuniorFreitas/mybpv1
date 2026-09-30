@@ -4,7 +4,6 @@
 @php
 $tipo = $dados['tipo'];
 $ferias = $dados['ferias'];
-$colaborador = $dados['colaborador'];
 $centro_custo = $dados['centro_custo'];
 $periodo = $dados['periodo'] ?? '';
 $data_saida = $dados['data_saida'];
@@ -155,10 +154,6 @@ $mensagem = $mensagens[$tipo] ?? '';
                     <tr>
                         <td width="40%" style="color: #555;"><strong>CÓD:</strong></td>
                         <td>#{{ $ferias->id }}</td>
-                    </tr>
-                    <tr style="background: #f8f9fa;">
-                        <td style="color: #555;"><strong>Colaborador:</strong></td>
-                        <td>{{ $colaborador }}</td>
                     </tr>
                     <tr>
                         <td style="color: #555;"><strong>Centro de Custo:</strong></td>

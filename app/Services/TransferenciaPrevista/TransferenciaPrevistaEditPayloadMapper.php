@@ -5,6 +5,8 @@ namespace App\Services\TransferenciaPrevista;
 use App\Models\Arquivo;
 use App\Models\TransferenciaPrevista;
 use App\Models\User;
+use DateTimeInterface;
+use MasterTag\DataHora;
 
 /**
  * Monta payload enxuto do modal editar/visualizar/aprovar Transferência Prevista.
@@ -80,7 +82,7 @@ class TransferenciaPrevistaEditPayloadMapper
             'centro_custo_id' => $admissao?->centro_custo_id,
             'centro_custo_origem_id' => $item->centro_custo_origem_id,
             'centro_custo_destino_id' => $item->centro_custo_destino_id,
-            'data_transferencia' => $item->data_transferencia,
+            'data_transferencia' => $this->formatDateBr($item->data_transferencia),
             'user_id' => $item->user_id,
             'solicitante' => $item->solicitante,
             'obs' => $item->obs,
@@ -95,33 +97,85 @@ class TransferenciaPrevistaEditPayloadMapper
             'gestor_aprovacao_id' => $item->gestor_aprovacao_id,
             'anexos' => $this->mapAnexos($item),
             'anexosDel' => [],
-            'data_aprovacao' => $item->data_aprovacao,
+            'data_aprovacao' => $this->formatDateBr($item->data_aprovacao),
             'obs_aprovacao' => $item->obs_aprovacao,
             'status_aprovacao' => $item->status_aprovacao ?: '',
             'user_aprovacao' => $this->mapUserResumo($item->UserAprovacao),
             'user_aprovacao_id' => $item->user_aprovacao_id,
-            'data_aprovacao_gestor_destino' => $item->data_aprovacao_gestor_destino,
+            'data_aprovacao_gestor_destino' => $this->formatDateTimeBr($item->data_aprovacao_gestor_destino),
             'obs_aprovacao_gestor_destino' => $item->obs_aprovacao_gestor_destino,
             'status_aprovacao_gestor_destino' => $item->status_aprovacao_gestor_destino ?: '',
             'quem_aprovou_gestor_destino' => $this->mapUserResumo($item->QuemAprovouGestorDestino),
             'user_aprovacao_gestor_destino_id' => $item->user_aprovacao_gestor_destino_id,
-            'data_aprovacao_gestor_unico' => $item->data_aprovacao_gestor_unico,
+            'data_aprovacao_gestor_unico' => $this->formatDateTimeBr($item->data_aprovacao_gestor_unico),
             'obs_aprovacao_gestor_unico' => $item->obs_aprovacao_gestor_unico,
             'status_aprovacao_gestor_unico' => $item->status_aprovacao_gestor_unico ?: '',
             'quem_aprovou_gestor_unico' => $this->mapUserResumo($item->QuemAprovouGestorUnico),
             'user_aprovacao_gestor_unico_id' => $item->user_aprovacao_gestor_unico_id,
-            'data_aprovacao_extra' => $item->data_aprovacao_extra,
+            'data_aprovacao_extra' => $this->formatDateTimeBr($item->data_aprovacao_extra),
             'obs_aprovacao_extra' => $item->obs_aprovacao_extra,
             'status_aprovacao_extra' => $item->status_aprovacao_extra ?: '',
             'aprovacao_extra_id' => $item->aprovacao_extra_id,
             'aprovacao_extra' => $this->mapUserResumo($item->AprovacaoExtra),
-            'data_aprovacao_rh' => $item->data_aprovacao_rh,
+            'data_aprovacao_rh' => $this->formatDateTimeBr($item->data_aprovacao_rh),
             'obs_rh' => $item->obs_rh,
             'resposta_rh' => $item->resposta_rh ?: '',
             'rh_aprovacao' => $this->mapUserResumo($item->RhAprovacao),
             'user_rh_id' => $item->user_rh_id,
             'empresa_id' => $item->empresa_id,
         ];
+    }
+
+    /**
+     * DatePicker e labels do modal esperam d/m/Y (não ISO/Carbon).
+     */
+    private function formatDateBr(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        if ($value instanceof DateTimeInterface) {
+            return $value->format('d/m/Y');
+        }
+
+        $texto = trim((string) $value);
+        if ($texto === '') {
+            return '';
+        }
+
+        if (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $texto)) {
+            return $texto;
+        }
+
+        return (new DataHora($texto))->dataCompleta();
+    }
+
+    /**
+     * Datas de aprovação no modal: d/m/Y às H:i:s.
+     */
+    private function formatDateTimeBr(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        if ($value instanceof DateTimeInterface) {
+            return $value->format('d/m/Y \à\s H:i:s');
+        }
+
+        $texto = trim((string) $value);
+        if ($texto === '') {
+            return '';
+        }
+
+        if (preg_match('/^\d{2}\/\d{2}\/\d{4}/', $texto)) {
+            return $texto;
+        }
+
+        $data = new DataHora($texto);
+
+        return $data->dataCompleta() . ' às ' . $data->hora() . ':' . $data->minuto() . ':' . $data->segundo();
     }
 
     /**

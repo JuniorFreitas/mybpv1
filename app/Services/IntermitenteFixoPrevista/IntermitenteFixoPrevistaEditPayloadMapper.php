@@ -108,6 +108,7 @@ class IntermitenteFixoPrevistaEditPayloadMapper
             'obs_aprovacao_extra' => $item->obs_aprovacao_extra,
             'status_aprovacao_extra' => $item->status_aprovacao_extra ?: '',
             'aprovacao_extra_id' => $item->aprovacao_extra_id,
+            'aprovacao_extra_nome' => $item->UserAprovacaoExtra?->nome ?? '',
             'data_aprovacao_rh' => $item->data_aprovacao_rh,
             'obs_rh' => $item->obs_rh,
             'status_aprovacao_rh' => $item->status_aprovacao_rh ?: '',

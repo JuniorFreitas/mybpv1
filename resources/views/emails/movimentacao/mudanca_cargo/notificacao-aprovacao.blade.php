@@ -4,7 +4,6 @@
 @php
 $tipo = $dados['tipo'];
 $mudanca = $dados['mudanca_cargo'];
-$colaborador = $dados['colaborador'];
 $centro_custo_anterior = $dados['centro_custo_anterior'];
 $centro_custo_novo = $dados['centro_custo_novo'];
 $cargo_anterior = $dados['cargo_anterior'];
@@ -164,10 +163,6 @@ $mensagem = $mensagens[$tipo] ?? '';
                     <tr>
                         <td width="40%" style="color: #555;"><strong>CÓD:</strong></td>
                         <td>#{{ $mudanca->id }}</td>
-                    </tr>
-                    <tr style="background: #f8f9fa;">
-                        <td style="color: #555;"><strong>Colaborador:</strong></td>
-                        <td>{{ $colaborador }}</td>
                     </tr>
                     <tr>
                         <td style="color: #555;"><strong>Centro de Custo Anterior:</strong></td>

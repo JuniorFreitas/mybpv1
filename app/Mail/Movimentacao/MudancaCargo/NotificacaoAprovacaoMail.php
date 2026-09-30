@@ -39,20 +39,19 @@ class NotificacaoAprovacaoMail extends Mailable
     private function gerarAssunto(): string
     {
         $tipo = $this->dados['tipo'];
-        $colaborador = $this->dados['colaborador'] ?? '';
         $nomeAprovacaoExtra = $this->dados['nome_aprovacao_extra'] ?? 'Aprovação Extra';
 
         $assuntos = [
-            'criacao' => "Notificação — Mudança de cargo ({$colaborador}) — sua aprovação como gestor",
-            'pendente_aprovacao_extra' => "Notificação — Mudança de cargo ({$colaborador}) — aguardando aprovação de {$nomeAprovacaoExtra}",
-            'pendente_aprovacao_rh' => "Notificação — Mudança de cargo ({$colaborador}) — aguardando aprovação do RH",
-            'reprovado_gestor' => "Notificação — Mudança de cargo ({$colaborador}) — reprovada pelo gestor",
-            'reprovado_aprovacao_extra' => "Notificação — Mudança de cargo ({$colaborador}) — reprovada por {$nomeAprovacaoExtra}",
-            'reprovado_rh' => "Notificação — Mudança de cargo ({$colaborador}) — reprovada pelo RH",
-            'cancelado' => "Notificação — Mudança de cargo ({$colaborador}) — cancelada",
-            'aprovado_final' => "Notificação — Mudança de cargo ({$colaborador}) — aprovada em todas as etapas",
+            'criacao' => "Notificação — Mudança de cargo — sua aprovação como gestor",
+            'pendente_aprovacao_extra' => "Notificação — Mudança de cargo — aguardando aprovação de {$nomeAprovacaoExtra}",
+            'pendente_aprovacao_rh' => "Notificação — Mudança de cargo — aguardando aprovação do RH",
+            'reprovado_gestor' => "Notificação — Mudança de cargo — reprovada pelo gestor",
+            'reprovado_aprovacao_extra' => "Notificação — Mudança de cargo — reprovada por {$nomeAprovacaoExtra}",
+            'reprovado_rh' => "Notificação — Mudança de cargo — reprovada pelo RH",
+            'cancelado' => "Notificação — Mudança de cargo — cancelada",
+            'aprovado_final' => "Notificação — Mudança de cargo — aprovada em todas as etapas",
         ];
 
-        return $assuntos[$tipo] ?? "Notificação — Mudança de cargo {$colaborador}";
+        return $assuntos[$tipo] ?? "Notificação — Mudança de cargo";
     }
 }

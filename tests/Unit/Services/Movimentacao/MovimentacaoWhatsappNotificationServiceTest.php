@@ -36,7 +36,6 @@ class MovimentacaoWhatsappNotificationServiceTest extends TestCase
             ['gestor@empresa.com'],
             'Férias',
             'criacao',
-            'Colaborador Teste',
             'https://mybp.test/movimentacao',
         );
 
@@ -64,7 +63,6 @@ class MovimentacaoWhatsappNotificationServiceTest extends TestCase
             ['gestor@empresa.com'],
             'Férias',
             'criacao',
-            'Colaborador Teste',
             'https://mybp.test/movimentacao',
         );
 

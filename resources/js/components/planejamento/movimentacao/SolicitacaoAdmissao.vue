@@ -130,6 +130,7 @@
                                             empty-message="Nenhuma opção encontrada."
                                             :max-results="30"
                                             @opening="fecharOutrosComboboxes('form-admissao-tipo')"
+                                            @select="limparComboboxInvalido('admissao-tipo-' + hash)"
                                         />
                                     </div>
                                 </div>
@@ -137,7 +138,7 @@
 
                             <div class="col-12 col-md-4">
                                 <div class="form-group mybp-filtro-campo mybp-modal-campo-data">
-                                    <label class="mybp-label">Data admissão</label>
+                                    <label class="mybp-label">Data admissão <span class="text-danger">*</span></label>
                                     <datepicker
                                         :id="`admissao-data-${hash}`"
                                         formsm
@@ -239,6 +240,7 @@
                                             empty-message="Nenhuma opção encontrada."
                                             :max-results="10"
                                             @opening="fecharOutrosComboboxes('form-admissao-status-gestor')"
+                                            @select="limparComboboxInvalido('admissao-status-gestor-' + hash)"
                                         />
                                     </div>
                                 </div>
@@ -290,6 +292,7 @@
                                             empty-message="Nenhuma opção encontrada."
                                             :max-results="10"
                                             @opening="fecharOutrosComboboxes('form-admissao-status-extra')"
+                                            @select="limparComboboxInvalido('admissao-status-extra-' + hash)"
                                         />
                                     </div>
                                 </div>
@@ -336,6 +339,7 @@
                                             empty-message="Nenhuma opção encontrada."
                                             :max-results="10"
                                             @opening="fecharOutrosComboboxes('form-admissao-status-rh')"
+                                            @select="limparComboboxInvalido('admissao-status-rh-' + hash)"
                                         />
                                     </div>
                                 </div>
@@ -749,9 +753,11 @@ import FiltroListagem from '../../ui/FiltroListagem.vue'
 import MybpCardCampo from '../../ui/MybpCardCampo.vue'
 import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
+import ComboboxValidation from '../../../mixins/ComboboxValidation'
+import { buildOpcoesStatusFluxoAprovacao } from '../../../utils/opcoesStatusFluxoAprovacao'
 
 export default {
-    mixins: [ExportacaoMixin, Utils, configuracoes],
+    mixins: [ExportacaoMixin, Utils, configuracoes, ComboboxValidation],
     inject: {
         atualizarUrlMovimentacao: { default: () => () => {} }
     },
@@ -1062,22 +1068,10 @@ export default {
             return opts
         },
         opcoesStatus() {
-            const opts = [
-                { value: '', label: 'Todos os status' },
-                { value: 'aberto', label: 'Em aberto' },
-                { value: 'aprovado_gestor', label: 'Aprovado Gestor' }
-            ]
-            if (this.temAprovacaoExtra) {
-                opts.push({
-                    value: 'aprovado_extra',
-                    label: `Aprovado ${this.nomeAprovacaoExtra || 'Extra'}`
-                })
-            }
-            opts.push(
-                { value: 'aprovado_rh', label: 'Aprovado Rh' },
-                { value: 'reprovado', label: 'Reprovado' }
-            )
-            return opts
+            return buildOpcoesStatusFluxoAprovacao({
+                temAprovacaoExtra: this.temAprovacaoExtra,
+                nomeAprovacaoExtra: this.nomeAprovacaoExtra
+            })
         },
         opcoesTipoContrato() {
             const opts = [{ value: '', label: 'Todos os tipos' }]
@@ -1281,6 +1275,7 @@ export default {
 
         onSelectFormLotacao() {
             this.limparFormCentroCusto()
+            this.limparComboboxInvalido(`admissao-lotacao-${this.hash}`)
         },
 
         aplicarCentroCustoPorValorCombo(valor) {
@@ -1309,6 +1304,7 @@ export default {
             } else {
                 this.limparFormCentroCusto()
             }
+            this.limparComboboxInvalido(`admissao-cc-${this.hash}`)
         },
 
         normalizarDataBr(valor) {
@@ -1332,6 +1328,7 @@ export default {
         onSelectDataAdmissao(valor) {
             const texto = typeof valor === 'string' ? valor : valor && valor.value ? valor.value : ''
             this.form.data_admissao = this.normalizarDataBr(texto)
+            this.limparCampoDataInvalido(`admissao-data-${this.hash}`)
         },
 
         sincronizarDataAdmissaoDoInput() {
@@ -1488,40 +1485,7 @@ export default {
         },
 
         cadastrar() {
-            this.sincronizarDataAdmissaoDoInput()
-            if (this.temFilial && !this.formLotacaoCnpj) {
-                mostraErro('', 'Selecione a lotação')
-                return false
-            }
-            if (!this.form.centro_custo_id) {
-                mostraErro('', 'Selecione o centro de custo')
-                return false
-            }
-            if (this.form.filial && !this.form.centro_custo_filial_id) {
-                mostraErro('', 'Centro de custo de filial inválido')
-                return false
-            }
-            if (this.form.data_admissao === 'Invalid date') {
-                this.form.data_admissao = ''
-            }
-            if (this.form.gestor_id === '') {
-                valida_campo_vazio($(`#gestor_${this.hash}`), 1)
-                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo GESTOR não pode ficar vazio')
-                this.resetaCampoGestor()
-                return false
-            }
-            if (this.form.cargo_id === '') {
-                valida_campo_vazio($(`#cargo_${this.hash}`), 1)
-                $(`#${this.hash} #cargo_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo CARGO não pode ficar vazio')
-                this.resetaCampoCargo()
-                return false
-            }
-
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
+            if (!this.validarCamposSolicitacao()) {
                 return false
             }
 
@@ -1601,40 +1565,7 @@ export default {
         },
 
         alterar() {
-            this.sincronizarDataAdmissaoDoInput()
-            if (this.temFilial && !this.formLotacaoCnpj) {
-                mostraErro('', 'Selecione a lotação')
-                return false
-            }
-            if (!this.form.centro_custo_id) {
-                mostraErro('', 'Selecione o centro de custo')
-                return false
-            }
-            if (this.form.filial && !this.form.centro_custo_filial_id) {
-                mostraErro('', 'Centro de custo de filial inválido')
-                return false
-            }
-            if (this.form.data_admissao === 'Invalid date') {
-                this.form.data_admissao = ''
-            }
-            if (this.form.gestor_id === '') {
-                valida_campo_vazio($(`#gestor_${this.hash}`), 1)
-                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo GESTOR não pode ficar vazio')
-                this.resetaCampoGestor()
-                return false
-            }
-            if (this.form.cargo_id === '') {
-                valida_campo_vazio($(`#cargo_${this.hash}`), 1)
-                $(`#${this.hash} #cargo_${this.hash}`).focus().trigger('blur')
-                mostraErro('', 'Campo CARGO não pode ficar vazio')
-                this.resetaCampoCargo()
-                return false
-            }
-
-            $(`#${this.hash} :input:visible`).trigger('blur')
-            if ($(`#${this.hash} :input:visible.is-invalid`).length) {
-                mostraErro('', 'Verifique os campos marcados')
+            if (!this.validarCamposSolicitacao()) {
                 return false
             }
 
@@ -1653,10 +1584,84 @@ export default {
                     this.preload = false
                 })
         },
-        aprovarGestor() {
-            if (!this.form.status_aprovacao) {
-                mostraErro('', 'Selecione o status da aprovação')
+
+        validarCamposSolicitacao() {
+            this.sincronizarDataAdmissaoDoInput()
+            if (this.form.data_admissao === 'Invalid date') {
+                this.form.data_admissao = ''
+            }
+
+            if (this.modalCamposBloqueados) {
+                return true
+            }
+
+            if (!this.form.cargo_id) {
+                valida_campo_vazio($(`#cargo_${this.hash}`), 1)
+                $(`#${this.hash} #cargo_${this.hash}`).focus().trigger('blur')
+                mostraErro('', 'Campo CARGO não pode ficar vazio')
+                this.resetaCampoCargo()
                 return false
+            }
+
+            if (this.temFilial) {
+                if (
+                    !this.exigirCombobox(this.formLotacaoCnpj, `admissao-lotacao-${this.hash}`, {
+                        toastMsg: 'Selecione a lotação'
+                    })
+                ) {
+                    return false
+                }
+            }
+
+            if (
+                !this.exigirCombobox(this.form.centro_custo_id || this.formCentroCustoCombo, `admissao-cc-${this.hash}`, {
+                    toastMsg: 'Selecione o centro de custo'
+                })
+            ) {
+                return false
+            }
+
+            if (this.form.filial && !this.form.centro_custo_filial_id) {
+                mostraErro('', 'Centro de custo de filial inválido')
+                return false
+            }
+
+            if (
+                !this.exigirCombobox(this.form.tipo_contrato, `admissao-tipo-${this.hash}`, {
+                    toastMsg: 'Selecione o tipo de admissão'
+                })
+            ) {
+                return false
+            }
+
+            const dataId = `admissao-data-${this.hash}`
+            if (
+                !this.exigirCampoData(this.form.data_admissao, dataId, {
+                    toastMsg: 'Campo DATA ADMISSÃO não pode ficar vazio'
+                })
+            ) {
+                return false
+            }
+
+            if (!this.form.gestor_id) {
+                valida_campo_vazio($(`#gestor_${this.hash}`), 1)
+                $(`#${this.hash} #gestor_${this.hash}`).focus().trigger('blur')
+                mostraErro('', 'Campo GESTOR não pode ficar vazio')
+                this.resetaCampoGestor()
+                return false
+            }
+
+            return this.validarInputsAtivosVisiveis(this.hash, { preservarIds: [dataId] })
+        },
+
+        aprovarGestor() {
+            const statusId = `admissao-status-gestor-${this.hash}`
+            if (
+                !this.exigirCombobox(this.form.status_aprovacao, statusId, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
             }
 
             this.preload = true
@@ -1674,9 +1679,13 @@ export default {
                 })
         },
         aprovarExtra() {
-            if (!this.form.status_aprovacao_extra) {
-                mostraErro('', 'Selecione o status da aprovação')
-                return false
+            const statusId = `admissao-status-extra-${this.hash}`
+            if (
+                !this.exigirCombobox(this.form.status_aprovacao_extra, statusId, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
             }
 
             this.preload = true
@@ -1694,9 +1703,13 @@ export default {
                 })
         },
         aprovarRh() {
-            if (!this.form.status_aprovacao_rh) {
-                mostraErro('', 'Selecione o status da aprovação')
-                return false
+            const statusId = `admissao-status-rh-${this.hash}`
+            if (
+                !this.exigirCombobox(this.form.status_aprovacao_rh, statusId, {
+                    toastMsg: 'Selecione o status da aprovação'
+                })
+            ) {
+                return
             }
             this.preload = true
             axios

@@ -7,7 +7,6 @@
                 Olá, <strong>{{ $dados['nome_para'] }}</strong>!<br><br>
                 <strong>{{ $dados['nome_de'] }}</strong>, criou e marcou você em uma transferência prevista. <br>
                 ID: <strong>{{$dados['id']}}</strong>. <br>
-                Colaborador: <strong>{{$dados['colaborador']}}</strong>. <br>
                 Centro de custo origem: <strong>{{$dados['centro_custo_origem']}}</strong>. <br>
                 Cargo de custo destino: <strong>{{$dados['centro_custo_destino']}}</strong>. <br>
                 <br><br>

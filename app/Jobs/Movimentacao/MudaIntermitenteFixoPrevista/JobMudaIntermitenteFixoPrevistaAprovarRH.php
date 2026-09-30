@@ -72,15 +72,6 @@ class JobNotificacaoAprovacaoRH implements ShouldQueue
             return;
         }
 
-        // Busca currículo diretamente
-        $curriculo = \App\Models\Curriculo::withoutGlobalScope(\App\Scopes\ScopeEmpresa::class)
-            ->select('id', 'nome')
-            ->where('id', $intermitente->colaborador_id)
-            ->first();
-
-        if (!$curriculo) {
-            return;
-        }
 
         // Busca empresa
         $empresa = DB::table('clientes')
@@ -99,7 +90,7 @@ class JobNotificacaoAprovacaoRH implements ShouldQueue
             'emails_bcc' => $this->emailsRH, // Emails restantes vão como BCC
             'etapa' => $this->etapa,
             'intermitente_id' => $intermitente->id,
-            'colaborador' => $curriculo->nome,
+            'colaborador' => '',
             'empresa_id' => $this->empresaId,
             'nome_empresa' => $empresa ? $empresa->nome_fantasia : 'MyBP seu negócio na sua mão',
         ];

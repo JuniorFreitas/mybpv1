@@ -31,7 +31,7 @@ class JobValorExtraPrevistaAprovar implements ShouldQueue
             'email_para' => $valorExtraPrevista->UserCadastrou->login,
             'status_aprovacao' => $valorExtraPrevista->status_aprovacao,
             'id' => $valorExtraPrevista->id,
-            'colaborador' => $valorExtraPrevista->Colaborador->nome,
+            'colaborador' => '',
             'empresa_id' => auth()->user()->empresa_id
         ];
 
