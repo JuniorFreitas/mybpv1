@@ -1,14 +1,11 @@
-# Demissão — modal no padrão UX MyBP
+# Demissão — modal e cards no padrão UX MyBP
 
 - Arquivo: `resources/js/components/planejamento/movimentacao/SolicitacaoDemissao.vue`
-- Modal segue padrão CIH/Transferência: `fieldset` + `mybp-label` + legenda `mybp-campo-obrigatorio-legenda` + `ComboboxAutoComplete`
-- Layout: Colaborador → CC | Lotação → Data | Tipo aviso → Gestor → Obs → Anexos
-- Lotação (readonly): mesmo formato dos cards (`nome - CNPJ`) via `labelLotacaoAtual` (auth `cnpjs` / vínculo CC filial / `lista_ccs`)
-- Modal: `demissao-modal-form mybp-filtros-compactos` (mesma altura/fonte dos filtros) + gap `--mybp-fc-gap: 0.75rem`
-- DatePicker: esconder label vazia aninhada e zerar `corrigiDatepicker` (evita sumir com densificação)
-- Edit payload: `DemissaoPrevistaEditPayloadMapper` formata `data_demissao`/`data_aprovacao*` em `d/m/Y` (Carbon no JSON virava ISO → "Invalid date" no DatePicker)
-- DatePicker: apply+hide emitem v-model; limpa "hoje" fantasma no mount; `cadastrar()` sincroniza DOM→`form.data_demissao` antes de validar
-- Layout (padrão CIH): fieldsets **Colaborador** → **Solicitação** (Data 4 + Tipo 8 + Gestor) → **Detalhes** (Obs + Anexos); aprovações Status 4 + Obs 8
-- CC opcional: `centro_custo_id` nullable (migration); aviso no modal + `confirm` no cadastro; store/update normalizam ''→null
-- Tipo de aviso e status de aprovação: combobox; validação explícita em `cadastrar()` / `aprovar*`
-- Filtros da listagem continuam com `mybp-filtros-compactos`
+- Modal: fieldset CIH + `mybp-filtros-compactos` + combobox; CC opcional com confirm
+- **Cards listagem** usam o padrão compartilhado **Card detalhe**:
+  - Doc: `docs/PADRAO_UX_CARD_DETALHE.md`
+  - Skill: `.cursor/skills/mybp-card-detalhe/SKILL.md`
+  - CSS: `resources/sass/_mybp-card-detalhe.scss`
+  - Componentes: `MybpCardCampo`, `MybpFluxoAprovacao`, `MybpStatusBadge`
+  - Seções: Data/Aviso/Cargo → Lotação/CC/Gestor → Fluxo de aprovação
+- API `filtro`: `gestor_nome` + `lotacao` via `LotacaoLabelResolver`

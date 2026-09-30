@@ -287,7 +287,8 @@ class DemissaoPrevistaController extends Controller
                 'dp.status_aprovacao_extra',
                 'usa.nome as user_aprovacao_nome',
                 'urh.nome as rh_aprovacao_nome',
-                'uextra.nome as aprovacao_extra_nome'
+                'uextra.nome as aprovacao_extra_nome',
+                'ug.nome as gestor_nome'
             )
             ->leftJoin('users as u', 'dp.colaborador_id', '=', 'u.id')
             ->leftJoin('users as us', 'dp.user_id', '=', 'us.id')
@@ -306,6 +307,7 @@ class DemissaoPrevistaController extends Controller
             ->leftjoin('users as urh', 'urh.id', '=', 'dp.rh_aprovacao_id')
             ->leftjoin('users as usa', 'dp.user_aprovacao_id', '=', 'usa.id')
             ->leftjoin('users as uextra', 'dp.aprovacao_extra_id', '=', 'uextra.id')
+            ->leftJoin('users as ug', 'dp.gestor_id', '=', 'ug.id')
             ->where('dp.empresa_id', '=', auth()->user()->empresa_id)
             ->whereNull('dp.deleted_at');
 

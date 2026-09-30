@@ -3,7 +3,8 @@
 
 Last updated: 2026-09-29
 
-- [demissao-modal-padrao-ux](demissao-modal-padrao-ux.md) — Modal demissão: fieldset + mybp-label + combobox | pattern | demissao, modal, ux
+- [demissao-modal-padrao-ux](demissao-modal-padrao-ux.md) — Modal + cards demissão no padrão Card detalhe (`MybpFluxoAprovacao`) | pattern | demissao, modal, card-detalhe
+- [card-detalhe-operacional](card-detalhe-operacional.md) — Padrão reutilizável corpo do card + fluxo aprovação | pattern | card, fluxo, ux
 - [cloud-multi-move-drag](cloud-multi-move-drag.md) — Multi-seleção + drag para pasta no Cloud | flow | cloud, drag, move
 - [cih-visibilidade-aprovacao](cih-visibilidade-aprovacao.md) — ver_todas ≠ aprovar; ADM override gestor | domain | cih, permissao, habilidades
 - [cih-autocomplete-cnpj](cih-autocomplete-cnpj.md) — Autocomplete colaborador filtra por CNPJ/CC do modal | flow | cih, autocomplete, cnpj
