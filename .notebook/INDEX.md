@@ -3,6 +3,8 @@
 
 Last updated: 2026-09-30
 
+- [cih-modal-padrao-ux](cih-modal-padrao-ux.md) — Modal CIH no padrão mybp-modal-form + ComboboxValidation | pattern | cih, modal, combobox
+- [cih-fluxo-padrao-ux](cih-fluxo-padrao-ux.md) — CIH: card detalhe + MybpFluxoAprovacao + filtro status por etapa | pattern | cih, card-detalhe, fluxo, filtro
 - [mobilizacao-padrao-ux](mobilizacao-padrao-ux.md) — Relatório mobilização: filtros compactos + cards mybp | pattern | mobilizacao, filtro, card, relatorio
 - [requisicao-vaga-padrao-ux](requisicao-vaga-padrao-ux.md) — Filtros/cards/modal Requisição de Vagas no padrão operacional | pattern | requisicao-vaga, filtro, card-detalhe, modal
 - [transferencia-lotacao-cnpj](transferencia-lotacao-cnpj.md) — Modal Lotação→CC origem/destino + cards lotação | flow | transferencia, lotacao, cnpj

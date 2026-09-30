@@ -66,16 +66,71 @@ class CihFilterApplier
 
     private function applyStatusFilter(Builder $query): void
     {
-        if (!isset($this->filtros['campoStatus']) || empty($this->filtros['campoStatus'])) {
+        $status = $this->filtros['campoStatusAprovacao']
+            ?? $this->filtros['campoStatus']
+            ?? null;
+
+        if ($status === null || $status === '') {
             return;
         }
 
-        $status = $this->filtros['campoStatus'];
+        $status = (string) $status;
 
-        $query->when($status === 'aberto', fn($q) => $q->where('status', 'aberto'))
-            ->when($status === 'aprovado_gestor', fn($q) => $q->where('status', 'aprovado')->whereNull('resposta_rh'))
-            ->when($status === 'aprovado_rh', fn($q) => $q->where('resposta_rh', 'aprovado'))
-            ->when($status === 'reprovado', fn($q) => $q->where(fn($subQ) => $subQ->where('status', 'reprovado')->orWhere('resposta_rh', 'reprovado')));
+        // CIH: status (gestor: aberto|aprovado|reprovado) + resposta_rh (null|aprovado|reprovado). Sem etapa extra.
+        if (in_array($status, ['pendente_extra', 'aprovado_extra', 'reprovado_extra'], true)) {
+            $query->whereRaw('1 = 0');
+            return;
+        }
+
+        if ($status === 'aberto') {
+            $query->where('status', '!=', 'reprovado')
+                ->where(function (Builder $q) {
+                    $q->whereNull('resposta_rh')->orWhere('resposta_rh', '');
+                });
+            return;
+        }
+
+        if ($status === 'pendente_gestor') {
+            $query->where('status', 'aberto')
+                ->where(function (Builder $q) {
+                    $q->whereNull('resposta_rh')->orWhere('resposta_rh', '');
+                });
+            return;
+        }
+
+        if ($status === 'aprovado_gestor') {
+            $query->where('status', 'aprovado');
+            return;
+        }
+
+        if ($status === 'reprovado_gestor') {
+            $query->where('status', 'reprovado');
+            return;
+        }
+
+        if ($status === 'pendente_rh') {
+            $query->where('status', 'aprovado')
+                ->where(function (Builder $q) {
+                    $q->whereNull('resposta_rh')->orWhere('resposta_rh', '');
+                });
+            return;
+        }
+
+        if ($status === 'aprovado_rh') {
+            $query->where('resposta_rh', 'aprovado');
+            return;
+        }
+
+        if ($status === 'reprovado_rh') {
+            $query->where('resposta_rh', 'reprovado');
+            return;
+        }
+
+        if ($status === 'reprovado') {
+            $query->where(function (Builder $q) {
+                $q->where('status', 'reprovado')->orWhere('resposta_rh', 'reprovado');
+            });
+        }
     }
 
     private function applyTagFilter(Builder $query): void

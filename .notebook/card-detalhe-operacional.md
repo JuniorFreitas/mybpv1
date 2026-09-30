@@ -10,4 +10,5 @@
   - `SolicitacaoIntermitenteFixo.vue`
   - `SolicitacaoTransferencia.vue`
   - `RequisicaoVaga.vue`
-- Próximos candidatos: CIH — remover CSS scoped `fluxo-*` / `*-card-corpo` locais
+  - `CIH.vue` (apontamento)
+- Próximos candidatos: telas legadas ainda com CSS scoped de fluxo/card
