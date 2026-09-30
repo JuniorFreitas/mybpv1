@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use App\Jobs\JobExportaRequisicaoVaga;
 use App\Jobs\RequisicaoVaga\JobNotificacaoRecursiva;
 use App\Models\Arquivo;
+use App\Models\CentroCusto;
 use App\Models\Cliente;
 use App\Models\RequisicaoVagaCustomCampo;
 use App\Models\RequisicaoVagaMovimentacao;
 use App\Models\User;
 use App\Models\Vaga;
+use App\Services\Cih\CihLotacaoResolver;
+use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
 use App\Services\RequisicaoVaga\RequisicaoVagaFilterApplier;
 use DB;
 use Illuminate\Http\Request;
@@ -427,17 +430,37 @@ class RequisicaoVagaController extends Controller
             $nomeAprovacaoExtra = $config->nome_aprovacao;
         }
 
+        $empresaId = (int) auth()->user()->empresa_id;
+        $empresa = Cliente::query()
+            ->select(['id', 'nome_fantasia', 'razao_social', 'cnpj'])
+            ->find($empresaId);
+        $lotacaoResolver = new CihLotacaoResolver($empresaId);
+
         // Mapear items para incluir nomes de aprovadores, datas formatadas e área (frontend usa item.area.label)
-        $itens = collect($resultado->items())->map(function ($item) {
+        $itens = collect($resultado->items())->map(function ($item) use ($empresaId, $empresa, $lotacaoResolver) {
             $item->rh_aprovacao_nome = $item->AprovacaoRh ? $item->AprovacaoRh->nome : '';
+            $item->aprovacao_extra_nome = $item->AprovacaoExtra ? $item->AprovacaoExtra->nome : '';
+            $item->user_aprovacao_nome = $item->UserAprovacao ? $item->UserAprovacao->nome : '';
+            $item->gestor_nome = $item->GestorContratacao
+                ? $item->GestorContratacao->nome
+                : ($item->gestor ?? '');
+            $item->lotacao = LotacaoLabelResolver::fromCentroCustoId(
+                $empresaId,
+                $item->centro_custo_id ? (int) $item->centro_custo_id : null,
+                $empresa,
+                $item->CentroCusto?->label,
+                $lotacaoResolver
+            );
             // Data da aprovação (Gestor)
             $item->data_aprovacao_br = $item->data_aprovacao ? (new \MasterTag\DataHora($item->data_aprovacao))->dataCompleta() . ' ' . substr((new \MasterTag\DataHora($item->data_aprovacao))->horaCompleta(), 0, 5) : '';
             // Data da aprovação RH (para exibição no fluxo)
             $item->data_aprovacao_rh_br = $item->data_aprovacao_rh ? (new \MasterTag\DataHora($item->data_aprovacao_rh))->dataCompleta() . ' ' . substr((new \MasterTag\DataHora($item->data_aprovacao_rh))->horaCompleta(), 0, 5) : '';
             // Data da solicitação
             $item->created_at_br = $item->created_at ? (new \MasterTag\DataHora($item->created_at))->dataCompleta() . ' ' . substr((new \MasterTag\DataHora($item->created_at))->horaCompleta(), 0, 5) : '';
-            // Expor Area como "area" (minúsculo) para o frontend (item.area.label)
+            // Expor relações em chave minúscula para o frontend
             $item->area = $item->Area;
+            $item->cargo = $item->Cargo;
+            $item->centro_custo = $item->CentroCusto;
             return $item;
         })->toArray();
 
@@ -452,6 +475,7 @@ class RequisicaoVagaController extends Controller
                 'aprovar_por_rh' => auth()->user()->can('privilegio_aprovar_por_rh'),
                 'tem_aprovacao_extra' => $config ? true : false,
                 'nome_aprovacao_extra' => $nomeAprovacaoExtra,
+                'cc' => (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id),
             ]
         ]);
     }

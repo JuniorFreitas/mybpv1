@@ -3,7 +3,7 @@
 > Pendente / Aprovado / Reprovado por etapa (gestor → extra → RH), além de Em aberto e Reprovado (qualquer).
 
 Entry: `resources/js/utils/opcoesStatusFluxoAprovacao.js` + `App\Services\Concerns\AppliesApprovalFlowStatusFilter`
-UI: Demissão, Admissão, Férias, Valor Extra, Mudança Cargo, Intermitente Fixo
+UI: Demissão, Admissão, Férias, Valor Extra, Mudança Cargo, Intermitente Fixo, Requisição de Vagas
 Transferência: opções próprias (origem/destino/único) em `SolicitacaoTransferencia.vue`
 
 ## Regras
@@ -11,7 +11,8 @@ Transferência: opções próprias (origem/destino/único) em `SolicitacaoTransf
 - `pendente_*` = etapa atual aguardando decisão
 - `aprovado_*` / `reprovado_*` = coluna da etapa com o valor
 - Extra só aparece no combo se `temAprovacaoExtra`
-- Backend resolve extra via `AprovacaoExtraConfig::getConfigAtiva` por tipo (`demissao`, `admissao`, `ferias`, `valor_extra`, `mudanca_cargo`, `intermitente_fixo`)
+- Backend resolve extra via `AprovacaoExtraConfig::getConfigAtiva` por tipo (`demissao`, `admissao`, `ferias`, `valor_extra`, `mudanca_cargo`, `intermitente_fixo`, `requisicao_vaga`)
 - Demissão listagem (Query Builder `dp`) usa `DemissaoPrevistaFilterApplier::applyStatusWithColumns()`
+- Requisição de Vagas: `RequisicaoVagaFilterApplier` + `campoStatusAprovacao` (aceita legado `campoStatus`)
 
 Updated: 2026-09-30

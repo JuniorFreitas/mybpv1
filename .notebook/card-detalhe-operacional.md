@@ -9,4 +9,5 @@
   - `SolicitacaoMudaCargo.vue`
   - `SolicitacaoIntermitenteFixo.vue`
   - `SolicitacaoTransferencia.vue`
-- Próximos candidatos: CIH, Requisição de Vagas — remover CSS scoped `fluxo-*` / `*-card-corpo` locais
+  - `RequisicaoVaga.vue`
+- Próximos candidatos: CIH — remover CSS scoped `fluxo-*` / `*-card-corpo` locais
