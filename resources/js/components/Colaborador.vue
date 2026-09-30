@@ -1,7 +1,9 @@
 <template>
     <div class="col-12">
-        <div class="form-group">
-            <label>{{ label }}</label>
+        <div class="form-group mybp-filtro-campo">
+            <label class="mybp-label">
+                {{ labelTexto }} <span v-if="obrigatorio" class="text-danger">*</span>
+            </label>
             <autocomplete :caminho="urlAutocomplete"
                           :formsm="formsm"
                           :valido="model.colaborador_id !== ''"
@@ -55,11 +57,18 @@ export default {
         verifica: {
             type: Boolean,
             required: true,
+        },
+        obrigatorio: {
+            type: Boolean,
+            default: true
         }
     },
     computed: {
         hash() {
             return `colaborador_${parseInt((Math.random() * 999999))}`;
+        },
+        labelTexto() {
+            return String(this.label || 'Colaborador').replace(/\s*\*\s*$/, '').trim() || 'Colaborador'
         },
         urlAutocomplete() {
             return this.tipo === 'ferias' ? 'autocomplete/colaboradores-ferias/' : 'autocomplete/colaboradores/'
@@ -70,6 +79,10 @@ export default {
             this.model.colaborador_id = this.tipo === 'ferias' ? obj.feedback_id : obj.curriculo_id;
             this.model.admissao_id = obj.id;
             this.model.centro_custo_id = obj.centro_custo_id ?? '';
+            this.model.filial = !!(obj.filial === true || obj.filial === 1 || obj.filial === '1');
+            this.model.centro_custo_filial_id = this.model.filial
+                ? (obj.centro_custo_filial_id ?? null)
+                : null;
             this.model.autocomplete_label_colaborador = obj.label;
             this.model.autocomplete_label_colaborador_anterior = obj.label;
 
@@ -81,6 +94,8 @@ export default {
                 this.model.autocomplete_label_colaborador = '';
                 this.model.colaborador_id = '';
                 this.model.centro_custo_id = '';
+                this.model.filial = false;
+                this.model.centro_custo_filial_id = '';
 
                 setTimeout(() => {
                     if (this.model.colaborador_id === '') {

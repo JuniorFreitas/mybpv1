@@ -27,6 +27,8 @@ class FeriasPrevistaEditPayloadMapperTest extends TestCase
             'centro_custo_id' => 5,
             'data_admissao' => '2024-01-01',
             'feedback_id' => 11,
+            'filial' => false,
+            'centro_custo_filial_id' => null,
         ]);
         $admissao->id = 12;
         $admissao->setRelation('Feedback', $feedback);
@@ -106,6 +108,8 @@ class FeriasPrevistaEditPayloadMapperTest extends TestCase
         $this->assertSame('ANA SILVA', $payload['autocomplete_label_colaborador']);
         $this->assertSame('Carlos Gestor', $payload['autocomplete_label_gestor_modal']);
         $this->assertSame(5, $payload['centro_custo_id']);
+        $this->assertFalse($payload['filial']);
+        $this->assertNull($payload['centro_custo_filial_id']);
         $this->assertSame('2024/2025', $payload['periodo_label']);
         $this->assertSame('Maria Solicitante', $payload['solicitante']);
         $this->assertSame(['id' => 30, 'nome' => 'Beatriz Aprovadora'], $payload['gestor_aprovacao']);

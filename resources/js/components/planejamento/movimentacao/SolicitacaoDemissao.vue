@@ -12,14 +12,14 @@
                 <form
                     v-if="!preload && !cadastrado && !atualizado"
                     :id="`form_${hash}`"
-                    class="demissao-modal-form mybp-filtros-compactos"
+                    class="mybp-modal-form mybp-filtros-compactos"
                     onsubmit="return false"
                 >
-                    <p class="mybp-campo-obrigatorio-legenda demissao-modal-legenda">
+                    <p class="mybp-campo-obrigatorio-legenda mybp-modal-legenda">
                         Campos com <span class="text-danger">*</span> são obrigatórios.
                     </p>
 
-                    <fieldset class="demissao-modal-secao">
+                    <fieldset class="mybp-modal-secao">
                         <legend>Colaborador</legend>
                         <div class="row">
                             <div class="col-12">
@@ -74,11 +74,11 @@
                         </div>
                     </fieldset>
 
-                    <fieldset class="demissao-modal-secao">
+                    <fieldset class="mybp-modal-secao">
                         <legend>Solicitação</legend>
                         <div class="row">
                             <div class="col-12 col-md-4">
-                                <div class="form-group mybp-filtro-campo demissao-modal-campo-data">
+                                <div class="form-group mybp-filtro-campo mybp-modal-campo-data">
                                     <label class="mybp-label">Data da Demissão <span class="text-danger">*</span></label>
                                     <datepicker
                                         :id="`demissao-data-${hash}`"
@@ -124,7 +124,7 @@
                         </div>
                     </fieldset>
 
-                    <fieldset class="demissao-modal-secao">
+                    <fieldset class="mybp-modal-secao">
                         <legend>Detalhes</legend>
                         <div class="row">
                             <div class="col-12">
@@ -162,7 +162,7 @@
                         Esta solicitação ainda não foi aprovada ou reprovada pelo gestor!
                     </div>
 
-                    <fieldset v-if="visualizar || aprovando" class="demissao-modal-secao">
+                    <fieldset v-if="visualizar || aprovando" class="mybp-modal-secao">
                         <legend>Aprovação Gestor</legend>
                         <div class="row">
                             <div v-if="!aprovando && form.user_aprovacao" class="col-12 mb-2">
@@ -211,7 +211,7 @@
                         Esta solicitação ainda não foi aprovada ou reprovada pela {{ nomeAprovacaoExtra }}!
                     </div>
 
-                    <fieldset v-if="visualizar || aprovandoExtra" class="demissao-modal-secao">
+                    <fieldset v-if="visualizar || aprovandoExtra" class="mybp-modal-secao">
                         <div v-if="!temAprovacaoExtra" class="alert alert-info">
                             <i class="fa fa-info-circle"></i> Esta empresa não possui aprovação extra configurada.
                         </div>
@@ -263,7 +263,7 @@
 
                     <div class="alert alert-warning" v-if="aprovandoRh">Esta solicitação ainda não foi aprovada ou reprovada!</div>
 
-                    <fieldset v-if="visualizar || aprovandoRh" class="demissao-modal-secao">
+                    <fieldset v-if="visualizar || aprovandoRh" class="mybp-modal-secao">
                         <legend>Aprovação RH</legend>
                         <div class="row">
                             <div v-if="!aprovandoRh && form.rh_aprovacao" class="col-12 mb-2">
@@ -1828,7 +1828,7 @@ export default {
             if (input && input.value) {
                 valor = String(input.value).trim()
             } else {
-                const fallback = $(`#${this.hash} .demissao-modal-campo-data input:text`).first()
+                const fallback = $(`#${this.hash} .mybp-modal-campo-data input:text`).first()
                 if (fallback.length) {
                     valor = String(fallback.val() || '').trim()
                 }
@@ -1957,76 +1957,6 @@ export default {
 </script>
 
 <style scoped>
-/* Modal no mesmo padrão visual dos filtros compactos (altura/fonte/borda) */
-.demissao-modal-form {
-    margin-top: 0.15rem;
-    --mybp-fc-gap: 0.75rem;
-}
-
-.demissao-modal-legenda {
-    margin-bottom: 0.65rem;
-    font-size: var(--mybp-fc-label-fs, 0.7rem);
-    color: #6c757d;
-}
-
-.demissao-modal-form .demissao-modal-secao {
-    margin-top: 0.55rem;
-    margin-bottom: 0.55rem;
-    padding: 0.75rem 0.85rem 0.55rem;
-}
-
-.demissao-modal-form .demissao-modal-secao > legend {
-    font-size: 0.7rem;
-    line-height: 1.25;
-    padding: 0.25rem 0.7rem;
-    letter-spacing: 0.02em;
-}
-
-.demissao-modal-form .demissao-modal-secao:first-of-type {
-    margin-top: 0;
-}
-
-.demissao-modal-form .row > [class*='col-'] {
-    margin-bottom: var(--mybp-fc-gap, 0.75rem);
-}
-
-.demissao-modal-form :deep(.form-group > .form-group) {
-    margin-bottom: 0;
-}
-
-.demissao-modal-form :deep(.mybp-filtro-campo .form-group) {
-    margin-bottom: 0;
-}
-
-.demissao-modal-form :deep(.mybp-filtro-campo .form-group > div > label:empty),
-.demissao-modal-form :deep(.form-group > .form-group > div > label:empty) {
-    display: none;
-    margin: 0;
-    padding: 0;
-    height: 0;
-    line-height: 0;
-}
-
-.demissao-modal-form :deep(.demissao-modal-campo-data .corrigiDatepicker),
-.demissao-modal-form :deep(.corrigiDatepicker) {
-    margin-top: 0;
-}
-
-/* Autocomplete / DatePicker herdam altura compacta do filtro */
-.demissao-modal-form :deep(.mybp-filtro-campo .autocomplete input),
-.demissao-modal-form :deep(.mybp-filtro-campo input.form-control),
-.demissao-modal-form :deep(.demissao-modal-campo-data .form-control),
-.demissao-modal-form :deep(.demissao-modal-campo-data .form-control-sm) {
-    height: var(--mybp-fc-ctrl-h, 1.625rem) !important;
-    min-height: var(--mybp-fc-ctrl-h, 1.625rem) !important;
-    max-height: var(--mybp-fc-ctrl-h, 1.625rem) !important;
-    padding: 0.15rem 0.45rem !important;
-    font-size: var(--mybp-fc-ctrl-fs, 0.6875rem) !important;
-    line-height: 1.25 !important;
-    border-radius: var(--mybp-fc-radius, 6px) !important;
-    box-sizing: border-box !important;
-}
-
 .demissao-filtro-hint {
     display: inline-flex;
     align-items: center;

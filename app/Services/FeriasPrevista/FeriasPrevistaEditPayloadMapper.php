@@ -80,6 +80,8 @@ class FeriasPrevistaEditPayloadMapper
             'autocomplete_label_colaborador_anterior' => $colaboradorNome,
             'data_admissao' => $admissao?->data_admissao ?? '',
             'centro_custo_id' => $centroCustoId,
+            'filial' => (bool) ($admissao?->filial ?? false),
+            'centro_custo_filial_id' => $admissao?->centro_custo_filial_id,
             'periodo_aquisitivo_id' => $item->periodo_aquisitivo_id,
             'periodo_label' => $item->PeriodoAquisitivo?->label ?? '',
             'data_saida' => $item->data_saida,

@@ -74,6 +74,7 @@ Guia para modelos de IA atuarem com seguranca, qualidade e performance no projet
 - **Listagens de cadastro (filtros + cards):** seguir `docs/PADRAO_UX_LISTAGEM_CADASTROS.md` e skill `.cursor/skills/mybp-front-cardlist/SKILL.md` — `FiltroListagem`, cards `mybp-*`, combobox nos filtros, query params (`resources/js/utils/listagemQueryParams.js`: filtros + `page`/`pages`).
 - **Filtros compactos (operacional/carteira):** seguir `docs/PADRAO_UX_FILTROS_COMPACTOS.md` e skill `.cursor/skills/mybp-filtros-compactos/SKILL.md` — classe `mybp-filtros-compactos`, grade `col-md-4`, `DateRangeFilter` (commit no blur), Mais filtros com shell animado, ações densas (`resources/sass/_mybp-filtros-compactos.scss`).
 - **Card detalhe (operacional/aprovação):** seguir `docs/PADRAO_UX_CARD_DETALHE.md` e skill `.cursor/skills/mybp-card-detalhe/SKILL.md` — `mybp-card-corpo` + seções/campos, `MybpStatusBadge`, `MybpFluxoAprovacao` (`resources/sass/_mybp-card-detalhe.scss`).
+- **Modal operacional:** `mybp-modal-form mybp-filtros-compactos` + `fieldset.mybp-modal-secao` + `mybp-label` + combobox (`resources/sass/_mybp-modal-form.scss`; refs: Demissão e Férias).
 - **Dividir componentes** da melhor forma possivel para manutencao e codigo mais leve.
 - Em qualquer componente, considerar **performance, seguranca e otimizacao** desde o inicio.
 - O objetivo e manter o frontend modular para permitir **migracao futura** sem reescrever tudo.
