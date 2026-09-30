@@ -3,6 +3,7 @@
 
 Last updated: 2026-09-30
 
+- [admissao-processo-filtros-compactos](admissao-processo-filtros-compactos.md) — Filtros compactos em Admissão > Processo | pattern | admissao, filtro, compactos
 - [cih-modal-padrao-ux](cih-modal-padrao-ux.md) — Modal CIH no padrão mybp-modal-form + ComboboxValidation | pattern | cih, modal, combobox
 - [cih-fluxo-padrao-ux](cih-fluxo-padrao-ux.md) — CIH: card detalhe + MybpFluxoAprovacao + filtro status por etapa | pattern | cih, card-detalhe, fluxo, filtro
 - [mobilizacao-padrao-ux](mobilizacao-padrao-ux.md) — Relatório mobilização: filtros compactos + cards mybp | pattern | mobilizacao, filtro, card, relatorio

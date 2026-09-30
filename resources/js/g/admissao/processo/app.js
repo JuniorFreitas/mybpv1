@@ -4,6 +4,8 @@ import endereco from '../../../components/Endereco'
 import DadosBancarios from '../../../components/DadosBancarios'
 import datepicker from '../../../components/DatePicker'
 import DateRangeFilter from '../../../components/DateRangeFilter.vue'
+import ComboboxAutoComplete from '../../../components/ComboboxAutoComplete.vue'
+import FiltroListagem from '../../../components/ui/FiltroListagem.vue'
 import upload from '../../../components/Upload'
 import telefone from '../../../components/Telefones'
 import DadosPessoais from '../../../components/entrevistas/DadosPessoaisTexto'
@@ -22,6 +24,8 @@ const app = createApp({
         endereco,
         datepicker,
         DateRangeFilter,
+        ComboboxAutoComplete,
+        FiltroListagem,
         upload,
         telefone,
         DadosPessoais,
@@ -102,6 +106,7 @@ const app = createApp({
             anexoUploadAndamento: false,
 
             hash: `mastertag_${parseInt(Math.random() * 999999)}`,
+            filtrosAvancadosAbertos: false,
             urlExportacao: `${URL_ADMIN}/admissao/export`,
 
             todos_municipios: `autocomplete/todos-municipios`,
@@ -688,6 +693,109 @@ const app = createApp({
         //     return this.$root.$data.AUTENTICADO;
         // },
 
+        totalFiltrosAtivos() {
+            const d = this.controle.dados
+            let total = [d.campoBusca, d.campoCPF, d.campoStatusAdmissao, d.campoTipoAdmissao, d.campoVaga, d.campoUf, d.campoCentroCusto]
+                .filter((v) => v !== '' && v !== null && v !== undefined).length
+            if (this.AUTENTICADO?.temFilial && d.campoCnpj) total++
+            if (d.filtroPeriodo && d.dataInicio && d.dataFim) total++
+            if (d.filtroAso && d.dataInicioAso && d.dataFimAso) total++
+            if (d.filtroDataAdmissao && d.dataInicioAdmissao && d.dataFimAdmissao) total++
+            if (d.campoDemitido === true) total++
+            if (Number(d.pages) !== 20) total++
+            return total
+        },
+        campoBuscaUnificada() {
+            const d = this.controle.dados
+            if (d.campoCPF) return d.campoCPF
+            return d.campoBusca || ''
+        },
+        buscaUnificadaEhCpf() {
+            return !!this.controle.dados.campoCPF
+        },
+        totalFiltrosAtivosAvancados() {
+            const d = this.controle.dados
+            let total = [d.campoVaga, d.campoUf].filter((v) => v !== '' && v !== null && v !== undefined).length
+            if (d.filtroPeriodo && d.dataInicio && d.dataFim) total++
+            if (d.filtroAso && d.dataInicioAso && d.dataFimAso) total++
+            if (d.filtroDataAdmissao && d.dataInicioAdmissao && d.dataFimAdmissao) total++
+            if (d.campoDemitido === true) total++
+            if (Number(d.pages) !== 20) total++
+            return total
+        },
+        filtroStatusAdmissaoOpcoes() {
+            const opcoes = [{ value: '', label: 'Todos os status' }]
+            ;(this.listaStatusAdmissao || []).forEach((item) => {
+                const value = typeof item === 'object' ? item.id ?? item.value ?? item.label : item
+                const label = typeof item === 'object' ? item.label || item.nome || String(value) : String(item)
+                if (value !== '' && value != null) opcoes.push({ value, label })
+            })
+            return opcoes
+        },
+        filtroTipoAdmissaoOpcoes() {
+            const opcoes = [{ value: '', label: 'Todos os tipos' }]
+            ;(this.listaTipoAdmissao || []).forEach((item) => {
+                const value = typeof item === 'object' ? item.id ?? item.value ?? item.label : item
+                const label = typeof item === 'object' ? item.label || item.nome || String(value) : String(item)
+                if (value !== '' && value != null) opcoes.push({ value, label })
+            })
+            return opcoes
+        },
+        filtroUfOpcoes() {
+            const opcoes = [{ value: '', label: 'Todos os estados' }]
+            ;(this.ufs || []).forEach((uf) => opcoes.push({ value: uf, label: uf }))
+            return opcoes
+        },
+        filtroCnpjOpcoes() {
+            const opcoes = [{ value: '', label: 'Todas as lotações' }]
+            if (!this.lista_ccs || !this.lista_ccs.cnpjs) return opcoes
+            Object.keys(this.lista_ccs.cnpjs).forEach((key) => {
+                const item = this.lista_ccs.cnpjs[key]
+                opcoes.push({
+                    value: key,
+                    label: `${item.nome_fantasia} - ${item.cnpj}`,
+                    meta: item.cnpj
+                })
+            })
+            return opcoes
+        },
+        filtroCentroCustoOpcoes() {
+            const opcoes = [{ value: '', label: 'Todos os centros de custo' }]
+            ;(this.filtroListaCentroCustoCnpj || []).forEach((item) => {
+                if (!item) return
+                const value = item.matriz ? item.id : item.filial_id
+                if (value === '' || value == null) return
+                opcoes.push({ value, label: item.label || String(value), raw: item })
+            })
+            opcoes.push({ value: '--naoinformado--', label: '--- Não Informado ---' })
+            return opcoes
+        },
+        filtroDemitidoOpcoes() {
+            return [
+                { value: 'false', label: 'Não' },
+                { value: 'true', label: 'Sim' }
+            ]
+        },
+        filtroPagesOpcoes() {
+            return (this.por_pagina || [20, 50, 100, 150]).map((n) => ({ value: n, label: String(n) }))
+        },
+        campoDemitidoCombo: {
+            get() {
+                return this.controle.dados.campoDemitido ? 'true' : 'false'
+            },
+            set(v) {
+                this.controle.dados.campoDemitido = v === true || v === 'true'
+            }
+        },
+        campoPagesCombo: {
+            get() {
+                return this.controle.dados.pages
+            },
+            set(v) {
+                const n = Number(v)
+                this.controle.dados.pages = Number.isFinite(n) && n > 0 ? n : 20
+            }
+        },
         filtroListaCentroCustoCnpj() {
             if (this.controle.dados.campoCnpj !== '' && this.AUTENTICADO.temFilial) {
                 return this.lista_ccs.centros_custos[this.controle.dados.campoCnpj]
@@ -722,6 +830,7 @@ const app = createApp({
             this.controle.dados.cliente_custom = parseInt(this.cliente_id)
         }
         this.urlParamGet()
+            this.abrirFiltrosAvancadosSeNecessario()
         this.$nextTick(() => {
             const page = this.controle.dados.page
             if (this.$refs.componente && page >= 1) {
@@ -826,6 +935,109 @@ const app = createApp({
         },
         changeCnpj() {
             this.controle.dados.campoCentroCusto = ''
+            this.atualizar()
+        },
+        onSelectFiltro() {
+            this.atualizar()
+        },
+        formatarCpfDigitos(valor) {
+            const d = String(valor || '').replace(/\D/g, '').slice(0, 11)
+            if (d.length <= 3) return d
+            if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`
+            if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`
+            return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`
+        },
+        parecePadraoCpf(valor) {
+            const raw = String(valor || '').trim()
+            if (!raw) return false
+            if (!/^[\d.\-\s]+$/.test(raw)) return false
+            const digitos = raw.replace(/\D/g, '')
+            return digitos.length > 0 && digitos.length <= 11
+        },
+        onInputBuscaUnificada(event) {
+            const valor = event && event.target ? event.target.value : ''
+            const d = this.controle.dados
+            if (!valor) {
+                d.campoBusca = ''
+                d.campoCPF = ''
+                return
+            }
+            if (this.parecePadraoCpf(valor)) {
+                const mascarado = this.formatarCpfDigitos(valor)
+                d.campoCPF = mascarado
+                d.campoBusca = ''
+                if (event.target && event.target.value !== mascarado) {
+                    event.target.value = mascarado
+                }
+                return
+            }
+            d.campoBusca = valor
+            d.campoCPF = ''
+        },
+        onSelectCnpj() {
+            this.changeCnpj()
+        },
+        onSelectDemitido() {
+            this.atualizar()
+        },
+        onPeriodoChange() {
+            this.atualizar()
+        },
+        fecharOutrosComboboxes(excetoId) {
+            const mapa = {
+                'admissao-processo-status': 'comboFiltroStatusAdmissao',
+                'admissao-processo-tipo': 'comboFiltroTipoAdmissao',
+                'admissao-processo-cnpj': 'comboFiltroCnpj',
+                'admissao-processo-cc': 'comboFiltroCentroCusto',
+                'admissao-processo-uf': 'comboFiltroUf',
+                'admissao-processo-demitido': 'comboFiltroDemitido',
+                'admissao-processo-pages': 'comboFiltroPages'
+            }
+            Object.keys(mapa).forEach((id) => {
+                if (id === excetoId) return
+                const ref = this.$refs[mapa[id]]
+                if (ref && typeof ref.fechar === 'function') ref.fechar()
+                else if (ref && typeof ref.close === 'function') ref.close()
+            })
+        },
+        limparFiltros() {
+            const pages = this.controle.dados.pages || 20
+            const cnpjPadrao = !this.AUTENTICADO?.temFilial && this.lista_ccs?.cnpjs
+                ? Object.keys(this.lista_ccs.cnpjs)[0]
+                : ''
+            this.controle.dados = {
+                ...this.controle.dados,
+                autocomplete_label_anterior: '',
+                autocomplete_label: '',
+                autocomplete_label_cliente_anterior: '',
+                autocomplete_label_cliente: '',
+                cliente_custom: '',
+                campoBusca: '',
+                campoVaga: '',
+                campoLido: '',
+                campoFiltro: '',
+                campoPcd: '',
+                campoCliente: '',
+                campoStatusAdmissao: '',
+                campoTipoAdmissao: '',
+                campoUf: '',
+                campoAso: '',
+                campoAdmissao: '',
+                campoDemitido: false,
+                campoCnpj: cnpjPadrao,
+                campoCentroCusto: '',
+                filtroPeriodo: false,
+                dataInicio: '',
+                dataFim: '',
+                filtroAso: false,
+                dataInicioAso: '',
+                dataFimAso: '',
+                filtroDataAdmissao: false,
+                dataInicioAdmissao: '',
+                dataFimAdmissao: '',
+                campoCPF: '',
+                pages
+            }
             this.atualizar()
         },
         buscaProjeto(vaga_aberta_id) {
@@ -1129,6 +1341,7 @@ const app = createApp({
                 this.controle.dados.autocomplete_label_anterior = ''
                 this.controle.dados.autocomplete_label = ''
                 this.controle.dados.campoVaga = ''
+                this.atualizar()
             }
         },
 
@@ -1136,6 +1349,7 @@ const app = createApp({
             this.controle.dados.campoVaga = obj.id
             this.controle.dados.autocomplete_label = obj.label
             this.controle.dados.autocomplete_label_anterior = obj.label
+            this.atualizar()
         },
 
         resetaCampoCliente() {
@@ -1316,6 +1530,11 @@ const app = createApp({
         },
         carregando() {
             this.controle.carregando = true
+        },
+        abrirFiltrosAvancadosSeNecessario() {
+            if (this.totalFiltrosAtivosAvancados > 0) {
+                this.filtrosAvancadosAbertos = true
+            }
         },
         atualizar() {
             this.syncUrlFiltros()

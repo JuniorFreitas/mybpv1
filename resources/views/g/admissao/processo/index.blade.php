@@ -1320,9 +1320,14 @@
         </template>
     </modal>
 
-    <fieldset>
-        <legend class="text-uppercase">Filtro</legend>
-        <form class="row" @submit.prevent="$refs.componente.buscar()">
+    <filtro-listagem
+        class="mt-2 mybp-filtros-compactos"
+        :mostrar-limpar-filtros="totalFiltrosAtivos > 0"
+        :desabilitado="controle.carregando"
+        @submit="atualizar"
+        @limpar="limparFiltros"
+    >
+        <template #filtros>
             <date-range-filter
                 :key="'filtro-periodo'"
                 v-model:enabled="controle.dados.filtroPeriodo"
@@ -1331,8 +1336,9 @@
                 :disabled="!!controle.carregando"
                 :id-suffix="'periodo-' + hash"
                 label="Por período"
-                wrapper-class="col-12 col-md-3">
-            </date-range-filter>
+                wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                @change="onPeriodoChange"
+            ></date-range-filter>
 
             <date-range-filter
                 :key="'filtro-aso'"
@@ -1342,8 +1348,9 @@
                 :disabled="!!controle.carregando"
                 :id-suffix="'aso-' + hash"
                 label="Data do ASO"
-                wrapper-class="col-12 col-md-3">
-            </date-range-filter>
+                wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                @change="onPeriodoChange"
+            ></date-range-filter>
 
             <date-range-filter
                 :key="'filtro-admissao'"
@@ -1353,169 +1360,229 @@
                 :disabled="!!controle.carregando"
                 :id-suffix="'admissao-' + hash"
                 label="Data da Admissão"
-                wrapper-class="col-12 col-md-3">
-            </date-range-filter>
-            <div class="col-12 col-sm-4 col-md-3" v-if="lista_ccs && AUTENTICADO.temFilial">
-                <div class="form-group">
-                    <label for="">Por Cnpj</label>
-                    <select class="form-control form-control-sm" @change="changeCnpj"
+                wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                @change="onPeriodoChange"
+            ></date-range-filter>
+
+            <div class="col-12 col-md-4" v-if="lista_ccs && AUTENTICADO.temFilial">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="admissao-processo-cnpj">Lotação</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroCnpj"
+                            instance-id="admissao-processo-cnpj"
+                            input-id="admissao-processo-cnpj"
+                            v-model="controle.dados.campoCnpj"
+                            :options="filtroCnpjOpcoes"
                             :disabled="controle.carregando"
-                            v-model="controle.dados.campoCnpj">
-                        <option value="">Todos</option>
-                        <option v-for="(item, key) in lista_ccs.cnpjs" :value="key" :keys="key">
-                            @{{item.nome_fantasia}} - @{{item.cnpj}}
-                        </option>
-                    </select>
+                            placeholder-blur="Todas as lotações"
+                            empty-message="Nenhuma lotação encontrada."
+                            :max-results="50"
+                            @opening="fecharOutrosComboboxes('admissao-processo-cnpj')"
+                            @select="onSelectCnpj"
+                        ></combobox-auto-complete>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-12 col-sm-4 col-md-3" v-if="lista_ccs">
-                <div class="form-group">
-                    <label for="">Centro de Custo</label>
-                    <select class="form-control form-control-sm" @change="atualizar"
+            <div class="col-12 col-md-4" v-if="lista_ccs">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="admissao-processo-cc">Centro de custo</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroCentroCusto"
+                            instance-id="admissao-processo-cc"
+                            input-id="admissao-processo-cc"
+                            v-model="controle.dados.campoCentroCusto"
+                            :options="filtroCentroCustoOpcoes"
+                            :disabled="controle.carregando || !filtroCentroCustoOpcoes.length"
+                            placeholder-blur="Todos os centros de custo"
+                            empty-message="Nenhum centro de custo encontrado."
+                            :max-results="200"
+                            @opening="fecharOutrosComboboxes('admissao-processo-cc')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="admissao-processo-busca">
+                        Colaborador / CPF
+                        <span v-if="buscaUnificadaEhCpf" class="admissao-processo-filtro-hint">CPF</span>
+                    </label>
+                    <input
+                        id="admissao-processo-busca"
+                        type="text"
+                        placeholder="Nome ou CPF"
+                        autocomplete="off"
+                        inputmode="search"
+                        class="form-control form-control-sm"
+                        :disabled="controle.carregando"
+                        :value="campoBuscaUnificada"
+                        @input="onInputBuscaUnificada"
+                    />
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label">Cargo</label>
+                    <autocomplete
+                        :caminho="controle.dados.caminho_autocomplete"
+                        :valido="controle.dados.campoVaga !== ''"
+                        :formsm="true"
+                        v-model="controle.dados.autocomplete_label"
+                        :disabled="controle.carregando"
+                        placeholder="Por cargo"
+                        @onblur="resetaCampo"
+                        @onselect="selecionaVaga"
+                    ></autocomplete>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="admissao-processo-uf">Estado</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroUf"
+                            instance-id="admissao-processo-uf"
+                            input-id="admissao-processo-uf"
+                            v-model="controle.dados.campoUf"
+                            :options="filtroUfOpcoes"
                             :disabled="controle.carregando"
-                            v-model="controle.dados.campoCentroCusto">
-                        <option value="">Todos</option>
-                        <option :title="item.label" v-for="(item, key) in filtroListaCentroCustoCnpj"
-                                :value="item.matriz ? item.id : item.filial_id"
-                                :keys="key">
-                            @{{item.label}}
-                        </option>
-                        <option value="--naoinformado--">--- Não Informado ---</option>
-                    </select>
+                            placeholder-blur="Todos os estados"
+                            empty-message="Nenhum estado encontrado."
+                            :max-results="30"
+                            @opening="fecharOutrosComboboxes('admissao-processo-uf')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
                 </div>
             </div>
 
-
-            <div class="col-12 col-sm-6 col-md-6 col-lg-3">
-                <div class="form-group">
-                    <label>CPF</label>
-                    <input type="text"
-                           placeholder="Buscar por cpf"
-                           autocomplete="mybp"
-                           onblur="valida_cpf(this)"
-                           v-mascara:cpf
-                           class="form-control form-control-sm" :disabled="controle.carregando"
-                           v-model="controle.dados.campoCPF">
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
-                <div class="form-group">
-                    <label>Nome</label>
-                    <input type="text"
-                           placeholder="Buscar por nome ou ID"
-                           autocomplete="off"
-                           class="form-control form-control-sm"
-                           :disabled="controle.carregando"
-                           v-model="controle.dados.campoBusca">
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-5 col-md-5 col-lg-5">
-                <div class="form-group">
-                    <label>Cargo</label>
-                    <autocomplete :caminho="controle.dados.caminho_autocomplete"
-                                  :valido="controle.dados.campoVaga !== ''"
-                                  v-model="controle.dados.autocomplete_label"
-                                  :disabled="controle.carregando"
-                                  placeholder="Por cargo"
-                                  @onblur="resetaCampo"
-                                  @onselect="selecionaVaga"></autocomplete>
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                <div class="form-group">
-                    <label>Estado</label>
-                    <select2 :settings="settings2" :options="ufs" @change="atualizar" :disabled="controle.carregando"
-                             v-model="controle.dados.campoUf"></select2>
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-4 col-md-3">
-                <div class="form-group">
-                    <label for="">Status admissão</label>
-                    <select2 :settings="settings2" :options="listaStatusAdmissao" @change="atualizar"
-                             :disabled="controle.carregando" v-model="controle.dados.campoStatusAdmissao"></select2>
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-4 col-md-3">
-                <div class="form-group">
-                    <label for="">Tipo admissão</label>
-                    <select2 :settings="settings2" :options="listaTipoAdmissao" @change="atualizar"
-                             :disabled="controle.carregando" v-model="controle.dados.campoTipoAdmissao"></select2>
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-2" v-if="permissoes.filtrar_demitido">
-                <div class="form-group">
-                    <label>Por Demitido</label>
-                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                            @change.prevent="filtrarDemitidos=controle.dados.campoDemitido"
-                            v-model="controle.dados.campoDemitido">
-                        <option :value="true">Sim</option>
-                        <option :value="false">Não</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                <div class="form-group">
-                    <label for="">Exibir</label>
-                    <select class="form-control form-control-sm" @change="atualizar"
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="admissao-processo-status">Status admissão</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroStatusAdmissao"
+                            instance-id="admissao-processo-status"
+                            input-id="admissao-processo-status"
+                            v-model="controle.dados.campoStatusAdmissao"
+                            :options="filtroStatusAdmissaoOpcoes"
                             :disabled="controle.carregando"
-                            v-model="controle.dados.pages">
-                        <option v-for="item in por_pagina" :value="item">@{{ item }}</option>
-                    </select>
+                            placeholder-blur="Todos os status"
+                            empty-message="Nenhuma opção encontrada."
+                            :max-results="20"
+                            @opening="fecharOutrosComboboxes('admissao-processo-status')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
                 </div>
             </div>
-        </form>
 
-        <div class="col-12">
-            <div class="row">
-                <button type="button" class="btn btn-sm mr-1 btn-success mr-1 mb-2" :disabled="controle.carregando"
-                        @click="atualizar"><i
-                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                    Atualizar
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="admissao-processo-tipo">Tipo admissão</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroTipoAdmissao"
+                            instance-id="admissao-processo-tipo"
+                            input-id="admissao-processo-tipo"
+                            v-model="controle.dados.campoTipoAdmissao"
+                            :options="filtroTipoAdmissaoOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Todos os tipos"
+                            empty-message="Nenhuma opção encontrada."
+                            :max-results="20"
+                            @opening="fecharOutrosComboboxes('admissao-processo-tipo')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4" v-if="permissoes.filtrar_demitido">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="admissao-processo-demitido">Por demitido</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroDemitido"
+                            instance-id="admissao-processo-demitido"
+                            input-id="admissao-processo-demitido"
+                            v-model="campoDemitidoCombo"
+                            :options="filtroDemitidoOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Não"
+                            empty-message="Nenhuma opção encontrada."
+                            :max-results="5"
+                            @opening="fecharOutrosComboboxes('admissao-processo-demitido')"
+                            @select="onSelectDemitido"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="admissao-processo-pages">Exibir</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroPages"
+                            instance-id="admissao-processo-pages"
+                            input-id="admissao-processo-pages"
+                            v-model="campoPagesCombo"
+                            :options="filtroPagesOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="20"
+                            empty-message="Nenhuma opção encontrada."
+                            :max-results="10"
+                            @opening="fecharOutrosComboboxes('admissao-processo-pages')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template #acoes>
+            <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
+                Buscar
+            </button>
+            @can('admissao_processo_insert')
+                <button
+                    type="button"
+                    class="btn btn-sm btn-primary"
+                    :disabled="controle.carregando"
+                    @click="formCadastraAvulsa(); $refs.janelaAdmissaoAvulsa?.abrirModal()"
+                >
+                    <i class="fas fa-plus"></i> Admissão avulsa
                 </button>
-                @can('admissao_processo_insert')
-                    <button type="button" class="btn btn-sm mr-1 btn-primary mr-1 mb-2" :disabled="controle.carregando"
-                            @click="formCadastraAvulsa(); $refs.janelaAdmissaoAvulsa?.abrirModal()"
-                    >
-                        <i class="fas fa-plus"></i>
-                        ADMISSÃO AVULSA
-                    </button>
-
-
-                    <button class="btn btn-sm mr-1 btn-danger mb-2 mr-1"
-                            :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                            :disabled="selecionados.length === 0" @click="selecionados = []">
-                        <i class="fa fa-times"></i> LIMPAR SELEÇÃO
-                    </button>
-
-                    <button type="button" class="btn btn-sm mr-1 btn-primary mb-2 mr-1"
-                            @click.prevent="exportaExcel()"
-                            :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
-                        <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
-                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
-                    </button>
-
-
-                    <button class="btn btn-sm mr-1 btn-primary mb-2 mr-1" v-if="false"
-                            :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                            :disabled="selecionados.length === 0"
-                            @click="formCadastraMassa(); $refs.janelaAdmissaoMassa?.abrirModal()">
-                        <i class="fa fa-plus"></i> ATUALIZAR SELECIONADOS <span class="badge badge-light"
-                                                                                v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
-                    </button>
-                @endcan
-
-            </div>
-        </div>
-
-    </fieldset>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    :disabled="selecionados.length === 0"
+                    @click="selecionados = []"
+                >
+                    <i class="fa fa-times"></i> Limpar seleção
+                    <span class="badge badge-light ml-1" v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    @click.prevent="exportaExcel()"
+                    :disabled="controle.carregando || preloadExportacao || (!controle.carregando && lista.length === 0 && selecionados.length === 0)"
+                >
+                    <i class="fas fa-file-excel"></i> Exportar Excel
+                    <span class="badge badge-light ml-1" v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
+                </button>
+            @endcan
+        </template>
+    </filtro-listagem>
 
     <preload v-if="controle.carregando" class="text-center"></preload>
 
@@ -1724,6 +1791,20 @@
             font-size: 0.875rem;
             color: #6c757d;
             margin: 0;
+        }
+
+        .admissao-processo-filtro-hint {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.25rem;
+            margin-left: 0.35rem;
+            padding: 0.05rem 0.35rem;
+            border-radius: 999px;
+            background: rgba(23, 66, 87, 0.12);
+            color: var(--primary, #174257);
+            font-size: 0.68rem;
+            font-weight: 700;
         }
 
         /* Toolbar */
