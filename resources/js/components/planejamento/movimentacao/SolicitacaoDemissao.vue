@@ -19,8 +19,8 @@
                         Campos com <span class="text-danger">*</span> são obrigatórios.
                     </p>
 
-                    <fieldset>
-                        <legend>Informações da Solicitação</legend>
+                    <fieldset class="demissao-modal-secao">
+                        <legend>Colaborador</legend>
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group mybp-filtro-campo">
@@ -71,8 +71,13 @@
                                     Este colaborador está sem centro de custo. A solicitação pode ser registrada mesmo assim.
                                 </div>
                             </div>
+                        </div>
+                    </fieldset>
 
-                            <div class="col-12 col-md-6">
+                    <fieldset class="demissao-modal-secao">
+                        <legend>Solicitação</legend>
+                        <div class="row">
+                            <div class="col-12 col-md-4">
                                 <div class="form-group mybp-filtro-campo demissao-modal-campo-data">
                                     <label class="mybp-label">Data da Demissão <span class="text-danger">*</span></label>
                                     <datepicker
@@ -87,7 +92,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 col-md-6">
+                            <div class="col-12 col-md-8">
                                 <div class="form-group mybp-filtro-campo">
                                     <label class="mybp-label" :for="`demissao-tipo-aviso-${hash}`">
                                         Tipo de Aviso <span class="text-danger">*</span>
@@ -116,14 +121,19 @@
                                 :verifica="visualizar || aprovando || aprovandoExtra || aprovandoRh"
                                 :hash="hash"
                             ></gestoraprovacao>
+                        </div>
+                    </fieldset>
 
+                    <fieldset class="demissao-modal-secao">
+                        <legend>Detalhes</legend>
+                        <div class="row">
                             <div class="col-12">
                                 <div class="form-group mybp-filtro-campo">
                                     <label class="mybp-label">Observação</label>
                                     <textarea
                                         class="form-control form-control-sm"
                                         v-model="form.obs"
-                                        rows="4"
+                                        rows="3"
                                         placeholder="Informações relevantes sobre a demissão"
                                         :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
                                     ></textarea>
@@ -152,25 +162,13 @@
                         Esta solicitação ainda não foi aprovada ou reprovada pelo gestor!
                     </div>
 
-                    <fieldset v-if="visualizar || aprovando">
+                    <fieldset v-if="visualizar || aprovando" class="demissao-modal-secao">
                         <legend>Aprovação Gestor</legend>
                         <div class="row">
                             <div v-if="!aprovando && form.user_aprovacao" class="col-12 mb-2">
                                 <p class="mb-0 text-muted">
                                     {{ form.status_aprovacao }} por: {{ form.user_aprovacao.nome }} em {{ form.data_aprovacao }}
                                 </p>
-                            </div>
-
-                            <div class="col-12">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Observação</label>
-                                    <textarea
-                                        class="form-control form-control-sm"
-                                        :disabled="!aprovando || aprovandoExtra || aprovandoRh"
-                                        v-model="form.obs_aprovacao"
-                                        rows="4"
-                                    ></textarea>
-                                </div>
                             </div>
 
                             <div class="col-12 col-md-4">
@@ -194,6 +192,18 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="col-12 col-md-8">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Observação</label>
+                                    <textarea
+                                        class="form-control form-control-sm"
+                                        :disabled="!aprovando || aprovandoExtra || aprovandoRh"
+                                        v-model="form.obs_aprovacao"
+                                        rows="2"
+                                    ></textarea>
+                                </div>
+                            </div>
                         </div>
                     </fieldset>
 
@@ -201,7 +211,7 @@
                         Esta solicitação ainda não foi aprovada ou reprovada pela {{ nomeAprovacaoExtra }}!
                     </div>
 
-                    <fieldset v-if="visualizar || aprovandoExtra">
+                    <fieldset v-if="visualizar || aprovandoExtra" class="demissao-modal-secao">
                         <div v-if="!temAprovacaoExtra" class="alert alert-info">
                             <i class="fa fa-info-circle"></i> Esta empresa não possui aprovação extra configurada.
                         </div>
@@ -213,18 +223,6 @@
                                     {{ form.status_aprovacao_extra }} por: {{ form.aprovacao_extra.nome }} em
                                     {{ form.data_aprovacao_extra }}
                                 </p>
-                            </div>
-
-                            <div class="col-12">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Observação</label>
-                                    <textarea
-                                        class="form-control form-control-sm"
-                                        :disabled="!aprovandoExtra || aprovandoRh"
-                                        v-model="form.obs_aprovacao_extra"
-                                        rows="4"
-                                    ></textarea>
-                                </div>
                             </div>
 
                             <div class="col-12 col-md-4">
@@ -248,30 +246,30 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="col-12 col-md-8">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Observação</label>
+                                    <textarea
+                                        class="form-control form-control-sm"
+                                        :disabled="!aprovandoExtra || aprovandoRh"
+                                        v-model="form.obs_aprovacao_extra"
+                                        rows="2"
+                                    ></textarea>
+                                </div>
+                            </div>
                         </div>
                     </fieldset>
 
                     <div class="alert alert-warning" v-if="aprovandoRh">Esta solicitação ainda não foi aprovada ou reprovada!</div>
 
-                    <fieldset v-if="visualizar || aprovandoRh">
+                    <fieldset v-if="visualizar || aprovandoRh" class="demissao-modal-secao">
                         <legend>Aprovação RH</legend>
                         <div class="row">
                             <div v-if="!aprovandoRh && form.rh_aprovacao" class="col-12 mb-2">
                                 <p class="mb-0 text-muted">
                                     {{ form.status_aprovacao_rh }} por: {{ form.rh_aprovacao.nome }} em {{ form.data_aprovacao_rh }}
                                 </p>
-                            </div>
-
-                            <div class="col-12">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Observação</label>
-                                    <textarea
-                                        class="form-control form-control-sm"
-                                        :disabled="!aprovandoRh"
-                                        v-model="form.obs_rh"
-                                        rows="4"
-                                    ></textarea>
-                                </div>
                             </div>
 
                             <div class="col-12 col-md-4">
@@ -293,6 +291,18 @@
                                             @opening="fecharOutrosComboboxes('form-status-rh')"
                                         />
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-8">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Observação</label>
+                                    <textarea
+                                        class="form-control form-control-sm"
+                                        :disabled="!aprovandoRh"
+                                        v-model="form.obs_rh"
+                                        rows="2"
+                                    ></textarea>
                                 </div>
                             </div>
                         </div>
@@ -1993,6 +2003,23 @@ export default {
     margin-bottom: 0.65rem;
     font-size: var(--mybp-fc-label-fs, 0.7rem);
     color: #6c757d;
+}
+
+.demissao-modal-form .demissao-modal-secao {
+    margin-top: 0.55rem;
+    margin-bottom: 0.55rem;
+    padding: 0.75rem 0.85rem 0.55rem;
+}
+
+.demissao-modal-form .demissao-modal-secao > legend {
+    font-size: 0.7rem;
+    line-height: 1.25;
+    padding: 0.25rem 0.7rem;
+    letter-spacing: 0.02em;
+}
+
+.demissao-modal-form .demissao-modal-secao:first-of-type {
+    margin-top: 0;
 }
 
 .demissao-modal-form .row > [class*='col-'] {

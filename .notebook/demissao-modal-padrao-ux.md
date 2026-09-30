@@ -8,6 +8,7 @@
 - DatePicker: esconder label vazia aninhada e zerar `corrigiDatepicker` (evita sumir com densificação)
 - Edit payload: `DemissaoPrevistaEditPayloadMapper` formata `data_demissao`/`data_aprovacao*` em `d/m/Y` (Carbon no JSON virava ISO → "Invalid date" no DatePicker)
 - DatePicker: apply+hide emitem v-model; limpa "hoje" fantasma no mount; `cadastrar()` sincroniza DOM→`form.data_demissao` antes de validar
+- Layout (padrão CIH): fieldsets **Colaborador** → **Solicitação** (Data 4 + Tipo 8 + Gestor) → **Detalhes** (Obs + Anexos); aprovações Status 4 + Obs 8
 - CC opcional: `centro_custo_id` nullable (migration); aviso no modal + `confirm` no cadastro; store/update normalizam ''→null
 - Tipo de aviso e status de aprovação: combobox; validação explícita em `cadastrar()` / `aprovar*`
 - Filtros da listagem continuam com `mybp-filtros-compactos`
