@@ -19,8 +19,8 @@
                             :leitura="true"
                             :model="item.docs_curriculo_anexos"
                             :model-delete="[]" :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :multi="false"></upload>
+                            @on-progresso="anexoUploadAndamento=true"
+                            @on-finalizado="anexoUploadAndamento=false" :multi="false"></upload>
                 </fieldset>
             </div>
 

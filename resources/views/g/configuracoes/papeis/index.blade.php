@@ -81,9 +81,10 @@
 
                     <div role="tabpanel" class="tab-pane p-1" id="abaHabilidades">
                         <p class="small text-muted mb-2 px-1">
-                            As permissões ficam <strong>agrupadas por categoria</strong> (trecho do nome antes de <code>_</code>).
-                            Use busca e/ou categoria para reduzir a lista; os botões <strong>Permitir todas</strong> e <strong>Remover todas</strong>
+                            As permissões ficam <strong>agrupadas por módulo e recurso</strong>.
+                            Use busca e/ou módulo para reduzir a lista; os botões <strong>Permitir todas</strong> e <strong>Remover todas</strong>
                             respeitam esse recorte quando algum filtro estiver ativo.
+                            Em cada recurso há atalho para marcar/desmarcar todas as ações.
                         </p>
                         <!-- Filtros para habilidades -->
                         <div class="row mb-2 py-2 align-items-end">
@@ -98,16 +99,16 @@
                                     <input type="text"
                                            v-model="filtroHabilidades"
                                            @input="filtrarHabilidades"
-                                           placeholder="Nome ou descrição…"
+                                           placeholder="Nome, descrição, módulo…"
                                            class="form-control">
                                 </div>
                             </div>
                             <div class="col-md-4 mb-2 mb-md-0">
-                                <label class="small font-weight-bold text-muted mb-1 d-block">Categoria</label>
+                                <label class="small font-weight-bold text-muted mb-1 d-block">Módulo</label>
                                 <select v-model="categoriaFiltro"
                                         @change="filtrarHabilidades"
                                         class="form-control form-control-sm">
-                                    <option value="">Todas as categorias</option>
+                                    <option value="">Todos os módulos</option>
                                     <option v-for="categoria in categoriasHabilidades"
                                             :key="categoria"
                                             :value="categoria">
@@ -135,7 +136,7 @@
                                 </template>
                                 <template v-else>
                                     <strong class="text-dark">Escopo: grupo inteiro</strong>
-                                    — sem busca nem categoria, as ações abaixo aplicam às <strong>@{{ listaDeHabilidades.length }}</strong> permissões do cadastro.
+                                    — sem busca nem módulo, as ações abaixo aplicam às <strong>@{{ listaDeHabilidades.length }}</strong> permissões do cadastro.
                                 </template>
                             </div>
                             <div class="btn-group btn-group-sm flex-shrink-0">
@@ -157,67 +158,99 @@
                         <div v-if="habilidadesFiltradas.length === 0" class="text-center text-muted border rounded py-5 bg-white">
                             <i class="fa fa-search fa-2x mb-3 d-block"></i>
                             <p class="mb-0 font-weight-bold">Nenhuma permissão neste filtro</p>
-                            <small>Ajuste a busca ou a categoria.</small>
+                            <small>Ajuste a busca ou o módulo.</small>
                         </div>
 
-                        <div v-for="grupo in habilidadesAgrupadasPorCategoria" :key="grupo.categoria" class="card mb-2 shadow-sm border">
-                            <div class="card-header py-2 bg-white border-bottom-0">
+                        <div v-for="modulo in habilidadesAgrupadasPorModulo" :key="modulo.modulo" class="card mb-3 shadow-sm border">
+                            <div class="card-header py-2 bg-white">
                                 <h6 class="mb-0 font-weight-bold text-dark">
-                                    <i class="fa fa-folder-open text-primary mr-2"></i>@{{ grupo.categoria }}
+                                    <i class="fa fa-folder-open text-primary mr-2"></i>@{{ modulo.modulo_label }}
                                 </h6>
                                 <small class="text-muted">
-                                    @{{ contarPermitidasNoGrupo(grupo.itens) }} de @{{ grupo.itens.length }} permitidas nesta seção
+                                    @{{ contarPermitidasNoGrupo(modulo.itens) }} de @{{ modulo.itens.length }} permitidas neste módulo
                                 </small>
                             </div>
-                            <div class="table-responsive border-top">
-                                <table class="table table-sm table-hover mb-0">
-                                    <thead class="thead-light">
-                                    <tr>
-                                        <th class="border-0" style="width: 38%;">Permissão</th>
-                                        <th class="border-0">Descrição</th>
-                                        <th class="border-0 text-center" style="min-width: 160px;">Situação</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr v-for="habilidade in grupo.itens" :key="habilidade.id" class="align-middle">
-                                        <td class="py-2">
-                                            <div class="d-flex align-items-start">
-                                                <i class="fa fa-shield-alt text-primary mr-2 mt-1"></i>
-                                                <span class="text-dark small"><span class="text-body">@{{ habilidade.nome }}</span></span>
-                                            </div>
-                                        </td>
-                                        <td class="py-2">
-                                            <span class="text-muted small">@{{ habilidade.descricao }}</span>
-                                        </td>
-                                        <td class="py-2 text-center">
-                                            <template v-if="ehHabilidadeObrigatoriaAlterarSenha(habilidade)">
-                                                <button type="button"
-                                                        class="btn btn-sm btn-success px-2"
-                                                        disabled
-                                                        title="Todos os grupos devem manter esta permissão; não é possível desmarcar.">
-                                                    <i class="fa fa-lock mr-1" aria-hidden="true"></i>Permitida (obrigatória)
-                                                </button>
-                                            </template>
-                                            <template v-else>
-                                                <button type="button"
-                                                        class="btn btn-sm btn-success px-2"
-                                                        @click.prevent="definirAcessoHabilidade(habilidade, false)"
-                                                        v-if="habilidade.acesso"
-                                                        title="Remover esta permissão">
-                                                    <i class="fa fa-check mr-1" aria-hidden="true"></i>Permitida
-                                                </button>
-                                                <button type="button"
-                                                        class="btn btn-sm btn-outline-secondary px-2"
-                                                        @click.prevent="definirAcessoHabilidade(habilidade, true)"
-                                                        v-if="!habilidade.acesso"
-                                                        title="Conceder esta permissão">
-                                                    <i class="fa fa-minus mr-1 text-muted" aria-hidden="true"></i>Não permitida
-                                                </button>
-                                            </template>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
+                            <div class="card-body p-0">
+                                <div v-for="recurso in modulo.recursos" :key="modulo.modulo + '-' + recurso.recurso" class="border-top">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between px-3 py-2 bg-light">
+                                        <div>
+                                            <span class="font-weight-bold text-dark small">@{{ recurso.recurso_label }}</span>
+                                            <span class="text-muted small ml-2">
+                                                @{{ contarPermitidasNoGrupo(recurso.itens) }}/@{{ recurso.itens.length }}
+                                            </span>
+                                        </div>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button"
+                                                    class="btn btn-outline-success btn-sm"
+                                                    @click.prevent="marcarTodasDoRecurso(recurso.itens)"
+                                                    title="Permitir todas as ações deste recurso">
+                                                <i class="fa fa-check"></i>
+                                            </button>
+                                            <button type="button"
+                                                    class="btn btn-outline-danger btn-sm"
+                                                    @click.prevent="desmarcarTodasDoRecurso(recurso.itens)"
+                                                    title="Remover todas as ações deste recurso">
+                                                <i class="fa fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover mb-0">
+                                            <thead class="thead-light">
+                                            <tr>
+                                                <th class="border-0" style="width: 22%;">Ação</th>
+                                                <th class="border-0" style="width: 28%;">Código</th>
+                                                <th class="border-0">Descrição</th>
+                                                <th class="border-0 text-center" style="min-width: 160px;">Situação</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr v-for="habilidade in recurso.itens" :key="habilidade.id" class="align-middle">
+                                                <td class="py-2">
+                                                    <span class="small font-weight-bold text-dark">
+                                                        @{{ habilidade.acao_label || habilidade.acao || '—' }}
+                                                    </span>
+                                                </td>
+                                                <td class="py-2">
+                                                    <div class="d-flex align-items-start">
+                                                        <i class="fa fa-shield-alt text-primary mr-2 mt-1"></i>
+                                                        <span class="text-body small">@{{ habilidade.nome }}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="py-2">
+                                                    <span class="text-muted small">@{{ habilidade.descricao }}</span>
+                                                </td>
+                                                <td class="py-2 text-center">
+                                                    <template v-if="ehHabilidadeObrigatoriaAlterarSenha(habilidade)">
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-success px-2"
+                                                                disabled
+                                                                title="Todos os grupos devem manter esta permissão; não é possível desmarcar.">
+                                                            <i class="fa fa-lock mr-1" aria-hidden="true"></i>Permitida (obrigatória)
+                                                        </button>
+                                                    </template>
+                                                    <template v-else>
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-success px-2"
+                                                                @click.prevent="definirAcessoHabilidade(habilidade, false)"
+                                                                v-if="habilidade.acesso"
+                                                                title="Remover esta permissão">
+                                                            <i class="fa fa-check mr-1" aria-hidden="true"></i>Permitida
+                                                        </button>
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-outline-secondary px-2"
+                                                                @click.prevent="definirAcessoHabilidade(habilidade, true)"
+                                                                v-if="!habilidade.acesso"
+                                                                title="Conceder esta permissão">
+                                                            <i class="fa fa-minus mr-1 text-muted" aria-hidden="true"></i>Não permitida
+                                                        </button>
+                                                    </template>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

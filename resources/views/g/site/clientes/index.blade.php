@@ -12,8 +12,8 @@
                 url="{{ route('g.site.cliente.upload-fotos') }}"
                 :ordenar="true"
                 :apenas-imagens="true"
-                @onprogresso="fotoUploadAndamento=true"
-                @onfinalizado="fotoUploadAndamento=false"></upload>
+                @on-progresso="fotoUploadAndamento=true"
+                @on-finalizado="fotoUploadAndamento=false"></upload>
     </fieldset>
 
     <button class="btn btn-success" :disabled="fotoUploadAndamento" @click="alterar"><i class="fa fa-save"></i> Salvar</button>

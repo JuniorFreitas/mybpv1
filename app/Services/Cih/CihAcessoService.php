@@ -2,6 +2,7 @@
 
 namespace App\Services\Cih;
 
+use App\Authorization\HabilidadeResolver;
 use App\Models\CentroCusto;
 use App\Models\Cih;
 use App\Models\User;
@@ -18,15 +19,22 @@ class CihAcessoService
     /** CNPJ matriz Montisol (12.557.849/0001-40), só dígitos. */
     public const CNPJ_MATRIZ_MONTISOL = '12557849000140';
 
+    public function __construct(
+        private readonly HabilidadeResolver $habilidadeResolver,
+    ) {
+    }
+
     public function podeVerTodas(User $user): bool
     {
-        return $user->can('admissao_cih_privilegio_adm')
-            || $user->can('admissao_cih_ver_todas');
+        return $this->habilidadeResolver->canAny($user, [
+            'admissao_cih_privilegio_adm',
+            'admissao_cih_ver_todas',
+        ]);
     }
 
     public function podeAprovarComoGestor(User $user, Cih $cih): bool
     {
-        if ($user->can('admissao_cih_privilegio_adm')) {
+        if ($this->habilidadeResolver->can($user, 'admissao_cih_privilegio_adm')) {
             return true;
         }
 

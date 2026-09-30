@@ -171,18 +171,16 @@ class CarteiraAssinaturaController extends Controller
             if (in_array($mimeType, $permitidos)) {
                 $arquivo = Arquivo::gravaArquivo($request, 'arquivo', 'disco-assinatura');
                 return response()->json($arquivo, 201);
-            } else {
-                return response()->json([
-                    'msg' => "O upload do arquivo \"{$request->file('arquivo')->getClientOriginalName()}\" falhou. Permitidos apenas imagens JPG/JPEG ou PDF.",
-                    'erros' => []
-                ], 400);
-            }
-        } else {
+            } 
             return response()->json([
-                'msg' => "O upload do anexo falhou",
+                'msg' => "O upload do arquivo \"{$request->file('arquivo')->getClientOriginalName()}\" falhou. Permitidos apenas imagens JPEG, PNG, JPG e GIF.",
                 'erros' => []
             ], 400);
-        }
+        } 
+            return response()->json([
+                'msg' => "O upload do arquivo \"{$request->file('arquivo')->getClientOriginalName()}\" falhou. Arquivo não permitido.",
+                'erros' => []
+            ], 400);
     }
 
     public function anexoShow(Request $request, $arquivo)

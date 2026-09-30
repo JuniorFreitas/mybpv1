@@ -39,8 +39,8 @@
                             :quantidade="1"
                             :model-delete="form.foto_perfilDel"
                             :url="urlAnexoUpload"
-                            @onprogresso="anexoUploadAndamento = true"
-                            @onfinalizado="anexoUploadAndamento = false"
+                            @onProgresso="anexoUploadAndamento = true"
+                            @onFinalizado="anexoUploadAndamento = false"
                             :multi="true"
                         >
                         </upload>

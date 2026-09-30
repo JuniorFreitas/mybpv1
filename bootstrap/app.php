@@ -54,6 +54,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'habilidades' => \App\Http\Middleware\CarregaHabilidades::class,
             'check.password.reset' => \App\Http\Middleware\CheckPasswordReset::class,
             'can.sanctum' => \App\Http\Middleware\TemHabilidade::class,
+            'can.any' => \App\Http\Middleware\CanAnyHabilidade::class,
             'usuario.ativo' => \App\Http\Middleware\UsuarioAtivo::class,
             'apitoken' => \App\Http\Middleware\ApiToken::class,
             'assinatura.digital.habilitada' => \App\Http\Middleware\VerificaAssinaturaDigitalHabilitada::class,

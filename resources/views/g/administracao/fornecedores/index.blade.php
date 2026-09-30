@@ -196,8 +196,8 @@
                                         :model-delete="form.anexosDel"
                                         :url="urlAnexoUpload"
                                         label="Anexar ..."
-                                        @onProgresso="anexoUploadAndamento=true"
-                                        @onFinalizado="anexoUploadAndamento=false"></upload>
+                                        @on-progresso="anexoUploadAndamento=true"
+                                        @on-finalizado="anexoUploadAndamento=false"></upload>
                             </fieldset>
 
                             <div class="custom-control custom-switch">
@@ -366,8 +366,8 @@
                                                             :model-delete="obj.anexosDel"
                                                             :url="urlAnexoServicoUpload"
                                                             label="Anexar ..."
-                                                            @onProgresso="anexoServicoUploadAndamento=true"
-                                                            @onFinalizado="anexoServicoUploadAndamento=false"></upload>
+                                                            @on-progresso="anexoServicoUploadAndamento=true"
+                                                            @on-finalizado="anexoServicoUploadAndamento=false"></upload>
 
                                                 </fieldset>
                                             </div>

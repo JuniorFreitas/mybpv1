@@ -72,8 +72,11 @@ class Sistema
         }
 
         $retorno = false;
-        $listaDeHabilidade = auth()->user()->listaDeHabilidades();
-        $listaDeHabilidade = collect($listaDeHabilidade);
+        $listaDeHabilidade = collect(
+            \App\Authorization\HabilidadeImplication::expandWithImpliedAccess(
+                auth()->user()->listaDeHabilidades()
+            )
+        );
 
         foreach ($lista as $habilidade) {
             if ($listaDeHabilidade->search($habilidade) !== false) {

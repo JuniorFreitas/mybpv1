@@ -99,23 +99,68 @@ const app = createApp({
         },
 
         /**
-         * Habilidades filtradas agrupadas por prefixo do nome (categoria), ordenadas.
+         * Habilidades filtradas agrupadas por módulo e recurso (metadados do backend).
+         */
+        habilidadesAgrupadasPorModulo() {
+            const modulosMap = new Map()
+            for (const h of this.habilidadesFiltradas) {
+                const moduloKey = h.modulo || this.extrairCategoria(h.nome).toLowerCase()
+                const moduloLabel = h.modulo_label || this.extrairCategoria(h.nome)
+                const recursoKey = h.recurso || 'geral'
+                const recursoLabel = h.recurso_label || this.labelizeSlug(recursoKey)
+
+                if (!modulosMap.has(moduloKey)) {
+                    modulosMap.set(moduloKey, {
+                        modulo: moduloKey,
+                        modulo_label: moduloLabel,
+                        recursos: new Map(),
+                        itens: []
+                    })
+                }
+                const modulo = modulosMap.get(moduloKey)
+                modulo.itens.push(h)
+
+                if (!modulo.recursos.has(recursoKey)) {
+                    modulo.recursos.set(recursoKey, {
+                        recurso: recursoKey,
+                        recurso_label: recursoLabel,
+                        itens: []
+                    })
+                }
+                modulo.recursos.get(recursoKey).itens.push(h)
+            }
+
+            const resultado = []
+            for (const modulo of modulosMap.values()) {
+                for (const recurso of modulo.recursos.values()) {
+                    recurso.itens.sort((a, b) => {
+                        const aa = String(a.acao_label || a.acao || a.nome)
+                        const bb = String(b.acao_label || b.acao || b.nome)
+                        return aa.localeCompare(bb, 'pt-BR')
+                    })
+                }
+                const recursos = Array.from(modulo.recursos.values()).sort((a, b) =>
+                    a.recurso_label.localeCompare(b.recurso_label, 'pt-BR')
+                )
+                resultado.push({
+                    modulo: modulo.modulo,
+                    modulo_label: modulo.modulo_label,
+                    itens: modulo.itens,
+                    recursos
+                })
+            }
+
+            return resultado.sort((a, b) => a.modulo_label.localeCompare(b.modulo_label, 'pt-BR'))
+        },
+
+        /**
+         * @deprecated Mantido como alias durante transição; preferir habilidadesAgrupadasPorModulo.
          */
         habilidadesAgrupadasPorCategoria() {
-            const map = new Map()
-            for (const h of this.habilidadesFiltradas) {
-                const cat = this.extrairCategoria(h.nome)
-                if (!map.has(cat)) {
-                    map.set(cat, [])
-                }
-                map.get(cat).push(h)
-            }
-            for (const arr of map.values()) {
-                arr.sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'))
-            }
-            return Array.from(map.entries())
-                .map(([categoria, itens]) => ({ categoria, itens }))
-                .sort((a, b) => a.categoria.localeCompare(b.categoria, 'pt-BR'))
+            return this.habilidadesAgrupadasPorModulo.map((m) => ({
+                categoria: m.modulo_label,
+                itens: m.itens
+            }))
         },
 
         /**
@@ -171,38 +216,52 @@ const app = createApp({
         },
 
         /**
-         * Filtra as habilidades baseado no termo de busca e categoria
+         * Filtra as habilidades baseado no termo de busca e módulo
          */
         filtrarHabilidades() {
             let habilidades = [...this.listaDeHabilidades]
 
-            // Filtro por texto
             if (this.filtroHabilidades.trim()) {
                 const termo = this.filtroHabilidades.toLowerCase()
-                habilidades = habilidades.filter(
-                    (habilidade) => habilidade.nome.toLowerCase().includes(termo) || habilidade.descricao.toLowerCase().includes(termo)
-                )
+                habilidades = habilidades.filter((habilidade) => {
+                    const campos = [
+                        habilidade.nome,
+                        habilidade.descricao,
+                        habilidade.modulo_label,
+                        habilidade.recurso_label,
+                        habilidade.acao_label,
+                    ]
+                    return campos.some((c) => String(c || '').toLowerCase().includes(termo))
+                })
             }
 
-            // Filtro por categoria
             if (this.categoriaFiltro) {
-                habilidades = habilidades.filter((habilidade) => this.extrairCategoria(habilidade.nome) === this.categoriaFiltro)
+                habilidades = habilidades.filter((habilidade) => {
+                    const label = habilidade.modulo_label || this.extrairCategoria(habilidade.nome)
+                    return label === this.categoriaFiltro
+                })
             }
 
             this.habilidadesFiltradas = habilidades
         },
 
         /**
-         * Extrai a categoria de uma habilidade baseado no nome
+         * Extrai a categoria de uma habilidade baseado no nome (fallback).
          * @param {string} nomeHabilidade - Nome da habilidade
          * @returns {string} Categoria da habilidade
          */
         extrairCategoria(nomeHabilidade) {
-            const partes = nomeHabilidade.split('_')
+            const partes = String(nomeHabilidade || '').split('_')
             if (partes.length >= 2) {
                 return partes[0].charAt(0).toUpperCase() + partes[0].slice(1)
             }
             return 'Outros'
+        },
+
+        labelizeSlug(slug) {
+            return String(slug || '')
+                .replace(/[-_]/g, ' ')
+                .replace(/\b\w/g, (c) => c.toUpperCase())
         },
 
         ehHabilidadeObrigatoriaAlterarSenha(habilidade) {
@@ -229,14 +288,31 @@ const app = createApp({
         },
 
         /**
-         * Gera a lista de categorias únicas das habilidades
+         * Gera a lista de módulos (labels) únicos das habilidades
          */
         gerarCategorias() {
             const categorias = new Set()
             this.listaDeHabilidades.forEach((habilidade) => {
-                categorias.add(this.extrairCategoria(habilidade.nome))
+                categorias.add(habilidade.modulo_label || this.extrairCategoria(habilidade.nome))
             })
-            this.categoriasHabilidades = Array.from(categorias).sort()
+            this.categoriasHabilidades = Array.from(categorias).sort((a, b) => a.localeCompare(b, 'pt-BR'))
+        },
+
+        marcarTodasDoRecurso(itens) {
+            ;(itens || []).forEach((h) => {
+                h.acesso = true
+            })
+            this.syncFlagTodasHabilidades()
+        },
+
+        desmarcarTodasDoRecurso(itens) {
+            ;(itens || []).forEach((h) => {
+                if (!this.ehHabilidadeObrigatoriaAlterarSenha(h)) {
+                    h.acesso = false
+                }
+            })
+            this.garantirHabilidadeAlterarSenha()
+            this.syncFlagTodasHabilidades()
         },
 
         /**

@@ -224,23 +224,23 @@ class HabilidadesTableSeeder extends Seeder
 
 
         //PosAdmissoes_form_rh------------------------------
-        $lista[] = ['nome' => 'posadmissao_form_rh', 'descricao' => 'Acessar formulario pos-admissao rh'];
+        $lista[] = ['nome' => 'admissao_pos_form_rh', 'descricao' => 'Acessar formulario pos-admissao rh'];
         //PosAdmissoes_form_adm------------------------------
-        $lista[] = ['nome' => 'posadmissao_form_adm', 'descricao' => 'Acessar formulario pos-admissao adm'];
+        $lista[] = ['nome' => 'admissao_pos_form_adm', 'descricao' => 'Acessar formulario pos-admissao adm'];
         //PosAdmissoes_form_ssma------------------------------
-        $lista[] = ['nome' => 'posadmissao_form_ssma', 'descricao' => 'Acessar formulario pos-admissao ssma'];
+        $lista[] = ['nome' => 'admissao_pos_form_ssma', 'descricao' => 'Acessar formulario pos-admissao ssma'];
 
 
-        $lista[] = ['nome' => 'posadmissao_avaliar', 'descricao' => 'Acessar formulario avaliar'];
-        $lista[] = ['nome' => 'posadmissao_avaliar_insert', 'descricao' => 'Pode cadastrar avaliação'];
-        $lista[] = ['nome' => 'posadmissao_avaliar_update', 'descricao' => 'Pode alterar avaliação'];
+        $lista[] = ['nome' => 'admissao_pos_avaliar', 'descricao' => 'Acessar formulario avaliar'];
+        $lista[] = ['nome' => 'admissao_pos_avaliar_insert', 'descricao' => 'Pode cadastrar avaliação'];
+        $lista[] = ['nome' => 'admissao_pos_avaliar_update', 'descricao' => 'Pode alterar avaliação'];
 
-        $lista[] = ['nome' => 'posadmissao_desmobilizar', 'descricao' => 'Acessar formulario desmobilizar'];
-        $lista[] = ['nome' => 'posadmissao_desmobilizar_insert', 'descricao' => 'Pode cadastrar desmobilização'];
-        $lista[] = ['nome' => 'posadmissao_desmobilizar_update', 'descricao' => 'Pode alterar desmobilização'];
-        $lista[] = ['nome' => 'posadmissao_entrevista_desligamento', 'descricao' => 'Acessar formulario de entrevista desligamento'];
-        $lista[] = ['nome' => 'posadmissao_entrevista_desligamento_insert', 'descricao' => 'Pode cadastrar entrevista desligamento'];
-        $lista[] = ['nome' => 'posadmissao_entrevista_desligamento_update', 'descricao' => 'Pode alterar entrevista desligamento'];
+        $lista[] = ['nome' => 'admissao_pos_desmobilizar', 'descricao' => 'Acessar formulario desmobilizar'];
+        $lista[] = ['nome' => 'admissao_pos_desmobilizar_insert', 'descricao' => 'Pode cadastrar desmobilização'];
+        $lista[] = ['nome' => 'admissao_pos_desmobilizar_update', 'descricao' => 'Pode alterar desmobilização'];
+        $lista[] = ['nome' => 'admissao_pos_entrevista_desligamento', 'descricao' => 'Acessar formulario de entrevista desligamento'];
+        $lista[] = ['nome' => 'admissao_pos_entrevista_desligamento_insert', 'descricao' => 'Pode cadastrar entrevista desligamento'];
+        $lista[] = ['nome' => 'admissao_pos_entrevista_desligamento_update', 'descricao' => 'Pode alterar entrevista desligamento'];
 
 
         $lista[] = ['nome' => 'entrevista_rh_cliente', 'descricao' => 'Acessar menu EntrevistaRH cliente'];
@@ -256,6 +256,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'admissao_cih_aprovar', 'descricao' => 'Pode aprovar uma ocorrencia CIH'];
         $lista[] = ['nome' => 'admissao_cih_privilegio_adm', 'descricao' => 'Pode visualizar todas as CIH'];
         $lista[] = ['nome' => 'admissao_cih_ver_todas', 'descricao' => 'Pode visualizar todas as CIH (sem ampliar aprovação)'];
+        $lista[] = ['nome' => 'admissao_controle_exames', 'descricao' => 'Acessar menu Controle de Exames'];
 
 
         $lista[] = ['nome' => 'admissao_historico', 'descricao' => 'Acessar menu Historico'];
@@ -376,6 +377,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'relatorio_centro_de_custo', 'descricao' => 'Acessar Relatorio de Centro de Custo'];
         $lista[] = ['nome' => 'relatorio_aniversariantes', 'descricao' => 'Acessar Relatórios de Aniversariantes'];
         $lista[] = ['nome' => 'relatorio_avaliacao_90_dias', 'descricao' => 'Pode acessar o relatório de avaliação de 90 dias'];
+        $lista[] = ['nome' => 'relatorio_nps', 'descricao' => 'Acessar Relatório NPS (Resultados)'];
 
         $lista[] = ['nome' => 'planejamento_requisicao_vaga', 'descricao' => 'Acessa menu Requisição de Vaga dentro do menu Planejamento'];
         $lista[] = ['nome' => 'planejamento_requisicao_vaga_insert', 'descricao' => 'Inseri'];

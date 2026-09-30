@@ -1,8 +1,11 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-09-28
+Last updated: 2026-09-29
 
+- [checkpoint-autorizacao-2026-09-29](checkpoint-autorizacao-2026-09-29.md) — **CONTINUAR AQUI** auth habilidades/Cloud (feito + backlog) | checkpoint | permissao, habilidades, cloud
+- [autorizacao-habilidades](autorizacao-habilidades.md) — Registry + aliases + Cloud multi-grupo + Policies | flow | permissao, habilidades
+- [entrega-2026-09-28-29](entrega-2026-09-28-29.md) — CIH + Movimentação + Cloud (28–29/09) | entrega | cih, movimentacao, cloud
 - [cloud-multi-move-drag](cloud-multi-move-drag.md) — Multi-seleção + drag para pasta no Cloud | flow | cloud, drag, move
 - [cih-visibilidade-aprovacao](cih-visibilidade-aprovacao.md) — ver_todas ≠ aprovar; ADM override gestor | domain | cih, permissao, habilidades
 - [cih-autocomplete-cnpj](cih-autocomplete-cnpj.md) — Autocomplete colaborador filtra por CNPJ/CC do modal | flow | cih, autocomplete, cnpj

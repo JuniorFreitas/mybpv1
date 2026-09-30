@@ -237,7 +237,7 @@ class CihController extends Controller
         try {
             DB::beginTransaction();
             if (is_null($dados['resposta_rh'])) {
-                if (!(new CihAcessoService())->podeAprovarComoGestor(auth()->user(), $cih)) {
+                if (!app(CihAcessoService::class)->podeAprovarComoGestor(auth()->user(), $cih)) {
                     return response()->json([
                         'msg' => 'Você só pode aprovar CIH sob sua responsabilidade.',
                     ], 403);

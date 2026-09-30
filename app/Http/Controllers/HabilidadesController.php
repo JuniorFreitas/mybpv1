@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Habilidade;
+use App\Http\Middleware\CarregaHabilidades;
 use Illuminate\Http\Request;
 
 class HabilidadesController extends Controller
@@ -54,6 +55,7 @@ class HabilidadesController extends Controller
             ]);
         }else{
             Habilidade::create($request->all());
+            CarregaHabilidades::forgetNomesCache();
             return response()->json([
                 'erro' => 'n'
             ]);
@@ -108,6 +110,7 @@ class HabilidadesController extends Controller
             ]);
         }else{
             $habilidade->update($request->all());
+            CarregaHabilidades::forgetNomesCache();
             return response()->json([
                 'erro' => 'n'
             ]);
@@ -124,6 +127,7 @@ class HabilidadesController extends Controller
     {
         $this->authorize('configuracao_habilidades_delete');
         $habilidade->delete();
+        CarregaHabilidades::forgetNomesCache();
     }
 
     public function atualizar(Request $request){

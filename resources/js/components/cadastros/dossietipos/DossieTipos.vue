@@ -63,8 +63,8 @@
                                     :model-delete="form.modeloDel"
                                     :url="urlModeloUpload"
                                     :quantidade="1"
-                                    @onprogresso="anexoUploadAndamento = true"
-                                    @onfinalizado="anexoUploadAndamento = false"
+                                    @onProgresso="anexoUploadAndamento = true"
+                                    @onFinalizado="anexoUploadAndamento = false"
                                 ></upload>
                             </div>
                         </div>
