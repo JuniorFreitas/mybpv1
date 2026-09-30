@@ -3,6 +3,7 @@
 
 Last updated: 2026-09-30
 
+- [mobilizacao-padrao-ux](mobilizacao-padrao-ux.md) — Relatório mobilização: filtros compactos + cards mybp | pattern | mobilizacao, filtro, card, relatorio
 - [requisicao-vaga-padrao-ux](requisicao-vaga-padrao-ux.md) — Filtros/cards/modal Requisição de Vagas no padrão operacional | pattern | requisicao-vaga, filtro, card-detalhe, modal
 - [transferencia-lotacao-cnpj](transferencia-lotacao-cnpj.md) — Modal Lotação→CC origem/destino + cards lotação | flow | transferencia, lotacao, cnpj
 - [filtro-status-fluxo-aprovacao](filtro-status-fluxo-aprovacao.md) — Pendente/Aprovado/Reprovado por etapa nas movimentações | pattern | filtro, status, aprovacao
