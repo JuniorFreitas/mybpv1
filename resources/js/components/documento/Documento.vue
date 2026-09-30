@@ -40,8 +40,8 @@
                             :apenas-imagens="(doc.configuracoes || {}).apenas_img"
                             :apenas-pdf="(doc.configuracoes || {}).apenas_pdf"
                             :apenas-pdf-img="(doc.configuracoes || {}).apenas_pdf_img"
-                            @onprogresso="anexoUploadAndamento = true"
-                            @onfinalizado="anexoUploadAndamento = false"
+                            @onProgresso="anexoUploadAndamento = true"
+                            @onFinalizado="anexoUploadAndamento = false"
                             :quantidade="(doc.configuracoes || {}).max || 1"
                             :multi="(doc.configuracoes || {}).multiple"
                         ></upload>

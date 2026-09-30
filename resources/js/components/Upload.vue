@@ -771,7 +771,6 @@ export default {
     proximo() {
       if (this.atual === this.total) {
         if (this.arquivo.enviado) {
-          this.$emit("onfinalizado");
           this.$emit("onFinalizado");
           this.emAndamento = false;
         } else {
@@ -961,7 +960,6 @@ export default {
           refVue.arquivo.bytesCarregados = e.loaded;
           refVue.arquivo.bytesTotal = e.total;
           this.lista[refVue.atual - 1] = refVue.arquivo;
-          refVue.$emit("onprogresso", refVue.arquivo);
           refVue.$emit("onProgresso", refVue.arquivo);
           refVue.$emit("onprogressogeral", refVue.pctGeral);
         },
@@ -991,7 +989,6 @@ export default {
 
             if (refVue.atual === refVue.total) {
               refVue.lista.splice(refVue.atual - 1, 1);
-              refVue.$emit("onfinalizado");
               refVue.$emit("onFinalizado");
               refVue.emAndamento = false;
               return;

@@ -475,9 +475,13 @@ class PosAdmissaoController extends Controller
                 'formulario' => $formulario,
                 'form_limpo' => $formulario_vazio,
                 // ToDO ajustar na branch que vai ser feito a modificação de formulario por tabela
-                'posadmissao_form_adm' => auth()->user()->can('posadmissao_form_adm'),
-                'posadmissao_form_rh' => auth()->user()->can('posadmissao_form_rh'),
-                'posadmissao_form_ssma' => auth()->user()->can('posadmissao_form_ssma'),
+                'admissao_pos_form_adm' => auth()->user()->can('admissao_pos_form_adm'),
+                'admissao_pos_form_rh' => auth()->user()->can('admissao_pos_form_rh'),
+                'admissao_pos_form_ssma' => auth()->user()->can('admissao_pos_form_ssma'),
+                // aliases legados para frontend ainda em transição
+                'posadmissao_form_adm' => auth()->user()->can('admissao_pos_form_adm'),
+                'posadmissao_form_rh' => auth()->user()->can('admissao_pos_form_rh'),
+                'posadmissao_form_ssma' => auth()->user()->can('admissao_pos_form_ssma'),
             ]
         ]);
     }
@@ -682,7 +686,7 @@ class PosAdmissaoController extends Controller
 
     public function entrevistar(Request $request)
     {
-        $this->authorize('posadmissao_avaliar_insert');
+        $this->authorize('admissao_pos_avaliar_insert');
         $dados = $request->input();
 
         $dados['entrevista_desligamento']['feedback_id'] = $dados['feedback_id'];
@@ -704,7 +708,7 @@ class PosAdmissaoController extends Controller
 
     public function entrevistarUpdate(Request $request, EntrevistaDesligamento $entrevista)
     {
-        $this->authorize('posadmissao_avaliar_update');
+        $this->authorize('admissao_pos_avaliar_update');
         $dados = $request->input();
         $dados['user_entrevista'] = auth()->id();
         $dados['data_entrevista'] = (new DataHora())->dataHoraInsert();

@@ -2,17 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Authorization\Cloud\CloudCapabilityCatalog;
 use App\Models\Arquivo;
 use App\Models\Cloud;
 use App\Models\GrupoCloud;
 use App\Models\ItensCloud;
 use App\Models\User;
+use App\Services\Cloud\CloudAuthorizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class CloudController extends Controller
 {
+    public function __construct(
+        private readonly CloudAuthorizationService $cloudAuth,
+    ) {
+    }
     /**
      * Display a listing of the resource.
      *
@@ -351,8 +358,10 @@ class CloudController extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-        $this->autorizarArquivoCloud($arquivo);
-        $caminho = $this->resolverCaminhoAnexoCloud($arquivo, (bool) $request->query('thumb'));
+        // Listagem/thumbs: basta ACL do item (+ can:cloud na rota).
+        // Capacidade "Visualizar" é ação de abrir arquivo, não preview na grade.
+        $model = $this->cloudAuth->authorizeCloudFile($arquivo);
+        $caminho = $this->resolverCaminhoAnexoCloud($model, $arquivo, (bool) $request->query('thumb'));
 
         return $this->respostaAnexoPrivado(
             Arquivo::anexoShow(Arquivo::DISCO_CLOUD, $caminho)
@@ -362,7 +371,7 @@ class CloudController extends Controller
     //anexo ou foto
     public function download($arquivo)
     {
-        $this->autorizarArquivoCloud($arquivo);
+        $this->cloudAuth->authorizeCloudFileWithCapability($arquivo, CloudCapabilityCatalog::DOWNLOAD);
 
         return $this->respostaAnexoPrivado(
             Arquivo::anexoDownload(Arquivo::DISCO_CLOUD, $arquivo)
@@ -371,7 +380,7 @@ class CloudController extends Controller
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        $this->autorizarArquivoCloud($arquivo);
+        $this->cloudAuth->authorizeCloudFileWithCapability($arquivo, CloudCapabilityCatalog::DELETAR);
 
         return Arquivo::anexoDelete(Arquivo::DISCO_CLOUD, $arquivo);
     }
@@ -399,67 +408,29 @@ class CloudController extends Controller
      */
     protected function autorizarArquivoCloud(string $arquivo): Arquivo
     {
-        if (!auth()->check()) {
-            abort(401, 'Não autenticado');
-        }
-
-        $user = auth()->user();
-
-        $model = Arquivo::query()
-            ->where('disco', Arquivo::DISCO_CLOUD)
-            ->where(function ($query) use ($arquivo) {
-                $query->where('file', $arquivo)->orWhere('thumb', $arquivo);
-            })
-            ->first();
-
-        if (!$model) {
-            abort(404);
-        }
-
-        $item = ItensCloud::query()->where('arquivo_id', $model->id)->first();
-        if (!$item) {
-            abort(404);
-        }
-
-        $cloud = Cloud::encontrarAutorizadoOuAbortar($item->cloud_id);
-
-        if ((int) $cloud->empresa_id !== (int) $user->empresa_id) {
-            abort(403, 'Sem permissão para acessar este arquivo');
-        }
-
-        if (!$item->TemPermissao) {
-            abort(403, 'Sem permissão para acessar este arquivo');
-        }
-
-        return $model;
+        return $this->cloudAuth->authorizeCloudFile($arquivo);
     }
 
     /**
-     * Resolve path do anexo; para imagens com ?thumb=1 usa o arquivo _p.
+     * Resolve path do anexo; prefere thumb quando pedido/URL _p, com fallback ao original se o _p não existir no disco.
      */
-    protected function resolverCaminhoAnexoCloud(string $arquivo, bool $forcarThumb = false): string
+    protected function resolverCaminhoAnexoCloud(Arquivo $model, string $arquivo, bool $forcarThumb = false): string
     {
-        if (!$forcarThumb) {
-            return $arquivo;
-        }
+        $disk = Storage::disk(Arquivo::DISCO_CLOUD);
+        $querThumb = $forcarThumb
+            || ($model->thumb && $arquivo === $model->thumb)
+            || (bool) preg_match('/_p\.[^.]+$/', $arquivo);
 
-        $model = Arquivo::query()
-            ->where('disco', Arquivo::DISCO_CLOUD)
-            ->where(function ($query) use ($arquivo) {
-                $query->where('file', $arquivo)->orWhere('thumb', $arquivo);
-            })
-            ->first();
-
-        if ($model && $model->imagem && $model->thumb) {
+        if ($querThumb && $model->thumb && $disk->exists($model->thumb)) {
             return $model->thumb;
         }
 
-        $pos = strrpos($arquivo, '.');
-        if ($pos === false) {
-            return $arquivo;
+        if ($model->file && $disk->exists($model->file)) {
+            return $model->file;
         }
 
-        return substr($arquivo, 0, $pos) . '_p.' . substr($arquivo, $pos + 1);
+        // Último recurso: path da URL (mantém 404 consistente se nada existir)
+        return $arquivo;
     }
 
     //CLOUD CADASTRO

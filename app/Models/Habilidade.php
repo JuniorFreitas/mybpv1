@@ -47,10 +47,15 @@ class Habilidade extends Model
 
     protected $table = 'habilidades';
     protected $fillable = [
-        'id','nome', 'descricao'
+        'id', 'nome', 'descricao', 'modulo', 'recurso', 'acao',
     ];
     protected $casts = [
-        'id' => 'int','nome' => 'string', 'descricao' => 'string'
+        'id' => 'int',
+        'nome' => 'string',
+        'descricao' => 'string',
+        'modulo' => 'string',
+        'recurso' => 'string',
+        'acao' => 'string',
     ];
 
     public $timestamps = false;

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Authorization\Cloud\CloudCapabilityCatalog;
 use App\Models\Arquivo;
 use App\Models\Cloud;
 use App\Models\GrupoCloud;
 use App\Models\ItensCloud;
 use App\Models\User;
+use App\Services\Cloud\CloudAuthorizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -15,6 +17,10 @@ use MasterTag\DataHora;
 
 class ItensCloudController extends Controller
 {
+    public function __construct(
+        private readonly CloudAuthorizationService $cloudAuth,
+    ) {
+    }
     /**
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -114,8 +120,7 @@ class ItensCloudController extends Controller
      */
     public function update(Request $request, ItensCloud $itenscloud)
     {
-        //UpdatePara Pasta
-        $this->authorize('cloud_update');
+        $this->authorize('update', $itenscloud);
         Cloud::encontrarAutorizadoOuAbortar($itenscloud->cloud_id);
         $dados = $request->input();
         // Impede troca de cloud_id via payload (IDOR)
@@ -194,6 +199,7 @@ class ItensCloudController extends Controller
      */
     public function destroy(ItensCloud $itenscloud)
     {
+        $this->authorize('delete', $itenscloud);
         Cloud::encontrarAutorizadoOuAbortar($itenscloud->cloud_id);
 
         try {
@@ -225,6 +231,7 @@ class ItensCloudController extends Controller
 
     public function revisar(ItensCloud $item)
     {
+        $this->authorize('review', $item);
         Cloud::encontrarAutorizadoOuAbortar($item->cloud_id);
 
         try {
@@ -290,6 +297,7 @@ class ItensCloudController extends Controller
 
     public function aprovar(ItensCloud $item)
     {
+        $this->authorize('approve', $item);
         Cloud::encontrarAutorizadoOuAbortar($item->cloud_id);
 
         try {
@@ -377,6 +385,7 @@ class ItensCloudController extends Controller
 
     public function moverArquivo(Request $request, ItensCloud $item)
     {
+        $this->authorize('move', $item);
         Cloud::encontrarAutorizadoOuAbortar($item->cloud_id);
 
         $pastaDestino = $request->filled('pasta') ? (int) $request->pasta : null;
@@ -395,6 +404,8 @@ class ItensCloudController extends Controller
 
     public function moverVarios(Request $request)
     {
+        $this->cloudAuth->authorizeCloudAction(auth()->user(), CloudCapabilityCatalog::MOVER);
+
         $dados = $request->validate([
             'itens' => ['required', 'array', 'min:1'],
             'itens.*' => ['integer'],

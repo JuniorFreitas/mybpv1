@@ -983,13 +983,15 @@
                         </a>
                     </li>
                 @endcan
-                @if(auth()->user()->empresa_id === \App\Models\User::MYBP_EMPRESA_ID)
-                    <li>
-                        <a href="{{ route('g.relatorios.nps.index') }}" parent="relatorios" key="relatorio_nps">
-                            NPS (Resultados)
-                        </a>
-                    </li>
-                @endif
+                @can('relatorio_nps')
+                    @if(auth()->user()->empresa_id === \App\Models\User::MYBP_EMPRESA_ID)
+                        <li>
+                            <a href="{{ route('g.relatorios.nps.index') }}" parent="relatorios" key="relatorio_nps">
+                                NPS (Resultados)
+                            </a>
+                        </li>
+                    @endif
+                @endcan
             </ul>
         </li>
     @endif

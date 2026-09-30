@@ -16,8 +16,8 @@
                         :leitura="true"
                         :quantidade="1"
                         :url="urlFotoUpload"
-                        @onProgresso="fotoUploadAndamento=true"
-                        @onFinalizado="fotoUploadAndamento=false"></upload>
+                        @on-progresso="fotoUploadAndamento=true"
+                        @on-finalizado="fotoUploadAndamento=false"></upload>
             </fieldset>
 
             <div class="alert alert-warning" v-show="!preloadAjax && form.fotos.length==0"><i
@@ -30,8 +30,8 @@
                         :leitura="true"
                         :model-delete="form.anexosDel"
                         :url="urlAnexoUpload"
-                        @onProgresso="anexoUploadAndamento=true"
-                        @onFinalizado="anexoUploadAndamento=false"></upload>
+                        @on-progresso="anexoUploadAndamento=true"
+                        @on-finalizado="anexoUploadAndamento=false"></upload>
             </fieldset>
 
             <div class="alert alert-warning" v-show="!preloadAjax && form.anexos.length==0"><i
@@ -1721,8 +1721,8 @@
                             :apenas-imagens="true"
                             :quantidade="1"
                             :url="urlFotoUpload"
-                            @onProgresso="fotoUploadAndamento=true"
-                            @onFinalizado="fotoUploadAndamento=false"></upload>
+                            @on-progresso="fotoUploadAndamento=true"
+                            @on-finalizado="fotoUploadAndamento=false"></upload>
                 </fieldset>
 
                 <fieldset>
@@ -1730,8 +1730,8 @@
                     <upload :model="form.anexos"
                             :model-delete="form.anexosDel"
                             :url="urlAnexoUpload"
-                            @onProgresso="anexoUploadAndamento=true"
-                            @onFinalizado="anexoUploadAndamento=false"></upload>
+                            @on-progresso="anexoUploadAndamento=true"
+                            @on-finalizado="anexoUploadAndamento=false"></upload>
                 </fieldset>
 
                 <fieldset>

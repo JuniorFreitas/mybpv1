@@ -298,8 +298,8 @@
                                             :multi="false"
                                             :apenas-imagens="true"
                                             label="Selecione a Logo"
-                                            @onProgresso="logoUploadAndamento=true"
-                                            @onFinalizado="logoUploadAndamento=false"></upload>
+                                            @on-progresso="logoUploadAndamento=true"
+                                            @on-finalizado="logoUploadAndamento=false"></upload>
                                     </div>
                                 </div>
                             </fieldset>
@@ -315,8 +315,8 @@
                                             :multi="false"
                                             :apenas-imagens="true"
                                             label="Selecione a Mascote"
-                                            @onProgresso="mascoteUploadAndamento=true"
-                                            @onFinalizado="mascoteUploadAndamento=false"></upload>
+                                            @on-progresso="mascoteUploadAndamento=true"
+                                            @on-finalizado="mascoteUploadAndamento=false"></upload>
                                     </div>
                                 </div>
                             </fieldset>
@@ -452,8 +452,8 @@
                                                             :model-delete="obj.anexosDel"
                                                             :url="urlAnexoUpload"
                                                             label="Selecionar Arquivo(s)"
-                                                            @onProgresso="anexoUploadAndamento=true"
-                                                            @onFinalizado="anexoUploadAndamento=false"></upload>
+                                                            @on-progresso="anexoUploadAndamento=true"
+                                                            @on-finalizado="anexoUploadAndamento=false"></upload>
                                                     </div>
                                                 </div>
                                             </fieldset>
@@ -572,8 +572,8 @@
                                                             :model-delete="obj.anexosDel"
                                                             :url="urlAnexoUpload"
                                                             label="Selecionar Arquivo(s)"
-                                                            @onProgresso="anexoUploadAndamento=true"
-                                                            @onFinalizado="anexoUploadAndamento=false"></upload>
+                                                            @on-progresso="anexoUploadAndamento=true"
+                                                            @on-finalizado="anexoUploadAndamento=false"></upload>
                                                     </div>
                                                 </div>
                                             </fieldset>

@@ -820,7 +820,7 @@
                                    @click.prevent="formDesmobilizar(item.id); $refs.janelaAvaliar?.abrirModal()">
                                     Desmobilizar
                                 </a>
-                                @can('posadmissao_entrevista_desligamento')
+                                @can('admissao_pos_entrevista_desligamento')
                                     <a class="dropdown-item" href="javascript://" title="Entrevistar"
                                        v-if="item.demissao && item.demissao.data_desmobilizacao"
                                        @click.prevent="formEntrevistar(item.id); $refs.janelaAvaliar?.abrirModal()">

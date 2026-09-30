@@ -15,6 +15,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->app->singleton(\App\Authorization\HabilidadeRegistry::class);
+        $this->app->singleton(\App\Authorization\HabilidadeResolver::class);
+        $this->app->singleton(\App\Services\Cloud\CloudAuthorizationService::class);
+
         $this->app->bind(
             \App\Contracts\IntegracaoSpa\EmpresaIntegracaoSpaQuery::class,
             \App\Services\IntegracaoSpa\EmpresaIntegracaoSpaEloquent::class

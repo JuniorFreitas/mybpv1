@@ -136,8 +136,8 @@
                             :model="anexos"
                             :model-delete="anexosDel" :url="urlAnexoUpload"
                             :apenas-pdf="true"
-                            @onprogresso="anexoUploadAndamento=true"
-                            @onfinalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
+                            @on-progresso="anexoUploadAndamento=true"
+                            @on-finalizado="anexoUploadAndamento=false" :quantidade="1" :multi="false"></upload>
                 </fieldset>
 
                 <button class="btn btn-primary btn-sm" v-if="anexos.length && !anexos[0].falhou && !anexoUploadAndamento" @click.prevent="salvar()">Salvar e enviar</button>

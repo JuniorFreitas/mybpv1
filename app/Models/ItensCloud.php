@@ -225,7 +225,20 @@ class ItensCloud extends Model
 
     public function getTemPermissaoAttribute()
     {
-        return $this->Permissoes()->whereIn('grupo_cloud_id', [auth()->user()->GrupoCloud->id])->count() > 0 ? true : false;
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        $grupoIds = method_exists($user, 'idsGruposCloud')
+            ? $user->idsGruposCloud()
+            : array_filter([(int) ($user->grupo_cloud_id ?? 0)]);
+
+        if ($grupoIds === []) {
+            return false;
+        }
+
+        return $this->Permissoes()->whereIn('grupo_cloud_id', $grupoIds)->exists();
     }
 
     /**

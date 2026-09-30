@@ -47,8 +47,8 @@
                             url="{{ route('g.site.galeria.upload-fotos') }}"
                             :ordenar="true"
                             :apenas-imagens="true"
-                            @onprogresso="fotoUploadAndamento=true"
-                            @onfinalizado="fotoUploadAndamento=false"></upload>
+                            @on-progresso="fotoUploadAndamento=true"
+                            @on-finalizado="fotoUploadAndamento=false"></upload>
                 </fieldset>
 
             </form>

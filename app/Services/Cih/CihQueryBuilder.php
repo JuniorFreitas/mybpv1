@@ -63,7 +63,7 @@ class CihQueryBuilder
         $this->user = $user;
         $this->filtros = $filtros;
         $this->isExport = $isExport;
-        $this->acessoService = new CihAcessoService();
+        $this->acessoService = app(CihAcessoService::class);
     }
 
     public function build(): Builder

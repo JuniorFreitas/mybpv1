@@ -11,8 +11,8 @@
                     :model-delete="form.foto_tresDel"
                     :apenas-imagens="true"
                     :quantidade="1"
-                    @onprogresso="anexoUploadAndamento = true"
-                    @onfinalizado="anexoUploadAndamento = false"
+                    @onProgresso="anexoUploadAndamento = true"
+                    @onFinalizado="anexoUploadAndamento = false"
                 ></upload>
             </fieldset>
 
@@ -27,8 +27,8 @@
                     :model="form[secao.chave]"
                     :model-delete="form[`${secao.chave}Del`]"
                     :url="urlAnexoUpload"
-                    @onprogresso="anexoUploadAndamento = true"
-                    @onfinalizado="anexoUploadAndamento = false"
+                    @onProgresso="anexoUploadAndamento = true"
+                    @onFinalizado="anexoUploadAndamento = false"
                 ></upload>
                 <button
                     v-if="secao.tem_modelo && secao.tipo_modelo"

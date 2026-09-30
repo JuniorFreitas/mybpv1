@@ -397,6 +397,42 @@ class User extends Authenticatable
         return $this->hasOne(GrupoCloud::class, 'id', 'grupo_cloud_id');
     }
 
+    /**
+     * Grupos Cloud adicionais (N-N). Pivot: user_id → grupo_cloud_id.
+     */
+    public function GrupoClouds()
+    {
+        return $this->belongsToMany(GrupoCloud::class, 'user_grupo_cloud', 'user_id', 'grupo_cloud_id');
+    }
+
+    /**
+     * IDs de todos os grupos Cloud do usuário (principal + pivot), únicos.
+     *
+     * @return list<int>
+     */
+    public function idsGruposCloud(): array
+    {
+        $ids = [];
+        if ($this->grupo_cloud_id) {
+            $ids[] = (int) $this->grupo_cloud_id;
+        }
+
+        $userId = $this->getKey();
+        if ($userId) {
+            try {
+                foreach (\Illuminate\Support\Facades\DB::table('user_grupo_cloud')
+                    ->where('user_id', $userId)
+                    ->pluck('grupo_cloud_id') as $id) {
+                    $ids[] = (int) $id;
+                }
+            } catch (\Throwable) {
+                // tabela ausente em testes mínimos
+            }
+        }
+
+        return array_values(array_unique(array_filter($ids)));
+    }
+
     public function Feedback()
     {
         return $this->hasOne(FeedbackCurriculo::class, 'curriculo_id', 'id');
@@ -581,12 +617,6 @@ class User extends Authenticatable
     {
         return $this->Clouds()->where('ativo', true);
     }
-
-    public function GrupoClouds()
-    {
-        return $this->belongsToMany(GrupoCloud::class, 'user_grupo_cloud', 'grupo_cloud_id', 'user_id');
-    }
-
 
     public function RecuperacaoSenha()
     {

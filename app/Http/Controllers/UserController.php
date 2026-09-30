@@ -426,12 +426,16 @@ class UserController extends Controller
 
     public function perfilUsuario($id)
     {
+        $this->autorizarAcessoPerfil((int) $id);
+
         $user = User::find($id)->load('FotoPerfil');
         return response()->json(['user' => $user]);
     }
 
     public function atualizaPerfilUsuario(Request $request, $id)
     {
+        $this->autorizarAcessoPerfil((int) $id);
+
         $dados = $request->input();
 
         $usuario = User::find($id);
@@ -470,6 +474,21 @@ class UserController extends Controller
 
             return response()->json([], 201);
         }
+    }
+
+    /**
+     * Perfil próprio ou quem gerencia usuários.
+     */
+    private function autorizarAcessoPerfil(int $id): void
+    {
+        $auth = auth()->user();
+        if ((int) $auth->id === $id) {
+            return;
+        }
+        if ($auth->can('usuario_usuarios')) {
+            return;
+        }
+        abort(403);
     }
 
     public function solicitaRecuperaSenha(Request $request)

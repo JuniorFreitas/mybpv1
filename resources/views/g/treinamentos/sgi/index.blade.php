@@ -176,8 +176,8 @@
                             :model-delete="form.anexosDel"
                             :url="url_anexo"
                             label="Selecionar"
-                            @onProgresso="anexoUploadAndamento=true"
-                            @onFinalizado="anexoUploadAndamento=false"></upload>
+                            @on-progresso="anexoUploadAndamento=true"
+                            @on-finalizado="anexoUploadAndamento=false"></upload>
                 </fieldset>
 
             </div>

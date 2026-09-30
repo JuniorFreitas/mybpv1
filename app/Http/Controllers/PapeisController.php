@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Authorization\HabilidadeRegistry;
 use App\Models\Habilidade;
 use App\Models\Papel;
 use App\Models\User;
@@ -10,6 +11,11 @@ use Illuminate\Support\Collection;
 
 class PapeisController extends Controller
 {
+
+    public function __construct(
+        private readonly HabilidadeRegistry $habilidadeRegistry,
+    ) {
+    }
 
     /**
      * Display a listing of the resource.
@@ -29,15 +35,10 @@ class PapeisController extends Controller
      */
     public function create()
     {
-//        $listaDeHabilidades = Habilidade::orderBy('nome', 'asc')->get()->map(function ($habilidade) {
-//            $habilidade->acesso = true;
-//            return $habilidade;
-//        });
-
         $listaDeHabilidades = Papel::whereEmpresaId(auth()->user()->empresa_id)->where('master', true)->first()->habilidades->map(function ($habilidade) {
             $habilidade->acesso = true;
-            return $habilidade;
-        });;
+            return $this->enriquecerHabilidade($habilidade);
+        });
 
         return response()->json($listaDeHabilidades, 201);
     }
@@ -106,15 +107,20 @@ class PapeisController extends Controller
             return $habilidade;
         });
 
+        $habilidadesEnriquecidas = $listaDeHabilidades->habilidades->map(function ($habilidade) {
+            return $this->enriquecerHabilidade($habilidade);
+        });
+
         $usuariosVinculados = User::where('grupo_id', $papel->id)
             ->where('empresa_id', auth()->user()->empresa_id)
             ->select(['id', 'nome', 'login as email', 'ativo', 'ultimo_acesso'])
             ->orderBy('nome')
             ->get();
 
-        return response()->json(['listaDeHabilidade' => $listaDeHabilidades->habilidades,
+        return response()->json([
+            'listaDeHabilidade' => $habilidadesEnriquecidas,
             'papel' => $papel,
-            'usuariosVinculados' => $usuariosVinculados
+            'usuariosVinculados' => $usuariosVinculados,
         ], 201);
     }
 
@@ -231,6 +237,26 @@ class PapeisController extends Controller
         }
 
         return $ids;
+    }
+
+    /**
+     * Enriquece habilidade com metadados do registry (ou heurística).
+     */
+    private function enriquecerHabilidade(Habilidade $habilidade): Habilidade
+    {
+        $meta = $this->habilidadeRegistry->enrich(
+            (string) $habilidade->nome,
+            $habilidade->descricao
+        );
+
+        $habilidade->modulo = $meta['modulo'];
+        $habilidade->recurso = $meta['recurso'];
+        $habilidade->acao = $meta['acao'];
+        $habilidade->modulo_label = $meta['modulo_label'];
+        $habilidade->recurso_label = $meta['recurso_label'];
+        $habilidade->acao_label = $meta['acao_label'];
+
+        return $habilidade;
     }
 
 }

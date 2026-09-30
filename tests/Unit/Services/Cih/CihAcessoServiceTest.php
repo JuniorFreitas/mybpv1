@@ -15,7 +15,7 @@ class CihAcessoServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new CihAcessoService();
+        $this->service = app(CihAcessoService::class);
     }
 
     public function test_pode_ver_todas_com_privilegio_adm(): void

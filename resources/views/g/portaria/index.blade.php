@@ -174,8 +174,8 @@
                                         :apenas-imagens="true"
                                         :quantidade="1"
                                         label="Selecionar Imagem"
-                                        @onProgresso="anexoUploadAndamento=true"
-                                        @onFinalizado="anexoUploadAndamento=false"></upload>
+                                        @on-progresso="anexoUploadAndamento=true"
+                                        @on-finalizado="anexoUploadAndamento=false"></upload>
                             </fieldset>
                         </div>
 
