@@ -253,13 +253,22 @@ class AdmissoesPrevistaController extends Controller
         $resultado = $this->filtro($request)->paginate($request->pages);
         $empresaMatriz = auth()->user()->Empresa;
         $itens = collect($resultado->items())->map(function ($item) use ($empresaMatriz) {
-            $item->lotacao = LotacaoLabelResolver::forCentroCustoFilialFlags(
+            $payload = $item->toArray();
+            $payload['lotacao'] = LotacaoLabelResolver::forCentroCustoFilialFlags(
                 $item->filial,
                 $item->CentroCustoFilial,
                 $empresaMatriz
             );
+            $rawData = $item->getRawOriginal('data_admissao');
+            $payload['data_admissao'] = $rawData
+                ? (new DataHora($rawData))->dataCompleta()
+                : '';
+            $payload['data_aprovacao'] = $this->formatDateTimeListagem($item->getRawOriginal('data_aprovacao'));
+            $payload['data_aprovacao_extra'] = $this->formatDateTimeListagem($item->getRawOriginal('data_aprovacao_extra'));
+            $payload['data_aprovacao_rh'] = $this->formatDateTimeListagem($item->getRawOriginal('data_aprovacao_rh'));
+            $payload['created_at'] = $this->formatDateTimeListagem($item->getRawOriginal('created_at'));
 
-            return $item;
+            return $payload;
         })->values();
 
         // Busca configuração de aprovação extra ativa
@@ -360,6 +369,17 @@ class AdmissoesPrevistaController extends Controller
         $filterApplier->apply($resultado);
 
         return $resultado;
+    }
+
+    private function formatDateTimeListagem(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        $data = new DataHora($value);
+
+        return $data->dataCompleta() . ' às ' . $data->hora() . ':' . $data->minuto() . ':' . $data->segundo();
     }
 
     public function aprovarExtra(Request $request, AdmissoesPrevista $admissoesPrevista)
