@@ -3,61 +3,6 @@
 @section('content_header', 'Resultado Integrado')
 @section('content')
 
-    <modal ref="filtroColunas" id="filtroColunas" titulo="Mostrar e Ocultar colunas">
-        <template #conteudo>
-
-            <div class="custom-control custom-switch mb-2">
-                <input type="checkbox" v-model="colunasTabela.pcd" @click="colunasTabela.pcd = !colunasTabela.pcd"
-                       class="custom-control-input" id="pcd">
-                <label class="custom-control-label" for="pcd">PCD</label>
-            </div>
-
-            <div class="custom-control custom-switch mb-2" v-show="cliente_id === 0 || cliente_area_id === 1">
-                <input type="checkbox" v-model="colunasTabela.rota_transporte"
-                       @click="colunasTabela.rota_transporte = !colunasTabela.rota_transporte"
-                       class="custom-control-input"
-                       id="rota_transporte">
-                <label class="custom-control-label" for="rota_transporte">ROTA TRANSPORTE</label>
-            </div>
-
-            <div class="custom-control custom-switch mb-2" v-show="cliente_id === 0 || cliente_area_id === 1">
-                <input type="checkbox" v-model="colunasTabela.rh_nota"
-                       @click="colunasTabela.rh_nota = !colunasTabela.rh_nota" class="custom-control-input"
-                       id="rh_nota">
-                <label class="custom-control-label" for="rh_nota">PARECER RH NOTA</label>
-            </div>
-
-            <div class="custom-control custom-switch mb-2" v-show="cliente_id === 0 || cliente_area_id === 1">
-                <input type="checkbox" v-model="colunasTabela.entrevista_tecnica"
-                       @click="colunasTabela.entrevista_tecnica = !colunasTabela.entrevista_tecnica"
-                       class="custom-control-input" id="entrevista_tecnica">
-                <label class="custom-control-label" for="entrevista_tecnica">ENTREVISTA TÉCNICA NOTA</label>
-            </div>
-
-            <div class="custom-control custom-switch mb-2" v-show="cliente_id === 0 || cliente_area_id === 1">
-                <input type="checkbox" v-model="colunasTabela.teste_pratico"
-                       @click="colunasTabela.teste_pratico = !colunasTabela.teste_pratico" class="custom-control-input"
-                       id="teste_pratico">
-                <label class="custom-control-label" for="teste_pratico">TESTE PRÁTICO</label>
-            </div>
-
-            <div class="custom-control custom-switch mb-2" v-show="cliente_id === 0 || cliente_area_id > 1">
-                <input type="checkbox" v-model="colunasTabela.parecer_individual"
-                       @click="colunasTabela.parecer_individual = !colunasTabela.parecer_individual"
-                       class="custom-control-input" id="parecer_individual">
-                <label class="custom-control-label" for="parecer_individual">PARECER INDIVIDUAL</label>
-            </div>
-
-            <div class="custom-control custom-switch mb-2" v-show="cliente_id === 0 || cliente_area_id > 1">
-                <input type="checkbox" v-model="colunasTabela.nota_individual"
-                       @click="colunasTabela.nota_individual = !colunasTabela.nota_individual"
-                       class="custom-control-input"
-                       id="nota_individual">
-                <label class="custom-control-label" for="nota_individual">NOTA INDIVIDUAL</label>
-            </div>
-        </template>
-    </modal>
-
     <modal ref="janelaParecerEntrevista" id="janelaParecerEntrevista" :titulo="tituloJanela" :size="90" :fechar="!preloadForm">
         <template #conteudo>
             <preload v-if="preloadForm"></preload>
@@ -313,15 +258,14 @@
             <button
                 type="button"
                 class="btn btn-sm btn-outline-secondary mybp-btn-acao-compact"
-                :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                :disabled="selecionados.length === 0"
+                v-show="selecionados.length > 0"
                 @click.prevent="selecionados = []"
             >
                 <i class="fa fa-times"></i> Limpar seleção
             </button>
             <button
                 type="button"
-                class="btn btn-sm btn-success mybp-btn-acao-compact"
+                class="btn btn-sm btn-outline-primary mybp-btn-acao-compact"
                 @click.prevent="exportaExcel()"
                 :disabled="controle.carregando || preloadExportacao || (!controle.carregando && !lista.length)"
             >
@@ -335,174 +279,172 @@
     <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length===0">
         <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
     </div>
-    <div id="conteudo">
-        <table class="tabela" v-show="!controle.carregando && lista.length > 0">
-            <thead>
-            <tr class="bg-default">
-                <th style="width: 1em;">
-                    <input type="checkbox" :checked="tudoMarcado" :disabled="comResultado.length === 0"
-                           :content="comResultado.length > 0 ? 'Selecionar todos' : 'Não possui cadastrodo no RH'"
-                           v-tippy
-                           style="cursor: pointer" @change.prevent="selecionaTodos">
-                </th>
-                {{-- <th>Cód</th> --}}
-                <th>Nome</th>
-                {{--                <th>Empresa</th>--}}
-                <th v-if="colunasTabela.pcd">PCD</th>
-                <th>Cargo</th>
-                <th>Enc. Doc</th>
-                <th>Enc. Exame</th>
-                <th>Enc. Treinamento</th>
-                <th>Resp. Encaminhamento</th>
-                {{-- <th>Entrevista</th> --}}
-                {{-- <th v-show="colunasTabela.rh_nota">Parecer RH Nota</th> --}}
-                {{-- <th v-show="colunasTabela.rota_transporte">Rota Transporte</th> --}}
-                {{-- <th v-show="colunasTabela.entrevista_tecnica">Entrevista Técnica Nota</th> --}}
-                {{-- <th v-show="colunasTabela.teste_pratico">Teste Prático Nota</th> --}}
-                {{-- <th v-show="colunasTabela.parecer_individual">Parecer Individual</th> --}}
-                {{-- <th v-show="colunasTabela.nota_individual">Nota Individual</th> --}}
-                <th>
-                    <button class="btn btn-sm mr-1 btn-primary mb-2" content="Mostrar e Ocultar Colunas" v-tippy
-                            @click="$refs.filtroColunas?.abrirModal()">
-                        <i class="bx bxs-filter-alt" aria-hidden="true"></i>
-                    </button>
-                </th>
-            </tr>
-            </thead>
-            <tbody v-for="entrevista in lista">
-            <tr style="background: white !important; border-bottom: none">
-                <td class="text-center" style="width: 1em;">
-                    <label :for="entrevista.id">
-                        <input type="checkbox" v-model="selecionados" :value="entrevista.id" :id="entrevista.id"
-                               :style="entrevista.resultado_integrado ? 'cursor:pointer' : 'cursor: not-allowed'"
-                               :content="entrevista.resultado_integrado ? 'Selecionar' : 'Não possui parecer Cadastrado'"
-                               v-tippy v-if="entrevista.resultado_integrado">
-                        <input type="checkbox" v-else disabled="disabled" content="Sem parecer RH" v-tippy>
 
-                    </label>
-                </td>
-                {{-- <td class="text-center"> --}}
-                {{-- @{{entrevista.id}} --}}
-                {{-- </td> --}}
-                <td class="text-center">
-                    @{{ entrevista . curriculo . nome }}
-                </td>
-                {{--                <td class="text-center" v-if="cliente_id === 0  && colunasTabela.cliente">--}}
-                {{--                    @{{ entrevista . cliente . razao_social }}--}}
-                {{--                </td>--}}
-                <td class="text-center" v-show="colunasTabela.pcd">
-                    @{{ entrevista . curriculo . pcd ? 'Sim' : 'Não' }}
-                </td>
-                <td class="text-center">
-                    @{{ entrevista . vaga_aberta_municipio }}
-                </td>
+    <div id="conteudo" v-show="!controle.carregando && lista.length > 0">
+        <div class="d-flex align-items-center flex-wrap mb-2 mybp-lista-selecao">
+            <label class="mb-0 mr-3 d-flex align-items-center" style="gap: 0.4rem; cursor: pointer;">
+                <input
+                    type="checkbox"
+                    :checked="tudoMarcado"
+                    :disabled="comResultado.length === 0"
+                    @change.prevent="selecionaTodos"
+                />
+                <span class="small text-muted">
+                    Selecionar todos (@{{ comResultado.length }})
+                </span>
+            </label>
+            <span class="small text-muted" v-if="selecionados.length">
+                @{{ selecionados.length }} selecionado(s)
+            </span>
+        </div>
 
-                <td class="text-center">
-                        <span v-if="entrevista.resultado_integrado">
-                            @{{ entrevista . resultado_integrado . documentos_entregue ? 'Sim' : 'Não' }} <br>
-                            @{{ entrevista . resultado_integrado . documentos_entregue_data }} <br>
+        <div class="mybp-cards-lista">
+            <div class="mybp-card" v-for="entrevista in lista" :key="entrevista.id">
+                <div class="mybp-card-header-row">
+                    <div class="mybp-card-left">
+                        <label
+                            class="mb-0 mr-1"
+                            :for="'ri-sel-' + entrevista.id"
+                            v-if="entrevista.resultado_integrado"
+                            style="cursor: pointer;"
+                        >
+                            <input
+                                type="checkbox"
+                                :id="'ri-sel-' + entrevista.id"
+                                v-model="selecionados"
+                                :value="entrevista.id"
+                            />
+                        </label>
+                        <span
+                            class="mb-0 mr-1 text-muted"
+                            v-else
+                            content="Sem resultado integrado"
+                            v-tippy
+                        >
+                            <input type="checkbox" disabled />
                         </span>
-                    <span v-else>---</span>
-                </td>
-
-                <td class="text-center">
-                        <span v-if="entrevista.resultado_integrado">
-                            @{{ entrevista . resultado_integrado . encaminhado_exame ? 'Sim' : 'Não' }} <br>
-                            @{{ entrevista . resultado_integrado . encaminhado_exame_data }} <br>
-                        </span>
-                    <span v-else>---</span>
-                </td>
-
-                <td class="text-center">
-                        <span v-if="entrevista.resultado_integrado">
-                            @{{ entrevista . resultado_integrado . encaminhado_treinamento ? 'Sim' : 'Não' }} <br>
-                            @{{ entrevista . resultado_integrado . encaminhado_treinamento_data }} <br>
-                        </span>
-                    <span v-else>---</span>
-                </td>
-
-                <td class="text-center">
-                        <span v-if="entrevista.resultado_integrado">
-                            @{{ entrevista . resultado_integrado . responsavel_envio }}
-                        </span>
-                    <span v-else>---</span>
-                </td>
-
-                <!--                <td class="text-center">
-                                                                                        Data: @{{ entrevista . data_entrevista }}<br>
-                                                                                        Local: @{{ entrevista . local_entrevista }}<br>
-                                                                                    </td>
-
-                                                                                    <td class="text-center" v-show="colunasTabela.rh_nota">
-                                                                                        @{{ entrevista . parecer_rh ? entrevista . parecer_rh . nota : 'aguardando' }}
-                                                                                    </td>
-
-                                                                                    <td class="text-center" v-show="colunasTabela.rota_transporte">
-                                                                                         <span v-if="entrevista.parecer_rota && entrevista.parecer_rota.tem_rota">
-                                                                                                    Tem rota? @{{ entrevista . parecer_rota . tem_rota ? 'Sim' : 'Não' }} <br>
-                                                                                                    Data da entrevista: @{{ entrevista . parecer_rota . updated_at }}
-                                                                                                </span>
-                                                                                        <span v-else>
-                                                                                            Aguardando
-                                                                                        </span>
-                                                                                    </td>
-
-                                                                                    <td class="text-center" v-show="colunasTabela.entrevista_tecnica">
-                                                                                        @{{ entrevista . parecer_tecnica ? entrevista . parecer_tecnica . nota : 'aguardando' }}
-                                                                                    </td>
-
-                                                                                    <td class="text-center" v-show="colunasTabela.teste_pratico">
-                                                                                        @{{ entrevista . parecer_teste ? entrevista . parecer_teste . NotaTesteFormat : 'aguardando' }}
-                                                                                    </td>
-
-                                                                                    <td class="text-center" v-show="colunasTabela.parecer_individual">
-                                                                                        @{{ entrevista . parecer_rh ? (entrevista . parecer_rh . individual_rh ? entrevista . parecer_rh . individual_rh . parecer : 'aguardando') : 'aguardando' }}
-                                                                                    </td>
-                                                                                    <td class="text-center" v-show="colunasTabela.nota_individual">
-                                                                                        @{{ entrevista . parecer_rh ? (entrevista . parecer_rh . individual_rh ? entrevista . parecer_rh . individual_rh . nota : 'aguardando') : 'aguardando' }}
-                                                                                    </td>-->
-
-
-                <td class="text-center">
-
-                    <form :action="`${URL_ADMIN}/entrevistas/resultado-integrado/ficha/${entrevista.id}`"
-                          target="_blank" method="get">
-                        <button class="btn btn-sm mr-1 btn-primary mb-2" content="Encaminhar" v-tippy
-                                v-show="!entrevista.resultado_integrado" @click.prevent="formEntrevistar(entrevista.id); $refs.janelaParecerEntrevista?.abrirModal()">
-                            <i class="far fa-share-square"></i>
-                        </button>
-
-                        @can('entrevista_resultado_integrado_update')
-                            <button class="btn btn-sm mr-1 btn-primary mb-2" content="Editar" v-tippy
+                        <span class="mybp-badge-id">#@{{ entrevista.id }}</span>
+                        <div class="mybp-card-titulo">
+                            <strong>@{{ entrevista.curriculo ? entrevista.curriculo.nome : 'Não informado' }}</strong>
+                        </div>
+                    </div>
+                    <div class="mybp-card-right">
+                        <mybp-status-badge
+                            :variante="chaveStatusRi(entrevista)"
+                            :texto="textoStatusRi(entrevista)"
+                        ></mybp-status-badge>
+                        <div class="dropdown" :class="{ show: isDropdownOpen(entrevista.id) }">
+                            <a
+                                class="mybp-btn-acoes-compact"
+                                href="#"
+                                role="button"
+                                :id="'ri-acoes-' + entrevista.id"
+                                aria-haspopup="true"
+                                :aria-expanded="isDropdownOpen(entrevista.id) ? 'true' : 'false'"
+                                @click.prevent.stop="toggleDropdown(entrevista.id)"
+                            >
+                                <i class="fas fa-ellipsis-v"></i>
+                            </a>
+                            <div
+                                class="dropdown-menu mybp-dropdown-menu dropdown-menu-right"
+                                :class="{ show: isDropdownOpen(entrevista.id) }"
+                                :aria-labelledby="'ri-acoes-' + entrevista.id"
+                                @click="fecharDropdown"
+                            >
+                                <a
+                                    class="dropdown-item"
+                                    href="javascript://"
+                                    v-show="!entrevista.resultado_integrado"
+                                    @click.prevent="formEntrevistar(entrevista.id); $refs.janelaParecerEntrevista?.abrirModal()"
+                                >
+                                    <i class="far fa-share-square mr-1"></i> Encaminhar
+                                </a>
+                                @can('entrevista_resultado_integrado_update')
+                                    <a
+                                        class="dropdown-item"
+                                        href="javascript://"
+                                        v-show="entrevista.resultado_integrado"
+                                        @click.prevent="formEntrevistar(entrevista.id); editando = true; $refs.janelaParecerEntrevista?.abrirModal()"
+                                    >
+                                        <i class="fa fa-edit mr-1"></i> Editar
+                                    </a>
+                                @endcan
+                                <a
+                                    class="dropdown-item"
+                                    href="javascript://"
                                     v-show="entrevista.resultado_integrado"
-                                    @click.prevent="formEntrevistar(entrevista.id); editando = true; $refs.janelaParecerEntrevista?.abrirModal()">
-                                <i class="fa fa-edit" aria-hidden="true"></i>
-                            </button>
-                        @endcan
+                                    @click.prevent="formEntrevistar(entrevista.id); visualizar = true; $refs.janelaParecerEntrevista?.abrirModal()"
+                                >
+                                    <i class="fa fa-search-plus mr-1"></i> Visualizar
+                                </a>
+                                <a
+                                    class="dropdown-item"
+                                    v-if="entrevista.resultado_integrado"
+                                    :href="`${URL_ADMIN}/entrevistas/resultado-integrado/ficha/${entrevista.id}`"
+                                    target="_blank"
+                                >
+                                    <i class="fa fa-file-pdf mr-1"></i> Imprimir
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                        <button class="btn btn-sm mr-1 btn-primary mb-2" content="Visualizar" v-tippy
-                                v-show="entrevista.resultado_integrado"
-                                @click.prevent="formEntrevistar(entrevista.id); visualizar = true; $refs.janelaParecerEntrevista?.abrirModal()">
-                            <i class="fa fa-search-plus" aria-hidden="true"></i>
-                        </button>
+                <div class="mybp-card-corpo" :class="'mybp-card-corpo--' + chaveStatusRi(entrevista)">
+                    <section class="mybp-card-secao">
+                        <div class="mybp-card-row">
+                            <mybp-card-campo
+                                icon="fas fa-briefcase"
+                                label="Cargo"
+                                :valor="entrevista.vaga_aberta_municipio"
+                                forte
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-wheelchair"
+                                label="PCD"
+                                :valor="entrevista.curriculo && entrevista.curriculo.pcd ? 'Sim' : 'Não'"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-user-check"
+                                label="Resp. encaminhamento"
+                                :valor="textoRespRi(entrevista)"
+                            ></mybp-card-campo>
+                        </div>
+                    </section>
 
-                        @csrf
-                        <input type="hidden" name="id" :value="entrevista.curriculo_id">
-                        <button v-if="entrevista.resultado_integrado" type="submit" content="Imprimir" v-tippy
-                                class="btn btn-sm mr-1 btn-primary mb-2">
-                            <i class="fa fa-file-pdf" aria-hidden="true"></i>
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+                    <section class="mybp-card-secao">
+                        <div class="mybp-card-row">
+                            <mybp-card-campo
+                                icon="fas fa-folder-open"
+                                label="Enc. documentos"
+                                :valor="textoEncRi(entrevista, 'documentos_entregue', 'documentos_entregue_data')"
+                                :tom="tomEncRi(entrevista, 'documentos_entregue')"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-notes-medical"
+                                label="Enc. exame"
+                                :valor="textoEncRi(entrevista, 'encaminhado_exame', 'encaminhado_exame_data')"
+                                :tom="tomEncRi(entrevista, 'encaminhado_exame')"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-chalkboard-teacher"
+                                label="Enc. treinamento"
+                                :valor="textoEncRi(entrevista, 'encaminhado_treinamento', 'encaminhado_treinamento_data')"
+                                :tom="tomEncRi(entrevista, 'encaminhado_treinamento')"
+                            ></mybp-card-campo>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
                             url="{{ route('g.entrevista.resultado-integrado.resultado_integrado.atualizar') }}"
                             :por-pagina="controle.dados.pages" :dados="controle.dados" @carregou="carregou"
                             @carregando="carregando">
         </controle-paginacao>
     </div>
+
 @stop
 @push('js')
     <script src="{{ mix('js/g/entrevistas/resultado_integrado/app.js') }}"></script>

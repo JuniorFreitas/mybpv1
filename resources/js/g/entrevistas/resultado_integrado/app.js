@@ -10,6 +10,8 @@ import FormRh from '../../../components/entrevistas/FormParecerRh'
 import FormResultadoIntegrado from '../../../components/entrevistas/FormResultadoIntegrado'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
+import MybpCardCampo from '../../../components/ui/MybpCardCampo.vue'
+import MybpStatusBadge from '../../../components/ui/MybpStatusBadge.vue'
 const app = createApp({
     mixins: [ExportacaoMixin, ComboboxValidation],
     components: {
@@ -20,7 +22,9 @@ const app = createApp({
         FiltroListagem,
         DadosPessoais,
         FormRh,
-        FormResultadoIntegrado
+        FormResultadoIntegrado,
+        MybpCardCampo,
+        MybpStatusBadge
     },
     data() {
         return {
@@ -34,6 +38,7 @@ const app = createApp({
             visualizar: false,
             preloadExportacao: false,
             filtrosAvancadosAbertos: false,
+            dropdownAbertoId: null,
 
             urlExportacao: `${URL_ADMIN}/entrevistas/resultado-integrado/export`,
 
@@ -46,17 +51,6 @@ const app = createApp({
             cliente_id: '',
             cliente_area_id: 0,
             provas: 0,
-
-            colunasTabela: {
-                cliente: false,
-                pcd: false,
-                rh_nota: true,
-                rota_transporte: true,
-                entrevista_tecnica: true,
-                teste_pratico: true,
-                parecer_individual: true,
-                nota_individual: true
-            },
 
             URL_ADMIN,
             selecionados: [],
@@ -283,23 +277,12 @@ const app = createApp({
             })
         },
         tudoMarcado() {
-            let totalItens = this.comResultado.length
-            let totalEncontrado = 0
-
+            const totalItens = this.comResultado.length
             if (totalItens === 0) {
                 return false
             }
-
-            this.comResultado.forEach((item) => {
-                let id = item.curriculo_id
-                if (this.selecionados.indexOf(id) >= 0) {
-                    totalEncontrado++
-                    //faz nada
-                } else {
-                    return false
-                }
-            })
-            let resultado = totalItens === totalEncontrado
+            const totalEncontrado = this.comResultado.filter((item) => this.selecionados.indexOf(item.id) >= 0).length
+            const resultado = totalItens === totalEncontrado
             this.selecionaTudo = resultado
             return resultado
         },
@@ -525,6 +508,39 @@ const app = createApp({
                     }
                 })
             }
+        },
+
+        chaveStatusRi(item) {
+            return item && item.resultado_integrado ? 'aprovado' : 'pendente'
+        },
+        textoStatusRi(item) {
+            return item && item.resultado_integrado ? 'Integrado' : 'Pendente'
+        },
+        textoRespRi(item) {
+            const ri = item && item.resultado_integrado
+            if (!ri || !ri.responsavel_envio) return ''
+            return ri.responsavel_envio
+        },
+        textoEncRi(item, flagKey, dataKey) {
+            const ri = item && item.resultado_integrado
+            if (!ri) return '—'
+            const sim = !!ri[flagKey]
+            const data = ri[dataKey] || ''
+            return data ? `${sim ? 'Sim' : 'Não'} · ${data}` : sim ? 'Sim' : 'Não'
+        },
+        tomEncRi(item, flagKey) {
+            const ri = item && item.resultado_integrado
+            if (!ri) return 'meta'
+            return ri[flagKey] ? 'positivo' : 'negativo'
+        },
+        toggleDropdown(itemId) {
+            this.dropdownAbertoId = this.dropdownAbertoId === itemId ? null : itemId
+        },
+        isDropdownOpen(itemId) {
+            return this.dropdownAbertoId === itemId
+        },
+        fecharDropdown() {
+            this.dropdownAbertoId = null
         },
 
         formEntrevistar(id) {
