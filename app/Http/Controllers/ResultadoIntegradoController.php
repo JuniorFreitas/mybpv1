@@ -329,15 +329,26 @@ class ResultadoIntegradoController extends Controller
             ->has('parecerRh')
             ->whereIn('selecionado', ['sim', 'standby'])->whereInteresse(true);
 
-        $filtroPeriodo = $request->filtroPeriodo == 'true';
+        $filtroPeriodo = filter_var($request->input('filtroPeriodo'), FILTER_VALIDATE_BOOLEAN);
         if ($filtroPeriodo) {
-            $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
-            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
-            $resultado->whereHas('parecerRh', function ($q) use ($dataInicio, $dataFim) {
-                $q->where('created_at', '>=', $dataInicio->dataHoraInsert())
-                    ->where('created_at', '<=', $dataFim->dataHoraInsert());
-            });
+            if ($request->filled('dataInicio') && $request->filled('dataFim')) {
+                $dataInicio = new DataHora($request->dataInicio . ' 00:00:00');
+                $dataFim = new DataHora($request->dataFim . ' 23:59:59');
+            } elseif ($request->filled('periodo') && str_contains((string) $request->periodo, ' até ')) {
+                $periodo = explode(' até ', $request->periodo);
+                $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
+                $dataFim = new DataHora($periodo[1] . ' 23:59:59');
+            } else {
+                $dataInicio = null;
+                $dataFim = null;
+            }
+
+            if ($dataInicio && $dataFim) {
+                $resultado->whereHas('parecerRh', function ($q) use ($dataInicio, $dataFim) {
+                    $q->where('created_at', '>=', $dataInicio->dataHoraInsert())
+                        ->where('created_at', '<=', $dataFim->dataHoraInsert());
+                });
+            }
         }
 
         if ($request->filled('campoCliente')) {
@@ -354,7 +365,7 @@ class ResultadoIntegradoController extends Controller
 
         if ($request->filled('campoCPF')) {
             $resultado->whereHas('Curriculo', function ($query) use ($request) {
-                $query->whereCpf($request->campoBusca);
+                $query->whereCpf($request->campoCPF);
             });
         }
 

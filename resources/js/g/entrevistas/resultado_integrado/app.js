@@ -2,15 +2,22 @@ import { createApp } from 'vue'
 import { registerGlobals } from '../../../registerGlobals'
 import endereco from '../../../components/Endereco'
 import datepicker from '../../../components/DatePicker'
+import DateRangeFilter from '../../../components/DateRangeFilter.vue'
+import ComboboxAutoComplete from '../../../components/ComboboxAutoComplete.vue'
+import FiltroListagem from '../../../components/ui/FiltroListagem.vue'
 import DadosPessoais from '../../../components/entrevistas/DadosPessoaisTexto'
 import FormRh from '../../../components/entrevistas/FormParecerRh'
 import FormResultadoIntegrado from '../../../components/entrevistas/FormResultadoIntegrado'
+import ComboboxValidation from '../../../mixins/ComboboxValidation'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 const app = createApp({
-    mixins: [ExportacaoMixin],
+    mixins: [ExportacaoMixin, ComboboxValidation],
     components: {
         endereco,
         datepicker,
+        DateRangeFilter,
+        ComboboxAutoComplete,
+        FiltroListagem,
         DadosPessoais,
         FormRh,
         FormResultadoIntegrado
@@ -26,6 +33,7 @@ const app = createApp({
             atualizado: false,
             visualizar: false,
             preloadExportacao: false,
+            filtrosAvancadosAbertos: false,
 
             urlExportacao: `${URL_ADMIN}/entrevistas/resultado-integrado/export`,
 
@@ -252,6 +260,8 @@ const app = createApp({
                     cliente_custom: '',
                     parecer_individual: '',
                     filtroPeriodo: false,
+                    dataInicio: '',
+                    dataFim: '',
                     periodo: ''
                 }
             }
@@ -292,6 +302,83 @@ const app = createApp({
             let resultado = totalItens === totalEncontrado
             this.selecionaTudo = resultado
             return resultado
+        },
+        totalFiltrosAtivos() {
+            const d = this.controle.dados
+            let total = [
+                d.campoBusca,
+                d.campoCPF,
+                d.campoVaga,
+                d.campoUf,
+                d.parecer_individual,
+                d.entrevista_rh,
+                d.campoRh,
+                d.entrevista_rh_nota
+            ].filter((v) => v !== '' && v !== null && v !== undefined).length
+            if (d.filtroPeriodo && d.dataInicio && d.dataFim) total++
+            if (Number(d.pages) !== 20) total++
+            return total
+        },
+        totalFiltrosAtivosAvancados() {
+            const d = this.controle.dados
+            let total = [d.campoRh, d.entrevista_rh_nota].filter((v) => v !== '' && v !== null && v !== undefined).length
+            if (Number(d.pages) !== 20) total++
+            return total
+        },
+        campoBuscaUnificada() {
+            const d = this.controle.dados
+            if (d.campoCPF) return d.campoCPF
+            return d.campoBusca || ''
+        },
+        buscaUnificadaEhCpf() {
+            return !!this.controle.dados.campoCPF
+        },
+        filtroUfOpcoes() {
+            const ufs = [
+                'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
+                'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
+                'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+            ]
+            return [{ value: '', label: 'Todos os estados' }, ...ufs.map((uf) => ({ value: uf, label: uf }))]
+        },
+        filtroClassIndividualOpcoes() {
+            return [
+                { value: '', label: 'Sem filtro' },
+                { value: 'favoravel', label: 'Favorável' },
+                { value: 'destaque', label: 'Destaque' }
+            ]
+        },
+        filtroClassRhOpcoes() {
+            return [
+                { value: '', label: 'Sem filtro' },
+                { value: 'entrevistado', label: 'Entrevistados' },
+                { value: 'nao_entrevistado', label: 'Não Entrevistados' },
+                { value: 'favoravel', label: 'Favorável' },
+                { value: 'destaque', label: 'Destaque' },
+                { value: 'stand_by', label: 'Stand By' },
+                { value: 'desfavoravel', label: 'Desfavorável' }
+            ]
+        },
+        filtroNotaOpcoes() {
+            return [
+                { value: '', label: 'Sem filtro' },
+                { value: '0', label: '0' },
+                { value: '1-5', label: '1 à 5' },
+                { value: '5-7', label: '5 à 7' },
+                { value: '8-10', label: '8 à 10' }
+            ]
+        },
+        filtroPagesOpcoes() {
+            return [20, 50, 100].map((n) => ({ value: n, label: String(n) }))
+        },
+        campoPagesCombo: {
+            get() {
+                return this.controle.dados.pages
+            },
+            set(v) {
+                const n = Number(v)
+                this.controle.dados.pages = Number.isFinite(n) && n > 0 ? n : 20
+            }
         }
     },
     mounted() {
@@ -337,6 +424,88 @@ const app = createApp({
             setTimeout(() => {
                 this && this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null
             }, 600)
+        },
+        formatarCpfDigitos(valor) {
+            const d = String(valor || '').replace(/\D/g, '').slice(0, 11)
+            if (d.length <= 3) return d
+            if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`
+            if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`
+            return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`
+        },
+        parecePadraoCpf(valor) {
+            const raw = String(valor || '').trim()
+            if (!raw) return false
+            if (!/^[\d.\-\s]+$/.test(raw)) return false
+            const digitos = raw.replace(/\D/g, '')
+            return digitos.length > 0 && digitos.length <= 11
+        },
+        onInputBuscaUnificada(event) {
+            const valor = event && event.target ? event.target.value : ''
+            const d = this.controle.dados
+            if (!valor) {
+                d.campoBusca = ''
+                d.campoCPF = ''
+                return
+            }
+            if (this.parecePadraoCpf(valor)) {
+                const mascarado = this.formatarCpfDigitos(valor)
+                d.campoCPF = mascarado
+                d.campoBusca = ''
+                if (event.target && event.target.value !== mascarado) {
+                    event.target.value = mascarado
+                }
+                return
+            }
+            d.campoBusca = valor
+            d.campoCPF = ''
+        },
+        onPeriodoChange() {
+            this.atualizar()
+        },
+        onSelectFiltro() {
+            this.atualizar()
+        },
+        fecharOutrosComboboxes(excetoId) {
+            const mapa = {
+                'ri-filtro-uf': 'comboFiltroUf',
+                'ri-filtro-class-ind': 'comboFiltroClassInd',
+                'ri-filtro-class-rh': 'comboFiltroClassRh',
+                'ri-filtro-nota-ind': 'comboFiltroNotaInd',
+                'ri-filtro-nota-rh': 'comboFiltroNotaRh',
+                'ri-filtro-pages': 'comboFiltroPages'
+            }
+            Object.keys(mapa).forEach((id) => {
+                if (id === excetoId) return
+                const ref = this.$refs[mapa[id]]
+                if (ref && typeof ref.fechar === 'function') ref.fechar()
+                else if (ref && typeof ref.close === 'function') ref.close()
+            })
+        },
+        limparFiltros() {
+            const pages = this.controle.dados.pages || 20
+            this.controle.dados = {
+                ...this.controle.dados,
+                autocomplete_label_anterior: '',
+                autocomplete_label: '',
+                autocomplete_label_cliente_anterior: '',
+                autocomplete_label_cliente: '',
+                cliente_custom: '',
+                campoBusca: '',
+                campoCPF: '',
+                campoVaga: '',
+                campoCliente: this.cliente_id !== 0 ? this.cliente_id : '',
+                campoUf: '',
+                campoRh: '',
+                entrevista_rh: '',
+                entrevista_rh_nota: '',
+                parecer_individual: '',
+                filtroPeriodo: false,
+                dataInicio: '',
+                dataFim: '',
+                periodo: '',
+                pages
+            }
+            this.atualizar()
         },
         selecionaTodos() {
             this.selecionaTudo = !this.selecionaTudo
@@ -406,13 +575,17 @@ const app = createApp({
         },
 
         cadastrar() {
+            if (this.visualizar) {
+                return false
+            }
+
             const formRi = this.$refs.formResultadoIntegrado
             if (formRi && typeof formRi.validarCampos === 'function' && !formRi.validarCampos()) {
                 return false
             }
 
-            $('#janelaParecerEntrevista :input:visible').trigger('blur')
-            if ($('#janelaParecerEntrevista :input:visible.is-invalid').length) {
+            $('#janelaParecerEntrevista :input:visible:enabled').trigger('blur')
+            if ($('#janelaParecerEntrevista :input:visible:enabled.is-invalid').length) {
                 mostraErro('', 'Verifique os campos marcados')
                 return false
             }
@@ -434,24 +607,7 @@ const app = createApp({
         },
 
         alterar() {
-            if (this.form.curriculo.municipio_id === '') {
-                valida_campo_vazio($('#mun_' + this.hash), 1)
-                mostraErro('', 'Campo MUNICÍPIO não pode ficar vazio')
-                this.resetaCampoMunicipioModal()
-                return false
-            }
-
-            if (this.form.vaga_id === '') {
-                valida_campo_vazio($('#vaga_' + this.hash), 1)
-                mostraErro('', 'Campo VAGA não pode ficar vazio')
-                this.resetaCampoVagaModal()
-                return false
-            }
-
-            if (this.form.cliente_id === '') {
-                valida_campo_vazio($('#cliente_' + this.hash), 1)
-                mostraErro('', 'Campo EMPRESA não pode ficar vazio')
-                this.resetaCampoClienteModal()
+            if (this.visualizar) {
                 return false
             }
 
@@ -460,16 +616,10 @@ const app = createApp({
                 return false
             }
 
-            $('#janelaParecerEntrevista :input:visible').trigger('blur')
-            if ($('#janelaParecerEntrevista :input:visible.is-invalid').length) {
+            $('#janelaParecerEntrevista :input:visible:enabled').trigger('blur')
+            if ($('#janelaParecerEntrevista :input:visible:enabled.is-invalid').length) {
                 mostraErro('', 'Verifique os campos marcados')
                 return false
-            }
-            if (this.nr_dez === 'sim') {
-                if (this.nr.length === 0) {
-                    mostraErro('', 'Por favor insira o Certificado NR 10')
-                    return false
-                }
             }
 
             this.preload = true

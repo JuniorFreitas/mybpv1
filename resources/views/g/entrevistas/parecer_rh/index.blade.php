@@ -64,8 +64,12 @@
     <modal ref="janelaParecerEntrevista" id="janelaParecerEntrevista" :titulo="tituloJanela" :size="80" :fechar="!preloadForm">
         <template #conteudo>
             <preload v-if="preloadForm"></preload>
-            <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''">
-                <form-rh :form="form"
+            <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''" class="mybp-modal-form mybp-filtros-compactos">
+                <p class="mybp-campo-obrigatorio-legenda mybp-modal-legenda" v-show="!visualizar">
+                    Campos com <span class="text-danger">*</span> são obrigatórios.
+                </p>
+                <form-rh ref="formRh"
+                         :form="form"
                          :cliente_id="form.id"
                          :visualizar="visualizar"
                          :disabled-parecer-rh="false"

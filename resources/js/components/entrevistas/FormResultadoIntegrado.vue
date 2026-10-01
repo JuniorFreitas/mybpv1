@@ -263,16 +263,20 @@
                     <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" :for="`ri-autorizado-${hash}`">
                             Autorizado por
-                            <span class="text-danger" v-show="form.excessao">*</span>
+                            <span class="text-danger" v-show="form.excessao === true">*</span>
                         </label>
                         <input
                             :id="`ri-autorizado-${hash}`"
                             type="text"
                             class="form-control form-control-sm"
                             autocomplete="off"
-                            :disabled="visualizar || disabled || !form.excessao"
-                            :placeholder="form.excessao ? '' : 'Somente se houver exceção'"
-                            onblur="valida_campo_vazio(this, 3)"
+                            :disabled="visualizar || disabled || form.excessao !== true"
+                            :placeholder="form.excessao === true ? '' : 'Somente se houver exceção'"
+                            v-bind="
+                                form.excessao === true && !visualizar && !disabled
+                                    ? { onblur: 'valida_campo_vazio(this, 3)' }
+                                    : {}
+                            "
                             v-model="form.autorizado_por"
                         />
                     </div>
@@ -527,6 +531,14 @@ export default {
             }
 
             if (
+                !this.exigirCombobox(this.exameCombo, `ri-exame-${this.hash}`, {
+                    toastMsg: 'Selecione o encaminhamento de exame'
+                })
+            ) {
+                return false
+            }
+
+            if (
                 this.form.encaminhado_exame === true &&
                 this.exigePcmsoEmpresa &&
                 !this.exigirCombobox(this.form.pcmso_id, `ri-pcmso-${this.hash}`, {
@@ -567,6 +579,16 @@ export default {
                 if (el && typeof valida_campo_vazio === 'function') valida_campo_vazio(el, 3)
                 if (typeof mostraErro === 'function') mostraErro('', 'Informe quem autorizou a exceção')
                 return false
+            }
+
+            if (this.form.excessao !== true) {
+                const el = document.getElementById(`ri-autorizado-${this.hash}`)
+                if (el) {
+                    el.classList.remove('is-invalid')
+                    const fb = el.parentElement && el.parentElement.querySelector('div.invalid-feedback')
+                    if (fb) fb.remove()
+                }
+                this.form.autorizado_por = ''
             }
 
             if (!String(this.form.responsavel_envio || '').trim()) {

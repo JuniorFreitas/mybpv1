@@ -58,10 +58,13 @@
         </template>
     </modal>
 
-    <modal ref="janelaParecerEntrevista" id="janelaParecerEntrevista" :titulo="tituloJanela" :size="80" :fechar="!preloadForm">
+    <modal ref="janelaParecerEntrevista" id="janelaParecerEntrevista" :titulo="tituloJanela" :size="90" :fechar="!preloadForm">
         <template #conteudo>
             <preload v-if="preloadForm"></preload>
             <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''" class="mybp-modal-form mybp-filtros-compactos">
+                <p class="mybp-campo-obrigatorio-legenda mybp-modal-legenda" v-show="!visualizar">
+                    Campos com <span class="text-danger">*</span> são obrigatórios.
+                </p>
                 <form-rh :form="form" :cliente_id="cliente_id" :visualizar="true" :entrevistado-rh="false"
                          :entrevista-rh="false" disabled-parecer-rh :entrevista-gestor="false"
                          entrevista-gestor-disabled
@@ -71,6 +74,8 @@
                     v-if="!preloadForm"
                     ref="formResultadoIntegrado"
                     :form="form.resultado_integrado"
+                    :visualizar="visualizar"
+                    :disabled="visualizar"
                     :nome-candidato="form.curriculo ? form.curriculo.nome : 'Candidato'"
                     :telefone-principal="form.tel_principal"></form-resultado-integrado>
             </div>
@@ -89,194 +94,243 @@
         </template>
     </modal>
 
-    <fieldset>
-        <legend>Filtro</legend>
-        <form @submit.prevent="$refs.componente.buscar()">
-            <div class="row">
-                <div class="col-12 col-md-4">
-                    <div class="form-check" style="margin-bottom: -11px;">
-                        <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
-                               id="filtroIntervalo"
-                               v-model="controle.dados.filtroPeriodo">
-                        <label class="form-check-label cursor-pointer" for="filtroIntervalo">Por período</label>
-                    </div>
-                    <div class="form-group">
-                        <datepicker range formsm label=""
-                                    :disabled="controle.carregando || !controle.dados.filtroPeriodo"
-                                    v-model="controle.dados.periodo"></datepicker>
-                    </div>
+    <filtro-listagem
+        class="mt-2 mybp-filtros-compactos"
+        :mostrar-limpar-filtros="totalFiltrosAtivos > 0"
+        :desabilitado="controle.carregando"
+        @submit="atualizar"
+        @limpar="limparFiltros"
+    >
+        <template #filtros>
+            <date-range-filter
+                :key="'ri-filtro-periodo'"
+                v-model:enabled="controle.dados.filtroPeriodo"
+                v-model:start-date="controle.dados.dataInicio"
+                v-model:end-date="controle.dados.dataFim"
+                :disabled="!!controle.carregando"
+                :id-suffix="'periodo-' + hash"
+                label="Por período"
+                wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                @change="onPeriodoChange"
+            ></date-range-filter>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="ri-filtro-busca">
+                        Candidato / CPF
+                        <span v-if="buscaUnificadaEhCpf" class="text-muted small">CPF</span>
+                    </label>
+                    <input
+                        id="ri-filtro-busca"
+                        type="text"
+                        placeholder="Nome ou CPF"
+                        autocomplete="off"
+                        inputmode="search"
+                        class="form-control form-control-sm"
+                        :disabled="controle.carregando"
+                        :value="campoBuscaUnificada"
+                        @input="onInputBuscaUnificada"
+                    />
                 </div>
+            </div>
 
-                <div class="col-12 col-sm-6 col-md-6 col-lg-4">
-                    <div class="form-group">
-                        <label>Nome</label>
-                        <input type="text" placeholder="Buscar por nome" autocomplete="off"
-                               class="form-control form-control-sm" :disabled="controle.carregando"
-                               v-model="controle.dados.campoBusca">
-                    </div>
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label">Cargo</label>
+                    <autocomplete
+                        :caminho="controle.dados.caminho_autocomplete"
+                        :valido="controle.dados.campoVaga !== ''"
+                        :formsm="true"
+                        v-model="controle.dados.autocomplete_label"
+                        :disabled="controle.carregando"
+                        placeholder="Por cargo"
+                        @onblur="resetaCampo"
+                        @onselect="selecionaVaga"
+                    ></autocomplete>
                 </div>
+            </div>
 
-                <div class="col-12 col-sm-6 col-md-6 col-lg-4">
-                    <div class="form-group">
-                        <label>CPF</label>
-                        <input type="text" placeholder="Buscar por cpf" autocomplete="mastertag"
-                               onblur="valida_cpf(this)"
-                               v-mascara:cpf class="form-control form-control-sm" :disabled="controle.carregando"
-                               v-model="controle.dados.campoCPF">
-                    </div>
-                </div>
-
-
-                <div class="col-12 col-sm-12 col-md-12 col-lg-12">
-                    <div class="form-group">
-                        <label>Cargo</label>
-                        <autocomplete :caminho="controle.dados.caminho_autocomplete"
-                                      :valido="controle.dados.campoVaga !== ''"
-                                      v-model="controle.dados.autocomplete_label"
-                                      :disabled="controle.carregando" placeholder="Por cargo" @onblur="resetaCampo"
-                                      @onselect="selecionaVaga"></autocomplete>
-                    </div>
-                </div>
-
-                <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                    <div class="form-group">
-                        <label>Estado</label>
-                        <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                                v-model="controle.dados.campoUf">
-                            <option value="">SEM FILTRO</option>
-                            <option value="MA">MA</option>
-                            <option value="AC">AC</option>
-                            <option value="AL">AL</option>
-                            <option value="AP">AP</option>
-                            <option value="AM">AM</option>
-                            <option value="BA">BA</option>
-                            <option value="CE">CE</option>
-                            <option value="DF">DF</option>
-                            <option value="ES">ES</option>
-                            <option value="GO">GO</option>
-                            <option value="MT">MT</option>
-                            <option value="MS">MS</option>
-                            <option value="MG">MG</option>
-                            <option value="PA">PA</option>
-                            <option value="PB">PB</option>
-                            <option value="PR">PR</option>
-                            <option value="PE">PE</option>
-                            <option value="PI">PI</option>
-                            <option value="RJ">RJ</option>
-                            <option value="RN">RN</option>
-                            <option value="RS">RS</option>
-                            <option value="RO">RO</option>
-                            <option value="RR">RR</option>
-                            <option value="SC">SC</option>
-                            <option value="SP">SP</option>
-                            <option value="SE">SE</option>
-                            <option value="TO">TO</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="col-12 col-sm-4 col-md-3 ">
-                    <label for="">Por classificação individual</label>
-                    <div class="form-group">
-                        <select class="form-control  form-control-sm" @change="atualizar"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.parecer_individual">
-                            <option value="">Sem filtro</option>
-                            <option value="favoravel">Favorável</option>
-                            <option value="destaque">Destaque</option>
-                            {{-- <option value="stand_by">Stand By</option> --}}
-                            {{-- <option value="desfavoravel">Desfavorável</option> --}}
-                        </select>
-
-                    </div>
-                </div>
-
-
-                <div class="col-12 col-sm-4 col-md-3 col-lg-2" v-if="servico">
-                    <div class="form-group">
-                        <label for="">Por nota individual</label>
-                        <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                                v-model="controle.dados.campoRh">
-                            <option value="">Sem filtro</option>
-                            <option value="0">0</option>
-                            <option value="1-5">1 à 5</option>
-                            <option value="5-7">5 à 7</option>
-                            <option value="8-10">8 à 10</option>
-                        </select>
-                    </div>
-                </div>
-
-
-                <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                    <div class="form-group">
-                        <label for="">Por nota RH</label>
-                        <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                                v-model="controle.dados.entrevista_rh_nota">
-                            <option value="">Sem filtro</option>
-                            <option value="0">0</option>
-                            <option value="1-5">1 à 5</option>
-                            <option value="5-7">5 à 7</option>
-                            <option value="8-10">8 à 10</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="col-12 col-sm-4 col-md-3 ">
-                    <label for="">Por classificação RH</label>
-                    <div class="form-group">
-                        <select class="form-control  form-control-sm" @change="atualizar"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.entrevista_rh">
-                            <option value="">Sem filtro</option>
-                            <option value="entrevistado">Entrevistados</option>
-                            <option value="nao_entrevistado">Não Entrevistados</option>
-                            <option value="favoravel">Favorável</option>
-                            <option value="destaque">Destaque</option>
-                            <option value="stand_by">Stand By</option>
-                            <option value="desfavoravel">Desfavorável</option>
-                        </select>
-
-                    </div>
-                </div>
-
-
-                <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                    <div class="form-group">
-                        <label for="">Exibir</label>
-                        <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                                v-model="controle.dados.pages">
-                            <option value="20">20</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                        </select>
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="ri-filtro-uf">Estado</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroUf"
+                            instance-id="ri-filtro-uf"
+                            input-id="ri-filtro-uf"
+                            v-model="controle.dados.campoUf"
+                            :options="filtroUfOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Todos os estados"
+                            empty-message="Nenhum estado encontrado."
+                            :max-results="30"
+                            @opening="fecharOutrosComboboxes('ri-filtro-uf')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
                     </div>
                 </div>
             </div>
-        </form>
 
-        <div class="col-12">
-            <div class="row">
-                <button type="button" class="btn btn-sm mr-1 btn-success mr-1 mb-1" :disabled="controle.carregando"
-                        @click.prevent="atualizar">
-                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                    Atualizar
-                </button>
-
-                <button class="btn btn-sm mr-1 btn-danger mb-1 mr-1"
-                        :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                        :disabled="selecionados.length === 0" @click.prevent="selecionados = []">
-                    <i class="fa fa-times"></i> Limpar seleção
-                </button>
-                <button type="button" class="btn btn-sm mr-1 btn-primary  mr-1 mb-1"
-                        @click.prevent="exportaExcel()"
-                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && !lista.length) ">
-                    <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
-                                                                           v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
-                </button>
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="ri-filtro-class-ind">Classificação individual</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroClassInd"
+                            instance-id="ri-filtro-class-ind"
+                            input-id="ri-filtro-class-ind"
+                            v-model="controle.dados.parecer_individual"
+                            :options="filtroClassIndividualOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Sem filtro"
+                            empty-message="Nenhuma opção."
+                            :max-results="20"
+                            @opening="fecharOutrosComboboxes('ri-filtro-class-ind')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
             </div>
-        </div>
 
-    </fieldset>
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="ri-filtro-class-rh">Classificação RH</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroClassRh"
+                            instance-id="ri-filtro-class-rh"
+                            input-id="ri-filtro-class-rh"
+                            v-model="controle.dados.entrevista_rh"
+                            :options="filtroClassRhOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Sem filtro"
+                            empty-message="Nenhuma opção."
+                            :max-results="20"
+                            @opening="fecharOutrosComboboxes('ri-filtro-class-rh')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="col-12 mybp-filtros-avancados-shell"
+                :class="filtrosAvancadosAbertos ? 'is-open' : ''"
+                :aria-hidden="filtrosAvancadosAbertos ? 'false' : 'true'"
+            >
+                <div class="mybp-filtros-avancados-shell__inner">
+                    <div class="mybp-filtros-avancados">
+                        <div class="mybp-filtros-avancados__block">
+                            <p class="mybp-filtros-avancados__title">Outros filtros</p>
+                            <div class="row">
+                                <div class="col-12 col-md-4" v-if="servico">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="ri-filtro-nota-ind">Nota individual</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                ref="comboFiltroNotaInd"
+                                                instance-id="ri-filtro-nota-ind"
+                                                input-id="ri-filtro-nota-ind"
+                                                v-model="controle.dados.campoRh"
+                                                :options="filtroNotaOpcoes"
+                                                :disabled="controle.carregando"
+                                                placeholder-blur="Sem filtro"
+                                                empty-message="Nenhuma opção."
+                                                :max-results="10"
+                                                @opening="fecharOutrosComboboxes('ri-filtro-nota-ind')"
+                                                @select="onSelectFiltro"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="ri-filtro-nota-rh">Nota RH</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                ref="comboFiltroNotaRh"
+                                                instance-id="ri-filtro-nota-rh"
+                                                input-id="ri-filtro-nota-rh"
+                                                v-model="controle.dados.entrevista_rh_nota"
+                                                :options="filtroNotaOpcoes"
+                                                :disabled="controle.carregando"
+                                                placeholder-blur="Sem filtro"
+                                                empty-message="Nenhuma opção."
+                                                :max-results="10"
+                                                @opening="fecharOutrosComboboxes('ri-filtro-nota-rh')"
+                                                @select="onSelectFiltro"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="ri-filtro-pages">Exibir</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                ref="comboFiltroPages"
+                                                instance-id="ri-filtro-pages"
+                                                input-id="ri-filtro-pages"
+                                                v-model="campoPagesCombo"
+                                                :options="filtroPagesOpcoes"
+                                                :disabled="controle.carregando"
+                                                placeholder-blur="20"
+                                                empty-message="Nenhuma opção."
+                                                :max-results="10"
+                                                @opening="fecharOutrosComboboxes('ri-filtro-pages')"
+                                                @select="onSelectFiltro"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template #acoes>
+            <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
+                Buscar
+            </button>
+            <button
+                type="button"
+                class="btn btn-sm mybp-btn-mais-filtros"
+                :class="filtrosAvancadosAbertos ? 'btn-primary is-open' : 'btn-outline-primary'"
+                :aria-expanded="filtrosAvancadosAbertos ? 'true' : 'false'"
+                @click="filtrosAvancadosAbertos = !filtrosAvancadosAbertos"
+            >
+                <i class="fa" :class="filtrosAvancadosAbertos ? 'fa-chevron-up' : 'fa-sliders-h'"></i>
+                @{{ filtrosAvancadosAbertos ? 'Menos filtros' : 'Mais filtros' }}
+                <span class="badge badge-light ml-1" v-if="totalFiltrosAtivosAvancados">
+                    @{{ totalFiltrosAtivosAvancados }}
+                </span>
+            </button>
+            <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary mybp-btn-acao-compact"
+                :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
+                :disabled="selecionados.length === 0"
+                @click.prevent="selecionados = []"
+            >
+                <i class="fa fa-times"></i> Limpar seleção
+            </button>
+            <button
+                type="button"
+                class="btn btn-sm btn-success mybp-btn-acao-compact"
+                @click.prevent="exportaExcel()"
+                :disabled="controle.carregando || preloadExportacao || (!controle.carregando && !lista.length)"
+            >
+                <i class="fas fa-file-excel"></i> Exportar Excel
+                <span class="badge badge-light" v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
+            </button>
+        </template>
+    </filtro-listagem>
+
     <preload class="text-center" v-if="controle.carregando"></preload>
     <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length===0">
         <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
@@ -445,7 +499,7 @@
         </table>
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
                             url="{{ route('g.entrevista.resultado-integrado.resultado_integrado.atualizar') }}"
-                            :por-pagina="controle.dados.porPagina" :dados="controle.dados" @carregou="carregou"
+                            :por-pagina="controle.dados.pages" :dados="controle.dados" @carregou="carregou"
                             @carregando="carregando">
         </controle-paginacao>
     </div>

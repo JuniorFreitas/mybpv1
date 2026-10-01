@@ -407,6 +407,11 @@ const app = createApp({
                 return false
             }
 
+            const formRh = this.$refs.formRh
+            if (formRh && typeof formRh.validarCampos === 'function' && !formRh.validarCampos()) {
+                return false
+            }
+
             $('#janelaParecerEntrevista :input:visible').trigger('blur')
             if ($('#janelaParecerEntrevista :input:visible.is-invalid').length) {
                 mostraErro('', 'Verifique os campos marcados')
@@ -454,6 +459,11 @@ const app = createApp({
                 valida_campo_vazio($('#cliente_' + this.hash), 1)
                 mostraErro('', 'Campo EMPRESA não pode ficar vazio')
                 this.resetaCampoClienteModal()
+                return false
+            }
+
+            const formRh = this.$refs.formRh
+            if (formRh && typeof formRh.validarCampos === 'function' && !formRh.validarCampos()) {
                 return false
             }
 

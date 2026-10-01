@@ -3,6 +3,8 @@
 
 Last updated: 2026-09-30
 
+- [form-parecer-rh-modal-padrao](form-parecer-rh-modal-padrao.md) — FormParecerRh mybp + combos + MybpBoolCombobox + validarCampos | pattern | entrevista, modal, combobox
+- [resultado-integrado-filtros-modal](resultado-integrado-filtros-modal.md) — RI: filtros compactos + modal validação | pattern | entrevista, filtro, modal, combobox
 - [admissao-processo-modal-validacao](admissao-processo-modal-validacao.md) — Avulsa/Admitir: seções flat + col-md-4 + combos estáticos + validação | pattern | admissao, modal, combobox
 - [dependentes-ferias-modal-padrao](dependentes-ferias-modal-padrao.md) — Dependentes + Férias adquiridas mybp + combos | pattern | admissao, modal, combobox
 - [endereco-modal-padrao](endereco-modal-padrao.md) — Endereco mybp + UF combo + ViaCEP denso | pattern | admissao, modal, combobox, endereco
