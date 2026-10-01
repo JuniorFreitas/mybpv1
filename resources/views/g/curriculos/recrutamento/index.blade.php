@@ -491,24 +491,42 @@
         </template>
     </modal>
 
-    <div class="row pb-3 pt-3">
-        <div class="col-xl-3 col-lg-6">
-            <div class="card card-stats mb-4 mb-xl-0 bg-primary">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col">
-                            <h5 class="card-title text-uppercase text-white  mb-0">Total Cadastrados</h5>
-                            <span class="h2 font-weight-bold mb-0 text-white ">{{$curriculos}}</span>
-                        </div>
-                        <div class="col-auto">
-                            <div class="icon icon-shape bg-default text-white rounded-circle shadow">
-                                <i class="fas fa-user"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div class="mybp-kpi-row" role="group" aria-label="Resumo do recrutamento">
+        <article class="mybp-kpi mybp-kpi--neutro">
+            <div class="mybp-kpi__icon" aria-hidden="true">
+                <i class="fas fa-users"></i>
             </div>
-        </div>
+            <div class="mybp-kpi__body">
+                <span class="mybp-kpi__label">Total cadastrados</span>
+                <span class="mybp-kpi__valor">{{ number_format($curriculos, 0, ',', '.') }}</span>
+                <span class="mybp-kpi__hint">Base completa com vaga</span>
+            </div>
+        </article>
+
+        <article class="mybp-kpi mybp-kpi--info">
+            <div class="mybp-kpi__icon" aria-hidden="true">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="mybp-kpi__body">
+                <span class="mybp-kpi__label">Cadastrados</span>
+                <span class="mybp-kpi__valor">{{ number_format($curriculos90dias, 0, ',', '.') }}</span>
+                <span class="mybp-kpi__hint">Últimos 90 dias</span>
+            </div>
+        </article>
+
+        <article class="mybp-kpi mybp-kpi--ok">
+            <div class="mybp-kpi__icon" aria-hidden="true">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="mybp-kpi__body">
+                <span class="mybp-kpi__label">Selecionados</span>
+                <span class="mybp-kpi__valor">{{ number_format($selecionados90dias, 0, ',', '.') }}</span>
+                <span class="mybp-kpi__hint">
+                    Últimos 90 dias
+                    <span class="mybp-kpi__meta">· {{ number_format($taxaSelecao90dias, 1, ',', '.') }}% dos cadastrados</span>
+                </span>
+            </div>
+        </article>
     </div>
 
     <filtro-listagem

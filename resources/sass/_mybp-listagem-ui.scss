@@ -889,3 +889,119 @@
         width: 100%;
     }
 }
+
+/* --- KPIs de resumo (topo de listagens operacionais) --- */
+.mybp-kpi-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.65rem;
+    margin: 0.85rem 0 0.35rem;
+}
+
+.mybp-kpi {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    min-width: 0;
+    padding: 0.7rem 0.85rem;
+    background: #fff;
+    border: 1px solid #eef1f4;
+    border-left-width: 3px;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(23, 66, 87, 0.04);
+}
+
+.mybp-kpi--neutro {
+    border-left-color: #174257;
+}
+
+.mybp-kpi--info {
+    border-left-color: #2f80a8;
+}
+
+.mybp-kpi--ok {
+    border-left-color: #2f7d4a;
+}
+
+.mybp-kpi__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: #f0f6f9;
+    color: #174257;
+    font-size: 0.8rem;
+}
+
+.mybp-kpi--info .mybp-kpi__icon {
+    background: #eef7fb;
+    color: #2f80a8;
+}
+
+.mybp-kpi--ok .mybp-kpi__icon {
+    background: #eef8f1;
+    color: #2f7d4a;
+}
+
+.mybp-kpi__body {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.mybp-kpi__label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #6c757d;
+    line-height: 1.2;
+}
+
+.mybp-kpi__valor {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #174257;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.mybp-kpi__hint {
+    font-size: 0.72rem;
+    color: #8a939b;
+    line-height: 1.3;
+}
+
+.mybp-kpi__meta {
+    color: #2f7d4a;
+    font-weight: 600;
+}
+
+@media (max-width: 767.98px) {
+    .mybp-kpi-row {
+        grid-template-columns: 1fr;
+    }
+
+    .mybp-kpi__valor {
+        font-size: 1.2rem;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .mybp-kpi-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .mybp-kpi {
+        padding: 0.6rem 0.7rem;
+    }
+
+    .mybp-kpi__valor {
+        font-size: 1.15rem;
+    }
+}

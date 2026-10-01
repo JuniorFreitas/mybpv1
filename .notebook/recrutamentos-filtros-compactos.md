@@ -27,6 +27,7 @@
 - `mybp-cards-lista` + badge por status (Selecionado / Não selecionado / Stand by / Lido / Não lido)
 - Campos: CPF, UF, Vaga, PCD, Selecionado, Contato, Interesse, Data, Lido
 - Dropdown: Recrutar, Gerar PDF, Remover
+- Cards topo: KPIs densos `.mybp-kpi-row` (total / 90d / selecionados 90d + taxa %)
 
 ## Período
 - Front: `dataInicio`/`dataFim` ISO + sync `periodo` BR (`dd/mm/yyyy até dd/mm/yyyy`)
