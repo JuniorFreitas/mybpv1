@@ -61,17 +61,18 @@
     <modal ref="janelaParecerEntrevista" id="janelaParecerEntrevista" :titulo="tituloJanela" :size="80" :fechar="!preloadForm">
         <template #conteudo>
             <preload v-if="preloadForm"></preload>
-            <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''">
+            <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''" class="mybp-modal-form mybp-filtros-compactos">
                 <form-rh :form="form" :cliente_id="cliente_id" :visualizar="true" :entrevistado-rh="false"
                          :entrevista-rh="false" disabled-parecer-rh :entrevista-gestor="false"
                          entrevista-gestor-disabled
                          entrevista-rh-disabled @finalizou="()=>{preloadForm = false}"></form-rh>
 
-                <fieldset v-if="!preloadForm">
-                    <legend class="text-uppercase">ENCAMINHAMENTO PARA ADMISSÃO</legend>
-                    <form-resultado-integrado :form="form.resultado_integrado" :nome-candidato="form.curriculo ? form.curriculo.nome : 'Candidato'" :telefone-principal="form.tel_principal"></form-resultado-integrado>
-                </fieldset>
-
+                <form-resultado-integrado
+                    v-if="!preloadForm"
+                    ref="formResultadoIntegrado"
+                    :form="form.resultado_integrado"
+                    :nome-candidato="form.curriculo ? form.curriculo.nome : 'Candidato'"
+                    :telefone-principal="form.tel_principal"></form-resultado-integrado>
             </div>
         </template>
         <template #rodape>

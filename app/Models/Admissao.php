@@ -904,11 +904,29 @@ class Admissao extends Model
 
     public function FeriasAdquiridasCriaOuAtualiza($dados)
     {
-        if (isset($dados['nova'])) {
-            $this->FeriasAdquiridas()->create($dados);
-        } else {
-            $this->FeriasAdquiridas->find($dados['id'])->update($dados);
+        $periodoGozado = trim((string) ($dados['periodo_gozado'] ?? ''));
+        $proximoPeriodo = trim((string) ($dados['proximo_periodo'] ?? ''));
+
+        // ConvertEmptyStringsToNull transforma '' em null e quebra NOT NULL no banco
+        if ($periodoGozado === '' || $proximoPeriodo === '') {
+            return null;
         }
+
+        $dados['periodo_gozado'] = $periodoGozado;
+        $dados['proximo_periodo'] = $proximoPeriodo;
+
+        if (isset($dados['nova'])) {
+            return $this->FeriasAdquiridas()->create($dados);
+        }
+
+        $ferias = $this->FeriasAdquiridas->find($dados['id'] ?? null);
+        if (!$ferias) {
+            return null;
+        }
+
+        $ferias->update($dados);
+
+        return $ferias;
     }
 
     public static function getNumeroSupervisor($cliente_id, $area_etiqueta_id)

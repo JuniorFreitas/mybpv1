@@ -3,6 +3,12 @@
 
 Last updated: 2026-09-30
 
+- [admissao-processo-modal-validacao](admissao-processo-modal-validacao.md) — Avulsa/Admitir: seções flat + col-md-4 + combos estáticos + validação | pattern | admissao, modal, combobox
+- [dependentes-ferias-modal-padrao](dependentes-ferias-modal-padrao.md) — Dependentes + Férias adquiridas mybp + combos | pattern | admissao, modal, combobox
+- [endereco-modal-padrao](endereco-modal-padrao.md) — Endereco mybp + UF combo + ViaCEP denso | pattern | admissao, modal, combobox, endereco
+- [telefones-modal-padrao](telefones-modal-padrao.md) — Telefones mybp + combo tipo + validarCampos | pattern | admissao, modal, combobox, telefone
+- [form-resultado-integrado-modal-padrao](form-resultado-integrado-modal-padrao.md) — FormResultadoIntegrado mybp + combos + validarCampos | pattern | admissao, entrevista, modal, combobox
+- [dados-bancarios-modal-padrao](dados-bancarios-modal-padrao.md) — DadosBancarios mybp + combo PIX/tipo chave + validarCampos | pattern | admissao, modal, combobox
 - [admissao-processo-filtros-compactos](admissao-processo-filtros-compactos.md) — Filtros compactos em Admissão > Processo | pattern | admissao, filtro, compactos
 - [cih-modal-padrao-ux](cih-modal-padrao-ux.md) — Modal CIH no padrão mybp-modal-form + ComboboxValidation | pattern | cih, modal, combobox
 - [cih-fluxo-padrao-ux](cih-fluxo-padrao-ux.md) — CIH: card detalhe + MybpFluxoAprovacao + filtro status por etapa | pattern | cih, card-detalhe, fluxo, filtro

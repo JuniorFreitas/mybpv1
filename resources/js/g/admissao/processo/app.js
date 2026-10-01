@@ -15,11 +15,12 @@ import Select2 from '../../../components/Select2/Select2'
 import configselect2 from '../../../components/Select2/mixSelec2'
 import Utils from '../../../mixins/Utils'
 import Validacoes from '../../../mixins/Validacoes'
+import ComboboxValidation from '../../../mixins/ComboboxValidation'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 import dependentes from '../../../components/admissao/processo/Dependentes'
 import FeriasAdquiridas from '../../../components/admissao/processo/FeriasAdquiridas'
 const app = createApp({
-    mixins: [configselect2, Utils, Validacoes, ExportacaoMixin],
+    mixins: [configselect2, Utils, Validacoes, ExportacaoMixin, ComboboxValidation],
     components: {
         endereco,
         datepicker,
@@ -588,6 +589,10 @@ const app = createApp({
             vagas: [],
             areasEtiquetas: [],
             listaProjetos: [],
+            opcoesFormacaoModal:
+                typeof window !== 'undefined' && Array.isArray(window.__MYBP_ESCOLARIDADES)
+                    ? window.__MYBP_ESCOLARIDADES
+                    : [],
 
             modeldemissao: {
                 preload: false,
@@ -722,6 +727,152 @@ const app = createApp({
             if (d.campoDemitido === true) total++
             if (Number(d.pages) !== 20) total++
             return total
+        },
+        opcoesSexoModal() {
+            return (this.lista_sexos || []).map((item) => ({ value: item, label: String(item) }))
+        },
+        opcoesEstadoCivilModal() {
+            return (this.lista_estados_civis || []).map((item) => ({ value: item, label: String(item) }))
+        },
+        opcoesSimNaoModal() {
+            return [
+                { value: 'sim', label: 'Sim' },
+                { value: 'nao', label: 'Não' }
+            ]
+        },
+        opcoesCalcaModal() {
+            return Array.from({ length: 23 }, (_, i) => {
+                const n = String(34 + i)
+                return { value: n, label: n }
+            })
+        },
+        opcoesBotaModal() {
+            return Array.from({ length: 18 }, (_, i) => {
+                const n = String(33 + i)
+                return { value: n, label: n }
+            })
+        },
+        opcoesCamisaProtModal() {
+            return Array.from({ length: 5 }, (_, i) => {
+                const n = String(2 + i)
+                return { value: n, label: n }
+            })
+        },
+        opcoesCamisaMeiaModal() {
+            return ['P', 'M', 'G', 'GG', 'XG'].map((v) => ({ value: v, label: v }))
+        },
+        opcoesTecnicaModal() {
+            return [
+                { value: '', label: 'NÃO INFORMADO' },
+                { value: 'NÃO SE APLICA', label: 'NÃO SE APLICA' },
+                { value: 'Sim', label: 'Sim' },
+                { value: 'Não', label: 'Não' }
+            ]
+        },
+        opcoesTecnicaPonteModal() {
+            return [
+                { value: '', label: 'NÃO INFORMADO' },
+                { value: 'NÃO SE APLICA', label: 'NÃO SE APLICA' },
+                { value: 'true', label: 'Sim' },
+                { value: 'false', label: 'Não' }
+            ]
+        },
+        opcoesProjetoModal() {
+            return (this.listaProjetos || []).map((item) => ({
+                value: item.id,
+                label: ((item.projeto && item.projeto.nome) || 'Projeto') + ' - (' + item.qnt_preenchida + ' de ' + item.qnt_total + ')',
+                meta: item.tem_vaga ? '' : 'Sem vaga'
+            }))
+        },
+        opcoesMassaTipoAdmissao() {
+            return ['TEMPORARIO', 'INTERMITENTE', 'DETERMINADO', 'FIXO', 'PJ'].map((v) => ({ value: v, label: v }))
+        },
+        opcoesMassaPrazo() {
+            return ['Nenhum', '30+30', '45+45', '30+60', '60+30'].map((v) => ({ value: v, label: v }))
+        },
+        opcoesMassaStatusSimples() {
+            return ['PENDENTE', 'CONCLUIDO'].map((v) => ({ value: v, label: v }))
+        },
+        opcoesMassaCarteira() {
+            return ['PENDENTE', 'AGUARDANDO TREINAMENTO', 'ENTREGUE'].map((v) => ({ value: v, label: v }))
+        },
+        opcoesMassaSegmento() {
+            return (this.segmentos_treinamento || []).map((s) => ({ value: s.id, label: s.nome }))
+        },
+        opcoesMassaStatus() {
+            return (this.listaStatusAdmissao || []).map((item) => {
+                const value = typeof item === 'object' ? item.id ?? item.value ?? item.label : item
+                const label = typeof item === 'object' ? item.label || item.nome || String(value) : String(item)
+                return { value, label }
+            })
+        },
+        formMassaBiometriaCombo: {
+            get() { return this.boolToCombo(this.form_massa && this.form_massa.biometria) },
+            set(v) { if (this.form_massa) this.form_massa.biometria = this.comboToBool(v) }
+        },
+        formCurriculoPcdCombo: {
+            get() { return this.boolToCombo(this.form && this.form.curriculo && this.form.curriculo.pcd) },
+            set(v) { if (this.form && this.form.curriculo) this.form.curriculo.pcd = this.comboToBool(v) }
+        },
+        formParecerExFuncionarioCombo: {
+            get() { return this.boolToCombo(this.form && this.form.parecer_rh && this.form.parecer_rh.ex_funcionario) },
+            set(v) { if (this.form && this.form.parecer_rh) this.form.parecer_rh.ex_funcionario = this.comboToBool(v) }
+        },
+        formParecerTurnoCombo: {
+            get() { return this.boolToCombo(this.form && this.form.parecer_rh && this.form.parecer_rh.turnos_seis_por_dois) },
+            set(v) { if (this.form && this.form.parecer_rh) this.form.parecer_rh.turnos_seis_por_dois = this.comboToBool(v) }
+        },
+        formParecerIndicacaoCombo: {
+            get() { return this.boolToCombo(this.form && this.form.parecer_rh && this.form.parecer_rh.indicacao) },
+            set(v) { if (this.form && this.form.parecer_rh) this.form.parecer_rh.indicacao = this.comboToBool(v) }
+        },
+        formAvulsaPcdCombo: {
+            get() {
+                return this.boolToCombo(
+                    this.formAvulsa && this.formAvulsa.curriculo && this.formAvulsa.curriculo.pcd
+                )
+            },
+            set(v) {
+                if (this.formAvulsa && this.formAvulsa.curriculo) {
+                    this.formAvulsa.curriculo.pcd = this.comboToBool(v)
+                }
+            }
+        },
+        formAvulsaExFuncCombo: {
+            get() {
+                return this.boolToCombo(
+                    this.formAvulsa && this.formAvulsa.parecer_rh && this.formAvulsa.parecer_rh.ex_funcionario
+                )
+            },
+            set(v) {
+                if (this.formAvulsa && this.formAvulsa.parecer_rh) {
+                    this.formAvulsa.parecer_rh.ex_funcionario = this.comboToBool(v)
+                }
+            }
+        },
+        formAvulsaTurnoCombo: {
+            get() {
+                return this.boolToCombo(
+                    this.formAvulsa && this.formAvulsa.parecer_rh && this.formAvulsa.parecer_rh.turnos_seis_por_dois
+                )
+            },
+            set(v) {
+                if (this.formAvulsa && this.formAvulsa.parecer_rh) {
+                    this.formAvulsa.parecer_rh.turnos_seis_por_dois = this.comboToBool(v)
+                }
+            }
+        },
+        formAvulsaIndicacaoCombo: {
+            get() {
+                return this.boolToCombo(
+                    this.formAvulsa && this.formAvulsa.parecer_rh && this.formAvulsa.parecer_rh.indicacao
+                )
+            },
+            set(v) {
+                if (this.formAvulsa && this.formAvulsa.parecer_rh) {
+                    this.formAvulsa.parecer_rh.indicacao = this.comboToBool(v)
+                }
+            }
         },
         filtroStatusAdmissaoOpcoes() {
             const opcoes = [{ value: '', label: 'Todos os status' }]
@@ -864,6 +1015,17 @@ const app = createApp({
             }
             this.dropdownAbertoKey = null
         },
+        boolToCombo(val) {
+            if (val === true || val === 'true' || val === 1 || val === '1') return 'sim'
+            if (val === false || val === 'false' || val === 0 || val === '0') return 'nao'
+            return ''
+        },
+        comboToBool(v) {
+            if (v === 'sim') return true
+            if (v === 'nao') return false
+            return ''
+        },
+        fecharOutrosComboboxesModal() {},
         getDataAso(item) {
             if (item.admissao && item.admissao.ultimo_aso && item.admissao.ultimo_aso.data_realizacao) return item.admissao.ultimo_aso.data_realizacao
             if (item.ultimo_aso && item.ultimo_aso.data_realizacao) return item.ultimo_aso.data_realizacao
@@ -912,6 +1074,11 @@ const app = createApp({
         },
 
         async demiteColaborador() {
+            if (!this.exigirCampoData(this.modeldemissao.form.data_desmobilizacao, 'demitir-data', {
+                toastMsg: 'Informe a data da demissão'
+            })) {
+                return
+            }
             this.modeldemissao.preload = true
             await axios
                 .post(`${URL_ADMIN}/admissao/demitir-via-privilegio`, this.modeldemissao.form)
@@ -1247,6 +1414,18 @@ const app = createApp({
             }
 
             formReset()
+
+            if (!this.exigirCombobox(this.formAvulsaPcdCombo, 'avulsa-pcd', { toastMsg: 'Selecione a Cota PCD' })) {
+                return false
+            }
+            if (
+                !this.exigirCombobox(this.formAvulsaIndicacaoCombo, 'avulsa-indicacao', {
+                    toastMsg: 'Informe se foi indicado'
+                })
+            ) {
+                return false
+            }
+
             this.validaBlurNoModal('#janelaAdmissaoAvulsa')
             $('#janelaAdmissaoAvulsa :input:visible:enabled').trigger('blur')
 
@@ -1279,12 +1458,50 @@ const app = createApp({
                 return false
             }
 
+            const telefonesAvulsa = this.$refs.telefonesAvulsa
+            if (telefonesAvulsa && typeof telefonesAvulsa.validarCampos === 'function' && !telefonesAvulsa.validarCampos()) {
+                return false
+            }
+
+            const enderecoAvulsa = this.$refs.enderecoAvulsa
+            if (enderecoAvulsa && typeof enderecoAvulsa.validarCampos === 'function' && !enderecoAvulsa.validarCampos()) {
+                return false
+            }
+
             if (this.formAvulsa.feedback.vaga_id === '') {
                 valida_campo_vazio($('#vaga_' + this.hash), 1)
                 $('#janelaAdmissaoAvulsa #vaga_' + this.hash)
                     .focus()
                     .trigger('blur')
                 mostraErro('', 'O campo vaga não pode ficar vazio')
+                return false
+            }
+
+            const formRiAvulsa = this.$refs.formResultadoIntegradoAvulsa
+            if (formRiAvulsa && typeof formRiAvulsa.validarCampos === 'function' && !formRiAvulsa.validarCampos()) {
+                return false
+            }
+
+            const formAdmAvulsa = this.$refs.formAdmissaoAvulsa
+            if (formAdmAvulsa && typeof formAdmAvulsa.validarCampos === 'function' && !formAdmAvulsa.validarCampos()) {
+                return false
+            }
+
+            const dependentesAvulsa = this.$refs.dependentesAvulsa
+            if (
+                dependentesAvulsa &&
+                typeof dependentesAvulsa.validarCampos === 'function' &&
+                !dependentesAvulsa.validarCampos()
+            ) {
+                return false
+            }
+
+            const dadosBancariosAvulsa = this.$refs.dadosBancariosAvulsa
+            if (
+                dadosBancariosAvulsa &&
+                typeof dadosBancariosAvulsa.validarCampos === 'function' &&
+                !dadosBancariosAvulsa.validarCampos()
+            ) {
                 return false
             }
 
@@ -1452,6 +1669,37 @@ const app = createApp({
 
         alterar() {
             if (this.visualizar) {
+                return false
+            }
+
+            if (!this.exigirCombobox(this.formCurriculoPcdCombo, 'adm-pcd', { toastMsg: 'Selecione a Cota PCD' })) {
+                return false
+            }
+            if (!this.exigirCombobox(this.form.curriculo.formacao, 'adm-formacao', { toastMsg: 'Selecione a formação' })) {
+                return false
+            }
+            const telefones = this.$refs.telefonesModal
+            if (telefones && typeof telefones.validarCampos === 'function' && !telefones.validarCampos()) {
+                return false
+            }
+            const endereco = this.$refs.enderecoModal
+            if (endereco && typeof endereco.validarCampos === 'function' && !endereco.validarCampos()) {
+                return false
+            }
+            const formRi = this.$refs.formResultadoIntegradoModal
+            if (formRi && typeof formRi.validarCampos === 'function' && !formRi.validarCampos()) {
+                return false
+            }
+            const formAdm = this.$refs.formAdmissaoModal
+            if (formAdm && typeof formAdm.validarCampos === 'function' && !formAdm.validarCampos()) {
+                return false
+            }
+            const dependentes = this.$refs.dependentesModal
+            if (dependentes && typeof dependentes.validarCampos === 'function' && !dependentes.validarCampos()) {
+                return false
+            }
+            const dadosBancarios = this.$refs.dadosBancariosModal
+            if (dadosBancarios && typeof dadosBancarios.validarCampos === 'function' && !dadosBancarios.validarCampos()) {
                 return false
             }
 
