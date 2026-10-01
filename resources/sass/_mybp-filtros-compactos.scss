@@ -62,10 +62,10 @@
     font-weight: 600;
 }
 
-.mybp-filtros-compactos .mybp-filtro-campo > .form-control,
-.mybp-filtros-compactos .mybp-filtro-campo > .form-control-sm,
-.mybp-filtros-compactos .mybp-filtro-campo .form-control,
-.mybp-filtros-compactos .mybp-filtro-campo .form-control-sm,
+.mybp-filtros-compactos .mybp-filtro-campo > .form-control:not(textarea),
+.mybp-filtros-compactos .mybp-filtro-campo > .form-control-sm:not(textarea),
+.mybp-filtros-compactos .mybp-filtro-campo .form-control:not(textarea),
+.mybp-filtros-compactos .mybp-filtro-campo .form-control-sm:not(textarea),
 .mybp-filtros-compactos .mybp-filtro-campo .combobox-ac-wrap .form-control,
 .mybp-filtros-compactos .mybp-filtro-campo .ma-select,
 .mybp-filtros-compactos .mybp-filtro-campo .ma-filtro-combo-toggle,
@@ -87,10 +87,14 @@
 .mybp-filtros-compactos .mybp-filtro-campo textarea.form-control,
 .mybp-filtros-compactos .mybp-filtro-campo textarea.form-control-sm {
     height: auto !important;
-    min-height: calc(var(--mybp-fc-ctrl-h) * 3.2) !important;
+    min-height: 4.25rem !important;
     max-height: none !important;
     padding: 0.35rem 0.45rem !important;
+    font-size: var(--mybp-fc-ctrl-fs) !important;
     line-height: 1.35 !important;
+    border-radius: var(--mybp-fc-radius) !important;
+    border-color: #dee2e6 !important;
+    box-sizing: border-box !important;
     resize: vertical;
 }
 

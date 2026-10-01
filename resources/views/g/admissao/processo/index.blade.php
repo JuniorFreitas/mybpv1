@@ -30,7 +30,7 @@
             <p class=" mt-2 text-center" v-if="formAvulsa.preload">
                 <i class="fa fa-spinner fa-pulse"></i> Aguarde ...
             </p>
-            <div v-if="!formAvulsa.preload && !formAvulsa.cadastrado">
+            <div v-if="!formAvulsa.preload && !formAvulsa.cadastrado" class="mybp-modal-form mybp-filtros-compactos">
                 <div v-if="!formAvulsa.preload">
                     <div class="alert alert-warning" v-show="formAvulsa.ex_funcionario">
                         <i class="fa fa-exclamation-triangle"></i> Ex-Funcionário
@@ -41,14 +41,20 @@
                                rel="noopener noreferrer">Verificar Pós Admissão</a>
                         </span>
                     </div>
-                    <fieldset>
+
+                    <p class="mybp-campo-obrigatorio-legenda mybp-modal-legenda">
+                        Campos com <span class="text-danger">*</span> são obrigatórios.
+                    </p>
+
+                    <fieldset class="mybp-modal-secao">
                         <legend>Dados Pessoais</legend>
                         <div class="row">
-                            <div class="col-12 col-sm-6 col-md-4">
-                                <div class="form-group">
-                                    <label>CPF <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" v-model="formAvulsa.curriculo.cpf"
-                                           placeholder="CPF"
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" for="avulsa-cpf">CPF <span class="text-danger">*</span></label>
+                                    <input id="avulsa-cpf" type="text" class="form-control form-control-sm"
+                                           v-model="formAvulsa.curriculo.cpf"
+                                           placeholder="000.000.000-00"
                                            ref="cpf"
                                            :disabled="disabledInput"
                                            @blur="buscaCpf"
@@ -56,31 +62,34 @@
                                            autocomplete="mybp" v-mascara:cpf>
                                 </div>
                             </div>
+
                             <template v-if="exibiFormulario">
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label>Nome <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" v-model="formAvulsa.curriculo.nome"
-                                               placeholder="Nome"
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-nome">Nome <span class="text-danger">*</span></label>
+                                        <input id="avulsa-nome" type="text" class="form-control form-control-sm"
+                                               v-model="formAvulsa.curriculo.nome"
+                                               placeholder="Nome completo"
                                                autocomplete="mybp" onblur="valida_campo_vazio(this,3)">
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label>E-mail <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" v-model="formAvulsa.curriculo.email"
-                                               placeholder="Ex.: email@email.com"
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-email">E-mail <span class="text-danger">*</span></label>
+                                        <input id="avulsa-email" type="text" class="form-control form-control-sm"
+                                               v-model="formAvulsa.curriculo.email"
+                                               placeholder="email@empresa.com"
                                                autocomplete="mybp" onblur="validaEmail(this)">
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label>Nascimento <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control validacampo"
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-nasc">Nascimento <span class="text-danger">*</span></label>
+                                        <input id="avulsa-nasc" type="text" class="form-control form-control-sm validacampo"
                                                v-model="formAvulsa.curriculo.nascimento"
-                                               placeholder="Ex: 10/10/2010"
+                                               placeholder="dd/mm/aaaa"
                                                v-mascara:data
                                                autocomplete="mybp"
                                                @keyup.prevent="valida_data_vazio($event.target,true)"
@@ -88,213 +97,213 @@
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label>Naturalidade</label>
-                                        <input type="text" class="form-control" onblur="valida_campo(this,2)"
-                                               v-model="formAvulsa.curriculo.naturalidade" :disabled="visualizar">
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-naturalidade">Naturalidade</label>
+                                        <input id="avulsa-naturalidade" type="text" class="form-control form-control-sm"
+                                               onblur="valida_campo(this,2)"
+                                               v-model="formAvulsa.curriculo.naturalidade">
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label>Cota PCD (Lei nº 8.213/91) <span class="text-danger">*</span></label>
-                                        <select class="form-control" onchange="valida_campo_vazio(this,1)"
-                                                onblur="valida_campo_vazio(this,1)"
-                                                v-model="formAvulsa.curriculo.pcd">
-                                            <option value="">Selecione</option>
-                                            <option :value="true">Sim</option>
-                                            <option :value="false">Não</option>
-                                        </select>
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-pcd">Cota PCD <span class="text-danger">*</span></label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="avulsa-pcd"
+                                                input-id="avulsa-pcd"
+                                                v-model="formAvulsaPcdCombo"
+                                                :options="opcoesSimNaoModal"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma opção."
+                                                :max-results="5"
+                                                @opening="fecharOutrosComboboxesModal('avulsa-pcd')"
+                                                @select="limparComboboxInvalido('avulsa-pcd')"
+                                            ></combobox-auto-complete>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-6 col-md-4" v-if="formAvulsa.curriculo.pcd">
-                                    <div class="form-group">
-                                        <label>CID (Código Internacional de Doenças) <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" onblur="valida_campo_vazio(this,1)"
-                                               placeholder="Informe o CID" v-model="formAvulsa.curriculo.cid">
+                                <div class="col-12 col-md-4" v-show="formAvulsa.curriculo.pcd">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-cid">CID <span class="text-danger">*</span></label>
+                                        <input id="avulsa-cid" type="text" class="form-control form-control-sm"
+                                               onblur="valida_campo_vazio(this,1)"
+                                               placeholder="Informe o CID"
+                                               v-model="formAvulsa.curriculo.cid">
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label>Sexo</label>
-                                        <select class="form-control"
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-sexo">Sexo</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="avulsa-sexo"
+                                                input-id="avulsa-sexo"
                                                 v-model="formAvulsa.curriculo.sexo"
-                                        >
-                                            <option value="">Selecione</option>
-                                            <option v-for="item in lista_sexos" :value="item">@{{item}}</option>
-                                        </select>
+                                                :options="opcoesSexoModal"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma opção."
+                                                :max-results="20"
+                                                @opening="fecharOutrosComboboxesModal('avulsa-sexo')"
+                                                @select="limparComboboxInvalido('avulsa-sexo')"
+                                            ></combobox-auto-complete>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label>Estado Civil</label>
-                                        <select
-                                            class="form-control"
-                                            v-model="formAvulsa.curriculo.estado_civil"
-                                        >
-                                            <option value="">Selecione</option>
-                                            <option v-for="item in lista_estados_civis" :value="item">@{{item}}</option>
-                                        </select>
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-estado-civil">Estado Civil</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="avulsa-estado-civil"
+                                                input-id="avulsa-estado-civil"
+                                                v-model="formAvulsa.curriculo.estado_civil"
+                                                :options="opcoesEstadoCivilModal"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma opção."
+                                                :max-results="20"
+                                                @opening="fecharOutrosComboboxesModal('avulsa-estado-civil')"
+                                                @select="limparComboboxInvalido('avulsa-estado-civil')"
+                                            ></combobox-auto-complete>
+                                        </div>
                                     </div>
                                 </div>
 
-
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label>Pai</label>
-                                        <input type="text" class="form-control"
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-pai">Pai</label>
+                                        <input id="avulsa-pai" type="text" class="form-control form-control-sm"
                                                v-model="formAvulsa.curriculo.filiacao_pai"
-                                               placeholder="Nome do Pai"
+                                               placeholder="Nome do pai"
                                                autocomplete="mybp">
                                     </div>
                                 </div>
-                                <div class="col-12 col-sm-6 col-md-4">
-                                    <div class="form-group">
-                                        <label>Mãe <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control"
+
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-mae">Mãe <span class="text-danger">*</span></label>
+                                        <input id="avulsa-mae" type="text" class="form-control form-control-sm"
                                                v-model="formAvulsa.curriculo.filiacao_mae"
-                                               placeholder="Nome da Mãe"
+                                               placeholder="Nome da mãe"
                                                autocomplete="mybp" onblur="valida_campo_vazio(this,3)">
                                     </div>
                                 </div>
-
-                                <div class="col-12">
-                                    <fieldset>
-                                        <legend>Endereço</legend>
-                                        <div class="row">
-                                            <div class="col-12">
-                                                <endereco :obrigatorio="false" :model="formAvulsa.curriculo"></endereco>
-                                            </div>
-                                        </div>
-                                    </fieldset>
-                                </div>
-
-                                <div class="col-12">
-                                    <fieldset>
-                                        <legend>Contato <span class="text-danger">*</span></legend>
-                                        <div class="row">
-                                            <div class="col-12">
-                                                <telefone :model="formAvulsa.curriculo.telefones" :pais="false"
-                                                          :model-delete="formAvulsa.curriculo.telefonesDelete"
-                                                          :qnt_min="1"
-                                                          :ramal="false"></telefone>
-                                            </div>
-                                        </div>
-                                    </fieldset>
-                                </div>
-
-                                <div class="col-12">
-                                    <fieldset>
-                                        <legend>DOCUMENTOS</legend>
-                                        <div class="row">
-                                            <div class="col-12 col-sm-6 col-lg-2">
-                                                <div class="form-group">
-                                                    <label>CNH</label>
-                                                    <input type="text" class="form-control"
-                                                           onblur="valida_campo(this,1)"
-                                                           v-model="formAvulsa.curriculo.cnh" :disabled="visualizar">
-                                                </div>
-                                            </div>
-                                            <div class="col-12 col-sm-6 col-md-4">
-                                                <div class="form-group">
-                                                    <label>RG</label>
-                                                    <input type="text" class="form-control"
-                                                           onblur="valida_campo(this,2)"
-                                                           v-model="formAvulsa.curriculo.rg" :disabled="visualizar">
-                                                </div>
-                                            </div>
-                                            <div class="col-12 col-sm-6 col-md-4">
-                                                <div class="form-group">
-                                                    <label>RG Data Emissão</label>
-                                                    <input type="text" class="form-control validacampo"
-                                                           placeholder="dd/mm/aaaa"
-                                                           v-model="formAvulsa.curriculo.rg_data_emissao" v-mascara:data
-                                                           @keyup.prevent="valida_data($event.target)"
-                                                           @blur.prevent="valida_data($event.target)"
-                                                           :disabled="visualizar">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </fieldset>
-                                </div>
-
-                                <div class="col-12">
-                                    <fieldset>
-                                        <legend>Formação</legend>
-                                        <div class="row">
-                                            <div class="col-12 col-sm-6">
-                                                <div class="form-group">
-                                                    <label>Formação </label>
-                                                    <select class="form-control"
-                                                            v-model="formAvulsa.curriculo.formacao">
-                                                        @foreach(\App\Models\Escolaridade::get() as $item)
-                                                            <option value="{{$item->id}}">{{$item->tipo}}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="col-12 col-sm-6 col-lg-6 col-xl-6"
-                                                 v-if="formAvulsa.curriculo.formacao >=8">
-                                                <div class="form-group">
-                                                    <label>Curso <span class="text-danger">*</span></label>
-                                                    <input type="text" class="form-control"
-                                                           v-model="formAvulsa.curriculo.formacao_curso"
-                                                           placeholder="Ex: Administração"
-                                                           autocomplete="mybp" onblur="valida_campo_vazio(this,1)">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </fieldset>
-                                </div>
                             </template>
-
                         </div>
                     </fieldset>
 
                     <template v-if="exibiFormulario">
-                        <fieldset>
-                            <legend>SOBRE A VAGA</legend>
-                            <div class="row">
+                        <fieldset class="mybp-modal-secao">
+                            <legend>Endereço</legend>
+                            <endereco ref="enderecoAvulsa"
+                                      :obrigatorio="false"
+                                      :model="formAvulsa.curriculo"></endereco>
+                        </fieldset>
 
-                                <div class="col-12 col-sm-12 col-md-12">
-                                    <div class="form-group">
-                                        <label>Vaga <span class="text-danger">*</span></label>
+                        <fieldset class="mybp-modal-secao">
+                            <legend>Contato <span class="text-danger">*</span></legend>
+                            <telefone ref="telefonesAvulsa"
+                                      :model="formAvulsa.curriculo.telefones"
+                                      :pais="false"
+                                      :ramal="false"
+                                      :detalhe="false"
+                                      :model-delete="formAvulsa.curriculo.telefonesDelete"
+                                      :qnt_min="1"></telefone>
+                        </fieldset>
+
+                        <fieldset class="mybp-modal-secao">
+                            <legend>Documentos</legend>
+                            <div class="row">
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-cnh">CNH</label>
+                                        <input id="avulsa-cnh" type="text" class="form-control form-control-sm"
+                                               onblur="valida_campo(this,1)"
+                                               v-model="formAvulsa.curriculo.cnh">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-rg">RG</label>
+                                        <input id="avulsa-rg" type="text" class="form-control form-control-sm"
+                                               onblur="valida_campo(this,2)"
+                                               v-model="formAvulsa.curriculo.rg">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-rg-emissao">RG — data emissão</label>
+                                        <input id="avulsa-rg-emissao" type="text"
+                                               class="form-control form-control-sm validacampo"
+                                               placeholder="dd/mm/aaaa"
+                                               v-model="formAvulsa.curriculo.rg_data_emissao" v-mascara:data
+                                               @keyup.prevent="valida_data($event.target)"
+                                               @blur.prevent="valida_data($event.target)">
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="mybp-modal-secao">
+                            <legend>Formação</legend>
+                            <div class="row">
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-formacao">Formação</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="avulsa-formacao"
+                                                input-id="avulsa-formacao"
+                                                v-model="formAvulsa.curriculo.formacao"
+                                                :options="opcoesFormacaoModal"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma formação."
+                                                :max-results="50"
+                                                @opening="fecharOutrosComboboxesModal('avulsa-formacao')"
+                                                @select="limparComboboxInvalido('avulsa-formacao')"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-8" v-show="formAvulsa.curriculo.formacao >= 8">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-curso">Curso <span class="text-danger">*</span></label>
+                                        <input id="avulsa-curso" type="text" class="form-control form-control-sm"
+                                               v-model="formAvulsa.curriculo.formacao_curso"
+                                               placeholder="Ex: Administração"
+                                               autocomplete="mybp" onblur="valida_campo_vazio(this,1)">
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="mybp-modal-secao">
+                            <legend>Sobre a Vaga</legend>
+                            <div class="row">
+                                <div class="col-12 col-md-8">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" :for="`vaga_${hash}`">Vaga <span class="text-danger">*</span></label>
                                         <autocomplete :caminho="controle.dados.caminho_autocomplete"
                                                       :valido="formAvulsa.feedback.vaga_id !== ''"
                                                       v-model="formAvulsa.feedback.autocomplete_label_vaga_modal"
                                                       placeholder="Digite uma vaga"
-                                                      :formsm="false"
+                                                      :formsm="true"
                                                       :id="`vaga_${hash}`"
                                                       @onblur="resetaCampoVagaModal"
                                                       @onselect="selecionaVagaModal"></autocomplete>
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-12 col-md-6"
-                                     v-if="listaProjetos.length || formAvulsa.feedback.vaga_projeto_id">
-                                    <div class="form-group">
-                                        <label>Projeto</label>
-                                        <select class="form-control"
-                                                v-model="formAvulsa.feedback.vaga_projeto_id">
-                                            <option value="" selected>Selecione</option>
-                                            <option v-for="item in listaProjetos" :value="item.id"
-                                                    :key="item.projeto_id"
-                                                    :disabled="!item.tem_vaga">
-                                                @{{ item.projeto.nome }} - (@{{ item.qnt_preenchida }} de @{{
-                                                item.qnt_total }})
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="col-12 col-md-6">
-                                    <div class="form-group">
-                                        <label for="">Data admissão prevista</label>
-                                        <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-data-prevista">Data admissão prevista</label>
+                                        <input id="avulsa-data-prevista" type="text"
+                                               class="form-control form-control-sm validacampo"
+                                               placeholder="dd/mm/aaaa"
                                                v-mascara:data
                                                @keyup.prevent="valida_data($event.target)"
                                                @blur.prevent="valida_data($event.target)"
@@ -302,276 +311,238 @@
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <div class="form-group">
-                                        <label>Ex funcionário</label>
-                                        <select class="form-control"
-                                                v-model="formAvulsa.parecer_rh.ex_funcionario">
-                                            <option value="">Selecione</option>
-                                            <option :value="true">Sim</option>
-                                            <option :value="false">Não</option>
-                                        </select>
+                                <div class="col-12 col-md-4" v-show="listaProjetos.length || formAvulsa.feedback.vaga_projeto_id">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-projeto">Projeto</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="avulsa-projeto"
+                                                input-id="avulsa-projeto"
+                                                v-model="formAvulsa.feedback.vaga_projeto_id"
+                                                :options="opcoesProjetoModal"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhum projeto."
+                                                :max-results="50"
+                                                @opening="fecharOutrosComboboxesModal('avulsa-projeto')"
+                                                @select="limparComboboxInvalido('avulsa-projeto')"
+                                            ></combobox-auto-complete>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <div class="form-group">
-                                        <label>Turno 6x2</label>
-                                        <select class="form-control"
-                                                v-model="formAvulsa.parecer_rh.turnos_seis_por_dois">
-                                            <option value="">Selecione</option>
-                                            <option :value="true">Sim</option>
-                                            <option :value="false">Não</option>
-                                        </select>
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-ex-func">Ex-funcionário</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="avulsa-ex-func"
+                                                input-id="avulsa-ex-func"
+                                                v-model="formAvulsaExFuncCombo"
+                                                :options="opcoesSimNaoModal"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma opção."
+                                                :max-results="5"
+                                                @opening="fecharOutrosComboboxesModal('avulsa-ex-func')"
+                                                @select="limparComboboxInvalido('avulsa-ex-func')"
+                                            ></combobox-auto-complete>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <div class="form-group">
-                                        <label>Indicado <span class="text-danger">*</span></label>
-                                        <select class="form-control" onchange="valida_campo_vazio(this,1)"
-                                                onblur="valida_campo_vazio(this,1)"
-                                                v-model="formAvulsa.parecer_rh.indicacao">
-                                            <option value="">Selecione</option>
-                                            <option :value="true">Sim</option>
-                                            <option :value="false">Não</option>
-                                        </select>
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-turno">Turno 6x2</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="avulsa-turno"
+                                                input-id="avulsa-turno"
+                                                v-model="formAvulsaTurnoCombo"
+                                                :options="opcoesSimNaoModal"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma opção."
+                                                :max-results="5"
+                                                @opening="fecharOutrosComboboxesModal('avulsa-turno')"
+                                                @select="limparComboboxInvalido('avulsa-turno')"
+                                            ></combobox-auto-complete>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-sm-6 col-md-3" v-show="formAvulsa.parecer_rh.indicacao">
-                                    <div class="form-group">
-                                        <label>Quem indicou <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control"
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-indicacao">Indicado <span class="text-danger">*</span></label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="avulsa-indicacao"
+                                                input-id="avulsa-indicacao"
+                                                v-model="formAvulsaIndicacaoCombo"
+                                                :options="opcoesSimNaoModal"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma opção."
+                                                :max-results="5"
+                                                @opening="fecharOutrosComboboxesModal('avulsa-indicacao')"
+                                                @select="limparComboboxInvalido('avulsa-indicacao')"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-4" v-show="formAvulsa.parecer_rh.indicacao">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-indicado-por">Quem indicou <span class="text-danger">*</span></label>
+                                        <input id="avulsa-indicado-por" type="text" class="form-control form-control-sm"
                                                v-model="formAvulsa.parecer_rh.indicado_por"
                                                placeholder="Nome"
                                                autocomplete="mybp" onblur="valida_campo_vazio(this,1)">
                                     </div>
                                 </div>
 
-                                <div class="col-12"></div>
-
-                                <div class="col-12 col-sm-6 col-md-3">
-                                    <div class="form-group">
-                                        <label>Indicado para qual área?</label>
-                                        <input type="text" class="form-control"
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-area">Indicado para qual área?</label>
+                                        <input id="avulsa-area" type="text" class="form-control form-control-sm"
                                                v-model="formAvulsa.parecer_tecnica.indicado_area"
                                                placeholder="Área"
                                                autocomplete="mybp">
                                     </div>
                                 </div>
-
-                                <div class="col-12">
-                                    <fieldset>
-                                        <legend>EPI</legend>
-                                        <div class="row">
-                                            <div class="col-12 col-sm-6 col-md-3">
-                                                <div class="form-group">
-                                                    <label>Calça</label>
-
-                                                    <select class="form-control" v-model="formAvulsa.parecer_rh.calca">
-                                                        <option value="">Selecione</option>
-                                                        @foreach(range(34,56) as $i)
-                                                            <option value="{{$i}}">{{$i}}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-12 col-sm-6 col-md-3">
-                                                <div class="form-group">
-                                                    <label>Bota</label>
-                                                    <select class="form-control" :disabled="visualizar"
-                                                            v-model="formAvulsa.parecer_rh.bota">
-                                                        <option value="">Selecione</option>
-                                                        @foreach(range(33,50) as $i)
-                                                            <option value="{{$i}}">{{$i}}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-12 col-sm-6 col-md-3">
-                                                <div class="form-group">
-                                                    <label>Camisa proteção</label>
-                                                    <select class="form-control"
-                                                            v-model="formAvulsa.parecer_rh.camisa_protecao">
-                                                        <option value="">Selecione</option>
-                                                        @foreach(range(2,6) as $i)
-                                                            <option value="{{$i}}">{{$i}}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-12 col-sm-6 col-md-3">
-                                                <div class="form-group">
-                                                    <label>Camisa de meia</label>
-                                                    <select class="form-control"
-                                                            v-model="formAvulsa.parecer_rh.camisa_meia">
-                                                        <option value="">Selecione</option>
-                                                        <option value="P">P</option>
-                                                        <option value="M">M</option>
-                                                        <option value="G">G</option>
-                                                        <option value="GG">GG</option>
-                                                        <option value="XG">XG</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </fieldset>
-                                </div>
-
-                                <div class="col-12">
-                                    <fieldset>
-                                        <legend>Rotas</legend>
-                                        <div class="row">
-                                            <div class="col-12 col-sm-6 col-md-4">
-                                                <div class="form-group">
-                                                    <label>Bairro Rota</label>
-                                                    <input type="text" class="form-control"
-                                                           v-model="formAvulsa.parecer_rota.bairro_rota"
-                                                           placeholder="Bairro"
-                                                           autocomplete="mybp">
-                                                </div>
-                                            </div>
-
-                                            <div class="col-12 col-sm-6 col-md-4">
-                                                <div class="form-group">
-                                                    <label>Ponto de referência rota</label>
-                                                    <input type="text" class="form-control"
-                                                           v-model="formAvulsa.parecer_rota.ponto_referencia_rota"
-                                                           placeholder="Ponto de referência"
-                                                           autocomplete="mybp">
-                                                </div>
-                                            </div>
-
-                                            <div class="col-12 col-sm-6 col-md-4">
-                                                <div class="form-group">
-                                                    <label>Ponto de referência residência</label>
-                                                    <input type="text" class="form-control"
-                                                           v-model="formAvulsa.parecer_rota.ponto_referencia_residencia"
-                                                           placeholder="Ponto de referência"
-                                                           autocomplete="mybp">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </fieldset>
-                                </div>
-
-                                {{--                                <div class="col-12">--}}
-                                {{--                                    <fieldset>--}}
-                                {{--                                        <legend>Testes</legend>--}}
-                                {{--                                        <div class="row">--}}
-                                {{--                                            <div class="col-12 col-sm-6">--}}
-                                {{--                                                <div class="form-group">--}}
-                                {{--                                                    <label>Qual o teste foi aplicado</label>--}}
-                                {{--                                                    <input type="text" class="form-control"--}}
-                                {{--                                                           v-model="formAvulsa.parecer_teste.qual_teste"--}}
-                                {{--                                                           placeholder="Teste"--}}
-                                {{--                                                           autocomplete="mybp">--}}
-                                {{--                                                </div>--}}
-                                {{--                                            </div>--}}
-
-                                {{--                                            <div class="col-12 col-sm-6">--}}
-                                {{--                                                <div class="form-group">--}}
-                                {{--                                                    <label>Resultado do Teste</label>--}}
-                                {{--                                                    <select class="form-control"--}}
-                                {{--                                                            v-model="formAvulsa.parecer_teste.parecer_final_teste">--}}
-                                {{--                                                        <option value="">Selecione</option>--}}
-                                {{--                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
-                                {{--                                                        <option value="favoravel">Favorável</option>--}}
-                                {{--                                                        <option value="restricao">Restrição</option>--}}
-                                {{--                                                        <option value="desfavoravel">Desfavorável</option>--}}
-                                {{--                                                    </select>--}}
-                                {{--                                                </div>--}}
-                                {{--                                            </div>--}}
-
-                                {{--                                        </div>--}}
-                                {{--                                    </fieldset>--}}
-                                {{--                                </div>--}}
-
-                                {{--                                <div class="col-12">--}}
-                                {{--                                    <fieldset>--}}
-                                {{--                                        <legend>Técnica</legend>--}}
-                                {{--                                        <div class="row">--}}
-
-                                {{--                                            <div class="col-12 col-sm-6 col-md-4">--}}
-                                {{--                                                <div class="form-group">--}}
-                                {{--                                                    <label>Experiência com cargas rigger</label>--}}
-                                {{--                                                    <select class="form-control"--}}
-                                {{--                                                            v-model="formAvulsa.parecer_tecnica.experiencia_cargas_rigger">--}}
-                                {{--                                                        <option :value="null">NÃO INFORMADO</option>--}}
-                                {{--                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
-                                {{--                                                        <option value="Sim">Sim</option>--}}
-                                {{--                                                        <option value="Não">Não</option>--}}
-                                {{--                                                    </select>--}}
-                                {{--                                                </div>--}}
-                                {{--                                            </div>--}}
-
-
-                                {{--                                            <div class="col-12 col-sm-6 col-md-4">--}}
-                                {{--                                                <div class="form-group">--}}
-                                {{--                                                    <label>Opera plataforma móvel</label>--}}
-                                {{--                                                    <select class="form-control"--}}
-                                {{--                                                            v-model="formAvulsa.parecer_tecnica.opera_plat_movel">--}}
-                                {{--                                                        <option :value="null">NÃO INFORMADO</option>--}}
-                                {{--                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
-                                {{--                                                        <option value="Sim">Sim</option>--}}
-                                {{--                                                        <option value="Não">Não</option>--}}
-                                {{--                                                    </select>--}}
-                                {{--                                                </div>--}}
-                                {{--                                            </div>--}}
-
-                                {{--                                            <div class="col-12 col-sm-6 col-md-4">--}}
-                                {{--                                                <div class="form-group">--}}
-                                {{--                                                    <label>Opera ponte rolante</label>--}}
-                                {{--                                                    <select class="form-control"--}}
-                                {{--                                                            v-model="formAvulsa.parecer_tecnica.opera_plat_ponte">--}}
-                                {{--                                                        <option :value="null">NÃO INFORMADO</option>--}}
-                                {{--                                                        <option value="NÃO SE APLICA">NÃO SE APLICA</option>--}}
-                                {{--                                                        <option value="true">Sim</option>--}}
-                                {{--                                                        <option value="false">Não</option>--}}
-                                {{--                                                    </select>--}}
-                                {{--                                                </div>--}}
-                                {{--                                            </div>--}}
-
-                                {{--                                        </div>--}}
-                                {{--                                    </fieldset>--}}
-                                {{--                                </div>--}}
-
-                                <div class="col-12">
-                                    <fieldset>
-                                        <legend>RESULTADO INTEGRADO</legend>
-                                        <form-resultado-integrado
-                                            :form="formAvulsa.resultado_integrado"></form-resultado-integrado>
-                                    </fieldset>
-                                </div>
-
                             </div>
-
                         </fieldset>
 
-                        <fieldset>
-                            <legend>Admissão</legend>
-                            <form-admissao :form="form.admissao"></form-admissao>
-                            <dependentes :model="formAvulsa.curriculo.dependentes"
-                                         :model-delete="formAvulsa.curriculo.dependentesDelete"></dependentes>
-                            <dados-bancarios :model="formAvulsa.feedback.banco_conta"></dados-bancarios>
-
-                            <div class="col-12">
-                                <fieldset>
-                                    <legend>FOTO ESCANEADA</legend>
-                                    <upload :model="formAvulsa.curriculo.foto_tres"
-                                            :model-delete="formAvulsa.curriculo.foto_tres_delete"
-                                            url="{{ route('g.admissao.admissao.upload-anexos') }}"
-                                            :apenas-imagens="true"
-                                            :quantidade="1"
-                                            label="Selecionar Imagem"
-                                            @onProgresso="anexoUploadAndamento=true"
-                                            @onFinalizado="anexoUploadAndamento=false"></upload>
-                                </fieldset>
+                        <fieldset class="mybp-modal-secao">
+                            <legend>EPI</legend>
+                            <div class="row">
+                                <div class="col-12 col-md-3">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-calca">Calça</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="avulsa-calca"
+                                                input-id="avulsa-calca"
+                                                v-model="formAvulsa.parecer_rh.calca"
+                                                :options="opcoesCalcaModal"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma opção."
+                                                :max-results="30"
+                                                @opening="fecharOutrosComboboxesModal('avulsa-calca')"
+                                                @select="limparComboboxInvalido('avulsa-calca')"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-bota">Bota</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="avulsa-bota"
+                                                input-id="avulsa-bota"
+                                                v-model="formAvulsa.parecer_rh.bota"
+                                                :options="opcoesBotaModal"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma opção."
+                                                :max-results="30"
+                                                @opening="fecharOutrosComboboxesModal('avulsa-bota')"
+                                                @select="limparComboboxInvalido('avulsa-bota')"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-camisa-prot">Camisa proteção</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="avulsa-camisa-prot"
+                                                input-id="avulsa-camisa-prot"
+                                                v-model="formAvulsa.parecer_rh.camisa_protecao"
+                                                :options="opcoesCamisaProtModal"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma opção."
+                                                :max-results="10"
+                                                @opening="fecharOutrosComboboxesModal('avulsa-camisa-prot')"
+                                                @select="limparComboboxInvalido('avulsa-camisa-prot')"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-camisa-meia">Camisa de meia</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                instance-id="avulsa-camisa-meia"
+                                                input-id="avulsa-camisa-meia"
+                                                v-model="formAvulsa.parecer_rh.camisa_meia"
+                                                :options="opcoesCamisaMeiaModal"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma opção."
+                                                :max-results="10"
+                                                @opening="fecharOutrosComboboxesModal('avulsa-camisa-meia')"
+                                                @select="limparComboboxInvalido('avulsa-camisa-meia')"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                        </fieldset>
+
+                        <fieldset class="mybp-modal-secao">
+                            <legend>Rotas</legend>
+                            <div class="row">
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-bairro-rota">Bairro rota</label>
+                                        <input id="avulsa-bairro-rota" type="text" class="form-control form-control-sm"
+                                               v-model="formAvulsa.parecer_rota.bairro_rota"
+                                               placeholder="Bairro"
+                                               autocomplete="mybp">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-ref-rota">Ponto de referência rota</label>
+                                        <input id="avulsa-ref-rota" type="text" class="form-control form-control-sm"
+                                               v-model="formAvulsa.parecer_rota.ponto_referencia_rota"
+                                               placeholder="Referência"
+                                               autocomplete="mybp">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="avulsa-ref-res">Ponto de referência residência</label>
+                                        <input id="avulsa-ref-res" type="text" class="form-control form-control-sm"
+                                               v-model="formAvulsa.parecer_rota.ponto_referencia_residencia"
+                                               placeholder="Referência"
+                                               autocomplete="mybp">
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <form-resultado-integrado
+                            ref="formResultadoIntegradoAvulsa"
+                            :form="formAvulsa.resultado_integrado"></form-resultado-integrado>
+
+                        <form-admissao ref="formAdmissaoAvulsa" :form="form.admissao"></form-admissao>
+
+                        <dependentes ref="dependentesAvulsa"
+                                     :model="formAvulsa.curriculo.dependentes"
+                                     :model-delete="formAvulsa.curriculo.dependentesDelete"></dependentes>
+
+                        <dados-bancarios ref="dadosBancariosAvulsa"
+                                         :model="formAvulsa.feedback.banco_conta"></dados-bancarios>
+
+                        <fieldset class="mybp-modal-secao">
+                            <legend>Foto escaneada</legend>
+                            <upload :model="formAvulsa.curriculo.foto_tres"
+                                    :model-delete="formAvulsa.curriculo.foto_tres_delete"
+                                    url="{{ route('g.admissao.admissao.upload-anexos') }}"
+                                    :apenas-imagens="true"
+                                    :quantidade="1"
+                                    label="Selecionar Imagem"
+                                    @onProgresso="anexoUploadAndamento=true"
+                                    @onFinalizado="anexoUploadAndamento=false"></upload>
                         </fieldset>
                     </template>
                 </div>
@@ -596,359 +567,402 @@
             </div>
 
             <preload v-if="preload"></preload>
-            <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''">
+            <div v-if="!preload && (!cadastrado && !atualizado) && form.id !== ''" class="mybp-modal-form mybp-filtros-compactos">
+                <p class="mybp-campo-obrigatorio-legenda mybp-modal-legenda">
+                    Campos com <span class="text-danger">*</span> são obrigatórios.
+                </p>
 
-                <fieldset>
-                    <legend>DADOS PESSOAIS</legend>
+                <fieldset class="mybp-modal-secao">
+                    <legend>Dados Pessoais</legend>
                     <div class="row">
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Nome <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" :disabled="visualizar"
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-nome">Nome <span class="text-danger">*</span></label>
+                                <input id="adm-nome" type="text" class="form-control form-control-sm" :disabled="visualizar"
                                        v-model="form.curriculo.nome">
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>E-mail <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control"
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-email">E-mail <span class="text-danger">*</span></label>
+                                <input id="adm-email" type="text" class="form-control form-control-sm"
                                        :disabled="visualizar"
                                        onblur="validaEmailVazio(this)"
                                        v-model="form.curriculo.email">
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>Nascimento <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control validacampo"
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-nasc">Nascimento <span class="text-danger">*</span></label>
+                                <input id="adm-nasc" type="text" class="form-control form-control-sm validacampo"
                                        :disabled="visualizar"
                                        v-model="form.curriculo.nascimento"
-                                       placeholder="Ex: 10/10/2010"
+                                       placeholder="dd/mm/aaaa"
                                        v-mascara:data
                                        autocomplete="mybp" @keyup.prevent="valida_data_vazio($event.target,true)"
                                        @blur.prevent="valida_data_vazio($event.target,true)">
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>Naturalidade</label>
-                                <input type="text" class="form-control" onblur="valida_campo(this,2)"
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-naturalidade">Naturalidade</label>
+                                <input id="adm-naturalidade" type="text" class="form-control form-control-sm" onblur="valida_campo(this,2)"
                                        v-model="form.curriculo.naturalidade" :disabled="visualizar">
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>Sexo</label>
-                                <select
-                                    class="form-control"
-                                    v-model="form.curriculo.sexo"
-                                    :disabled="visualizar"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option v-for="item in lista_sexos" :value="item">@{{item}}</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>Estado Civil</label>
-                                <select
-                                    class="form-control"
-                                    :disabled="visualizar"
-                                    v-model="form.curriculo.estado_civil"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option v-for="item in lista_estados_civis" :value="item">@{{item}}</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>Cota PCD (Lei nº 8.213/91) <span class="text-danger">*</span></label>
-                                <select class="form-control" onchange="valida_campo_vazio(this,1)"
-                                        onblur="valida_campo_vazio(this,1)"
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-sexo">Sexo</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="adm-sexo"
+                                        input-id="adm-sexo"
+                                        v-model="form.curriculo.sexo"
+                                        :options="opcoesSexoModal"
                                         :disabled="visualizar"
-                                        v-model="form.curriculo.pcd">
-                                    <option value="">Selecione</option>
-                                    <option :value='true'>Sim</option>
-                                    <option :value='false'>Não</option>
-                                </select>
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="80"
+                                        @opening="fecharOutrosComboboxesModal('adm-sexo')"
+                                        @select="limparComboboxInvalido('adm-sexo')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-md-4" v-if="form.curriculo.pcd">
-                            <div class="form-group">
-                                <label>CID (Código Internacional de Doenças) <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" onblur="valida_campo_vazio(this,1)"
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-estado-civil">Estado Civil</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="adm-estado-civil"
+                                        input-id="adm-estado-civil"
+                                        v-model="form.curriculo.estado_civil"
+                                        :options="opcoesEstadoCivilModal"
+                                        :disabled="visualizar"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="80"
+                                        @opening="fecharOutrosComboboxesModal('adm-estado-civil')"
+                                        @select="limparComboboxInvalido('adm-estado-civil')"
+                                    ></combobox-auto-complete>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-pcd">Cota PCD <span class="text-danger">*</span></label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="adm-pcd"
+                                        input-id="adm-pcd"
+                                        v-model="formCurriculoPcdCombo"
+                                        :options="opcoesSimNaoModal"
+                                        :disabled="visualizar"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="80"
+                                        @opening="fecharOutrosComboboxesModal('adm-pcd')"
+                                        @select="limparComboboxInvalido('adm-pcd')"
+                                    ></combobox-auto-complete>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-4" v-show="form.curriculo.pcd">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-cid">CID <span class="text-danger">*</span></label>
+                                <input id="adm-cid" type="text" class="form-control form-control-sm" onblur="valida_campo_vazio(this,1)"
                                        placeholder="Informe o CID" v-model="form.curriculo.cid">
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Pai</label>
-                                <input type="text" class="form-control"
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-pai">Pai</label>
+                                <input id="adm-pai" type="text" class="form-control form-control-sm"
                                        v-model="form.curriculo.filiacao_pai" :disabled="visualizar"
-                                       placeholder="Nome do Pai"
+                                       placeholder="Nome do pai"
                                        autocomplete="mybp">
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Mãe <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control"
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-mae">Mãe <span class="text-danger">*</span></label>
+                                <input id="adm-mae" type="text" class="form-control form-control-sm"
                                        v-model="form.curriculo.filiacao_mae" :disabled="visualizar"
-                                       placeholder="Nome da Mãe"
+                                       placeholder="Nome da mãe"
                                        autocomplete="mybp" onblur="valida_campo_vazio(this,3)">
                             </div>
                         </div>
                     </div>
                 </fieldset>
 
-                <fieldset>
+                <fieldset class="mybp-modal-secao">
                     <legend>Endereço</legend>
-                    <div class="row">
-                        <div class="col-12">
-                            <endereco :obrigatorio="false" :disabled="visualizar"
-                                      :model="form.curriculo"></endereco>
-                        </div>
-                    </div>
+                    <endereco ref="enderecoModal"
+                              :obrigatorio="false"
+                              :disabled="visualizar"
+                              :model="form.curriculo"></endereco>
                 </fieldset>
 
-                <fieldset>
-                    <legend>CONTATO</legend>
-                    <div class="row">
-                        <div class="col-12">
-                            <telefone :model="form.curriculo.telefones" :pais="false"
-                                      :model-delete="form.curriculo.telefonesDelete"
-                                      :qnt_min="1"
-                                      :disabled="visualizar"
-                                      :ramal="false"></telefone>
-                        </div>
-                    </div>
+                <fieldset class="mybp-modal-secao">
+                    <legend>Contato <span class="text-danger">*</span></legend>
+                    <telefone ref="telefonesModal"
+                              :model="form.curriculo.telefones"
+                              :pais="false"
+                              :ramal="false"
+                              :detalhe="false"
+                              :model-delete="form.curriculo.telefonesDelete"
+                              :qnt_min="1"
+                              :disabled="visualizar"></telefone>
                 </fieldset>
 
-                <fieldset>
-                    <legend>DOCUMENTOS</legend>
+                <fieldset class="mybp-modal-secao">
+                    <legend>Documentos</legend>
                     <div class="row">
-                        <div class="col-12 col-sm-6 col-lg-2">
-                            <div class="form-group">
-                                <label>CNH</label>
-                                <input type="text" class="form-control"
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-cnh">CNH</label>
+                                <input id="adm-cnh" type="text" class="form-control form-control-sm"
                                        :disabled="visualizar"
                                        :value="form.parecer_rh.cnh ? form.parecer_rh.cnh_tipo : 'Não possui'">
                             </div>
                         </div>
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>RG</label>
-                                <input type="text" class="form-control" onblur="valida_campo(this,2)"
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-rg">RG</label>
+                                <input id="adm-rg" type="text" class="form-control form-control-sm"
+                                       onblur="valida_campo(this,2)"
                                        v-model="form.curriculo.rg" :disabled="visualizar">
                             </div>
                         </div>
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>RG Data Emissão</label>
-                                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-rg-emissao">RG — data emissão</label>
+                                <input id="adm-rg-emissao" type="text"
+                                       class="form-control form-control-sm validacampo"
+                                       placeholder="dd/mm/aaaa"
                                        v-model="form.curriculo.rg_data_emissao" v-mascara:data
                                        @keyup.prevent="valida_data($event.target)"
-                                       @blur.prevent="valida_data($event.target)" :disabled="visualizar">
+                                       @blur.prevent="valida_data($event.target)"
+                                       :disabled="visualizar">
                             </div>
                         </div>
-
                     </div>
                 </fieldset>
 
-                <fieldset>
+                <fieldset class="mybp-modal-secao">
+                    <legend>Formação</legend>
+                    <div class="row">
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-formacao">Formação <span class="text-danger">*</span></label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="adm-formacao"
+                                        input-id="adm-formacao"
+                                        v-model="form.curriculo.formacao"
+                                        :options="opcoesFormacaoModal"
+                                        :disabled="visualizar"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="80"
+                                        @opening="fecharOutrosComboboxesModal('adm-formacao')"
+                                        @select="limparComboboxInvalido('adm-formacao')"
+                                    ></combobox-auto-complete>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-8" v-show="form.curriculo.formacao >= 8">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-curso">Curso <span class="text-danger">*</span></label>
+                                <input id="adm-curso" type="text" class="form-control form-control-sm"
+                                       :disabled="visualizar"
+                                       v-model="form.curriculo.formacao_curso"
+                                       placeholder="Ex: Administração"
+                                       autocomplete="mybp" onblur="valida_campo_vazio(this,1)">
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="mybp-modal-secao">
                     <legend>EPI</legend>
                     <div class="row">
-                        <div class="col-12 col-sm-3">
-                            <div class="form-group">
-                                <label>Calça</label>
-
-                                <select :disabled="visualizar"
-                                        class="form-control"
+                        <div class="col-12 col-md-3">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-calca">Calça</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="adm-calca"
+                                        input-id="adm-calca"
                                         v-model="form.parecer_rh.calca"
-                                >
-                                    <option value="">Selecione</option>
-                                    @foreach(range(34,56) as $i)
-                                        <option value="{{$i}}">{{$i}}</option>
-                                    @endforeach
-                                </select>
+                                        :options="opcoesCalcaModal"
+                                        :disabled="visualizar"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="80"
+                                        @opening="fecharOutrosComboboxesModal('adm-calca')"
+                                        @select="limparComboboxInvalido('adm-calca')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="col-12 col-sm-3">
-                            <div class="form-group">
-                                <label>Bota</label>
-                                <select
-                                    class="form-control" :disabled="visualizar"
-                                    v-model="form.parecer_rh.bota"
-                                >
-                                    <option value="">Selecione</option>
-                                    @foreach(range(33,50) as $i)
-                                        <option value="{{$i}}">{{$i}}</option>
-                                    @endforeach
-                                </select>
+                        <div class="col-12 col-md-3">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-bota">Bota</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="adm-bota"
+                                        input-id="adm-bota"
+                                        v-model="form.parecer_rh.bota"
+                                        :options="opcoesBotaModal"
+                                        :disabled="visualizar"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="80"
+                                        @opening="fecharOutrosComboboxesModal('adm-bota')"
+                                        @select="limparComboboxInvalido('adm-bota')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="col-12 col-sm-3">
-                            <div class="form-group">
-                                <label>Camisa proteção</label>
-
-                                <select :disabled="visualizar" class="form-control"
-                                        v-model="form.parecer_rh.camisa_protecao">
-                                    <option value="">Selecione</option>
-                                    @foreach(range(2,6) as $i)
-                                        <option value="{{$i}}">{{$i}}</option>
-                                    @endforeach
-                                </select>
+                        <div class="col-12 col-md-3">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-camisa-prot">Camisa proteção</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="adm-camisa-prot"
+                                        input-id="adm-camisa-prot"
+                                        v-model="form.parecer_rh.camisa_protecao"
+                                        :options="opcoesCamisaProtModal"
+                                        :disabled="visualizar"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="80"
+                                        @opening="fecharOutrosComboboxesModal('adm-camisa-prot')"
+                                        @select="limparComboboxInvalido('adm-camisa-prot')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="col-12 col-sm-3">
-                            <div class="form-group">
-                                <label>Camisa de meia</label>
-                                <select :disabled="visualizar"
-                                        class="form-control"
-                                        v-model="form.parecer_rh.camisa_meia">
-                                    <option value="">Selecione</option>
-                                    <option value="P">P</option>
-                                    <option value="M">M</option>
-                                    <option value="G">G</option>
-                                    <option value="GG">GG</option>
-                                    <option value="XG">XG</option>
-                                </select>
+                        <div class="col-12 col-md-3">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-camisa-meia">Camisa de meia</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="adm-camisa-meia"
+                                        input-id="adm-camisa-meia"
+                                        v-model="form.parecer_rh.camisa_meia"
+                                        :options="opcoesCamisaMeiaModal"
+                                        :disabled="visualizar"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="80"
+                                        @opening="fecharOutrosComboboxesModal('adm-camisa-meia')"
+                                        @select="limparComboboxInvalido('adm-camisa-meia')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </fieldset>
 
-                <div class="col-12">
-                    <fieldset>
-                        <legend>Formação</legend>
-                        <div class="row">
-                            <div class="col-12 col-sm-6">
-                                <div class="form-group">
-                                    <label>Formação <span class="text-danger">*</span></label>
-                                    <select class="form-control"
-                                            onblur="valida_campo_vazio(this,1)"
-                                            onchange="valida_campo_vazio(this,1)"
-                                            :disabled="visualizar"
-                                            v-model="form.curriculo.formacao">
-                                        <option value="">Selecione ...</option>
-                                        @foreach(\App\Models\Escolaridade::get() as $item)
-                                            <option :value="{{$item->id}}">{{$item->tipo}}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-12 col-sm-6 col-lg-6 col-xl-6"
-                                 v-if="form.curriculo.formacao >=8">
-                                <div class="form-group">
-                                    <label>Curso <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control"
-                                           :disabled="visualizar"
-                                           v-model="form.curriculo.formacao_curso"
-                                           placeholder="Ex: Administração"
-                                           autocomplete="mybp" onblur="valida_campo_vazio(this,1)">
-                                </div>
-                            </div>
-                        </div>
-                    </fieldset>
-                </div>
-
-                <fieldset>
+                <fieldset class="mybp-modal-secao">
                     <legend>Técnica</legend>
                     <div class="row">
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>Experiência com cargas rigger</label>
-                                <select class="form-control" :disabled="visualizar"
-                                        v-model="form.parecer_tecnica.experiencia_cargas_rigger">
-                                    <option :value="null">NÃO INFORMADO</option>
-                                    <option value="NÃO SE APLICA">NÃO SE APLICA</option>
-                                    <option value="Sim">Sim</option>
-                                    <option value="Não">Não</option>
-                                </select>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-exp-rigger">Experiência com cargas rigger</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="adm-exp-rigger"
+                                        input-id="adm-exp-rigger"
+                                        v-model="form.parecer_tecnica.experiencia_cargas_rigger"
+                                        :options="opcoesTecnicaModal"
+                                        :disabled="visualizar"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="80"
+                                        @opening="fecharOutrosComboboxesModal('adm-exp-rigger')"
+                                        @select="limparComboboxInvalido('adm-exp-rigger')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
-
-
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>Opera plataforma móvel</label>
-                                <select class="form-control" :disabled="visualizar"
-                                        v-model="form.parecer_tecnica.opera_plat_movel">
-                                    <option :value="null">NÃO INFORMADO</option>
-                                    <option value="NÃO SE APLICA">NÃO SE APLICA</option>
-                                    <option value="Sim">Sim</option>
-                                    <option value="Não">Não</option>
-                                </select>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-plat-movel">Opera plataforma móvel</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="adm-plat-movel"
+                                        input-id="adm-plat-movel"
+                                        v-model="form.parecer_tecnica.opera_plat_movel"
+                                        :options="opcoesTecnicaModal"
+                                        :disabled="visualizar"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="80"
+                                        @opening="fecharOutrosComboboxesModal('adm-plat-movel')"
+                                        @select="limparComboboxInvalido('adm-plat-movel')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>Opera ponte rolante</label>
-                                <select class="form-control" :disabled="visualizar"
-                                        v-model="form.parecer_tecnica.opera_plat_ponte">
-                                    <option :value="null">NÃO INFORMADO</option>
-                                    <option value="NÃO SE APLICA">NÃO SE APLICA</option>
-                                    <option value="true">Sim</option>
-                                    <option value="false">Não</option>
-                                </select>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-ponte">Opera ponte rolante</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="adm-ponte"
+                                        input-id="adm-ponte"
+                                        v-model="form.parecer_tecnica.opera_plat_ponte"
+                                        :options="opcoesTecnicaPonteModal"
+                                        :disabled="visualizar"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="80"
+                                        @opening="fecharOutrosComboboxesModal('adm-ponte')"
+                                        @select="limparComboboxInvalido('adm-ponte')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
-
                     </div>
                 </fieldset>
 
-                <fieldset>
-                    <legend>SOBRE A VAGA</legend>
+                <fieldset class="mybp-modal-secao">
+                    <legend>Sobre a Vaga</legend>
                     <div class="row">
-                        <div class="col-12 col-sm-12 col-md-12">
-                            <div class="form-group">
-                                <label>Vaga <span class="text-danger">*</span></label>
+                        <div class="col-12 col-md-8">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" :for="`vaga_edit_${hash}`">Vaga <span class="text-danger">*</span></label>
                                 <autocomplete :caminho="controle.dados.caminho_autocomplete"
                                               :valido="form.vagas_abertas_id !== ''"
                                               v-model="form.autocomplete_label_vaga_modal"
                                               placeholder="Digite uma vaga"
                                               :disabled="visualizar"
                                               :readonly="visualizar"
-                                              :formsm="false"
-                                              :id="`vaga_${hash}`"
+                                              :formsm="true"
+                                              :id="`vaga_edit_${hash}`"
                                               @onblur="resetaCampoVagaModalEditar"
                                               @onselect="selecionaVagaModalEditar"></autocomplete>
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-12 col-md-6" v-if="listaProjetos.length || form.vaga_projeto_id">
-                            <div class="form-group">
-                                <label>Projeto</label>
-                                <select class="form-control"
-                                        v-model="form.vaga_projeto_id" :disabled="visualizar">
-                                    <option value="" selected>Selecione</option>
-                                    <option v-for="item in listaProjetos" :value="item.id" :key="item.projeto_id"
-                                            :disabled="!item.tem_vaga">
-                                        @{{ item.projeto.nome }} - (@{{ item.qnt_preenchida }} de @{{ item.qnt_total }})
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-md-6">
-                            <div class="form-group">
-                                <label for="">Data admissão prevista</label>
-                                <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-data-prevista">Data admissão prevista</label>
+                                <input id="adm-data-prevista" type="text"
+                                       class="form-control form-control-sm validacampo"
+                                       placeholder="dd/mm/aaaa"
                                        v-mascara:data
                                        @keyup.prevent="valida_data($event.target)"
                                        @blur.prevent="valida_data($event.target)"
@@ -957,149 +971,176 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-md-3">
-                            <div class="form-group">
-                                <label>Ex funcionário</label>
-                                <select class="form-control"
-                                        v-model="form.parecer_rh.ex_funcionario" :disabled="visualizar">
-                                    <option value="">Selecione</option>
-                                    <option :value="true">Sim</option>
-                                    <option :value="false">Não</option>
-                                </select>
+                        <div class="col-12 col-md-4" v-show="listaProjetos.length || form.vaga_projeto_id">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-projeto">Projeto</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="adm-projeto"
+                                        input-id="adm-projeto"
+                                        v-model="form.vaga_projeto_id"
+                                        :options="opcoesProjetoModal"
+                                        :disabled="visualizar"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="80"
+                                        @opening="fecharOutrosComboboxesModal('adm-projeto')"
+                                        @select="limparComboboxInvalido('adm-projeto')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-md-3">
-                            <div class="form-group">
-                                <label>Turno 6x2</label>
-                                <select class="form-control"
-                                        v-model="form.parecer_rh.turnos_seis_por_dois" :disabled="visualizar">
-                                    <option value="">Selecione</option>
-                                    <option :value="true">Sim</option>
-                                    <option :value="false">Não</option>
-                                </select>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-ex-func">Ex-funcionário</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="adm-ex-func"
+                                        input-id="adm-ex-func"
+                                        v-model="formParecerExFuncionarioCombo"
+                                        :options="opcoesSimNaoModal"
+                                        :disabled="visualizar"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="80"
+                                        @opening="fecharOutrosComboboxesModal('adm-ex-func')"
+                                        @select="limparComboboxInvalido('adm-ex-func')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-md-3">
-                            <div class="form-group">
-                                <label>Indicado</label>
-                                <select class="form-control" :disabled="visualizar"
-                                        v-model="form.parecer_rh.indicacao">
-                                    <option value="">Selecione</option>
-                                    <option :value="true">Sim</option>
-                                    <option :value="false">Não</option>
-                                </select>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-turno">Turno 6x2</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="adm-turno"
+                                        input-id="adm-turno"
+                                        v-model="formParecerTurnoCombo"
+                                        :options="opcoesSimNaoModal"
+                                        :disabled="visualizar"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="80"
+                                        @opening="fecharOutrosComboboxesModal('adm-turno')"
+                                        @select="limparComboboxInvalido('adm-turno')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6 col-md-3" v-show="form.parecer_rh.indicacao">
-                            <div class="form-group">
-                                <label>Quem indicou <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control"
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-indicado">Indicado</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="adm-indicado"
+                                        input-id="adm-indicado"
+                                        v-model="formParecerIndicacaoCombo"
+                                        :options="opcoesSimNaoModal"
+                                        :disabled="visualizar"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="80"
+                                        @opening="fecharOutrosComboboxesModal('adm-indicado')"
+                                        @select="limparComboboxInvalido('adm-indicado')"
+                                    ></combobox-auto-complete>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-4" v-show="form.parecer_rh.indicacao">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-indicado-por">Quem indicou <span class="text-danger">*</span></label>
+                                <input id="adm-indicado-por" type="text" class="form-control form-control-sm"
                                        v-model="form.parecer_rh.indicado_por" :disabled="visualizar"
                                        placeholder="Nome"
                                        autocomplete="mybp" onblur="valida_campo_vazio(this,1)">
                             </div>
                         </div>
-
-                        <div class="col-12"></div>
-
-                        <fieldset v-if="form.parecer_rota">
-                            <legend>Rota</legend>
-                            <div class="row">
-                                <div class="col-12 col-sm-6">
-                                    <div class="form-group">
-                                        <label>Bairro Rota</label>
-                                        <input type="text" class="form-control" :disabled="visualizar"
-                                               :value="form.parecer_rota.bairro_rota">
-                                    </div>
-                                </div>
-
-                                <div class="col-12 col-sm-6">
-                                    <div class="form-group">
-                                        <label>Ponto Referência Rota</label>
-                                        <input type="text" class="form-control" :disabled="visualizar"
-                                               :value="form.parecer_rota.ponto_referencia_rota">
-                                    </div>
-                                </div>
-
-                                <div class="col-12 col-sm-6">
-                                    <div class="form-group">
-                                        <label>Ponto Referência Bairro</label>
-                                        <input type="text" class="form-control" :disabled="visualizar"
-                                               :value="form.parecer_rota.ponto_referencia_residencia">
-                                    </div>
-                                </div>
-                            </div>
-                        </fieldset>
-
-                        <fieldset v-if="form.parecer_teste">
-                            <legend>Testes</legend>
-                            <div class="row">
-                                <div class="col-12 col-sm-6">
-                                    <div class="form-group">
-                                        <label>Teste aplicado</label>
-                                        <input type="text" class="form-control" :disabled="visualizar"
-                                               :value="form.parecer_teste.qual_teste">
-                                    </div>
-                                </div>
-
-                                <div class="col-12 col-sm-6">
-                                    <div class="form-group">
-                                        <label>Resultado Teste Prático</label>
-                                        <input type="text" class="form-control" :disabled="visualizar"
-                                               :value="form.parecer_teste.parecer_final_teste">
-                                    </div>
-                                </div>
-                            </div>
-                        </fieldset>
                     </div>
                 </fieldset>
 
-                <fieldset>
-                    <legend>RESULTADO INTEGRADO</legend>
-                    <form-resultado-integrado
-                        :form="form.resultado_integrado" :disabled="visualizar || !editando"
-                        :visualizar="visualizar"></form-resultado-integrado>
+                <fieldset class="mybp-modal-secao" v-if="form.parecer_rota">
+                    <legend>Rota</legend>
+                    <div class="row">
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-bairro-rota">Bairro rota</label>
+                                <input id="adm-bairro-rota" type="text" class="form-control form-control-sm" :disabled="visualizar"
+                                       :value="form.parecer_rota.bairro_rota">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-ref-rota">Ponto de referência rota</label>
+                                <input id="adm-ref-rota" type="text" class="form-control form-control-sm" :disabled="visualizar"
+                                       :value="form.parecer_rota.ponto_referencia_rota">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-ref-res">Ponto de referência residência</label>
+                                <input id="adm-ref-res" type="text" class="form-control form-control-sm" :disabled="visualizar"
+                                       :value="form.parecer_rota.ponto_referencia_residencia">
+                            </div>
+                        </div>
+                    </div>
                 </fieldset>
 
-
-                <fieldset>
-                    <legend class="text-uppercase">ADMISSÃO</legend>
-
-                    <form-admissao :form="form.admissao"
-                                   :visualizar="visualizar"
-                                   :disabled="visualizar || !editando"></form-admissao>
-
-                    <div class="col-12">
-                        <dependentes :model="form.curriculo.dependentes" :visualizar='visualizar'
-                                     :model-delete="form.curriculo.dependentesDelete"></dependentes>
+                <fieldset class="mybp-modal-secao" v-if="form.parecer_teste">
+                    <legend>Testes</legend>
+                    <div class="row">
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-teste">Teste aplicado</label>
+                                <input id="adm-teste" type="text" class="form-control form-control-sm" :disabled="visualizar"
+                                       :value="form.parecer_teste.qual_teste">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="adm-resultado-teste">Resultado teste prático</label>
+                                <input id="adm-resultado-teste" type="text" class="form-control form-control-sm" :disabled="visualizar"
+                                       :value="form.parecer_teste.parecer_final_teste">
+                            </div>
+                        </div>
                     </div>
+                </fieldset>
 
-                    {{--                    <div class="col-12">--}}
-                    {{--                        <ferias-adquiridas :model="form.admissao.ferias_adquiridas" :visualizar='visualizar'--}}
-                    {{--                                     :model-delete="form.admissao.ferias_adquiridasDelete"></ferias-adquiridas>--}}
-                    {{--                    </div>--}}
+                <form-resultado-integrado
+                    ref="formResultadoIntegradoModal"
+                    :form="form.resultado_integrado" :disabled="visualizar || !editando"
+                    :visualizar="visualizar"></form-resultado-integrado>
 
-                    <div class="col-12">
-                        <dados-bancarios :model="form.banco_conta" :visualizar='visualizar'></dados-bancarios>
-                    </div>
+                <form-admissao ref="formAdmissaoModal"
+                               :form="form.admissao"
+                               :visualizar="visualizar"
+                               :disabled="visualizar || !editando"></form-admissao>
 
-                    <div class='col-12'>
-                        <fieldset>
-                            <legend>FOTO ESCANEADA</legend>
-                            <upload :model='form.curriculo.foto_tres'
-                                    :model-delete='form.curriculo.foto_tres_delete' :leitura='visualizar'
-                                    url="{{ route('g.admissao.admissao.upload-anexos') }}"
-                                    :apenas-imagens='true'
-                                    :quantidade='1'
-                                    :disabled="visualizar"
-                                    label='Selecionar Imagem'
-                                    @onProgresso='anexoUploadAndamento=true'
-                                    @onFinalizado='anexoUploadAndamento=false'></upload>
-                        </fieldset>
-                    </div>
+                <dependentes ref="dependentesModal"
+                             :model="form.curriculo.dependentes"
+                             :visualizar='visualizar'
+                             :model-delete="form.curriculo.dependentesDelete"></dependentes>
+
+                <dados-bancarios ref="dadosBancariosModal"
+                                 :model="form.banco_conta"
+                                 :visualizar='visualizar'></dados-bancarios>
+
+                <fieldset class="mybp-modal-secao">
+                    <legend>Foto escaneada</legend>
+                    <upload :model='form.curriculo.foto_tres'
+                            :model-delete='form.curriculo.foto_tres_delete' :leitura='visualizar'
+                            url="{{ route('g.admissao.admissao.upload-anexos') }}"
+                            :apenas-imagens='true'
+                            :quantidade='1'
+                            :disabled="visualizar"
+                            label='Selecionar Imagem'
+                            @onProgresso='anexoUploadAndamento=true'
+                            @onFinalizado='anexoUploadAndamento=false'></upload>
+                </fieldset>
             </div>
         </template>
         <template #rodape>
@@ -1120,68 +1161,80 @@
     <modal ref="janelaAdmissaoMassa" id="janelaAdmissaoMassa" titulo="Admissão em massa" :size="95">
         <template #conteudo>
             <preload v-if="form_massa.preload"></preload>
-            <div v-if="!form_massa.preload">
+            <div v-if="!form_massa.preload" class="mybp-modal-form mybp-filtros-compactos">
 
-                <fieldset>
-                    <legend class="text-uppercase">INFORMAÇÕES</legend>
+                <fieldset class="mybp-modal-secao">
+                    <legend>Informações</legend>
                     <div class="row">
 
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Tipo de admissão</label>
-                                <select class="form-control" onchange="valida_campo(this,1)"
-                                        onblur="valida_campo(this,1)"
-                                        v-model="form_massa.tipo_admissao">
-                                    <option value="">Selecione</option>
-                                    <option value="TEMPORARIO">TEMPORARIO</option>
-                                    <option value="INTERMITENTE">INTERMITENTE</option>
-                                    <option value="DETERMINADO">DETERMINADO</option>
-                                    <option value="FIXO">FIXO</option>
-                                    <option value="PJ">PJ</option>
-                                </select>
+                                                <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="massa-tipo">Tipo de admissão</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="massa-tipo"
+                                        input-id="massa-tipo"
+                                        v-model="form_massa.tipo_admissao"
+                                        :options="opcoesMassaTipoAdmissao"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="40"
+                                        @opening="fecharOutrosComboboxesModal('massa-tipo')"
+                                        @select="limparComboboxInvalido('massa-tipo')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6" v-if="form_massa.tipo_admissao === 'FIXO'">
-                            <div class="form-group">
-                                <label>Prazo de experiência <span class="text-danger">*</span></label>
-                                <select class="form-control" onchange="valida_campo_vazio(this,1)"
-                                        onblur="valida_campo_vazio(this,1)"
-                                        v-model="form_massa.prazo_experiencia">
-                                    <option :value="''">Selecione</option>
-                                    <option value="Nenhum">Nenhum</option>
-                                    <option value="30+30">30+30</option>
-                                    <option value="45+45">45+45</option>
-                                    <option value="30+60">30+60</option>
-                                    <option value="60+30">60+30</option>
-                                </select>
+                                                <div class="col-12 col-md-4" v-if="form_massa.tipo_admissao === 'FIXO'">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="massa-prazo">Prazo de experiência <span class="text-danger">*</span></label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="massa-prazo"
+                                        input-id="massa-prazo"
+                                        v-model="form_massa.prazo_experiencia"
+                                        :options="opcoesMassaPrazo"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="40"
+                                        @opening="fecharOutrosComboboxesModal('massa-prazo')"
+                                        @select="limparComboboxInvalido('massa-prazo')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
 
                         <div class="col-12 col-sm-6"
                              v-if="form_massa.tipo_admissao === 'TEMPORARIO' || form_massa.tipo_admissao === 'DETERMINADO'">
-                            <div class="form-group">
+                            <div class="form-group mybp-filtro-campo">
                                 <datepicker label="Data de encerramento"
                                             v-model="form_massa.data_encerramento"></datepicker>
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Documento Portaria</label>
-                                <select class="form-control" onchange="valida_campo(this,1)"
-                                        onblur="valida_campo(this,1)"
-                                        v-model="form_massa.documento_portaria">
-                                    <option value="">Selecione</option>
-                                    <option value="PENDENTE">PENDENTE</option>
-                                    <option value="CONCLUIDO">CONCLUIDO</option>
-                                </select>
+                                                <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="massa-doc-portaria">Documento Portaria</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="massa-doc-portaria"
+                                        input-id="massa-doc-portaria"
+                                        v-model="form_massa.documento_portaria"
+                                        :options="opcoesMassaStatusSimples"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="40"
+                                        @opening="fecharOutrosComboboxesModal('massa-doc-portaria')"
+                                        @select="limparComboboxInvalido('massa-doc-portaria')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
 
                         <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Data do ASO</label>
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Data do ASO</label>
                                 <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
                                        v-model="form_massa.ultimo_aso.data_realizacao" v-mascara:data
                                        @keyup.prevent="valida_data($event.target)"
@@ -1189,55 +1242,66 @@
                             </div>
                         </div>
 
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Status Carteira de Treinamento e Etiqueta</label>
-                                <select class="form-control" onchange="valida_campo(this,1)"
-                                        onblur="valida_campo(this,1)"
-                                        v-model="form_massa.status_carteira_treinamento">
-                                    <option value="">Selecione</option>
-                                    <option value="PENDENTE">PENDENTE</option>
-                                    <option value="AGUARDANDO TREINAMENTO">AGUARDANDO TREINAMENTO</option>
-                                    <option value="ENTREGUE">ENTREGUE</option>
-                                </select>
+                                                <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="massa-carteira">Status Carteira / Etiqueta</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="massa-carteira"
+                                        input-id="massa-carteira"
+                                        v-model="form_massa.status_carteira_treinamento"
+                                        :options="opcoesMassaCarteira"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="40"
+                                        @opening="fecharOutrosComboboxesModal('massa-carteira')"
+                                        @select="limparComboboxInvalido('massa-carteira')"
+                                    ></combobox-auto-complete>
+                                </div>
+                            </div>
+                        </div>
+
+                                                <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="massa-segmento">Padrão de treinamento</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="massa-segmento"
+                                        input-id="massa-segmento"
+                                        v-model="form_massa.segmento_treinamento_id"
+                                        :options="opcoesMassaSegmento"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="40"
+                                        @opening="fecharOutrosComboboxesModal('massa-segmento')"
+                                        @select="limparComboboxInvalido('massa-segmento')"
+                                    ></combobox-auto-complete>
+                                </div>
+                            </div>
+                        </div>
+
+                                                <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="massa-status">Status <span class="text-danger">*</span></label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="massa-status"
+                                        input-id="massa-status"
+                                        v-model="form_massa.status"
+                                        :options="opcoesMassaStatus"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="40"
+                                        @opening="fecharOutrosComboboxesModal('massa-status')"
+                                        @select="limparComboboxInvalido('massa-status')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
 
                         <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Padrão de treinamento</label>
-                                <select class="form-control" v-model="form_massa.segmento_treinamento_id">
-                                    <option :value="null">Selecione</option>
-                                    <option v-for="s in segmentos_treinamento" :key="s.id" :value="s.id">@{{ s.nome }}</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Status <span class="text-danger">*</span></label>
-                                <select class="form-control" onchange="valida_campo_vazio(this,1)"
-
-                                        onblur="valida_campo_vazio(this,1)"
-                                        v-model="form_massa.status">
-                                    <option value="">Selecione</option>
-                                    <option value="AGUARDANDO QUALIFICAÇÃO">AGUARDANDO QUALIFICAÇÃO</option>
-                                    <option value="PRONTO PARA ADMISSAO">PRONTO PARA ADMISSAO</option>
-                                    <option value="ADMITIDO">ADMITIDO</option>
-                                    <option value="STAND BY">STAND BY</option>
-                                    <option value="PENDENTE ASO">PENDENTE ASO</option>
-                                    <option value="PENDENTE DOCUMENTO">PENDENTE DOCUMENTO</option>
-                                    <option value="PENDENTE TREINAMENTO">PENDENTE TREINAMENTO</option>
-                                    <option value="CANCELADO">CANCELADO</option>
-                                    <option value="ENCAMINHADO EXAME">ENCAMINHADO EXAME</option>
-                                    <option value="DESISTÊNCIA">DESISTÊNCIA</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Data da Admissão</label>
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Data da Admissão</label>
                                 <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
                                        v-model="form_massa.data_admissao" v-mascara:data
                                        @keyup.prevent="valida_data($event.target)"
@@ -1246,8 +1310,8 @@
                         </div>
 
                         <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Data da Entrega na área</label>
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Data da Entrega na área</label>
                                 <input type="text" class="form-control validacampo" placeholder="dd/mm/aaaa"
                                        v-model="form_massa.data_entrega_area" v-mascara:data
                                        @keyup.prevent="valida_data($event.target)"
@@ -1256,15 +1320,22 @@
                         </div>
 
 
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Biometria</label>
-                                <select class="form-control"
-                                        v-model="form_massa.biometria">
-                                    <option value="">Selecione</option>
-                                    <option :value="true">SIM</option>
-                                    <option :value="false">NÃO</option>
-                                </select>
+                                                <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="massa-biometria">Biometria</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="massa-biometria"
+                                        input-id="massa-biometria"
+                                        v-model="formMassaBiometriaCombo"
+                                        :options="opcoesSimNaoModal"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="40"
+                                        @opening="fecharOutrosComboboxesModal('massa-biometria')"
+                                        @select="limparComboboxInvalido('massa-biometria')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1285,25 +1356,58 @@
     <modal ref="janelaDemitir" id="janelaDemitir" titulo="Demissão Avulsa" size="g">
         <template #conteudo>
             <preload v-if="modeldemissao.preload"></preload>
-            <div v-if="!modeldemissao.preload">
-                <fieldset style="margin-top: 0px">
-                    <legend>Informações do Colaborador</legend>
-                    <div style="text-transform: uppercase">
-                        <span>Nome: <strong>@{{ modeldemissao.form.nome }}</strong></span><br>
-                        <span>CPF: <strong>@{{ modeldemissao.form.cpf }}</strong></span><br>
-                        <span>
-                            Cargo: <strong>@{{ modeldemissao.form.cargo }}</strong> | Função: <strong>
-                                @{{ modeldemissao.form.funcao }}</strong></span><br>
-                        <span>Data de admissão: <strong>@{{ modeldemissao.form.data_admissao }}</strong></span><br>
+            <div v-if="!modeldemissao.preload" class="mybp-modal-form mybp-filtros-compactos">
+                <fieldset class="mybp-modal-secao" style="margin-top: 0">
+                    <legend>Colaborador</legend>
+                    <div class="row">
+                        <div class="col-12 col-md-6">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Nome</label>
+                                <input type="text" class="form-control form-control-sm" :value="modeldemissao.form.nome" disabled>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">CPF</label>
+                                <input type="text" class="form-control form-control-sm" :value="modeldemissao.form.cpf" disabled>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Cargo</label>
+                                <input type="text" class="form-control form-control-sm" :value="modeldemissao.form.cargo" disabled>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Função</label>
+                                <input type="text" class="form-control form-control-sm" :value="modeldemissao.form.funcao" disabled>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Data de admissão</label>
+                                <input type="text" class="form-control form-control-sm" :value="modeldemissao.form.data_admissao" disabled>
+                            </div>
+                        </div>
                     </div>
                 </fieldset>
-
-                <fieldset>
-                    <legend>Dados da demissão</legend>
+                <fieldset class="mybp-modal-secao">
+                    <legend>Demissão</legend>
                     <div class="row">
-                        <div class="col-12">
-                            <datepicker label="Data demissão" :disabled="modeldemissao.form.status === 'DEMITIDO'"
-                                        v-model="modeldemissao.form.data_desmobilizacao"></datepicker>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo mybp-modal-campo-data">
+                                <label class="mybp-label">Data demissão <span class="text-danger">*</span></label>
+                                <datepicker
+                                    id="demitir-data"
+                                    label=""
+                                    class="corrigiDatepicker"
+                                    formsm
+                                    :disabled="modeldemissao.form.status === 'DEMITIDO'"
+                                    v-model="modeldemissao.form.data_desmobilizacao"
+                                    @onselect="limparCampoDataInvalido('demitir-data')"
+                                ></datepicker>
+                            </div>
                         </div>
                     </div>
                 </fieldset>
@@ -1320,9 +1424,14 @@
         </template>
     </modal>
 
-    <fieldset>
-        <legend class="text-uppercase">Filtro</legend>
-        <form class="row" @submit.prevent="$refs.componente.buscar()">
+    <filtro-listagem
+        class="mt-2 mybp-filtros-compactos"
+        :mostrar-limpar-filtros="totalFiltrosAtivos > 0"
+        :desabilitado="controle.carregando"
+        @submit="atualizar"
+        @limpar="limparFiltros"
+    >
+        <template #filtros>
             <date-range-filter
                 :key="'filtro-periodo'"
                 v-model:enabled="controle.dados.filtroPeriodo"
@@ -1331,8 +1440,9 @@
                 :disabled="!!controle.carregando"
                 :id-suffix="'periodo-' + hash"
                 label="Por período"
-                wrapper-class="col-12 col-md-3">
-            </date-range-filter>
+                wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                @change="onPeriodoChange"
+            ></date-range-filter>
 
             <date-range-filter
                 :key="'filtro-aso'"
@@ -1342,8 +1452,9 @@
                 :disabled="!!controle.carregando"
                 :id-suffix="'aso-' + hash"
                 label="Data do ASO"
-                wrapper-class="col-12 col-md-3">
-            </date-range-filter>
+                wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                @change="onPeriodoChange"
+            ></date-range-filter>
 
             <date-range-filter
                 :key="'filtro-admissao'"
@@ -1353,169 +1464,229 @@
                 :disabled="!!controle.carregando"
                 :id-suffix="'admissao-' + hash"
                 label="Data da Admissão"
-                wrapper-class="col-12 col-md-3">
-            </date-range-filter>
-            <div class="col-12 col-sm-4 col-md-3" v-if="lista_ccs && AUTENTICADO.temFilial">
-                <div class="form-group">
-                    <label for="">Por Cnpj</label>
-                    <select class="form-control form-control-sm" @change="changeCnpj"
+                wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                @change="onPeriodoChange"
+            ></date-range-filter>
+
+            <div class="col-12 col-md-4" v-if="lista_ccs && AUTENTICADO.temFilial">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="admissao-processo-cnpj">Lotação</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroCnpj"
+                            instance-id="admissao-processo-cnpj"
+                            input-id="admissao-processo-cnpj"
+                            v-model="controle.dados.campoCnpj"
+                            :options="filtroCnpjOpcoes"
                             :disabled="controle.carregando"
-                            v-model="controle.dados.campoCnpj">
-                        <option value="">Todos</option>
-                        <option v-for="(item, key) in lista_ccs.cnpjs" :value="key" :keys="key">
-                            @{{item.nome_fantasia}} - @{{item.cnpj}}
-                        </option>
-                    </select>
+                            placeholder-blur="Todas as lotações"
+                            empty-message="Nenhuma lotação encontrada."
+                            :max-results="50"
+                            @opening="fecharOutrosComboboxes('admissao-processo-cnpj')"
+                            @select="onSelectCnpj"
+                        ></combobox-auto-complete>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-12 col-sm-4 col-md-3" v-if="lista_ccs">
-                <div class="form-group">
-                    <label for="">Centro de Custo</label>
-                    <select class="form-control form-control-sm" @change="atualizar"
+            <div class="col-12 col-md-4" v-if="lista_ccs">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="admissao-processo-cc">Centro de custo</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroCentroCusto"
+                            instance-id="admissao-processo-cc"
+                            input-id="admissao-processo-cc"
+                            v-model="controle.dados.campoCentroCusto"
+                            :options="filtroCentroCustoOpcoes"
+                            :disabled="controle.carregando || !filtroCentroCustoOpcoes.length"
+                            placeholder-blur="Todos os centros de custo"
+                            empty-message="Nenhum centro de custo encontrado."
+                            :max-results="200"
+                            @opening="fecharOutrosComboboxes('admissao-processo-cc')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="admissao-processo-busca">
+                        Colaborador / CPF
+                        <span v-if="buscaUnificadaEhCpf" class="admissao-processo-filtro-hint">CPF</span>
+                    </label>
+                    <input
+                        id="admissao-processo-busca"
+                        type="text"
+                        placeholder="Nome ou CPF"
+                        autocomplete="off"
+                        inputmode="search"
+                        class="form-control form-control-sm"
+                        :disabled="controle.carregando"
+                        :value="campoBuscaUnificada"
+                        @input="onInputBuscaUnificada"
+                    />
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label">Cargo</label>
+                    <autocomplete
+                        :caminho="controle.dados.caminho_autocomplete"
+                        :valido="controle.dados.campoVaga !== ''"
+                        :formsm="true"
+                        v-model="controle.dados.autocomplete_label"
+                        :disabled="controle.carregando"
+                        placeholder="Por cargo"
+                        @onblur="resetaCampo"
+                        @onselect="selecionaVaga"
+                    ></autocomplete>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="admissao-processo-uf">Estado</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroUf"
+                            instance-id="admissao-processo-uf"
+                            input-id="admissao-processo-uf"
+                            v-model="controle.dados.campoUf"
+                            :options="filtroUfOpcoes"
                             :disabled="controle.carregando"
-                            v-model="controle.dados.campoCentroCusto">
-                        <option value="">Todos</option>
-                        <option :title="item.label" v-for="(item, key) in filtroListaCentroCustoCnpj"
-                                :value="item.matriz ? item.id : item.filial_id"
-                                :keys="key">
-                            @{{item.label}}
-                        </option>
-                        <option value="--naoinformado--">--- Não Informado ---</option>
-                    </select>
+                            placeholder-blur="Todos os estados"
+                            empty-message="Nenhum estado encontrado."
+                            :max-results="30"
+                            @opening="fecharOutrosComboboxes('admissao-processo-uf')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
                 </div>
             </div>
 
-
-            <div class="col-12 col-sm-6 col-md-6 col-lg-3">
-                <div class="form-group">
-                    <label>CPF</label>
-                    <input type="text"
-                           placeholder="Buscar por cpf"
-                           autocomplete="mybp"
-                           onblur="valida_cpf(this)"
-                           v-mascara:cpf
-                           class="form-control form-control-sm" :disabled="controle.carregando"
-                           v-model="controle.dados.campoCPF">
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
-                <div class="form-group">
-                    <label>Nome</label>
-                    <input type="text"
-                           placeholder="Buscar por nome ou ID"
-                           autocomplete="off"
-                           class="form-control form-control-sm"
-                           :disabled="controle.carregando"
-                           v-model="controle.dados.campoBusca">
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-5 col-md-5 col-lg-5">
-                <div class="form-group">
-                    <label>Cargo</label>
-                    <autocomplete :caminho="controle.dados.caminho_autocomplete"
-                                  :valido="controle.dados.campoVaga !== ''"
-                                  v-model="controle.dados.autocomplete_label"
-                                  :disabled="controle.carregando"
-                                  placeholder="Por cargo"
-                                  @onblur="resetaCampo"
-                                  @onselect="selecionaVaga"></autocomplete>
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                <div class="form-group">
-                    <label>Estado</label>
-                    <select2 :settings="settings2" :options="ufs" @change="atualizar" :disabled="controle.carregando"
-                             v-model="controle.dados.campoUf"></select2>
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-4 col-md-3">
-                <div class="form-group">
-                    <label for="">Status admissão</label>
-                    <select2 :settings="settings2" :options="listaStatusAdmissao" @change="atualizar"
-                             :disabled="controle.carregando" v-model="controle.dados.campoStatusAdmissao"></select2>
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-4 col-md-3">
-                <div class="form-group">
-                    <label for="">Tipo admissão</label>
-                    <select2 :settings="settings2" :options="listaTipoAdmissao" @change="atualizar"
-                             :disabled="controle.carregando" v-model="controle.dados.campoTipoAdmissao"></select2>
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-2" v-if="permissoes.filtrar_demitido">
-                <div class="form-group">
-                    <label>Por Demitido</label>
-                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                            @change.prevent="filtrarDemitidos=controle.dados.campoDemitido"
-                            v-model="controle.dados.campoDemitido">
-                        <option :value="true">Sim</option>
-                        <option :value="false">Não</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                <div class="form-group">
-                    <label for="">Exibir</label>
-                    <select class="form-control form-control-sm" @change="atualizar"
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="admissao-processo-status">Status admissão</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroStatusAdmissao"
+                            instance-id="admissao-processo-status"
+                            input-id="admissao-processo-status"
+                            v-model="controle.dados.campoStatusAdmissao"
+                            :options="filtroStatusAdmissaoOpcoes"
                             :disabled="controle.carregando"
-                            v-model="controle.dados.pages">
-                        <option v-for="item in por_pagina" :value="item">@{{ item }}</option>
-                    </select>
+                            placeholder-blur="Todos os status"
+                            empty-message="Nenhuma opção encontrada."
+                            :max-results="20"
+                            @opening="fecharOutrosComboboxes('admissao-processo-status')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
                 </div>
             </div>
-        </form>
 
-        <div class="col-12">
-            <div class="row">
-                <button type="button" class="btn btn-sm mr-1 btn-success mr-1 mb-2" :disabled="controle.carregando"
-                        @click="atualizar"><i
-                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                    Atualizar
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="admissao-processo-tipo">Tipo admissão</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroTipoAdmissao"
+                            instance-id="admissao-processo-tipo"
+                            input-id="admissao-processo-tipo"
+                            v-model="controle.dados.campoTipoAdmissao"
+                            :options="filtroTipoAdmissaoOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Todos os tipos"
+                            empty-message="Nenhuma opção encontrada."
+                            :max-results="20"
+                            @opening="fecharOutrosComboboxes('admissao-processo-tipo')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4" v-if="permissoes.filtrar_demitido">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="admissao-processo-demitido">Por demitido</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroDemitido"
+                            instance-id="admissao-processo-demitido"
+                            input-id="admissao-processo-demitido"
+                            v-model="campoDemitidoCombo"
+                            :options="filtroDemitidoOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Não"
+                            empty-message="Nenhuma opção encontrada."
+                            :max-results="5"
+                            @opening="fecharOutrosComboboxes('admissao-processo-demitido')"
+                            @select="onSelectDemitido"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="admissao-processo-pages">Exibir</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroPages"
+                            instance-id="admissao-processo-pages"
+                            input-id="admissao-processo-pages"
+                            v-model="campoPagesCombo"
+                            :options="filtroPagesOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="20"
+                            empty-message="Nenhuma opção encontrada."
+                            :max-results="10"
+                            @opening="fecharOutrosComboboxes('admissao-processo-pages')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template #acoes>
+            <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
+                Buscar
+            </button>
+            @can('admissao_processo_insert')
+                <button
+                    type="button"
+                    class="btn btn-sm btn-primary"
+                    :disabled="controle.carregando"
+                    @click="formCadastraAvulsa(); $refs.janelaAdmissaoAvulsa?.abrirModal()"
+                >
+                    <i class="fas fa-plus"></i> Admissão avulsa
                 </button>
-                @can('admissao_processo_insert')
-                    <button type="button" class="btn btn-sm mr-1 btn-primary mr-1 mb-2" :disabled="controle.carregando"
-                            @click="formCadastraAvulsa(); $refs.janelaAdmissaoAvulsa?.abrirModal()"
-                    >
-                        <i class="fas fa-plus"></i>
-                        ADMISSÃO AVULSA
-                    </button>
-
-
-                    <button class="btn btn-sm mr-1 btn-danger mb-2 mr-1"
-                            :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                            :disabled="selecionados.length === 0" @click="selecionados = []">
-                        <i class="fa fa-times"></i> LIMPAR SELEÇÃO
-                    </button>
-
-                    <button type="button" class="btn btn-sm mr-1 btn-primary mb-2 mr-1"
-                            @click.prevent="exportaExcel()"
-                            :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
-                        <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
-                                                                               v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
-                    </button>
-
-
-                    <button class="btn btn-sm mr-1 btn-primary mb-2 mr-1" v-if="false"
-                            :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                            :disabled="selecionados.length === 0"
-                            @click="formCadastraMassa(); $refs.janelaAdmissaoMassa?.abrirModal()">
-                        <i class="fa fa-plus"></i> ATUALIZAR SELECIONADOS <span class="badge badge-light"
-                                                                                v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
-                    </button>
-                @endcan
-
-            </div>
-        </div>
-
-    </fieldset>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    :disabled="selecionados.length === 0"
+                    @click="selecionados = []"
+                >
+                    <i class="fa fa-times"></i> Limpar seleção
+                    <span class="badge badge-light ml-1" v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
+                </button>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    @click.prevent="exportaExcel()"
+                    :disabled="controle.carregando || preloadExportacao || (!controle.carregando && lista.length === 0 && selecionados.length === 0)"
+                >
+                    <i class="fas fa-file-excel"></i> Exportar Excel
+                    <span class="badge badge-light ml-1" v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
+                </button>
+            @endcan
+        </template>
+    </filtro-listagem>
 
     <preload v-if="controle.carregando" class="text-center"></preload>
 
@@ -1690,6 +1861,16 @@
     </div>
 @stop
 @push('js')
+    @php
+        $escolaridadesModal = \App\Models\Escolaridade::query()
+            ->orderBy('tipo')
+            ->get(['id', 'tipo'])
+            ->map(fn ($item) => ['value' => $item->id, 'label' => $item->tipo])
+            ->values();
+    @endphp
+    <script>
+        window.__MYBP_ESCOLARIDADES = @json($escolaridadesModal);
+    </script>
     <script src="{{mix('js/g/admissao/processo/app.js')}}"></script>
 @endpush
 @push('css')
@@ -1724,6 +1905,20 @@
             font-size: 0.875rem;
             color: #6c757d;
             margin: 0;
+        }
+
+        .admissao-processo-filtro-hint {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.25rem;
+            margin-left: 0.35rem;
+            padding: 0.05rem 0.35rem;
+            border-radius: 999px;
+            background: rgba(23, 66, 87, 0.12);
+            color: var(--primary, #174257);
+            font-size: 0.68rem;
+            font-weight: 700;
         }
 
         /* Toolbar */

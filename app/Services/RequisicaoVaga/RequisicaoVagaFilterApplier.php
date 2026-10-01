@@ -3,6 +3,7 @@
 namespace App\Services\RequisicaoVaga;
 
 use App\Models\User;
+use App\Services\Concerns\AppliesApprovalFlowStatusFilter;
 use Illuminate\Database\Eloquent\Builder;
 use MasterTag\DataHora;
 
@@ -12,6 +13,8 @@ use MasterTag\DataHora;
  */
 class RequisicaoVagaFilterApplier
 {
+    use AppliesApprovalFlowStatusFilter;
+
     private array $filtros;
     private User $user;
 
@@ -25,7 +28,7 @@ class RequisicaoVagaFilterApplier
     {
         $this->applyPeriodo($query);
         $this->applyCampoBusca($query);
-        $this->applyCampoStatus($query);
+        $this->applyCampoStatusAprovacao($query);
         $this->applyPermissoes($query);
         $this->applyOrdenacao($query);
     }
@@ -71,13 +74,24 @@ class RequisicaoVagaFilterApplier
         });
     }
 
-    private function applyCampoStatus(Builder $query): void
+    private function applyCampoStatusAprovacao(Builder $query): void
     {
-        if (!isset($this->filtros['campoStatus']) || $this->filtros['campoStatus'] === '') {
-            return;
-        }
-        $status = $this->filtros['campoStatus'] === 'aberto' ? null : $this->filtros['campoStatus'];
-        $query->where('status_aprovacao', $status);
+        $status = $this->filtros['campoStatusAprovacao']
+            ?? $this->filtros['campoStatus']
+            ?? null;
+
+        $this->applyApprovalFlowStatusFilter(
+            $query,
+            $status !== null && $status !== '' ? (string) $status : null,
+            [
+                'gestor' => 'status_aprovacao',
+                'extra' => 'status_aprovacao_extra',
+                'rh' => 'status_aprovacao_rh',
+            ],
+            'aprovado',
+            'reprovado',
+            'requisicao_vaga'
+        );
     }
 
     private function applyPermissoes(Builder $query): void

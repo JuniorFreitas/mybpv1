@@ -1,24 +1,34 @@
 <template>
-    <div id="formParecerRh">
+    <div id="formParecerRh" class="mybp-modal-form mybp-filtros-compactos">
         <div v-if="!preload">
             <dados-pessoais :form="form"></dados-pessoais>
 
-            <fieldset v-if="!cliente_servico">
-                <legend>TIPO DE ENTREVISTA</legend>
-                <select
-                    class="form-control"
-                    :disabled="visualizar || disabledParecerRh"
-                    onchange="valida_campo_vazio(this, 1)"
-                    @change="changeTipoEntrevista"
-                    v-bind="!visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}"
-                    v-model="form.parecer_rh.tipo_entrevista"
-                >
-                    <option value="Fixo">Fixo</option>
-                    <option value="Parada">Parada</option>
-                </select>
+            <fieldset v-if="!cliente_servico" class="mybp-modal-secao">
+                <legend>Tipo de entrevista</legend>
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Tipo</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-tipo_entrevista-${hash}`"
+                                    :input-id="`rh-tipo_entrevista-${hash}`"
+                                    v-model="form.parecer_rh.tipo_entrevista"
+                                    :options="opcoesTipoEntrevista"
+                                    :disabled="visualizar || disabledParecerRh"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-tipo_entrevista-${hash}`)"
+                                    @select="onRhComboSelect(`rh-tipo_entrevista-${hash}`, 'tipo')"
+                                ></combobox-auto-complete>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </fieldset>
 
-            <fieldset v-if="provas > 0">
+            <fieldset v-if="provas > 0" class="mybp-modal-secao">
                 <legend>Provas</legend>
                 <div class="alert alert-warning" v-show="form.simulados.length < provas">
                     <i class="fa fa-exclamation-triangle"></i> Atenção! Candidato(a) possuí prova pendente.
@@ -39,116 +49,88 @@
                 </div>
             </fieldset>
 
-            <fieldset v-if="cliente_servico">
-                <legend>NOTA TESTE DIGITAÇÃO</legend>
-                <select class="form-control" :disabled="visualizar || disabledParecerRh" v-model="form.parecer_rh.nota_digitacao">
-                    <option value="">Selecione</option>
-                    <option v-for="qnt in 10" :key="qnt" :value="qnt">{{ qnt }}</option>
-                </select>
+            <fieldset v-if="cliente_servico" class="mybp-modal-secao">
+                <legend>Nota teste digitação</legend>
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Nota</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-nota_digitacao-${hash}`"
+                                    :input-id="`rh-nota_digitacao-${hash}`"
+                                    v-model="form.parecer_rh.nota_digitacao"
+                                    :options="opcoesNota1a10"
+                                    :disabled="visualizar || disabledParecerRh"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-nota_digitacao-${hash}`)"
+                                    @select="onRhComboSelect(`rh-nota_digitacao-${hash}`)"
+                                ></combobox-auto-complete>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </fieldset>
 
-            <fieldset>
-                <legend>INFORMAÇÕES COMPLEMENTARES</legend>
+            <fieldset class="mybp-modal-secao">
+                <legend>Informações complementares</legend>
                 <div class="row">
-                    <div class="col-12 col-sm-6" v-if="!cliente_servico">
-                        <div class="form-group">
-                            <label>Domínio</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                v-model="form.parecer_rh.destro"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="Destro">Destro</option>
-                                <option value="Canhoto">Canhoto</option>
-                            </select>
-
-                            <select
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.destro"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="Destro">Destro</option>
-                                <option value="Canhoto">Canhoto</option>
-                            </select>
+                    <div class="col-12 col-md-4" v-if="!cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Domínio</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-destro-${hash}`"
+                                    :input-id="`rh-destro-${hash}`"
+                                    v-model="form.parecer_rh.destro"
+                                    :options="opcoesDestro"
+                                    :disabled="visualizar || disabledParecerRh"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-destro-${hash}`)"
+                                    @select="onRhComboSelect(`rh-destro-${hash}`)"
+                                ></combobox-auto-complete>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Ex Funcionário</label>
-
-                            <select
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Ex Funcionário</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-ex_funcionario-${hash}`"
                                 v-model="form.parecer_rh.ex_funcionario"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
-
-                            <select
-                                class="form-control"
                                 :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.ex_funcionario"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
+                                @opening="fecharOutrosComboboxes(`rh-ex_funcionario-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-ex_funcionario-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6" v-if="!cliente_servico">
-                        <div class="form-group">
-                            <label>CNH</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
+                    <div class="col-12 col-md-4" v-if="!cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">CNH</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-cnh-${hash}`"
                                 v-model="form.parecer_rh.cnh"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
-
-                            <select
-                                class="form-control"
                                 :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.cnh"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
+                                @opening="fecharOutrosComboboxes(`rh-cnh-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-cnh-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6" v-if="form.parecer_rh.cnh">
-                        <div class="form-group">
-                            <label>Tipo da CNH</label>
+                    <div class="col-12 col-md-4" v-if="form.parecer_rh.cnh">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Tipo da CNH</label>
                             <input
                                 type="text"
                                 :disabled="visualizar || disabledParecerRh"
                                 autocomplete="off"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 v-bind="
                                     !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
                                 "
@@ -157,60 +139,52 @@
                         </div>
                     </div>
 
-                    <div class="col-12" v-if="!cliente_servico">
-                        <div class="form-group">
-                            <label>Rota/Bairro</label>
+                    <div class="col-12 col-md-8" v-if="!cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Rota/Bairro</label>
                             <input
                                 type="text"
                                 :disabled="visualizar || disabledParecerRh"
                                 autocomplete="off"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
+                                    form.parecer_rh.tipo_entrevista === 'Fixo' && (!visualizar || !disabledParecerRh)
+                                        ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' }
+                                        : {}
                                 "
                                 v-model="form.parecer_rh.rota_bairro"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            />
-
-                            <input
-                                type="text"
-                                :disabled="visualizar || disabledParecerRh"
-                                autocomplete="off"
-                                class="form-control"
-                                v-model="form.parecer_rh.rota_bairro"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
                             />
                         </div>
                     </div>
 
-                    <div class="col-12"></div>
-                    <div class="col-12 col-sm-6" v-if="cliente_servico">
-                        <div class="form-group">
-                            <label>Avaliação Dinâmica de Grupo</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                v-model="form.parecer_rh.dinamicadegrupo"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="Destaque">Destaque</option>
-                                <option value="Favorável">Favorável</option>
-                                <option value="Desfavorável">Desfavorável</option>
-                            </select>
+                    <div class="col-12 col-md-4" v-if="cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Avaliação Dinâmica de Grupo</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-dinamicadegrupo-${hash}`"
+                                    :input-id="`rh-dinamicadegrupo-${hash}`"
+                                    v-model="form.parecer_rh.dinamicadegrupo"
+                                    :options="opcoesDinamicaGrupo"
+                                    :disabled="visualizar || disabledParecerRh"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-dinamicadegrupo-${hash}`)"
+                                    @select="onRhComboSelect(`rh-dinamicadegrupo-${hash}`)"
+                                ></combobox-auto-complete>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12" v-if="form.parecer_rh.dinamicadegrupo">
-                        <div class="form-group">
-                            <label>OBS.:</label>
+                    <div class="col-12 col-md-8" v-if="form.parecer_rh.dinamicadegrupo">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">OBS.:</label>
                             <input
                                 type="text"
                                 :disabled="visualizar || disabledParecerRh"
                                 autocomplete="off"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 v-model="form.parecer_rh.obs_dinamicadegrupo"
                             />
                         </div>
@@ -218,158 +192,133 @@
                 </div>
             </fieldset>
 
-            <fieldset v-if="!cliente_servico">
-                <legend class="text-uppercase">EPI Pontuação</legend>
+            <fieldset v-if="!cliente_servico" class="mybp-modal-secao">
+                <legend>EPI</legend>
                 <div class="row">
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Camisa de Meia</label>
-                            <select
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.camisa_meia"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="P">P</option>
-                                <option value="M">M</option>
-                                <option value="G">G</option>
-                                <option value="GG">GG</option>
-                                <option value="XG">XG</option>
-                            </select>
+                    <div class="col-12 col-md-3">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Camisa de Meia</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-camisa_meia-${hash}`"
+                                    :input-id="`rh-camisa_meia-${hash}`"
+                                    v-model="form.parecer_rh.camisa_meia"
+                                    :options="opcoesCamisaMeia"
+                                    :disabled="visualizar || disabledParecerRh"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-camisa_meia-${hash}`)"
+                                    @select="onRhComboSelect(`rh-camisa_meia-${hash}`)"
+                                ></combobox-auto-complete>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Camisa Proteção</label>
-                            <select
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.camisa_protecao"
-                            >
-                                <option value="">Selecione</option>
-                                <template v-for="qnt in 6">
-                                    <option :key="qnt" :value="qnt" v-if="qnt >= 2">{{ qnt }}</option>
-                                </template>
-                            </select>
+                    <div class="col-12 col-md-3">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Camisa Proteção</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-camisa_protecao-${hash}`"
+                                    :input-id="`rh-camisa_protecao-${hash}`"
+                                    v-model="form.parecer_rh.camisa_protecao"
+                                    :options="opcoesCamisaProt"
+                                    :disabled="visualizar || disabledParecerRh"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-camisa_protecao-${hash}`)"
+                                    @select="onRhComboSelect(`rh-camisa_protecao-${hash}`)"
+                                ></combobox-auto-complete>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Calça</label>
-                            <select
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.calca"
-                            >
-                                <option value="">Selecione</option>
-                                <template v-for="qnt in 56">
-                                    <option v-if="qnt >= 34" :key="qnt" :value="qnt">{{ qnt }}</option>
-                                </template>
-                            </select>
+                    <div class="col-12 col-md-3">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Calça</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-calca-${hash}`"
+                                    :input-id="`rh-calca-${hash}`"
+                                    v-model="form.parecer_rh.calca"
+                                    :options="opcoesCalca"
+                                    :disabled="visualizar || disabledParecerRh"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-calca-${hash}`)"
+                                    @select="onRhComboSelect(`rh-calca-${hash}`)"
+                                ></combobox-auto-complete>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Bota</label>
-                            <select
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.bota"
-                            >
-                                <option value="">Selecione</option>
-                                <template v-for="qnt in 50">
-                                    <option v-if="qnt >= 34" :key="qnt" :value="qnt">{{ qnt }}</option>
-                                </template>
-                            </select>
+                    <div class="col-12 col-md-3">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Bota</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-bota-${hash}`"
+                                    :input-id="`rh-bota-${hash}`"
+                                    v-model="form.parecer_rh.bota"
+                                    :options="opcoesBota"
+                                    :disabled="visualizar || disabledParecerRh"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-bota-${hash}`)"
+                                    @select="onRhComboSelect(`rh-bota-${hash}`)"
+                                ></combobox-auto-complete>
+                            </div>
                         </div>
                     </div>
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend class="text-uppercase">Hístorico Familiar e Social</legend>
+            <fieldset class="mybp-modal-secao">
+                <legend>Histórico familiar e social</legend>
                 <div class="row">
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label>Mora com quem?</label>
+                    <div class="col-12 col-md-8">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Mora com quem?</label>
                             <input
                                 type="text"
                                 :disabled="visualizar || disabledParecerRh"
                                 autocomplete="off"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 2)', onblur: 'valida_campo_vazio(this, 2)' } : {}
+                                    form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico && (!visualizar || !disabledParecerRh)
+                                        ? { onchange: 'valida_campo_vazio(this, 2)', onblur: 'valida_campo_vazio(this, 2)' }
+                                        : {}
                                 "
                                 v-model="form.parecer_rh.mora_com_quem"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            />
-
-                            <input
-                                type="text"
-                                :disabled="visualizar || disabledParecerRh"
-                                autocomplete="off"
-                                class="form-control"
-                                v-model="form.parecer_rh.mora_com_quem"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
                             />
                         </div>
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Casado?</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Casado?</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-casado-${hash}`"
                                 v-model="form.parecer_rh.casado"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
-
-                            <select
-                                class="form-control"
                                 :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.casado"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
+                                @opening="fecharOutrosComboboxes(`rh-casado-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-casado-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6" v-if="form.parecer_rh.casado">
-                        <div class="form-group">
-                            <label>Tempo de convivência</label>
+                    <div class="col-12 col-md-4" v-if="form.parecer_rh.casado">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Tempo de convivência</label>
                             <input
                                 type="text"
                                 :disabled="visualizar || disabledParecerRh"
                                 autocomplete="off"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 v-bind="
                                     !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
                                 "
@@ -377,48 +326,29 @@
                             />
                         </div>
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Filhos?</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Filhos?</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-filhos-${hash}`"
                                 v-model="form.parecer_rh.filhos"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
-
-                            <select
-                                class="form-control"
                                 :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.filhos"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
+                                @opening="fecharOutrosComboboxes(`rh-filhos-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-filhos-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6" v-if="form.parecer_rh.filhos">
-                        <div class="form-group">
-                            <label>Quantos?</label>
+                    <div class="col-12 col-md-4" v-if="form.parecer_rh.filhos">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Quantos?</label>
                             <input
                                 type="number"
                                 min="1"
                                 :disabled="visualizar || disabledParecerRh"
                                 autocomplete="off"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 v-bind="
                                     !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
                                 "
@@ -426,35 +356,28 @@
                             />
                         </div>
                     </div>
-                </div>
 
-                <div class="row" v-if="form.parecer_rh.casado">
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Esposa ou Marido Trabalha?</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
+                    <div class="col-12 col-md-4" v-if="form.parecer_rh.casado">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Esposa ou Marido Trabalha?</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-conjuge_trabalha-${hash}`"
                                 v-model="form.parecer_rh.conjuge_trabalha"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
+                                :disabled="visualizar || disabledParecerRh"
+                                @opening="fecharOutrosComboboxes(`rh-conjuge_trabalha-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-conjuge_trabalha-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6" v-if="form.parecer_rh.conjuge_trabalha">
-                        <div class="form-group">
-                            <label>Em quê?</label>
+                    <div class="col-12 col-md-4" v-if="form.parecer_rh.casado && form.parecer_rh.conjuge_trabalha">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Em quê?</label>
                             <input
                                 type="text"
                                 :disabled="visualizar || disabledParecerRh"
                                 autocomplete="off"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 v-bind="
                                     !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
                                 "
@@ -462,47 +385,28 @@
                             />
                         </div>
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Praticante de alguma religião?</label>
-                            <select
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Praticante de alguma religião?</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-religioso-${hash}`"
                                 v-model="form.parecer_rh.religioso"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
-
-                            <select
-                                class="form-control"
                                 :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.religioso"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
+                                @opening="fecharOutrosComboboxes(`rh-religioso-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-religioso-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6" v-if="form.parecer_rh.religioso">
-                        <div class="form-group">
-                            <label>Qual?</label>
+                    <div class="col-12 col-md-4" v-if="form.parecer_rh.religioso">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Qual?</label>
                             <input
                                 type="text"
                                 :disabled="visualizar || disabledParecerRh"
                                 autocomplete="off"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 v-bind="
                                     !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
                                 "
@@ -510,47 +414,28 @@
                             />
                         </div>
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Fuma?</label>
-                            <select
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Fuma?</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-fuma-${hash}`"
                                 v-model="form.parecer_rh.fuma"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
-
-                            <select
-                                class="form-control"
                                 :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.fuma"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
+                                @opening="fecharOutrosComboboxes(`rh-fuma-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-fuma-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6" v-if="form.parecer_rh.fuma">
-                        <div class="form-group">
-                            <label>Qual frequência?</label>
+                    <div class="col-12 col-md-4" v-if="form.parecer_rh.fuma">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Qual frequência?</label>
                             <input
                                 type="text"
                                 :disabled="visualizar || disabledParecerRh"
                                 autocomplete="off"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 v-bind="
                                     !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
                                 "
@@ -558,47 +443,28 @@
                             />
                         </div>
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Bebe?</label>
-                            <select
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Bebe?</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-bebe-${hash}`"
                                 v-model="form.parecer_rh.bebe"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
-
-                            <select
-                                class="form-control"
                                 :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.bebe"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
+                                @opening="fecharOutrosComboboxes(`rh-bebe-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-bebe-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6" v-if="form.parecer_rh.bebe">
-                        <div class="form-group">
-                            <label>Qual frequência?</label>
+                    <div class="col-12 col-md-4" v-if="form.parecer_rh.bebe">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Qual frequência?</label>
                             <input
                                 type="text"
                                 :disabled="visualizar || disabledParecerRh"
                                 autocomplete="off"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 v-bind="
                                     !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
                                 "
@@ -606,47 +472,28 @@
                             />
                         </div>
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Indicado por alguém?</label>
-                            <select
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Indicado por alguém?</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-indicacao-${hash}`"
                                 v-model="form.parecer_rh.indicacao"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
-
-                            <select
-                                class="form-control"
                                 :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.indicacao"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
+                                @opening="fecharOutrosComboboxes(`rh-indicacao-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-indicacao-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6" v-if="form.parecer_rh.indicacao">
-                        <div class="form-group">
-                            <label>Quem?</label>
+                    <div class="col-12 col-md-4" v-if="form.parecer_rh.indicacao">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Quem?</label>
                             <input
                                 type="text"
                                 :disabled="visualizar || disabledParecerRh"
                                 autocomplete="off"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 v-bind="
                                     !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
                                 "
@@ -657,48 +504,30 @@
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend class="text-uppercase">Outras informações</legend>
-
-                <div class="row" v-if="!cliente_servico">
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Experiência na ALUMAR?</label>
-                            <select
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
+            <fieldset class="mybp-modal-secao">
+                <legend>Outras informações</legend>
+                <div class="row">
+                    <div class="col-12 col-md-4" v-if="!cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Experiência na ALUMAR?</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-alumar_experiencia-${hash}`"
                                 v-model="form.parecer_rh.alumar_experiencia"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
-
-                            <select
-                                class="form-control"
                                 :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.alumar_experiencia"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
+                                @opening="fecharOutrosComboboxes(`rh-alumar_experiencia-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-alumar_experiencia-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6" v-if="form.parecer_rh.alumar_experiencia">
-                        <div class="form-group">
-                            <label>Qual área?</label>
+                    <div class="col-12 col-md-4" v-if="!cliente_servico && form.parecer_rh.alumar_experiencia">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Qual área?</label>
                             <input
                                 type="text"
                                 :disabled="visualizar || disabledParecerRh"
                                 autocomplete="off"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 v-bind="
                                     !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
                                 "
@@ -706,677 +535,454 @@
                             />
                         </div>
                     </div>
-                </div>
 
-                <div class="row" v-if="cliente_servico">
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Experiência na área?</label>
-                            <select
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
+                    <div class="col-12 col-md-4" v-if="cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Experiência na área?</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-experiencia_callcenter-${hash}`"
                                 v-model="form.parecer_rh.experiencia_callcenter"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
+                                :disabled="visualizar || disabledParecerRh"
+                                @opening="fecharOutrosComboboxes(`rh-experiencia_callcenter-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-experiencia_callcenter-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
 
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label>Observação</label>
+                    <div class="col-12 col-md-8" v-if="cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Observação</label>
                             <textarea
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 :disabled="visualizar || disabledParecerRh"
                                 cols="3"
-                                rows="3"
+                                rows="2"
                                 v-model="form.parecer_rh.obs_call"
                             ></textarea>
                         </div>
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label>Grau de instrução</label>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Grau de instrução</label>
                             <input
                                 type="text"
                                 :disabled="visualizar || disabledParecerRh"
                                 autocomplete="off"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
+                                    form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico && (!visualizar || !disabledParecerRh)
+                                        ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' }
+                                        : {}
                                 "
                                 v-model="form.parecer_rh.grau_instrucao"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
                             />
+                        </div>
+                    </div>
 
+                    <div class="col-12 col-md-4" v-if="!cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Disponibilidade de hora extra?</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-horaextra-${hash}`"
+                                v-model="form.parecer_rh.horaextra"
+                                :disabled="visualizar || disabledParecerRh"
+                                @opening="fecharOutrosComboboxes(`rh-horaextra-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-horaextra-${hash}`)"
+                            ></mybp-bool-combobox>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4" v-if="!cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Disponibilidade para turnos 6X2?</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-turnos_seis_por_dois-${hash}`"
+                                v-model="form.parecer_rh.turnos_seis_por_dois"
+                                :disabled="visualizar || disabledParecerRh"
+                                @opening="fecharOutrosComboboxes(`rh-turnos_seis_por_dois-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-turnos_seis_por_dois-${hash}`)"
+                            ></mybp-bool-combobox>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4" v-if="!cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Disponibilidade para noturno?</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-noturno-${hash}`"
+                                v-model="form.parecer_rh.noturno"
+                                :disabled="visualizar || disabledParecerRh"
+                                @opening="fecharOutrosComboboxes(`rh-noturno-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-noturno-${hash}`)"
+                            ></mybp-bool-combobox>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4" v-if="!cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Acidente de trabalho anterior?</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-acidente_trabalho-${hash}`"
+                                v-model="form.parecer_rh.acidente_trabalho"
+                                :disabled="visualizar || disabledParecerRh"
+                                @opening="fecharOutrosComboboxes(`rh-acidente_trabalho-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-acidente_trabalho-${hash}`)"
+                            ></mybp-bool-combobox>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4" v-if="!cliente_servico && form.parecer_rh.acidente_trabalho">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Especifique</label>
                             <input
                                 type="text"
                                 :disabled="visualizar || disabledParecerRh"
                                 autocomplete="off"
-                                class="form-control"
-                                v-model="form.parecer_rh.grau_instrucao"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
+                                class="form-control form-control-sm"
+                                v-bind="
+                                    !visualizar || !disabledParecerRh
+                                        ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' }
+                                        : {}
+                                "
+                                v-model="form.parecer_rh.acidente_trabalho_qual"
                             />
                         </div>
                     </div>
-                </div>
 
-                <template v-if="!cliente_servico">
-                    <div class="row">
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Disponibilidade de hora extra?</label>
-                                <select
-                                    v-bind="
-                                        !visualizar || !disabledParecerRh
-                                            ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' }
-                                            : {}
-                                    "
-                                    class="form-control"
-                                    :disabled="visualizar || disabledParecerRh"
-                                    v-model="form.parecer_rh.horaextra"
-                                    v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option :value="true">Sim</option>
-                                    <option :value="false">Não</option>
-                                </select>
-
-                                <select
-                                    class="form-control"
-                                    :disabled="visualizar || disabledParecerRh"
-                                    v-model="form.parecer_rh.horaextra"
-                                    v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option :value="true">Sim</option>
-                                    <option :value="false">Não</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Disponibilidade para turnos 6X2?</label>
-                                <select
-                                    v-bind="
-                                        !visualizar || !disabledParecerRh
-                                            ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' }
-                                            : {}
-                                    "
-                                    class="form-control"
-                                    :disabled="visualizar || disabledParecerRh"
-                                    v-model="form.parecer_rh.turnos_seis_por_dois"
-                                    v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option :value="true">Sim</option>
-                                    <option :value="false">Não</option>
-                                </select>
-
-                                <select
-                                    class="form-control"
-                                    :disabled="visualizar || disabledParecerRh"
-                                    v-model="form.parecer_rh.turnos_seis_por_dois"
-                                    v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option :value="true">Sim</option>
-                                    <option :value="false">Não</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Disponibilidade para noturno?</label>
-                                <select
-                                    v-bind="
-                                        !visualizar || !disabledParecerRh
-                                            ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' }
-                                            : {}
-                                    "
-                                    class="form-control"
-                                    :disabled="visualizar || disabledParecerRh"
-                                    v-model="form.parecer_rh.noturno"
-                                    v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option :value="true">Sim</option>
-                                    <option :value="false">Não</option>
-                                </select>
-
-                                <select
-                                    class="form-control"
-                                    :disabled="visualizar || disabledParecerRh"
-                                    v-model="form.parecer_rh.noturno"
-                                    v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option :value="true">Sim</option>
-                                    <option :value="false">Não</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Acidente de trabalho anterior?</label>
-                                <select
-                                    v-bind="
-                                        !visualizar || !disabledParecerRh
-                                            ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' }
-                                            : {}
-                                    "
-                                    class="form-control"
-                                    :disabled="visualizar || disabledParecerRh"
-                                    v-model="form.parecer_rh.acidente_trabalho"
-                                    v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option :value="true">Sim</option>
-                                    <option :value="false">Não</option>
-                                </select>
-
-                                <select
-                                    class="form-control"
-                                    :disabled="visualizar || disabledParecerRh"
-                                    v-model="form.parecer_rh.acidente_trabalho"
-                                    v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option :value="true">Sim</option>
-                                    <option :value="false">Não</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6" v-if="form.parecer_rh.acidente_trabalho">
-                            <div class="form-group">
-                                <label>Especifique</label>
-                                <input
-                                    type="text"
-                                    :disabled="visualizar || disabledParecerRh"
-                                    autocomplete="off"
-                                    class="form-control"
-                                    v-bind="
-                                        !visualizar || !disabledParecerRh
-                                            ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' }
-                                            : {}
-                                    "
-                                    v-model="form.parecer_rh.acidente_trabalho_qual"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Afastamento INSS anterior?</label>
-                                <select
-                                    v-bind="
-                                        !visualizar || !disabledParecerRh
-                                            ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' }
-                                            : {}
-                                    "
-                                    class="form-control"
-                                    :disabled="visualizar || disabledParecerRh"
-                                    v-model="form.parecer_rh.afastamento_inss"
-                                    v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option :value="true">Sim</option>
-                                    <option :value="false">Não</option>
-                                </select>
-
-                                <select
-                                    class="form-control"
-                                    :disabled="visualizar || disabledParecerRh"
-                                    v-model="form.parecer_rh.afastamento_inss"
-                                    v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option :value="true">Sim</option>
-                                    <option :value="false">Não</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6" v-if="form.parecer_rh.afastamento_inss">
-                            <div class="form-group">
-                                <label>Especifique</label>
-                                <input
-                                    type="text"
-                                    :disabled="visualizar || disabledParecerRh"
-                                    autocomplete="off"
-                                    class="form-control"
-                                    v-bind="
-                                        !visualizar || !disabledParecerRh
-                                            ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' }
-                                            : {}
-                                    "
-                                    v-model="form.parecer_rh.afastamento_inss_qual"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </template>
-
-                <div class="row" v-if="cliente_servico">
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Disponibilidade de horários</label>
-                            <select
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                class="form-control"
+                    <div class="col-12 col-md-4" v-if="!cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Afastamento INSS anterior?</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-afastamento_inss-${hash}`"
+                                v-model="form.parecer_rh.afastamento_inss"
                                 :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.disponibilidade_horarios"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="Manhã">Manhã</option>
-                                <option value="Manhã - tarde">Manhã - tarde</option>
-                                <option value="Manhã - noite">Manhã - noite</option>
-                                <option value="Tarde">Tarde</option>
-                                <option value="Tarde - noite">Tarde - noite</option>
-                                <option value="Noite">Noite</option>
-                                <option value="Noite - madrugada">Noite - Madrugada</option>
-                                <option value="Madrugada">Madrugada</option>
-                                <option value="Madrugada - manhã">Madrugada - manhã</option>
-                                <option value="qualquer horário">Qualquer horário</option>
-                            </select>
+                                @opening="fecharOutrosComboboxes(`rh-afastamento_inss-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-afastamento_inss-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Disponibilidade para turnos 6X1</label>
-                            <select
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                class="form-control"
+                    <div class="col-12 col-md-4" v-if="!cliente_servico && form.parecer_rh.afastamento_inss">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Especifique</label>
+                            <input
+                                type="text"
                                 :disabled="visualizar || disabledParecerRh"
+                                autocomplete="off"
+                                class="form-control form-control-sm"
+                                v-bind="
+                                    !visualizar || !disabledParecerRh
+                                        ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' }
+                                        : {}
+                                "
+                                v-model="form.parecer_rh.afastamento_inss_qual"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4" v-if="cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Disponibilidade de horários</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-disponibilidade_horarios-${hash}`"
+                                    :input-id="`rh-disponibilidade_horarios-${hash}`"
+                                    v-model="form.parecer_rh.disponibilidade_horarios"
+                                    :options="opcoesDisponibilidadeHorarios"
+                                    :disabled="visualizar || disabledParecerRh"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-disponibilidade_horarios-${hash}`)"
+                                    @select="onRhComboSelect(`rh-disponibilidade_horarios-${hash}`)"
+                                ></combobox-auto-complete>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4" v-if="cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Disponibilidade para turnos 6X1</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-turnos_seis_por_um-${hash}`"
                                 v-model="form.parecer_rh.turnos_seis_por_um"
-                            >
-                                <option value="">Selecione</option>
-                                <option :value="true">Sim</option>
-                                <option :value="false">Não</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Horário Preferencial</label>
-                            <select
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                class="form-control"
                                 :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.horario_preferencial"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="manha">Manhã</option>
-                                <option value="tarde">Tarde</option>
-                                <option value="noite">Noite</option>
-                                <option value="madrugada">Madrugada</option>
-                                <option value="qualquer horário">Qualquer horário</option>
-                            </select>
+                                @opening="fecharOutrosComboboxes(`rh-turnos_seis_por_um-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-turnos_seis_por_um-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
 
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label>Observação</label>
+                    <div class="col-12 col-md-4" v-if="cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Horário Preferencial</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-horario_preferencial-${hash}`"
+                                    :input-id="`rh-horario_preferencial-${hash}`"
+                                    v-model="form.parecer_rh.horario_preferencial"
+                                    :options="opcoesHorarioPreferencial"
+                                    :disabled="visualizar || disabledParecerRh"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-horario_preferencial-${hash}`)"
+                                    @select="onRhComboSelect(`rh-horario_preferencial-${hash}`)"
+                                ></combobox-auto-complete>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12" v-if="cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Observação</label>
                             <textarea
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 :disabled="visualizar || disabledParecerRh"
                                 cols="3"
-                                rows="3"
+                                rows="2"
                                 v-model="form.parecer_rh.obs_horario"
                             ></textarea>
                         </div>
                     </div>
-                </div>
 
-                <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label>Especifique situações de saúde</label>
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Especifique situações de saúde</label>
                             <textarea
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 :disabled="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.situacao_saude"
                                 cols="3"
+                                rows="2"
                                 v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 2)', onblur: 'valida_campo_vazio(this, 2)' } : {}
+                                    form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico && (!visualizar || !disabledParecerRh)
+                                        ? { onkeyup: 'valida_campo_vazio(this, 2)', onblur: 'valida_campo_vazio(this, 2)' }
+                                        : {}
                                 "
-                                rows="3"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            ></textarea>
-
-                            <textarea
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.situacao_saude"
-                                cols="3"
-                                rows="3"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
                             ></textarea>
                         </div>
                     </div>
-                </div>
 
-                <div class="row" v-if="!cliente_servico">
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Certificado NR 10</label>
-                            <select
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onchange: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
+                    <div class="col-12 col-md-4" v-if="!cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Certificado NR 10</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-nr_dez-${hash}`"
                                 v-model="form.parecer_rh.nr_dez"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="sim">Sim</option>
-                                <option value="nao">Não</option>
-                                <option value="nao se aplica">Não se aplica</option>
-                            </select>
-
-                            <select
-                                class="form-control"
                                 :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.nr_dez"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="sim">Sim</option>
-                                <option value="nao">Não</option>
-                                <option value="nao se aplica">Não se aplica</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <fieldset v-if="form.parecer_rh.nr_dez === 'sim'">
-                    <legend>Certificado NR10</legend>
-                    <div class="row">
-                        <div class="col-12">
-                            <button class="btn btn-sm mr-1 btn-primary mb-3" :disabled="visualizar || disabledParecerRh" @click.prevent="addLINr($event.target)">
-                                <i class="fas fa-plus" aria-hidden="true"></i>
-                                Adicionar Certificado NR10
-                            </button>
+                                mode="simnao"
+                                @opening="fecharOutrosComboboxes(`rh-nr_dez-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-nr_dez-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
 
-                    <div
-                        class="row py-3"
-                        style="border-bottom: 1px dashed #cccccc"
-                        v-show="form.certificados_nr.length > 0"
-                        v-for="(obj, index) in form.certificados_nr"
-                        :key="obj.id"
-                    >
-                        <div class="col-12 text-uppercase"><strong>Informações Certificado NR10</strong></div>
-
-                        <div class="col-12">
-                            <div class="form-group">
-                                <label>Instituição</label>
-                                <input
-                                    type="text"
-                                    :disabled="visualizar || disabledParecerRh"
-                                    autocomplete="off"
-                                    class="form-control"
-                                    v-bind="
-                                        !visualizar || !disabledParecerRh
-                                            ? { onkeyup: 'valida_campo_vazio(this, 2)', onblur: 'valida_campo_vazio(this, 2)' }
-                                            : {}
-                                    "
-                                    v-model="obj.nr_dez_instituicao"
-                                />
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Data de Emissão</label>
-                                <datepicker label="" :disabled="visualizar || disabledParecerRh" v-model="obj.nr_dez_emissao"></datepicker>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Data de Validade</label>
-                                <datepicker label="" :disabled="visualizar || disabledParecerRh" v-model="obj.nr_dez_validade"></datepicker>
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            <button class="btn btn-sm mr-1 btn-primary" :disabled="visualizar || disabledParecerRh" @click.prevent="addLINr($event.target)">
-                                <i class="fas fa-plus" aria-hidden="true"></i>
-                                Certificado
-                            </button>
-                            <button class="btn btn-sm mr-1 btn-danger" :disabled="visualizar || disabledParecerRh" @click.prevent="removerLINr(index)">
-                                <i class="fa fa-times"></i> Remover
-                            </button>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <fieldset v-if="!cliente_servico">
-                    <legend>Cursos de Formação</legend>
-                    <div class="row">
-                        <div class="col-12">
-                            <button class="btn btn-sm mr-1 btn-primary mb-3" :disabled="visualizar || disabledParecerRh" @click.prevent="addLICurso($event.target)">
-                                <i class="fas fa-plus" aria-hidden="true"></i>
-                                Adicionar Curso de Formação
-                            </button>
-                        </div>
-                    </div>
-
-                    <div
-                        class="row py-3"
-                        style="border-bottom: 1px dashed #cccccc"
-                        v-show="form.cursos_formacoes.length > 0"
-                        v-for="(obj, index) in form.cursos_formacoes"
-                        :key="obj.id"
-                    >
-                        <div class="col-12 text-uppercase"><strong>Informações Certificado NR10</strong></div>
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Curso</label>
-                                <input
-                                    type="text"
-                                    :disabled="visualizar || disabledParecerRh"
-                                    autocomplete="off"
-                                    class="form-control"
-                                    v-bind="
-                                        !visualizar || !disabledParecerRh
-                                            ? { onkeyup: 'valida_campo_vazio(this, 2)', onblur: 'valida_campo_vazio(this, 2)' }
-                                            : {}
-                                    "
-                                    v-model="obj.curso"
-                                />
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Instituição</label>
-                                <input
-                                    type="text"
-                                    :disabled="visualizar || disabledParecerRh"
-                                    autocomplete="off"
-                                    class="form-control"
-                                    v-bind="
-                                        !visualizar || !disabledParecerRh
-                                            ? { onkeyup: 'valida_campo_vazio(this, 2)', onblur: 'valida_campo_vazio(this, 2)' }
-                                            : {}
-                                    "
-                                    v-model="obj.instituicao"
-                                />
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6">
-                            <datepicker label="Data de Emissão" :disabled="visualizar || disabledParecerRh" v-model="obj.emissao"></datepicker>
-                        </div>
-
-                        <div class="col-12 col-sm-6">
-                            <div class="form-group">
-                                <label>Data de Validade</label>
-                                <input
-                                    type="text"
-                                    :disabled="visualizar || disabledParecerRh"
-                                    autocomplete="off"
-                                    class="form-control"
-                                    v-mascara:data
-                                    onblur="valida_data(this)"
-                                    v-model="obj.validade"
-                                />
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            <button class="btn btn-sm mr-1 btn-primary" :disabled="visualizar || disabledParecerRh" @click.prevent="addLICurso($event.target)">
-                                <i class="fas fa-plus" aria-hidden="true"></i>
-                                Curso de Formação
-                            </button>
-                            <button class="btn btn-sm mr-1 btn-danger" :disabled="visualizar || disabledParecerRh" @click.prevent="removerLICurso(index)">
-                                <i class="fa fa-times"></i> Remover
-                            </button>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <div class="row">
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Comportamento Seguro</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                onchange="valida_campo_vazio(this, 1)"
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Comportamento Seguro</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-comportamento_seguro-${hash}`"
                                 v-model="form.parecer_rh.comportamento_seguro"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="sim">Sim</option>
-                                <option value="nao">Não</option>
-                                <option value="razoavel">Razoável</option>
-                            </select>
-
-                            <select
-                                class="form-control"
                                 :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.comportamento_seguro"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="sim">Sim</option>
-                                <option value="nao">Não</option>
-                                <option value="razoavel">Razoável</option>
-                            </select>
+                                mode="simnao"
+                                @opening="fecharOutrosComboboxes(`rh-comportamento_seguro-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-comportamento_seguro-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Energia para o trabalho</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                onchange="valida_campo_vazio(this, 1)"
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Energia para o trabalho</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-energia_para_trabalho-${hash}`"
                                 v-model="form.parecer_rh.energia_para_trabalho"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="sim">Sim</option>
-                                <option value="nao">Não</option>
-                                <option value="razoavel">Razoável</option>
-                            </select>
-
-                            <select
-                                class="form-control"
                                 :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.energia_para_trabalho"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="sim">Sim</option>
-                                <option value="nao">Não</option>
-                                <option value="razoavel">Razoável</option>
-                            </select>
+                                mode="simnao"
+                                @opening="fecharOutrosComboboxes(`rh-energia_para_trabalho-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-energia_para_trabalho-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Postura</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                onchange="valida_campo_vazio(this, 1)"
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Postura</label>
+                            <mybp-bool-combobox
+                                :input-id="`rh-postura-${hash}`"
                                 v-model="form.parecer_rh.postura"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Fixo' && !cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="sim">Sim</option>
-                                <option value="nao">Não</option>
-                                <option value="razoavel">Razoável</option>
-                            </select>
-
-                            <select
-                                class="form-control"
                                 :disabled="visualizar || disabledParecerRh"
-                                v-model="form.parecer_rh.postura"
-                                v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="sim">Sim</option>
-                                <option value="nao">Não</option>
-                                <option value="razoavel">Razoável</option>
-                            </select>
+                                mode="simnao"
+                                @opening="fecharOutrosComboboxes(`rh-postura-${hash}`)"
+                                    @select="limparComboboxInvalido(`rh-postura-${hash}`)"
+                            ></mybp-bool-combobox>
                         </div>
                     </div>
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend class="text-uppercase">Histórico Profissional</legend>
+            <fieldset v-if="!cliente_servico && form.parecer_rh.nr_dez === 'sim'" class="mybp-modal-secao">
+                <legend>Certificado NR10</legend>
                 <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label
+                        <button class="btn btn-sm mr-1 btn-primary mb-2" :disabled="visualizar || disabledParecerRh" @click.prevent="addLINr($event.target)">
+                            <i class="fas fa-plus" aria-hidden="true"></i>
+                            Adicionar Certificado NR10
+                        </button>
+                    </div>
+                </div>
+
+                <div
+                    class="row align-items-end py-2"
+                    style="border-bottom: 1px dashed #cccccc"
+                    v-show="form.certificados_nr.length > 0"
+                    v-for="(obj, index) in form.certificados_nr"
+                    :key="obj.id || index"
+                >
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Instituição</label>
+                            <input
+                                type="text"
+                                :disabled="visualizar || disabledParecerRh"
+                                autocomplete="off"
+                                class="form-control form-control-sm"
+                                v-bind="
+                                    !visualizar || !disabledParecerRh
+                                        ? { onkeyup: 'valida_campo_vazio(this, 2)', onblur: 'valida_campo_vazio(this, 2)' }
+                                        : {}
+                                "
+                                v-model="obj.nr_dez_instituicao"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo mybp-modal-campo-data">
+                            <label class="mybp-label">Data de Emissão</label>
+                            <datepicker label="" :disabled="visualizar || disabledParecerRh" v-model="obj.nr_dez_emissao" formsm></datepicker>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo mybp-modal-campo-data">
+                            <label class="mybp-label">Data de Validade</label>
+                            <datepicker label="" :disabled="visualizar || disabledParecerRh" v-model="obj.nr_dez_validade" formsm></datepicker>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <button class="btn btn-sm mr-1 btn-primary" :disabled="visualizar || disabledParecerRh" @click.prevent="addLINr($event.target)">
+                            <i class="fas fa-plus" aria-hidden="true"></i>
+                            Certificado
+                        </button>
+                        <button class="btn btn-sm mr-1 btn-danger" :disabled="visualizar || disabledParecerRh" @click.prevent="removerLINr(index)">
+                            <i class="fa fa-times"></i> Remover
+                        </button>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset v-if="!cliente_servico" class="mybp-modal-secao">
+                <legend>Cursos de formação</legend>
+                <div class="row">
+                    <div class="col-12">
+                        <button class="btn btn-sm mr-1 btn-primary mb-2" :disabled="visualizar || disabledParecerRh" @click.prevent="addLICurso($event.target)">
+                            <i class="fas fa-plus" aria-hidden="true"></i>
+                            Adicionar Curso de Formação
+                        </button>
+                    </div>
+                </div>
+
+                <div
+                    class="row align-items-end py-2"
+                    style="border-bottom: 1px dashed #cccccc"
+                    v-show="form.cursos_formacoes.length > 0"
+                    v-for="(obj, index) in form.cursos_formacoes"
+                    :key="obj.id || index"
+                >
+                    <div class="col-12 col-md-3">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Curso</label>
+                            <input
+                                type="text"
+                                :disabled="visualizar || disabledParecerRh"
+                                autocomplete="off"
+                                class="form-control form-control-sm"
+                                v-bind="
+                                    !visualizar || !disabledParecerRh
+                                        ? { onkeyup: 'valida_campo_vazio(this, 2)', onblur: 'valida_campo_vazio(this, 2)' }
+                                        : {}
+                                "
+                                v-model="obj.curso"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Instituição</label>
+                            <input
+                                type="text"
+                                :disabled="visualizar || disabledParecerRh"
+                                autocomplete="off"
+                                class="form-control form-control-sm"
+                                v-bind="
+                                    !visualizar || !disabledParecerRh
+                                        ? { onkeyup: 'valida_campo_vazio(this, 2)', onblur: 'valida_campo_vazio(this, 2)' }
+                                        : {}
+                                "
+                                v-model="obj.instituicao"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <div class="form-group mybp-filtro-campo mybp-modal-campo-data">
+                            <label class="mybp-label">Data de Emissão</label>
+                            <datepicker label="" :disabled="visualizar || disabledParecerRh" v-model="obj.emissao" formsm></datepicker>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Data de Validade</label>
+                            <input
+                                type="text"
+                                :disabled="visualizar || disabledParecerRh"
+                                autocomplete="off"
+                                class="form-control form-control-sm"
+                                v-mascara:data
+                                onblur="valida_data(this)"
+                                v-model="obj.validade"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <button class="btn btn-sm mr-1 btn-primary" :disabled="visualizar || disabledParecerRh" @click.prevent="addLICurso($event.target)">
+                            <i class="fas fa-plus" aria-hidden="true"></i>
+                            Curso de Formação
+                        </button>
+                        <button class="btn btn-sm mr-1 btn-danger" :disabled="visualizar || disabledParecerRh" @click.prevent="removerLICurso(index)">
+                            <i class="fa fa-times"></i> Remover
+                        </button>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="mybp-modal-secao">
+                <legend>Histórico profissional</legend>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label"
                                 >Quais as suas últimas experiências? Nome das empresas, cargos ocupados, tempo de permanência nas funções e os motivos de saída.
                             </label>
                             <textarea
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 :disabled="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.historico_profissional"
                                 cols="3"
@@ -1388,7 +994,7 @@
                             ></textarea>
 
                             <textarea
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 :disabled="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.historico_profissional"
                                 cols="3"
@@ -1400,14 +1006,14 @@
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend class="text-uppercase">Histórico Educacional</legend>
+            <fieldset class="mybp-modal-secao">
+                <legend>Histórico educacional</legend>
                 <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label>Fale-me sobre sua formação educacional e cursos.</label>
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Fale-me sobre sua formação educacional e cursos.</label>
                             <textarea
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 :disabled="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.historico_educacional"
                                 cols="3"
@@ -1419,7 +1025,7 @@
                             ></textarea>
 
                             <textarea
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 :disabled="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.historico_educacional"
                                 cols="3"
@@ -1431,18 +1037,18 @@
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend class="text-uppercase">Objetivos e expectativas</legend>
+            <fieldset class="mybp-modal-secao">
+                <legend>Objetivos e expectativas</legend>
                 <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label"
                                 >Quais são suas expectativas em relação à essa empresa e ao cargo ao qual você se candidatou? Geralmente, que o motiva e o que
                                 você detesta no trabalho? Que seria um ambiente ideal de trabalho? Quais são seus planos profissionais em curto prazo? E a
                                 longo? Quais são seus planos pessoais? Porque deveríamos contratá-lo?</label
                             >
                             <textarea
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 :disabled="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.objetivos_expectativas"
                                 cols="3"
@@ -1453,17 +1059,17 @@
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend class="text-uppercase">Auto-imagem</legend>
+            <fieldset class="mybp-modal-secao">
+                <legend>Autoimagem</legend>
                 <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label"
                                 >Quais são suas maiores qualidades? Que aspectos da sua vida você precisa melhorar? Qual foi sua maior frustração? Qual é o seu
                                 maior sonho?</label
                             >
                             <textarea
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 :disabled="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.auto_imagem"
                                 cols="3"
@@ -1474,12 +1080,12 @@
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend class="text-uppercase">Competências</legend>
+            <fieldset class="mybp-modal-secao">
+                <legend>Competências</legend>
                 <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label class="labeltext"
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label labeltext"
                                 >Conte-me, com riqueza de detalhes, um fato recente que realmente tenha ocorrido no âmbito profissional. Caso a situação
                                 perguntada não faça parte do seu histórico profissional, busque-a na sua formação acadêmica e por fim na sua vida pessoal.
                                 <br />
@@ -1496,7 +1102,7 @@
                                     id="competenciasUm"
                                     value="1"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="competenciasUm"
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="competenciasUm"
                                     >Não atende ao desempenho esperado</label
                                 >
                             </div>
@@ -1509,7 +1115,7 @@
                                     id="competenciasDois"
                                     value="2"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="competenciasDois">Atende parcialmente</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="competenciasDois">Atende parcialmente</label>
                             </div>
                             <div class="form-check form-check-inline cursor-pointer">
                                 <input
@@ -1520,7 +1126,7 @@
                                     id="competenciasTres"
                                     value="3"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="competenciasTres">Atende ao esperado</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="competenciasTres">Atende ao esperado</label>
                             </div>
                             <div class="form-check form-check-inline cursor-pointer">
                                 <input
@@ -1531,19 +1137,19 @@
                                     id="competenciasQuatro"
                                     value="4"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="competenciasQuatro">Supera as expectativas</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="competenciasQuatro">Supera as expectativas</label>
                             </div>
                         </div>
                     </div>
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend class="text-uppercase">Comportamento Ético</legend>
+            <fieldset class="mybp-modal-secao">
+                <legend>Comportamento ético</legend>
                 <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label class="labeltext"
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label labeltext"
                                 >Descreva um fato em que alguém solicitou que você procedesse contra uma norma ou regra.
                                 <br />
                                 Conte-me um fato em que foi solicitado um procedimento fora dos padrões, em que precisaria agir inadequadamente. O que você fez?
@@ -1561,7 +1167,7 @@
                                     id="comportamento_eticoUm"
                                     value="1"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="comportamento_eticoUm"
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="comportamento_eticoUm"
                                     >Não atende ao desempenho esperado</label
                                 >
                             </div>
@@ -1574,7 +1180,7 @@
                                     id="comportamento_eticoDois"
                                     value="2"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="comportamento_eticoDois">Atende parcialmente</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="comportamento_eticoDois">Atende parcialmente</label>
                             </div>
                             <div class="form-check form-check-inline cursor-pointer">
                                 <input
@@ -1585,7 +1191,7 @@
                                     id="comportamento_eticoTres"
                                     value="3"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="comportamento_eticoTres">Atende ao esperado</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="comportamento_eticoTres">Atende ao esperado</label>
                             </div>
                             <div class="form-check form-check-inline cursor-pointer">
                                 <input
@@ -1596,7 +1202,7 @@
                                     id="comportamento_eticoQuatro"
                                     value="4"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="comportamento_eticoQuatro"
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="comportamento_eticoQuatro"
                                     >Supera as expectativas</label
                                 >
                             </div>
@@ -1605,12 +1211,12 @@
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend class="text-uppercase">Comprometimento</legend>
+            <fieldset class="mybp-modal-secao">
+                <legend>Comprometimento</legend>
                 <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label class="labeltext"
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label labeltext"
                                 >Descreva uma situação na qual o seu comprometimento com a empresa foi primordial para que um problema fosse resolvido. <br />
                                 Descreva um fato no qual a sua disciplina e organização foram essenciais para o sucesso de uma ação. <br />
                                 Conte-me uma situação em que você demonstrou disponibilidade para a empresa na qual trabalhava
@@ -1625,7 +1231,7 @@
                                     id="comprometimentoUm"
                                     value="1"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="comprometimentoUm"
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="comprometimentoUm"
                                     >Não atende ao desempenho esperado</label
                                 >
                             </div>
@@ -1638,7 +1244,7 @@
                                     id="comprometimentoDois"
                                     value="2"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="comprometimentoDois">Atende parcialmente</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="comprometimentoDois">Atende parcialmente</label>
                             </div>
                             <div class="form-check form-check-inline cursor-pointer">
                                 <input
@@ -1649,7 +1255,7 @@
                                     id="comprometimentoTres"
                                     value="3"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="comprometimentoTres">Atende ao esperado</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="comprometimentoTres">Atende ao esperado</label>
                             </div>
                             <div class="form-check form-check-inline cursor-pointer">
                                 <input
@@ -1660,7 +1266,7 @@
                                     id="comprometimentoQuatro"
                                     value="4"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="comprometimentoQuatro"
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="comprometimentoQuatro"
                                     >Supera as expectativas</label
                                 >
                             </div>
@@ -1669,12 +1275,12 @@
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend class="text-uppercase">Comunicação</legend>
+            <fieldset class="mybp-modal-secao">
+                <legend>Comunicação</legend>
                 <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label class="labeltext"
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label labeltext"
                                 >Todos nós já passamos por situações em que não compreendemos o que nos foi comunicado. Por exemplo: um prazo de entrega,
                                 instruções complicadas, etc. Conte uma situação vivenciada onde isso aconteceu com você. Como você solucionou? <br />
                                 Qual foi o pior problema de comunicação que você já enfrentou? Relate-nos essa experiência.
@@ -1689,7 +1295,7 @@
                                     id="comunicacaoUm"
                                     value="1"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="comunicacaoUm"
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="comunicacaoUm"
                                     >Não atende ao desempenho esperado</label
                                 >
                             </div>
@@ -1702,7 +1308,7 @@
                                     id="comunicacaoDois"
                                     value="2"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="comunicacaoDois">Atende parcialmente</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="comunicacaoDois">Atende parcialmente</label>
                             </div>
                             <div class="form-check form-check-inline cursor-pointer">
                                 <input
@@ -1713,7 +1319,7 @@
                                     id="comunicacaoTres"
                                     value="3"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="comunicacaoTres">Atende ao esperado</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="comunicacaoTres">Atende ao esperado</label>
                             </div>
                             <div class="form-check form-check-inline cursor-pointer">
                                 <input
@@ -1724,19 +1330,19 @@
                                     id="comunicacaoQuatro"
                                     value="4"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="comunicacaoQuatro">Supera as expectativas</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="comunicacaoQuatro">Supera as expectativas</label>
                             </div>
                         </div>
                     </div>
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend class="text-uppercase">Cultura da Qualidade</legend>
+            <fieldset class="mybp-modal-secao">
+                <legend>Cultura da qualidade</legend>
                 <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label class="labeltext"
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label labeltext"
                                 >Conte-me um fato em que foi necessário ser obediente aos procedimentos e regras organizacionais, sendo preciso ajustar a ação a
                                 ser tomada para que esta se adequasse à política da empresa. <br />
                                 Cite uma situação que você recorreu ao sistema de gestão da qualidade para resolver um problema. <br />
@@ -1753,7 +1359,7 @@
                                     id="cultura_qualidadeUm"
                                     value="1"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="cultura_qualidadeUm"
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="cultura_qualidadeUm"
                                     >Não atende ao desempenho esperado</label
                                 >
                             </div>
@@ -1766,7 +1372,7 @@
                                     id="cultura_qualidadeDois"
                                     value="2"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="cultura_qualidadeDois">Atende parcialmente</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="cultura_qualidadeDois">Atende parcialmente</label>
                             </div>
                             <div class="form-check form-check-inline cursor-pointer">
                                 <input
@@ -1777,7 +1383,7 @@
                                     id="cultura_qualidadeTres"
                                     value="3"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="cultura_qualidadeTres">Atende ao esperado</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="cultura_qualidadeTres">Atende ao esperado</label>
                             </div>
                             <div class="form-check form-check-inline cursor-pointer">
                                 <input
@@ -1788,7 +1394,7 @@
                                     id="cultura_qualidadeQuatro"
                                     value="4"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="cultura_qualidadeQuatro"
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="cultura_qualidadeQuatro"
                                     >Supera as expectativas</label
                                 >
                             </div>
@@ -1797,12 +1403,12 @@
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend class="text-uppercase">Foco no Cliente</legend>
+            <fieldset class="mybp-modal-secao">
+                <legend>Foco no cliente</legend>
                 <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label class="labeltext"
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label labeltext"
                                 >Conte uma situação em que você direcionou seus esforços para satisfazer as necessidades do cliente (interno ou externo). <br />
                                 Cite um fato no qual foi necessário agir com atenção, respeito e cortesia para com um cliente (interno ou externo), mesmo já
                                 estando irritado com a situação. Você conseguiu controlar a sua irritação e resolver a questão do cliente? <br />
@@ -1819,7 +1425,7 @@
                                     id="foco_clienteUm"
                                     value="1"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="foco_clienteUm"
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="foco_clienteUm"
                                     >Não atende ao desempenho esperado</label
                                 >
                             </div>
@@ -1832,7 +1438,7 @@
                                     id="foco_clienteDois"
                                     value="2"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="foco_clienteDois">Atende parcialmente</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="foco_clienteDois">Atende parcialmente</label>
                             </div>
                             <div class="form-check form-check-inline cursor-pointer">
                                 <input
@@ -1843,7 +1449,7 @@
                                     id="foco_clienteTres"
                                     value="3"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="foco_clienteTres">Atende ao esperado</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="foco_clienteTres">Atende ao esperado</label>
                             </div>
                             <div class="form-check form-check-inline cursor-pointer">
                                 <input
@@ -1854,19 +1460,19 @@
                                     id="foco_clienteQuatro"
                                     value="4"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="foco_clienteQuatro">Supera as expectativas</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="foco_clienteQuatro">Supera as expectativas</label>
                             </div>
                         </div>
                     </div>
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend class="text-uppercase">Iniciativa</legend>
+            <fieldset class="mybp-modal-secao">
+                <legend>Iniciativa</legend>
                 <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label class="labeltext"
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label labeltext"
                                 >Conte uma situação na qual você precisou se antecipar para resolucionar um problema. <br />
                                 Fale sobre algum projeto ou idéia que foram aceitos, introduzidos ou realizados com sucesso, principalmente em decorrência de
                                 sua iniciativa. <br />
@@ -1882,7 +1488,7 @@
                                     id="iniciativaUm"
                                     value="1"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="iniciativaUm"
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="iniciativaUm"
                                     >Não atende ao desempenho esperado</label
                                 >
                             </div>
@@ -1895,7 +1501,7 @@
                                     id="iniciativaDois"
                                     value="2"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="iniciativaDois">Atende parcialmente</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="iniciativaDois">Atende parcialmente</label>
                             </div>
                             <div class="form-check form-check-inline cursor-pointer">
                                 <input
@@ -1906,7 +1512,7 @@
                                     id="iniciativaTres"
                                     value="3"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="iniciativaTres">Atende ao esperado</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="iniciativaTres">Atende ao esperado</label>
                             </div>
                             <div class="form-check form-check-inline cursor-pointer">
                                 <input
@@ -1917,19 +1523,19 @@
                                     id="iniciativaQuatro"
                                     value="4"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="iniciativaQuatro">Supera as expectativas</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="iniciativaQuatro">Supera as expectativas</label>
                             </div>
                         </div>
                     </div>
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend class="text-uppercase">Orientação para resultados</legend>
+            <fieldset class="mybp-modal-secao">
+                <legend>Orientação para resultados</legend>
                 <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label class="labeltext"
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label labeltext"
                                 >Descreva algumas metas desafiadoras que você planejou para si mesmo e de que forma agiu frente a elas? Conseguiu atingi-las?
                                 <br />
                                 Fale sobre a meta mais desafiadora que você teve que alcançar. De que forma agiu? Quais foram os resultados?<br />
@@ -1944,7 +1550,7 @@
                                     id="orientacao_resultadosUm"
                                     value="1"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="orientacao_resultadosUm"
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="orientacao_resultadosUm"
                                     >Não atende ao desempenho esperado</label
                                 >
                             </div>
@@ -1957,7 +1563,7 @@
                                     id="orientacao_resultadosDois"
                                     value="2"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="orientacao_resultadosDois"
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="orientacao_resultadosDois"
                                     >Atende parcialmente</label
                                 >
                             </div>
@@ -1970,7 +1576,7 @@
                                     id="orientacao_resultadosTres"
                                     value="3"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="orientacao_resultadosTres"
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="orientacao_resultadosTres"
                                     >Atende ao esperado</label
                                 >
                             </div>
@@ -1983,7 +1589,7 @@
                                     id="orientacao_resultadosQuatro"
                                     value="4"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="orientacao_resultadosQuatro"
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="orientacao_resultadosQuatro"
                                     >Supera as expectativas</label
                                 >
                             </div>
@@ -1992,12 +1598,12 @@
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend class="text-uppercase">Trabalho em equipe</legend>
+            <fieldset class="mybp-modal-secao">
+                <legend>Trabalho em equipe</legend>
                 <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label class="labeltext"
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label labeltext"
                                 >Explicite um momento que você precisou se adaptar às diversas situações num determinado grupo. O que você fez? Como você reage
                                 quando tem que interagir com outros colegas para a conclusão de uma tarefa? Cite uma situação real. Por que o trabalho em equipe
                                 traz resultados mais eficazes? Cite uma situação vivida por você que o faz afirmar isso.
@@ -2012,7 +1618,7 @@
                                     id="trabalho_equipeUm"
                                     value="1"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="trabalho_equipeUm"
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="trabalho_equipeUm"
                                     >Não atende ao desempenho esperado</label
                                 >
                             </div>
@@ -2025,7 +1631,7 @@
                                     id="trabalho_equipeDois"
                                     value="2"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="trabalho_equipeDois">Atende parcialmente</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="trabalho_equipeDois">Atende parcialmente</label>
                             </div>
                             <div class="form-check form-check-inline cursor-pointer">
                                 <input
@@ -2036,7 +1642,7 @@
                                     id="trabalho_equipeTres"
                                     value="3"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="trabalho_equipeTres">Atende ao esperado</label>
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="trabalho_equipeTres">Atende ao esperado</label>
                             </div>
                             <div class="form-check form-check-inline cursor-pointer">
                                 <input
@@ -2047,7 +1653,7 @@
                                     id="trabalho_equipeQuatro"
                                     value="4"
                                 />
-                                <label class="form-check-label cursor-pointer" style="margin-top: 3px" for="trabalho_equipeQuatro"
+                                <label class="mybp-label form-check-label cursor-pointer" style="margin-top: 3px" for="trabalho_equipeQuatro"
                                     >Supera as expectativas</label
                                 >
                             </div>
@@ -2056,29 +1662,33 @@
                 </div>
             </fieldset>
 
-            <fieldset v-if="cliente_servico">
-                <legend>Avaliação Psicológica</legend>
-                <div class="form-group">
-                    <textarea
-                        :disabled="
-                            visualizar ||
-                            disabledParecerRh ||
-                            (form.parecer_rh.individual_rh.parecer !== 'destaque' && form.parecer_rh.individual_rh.parecer !== 'favoravel')
-                        "
-                        class="form-control"
-                        v-model="form.parecer_rh.individual_rh.avaliacao_psicologica"
-                        cols="5"
-                        rows="5"
-                    ></textarea>
+            <fieldset v-if="cliente_servico" class="mybp-modal-secao">
+                <legend>Avaliação psicológica</legend>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-group mybp-filtro-campo">
+                            <textarea
+                                :disabled="
+                                    visualizar ||
+                                    disabledParecerRh ||
+                                    (form.parecer_rh.individual_rh.parecer !== 'destaque' && form.parecer_rh.individual_rh.parecer !== 'favoravel')
+                                "
+                                class="form-control form-control-sm"
+                                v-model="form.parecer_rh.individual_rh.avaliacao_psicologica"
+                                cols="5"
+                                rows="4"
+                            ></textarea>
+                        </div>
+                    </div>
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend>VAGA DEFINIDA</legend>
+            <fieldset class="mybp-modal-secao">
+                <legend>Vaga definida</legend>
                 <div class="row">
-                    <div class="col-12 col-sm-6 col-md-4">
-                        <div class="form-group">
-                            <label>Vaga</label>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Vaga</label>
                             <autocomplete
                                 :caminho="caminho_autocomplete"
                                 :valido="form.vaga_id !== ''"
@@ -2086,16 +1696,16 @@
                                 placeholder="Selecione uma vaga"
                                 :id="`vaga_${hash}`"
                                 :disabled="visualizar || disabledParecerRh"
-                                :formsm="false"
+                                :formsm="true"
                                 @onblur="resetaCampoVagaModal"
                                 @onselect="selecionaVagaModal"
                             ></autocomplete>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6 col-md-4">
-                        <div class="form-group">
-                            <label>Cidade</label>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Cidade</label>
                             <autocomplete
                                 :caminho="todos_municipios"
                                 :valido="form.curriculo.municipio_id !== ''"
@@ -2103,16 +1713,16 @@
                                 placeholder="Selecione um municipio"
                                 :id="`mun_${hash}`"
                                 :disabled="visualizar || disabledParecerRh"
-                                :formsm="false"
+                                :formsm="true"
                                 @onblur="resetaCampoMunicipioModal"
                                 @onselect="selecionaMunicipioModal"
                             ></autocomplete>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6 col-md-4" v-if="cliente_id === 1">
-                        <div class="form-group">
-                            <label>Empresa</label>
+                    <div class="col-12 col-md-4" v-if="cliente_id === 1">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Empresa</label>
                             <autocomplete
                                 :caminho="caminho_cliente_autocomplete"
                                 :valido="form.cliente_id !== ''"
@@ -2120,7 +1730,7 @@
                                 placeholder="Selecione um cliente"
                                 :id="`cliente_${hash}`"
                                 :disabled="visualizar || disabledParecerRh"
-                                :formsm="false"
+                                :formsm="true"
                                 @onblur="resetaCampoClienteModal"
                                 @onselect="selecionaClienteModal"
                             ></autocomplete>
@@ -2129,110 +1739,112 @@
                 </div>
             </fieldset>
 
-            <fieldset>
-                <legend class="text-uppercase" v-if="!cliente_servico">Parecer Final RH</legend>
-                <legend class="text-uppercase" v-if="cliente_servico">Parecer Individual</legend>
+            <fieldset class="mybp-modal-secao">
+                <legend v-if="!cliente_servico">Parecer final RH</legend>
+                <legend v-if="cliente_servico">Parecer individual</legend>
                 <div class="row">
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Parecer</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                onchange="valida_campo_vazio(this, 1)"
-                                v-model="form.parecer_rh.parecer_final"
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Parecer</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-parecer_final-${hash}`"
+                                    :input-id="`rh-parecer_final-${hash}`"
+                                    v-model="form.parecer_rh.parecer_final"
+                                    :options="opcoesParecerFinal"
+                                    :disabled="visualizar || disabledParecerRh"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-parecer_final-${hash}`)"
+                                    @select="onRhComboSelect(`rh-parecer_final-${hash}`)"
                                 v-if="!cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="indicacao_rh">Indicação RH</option>
-                                <option value="parada">Parada</option>
-                                <option value="fixo">Fixo</option>
-                                <option value="intermitente">Intermitente</option>
-                            </select>
+                                ></combobox-auto-complete>
+                            </div>
 
-                            <select
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                onchange="valida_campo_vazio(this, 1)"
-                                v-model="form.parecer_rh.individual_rh.parecer"
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-individual_rh-parecer-${hash}`"
+                                    :input-id="`rh-individual_rh-parecer-${hash}`"
+                                    v-model="form.parecer_rh.individual_rh.parecer"
+                                    :options="opcoesParecerClassificacao"
+                                    :disabled="visualizar || disabledParecerRh"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-individual_rh-parecer-${hash}`)"
+                                    @select="onRhComboSelect(`rh-individual_rh-parecer-${hash}`)"
                                 v-if="cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="destaque">Destaque</option>
-                                <option value="favoravel">Favorável</option>
-                                <option value="stand_by">Stand By</option>
-                                <option value="desfavoravel">Desfavoravel</option>
-                            </select>
+                                ></combobox-auto-complete>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6" v-if="!cliente_servico">
-                        <div class="form-group">
-                            <label>Resultado</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                onchange="valida_campo_vazio(this, 1)"
-                                v-model="form.parecer_rh.parecer_final_um"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="favoravel">Favorável RH</option>
-                                <option value="restricao">Restrição</option>
-                                <option value="desfavoravel">Desfavorável</option>
-                            </select>
+                    <div class="col-12 col-md-4" v-if="!cliente_servico">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Resultado</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-parecer_final_um-${hash}`"
+                                    :input-id="`rh-parecer_final_um-${hash}`"
+                                    v-model="form.parecer_rh.parecer_final_um"
+                                    :options="opcoesParecerFinalUm"
+                                    :disabled="visualizar || disabledParecerRh"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-parecer_final_um-${hash}`)"
+                                    @select="onRhComboSelect(`rh-parecer_final_um-${hash}`)"
+                                ></combobox-auto-complete>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Nota</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                onchange="valida_campo_vazio(this, 1)"
-                                v-model="form.parecer_rh.nota"
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Nota</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-nota-${hash}`"
+                                    :input-id="`rh-nota-${hash}`"
+                                    v-model="form.parecer_rh.nota"
+                                    :options="opcoesNota0a10"
+                                    :disabled="visualizar || disabledParecerRh"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-nota-${hash}`)"
+                                    @select="onRhComboSelect(`rh-nota-${hash}`)"
                                 v-if="!cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option v-for="(qnt, index) in 10" :value="qnt" :key="qnt.id || index">{{ qnt }}</option>
-                            </select>
+                                ></combobox-auto-complete>
+                            </div>
 
-                            <select
-                                class="form-control"
-                                :disabled="visualizar || disabledParecerRh"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                onchange="valida_campo_vazio(this, 1)"
-                                v-model="form.parecer_rh.individual_rh.nota"
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-individual_rh-nota-${hash}`"
+                                    :input-id="`rh-individual_rh-nota-${hash}`"
+                                    v-model="form.parecer_rh.individual_rh.nota"
+                                    :options="opcoesNota0a10"
+                                    :disabled="visualizar || disabledParecerRh"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-individual_rh-nota-${hash}`)"
+                                    @select="onRhComboSelect(`rh-individual_rh-nota-${hash}`)"
                                 v-if="cliente_servico"
-                            >
-                                <option value="">Selecione</option>
-                                <option v-for="(qnt, index) in 10" :value="qnt" :key="index">{{ qnt }}</option>
-                            </select>
+                                ></combobox-auto-complete>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6" v-show="entrevistadoRh">
-                        <div class="form-group">
-                            <label>Entrevistado Por:</label>
+                    <div class="col-12 col-md-4" v-show="entrevistadoRh">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Entrevistado Por:</label>
                             <input
                                 type="text"
                                 :disabled="visualizar || disabledParecerRh"
                                 autocomplete="off"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 onblur="valida_campo_vazio(this, 3)"
                                 v-if="!cliente_servico"
                                 v-model="form.parecer_rh.quem_entrevistou"
@@ -2242,7 +1854,7 @@
                                 type="text"
                                 :disabled="visualizar || disabledParecerRh"
                                 autocomplete="off"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 onblur="valida_campo_vazio(this, 3)"
                                 v-if="cliente_servico"
                                 v-model="form.parecer_rh.individual_rh.entrevistado_por"
@@ -2252,10 +1864,10 @@
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label>Comentários</label>
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Comentários</label>
                             <textarea
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 :disabled="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.comentarios"
                                 cols="3"
@@ -2264,7 +1876,7 @@
                             ></textarea>
 
                             <textarea
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 :disabled="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.individual_rh.comentario"
                                 cols="3"
@@ -2276,101 +1888,75 @@
                 </div>
             </fieldset>
 
-            <fieldset v-if="entrevistaGestor">
-                <legend class="text-uppercase">Entrevista Gestor</legend>
+            <fieldset v-if="entrevistaGestor" class="mybp-modal-secao">
+                <legend>Entrevista gestor</legend>
                 <div class="row">
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Parecer</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                onchange="valida_campo_vazio(this, 1)"
-                                v-if="!entrevistaGestorDisabled"
-                                v-model="form.parecer_rh.gestor_rh.parecer"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="destaque">Destaque</option>
-                                <option value="favoravel">Favorável</option>
-                                <option value="stand_by">Stand By</option>
-                                <option value="desfavoravel">Desfavoravel</option>
-                            </select>
-
-                            <select class="form-control" disabled="disabled" v-if="entrevistaGestorDisabled" v-model="form.parecer_rh.gestor_rh.parecer">
-                                <option value="">Selecione</option>
-                                <option value="destaque">Destaque</option>
-                                <option value="favoravel">Favorável</option>
-                                <option value="stand_by">Stand By</option>
-                                <option value="desfavoravel">Desfavoravel</option>
-                            </select>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Parecer</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-gestor_rh-parecer-${hash}`"
+                                    :input-id="`rh-gestor_rh-parecer-${hash}`"
+                                    v-model="form.parecer_rh.gestor_rh.parecer"
+                                    :options="opcoesParecerClassificacao"
+                                    :disabled="visualizar || entrevistaGestorDisabled"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-gestor_rh-parecer-${hash}`)"
+                                    @select="onRhComboSelect(`rh-gestor_rh-parecer-${hash}`)"
+                                ></combobox-auto-complete>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Indicado para</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                onchange="valida_campo_vazio(this, 1)"
-                                v-if="!entrevistaGestorDisabled"
-                                v-model="form.parecer_rh.gestor_rh.indicado_para"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="ATENDENTE RECEPTIVO">ATENDENTE RECEPTIVO</option>
-                                <option value="ATENDENTE ATIVO">ATENDENTE ATIVO</option>
-                                <option value="SUPERVISOR ATENDIMENTO">SUPERVISOR ATENDIMENTO</option>
-                                <option value="ASSISTENTE COMERCIAL I">ASSISTENTE COMERCIAL I</option>
-                                <option value="PROMOTOR DE VENDAS">PROMOTOR DE VENDAS</option>
-                            </select>
-
-                            <select class="form-control" disabled="disabled" v-if="entrevistaGestorDisabled" v-model="form.parecer_rh.gestor_rh.indicado_para">
-                                <option value="">Selecione</option>
-                                <option value="ATENDENTE RECEPTIVO">ATENDENTE RECEPTIVO</option>
-                                <option value="ATENDENTE ATIVO">ATENDENTE ATIVO</option>
-                                <option value="SUPERVISOR ATENDIMENTO">SUPERVISOR ATENDIMENTO</option>
-                                <option value="ASSISTENTE COMERCIAL I">ASSISTENTE COMERCIAL I</option>
-                                <option value="PROMOTOR DE VENDAS">PROMOTOR DE VENDAS</option>
-                            </select>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Indicado para</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-gestor_rh-indicado_para-${hash}`"
+                                    :input-id="`rh-gestor_rh-indicado_para-${hash}`"
+                                    v-model="form.parecer_rh.gestor_rh.indicado_para"
+                                    :options="opcoesIndicadoPara"
+                                    :disabled="visualizar || entrevistaGestorDisabled"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-gestor_rh-indicado_para-${hash}`)"
+                                    @select="onRhComboSelect(`rh-gestor_rh-indicado_para-${hash}`)"
+                                ></combobox-auto-complete>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Nota</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                onchange="valida_campo_vazio(this, 1)"
-                                v-if="!entrevistaGestorDisabled"
-                                v-model="form.parecer_rh.gestor_rh.nota"
-                            >
-                                <option value="">Selecione</option>
-                                <option v-for="(qnt, index) in 10" :value="qnt" :key="index">{{ qnt }}</option>
-                            </select>
-
-                            <select class="form-control" disabled="disabled" v-if="entrevistaGestorDisabled" v-model="form.parecer_rh.gestor_rh.nota">
-                                <option value="">Selecione</option>
-                                <option v-for="(qnt, index) in 10" :value="qnt" :key="index">{{ qnt }}</option>
-                            </select>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Nota</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-gestor_rh-nota-${hash}`"
+                                    :input-id="`rh-gestor_rh-nota-${hash}`"
+                                    v-model="form.parecer_rh.gestor_rh.nota"
+                                    :options="opcoesNota0a10"
+                                    :disabled="visualizar || entrevistaGestorDisabled"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-gestor_rh-nota-${hash}`)"
+                                    @select="onRhComboSelect(`rh-gestor_rh-nota-${hash}`)"
+                                ></combobox-auto-complete>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Entrevistado Por:</label>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Entrevistado Por:</label>
                             <input
                                 type="text"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 :disabled="visualizar"
                                 v-bind="
                                     !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
@@ -2381,7 +1967,7 @@
 
                             <input
                                 type="text"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 disabled="disabled"
                                 v-if="entrevistaGestorDisabled"
                                 v-model="form.parecer_rh.gestor_rh.entrevistado_por"
@@ -2392,10 +1978,10 @@
 
                 <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label>Comentários</label>
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Comentários</label>
                             <textarea
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 :disabled="visualizar || entrevistaGestorDisabled"
                                 v-model="form.parecer_rh.gestor_rh.comentario"
                                 cols="3"
@@ -2406,109 +1992,78 @@
                 </div>
             </fieldset>
 
-            <fieldset v-if="entrevistaRh">
-                <legend class="text-uppercase">Entrevista RH</legend>
+            <fieldset v-if="entrevistaRh" class="mybp-modal-secao">
+                <legend>Entrevista RH</legend>
                 <div class="row">
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Parecer</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                onchange="valida_campo_vazio(this, 1)"
-                                v-if="!entrevistaRhDisabled"
-                                v-model="form.parecer_rh.entrevista_rh.parecer"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="destaque">Destaque</option>
-                                <option value="favoravel">Favorável</option>
-                                <option value="stand_by">Stand By</option>
-                                <option value="desfavoravel">Desfavoravel</option>
-                            </select>
-
-                            <select
-                                class="form-control"
-                                :disabled="visualizar"
-                                v-if="entrevistaRhDisabled"
-                                v-model="form.parecer_rh.entrevista_rh.parecer"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="destaque">Destaque</option>
-                                <option value="favoravel">Favorável</option>
-                                <option value="stand_by">Stand By</option>
-                                <option value="desfavoravel">Desfavoravel</option>
-                            </select>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Parecer</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-entrevista_rh-parecer-${hash}`"
+                                    :input-id="`rh-entrevista_rh-parecer-${hash}`"
+                                    v-model="form.parecer_rh.entrevista_rh.parecer"
+                                    :options="opcoesParecerClassificacao"
+                                    :disabled="visualizar || entrevistaRhDisabled"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-entrevista_rh-parecer-${hash}`)"
+                                    @select="onRhComboSelect(`rh-entrevista_rh-parecer-${hash}`)"
+                                ></combobox-auto-complete>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Indicado para</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar"
-                                v-if="!entrevistaRhDisabled"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                onchange="valida_campo_vazio(this, 1)"
-                                v-model="form.parecer_rh.entrevista_rh.indicado_para"
-                            >
-                                <option value="">Selecione</option>
-                                <option value="ATENDENTE RECEPTIVO">ATENDENTE RECEPTIVO</option>
-                                <option value="ATENDENTE ATIVO">ATENDENTE ATIVO</option>
-                                <option value="SUPERVISOR ATENDIMENTO">SUPERVISOR ATENDIMENTO</option>
-                                <option value="ASSISTENTE COMERCIAL I">ASSISTENTE COMERCIAL I</option>
-                                <option value="PROMOTOR DE VENDAS">PROMOTOR DE VENDAS</option>
-                            </select>
-
-                            <select class="form-control" disabled="disabled" v-if="entrevistaRhDisabled" v-model="form.parecer_rh.entrevista_rh.indicado_para">
-                                <option value="">Selecione</option>
-                                <option value="ATENDENTE RECEPTIVO">ATENDENTE RECEPTIVO</option>
-                                <option value="ATENDENTE ATIVO">ATENDENTE ATIVO</option>
-                                <option value="SUPERVISOR ATENDIMENTO">SUPERVISOR ATENDIMENTO</option>
-                                <option value="ASSISTENTE COMERCIAL I">ASSISTENTE COMERCIAL I</option>
-                                <option value="PROMOTOR DE VENDAS">PROMOTOR DE VENDAS</option>
-                            </select>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Indicado para</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-entrevista_rh-indicado_para-${hash}`"
+                                    :input-id="`rh-entrevista_rh-indicado_para-${hash}`"
+                                    v-model="form.parecer_rh.entrevista_rh.indicado_para"
+                                    :options="opcoesIndicadoPara"
+                                    :disabled="visualizar || entrevistaRhDisabled"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-entrevista_rh-indicado_para-${hash}`)"
+                                    @select="onRhComboSelect(`rh-entrevista_rh-indicado_para-${hash}`)"
+                                ></combobox-auto-complete>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Nota</label>
-                            <select
-                                class="form-control"
-                                :disabled="visualizar"
-                                v-if="!entrevistaRhDisabled"
-                                v-bind="
-                                    !visualizar || !disabledParecerRh ? { onkeyup: 'valida_campo_vazio(this, 1)', onblur: 'valida_campo_vazio(this, 1)' } : {}
-                                "
-                                onchange="valida_campo_vazio(this, 1)"
-                                v-model="form.parecer_rh.entrevista_rh.nota"
-                            >
-                                <option value="">Selecione</option>
-                                <option v-for="(qnt, index) in 10" :value="qnt" :key="index">{{ qnt }}</option>
-                            </select>
-
-                            <select class="form-control" disabled="disabled" v-if="entrevistaRhDisabled" v-model="form.parecer_rh.entrevista_rh.nota">
-                                <option value="">Selecione</option>
-                                <option v-for="(qnt, index) in 10" :value="qnt" :key="index">{{ qnt }}</option>
-                            </select>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Nota</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    :instance-id="`rh-entrevista_rh-nota-${hash}`"
+                                    :input-id="`rh-entrevista_rh-nota-${hash}`"
+                                    v-model="form.parecer_rh.entrevista_rh.nota"
+                                    :options="opcoesNota0a10"
+                                    :disabled="visualizar || entrevistaRhDisabled"
+                                    placeholder-blur="Selecione..."
+                                    empty-message="Nenhuma opção."
+                                    :max-results="80"
+                                    @opening="fecharOutrosComboboxes(`rh-entrevista_rh-nota-${hash}`)"
+                                    @select="onRhComboSelect(`rh-entrevista_rh-nota-${hash}`)"
+                                ></combobox-auto-complete>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-6">
-                        <div class="form-group">
-                            <label>Entrevistado Por:</label>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Entrevistado Por:</label>
                             <input
                                 type="text"
                                 :disabled="visualizar"
                                 autocomplete="off"
                                 v-if="!entrevistaRhDisabled"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 onblur="valida_campo_vazio(this, 3)"
                                 v-model="form.parecer_rh.entrevista_rh.entrevistado_por"
                             />
@@ -2518,7 +2073,7 @@
                                 disabled
                                 autocomplete="off"
                                 v-if="entrevistaRhDisabled"
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 v-model="form.parecer_rh.entrevista_rh.entrevistado_por"
                             />
                         </div>
@@ -2527,10 +2082,10 @@
 
                 <div class="row">
                     <div class="col-12">
-                        <div class="form-group">
-                            <label>Comentários</label>
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label">Comentários</label>
                             <textarea
-                                class="form-control"
+                                class="form-control form-control-sm"
                                 :disabled="visualizar || entrevistaRhDisabled"
                                 v-model="form.parecer_rh.entrevista_rh.comentario"
                                 cols="3"
@@ -2546,8 +2101,13 @@
 
 <script>
 import DadosPessoais from './DadosPessoaisTexto'
+import ComboboxAutoComplete from '../ComboboxAutoComplete.vue'
+import MybpBoolCombobox from '../ui/MybpBoolCombobox.vue'
+import ComboboxValidation from '../../mixins/ComboboxValidation'
 
 export default {
+    name: 'FormParecerRh',
+    mixins: [ComboboxValidation],
     props: {
         form: {
             type: Object,
@@ -2780,18 +2340,151 @@ export default {
                 this.preload = false
             })
 
-        if (this.disabledParecerRh) {
-            setTimeout(() => {
-                $('#formParecerRh select').removeAttr('onblur')
-            }, 8000)
-        }
     },
 
     components: {
-        DadosPessoais
+        DadosPessoais,
+        ComboboxAutoComplete,
+        MybpBoolCombobox
+    },
+
+    computed: {
+        opcoesTipoEntrevista() {
+            return [
+                { value: 'Fixo', label: 'Fixo' },
+                { value: 'Parada', label: 'Parada' }
+            ]
+        },
+        opcoesDestro() {
+            return [
+                { value: 'Destro', label: 'Destro' },
+                { value: 'Canhoto', label: 'Canhoto' }
+            ]
+        },
+        opcoesDinamicaGrupo() {
+            return [
+                { value: 'Destaque', label: 'Destaque' },
+                { value: 'Favorável', label: 'Favorável' },
+                { value: 'Desfavorável', label: 'Desfavorável' }
+            ]
+        },
+        opcoesCamisaMeia() {
+            return ['P', 'M', 'G', 'GG', 'XG'].map((v) => ({ value: v, label: v }))
+        },
+        opcoesCamisaProt() {
+            return [2, 3, 4, 5, 6].map((n) => ({ value: n, label: String(n) }))
+        },
+        opcoesCalca() {
+            return Array.from({ length: 23 }, (_, i) => {
+                const n = 34 + i
+                return { value: n, label: String(n) }
+            })
+        },
+        opcoesBota() {
+            return Array.from({ length: 17 }, (_, i) => {
+                const n = 34 + i
+                return { value: n, label: String(n) }
+            })
+        },
+        opcoesNota1a10() {
+            return Array.from({ length: 10 }, (_, i) => {
+                const n = i + 1
+                return { value: n, label: String(n) }
+            })
+        },
+        opcoesNota0a10() {
+            return Array.from({ length: 11 }, (_, i) => ({ value: i, label: String(i) }))
+        },
+        opcoesDisponibilidadeHorarios() {
+            return [
+                'Manhã',
+                'Manhã - tarde',
+                'Manhã - noite',
+                'Tarde',
+                'Tarde - noite',
+                'Noite',
+                'Madrugada',
+                'Qualquer horário'
+            ].map((v) => ({ value: v, label: v }))
+        },
+        opcoesHorarioPreferencial() {
+            return ['Manhã', 'Tarde', 'Noite', 'Madrugada', 'Qualquer horário'].map((v) => ({
+                value: v,
+                label: v
+            }))
+        },
+        opcoesParecerFinal() {
+            return ['Indicação RH', 'Parada', 'Fixo', 'Intermitente'].map((v) => ({ value: v, label: v }))
+        },
+        opcoesParecerClassificacao() {
+            return [
+                { value: 'Destaque', label: 'Destaque' },
+                { value: 'Favorável', label: 'Favorável' },
+                { value: 'Stand By', label: 'Stand By' },
+                { value: 'Desfavoravel', label: 'Desfavorável' }
+            ]
+        },
+        opcoesParecerFinalUm() {
+            return [
+                { value: 'Favorável RH', label: 'Favorável RH' },
+                { value: 'Restrição', label: 'Restrição' },
+                { value: 'Desfavorável', label: 'Desfavorável' }
+            ]
+        },
+        opcoesIndicadoPara() {
+            return [
+                'ATENDENTE RECEPTIVO',
+                'ATENDENTE ATIVO',
+                'SUPERVISOR ATENDIMENTO',
+                'ASSISTENTE COMERCIAL I',
+                'PROMOTOR DE VENDAS'
+            ].map((v) => ({ value: v, label: v }))
+        }
     },
 
     methods: {
+        fecharOutrosComboboxes() {},
+        onRhComboSelect(inputId, tipo) {
+            this.limparComboboxInvalido(inputId)
+            if (tipo === 'tipo') {
+                this.changeTipoEntrevista()
+            }
+        },
+        validarCampos() {
+            if (this.visualizar) return true
+
+            if (!this.disabledParecerRh && !this.cliente_servico) {
+                if (
+                    !this.exigirCombobox(this.form.parecer_rh.tipo_entrevista, `rh-tipo_entrevista-${this.hash}`, {
+                        toastMsg: 'Selecione o tipo de entrevista'
+                    })
+                ) {
+                    return false
+                }
+            }
+
+            if (this.entrevistaGestor && !this.entrevistaGestorDisabled) {
+                if (
+                    !this.exigirCombobox(this.form.parecer_rh.gestor_rh.parecer, `rh-gestor_rh-parecer-${this.hash}`, {
+                        toastMsg: 'Selecione o parecer do gestor'
+                    })
+                ) {
+                    return false
+                }
+            }
+
+            if (this.entrevistaRh && !this.entrevistaRhDisabled) {
+                if (
+                    !this.exigirCombobox(this.form.parecer_rh.entrevista_rh.parecer, `rh-entrevista_rh-parecer-${this.hash}`, {
+                        toastMsg: 'Selecione o parecer da entrevista RH'
+                    })
+                ) {
+                    return false
+                }
+            }
+
+            return this.validarInputsAtivosVisiveis('formParecerRh', { preservarIds: [] })
+        },
         /** Adiciona linhas **/
         addLICurso() {
             let obj = {}

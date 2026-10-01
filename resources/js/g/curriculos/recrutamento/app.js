@@ -3,6 +3,13 @@ import { registerGlobals } from '../../../registerGlobals'
 import endereco from '../../../components/Endereco'
 import telefone from '../../../components/Telefones'
 import datepicker from '../../../components/DatePicker'
+import DateRangeFilter from '../../../components/DateRangeFilter.vue'
+import ComboboxAutoComplete from '../../../components/ComboboxAutoComplete.vue'
+import FiltroListagem from '../../../components/ui/FiltroListagem.vue'
+import MybpBoolCombobox from '../../../components/ui/MybpBoolCombobox.vue'
+import MybpCardCampo from '../../../components/ui/MybpCardCampo.vue'
+import MybpStatusBadge from '../../../components/ui/MybpStatusBadge.vue'
+import ComboboxValidation from '../../../mixins/ComboboxValidation'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 
 // ===== CONSTANTES E CONFIGURAÇÕES =====
@@ -32,9 +39,15 @@ const app = createApp({
     components: {
         endereco,
         datepicker,
-        telefone
+        telefone,
+        DateRangeFilter,
+        ComboboxAutoComplete,
+        FiltroListagem,
+        MybpBoolCombobox,
+        MybpCardCampo,
+        MybpStatusBadge
     },
-    mixins: [ExportacaoMixin],
+    mixins: [ExportacaoMixin, ComboboxValidation],
 
     data() {
         return {
@@ -46,6 +59,7 @@ const app = createApp({
             feedback: false,
             cadastrado: false,
             atualizado: false,
+            dropdownAbertoId: null,
 
             // ===== CONFIGURAÇÕES =====
             permite_envio_whatsapp: null,
@@ -90,6 +104,8 @@ const app = createApp({
                     campoPcd: '',
                     campoCPF: '',
                     filtroPeriodo: false,
+                    dataInicio: '',
+                    dataFim: '',
                     periodo: ''
                 }
             }
@@ -106,6 +122,80 @@ const app = createApp({
         },
         telefonePrincipalNumero() {
             return this.telefonePrincipal ? this.telefonePrincipal.numero : ''
+        },
+        totalFiltrosAtivos() {
+            const d = this.controle.dados
+            let total = [d.campoBusca, d.campoCPF, d.campoVaga, d.campoUf, d.campoLido, d.campoPcd].filter(
+                (v) => v !== '' && v !== null && v !== undefined
+            ).length
+            if (d.filtroPeriodo && d.dataInicio && d.dataFim) total++
+            if (Number(d.pages) !== 20) total++
+            return total
+        },
+        campoBuscaUnificada() {
+            const d = this.controle.dados
+            if (d.campoCPF) return d.campoCPF
+            return d.campoBusca || ''
+        },
+        buscaUnificadaEhCpf() {
+            return !!this.controle.dados.campoCPF
+        },
+        campoPagesCombo: {
+            get() {
+                return this.controle.dados.pages === '' || this.controle.dados.pages == null
+                    ? 20
+                    : Number(this.controle.dados.pages)
+            },
+            set(v) {
+                this.controle.dados.pages = v === '' || v == null ? 20 : Number(v)
+            }
+        },
+        filtroUfOpcoes() {
+            const ufs = [
+                'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
+                'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
+                'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+            ]
+            return [{ value: '', label: 'Todos os estados' }, ...ufs.map((uf) => ({ value: uf, label: uf }))]
+        },
+        filtroSimNaoOpcoes() {
+            return [
+                { value: '', label: 'Geral' },
+                { value: 'true', label: 'Sim' },
+                { value: 'false', label: 'Não' }
+            ]
+        },
+        filtroPagesOpcoes() {
+            return [20, 50, 100].map((n) => ({ value: n, label: String(n) }))
+        },
+        opcoesSexoModal() {
+            return (this.lista_sexos || []).map((item) => ({ value: item, label: item }))
+        },
+        opcoesEstadoCivilModal() {
+            return (this.lista_estados_civis || []).map((item) => ({ value: item, label: item }))
+        },
+        opcoesSelecionadoModal() {
+            return [
+                { value: 'sim', label: 'Sim' },
+                { value: 'nao', label: 'Não' },
+                { value: 'standby', label: 'Stand by' }
+            ]
+        },
+        opcoesSimNaoModal() {
+            return [
+                { value: 'sim', label: 'Sim' },
+                { value: 'nao', label: 'Não' }
+            ]
+        },
+        viajarCombo: {
+            get() {
+                if (this.form.viajar === true || this.form.viajar === 'true' || this.form.viajar === 1) return 'sim'
+                if (this.form.viajar === false || this.form.viajar === 'false' || this.form.viajar === 0) return 'nao'
+                return ''
+            },
+            set() {
+                /* somente leitura */
+            }
         }
     },
 
@@ -481,14 +571,57 @@ const app = createApp({
         },
 
         validarCamposObrigatorios() {
-            $('#janelaCadastrar :input:visible').trigger('blur')
+            if (
+                !this.exigirCombobox(this.form_feedback.selecionado, 'rec-modal-selecionado', {
+                    toastMsg: 'Selecione se o candidato foi selecionado'
+                })
+            ) {
+                return false
+            }
 
-            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
+            if (this.form_feedback.selecionado === 'nao') {
+                if (
+                    this.form_feedback.envia_mail_desclassificacao !== true &&
+                    this.form_feedback.envia_mail_desclassificacao !== false
+                ) {
+                    if (
+                        !this.exigirCombobox(this.form_feedback.envia_mail_desclassificacao, 'rec-modal-mail-desclass', {
+                            toastMsg: 'Informe se envia e-mail de desclassificação'
+                        })
+                    ) {
+                        return false
+                    }
+                }
+            }
+
+            if (this.form_feedback.selecionado && this.form_feedback.selecionado !== 'nao') {
+                if (this.form_feedback.contato_realizado !== true && this.form_feedback.contato_realizado !== false) {
+                    if (
+                        !this.exigirCombobox(this.form_feedback.contato_realizado, 'rec-modal-contato', {
+                            toastMsg: 'Informe se o contato foi realizado'
+                        })
+                    ) {
+                        return false
+                    }
+                }
+            }
+
+            $('#janelaCadastrar :input:visible:enabled').trigger('blur')
+
+            if ($('#janelaCadastrar :input:visible:enabled.is-invalid').length) {
                 mostraErro('', MENSAGENS.ERRO_CAMPOS_INVALIDOS)
                 return false
             }
 
-            return true
+            return this.validarInputsAtivosVisiveis('janelaCadastrar', { preservarIds: [] })
+        },
+
+        fecharOutrosComboboxesModal() {
+            /* Combobox do modal sem refs; opening só sinaliza — filtros usam fecharOutrosComboboxes */
+        },
+
+        onSelectFeedbackCombo(inputId) {
+            this.limparComboboxInvalido(inputId)
         },
 
         processarSucessoAlteracao() {
@@ -602,10 +735,167 @@ const app = createApp({
         },
 
         atualizar() {
+            this.sincronizarPeriodoBr()
             if (this.$refs.componente) {
                 this.resetarPaginacao()
                 this.executarBusca()
             }
+        },
+
+        sincronizarPeriodoBr() {
+            const d = this.controle.dados
+            if (d.filtroPeriodo && d.dataInicio && d.dataFim) {
+                d.periodo = `${this.isoParaBr(d.dataInicio)} até ${this.isoParaBr(d.dataFim)}`
+            } else {
+                d.periodo = ''
+            }
+        },
+        isoParaBr(iso) {
+            if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return ''
+            const [y, m, day] = iso.split('-')
+            return `${day}/${m}/${y}`
+        },
+        formatarCpfDigitos(valor) {
+            const d = String(valor || '').replace(/\D/g, '').slice(0, 11)
+            if (d.length <= 3) return d
+            if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`
+            if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`
+            return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`
+        },
+        parecePadraoCpf(valor) {
+            const raw = String(valor || '').trim()
+            if (!raw) return false
+            if (!/^[\d.\-\s]+$/.test(raw)) return false
+            const digitos = raw.replace(/\D/g, '')
+            return digitos.length > 0 && digitos.length <= 11
+        },
+        onInputBuscaUnificada(event) {
+            const valor = event && event.target ? event.target.value : ''
+            const d = this.controle.dados
+            if (!valor) {
+                d.campoBusca = ''
+                d.campoCPF = ''
+                return
+            }
+            if (this.parecePadraoCpf(valor)) {
+                const mascarado = this.formatarCpfDigitos(valor)
+                d.campoCPF = mascarado
+                d.campoBusca = ''
+                if (event.target && event.target.value !== mascarado) {
+                    event.target.value = mascarado
+                }
+                return
+            }
+            d.campoBusca = valor
+            d.campoCPF = ''
+        },
+        onPeriodoChange() {
+            this.atualizar()
+        },
+        onSelectFiltro() {
+            this.atualizar()
+        },
+        fecharOutrosComboboxes(excetoId) {
+            const mapa = {
+                'rec-filtro-uf': 'comboFiltroUf',
+                'rec-filtro-lido': 'comboFiltroLido',
+                'rec-filtro-pcd': 'comboFiltroPcd',
+                'rec-filtro-pages': 'comboFiltroPages'
+            }
+            Object.keys(mapa).forEach((id) => {
+                if (id === excetoId) return
+                const ref = this.$refs[mapa[id]]
+                if (ref && typeof ref.fechar === 'function') ref.fechar()
+                else if (ref && typeof ref.close === 'function') ref.close()
+            })
+        },
+        limparFiltros() {
+            const pages = this.controle.dados.pages || 20
+            this.controle.dados = {
+                ...this.controle.dados,
+                autocomplete_label_anterior: '',
+                autocomplete_label: '',
+                campoBusca: '',
+                campoCPF: '',
+                campoVaga: '',
+                campoUf: '',
+                campoLido: '',
+                campoPcd: '',
+                campoFiltro: '',
+                filtroPeriodo: false,
+                dataInicio: '',
+                dataFim: '',
+                periodo: '',
+                pages
+            }
+            this.atualizar()
+        },
+
+        chaveStatusRec(item) {
+            const sel = item && item.feed_back ? item.feed_back.selecionado : ''
+            if (sel === 'sim') return 'aprovado'
+            if (sel === 'nao') return 'reprovado'
+            if (sel === 'standby') return 'gestor'
+            if (item && item.lido) return 'neutro'
+            return 'pendente'
+        },
+        textoStatusRec(item) {
+            const sel = item && item.feed_back ? item.feed_back.selecionado : ''
+            if (sel === 'sim') return 'Selecionado'
+            if (sel === 'nao') return 'Não selecionado'
+            if (sel === 'standby') return 'Stand by'
+            if (item && item.lido) return 'Lido'
+            return 'Não lido'
+        },
+        textoSelecionadoRec(item) {
+            const sel = item && item.feed_back ? item.feed_back.selecionado : ''
+            if (!sel) return ''
+            if (sel === 'sim') return 'Sim'
+            if (sel === 'nao') return 'Não'
+            if (sel === 'standby') return 'Stand by'
+            return String(sel)
+        },
+        textoSimNaoFeed(item, key) {
+            if (!item || !item.feed_back) return 'Não'
+            return item.feed_back[key] ? 'Sim' : 'Não'
+        },
+        tomSimNaoFeed(item, key) {
+            if (!item || !item.feed_back) return 'negativo'
+            return item.feed_back[key] ? 'positivo' : 'negativo'
+        },
+        countRec(item, key) {
+            const n = item ? Number(item[key] || 0) : 0
+            return Number.isFinite(n) ? n : 0
+        },
+        textoTemCountRec(item, key) {
+            const n = this.countRec(item, key)
+            if (n <= 0) return 'Não'
+            return n === 1 ? 'Sim (1)' : `Sim (${n})`
+        },
+        tomTemCountRec(item, key) {
+            return this.countRec(item, key) > 0 ? 'positivo' : 'negativo'
+        },
+        textoInteresseRec(item) {
+            if (!item || !item.feed_back) return ''
+            if (item.feed_back.interesse === true || item.feed_back.interesse === false) {
+                return item.feed_back.interesse ? 'Sim' : 'Não'
+            }
+            return ''
+        },
+        tomInteresseRec(item) {
+            if (!item || !item.feed_back) return 'meta'
+            if (item.feed_back.interesse === true) return 'positivo'
+            if (item.feed_back.interesse === false) return 'negativo'
+            return 'meta'
+        },
+        toggleDropdown(itemId) {
+            this.dropdownAbertoId = this.dropdownAbertoId === itemId ? null : itemId
+        },
+        isDropdownOpen(itemId) {
+            return this.dropdownAbertoId === itemId
+        },
+        fecharDropdown() {
+            this.dropdownAbertoId = null
         },
 
         resetarPaginacao() {

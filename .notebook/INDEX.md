@@ -3,13 +3,27 @@
 
 Last updated: 2026-09-30
 
+- [recrutamentos-filtros-compactos](recrutamentos-filtros-compactos.md) — Recrutamentos: filtros compactos + período ISO | pattern | curriculo, filtro, compactos
+- [form-parecer-rh-modal-padrao](form-parecer-rh-modal-padrao.md) — FormParecerRh mybp + combos + MybpBoolCombobox + validarCampos | pattern | entrevista, modal, combobox
+- [resultado-integrado-filtros-modal](resultado-integrado-filtros-modal.md) — RI: filtros compactos + modal validação | pattern | entrevista, filtro, modal, combobox
+- [admissao-processo-modal-validacao](admissao-processo-modal-validacao.md) — Avulsa/Admitir: seções flat + col-md-4 + combos estáticos + validação | pattern | admissao, modal, combobox
+- [dependentes-ferias-modal-padrao](dependentes-ferias-modal-padrao.md) — Dependentes + Férias adquiridas mybp + combos | pattern | admissao, modal, combobox
+- [endereco-modal-padrao](endereco-modal-padrao.md) — Endereco mybp + UF combo + ViaCEP denso | pattern | admissao, modal, combobox, endereco
+- [telefones-modal-padrao](telefones-modal-padrao.md) — Telefones mybp + combo tipo + validarCampos | pattern | admissao, modal, combobox, telefone
+- [form-resultado-integrado-modal-padrao](form-resultado-integrado-modal-padrao.md) — FormResultadoIntegrado mybp + combos + validarCampos | pattern | admissao, entrevista, modal, combobox
+- [dados-bancarios-modal-padrao](dados-bancarios-modal-padrao.md) — DadosBancarios mybp + combo PIX/tipo chave + validarCampos | pattern | admissao, modal, combobox
+- [admissao-processo-filtros-compactos](admissao-processo-filtros-compactos.md) — Filtros compactos em Admissão > Processo | pattern | admissao, filtro, compactos
+- [cih-modal-padrao-ux](cih-modal-padrao-ux.md) — Modal CIH no padrão mybp-modal-form + ComboboxValidation | pattern | cih, modal, combobox
+- [cih-fluxo-padrao-ux](cih-fluxo-padrao-ux.md) — CIH: card detalhe + MybpFluxoAprovacao + filtro status por etapa | pattern | cih, card-detalhe, fluxo, filtro
+- [mobilizacao-padrao-ux](mobilizacao-padrao-ux.md) — Relatório mobilização: filtros compactos + cards mybp | pattern | mobilizacao, filtro, card, relatorio
+- [requisicao-vaga-padrao-ux](requisicao-vaga-padrao-ux.md) — Filtros/cards/modal Requisição de Vagas no padrão operacional | pattern | requisicao-vaga, filtro, card-detalhe, modal
 - [transferencia-lotacao-cnpj](transferencia-lotacao-cnpj.md) — Modal Lotação→CC origem/destino + cards lotação | flow | transferencia, lotacao, cnpj
 - [filtro-status-fluxo-aprovacao](filtro-status-fluxo-aprovacao.md) — Pendente/Aprovado/Reprovado por etapa nas movimentações | pattern | filtro, status, aprovacao
 - [combobox-validacao-visual](combobox-validacao-visual.md) — Validar ComboboxAutoComplete sem esmagar layout (`exigirCombobox`) | pattern | combobox, validacao, ux
 - [admissao-modal-card-padrao-ux](admissao-modal-card-padrao-ux.md) — Modal + cards admissão no padrão Card detalhe / mybp-modal-form | pattern | admissao, modal, card-detalhe
 - [demissao-modal-padrao-ux](demissao-modal-padrao-ux.md) — Modal + cards demissão no padrão Card detalhe (`MybpFluxoAprovacao`) | pattern | demissao, modal, card-detalhe
-- [card-detalhe-operacional](card-detalhe-operacional.md) — Card detalhe + fluxo (Demissão/Férias/Admissão/Liderança/Cargo/Intermitente/Transferência) | pattern | card, fluxo, ux
-- [modal-operacional-mybp](modal-operacional-mybp.md) — Modal mybp-modal-form nas movimentações (incl. Liderança, Cargo, Intermitente, Transferência) | pattern | modal, ux
+- [card-detalhe-operacional](card-detalhe-operacional.md) — Card detalhe + fluxo (movimentações + Requisição Vagas) | pattern | card, fluxo, ux
+- [modal-operacional-mybp](modal-operacional-mybp.md) — Modal mybp-modal-form (movimentações + Requisição Vagas) | pattern | modal, ux
 - [cloud-multi-move-drag](cloud-multi-move-drag.md) — Multi-seleção + drag para pasta no Cloud | flow | cloud, drag, move
 - [cih-visibilidade-aprovacao](cih-visibilidade-aprovacao.md) — ver_todas ≠ aprovar; ADM override gestor | domain | cih, permissao, habilidades
 - [cih-autocomplete-cnpj](cih-autocomplete-cnpj.md) — Autocomplete colaborador filtra por CNPJ/CC do modal | flow | cih, autocomplete, cnpj

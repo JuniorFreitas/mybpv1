@@ -34,8 +34,32 @@ class RecrutamentoController extends Controller
      */
     public function index()
     {
-        $curriculos = Curriculo::whereHas('VagaAberta')->count();
-        return view('g.curriculos.recrutamento.index', compact('curriculos'));
+        $desde90Dias = now()->subDays(90);
+        $totais = Curriculo::query()
+            ->whereHas('VagaAberta')
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw('SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as total_90', [$desde90Dias])
+            ->first();
+
+        $curriculos = (int) ($totais->total ?? 0);
+        $curriculos90dias = (int) ($totais->total_90 ?? 0);
+        $selecionados90dias = Curriculo::query()
+            ->whereHas('VagaAberta')
+            ->where('created_at', '>=', $desde90Dias)
+            ->whereHas('FeedBack', function ($q) {
+                $q->where('selecionado', 'sim');
+            })
+            ->count();
+        $taxaSelecao90dias = $curriculos90dias > 0
+            ? round(($selecionados90dias / $curriculos90dias) * 100, 1)
+            : 0.0;
+
+        return view('g.curriculos.recrutamento.index', compact(
+            'curriculos',
+            'curriculos90dias',
+            'selecionados90dias',
+            'taxaSelecao90dias'
+        ));
     }
 
     /**
@@ -765,11 +789,23 @@ class RecrutamentoController extends Controller
             ->whereHas('VagaAberta')
             ->with('VagaAberta.VagaSelecionada',
                 'FeedBack:id,curriculo_id,interesse,selecionado,contato_realizado')
+            ->withCount([
+                'Experiencias as experiencias_count',
+                'Qualificacoes as qualificacoes_count',
+            ])
             ->doesntHave('FeedBack.parecerRh');
 
         // Filtro por período
-        if ($request->filtroPeriodo == 'true') {
-            $this->applyDateFilter($query, $request->periodo);
+        $filtroPeriodo = filter_var($request->input('filtroPeriodo'), FILTER_VALIDATE_BOOLEAN);
+        if ($filtroPeriodo) {
+            if ($request->filled('dataInicio') && $request->filled('dataFim')) {
+                $dataInicio = new DataHora($request->dataInicio . ' 00:00:00');
+                $dataFim = new DataHora($request->dataFim . ' 23:59:59');
+                $query->where('updated_at', '>=', $dataInicio->dataHoraInsert())
+                    ->where('updated_at', '<=', $dataFim->dataHoraInsert());
+            } elseif ($request->filled('periodo') && str_contains((string) $request->periodo, ' até ')) {
+                $this->applyDateFilter($query, $request->periodo);
+            }
         }
 
         // Filtros de busca

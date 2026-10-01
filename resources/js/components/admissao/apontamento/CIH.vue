@@ -9,34 +9,39 @@
                 <form
                     v-if="!preloadAjax && !cadastrado && !atualizado"
                     id="form"
-                    class="cih-modal-form mybp-filtros-compactos"
+                    class="mybp-modal-form mybp-filtros-compactos"
                     onsubmit="return false"
                 >
-                    <p class="mybp-campo-obrigatorio-legenda cih-modal-legenda">
+                    <p class="mybp-campo-obrigatorio-legenda mybp-modal-legenda">
                         Campos com <span class="text-danger">*</span> são obrigatórios.
                     </p>
 
-                    <fieldset class="cih-modal-secao">
+                    <fieldset class="mybp-modal-secao">
                         <legend>Ocorrência</legend>
                         <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Data da Ocorrência <span class="text-danger">*</span></label>
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo mybp-modal-campo-data">
+                                    <label class="mybp-label" for="cih-form-data">
+                                        Data da Ocorrência <span class="text-danger">*</span>
+                                    </label>
                                     <date-picker
                                         id="cih-form-data"
                                         label=""
+                                        class="corrigiDatepicker"
                                         :disabled="visualizar || aprovandoRh || aprovando"
                                         formsm
                                         v-model="form.data_lancamento"
                                         :max="hoje"
-                                        @input="marcarInputInvalido('#cih-form-data', !form.data_lancamento)"
+                                        @input="limparCampoDataInvalido('cih-form-data')"
                                     ></date-picker>
                                 </div>
                             </div>
 
-                            <div :class="form.tag_id === 0 ? 'col-md-4' : 'col-md-8'">
+                            <div :class="form.tag_id === 0 ? 'col-12 col-md-4' : 'col-12 col-md-8'">
                                 <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Tipo <span class="text-danger">*</span></label>
+                                    <label class="mybp-label" for="cih-form-tipo">
+                                        Tipo <span class="text-danger">*</span>
+                                    </label>
                                     <div class="mybp-combobox-wrap">
                                         <combobox-auto-complete
                                             ref="comboFormTipo"
@@ -49,15 +54,17 @@
                                             empty-message="Nenhum tipo encontrado."
                                             :max-results="100"
                                             @opening="fecharOutrosComboboxes('form-tipo')"
-                                            @select="marcarInputInvalido('#cih-form-tipo', false)"
+                                            @select="limparComboboxInvalido('cih-form-tipo')"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="col-md-4" v-if="form.tag_id === 0">
+                            <div class="col-12 col-md-4" v-if="form.tag_id === 0">
                                 <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Especifique <span class="text-danger">*</span></label>
+                                    <label class="mybp-label" for="cih-form-outra-tag">
+                                        Especifique <span class="text-danger">*</span>
+                                    </label>
                                     <input
                                         id="cih-form-outra-tag"
                                         type="text"
@@ -70,9 +77,11 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-6" v-if="config_modelo_cih === 'area'">
+                            <div class="col-12 col-md-4" v-if="config_modelo_cih === 'area'">
                                 <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Área <span class="text-danger">*</span></label>
+                                    <label class="mybp-label" for="cih-form-area">
+                                        Área <span class="text-danger">*</span>
+                                    </label>
                                     <div class="mybp-combobox-wrap">
                                         <combobox-auto-complete
                                             ref="comboFormArea"
@@ -85,16 +94,19 @@
                                             empty-message="Nenhuma área encontrada."
                                             :max-results="100"
                                             @opening="fecharOutrosComboboxes('form-area')"
-                                            @select="marcarInputInvalido('#cih-form-area', false)"
+                                            @select="limparComboboxInvalido('cih-form-area')"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="col-md-6" v-if="form.area_id === 0">
+                            <div class="col-12 col-md-4" v-if="form.area_id === 0">
                                 <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Especifique <span class="text-danger">*</span></label>
+                                    <label class="mybp-label" for="cih-form-outra-area">
+                                        Especifique <span class="text-danger">*</span>
+                                    </label>
                                     <input
+                                        id="cih-form-outra-area"
                                         type="text"
                                         class="form-control form-control-sm validacampo"
                                         @blur.prevent="valida_campo_vazio($event.target, 1)"
@@ -106,11 +118,13 @@
                             </div>
 
                             <div
-                                class="col-md-6"
+                                class="col-12 col-md-4"
                                 v-if="config_modelo_cih === 'centro_de_custo' && lista_ccs && AUTENTICADO.temFilial"
                             >
                                 <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Lotação <span class="text-danger">*</span></label>
+                                    <label class="mybp-label" for="cih-form-cnpj">
+                                        Lotação <span class="text-danger">*</span>
+                                    </label>
                                     <div class="mybp-combobox-wrap">
                                         <combobox-auto-complete
                                             ref="comboFormCnpj"
@@ -129,9 +143,14 @@
                                 </div>
                             </div>
 
-                            <div class="col-12" v-if="config_modelo_cih === 'centro_de_custo'">
+                            <div
+                                class="col-12 col-md-4"
+                                v-if="config_modelo_cih === 'centro_de_custo'"
+                            >
                                 <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Centro de Custo <span class="text-danger">*</span></label>
+                                    <label class="mybp-label" for="cih-form-centro-custo">
+                                        Centro de Custo <span class="text-danger">*</span>
+                                    </label>
                                     <div class="mybp-combobox-wrap">
                                         <combobox-auto-complete
                                             ref="comboFormCentroCusto"
@@ -144,7 +163,7 @@
                                             empty-message="Nenhum centro de custo encontrado."
                                             :max-results="200"
                                             @opening="fecharOutrosComboboxes('form-centro-custo')"
-                                            @select="marcarInputInvalido('#cih-form-centro-custo', false)"
+                                            @select="limparComboboxInvalido('cih-form-centro-custo')"
                                         />
                                     </div>
                                 </div>
@@ -152,12 +171,14 @@
                         </div>
                     </fieldset>
 
-                    <fieldset class="cih-modal-secao">
+                    <fieldset class="mybp-modal-secao">
                         <legend>Envolvidos</legend>
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Colaborador(es) <span class="text-danger">*</span></label>
+                                    <label class="mybp-label" :for="`colaborador_${hash}`">
+                                        Colaborador(es) <span class="text-danger">*</span>
+                                    </label>
                                     <autocomplete
                                         :key="colaboradorCihCaminho"
                                         :caminho="colaboradorCihCaminho"
@@ -185,18 +206,10 @@
                                         </thead>
                                         <tbody>
                                             <tr v-for="(colaborador, index) in form.colaboradores" :key="colaborador.id || index">
-                                                <td>
-                                                    {{ labelNomeColaboradorModal(colaborador) }}
-                                                </td>
-                                                <td>
-                                                    {{ labelCargoColaboradorModal(colaborador) }}
-                                                </td>
-                                                <td>
-                                                    {{ labelCentroCustoColaboradorModal(colaborador) }}
-                                                </td>
-                                                <td>
-                                                    {{ labelLotacaoColaboradorModal(colaborador) }}
-                                                </td>
+                                                <td>{{ labelNomeColaboradorModal(colaborador) }}</td>
+                                                <td>{{ labelCargoColaboradorModal(colaborador) }}</td>
+                                                <td>{{ labelCentroCustoColaboradorModal(colaborador) }}</td>
+                                                <td>{{ labelLotacaoColaboradorModal(colaborador) }}</td>
                                                 <td class="text-center" v-if="!editando">
                                                     <a
                                                         href="javascript://"
@@ -213,6 +226,7 @@
                             </div>
 
                             <gestoraprovacao
+                                label="Gestor Aprovação"
                                 :model="form"
                                 :verifica="aprovando || aprovandoRh || visualizar"
                                 :hash="hash"
@@ -223,16 +237,19 @@
                         </div>
                     </fieldset>
 
-                    <fieldset class="cih-modal-secao">
+                    <fieldset class="mybp-modal-secao">
                         <legend>Detalhes</legend>
                         <div class="row">
                             <div class="col-12">
                                 <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Ação <span class="text-danger">*</span></label>
+                                    <label class="mybp-label" for="cih-form-acao">
+                                        Ação <span class="text-danger">*</span>
+                                    </label>
                                     <textarea
                                         id="cih-form-acao"
                                         class="form-control form-control-sm validacampo"
                                         rows="3"
+                                        placeholder="Descreva a ação tomada"
                                         :disabled="visualizar || aprovandoRh || aprovando"
                                         @blur.prevent="valida_campo_vazio($event.target, 1)"
                                         @keyup.prevent="valida_campo_vazio($event.target, 1)"
@@ -263,12 +280,14 @@
 
                             <div class="col-12">
                                 <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Observação</label>
+                                    <label class="mybp-label" for="cih-form-obs-lancamento">Observação</label>
                                     <textarea
+                                        id="cih-form-obs-lancamento"
                                         class="form-control form-control-sm"
                                         :disabled="visualizar || aprovandoRh || aprovando"
                                         v-model="form.obs_lancamento"
                                         rows="2"
+                                        placeholder="Informações complementares do lançamento"
                                     ></textarea>
                                 </div>
                             </div>
@@ -276,33 +295,24 @@
                     </fieldset>
 
                     <div class="alert alert-warning" v-if="(visualizar && !form.responsavel_aprovacao) || aprovando">
-                        Esta solicitação ainda não foi aprovada ou reprovada pelo GESTOR!
+                        Esta solicitação ainda não foi aprovada ou reprovada pelo gestor!
                     </div>
 
-                    <fieldset v-if="!cadastrando" class="cih-modal-secao">
+                    <fieldset v-if="!cadastrando" class="mybp-modal-secao">
                         <legend>Aprovação Gestor</legend>
                         <div class="row">
-                            <div v-if="!aprovando && form.responsavel_aprovacao" class="col-12">
-                                <legend>
+                            <div v-if="!aprovando && form.responsavel_aprovacao" class="col-12 mb-2">
+                                <p class="mb-0 text-muted">
                                     {{ form.status }} por: {{ form.responsavel_aprovacao.nome }} em
                                     {{ form.data_aprovacao }}
-                                </legend>
-                            </div>
-                            <div class="col-12">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Observação</label>
-                                    <textarea
-                                        class="form-control form-control-sm"
-                                        :disabled="!aprovando || aprovandoRh"
-                                        v-model="form.obs_aprovacao"
-                                        rows="3"
-                                    ></textarea>
-                                </div>
+                                </p>
                             </div>
 
-                            <div class="col-md-6">
+                            <div class="col-12 col-md-4">
                                 <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Status <span class="text-danger" v-if="aprovando">*</span></label>
+                                    <label class="mybp-label" for="cih-form-status-gestor">
+                                        Status <span class="text-danger" v-if="aprovando">*</span>
+                                    </label>
                                     <div class="mybp-combobox-wrap">
                                         <combobox-auto-complete
                                             ref="comboFormStatusGestor"
@@ -315,8 +325,23 @@
                                             empty-message="Nenhuma opção encontrada."
                                             :max-results="10"
                                             @opening="fecharOutrosComboboxes('form-status-gestor')"
+                                            @select="limparComboboxInvalido('cih-form-status-gestor')"
                                         />
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-8">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" for="cih-form-obs-gestor">Observação</label>
+                                    <textarea
+                                        id="cih-form-obs-gestor"
+                                        class="form-control form-control-sm"
+                                        :disabled="!aprovando || aprovandoRh"
+                                        v-model="form.obs_aprovacao"
+                                        rows="3"
+                                        placeholder="Observação da aprovação do gestor"
+                                    ></textarea>
                                 </div>
                             </div>
                         </div>
@@ -326,31 +351,21 @@
                         Esta solicitação ainda não foi aprovada ou reprovada pelo RH!
                     </div>
 
-                    <fieldset v-if="visualizar || aprovandoRh" class="cih-modal-secao">
+                    <fieldset v-if="visualizar || aprovandoRh" class="mybp-modal-secao">
                         <legend>Aprovação RH</legend>
                         <div class="row">
-                            <div v-if="!aprovandoRh && form.rh_aprovacao" class="col-12">
-                                <legend>
+                            <div v-if="!aprovandoRh && form.rh_aprovacao" class="col-12 mb-2">
+                                <p class="mb-0 text-muted">
                                     {{ form.resposta_rh }} por: {{ form.rh_aprovacao.nome }} em
                                     {{ form.data_aprovacao_rh }}
-                                </legend>
+                                </p>
                             </div>
 
-                            <div class="col-12">
+                            <div class="col-12 col-md-4">
                                 <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Observação</label>
-                                    <textarea
-                                        class="form-control form-control-sm"
-                                        :disabled="visualizar && !aprovando && !aprovandoRh"
-                                        v-model="form.obs_rh"
-                                        rows="3"
-                                    ></textarea>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Status <span class="text-danger" v-if="aprovandoRh">*</span></label>
+                                    <label class="mybp-label" for="cih-form-status-rh">
+                                        Status <span class="text-danger" v-if="aprovandoRh">*</span>
+                                    </label>
                                     <div class="mybp-combobox-wrap">
                                         <combobox-auto-complete
                                             ref="comboFormStatusRh"
@@ -363,8 +378,23 @@
                                             empty-message="Nenhuma opção encontrada."
                                             :max-results="10"
                                             @opening="fecharOutrosComboboxes('form-status-rh')"
+                                            @select="limparComboboxInvalido('cih-form-status-rh')"
                                         />
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-md-8">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" for="cih-form-obs-rh">Observação</label>
+                                    <textarea
+                                        id="cih-form-obs-rh"
+                                        class="form-control form-control-sm"
+                                        :disabled="visualizar && !aprovando && !aprovandoRh"
+                                        v-model="form.obs_rh"
+                                        rows="3"
+                                        placeholder="Observação da aprovação do RH"
+                                    ></textarea>
                                 </div>
                             </div>
                         </div>
@@ -427,8 +457,8 @@
                             <combobox-auto-complete
                                 ref="comboFiltroStatus"
                                 instance-id="filtro-status"
-                                v-model="controle.dados.campoStatus"
-                                :options="filtroStatusOpcoes"
+                                v-model="controle.dados.campoStatusAprovacao"
+                                :options="filtroStatusAprovacaoOpcoes"
                                 :disabled="controle.carregando"
                                 input-id="cih-filtro-status"
                                 placeholder-blur="Todos os Status"
@@ -581,14 +611,6 @@
             </template>
         </FiltroListagem>
 
-        <div class="cih-lista-legenda" v-show="!controle.carregando && lista.length > 0">
-            <span class="cih-lista-legenda__label">Legenda:</span>
-            <span class="cih-status-badge cih-status-badge--aberto">Em aberto</span>
-            <span class="cih-status-badge cih-status-badge--gestor">Aprovado pelo Gestor</span>
-            <span class="cih-status-badge cih-status-badge--rh">Aprovado pelo RH</span>
-            <span class="cih-status-badge cih-status-badge--reprovado">Reprovado</span>
-        </div>
-
         <preload v-if="controle.carregando"></preload>
 
         <div id="conteudo">
@@ -606,9 +628,10 @@
                             </div>
                         </div>
                         <div class="mybp-card-right">
-                            <span class="cih-status-badge" :class="classeStatusLista(item)">
-                                {{ textoStatusLista(item) }}
-                            </span>
+                            <mybp-status-badge
+                                :variante="chaveStatusLista(item)"
+                                :texto="textoStatusLista(item)"
+                            />
                             <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
                                 <a
                                     class="mybp-btn-acoes-compact"
@@ -658,104 +681,72 @@
                         </div>
                     </div>
 
-                    <div class="cih-card-corpo" :class="classeBordaStatusLista(item)">
-                        <section class="cih-card-secao">
-                            <div class="cih-card-row">
-                                <div class="cih-card-campo">
-                                    <span class="cih-card-campo__label">
-                                        <i class="fas fa-tag" aria-hidden="true"></i> Tipo
-                                    </span>
-                                    <span class="cih-card-campo__valor cih-card-campo__valor--forte">{{ labelTipoLista(item) }}</span>
-                                </div>
-                                <div class="cih-card-campo">
-                                    <span class="cih-card-campo__label">
-                                        <i class="fas fa-calendar-day" aria-hidden="true"></i> Data da ocorrência
-                                    </span>
-                                    <span class="cih-card-campo__valor">{{ item.data_lancamento || 'Não informado' }}</span>
-                                </div>
-                                <div class="cih-card-campo">
-                                    <span class="cih-card-campo__label">
-                                        <i class="fas fa-user-edit" aria-hidden="true"></i> Lançamento
-                                    </span>
-                                    <span class="cih-card-campo__valor">
-                                        {{ item.responsavel_lancamento?.nome || 'Não informado' }}
-                                        <template v-if="item.created_at">
-                                            <br />
-                                            <span class="cih-card-campo__meta">{{ item.created_at }}</span>
-                                        </template>
-                                    </span>
-                                </div>
+                    <div class="mybp-card-corpo" :class="classeBordaStatusLista(item)">
+                        <section class="mybp-card-secao">
+                            <div class="mybp-card-row">
+                                <mybp-card-campo
+                                    icon="fas fa-tag"
+                                    label="Tipo"
+                                    :valor="labelTipoLista(item)"
+                                    forte
+                                />
+                                <mybp-card-campo
+                                    icon="fas fa-calendar-day"
+                                    label="Data da ocorrência"
+                                    :valor="item.data_lancamento"
+                                />
+                                <mybp-card-campo
+                                    icon="fas fa-user-edit"
+                                    label="Lançamento"
+                                    :valor="item.responsavel_lancamento?.nome"
+                                    :meta="item.created_at || ''"
+                                />
                             </div>
                         </section>
 
-                        <section class="cih-card-secao" v-if="mostrarLinhaEscopoLista(item)">
-                            <div class="cih-card-row">
-                                <div class="cih-card-campo" v-if="AUTENTICADO.temFilial">
-                                    <span class="cih-card-campo__label">
-                                        <i class="fas fa-building" aria-hidden="true"></i> Lotação
-                                    </span>
-                                    <span class="cih-card-campo__valor">{{ labelLotacaoLista(item) || 'Não informado' }}</span>
-                                </div>
-                                <div class="cih-card-campo" v-if="config_modelo_cih === 'centro_de_custo'">
-                                    <span class="cih-card-campo__label">
-                                        <i class="fas fa-sitemap" aria-hidden="true"></i> Centro de Custo
-                                    </span>
-                                    <span class="cih-card-campo__valor">{{ labelCentroCustoLista(item) || 'Não informado' }}</span>
-                                </div>
-                                <div class="cih-card-campo" v-if="config_modelo_cih === 'area'">
-                                    <span class="cih-card-campo__label">
-                                        <i class="fas fa-map-marker-alt" aria-hidden="true"></i> Área
-                                    </span>
-                                    <span class="cih-card-campo__valor">{{ labelAreaLista(item) || 'Não informado' }}</span>
-                                </div>
-                                <div class="cih-card-campo" v-if="item.gestor_aprovacao?.nome || config_modelo_cih === 'area'">
-                                    <span class="cih-card-campo__label">
-                                        <i class="fas fa-user-tie" aria-hidden="true"></i> Gestor responsável
-                                    </span>
-                                    <span class="cih-card-campo__valor">{{ item.gestor_aprovacao?.nome || 'Não informado' }}</span>
-                                </div>
+                        <section class="mybp-card-secao" v-if="mostrarLinhaEscopoLista(item)">
+                            <div class="mybp-card-row">
+                                <mybp-card-campo
+                                    v-if="AUTENTICADO.temFilial"
+                                    icon="fas fa-building"
+                                    label="Lotação"
+                                    :valor="labelLotacaoLista(item)"
+                                />
+                                <mybp-card-campo
+                                    v-if="config_modelo_cih === 'centro_de_custo'"
+                                    icon="fas fa-sitemap"
+                                    label="Centro de Custo"
+                                    :valor="labelCentroCustoLista(item)"
+                                />
+                                <mybp-card-campo
+                                    v-if="config_modelo_cih === 'area'"
+                                    icon="fas fa-map-marker-alt"
+                                    label="Área"
+                                    :valor="labelAreaLista(item)"
+                                />
+                                <mybp-card-campo
+                                    v-if="item.gestor_aprovacao?.nome || config_modelo_cih === 'area'"
+                                    icon="fas fa-user-tie"
+                                    label="Gestor responsável"
+                                    :valor="item.gestor_aprovacao?.nome"
+                                />
                             </div>
                         </section>
 
-                        <section class="cih-card-secao cih-card-secao--acao" v-if="item.acao">
-                            <div class="cih-card-campo cih-card-campo--full">
-                                <span class="cih-card-campo__label">
-                                    <i class="fas fa-bolt" aria-hidden="true"></i> Ação
-                                </span>
-                                <span class="cih-card-campo__valor cih-card-campo__valor--acao">{{ resumoAcaoLista(item) }}</span>
-                            </div>
+                        <section class="mybp-card-secao mybp-card-secao--acao" v-if="item.acao">
+                            <mybp-card-campo
+                                icon="fas fa-bolt"
+                                label="Ação"
+                                :valor="resumoAcaoLista(item)"
+                                full
+                            />
                         </section>
 
-                        <section class="cih-card-secao cih-card-secao--historico">
-                            <div class="cih-card-secao__titulo">
-                                <i class="fas fa-history" aria-hidden="true"></i> Histórico de aprovação
+                        <section class="mybp-card-secao mybp-card-secao--fluxo">
+                            <div class="mybp-card-secao__titulo">
+                                <i class="fas fa-project-diagram" aria-hidden="true"></i> Fluxo de aprovação
                             </div>
-                            <div class="cih-card-row cih-card-row--historico">
-                                <div class="cih-card-campo">
-                                    <span class="cih-card-campo__label">
-                                        <i class="fas fa-user-check" aria-hidden="true"></i> Aprovação gestor
-                                    </span>
-                                    <span
-                                        class="cih-card-campo__valor cih-card-campo__valor--meta cih-card-campo__valor--linhas"
-                                        :class="{
-                                            'cih-card-campo__valor--negativo': aprovacaoGestorNegativaLista(item),
-                                            'cih-card-campo__valor--positivo': aprovacaoGestorPositivaLista(item)
-                                        }"
-                                    >{{ detalheAprovacaoGestorLista(item) }}</span>
-                                </div>
-                                <div class="cih-card-campo">
-                                    <span class="cih-card-campo__label">
-                                        <i class="fas fa-users" aria-hidden="true"></i> Aprovação RH
-                                    </span>
-                                    <span
-                                        class="cih-card-campo__valor cih-card-campo__valor--meta cih-card-campo__valor--linhas"
-                                        :class="{
-                                            'cih-card-campo__valor--negativo': aprovacaoRhNegativaLista(item),
-                                            'cih-card-campo__valor--positivo': aprovacaoRhPositivaLista(item)
-                                        }"
-                                    >{{ detalheAprovacaoRhLista(item) }}</span>
-                                </div>
-                            </div>
+                            <mybp-fluxo-aprovacao :steps="fluxoStepsLista(item)" />
                         </section>
                     </div>
                 </div>
@@ -784,8 +775,13 @@ import ControlePaginacao from '../../ControlePaginacao'
 import DateRangeFilter from '../../DateRangeFilter.vue'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete.vue'
 import FiltroListagem from '../../ui/FiltroListagem.vue'
+import MybpCardCampo from '../../ui/MybpCardCampo.vue'
+import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
+import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 import Validacoes from '../../../mixins/Validacoes'
+import ComboboxValidation from '../../../mixins/ComboboxValidation'
+import { buildOpcoesStatusFluxoAprovacao } from '../../../utils/opcoesStatusFluxoAprovacao'
 
 export default {
     name: 'CIH',
@@ -795,11 +791,14 @@ export default {
         DateRangeFilter,
         ComboboxAutoComplete,
         FiltroListagem,
+        MybpCardCampo,
+        MybpFluxoAprovacao,
+        MybpStatusBadge,
         Upload,
         ControlePaginacao,
         gestoraprovacao
     },
-    mixins: [ExportacaoMixin, Validacoes],
+    mixins: [ExportacaoMixin, Validacoes, ComboboxValidation],
     data() {
         return {
             tituloJanela: 'Cadastrando CIH',
@@ -904,7 +903,7 @@ export default {
                 carregando: false,
                 dados: {
                     campoBusca: '',
-                    campoStatus: '',
+                    campoStatusAprovacao: '',
                     campoTags: '',
                     campoAreas: '',
                     campoCentrosDeCusto: '',
@@ -933,7 +932,7 @@ export default {
             return !!(
                 d.filtroPeriodo ||
                 (d.campoBusca || '').trim() ||
-                d.campoStatus ||
+                d.campoStatusAprovacao ||
                 d.campoTags ||
                 d.campoAreas ||
                 d.campoCentrosDeCusto ||
@@ -941,14 +940,8 @@ export default {
                 d.campoCnpj
             )
         },
-        filtroStatusOpcoes() {
-            return [
-                { value: '', label: 'Todos os Status' },
-                { value: 'aberto', label: 'Em aberto' },
-                { value: 'aprovado_gestor', label: 'Aprovado Gestor' },
-                { value: 'aprovado_rh', label: 'Aprovado Rh' },
-                { value: 'reprovado', label: 'Reprovado' }
-            ]
+        filtroStatusAprovacaoOpcoes() {
+            return buildOpcoesStatusFluxoAprovacao({ temAprovacaoExtra: false })
         },
         filtroTipoOpcoes() {
             const opcoes = [{ value: '', label: 'Todos os tipos' }]
@@ -1119,7 +1112,7 @@ export default {
             return {
                 campoBusca: this.controle.dados.campoBusca,
                 campoCentrosDeCusto: this.controle.dados.campoCentrosDeCusto,
-                campoStatus: this.controle.dados.campoStatus,
+                campoStatusAprovacao: this.controle.dados.campoStatusAprovacao,
                 campoTags: this.controle.dados.campoTags,
                 campoAreas: this.controle.dados.campoAreas,
                 campoGestores: this.controle.dados.campoGestores,
@@ -1143,8 +1136,8 @@ export default {
             this.form.autocomplete_label_colaborador = ''
             this.form.autocomplete_label_colaborador_anterior = ''
             this.form.feedback_id = ''
-            this.marcarInputInvalido('#cih-form-cnpj', false)
-            this.marcarInputInvalido('#cih-form-centro-custo', false)
+            this.limparComboboxInvalido('cih-form-cnpj')
+            this.limparComboboxInvalido('cih-form-centro-custo')
         },
         resolverCnpjPorCentroCusto(centroId) {
             if (!centroId || !this.lista_ccs?.centros_custos) {
@@ -1183,28 +1176,44 @@ export default {
         validarLancamento() {
             this.limparErrosModal()
             this.validaBlur()
-            $('#janelaCadastrar :input:enabled').trigger('blur')
 
             let valido = true
             let mensagem = 'Existem campos obrigatórios não preenchidos'
 
-            if (this.campoFormVazio(this.form.data_lancamento)) {
-                this.marcarInputInvalido('#cih-form-data', true)
+            if (
+                !this.exigirCampoData(this.form.data_lancamento, 'cih-form-data', {
+                    toast: false,
+                    toastMsg: 'Informe a data da ocorrência'
+                })
+            ) {
+                mensagem = 'Informe a data da ocorrência'
                 valido = false
             }
 
-            if (this.campoFormVazio(this.form.tag_id)) {
-                this.marcarInputInvalido('#cih-form-tipo', true)
+            if (
+                !this.exigirCombobox(this.form.tag_id, 'cih-form-tipo', {
+                    toast: false,
+                    toastMsg: 'Selecione o tipo'
+                })
+            ) {
+                mensagem = 'Selecione o tipo'
                 valido = false
             }
 
             if (this.form.tag_id === 0 && !(this.form.outra_tag || '').trim()) {
                 this.marcarInputInvalido('#cih-form-outra-tag', true)
+                mensagem = 'Especifique o tipo'
                 valido = false
             }
 
-            if (this.config_modelo_cih === 'area' && this.campoFormVazio(this.form.area_id)) {
-                this.marcarInputInvalido('#cih-form-area', true)
+            if (
+                this.config_modelo_cih === 'area' &&
+                !this.exigirCombobox(this.form.area_id, 'cih-form-area', {
+                    toast: false,
+                    toastMsg: 'Selecione a área'
+                })
+            ) {
+                mensagem = 'Selecione a área'
                 valido = false
             }
 
@@ -1212,15 +1221,23 @@ export default {
                 this.config_modelo_cih === 'centro_de_custo' &&
                 this.AUTENTICADO?.temFilial &&
                 this.lista_ccs &&
-                this.campoFormVazio(this.form.campoCnpj)
+                !this.exigirCombobox(this.form.campoCnpj, 'cih-form-cnpj', {
+                    toast: false,
+                    toastMsg: 'Selecione a lotação para buscar o centro de custo'
+                })
             ) {
-                this.marcarInputInvalido('#cih-form-cnpj', true)
                 mensagem = 'Selecione a lotação para buscar o centro de custo'
                 valido = false
             }
 
-            if (this.config_modelo_cih === 'centro_de_custo' && this.campoFormVazio(this.form.centro_custo_id)) {
-                this.marcarInputInvalido('#cih-form-centro-custo', true)
+            if (
+                this.config_modelo_cih === 'centro_de_custo' &&
+                !this.exigirCombobox(this.form.centro_custo_id, 'cih-form-centro-custo', {
+                    toast: false,
+                    toastMsg: 'Selecione o centro de custo'
+                })
+            ) {
+                mensagem = 'Selecione o centro de custo'
                 valido = false
             }
 
@@ -1232,12 +1249,19 @@ export default {
 
             if (!(this.form.acao || '').trim()) {
                 this.marcarInputInvalido('#cih-form-acao', true)
+                mensagem = 'Informe a ação'
                 valido = false
             }
 
             if (this.anexoObrigatorioAtual && (!this.form.anexos || this.form.anexos.length === 0)) {
                 this.marcarInputInvalido('#cih-form-anexo', true)
                 mensagem = 'O Campo Anexo não pode ficar vazio'
+                valido = false
+            }
+
+            if (this.config_modelo_cih === 'area' && this.campoFormVazio(this.form.gestor_id)) {
+                valida_campo_vazio($(`#gestor_${this.hash}`), 1)
+                mensagem = 'Selecione o gestor de aprovação'
                 valido = false
             }
 
@@ -1254,7 +1278,7 @@ export default {
         limparFiltros() {
             this.controle.dados = {
                 campoBusca: '',
-                campoStatus: '',
+                campoStatusAprovacao: '',
                 campoTags: '',
                 campoAreas: '',
                 campoCentrosDeCusto: '',
@@ -1548,7 +1572,27 @@ export default {
         },
         aprovar() {
             formReset()
-            $('#janelaCadastrar :input:enabled').trigger('blur')
+
+            if (this.aprovando) {
+                if (
+                    !this.exigirCombobox(this.form.status, 'cih-form-status-gestor', {
+                        toastMsg: 'Selecione o status da aprovação do gestor'
+                    })
+                ) {
+                    return false
+                }
+            }
+
+            if (this.aprovandoRh) {
+                if (
+                    !this.exigirCombobox(this.form.resposta_rh, 'cih-form-status-rh', {
+                        toastMsg: 'Selecione o status da aprovação do RH'
+                    })
+                ) {
+                    return false
+                }
+            }
+
             if ($('#janelaCadastrar :input:enabled.is-invalid').length) {
                 mostraErro('', 'Verificar os erros')
                 return false
@@ -1748,16 +1792,13 @@ export default {
             if (item.resposta_rh === 'aprovado') {
                 return 'rh'
             }
-            if (item.status === 'aprovado' && item.resposta_rh === null) {
+            if (item.status === 'aprovado') {
                 return 'gestor'
             }
             return 'aberto'
         },
-        classeStatusLista(item) {
-            return `cih-status-badge--${this.chaveStatusLista(item)}`
-        },
         classeBordaStatusLista(item) {
-            return `cih-card-corpo--${this.chaveStatusLista(item)}`
+            return `mybp-card-corpo--${this.chaveStatusLista(item)}`
         },
         textoStatusLista(item) {
             const chave = this.chaveStatusLista(item)
@@ -1772,47 +1813,52 @@ export default {
             }
             return 'Em aberto'
         },
-        detalheAprovacaoGestorLista(item) {
-            if (!item || !item.responsavel_aprovacao) {
-                return 'Pendente'
+        fluxoStepsLista(item) {
+            if (!item) {
+                return []
             }
-            const status = item.status === 'reprovado' ? 'Reprovado' : item.status === 'aprovado' ? 'Aprovado' : item.status
-            const linhas = [status]
-            if (item.data_aprovacao) {
-                linhas.push(item.data_aprovacao)
+
+            let statusGestor = 'aguardando'
+            if (item.status === 'aprovado') {
+                statusGestor = 'aprovado'
+            } else if (item.status === 'reprovado') {
+                statusGestor = 'reprovado'
             }
-            linhas.push(item.responsavel_aprovacao.nome)
-            return linhas.join('\n')
-        },
-        detalheAprovacaoRhLista(item) {
-            if (item?.status === 'reprovado' && !item.resposta_rh) {
-                return 'Cancelado'
+
+            let statusRh = 'pendente'
+            if (item.status === 'reprovado') {
+                statusRh = 'cancelado'
+            } else if (item.resposta_rh === 'aprovado') {
+                statusRh = 'aprovado'
+            } else if (item.resposta_rh === 'reprovado') {
+                statusRh = 'reprovado'
+            } else if (item.status === 'aprovado') {
+                statusRh = 'aguardando'
             }
-            if (!item || !item.rh_aprovacao || !item.resposta_rh) {
-                return 'Pendente'
-            }
-            const status = item.resposta_rh === 'reprovado' ? 'Reprovado' : item.resposta_rh === 'aprovado' ? 'Aprovado' : item.resposta_rh
-            const linhas = [status]
-            if (item.data_aprovacao_rh) {
-                linhas.push(item.data_aprovacao_rh)
-            }
-            linhas.push(item.rh_aprovacao.nome)
-            return linhas.join('\n')
-        },
-        aprovacaoGestorNegativaLista(item) {
-            return item?.status === 'reprovado'
-        },
-        aprovacaoGestorPositivaLista(item) {
-            return item?.status === 'aprovado' && !!item?.responsavel_aprovacao
-        },
-        aprovacaoRhNegativaLista(item) {
-            if (item?.status === 'reprovado' && !item.resposta_rh) {
-                return true
-            }
-            return item?.resposta_rh === 'reprovado'
-        },
-        aprovacaoRhPositivaLista(item) {
-            return item?.resposta_rh === 'aprovado'
+
+            return [
+                {
+                    key: 'lancamento',
+                    label: 'Lançamento',
+                    status: 'aprovado',
+                    nome: item.responsavel_lancamento?.nome,
+                    data: item.created_at
+                },
+                {
+                    key: 'gestor',
+                    label: 'Gestor',
+                    status: statusGestor,
+                    nome: item.responsavel_aprovacao?.nome,
+                    data: item.data_aprovacao
+                },
+                {
+                    key: 'rh',
+                    label: 'RH',
+                    status: statusRh,
+                    nome: item.rh_aprovacao?.nome,
+                    data: item.data_aprovacao_rh
+                }
+            ]
         },
         carregou(dados) {
             this.lista = dados.itens
@@ -1842,79 +1888,19 @@ export default {
 </script>
 
 <style scoped>
-.cih-modal-form {
-    margin-top: 0.15rem;
-}
-
-.cih-modal-legenda {
-    margin-bottom: 0.65rem;
-    font-size: var(--mybp-fc-label-fs, 0.7rem);
-    color: #6c757d;
-}
-
-.cih-modal-form .cih-modal-secao {
-    margin-top: 0.55rem;
-    margin-bottom: 0.55rem;
-    padding: 0.75rem 0.85rem 0.55rem;
-}
-
-.cih-modal-form .cih-modal-secao > legend {
-    font-size: 0.7rem;
-    line-height: 1.25;
-    padding: 0.25rem 0.7rem;
-    letter-spacing: 0.02em;
-    /* font-weight: 600; */
-}
-
-.cih-modal-form .cih-modal-secao:first-of-type {
-    margin-top: 0;
-}
-
-.cih-modal-form :deep(.form-group > .form-group) {
-    margin-bottom: 0;
-}
-
-.cih-modal-form :deep(.form-group > .form-group > div > label:empty) {
-    display: none;
-}
-
-.cih-modal-form :deep(.mybp-filtro-campo .form-group) {
-    margin-bottom: 0;
-}
-
-.cih-modal-form .row > [class*='col-'] {
-    margin-bottom: var(--mybp-fc-gap, 0.45rem);
-}
-
-.cih-modal-table-wrap {
-    margin-top: 0.35rem;
-}
-
 .cih-modal-table {
-    font-size: var(--mybp-fc-ctrl-fs, 0.6875rem);
+    margin-bottom: 0;
 }
 
 .cih-modal-table thead th {
-    font-size: var(--mybp-fc-label-fs, 0.7rem);
+    font-size: 0.72rem;
     font-weight: 600;
-    padding: 0.3rem 0.45rem !important;
-    vertical-align: middle;
     white-space: nowrap;
-    background-color: #eef1f4;
-    border-color: #dde2e7;
-    text-align: left;
-}
-
-.cih-modal-table thead th.text-center {
-    text-align: center;
 }
 
 .cih-modal-table tbody td {
-    font-size: var(--mybp-fc-ctrl-fs, 0.6875rem);
-    line-height: 1.3;
-    padding: 0.3rem 0.45rem !important;
     vertical-align: middle;
-    text-align: left;
+    font-size: 0.8rem;
 }
 
 .cih-modal-table tbody td.text-center {
@@ -1933,209 +1919,5 @@ export default {
     border-radius: 4px;
     padding: 0.45rem 0.6rem;
     background-color: #fff8f8;
-}
-
-.cih-lista-legenda {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.4rem 0.55rem;
-    margin: 0.65rem 0 0.45rem;
-    padding: 0.35rem 0;
-}
-
-.cih-lista-legenda__label {
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: #6c757d;
-    margin-right: 0.15rem;
-}
-
-.cih-status-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.18rem 0.5rem;
-    border-radius: 999px;
-    font-size: 0.68rem;
-    font-weight: 600;
-    line-height: 1.2;
-    white-space: nowrap;
-    border: 1px solid transparent;
-}
-
-.cih-status-badge--aberto {
-    background: #f1f3f5;
-    color: #495057;
-    border-color: #dee2e6;
-}
-
-.cih-status-badge--gestor {
-    background: #fff3cd;
-    color: #856404;
-    border-color: #ffeeba;
-}
-
-.cih-status-badge--rh {
-    background: #d4edda;
-    color: #155724;
-    border-color: #c3e6cb;
-}
-
-.cih-status-badge--reprovado {
-    background: #f8d7da;
-    color: #721c24;
-    border-color: #f5c6cb;
-}
-
-.cih-card-corpo {
-    margin-top: 0.15rem;
-    border: 1px solid #e4e8ec;
-    border-radius: 8px;
-    border-left: 4px solid #adb5bd;
-    background: #fff;
-    overflow: hidden;
-}
-
-.cih-card-corpo--aberto {
-    border-left-color: #adb5bd;
-}
-
-.cih-card-corpo--gestor {
-    border-left-color: #ffc107;
-}
-
-.cih-card-corpo--rh {
-    border-left-color: #28a745;
-}
-
-.cih-card-corpo--reprovado {
-    border-left-color: #dc3545;
-}
-
-.cih-card-secao {
-    padding: 0.7rem 0.85rem;
-}
-
-.cih-card-secao + .cih-card-secao {
-    border-top: 1px solid #eef1f4;
-}
-
-.cih-card-secao--acao {
-    background: #f5f9fc;
-}
-
-.cih-card-secao--historico {
-    background: #fafbfc;
-}
-
-.cih-card-secao__titulo {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: #4e4f4f;
-    margin-bottom: 0.45rem;
-}
-
-.cih-card-secao__titulo i {
-    font-size: 0.7rem;
-    opacity: 0.85;
-}
-
-.cih-card-row {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.75rem 1.25rem;
-}
-
-.cih-card-row--historico {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.cih-card-campo {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-}
-
-.cih-card-campo--full {
-    width: 100%;
-}
-
-.cih-card-campo__label {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    text-transform: uppercase;
-    color: #4e4f4f;
-}
-
-.cih-card-campo__label i {
-    font-size: 0.7rem;
-    width: 0.85rem;
-    text-align: center;
-    opacity: 0.9;
-}
-
-.cih-card-campo__valor {
-    font-size: 0.8125rem;
-    line-height: 1.4;
-    color: #212529;
-    word-break: break-word;
-}
-
-.cih-card-campo__valor--forte {
-    font-weight: 600;
-    color: #174257;
-}
-
-.cih-card-campo__valor--acao {
-    font-size: 0.8125rem;
-    font-weight: 400;
-    color: #212529;
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.cih-card-campo__valor--meta {
-    font-size: 0.78rem;
-    color: #495057;
-}
-
-.cih-card-campo__valor--linhas {
-    white-space: pre-line;
-}
-
-.cih-card-campo__valor--negativo {
-    color: #dc3545;
-    font-weight: 600;
-}
-
-.cih-card-campo__valor--positivo {
-    color: #28a745;
-    font-weight: 600;
-}
-
-.cih-card-campo__meta {
-    font-size: 0.75rem;
-    color: #8a939b;
-    font-weight: 400;
-}
-
-@media (max-width: 767.98px) {
-    .cih-card-row,
-    .cih-card-row--historico {
-        grid-template-columns: 1fr;
-        gap: 0.65rem;
-    }
 }
 </style>

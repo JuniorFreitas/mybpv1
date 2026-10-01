@@ -8,6 +8,8 @@
 
 Padrão reutilizável de filtros densos (carteira/treinamentos) com `FiltroListagem` + `mybp-filtros-compactos`.
 
+Telas: carteira etiquetas, CIH, mobilização, admissão em processo, movimentações.
+
 ## Source of truth
 
 - Doc: `docs/PADRAO_UX_FILTROS_COMPACTOS.md`

@@ -4,6 +4,8 @@ import endereco from '../../../components/Endereco'
 import DadosBancarios from '../../../components/DadosBancarios'
 import datepicker from '../../../components/DatePicker'
 import DateRangeFilter from '../../../components/DateRangeFilter.vue'
+import ComboboxAutoComplete from '../../../components/ComboboxAutoComplete.vue'
+import FiltroListagem from '../../../components/ui/FiltroListagem.vue'
 import upload from '../../../components/Upload'
 import telefone from '../../../components/Telefones'
 import DadosPessoais from '../../../components/entrevistas/DadosPessoaisTexto'
@@ -13,15 +15,18 @@ import Select2 from '../../../components/Select2/Select2'
 import configselect2 from '../../../components/Select2/mixSelec2'
 import Utils from '../../../mixins/Utils'
 import Validacoes from '../../../mixins/Validacoes'
+import ComboboxValidation from '../../../mixins/ComboboxValidation'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 import dependentes from '../../../components/admissao/processo/Dependentes'
 import FeriasAdquiridas from '../../../components/admissao/processo/FeriasAdquiridas'
 const app = createApp({
-    mixins: [configselect2, Utils, Validacoes, ExportacaoMixin],
+    mixins: [configselect2, Utils, Validacoes, ExportacaoMixin, ComboboxValidation],
     components: {
         endereco,
         datepicker,
         DateRangeFilter,
+        ComboboxAutoComplete,
+        FiltroListagem,
         upload,
         telefone,
         DadosPessoais,
@@ -102,6 +107,7 @@ const app = createApp({
             anexoUploadAndamento: false,
 
             hash: `mastertag_${parseInt(Math.random() * 999999)}`,
+            filtrosAvancadosAbertos: false,
             urlExportacao: `${URL_ADMIN}/admissao/export`,
 
             todos_municipios: `autocomplete/todos-municipios`,
@@ -583,6 +589,10 @@ const app = createApp({
             vagas: [],
             areasEtiquetas: [],
             listaProjetos: [],
+            opcoesFormacaoModal:
+                typeof window !== 'undefined' && Array.isArray(window.__MYBP_ESCOLARIDADES)
+                    ? window.__MYBP_ESCOLARIDADES
+                    : [],
 
             modeldemissao: {
                 preload: false,
@@ -688,6 +698,255 @@ const app = createApp({
         //     return this.$root.$data.AUTENTICADO;
         // },
 
+        totalFiltrosAtivos() {
+            const d = this.controle.dados
+            let total = [d.campoBusca, d.campoCPF, d.campoStatusAdmissao, d.campoTipoAdmissao, d.campoVaga, d.campoUf, d.campoCentroCusto]
+                .filter((v) => v !== '' && v !== null && v !== undefined).length
+            if (this.AUTENTICADO?.temFilial && d.campoCnpj) total++
+            if (d.filtroPeriodo && d.dataInicio && d.dataFim) total++
+            if (d.filtroAso && d.dataInicioAso && d.dataFimAso) total++
+            if (d.filtroDataAdmissao && d.dataInicioAdmissao && d.dataFimAdmissao) total++
+            if (d.campoDemitido === true) total++
+            if (Number(d.pages) !== 20) total++
+            return total
+        },
+        campoBuscaUnificada() {
+            const d = this.controle.dados
+            if (d.campoCPF) return d.campoCPF
+            return d.campoBusca || ''
+        },
+        buscaUnificadaEhCpf() {
+            return !!this.controle.dados.campoCPF
+        },
+        totalFiltrosAtivosAvancados() {
+            const d = this.controle.dados
+            let total = [d.campoVaga, d.campoUf].filter((v) => v !== '' && v !== null && v !== undefined).length
+            if (d.filtroPeriodo && d.dataInicio && d.dataFim) total++
+            if (d.filtroAso && d.dataInicioAso && d.dataFimAso) total++
+            if (d.filtroDataAdmissao && d.dataInicioAdmissao && d.dataFimAdmissao) total++
+            if (d.campoDemitido === true) total++
+            if (Number(d.pages) !== 20) total++
+            return total
+        },
+        opcoesSexoModal() {
+            return (this.lista_sexos || []).map((item) => ({ value: item, label: String(item) }))
+        },
+        opcoesEstadoCivilModal() {
+            return (this.lista_estados_civis || []).map((item) => ({ value: item, label: String(item) }))
+        },
+        opcoesSimNaoModal() {
+            return [
+                { value: 'sim', label: 'Sim' },
+                { value: 'nao', label: 'Não' }
+            ]
+        },
+        opcoesCalcaModal() {
+            return Array.from({ length: 23 }, (_, i) => {
+                const n = String(34 + i)
+                return { value: n, label: n }
+            })
+        },
+        opcoesBotaModal() {
+            return Array.from({ length: 18 }, (_, i) => {
+                const n = String(33 + i)
+                return { value: n, label: n }
+            })
+        },
+        opcoesCamisaProtModal() {
+            return Array.from({ length: 5 }, (_, i) => {
+                const n = String(2 + i)
+                return { value: n, label: n }
+            })
+        },
+        opcoesCamisaMeiaModal() {
+            return ['P', 'M', 'G', 'GG', 'XG'].map((v) => ({ value: v, label: v }))
+        },
+        opcoesTecnicaModal() {
+            return [
+                { value: '', label: 'NÃO INFORMADO' },
+                { value: 'NÃO SE APLICA', label: 'NÃO SE APLICA' },
+                { value: 'Sim', label: 'Sim' },
+                { value: 'Não', label: 'Não' }
+            ]
+        },
+        opcoesTecnicaPonteModal() {
+            return [
+                { value: '', label: 'NÃO INFORMADO' },
+                { value: 'NÃO SE APLICA', label: 'NÃO SE APLICA' },
+                { value: 'true', label: 'Sim' },
+                { value: 'false', label: 'Não' }
+            ]
+        },
+        opcoesProjetoModal() {
+            return (this.listaProjetos || []).map((item) => ({
+                value: item.id,
+                label: ((item.projeto && item.projeto.nome) || 'Projeto') + ' - (' + item.qnt_preenchida + ' de ' + item.qnt_total + ')',
+                meta: item.tem_vaga ? '' : 'Sem vaga'
+            }))
+        },
+        opcoesMassaTipoAdmissao() {
+            return ['TEMPORARIO', 'INTERMITENTE', 'DETERMINADO', 'FIXO', 'PJ'].map((v) => ({ value: v, label: v }))
+        },
+        opcoesMassaPrazo() {
+            return ['Nenhum', '30+30', '45+45', '30+60', '60+30'].map((v) => ({ value: v, label: v }))
+        },
+        opcoesMassaStatusSimples() {
+            return ['PENDENTE', 'CONCLUIDO'].map((v) => ({ value: v, label: v }))
+        },
+        opcoesMassaCarteira() {
+            return ['PENDENTE', 'AGUARDANDO TREINAMENTO', 'ENTREGUE'].map((v) => ({ value: v, label: v }))
+        },
+        opcoesMassaSegmento() {
+            return (this.segmentos_treinamento || []).map((s) => ({ value: s.id, label: s.nome }))
+        },
+        opcoesMassaStatus() {
+            return (this.listaStatusAdmissao || []).map((item) => {
+                const value = typeof item === 'object' ? item.id ?? item.value ?? item.label : item
+                const label = typeof item === 'object' ? item.label || item.nome || String(value) : String(item)
+                return { value, label }
+            })
+        },
+        formMassaBiometriaCombo: {
+            get() { return this.boolToCombo(this.form_massa && this.form_massa.biometria) },
+            set(v) { if (this.form_massa) this.form_massa.biometria = this.comboToBool(v) }
+        },
+        formCurriculoPcdCombo: {
+            get() { return this.boolToCombo(this.form && this.form.curriculo && this.form.curriculo.pcd) },
+            set(v) { if (this.form && this.form.curriculo) this.form.curriculo.pcd = this.comboToBool(v) }
+        },
+        formParecerExFuncionarioCombo: {
+            get() { return this.boolToCombo(this.form && this.form.parecer_rh && this.form.parecer_rh.ex_funcionario) },
+            set(v) { if (this.form && this.form.parecer_rh) this.form.parecer_rh.ex_funcionario = this.comboToBool(v) }
+        },
+        formParecerTurnoCombo: {
+            get() { return this.boolToCombo(this.form && this.form.parecer_rh && this.form.parecer_rh.turnos_seis_por_dois) },
+            set(v) { if (this.form && this.form.parecer_rh) this.form.parecer_rh.turnos_seis_por_dois = this.comboToBool(v) }
+        },
+        formParecerIndicacaoCombo: {
+            get() { return this.boolToCombo(this.form && this.form.parecer_rh && this.form.parecer_rh.indicacao) },
+            set(v) { if (this.form && this.form.parecer_rh) this.form.parecer_rh.indicacao = this.comboToBool(v) }
+        },
+        formAvulsaPcdCombo: {
+            get() {
+                return this.boolToCombo(
+                    this.formAvulsa && this.formAvulsa.curriculo && this.formAvulsa.curriculo.pcd
+                )
+            },
+            set(v) {
+                if (this.formAvulsa && this.formAvulsa.curriculo) {
+                    this.formAvulsa.curriculo.pcd = this.comboToBool(v)
+                }
+            }
+        },
+        formAvulsaExFuncCombo: {
+            get() {
+                return this.boolToCombo(
+                    this.formAvulsa && this.formAvulsa.parecer_rh && this.formAvulsa.parecer_rh.ex_funcionario
+                )
+            },
+            set(v) {
+                if (this.formAvulsa && this.formAvulsa.parecer_rh) {
+                    this.formAvulsa.parecer_rh.ex_funcionario = this.comboToBool(v)
+                }
+            }
+        },
+        formAvulsaTurnoCombo: {
+            get() {
+                return this.boolToCombo(
+                    this.formAvulsa && this.formAvulsa.parecer_rh && this.formAvulsa.parecer_rh.turnos_seis_por_dois
+                )
+            },
+            set(v) {
+                if (this.formAvulsa && this.formAvulsa.parecer_rh) {
+                    this.formAvulsa.parecer_rh.turnos_seis_por_dois = this.comboToBool(v)
+                }
+            }
+        },
+        formAvulsaIndicacaoCombo: {
+            get() {
+                return this.boolToCombo(
+                    this.formAvulsa && this.formAvulsa.parecer_rh && this.formAvulsa.parecer_rh.indicacao
+                )
+            },
+            set(v) {
+                if (this.formAvulsa && this.formAvulsa.parecer_rh) {
+                    this.formAvulsa.parecer_rh.indicacao = this.comboToBool(v)
+                }
+            }
+        },
+        filtroStatusAdmissaoOpcoes() {
+            const opcoes = [{ value: '', label: 'Todos os status' }]
+            ;(this.listaStatusAdmissao || []).forEach((item) => {
+                const value = typeof item === 'object' ? item.id ?? item.value ?? item.label : item
+                const label = typeof item === 'object' ? item.label || item.nome || String(value) : String(item)
+                if (value !== '' && value != null) opcoes.push({ value, label })
+            })
+            return opcoes
+        },
+        filtroTipoAdmissaoOpcoes() {
+            const opcoes = [{ value: '', label: 'Todos os tipos' }]
+            ;(this.listaTipoAdmissao || []).forEach((item) => {
+                const value = typeof item === 'object' ? item.id ?? item.value ?? item.label : item
+                const label = typeof item === 'object' ? item.label || item.nome || String(value) : String(item)
+                if (value !== '' && value != null) opcoes.push({ value, label })
+            })
+            return opcoes
+        },
+        filtroUfOpcoes() {
+            const opcoes = [{ value: '', label: 'Todos os estados' }]
+            ;(this.ufs || []).forEach((uf) => opcoes.push({ value: uf, label: uf }))
+            return opcoes
+        },
+        filtroCnpjOpcoes() {
+            const opcoes = [{ value: '', label: 'Todas as lotações' }]
+            if (!this.lista_ccs || !this.lista_ccs.cnpjs) return opcoes
+            Object.keys(this.lista_ccs.cnpjs).forEach((key) => {
+                const item = this.lista_ccs.cnpjs[key]
+                opcoes.push({
+                    value: key,
+                    label: `${item.nome_fantasia} - ${item.cnpj}`,
+                    meta: item.cnpj
+                })
+            })
+            return opcoes
+        },
+        filtroCentroCustoOpcoes() {
+            const opcoes = [{ value: '', label: 'Todos os centros de custo' }]
+            ;(this.filtroListaCentroCustoCnpj || []).forEach((item) => {
+                if (!item) return
+                const value = item.matriz ? item.id : item.filial_id
+                if (value === '' || value == null) return
+                opcoes.push({ value, label: item.label || String(value), raw: item })
+            })
+            opcoes.push({ value: '--naoinformado--', label: '--- Não Informado ---' })
+            return opcoes
+        },
+        filtroDemitidoOpcoes() {
+            return [
+                { value: 'false', label: 'Não' },
+                { value: 'true', label: 'Sim' }
+            ]
+        },
+        filtroPagesOpcoes() {
+            return (this.por_pagina || [20, 50, 100, 150]).map((n) => ({ value: n, label: String(n) }))
+        },
+        campoDemitidoCombo: {
+            get() {
+                return this.controle.dados.campoDemitido ? 'true' : 'false'
+            },
+            set(v) {
+                this.controle.dados.campoDemitido = v === true || v === 'true'
+            }
+        },
+        campoPagesCombo: {
+            get() {
+                return this.controle.dados.pages
+            },
+            set(v) {
+                const n = Number(v)
+                this.controle.dados.pages = Number.isFinite(n) && n > 0 ? n : 20
+            }
+        },
         filtroListaCentroCustoCnpj() {
             if (this.controle.dados.campoCnpj !== '' && this.AUTENTICADO.temFilial) {
                 return this.lista_ccs.centros_custos[this.controle.dados.campoCnpj]
@@ -722,6 +981,7 @@ const app = createApp({
             this.controle.dados.cliente_custom = parseInt(this.cliente_id)
         }
         this.urlParamGet()
+            this.abrirFiltrosAvancadosSeNecessario()
         this.$nextTick(() => {
             const page = this.controle.dados.page
             if (this.$refs.componente && page >= 1) {
@@ -755,6 +1015,17 @@ const app = createApp({
             }
             this.dropdownAbertoKey = null
         },
+        boolToCombo(val) {
+            if (val === true || val === 'true' || val === 1 || val === '1') return 'sim'
+            if (val === false || val === 'false' || val === 0 || val === '0') return 'nao'
+            return ''
+        },
+        comboToBool(v) {
+            if (v === 'sim') return true
+            if (v === 'nao') return false
+            return ''
+        },
+        fecharOutrosComboboxesModal() {},
         getDataAso(item) {
             if (item.admissao && item.admissao.ultimo_aso && item.admissao.ultimo_aso.data_realizacao) return item.admissao.ultimo_aso.data_realizacao
             if (item.ultimo_aso && item.ultimo_aso.data_realizacao) return item.ultimo_aso.data_realizacao
@@ -803,6 +1074,11 @@ const app = createApp({
         },
 
         async demiteColaborador() {
+            if (!this.exigirCampoData(this.modeldemissao.form.data_desmobilizacao, 'demitir-data', {
+                toastMsg: 'Informe a data da demissão'
+            })) {
+                return
+            }
             this.modeldemissao.preload = true
             await axios
                 .post(`${URL_ADMIN}/admissao/demitir-via-privilegio`, this.modeldemissao.form)
@@ -826,6 +1102,109 @@ const app = createApp({
         },
         changeCnpj() {
             this.controle.dados.campoCentroCusto = ''
+            this.atualizar()
+        },
+        onSelectFiltro() {
+            this.atualizar()
+        },
+        formatarCpfDigitos(valor) {
+            const d = String(valor || '').replace(/\D/g, '').slice(0, 11)
+            if (d.length <= 3) return d
+            if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`
+            if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`
+            return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`
+        },
+        parecePadraoCpf(valor) {
+            const raw = String(valor || '').trim()
+            if (!raw) return false
+            if (!/^[\d.\-\s]+$/.test(raw)) return false
+            const digitos = raw.replace(/\D/g, '')
+            return digitos.length > 0 && digitos.length <= 11
+        },
+        onInputBuscaUnificada(event) {
+            const valor = event && event.target ? event.target.value : ''
+            const d = this.controle.dados
+            if (!valor) {
+                d.campoBusca = ''
+                d.campoCPF = ''
+                return
+            }
+            if (this.parecePadraoCpf(valor)) {
+                const mascarado = this.formatarCpfDigitos(valor)
+                d.campoCPF = mascarado
+                d.campoBusca = ''
+                if (event.target && event.target.value !== mascarado) {
+                    event.target.value = mascarado
+                }
+                return
+            }
+            d.campoBusca = valor
+            d.campoCPF = ''
+        },
+        onSelectCnpj() {
+            this.changeCnpj()
+        },
+        onSelectDemitido() {
+            this.atualizar()
+        },
+        onPeriodoChange() {
+            this.atualizar()
+        },
+        fecharOutrosComboboxes(excetoId) {
+            const mapa = {
+                'admissao-processo-status': 'comboFiltroStatusAdmissao',
+                'admissao-processo-tipo': 'comboFiltroTipoAdmissao',
+                'admissao-processo-cnpj': 'comboFiltroCnpj',
+                'admissao-processo-cc': 'comboFiltroCentroCusto',
+                'admissao-processo-uf': 'comboFiltroUf',
+                'admissao-processo-demitido': 'comboFiltroDemitido',
+                'admissao-processo-pages': 'comboFiltroPages'
+            }
+            Object.keys(mapa).forEach((id) => {
+                if (id === excetoId) return
+                const ref = this.$refs[mapa[id]]
+                if (ref && typeof ref.fechar === 'function') ref.fechar()
+                else if (ref && typeof ref.close === 'function') ref.close()
+            })
+        },
+        limparFiltros() {
+            const pages = this.controle.dados.pages || 20
+            const cnpjPadrao = !this.AUTENTICADO?.temFilial && this.lista_ccs?.cnpjs
+                ? Object.keys(this.lista_ccs.cnpjs)[0]
+                : ''
+            this.controle.dados = {
+                ...this.controle.dados,
+                autocomplete_label_anterior: '',
+                autocomplete_label: '',
+                autocomplete_label_cliente_anterior: '',
+                autocomplete_label_cliente: '',
+                cliente_custom: '',
+                campoBusca: '',
+                campoVaga: '',
+                campoLido: '',
+                campoFiltro: '',
+                campoPcd: '',
+                campoCliente: '',
+                campoStatusAdmissao: '',
+                campoTipoAdmissao: '',
+                campoUf: '',
+                campoAso: '',
+                campoAdmissao: '',
+                campoDemitido: false,
+                campoCnpj: cnpjPadrao,
+                campoCentroCusto: '',
+                filtroPeriodo: false,
+                dataInicio: '',
+                dataFim: '',
+                filtroAso: false,
+                dataInicioAso: '',
+                dataFimAso: '',
+                filtroDataAdmissao: false,
+                dataInicioAdmissao: '',
+                dataFimAdmissao: '',
+                campoCPF: '',
+                pages
+            }
             this.atualizar()
         },
         buscaProjeto(vaga_aberta_id) {
@@ -1035,6 +1414,18 @@ const app = createApp({
             }
 
             formReset()
+
+            if (!this.exigirCombobox(this.formAvulsaPcdCombo, 'avulsa-pcd', { toastMsg: 'Selecione a Cota PCD' })) {
+                return false
+            }
+            if (
+                !this.exigirCombobox(this.formAvulsaIndicacaoCombo, 'avulsa-indicacao', {
+                    toastMsg: 'Informe se foi indicado'
+                })
+            ) {
+                return false
+            }
+
             this.validaBlurNoModal('#janelaAdmissaoAvulsa')
             $('#janelaAdmissaoAvulsa :input:visible:enabled').trigger('blur')
 
@@ -1067,12 +1458,50 @@ const app = createApp({
                 return false
             }
 
+            const telefonesAvulsa = this.$refs.telefonesAvulsa
+            if (telefonesAvulsa && typeof telefonesAvulsa.validarCampos === 'function' && !telefonesAvulsa.validarCampos()) {
+                return false
+            }
+
+            const enderecoAvulsa = this.$refs.enderecoAvulsa
+            if (enderecoAvulsa && typeof enderecoAvulsa.validarCampos === 'function' && !enderecoAvulsa.validarCampos()) {
+                return false
+            }
+
             if (this.formAvulsa.feedback.vaga_id === '') {
                 valida_campo_vazio($('#vaga_' + this.hash), 1)
                 $('#janelaAdmissaoAvulsa #vaga_' + this.hash)
                     .focus()
                     .trigger('blur')
                 mostraErro('', 'O campo vaga não pode ficar vazio')
+                return false
+            }
+
+            const formRiAvulsa = this.$refs.formResultadoIntegradoAvulsa
+            if (formRiAvulsa && typeof formRiAvulsa.validarCampos === 'function' && !formRiAvulsa.validarCampos()) {
+                return false
+            }
+
+            const formAdmAvulsa = this.$refs.formAdmissaoAvulsa
+            if (formAdmAvulsa && typeof formAdmAvulsa.validarCampos === 'function' && !formAdmAvulsa.validarCampos()) {
+                return false
+            }
+
+            const dependentesAvulsa = this.$refs.dependentesAvulsa
+            if (
+                dependentesAvulsa &&
+                typeof dependentesAvulsa.validarCampos === 'function' &&
+                !dependentesAvulsa.validarCampos()
+            ) {
+                return false
+            }
+
+            const dadosBancariosAvulsa = this.$refs.dadosBancariosAvulsa
+            if (
+                dadosBancariosAvulsa &&
+                typeof dadosBancariosAvulsa.validarCampos === 'function' &&
+                !dadosBancariosAvulsa.validarCampos()
+            ) {
                 return false
             }
 
@@ -1129,6 +1558,7 @@ const app = createApp({
                 this.controle.dados.autocomplete_label_anterior = ''
                 this.controle.dados.autocomplete_label = ''
                 this.controle.dados.campoVaga = ''
+                this.atualizar()
             }
         },
 
@@ -1136,6 +1566,7 @@ const app = createApp({
             this.controle.dados.campoVaga = obj.id
             this.controle.dados.autocomplete_label = obj.label
             this.controle.dados.autocomplete_label_anterior = obj.label
+            this.atualizar()
         },
 
         resetaCampoCliente() {
@@ -1241,6 +1672,37 @@ const app = createApp({
                 return false
             }
 
+            if (!this.exigirCombobox(this.formCurriculoPcdCombo, 'adm-pcd', { toastMsg: 'Selecione a Cota PCD' })) {
+                return false
+            }
+            if (!this.exigirCombobox(this.form.curriculo.formacao, 'adm-formacao', { toastMsg: 'Selecione a formação' })) {
+                return false
+            }
+            const telefones = this.$refs.telefonesModal
+            if (telefones && typeof telefones.validarCampos === 'function' && !telefones.validarCampos()) {
+                return false
+            }
+            const endereco = this.$refs.enderecoModal
+            if (endereco && typeof endereco.validarCampos === 'function' && !endereco.validarCampos()) {
+                return false
+            }
+            const formRi = this.$refs.formResultadoIntegradoModal
+            if (formRi && typeof formRi.validarCampos === 'function' && !formRi.validarCampos()) {
+                return false
+            }
+            const formAdm = this.$refs.formAdmissaoModal
+            if (formAdm && typeof formAdm.validarCampos === 'function' && !formAdm.validarCampos()) {
+                return false
+            }
+            const dependentes = this.$refs.dependentesModal
+            if (dependentes && typeof dependentes.validarCampos === 'function' && !dependentes.validarCampos()) {
+                return false
+            }
+            const dadosBancarios = this.$refs.dadosBancariosModal
+            if (dadosBancarios && typeof dadosBancarios.validarCampos === 'function' && !dadosBancarios.validarCampos()) {
+                return false
+            }
+
             this.validaBlurNoModal('#janelaCadastrar')
             $('#janelaCadastrar :input:visible:enabled').trigger('blur')
             if (this.temErroValidacaoModal('#janelaCadastrar')) {
@@ -1316,6 +1778,11 @@ const app = createApp({
         },
         carregando() {
             this.controle.carregando = true
+        },
+        abrirFiltrosAvancadosSeNecessario() {
+            if (this.totalFiltrosAtivosAvancados > 0) {
+                this.filtrosAvancadosAbertos = true
+            }
         },
         atualizar() {
             this.syncUrlFiltros()
