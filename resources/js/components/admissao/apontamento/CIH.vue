@@ -250,7 +250,7 @@
                                         class="form-control form-control-sm validacampo"
                                         rows="3"
                                         placeholder="Descreva a ação tomada"
-                                        :disabled="visualizar || aprovandoRh || aprovando"
+                                        :readonly="visualizar || aprovandoRh || aprovando"
                                         @blur.prevent="valida_campo_vazio($event.target, 1)"
                                         @keyup.prevent="valida_campo_vazio($event.target, 1)"
                                         v-model="form.acao"
@@ -284,7 +284,7 @@
                                     <textarea
                                         id="cih-form-obs-lancamento"
                                         class="form-control form-control-sm"
-                                        :disabled="visualizar || aprovandoRh || aprovando"
+                                        :readonly="visualizar || aprovandoRh || aprovando"
                                         v-model="form.obs_lancamento"
                                         rows="2"
                                         placeholder="Informações complementares do lançamento"
@@ -337,7 +337,7 @@
                                     <textarea
                                         id="cih-form-obs-gestor"
                                         class="form-control form-control-sm"
-                                        :disabled="!aprovando || aprovandoRh"
+                                        :readonly="!aprovando || aprovandoRh"
                                         v-model="form.obs_aprovacao"
                                         rows="3"
                                         placeholder="Observação da aprovação do gestor"
@@ -390,7 +390,7 @@
                                     <textarea
                                         id="cih-form-obs-rh"
                                         class="form-control form-control-sm"
-                                        :disabled="visualizar && !aprovando && !aprovandoRh"
+                                        :readonly="visualizar && !aprovando && !aprovandoRh"
                                         v-model="form.obs_rh"
                                         rows="3"
                                         placeholder="Observação da aprovação do RH"

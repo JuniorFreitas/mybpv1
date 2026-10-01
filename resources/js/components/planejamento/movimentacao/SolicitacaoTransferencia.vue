@@ -207,7 +207,7 @@
                                         v-model="form.obs"
                                         rows="3"
                                         placeholder="Informações relevantes sobre a transferência"
-                                        :disabled="visualizar || aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
+                                        :readonly="visualizar || aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
                                     ></textarea>
                                 </div>
                             </div>
@@ -249,7 +249,7 @@
                                         <label>Observação</label>
                                         <textarea
                                             class="form-control form-control-sm"
-                                            :disabled="!aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
+                                            :readonly="!aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
                                             v-model="form.obs_aprovacao"
                                             cols="5"
                                             rows="5"
@@ -299,7 +299,7 @@
                                         <label>Observação</label>
                                         <textarea
                                             class="form-control form-control-sm"
-                                            :disabled="!aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
+                                            :readonly="!aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
                                             v-model="form.obs_aprovacao_gestor_destino"
                                             cols="5"
                                             rows="5"
@@ -353,7 +353,7 @@
                                         <label>Observação</label>
                                         <textarea
                                             class="form-control form-control-sm"
-                                            :disabled="!aprovandoGestorUnico || aprovandoExtra || aprovandoRh"
+                                            :readonly="!aprovandoGestorUnico || aprovandoExtra || aprovandoRh"
                                             v-model="form.obs_aprovacao_gestor_unico"
                                             cols="5"
                                             rows="5"
@@ -408,7 +408,7 @@
                                         <label>Observação</label>
                                         <textarea
                                             class="form-control form-control-sm"
-                                            :disabled="!aprovandoExtra || aprovandoRh"
+                                            :readonly="!aprovandoExtra || aprovandoRh"
                                             v-model="form.obs_aprovacao_extra"
                                             cols="5"
                                             rows="5"
@@ -454,7 +454,7 @@
                                         <label>Observação</label>
                                         <textarea
                                             class="form-control form-control-sm"
-                                            :disabled="visualizar && !aprovando && !aprovandoRh"
+                                            :readonly="visualizar && !aprovando && !aprovandoRh"
                                             v-model="form.obs_rh"
                                             cols="5"
                                             rows="5"

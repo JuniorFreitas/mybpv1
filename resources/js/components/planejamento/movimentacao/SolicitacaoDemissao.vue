@@ -136,7 +136,7 @@
                                         v-model="form.obs"
                                         rows="3"
                                         placeholder="Informações relevantes sobre a demissão"
-                                        :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
+                                        :readonly="visualizar || aprovando || aprovandoExtra || aprovandoRh"
                                     ></textarea>
                                 </div>
                             </div>
@@ -200,7 +200,7 @@
                                     <label class="mybp-label">Observação</label>
                                     <textarea
                                         class="form-control form-control-sm"
-                                        :disabled="!aprovando || aprovandoExtra || aprovandoRh"
+                                        :readonly="!aprovando || aprovandoExtra || aprovandoRh"
                                         v-model="form.obs_aprovacao"
                                         rows="2"
                                     ></textarea>
@@ -255,7 +255,7 @@
                                     <label class="mybp-label">Observação</label>
                                     <textarea
                                         class="form-control form-control-sm"
-                                        :disabled="!aprovandoExtra || aprovandoRh"
+                                        :readonly="!aprovandoExtra || aprovandoRh"
                                         v-model="form.obs_aprovacao_extra"
                                         rows="2"
                                     ></textarea>
@@ -303,7 +303,7 @@
                                     <label class="mybp-label">Observação</label>
                                     <textarea
                                         class="form-control form-control-sm"
-                                        :disabled="!aprovandoRh"
+                                        :readonly="!aprovandoRh"
                                         v-model="form.obs_rh"
                                         rows="2"
                                     ></textarea>
