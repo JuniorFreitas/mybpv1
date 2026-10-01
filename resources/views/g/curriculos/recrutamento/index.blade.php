@@ -160,42 +160,58 @@
 
                 <fieldset class="mybp-modal-secao" v-if="form.experiencias && form.experiencias.length">
                     <legend>Experiências</legend>
-                    <div class="row" v-for="(item, idx) in form.experiencias" :key="'exp-' + idx">
-                        <div class="col-12 col-md-4">
-                            <div class="form-group mybp-filtro-campo">
-                                <label class="mybp-label">Empresa</label>
-                                <input type="text" class="form-control form-control-sm" disabled :value="item.empresa || 'Não informado'">
+                    <div
+                        class="mybp-modal-bloco-experiencia"
+                        v-for="(item, idx) in form.experiencias"
+                        :key="'exp-' + idx"
+                    >
+                        <p class="mybp-modal-bloco-experiencia__titulo">Experiência @{{ idx + 1 }}</p>
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Empresa</label>
+                                    <input type="text" class="form-control form-control-sm" disabled
+                                           :value="item.empresa || 'Não informado'">
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <div class="form-group mybp-filtro-campo">
-                                <label class="mybp-label">Cargo</label>
-                                <input type="text" class="form-control form-control-sm" disabled :value="item.cargo || 'Não informado'">
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Cargo</label>
+                                    <input type="text" class="form-control form-control-sm" disabled
+                                           :value="item.cargo || 'Não informado'">
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <div class="form-group mybp-filtro-campo">
-                                <label class="mybp-label">Período</label>
-                                <input type="text" class="form-control form-control-sm" disabled
-                                       :value="(item.data_inicio || '—') + ' até ' + (item.data_fim || '—')">
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Período</label>
+                                    <input type="text" class="form-control form-control-sm" disabled
+                                           :value="(item.data_inicio || '—') + ' até ' + (item.data_fim || '—')">
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <div class="form-group mybp-filtro-campo">
-                                <label class="mybp-label">Nome referência</label>
-                                <input type="text" class="form-control form-control-sm" disabled :value="item.referencia_nome || 'Não informado'">
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Nome referência</label>
+                                    <input type="text" class="form-control form-control-sm" disabled
+                                           :value="item.referencia_nome || 'Não informado'">
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <div class="form-group mybp-filtro-campo">
-                                <label class="mybp-label">Telefone referência</label>
-                                <input type="text" class="form-control form-control-sm" disabled :value="item.referencia_telefone || 'Não informado'">
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Telefone referência</label>
+                                    <input type="text" class="form-control form-control-sm" disabled
+                                           :value="item.referencia_telefone || 'Não informado'">
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <div class="form-group mybp-filtro-campo">
-                                <label class="mybp-label">Principais atividades</label>
-                                <input type="text" class="form-control form-control-sm" disabled :value="item.principais_atv || 'Não informado'">
+                            <div class="col-12">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Principais atividades</label>
+                                    <textarea
+                                        class="form-control form-control-sm"
+                                        rows="4"
+                                        disabled
+                                        :value="item.principais_atv || 'Não informado'"
+                                    ></textarea>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -203,24 +219,33 @@
 
                 <fieldset class="mybp-modal-secao" v-if="form.qualificacoes && form.qualificacoes.length">
                     <legend>Qualificações</legend>
-                    <div class="row" v-for="(item, idx) in form.qualificacoes" :key="'qual-' + idx">
-                        <div class="col-12 col-md-4">
-                            <div class="form-group mybp-filtro-campo">
-                                <label class="mybp-label">Curso</label>
-                                <input type="text" class="form-control form-control-sm" disabled :value="item.nome || 'Não informado'">
+                    <div
+                        class="mybp-modal-bloco-experiencia"
+                        v-for="(item, idx) in form.qualificacoes"
+                        :key="'qual-' + idx"
+                    >
+                        <p class="mybp-modal-bloco-experiencia__titulo" v-if="form.qualificacoes.length > 1">
+                            Qualificação @{{ idx + 1 }}
+                        </p>
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Curso</label>
+                                    <input type="text" class="form-control form-control-sm" disabled :value="item.nome || 'Não informado'">
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <div class="form-group mybp-filtro-campo">
-                                <label class="mybp-label">Instituição</label>
-                                <input type="text" class="form-control form-control-sm" disabled :value="item.instituicao || 'Não informado'">
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Instituição</label>
+                                    <input type="text" class="form-control form-control-sm" disabled :value="item.instituicao || 'Não informado'">
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <div class="form-group mybp-filtro-campo">
-                                <label class="mybp-label">Conclusão</label>
-                                <input type="text" class="form-control form-control-sm" disabled
-                                       :value="(item.mes_conclusao || '—') + '/' + (item.ano_conclusao || '—')">
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">Conclusão</label>
+                                    <input type="text" class="form-control form-control-sm" disabled
+                                           :value="(item.mes_conclusao || '—') + '/' + (item.ano_conclusao || '—')">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -418,7 +443,11 @@
                         <div class="col-12">
                             <div class="form-group mybp-filtro-campo">
                                 <label class="mybp-label">Observações</label>
-                                <input type="text" class="form-control form-control-sm" v-model="form_feedback.obs">
+                                <textarea
+                                    class="form-control form-control-sm"
+                                    rows="3"
+                                    v-model="form_feedback.obs"
+                                ></textarea>
                             </div>
                         </div>
 
@@ -643,102 +672,139 @@
         <preload></preload>
     </p>
 
-    <div id="conteudo">
+    <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length === 0">
+        <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+    </div>
 
-        <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-            <table class="tabela">
-                <thead>
-                <tr class="bg-default">
-                    <th>Cód</th>
-                    <th>Nome</th>
-                    <th>CPF</th>
-                    <th>UF</th>
-                    <th>Vaga</th>
-                    <th>PCD</th>
-                    <th>Selecionado</th>
-                    <th>Contato Realizado</th>
-                    <th>Interesse</th>
-                    <th>Data</th>
-                    <th>Lido</th>
-                    <th>Ação</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="curriculo in lista">
-                    <td data-label="Cód">
-                        @{{curriculo.id}}
-                    </td>
-                    <td data-label="Nome">
-                        @{{curriculo.nome}}
-                    </td>
-                    <td data-label="CPF">
-                        @{{curriculo.cpf}}
-                    </td>
-                    <td data-label="UF">
-                        @{{curriculo.uf_vaga ? curriculo.uf_vaga : 'Não informado'}}
-                    </td>
-                    <td data-label="Vaga">
-                        @{{curriculo.vaga_aberta?.vaga_selecionada?.nome || 'Não informado'}}
-                    </td>
-                    <td data-label="PCD">
-                        @{{curriculo.pcd ? "SIM" : "NÃO"}}
-                    </td>
-                    <td data-label="Selecionado">
-                        @{{curriculo.feed_back ? curriculo.feed_back.selecionado ?
-                        curriculo.feed_back.selecionado.toUpperCase() : "--" : "--"}}
-                    </td>
-                    <td data-label="Contato Realizado">
-                        @{{curriculo.feed_back ? curriculo.feed_back.contato_realizado ? "SIM" : "NÃO" : "NÃO"}}
-                    </td>
-                    <td data-label="Interesse">
-                        @{{curriculo.feed_back ? curriculo.feed_back.interesse ? "SIM" : "NÃO" : "--"}}
-                    </td>
-                    <td data-label="Data">
-                        @{{curriculo.created_at}}
-                    </td>
-                    <td data-label="Lido">
-                        <span v-show="curriculo.lido">
-                            <i class="fa fa-check text-success"></i> SIM
-                        </span>
-                        <span v-show="!curriculo.lido">
-                            <i class="fa fa-ban text-warning"></i> NÃO
-                        </span>
-                        {{--                        @{{curriculo.lido===true ? 'SIM' : 'NÃO'}}--}}
-                    </td>
-
-                    <td data-label="Ação">
-                        <a href="javascript://" class="btn btn-sm mr-1 mb-2 btn-primary"
-                           @click.prevent="formAlterar(curriculo.id)"
-                           content="Recrutar" v-tippy
-                        >
-                            <i class="fa fa-edit" aria-hidden="true"></i>
-                        </a>
-
-                        <a :href="`recrutamentos/${curriculo.ctoken}`" target="_blank"
-                           class="btn btn-sm mr-1 mb-2 btn-primary"
-                           content="Gerar PDF" v-tippy
-                        >
-                            <i class="far fa-file-pdf"></i>
-                        </a>
-
-                        @can('curriculos_recrutamento_delete')
-                            <a href="javascript://" class="btn btn-sm mr-1 mb-2 btn-danger" content="Remover" v-tippy
-                               @click.prevent="janelaConfirmar(curriculo.id); $refs.janelaConfirmar?.abrirModal()"
+    <div id="conteudo" v-show="!controle.carregando && lista.length > 0">
+        <div class="mybp-cards-lista">
+            <div class="mybp-card" v-for="curriculo in lista" :key="curriculo.id">
+                <div class="mybp-card-header-row">
+                    <div class="mybp-card-left">
+                        <span class="mybp-badge-id">#@{{ curriculo.id }}</span>
+                        <div class="mybp-card-titulo">
+                            <strong>@{{ curriculo.nome || 'Não informado' }}</strong>
+                        </div>
+                    </div>
+                    <div class="mybp-card-right">
+                        <mybp-status-badge
+                            :variante="chaveStatusRec(curriculo)"
+                            :texto="textoStatusRec(curriculo)"
+                        ></mybp-status-badge>
+                        <div class="dropdown" :class="{ show: isDropdownOpen(curriculo.id) }">
+                            <a
+                                class="mybp-btn-acoes-compact"
+                                href="#"
+                                role="button"
+                                :id="'rec-acoes-' + curriculo.id"
+                                aria-haspopup="true"
+                                :aria-expanded="isDropdownOpen(curriculo.id) ? 'true' : 'false'"
+                                @click.prevent.stop="toggleDropdown(curriculo.id)"
                             >
-                                <i class="fa fa-trash" aria-hidden="true"></i>
+                                <i class="fas fa-ellipsis-v"></i>
                             </a>
-                        @endcan
-                    </td>
+                            <div
+                                class="dropdown-menu mybp-dropdown-menu dropdown-menu-right"
+                                :class="{ show: isDropdownOpen(curriculo.id) }"
+                                :aria-labelledby="'rec-acoes-' + curriculo.id"
+                                @click="fecharDropdown"
+                            >
+                                <a
+                                    class="dropdown-item"
+                                    href="javascript://"
+                                    @click.prevent="formAlterar(curriculo.id)"
+                                >
+                                    <i class="fa fa-edit mr-1"></i> Recrutar
+                                </a>
+                                <a
+                                    class="dropdown-item"
+                                    :href="`recrutamentos/${curriculo.ctoken}`"
+                                    target="_blank"
+                                >
+                                    <i class="far fa-file-pdf mr-1"></i> Gerar PDF
+                                </a>
+                                @can('curriculos_recrutamento_delete')
+                                    <a
+                                        class="dropdown-item text-danger"
+                                        href="javascript://"
+                                        @click.prevent="janelaConfirmar(curriculo.id); $refs.janelaConfirmar?.abrirModal()"
+                                    >
+                                        <i class="fa fa-trash mr-1"></i> Remover
+                                    </a>
+                                @endcan
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                </tr>
-                </tbody>
-            </table>
+                <div class="mybp-card-corpo" :class="'mybp-card-corpo--' + chaveStatusRec(curriculo)">
+                    <section class="mybp-card-secao">
+                        <div class="mybp-card-row">
+                            <mybp-card-campo
+                                icon="fas fa-id-card"
+                                label="CPF"
+                                :valor="curriculo.cpf"
+                                forte
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-map-marker-alt"
+                                label="UF"
+                                :valor="curriculo.uf_vaga"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-briefcase"
+                                label="Vaga"
+                                :valor="curriculo.vaga_aberta?.vaga_selecionada?.nome"
+                            ></mybp-card-campo>
+                        </div>
+                    </section>
+
+                    <section class="mybp-card-secao">
+                        <div class="mybp-card-row">
+                            <mybp-card-campo
+                                icon="fas fa-wheelchair"
+                                label="PCD"
+                                :valor="curriculo.pcd ? 'Sim' : 'Não'"
+                                :tom="curriculo.pcd ? 'positivo' : 'meta'"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-user-check"
+                                label="Selecionado"
+                                :valor="textoSelecionadoRec(curriculo)"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-phone"
+                                label="Contato realizado"
+                                :valor="textoSimNaoFeed(curriculo, 'contato_realizado')"
+                                :tom="tomSimNaoFeed(curriculo, 'contato_realizado')"
+                            ></mybp-card-campo>
+                        </div>
+                    </section>
+
+                    <section class="mybp-card-secao">
+                        <div class="mybp-card-row">
+                            <mybp-card-campo
+                                icon="fas fa-heart"
+                                label="Interesse"
+                                :valor="textoInteresseRec(curriculo)"
+                                :tom="tomInteresseRec(curriculo)"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-calendar"
+                                label="Data cadastro"
+                                :valor="curriculo.created_at"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-eye"
+                                label="Lido"
+                                :valor="curriculo.lido ? 'Sim' : 'Não'"
+                                :tom="curriculo.lido ? 'positivo' : 'negativo'"
+                            ></mybp-card-campo>
+                        </div>
+                    </section>
+                </div>
+            </div>
         </div>
-
-        <div class="alert alert-warning" v-show="!controle.carregando && lista.length === 0">
-            <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
-        </div>
-
 
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
                             url="{{route('g.recrutamento.recrutamentos.atualizar')}}"

@@ -20,7 +20,13 @@
 - Sexo/Estado civil/Selecionado → `ComboboxAutoComplete` (`rec-modal-*`)
 - Bools do feedback → `MybpBoolCombobox`
 - Formação/Experiências/Qualificações em campos disabled densos
+- Experiências: bloco `.mybp-modal-bloco-experiencia`; `principais_atv` e Observações em `textarea` (CSS sem height fixa)
 - Validação submit: `exigirCombobox` + `:input:visible:enabled`
+
+## Listagem (cards)
+- `mybp-cards-lista` + badge por status (Selecionado / Não selecionado / Stand by / Lido / Não lido)
+- Campos: CPF, UF, Vaga, PCD, Selecionado, Contato, Interesse, Data, Lido
+- Dropdown: Recrutar, Gerar PDF, Remover
 
 ## Período
 - Front: `dataInicio`/`dataFim` ISO + sync `periodo` BR (`dd/mm/yyyy até dd/mm/yyyy`)

@@ -7,6 +7,8 @@ import DateRangeFilter from '../../../components/DateRangeFilter.vue'
 import ComboboxAutoComplete from '../../../components/ComboboxAutoComplete.vue'
 import FiltroListagem from '../../../components/ui/FiltroListagem.vue'
 import MybpBoolCombobox from '../../../components/ui/MybpBoolCombobox.vue'
+import MybpCardCampo from '../../../components/ui/MybpCardCampo.vue'
+import MybpStatusBadge from '../../../components/ui/MybpStatusBadge.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 
@@ -41,7 +43,9 @@ const app = createApp({
         DateRangeFilter,
         ComboboxAutoComplete,
         FiltroListagem,
-        MybpBoolCombobox
+        MybpBoolCombobox,
+        MybpCardCampo,
+        MybpStatusBadge
     },
     mixins: [ExportacaoMixin, ComboboxValidation],
 
@@ -55,6 +59,7 @@ const app = createApp({
             feedback: false,
             cadastrado: false,
             atualizado: false,
+            dropdownAbertoId: null,
 
             // ===== CONFIGURAÇÕES =====
             permite_envio_whatsapp: null,
@@ -824,6 +829,61 @@ const app = createApp({
                 pages
             }
             this.atualizar()
+        },
+
+        chaveStatusRec(item) {
+            const sel = item && item.feed_back ? item.feed_back.selecionado : ''
+            if (sel === 'sim') return 'aprovado'
+            if (sel === 'nao') return 'reprovado'
+            if (sel === 'standby') return 'gestor'
+            if (item && item.lido) return 'neutro'
+            return 'pendente'
+        },
+        textoStatusRec(item) {
+            const sel = item && item.feed_back ? item.feed_back.selecionado : ''
+            if (sel === 'sim') return 'Selecionado'
+            if (sel === 'nao') return 'Não selecionado'
+            if (sel === 'standby') return 'Stand by'
+            if (item && item.lido) return 'Lido'
+            return 'Não lido'
+        },
+        textoSelecionadoRec(item) {
+            const sel = item && item.feed_back ? item.feed_back.selecionado : ''
+            if (!sel) return ''
+            if (sel === 'sim') return 'Sim'
+            if (sel === 'nao') return 'Não'
+            if (sel === 'standby') return 'Stand by'
+            return String(sel)
+        },
+        textoSimNaoFeed(item, key) {
+            if (!item || !item.feed_back) return 'Não'
+            return item.feed_back[key] ? 'Sim' : 'Não'
+        },
+        tomSimNaoFeed(item, key) {
+            if (!item || !item.feed_back) return 'negativo'
+            return item.feed_back[key] ? 'positivo' : 'negativo'
+        },
+        textoInteresseRec(item) {
+            if (!item || !item.feed_back) return ''
+            if (item.feed_back.interesse === true || item.feed_back.interesse === false) {
+                return item.feed_back.interesse ? 'Sim' : 'Não'
+            }
+            return ''
+        },
+        tomInteresseRec(item) {
+            if (!item || !item.feed_back) return 'meta'
+            if (item.feed_back.interesse === true) return 'positivo'
+            if (item.feed_back.interesse === false) return 'negativo'
+            return 'meta'
+        },
+        toggleDropdown(itemId) {
+            this.dropdownAbertoId = this.dropdownAbertoId === itemId ? null : itemId
+        },
+        isDropdownOpen(itemId) {
+            return this.dropdownAbertoId === itemId
+        },
+        fecharDropdown() {
+            this.dropdownAbertoId = null
         },
 
         resetarPaginacao() {
