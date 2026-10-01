@@ -6,6 +6,7 @@ import datepicker from '../../../components/DatePicker'
 import DateRangeFilter from '../../../components/DateRangeFilter.vue'
 import ComboboxAutoComplete from '../../../components/ComboboxAutoComplete.vue'
 import FiltroListagem from '../../../components/ui/FiltroListagem.vue'
+import MybpBoolCombobox from '../../../components/ui/MybpBoolCombobox.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 
@@ -39,7 +40,8 @@ const app = createApp({
         telefone,
         DateRangeFilter,
         ComboboxAutoComplete,
-        FiltroListagem
+        FiltroListagem,
+        MybpBoolCombobox
     },
     mixins: [ExportacaoMixin, ComboboxValidation],
 
@@ -160,6 +162,35 @@ const app = createApp({
         },
         filtroPagesOpcoes() {
             return [20, 50, 100].map((n) => ({ value: n, label: String(n) }))
+        },
+        opcoesSexoModal() {
+            return (this.lista_sexos || []).map((item) => ({ value: item, label: item }))
+        },
+        opcoesEstadoCivilModal() {
+            return (this.lista_estados_civis || []).map((item) => ({ value: item, label: item }))
+        },
+        opcoesSelecionadoModal() {
+            return [
+                { value: 'sim', label: 'Sim' },
+                { value: 'nao', label: 'Não' },
+                { value: 'standby', label: 'Stand by' }
+            ]
+        },
+        opcoesSimNaoModal() {
+            return [
+                { value: 'sim', label: 'Sim' },
+                { value: 'nao', label: 'Não' }
+            ]
+        },
+        viajarCombo: {
+            get() {
+                if (this.form.viajar === true || this.form.viajar === 'true' || this.form.viajar === 1) return 'sim'
+                if (this.form.viajar === false || this.form.viajar === 'false' || this.form.viajar === 0) return 'nao'
+                return ''
+            },
+            set() {
+                /* somente leitura */
+            }
         }
     },
 
@@ -535,14 +566,57 @@ const app = createApp({
         },
 
         validarCamposObrigatorios() {
-            $('#janelaCadastrar :input:visible').trigger('blur')
+            if (
+                !this.exigirCombobox(this.form_feedback.selecionado, 'rec-modal-selecionado', {
+                    toastMsg: 'Selecione se o candidato foi selecionado'
+                })
+            ) {
+                return false
+            }
 
-            if ($('#janelaCadastrar :input:visible.is-invalid').length) {
+            if (this.form_feedback.selecionado === 'nao') {
+                if (
+                    this.form_feedback.envia_mail_desclassificacao !== true &&
+                    this.form_feedback.envia_mail_desclassificacao !== false
+                ) {
+                    if (
+                        !this.exigirCombobox(this.form_feedback.envia_mail_desclassificacao, 'rec-modal-mail-desclass', {
+                            toastMsg: 'Informe se envia e-mail de desclassificação'
+                        })
+                    ) {
+                        return false
+                    }
+                }
+            }
+
+            if (this.form_feedback.selecionado && this.form_feedback.selecionado !== 'nao') {
+                if (this.form_feedback.contato_realizado !== true && this.form_feedback.contato_realizado !== false) {
+                    if (
+                        !this.exigirCombobox(this.form_feedback.contato_realizado, 'rec-modal-contato', {
+                            toastMsg: 'Informe se o contato foi realizado'
+                        })
+                    ) {
+                        return false
+                    }
+                }
+            }
+
+            $('#janelaCadastrar :input:visible:enabled').trigger('blur')
+
+            if ($('#janelaCadastrar :input:visible:enabled.is-invalid').length) {
                 mostraErro('', MENSAGENS.ERRO_CAMPOS_INVALIDOS)
                 return false
             }
 
-            return true
+            return this.validarInputsAtivosVisiveis('janelaCadastrar', { preservarIds: [] })
+        },
+
+        fecharOutrosComboboxesModal() {
+            /* Combobox do modal sem refs; opening só sinaliza — filtros usam fecharOutrosComboboxes */
+        },
+
+        onSelectFeedbackCombo(inputId) {
+            this.limparComboboxInvalido(inputId)
         },
 
         processarSucessoAlteracao() {

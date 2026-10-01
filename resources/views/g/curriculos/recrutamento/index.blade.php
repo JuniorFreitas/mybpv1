@@ -6,391 +6,376 @@
     <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :fechar="!preloadAjax" :size="90">
         <template #conteudo>
             <preload v-show="preloadAjax" :label="editando ? 'Salvando ...' : 'Carregando ...'"></preload>
-            <form v-show="!preloadAjax && (!cadastrado && !atualizado)" id="form" onsubmit="return false;">
-                <fieldset>
-                    <legend>Dados Pessoais</legend>
+            <form v-show="!preloadAjax && (!cadastrado && !atualizado)" id="form" class="mybp-modal-form mybp-filtros-compactos" onsubmit="return false;">
+                <p class="mybp-campo-obrigatorio-legenda mybp-modal-legenda" v-show="editando">
+                    Campos com <span class="text-danger">*</span> são obrigatórios.
+                </p>
+
+                <fieldset class="mybp-modal-secao">
+                    <legend>Dados pessoais</legend>
                     <div class="row">
-                        <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
-                            <div class="form-group">
-                                <label>Nome <span style="color: red;">*</span></label>
-                                <input type="text" class="form-control" v-model="form.nome"
-                                       placeholder="Nome"
-                                       autocomplete="mastertag" onblur="valida_campo_vazio(this,3)"
-                                >
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Nome <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-sm" v-model="form.nome"
+                                       placeholder="Nome" autocomplete="off"
+                                       onblur="valida_campo_vazio(this,3)">
                             </div>
                         </div>
-
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>CPF <span style="color: red;">*</span></label>
-                                <input type="text" class="form-control" v-model="form.cpf"
-                                       placeholder="CPF"
-                                       disabled
-                                       autocomplete="mastertag" v-mascara:cpf onblur="valida_cpf_vazio(this)"
-                                >
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">CPF <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-sm" v-model="form.cpf"
+                                       placeholder="CPF" disabled autocomplete="off" v-mascara:cpf>
                             </div>
                         </div>
-
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>RG</label>
-                                <input type="text" class="form-control" v-model="form.rg"
-                                       placeholder="RG"
-                                       autocomplete="mastertag" v-mascara:numero
-                                       onblur="valida_campo(this,1)"
-                                >
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">RG</label>
+                                <input type="text" class="form-control form-control-sm" v-model="form.rg"
+                                       placeholder="RG" autocomplete="off" v-mascara:numero
+                                       onblur="valida_campo(this,1)">
                             </div>
                         </div>
-
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>Orgão Expeditor (RG)</label>
-                                <input type="text" class="form-control" v-model="form.orgao_expeditor"
-                                       placeholder="Orgão"
-                                       autocomplete="mastertag" onblur="valida_campo(this,1)"
-                                >
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Órgão expeditor (RG)</label>
+                                <input type="text" class="form-control form-control-sm" v-model="form.orgao_expeditor"
+                                       placeholder="Órgão" autocomplete="off" onblur="valida_campo(this,1)">
                             </div>
                         </div>
-
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>CNH</label>
-                                <input type="text" class="form-control" v-model="form.cnh"
-                                       placeholder="Tipo da CNH"
-                                       autocomplete="mastertag"
-                                >
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">CNH</label>
+                                <input type="text" class="form-control form-control-sm" v-model="form.cnh"
+                                       placeholder="Tipo da CNH" autocomplete="off">
                             </div>
                         </div>
-
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>Nascimento <span style="color: red;">*</span></label>
-                                <input type="text" class="form-control" v-model="form.nascimento"
-                                       placeholder="Ex: 10/10/2010"
-                                       v-mascara:data
-                                       autocomplete="mastertag" onblur="valida_data_vazio(this)"
-                                >
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Nascimento <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-sm" v-model="form.nascimento"
+                                       placeholder="Ex: 10/10/2010" v-mascara:data autocomplete="off"
+                                       onblur="valida_data_vazio(this)">
                             </div>
                         </div>
-
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>Sexo</label>
-                                <select
-                                    class="form-control"
-                                    v-model="form.sexo"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option v-for="item in lista_sexos" :value="item">@{{item}}</option>
-                                </select>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="rec-modal-sexo">Sexo</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="rec-modal-sexo"
+                                        input-id="rec-modal-sexo"
+                                        v-model="form.sexo"
+                                        :options="opcoesSexoModal"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="20"
+                                        @opening="fecharOutrosComboboxesModal('rec-modal-sexo')"
+                                        @select="limparComboboxInvalido('rec-modal-sexo')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="col-12 col-sm-6 col-md-4">
-                            <div class="form-group">
-                                <label>Estado Civil</label>
-                                <select
-                                    class="form-control"
-                                    v-model="form.estado_civil"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option v-for="item in lista_estados_civis" :value="item">@{{item}}</option>
-                                </select>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="rec-modal-estado-civil">Estado civil</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="rec-modal-estado-civil"
+                                        input-id="rec-modal-estado-civil"
+                                        v-model="form.estado_civil"
+                                        :options="opcoesEstadoCivilModal"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="20"
+                                        @opening="fecharOutrosComboboxesModal('rec-modal-estado-civil')"
+                                        @select="limparComboboxInvalido('rec-modal-estado-civil')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="col-12"></div>
-
-                        <div class="col-sm-6 col-lg-6 col-xl-6">
-                            <div class="form-group">
-                                <label>Nome do pai</label>
-                                <input type="text" class="form-control" v-model="form.filiacao_pai"
-                                       placeholder="Nome"
-                                       onblur="valida_campo(this,3)"
-                                       autocomplete="mastertag"
-                                >
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">E-mail <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-sm" v-model="form.email"
+                                       placeholder="Ex.: email@email.com" autocomplete="off"
+                                       onblur="validaEmailVazio(this)">
                             </div>
                         </div>
-
-                        <div class="col-sm-6 col-lg-6 col-xl-6">
-                            <div class="form-group">
-                                <label>Nome da mãe</label>
-                                <input type="text" class="form-control" v-model="form.filiacao_mae"
-                                       onblur="valida_campo(this,3)"
-                                       placeholder="Nome"
-                                       autocomplete="mastertag"
-                                >
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Nome do pai</label>
+                                <input type="text" class="form-control form-control-sm" v-model="form.filiacao_pai"
+                                       placeholder="Nome" autocomplete="off" onblur="valida_campo(this,3)">
                             </div>
                         </div>
-
-                        <div class="col-12 col-sm-6 col-lg-6 col-xl-6">
-                            <div class="form-group">
-                                <label>E-mail <span style="color: red;">*</span></label>
-                                <input type="text" class="form-control" v-model="form.email"
-                                       placeholder="Ex.: email@email.com"
-                                       autocomplete="mastertag" onblur="validaEmailVazio(this)"
-                                >
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Nome da mãe</label>
+                                <input type="text" class="form-control form-control-sm" v-model="form.filiacao_mae"
+                                       placeholder="Nome" autocomplete="off" onblur="valida_campo(this,3)">
                             </div>
                         </div>
-
                     </div>
                 </fieldset>
 
-                <fieldset>
+                <fieldset class="mybp-modal-secao">
                     <legend>Endereço</legend>
-                    <div class="row">
-                        <div class="col-12 col-sm-12 col-lg-12 col-xl-12">
-                            <endereco :model="form"></endereco>
-                        </div>
-                    </div>
+                    <endereco :model="form"></endereco>
                 </fieldset>
 
-                <fieldset>
+                <fieldset class="mybp-modal-secao">
                     <legend>Contatos</legend>
-                    <div class="row">
-                        <div class="col-12 col-sm-12 col-lg-12 col-xl-12">
-                            <telefone :model="form.telefones" :model-delete="form.telefonesDelete" :qnt_min="1"
-                                      :pais="false"
-                                      :ramal="false"
-                            ></telefone>
-                        </div>
-                    </div>
+                    <telefone :model="form.telefones" :model-delete="form.telefonesDelete" :qnt_min="1"
+                              :pais="false" :ramal="false"></telefone>
                 </fieldset>
 
-                <fieldset>
+                <fieldset class="mybp-modal-secao">
                     <legend>Formação</legend>
                     <div class="row">
-                        <div class="col-12" style="font-size: 0.8rem;">
-                            <p>Formação: <span v-if="editando">@{{ form.formacao?.tipo || 'Não informado' }}</span></p>
-                            <p>Curso: <span
-                                    v-if="editando"
-                                >@{{ form.formacao_curso }} ( @{{ form.formacao_status }} )</span>
-                            </p>
-                            <p>Instituição: <span v-if="editando">@{{ form.formacao_instituicao }}</span></p>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Formação</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="form.formacao?.tipo || 'Não informado'">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Curso</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="form.formacao_curso ? (form.formacao_curso + ' (' + (form.formacao_status || '') + ')') : 'Não informado'">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Instituição</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="form.formacao_instituicao || 'Não informado'">
+                            </div>
                         </div>
                     </div>
                 </fieldset>
 
-                <fieldset>
+                <fieldset class="mybp-modal-secao" v-if="form.experiencias && form.experiencias.length">
                     <legend>Experiências</legend>
-                    <div class="row">
-                        <div class="col-12" style="font-size: 0.8rem;">
-                            <div v-for="item in form.experiencias">
-                                <p>Empresa: <span v-if="editando">@{{ item.empresa }}</span></p>
-                                <p>Cargo: <span v-if="editando">@{{ item.cargo }}</span></p>
-                                <p>Nome Referência: <span v-if="editando">@{{ item.referencia_nome }}</span></p>
-                                <p>Telefone Referência: <span v-if="editando">@{{ item.referencia_telefone }}</span></p>
-                                <p>Principais Atividades: <span v-if="editando">@{{ item.principais_atv}}</span></p>
-                                <p>Data Inicio: <span v-if="editando">@{{ item.data_inicio}}</span></p>
-                                <p>Data Fim: <span v-if="editando">@{{ item.data_fim}}</span></p>
-                                <hr>
+                    <div class="row" v-for="(item, idx) in form.experiencias" :key="'exp-' + idx">
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Empresa</label>
+                                <input type="text" class="form-control form-control-sm" disabled :value="item.empresa || 'Não informado'">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Cargo</label>
+                                <input type="text" class="form-control form-control-sm" disabled :value="item.cargo || 'Não informado'">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Período</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="(item.data_inicio || '—') + ' até ' + (item.data_fim || '—')">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Nome referência</label>
+                                <input type="text" class="form-control form-control-sm" disabled :value="item.referencia_nome || 'Não informado'">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Telefone referência</label>
+                                <input type="text" class="form-control form-control-sm" disabled :value="item.referencia_telefone || 'Não informado'">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Principais atividades</label>
+                                <input type="text" class="form-control form-control-sm" disabled :value="item.principais_atv || 'Não informado'">
                             </div>
                         </div>
                     </div>
                 </fieldset>
 
-                <fieldset>
+                <fieldset class="mybp-modal-secao" v-if="form.qualificacoes && form.qualificacoes.length">
                     <legend>Qualificações</legend>
-                    <div class="row">
-                        <div class="col-12" style="font-size: 0.8rem;">
-                            <div v-for="item in form.qualificacoes">
-                                <p>Curso: <span v-if="editando">@{{ item.nome }}</span></p>
-                                <p>Instituição: <span v-if="editando">@{{ item.instituicao }}</span></p>
-                                <p>Conclusão: <span
-                                        v-if="editando"
-                                    >@{{ item.mes_conclusao }}/@{{ item.ano_conclusao }}</span></p>
+                    <div class="row" v-for="(item, idx) in form.qualificacoes" :key="'qual-' + idx">
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Curso</label>
+                                <input type="text" class="form-control form-control-sm" disabled :value="item.nome || 'Não informado'">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Instituição</label>
+                                <input type="text" class="form-control form-control-sm" disabled :value="item.instituicao || 'Não informado'">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Conclusão</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="(item.mes_conclusao || '—') + '/' + (item.ano_conclusao || '—')">
                             </div>
                         </div>
                     </div>
                 </fieldset>
 
-
-                <fieldset>
+                <fieldset class="mybp-modal-secao">
                     <legend>Feedback</legend>
-
-                    <div class="alert alert-warning" v-if="form.atualizacao">
-                        <h5>Este curriculo foi atualizado em: @{{ form.atualizacao.created_at }}</h5>
+                    <div class="alert alert-warning py-2 px-3 mb-2" v-if="form.atualizacao">
+                        Este currículo foi atualizado em: @{{ form.atualizacao.created_at }}
                     </div>
-
                     <div class="row">
                         <div class="col-12 col-md-4" v-if="editando">
-                            <div class="form-group">
-                                <label>Vaga Pretendida</label>
-                                <input type="text" disabled="disabled" class="form-control"
-                                       :value="form.vaga_aberta?.vaga_selecionada?.nome || 'Não informado'"
-                                >
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Vaga pretendida</label>
+                                <input type="text" disabled class="form-control form-control-sm"
+                                       :value="form.vaga_aberta?.vaga_selecionada?.nome || 'Não informado'">
                             </div>
-
                         </div>
-
-                        {{--                        <div class="col-12 col-md-4" v-if="editando">--}}
-                        {{--                            <div class="form-group">--}}
-                        {{--                                <label for="Cidade">Município</label>--}}
-                        {{--                                <input type="text" class="form-control" disabled v-model="form.municipio_vaga_format">--}}
-                        {{--                            </div>--}}
-                        {{--                        </div>--}}
-
                         <div class="col-12 col-md-4" v-if="editando">
-                            <div class="form-group">
-                                <label>Disponibilidade para viajar</label>
-                                <select class="form-control" disabled v-model="form.viajar">
-                                    <option value="">Não informado ou (adm avulsa)</option>
-                                    <option :value="true">Sim</option>
-                                    <option :value="false">Não</option>
-                                </select>
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="rec-modal-viajar">Disponibilidade para viajar</label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="rec-modal-viajar"
+                                        input-id="rec-modal-viajar"
+                                        v-model="viajarCombo"
+                                        :options="opcoesSimNaoModal"
+                                        :disabled="true"
+                                        placeholder-blur="Não informado"
+                                        empty-message="Nenhuma opção."
+                                        :max-results="5"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
-
                         <div class="col-12 col-md-4" v-if="editando">
-                            <div class="form-group">
-                                <label>Cota PCD (Lei nº 8.213/91)</label>
-                                <input type="text" disabled="disabled" class="form-control"
-                                       :value="!form.pcd ? 'Não': 'Sim'"
-                                >
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Cota PCD (Lei nº 8.213/91)</label>
+                                <input type="text" disabled class="form-control form-control-sm"
+                                       :value="!form.pcd ? 'Não' : 'Sim'">
                             </div>
                         </div>
-
                         <div class="col-12 col-md-4" v-if="editando && form.pcd">
-                            <div class="form-group">
-                                <label>CID</label>
-                                <input type="text" disabled="disabled" class="form-control"
-                                       :value="form.cid"
-                                >
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">CID</label>
+                                <input type="text" disabled class="form-control form-control-sm" :value="form.cid">
                             </div>
                         </div>
 
                         <div class="col-12 col-md-4">
-                            <div class="form-group">
-                                <label>Selecionado <span style="color: red;">*</span></label>
-                                <select class="form-control"
-                                        onblur="valida_campo_vazio(this,1)"
-                                        onchange="valida_campo_vazio(this,1)"
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="rec-modal-selecionado">Selecionado <span class="text-danger">*</span></label>
+                                <div class="mybp-combobox-wrap">
+                                    <combobox-auto-complete
+                                        instance-id="rec-modal-selecionado"
+                                        input-id="rec-modal-selecionado"
                                         v-model="form_feedback.selecionado"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option value="sim">SIM</option>
-                                    <option value="nao">NÃO</option>
-                                    <option value="standby">STAND BY</option>
-                                </select>
+                                        :options="opcoesSelecionadoModal"
+                                        placeholder-blur="Selecione..."
+                                        empty-message="Nenhuma opção."
+                                        :max-results="10"
+                                        @opening="fecharOutrosComboboxesModal('rec-modal-selecionado')"
+                                        @select="onSelectFeedbackCombo('rec-modal-selecionado')"
+                                    ></combobox-auto-complete>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="col-12 col-md-4"
-                             v-if="form_feedback.selecionado !== '' && form_feedback.selecionado === 'nao'"
-                        >
-                            <div class="form-group">
-                                <label>Enviar e-mail desclassificação <span style="color: red;">*</span></label>
-                                <select class="form-control"
-                                        onblur="valida_campo_vazio(this,1)"
-                                        onchange="valida_campo_vazio(this,1)"
-                                        v-model="form_feedback.envia_mail_desclassificacao"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option :value="true">SIM</option>
-                                    <option :value="false">NÃO</option>
-                                </select>
+                        <div class="col-12 col-md-4" v-if="form_feedback.selecionado === 'nao'">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="rec-modal-mail-desclass">E-mail desclassificação <span class="text-danger">*</span></label>
+                                <mybp-bool-combobox
+                                    input-id="rec-modal-mail-desclass"
+                                    v-model="form_feedback.envia_mail_desclassificacao"
+                                    @opening="fecharOutrosComboboxesModal('rec-modal-mail-desclass')"
+                                    @select="limparComboboxInvalido('rec-modal-mail-desclass')"
+                                ></mybp-bool-combobox>
                             </div>
                         </div>
 
-                        <div class="col-12 col-md-4"
-                             v-if="form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'"
-                        >
-                            <div class="form-group">
-                                <label>Selecione uma vaga <span style="color: red;">*</span></label>
-                                <autocomplete :formsm="false" :caminho="controle.dados.caminho_autocomplete"
-                                              :valido="form_feedback.vagas_abertas_id !== ''"
-                                              v-model="form_feedback.autocomplete_label_vaga_modal"
-                                              placeholder="Digite o nome da vaga"
-                                              :id="`vaga_modal_${hash}`"
-                                              @onblur="resetaCampoVagaModal"
-                                              @onselect="selecionaVagaModal"
+                        <div class="col-12 col-md-4" v-if="form_feedback.selecionado && form_feedback.selecionado !== 'nao'">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Selecione uma vaga <span class="text-danger">*</span></label>
+                                <autocomplete
+                                    :formsm="true"
+                                    :caminho="controle.dados.caminho_autocomplete"
+                                    :valido="form_feedback.vagas_abertas_id !== ''"
+                                    v-model="form_feedback.autocomplete_label_vaga_modal"
+                                    placeholder="Digite o nome da vaga"
+                                    id="rec-modal-vaga"
+                                    @onblur="resetaCampoVagaModal"
+                                    @onselect="selecionaVagaModal"
                                 ></autocomplete>
                             </div>
                         </div>
 
-                        <div class="col-12 col-md-4"
-                             v-if="form_feedback.selecionado !== '' && form_feedback.selecionado === 'sim' && form_feedback.tem_provas"
-                        >
-                            <div class="form-group">
-                                <label>Enviar e-mail links de provas <span style="color: red;">*</span></label>
-                                <select class="form-control"
-                                        onblur="valida_campo_vazio(this,1)"
-                                        onchange="valida_campo_vazio(this,1)"
-                                        v-model="form_feedback.envia_mail_provas"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option :value="true">SIM</option>
-                                    <option :value="false">NÃO</option>
-                                </select>
+                        <div class="col-12 col-md-4" v-if="form_feedback.selecionado === 'sim' && form_feedback.tem_provas">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="rec-modal-mail-provas">E-mail links de provas <span class="text-danger">*</span></label>
+                                <mybp-bool-combobox
+                                    input-id="rec-modal-mail-provas"
+                                    v-model="form_feedback.envia_mail_provas"
+                                    @opening="fecharOutrosComboboxesModal('rec-modal-mail-provas')"
+                                    @select="limparComboboxInvalido('rec-modal-mail-provas')"
+                                ></mybp-bool-combobox>
                             </div>
                         </div>
 
-                        <div class="col-12 col-md-4"
-                             v-if="form_feedback.selecionado !== '' && form_feedback.selecionado === 'sim'"
-                        >
-                            <div class="form-group">
-                                <label>Enviar e-mail de avanço de etapa <span style="color: red;">*</span></label>
-                                <select class="form-control"
-                                        onblur="valida_campo_vazio(this,1)"
-                                        onchange="valida_campo_vazio(this,1)"
-                                        v-model="form_feedback.envia_mail_proxima_etapa"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option :value="true">SIM</option>
-                                    <option :value="false">NÃO</option>
-                                </select>
+                        <div class="col-12 col-md-4" v-if="form_feedback.selecionado === 'sim'">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="rec-modal-mail-etapa">E-mail avanço de etapa <span class="text-danger">*</span></label>
+                                <mybp-bool-combobox
+                                    input-id="rec-modal-mail-etapa"
+                                    v-model="form_feedback.envia_mail_proxima_etapa"
+                                    @opening="fecharOutrosComboboxesModal('rec-modal-mail-etapa')"
+                                    @select="limparComboboxInvalido('rec-modal-mail-etapa')"
+                                ></mybp-bool-combobox>
                             </div>
                         </div>
 
-                        <div class="col-12 col-md-4"
-                             v-if="form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'"
-                        >
-                            <div class="form-group">
-                                <label for="">Contato Realizado <span style="color: red;">*</span></label>
-                                <select class="form-control"
-                                        onblur="valida_campo_vazio(this,1)"
-                                        onchange="valida_campo_vazio(this,1)"
-                                        v-model="form_feedback.contato_realizado"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option :value="true">SIM</option>
-                                    <option :value="false">NÃO</option>
-                                </select>
+                        <div class="col-12 col-md-4" v-if="form_feedback.selecionado && form_feedback.selecionado !== 'nao'">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="rec-modal-contato">Contato realizado <span class="text-danger">*</span></label>
+                                <mybp-bool-combobox
+                                    input-id="rec-modal-contato"
+                                    v-model="form_feedback.contato_realizado"
+                                    @opening="fecharOutrosComboboxesModal('rec-modal-contato')"
+                                    @select="limparComboboxInvalido('rec-modal-contato')"
+                                ></mybp-bool-combobox>
                             </div>
                         </div>
 
                         <div class="col-12 col-md-4" v-if="telefonePrincipal">
-                            <div class="form-group">
-                                <label for="">Contato Principal</label>
-                                <select class="form-control">
-                                    <option selected disabled="disabled" readonly="readonly">
-                                        @{{ telefonePrincipalNumero }}
-                                    </option>
-                                </select>
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Contato principal</label>
+                                <input type="text" class="form-control form-control-sm" disabled :value="telefonePrincipalNumero">
                             </div>
                         </div>
 
                         <template v-if="permite_envio_whatsapp && telefonePrincipal && telefonePrincipal.tipo === 'whatsapp'">
-                            <div class="col-12 col-md-4"
-                                 v-if="form_feedback.contato_realizado"
-                            >
-                                <div class="form-group">
-                                    <label>Enviar Notificação via whatsApp <span style="color: red;">*</span></label>
-                                    <select class="form-control"
-                                            onblur="valida_campo_vazio(this,1)"
-                                            onchange="valida_campo_vazio(this,1)"
-                                            v-model="form_feedback.envia_whatsapp"
-                                    >
-                                        <option value="">Selecione</option>
-                                        <option :value="true">SIM</option>
-                                        <option :value="false">NÃO</option>
-                                    </select>
+                            <div class="col-12 col-md-4" v-if="form_feedback.contato_realizado">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" for="rec-modal-whatsapp">Notificação WhatsApp <span class="text-danger">*</span></label>
+                                    <mybp-bool-combobox
+                                        input-id="rec-modal-whatsapp"
+                                        v-model="form_feedback.envia_whatsapp"
+                                        @opening="fecharOutrosComboboxesModal('rec-modal-whatsapp')"
+                                        @select="limparComboboxInvalido('rec-modal-whatsapp')"
+                                    ></mybp-bool-combobox>
                                 </div>
                             </div>
                             <div class="col-12 col-md-4" v-if="form_feedback.contato_realizado && form_feedback.envia_whatsapp">
-                                <div class="form-group">
-                                    <label>&nbsp;</label>
-                                    <button type="button" class="btn btn-outline-info btn-sm btn-block"
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label">&nbsp;</label>
+                                    <button type="button" class="btn btn-sm btn-outline-primary btn-block mybp-btn-acao-compact"
                                             @click="previewRecrutamentoWhatsapp">
                                         <i class="fab fa-whatsapp"></i> Visualizar mensagem
                                     </button>
@@ -399,75 +384,59 @@
                         </template>
 
                         <div class="col-12 col-md-4"
-                             v-if="form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'"
-                        >
-                            <div class="form-group">
-                                <label for="">Interesse <span style="color: red;">*</span></label>
-                                <select class="form-control" onblur="valida_campo_vazio(this,1)"
-                                        onchange="valida_campo_vazio(this,1)"
-                                        v-model="form_feedback.interesse"
-                                >
-                                    <option value="">Selecione</option>
-                                    <option :value="true">SIM</option>
-                                    <option :value="false">NÃO</option>
-                                </select>
+                             v-if="form_feedback.contato_realizado && form_feedback.selecionado && form_feedback.selecionado !== 'nao'">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" for="rec-modal-interesse">Interesse <span class="text-danger">*</span></label>
+                                <mybp-bool-combobox
+                                    input-id="rec-modal-interesse"
+                                    v-model="form_feedback.interesse"
+                                    @opening="fecharOutrosComboboxesModal('rec-modal-interesse')"
+                                    @select="limparComboboxInvalido('rec-modal-interesse')"
+                                ></mybp-bool-combobox>
                             </div>
                         </div>
 
                         <div class="col-12 col-md-4"
-                             v-if="form_feedback.interesse && form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'"
-                        >
-                            <div class="form-group">
-                                {{--                                <label for="">Entrevista</label>--}}
-                                <datepicker :hora="true"
-                                            label="Entrevista"
+                             v-if="form_feedback.interesse && form_feedback.contato_realizado && form_feedback.selecionado && form_feedback.selecionado !== 'nao'">
+                            <div class="form-group mybp-filtro-campo mybp-modal-campo-data">
+                                <datepicker :hora="true" label="Entrevista" formsm
                                             min="{{(new \MasterTag\DataHora())->dataCompleta()}}"
-                                            posicao="up" v-model="form_feedback.data_entrevista"
-                                ></datepicker>
-
+                                            posicao="up" v-model="form_feedback.data_entrevista"></datepicker>
                             </div>
                         </div>
 
                         <div class="col-12 col-md-4"
-                             v-if="form_feedback.interesse && form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'"
-                        >
-                            <div class="form-group">
-                                <label for="">Local Entrevista <span style="color: red;">*</span></label>
-                                <input type="text" class="form-control"
+                             v-if="form_feedback.interesse && form_feedback.contato_realizado && form_feedback.selecionado && form_feedback.selecionado !== 'nao'">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Local entrevista <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-sm"
                                        onblur="valida_campo_vazio(this,1)"
-                                       v-model="form_feedback.local_entrevista"
-                                >
+                                       v-model="form_feedback.local_entrevista">
                             </div>
                         </div>
 
-                        {{--                        <div class="col-12 col-md-4"--}}
-                        {{--                             v-if="form_feedback.interesse && form_feedback.contato_realizado && form_feedback.selecionado !== '' && form_feedback.selecionado !== 'nao'">--}}
-                        {{--                            <div class="form-group">--}}
-                        {{--                                <label for="">Selecione um cliente</label>--}}
-                        {{--                                <autocomplete :formsm="false" :caminho="controle.dados.caminho_cliente_autocomplete"--}}
-                        {{--                                              :valido="form_feedback.cliente_id !== ''"--}}
-                        {{--                                              v-model="form_feedback.autocomplete_label_cliente_modal"--}}
-                        {{--                                              :id="`cliente_modal_${hash}`"--}}
-                        {{--                                              placeholder="Digite o nome da empresa"--}}
-                        {{--                                              @onblur="resetaCampoClienteModal"--}}
-                        {{--                                              @onselect="selecionaClienteModal"></autocomplete>--}}
-                        {{--                            </div>--}}
-                        {{--                        </div>--}}
-                        <div class="col-12 col-md-12">
-                            <div class="form-group">
-                                <label for="">Observações:</label>
-                                <input type="text" class="form-control"
-                                       v-model="form_feedback.obs"
-                                >
+                        <div class="col-12">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Observações</label>
+                                <input type="text" class="form-control form-control-sm" v-model="form_feedback.obs">
                             </div>
                         </div>
-                        <div class="col-12 col-sm-12" style="font-size: 0.8rem;" v-if="feedback && form.lido">
-                            <p>Lido por: <span v-if="editando">@{{ form.usuario?.nome || 'Não informado' }}</span></p>
-                            <p>Em: <span v-if="editando">@{{ form.datalido }}</span></p>
+
+                        <div class="col-12 col-md-4" v-if="feedback && form.lido">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Lido por</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="form.usuario?.nome || 'Não informado'">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4" v-if="feedback && form.lido">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Em</label>
+                                <input type="text" class="form-control form-control-sm" disabled :value="form.datalido">
+                            </div>
                         </div>
                     </div>
                 </fieldset>
-
             </form>
         </template>
         <template #rodape>
