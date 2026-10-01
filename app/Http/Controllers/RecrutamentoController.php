@@ -768,8 +768,16 @@ class RecrutamentoController extends Controller
             ->doesntHave('FeedBack.parecerRh');
 
         // Filtro por período
-        if ($request->filtroPeriodo == 'true') {
-            $this->applyDateFilter($query, $request->periodo);
+        $filtroPeriodo = filter_var($request->input('filtroPeriodo'), FILTER_VALIDATE_BOOLEAN);
+        if ($filtroPeriodo) {
+            if ($request->filled('dataInicio') && $request->filled('dataFim')) {
+                $dataInicio = new DataHora($request->dataInicio . ' 00:00:00');
+                $dataFim = new DataHora($request->dataFim . ' 23:59:59');
+                $query->where('updated_at', '>=', $dataInicio->dataHoraInsert())
+                    ->where('updated_at', '<=', $dataFim->dataHoraInsert());
+            } elseif ($request->filled('periodo') && str_contains((string) $request->periodo, ' até ')) {
+                $this->applyDateFilter($query, $request->periodo);
+            }
         }
 
         // Filtros de busca

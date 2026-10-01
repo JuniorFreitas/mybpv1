@@ -513,148 +513,162 @@
         </div>
     </div>
 
-    <fieldset>
-        <legend>Filtrar por</legend>
-        <form class="row" @submit.prevent="$refs.componente.buscar()">
+    <filtro-listagem
+        class="mt-2 mybp-filtros-compactos"
+        :mostrar-limpar-filtros="totalFiltrosAtivos > 0"
+        :desabilitado="controle.carregando"
+        @submit="atualizar"
+        @limpar="limparFiltros"
+    >
+        <template #filtros>
+            <date-range-filter
+                :key="'rec-filtro-periodo'"
+                v-model:enabled="controle.dados.filtroPeriodo"
+                v-model:start-date="controle.dados.dataInicio"
+                v-model:end-date="controle.dados.dataFim"
+                :disabled="!!controle.carregando"
+                :id-suffix="'periodo-' + hash"
+                label="Por período"
+                wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                @change="onPeriodoChange"
+            ></date-range-filter>
+
             <div class="col-12 col-md-4">
-                <div class="form-check" style="margin-bottom: -11px;">
-                    <input type="checkbox" class="form-check-input" :disabled="controle.carregando" id="filtroIntervalo"
-                           v-model="controle.dados.filtroPeriodo"
-                    >
-                    <label class="form-check-label cursor-pointer" for="filtroIntervalo">Por período</label>
-                </div>
-                <div class="form-group">
-                    <datepicker range formsm label="" :disabled="controle.carregando || !controle.dados.filtroPeriodo"
-                                v-model="controle.dados.periodo"
-                    ></datepicker>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
-                <div class="form-group">
-                    <label>Nome</label>
-                    <input type="text"
-                           placeholder="Buscar por nome"
-                           autocomplete="off"
-                           class="form-control form-control-sm" :disabled="controle.carregando"
-                           v-model="controle.dados.campoBusca"
-                    >
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="rec-filtro-busca">
+                        Candidato / CPF
+                        <span v-if="buscaUnificadaEhCpf" class="text-muted small">CPF</span>
+                    </label>
+                    <input
+                        id="rec-filtro-busca"
+                        type="text"
+                        placeholder="Nome ou CPF"
+                        autocomplete="off"
+                        inputmode="search"
+                        class="form-control form-control-sm"
+                        :disabled="controle.carregando"
+                        :value="campoBuscaUnificada"
+                        @input="onInputBuscaUnificada"
+                    />
                 </div>
             </div>
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
-                <div class="form-group">
-                    <label>CPF</label>
-                    <input type="text"
-                           placeholder="Buscar por cpf"
-                           autocomplete="mastertag"
-                           onblur="valida_cpf(this)"
-                           v-mascara:cpf
-                           class="form-control form-control-sm" :disabled="controle.carregando"
-                           v-model="controle.dados.campoCPF"
-                    >
-                </div>
-            </div>
-            <div class="col-12 col-sm-12 col-md-12 col-lg-12">
-                <div class="form-group">
-                    <label>Cargo</label>
-                    <autocomplete :caminho="controle.dados.caminho_autocomplete"
-                                  :valido="controle.dados.campoVaga !== ''"
-                                  v-model="controle.dados.autocomplete_label"
-                                  :disabled="controle.carregando"
-                                  placeholder="Por cargo"
-                                  @onblur="resetaCampo"
-                                  @onselect="selecionaVaga"
+
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label">Cargo</label>
+                    <autocomplete
+                        :caminho="controle.dados.caminho_autocomplete"
+                        :valido="controle.dados.campoVaga !== ''"
+                        :formsm="true"
+                        v-model="controle.dados.autocomplete_label"
+                        :disabled="controle.carregando"
+                        placeholder="Por cargo"
+                        @onblur="resetaCampo"
+                        @onselect="selecionaVaga"
                     ></autocomplete>
                 </div>
             </div>
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                <div class="form-group">
-                    <label>Estado</label>
-                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
+
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="rec-filtro-uf">Estado</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroUf"
+                            instance-id="rec-filtro-uf"
+                            input-id="rec-filtro-uf"
                             v-model="controle.dados.campoUf"
-                    >
-                        <option value="">SEM FILTRO</option>
-                        <option value="MA">MA</option>
-                        <option value="AC">AC</option>
-                        <option value="AL">AL</option>
-                        <option value="AP">AP</option>
-                        <option value="AM">AM</option>
-                        <option value="BA">BA</option>
-                        <option value="CE">CE</option>
-                        <option value="DF">DF</option>
-                        <option value="ES">ES</option>
-                        <option value="GO">GO</option>
-                        <option value="MT">MT</option>
-                        <option value="MS">MS</option>
-                        <option value="MG">MG</option>
-                        <option value="PA">PA</option>
-                        <option value="PB">PB</option>
-                        <option value="PR">PR</option>
-                        <option value="PE">PE</option>
-                        <option value="PI">PI</option>
-                        <option value="RJ">RJ</option>
-                        <option value="RN">RN</option>
-                        <option value="RS">RS</option>
-                        <option value="RO">RO</option>
-                        <option value="RR">RR</option>
-                        <option value="SC">SC</option>
-                        <option value="SP">SP</option>
-                        <option value="SE">SE</option>
-                        <option value="TO">TO</option>
-                    </select>
+                            :options="filtroUfOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Todos os estados"
+                            empty-message="Nenhum estado encontrado."
+                            :max-results="30"
+                            @opening="fecharOutrosComboboxes('rec-filtro-uf')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
                 </div>
             </div>
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                <div class="form-group">
-                    <label>Lido</label>
-                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
+
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="rec-filtro-lido">Lido</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroLido"
+                            instance-id="rec-filtro-lido"
+                            input-id="rec-filtro-lido"
                             v-model="controle.dados.campoLido"
-                    >
-                        <option value="">Geral</option>
-                        <option :value="true">Sim</option>
-                        <option :value="false">Não</option>
-                    </select>
+                            :options="filtroSimNaoOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Geral"
+                            empty-message="Nenhuma opção."
+                            :max-results="5"
+                            @opening="fecharOutrosComboboxes('rec-filtro-lido')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
                 </div>
             </div>
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                <div class="form-group">
-                    <label>PCD</label>
-                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
+
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="rec-filtro-pcd">PCD</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroPcd"
+                            instance-id="rec-filtro-pcd"
+                            input-id="rec-filtro-pcd"
                             v-model="controle.dados.campoPcd"
-                    >
-                        <option value="">Geral</option>
-                        <option :value="true">Sim</option>
-                        <option :value="false">Não</option>
-                    </select>
+                            :options="filtroSimNaoOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Geral"
+                            empty-message="Nenhuma opção."
+                            :max-results="5"
+                            @opening="fecharOutrosComboboxes('rec-filtro-pcd')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
                 </div>
             </div>
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                <div class="form-group">
-                    <label>Exibir</label>
-                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                            v-model="controle.dados.pages"
-                    >
-                        <option value="20">20</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="rec-filtro-pages">Exibir</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroPages"
+                            instance-id="rec-filtro-pages"
+                            input-id="rec-filtro-pages"
+                            v-model="campoPagesCombo"
+                            :options="filtroPagesOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="20"
+                            empty-message="Nenhuma opção."
+                            :max-results="10"
+                            @opening="fecharOutrosComboboxes('rec-filtro-pages')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
                 </div>
             </div>
-            <div class="col-12 col-md-9">
-                <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
-                    <i
-                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"
-                    ></i>
-                    Atualizar
-                </button>
-                <button type="button" class="btn btn-sm mr-1 btn-primary  mr-1"
-                        @click.prevent="exportaExcel()"
-                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && !lista.length) "
-                >
-                    <i class="fas fa-file-excel"></i> EXPORTAR EXCEL
-                </button>
-            </div>
-        </form>
-    </fieldset>
+        </template>
+
+        <template #acoes>
+            <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
+                Buscar
+            </button>
+            <button
+                type="button"
+                class="btn btn-sm btn-outline-primary mybp-btn-acao-compact"
+                @click.prevent="exportaExcel()"
+                :disabled="controle.carregando || preloadExportacao || (!controle.carregando && !lista.length)"
+            >
+                <i class="fas fa-file-excel"></i> Exportar Excel
+            </button>
+        </template>
+    </filtro-listagem>
 
     <p class="text-center" v-if="controle.carregando">
         <preload></preload>
@@ -759,7 +773,7 @@
 
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
                             url="{{route('g.recrutamento.recrutamentos.atualizar')}}"
-                            :por-pagina="controle.dados.porPagina"
+                            :por-pagina="controle.dados.pages"
                             :dados="controle.dados"
                             v-on:carregou="carregou" v-on:carregando="carregando"
         ></controle-paginacao>

@@ -3,6 +3,10 @@ import { registerGlobals } from '../../../registerGlobals'
 import endereco from '../../../components/Endereco'
 import telefone from '../../../components/Telefones'
 import datepicker from '../../../components/DatePicker'
+import DateRangeFilter from '../../../components/DateRangeFilter.vue'
+import ComboboxAutoComplete from '../../../components/ComboboxAutoComplete.vue'
+import FiltroListagem from '../../../components/ui/FiltroListagem.vue'
+import ComboboxValidation from '../../../mixins/ComboboxValidation'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 
 // ===== CONSTANTES E CONFIGURAÇÕES =====
@@ -32,9 +36,12 @@ const app = createApp({
     components: {
         endereco,
         datepicker,
-        telefone
+        telefone,
+        DateRangeFilter,
+        ComboboxAutoComplete,
+        FiltroListagem
     },
-    mixins: [ExportacaoMixin],
+    mixins: [ExportacaoMixin, ComboboxValidation],
 
     data() {
         return {
@@ -90,6 +97,8 @@ const app = createApp({
                     campoPcd: '',
                     campoCPF: '',
                     filtroPeriodo: false,
+                    dataInicio: '',
+                    dataFim: '',
                     periodo: ''
                 }
             }
@@ -106,6 +115,51 @@ const app = createApp({
         },
         telefonePrincipalNumero() {
             return this.telefonePrincipal ? this.telefonePrincipal.numero : ''
+        },
+        totalFiltrosAtivos() {
+            const d = this.controle.dados
+            let total = [d.campoBusca, d.campoCPF, d.campoVaga, d.campoUf, d.campoLido, d.campoPcd].filter(
+                (v) => v !== '' && v !== null && v !== undefined
+            ).length
+            if (d.filtroPeriodo && d.dataInicio && d.dataFim) total++
+            if (Number(d.pages) !== 20) total++
+            return total
+        },
+        campoBuscaUnificada() {
+            const d = this.controle.dados
+            if (d.campoCPF) return d.campoCPF
+            return d.campoBusca || ''
+        },
+        buscaUnificadaEhCpf() {
+            return !!this.controle.dados.campoCPF
+        },
+        campoPagesCombo: {
+            get() {
+                return this.controle.dados.pages === '' || this.controle.dados.pages == null
+                    ? 20
+                    : Number(this.controle.dados.pages)
+            },
+            set(v) {
+                this.controle.dados.pages = v === '' || v == null ? 20 : Number(v)
+            }
+        },
+        filtroUfOpcoes() {
+            const ufs = [
+                'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
+                'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
+                'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+            ]
+            return [{ value: '', label: 'Todos os estados' }, ...ufs.map((uf) => ({ value: uf, label: uf }))]
+        },
+        filtroSimNaoOpcoes() {
+            return [
+                { value: '', label: 'Geral' },
+                { value: 'true', label: 'Sim' },
+                { value: 'false', label: 'Não' }
+            ]
+        },
+        filtroPagesOpcoes() {
+            return [20, 50, 100].map((n) => ({ value: n, label: String(n) }))
         }
     },
 
@@ -602,10 +656,100 @@ const app = createApp({
         },
 
         atualizar() {
+            this.sincronizarPeriodoBr()
             if (this.$refs.componente) {
                 this.resetarPaginacao()
                 this.executarBusca()
             }
+        },
+
+        sincronizarPeriodoBr() {
+            const d = this.controle.dados
+            if (d.filtroPeriodo && d.dataInicio && d.dataFim) {
+                d.periodo = `${this.isoParaBr(d.dataInicio)} até ${this.isoParaBr(d.dataFim)}`
+            } else {
+                d.periodo = ''
+            }
+        },
+        isoParaBr(iso) {
+            if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return ''
+            const [y, m, day] = iso.split('-')
+            return `${day}/${m}/${y}`
+        },
+        formatarCpfDigitos(valor) {
+            const d = String(valor || '').replace(/\D/g, '').slice(0, 11)
+            if (d.length <= 3) return d
+            if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`
+            if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`
+            return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`
+        },
+        parecePadraoCpf(valor) {
+            const raw = String(valor || '').trim()
+            if (!raw) return false
+            if (!/^[\d.\-\s]+$/.test(raw)) return false
+            const digitos = raw.replace(/\D/g, '')
+            return digitos.length > 0 && digitos.length <= 11
+        },
+        onInputBuscaUnificada(event) {
+            const valor = event && event.target ? event.target.value : ''
+            const d = this.controle.dados
+            if (!valor) {
+                d.campoBusca = ''
+                d.campoCPF = ''
+                return
+            }
+            if (this.parecePadraoCpf(valor)) {
+                const mascarado = this.formatarCpfDigitos(valor)
+                d.campoCPF = mascarado
+                d.campoBusca = ''
+                if (event.target && event.target.value !== mascarado) {
+                    event.target.value = mascarado
+                }
+                return
+            }
+            d.campoBusca = valor
+            d.campoCPF = ''
+        },
+        onPeriodoChange() {
+            this.atualizar()
+        },
+        onSelectFiltro() {
+            this.atualizar()
+        },
+        fecharOutrosComboboxes(excetoId) {
+            const mapa = {
+                'rec-filtro-uf': 'comboFiltroUf',
+                'rec-filtro-lido': 'comboFiltroLido',
+                'rec-filtro-pcd': 'comboFiltroPcd',
+                'rec-filtro-pages': 'comboFiltroPages'
+            }
+            Object.keys(mapa).forEach((id) => {
+                if (id === excetoId) return
+                const ref = this.$refs[mapa[id]]
+                if (ref && typeof ref.fechar === 'function') ref.fechar()
+                else if (ref && typeof ref.close === 'function') ref.close()
+            })
+        },
+        limparFiltros() {
+            const pages = this.controle.dados.pages || 20
+            this.controle.dados = {
+                ...this.controle.dados,
+                autocomplete_label_anterior: '',
+                autocomplete_label: '',
+                campoBusca: '',
+                campoCPF: '',
+                campoVaga: '',
+                campoUf: '',
+                campoLido: '',
+                campoPcd: '',
+                campoFiltro: '',
+                filtroPeriodo: false,
+                dataInicio: '',
+                dataFim: '',
+                periodo: '',
+                pages
+            }
+            this.atualizar()
         },
 
         resetarPaginacao() {
