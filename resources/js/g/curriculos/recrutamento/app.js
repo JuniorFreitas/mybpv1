@@ -863,6 +863,18 @@ const app = createApp({
             if (!item || !item.feed_back) return 'negativo'
             return item.feed_back[key] ? 'positivo' : 'negativo'
         },
+        countRec(item, key) {
+            const n = item ? Number(item[key] || 0) : 0
+            return Number.isFinite(n) ? n : 0
+        },
+        textoTemCountRec(item, key) {
+            const n = this.countRec(item, key)
+            if (n <= 0) return 'Não'
+            return n === 1 ? 'Sim (1)' : `Sim (${n})`
+        },
+        tomTemCountRec(item, key) {
+            return this.countRec(item, key) > 0 ? 'positivo' : 'negativo'
+        },
         textoInteresseRec(item) {
             if (!item || !item.feed_back) return ''
             if (item.feed_back.interesse === true || item.feed_back.interesse === false) {

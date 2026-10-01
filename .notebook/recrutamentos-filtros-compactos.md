@@ -25,7 +25,8 @@
 
 ## Listagem (cards)
 - `mybp-cards-lista` + badge por status (Selecionado / Não selecionado / Stand by / Lido / Não lido)
-- Campos: CPF, UF, Vaga, PCD, Selecionado, Contato, Interesse, Data, Lido
+- Campos: CPF, UF, Vaga, PCD, Selecionado, Contato, Experiências, Qualificações, Interesse, Data, Lido
+- Contagens via `withCount` (`experiencias_count` / `qualificacoes_count`) no `filtro()`
 - Dropdown: Recrutar, Gerar PDF, Remover
 - Cards topo: KPIs densos `.mybp-kpi-row` (total / 90d / selecionados 90d + taxa %)
 

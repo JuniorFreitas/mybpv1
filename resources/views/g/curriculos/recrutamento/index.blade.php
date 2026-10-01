@@ -802,11 +802,28 @@
                     <section class="mybp-card-secao">
                         <div class="mybp-card-row">
                             <mybp-card-campo
+                                icon="fas fa-briefcase"
+                                label="Experiências"
+                                :valor="textoTemCountRec(curriculo, 'experiencias_count')"
+                                :tom="tomTemCountRec(curriculo, 'experiencias_count')"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-graduation-cap"
+                                label="Qualificações"
+                                :valor="textoTemCountRec(curriculo, 'qualificacoes_count')"
+                                :tom="tomTemCountRec(curriculo, 'qualificacoes_count')"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
                                 icon="fas fa-heart"
                                 label="Interesse"
                                 :valor="textoInteresseRec(curriculo)"
                                 :tom="tomInteresseRec(curriculo)"
                             ></mybp-card-campo>
+                        </div>
+                    </section>
+
+                    <section class="mybp-card-secao">
+                        <div class="mybp-card-row">
                             <mybp-card-campo
                                 icon="fas fa-calendar"
                                 label="Data cadastro"

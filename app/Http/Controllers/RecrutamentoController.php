@@ -789,6 +789,10 @@ class RecrutamentoController extends Controller
             ->whereHas('VagaAberta')
             ->with('VagaAberta.VagaSelecionada',
                 'FeedBack:id,curriculo_id,interesse,selecionado,contato_realizado')
+            ->withCount([
+                'Experiencias as experiencias_count',
+                'Qualificacoes as qualificacoes_count',
+            ])
             ->doesntHave('FeedBack.parecerRh');
 
         // Filtro por período
