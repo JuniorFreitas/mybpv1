@@ -421,7 +421,7 @@
                                                 <textarea
                                                     class="form-control form-control-sm"
                                                     rows="3"
-                                                    :disabled="modalCamposBloqueados"
+                                                    :readonly="modalCamposBloqueados"
                                                     onblur="valida_campo_vazio(this, 1)"
                                                     v-model="form.custom_values[campo.id]"
                                                     :placeholder="campo.label"
@@ -496,7 +496,7 @@
                                         v-model="form.observacao"
                                         cols="5"
                                         rows="3"
-                                        :disabled="modalCamposBloqueados"
+                                        :readonly="modalCamposBloqueados"
                                     ></textarea>
                                 </div>
                             </div>
@@ -543,7 +543,7 @@
                                     <label class="mybp-label">Observação</label>
                                     <textarea
                                         class="form-control form-control-sm"
-                                        :disabled="!aprovando || aprovandoExtra || aprovandoRh"
+                                        :readonly="!aprovando || aprovandoExtra || aprovandoRh"
                                         v-model="form.obs_aprovacao"
                                         rows="2"
                                     ></textarea>
@@ -598,7 +598,7 @@
                                     <label class="mybp-label">Observação</label>
                                     <textarea
                                         class="form-control form-control-sm"
-                                        :disabled="!aprovandoExtra || aprovandoRh"
+                                        :readonly="!aprovandoExtra || aprovandoRh"
                                         v-model="form.obs_aprovacao_extra"
                                         rows="2"
                                     ></textarea>
@@ -647,7 +647,7 @@
                                     <label class="mybp-label">Observação</label>
                                     <textarea
                                         class="form-control form-control-sm"
-                                        :disabled="!aprovandoRh"
+                                        :readonly="!aprovandoRh"
                                         v-model="form.obs_rh"
                                         rows="2"
                                     ></textarea>

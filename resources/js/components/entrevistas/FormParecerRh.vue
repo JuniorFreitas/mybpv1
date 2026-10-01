@@ -554,7 +554,7 @@
                             <label class="mybp-label">Observação</label>
                             <textarea
                                 class="form-control form-control-sm"
-                                :disabled="visualizar || disabledParecerRh"
+                                :readonly="visualizar || disabledParecerRh"
                                 cols="3"
                                 rows="2"
                                 v-model="form.parecer_rh.obs_call"
@@ -739,7 +739,7 @@
                             <label class="mybp-label">Observação</label>
                             <textarea
                                 class="form-control form-control-sm"
-                                :disabled="visualizar || disabledParecerRh"
+                                :readonly="visualizar || disabledParecerRh"
                                 cols="3"
                                 rows="2"
                                 v-model="form.parecer_rh.obs_horario"
@@ -752,7 +752,7 @@
                             <label class="mybp-label">Especifique situações de saúde</label>
                             <textarea
                                 class="form-control form-control-sm"
-                                :disabled="visualizar || disabledParecerRh"
+                                :readonly="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.situacao_saude"
                                 cols="3"
                                 rows="2"
@@ -983,7 +983,7 @@
                             </label>
                             <textarea
                                 class="form-control form-control-sm"
-                                :disabled="visualizar || disabledParecerRh"
+                                :readonly="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.historico_profissional"
                                 cols="3"
                                 v-bind="
@@ -995,7 +995,7 @@
 
                             <textarea
                                 class="form-control form-control-sm"
-                                :disabled="visualizar || disabledParecerRh"
+                                :readonly="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.historico_profissional"
                                 cols="3"
                                 v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
@@ -1014,7 +1014,7 @@
                             <label class="mybp-label">Fale-me sobre sua formação educacional e cursos.</label>
                             <textarea
                                 class="form-control form-control-sm"
-                                :disabled="visualizar || disabledParecerRh"
+                                :readonly="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.historico_educacional"
                                 cols="3"
                                 v-bind="
@@ -1026,7 +1026,7 @@
 
                             <textarea
                                 class="form-control form-control-sm"
-                                :disabled="visualizar || disabledParecerRh"
+                                :readonly="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.historico_educacional"
                                 cols="3"
                                 v-if="form.parecer_rh.tipo_entrevista === 'Parada' || cliente_servico"
@@ -1049,7 +1049,7 @@
                             >
                             <textarea
                                 class="form-control form-control-sm"
-                                :disabled="visualizar || disabledParecerRh"
+                                :readonly="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.objetivos_expectativas"
                                 cols="3"
                                 rows="3"
@@ -1070,7 +1070,7 @@
                             >
                             <textarea
                                 class="form-control form-control-sm"
-                                :disabled="visualizar || disabledParecerRh"
+                                :readonly="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.auto_imagem"
                                 cols="3"
                                 rows="3"
@@ -1668,7 +1668,7 @@
                     <div class="col-12">
                         <div class="form-group mybp-filtro-campo">
                             <textarea
-                                :disabled="
+                                :readonly="
                                     visualizar ||
                                     disabledParecerRh ||
                                     (form.parecer_rh.individual_rh.parecer !== 'destaque' && form.parecer_rh.individual_rh.parecer !== 'favoravel')
@@ -1868,7 +1868,7 @@
                             <label class="mybp-label">Comentários</label>
                             <textarea
                                 class="form-control form-control-sm"
-                                :disabled="visualizar || disabledParecerRh"
+                                :readonly="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.comentarios"
                                 cols="3"
                                 v-if="!cliente_servico"
@@ -1877,7 +1877,7 @@
 
                             <textarea
                                 class="form-control form-control-sm"
-                                :disabled="visualizar || disabledParecerRh"
+                                :readonly="visualizar || disabledParecerRh"
                                 v-model="form.parecer_rh.individual_rh.comentario"
                                 cols="3"
                                 v-if="cliente_servico"
@@ -1982,7 +1982,7 @@
                             <label class="mybp-label">Comentários</label>
                             <textarea
                                 class="form-control form-control-sm"
-                                :disabled="visualizar || entrevistaGestorDisabled"
+                                :readonly="visualizar || entrevistaGestorDisabled"
                                 v-model="form.parecer_rh.gestor_rh.comentario"
                                 cols="3"
                                 rows="3"
@@ -2086,7 +2086,7 @@
                             <label class="mybp-label">Comentários</label>
                             <textarea
                                 class="form-control form-control-sm"
-                                :disabled="visualizar || entrevistaRhDisabled"
+                                :readonly="visualizar || entrevistaRhDisabled"
                                 v-model="form.parecer_rh.entrevista_rh.comentario"
                                 cols="3"
                                 rows="3"

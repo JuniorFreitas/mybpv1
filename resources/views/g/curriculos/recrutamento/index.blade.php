@@ -208,7 +208,7 @@
                                     <textarea
                                         class="form-control form-control-sm"
                                         rows="4"
-                                        disabled
+                                        readonly
                                         :value="item.principais_atv || 'Não informado'"
                                     ></textarea>
                                 </div>

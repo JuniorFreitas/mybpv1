@@ -8,4 +8,5 @@
 - Admissão: Lotação (CNPJ) → CC filtrado por `lista_ccs`
 - Transferência: CC origem/destino combobox; modos origem/destino/único preservados
 - CIH: Lotação → CC; área+gestor no modelo `area`; validação combobox no lançamento/aprovação
+- Textarea: sem `height:!important` (bloqueia resize); `resize:vertical`; leitura com `readonly` (não `disabled`)
 - Validação de combobox obrigatório: `docs/PADRAO_VALIDACAO_COMBOBOX.md` + mixin `ComboboxValidation`

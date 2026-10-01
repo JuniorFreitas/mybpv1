@@ -85,17 +85,22 @@
 }
 
 .mybp-filtros-compactos .mybp-filtro-campo textarea.form-control,
-.mybp-filtros-compactos .mybp-filtro-campo textarea.form-control-sm {
-    height: auto !important;
-    min-height: 4.25rem !important;
+.mybp-filtros-compactos .mybp-filtro-campo textarea.form-control-sm,
+.mybp-filtros-compactos textarea.form-control,
+.mybp-filtros-compactos textarea.form-control-sm {
+    /* Nunca usar height:!important — bloqueia o resize nativo do browser */
+    height: auto;
+    min-height: 5rem !important;
     max-height: none !important;
-    padding: 0.35rem 0.45rem !important;
+    padding: 0.4rem 0.5rem !important;
     font-size: var(--mybp-fc-ctrl-fs) !important;
-    line-height: 1.35 !important;
+    line-height: 1.4 !important;
     border-radius: var(--mybp-fc-radius) !important;
     border-color: #dee2e6 !important;
     box-sizing: border-box !important;
-    resize: vertical;
+    resize: vertical !important;
+    overflow: auto !important;
+    field-sizing: content;
 }
 
 .mybp-filtros-compactos .mybp-filtro-campo .ma-filtro-combo > .form-control.ma-select,

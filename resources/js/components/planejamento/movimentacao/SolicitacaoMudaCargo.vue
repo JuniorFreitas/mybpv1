@@ -455,7 +455,7 @@
                                         v-model="form.obs_solicitante"
                                         cols="5"
                                         rows="5"
-                                        :disabled="visualizar || aprovandoRh || aprovandoExtra || aprovando"
+                                        :readonly="visualizar || aprovandoRh || aprovandoExtra || aprovando"
                                     ></textarea>
                                 </div>
                             </div>
@@ -489,7 +489,7 @@
                                     <label class="mybp-label">Observação</label>
                                     <textarea
                                         class="form-control form-control-sm"
-                                        :disabled="!aprovando"
+                                        :readonly="!aprovando"
                                         v-model="form.obs_gestor_aprovacao"
                                         cols="5"
                                         rows="5"
@@ -542,7 +542,7 @@
                                     <label class="mybp-label">Observação</label>
                                     <textarea
                                         class="form-control form-control-sm"
-                                        :disabled="!aprovandoExtra"
+                                        :readonly="!aprovandoExtra"
                                         v-model="form.obs_aprovacao_extra"
                                         cols="5"
                                         rows="5"
@@ -590,7 +590,7 @@
                             <div class="col-12">
                                 <div class="form-group mybp-filtro-campo">
                                     <label class="mybp-label">Observação</label>
-                                    <textarea class="form-control form-control-sm" :disabled="!aprovandoRh" v-model="form.obs_rh" cols="5" rows="5"></textarea>
+                                    <textarea class="form-control form-control-sm" :readonly="!aprovandoRh" v-model="form.obs_rh" cols="5" rows="5"></textarea>
                                 </div>
                             </div>
 
