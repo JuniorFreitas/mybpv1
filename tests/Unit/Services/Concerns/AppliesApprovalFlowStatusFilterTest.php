@@ -71,6 +71,16 @@ class AppliesApprovalFlowStatusFilterTest extends TestCase
         $this->assertContains(AdmissoesPrevista::STATUS_APROVADO, $query->getBindings());
     }
 
+    public function test_aberto_e_pendente_sem_rh_final_e_sem_reprovacao(): void
+    {
+        $query = $this->apply('aberto');
+        $sql = $query->toSql();
+
+        $this->assertStringContainsString('status_aprovacao_rh', $sql);
+        $this->assertContains(AdmissoesPrevista::STATUS_REPROVADO, $query->getBindings());
+        $this->assertNotContains(AdmissoesPrevista::STATUS_APROVADO, $query->getBindings());
+    }
+
     public function test_reprovado_qualquer_etapa(): void
     {
         $query = $this->apply('reprovado');

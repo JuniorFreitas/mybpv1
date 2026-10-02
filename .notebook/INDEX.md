@@ -1,8 +1,9 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-10-01
+Last updated: 2026-10-02
 
+- [ferias-status-em-aberto](ferias-status-em-aberto.md) — Em aberto = pendente em qualquer etapa; card mostra a etapa | flow | ferias, filtro, status
 - [aniversariante-mensagem](aniversariante-mensagem.md) — Lista só status ADMITIDO; scopeAdmitidos ≠ ADMITIDO | flow | aniversariante, email
 - [recrutamentos-filtros-compactos](recrutamentos-filtros-compactos.md) — Recrutamentos: filtros compactos + período ISO | pattern | curriculo, filtro, compactos
 - [form-parecer-rh-modal-padrao](form-parecer-rh-modal-padrao.md) — FormParecerRh mybp + combos + MybpBoolCombobox + validarCampos | pattern | entrevista, modal, combobox

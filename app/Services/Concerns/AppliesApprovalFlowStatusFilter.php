@@ -34,6 +34,7 @@ trait AppliesApprovalFlowStatusFilter
         $extra = $columns['extra'];
         $rh = $columns['rh'];
 
+        // Em aberto = pendente na etapa atual (gestor, extra ou RH), como "reprovado" agrupa qualquer etapa.
         if ($status === 'aberto') {
             $this->whereApprovalFlowEmAndamento($query, $gestor, $extra, $rh, $reprovado);
             return;

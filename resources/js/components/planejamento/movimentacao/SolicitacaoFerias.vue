@@ -1491,8 +1491,8 @@ export default {
             if (!label) return ''
             return item.ultima_data ? `${label} — Limite: ${item.ultima_data}` : label
         },
-        chaveStatusLista(item) {
-            if (!item) return 'aberto'
+        etapaAtualLista(item) {
+            if (!item) return 'pendente_gestor'
             if (
                 item.status_aprovacao_gestor === 'reprovado' ||
                 item.status_aprovacao_extra === 'reprovado' ||
@@ -1500,21 +1500,27 @@ export default {
             ) {
                 return 'reprovado'
             }
-            if (item.status_aprovacao_rh === 'aprovado') return 'rh'
-            if (this.temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') return 'extra'
-            if (item.status_aprovacao_gestor === 'aprovado') return 'gestor'
-            return 'aberto'
+            if (item.status_aprovacao_rh === 'aprovado') return 'aprovado_rh'
+            if (item.status_aprovacao_gestor !== 'aprovado') return 'pendente_gestor'
+            if (this.temAprovacaoExtra && item.status_aprovacao_extra !== 'aprovado') return 'pendente_extra'
+            return 'pendente_rh'
+        },
+        chaveStatusLista(item) {
+            const etapa = this.etapaAtualLista(item)
+            if (etapa === 'reprovado') return 'reprovado'
+            if (etapa === 'aprovado_rh') return 'rh'
+            return 'pendente'
         },
         classeBordaStatusLista(item) {
             return `mybp-card-corpo--${this.chaveStatusLista(item)}`
         },
         textoStatusLista(item) {
-            const chave = this.chaveStatusLista(item)
-            if (chave === 'reprovado') return 'Reprovado'
-            if (chave === 'rh') return 'Aprovado RH'
-            if (chave === 'extra') return `Aprovado ${this.nomeAprovacaoExtra || 'Extra'}`
-            if (chave === 'gestor') return 'Aprovado Gestor'
-            return 'Em aberto'
+            const etapa = this.etapaAtualLista(item)
+            if (etapa === 'reprovado') return 'Reprovado'
+            if (etapa === 'aprovado_rh') return 'Aprovado RH'
+            if (etapa === 'pendente_gestor') return 'Pendente Gestor'
+            if (etapa === 'pendente_extra') return `Pendente ${this.nomeAprovacaoExtra || 'Extra'}`
+            return 'Pendente RH'
         },
         fluxoStepsLista(item) {
             if (!item) return []

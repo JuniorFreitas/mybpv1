@@ -11,7 +11,7 @@ export function buildOpcoesStatusFluxoAprovacao(opts = {}) {
 
     const opcoes = [
         { value: '', label: 'Todos os status' },
-        { value: 'aberto', label: 'Em aberto' },
+        { value: 'aberto', label: 'Em aberto (qualquer etapa)' },
         { value: 'pendente_gestor', label: 'Pendente Gestor' },
         { value: 'aprovado_gestor', label: 'Aprovado Gestor' },
         { value: 'reprovado_gestor', label: 'Reprovado Gestor' }
