@@ -1,8 +1,9 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-09-30
+Last updated: 2026-10-01
 
+- [aniversariante-mensagem](aniversariante-mensagem.md) — Lista só status ADMITIDO; scopeAdmitidos ≠ ADMITIDO | flow | aniversariante, email
 - [recrutamentos-filtros-compactos](recrutamentos-filtros-compactos.md) — Recrutamentos: filtros compactos + período ISO | pattern | curriculo, filtro, compactos
 - [form-parecer-rh-modal-padrao](form-parecer-rh-modal-padrao.md) — FormParecerRh mybp + combos + MybpBoolCombobox + validarCampos | pattern | entrevista, modal, combobox
 - [resultado-integrado-filtros-modal](resultado-integrado-filtros-modal.md) — RI: filtros compactos + modal validação | pattern | entrevista, filtro, modal, combobox
@@ -37,7 +38,6 @@ Last updated: 2026-09-30
 - [relatorio-treinamento-vencimento](relatorio-treinamento-vencimento.md) — Tela/export vs e-mail: Admitidos≠ADMITIDO, períodos e DIAS_ALERTA=45 | gotcha | treinamento, vencimento
 - [weekly-report-kanban](weekly-report-kanban.md) — Kanban Trello + tenant empresa_id + Echo | flow | weekly-report, kanban, multitenant
 - [contrato-customizado-apelido](contrato-customizado-apelido.md) — Blade dossiê por apelido (contrato + checklist Coimbra) | flow | dossie, contrato, checklist
-- [aniversariante-mensagem](aniversariante-mensagem.md) — Envio robusto + retry 08:00 + --retentar-pendentes | flow | aniversariante, email
 - [filial-cache-cnpjs](filial-cache-cnpjs.md) — Filial sem CC entra em `lista_cc` + combo CC | gotcha | filial, cache, centrocusto
 - [exame-data-realizacao-whatsapp](exame-data-realizacao-whatsapp.md) — Datepicker ≠ payload; DataHora(null)=hoje | gotcha | exame, whatsapp, data
 - [schedule-kernel-laravel12](schedule-kernel-laravel12.md) — Kernel schedule morto; usar withSchedule | gotcha | schedule, aniversariante

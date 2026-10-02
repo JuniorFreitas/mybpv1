@@ -7,12 +7,31 @@
                         <h5>
                             Enviar os parabéns para os <strong>{{ selecionadosMassa.length }}</strong> funcionário(s) selecionado(s)?
                         </h5>
+                        <div v-if="aniversarioWhatsapp" class="mt-3">
+                            <p class="mb-2">Como deseja enviar?</p>
+                            <div class="custom-control custom-switch mb-2">
+                                <input type="checkbox" class="custom-control-input" id="canal-email" v-model="enviarPorEmail" />
+                                <label class="custom-control-label" for="canal-email">E-mail</label>
+                            </div>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="canal-whatsapp" v-model="enviarPorWhatsapp" />
+                                <label class="custom-control-label" for="canal-whatsapp">WhatsApp</label>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </template>
             <template #rodape>
                 <div v-show="!preload">
-                    <button type="button" class="btn btn-sm mr-1 btn-primary" @click="enviar()" v-show="!enviado"><i class="fa fa-envelope"></i> Enviar</button>
+                    <button
+                        type="button"
+                        class="btn btn-sm mr-1 btn-primary"
+                        @click="enviar()"
+                        v-show="!enviado"
+                        :disabled="aniversarioWhatsapp && !canalEnvio"
+                    >
+                        <i class="fa fa-envelope"></i> Enviar
+                    </button>
                 </div>
             </template>
         </modal>
@@ -88,6 +107,7 @@
                             <td class="text-center">Nome</td>
                             <td class="text-center">Data</td>
                             <td class="text-center">Email</td>
+                            <td class="text-center">WhatsApp</td>
                             <td class="text-center">Enviado</td>
                         </tr>
                     </thead>
@@ -101,7 +121,7 @@
                             }"
                         >
                             <td class="text-center">
-                                <label :for="aniversariantes.id" v-if="aniversariantes.enviado == 'Não' && !aniversariantes.email_ignorado">
+                                <label :for="aniversariantes.id" v-if="podeSelecionar(aniversariantes)">
                                     <input
                                         type="checkbox"
                                         v-model="selecionadosMassa"
@@ -114,6 +134,7 @@
                             <td class="text-center"><i class="fa fa-birthday-cake mr-2" v-if="aniversariantes.hoje"></i>{{ aniversariantes.nome }}</td>
                             <td class="text-center">{{ aniversariantes.aniversario }}</td>
                             <td class="text-center">{{ aniversariantes.email }}</td>
+                            <td class="text-center">{{ aniversariantes.whatsapp }}</td>
                             <td class="text-center">{{ aniversariantes.enviado }}</td>
                         </tr>
                     </tbody>
@@ -162,6 +183,9 @@ export default {
             selecionaTudoMassa: false,
             niver_dia: 'todos',
             mostrarMensagem: false,
+            aniversarioWhatsapp: false,
+            enviarPorEmail: false,
+            enviarPorWhatsapp: false,
 
             urlPaginacao: `${URL_ADMIN}/administracao/aniversariantes/atualizar`,
             controle: {
@@ -177,6 +201,13 @@ export default {
         this.formDefault = _.cloneDeep(this.form)
     },
     computed: {
+        canalEnvio() {
+            if (!this.aniversarioWhatsapp) return 'email'
+            if (this.enviarPorEmail && this.enviarPorWhatsapp) return 'ambos'
+            if (this.enviarPorEmail) return 'email'
+            if (this.enviarPorWhatsapp) return 'whatsapp'
+            return ''
+        },
         filtrarLista() {
             if (this.lista && this.lista.length) {
                 return this.lista.filter((item) => item.nome.toLowerCase().includes(this.nome_filtrado.toLowerCase()))
@@ -184,21 +215,40 @@ export default {
         }
     },
     methods: {
+        podeSelecionar(item) {
+            const emailPendente = item.enviado == 'Não' && !item.email_ignorado
+            const whatsappPendente = this.aniversarioWhatsapp
+                && item.whatsapp
+                && item.whatsapp !== 'Não informado'
+                && item.whatsapp_status !== 'enfileirado'
+            return emailPendente || whatsappPendente
+        },
         abrirModalParabens() {
             if (!this.selecionadosMassa.length) return
+            this.enviarPorEmail = false
+            this.enviarPorWhatsapp = false
             if (this.$refs && this.$refs.modalParabensMassa && typeof this.$refs.modalParabensMassa.abrirModal === 'function') {
                 this.$refs.modalParabensMassa.abrirModal()
             }
         },
         enviar() {
+            if (this.aniversarioWhatsapp && !this.canalEnvio) return
             this.preload = true
             axios
-                .post(`${URL_ADMIN}/administracao/aniversariantes/enviaEmail`, { selecionados: this.selecionadosMassa })
+                .post(`${URL_ADMIN}/administracao/aniversariantes/enviaEmail`, {
+                    selecionados: this.selecionadosMassa,
+                    canal: this.aniversarioWhatsapp ? this.canalEnvio : 'email'
+                })
                 .then((response) => {
                     if (this.$refs && this.$refs.modalParabensMassa && typeof this.$refs.modalParabensMassa.fecharModal === 'function') {
                         this.$refs.modalParabensMassa.fecharModal()
                     }
-                    mostraSucesso('', 'Estamos enviando a mensagem de parabéns')
+                    const avisos = {
+                        email: 'Estamos enviando a mensagem de parabéns por e-mail',
+                        whatsapp: 'Estamos enviando a mensagem de parabéns por WhatsApp',
+                        ambos: 'Estamos enviando a mensagem de parabéns por e-mail e WhatsApp'
+                    }
+                    mostraSucesso('', avisos[this.canalEnvio] || avisos.email)
                     this.atualizar()
                     this.selecionadosMassa = []
                     this.selecionaTudoMassa = false
@@ -219,6 +269,7 @@ export default {
                 .then(({ data }) => {
                     this.lista = data.dados
                     this.lista_original = data.dados
+                    this.aniversarioWhatsapp = !!data.aniversario_whatsapp
                     this.aniversariantes_do_dia()
                     this.controle.carregando = false
                 })
@@ -230,7 +281,7 @@ export default {
             if (this.selecionaTudoMassa) {
                 this.lista.map((item) => {
                     let id = item.id
-                    if (this.selecionadosMassa.indexOf(id) === -1 && item.enviado == 'Não' && !item.email_ignorado) {
+                    if (this.selecionadosMassa.indexOf(id) === -1 && this.podeSelecionar(item)) {
                         this.selecionadosMassa.push(id)
                     }
                 })

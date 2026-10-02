@@ -14,6 +14,7 @@
                 <td class="text-center">Nome</td>
                 <td class="text-center">Data</td>
                 <td class="text-center">Email</td>
+                <td class="text-center">WhatsApp</td>
             </tr>
         </thead>
         @foreach($dados['rows'] as $aniversariente)
@@ -21,6 +22,7 @@
                 <td class="text-center">{{ $aniversariente['nome'] }}</td>
                 <td class="text-center">{{ $aniversariente['aniversario'] }}</td>
                 <td class="text-center">{{ $aniversariente['email'] }}</td>
+                <td class="text-center">{{ $aniversariente['whatsapp'] }}</td>
             </tr>
         @endforeach
 

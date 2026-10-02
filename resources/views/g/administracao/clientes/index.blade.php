@@ -739,6 +739,16 @@
                                 </div>
                                 <div class="col-12 col-sm-6 col-lg-4">
                                     <div class="form-group">
+                                        <label>WhatsApp de aniversário</label>
+                                        <select v-model="form.cliente_config.aniversario_whatsapp" class="form-control">
+                                            <option :value="false">Desabilitado</option>
+                                            <option :value="true">Habilitado</option>
+                                        </select>
+                                        <small class="text-muted">Envia a mensagem do dia no WhatsApp principal do admitido. Exige também a notificação de WhatsApp habilitada.</small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-lg-4">
+                                    <div class="form-group">
                                         <label>Schedule de Avaliação de Experiência</label>
                                         <select v-model="form.cliente_config.schedule_avaliacao_experiencia" class="form-control">
                                             <option :value="true">Habilitado</option>

@@ -14,6 +14,18 @@ use Throwable;
 
 class AniversarianteEnvioDiaService
 {
+    public const CANAL_EMAIL = 'email';
+
+    public const CANAL_WHATSAPP = 'whatsapp';
+
+    public const CANAL_AMBOS = 'ambos';
+
+    /** @var list<string> */
+    public const CANAIS = [
+        self::CANAL_EMAIL,
+        self::CANAL_WHATSAPP,
+        self::CANAL_AMBOS,
+    ];
     /**
      * Dispara felicitações do dia (timezone da aplicação).
      *
@@ -173,49 +185,66 @@ class AniversarianteEnvioDiaService
      * @param  object{id:int,nome:?string,email:?string,empresa_id:int}  $selecionado
      * @return 'enviados'|'erros'|'ignorados'
      */
-    public function processarAniversariante(object $selecionado, int $ano): string
+    public function processarAniversariante(object $selecionado, int $ano, ?string $canal = null): string
     {
         $curriculoId = (int) $selecionado->id;
         $empresaId = (int) $selecionado->empresa_id;
         $email = $this->normalizarEmail($selecionado->email ?? '');
+        $enviarEmail = $canal === null || $canal === self::CANAL_EMAIL || $canal === self::CANAL_AMBOS;
+        $enviarWhatsapp = $canal === null || $canal === self::CANAL_WHATSAPP || $canal === self::CANAL_AMBOS;
 
-        if ($this->emailIgnorado($email)) {
+        if (! $enviarEmail) {
+            $resultado = 'enviados';
+        } elseif ($this->emailIgnorado($email)) {
+            $resultado = 'ignorados';
             $this->marcarStatus($curriculoId, $empresaId, $ano, ParabensEnviado::STATUS_NAO);
-
-            return 'ignorados';
-        }
-
-        if (! $this->emailValido($email)) {
+        } elseif (! $this->emailValido($email)) {
+            $resultado = 'erros';
             $this->marcarStatus($curriculoId, $empresaId, $ano, ParabensEnviado::STATUS_ERRO);
             Log::warning('Aniversariante sem e-mail válido', [
                 'curriculo_id' => $curriculoId,
                 'empresa_id' => $empresaId,
             ]);
+        } else {
+            $this->marcarStatus($curriculoId, $empresaId, $ano, ParabensEnviado::STATUS_ENVIANDO);
 
-            return 'erros';
+            try {
+                Mail::send(new AniversariantesMail([
+                    'nome' => $selecionado->nome,
+                    'email' => $email,
+                    'empresa_id' => $empresaId,
+                ]));
+
+                $this->marcarStatus($curriculoId, $empresaId, $ano, ParabensEnviado::STATUS_ENVIADO);
+                $resultado = 'enviados';
+            } catch (Throwable $e) {
+                $this->marcarStatus($curriculoId, $empresaId, $ano, ParabensEnviado::STATUS_ERRO);
+                Log::error('Falha ao enviar felicitações de aniversário', [
+                    'curriculo_id' => $curriculoId,
+                    'empresa_id' => $empresaId,
+                    'erro' => $e->getMessage(),
+                ]);
+                $resultado = 'erros';
+            }
         }
 
-        $this->marcarStatus($curriculoId, $empresaId, $ano, ParabensEnviado::STATUS_ENVIANDO);
+        if ($enviarWhatsapp) {
+            $this->enfileirarWhatsapp($selecionado);
+        }
 
+        return $resultado;
+    }
+
+    private function enfileirarWhatsapp(object $selecionado): void
+    {
         try {
-            Mail::send(new AniversariantesMail([
-                'nome' => $selecionado->nome,
-                'email' => $email,
-                'empresa_id' => $empresaId,
-            ]));
-
-            $this->marcarStatus($curriculoId, $empresaId, $ano, ParabensEnviado::STATUS_ENVIADO);
-
-            return 'enviados';
+            app(AniversarianteWhatsappService::class)->enviarSeHabilitado($selecionado);
         } catch (Throwable $e) {
-            $this->marcarStatus($curriculoId, $empresaId, $ano, ParabensEnviado::STATUS_ERRO);
-            Log::error('Falha ao enviar felicitações de aniversário', [
-                'curriculo_id' => $curriculoId,
-                'empresa_id' => $empresaId,
+            Log::error('Falha ao enfileirar WhatsApp de aniversário', [
+                'curriculo_id' => (int) ($selecionado->id ?? 0),
+                'empresa_id' => (int) ($selecionado->empresa_id ?? 0),
                 'erro' => $e->getMessage(),
             ]);
-
-            return 'erros';
         }
     }
 

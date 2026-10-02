@@ -66,6 +66,7 @@
                             <td class="text-center">Nome</td>
                             <td class="text-center">Data</td>
                             <td class="text-center">Email</td>
+                            <td class="text-center">WhatsApp</td>
                         </tr>
                     </thead>
                     <tbody>
@@ -73,6 +74,7 @@
                             <td class="text-center"><i class="fa fa-birthday-cake mr-2" v-if="aniversariantes.hoje"></i>{{ aniversariantes.nome }}</td>
                             <td class="text-center">{{ aniversariantes.aniversario }}</td>
                             <td class="text-center">{{ aniversariantes.email }}</td>
+                            <td class="text-center">{{ aniversariantes.whatsapp }}</td>
                         </tr>
                     </tbody>
                 </table>

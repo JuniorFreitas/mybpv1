@@ -601,6 +601,13 @@ class Curriculo extends Model
         return $this->hasOne(TelefoneCurriculo::class, 'curriculo_id', 'id')->where('principal', true);
     }
 
+    public function TelWhatsappPrincipal()
+    {
+        return $this->hasOne(TelefoneCurriculo::class, 'curriculo_id', 'id')
+            ->where('principal', true)
+            ->where('tipo', TelefoneCurriculo::TIPO_WHATS);
+    }
+
     public function AnexosCpfRg()
     {
         return $this->belongsToMany(Arquivo::class, 'documentos_curriculos', 'curriculo_id', 'arquivo_id')->whereTipo('anexoscpfrg');

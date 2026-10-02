@@ -7,6 +7,7 @@ use App\Models\ClienteConfig;
 use App\Models\User;
 use App\Models\UsuarioWhatsappPreferencia;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class WhatsappNotificationGateService
 {
@@ -58,6 +59,21 @@ class WhatsappNotificationGateService
         return (bool) ClienteConfig::query()
             ->where('cliente_id', $empresaId)
             ->value('envia_whatsapp');
+    }
+
+    public function podeEnviarAniversario(int $empresaId): bool
+    {
+        if (!Schema::hasTable('cliente_configs') || !Schema::hasColumn('cliente_configs', 'aniversario_whatsapp')) {
+            return false;
+        }
+
+        if (!$this->empresaPermiteWhatsapp($empresaId)) {
+            return false;
+        }
+
+        return (bool) ClienteConfig::query()
+            ->where('cliente_id', $empresaId)
+            ->value('aniversario_whatsapp');
     }
 
     public function usuarioAceitaModulo(int $userId, string $modulo): bool

@@ -82,8 +82,14 @@ class ZapNotificacao
             return false;
         }
 
-        $tipo = TipoMensagemWhatsapp::tryFromString($meta['tipo'] ?? null);
         $empresaId = (int) ($meta['empresa_id'] ?? 0);
+
+        if (($meta['tipo'] ?? null) === 'aniversario') {
+            return $empresaId > 0
+                && app(WhatsappNotificationGateService::class)->podeEnviarAniversario($empresaId);
+        }
+
+        $tipo = TipoMensagemWhatsapp::tryFromString($meta['tipo'] ?? null);
 
         if (!$tipo || $empresaId <= 0) {
             Log::info('WhatsApp bloqueado: metadados inválidos', [

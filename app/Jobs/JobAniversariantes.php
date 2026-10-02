@@ -25,6 +25,7 @@ class JobAniversariantes implements ShouldQueue
         $this->mail = [
             'selecionados' => $dados['selecionados'],
             'empresa_id' => $dados['empresa_id'],
+            'canal' => $dados['canal'] ?? AniversarianteEnvioDiaService::CANAL_EMAIL,
         ];
     }
 
@@ -53,7 +54,11 @@ class JobAniversariantes implements ShouldQueue
 
         foreach ($selecionados as $aniversariante) {
             $aniversariante->empresa_id = $empresaId;
-            $resultado = $envioService->processarAniversariante($aniversariante, $ano);
+            $resultado = $envioService->processarAniversariante(
+                $aniversariante,
+                $ano,
+                $this->mail['canal'] ?? AniversarianteEnvioDiaService::CANAL_EMAIL
+            );
             $resumo[$resultado]++;
         }
 
