@@ -25,6 +25,7 @@ class AniversariantesEnviaEmailTelaTest extends TestCase
         $this->withoutMiddleware();
         Gate::define('administracao_aniversariantes', fn () => true);
 
+        Schema::dropIfExists('cliente_configs');
         Schema::dropIfExists('parabens_enviados');
         Schema::dropIfExists('curriculos');
         Schema::dropIfExists('users');
@@ -85,7 +86,8 @@ class AniversariantesEnviaEmailTelaTest extends TestCase
 
         Queue::assertPushed(JobAniversariantes::class, function (JobAniversariantes $job) {
             return (int) $job->mail['empresa_id'] === 50
-                && $job->mail['selecionados'] === [101, 102];
+                && $job->mail['selecionados'] === [101, 102]
+                && $job->mail['canal'] === AniversarianteEnvioDiaService::CANAL_EMAIL;
         });
 
         $this->assertSame(2, DB::table('parabens_enviados')->where('status', ParabensEnviado::STATUS_ENVIANDO)->count());
@@ -142,5 +144,89 @@ class AniversariantesEnviaEmailTelaTest extends TestCase
             ParabensEnviado::STATUS_NAO,
             DB::table('parabens_enviados')->where('curriculo_id', 102)->value('status')
         );
+    }
+
+    public function test_whatsapp_sem_habilitacao_nao_enfileira(): void
+    {
+        Queue::fake();
+
+        $user = User::query()->create([
+            'nome' => 'RH Teste',
+            'login' => 'rh@teste.com',
+            'empresa_id' => 50,
+            'ativo' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->postJson('/g/administracao/aniversariantes/enviaEmail', [
+                'selecionados' => [101],
+                'canal' => AniversarianteEnvioDiaService::CANAL_WHATSAPP,
+            ])
+            ->assertStatus(422);
+
+        Queue::assertNothingPushed();
+        $this->assertSame(0, DB::table('parabens_enviados')->count());
+    }
+
+    public function test_ambos_com_whatsapp_habilitado_enfileira_os_dois_canais(): void
+    {
+        Queue::fake();
+
+        Schema::create('cliente_configs', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('cliente_id');
+            $table->boolean('envia_whatsapp')->default(false);
+            $table->boolean('aniversario_whatsapp')->default(false);
+        });
+
+        DB::table('cliente_configs')->insert([
+            'cliente_id' => 50,
+            'envia_whatsapp' => true,
+            'aniversario_whatsapp' => true,
+        ]);
+
+        $user = User::query()->create([
+            'nome' => 'RH Teste',
+            'login' => 'rh2@teste.com',
+            'empresa_id' => 50,
+            'ativo' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->postJson('/g/administracao/aniversariantes/enviaEmail', [
+                'selecionados' => [101],
+                'canal' => AniversarianteEnvioDiaService::CANAL_AMBOS,
+            ])
+            ->assertOk();
+
+        Queue::assertPushed(JobAniversariantes::class, function (JobAniversariantes $job) {
+            return $job->mail['canal'] === AniversarianteEnvioDiaService::CANAL_AMBOS;
+        });
+
+        $this->assertSame(1, DB::table('parabens_enviados')->where('status', ParabensEnviado::STATUS_ENVIANDO)->count());
+    }
+
+    public function test_job_so_whatsapp_nao_dispara_email(): void
+    {
+        Mail::fake();
+
+        DB::table('curriculos')->insert([
+            'id' => 103,
+            'nome' => 'Fulano',
+            'email' => 'fulano@email.com',
+            'nascimento' => '1990-09-22',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $job = new JobAniversariantes([
+            'selecionados' => [103],
+            'empresa_id' => 50,
+            'canal' => AniversarianteEnvioDiaService::CANAL_WHATSAPP,
+        ]);
+        $job->handle(app(AniversarianteEnvioDiaService::class));
+
+        Mail::assertNothingSent();
+        $this->assertNull(DB::table('parabens_enviados')->where('curriculo_id', 103)->value('status'));
     }
 }

@@ -234,6 +234,7 @@ class ClientesController extends Controller
                         $dadosClienteConfig['configuracoes'] = $this->normalizarConfiguracoes($dados['cliente_config']['configuracoes'] ?? []);
                     }
                     $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigAssinatura($dados['cliente_config']));
+                    $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosAniversarioWhatsapp($dados['cliente_config']));
                     ClienteConfig::create($dadosClienteConfig);
 
                 }
@@ -617,6 +618,7 @@ class ClientesController extends Controller
                     );
                 }
                 $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigAssinatura($dados['cliente_config']));
+                $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosAniversarioWhatsapp($dados['cliente_config']));
                 $config->update($dadosClienteConfig);
             } else {
                 $dadosClienteConfig = [
@@ -636,6 +638,7 @@ class ClientesController extends Controller
                     $dadosClienteConfig['configuracoes'] = $this->normalizarConfiguracoes($dados['cliente_config']['configuracoes'] ?? []);
                 }
                 $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigAssinatura($dados['cliente_config']));
+                $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosAniversarioWhatsapp($dados['cliente_config']));
                 ClienteConfig::create($dadosClienteConfig);
             }
 
@@ -751,6 +754,17 @@ class ClientesController extends Controller
         }
 
         return $dados;
+    }
+
+    private function dadosAniversarioWhatsapp(array $dadosConfig): array
+    {
+        if (! Schema::hasColumn('cliente_configs', 'aniversario_whatsapp')) {
+            return [];
+        }
+
+        return [
+            'aniversario_whatsapp' => filter_var($dadosConfig['aniversario_whatsapp'] ?? false, FILTER_VALIDATE_BOOLEAN),
+        ];
     }
 
     private function criaOuAtualizaGrupoAdm($empresa_id)

@@ -93,6 +93,7 @@ const app = createApp({
                     id: '',
                     verifica_mes_vencimento: '',
                     envia_whatsapp: '',
+                    aniversario_whatsapp: false,
                     vencimento_aso: '',
                     modelo_cih: '',
                     supervisor_etiqueta_bloqueio: true,
@@ -298,6 +299,7 @@ const app = createApp({
                         this.form.cliente_config = {
                             verifica_mes_vencimento: '',
                             envia_whatsapp: '',
+                            aniversario_whatsapp: false,
                             vencimento_aso: '',
                             modelo_cih: '',
                             supervisor_etiqueta_bloqueio: true,
@@ -317,6 +319,7 @@ const app = createApp({
                         }
                     } else {
                         this.form.cliente_config.treinamento_permitir_desmarcar_realizado = !!this.form.cliente_config.treinamento_permitir_desmarcar_realizado
+                        this.form.cliente_config.aniversario_whatsapp = !!this.form.cliente_config.aniversario_whatsapp
                         this.form.cliente_config.assinatura_digital_habilitada = !!this.form.cliente_config.assinatura_digital_habilitada
                         this.form.cliente_config.descricao_vaga_ia_habilitada = !!this.form.cliente_config.descricao_vaga_ia_habilitada
                         this.form.cliente_config.limite_assinaturas_mensal = this.form.cliente_config.limite_assinaturas_mensal ?? ''

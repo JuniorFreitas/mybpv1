@@ -8,6 +8,7 @@ use Spatie\Activitylog\Models\Activity;
 use App\Tenant\Traits\TenantTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Domain\Whatsapp\Services\WhatsappConfigService;
+use App\Services\Aniversariante\AniversarianteWhatsappService;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -72,6 +73,7 @@ class ClienteConfig extends Model
 
     protected $fillable = [
         'envia_whatsapp',
+        'aniversario_whatsapp',
         'verifica_mes_vencimento',
         'cliente_id',
         'vencimento_aso',
@@ -92,6 +94,7 @@ class ClienteConfig extends Model
 
     protected $casts = [
         'envia_whatsapp' => 'boolean',
+        'aniversario_whatsapp' => 'boolean',
         'verifica_mes_vencimento' => 'int',
         'cliente_id' => 'int',
         'vencimento_aso' => 'int',
@@ -154,6 +157,11 @@ class ClienteConfig extends Model
         static::saved(function (ClienteConfig $config): void {
             if ($config->cliente_id && $config->wasChanged('envia_whatsapp')) {
                 app(WhatsappConfigService::class)->invalidateCache((int) $config->cliente_id);
+            }
+
+            if ($config->cliente_id && $config->aniversario_whatsapp && $config->wasChanged('aniversario_whatsapp')) {
+                app(AniversarianteWhatsappService::class)
+                    ->garantirPadroes((int) $config->cliente_id);
             }
         });
     }
