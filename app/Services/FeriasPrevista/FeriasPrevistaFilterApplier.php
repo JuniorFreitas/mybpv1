@@ -193,9 +193,18 @@ class FeriasPrevistaFilterApplier
 
     private function applyCampoStatusAprovacao(Builder $query): void
     {
+        $status = isset($this->filtros['campoStatusAprovacao']) ? (string) $this->filtros['campoStatusAprovacao'] : null;
+
+        // Aprovação do gestor ou da extra não é status final: o card mostra a etapa seguinte.
+        if (in_array($status, ['aprovado_gestor', 'aprovado_extra'], true)) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
         $this->applyApprovalFlowStatusFilter(
             $query,
-            isset($this->filtros['campoStatusAprovacao']) ? (string) $this->filtros['campoStatusAprovacao'] : null,
+            $status,
             [
                 'gestor' => 'status_aprovacao_gestor',
                 'extra' => 'status_aprovacao_extra',

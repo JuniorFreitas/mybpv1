@@ -1277,7 +1277,7 @@ export default {
             return buildOpcoesStatusFluxoAprovacao({
                 temAprovacaoExtra: this.temAprovacaoExtra,
                 nomeAprovacaoExtra: this.nomeAprovacaoExtra
-            })
+            }).filter((opcao) => opcao.value !== 'aprovado_gestor' && opcao.value !== 'aprovado_extra')
         },
         opcoesOrdenacao() {
             return [
@@ -1493,13 +1493,9 @@ export default {
         },
         etapaAtualLista(item) {
             if (!item) return 'pendente_gestor'
-            if (
-                item.status_aprovacao_gestor === 'reprovado' ||
-                item.status_aprovacao_extra === 'reprovado' ||
-                item.status_aprovacao_rh === 'reprovado'
-            ) {
-                return 'reprovado'
-            }
+            if (item.status_aprovacao_gestor === 'reprovado') return 'reprovado_gestor'
+            if (item.status_aprovacao_extra === 'reprovado') return 'reprovado_extra'
+            if (item.status_aprovacao_rh === 'reprovado') return 'reprovado_rh'
             if (item.status_aprovacao_rh === 'aprovado') return 'aprovado_rh'
             if (item.status_aprovacao_gestor !== 'aprovado') return 'pendente_gestor'
             if (this.temAprovacaoExtra && item.status_aprovacao_extra !== 'aprovado') return 'pendente_extra'
@@ -1507,7 +1503,7 @@ export default {
         },
         chaveStatusLista(item) {
             const etapa = this.etapaAtualLista(item)
-            if (etapa === 'reprovado') return 'reprovado'
+            if (String(etapa).indexOf('reprovado') === 0) return 'reprovado'
             if (etapa === 'aprovado_rh') return 'rh'
             return 'pendente'
         },
@@ -1515,12 +1511,17 @@ export default {
             return `mybp-card-corpo--${this.chaveStatusLista(item)}`
         },
         textoStatusLista(item) {
-            const etapa = this.etapaAtualLista(item)
-            if (etapa === 'reprovado') return 'Reprovado'
-            if (etapa === 'aprovado_rh') return 'Aprovado RH'
-            if (etapa === 'pendente_gestor') return 'Pendente Gestor'
-            if (etapa === 'pendente_extra') return `Pendente ${this.nomeAprovacaoExtra || 'Extra'}`
-            return 'Pendente RH'
+            const nomeExtra = this.nomeAprovacaoExtra || 'Extra'
+            const textos = {
+                reprovado_gestor: 'Reprovado Gestor',
+                reprovado_extra: `Reprovado ${nomeExtra}`,
+                reprovado_rh: 'Reprovado RH',
+                aprovado_rh: 'Aprovado RH',
+                pendente_gestor: 'Pendente Gestor',
+                pendente_extra: `Pendente ${nomeExtra}`,
+                pendente_rh: 'Pendente RH'
+            }
+            return textos[this.etapaAtualLista(item)] || 'Pendente Gestor'
         },
         fluxoStepsLista(item) {
             if (!item) return []
@@ -1612,7 +1613,11 @@ export default {
             if (urlParams.get('ordenacao')) this.controle.dados.ordenacao = urlParams.get('ordenacao')
             if (urlParams.get('campoBusca')) this.controle.dados.campoBusca = urlParams.get('campoBusca')
             if (urlParams.get('campoCPF')) this.controle.dados.campoCPF = urlParams.get('campoCPF')
-            if (urlParams.get('campoStatusAprovacao')) this.controle.dados.campoStatusAprovacao = urlParams.get('campoStatusAprovacao')
+            if (urlParams.get('campoStatusAprovacao')) {
+                const statusUrl = urlParams.get('campoStatusAprovacao')
+                this.controle.dados.campoStatusAprovacao =
+                    statusUrl === 'aprovado_gestor' || statusUrl === 'aprovado_extra' ? '' : statusUrl
+            }
             if (urlParams.get('campoCentroCusto')) this.controle.dados.campoCentroCusto = urlParams.get('campoCentroCusto')
             if (urlParams.get('filtroPeriodoAquisitivo')) this.controle.dados.filtroPeriodoAquisitivo = urlParams.get('filtroPeriodoAquisitivo')
             if (urlParams.get('dataInicio')) this.controle.dados.dataInicio = urlParams.get('dataInicio')
