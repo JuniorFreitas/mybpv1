@@ -958,7 +958,13 @@ import MybpCardCampo from '../../ui/MybpCardCampo.vue'
 import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
-import { buildOpcoesStatusFluxoAprovacao } from '../../../utils/opcoesStatusFluxoAprovacao'
+import {
+    etapaAtualFluxoAprovacao,
+    normalizarStatusUrlFluxo,
+    opcoesStatusFluxoAtual,
+    textoStatusFluxo,
+    varianteStatusFluxo
+} from '../../../utils/opcoesStatusFluxoAprovacao'
 
 export default {
     mixins: [configselect2, ExportacaoMixin, Utils, Validacoes, configuracoes, ComboboxValidation],
@@ -1274,10 +1280,10 @@ export default {
             return opts
         },
         opcoesStatus() {
-            return buildOpcoesStatusFluxoAprovacao({
+            return opcoesStatusFluxoAtual({
                 temAprovacaoExtra: this.temAprovacaoExtra,
                 nomeAprovacaoExtra: this.nomeAprovacaoExtra
-            }).filter((opcao) => opcao.value !== 'aprovado_gestor' && opcao.value !== 'aprovado_extra')
+            })
         },
         opcoesOrdenacao() {
             return [
@@ -1492,36 +1498,19 @@ export default {
             return item.ultima_data ? `${label} — Limite: ${item.ultima_data}` : label
         },
         etapaAtualLista(item) {
-            if (!item) return 'pendente_gestor'
-            if (item.status_aprovacao_gestor === 'reprovado') return 'reprovado_gestor'
-            if (item.status_aprovacao_extra === 'reprovado') return 'reprovado_extra'
-            if (item.status_aprovacao_rh === 'reprovado') return 'reprovado_rh'
-            if (item.status_aprovacao_rh === 'aprovado') return 'aprovado_rh'
-            if (item.status_aprovacao_gestor !== 'aprovado') return 'pendente_gestor'
-            if (this.temAprovacaoExtra && item.status_aprovacao_extra !== 'aprovado') return 'pendente_extra'
-            return 'pendente_rh'
+            return etapaAtualFluxoAprovacao(item, {
+                campoGestor: 'status_aprovacao_gestor',
+                temAprovacaoExtra: this.temAprovacaoExtra
+            })
         },
         chaveStatusLista(item) {
-            const etapa = this.etapaAtualLista(item)
-            if (String(etapa).indexOf('reprovado') === 0) return 'reprovado'
-            if (etapa === 'aprovado_rh') return 'rh'
-            return 'pendente'
+            return varianteStatusFluxo(this.etapaAtualLista(item))
         },
         classeBordaStatusLista(item) {
             return `mybp-card-corpo--${this.chaveStatusLista(item)}`
         },
         textoStatusLista(item) {
-            const nomeExtra = this.nomeAprovacaoExtra || 'Extra'
-            const textos = {
-                reprovado_gestor: 'Reprovado Gestor',
-                reprovado_extra: `Reprovado ${nomeExtra}`,
-                reprovado_rh: 'Reprovado RH',
-                aprovado_rh: 'Aprovado RH',
-                pendente_gestor: 'Pendente Gestor',
-                pendente_extra: `Pendente ${nomeExtra}`,
-                pendente_rh: 'Pendente RH'
-            }
-            return textos[this.etapaAtualLista(item)] || 'Pendente Gestor'
+            return textoStatusFluxo(this.etapaAtualLista(item), this.nomeAprovacaoExtra)
         },
         fluxoStepsLista(item) {
             if (!item) return []
@@ -1614,9 +1603,7 @@ export default {
             if (urlParams.get('campoBusca')) this.controle.dados.campoBusca = urlParams.get('campoBusca')
             if (urlParams.get('campoCPF')) this.controle.dados.campoCPF = urlParams.get('campoCPF')
             if (urlParams.get('campoStatusAprovacao')) {
-                const statusUrl = urlParams.get('campoStatusAprovacao')
-                this.controle.dados.campoStatusAprovacao =
-                    statusUrl === 'aprovado_gestor' || statusUrl === 'aprovado_extra' ? '' : statusUrl
+                this.controle.dados.campoStatusAprovacao = normalizarStatusUrlFluxo(urlParams.get('campoStatusAprovacao'))
             }
             if (urlParams.get('campoCentroCusto')) this.controle.dados.campoCentroCusto = urlParams.get('campoCentroCusto')
             if (urlParams.get('filtroPeriodoAquisitivo')) this.controle.dados.filtroPeriodoAquisitivo = urlParams.get('filtroPeriodoAquisitivo')

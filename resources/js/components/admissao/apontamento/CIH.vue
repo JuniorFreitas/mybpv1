@@ -781,7 +781,12 @@ import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 import Validacoes from '../../../mixins/Validacoes'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
-import { buildOpcoesStatusFluxoAprovacao } from '../../../utils/opcoesStatusFluxoAprovacao'
+import {
+    etapaAtualFluxoAprovacao,
+    opcoesStatusFluxoAtual,
+    textoStatusFluxo,
+    varianteStatusFluxo
+} from '../../../utils/opcoesStatusFluxoAprovacao'
 
 export default {
     name: 'CIH',
@@ -941,7 +946,7 @@ export default {
             )
         },
         filtroStatusAprovacaoOpcoes() {
-            return buildOpcoesStatusFluxoAprovacao({ temAprovacaoExtra: false })
+            return opcoesStatusFluxoAtual({ temAprovacaoExtra: false })
         },
         filtroTipoOpcoes() {
             const opcoes = [{ value: '', label: 'Todos os tipos' }]
@@ -1782,36 +1787,21 @@ export default {
             }
             return `${acao.slice(0, 217).trim()}...`
         },
+        etapaAtualLista(item) {
+            return etapaAtualFluxoAprovacao(item, {
+                campoGestor: 'status',
+                campoRh: 'resposta_rh',
+                temAprovacaoExtra: false
+            })
+        },
         chaveStatusLista(item) {
-            if (!item) {
-                return 'aberto'
-            }
-            if (item.resposta_rh === 'reprovado' || item.status === 'reprovado') {
-                return 'reprovado'
-            }
-            if (item.resposta_rh === 'aprovado') {
-                return 'rh'
-            }
-            if (item.status === 'aprovado') {
-                return 'gestor'
-            }
-            return 'aberto'
+            return varianteStatusFluxo(this.etapaAtualLista(item))
         },
         classeBordaStatusLista(item) {
             return `mybp-card-corpo--${this.chaveStatusLista(item)}`
         },
         textoStatusLista(item) {
-            const chave = this.chaveStatusLista(item)
-            if (chave === 'reprovado') {
-                return 'Reprovado'
-            }
-            if (chave === 'rh') {
-                return 'Aprovado RH'
-            }
-            if (chave === 'gestor') {
-                return 'Aprovado Gestor'
-            }
-            return 'Em aberto'
+            return textoStatusFluxo(this.etapaAtualLista(item))
         },
         fluxoStepsLista(item) {
             if (!item) {

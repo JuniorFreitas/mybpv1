@@ -195,10 +195,7 @@ class FeriasPrevistaFilterApplier
     {
         $status = isset($this->filtros['campoStatusAprovacao']) ? (string) $this->filtros['campoStatusAprovacao'] : null;
 
-        // Aprovação do gestor ou da extra não é status final: o card mostra a etapa seguinte.
-        if (in_array($status, ['aprovado_gestor', 'aprovado_extra'], true)) {
-            $query->whereRaw('1 = 0');
-
+        if ($this->bloquearStatusAprovacaoIntermediaria($query, $status)) {
             return;
         }
 

@@ -103,13 +103,12 @@ class TransferenciaPrevistaFilterApplierTest extends TestCase
         $this->assertStringContainsString('modo_aprovacao', $sql);
     }
 
-    public function test_filtro_aprovado_gestor_origem(): void
+    public function test_filtro_aprovado_gestor_origem_nao_e_status_atual(): void
     {
         $query = $this->applyStatus('aprovado_gestor_origem');
 
-        $this->assertStringContainsString('status_aprovacao', $query->toSql());
-        $this->assertContains('aprovado', $query->getBindings());
-        $this->assertContains(TransferenciaPrevista::MODO_APROVACAO_PADRAO, $query->getBindings());
+        $this->assertStringContainsString('1 = 0', $query->toSql());
+        $this->assertNotContains('aprovado', $query->getBindings());
     }
 
     public function test_filtro_reprovado_gestor_destino(): void
@@ -120,12 +119,12 @@ class TransferenciaPrevistaFilterApplierTest extends TestCase
         $this->assertContains('reprovado', $query->getBindings());
     }
 
-    public function test_filtro_aprovado_gestor_unico(): void
+    public function test_filtro_aprovado_gestor_unico_nao_e_status_atual(): void
     {
         $query = $this->applyStatus('aprovado_gestor_unico');
 
-        $this->assertContains(TransferenciaPrevista::MODO_APROVACAO_GESTOR_UNICO, $query->getBindings());
-        $this->assertContains('aprovado', $query->getBindings());
+        $this->assertStringContainsString('1 = 0', $query->toSql());
+        $this->assertNotContains('aprovado', $query->getBindings());
     }
 
     public function test_filtro_reprovado_rh(): void

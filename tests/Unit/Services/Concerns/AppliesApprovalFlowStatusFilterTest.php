@@ -39,12 +39,12 @@ class AppliesApprovalFlowStatusFilterTest extends TestCase
         $this->assertContains(AdmissoesPrevista::STATUS_REPROVADO, $query->getBindings());
     }
 
-    public function test_aprovado_gestor_filtra_coluna_gestor(): void
+    public function test_aprovado_gestor_nao_e_status_atual(): void
     {
         $query = $this->apply('aprovado_gestor');
 
-        $this->assertStringContainsString('status_aprovacao', $query->toSql());
-        $this->assertContains(AdmissoesPrevista::STATUS_APROVADO, $query->getBindings());
+        $this->assertStringContainsString('1 = 0', $query->toSql());
+        $this->assertNotContains(AdmissoesPrevista::STATUS_APROVADO, $query->getBindings());
     }
 
     public function test_reprovado_gestor_filtra_coluna_gestor(): void

@@ -77,7 +77,7 @@ class CihFilterApplier
         $status = (string) $status;
 
         // CIH: status (gestor: aberto|aprovado|reprovado) + resposta_rh (null|aprovado|reprovado). Sem etapa extra.
-        if (in_array($status, ['pendente_extra', 'aprovado_extra', 'reprovado_extra'], true)) {
+        if (in_array($status, ['pendente_extra', 'aprovado_extra', 'reprovado_extra', 'aprovado_gestor'], true)) {
             $query->whereRaw('1 = 0');
             return;
         }
@@ -95,11 +95,6 @@ class CihFilterApplier
                 ->where(function (Builder $q) {
                     $q->whereNull('resposta_rh')->orWhere('resposta_rh', '');
                 });
-            return;
-        }
-
-        if ($status === 'aprovado_gestor') {
-            $query->where('status', 'aprovado');
             return;
         }
 

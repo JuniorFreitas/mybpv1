@@ -721,7 +721,13 @@ import MybpCardCampo from '../../ui/MybpCardCampo.vue'
 import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
-import { buildOpcoesStatusFluxoAprovacao } from '../../../utils/opcoesStatusFluxoAprovacao'
+import {
+    etapaAtualFluxoAprovacao,
+    normalizarStatusUrlFluxo,
+    opcoesStatusFluxoAtual,
+    textoStatusFluxo,
+    varianteStatusFluxo
+} from '../../../utils/opcoesStatusFluxoAprovacao'
 
 export default {
     mixins: [ExportacaoMixin, Utils, configuracoes, ComboboxValidation],
@@ -1044,7 +1050,7 @@ export default {
             return opts
         },
         opcoesStatus() {
-            return buildOpcoesStatusFluxoAprovacao({
+            return opcoesStatusFluxoAtual({
                 temAprovacaoExtra: this.temAprovacaoExtra,
                 nomeAprovacaoExtra: this.nomeAprovacaoExtra
             })
@@ -1097,30 +1103,20 @@ export default {
         solicitanteLista(item) {
             return item?.solicitante?.nome || 'Não informado'
         },
+        etapaAtualLista(item) {
+            return etapaAtualFluxoAprovacao(item, {
+                campoGestor: 'status_aprovacao',
+                temAprovacaoExtra: this.temAprovacaoExtra
+            })
+        },
         chaveStatusLista(item) {
-            if (!item) return 'aberto'
-            if (
-                item.status_aprovacao === 'reprovado' ||
-                item.status_aprovacao_extra === 'reprovado' ||
-                item.status_aprovacao_rh === 'reprovado'
-            ) {
-                return 'reprovado'
-            }
-            if (item.status_aprovacao_rh === 'aprovado') return 'rh'
-            if (this.temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') return 'extra'
-            if (item.status_aprovacao === 'aprovado') return 'gestor'
-            return 'aberto'
+            return varianteStatusFluxo(this.etapaAtualLista(item))
         },
         classeBordaStatusLista(item) {
             return `mybp-card-corpo--${this.chaveStatusLista(item)}`
         },
         textoStatusLista(item) {
-            const chave = this.chaveStatusLista(item)
-            if (chave === 'reprovado') return 'Reprovado'
-            if (chave === 'rh') return 'Aprovado RH'
-            if (chave === 'extra') return `Aprovado ${this.nomeAprovacaoExtra || 'Extra'}`
-            if (chave === 'gestor') return 'Aprovado Gestor'
-            return 'Em aberto'
+            return textoStatusFluxo(this.etapaAtualLista(item), this.nomeAprovacaoExtra)
         },
         fluxoStepsLista(item) {
             if (!item) return []
@@ -1208,7 +1204,7 @@ export default {
             if (urlParams.get('ordenacao')) this.controle.dados.ordenacao = urlParams.get('ordenacao')
             if (urlParams.get('campoBusca')) this.controle.dados.campoBusca = urlParams.get('campoBusca')
             if (urlParams.get('campoCPF')) this.controle.dados.campoCPF = urlParams.get('campoCPF')
-            if (urlParams.get('campoStatusAprovacao')) this.controle.dados.campoStatusAprovacao = urlParams.get('campoStatusAprovacao')
+            this.controle.dados.campoStatusAprovacao = normalizarStatusUrlFluxo(urlParams.get('campoStatusAprovacao'))
             if (urlParams.get('campoCentroCusto')) this.controle.dados.campoCentroCusto = urlParams.get('campoCentroCusto')
             if (urlParams.get('dataInicio')) this.controle.dados.dataInicio = urlParams.get('dataInicio')
             if (urlParams.get('dataFim')) this.controle.dados.dataFim = urlParams.get('dataFim')

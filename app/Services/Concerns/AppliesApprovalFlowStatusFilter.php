@@ -145,6 +145,22 @@ trait AppliesApprovalFlowStatusFilter
         });
     }
 
+    /**
+     * Aprovado no gestor ou na extra não é o status atual: a lista mostra a etapa seguinte.
+     *
+     * @param  EloquentBuilder|QueryBuilder  $query
+     */
+    protected function bloquearStatusAprovacaoIntermediaria(EloquentBuilder|QueryBuilder $query, ?string $status): bool
+    {
+        if (!in_array($status, ['aprovado_gestor', 'aprovado_extra'], true)) {
+            return false;
+        }
+
+        $query->whereRaw('1 = 0');
+
+        return true;
+    }
+
     protected function temAprovacaoExtraAtivaParaFiltro(string $tipoProcesso): bool
     {
         $empresaId = (int) ($this->user->empresa_id ?? 0);

@@ -181,9 +181,14 @@ class MudancaCargoFilterApplier
 
     private function applyCampoStatusAprovacao(Builder $query): void
     {
+        $status = isset($this->filtros['campoStatusAprovacao']) ? (string) $this->filtros['campoStatusAprovacao'] : null;
+        if ($this->bloquearStatusAprovacaoIntermediaria($query, $status)) {
+            return;
+        }
+
         $this->applyApprovalFlowStatusFilter(
             $query,
-            isset($this->filtros['campoStatusAprovacao']) ? (string) $this->filtros['campoStatusAprovacao'] : null,
+            $status,
             [
                 'gestor' => 'status_aprovacao_gestor',
                 'extra' => 'status_aprovacao_extra',

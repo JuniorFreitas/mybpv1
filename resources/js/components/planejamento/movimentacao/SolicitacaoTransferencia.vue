@@ -1211,28 +1211,24 @@ export default defineComponent({
         const opcoesStatus = computed(() => {
             const opts = [
                 { value: '', label: 'Todos os status' },
-                { value: 'aberto', label: 'Em aberto' }
+                { value: 'aberto', label: 'Em aberto (qualquer etapa)' }
             ]
             if (exigeAprovacaoGestorOrigem.value) {
                 opts.push(
                     { value: 'pendente_gestor_origem', label: 'Pendente Gestor Origem' },
-                    { value: 'aprovado_gestor_origem', label: 'Aprovado Gestor Origem' },
                     { value: 'reprovado_gestor_origem', label: 'Reprovado Gestor Origem' }
                 )
             }
             opts.push(
                 { value: 'pendente_gestor_destino', label: 'Pendente Gestor Destino' },
-                { value: 'aprovado_gestor_destino', label: 'Aprovado Gestor Destino' },
                 { value: 'reprovado_gestor_destino', label: 'Reprovado Gestor Destino' },
                 { value: 'pendente_gestor_unico', label: 'Pendente Gestor Aprovação' },
-                { value: 'aprovado_gestor_unico', label: 'Aprovado Gestor Aprovação' },
                 { value: 'reprovado_gestor_unico', label: 'Reprovado Gestor Aprovação' }
             )
             if (temAprovacaoExtra.value) {
                 const nomeExtra = nomeAprovacaoExtra.value || 'Extra'
                 opts.push(
                     { value: 'pendente_extra', label: `Pendente ${nomeExtra}` },
-                    { value: 'aprovado_extra', label: `Aprovado ${nomeExtra}` },
                     { value: 'reprovado_extra', label: `Reprovado ${nomeExtra}` }
                 )
             }
@@ -1723,22 +1719,39 @@ export default defineComponent({
             return item?.user_cadastrou?.nome ?? 'Não informado'
         }
 
+        function etapaReprovacaoTransferencia(item) {
+            if (item.status_aprovacao === 'reprovado') return 'reprovado_gestor_origem'
+            if (item.status_aprovacao_gestor_destino === 'reprovado') return 'reprovado_gestor_destino'
+            if (item.status_aprovacao_gestor_unico === 'reprovado') return 'reprovado_gestor_unico'
+            if (item.status_aprovacao_extra === 'reprovado') return 'reprovado_extra'
+            if (item.resposta_rh === 'reprovado') return 'reprovado_rh'
+            return ''
+        }
+
+        function etapaAtualTransferencia(item) {
+            if (!item) return 'pendente_gestor_origem'
+            const reprovado = etapaReprovacaoTransferencia(item)
+            if (reprovado) return reprovado
+            if (item.resposta_rh === 'aprovado') return 'aprovado_rh'
+            if (item.modo_aprovacao === 'gestor_unico') {
+                if (!item.status_aprovacao_gestor_unico && !gestorUnicoDispensadoItem(item)) {
+                    return 'pendente_gestor_unico'
+                }
+            } else {
+                if (exibeEtapaGestorOrigem(item) && !item.status_aprovacao) return 'pendente_gestor_origem'
+                if (item.exige_aprovacao_gestor_destino && !item.status_aprovacao_gestor_destino) {
+                    return 'pendente_gestor_destino'
+                }
+            }
+            if (temAprovacaoExtra.value && item.status_aprovacao_extra !== 'aprovado') return 'pendente_extra'
+            return 'pendente_rh'
+        }
+
         function chaveStatusLista(item) {
-            if (!item) return 'aberto'
-            if (itemReprovado(item)) return 'reprovado'
-            if (item.resposta_rh === 'aprovado') return 'rh'
-            if (temAprovacaoExtra.value && item.status_aprovacao_extra === 'aprovado') return 'extra'
-            if (
-                item.modo_aprovacao === 'gestor_unico' &&
-                (item.status_aprovacao_gestor_unico === 'aprovado' || gestorUnicoDispensadoItem(item))
-            ) {
-                return 'gestor'
-            }
-            if (item.exige_aprovacao_gestor_destino && item.status_aprovacao_gestor_destino === 'aprovado') {
-                return 'gestor'
-            }
-            if (exibeEtapaGestorOrigem(item) && item.status_aprovacao === 'aprovado') return 'gestor'
-            return 'aberto'
+            const etapa = etapaAtualTransferencia(item)
+            if (String(etapa).indexOf('reprovado') === 0) return 'reprovado'
+            if (etapa === 'aprovado_rh') return 'rh'
+            return 'pendente'
         }
 
         function classeBordaStatusLista(item) {
@@ -1746,38 +1759,21 @@ export default defineComponent({
         }
 
         function textoStatusLista(item) {
-            if (itemReprovado(item)) return 'Reprovado'
-            if (item.resposta_rh === 'aprovado') return 'Aprovado RH'
-            if (temAprovacaoExtra.value && item.status_aprovacao_extra === 'aprovado') {
-                return `Aprovado ${nomeAprovacaoExtra.value || 'Extra'}`
+            const extra = nomeAprovacaoExtra.value || 'Extra'
+            const textos = {
+                reprovado_gestor_origem: 'Reprovado Gestor Origem',
+                reprovado_gestor_destino: 'Reprovado Gestor Destino',
+                reprovado_gestor_unico: 'Reprovado Gestor Aprovação',
+                reprovado_extra: `Reprovado ${extra}`,
+                reprovado_rh: 'Reprovado RH',
+                aprovado_rh: 'Aprovado RH',
+                pendente_gestor_origem: 'Pendente Gestor Origem',
+                pendente_gestor_destino: 'Pendente Gestor Destino',
+                pendente_gestor_unico: 'Pendente Gestor Aprovação',
+                pendente_extra: `Pendente ${extra}`,
+                pendente_rh: 'Pendente RH'
             }
-            if (item.exige_aprovacao_gestor_destino && item.status_aprovacao_gestor_destino === 'aprovado') {
-                return 'Aprovado Gestor Destino'
-            }
-            if (origemEtapaDispensada(item) && item.exige_aprovacao_gestor_destino) {
-                return 'Aguardando Gestor Destino'
-            }
-            if (
-                origemEtapaOmitidaDoFluxo(item) &&
-                item.exige_aprovacao_gestor_destino &&
-                !item.status_aprovacao_gestor_destino &&
-                !itemReprovado(item)
-            ) {
-                return 'Aguardando Gestor Destino'
-            }
-            if (exibeEtapaGestorOrigem(item) && item.status_aprovacao === 'aprovado') {
-                return 'Aprovado Gestor Origem'
-            }
-            if (
-                item.modo_aprovacao === 'gestor_unico' &&
-                (item.status_aprovacao_gestor_unico === 'aprovado' || gestorUnicoDispensadoItem(item))
-            ) {
-                return 'Aprovado Gestor Aprovação'
-            }
-            if (item.modo_aprovacao === 'gestor_unico') {
-                return 'Aguardando Gestor Aprovação'
-            }
-            return 'Em aberto'
+            return textos[etapaAtualTransferencia(item)] || 'Pendente Gestor Origem'
         }
 
         function fluxoStepsLista(item) {
@@ -2335,7 +2331,15 @@ export default defineComponent({
             const campoCPF = urlParams.get('campoCPF')
             if (campoCPF) controle.dados.campoCPF = campoCPF
             const campoStatus = urlParams.get('campoStatus')
-            if (campoStatus) controle.dados.campoStatus = campoStatus
+            const statusIntermediario = [
+                'aprovado_gestor_origem',
+                'aprovado_gestor_destino',
+                'aprovado_gestor_unico',
+                'aprovado_extra'
+            ]
+            if (campoStatus && !statusIntermediario.includes(campoStatus)) {
+                controle.dados.campoStatus = campoStatus
+            }
             const campoCentroCusto = urlParams.get('campoCentroCusto')
             if (campoCentroCusto) controle.dados.campoCentroCusto = campoCentroCusto
             const dataInicio = urlParams.get('dataInicio')

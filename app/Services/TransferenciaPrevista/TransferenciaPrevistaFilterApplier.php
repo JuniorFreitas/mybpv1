@@ -188,6 +188,17 @@ class TransferenciaPrevistaFilterApplier
             return;
         }
 
+        if (in_array($status, [
+            'aprovado_gestor_origem',
+            'aprovado_gestor_destino',
+            'aprovado_gestor_unico',
+            'aprovado_extra',
+        ], true)) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
         // Em aberto: ainda em andamento (sem RH final) e sem reprovação em nenhuma etapa.
         // Não basta status_aprovacao null — origem dispensada/omitida deixa null e a
         // reprova pode estar em destino, gestor único, extra ou RH.
