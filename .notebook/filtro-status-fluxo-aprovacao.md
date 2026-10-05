@@ -9,7 +9,7 @@ Transferência: opções próprias (origem/destino/único) em `SolicitacaoTransf
 ## Regras
 - `aberto` = em andamento (sem RH final e sem reprova em nenhuma etapa)
 - `pendente_*` = etapa atual aguardando decisão
-- `aprovado_*` / `reprovado_*` = coluna da etapa com o valor
+- Nas abas de movimentação e na CIH, `aprovado_gestor` e `aprovado_extra` não são status atual: o card e o filtro mostram a etapa seguinte. `reprovado_*` e `aprovado_rh` continuam na coluna da etapa. Requisição de Vagas ainda filtra `aprovado_gestor` pela coluna.
 - Extra só aparece no combo se `temAprovacaoExtra`
 - Backend resolve extra via `AprovacaoExtraConfig::getConfigAtiva` por tipo (`demissao`, `admissao`, `ferias`, `valor_extra`, `mudanca_cargo`, `intermitente_fixo`, `requisicao_vaga`)
 - Demissão listagem (Query Builder `dp`) usa `DemissaoPrevistaFilterApplier::applyStatusWithColumns()`

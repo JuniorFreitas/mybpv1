@@ -34,6 +34,7 @@ trait AppliesApprovalFlowStatusFilter
         $extra = $columns['extra'];
         $rh = $columns['rh'];
 
+        // Em aberto = pendente na etapa atual (gestor, extra ou RH), como "reprovado" agrupa qualquer etapa.
         if ($status === 'aberto') {
             $this->whereApprovalFlowEmAndamento($query, $gestor, $extra, $rh, $reprovado);
             return;
@@ -142,6 +143,22 @@ trait AppliesApprovalFlowStatusFilter
         $query->where(function ($q) use ($coluna, $reprovado) {
             $q->whereNull($coluna)->orWhere($coluna, '!=', $reprovado);
         });
+    }
+
+    /**
+     * Aprovado no gestor ou na extra não é o status atual: a lista mostra a etapa seguinte.
+     *
+     * @param  EloquentBuilder|QueryBuilder  $query
+     */
+    protected function bloquearStatusAprovacaoIntermediaria(EloquentBuilder|QueryBuilder $query, ?string $status): bool
+    {
+        if (!in_array($status, ['aprovado_gestor', 'aprovado_extra'], true)) {
+            return false;
+        }
+
+        $query->whereRaw('1 = 0');
+
+        return true;
     }
 
     protected function temAprovacaoExtraAtivaParaFiltro(string $tipoProcesso): bool

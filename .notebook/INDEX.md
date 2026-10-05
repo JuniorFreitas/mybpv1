@@ -1,8 +1,10 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-10-01
+Last updated: 2026-10-02
 
+- [mudanca-cargo-novo-cargo-validacao](mudanca-cargo-novo-cargo-validacao.md) — Validar `nova_vaga_aberta_id` (não `novo_cargo_id`) | gotcha | mudanca-cargo, validacao
+- [ferias-status-em-aberto](ferias-status-em-aberto.md) — Abas de movimentação: card e filtro na etapa atual | flow | ferias, filtro, status
 - [aniversariante-mensagem](aniversariante-mensagem.md) — Lista só status ADMITIDO; scopeAdmitidos ≠ ADMITIDO | flow | aniversariante, email
 - [recrutamentos-filtros-compactos](recrutamentos-filtros-compactos.md) — Recrutamentos: filtros compactos + período ISO | pattern | curriculo, filtro, compactos
 - [form-parecer-rh-modal-padrao](form-parecer-rh-modal-padrao.md) — FormParecerRh mybp + combos + MybpBoolCombobox + validarCampos | pattern | entrevista, modal, combobox
@@ -12,7 +14,7 @@ Last updated: 2026-10-01
 - [endereco-modal-padrao](endereco-modal-padrao.md) — Endereco mybp + UF combo + ViaCEP denso | pattern | admissao, modal, combobox, endereco
 - [telefones-modal-padrao](telefones-modal-padrao.md) — Telefones mybp + combo tipo + validarCampos | pattern | admissao, modal, combobox, telefone
 - [form-resultado-integrado-modal-padrao](form-resultado-integrado-modal-padrao.md) — FormResultadoIntegrado mybp + combos + validarCampos | pattern | admissao, entrevista, modal, combobox
-- [dados-bancarios-modal-padrao](dados-bancarios-modal-padrao.md) — DadosBancarios mybp + combo PIX/tipo chave + validarCampos | pattern | admissao, modal, combobox
+- [dados-bancarios-modal-padrao](dados-bancarios-modal-padrao.md) — DadosBancarios: select nativo PIX (sim/nao) + tipo chave; Combobox Teleport quebrava no modal | gotcha | admissao, modal, pix
 - [admissao-processo-filtros-compactos](admissao-processo-filtros-compactos.md) — Filtros compactos em Admissão > Processo | pattern | admissao, filtro, compactos
 - [cih-modal-padrao-ux](cih-modal-padrao-ux.md) — Modal CIH no padrão mybp-modal-form + ComboboxValidation | pattern | cih, modal, combobox
 - [cih-fluxo-padrao-ux](cih-fluxo-padrao-ux.md) — CIH: card detalhe + MybpFluxoAprovacao + filtro status por etapa | pattern | cih, card-detalhe, fluxo, filtro

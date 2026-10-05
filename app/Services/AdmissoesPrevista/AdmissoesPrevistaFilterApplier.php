@@ -128,9 +128,14 @@ class AdmissoesPrevistaFilterApplier
 
     private function applyCampoStatusAprovacao(Builder $query): void
     {
+        $status = isset($this->filtros['campoStatusAprovacao']) ? (string) $this->filtros['campoStatusAprovacao'] : null;
+        if ($this->bloquearStatusAprovacaoIntermediaria($query, $status)) {
+            return;
+        }
+
         $this->applyApprovalFlowStatusFilter(
             $query,
-            isset($this->filtros['campoStatusAprovacao']) ? (string) $this->filtros['campoStatusAprovacao'] : null,
+            $status,
             [
                 'gestor' => 'admissoes_previstas.status_aprovacao',
                 'extra' => 'admissoes_previstas.status_aprovacao_extra',
