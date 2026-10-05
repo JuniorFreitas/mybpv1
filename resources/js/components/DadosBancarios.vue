@@ -54,18 +54,17 @@
                             Tem PIX? <span class="text-danger">*</span>
                         </label>
                         <div class="mybp-combobox-wrap">
-                            <combobox-auto-complete
-                                :instance-id="`db-pix-${hash}`"
-                                :input-id="`db-pix-${hash}`"
+                            <select
+                                :id="`db-pix-${hash}`"
+                                class="form-control form-control-sm"
                                 v-model="pixCombo"
-                                :options="opcoesSimNao"
                                 :disabled="visualizar"
-                                placeholder-blur="Selecione..."
-                                empty-message="Nenhuma opção."
-                                :max-results="5"
-                                @opening="fecharOutrosComboboxes(`db-pix-${hash}`)"
-                                @select="limparComboboxInvalido(`db-pix-${hash}`)"
-                            ></combobox-auto-complete>
+                                @change="onPixChange"
+                            >
+                                <option value="">Selecione...</option>
+                                <option value="sim">Sim</option>
+                                <option value="nao">Não</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -75,18 +74,22 @@
                             Tipo de Chave <span class="text-danger">*</span>
                         </label>
                         <div class="mybp-combobox-wrap">
-                            <combobox-auto-complete
-                                :instance-id="`db-tipo-chave-${hash}`"
-                                :input-id="`db-tipo-chave-${hash}`"
+                            <select
+                                :id="`db-tipo-chave-${hash}`"
+                                class="form-control form-control-sm"
                                 v-model="model.tipochavepix"
-                                :options="opcoesTipoChavePix"
                                 :disabled="visualizar"
-                                placeholder-blur="Selecione..."
-                                empty-message="Nenhum tipo encontrado."
-                                :max-results="10"
-                                @opening="fecharOutrosComboboxes(`db-tipo-chave-${hash}`)"
-                                @select="limparComboboxInvalido(`db-tipo-chave-${hash}`)"
-                            ></combobox-auto-complete>
+                                @change="limparComboboxInvalido(`db-tipo-chave-${hash}`)"
+                            >
+                                <option value="">Selecione...</option>
+                                <option
+                                    v-for="opt in opcoesTipoChavePix"
+                                    :key="opt.value"
+                                    :value="opt.value"
+                                >
+                                    {{ opt.label }}
+                                </option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -111,19 +114,19 @@
 </template>
 
 <script>
-import ComboboxAutoComplete from './ComboboxAutoComplete.vue'
 import ComboboxValidation from '../mixins/ComboboxValidation'
 
+/** Domínio alinhado a App\Models\UsuarioConta::TIPOS_CHAVES */
 const TIPOS_CHAVE_PIX = [
-    { value: 'CPF', label: 'CPF' },
-    { value: 'CNPJ', label: 'CNPJ' },
-    { value: 'EMAIL', label: 'E-mail' },
-    { value: 'ALEATORIA', label: 'Aleatória' }
+    { value: 'cpf', label: 'CPF' },
+    { value: 'cnpj', label: 'CNPJ' },
+    { value: 'email', label: 'E-mail' },
+    { value: 'telefone', label: 'Telefone' },
+    { value: 'aleatoria', label: 'Aleatória' }
 ]
 
 export default {
     name: 'DadosBancarios',
-    components: { ComboboxAutoComplete },
     mixins: [ComboboxValidation],
     props: {
         model: {
@@ -149,16 +152,13 @@ export default {
         }
     },
     computed: {
-        opcoesSimNao() {
-            return [
-                { value: 'sim', label: 'Sim' },
-                { value: 'nao', label: 'Não' }
-            ]
-        },
         opcoesTipoChavePix() {
             const base = TIPOS_CHAVE_PIX.slice()
             const atual = this.model && this.model.tipochavepix
-            if (atual && !base.some((o) => o.value === atual)) {
+            if (!atual) return base
+
+            const normalizado = String(atual).trim().toLowerCase()
+            if (normalizado && !base.some((o) => o.value === normalizado)) {
                 base.push({ value: atual, label: String(atual) })
             }
             return base
@@ -177,17 +177,40 @@ export default {
             }
         }
     },
+    mounted() {
+        this.normalizarTipoChave()
+    },
+    watch: {
+        'model.tipochavepix'(val) {
+            this.normalizarTipoChave(val)
+        }
+    },
     methods: {
-        fecharOutrosComboboxes() {},
+        normalizarTipoChave(val) {
+            if (!this.model) return
+            const bruto = val !== undefined ? val : this.model.tipochavepix
+            if (bruto == null || bruto === '') return
+            const normalizado = String(bruto).trim().toLowerCase()
+            if (TIPOS_CHAVE_PIX.some((o) => o.value === normalizado) && bruto !== normalizado) {
+                this.model.tipochavepix = normalizado
+            }
+        },
         boolToCombo(val) {
-            if (val === true || val === 'true' || val === 1 || val === '1') return 'sim'
-            if (val === false || val === 'false' || val === 0 || val === '0') return 'nao'
+            if (val === true || val === 1 || val === '1') return 'sim'
+            if (val === false || val === 0 || val === '0') return 'nao'
+            if (val == null || val === '') return ''
+            const s = String(val).trim().toLowerCase()
+            if (s === 'sim' || s === 'true' || s === 's') return 'sim'
+            if (s === 'nao' || s === 'não' || s === 'false' || s === 'n') return 'nao'
             return ''
         },
         comboToBool(v) {
             if (v === 'sim') return true
             if (v === 'nao') return false
             return ''
+        },
+        onPixChange() {
+            this.limparComboboxInvalido(`db-pix-${this.hash}`)
         },
         validarCampos() {
             if (this.visualizar) return true
@@ -234,7 +257,7 @@ export default {
             }
 
             return this.validarInputsAtivosVisiveis(`dados-bancarios-${this.hash}`, {
-                preservarIds: []
+                preservarIds: [`db-pix-${this.hash}`, `db-tipo-chave-${this.hash}`]
             })
         }
     }

@@ -2,10 +2,16 @@
 
 ## Escopo
 - `resources/js/components/DadosBancarios.vue`: `mybp-modal-secao` + `mybp-label` + `form-control-sm`
-- PIX e Tipo de Chave → `ComboboxAutoComplete` + `ComboboxValidation`
-- Tipo chave: CPF, CNPJ, EMAIL, ALEATORIA (domínio importação); valor legado fora da lista entra nas opções
+- Tem PIX e Tipo de Chave → **`<select>` nativo** (valores string) + `ComboboxValidation` no submit
+- Tipo chave: domínio `UsuarioConta::TIPOS_CHAVES` (`cpf`, `cnpj`, `email`, `telefone`, `aleatoria`); legado em maiúsculo é normalizado
 - `validarCampos()` no submit via refs `dadosBancariosModal` / `dadosBancariosAvulsa`
 
-## Gotcha
-- Nested SFC: IDs com `hash` OK (não Blade in-DOM)
-- `model.pix` continua boolean; combo usa `sim`/`nao` via get/set
+## Gotcha — Tem PIX quebrado com Combobox
+- Migração para `ComboboxAutoComplete` (Teleport) no rodapé do modal de admissão impedia selecionar Sim/Não; campo obrigatório bloqueava o save
+- **Não** voltar a `<option :value="true|false">` — boolean em select nativo do Vue é instável
+- Padrão seguro: `v-model` string `''|sim|nao` via computed `pixCombo` ↔ `model.pix` boolean
+- `model.pix` continua boolean no payload/API
+
+## Refs
+- Blade: `resources/views/g/admissao/processo/index.blade.php`
+- Model: `app/Models/UsuarioConta.php`

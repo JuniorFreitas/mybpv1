@@ -383,7 +383,7 @@
                                     <autocomplete
                                         :id="`novo_cargo_${hash}`"
                                         :caminho="caminho_autocomplete_vagas"
-                                        :valido="form.autocomplete_label_vaga_nova !== ''"
+                                        :valido="!!form.nova_vaga_aberta_id"
                                         v-model="form.autocomplete_label_vaga_nova"
                                         placeholder="Novo Cargo"
                                         @onselect="selecionaVagaNovo"
@@ -1899,8 +1899,13 @@ export default {
             this.form.autocomplete_label_vaga_anterior = obj.vaga.nome
         },
         selecionaVagaNovo(obj) {
-            this.form.nova_vaga_aberta_id = obj.id
-            this.form.autocomplete_label_vaga_nova = obj.vaga.nome
+            this.form.nova_vaga_aberta_id = obj && obj.id != null ? obj.id : ''
+            const nomeVaga =
+                (obj && obj.vaga && obj.vaga.nome) ||
+                (obj && obj.Vaga && obj.Vaga.nome) ||
+                (obj && obj.label) ||
+                ''
+            this.form.autocomplete_label_vaga_nova = nomeVaga
         },
         selecionaColaborador(obj) {
             this.form.colaborador_id = obj.curriculo_id
@@ -2131,7 +2136,7 @@ export default {
                 }
             }
 
-            if (!this.form.mantem_cargo && !this.form.novo_cargo_id) {
+            if (!this.form.mantem_cargo && !this.form.nova_vaga_aberta_id) {
                 valida_campo_vazio($(`#novo_cargo_${this.hash}`), 1)
                 mostraErro('', 'Campo NOVO CARGO não pode ficar vazio')
                 return false
