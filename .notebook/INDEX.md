@@ -1,8 +1,9 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-10-02
+Last updated: 2026-10-07
 
+- [dados-bancarios-pix-nao-validacao](dados-bancarios-pix-nao-validacao.md) — Tem PIX=Não bloqueava avulsa (banco_conta + sync select) | gotcha | admissao, pix
 - [mudanca-cargo-novo-cargo-validacao](mudanca-cargo-novo-cargo-validacao.md) — Validar `nova_vaga_aberta_id` (não `novo_cargo_id`) | gotcha | mudanca-cargo, validacao
 - [ferias-status-em-aberto](ferias-status-em-aberto.md) — Abas de movimentação: card e filtro na etapa atual | flow | ferias, filtro, status
 - [aniversariante-mensagem](aniversariante-mensagem.md) — Lista só status ADMITIDO; scopeAdmitidos ≠ ADMITIDO | flow | aniversariante, email

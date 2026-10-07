@@ -1025,6 +1025,49 @@ const app = createApp({
             if (v === 'nao') return false
             return ''
         },
+        bancoContaPadrao() {
+            return {
+                banco: 'Banco do Brasil',
+                agencia: '',
+                conta: '',
+                pix: false,
+                tipochavepix: '',
+                chavepix: ''
+            }
+        },
+        /**
+         * Garante feedback.banco_conta após Object.assign da busca CPF
+         * (API pode omitir a chave e o select Tem PIX fica sem model).
+         */
+        garantirBancoContaAvulsa() {
+            if (!this.formAvulsa.feedback) {
+                this.formAvulsa.feedback = {}
+            }
+            const padrao = this.bancoContaPadrao()
+            const atual = this.formAvulsa.feedback.banco_conta
+            if (!atual || typeof atual !== 'object') {
+                this.formAvulsa.feedback.banco_conta = { ...padrao }
+                return
+            }
+            if (atual.pix === undefined || atual.pix === null) {
+                atual.pix = false
+            }
+            if (atual.banco === undefined || atual.banco === null) {
+                atual.banco = padrao.banco
+            }
+            if (atual.agencia === undefined || atual.agencia === null) {
+                atual.agencia = ''
+            }
+            if (atual.conta === undefined || atual.conta === null) {
+                atual.conta = ''
+            }
+            if (atual.tipochavepix === undefined || atual.tipochavepix === null) {
+                atual.tipochavepix = ''
+            }
+            if (atual.chavepix === undefined || atual.chavepix === null) {
+                atual.chavepix = ''
+            }
+        },
         fecharOutrosComboboxesModal() {},
         getDataAso(item) {
             if (item.admissao && item.admissao.ultimo_aso && item.admissao.ultimo_aso.data_realizacao) return item.admissao.ultimo_aso.data_realizacao
@@ -1262,6 +1305,8 @@ const app = createApp({
                             if (data.achou) {
                                 Object.assign(this.formAvulsa, response.data)
                                 Object.assign(this.form.admissao, response.data.admissao)
+                                // Object.assign substitui feedback e pode remover banco_conta
+                                this.garantirBancoContaAvulsa()
                                 this.exibiFormulario = true
                                 this.formAvulsa.preload = false
                                 this.formAvulsa.ex_funcionario = data.ex_funcionario
@@ -1272,6 +1317,7 @@ const app = createApp({
                                 let cpf = this.formAvulsa.curriculo.cpf
                                 this.formAvulsa = _.cloneDeep(this.formAvulsaDefault)
                                 this.formAvulsa.curriculo.cpf = cpf
+                                this.garantirBancoContaAvulsa()
                                 this.exibiFormulario = true
                                 this.formAvulsa.preload = false
                             }
