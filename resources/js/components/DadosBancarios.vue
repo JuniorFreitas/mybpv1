@@ -57,9 +57,9 @@
                             <select
                                 :id="`db-pix-${hash}`"
                                 class="form-control form-control-sm"
-                                v-model="pixCombo"
+                                :value="pixCombo"
                                 :disabled="visualizar"
-                                @change="onPixChange"
+                                @change="onPixSelectChange"
                             >
                                 <option value="">Selecione...</option>
                                 <option value="sim">Sim</option>
@@ -136,7 +136,7 @@ export default {
                 banco: '',
                 agencia: '',
                 conta: '',
-                pix: '',
+                pix: false,
                 tipochavepix: '',
                 chavepix: ''
             })
@@ -163,18 +163,8 @@ export default {
             }
             return base
         },
-        pixCombo: {
-            get() {
-                return this.boolToCombo(this.model && this.model.pix)
-            },
-            set(v) {
-                if (!this.model) return
-                this.model.pix = this.comboToBool(v)
-                if (this.model.pix !== true) {
-                    this.model.tipochavepix = ''
-                    this.model.chavepix = ''
-                }
-            }
+        pixCombo() {
+            return this.boolToCombo(this.model ? this.model.pix : undefined)
         }
     },
     mounted() {
@@ -197,6 +187,7 @@ export default {
         },
         boolToCombo(val) {
             if (val === true || val === 1 || val === '1') return 'sim'
+            // false é resposta válida ("Não") — não tratar como vazio
             if (val === false || val === 0 || val === '0') return 'nao'
             if (val == null || val === '') return ''
             const s = String(val).trim().toLowerCase()
@@ -209,11 +200,50 @@ export default {
             if (v === 'nao') return false
             return ''
         },
-        onPixChange() {
+        aplicarPixCombo(v) {
+            if (!this.model) return
+            this.model.pix = this.comboToBool(v)
+            if (this.model.pix !== true) {
+                this.model.tipochavepix = ''
+                this.model.chavepix = ''
+            }
+        },
+        onPixSelectChange(event) {
+            const v = event && event.target ? event.target.value : ''
+            this.aplicarPixCombo(v)
             this.limparComboboxInvalido(`db-pix-${this.hash}`)
+        },
+        /**
+         * Garante model.pix alinhado ao <select> (evita desync Vue/DOM
+         * em que a tela mostra "Não" mas o model ainda está vazio).
+         */
+        sincronizarPixDoSelect() {
+            const el = document.getElementById(`db-pix-${this.hash}`)
+            if (!el || !this.model) return
+            const v = String(el.value || '')
+            if (v !== 'sim' && v !== 'nao') return
+            if (this.boolToCombo(this.model.pix) !== v) {
+                this.aplicarPixCombo(v)
+            }
+        },
+        obterPixComboValor() {
+            this.sincronizarPixDoSelect()
+            const doModel = this.boolToCombo(this.model ? this.model.pix : undefined)
+            if (doModel === 'sim' || doModel === 'nao') return doModel
+            const el = document.getElementById(`db-pix-${this.hash}`)
+            const doDom = el ? String(el.value || '') : ''
+            if (doDom === 'sim' || doDom === 'nao') {
+                this.aplicarPixCombo(doDom)
+                return doDom
+            }
+            return ''
         },
         validarCampos() {
             if (this.visualizar) return true
+            if (!this.model) {
+                if (typeof mostraErro === 'function') mostraErro('', 'Dados bancários indisponíveis')
+                return false
+            }
 
             if (!String(this.model.banco || '').trim()) {
                 const el = document.getElementById(`db-banco-${this.hash}`)
@@ -234,7 +264,7 @@ export default {
                 return false
             }
             if (
-                !this.exigirCombobox(this.pixCombo, `db-pix-${this.hash}`, {
+                !this.exigirCombobox(this.obterPixComboValor(), `db-pix-${this.hash}`, {
                     toastMsg: 'Selecione se tem PIX'
                 })
             ) {

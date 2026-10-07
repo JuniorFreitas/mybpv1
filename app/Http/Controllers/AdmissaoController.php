@@ -2013,6 +2013,17 @@ class AdmissaoController extends Controller
 
                 if ($curriculo->FeedBack && $curriculo->FeedBack->BancoConta) {
                     $feedback->banco_conta = $curriculo->FeedBack->BancoConta;
+                } else {
+                    // Sempre enviar banco_conta: Object.assign no front substitui feedback
+                    // e, sem esta chave, o select "Tem PIX?" fica sem model válido.
+                    $feedback->banco_conta = (object) [
+                        'banco' => 'Banco do Brasil',
+                        'agencia' => '',
+                        'conta' => '',
+                        'pix' => false,
+                        'tipochavepix' => '',
+                        'chavepix' => '',
+                    ];
                 }
 
                 //Pode voltar
