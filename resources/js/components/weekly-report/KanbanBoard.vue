@@ -1,19 +1,18 @@
 <template>
-    <div class="wr-kanban">
+    <div class="wr-kanban" :style="{ background: boardBg }">
         <div class="wr-kanban__topbar">
-            <button type="button" class="btn btn-sm btn-outline-primary" @click="$emit('back')">
-                <i class="fas fa-arrow-left"></i>
-                Quadros
+            <button type="button" class="wr-kanban__chip wr-kanban__chip--primary" @click="$emit('back')">
+                <i class="fas fa-th-large"></i>
+                <span>Quadros</span>
             </button>
 
             <div class="wr-kanban__title-area">
                 <h4
                     v-if="!editingTitle"
                     class="wr-kanban__title mb-0"
-                    :title="canUpdateQuadro ? 'Clique para renomear' : ''"
-                    @click="canUpdateQuadro ? startEditTitle() : null"
+                    :title="canRenameQuadro ? 'Clique para renomear' : ''"
+                    @click="canRenameQuadro ? startEditTitle() : null"
                 >
-                    <i class="fas fa-columns mr-2 text-primary"></i>
                     {{ quadro.titulo }}
                 </h4>
                 <input
@@ -27,21 +26,48 @@
                 />
             </div>
 
-            <div v-if="atividades && atividades.length" class="wr-kanban__activity d-none d-lg-flex">
-                <small
-                    v-for="log in atividades.slice(0, 2)"
-                    :key="log.id"
-                    class="wr-activity-item"
-                    :title="(log.usuario?.nome || 'Alguém') + ' ' + log.descricao"
+            <div class="wr-kanban__members">
+                <span
+                    v-for="m in membrosPreview"
+                    :key="m.id"
+                    class="wr-kanban__avatar wr-tip"
+                    :data-tip="m.nome + (m.papel === 'dono' ? ' (Dono)' : '')"
+                    :aria-label="m.nome + (m.papel === 'dono' ? ' (Dono)' : '')"
+                    tabindex="0"
                 >
-                    <i class="fas fa-history mr-1"></i>
-                    {{ log.usuario?.nome || 'Alguém' }} {{ log.descricao }}
-                </small>
+                    {{ inicial(m.nome) }}
+                </span>
+                <span
+                    v-if="membrosExtra > 0"
+                    class="wr-kanban__avatar wr-kanban__avatar--more wr-tip"
+                    :data-tip="membrosExtra + ' membro(s)'"
+                    :aria-label="membrosExtra + ' membro(s)'"
+                    tabindex="0"
+                >
+                    +{{ membrosExtra }}
+                </span>
+                <button type="button" class="wr-kanban__chip wr-kanban__chip--primary" @click="shareOpen = true">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Compartilhar</span>
+                </button>
             </div>
         </div>
 
-        <div class="wr-kanban__board">
+        <BoardShareModal
+            :open="shareOpen"
+            :empresa-id="empresaId"
+            :quadro-id="quadro.id"
+            :sou-dono="!!quadro.sou_dono"
+            @close="shareOpen = false"
+            @changed="$emit('members-changed')"
+        />
+
+        <div
+            class="wr-kanban__board"
+            :class="{ 'wr-kanban__board--empty': !listasLocal.length }"
+        >
             <draggable
+                v-show="listasLocal.length"
                 :list="listasLocal"
                 item-key="id"
                 class="wr-kanban__columns"
@@ -74,34 +100,50 @@
                                 @click="canUpdateLista ? startEditLista(lista) : null"
                             >
                                 {{ lista.titulo }}
-                                <span class="badge badge-light border ml-1">{{ (lista.tarefas || []).length }}</span>
                             </h5>
+                            <span class="wr-lista__count">{{ (lista.tarefas || []).length }}</span>
 
-                            <div v-if="canUpdateLista || canDeleteLista" class="dropdown ml-auto">
+                            <div
+                                v-if="canUpdateLista || canDeleteLista"
+                                class="wr-lista__menu"
+                                @click.stop
+                                @mousedown.stop
+                                @pointerdown.stop
+                            >
                                 <button
-                                    class="btn btn-sm btn-link text-muted p-0 px-1"
                                     type="button"
-                                    data-toggle="dropdown"
+                                    class="wr-lista__menu-btn"
+                                    title="Ações da lista"
+                                    aria-label="Ações da lista"
+                                    :aria-expanded="listaMenuId === lista.id"
+                                    @click="toggleListaMenu(lista.id, $event)"
                                 >
                                     <i class="fas fa-ellipsis-h"></i>
                                 </button>
-                                <div class="dropdown-menu dropdown-menu-right">
-                                    <a
+                                <div
+                                    v-if="listaMenuId === lista.id"
+                                    class="wr-lista__menu-panel"
+                                    role="menu"
+                                    :style="listaMenuStyle"
+                                >
+                                    <button
                                         v-if="canUpdateLista"
-                                        class="dropdown-item"
-                                        href="#"
-                                        @click.prevent="startEditLista(lista)"
+                                        type="button"
+                                        class="wr-lista__menu-item"
+                                        role="menuitem"
+                                        @click="onListaMenuRename(lista)"
                                     >
-                                        Renomear
-                                    </a>
-                                    <a
+                                        <i class="fas fa-pen"></i> Renomear
+                                    </button>
+                                    <button
                                         v-if="canDeleteLista"
-                                        class="dropdown-item text-danger"
-                                        href="#"
-                                        @click.prevent="$emit('delete-lista', lista)"
+                                        type="button"
+                                        class="wr-lista__menu-item wr-lista__menu-item--danger"
+                                        role="menuitem"
+                                        @click="onListaMenuDelete(lista)"
                                     >
-                                        Excluir lista
-                                    </a>
+                                        <i class="fas fa-trash"></i> Excluir lista
+                                    </button>
                                 </div>
                             </div>
                         </header>
@@ -131,36 +173,32 @@
                             </template>
                         </draggable>
 
-                        <div v-if="!(lista.tarefas || []).length && addingListaId !== lista.id" class="wr-lista__empty">
-                            Arraste um card ou adicione abaixo
-                        </div>
-
                         <footer v-if="canInsertTarefa" class="wr-lista__footer">
-                            <form v-if="addingListaId === lista.id" @submit.prevent="criarTarefa(lista)">
+                            <form v-if="addingListaId === lista.id" class="wr-lista__composer" @submit.prevent="criarTarefa(lista)">
                                 <textarea
                                     ref="novaTarefaInput"
-                                    v-model.trim="novaTarefaTitulo"
+                                    v-model="novaTarefaTitulo"
                                     class="form-control form-control-sm mb-2"
                                     rows="2"
-                                    placeholder="Título do card"
+                                    placeholder="Digite um título para este card…"
                                     @keydown.enter.exact.prevent="criarTarefa(lista)"
                                     @keydown.esc.prevent="cancelAdd"
                                 ></textarea>
-                                <button class="btn btn-sm btn-primary mr-1" type="submit" :disabled="!novaTarefaTitulo || savingTarefa">
+                                <button class="btn btn-sm btn-success mr-1" type="submit" :disabled="!novaTarefaTitulo.trim() || savingTarefa">
                                     <i v-if="savingTarefa" class="fa fa-spinner fa-pulse"></i>
-                                    Adicionar
+                                    Adicionar card
                                 </button>
-                                <button class="btn btn-sm btn-outline-secondary" type="button" @click="cancelAdd">
-                                    Cancelar
+                                <button class="btn btn-sm btn-link text-muted p-0 px-1" type="button" @click="cancelAdd">
+                                    <i class="fas fa-times"></i>
                                 </button>
                             </form>
                             <button
                                 v-else
                                 type="button"
-                                class="btn btn-sm btn-outline-primary btn-block"
+                                class="wr-lista__add-card"
                                 @click="startAdd(lista)"
                             >
-                                <i class="fas fa-plus"></i> Adicionar card
+                                <i class="fas fa-plus"></i> Adicionar um card
                             </button>
                         </footer>
                     </section>
@@ -168,24 +206,42 @@
             </draggable>
 
             <section v-if="canInsertLista" class="wr-lista wr-lista--add">
-                <form v-if="addingLista" class="p-2" @submit.prevent="criarLista">
+                <form v-if="addingLista" class="wr-lista__composer wr-lista__composer--add-list" @submit.prevent="criarLista">
                     <input
                         ref="novaListaInput"
-                        v-model.trim="novaListaTitulo"
+                        v-model="novaListaTitulo"
                         class="form-control form-control-sm mb-2"
-                        placeholder="Nome da lista"
+                        placeholder="Insira o título da lista…"
                         @keydown.esc.prevent="addingLista = false"
                     />
-                    <button class="btn btn-sm btn-primary mr-1" type="submit" :disabled="!novaListaTitulo || savingLista">
-                        <i v-if="savingLista" class="fa fa-spinner fa-pulse"></i>
-                        Adicionar lista
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary" type="button" @click="addingLista = false">
-                        Cancelar
-                    </button>
+                    <div class="wr-lista__composer-actions">
+                        <button
+                            class="btn btn-sm btn-outline-primary"
+                            type="submit"
+                            :disabled="!novaListaTitulo.trim() || savingLista"
+                        >
+                            <i v-if="savingLista" class="fa fa-spinner fa-pulse"></i>
+                            <template v-else>Adicionar lista</template>
+                        </button>
+                        <button
+                            class="btn btn-sm btn-link text-danger p-0 px-1"
+                            type="button"
+                            title="Cancelar"
+                            aria-label="Cancelar"
+                            @click="addingLista = false"
+                        >
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </form>
-                <button v-else type="button" class="btn btn-sm btn-light btn-block wr-lista__add-btn" @click="startAddLista">
-                    <i class="fas fa-plus"></i> Adicionar lista
+                <button
+                    v-else
+                    type="button"
+                    class="wr-kanban__chip wr-kanban__chip--primary wr-kanban__chip--block"
+                    @click="startAddLista"
+                >
+                    <i class="fas fa-plus"></i>
+                    <span>Adicionar outra lista</span>
                 </button>
             </section>
         </div>
@@ -195,12 +251,15 @@
 <script>
 import draggable from 'vuedraggable'
 import TaskCard from './TaskCard.vue'
+import BoardShareModal from './BoardShareModal.vue'
+import { inicialNome, quadroTileBg } from './api'
 
 export default {
     name: 'KanbanBoard',
-    components: { draggable, TaskCard },
+    components: { draggable, TaskCard, BoardShareModal },
     props: {
         quadro: { type: Object, required: true },
+        empresaId: { type: [Number, String], required: true },
         listas: { type: Array, default: () => [] },
         atividades: { type: Array, default: () => [] },
         canUpdateQuadro: { type: Boolean, default: false },
@@ -220,13 +279,16 @@ export default {
         'reorder-listas',
         'create-tarefa',
         'reorder-tarefas',
-        'open-tarefa'
+        'open-tarefa',
+        'members-changed'
     ],
     data() {
         return {
             editingTitle: false,
             tituloLocal: this.quadro.titulo,
             editingListaId: null,
+            listaMenuId: null,
+            listaMenuStyle: null,
             addingLista: false,
             novaListaTitulo: '',
             addingListaId: null,
@@ -236,7 +298,46 @@ export default {
             dragBlockedClick: false,
             savingLista: false,
             savingTarefa: false,
-            listasLocal: []
+            listasLocal: [],
+            shareOpen: false
+        }
+    },
+    mounted() {
+        this._onDocClickListaMenu = (e) => {
+            if (!this.listaMenuId) return
+            if (!e.target?.closest?.('.wr-lista__menu')) {
+                this.closeListaMenu()
+            }
+        }
+        this._onEscListaMenu = (e) => {
+            if (e.key === 'Escape') this.closeListaMenu()
+        }
+        this._onScrollListaMenu = () => {
+            if (this.listaMenuId) this.closeListaMenu()
+        }
+        document.addEventListener('click', this._onDocClickListaMenu)
+        document.addEventListener('keydown', this._onEscListaMenu)
+        window.addEventListener('scroll', this._onScrollListaMenu, true)
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this._onDocClickListaMenu)
+        document.removeEventListener('keydown', this._onEscListaMenu)
+        window.removeEventListener('scroll', this._onScrollListaMenu, true)
+    },
+    computed: {
+        boardBg() {
+            return quadroTileBg(this.quadro?.id)
+        },
+        canRenameQuadro() {
+            return !!(this.canUpdateQuadro && this.quadro?.sou_dono)
+        },
+        membrosPreview() {
+            const list = this.quadro?.membros_preview || []
+            return list.slice(0, 5)
+        },
+        membrosExtra() {
+            const total = Number(this.quadro?.membros_count || 0)
+            return Math.max(0, total - this.membrosPreview.length)
         }
     },
     watch: {
@@ -255,6 +356,9 @@ export default {
         }
     },
     methods: {
+        inicial(nome) {
+            return inicialNome(nome)
+        },
         startEditTitle() {
             this.tituloLocal = this.quadro.titulo
             this.editingTitle = true
@@ -272,7 +376,40 @@ export default {
                 this.tituloLocal = this.quadro.titulo
             }
         },
+        closeListaMenu() {
+            this.listaMenuId = null
+            this.listaMenuStyle = null
+        },
+        toggleListaMenu(listaId, event) {
+            if (this.listaMenuId === listaId) {
+                this.closeListaMenu()
+                return
+            }
+            const btn = event?.currentTarget
+            if (btn?.getBoundingClientRect) {
+                const r = btn.getBoundingClientRect()
+                const width = 168
+                this.listaMenuStyle = {
+                    position: 'fixed',
+                    top: `${Math.round(r.bottom + 4)}px`,
+                    left: `${Math.round(Math.min(window.innerWidth - width - 8, Math.max(8, r.right - width)))}px`,
+                    zIndex: 1060
+                }
+            } else {
+                this.listaMenuStyle = null
+            }
+            this.listaMenuId = listaId
+        },
+        onListaMenuRename(lista) {
+            this.closeListaMenu()
+            this.startEditLista(lista)
+        },
+        onListaMenuDelete(lista) {
+            this.closeListaMenu()
+            this.$emit('delete-lista', lista)
+        },
         startEditLista(lista) {
+            this.closeListaMenu()
             this.editingListaId = lista.id
             this.$nextTick(() => {
                 const ref = this.$refs['lista_' + lista.id]
@@ -293,9 +430,10 @@ export default {
             this.$nextTick(() => this.$refs.novaListaInput && this.$refs.novaListaInput.focus())
         },
         criarLista() {
-            if (!this.novaListaTitulo || this.savingLista) return
+            const titulo = String(this.novaListaTitulo || '').replace(/\s+/g, ' ').trim()
+            if (!titulo || this.savingLista) return
             this.savingLista = true
-            this.$emit('create-lista', this.novaListaTitulo)
+            this.$emit('create-lista', titulo)
             this.novaListaTitulo = ''
             this.addingLista = false
             this.savingLista = false
@@ -313,9 +451,10 @@ export default {
             this.novaTarefaTitulo = ''
         },
         criarTarefa(lista) {
-            if (!this.novaTarefaTitulo || this.savingTarefa) return
+            const titulo = String(this.novaTarefaTitulo || '').replace(/\s+/g, ' ').trim()
+            if (!titulo || this.savingTarefa) return
             this.savingTarefa = true
-            this.$emit('create-tarefa', lista, this.novaTarefaTitulo)
+            this.$emit('create-tarefa', lista, titulo)
             this.cancelAdd()
             this.savingTarefa = false
         },

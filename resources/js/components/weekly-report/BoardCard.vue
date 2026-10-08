@@ -1,50 +1,200 @@
 <template>
-    <div class="mybp-card wr-quadro-card" @click="$emit('open', quadro)">
-        <div class="mybp-card-header-row border-0 pb-0 mb-0">
-            <div class="mybp-card-left">
-                <span class="wr-quadro-card__icon">
-                    <i class="fas fa-columns"></i>
-                </span>
-                <div class="min-w-0">
-                    <div class="mybp-card-titulo"><strong>{{ quadro.titulo }}</strong></div>
-                    <small class="text-muted">Clique para abrir o quadro</small>
-                </div>
-            </div>
-            <div class="mybp-card-right" @click.stop>
+    <article
+        class="wr-board-tile"
+        :class="{ 'wr-board-tile--editing': editing }"
+        :style="{ background: tileBg }"
+        role="button"
+        tabindex="0"
+        :aria-label="'Abrir quadro ' + quadro.titulo"
+        @click="onTileClick"
+        @keydown.enter.prevent="!editing && $emit('open', quadro)"
+        @keydown.space.prevent="!editing && $emit('open', quadro)"
+    >
+        <div class="wr-board-tile__fade" aria-hidden="true"></div>
+
+        <div class="wr-board-tile__top">
+            <form v-if="editing" class="wr-board-tile__rename" @click.stop @submit.prevent="salvarRename">
+                <input
+                    ref="tituloInput"
+                    v-model="tituloLocal"
+                    class="form-control form-control-sm wr-board-tile__rename-input"
+                    type="text"
+                    maxlength="120"
+                    :disabled="saving"
+                    @keydown.esc.prevent="cancelarRename"
+                    @blur="onBlurRename"
+                />
+            </form>
+            <h3 v-else class="wr-board-tile__title">{{ quadro.titulo }}</h3>
+
+            <div v-if="(canUpdate || canDelete) && !editing" class="wr-board-tile__menu" @click.stop>
                 <button
                     v-if="canUpdate"
                     type="button"
-                    class="btn btn-sm btn-outline-secondary"
+                    class="wr-board-tile__menu-btn"
                     title="Renomear"
-                    @click="$emit('rename', quadro)"
+                    aria-label="Renomear quadro"
+                    @click="iniciarRename"
                 >
                     <i class="fas fa-pen"></i>
-                </button>
-                <button type="button" class="btn btn-sm btn-primary" @click="$emit('open', quadro)">
-                    Abrir
                 </button>
                 <button
                     v-if="canDelete"
                     type="button"
-                    class="btn btn-sm btn-outline-danger"
+                    class="wr-board-tile__menu-btn wr-board-tile__menu-btn--danger"
                     title="Excluir"
+                    aria-label="Excluir quadro"
                     @click="$emit('delete', quadro)"
                 >
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
         </div>
-    </div>
+
+        <div v-if="!editing" class="wr-board-tile__bottom">
+            <span v-if="souDono" class="wr-board-tile__badge">Dono</span>
+            <div class="wr-board-tile__members" @click.stop>
+                <span
+                    v-for="m in membrosPreview"
+                    :key="m.id"
+                    class="wr-board-tile__avatar wr-tip"
+                    :data-tip="tipMembro(m)"
+                    :aria-label="tipMembro(m)"
+                    tabindex="0"
+                >
+                    {{ inicial(m.nome) }}
+                </span>
+                <span
+                    v-if="membrosExtra > 0"
+                    class="wr-board-tile__avatar wr-board-tile__avatar--more wr-tip"
+                    :data-tip="'+' + membrosExtra + ' membro(s)'"
+                    :aria-label="'+' + membrosExtra + ' membro(s)'"
+                    tabindex="0"
+                >
+                    +{{ membrosExtra }}
+                </span>
+            </div>
+        </div>
+        <div v-else class="wr-board-tile__bottom wr-board-tile__bottom--edit" @click.stop>
+            <button
+                type="button"
+                class="btn btn-sm btn-light"
+                :disabled="saving || !String(tituloLocal || '').trim()"
+                @mousedown.prevent="salvarRename"
+            >
+                <i v-if="saving" class="fa fa-spinner fa-pulse"></i>
+                <template v-else>Salvar</template>
+            </button>
+            <button
+                type="button"
+                class="btn btn-sm btn-link text-white"
+                :disabled="saving"
+                @mousedown.prevent="cancelarRename"
+            >
+                Cancelar
+            </button>
+        </div>
+    </article>
 </template>
 
 <script>
+import { inicialNome, quadroTileBg } from './api'
+
 export default {
     name: 'BoardCard',
     props: {
         quadro: { type: Object, required: true },
         canUpdate: { type: Boolean, default: false },
-        canDelete: { type: Boolean, default: false }
+        canDelete: { type: Boolean, default: false },
+        saving: { type: Boolean, default: false }
     },
-    emits: ['open', 'rename', 'delete']
+    emits: ['open', 'rename', 'delete'],
+    data() {
+        return {
+            editing: false,
+            tituloLocal: '',
+            _ignoreBlur: false
+        }
+    },
+    computed: {
+        souDono() {
+            return !!this.quadro?.sou_dono
+        },
+        tileBg() {
+            return quadroTileBg(this.quadro?.id)
+        },
+        membrosPreview() {
+            const list = Array.isArray(this.quadro?.membros_preview) ? this.quadro.membros_preview : []
+            return list.slice(0, 4)
+        },
+        membrosCount() {
+            return Number(this.quadro?.membros_count ?? this.membrosPreview.length) || 0
+        },
+        membrosExtra() {
+            return Math.max(0, this.membrosCount - this.membrosPreview.length)
+        }
+    },
+    watch: {
+        'quadro.titulo'(v) {
+            if (!this.editing) this.tituloLocal = v || ''
+        },
+        saving(v, prev) {
+            if (prev && !v && this.editing) {
+                this.editing = false
+            }
+        }
+    },
+    methods: {
+        inicial(nome) {
+            return inicialNome(nome)
+        },
+        tipMembro(m) {
+            if (!m?.nome) return 'Membro'
+            return m.papel === 'dono' ? `${m.nome} (Dono)` : m.nome
+        },
+        onTileClick() {
+            if (this.editing) return
+            this.$emit('open', this.quadro)
+        },
+        iniciarRename() {
+            this.tituloLocal = this.quadro.titulo || ''
+            this.editing = true
+            this.$nextTick(() => {
+                const el = this.$refs.tituloInput
+                if (el) {
+                    el.focus()
+                    el.select()
+                }
+            })
+        },
+        cancelarRename() {
+            this._ignoreBlur = true
+            this.editing = false
+            this.tituloLocal = this.quadro.titulo || ''
+            this.$nextTick(() => {
+                this._ignoreBlur = false
+            })
+        },
+        onBlurRename() {
+            if (this._ignoreBlur || this.saving) return
+            // Pequeno delay para permitir clique em Salvar
+            setTimeout(() => {
+                if (this.editing && !this.saving) this.cancelarRename()
+            }, 150)
+        },
+        salvarRename() {
+            const titulo = String(this.tituloLocal || '').replace(/\s+/g, ' ').trim()
+            if (!titulo || titulo === this.quadro.titulo) {
+                this.cancelarRename()
+                return
+            }
+            this.tituloLocal = titulo
+            this._ignoreBlur = true
+            this.$emit('rename', { quadro: this.quadro, titulo })
+            this.$nextTick(() => {
+                this._ignoreBlur = false
+            })
+        }
+    }
 }
 </script>

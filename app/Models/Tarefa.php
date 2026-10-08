@@ -5,6 +5,7 @@ namespace App\Models;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -16,6 +17,7 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @property int $id
  * @property int $lista_id
  * @property int $user_id
+ * @property int|null $quem_deletou_id
  * @property string $titulo
  * @property string|null $descricao
  * @property int $ordem
@@ -25,6 +27,7 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @property bool $concluido
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $Anexos
  * @property-read int|null $anexos_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ChecklistsTarefa> $Checklists
@@ -35,6 +38,7 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $Membros
  * @property-read int|null $membros_count
  * @property-read \App\Models\User|null $Usuario
+ * @property-read \App\Models\User|null $QuemDeletou
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
  * @property-read mixed $data_hora_entrega_formatada
@@ -59,7 +63,7 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @mixin \Eloquent
  */
 class Tarefa extends Model {
-    use HasFactory, LogsActivity, HasActivitylogOptions;
+    use HasFactory, SoftDeletes, LogsActivity, HasActivitylogOptions;
 
     protected static $logFillable = true;
     protected static $logName = 'Tarefa';
@@ -86,13 +90,14 @@ class Tarefa extends Model {
         'ordem',
         'concluido',
         'user_id',
+        'quem_deletou_id',
     ];
 
     protected $casts = [
         'id' => 'int',
         'lista_id' => 'int',
-
         'user_id' => 'int',
+        'quem_deletou_id' => 'int',
         'titulo' => 'string',
         'descricao' => 'string',
         'ordem' => 'int',
@@ -102,6 +107,7 @@ class Tarefa extends Model {
         'concluido' => 'boolean',
         'created_at' => 'datetime:d/m/Y à\s H:i:s',
         'updated_at' => 'datetime:d/m/Y à\s H:i:s',
+        'deleted_at' => 'datetime:d/m/Y à\s H:i:s',
     ];
 
     protected function serializeDate(DateTimeInterface $date) {
@@ -121,6 +127,23 @@ class Tarefa extends Model {
         static::creating(function ($model) {
             $model->user_id = auth()->user()->id;
         });
+
+        static::deleting(function (Tarefa $model) {
+            if ($model->isForceDeleting()) {
+                return;
+            }
+            $userId = (int) auth()->id();
+            if (!$userId) {
+                return;
+            }
+            $model->quem_deletou_id = $userId;
+            $model->saveQuietly();
+        });
+    }
+
+    public function getDeletedAtBrAttribute(): ?string
+    {
+        return $this->deleted_at?->format('d/m/Y \à\s H:i');
     }
 
     public function Lista() {
@@ -138,6 +161,11 @@ class Tarefa extends Model {
 
     public function Usuario() {
         return $this->hasOne(User::class, 'id', 'user_id');
+    }
+
+    public function QuemDeletou()
+    {
+        return $this->belongsTo(User::class, 'quem_deletou_id', 'id');
     }
 
     public function Anexos() {

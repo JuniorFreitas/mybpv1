@@ -13,6 +13,14 @@ export function quadroUrl(empresaId, quadroId = null, absolute = true) {
     return quadroId ? `${root}/${quadroId}` : root
 }
 
+export function quadroMembrosUrl(empresaId, quadroId, absolute = true) {
+    return `${quadroUrl(empresaId, quadroId, absolute)}/membros`
+}
+
+export function quadroMembrosBuscarUrl(empresaId, quadroId, absolute = true) {
+    return `${quadroMembrosUrl(empresaId, quadroId, absolute)}/buscar`
+}
+
 export function listasUrl(empresaId, quadroId, listaId = null, absolute = true) {
     const root = `${quadroUrl(empresaId, quadroId, absolute)}/listas`
     return listaId ? `${root}/${listaId}` : root
@@ -43,6 +51,25 @@ export function inicialNome(nome) {
     const parts = String(nome).trim().split(/\s+/)
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
+}
+
+/** Paleta Trello-like (mesma ordem em BoardCard / KanbanBoard) */
+export const QUADRO_TILE_COLORS = [
+    'linear-gradient(135deg, #0079bf 0%, #0c3953 100%)',
+    'linear-gradient(135deg, #0f4c60 0%, #174257 100%)',
+    'linear-gradient(135deg, #519839 0%, #216e4e 100%)',
+    'linear-gradient(135deg, #d29034 0%, #a54800 100%)',
+    'linear-gradient(135deg, #b04632 0%, #833414 100%)',
+    'linear-gradient(135deg, #89609e 0%, #5e4db2 100%)',
+    'linear-gradient(135deg, #cd5a91 0%, #943d73 100%)',
+    'linear-gradient(135deg, #4bbf6b 0%, #216e4e 100%)',
+    'linear-gradient(135deg, #00aecc 0%, #206a83 100%)',
+    'linear-gradient(135deg, #838c91 0%, #44546f 100%)'
+]
+
+export function quadroTileBg(quadroId) {
+    const id = Number(quadroId) || 0
+    return QUADRO_TILE_COLORS[id % QUADRO_TILE_COLORS.length]
 }
 
 /** Formato esperado pelo DatePicker + DataHora::converterDatePicker */

@@ -205,6 +205,7 @@ class TarefasController extends Controller
 
             $titulo = $tarefa->titulo;
             $idDelete = $tarefa->id;
+            // Soft delete + quem_deletou_id (hook deleting no model)
             $tarefa->delete();
 
             \DB::commit();
@@ -296,6 +297,10 @@ class TarefasController extends Controller
 
         if (!$membro) {
             return response()->json(['msg' => 'Membro inválido para este tenant.'], 400);
+        }
+
+        if ($request->acao == 'add' && !$quadro->temMembro($membro)) {
+            return response()->json(['msg' => 'Só é possível adicionar membros do quadro à tarefa.'], 400);
         }
 
         if ($request->acao == 'add') {

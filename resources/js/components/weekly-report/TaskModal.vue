@@ -2,7 +2,7 @@
     <modal
         id="wrJanelaTarefa"
         :titulo="local?.titulo || 'Tarefa'"
-        :size="95"
+        :size="82"
         topo
         :fechar="!busy"
         ref="modal"
@@ -45,28 +45,8 @@
                 <i class="fa fa-spinner fa-pulse fa-2x text-primary mb-2 d-block"></i>
                 <span class="text-muted small">Carregando card...</span>
             </div>
-            <div v-else class="row wr-modal">
-                <div class="col-12 col-lg-8 wr-modal__main">
-                    <section v-if="local.membros?.length" class="wr-modal__section">
-                        <h5 class="wr-modal__section-title">
-                            <i class="fas fa-users"></i> Membros
-                        </h5>
-                        <div class="wr-members">
-                            <span v-for="m in local.membros" :key="m.id" class="wr-avatar" :title="m.nome">
-                                {{ inicial(m.nome) }}
-                                <button
-                                    v-if="canUpdate"
-                                    type="button"
-                                    class="wr-avatar__remove"
-                                    title="Remover membro"
-                                    @click="removeMembro(m)"
-                                >
-                                    ×
-                                </button>
-                            </span>
-                        </div>
-                    </section>
-
+            <div v-else class="wr-modal">
+                <div class="wr-modal__main">
                     <section class="wr-modal__section">
                         <h5 class="wr-modal__section-title">
                             <i class="fas fa-align-left"></i> Descrição
@@ -404,9 +384,14 @@
                     </section>
 
                     <section class="wr-modal__section">
-                        <h5 class="wr-modal__section-title">
-                            <i class="fas fa-paperclip"></i> Anexos
-                        </h5>
+                        <div class="wr-modal__section-head">
+                            <h5 class="wr-modal__section-title mb-0">
+                                <i class="fas fa-paperclip"></i> Anexos
+                                <span v-if="(local.anexos || []).length" class="badge badge-soft ml-1">
+                                    {{ local.anexos.length }}
+                                </span>
+                            </h5>
+                        </div>
                         <div class="wr-anexos-box">
                             <upload
                                 v-if="canUpdate && uploadUrl"
@@ -416,8 +401,8 @@
                                 label="Anexar arquivo"
                                 @onFinalizado="loadShow"
                             />
-                            <ul class="list-unstyled wr-anexos mb-0">
-                                <li v-for="anexo in local.anexos || []" :key="anexo.id" class="wr-anexos__item">
+                            <ul v-if="(local.anexos || []).length" class="list-unstyled wr-anexos mb-0">
+                                <li v-for="anexo in local.anexos" :key="anexo.id" class="wr-anexos__item">
                                     <a :href="anexo.urlDownload || '#'" target="_blank" rel="noopener" class="wr-anexos__link">
                                         <i class="fas fa-file-alt"></i>
                                         <span>{{ anexo.nome }}{{ anexo.extensao }}</span>
@@ -432,10 +417,10 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </li>
-                                <li v-if="!(local.anexos || []).length" class="wr-empty wr-empty--sm">
-                                    Nenhum anexo
-                                </li>
                             </ul>
+                            <div v-else-if="!canUpdate" class="wr-empty wr-empty--sm">
+                                Nenhum anexo
+                            </div>
                         </div>
                     </section>
 
@@ -596,135 +581,156 @@
                     </section>
                 </div>
 
-                <aside class="col-12 col-lg-4">
+                <aside class="wr-modal__aside">
                     <div class="wr-sidebar">
-                        <h6 class="wr-sidebar__title">Ações</h6>
-
-                        <div v-if="canUpdate" class="wr-field">
-                            <label class="wr-field__label">Membros</label>
-                            <autocomplete
-                                v-model="membroBusca"
-                                :caminho="membrosUrl"
-                                placeholder="Buscar e adicionar membro"
-                                @onblur="membroBusca = ''"
-                                @onselect="addMembro"
-                            />
-                        </div>
-
-                        <div class="wr-field">
-                            <label class="wr-field__label">
-                                <i class="far fa-calendar-alt"></i> Início
-                            </label>
-                            <template v-if="canUpdate">
-                                <div v-if="local.datahora_inicio" class="wr-field__date">
-                                    <datepicker
-                                        :key="'inicio-' + local.id"
-                                        v-model="local.datahora_inicio"
-                                        :hora="true"
-                                        label=""
-                                        formsm
-                                        @onselect="onSelectInicio"
-                                    />
+                        <section class="wr-sidebar__block">
+                            <h6 class="wr-sidebar__title">Membros</h6>
+                            <div v-if="local.membros?.length" class="wr-members wr-members--sidebar">
+                                <span v-for="m in local.membros" :key="m.id" class="wr-avatar wr-tip" :data-tip="m.nome">
+                                    {{ inicial(m.nome) }}
                                     <button
+                                        v-if="canUpdate"
                                         type="button"
-                                        class="btn btn-sm btn-link text-danger wr-field__remove"
-                                        @click="setData('inicio', 'remove')"
+                                        class="wr-avatar__remove"
+                                        title="Remover membro"
+                                        @click="removeMembro(m)"
                                     >
-                                        Remover
+                                        ×
                                     </button>
-                                </div>
-                                <button
-                                    v-else
-                                    type="button"
-                                    class="btn btn-sm btn-light btn-block wr-field__add-btn"
-                                    @click="definirDataInicio"
-                                >
-                                    <i class="far fa-calendar-plus"></i> Definir início
-                                </button>
-                            </template>
-                            <div v-else class="wr-field__value">{{ local.datahora_inicio || '—' }}</div>
-                        </div>
+                                </span>
+                            </div>
+                            <p v-else class="wr-sidebar__hint mb-2">Nenhum membro neste card.</p>
+                            <div v-if="canUpdate" class="wr-field wr-field--flush">
+                                <autocomplete
+                                    v-model="membroBusca"
+                                    :caminho="membrosUrl"
+                                    placeholder="Adicionar membro…"
+                                    @onblur="membroBusca = ''"
+                                    @onselect="addMembro"
+                                />
+                            </div>
+                        </section>
 
-                        <div class="wr-field">
-                            <label class="wr-field__label">
-                                <i class="far fa-clock"></i> Entrega
-                            </label>
-                            <template v-if="canUpdate">
-                                <div v-if="local.datahora_entrega" class="wr-field__date">
-                                    <datepicker
-                                        :key="'entrega-' + local.id"
-                                        v-model="local.datahora_entrega"
-                                        :hora="true"
-                                        label=""
-                                        formsm
-                                        @onselect="onSelectEntrega"
-                                    />
+                        <section class="wr-sidebar__block">
+                            <h6 class="wr-sidebar__title">Datas</h6>
+                            <div class="wr-field">
+                                <label class="wr-field__label">
+                                    <i class="far fa-calendar-alt"></i> Início
+                                </label>
+                                <template v-if="canUpdate">
+                                    <div v-if="local.datahora_inicio" class="wr-field__date">
+                                        <datepicker
+                                            :key="'inicio-' + local.id"
+                                            v-model="local.datahora_inicio"
+                                            :hora="true"
+                                            label=""
+                                            formsm
+                                            @onselect="onSelectInicio"
+                                        />
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-link text-danger wr-field__remove"
+                                            @click="setData('inicio', 'remove')"
+                                        >
+                                            Remover
+                                        </button>
+                                    </div>
                                     <button
+                                        v-else
                                         type="button"
-                                        class="btn btn-sm btn-link text-danger wr-field__remove"
-                                        @click="setData('entrega', 'remove')"
+                                        class="btn btn-sm btn-light btn-block wr-field__add-btn"
+                                        @click="definirDataInicio"
                                     >
-                                        Remover
+                                        <i class="far fa-calendar-plus"></i> Definir início
                                     </button>
-                                </div>
-                                <button
-                                    v-else
-                                    type="button"
-                                    class="btn btn-sm btn-light btn-block wr-field__add-btn"
-                                    @click="definirDataEntrega"
-                                >
-                                    <i class="far fa-calendar-plus"></i> Definir entrega
-                                </button>
-                            </template>
-                            <div v-else class="wr-field__value">{{ local.datahora_entrega || '—' }}</div>
-                        </div>
+                                </template>
+                                <div v-else class="wr-field__value">{{ local.datahora_inicio || '—' }}</div>
+                            </div>
 
-                        <div v-if="canUpdate && local.datahora_entrega" class="wr-field">
-                            <label class="wr-field__label" for="wrLembrete">
-                                <i class="far fa-bell"></i> Lembrete
+                            <div class="wr-field">
+                                <label class="wr-field__label">
+                                    <i class="far fa-clock"></i> Entrega
+                                </label>
+                                <template v-if="canUpdate">
+                                    <div v-if="local.datahora_entrega" class="wr-field__date">
+                                        <datepicker
+                                            :key="'entrega-' + local.id"
+                                            v-model="local.datahora_entrega"
+                                            :hora="true"
+                                            label=""
+                                            formsm
+                                            @onselect="onSelectEntrega"
+                                        />
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-link text-danger wr-field__remove"
+                                            @click="setData('entrega', 'remove')"
+                                        >
+                                            Remover
+                                        </button>
+                                    </div>
+                                    <button
+                                        v-else
+                                        type="button"
+                                        class="btn btn-sm btn-light btn-block wr-field__add-btn"
+                                        @click="definirDataEntrega"
+                                    >
+                                        <i class="far fa-calendar-plus"></i> Definir entrega
+                                    </button>
+                                </template>
+                                <div v-else class="wr-field__value">{{ local.datahora_entrega || '—' }}</div>
+                            </div>
+
+                            <div v-if="canUpdate && local.datahora_entrega" class="wr-field wr-field--flush">
+                                <label class="wr-field__label" for="wrLembrete">
+                                    <i class="far fa-bell"></i> Lembrete
+                                </label>
+                                <select
+                                    id="wrLembrete"
+                                    v-model="local.lembreteText"
+                                    class="form-control form-control-sm"
+                                    @change="saveLembrete"
+                                >
+                                    <option :value="null">Sem lembrete</option>
+                                    <option value="5m">5 minutos antes</option>
+                                    <option value="10m">10 minutos antes</option>
+                                    <option value="15m">15 minutos antes</option>
+                                    <option value="1H">1 hora antes</option>
+                                    <option value="2H">2 horas antes</option>
+                                    <option value="1d">1 dia antes</option>
+                                    <option value="2d">2 dias antes</option>
+                                </select>
+                                <small class="wr-sidebar__hint d-block mt-1">
+                                    Alerta + e-mail aos membros no horário.
+                                </small>
+                            </div>
+                        </section>
+
+                        <section class="wr-sidebar__block wr-sidebar__block--last">
+                            <h6 class="wr-sidebar__title">Status</h6>
+                            <label class="wr-concluido" :class="{ 'wr-concluido--on': local.concluido }">
+                                <input
+                                    id="wrConcluido"
+                                    v-model="local.concluido"
+                                    type="checkbox"
+                                    :disabled="!canUpdate"
+                                    @change="saveConcluido"
+                                />
+                                <span class="wr-concluido__box">
+                                    <i class="fas fa-check"></i>
+                                </span>
+                                <span class="wr-concluido__text">Concluído</span>
                             </label>
-                            <select
-                                id="wrLembrete"
-                                v-model="local.lembreteText"
-                                class="form-control form-control-sm"
-                                @change="saveLembrete"
+
+                            <button
+                                v-if="canDelete"
+                                type="button"
+                                class="btn btn-sm btn-outline-danger btn-block wr-sidebar__danger"
+                                @click="$emit('delete', local)"
                             >
-                                <option :value="null">Sem lembrete</option>
-                                <option value="5m">5 minutos antes</option>
-                                <option value="10m">10 minutos antes</option>
-                                <option value="15m">15 minutos antes</option>
-                                <option value="1H">1 hora antes</option>
-                                <option value="2H">2 horas antes</option>
-                                <option value="1d">1 dia antes</option>
-                                <option value="2d">2 dias antes</option>
-                            </select>
-                            <small class="text-muted d-block mt-1">
-                                Notifica os membros do card (alerta + e-mail) no horário escolhido.
-                            </small>
-                        </div>
-
-                        <label class="wr-concluido" :class="{ 'wr-concluido--on': local.concluido }">
-                            <input
-                                id="wrConcluido"
-                                v-model="local.concluido"
-                                type="checkbox"
-                                :disabled="!canUpdate"
-                                @change="saveConcluido"
-                            />
-                            <span class="wr-concluido__box">
-                                <i class="fas fa-check"></i>
-                            </span>
-                            <span class="wr-concluido__text">Marcar como concluído</span>
-                        </label>
-
-                        <button
-                            v-if="canDelete"
-                            type="button"
-                            class="btn btn-sm btn-outline-danger btn-block wr-sidebar__danger"
-                            @click="$emit('delete', local)"
-                        >
-                            <i class="fas fa-trash"></i> Excluir card
-                        </button>
+                                <i class="fas fa-trash"></i> Excluir card
+                            </button>
+                        </section>
                     </div>
                 </aside>
             </div>
