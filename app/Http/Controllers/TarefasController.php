@@ -205,6 +205,7 @@ class TarefasController extends Controller
 
             $titulo = $tarefa->titulo;
             $idDelete = $tarefa->id;
+            // Soft delete + quem_deletou_id (hook deleting no model)
             $tarefa->delete();
 
             \DB::commit();

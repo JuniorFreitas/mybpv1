@@ -95,6 +95,7 @@ class WeeklyReportMultitenantTest extends TestCase
             $table->id();
             $table->unsignedBigInteger('lista_id');
             $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('quem_deletou_id')->nullable();
             $table->text('titulo');
             $table->text('descricao')->nullable();
             $table->integer('ordem')->default(1);
@@ -103,6 +104,7 @@ class WeeklyReportMultitenantTest extends TestCase
             $table->dateTime('lembrete')->nullable();
             $table->boolean('concluido')->default(false);
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('log_weekly', function (Blueprint $table) {
@@ -625,5 +627,45 @@ class WeeklyReportMultitenantTest extends TestCase
             "/g/weekly-report/10/quadros/{$quadro->id}/listas/{$lista->id}/tarefas/{$tarefa->id}/updateMembro",
             ['acao' => 'add', 'user_id' => $fora->id]
         )->assertStatus(400);
+    }
+
+    public function test_exclui_tarefa_com_soft_delete_e_quem_deletou(): void
+    {
+        Event::fake([\App\Events\WeeklyReport\TarefaEvent::class]);
+
+        $dono = $this->user(10, 'Dono Card Soft');
+        $this->actingAs($dono);
+
+        $quadro = Quadro::query()->create([
+            'titulo' => 'Board Card Soft',
+            'empresa_id' => 10,
+            'user_id' => $dono->id,
+        ]);
+        $lista = ListaTarefa::query()->create([
+            'titulo' => 'Lista Soft',
+            'quadro_id' => $quadro->id,
+            'user_id' => $dono->id,
+            'ordem' => 1,
+        ]);
+        $tarefa = Tarefa::query()->create([
+            'titulo' => 'Card Soft',
+            'lista_id' => $lista->id,
+            'user_id' => $dono->id,
+            'ordem' => 1,
+        ]);
+
+        $this->deleteJson(
+            "/g/weekly-report/10/quadros/{$quadro->id}/listas/{$lista->id}/tarefas/{$tarefa->id}"
+        )->assertOk();
+
+        $this->assertSoftDeleted('tarefas', ['id' => $tarefa->id]);
+        $this->assertDatabaseHas('tarefas', [
+            'id' => $tarefa->id,
+            'quem_deletou_id' => $dono->id,
+        ]);
+        $this->assertNull(Tarefa::query()->find($tarefa->id));
+        $this->assertFalse(
+            $lista->Tarefas()->whereKey($tarefa->id)->exists()
+        );
     }
 }

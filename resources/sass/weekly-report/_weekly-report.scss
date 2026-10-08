@@ -7,6 +7,101 @@
     overflow-x: hidden;
 }
 
+.wr-app--board,
+.wr-app__board-shell {
+    min-height: inherit;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.wr-app__board-shell > .wr-kanban {
+    flex: 1;
+}
+
+.wr-app__board-loading {
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    padding: 4rem 1rem;
+}
+
+/* Quadro aberto: canvas full-bleed (estilo Trello) — altura total sob o topbar */
+body.wr-board-fullscreen {
+    overflow: hidden;
+
+    .page-title-box,
+    .page-content .row > [class*='col-']:has(.page-title-box) {
+        display: none !important;
+    }
+
+    .main-content {
+        min-height: 0;
+    }
+
+    .page-content {
+        padding: 70px 0 0 !important;
+        min-height: 100vh;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .page-content > .container-fluid {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: none;
+        height: calc(100vh - 70px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .page-content .row {
+        margin: 0;
+        flex: 1 1 auto;
+        min-height: 0;
+        height: 100%;
+    }
+
+    .page-content .row > [class*='col-'] {
+        padding: 0;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .footer {
+        display: none !important;
+    }
+
+    .wr-app--board,
+    .wr-app__board-shell {
+        flex: 1 1 auto;
+        min-height: 0;
+        height: 100%;
+    }
+
+    .wr-kanban {
+        margin: 0;
+        border-radius: 0;
+        height: 100%;
+        min-height: 100%;
+        padding: 0.75rem 1rem 0;
+        flex: 1 1 auto;
+        overflow: hidden;
+    }
+
+    .wr-kanban__board {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    .wr-lista {
+        max-height: calc(100vh - 140px);
+    }
+}
+
 /* Tooltip leve para avatares (hover imediato) */
 .wr-tip {
     position: relative;
@@ -382,30 +477,79 @@
     min-width: 0;
 }
 
-/* ---- Board toolbar ---- */
+/* ---- Kanban board (estilo Trello) ---- */
+.wr-kanban {
+    margin: 0;
+    padding: 0.65rem 0.75rem 0;
+    border-radius: 0;
+    min-height: calc(100vh - 150px);
+    display: flex;
+    flex-direction: column;
+    background-size: cover;
+    background-position: center;
+}
+
 .wr-kanban__topbar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-    padding: 0.75rem 1rem;
-    background: #fff;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    gap: 0.55rem 0.75rem;
+    margin-bottom: 0.85rem;
+    padding: 0.35rem 0.15rem;
+}
+
+.wr-kanban__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 0;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 650;
+    padding: 0.4rem 0.7rem;
+    cursor: pointer;
+    transition: background 0.12s ease;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.32);
+        color: #fff;
+    }
+
+    i {
+        font-size: 0.8rem;
+    }
+}
+
+.wr-kanban__chip--primary {
+    background: rgba(0, 0, 0, 0.22);
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.32);
+    }
+}
+
+.wr-kanban__chip--block {
+    width: 100%;
+    min-height: 42px;
+    justify-content: flex-start;
+    padding: 0.55rem 0.85rem;
 }
 
 .wr-kanban__title-area {
     flex: 1;
-    min-width: 180px;
+    min-width: 160px;
 }
 
 .wr-kanban__title {
     font-size: 1.15rem;
-    font-weight: 600;
-    color: #174257;
+    font-weight: 750;
+    color: #fff;
     cursor: default;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    margin: 0;
+    line-height: 1.25;
 }
 
 .wr-kanban__title[title] {
@@ -414,6 +558,7 @@
 
 .wr-kanban__title-input {
     max-width: 360px;
+    font-weight: 700;
 }
 
 .wr-kanban__members {
@@ -421,22 +566,23 @@
     align-items: center;
     flex-shrink: 0;
     overflow: visible;
+    margin-left: auto;
+    gap: 0.15rem;
 }
 
 .wr-kanban__avatar {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     border-radius: 999px;
-    background: #0f4c60;
-    color: #fff;
+    background: rgba(255, 255, 255, 0.92);
+    color: #172b4d;
     font-size: 0.68rem;
     font-weight: 700;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     margin-left: -6px;
-    border: 2px solid #fff;
-    box-shadow: 0 0 0 1px rgba(15, 76, 96, 0.12);
+    border: 2px solid rgba(255, 255, 255, 0.95);
     z-index: 1;
 
     &:first-child {
@@ -450,91 +596,154 @@
 }
 
 .wr-kanban__avatar--more {
-    background: #6c757d;
+    background: rgba(23, 43, 77, 0.85);
+    color: #fff;
     font-size: 0.62rem;
-}
-
-.wr-kanban__activity {
-    gap: 0.35rem;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    max-width: 42%;
-}
-
-.wr-activity-item {
-    display: inline-block;
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 0.25rem 0.55rem;
-    color: #6c757d;
-    max-width: 240px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 /* ---- Board scroll ---- */
 .wr-kanban__board {
     display: flex;
     align-items: flex-start;
+    justify-content: flex-start;
     gap: 0.75rem;
     overflow-x: auto;
-    padding-bottom: 1rem;
-    min-height: 68vh;
+    padding: 0 0.1rem 1rem;
+    flex: 1;
+    min-height: 0;
+}
+
+.wr-kanban__board--empty {
+    .wr-lista--add {
+        margin-left: 0;
+        margin-right: auto;
+    }
 }
 
 .wr-kanban__columns {
     display: flex;
     align-items: flex-start;
+    justify-content: flex-start;
+    flex: 0 0 auto;
     gap: 0.75rem;
 }
 
 /* ---- Lista / coluna ---- */
 .wr-lista {
-    width: 290px;
-    flex: 0 0 290px;
-    background: #f1f3f5;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 0.6rem;
-    max-height: calc(100vh - 230px);
+    width: 272px;
+    flex: 0 0 272px;
+    background: #ebecf0;
+    border: 0;
+    border-radius: 12px;
+    padding: 0.5rem 0.5rem 0.4rem;
+    max-height: calc(100vh - 200px);
     display: flex;
     flex-direction: column;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 1px 1px rgba(9, 30, 66, 0.18);
 }
 
 .wr-lista--add {
     background: transparent;
-    border-style: dashed;
     box-shadow: none;
     justify-content: flex-start;
     max-height: none;
-}
-
-.wr-lista__add-btn {
-    height: 100%;
-    min-height: 48px;
+    padding: 0;
+    flex: 0 0 272px;
+    margin: 0;
 }
 
 .wr-lista__header {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
-    margin-bottom: 0.55rem;
+    gap: 0.3rem;
+    margin-bottom: 0.35rem;
     min-height: 32px;
+    padding: 0 0.15rem;
+    position: relative;
+    z-index: 2;
+}
+
+.wr-lista__menu {
+    position: relative;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.wr-lista__menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #6b778c;
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+
+    &:hover,
+    &[aria-expanded='true'] {
+        background: rgba(9, 30, 66, 0.1);
+        color: #172b4d;
+    }
+}
+
+.wr-lista__menu-panel {
+    min-width: 168px;
+    padding: 0.35rem;
+    background: #fff;
+    border: 1px solid #dfe3e8;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(9, 30, 66, 0.18);
+}
+
+.wr-lista__menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: #172b4d;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: left;
+    border-radius: 6px;
+    padding: 0.45rem 0.55rem;
+    cursor: pointer;
+
+    i {
+        width: 1rem;
+        opacity: 0.75;
+        font-size: 0.78rem;
+    }
+
+    &:hover {
+        background: #f0f3f5;
+    }
+
+    &--danger {
+        color: #c9372c;
+
+        &:hover {
+            background: #fdeceb;
+        }
+    }
 }
 
 .wr-lista-handle {
     cursor: grab;
     padding: 0 0.15rem;
+    color: #6b778c;
 }
 
 .wr-lista__title {
     flex: 1;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #343a40;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #172b4d;
     cursor: pointer;
     margin: 0;
     overflow: hidden;
@@ -542,81 +751,155 @@
     white-space: nowrap;
 }
 
+.wr-lista__count {
+    min-width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 999px;
+    background: rgba(9, 30, 66, 0.08);
+    color: #5e6c84;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.35rem;
+}
+
 .wr-lista__cards {
     flex: 1;
     overflow-y: auto;
-    min-height: 48px;
-    margin: 0 -0.15rem;
-    padding: 0 0.15rem;
-}
-
-.wr-lista__empty {
-    text-align: center;
-    color: #adb5bd;
-    font-size: 0.8rem;
-    padding: 1rem 0.5rem;
+    min-height: 8px;
+    margin: 0;
+    padding: 0 0.1rem 0.15rem;
 }
 
 .wr-lista__footer {
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.wr-lista__composer {
+    background: transparent;
+    padding: 0.15rem;
+}
+
+.wr-lista__composer--add-list {
+    width: 100%;
+    background: #ebecf0;
+    border-radius: 12px;
+    padding: 0.5rem;
+    box-shadow: 0 1px 1px rgba(9, 30, 66, 0.18);
+
+    .form-control {
+        border-radius: 6px;
+    }
+
+    .btn-outline-primary {
+        font-weight: 500;
+    }
+}
+
+.wr-lista__composer-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.wr-lista__add-card {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: #5e6c84;
+    text-align: left;
+    border-radius: 8px;
+    padding: 0.45rem 0.55rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(9, 30, 66, 0.08);
+        color: #172b4d;
+    }
+}
+
+.wr-task-wrap {
+    margin-bottom: 0.45rem !important;
 }
 
 /* ---- Task card ---- */
 .wr-task-card {
     cursor: pointer;
-    border: 1px solid #e9ecef !important;
-    border-left: 3px solid #174257 !important;
+    border: 0 !important;
     border-radius: 8px !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-    transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    background: #fff !important;
+    box-shadow: 0 1px 1px rgba(9, 30, 66, 0.25);
+    transition: box-shadow 0.12s ease, transform 0.12s ease, background 0.12s ease;
 }
 
 .wr-task-card:hover {
-    box-shadow: 0 4px 12px rgba(23, 66, 87, 0.12);
-    border-color: #174257 !important;
+    background: #f7f8f9 !important;
+    box-shadow: 0 2px 6px rgba(9, 30, 66, 0.22);
     transform: translateY(-1px);
 }
 
 .wr-task-card--done {
-    border-left-color: #28a745 !important;
-    opacity: 0.92;
+    opacity: 0.88;
 }
 
 .wr-task-card--late {
-    border-left-color: #dc3545 !important;
+    box-shadow: 0 0 0 2px rgba(235, 90, 70, 0.35), 0 1px 1px rgba(9, 30, 66, 0.25);
 }
 
 .wr-task-card__title {
     font-size: 0.875rem;
-    font-weight: 600;
-    color: #212529;
+    font-weight: 500;
+    color: #172b4d;
     line-height: 1.35;
     word-break: break-word;
 }
 
+.wr-task-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.15rem;
+}
+
 .badge-soft {
-    background: #eef2f4;
-    color: #495057;
-    border: 1px solid #dee2e6;
-    font-weight: 500;
+    background: #ebecf0;
+    color: #5e6c84;
+    border: 0;
+    font-weight: 600;
+}
+
+.wr-task-card__members {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.35rem !important;
 }
 
 .wr-avatar-badge {
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
-    background: #174257;
-    color: #fff;
-    font-size: 0.65rem;
+    background: #dfe1e6;
+    color: #172b4d;
+    font-size: 0.62rem;
     font-weight: 700;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-right: 0.15rem;
+    margin-left: -4px;
+    border: 2px solid #fff;
+
+    &:first-child {
+        margin-left: 0;
+    }
 }
 
 .wr-avatar-badge--more {
-    background: #6c757d;
+    background: #6b778c;
+    color: #fff;
 }
 
 .wr-avatar {
@@ -677,21 +960,30 @@
 
 /* ---- Task modal ---- */
 #wrJanelaTarefa {
-    // .modal-dialog {
-    //     max-width: 80%;
-    //     width: 80%;
-    // }
+    .modal-dialog {
+        max-width: min(1040px, 96vw) !important;
+        width: 100%;
+        margin: 1rem auto;
+    }
+
+    .modal-content {
+        border: 0;
+        border-radius: 12px;
+        box-shadow: 0 12px 40px rgba(15, 35, 52, 0.22);
+        overflow: visible;
+    }
 
     .modal-header {
         align-items: flex-start;
         border-bottom: 1px solid #e9ecef;
-        padding: 1rem 1.25rem 0.85rem;
+        padding: 0.9rem 1.15rem 0.75rem;
         background: linear-gradient(180deg, #f8fbfd 0%, #fff 100%);
     }
 
     .modal-body {
-        padding: 1.15rem 1.25rem 1.35rem;
-        background: #f6f8fa;
+        overflow: visible;
+        padding: 1rem 1.15rem 1.25rem;
+        background: #f0f3f5;
     }
 
     .modal-footer {
@@ -771,25 +1063,34 @@
 }
 
 .wr-modal {
-    margin: 0 -0.25rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 272px;
+    gap: 1rem;
+    align-items: start;
 }
 
 .wr-modal__main {
     background: #fff;
-    border: 1px solid #e9ecef;
+    border: 1px solid #e4e9ed;
     border-radius: 10px;
-    padding: 1.1rem 1.15rem 0.5rem;
+    padding: 1rem 1.1rem 0.35rem;
     box-shadow: 0 1px 2px rgba(23, 66, 87, 0.04);
+    min-width: 0;
+}
+
+.wr-modal__aside {
+    min-width: 0;
 }
 
 .wr-modal__section {
-    margin-bottom: 1.35rem;
-    padding-bottom: 1.15rem;
-    border-bottom: 1px solid #f0f2f4;
+    margin-bottom: 1.1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eef1f3;
 
     &--last {
         border-bottom: 0;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.35rem;
+        padding-bottom: 0.35rem;
     }
 }
 
@@ -1499,25 +1800,52 @@
 
 .wr-sidebar {
     background: #fff;
-    border: 1px solid #e9ecef;
+    border: 1px solid #e4e9ed;
     border-radius: 10px;
-    padding: 1rem;
+    padding: 0.85rem 0.9rem;
     box-shadow: 0 1px 2px rgba(23, 66, 87, 0.04);
     position: sticky;
-    top: 0.75rem;
+    top: 0.25rem;
+}
+
+.wr-sidebar__block {
+    padding-bottom: 0.85rem;
+    margin-bottom: 0.85rem;
+    border-bottom: 1px solid #eef1f3;
+
+    &--last {
+        border-bottom: 0;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
 }
 
 .wr-sidebar__title {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: #8a97a0;
-    margin-bottom: 0.9rem;
+    margin-bottom: 0.55rem;
+}
+
+.wr-sidebar__hint {
+    font-size: 0.75rem;
+    color: #8a97a0;
+    line-height: 1.35;
+    margin: 0;
+}
+
+.wr-members--sidebar {
+    margin-bottom: 0.55rem;
 }
 
 .wr-field {
-    margin-bottom: 0.95rem;
+    margin-bottom: 0.75rem;
+
+    &--flush {
+        margin-bottom: 0;
+    }
 
     .form-group {
         margin-bottom: 0;
@@ -1590,8 +1918,8 @@
     display: flex;
     align-items: center;
     gap: 0.65rem;
-    padding: 0.65rem 0.75rem;
-    margin: 0.25rem 0 0.85rem;
+    padding: 0.55rem 0.7rem;
+    margin: 0 0 0.65rem;
     border: 1px solid #e4e9ed;
     border-radius: 8px;
     background: #f8fbfd;
@@ -1660,9 +1988,12 @@
 }
 
 @media (max-width: 991px) {
+    .wr-modal {
+        grid-template-columns: 1fr;
+    }
+
     .wr-sidebar {
         position: static;
-        margin-top: 1rem;
     }
 }
 
@@ -1677,11 +2008,18 @@
         max-width: 100%;
     }
 
-    #wrJanelaTarefa .modal-body {
-        padding: 0.85rem;
+    #wrJanelaTarefa {
+        .modal-dialog {
+            margin: 0.5rem auto;
+            max-width: calc(100vw - 1rem) !important;
+        }
+
+        .modal-body {
+            padding: 0.75rem;
+        }
     }
 
     .wr-modal__main {
-        padding: 0.9rem;
+        padding: 0.85rem 0.85rem 0.25rem;
     }
 }

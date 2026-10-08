@@ -48,17 +48,23 @@
                 <span v-if="tarefa.concluido" class="badge badge-pill badge-success mr-1 mb-1">Concluído</span>
             </div>
 
-            <div v-if="tarefa.membros && tarefa.membros.length" class="wr-task-card__members mt-2">
+            <div v-if="tarefa.membros && tarefa.membros.length" class="wr-task-card__members">
                 <span
-                    v-for="m in tarefa.membros.slice(0, 5)"
+                    v-for="m in tarefa.membros.slice(0, 4)"
                     :key="m.id"
-                    class="wr-avatar-badge"
-                    :title="m.nome"
+                    class="wr-avatar-badge wr-tip"
+                    :data-tip="m.nome"
+                    :aria-label="m.nome"
+                    tabindex="0"
                 >
                     {{ inicialNome(m.nome) }}
                 </span>
-                <span v-if="tarefa.membros.length > 5" class="wr-avatar-badge wr-avatar-badge--more">
-                    +{{ tarefa.membros.length - 5 }}
+                <span
+                    v-if="tarefa.membros.length > 4"
+                    class="wr-avatar-badge wr-avatar-badge--more wr-tip"
+                    :data-tip="'+' + (tarefa.membros.length - 4) + ' membro(s)'"
+                >
+                    +{{ tarefa.membros.length - 4 }}
                 </span>
             </div>
         </div>

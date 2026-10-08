@@ -9,6 +9,8 @@
 - Frontend: `resources/js/components/Weekly-report.vue` + `resources/js/components/weekly-report/*`
 - **Membros do quadro (Trello):** tabela `quadros_membros` (`dono`|`membro`). Listagem só com membership; `assertWeeklyHierarchy` exige membro. Share: `QuadroMembroController` + `BoardShareModal` / botão Compartilhar no `KanbanBoard`. Rename/delete quadro só `sou_dono`. Card members ⊆ board members (`buscarMembros`, `updateMembro`, menções).
 - Lista “Seus quadros”: tiles estilo Trello; título único por usuário entre quadros em que é dono ou membro (não bloqueia homônimo de outro usuário da empresa).
+- Dentro do quadro: canvas com a mesma cor do tile, topbar glass, listas `#ebecf0`, cards brancos, “Adicionar um card / outra lista” no padrão Trello.
+- TaskModal: grid `main + aside 272px` (max ~1040px), body scrollável, sidebar sticky em blocos (Membros / Datas / Status); membros só na lateral.
 
 ## Gotchas
 - `empresa_id` = `cliente_id` (não é `users.id`).
@@ -16,6 +18,7 @@
 - Spatie `weekly_report` = abre módulo; `weekly_report_quadro_insert` = cria quadro (vira dono). Membro do quadro edita listas/cards com skills Spatie de lista/tarefa.
 - Membership: só dono/convidado vê o quadro (API `whereHas` + guard 403). Backfill antigo que metia todos com `weekly_report` foi limpo (`2026_10_08_140000_*`); novos membros só via Compartilhar.
 - Exclusão de quadro: soft delete (`deleted_at`) + `quem_deletou_id` (padrão MedidaAdministrativa).
+- Exclusão de card/tarefa: soft delete (`deleted_at`) + `quem_deletou_id` no model `Tarefa` (hook `deleting`; migration `2026_10_08_160000_*`).
 - Echo `onQuadroInsert`: não adiciona quadro alheio na lista (só se o user for membro do payload).
 - Não remover o dono do quadro via Share.
 - Em testes: não usar `Event::fake()` global (bloqueia `Quadro::created` / pivot dono); fake só eventos WR/Notificação.

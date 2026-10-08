@@ -53,6 +53,25 @@ export function inicialNome(nome) {
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
 }
 
+/** Paleta Trello-like (mesma ordem em BoardCard / KanbanBoard) */
+export const QUADRO_TILE_COLORS = [
+    'linear-gradient(135deg, #0079bf 0%, #0c3953 100%)',
+    'linear-gradient(135deg, #0f4c60 0%, #174257 100%)',
+    'linear-gradient(135deg, #519839 0%, #216e4e 100%)',
+    'linear-gradient(135deg, #d29034 0%, #a54800 100%)',
+    'linear-gradient(135deg, #b04632 0%, #833414 100%)',
+    'linear-gradient(135deg, #89609e 0%, #5e4db2 100%)',
+    'linear-gradient(135deg, #cd5a91 0%, #943d73 100%)',
+    'linear-gradient(135deg, #4bbf6b 0%, #216e4e 100%)',
+    'linear-gradient(135deg, #00aecc 0%, #206a83 100%)',
+    'linear-gradient(135deg, #838c91 0%, #44546f 100%)'
+]
+
+export function quadroTileBg(quadroId) {
+    const id = Number(quadroId) || 0
+    return QUADRO_TILE_COLORS[id % QUADRO_TILE_COLORS.length]
+}
+
 /** Formato esperado pelo DatePicker + DataHora::converterDatePicker */
 export function formatDataHoraPicker(value) {
     if (!value) return null

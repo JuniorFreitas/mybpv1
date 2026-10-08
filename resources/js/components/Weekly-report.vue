@@ -1,5 +1,5 @@
 <template>
-    <div class="wr-app">
+    <div class="wr-app" :class="{ 'wr-app--board': !!quadroAtivo }">
         <div v-if="loadError" class="alert alert-danger">
             {{ loadError }}
             <button type="button" class="btn btn-sm btn-outline-danger ml-2" @click="carregarQuadros">Tentar novamente</button>
@@ -19,11 +19,15 @@
             @delete="pedirDeleteQuadro"
         />
 
-        <div v-else>
-            <div v-if="preloadBoard" class="text-center text-muted py-5">
+        <div
+            v-else
+            class="wr-app__board-shell"
+            :style="preloadBoard ? { background: quadroTileBg(quadroAtivo?.id) } : null"
+        >
+            <div v-if="preloadBoard" class="wr-app__board-loading">
                 <i class="fa fa-spinner fa-pulse fa-2x mb-2 d-block"></i>
                 Abrindo quadro...
-                                                </div>
+            </div>
             <KanbanBoard
                 v-else
                 :quadro="quadroAtivo"
@@ -48,7 +52,7 @@
                 @open-tarefa="abrirTarefa"
                 @members-changed="onMembersChanged"
             />
-                        </div>
+        </div>
 
         <TaskModal
             v-if="tarefaAtiva && listaAtiva && quadroAtivo"
@@ -96,6 +100,7 @@ import {
     normalizeListas,
     normalizeLog,
     normalizeTarefa,
+    quadroTileBg,
     quadroUrl,
     tarefasUrl,
     toastErro,
@@ -195,13 +200,23 @@ export default {
             this.leaveEcho = () => {}
         }
     },
+    watch: {
+        quadroAtivo: {
+            immediate: true,
+            handler(v) {
+                document.body.classList.toggle('wr-board-fullscreen', !!v)
+            }
+        }
+    },
     beforeUnmount() {
+        document.body.classList.remove('wr-board-fullscreen')
         if (this._onPopState) {
             window.removeEventListener('popstate', this._onPopState)
         }
         if (this.leaveEcho) this.leaveEcho()
     },
     methods: {
+        quadroTileBg,
         syncUrl({ replace = false } = {}) {
             if (this._skipUrlSync) return
             escreverWeeklyQueryParams(
