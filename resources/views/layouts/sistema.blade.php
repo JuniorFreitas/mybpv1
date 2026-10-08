@@ -72,8 +72,8 @@
         <barra-top :usuario="{{ auth()->user()->load('Papel','FotoPerfil') }}"></barra-top>
 
         <div class="main-content">
-            <div class="page-content" style="padding: 15px 15px 15px 7px;">
-                <div class="container-fluid pb-5 mt-4 pt-5 ">
+            <div class="page-content">
+                <div class="container-fluid pb-4">
                     <div class="row">
                         @if(url()->current() != route('g.dashboard'))
                             <div class="col-12">

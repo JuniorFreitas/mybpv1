@@ -257,6 +257,13 @@ export default {
         this.formDefault = _.cloneDeep(this.form)
         this.initDropdowns()
         this.restaurarMenuColapsado()
+        this._onResizeMenu = () => this.restaurarMenuColapsado()
+        window.addEventListener('resize', this._onResizeMenu)
+    },
+    beforeUnmount() {
+        if (this._onResizeMenu) {
+            window.removeEventListener('resize', this._onResizeMenu)
+        }
     },
     methods: {
         initDropdowns() {
@@ -271,6 +278,8 @@ export default {
 
         restaurarMenuColapsado() {
             if (window.innerWidth < 992) {
+                // Em mobile o menu é drawer; não manter rail colapsada (cortava o conteúdo)
+                document.body.classList.remove('vertical-collpsed')
                 this.menuColapsado = !document.body.classList.contains('sidebar-enable')
                 return
             }
@@ -279,6 +288,8 @@ export default {
             document.body.classList.toggle('vertical-collpsed', colapsado)
             if (colapsado) {
                 document.body.classList.add('sidebar-enable')
+            } else {
+                document.body.classList.remove('sidebar-enable')
             }
             this.menuColapsado = colapsado
         },

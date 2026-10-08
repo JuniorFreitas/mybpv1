@@ -10,8 +10,8 @@
                 <h4
                     v-if="!editingTitle"
                     class="wr-kanban__title mb-0"
-                    :title="canUpdateQuadro ? 'Clique para renomear' : ''"
-                    @click="canUpdateQuadro ? startEditTitle() : null"
+                    :title="canRenameQuadro ? 'Clique para renomear' : ''"
+                    @click="canRenameQuadro ? startEditTitle() : null"
                 >
                     <i class="fas fa-columns mr-2 text-primary"></i>
                     {{ quadro.titulo }}
@@ -27,7 +27,37 @@
                 />
             </div>
 
-            <div v-if="atividades && atividades.length" class="wr-kanban__activity d-none d-lg-flex">
+            <div class="wr-kanban__members ml-auto mr-2">
+                <span
+                    v-for="m in membrosPreview"
+                    :key="m.id"
+                    class="wr-kanban__avatar wr-tip"
+                    :data-tip="m.nome + (m.papel === 'dono' ? ' (Dono)' : '')"
+                    :aria-label="m.nome + (m.papel === 'dono' ? ' (Dono)' : '')"
+                    tabindex="0"
+                >
+                    {{ inicial(m.nome) }}
+                </span>
+                <span
+                    v-if="membrosExtra > 0"
+                    class="wr-kanban__avatar wr-kanban__avatar--more wr-tip"
+                    :data-tip="membrosExtra + ' membro(s)'"
+                    :aria-label="membrosExtra + ' membro(s)'"
+                    tabindex="0"
+                >
+                    +{{ membrosExtra }}
+                </span>
+                <button
+                    type="button"
+                    class="btn btn-sm btn-primary ml-2"
+                    @click="shareOpen = true"
+                >
+                    <i class="fas fa-user-plus"></i>
+                    Compartilhar
+                </button>
+            </div>
+
+            <div v-if="atividades && atividades.length" class="wr-kanban__activity d-none d-xl-flex">
                 <small
                     v-for="log in atividades.slice(0, 2)"
                     :key="log.id"
@@ -39,6 +69,15 @@
                 </small>
             </div>
         </div>
+
+        <BoardShareModal
+            :open="shareOpen"
+            :empresa-id="empresaId"
+            :quadro-id="quadro.id"
+            :sou-dono="!!quadro.sou_dono"
+            @close="shareOpen = false"
+            @changed="$emit('members-changed')"
+        />
 
         <div class="wr-kanban__board">
             <draggable
@@ -195,12 +234,15 @@
 <script>
 import draggable from 'vuedraggable'
 import TaskCard from './TaskCard.vue'
+import BoardShareModal from './BoardShareModal.vue'
+import { inicialNome } from './api'
 
 export default {
     name: 'KanbanBoard',
-    components: { draggable, TaskCard },
+    components: { draggable, TaskCard, BoardShareModal },
     props: {
         quadro: { type: Object, required: true },
+        empresaId: { type: [Number, String], required: true },
         listas: { type: Array, default: () => [] },
         atividades: { type: Array, default: () => [] },
         canUpdateQuadro: { type: Boolean, default: false },
@@ -220,7 +262,8 @@ export default {
         'reorder-listas',
         'create-tarefa',
         'reorder-tarefas',
-        'open-tarefa'
+        'open-tarefa',
+        'members-changed'
     ],
     data() {
         return {
@@ -236,7 +279,21 @@ export default {
             dragBlockedClick: false,
             savingLista: false,
             savingTarefa: false,
-            listasLocal: []
+            listasLocal: [],
+            shareOpen: false
+        }
+    },
+    computed: {
+        canRenameQuadro() {
+            return !!(this.canUpdateQuadro && this.quadro?.sou_dono)
+        },
+        membrosPreview() {
+            const list = this.quadro?.membros_preview || []
+            return list.slice(0, 5)
+        },
+        membrosExtra() {
+            const total = Number(this.quadro?.membros_count || 0)
+            return Math.max(0, total - this.membrosPreview.length)
         }
     },
     watch: {
@@ -255,6 +312,9 @@ export default {
         }
     },
     methods: {
+        inicial(nome) {
+            return inicialNome(nome)
+        },
         startEditTitle() {
             this.tituloLocal = this.quadro.titulo
             this.editingTitle = true

@@ -43,6 +43,11 @@ class AttachMentionedMembers
 
         $adicionados = collect();
         foreach ($membros as $membro) {
+            // Card member ⊆ board member (fundamento Trello)
+            if (!$quadro->temMembro($membro)) {
+                continue;
+            }
+
             $tarefa->Membros()->syncWithoutDetaching([$membro->id]);
 
             $evento = new TarefaEvent($tarefa, TarefaEvent::UPDATE_MEMBROS);

@@ -545,13 +545,35 @@ class AutoCompletesController extends Controller
         if ($busca == '') {
             return response()->json([], 200);
         }
-        $quantidade = $request->query('rows');
+        $quantidade = (int) $request->query('rows', 10);
+        $quantidade = max(1, min($quantidade, 30));
 
-        $busca = $request->query('busca');
-        return User::whereAtivo(true)
+        $quadroRoute = $request->route('quadro');
+        $quadroId = (int) (
+            (is_object($quadroRoute) ? ($quadroRoute->id ?? 0) : $quadroRoute)
+            ?? $request->query('quadro_id')
+            ?? 0
+        );
+
+        $query = User::whereAtivo(true)
             ->where('nome', 'like', '%' . $busca . '%')
             ->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS)
-            ->whereEmpresaId(auth()->user()->empresa_id)
+            ->whereEmpresaId(auth()->user()->empresa_id);
+
+        // Estilo Trello: membros do card ⊆ membros do quadro
+        if ($quadroId > 0) {
+            $quadro = \App\Models\Quadro::query()->find($quadroId);
+            if (!$quadro || !$quadro->temMembro(auth()->user())) {
+                return response()->json(['msg' => 'Você não é membro deste quadro.'], 403);
+            }
+            $query->whereIn('id', function ($q) use ($quadroId) {
+                $q->select('user_id')
+                    ->from('quadros_membros')
+                    ->where('quadro_id', $quadroId);
+            });
+        }
+
+        return $query
             ->take($quantidade)
             ->get()
             ->map(function ($item) {

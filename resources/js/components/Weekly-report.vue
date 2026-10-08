@@ -27,6 +27,7 @@
             <KanbanBoard
                 v-else
                 :quadro="quadroAtivo"
+                :empresa-id="Number(id)"
                 :listas="arrayListas"
                 :atividades="atividades"
                 :can-update-quadro="perms.quadro_update"
@@ -45,6 +46,7 @@
                 @create-tarefa="criarTarefa"
                 @reorder-tarefas="reorderTarefas"
                 @open-tarefa="abrirTarefa"
+                @members-changed="onMembersChanged"
             />
                         </div>
 
@@ -152,14 +154,19 @@ export default {
             this.leaveEcho = joinWeeklyChannels(Number(this.id), {
                 onLog: this.onLog,
                 onQuadroInsert: (e) => {
-                    if (e.quadro && !this.listaQuadros.find((q) => q.id === e.quadro.id)) {
-                        this.listaQuadros.push(e.quadro)
-                    }
+                    // Só entra na lista quem é membro (criador ou já no preview).
+                    // Evita que o broadcast da empresa mostre quadro alheio.
+                    if (!e.quadro || this.listaQuadros.find((q) => q.id === e.quadro.id)) return
+                    if (!this.souMembroDoPayload(e.quadro)) return
+                    this.listaQuadros.push(this.normalizarQuadroLocal(e.quadro))
                 },
                 onQuadroUpdate: (e) => {
                     const q = this.listaQuadros.find((x) => x.id === e.quadro?.id)
-                    if (q) Object.assign(q, e.quadro)
-                    if (this.quadroAtivo?.id === e.quadro?.id) Object.assign(this.quadroAtivo, e.quadro)
+                    if (!q) return
+                    Object.assign(q, this.normalizarQuadroLocal(e.quadro, q))
+                    if (this.quadroAtivo?.id === e.quadro?.id) {
+                        Object.assign(this.quadroAtivo, this.normalizarQuadroLocal(e.quadro, this.quadroAtivo))
+                    }
                 },
                 onQuadroDelete: (e) => {
                     this.listaQuadros = this.listaQuadros.filter((q) => q.id !== e.id)
@@ -332,6 +339,43 @@ export default {
         onListasUpdate(listas) {
             this.arrayListas = listas
         },
+        souMembroDoPayload(quadro) {
+            if (!quadro) return false
+            const uid = Number(this.userId)
+            if (Number(quadro.user_id) === uid) return true
+            const preview = Array.isArray(quadro.membros_preview) ? quadro.membros_preview : []
+            return preview.some((m) => Number(m.id) === uid)
+        },
+        normalizarQuadroLocal(quadro, atual = null) {
+            const uid = Number(this.userId)
+            const souDono = Number(quadro?.user_id) === uid
+            return {
+                ...(atual || {}),
+                ...quadro,
+                sou_dono: souDono,
+                meu_papel: souDono ? 'dono' : atual?.meu_papel === 'dono' ? 'dono' : 'membro'
+            }
+        },
+        async onMembersChanged() {
+            try {
+                const { data } = await axios.get(weeklyBase(this.id))
+                this.listaQuadros = data.lista || []
+                if (this.quadroAtivo) {
+                    const q = this.listaQuadros.find((x) => Number(x.id) === Number(this.quadroAtivo.id))
+                    if (q) {
+                        this.quadroAtivo = {
+                            ...this.quadroAtivo,
+                            membros_preview: q.membros_preview,
+                            membros_count: q.membros_count,
+                            meu_papel: q.meu_papel,
+                            sou_dono: q.sou_dono
+                        }
+                    }
+                }
+            } catch (e) {
+                // avatares podem ficar defasados até o próximo reload
+            }
+        },
         async carregarQuadros() {
             this.preload = true
             this.loadError = ''
@@ -362,16 +406,26 @@ export default {
                 this.savingQuadro = false
             }
         },
-        pedirRenameQuadro(quadro) {
-            const titulo = window.prompt('Novo nome do quadro', quadro.titulo)
-            if (!titulo || !titulo.trim() || titulo === quadro.titulo) return
+        pedirRenameQuadro(payload) {
+            const quadro = payload?.quadro || payload
+            const titulo = String(payload?.titulo ?? '').trim()
+            if (!quadro?.id || !titulo || titulo === quadro.titulo) return
+
+            this.savingQuadro = true
             axios
-                .put(quadroUrl(this.id, quadro.id), { titulo: titulo.trim() })
+                .put(quadroUrl(this.id, quadro.id), { titulo })
                 .then(({ data }) => {
-                    Object.assign(quadro, data.quadro || { titulo: titulo.trim() })
+                    const atualizado = data.quadro || { ...quadro, titulo }
+                    Object.assign(quadro, atualizado)
+                    const naLista = this.listaQuadros.find((q) => q.id === quadro.id)
+                    if (naLista) Object.assign(naLista, atualizado)
+                    if (this.quadroAtivo?.id === quadro.id) Object.assign(this.quadroAtivo, atualizado)
                     toastOk('Quadro atualizado')
                 })
                 .catch((e) => toastErro(e?.response?.data?.msg || 'Erro ao renomear'))
+                .finally(() => {
+                    this.savingQuadro = false
+                })
         },
         pedirDeleteQuadro(quadro) {
             this.confirmMsg = `Excluir o quadro "${quadro.titulo}"? Esta ação não pode ser desfeita.`

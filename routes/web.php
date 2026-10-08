@@ -1565,6 +1565,15 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::get('weekly-report/{empresa}/quadros/{quadro}/listas', [\App\Http\Controllers\ListaTarefaController::class, 'index'])->name('listas.index');
 
         //Quadros
+        Route::get('weekly-report/{empresa}/quadros/{quadro}/membros/buscar', [\App\Http\Controllers\QuadroMembroController::class, 'buscar'])
+            ->name('quadros.membros.buscar');
+        Route::get('weekly-report/{empresa}/quadros/{quadro}/membros', [\App\Http\Controllers\QuadroMembroController::class, 'index'])
+            ->name('quadros.membros.index');
+        Route::post('weekly-report/{empresa}/quadros/{quadro}/membros', [\App\Http\Controllers\QuadroMembroController::class, 'store'])
+            ->name('quadros.membros.store');
+        Route::delete('weekly-report/{empresa}/quadros/{quadro}/membros/{user}', [\App\Http\Controllers\QuadroMembroController::class, 'destroy'])
+            ->name('quadros.membros.destroy');
+
         Route::delete('weekly-report/{empresa}/quadros/{quadro}', [\App\Http\Controllers\QuadroController::class, 'destroy'])->name('delete')->middleware('can:weekly_report_quadro_delete');
         Route::put('weekly-report/{empresa}/quadros/{quadro}', [\App\Http\Controllers\QuadroController::class, 'update'])->name('update')->middleware('can:weekly_report_quadro_update');
         Route::post('weekly-report/{empresa}/quadros', [\App\Http\Controllers\QuadroController::class, 'store'])->name('store')->middleware('can:weekly_report_quadro_insert');

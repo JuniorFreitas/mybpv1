@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\ListaTarefa;
 use App\Models\Quadro;
+use App\Models\QuadroMembro;
 use App\Models\Tarefa;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
@@ -45,6 +46,7 @@ class WeeklyReportMultitenantTest extends TestCase
         Schema::dropIfExists('log_weekly');
         Schema::dropIfExists('tarefas');
         Schema::dropIfExists('lista_tarefas');
+        Schema::dropIfExists('quadros_membros');
         Schema::dropIfExists('quadros');
         Schema::dropIfExists('users');
 
@@ -52,6 +54,7 @@ class WeeklyReportMultitenantTest extends TestCase
             $table->id();
             $table->string('nome')->nullable();
             $table->string('login')->nullable();
+            $table->string('tipo')->nullable();
             $table->unsignedBigInteger('empresa_id')->nullable();
             $table->boolean('ativo')->default(true);
             $table->boolean('require_password_reset')->default(false);
@@ -64,8 +67,19 @@ class WeeklyReportMultitenantTest extends TestCase
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('empresa_id');
+            $table->unsignedBigInteger('quem_deletou_id')->nullable();
             $table->text('titulo');
             $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('quadros_membros', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('quadro_id');
+            $table->unsignedBigInteger('user_id');
+            $table->string('papel', 20)->default('membro');
+            $table->timestamps();
+            $table->unique(['quadro_id', 'user_id']);
         });
 
         Schema::create('lista_tarefas', function (Blueprint $table) {
@@ -153,17 +167,40 @@ class WeeklyReportMultitenantTest extends TestCase
             $table->timestamps();
         });
 
-        Event::fake();
+        // Não usar Event::fake() global: desliga Eloquent model events (ex.: pivot dono no Quadro::created)
+        Event::fake([
+            \App\Events\WeeklyReport\QuadroEvent::class,
+            \App\Events\WeeklyReport\ListaEvent::class,
+            \App\Events\WeeklyReport\TarefaEvent::class,
+            \App\Events\WeeklyReport\CheckListTarefaEvent::class,
+            \App\Events\WeeklyReport\ItemChecklistEvent::class,
+            \App\Events\WeeklyReport\ComentarioTarefaEvent::class,
+            \App\Events\WeeklyReport\LogWeeklyEvent::class,
+            \App\Events\WeeklyReport\AnexoEvent::class,
+            \App\Events\Notificacoes\NotificacaoEvent::class,
+        ]);
     }
 
-    private function user(int $empresaId = 10): User
+    private function user(int $empresaId = 10, string $nome = null): User
     {
+        static $seq = 0;
+        $seq++;
+
         return User::query()->create([
-            'nome' => 'User ' . $empresaId,
-            'login' => "user{$empresaId}@test.com",
+            'nome' => $nome ?? ('User ' . $empresaId . ' #' . $seq),
+            'login' => "user{$empresaId}_{$seq}@test.com",
+            'tipo' => User::ADMINISTRADOR,
             'empresa_id' => $empresaId,
             'ativo' => true,
         ]);
+    }
+
+    private function addMembro(Quadro $quadro, User $user, string $papel = QuadroMembro::PAPEL_MEMBRO): void
+    {
+        QuadroMembro::query()->firstOrCreate(
+            ['quadro_id' => $quadro->id, 'user_id' => $user->id],
+            ['papel' => $papel]
+        );
     }
 
     public function test_lista_quadros_somente_do_tenant(): void
@@ -276,15 +313,11 @@ class WeeklyReportMultitenantTest extends TestCase
     public function test_adiciona_membro_no_item_do_checklist(): void
     {
         $user = $this->user(10);
-        $membro = User::query()->create([
-            'nome' => 'Membro Item',
-            'login' => 'membro-item@test.com',
-            'empresa_id' => 10,
-            'ativo' => true,
-        ]);
+        $membro = $this->user(10, 'Membro Item');
         $this->actingAs($user);
 
         $quadro = Quadro::query()->create(['titulo' => 'Board', 'empresa_id' => 10, 'user_id' => $user->id]);
+        $this->addMembro($quadro, $membro);
         $lista = ListaTarefa::query()->create(['titulo' => 'L1', 'quadro_id' => $quadro->id, 'user_id' => $user->id, 'ordem' => 1]);
         $tarefa = Tarefa::query()->create([
             'titulo' => 'Card',
@@ -314,13 +347,13 @@ class WeeklyReportMultitenantTest extends TestCase
             'user_id' => $membro->id,
         ]);
 
-        $outroTenant = User::query()->create([
-            'nome' => 'Outro',
-            'login' => 'outro@test.com',
-            'empresa_id' => 99,
-            'ativo' => true,
-        ]);
+        $foraDoQuadro = $this->user(10, 'Fora do Quadro');
+        $this->putJson(
+            "/g/weekly-report/10/quadros/{$quadro->id}/listas/{$lista->id}/tarefas/{$tarefa->id}/checklist/{$checklist->id}/item/{$item->id}/updateMembro",
+            ['acao' => 'add', 'user_id' => $foraDoQuadro->id]
+        )->assertStatus(400);
 
+        $outroTenant = $this->user(99, 'Outro');
         $this->putJson(
             "/g/weekly-report/10/quadros/{$quadro->id}/listas/{$lista->id}/tarefas/{$tarefa->id}/checklist/{$checklist->id}/item/{$item->id}/updateMembro",
             ['acao' => 'add', 'user_id' => $outroTenant->id]
@@ -342,18 +375,14 @@ class WeeklyReportMultitenantTest extends TestCase
 
     public function test_mencao_na_descricao_adiciona_membro_na_tarefa(): void
     {
-        Queue::fake();
+        Queue::fake([\App\Jobs\Weekly_report\UpdateMembrosJob::class]);
 
         $user = $this->user(10);
-        $mencionado = User::query()->create([
-            'nome' => 'Ana Mencionada',
-            'login' => 'ana@test.com',
-            'empresa_id' => 10,
-            'ativo' => true,
-        ]);
+        $mencionado = $this->user(10, 'Ana Mencionada');
         $this->actingAs($user);
 
         $quadro = Quadro::query()->create(['titulo' => 'Board', 'empresa_id' => 10, 'user_id' => $user->id]);
+        $this->addMembro($quadro, $mencionado);
         $lista = ListaTarefa::query()->create(['titulo' => 'L1', 'quadro_id' => $quadro->id, 'user_id' => $user->id, 'ordem' => 1]);
         $tarefa = Tarefa::query()->create([
             'titulo' => 'Card',
@@ -373,5 +402,228 @@ class WeeklyReportMultitenantTest extends TestCase
             'tarefa_id' => $tarefa->id,
             'user_id' => $mencionado->id,
         ]);
+    }
+
+    public function test_listagem_so_quadros_com_membership(): void
+    {
+        $dono = $this->user(10, 'Dono');
+        $outro = $this->user(10, 'Outro User');
+
+        $this->actingAs($dono);
+        $meu = Quadro::query()->create(['titulo' => 'Meu', 'empresa_id' => 10, 'user_id' => $dono->id]);
+
+        $this->actingAs($outro);
+        $alheio = Quadro::query()->create(['titulo' => 'Alheio', 'empresa_id' => 10, 'user_id' => $outro->id]);
+
+        $this->actingAs($dono);
+        $response = $this->getJson('/g/weekly-report/10');
+        $response->assertOk();
+        $titulos = collect($response->json('lista'))->pluck('titulo');
+        $this->assertTrue($titulos->contains('Meu'));
+        $this->assertFalse($titulos->contains('Alheio'));
+        $this->assertTrue(collect($response->json('lista'))->firstWhere('id', $meu->id)['sou_dono']);
+        $this->assertDatabaseHas('quadros_membros', [
+            'quadro_id' => $meu->id,
+            'user_id' => $dono->id,
+            'papel' => QuadroMembro::PAPEL_DONO,
+        ]);
+        $this->assertDatabaseMissing('quadros_membros', [
+            'quadro_id' => $alheio->id,
+            'user_id' => $dono->id,
+        ]);
+    }
+
+    public function test_nao_membro_recebe_403_nas_rotas_do_quadro(): void
+    {
+        $dono = $this->user(10, 'Dono');
+        $intruso = $this->user(10, 'Intruso');
+        $this->actingAs($dono);
+        $quadro = Quadro::query()->create(['titulo' => 'Privado', 'empresa_id' => 10, 'user_id' => $dono->id]);
+        $lista = ListaTarefa::query()->create([
+            'titulo' => 'L1',
+            'quadro_id' => $quadro->id,
+            'user_id' => $dono->id,
+            'ordem' => 1,
+        ]);
+
+        $this->actingAs($intruso);
+        $this->postJson("/g/weekly-report/10/quadros/{$quadro->id}/listas", ['titulo' => 'Hack'])
+            ->assertStatus(403);
+        $this->getJson("/g/weekly-report/10/quadros/{$quadro->id}/membros")
+            ->assertStatus(403);
+        $this->putJson("/g/weekly-report/10/quadros/{$quadro->id}/listas/{$lista->id}", ['titulo' => 'X'])
+            ->assertStatus(403);
+    }
+
+    public function test_dono_compartilha_e_remove_membro(): void
+    {
+        $dono = $this->user(10, 'Dono Share');
+        $convidado = $this->user(10, 'Convidado Share');
+        $this->actingAs($dono);
+        $quadro = Quadro::query()->create(['titulo' => 'Share', 'empresa_id' => 10, 'user_id' => $dono->id]);
+
+        $this->postJson("/g/weekly-report/10/quadros/{$quadro->id}/membros", [
+            'user_id' => $convidado->id,
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('quadros_membros', [
+            'quadro_id' => $quadro->id,
+            'user_id' => $convidado->id,
+            'papel' => QuadroMembro::PAPEL_MEMBRO,
+        ]);
+
+        $this->actingAs($convidado);
+        $this->getJson('/g/weekly-report/10')->assertOk();
+        $titulos = collect($this->getJson('/g/weekly-report/10')->json('lista'))->pluck('titulo');
+        $this->assertTrue($titulos->contains('Share'));
+
+        $this->postJson("/g/weekly-report/10/quadros/{$quadro->id}/membros", [
+            'user_id' => $this->user(10, 'Outro')->id,
+        ])->assertStatus(403);
+
+        $this->actingAs($dono);
+        $this->deleteJson("/g/weekly-report/10/quadros/{$quadro->id}/membros/{$convidado->id}")
+            ->assertOk();
+        $this->assertDatabaseMissing('quadros_membros', [
+            'quadro_id' => $quadro->id,
+            'user_id' => $convidado->id,
+        ]);
+
+        $this->deleteJson("/g/weekly-report/10/quadros/{$quadro->id}/membros/{$dono->id}")
+            ->assertStatus(400);
+    }
+
+    public function test_store_quadro_cria_pivot_dono(): void
+    {
+        $user = $this->user(10, 'Criador');
+        $this->actingAs($user);
+
+        $response = $this->postJson('/g/weekly-report/10/quadros', ['titulo' => 'Novo Board']);
+        $response->assertCreated();
+        $quadroId = $response->json('quadro.id');
+        $this->assertNotNull($quadroId);
+        $this->assertTrue($response->json('quadro.sou_dono'));
+        $this->assertDatabaseHas('quadros_membros', [
+            'quadro_id' => $quadroId,
+            'user_id' => $user->id,
+            'papel' => QuadroMembro::PAPEL_DONO,
+        ]);
+    }
+
+    public function test_exclui_quadro_com_soft_delete_e_quem_deletou(): void
+    {
+        $dono = $this->user(10, 'Dono Soft');
+        $this->actingAs($dono);
+
+        $quadro = Quadro::query()->create([
+            'titulo' => 'Para Excluir',
+            'empresa_id' => 10,
+            'user_id' => $dono->id,
+        ]);
+
+        $this->deleteJson("/g/weekly-report/10/quadros/{$quadro->id}")->assertOk();
+
+        $this->assertSoftDeleted('quadros', ['id' => $quadro->id]);
+        $this->assertDatabaseHas('quadros', [
+            'id' => $quadro->id,
+            'quem_deletou_id' => $dono->id,
+        ]);
+
+        // Some da listagem e libera o nome para novo quadro
+        $lista = collect($this->getJson('/g/weekly-report/10')->json('lista'))->pluck('titulo');
+        $this->assertFalse($lista->contains('Para Excluir'));
+
+        $this->postJson('/g/weekly-report/10/quadros', ['titulo' => 'Para Excluir'])
+            ->assertCreated();
+    }
+
+    public function test_nao_cria_quadro_com_titulo_duplicado_do_usuario_ou_vinculo(): void
+    {
+        $dono = $this->user(10, 'Criador Dup');
+        $colega = $this->user(10, 'Colega Dup');
+        $this->actingAs($dono);
+
+        $this->postJson('/g/weekly-report/10/quadros', ['titulo' => 'Recrutamento'])
+            ->assertCreated();
+
+        // Mesmo usuário não cria de novo (dono)
+        $this->postJson('/g/weekly-report/10/quadros', ['titulo' => '  recrutamento  '])
+            ->assertStatus(400)
+            ->assertJsonFragment(['msg' => 'Você já possui ou está vinculado a um quadro com este nome.']);
+
+        // Colega sem vínculo pode usar o mesmo nome
+        $this->actingAs($colega);
+        $this->postJson('/g/weekly-report/10/quadros', ['titulo' => 'Recrutamento'])
+            ->assertCreated();
+
+        // Colega vinculado a um quadro "Onboarding" não cria outro com o mesmo nome
+        $this->actingAs($dono);
+        $quadroOnboarding = Quadro::query()->create([
+            'titulo' => 'Onboarding',
+            'empresa_id' => 10,
+            'user_id' => $dono->id,
+        ]);
+        $this->addMembro($quadroOnboarding, $colega);
+
+        $this->actingAs($colega);
+        $this->postJson('/g/weekly-report/10/quadros', ['titulo' => 'Onboarding'])
+            ->assertStatus(400)
+            ->assertJsonFragment(['msg' => 'Você já possui ou está vinculado a um quadro com este nome.']);
+    }
+
+    public function test_buscar_membros_tarefa_so_retorna_membros_do_quadro(): void
+    {
+        $dono = $this->user(10, 'Dono Busca');
+        $noQuadro = $this->user(10, 'Alpha NoQuadro');
+        $fora = $this->user(10, 'Alpha Fora');
+        $this->actingAs($dono);
+
+        $quadro = Quadro::query()->create(['titulo' => 'Busca', 'empresa_id' => 10, 'user_id' => $dono->id]);
+        $this->addMembro($quadro, $noQuadro);
+        $lista = ListaTarefa::query()->create([
+            'titulo' => 'L1',
+            'quadro_id' => $quadro->id,
+            'user_id' => $dono->id,
+            'ordem' => 1,
+        ]);
+        $tarefa = Tarefa::query()->create([
+            'titulo' => 'Card',
+            'lista_id' => $lista->id,
+            'user_id' => $dono->id,
+            'ordem' => 1,
+        ]);
+
+        $response = $this->getJson(
+            "/g/weekly-report/10/quadros/{$quadro->id}/listas/{$lista->id}/tarefas/{$tarefa->id}/buscarMembros?busca=Alpha"
+        );
+        $response->assertOk();
+        $ids = collect($response->json())->pluck('id');
+        $this->assertTrue($ids->contains($noQuadro->id));
+        $this->assertFalse($ids->contains($fora->id));
+    }
+
+    public function test_update_membro_tarefa_rejeita_usuario_fora_do_quadro(): void
+    {
+        $dono = $this->user(10, 'Dono Tarefa');
+        $fora = $this->user(10, 'Fora Tarefa');
+        $this->actingAs($dono);
+        $quadro = Quadro::query()->create(['titulo' => 'T', 'empresa_id' => 10, 'user_id' => $dono->id]);
+        $lista = ListaTarefa::query()->create([
+            'titulo' => 'L1',
+            'quadro_id' => $quadro->id,
+            'user_id' => $dono->id,
+            'ordem' => 1,
+        ]);
+        $tarefa = Tarefa::query()->create([
+            'titulo' => 'Card',
+            'lista_id' => $lista->id,
+            'user_id' => $dono->id,
+            'ordem' => 1,
+        ]);
+
+        $this->putJson(
+            "/g/weekly-report/10/quadros/{$quadro->id}/listas/{$lista->id}/tarefas/{$tarefa->id}/updateMembro",
+            ['acao' => 'add', 'user_id' => $fora->id]
+        )->assertStatus(400);
     }
 }

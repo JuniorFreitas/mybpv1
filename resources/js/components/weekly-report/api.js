@@ -13,6 +13,14 @@ export function quadroUrl(empresaId, quadroId = null, absolute = true) {
     return quadroId ? `${root}/${quadroId}` : root
 }
 
+export function quadroMembrosUrl(empresaId, quadroId, absolute = true) {
+    return `${quadroUrl(empresaId, quadroId, absolute)}/membros`
+}
+
+export function quadroMembrosBuscarUrl(empresaId, quadroId, absolute = true) {
+    return `${quadroMembrosUrl(empresaId, quadroId, absolute)}/buscar`
+}
+
 export function listasUrl(empresaId, quadroId, listaId = null, absolute = true) {
     const root = `${quadroUrl(empresaId, quadroId, absolute)}/listas`
     return listaId ? `${root}/${listaId}` : root

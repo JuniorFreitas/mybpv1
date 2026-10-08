@@ -179,9 +179,21 @@
         margin-left: 0 !important;
     }
 
-    body.sidebar-enable {
+    // Drawer mobile (sidebar aberta por cima do conteúdo)
+    body.sidebar-enable:not(.vertical-collpsed) {
         .vertical-menu {
             display: block;
+        }
+    }
+
+    // Menu colapsado (ícones): precisa empurrar o conteúdo — senão corta sob a rail
+    body.vertical-collpsed {
+        .vertical-menu {
+            display: block !important;
+        }
+
+        .main-content {
+            margin-left: $sidebar-collapsed-width !important;
         }
     }
 }

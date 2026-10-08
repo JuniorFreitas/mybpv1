@@ -34,6 +34,11 @@ trait GuardsWeeklyReportTenant
             throw new HttpException(404, 'Quadro não encontrado.');
         }
 
+        // Estilo Trello: só membro do quadro acessa
+        if (!$quadro->temMembro(auth()->user())) {
+            throw new HttpException(403, 'Você não é membro deste quadro.');
+        }
+
         if ($lista && (int) $lista->quadro_id !== (int) $quadro->id) {
             throw new HttpException(404, 'Lista não encontrada neste quadro.');
         }
@@ -48,6 +53,13 @@ trait GuardsWeeklyReportTenant
 
         if ($item && $checklist && (int) $item->checklist_id !== (int) $checklist->id) {
             throw new HttpException(404, 'Item não encontrado nesta checklist.');
+        }
+    }
+
+    protected function assertQuadroDono(Quadro $quadro): void
+    {
+        if (!$quadro->isDono(auth()->user())) {
+            throw new HttpException(403, 'Apenas o dono do quadro pode realizar esta ação.');
         }
     }
 }
