@@ -481,7 +481,8 @@ class Sistema
     public static function validaEmail($email)
     {
         $email = trim($email);
-        $resultado = preg_match("/^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i", $email);
+        // Aceita plus addressing (ex.: usuario+tag@dominio.com)
+        $resultado = preg_match("/^([\w+-]+(?:\.[\w+-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i", $email);
         if ($resultado === 1) {
             return TRUE;
         } else {

@@ -732,9 +732,9 @@ const validacoes = {
         validaEmailVazio(evt) {
             $(evt).next("div.invalid-feedback").remove();
 
-            //var regex=/^[\w.-_\+]+@[\w-]+(\.\w{2,4})+$/;
+            // Aceita plus addressing (ex.: usuario+tag@dominio.com)
             var regex =
-                /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+                /^([\w+-]+(?:\.[\w+-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
             var valor = $(evt).val();
 
             if (regex.test(valor)) {
@@ -768,9 +768,9 @@ const validacoes = {
         validaEmail(evt) {
             $(evt).next("div.invalid-feedback").remove();
 
-            //var regex=/^[\w.-_\+]+@[\w-]+(\.\w{2,4})+$/;
+            // Aceita plus addressing (ex.: usuario+tag@dominio.com)
             var regex =
-                /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+                /^([\w+-]+(?:\.[\w+-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
             var valor = $(evt).val();
 
             if (regex.test(valor)) {
