@@ -299,6 +299,13 @@ class User extends Authenticatable
         return User::find(auth()->id());
     }
 
+    public function limparCacheHabilidades(): void
+    {
+        $this->listaDeHabilidade = [];
+        $this->unsetRelation('papel');
+        $this->unsetRelation('Papel');
+    }
+
     // retorna um array de habilidades
     public function listaDeHabilidades()
     {

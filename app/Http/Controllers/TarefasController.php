@@ -12,13 +12,16 @@ use App\Models\ChecklistsTarefa;
 use App\Models\ListaTarefa;
 use App\Models\LogWeekly;
 use App\Models\Quadro;
+use App\Models\QuadroMembro;
 use App\Models\Sistema;
 use App\Models\Tarefa;
 use App\Models\User;
 use App\Services\WeeklyReport\AttachMentionedMembers;
+use App\Services\WeeklyReport\GrantWeeklyReportAccess;
 use App\Support\WeeklyReport\WeeklyReportEagerLoads;
 use App\Support\WeeklyReportHtml;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use MasterTag\DataHora;
@@ -126,19 +129,36 @@ class TarefasController extends Controller
             $antes = [
                 'titulo' => $tarefa->titulo,
                 'concluido' => (bool) $tarefa->concluido,
+                'descricao' => $tarefa->descricao,
             ];
             $dados = $request->only(['titulo', 'descricao', 'concluido', 'lembrete']);
-            if ($request->filled('descricao')) {
-                $dados['descricao'] = WeeklyReportHtml::sanitize($dados['descricao']);
+            if ($request->has('descricao')) {
+                $dados['descricao'] = WeeklyReportHtml::sanitize($dados['descricao'] ?? '');
             }
             if ($request->exists('lembrete')) {
                 $tarefa->lembrete = $dados['lembrete'];
                 unset($dados['lembrete']);
             }
             $tarefa->update($dados);
+
+            // Menções na descrição: sync no save (add se mencionou, remove se tirou e salvou)
+            if ($request->has('descricao')) {
+                app(AttachMentionedMembers::class)->syncDescriptionMentions(
+                    $tarefa,
+                    $quadro,
+                    $empresa,
+                    $tarefa->descricao,
+                    $antes['descricao']
+                );
+            }
+
             \DB::commit();
 
-            $tarefa = $tarefa->fresh();
+            $tarefa = $tarefa->fresh()->load([
+                'Membros' => function ($q) {
+                    $q->select(['users.id', 'users.nome']);
+                },
+            ]);
             if ($request->has('concluido') && $antes['concluido'] !== (bool) $tarefa->concluido) {
                 LogWeekly::create([
                     'quadro_id' => $quadro->id,
@@ -159,35 +179,12 @@ class TarefasController extends Controller
                     'tarefa_id' => $tarefa->id,
                     'descricao' => 'atualizou a descrição desta tarefa',
                 ]);
-                $htmlMencoes = $tarefa->descricao;
-                $tarefaId = $tarefa->id;
-                $quadroId = $quadro->id;
-                $empresaId = $empresa;
-                dispatch(function () use ($tarefaId, $quadroId, $empresaId, $htmlMencoes) {
-                    try {
-                        $tarefaModel = Tarefa::query()->find($tarefaId);
-                        $quadroModel = Quadro::query()->find($quadroId);
-                        if ($tarefaModel && $quadroModel) {
-                            app(AttachMentionedMembers::class)->attachFromHtml(
-                                $tarefaModel,
-                                $quadroModel,
-                                $empresaId,
-                                $htmlMencoes
-                            );
-                        }
-                    } catch (\Throwable $e) {
-                        \Log::warning('WeeklyReport: falha ao vincular mencionados na descrição', [
-                            'tarefa_id' => $tarefaId,
-                            'erro' => $e->getMessage(),
-                        ]);
-                    }
-                })->afterResponse();
             }
 
             Event::dispatch(new TarefaEvent($tarefa, TarefaEvent::UPDATE));
 
             return response()->json([
-                'tarefa' => WeeklyReportEagerLoads::patchPayload($tarefa->fresh()),
+                'tarefa' => WeeklyReportEagerLoads::patchPayload($tarefa),
             ], 200);
         } catch (\Exception $e) {
             \DB::rollBack();
@@ -293,18 +290,53 @@ class TarefasController extends Controller
             ->whereId($request->user_id)
             ->whereEmpresaId($empresa)
             ->whereAtivo(true)
+            ->whereNull('deleted_at')
             ->first();
 
         if (!$membro) {
             return response()->json(['msg' => 'Membro inválido para este tenant.'], 400);
         }
 
-        if ($request->acao == 'add' && !$quadro->temMembro($membro)) {
-            return response()->json(['msg' => 'Só é possível adicionar membros do quadro à tarefa.'], 400);
-        }
-
         if ($request->acao == 'add') {
-            $tarefa->Membros()->syncWithoutDetaching([$membro->id]);
+            if (!$membro->grupo_id) {
+                return response()->json([
+                    'msg' => 'O usuário precisa pertencer a um grupo (papel) para ser adicionado.',
+                ], 400);
+            }
+
+            try {
+                DB::beginTransaction();
+
+                // Mesmo fluxo do Compartilhar: entra no quadro + weekly_report se ainda não for membro
+                if (!$quadro->temMembro($membro)) {
+                    if (!app(GrantWeeklyReportAccess::class)->handle($membro)) {
+                        DB::rollBack();
+
+                        return response()->json([
+                            'msg' => 'Não foi possível liberar o acesso ao Weekly Report para este usuário.',
+                        ], 400);
+                    }
+                    QuadroMembro::query()->firstOrCreate(
+                        [
+                            'quadro_id' => $quadro->id,
+                            'user_id' => $membro->id,
+                        ],
+                        [
+                            'papel' => QuadroMembro::PAPEL_MEMBRO,
+                        ]
+                    );
+                }
+
+                $tarefa->Membros()->syncWithoutDetaching([$membro->id]);
+                DB::commit();
+            } catch (\Throwable $e) {
+                DB::rollBack();
+
+                return response()->json([
+                    'msg' => $e->getMessage() ?: 'Erro ao adicionar membro',
+                ], 400);
+            }
+
             $evento = new TarefaEvent($tarefa, TarefaEvent::UPDATE_MEMBROS);
             $evento->acao = TarefaEvent::ACAO_ADD;
             Event::dispatch($evento);

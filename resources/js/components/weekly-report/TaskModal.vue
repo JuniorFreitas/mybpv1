@@ -59,7 +59,6 @@
                                     preset="basico"
                                     :init="tinyBasicoInit"
                                     :mentions-url="membrosSearchUrl"
-                                    @mention="onEditorMention"
                                 />
                             </div>
                             <div class="wr-desc-actions">
@@ -600,12 +599,13 @@
                                 </span>
                             </div>
                             <p v-else class="wr-sidebar__hint mb-2">Nenhum membro neste card.</p>
-                            <div v-if="canUpdate" class="wr-field wr-field--flush">
+                            <div v-if="canUpdate" class="wr-field wr-field--flush wr-sidebar__busca">
                                 <autocomplete
                                     v-model="membroBusca"
                                     :caminho="membrosUrl"
                                     placeholder="Adicionar membro…"
-                                    @onblur="membroBusca = ''"
+                                    formsm
+                                    :rows="8"
                                     @onselect="addMembro"
                                 />
                             </div>
@@ -1427,22 +1427,9 @@ export default {
             if (!this.local || !Array.isArray(membros)) return
             this.local.membros = membros
         },
-        onEditorMention(user) {
-            if (!this.canUpdate || !user?.id) return
-            if ((this.local.membros || []).some((m) => Number(m.id) === Number(user.id))) return
-            axios
-                .put(`${this.base()}/updateMembro`, { acao: 'add', user_id: user.id })
-                .then(({ data }) => {
-                    if (data.tarefa) {
-                        this.local = normalizeTarefa({ ...this.local, ...data.tarefa })
-                        this.$emit('updated', this.local)
-                    } else {
-                        const nome = user.nome || user.label || 'Membro'
-                        this.local.membros = [...(this.local.membros || []), { id: user.id, nome }]
-                        this.$emit('updated', this.local)
-                    }
-                })
-                .catch(() => {})
+        onEditorMention() {
+            // Descrição: membros só sincronizam ao salvar.
+            // Comentários: vínculo no publish (backend AttachMentionedMembers).
         },
         saveConcluido() {
             axios

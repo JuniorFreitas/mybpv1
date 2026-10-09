@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Models\Habilidade;
 use App\Models\ListaTarefa;
+use App\Models\Papel;
 use App\Models\Quadro;
 use App\Models\QuadroMembro;
 use App\Models\Tarefa;
 use App\Models\User;
+use App\Services\WeeklyReport\GrantWeeklyReportAccess;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -48,6 +51,9 @@ class WeeklyReportMultitenantTest extends TestCase
         Schema::dropIfExists('lista_tarefas');
         Schema::dropIfExists('quadros_membros');
         Schema::dropIfExists('quadros');
+        Schema::dropIfExists('papeis_habilidades');
+        Schema::dropIfExists('habilidades');
+        Schema::dropIfExists('papeis');
         Schema::dropIfExists('users');
 
         Schema::create('users', function (Blueprint $table) {
@@ -56,11 +62,33 @@ class WeeklyReportMultitenantTest extends TestCase
             $table->string('login')->nullable();
             $table->string('tipo')->nullable();
             $table->unsignedBigInteger('empresa_id')->nullable();
+            $table->unsignedBigInteger('grupo_id')->nullable();
             $table->boolean('ativo')->default(true);
             $table->boolean('require_password_reset')->default(false);
             $table->integer('password_reset_days')->nullable();
             $table->timestamps();
             $table->softDeletes();
+        });
+
+        Schema::create('papeis', function (Blueprint $table) {
+            $table->id();
+            $table->string('nome')->nullable();
+            $table->string('descricao')->nullable();
+            $table->unsignedBigInteger('empresa_id')->nullable();
+            $table->boolean('ativo')->default(true);
+            $table->boolean('master')->default(false);
+        });
+
+        Schema::create('habilidades', function (Blueprint $table) {
+            $table->id();
+            $table->string('nome');
+            $table->string('descricao')->nullable();
+        });
+
+        Schema::create('papeis_habilidades', function (Blueprint $table) {
+            $table->unsignedBigInteger('papel_id');
+            $table->unsignedBigInteger('habilidade_id');
+            $table->primary(['papel_id', 'habilidade_id']);
         });
 
         Schema::create('quadros', function (Blueprint $table) {
@@ -188,11 +216,19 @@ class WeeklyReportMultitenantTest extends TestCase
         static $seq = 0;
         $seq++;
 
+        $papel = Papel::withoutGlobalScopes()->create([
+            'nome' => 'Grupo ' . $empresaId . ' #' . $seq,
+            'descricao' => 'Teste',
+            'empresa_id' => $empresaId,
+            'ativo' => true,
+        ]);
+
         return User::query()->create([
             'nome' => $nome ?? ('User ' . $empresaId . ' #' . $seq),
             'login' => "user{$empresaId}_{$seq}@test.com",
             'tipo' => User::ADMINISTRADOR,
             'empresa_id' => $empresaId,
+            'grupo_id' => $papel->id,
             'ativo' => true,
         ]);
     }
@@ -377,14 +413,17 @@ class WeeklyReportMultitenantTest extends TestCase
 
     public function test_mencao_na_descricao_adiciona_membro_na_tarefa(): void
     {
-        Queue::fake([\App\Jobs\Weekly_report\UpdateMembrosJob::class]);
+        Queue::fake();
+        Habilidade::query()->create([
+            'nome' => GrantWeeklyReportAccess::HABILIDADE,
+            'descricao' => 'Acessar Weekly Report',
+        ]);
 
         $user = $this->user(10);
         $mencionado = $this->user(10, 'Ana Mencionada');
         $this->actingAs($user);
 
         $quadro = Quadro::query()->create(['titulo' => 'Board', 'empresa_id' => 10, 'user_id' => $user->id]);
-        $this->addMembro($quadro, $mencionado);
         $lista = ListaTarefa::query()->create(['titulo' => 'L1', 'quadro_id' => $quadro->id, 'user_id' => $user->id, 'ordem' => 1]);
         $tarefa = Tarefa::query()->create([
             'titulo' => 'Card',
@@ -396,11 +435,24 @@ class WeeklyReportMultitenantTest extends TestCase
 
         $html = '<p>Oi <span class="wr-mention" contenteditable="false" data-user-id="' . $mencionado->id . '" data-nome="Ana Mencionada">@Ana Mencionada</span></p>';
 
-        $this->putJson("/g/weekly-report/10/quadros/{$quadro->id}/listas/{$lista->id}/tarefas/{$tarefa->id}", [
+        $response = $this->putJson("/g/weekly-report/10/quadros/{$quadro->id}/listas/{$lista->id}/tarefas/{$tarefa->id}", [
             'descricao' => $html,
         ])->assertOk();
 
         $this->assertDatabaseHas('membros_tarefa', [
+            'tarefa_id' => $tarefa->id,
+            'user_id' => $mencionado->id,
+        ]);
+        $this->assertTrue(
+            collect($response->json('tarefa.membros'))->pluck('id')->contains($mencionado->id)
+        );
+
+        // Remove menção e salva → sai do card
+        $this->putJson("/g/weekly-report/10/quadros/{$quadro->id}/listas/{$lista->id}/tarefas/{$tarefa->id}", [
+            'descricao' => '<p>Sem menção</p>',
+        ])->assertOk();
+
+        $this->assertDatabaseMissing('membros_tarefa', [
             'tarefa_id' => $tarefa->id,
             'user_id' => $mencionado->id,
         ]);
@@ -573,15 +625,17 @@ class WeeklyReportMultitenantTest extends TestCase
             ->assertJsonFragment(['msg' => 'Você já possui ou está vinculado a um quadro com este nome.']);
     }
 
-    public function test_buscar_membros_tarefa_so_retorna_membros_do_quadro(): void
+    public function test_buscar_membros_tarefa_segue_regra_do_compartilhar(): void
     {
         $dono = $this->user(10, 'Dono Busca');
-        $noQuadro = $this->user(10, 'Alpha NoQuadro');
-        $fora = $this->user(10, 'Alpha Fora');
+        $naEmpresa = $this->user(10, 'Alpha NaEmpresa');
+        $outroTenant = $this->user(99, 'Alpha Outro');
+        $semGrupo = $this->user(10, 'Alpha SemGrupo');
+        $semGrupo->grupo_id = null;
+        $semGrupo->save();
         $this->actingAs($dono);
 
         $quadro = Quadro::query()->create(['titulo' => 'Busca', 'empresa_id' => 10, 'user_id' => $dono->id]);
-        $this->addMembro($quadro, $noQuadro);
         $lista = ListaTarefa::query()->create([
             'titulo' => 'L1',
             'quadro_id' => $quadro->id,
@@ -600,14 +654,66 @@ class WeeklyReportMultitenantTest extends TestCase
         );
         $response->assertOk();
         $ids = collect($response->json())->pluck('id');
-        $this->assertTrue($ids->contains($noQuadro->id));
-        $this->assertFalse($ids->contains($fora->id));
+        // Mesma base do Share: empresa + grupo (não precisa já ser membro do quadro)
+        $this->assertTrue($ids->contains($naEmpresa->id));
+        $this->assertFalse($ids->contains($outroTenant->id));
+        $this->assertFalse($ids->contains($semGrupo->id));
     }
 
-    public function test_update_membro_tarefa_rejeita_usuario_fora_do_quadro(): void
+    public function test_adicionar_membro_tarefa_convida_para_o_quadro(): void
     {
+        Queue::fake();
+        Habilidade::query()->create([
+            'nome' => GrantWeeklyReportAccess::HABILIDADE,
+            'descricao' => 'Acessar Weekly Report',
+        ]);
+
+        $dono = $this->user(10, 'Dono Add Card');
+        $convidado = $this->user(10, 'Colega Card');
+        $this->actingAs($dono);
+
+        $quadro = Quadro::query()->create(['titulo' => 'Board Add', 'empresa_id' => 10, 'user_id' => $dono->id]);
+        $lista = ListaTarefa::query()->create([
+            'titulo' => 'L1',
+            'quadro_id' => $quadro->id,
+            'user_id' => $dono->id,
+            'ordem' => 1,
+        ]);
+        $tarefa = Tarefa::query()->create([
+            'titulo' => 'Card',
+            'lista_id' => $lista->id,
+            'user_id' => $dono->id,
+            'ordem' => 1,
+        ]);
+
+        $this->assertFalse($quadro->temMembro($convidado));
+
+        $this->putJson(
+            "/g/weekly-report/10/quadros/{$quadro->id}/listas/{$lista->id}/tarefas/{$tarefa->id}/updateMembro",
+            ['acao' => 'add', 'user_id' => $convidado->id]
+        )->assertOk();
+
+        $this->assertTrue($quadro->fresh()->temMembro($convidado));
+        $this->assertDatabaseHas('membros_tarefa', [
+            'tarefa_id' => $tarefa->id,
+            'user_id' => $convidado->id,
+        ]);
+        $this->assertTrue(
+            $convidado->fresh()->Papel->habilidades()->where('nome', 'weekly_report')->exists()
+        );
+    }
+
+    public function test_update_membro_tarefa_rejeita_usuario_sem_grupo(): void
+    {
+        Habilidade::query()->create([
+            'nome' => GrantWeeklyReportAccess::HABILIDADE,
+            'descricao' => 'Acessar Weekly Report',
+        ]);
+
         $dono = $this->user(10, 'Dono Tarefa');
-        $fora = $this->user(10, 'Fora Tarefa');
+        $semGrupo = $this->user(10, 'Fora Tarefa');
+        $semGrupo->grupo_id = null;
+        $semGrupo->save();
         $this->actingAs($dono);
         $quadro = Quadro::query()->create(['titulo' => 'T', 'empresa_id' => 10, 'user_id' => $dono->id]);
         $lista = ListaTarefa::query()->create([
@@ -625,8 +731,10 @@ class WeeklyReportMultitenantTest extends TestCase
 
         $this->putJson(
             "/g/weekly-report/10/quadros/{$quadro->id}/listas/{$lista->id}/tarefas/{$tarefa->id}/updateMembro",
-            ['acao' => 'add', 'user_id' => $fora->id]
-        )->assertStatus(400);
+            ['acao' => 'add', 'user_id' => $semGrupo->id]
+        )
+            ->assertStatus(400)
+            ->assertJsonFragment(['msg' => 'O usuário precisa pertencer a um grupo (papel) para ser adicionado.']);
     }
 
     public function test_exclui_tarefa_com_soft_delete_e_quem_deletou(): void
@@ -667,5 +775,96 @@ class WeeklyReportMultitenantTest extends TestCase
         $this->assertFalse(
             $lista->Tarefas()->whereKey($tarefa->id)->exists()
         );
+    }
+
+    public function test_busca_membros_para_compartilhar_quadro(): void
+    {
+        $dono = $this->user(10, 'Dono Share Busca');
+        $candidato = $this->user(10, 'Maria Shareable');
+        $outroTenant = $this->user(99, 'Maria Outro');
+        $this->actingAs($dono);
+
+        $quadro = Quadro::query()->create([
+            'titulo' => 'Share Busca',
+            'empresa_id' => 10,
+            'user_id' => $dono->id,
+        ]);
+
+        $response = $this->getJson(
+            "/g/weekly-report/10/quadros/{$quadro->id}/membros/buscar?busca=Maria"
+        );
+        $response->assertOk();
+        $ids = collect($response->json())->pluck('id');
+        $this->assertTrue($ids->contains($candidato->id));
+        $this->assertFalse($ids->contains($outroTenant->id));
+        $this->assertFalse($ids->contains($dono->id));
+    }
+
+    public function test_convidar_membro_concede_habilidade_weekly_report(): void
+    {
+        Habilidade::query()->create([
+            'nome' => GrantWeeklyReportAccess::HABILIDADE,
+            'descricao' => 'Acessar Weekly Report',
+        ]);
+
+        $dono = $this->user(10, 'Dono Grant');
+        $convidado = $this->user(10, 'Convidado Sem WR');
+        $this->actingAs($dono);
+
+        $quadro = Quadro::query()->create([
+            'titulo' => 'Grant WR',
+            'empresa_id' => 10,
+            'user_id' => $dono->id,
+        ]);
+
+        $this->assertFalse(
+            $convidado->Papel->habilidades()->where('nome', 'weekly_report')->exists()
+        );
+
+        $this->postJson(
+            "/g/weekly-report/10/quadros/{$quadro->id}/membros",
+            ['user_id' => $convidado->id]
+        )->assertCreated();
+
+        $this->assertDatabaseHas('quadros_membros', [
+            'quadro_id' => $quadro->id,
+            'user_id' => $convidado->id,
+            'papel' => QuadroMembro::PAPEL_MEMBRO,
+        ]);
+        $this->assertTrue(
+            $convidado->fresh()->Papel->habilidades()->where('nome', 'weekly_report')->exists()
+        );
+    }
+
+    public function test_nao_convida_usuario_sem_grupo(): void
+    {
+        Habilidade::query()->create([
+            'nome' => GrantWeeklyReportAccess::HABILIDADE,
+            'descricao' => 'Acessar Weekly Report',
+        ]);
+
+        $dono = $this->user(10, 'Dono Sem Grupo');
+        $semGrupo = $this->user(10, 'Usuario Sem Grupo');
+        $semGrupo->grupo_id = null;
+        $semGrupo->save();
+        $this->actingAs($dono);
+
+        $quadro = Quadro::query()->create([
+            'titulo' => 'Sem Grupo',
+            'empresa_id' => 10,
+            'user_id' => $dono->id,
+        ]);
+
+        $this->postJson(
+            "/g/weekly-report/10/quadros/{$quadro->id}/membros",
+            ['user_id' => $semGrupo->id]
+        )
+            ->assertStatus(400)
+            ->assertJsonFragment(['msg' => 'O usuário precisa pertencer a um grupo (papel) para ser convidado.']);
+
+        $busca = $this->getJson(
+            "/g/weekly-report/10/quadros/{$quadro->id}/membros/buscar?busca=Usuario%20Sem"
+        )->assertOk();
+        $this->assertFalse(collect($busca->json())->pluck('id')->contains($semGrupo->id));
     }
 }

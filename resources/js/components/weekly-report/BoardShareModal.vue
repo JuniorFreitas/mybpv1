@@ -13,16 +13,17 @@
 
             <div class="wr-share-modal__body">
                 <p class="text-muted small mb-3">
-                    Pessoas adicionadas passam a ver e editar este quadro (como no Trello).
+                    Pessoas adicionadas passam a ver e editar este quadro.
                 </p>
 
-                <div v-if="souDono" class="form-group">
+                <div v-if="souDono" class="form-group wr-share-modal__busca">
                     <label class="small font-weight-bold">Convidar pessoa</label>
                     <autocomplete
                         v-model="buscaLabel"
                         :caminho="caminhoBusca"
                         placeholder="Buscar por nome..."
-                        @onblur="buscaLabel = ''"
+                        formsm
+                        :rows="8"
                         @onselect="onSelectConvidar"
                     />
                 </div>
@@ -34,35 +35,42 @@
                     <i class="fa fa-spinner fa-pulse"></i> Carregando...
                 </div>
 
-                <ul v-else class="list-group wr-share-list">
-                    <li v-for="m in membros" :key="m.id" class="list-group-item d-flex align-items-center">
-                        <span
-                            class="wr-share-avatar wr-tip mr-2"
-                            :data-tip="m.nome"
-                            :aria-label="m.nome"
-                            tabindex="0"
-                        >{{ inicialNome(m.nome) }}</span>
-                        <div class="flex-grow-1 min-w-0">
-                            <div class="font-weight-bold text-truncate">{{ m.nome }}</div>
-                            <small class="text-muted">{{ m.papel === 'dono' ? 'Dono' : 'Membro' }}</small>
-                        </div>
-                        <button
-                            v-if="souDono && m.papel !== 'dono'"
-                            type="button"
-                            class="btn btn-sm btn-outline-danger"
-                            :disabled="busyId === m.id"
-                            title="Remover do quadro"
-                            @click="remover(m)"
-                        >
-                            <i v-if="busyId === m.id" class="fa fa-spinner fa-pulse"></i>
-                            <i v-else class="fas fa-times"></i>
-                        </button>
-                        <span v-else-if="m.papel === 'dono'" class="badge badge-primary">Dono</span>
-                    </li>
-                    <li v-if="!membros.length" class="list-group-item text-muted small text-center">
-                        Nenhum membro neste quadro.
-                    </li>
-                </ul>
+                <div v-else class="wr-share-members">
+                    <div class="wr-share-members__head">
+                        <span class="wr-share-members__title">Membros</span>
+                        <span class="wr-share-members__count">{{ membros.length }}</span>
+                    </div>
+                    <ul class="wr-share-list">
+                        <li v-for="m in membros" :key="m.id" class="wr-share-list__item">
+                            <span
+                                class="wr-share-avatar wr-tip"
+                                :data-tip="m.nome"
+                                :aria-label="m.nome"
+                                tabindex="0"
+                            >{{ inicialNome(m.nome) }}</span>
+                            <span class="wr-share-list__name" :title="m.nome">{{ m.nome }}</span>
+                            <span
+                                v-if="m.papel === 'dono'"
+                                class="wr-share-list__badge"
+                            >Dono</span>
+                            <button
+                                v-else-if="souDono"
+                                type="button"
+                                class="wr-share-list__remove"
+                                :disabled="busyId === m.id"
+                                title="Remover do quadro"
+                                aria-label="Remover do quadro"
+                                @click="remover(m)"
+                            >
+                                <i v-if="busyId === m.id" class="fa fa-spinner fa-pulse"></i>
+                                <i v-else class="fas fa-times"></i>
+                            </button>
+                        </li>
+                        <li v-if="!membros.length" class="wr-share-list__empty">
+                            Nenhum membro neste quadro.
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -157,41 +165,182 @@ export default {
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    padding: 4rem 1rem 1rem;
+    padding: 3rem 1rem 1.5rem;
+    overflow-y: auto;
 }
 .wr-share-modal {
     width: 100%;
     max-width: 420px;
+    max-height: calc(100vh - 4.5rem);
+    display: flex;
+    flex-direction: column;
     background: #fff;
     border-radius: 0.75rem;
     box-shadow: 0 18px 48px rgba(3, 20, 30, 0.35);
-    overflow: hidden;
+    overflow: visible;
 }
 .wr-share-modal__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-shrink: 0;
     padding: 0.9rem 1rem;
     border-bottom: 1px solid #eef1f4;
+    border-radius: 0.75rem 0.75rem 0 0;
+    background: #fff;
 }
 .wr-share-modal__body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
     padding: 1rem;
+    overflow: visible;
+    border-radius: 0 0 0.75rem 0.75rem;
+    background: #fff;
+}
+.wr-share-modal__busca {
+    position: relative;
+    z-index: 30;
+    flex-shrink: 0;
+    margin-bottom: 0.75rem;
+}
+.wr-share-modal__busca :deep(.autocomplete) {
+    position: relative;
+    z-index: 30;
+}
+.wr-share-modal__busca :deep(.autocomplete-results) {
+    max-height: min(200px, 32vh) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 8px 20px rgba(3, 20, 30, 0.18);
+    z-index: 40 !important;
+}
+.wr-share-members {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    border: 1px solid #eef1f4;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fafbfc;
+}
+.wr-share-members__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 0.45rem 0.7rem;
+    border-bottom: 1px solid #eef1f4;
+    background: #fff;
+}
+.wr-share-members__title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6c757d;
+}
+.wr-share-members__count {
+    min-width: 1.35rem;
+    height: 1.35rem;
+    padding: 0 0.35rem;
+    border-radius: 999px;
+    background: #e8eef1;
+    color: #174257;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.wr-share-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.25rem;
+    position: relative;
+    z-index: 1;
+    flex: 1 1 auto;
+    min-height: 120px;
+    max-height: min(280px, 40vh);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.wr-share-list__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 36px;
+    padding: 0.3rem 0.45rem;
+    border-radius: 6px;
+    transition: background 0.12s ease;
+}
+.wr-share-list__item:hover {
+    background: #fff;
+}
+.wr-share-list__name {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #174257;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.wr-share-list__badge {
+    flex-shrink: 0;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #174257;
+    background: #e3eef3;
+    border-radius: 4px;
+    padding: 0.15rem 0.4rem;
+}
+.wr-share-list__remove {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #a0a8b0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+.wr-share-list__remove:hover:not(:disabled) {
+    background: #fdeceb;
+    color: #c9372c;
+}
+.wr-share-list__remove:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+.wr-share-list__empty {
+    padding: 1rem 0.75rem;
+    text-align: center;
+    color: #8a97a0;
+    font-size: 0.8rem;
 }
 .wr-share-avatar {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     border-radius: 999px;
     background: #0f4c60;
     color: #fff;
-    font-size: 0.72rem;
+    font-size: 0.65rem;
     font-weight: 700;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-}
-.wr-share-list {
-    max-height: 280px;
-    overflow: auto;
 }
 </style>

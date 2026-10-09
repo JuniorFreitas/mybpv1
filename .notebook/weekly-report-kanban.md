@@ -24,7 +24,9 @@
 - Em testes: não usar `Event::fake()` global (bloqueia `Quadro::created` / pivot dono); fake só eventos WR/Notificação.
 - `QuadroController::store` também faz `firstOrCreate` do dono (idempotente).
 - AutoComplete prepende `URL_ADMIN`; usar path relativo em `caminho`.
-- Share busca: `weekly-report/{empresa}/quadros/{quadro}/membros/buscar` (não ComboboxAutoComplete — usar `<autocomplete>`).
+- Share busca: `weekly-report/{empresa}/quadros/{quadro}/membros/buscar` (não ComboboxAutoComplete — usar `<autocomplete>`). Modal Share: `overflow: visible` (senão o dropdown do autocomplete some). Busca por nome/login.
+- Ao convidar membro: usuário **precisa ter grupo (`grupo_id`) ativo**; busca só lista quem tem grupo. `GrantWeeklyReportAccess` faz `syncWithoutDetaching` de `weekly_report` no papel — permissões vêm de `papeis_habilidades`.
+- TaskModal `buscarMembros`: mesma base do Share (empresa + grupo ativo). Ao adicionar no card, se ainda não for do quadro → convida no board + `GrantWeeklyReportAccess`.
 - Anexos só em rotas nested (rotas soltas sem tenant removidas).
 - TaskModal: NÃO emitir `updated` de forma que o pai reatribua `tarefaAtiva` (loop de `loadShow`). Usar `loadedId` + `Object.assign` só nas listas.
 - Checklist: formulário inline (sem `window.prompt` — bloqueado em browsers embutidos).
@@ -59,4 +61,4 @@
 - Query params (histórico + F5): `?quadro=&lista=&tarefa=` em `weekly-report/queryParams.js`. Restore valida quadro do tenant; tarefa via board ou GET show (403/404 limpa URL). Ações continuam pelos `perms.*`.
 - Lembrete: definir entrega + membros + lembrete (ex. 5m) → no horário, notificação in-app + e-mail; card atrasado fica vermelho.
 
-- Menção → avatar aparece em Membros da tarefa; mencionado recebe notificação/e-mail (fluxo updateMembro).
+- Menção na **descrição**: só sync ao salvar (`syncDescriptionMentions`); tirar menção e salvar remove o membro (não remove quem foi adicionado só pelo sidebar). Comentário: attach ao publicar.

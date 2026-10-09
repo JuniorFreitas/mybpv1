@@ -555,27 +555,46 @@ class AutoCompletesController extends Controller
             ?? 0
         );
 
-        $query = User::whereAtivo(true)
-            ->where('nome', 'like', '%' . $busca . '%')
-            ->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS)
-            ->whereEmpresaId(auth()->user()->empresa_id);
-
-        // Estilo Trello: membros do card ⊆ membros do quadro
+        // Mesma regra do Share: empresa + grupo (papel) ativo.
         if ($quadroId > 0) {
             $quadro = \App\Models\Quadro::query()->find($quadroId);
             if (!$quadro || !$quadro->temMembro(auth()->user())) {
                 return response()->json(['msg' => 'Você não é membro deste quadro.'], 403);
             }
-            $query->whereIn('id', function ($q) use ($quadroId) {
+        }
+
+        $query = User::query()
+            ->whereAtivo(true)
+            ->whereNull('deleted_at')
+            ->whereEmpresaId(auth()->user()->empresa_id)
+            ->where('grupo_id', '>', 0)
+            ->whereIn('tipo', User::TIPOS_USUARIOS_GERENCIAIS)
+            ->whereExists(function ($q) {
+                $q->select(\DB::raw(1))
+                    ->from('papeis')
+                    ->whereColumn('papeis.id', 'users.grupo_id')
+                    ->where('papeis.ativo', true);
+            })
+            ->where(function ($q) use ($busca) {
+                $q->where('nome', 'like', '%' . $busca . '%')
+                    ->orWhere('login', 'like', '%' . $busca . '%');
+            });
+
+        // Não listar quem já está no card (quando a rota traz a tarefa)
+        $tarefaRoute = $request->route('tarefa');
+        $tarefaId = (int) (is_object($tarefaRoute) ? ($tarefaRoute->id ?? 0) : ($tarefaRoute ?? 0));
+        if ($tarefaId > 0) {
+            $query->whereNotIn('id', function ($q) use ($tarefaId) {
                 $q->select('user_id')
-                    ->from('quadros_membros')
-                    ->where('quadro_id', $quadroId);
+                    ->from('membros_tarefa')
+                    ->where('tarefa_id', $tarefaId);
             });
         }
 
         return $query
+            ->orderBy('nome')
             ->take($quantidade)
-            ->get()
+            ->get(['id', 'nome', 'login', 'tipo', 'grupo_id'])
             ->map(function ($item) {
                 $item->label = $item->nome;
                 return $item;
