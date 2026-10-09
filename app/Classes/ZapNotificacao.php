@@ -89,6 +89,11 @@ class ZapNotificacao
                 && app(WhatsappNotificationGateService::class)->podeEnviarAniversario($empresaId);
         }
 
+        if (($meta['tipo'] ?? null) === 'mfa_login') {
+            return $empresaId > 0
+                && app(WhatsappNotificationGateService::class)->podeEnviarMfaLogin($empresaId);
+        }
+
         $tipo = TipoMensagemWhatsapp::tryFromString($meta['tipo'] ?? null);
 
         if (!$tipo || $empresaId <= 0) {

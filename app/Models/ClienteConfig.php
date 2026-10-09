@@ -18,6 +18,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $verifica_mes_vencimento
  * @property int|null $cliente_id
  * @property bool|null $envia_whatsapp
+ * @property bool $mfa_login_habilitado
+ * @property bool $mfa_login_email
+ * @property bool $mfa_login_whatsapp
  * @property int|null $vencimento_aso
  * @property string $modelo_cih
  * @property bool $supervisor_etiqueta_bloqueio
@@ -74,6 +77,9 @@ class ClienteConfig extends Model
     protected $fillable = [
         'envia_whatsapp',
         'aniversario_whatsapp',
+        'mfa_login_habilitado',
+        'mfa_login_email',
+        'mfa_login_whatsapp',
         'verifica_mes_vencimento',
         'cliente_id',
         'vencimento_aso',
@@ -95,6 +101,9 @@ class ClienteConfig extends Model
     protected $casts = [
         'envia_whatsapp' => 'boolean',
         'aniversario_whatsapp' => 'boolean',
+        'mfa_login_habilitado' => 'boolean',
+        'mfa_login_email' => 'boolean',
+        'mfa_login_whatsapp' => 'boolean',
         'verifica_mes_vencimento' => 'int',
         'cliente_id' => 'int',
         'vencimento_aso' => 'int',

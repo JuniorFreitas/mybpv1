@@ -88,6 +88,9 @@ Route::group(['prefix' => 'g'], function () {
     // Authentication Routes...
     Route::get('login', [\App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
     Route::post('login', [\App\Http\Controllers\Auth\LoginController::class, 'login']);
+    Route::get('login/mfa', [\App\Http\Controllers\Auth\LoginController::class, 'showMfaForm'])->name('login.mfa.show');
+    Route::post('login/mfa', [\App\Http\Controllers\Auth\LoginController::class, 'verificarMfa'])->name('login.mfa.verify');
+    Route::post('login/mfa/reenviar', [\App\Http\Controllers\Auth\LoginController::class, 'reenviarMfa'])->name('login.mfa.resend');
     Route::get('sair', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
     // Registration Routes...
     Route::get('register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register')->middleware('auth', 'configuracao_habilidades');

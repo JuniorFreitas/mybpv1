@@ -781,6 +781,42 @@
                         </fieldset>
 
                         <fieldset>
+                            <legend class="text-uppercase">MFA no Login</legend>
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-lg-4">
+                                    <div class="form-group">
+                                        <label>Autenticação em dois fatores (MFA)</label>
+                                        <select v-model="form.cliente_config.mfa_login_habilitado" class="form-control">
+                                            <option :value="false">Desabilitado</option>
+                                            <option :value="true">Habilitado</option>
+                                        </select>
+                                        <small class="text-muted">Quando habilitado, o login web exige código de 8 caracteres após a senha.</small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-lg-4" v-if="form.cliente_config.mfa_login_habilitado">
+                                    <div class="form-group">
+                                        <label>Canal e-mail</label>
+                                        <select v-model="form.cliente_config.mfa_login_email" class="form-control">
+                                            <option :value="true">Habilitado</option>
+                                            <option :value="false">Desabilitado</option>
+                                        </select>
+                                        <small class="text-muted">Envia o código para o login (e-mail) do usuário.</small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-lg-4" v-if="form.cliente_config.mfa_login_habilitado">
+                                    <div class="form-group">
+                                        <label>Canal WhatsApp</label>
+                                        <select v-model="form.cliente_config.mfa_login_whatsapp" class="form-control">
+                                            <option :value="false">Desabilitado</option>
+                                            <option :value="true">Habilitado</option>
+                                        </select>
+                                        <small class="text-muted">Exige notificação WhatsApp da empresa habilitada e telefone cadastrado no usuário.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset>
                             <legend class="text-uppercase">Assinatura Digital</legend>
                             <div class="row">
                                 <div class="col-12 col-sm-6 col-lg-4">

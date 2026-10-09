@@ -235,6 +235,7 @@ class ClientesController extends Controller
                     }
                     $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigAssinatura($dados['cliente_config']));
                     $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosAniversarioWhatsapp($dados['cliente_config']));
+                    $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigMfaLogin($dados['cliente_config']));
                     ClienteConfig::create($dadosClienteConfig);
 
                 }
@@ -619,6 +620,7 @@ class ClientesController extends Controller
                 }
                 $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigAssinatura($dados['cliente_config']));
                 $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosAniversarioWhatsapp($dados['cliente_config']));
+                $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigMfaLogin($dados['cliente_config']));
                 $config->update($dadosClienteConfig);
             } else {
                 $dadosClienteConfig = [
@@ -639,6 +641,7 @@ class ClientesController extends Controller
                 }
                 $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigAssinatura($dados['cliente_config']));
                 $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosAniversarioWhatsapp($dados['cliente_config']));
+                $dadosClienteConfig = array_merge($dadosClienteConfig, $this->dadosConfigMfaLogin($dados['cliente_config']));
                 ClienteConfig::create($dadosClienteConfig);
             }
 
@@ -764,6 +767,41 @@ class ClientesController extends Controller
 
         return [
             'aniversario_whatsapp' => filter_var($dadosConfig['aniversario_whatsapp'] ?? false, FILTER_VALIDATE_BOOLEAN),
+        ];
+    }
+
+    /**
+     * Normaliza flags de MFA no login web.
+     *
+     * @return array{mfa_login_habilitado?: bool, mfa_login_email?: bool, mfa_login_whatsapp?: bool}
+     */
+    private function dadosConfigMfaLogin(array $dadosConfig): array
+    {
+        if (!Schema::hasColumn('cliente_configs', 'mfa_login_habilitado')) {
+            return [];
+        }
+
+        $habilitado = filter_var($dadosConfig['mfa_login_habilitado'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $email = filter_var($dadosConfig['mfa_login_email'] ?? true, FILTER_VALIDATE_BOOLEAN);
+        $whatsapp = filter_var($dadosConfig['mfa_login_whatsapp'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $enviaWhatsapp = filter_var($dadosConfig['envia_whatsapp'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+        if ($whatsapp && !$enviaWhatsapp) {
+            throw new \InvalidArgumentException(
+                'Para usar MFA por WhatsApp, habilite também o envio de notificação no WhatsApp da empresa.'
+            );
+        }
+
+        if ($habilitado && !$email && !$whatsapp) {
+            throw new \InvalidArgumentException(
+                'Com MFA habilitado, selecione ao menos um canal: e-mail ou WhatsApp.'
+            );
+        }
+
+        return [
+            'mfa_login_habilitado' => $habilitado,
+            'mfa_login_email' => $email,
+            'mfa_login_whatsapp' => $whatsapp,
         ];
     }
 
