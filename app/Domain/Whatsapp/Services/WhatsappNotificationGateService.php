@@ -76,6 +76,27 @@ class WhatsappNotificationGateService
             ->value('aniversario_whatsapp');
     }
 
+    public function podeEnviarMfaLogin(int $empresaId): bool
+    {
+        if (!Schema::hasTable('cliente_configs') || !Schema::hasColumn('cliente_configs', 'mfa_login_whatsapp')) {
+            return false;
+        }
+
+        if (!$this->empresaPermiteWhatsapp($empresaId)) {
+            return false;
+        }
+
+        $config = ClienteConfig::query()
+            ->where('cliente_id', $empresaId)
+            ->first(['mfa_login_habilitado', 'mfa_login_whatsapp']);
+
+        if (!$config) {
+            return false;
+        }
+
+        return (bool) $config->mfa_login_habilitado && (bool) $config->mfa_login_whatsapp;
+    }
+
     public function usuarioAceitaModulo(int $userId, string $modulo): bool
     {
         $usuario = User::withoutGlobalScopes()
