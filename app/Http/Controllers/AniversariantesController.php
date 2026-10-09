@@ -159,7 +159,7 @@ class AniversariantesController extends Controller
         $funcionarios = Curriculo::select(['id', 'nome', 'email', 'nascimento', 'rg', 'orgao_expeditor'])
             ->whereHas('FeedBack', function ($q) {
                 $this->somenteAdmitidos($q);
-            })->whereRaw('month(nascimento) =' . $campoMes)
+            })->whereRaw('month(nascimento) = ?', [(int) $campoMes])
             ->with($this->relacoesAniversariante($ano))
             ->orderByRaw('day(nascimento)')->get()->map(function ($item) {
                 $data_nascimento = new DataHora($item->nascimento);
@@ -200,7 +200,7 @@ class AniversariantesController extends Controller
 
         $funcionarios = Curriculo::select(['id', 'nome', 'email', 'nascimento', 'rg', 'orgao_expeditor'])->whereHas('FeedBack', function ($q) {
             $this->somenteAdmitidos($q);
-        })->whereRaw('month(nascimento) =' . $campoMes)
+        })->whereRaw('month(nascimento) = ?', [(int) $campoMes])
             ->with($this->relacoesAniversariante($ano))
             ->orderByRaw('day(nascimento)')->get()->map(function ($item) {
                 $data_nascimento = new DataHora($item->nascimento);
@@ -257,7 +257,7 @@ class AniversariantesController extends Controller
 
         $funcionarios = Curriculo::select(['id', 'nome', 'email', 'nascimento', 'rg', 'orgao_expeditor'])->whereHas('FeedBack', function ($q) {
             $this->somenteAdmitidos($q);
-        })->whereRaw('month(nascimento) =' . $campoMes)
+        })->whereRaw('month(nascimento) = ?', [(int) $campoMes])
             ->with($this->relacoesAniversariante($ano))
             ->orderByRaw('day(nascimento)')->get()->map(function ($item) {
                 $data_nascimento = new DataHora($item->nascimento);

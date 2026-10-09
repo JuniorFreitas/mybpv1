@@ -287,9 +287,8 @@
                     <i class="fa fa-times"></i> Limpar seleção
                 </button>
                 <form target="_blank"
-                      action="{{ route('parecerrh.excel') }}"
-                      {{--                      action="{{ \App\Models\Sistema::UrlServidor }}/parecer_rh/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"--}}
-                      method="get">
+                      action="{{ route('g.entrevista.parecer_rh.excel') }}"
+                      method="post">
                     @csrf
                     <input type="hidden" name="selecionados[]" v-for="item in selecionados" :value="item">
 

@@ -48,7 +48,7 @@
 <body style="background: url({{ asset('images/bg_login_bpin_mybp.jpg') }}) no-repeat #072333; background-size: cover;">
 <div id="app" class="container mt-5" v-cloak>
     <div class="col-md-6 m-auto">
-        <recupera-senha token=""></recupera-senha>
+        <recupera-senha token="{{ $recuperacao->token_plain ?? '' }}"></recupera-senha>
     </div>
 </div>
 <script src="{{ mix('js/app.js') }}"></script>

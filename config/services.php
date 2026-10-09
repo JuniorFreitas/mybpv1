@@ -57,4 +57,13 @@ return [
         'token_ttl' => (int) env('BP_CHAMADOS_TOKEN_TTL', 900),
     ],
 
+    'api' => [
+        'token' => env('X_API_TOKEN'),
+    ],
+
+    'recaptcha' => [
+        'site_key' => env('RECAPTCHA_SITE_KEY'),
+        'secret_key' => env('RECAPTCHA_SECRET_KEY'),
+    ],
+
 ];

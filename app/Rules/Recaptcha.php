@@ -3,6 +3,7 @@
 namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Facades\Http;
 
 class Recaptcha implements Rule
 {
@@ -25,22 +26,27 @@ class Recaptcha implements Rule
      */
     public function passes($attribute, $value)
     {
-        $data = array(
-            'secret'   => env('RECAPTCHA_SECRET_KEY'),
-            'response' => $value
-        );
+        $secret = config('services.recaptcha.secret_key');
+        if (!$secret || !$value) {
+            return false;
+        }
 
         try {
-            $verify = curl_init();
-            curl_setopt($verify, CURLOPT_URL, "https://www.google.com/recaptcha/api/siteverify");
-            curl_setopt($verify, CURLOPT_POST, true);
-            curl_setopt($verify, CURLOPT_POSTFIELDS, http_build_query($data));
-            curl_setopt($verify, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($verify, CURLOPT_RETURNTRANSFER, true);
-            $response = curl_exec($verify);
-            return json_decode($response)->success;
-        } catch (\Exception $e) {
-            return response()->json(['msg' => 'Falha na vericação de Robô']);
+            $response = Http::asForm()
+                ->timeout(10)
+                ->post('https://www.google.com/recaptcha/api/siteverify', [
+                    'secret' => $secret,
+                    'response' => $value,
+                ]);
+
+            if (!$response->successful()) {
+                return false;
+            }
+
+            return (bool) data_get($response->json(), 'success', false);
+        } catch (\Throwable $e) {
+            // Fail-closed: falha de rede/TLS não libera o formulário
+            return false;
         }
     }
 

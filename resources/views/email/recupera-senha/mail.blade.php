@@ -6,10 +6,7 @@
             <td style="text-align: justify">
                 Olá, <strong>{{ $dados['nome'] }}</strong>! Tudo bem?<br>
                 Recebemos uma solicitação para a recuperação de senha. <br>
-                Sua senha só será alterada se você trocá-la até {{ $dados['expiracao'] }}.<br><br>
-                <h2 style="border: 3px dashed; padding: 29px; text-align: center;"
-                >CÓDIGO DE SEGURANÇA: <strong>{{ $dados['token'] }}</strong></h2>
-                <br>
+                O link abaixo é de uso único e expira em {{ $dados['expiracao'] }}.<br><br>
 
                 <a href="{{ route('recuperaSenhanew',$dados['token']) }}" class="link" target="_blank">
                     REDEFINIR MINHA SENHA

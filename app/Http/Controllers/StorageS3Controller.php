@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Arquivo;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class StorageS3Controller extends Controller
 {
@@ -40,64 +42,88 @@ class StorageS3Controller extends Controller
 
     public function anexoShow(Request $request, $arquivo)
     {
-        $path = Arquivo::buscaPath($arquivo);
-        if ($path == false) {
-            return response("", 404);
-        } else {
-            $disco = Arquivo::nomeDisco($arquivo);
-            $permitidos = [
-                Arquivo::S3
-            ];
-
-            if (in_array($disco, $permitidos) == false) {
-                return response("", 404);
-            }
-
-
-            return \Storage::disk($disco)->response($arquivo);
+        $model = $this->resolverArquivoS3($arquivo);
+        if (!$model || !$this->usuarioPodeAcessar($model)) {
+            return response('', 404);
         }
+
+        if (!Storage::disk(Arquivo::S3)->exists($arquivo)) {
+            return response('', 404);
+        }
+
+        return Storage::disk(Arquivo::S3)->response($arquivo, null, [
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Disposition' => 'inline',
+        ]);
     }
 
     public function anexoDelete(Request $request, $arquivo)
     {
-        //Se esta apagando realmente um anexo_imovel
-        $disco = Arquivo::nomeDisco($arquivo);
-        $permitidos = [
-            Arquivo::S3
-        ];
-        if (in_array($disco, $permitidos) == false) {
-            return response("", 404);
-        }
-        //Apagar
-        $model = Arquivo::findByArquivo($arquivo);
-        if ($model && $model->temporario) {
-            Arquivo::apagar($arquivo);
-            return response("", 200);
-
-        } else {
-            return response("Não foi possível apagar o anexo", 400);
+        $model = $this->resolverArquivoS3($arquivo);
+        if (!$model || !$this->usuarioPodeAcessar($model)) {
+            return response('', 404);
         }
 
+        if ($model->temporario && (int) $model->quem_enviou === (int) auth()->id()) {
+            $apagou = Arquivo::anexoDelete(Arquivo::S3, $arquivo);
+            if ($apagou === true) {
+                return response('', 200);
+            }
+        }
+
+        return response('Não foi possível apagar o anexo', 400);
     }
 
     //anexo ou foto
     public function download(Request $request, $arquivo)
     {
-        //Fazer a validacao (middleware) de download para anexos-cliente , anexos-ocorrencias, aqui se nescessario...
-        $disco = Arquivo::nomeDisco($arquivo);
-        $permitidos = [
-            Arquivo::S3
-        ];
-        if (in_array($disco, $permitidos) == false) {
-            return response("", 404);
+        $model = $this->resolverArquivoS3($arquivo);
+        if (!$model || !$this->usuarioPodeAcessar($model)) {
+            return response('', 404);
         }
 
-        $url = Arquivo::buscaPath($arquivo);
-        if ($url) {
-            $model = Arquivo::findByArquivo($arquivo);
-            return response()->download($url, $model->nome . $model->extensao);
-        } else {
-            return response("", 404);
+        if (!Storage::disk(Arquivo::S3)->exists($arquivo)) {
+            return response('', 404);
         }
+
+        $nome = ($model->nome ?: pathinfo($arquivo, PATHINFO_FILENAME)) . ($model->extensao ?: '');
+
+        return Storage::disk(Arquivo::S3)->download($arquivo, $nome, [
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
+    private function resolverArquivoS3(string $arquivo): ?Arquivo
+    {
+        return Arquivo::query()
+            ->where('disco', Arquivo::S3)
+            ->where(function ($q) use ($arquivo) {
+                $q->where('file', $arquivo)->orWhere('thumb', $arquivo);
+            })
+            ->first();
+    }
+
+    private function usuarioPodeAcessar(Arquivo $model): bool
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return false;
+        }
+
+        if ((int) $model->quem_enviou === (int) $user->id) {
+            return true;
+        }
+
+        // Candidato só acessa o próprio arquivo
+        if ($user->tipo === User::CANDIDATO) {
+            return false;
+        }
+
+        $uploaderEmpresa = User::withoutGlobalScopes()
+            ->where('id', $model->quem_enviou)
+            ->value('empresa_id');
+
+        return $uploaderEmpresa !== null
+            && (int) $uploaderEmpresa === (int) $user->empresa_id;
     }
 }

@@ -99,6 +99,13 @@ class VagaAbertaController extends Controller
 
     public function buscaCurriculo(Request $request)
     {
+        $escolaridades = Escolaridade::get();
+        $respostaVazia = [
+            'possuiCadastro' => false,
+            'escolaridades' => $escolaridades,
+            'success' => true,
+        ];
+
         //BUSCA POR CPF
         $cpf = Sistema::transformCpfCnpj($request->cpf);
         if (!Sistema::validaCPF($cpf)) {
@@ -112,62 +119,51 @@ class VagaAbertaController extends Controller
             ->select(['id', 'nome'])
             ->first();
 
-        $escolaridades = Escolaridade::get();
-
         if (!$user) {
-            return response()->json([
-                'possuiCadastro' => false,
-                'escolaridades' => $escolaridades,
-                'success' => true
-            ]);
+            // Resposta uniforme (sem oráculo de existência)
+            return response()->json($respostaVazia);
         }
 
         $dataNascimento = Sistema::dataTransform($request->nascimento);
         $nascimento = new DataHora($dataNascimento);
 
+        // Sem cid (dado sensível LGPD) na resposta pública
         $curriculo = $user->Curriculo()
             ->withoutGlobalScopes()
             ->select([
                 'id', 'cpf', 'rg', 'rg_data_emissao', 'naturalidade', 'orgao_expeditor', 'carteira_trabalho',
                 'nome', 'cnh', 'nascimento', 'logradouro', 'end_numero', 'complemento', 'bairro', 'municipio',
                 'uf', 'cep', 'email', 'formacao', 'formacao_instituicao', 'formacao_curso', 'formacao_status',
-                'vaga_pretendida', 'uf_vaga', 'municipio_id', 'pcd', 'cid', 'viajar', 'filiacao_pai', 'filiacao_mae',
+                'vaga_pretendida', 'uf_vaga', 'municipio_id', 'pcd', 'viajar', 'filiacao_pai', 'filiacao_mae',
                 'disponibilidade_sabado', 'disponibilidade_domingo', 'sexo'
             ])->first();
 
-        if ($curriculo) {
-            $cpfNascimentoValido = $curriculo->nascimento == $nascimento->dataCompleta();
-            if ($cpfNascimentoValido) {
-                $curriculo = $curriculo->load('Qualificacoes', 'Experiencias', 'Telefones');
-                $curriculo->temqualificacao = $curriculo->Qualificacoes()->count() > 0 ? true : false;
-                $curriculo->temexperiencia = $curriculo->Experiencias()->count() > 0 ? true : false;
+        if ($curriculo && $curriculo->nascimento == $nascimento->dataCompleta()) {
+            $curriculo = $curriculo->load('Qualificacoes', 'Experiencias', 'Telefones');
+            $curriculo->temqualificacao = $curriculo->Qualificacoes()->count() > 0 ? true : false;
+            $curriculo->temexperiencia = $curriculo->Experiencias()->count() > 0 ? true : false;
+            $curriculo->cid = null;
 
-                $curriculo->pcd = $curriculo->pcd ?: '';
-                $curriculo->viajar = $curriculo->viajar ?: '';
-                $curriculo->municipio_id = $curriculo->municipio_id ?: '';
+            $curriculo->pcd = $curriculo->pcd ?: '';
+            $curriculo->viajar = $curriculo->viajar ?: '';
+            $curriculo->municipio_id = $curriculo->municipio_id ?: '';
 
-                $municipio = Municipio::find($curriculo->municipio_id);
-
+            $municipio = Municipio::find($curriculo->municipio_id);
+            if ($municipio) {
                 $curriculo->autocomplete_label_municipio_modal = $municipio->nome . ' - ' . $municipio->uf;
                 $curriculo->autocomplete_label_municipio_modal_anterior = $municipio->nome . ' - ' . $municipio->uf;
-
-                $curriculo->cpf = Sistema::maskCpf($curriculo->cpf);
-                return response()->json([
-                    'curriculo' => $curriculo,
-                    'possuiCadastro' => true,
-                    'escolaridades' => $escolaridades
-                ]);
             }
-            return response()->json(['msg' => 'CPF encontrado, porém data de nascimento não confere',
-                'success' => false
-            ], 400);
+
+            $curriculo->cpf = Sistema::maskCpf($curriculo->cpf);
+            return response()->json([
+                'curriculo' => $curriculo,
+                'possuiCadastro' => true,
+                'escolaridades' => $escolaridades
+            ]);
         }
 
-        return response()->json([
-            'possuiCadastro' => false,
-            'escolaridades' => $escolaridades,
-            'success' => true
-        ]);
+        // CPF inexistente OU nascimento não confere → mesma resposta
+        return response()->json($respostaVazia);
     }
 
     /**
@@ -275,21 +271,30 @@ class VagaAbertaController extends Controller
         $cpf = Sistema::transformCpfCnpj($request->cpf_padrao);
         $dados['cpf'] = $cpf;
 
+        $empresaId = (int) ($dados['empresa_id'] ?? 0);
+        $vagaAbertaId = (int) ($dados['vaga_aberta_id'] ?? 0);
+
+        $vaga_aberta = VagasAbertas::withoutGlobalScopes()
+            ->where('id', $vagaAbertaId)
+            ->where('empresa_id', $empresaId)
+            ->with('Municipio')
+            ->first();
+
+        if (!$vaga_aberta || !$vaga_aberta->Municipio) {
+            return response()->json([
+                'msg' => 'Vaga inválida para esta empresa',
+                'success' => false,
+            ], 400);
+        }
+
         $user = User::whereHas('Curriculo', function ($q) use ($cpf) {
             $q->withoutGlobalScopes()->whereCpf($cpf);
-        })->whereEmpresaId($dados['empresa_id']);
+        })->whereEmpresaId($empresaId);
 
         $editando = $user->count() > 0;
 
         $dados['lido'] = false;
-//        $dados['pcd'] = $dados['pcd'];
-//        $dados['viajar'] = $dados['viajar'] == 'true';
-//        $dados['disponibilidade_sabado'] = $dados['disponibilidade_sabado'] == 'true';
-//        $dados['disponibilidade_domingo'] = $dados['disponibilidade_domingo'] == 'true';
-//        $dados['disponibilidade_domingo'] = $dados['disponibilidade_domingo'] == 'true';
-        $dados['email'] = mb_strtolower($dados['email']);
-        $vaga_aberta = VagasAbertas::whereId($dados['vaga_aberta_id'])->with('Municipio')->first();
-
+        $dados['email'] = mb_strtolower($dados['email'] ?? '');
         $dados['uf_vaga'] = mb_strtoupper($vaga_aberta->Municipio->uf);
         $dados['municipio_id'] = $vaga_aberta->municipio_id;
         $dados['vaga_pretendida'] = $vaga_aberta->id;
@@ -367,15 +372,18 @@ class VagaAbertaController extends Controller
                     'password' => Sistema::SenhaCpf($dados['cpf_padrao']),
                     'tipo' => User::CANDIDATO,
                     'ativo' => true,
-                    'temp' => false,
+                    'temp' => true,
                     'termos' => false,
-                    'empresa_id' => $dados['empresa_id']
+                    'empresa_id' => $empresaId,
+                    'password_changed_at' => null,
+                    'require_password_reset' => true,
                 ];
 
                 $usuario = $user->create($userObj);
-                $usuario->Curriculo()->create($dados);
+                $usuario->Curriculo()->create($this->camposCurriculoPermitidos($dados));
 
                 if (!isset($dados['telefones'])) {
+                    DB::rollBack();
                     return response()->json([
                         'msg' => 'É Necessário Informar pelo menos Um número de telefone',
                         'erros' => $dadosValidados->errors()
@@ -407,11 +415,25 @@ class VagaAbertaController extends Controller
                 }
             } else {
                 $curriculo = Curriculo::withoutGlobalScopes()->find($user->first()->id);
+                if (!$curriculo) {
+                    DB::rollBack();
+                    return response()->json(['msg' => 'Currículo não encontrado'], 400);
+                }
+
+                // Prova de posse: nascimento deve conferir para editar
+                $nascimentoInformado = (new DataHora(Sistema::dataTransform($dados['nascimento'] ?? '')))->dataCompleta();
+                if ($curriculo->nascimento !== $nascimentoInformado) {
+                    DB::rollBack();
+                    return response()->json([
+                        'msg' => 'Não foi possível atualizar o cadastro. Verifique os dados informados.',
+                        'success' => false,
+                    ], 400);
+                }
 
                 if (isset($dados['telefonesDelete'])) {
                     foreach ($dados['telefonesDelete'] as $index) {
                         if ($index > 0) {
-                            TelefoneCurriculo::find($index)->delete();
+                            $curriculo->Telefones()->where('id', $index)->delete();
                         }
                     }
                 }
@@ -424,7 +446,10 @@ class VagaAbertaController extends Controller
                             $dados['telefone_id'] = $telPrincipal;
                         }
                     } else {
-                        $curriculo->Telefones->find($linha['id'])->update($linha);
+                        $tel = $curriculo->Telefones()->find($linha['id']);
+                        if ($tel) {
+                            $tel->update($linha);
+                        }
                         if ($linha['principal']) {
                             $dados['telefone_id'] = $linha['id'];
                         }
@@ -435,15 +460,19 @@ class VagaAbertaController extends Controller
                     if (isset($dados['qualificacoesDelete'])) {
                         foreach ($dados['qualificacoesDelete'] as $index) {
                             if ($index > 0) {
-                                $curriculo->Qualificacoes()->find($index)->delete();
+                                $curriculo->Qualificacoes()->where('id', $index)->delete();
                             }
                         }
                     } else {
                         foreach ($dados['qualificacoes'] as $linha) {
                             if (isset($linha['id'])) {
-                                $curriculo->Qualificacoes()->find($linha['id'])->update($linha);
+                                $q = $curriculo->Qualificacoes()->find($linha['id']);
+                                if ($q) {
+                                    $q->update($linha);
+                                }
+                            } else {
+                                $curriculo->Qualificacoes()->create($linha);
                             }
-                            $curriculo->Qualificacoes()->create($linha);
                         }
                     }
 
@@ -451,7 +480,7 @@ class VagaAbertaController extends Controller
                     if (isset($dados['qualificacoesDelete'])) {
                         foreach ($dados['qualificacoesDelete'] as $index) {
                             if ($index > 0) {
-                                $curriculo->Qualificacoes()->find($index)->delete();
+                                $curriculo->Qualificacoes()->where('id', $index)->delete();
                             }
                         }
                     }
@@ -461,14 +490,17 @@ class VagaAbertaController extends Controller
                     if (isset($dados['experienciasDelete'])) {
                         foreach ($dados['experienciasDelete'] as $index) {
                             if ($index > 0) {
-                                $curriculo->Experiencias()->find($index)->delete();
+                                $curriculo->Experiencias()->where('id', $index)->delete();
                             }
                         }
                     } else {
                         foreach ($dados['experiencias'] as $linha) {
                             if (isset($linha['id'])) {
                                 $linha['data_fim'] = $linha['data_fim'] == "" ? null : $linha['data_fim'];
-                                $curriculo->Experiencias()->find($linha['id'])->update($linha);
+                                $exp = $curriculo->Experiencias()->find($linha['id']);
+                                if ($exp) {
+                                    $exp->update($linha);
+                                }
                             } else {
                                 $linha['data_fim'] = $linha['data_fim'] == "" ? null : $linha['data_fim'];
                                 $curriculo->Experiencias()->create($linha);
@@ -479,13 +511,12 @@ class VagaAbertaController extends Controller
                     if (isset($dados['experienciasDelete'])) {
                         foreach ($dados['experienciasDelete'] as $index) {
                             if ($index > 0) {
-                                $curriculo->Experiencias()->find($index)->delete();
+                                $curriculo->Experiencias()->where('id', $index)->delete();
                             }
                         }
                     }
                 }
-                unset($dados['cpf']);
-                $curriculo->update($dados);
+                $curriculo->update($this->camposCurriculoPermitidos($dados, false));
             }
 
             DB::commit();
@@ -557,6 +588,39 @@ class VagaAbertaController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    /**
+     * Lista branca de campos de currículo aceitos no cadastro/edição público.
+     * Impede mass assignment de flags internas (lido, usuario_lido, etc.).
+     */
+    private function camposCurriculoPermitidos(array $dados, bool $incluirCpf = true): array
+    {
+        $permitidos = [
+            'rg', 'rg_data_emissao', 'naturalidade', 'nacionalidade', 'orgao_expeditor', 'carteira_trabalho',
+            'nome', 'estado_civil', 'cnh', 'cnh_vencimento', 'nascimento', 'logradouro', 'end_numero',
+            'complemento', 'bairro', 'municipio', 'uf', 'cep', 'email', 'formacao', 'formacao_instituicao',
+            'formacao_curso', 'formacao_status', 'vaga_pretendida', 'uf_vaga', 'municipio_id', 'pcd', 'cid',
+            'viajar', 'filiacao_pai', 'filiacao_mae', 'disponibilidade_sabado', 'disponibilidade_domingo', 'sexo',
+            'lido',
+        ];
+
+        if ($incluirCpf) {
+            array_unshift($permitidos, 'cpf');
+        }
+
+        $out = [];
+        foreach ($permitidos as $campo) {
+            if (array_key_exists($campo, $dados)) {
+                $out[$campo] = $dados[$campo];
+            }
+        }
+
+        // Flags internas sempre controladas pelo servidor
+        $out['lido'] = false;
+        unset($out['usuario_lido'], $out['datalido']);
+
+        return $out;
     }
 
     /**

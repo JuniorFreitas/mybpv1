@@ -11,20 +11,38 @@ class ScopeEmpresa implements Scope
     /**
      * Apply the scope to a given Eloquent query builder.
      *
+     * Fail-closed: sem usuário autenticado a query não retorna dados de tenant.
+     * Jobs/console devem usar withoutGlobalScopes() (ou autenticar contexto) quando
+     * precisarem cruzar empresas.
+     *
      * @param \Illuminate\Database\Eloquent\Builder $builder
      * @param \Illuminate\Database\Eloquent\Model $model
      * @return void
      */
     public function apply(Builder $builder, Model $model)
     {
+        $user = auth()->user();
+
         if ($model->hasCast('empresa_id')) { // pro nao aceitar Nome de classe statico, exemplo:  Curriculo:get();
-            if(auth()->user()){
-                return $builder->where('empresa_id', auth()->user()->empresa_id);
+            if ($user) {
+                $builder->where($model->getTable() . '.empresa_id', $user->empresa_id);
+
+                return;
             }
-        } else {
-            return $builder->whereHas('Pessoa', function ($query) {
-                $query->whereEmpresaId(auth()->user()->empresa_id);
-            });
+
+            $builder->whereRaw('1 = 0');
+
+            return;
         }
+
+        if (!$user) {
+            $builder->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $builder->whereHas('Pessoa', function ($query) use ($user) {
+            $query->whereEmpresaId($user->empresa_id);
+        });
     }
 }

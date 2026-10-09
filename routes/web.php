@@ -13,8 +13,12 @@ Route::get('/health', function () {
 
 Route::get('/verificacao-assinatura', [\App\Http\Controllers\VerificacaoAssinaturaController::class, 'index'])->name('verificacao-assinatura');
 
-Route::get('/recupera-senha/{token}', [\App\Http\Controllers\UserController::class, 'recuperaSenha'])->name('recuperaSenhanew');
-Route::post('/envia-recupera-senha', [\App\Http\Controllers\UserController::class, 'recuperaSenhaPost'])->name('recuperaSenhaPost');
+Route::get('/recupera-senha/{token}', [\App\Http\Controllers\UserController::class, 'recuperaSenha'])
+    ->middleware('throttle:10,1')
+    ->name('recuperaSenhanew');
+Route::post('/envia-recupera-senha', [\App\Http\Controllers\UserController::class, 'recuperaSenhaPost'])
+    ->middleware('throttle:5,1')
+    ->name('recuperaSenhaPost');
 
 //Route::get('testezap', function () {
 //
@@ -98,7 +102,9 @@ Route::group(['prefix' => 'g'], function () {
     Route::get('password/reset/{token}', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('password/reset', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'reset']);
 
-    Route::post('/enviaSolicitacaoSenha', [\App\Http\Controllers\UserController::class, 'solicitaRecuperaSenha'])->name('solicitaRecuperaSenha');
+    Route::post('/enviaSolicitacaoSenha', [\App\Http\Controllers\UserController::class, 'solicitaRecuperaSenha'])
+        ->middleware('throttle:5,1')
+        ->name('solicitaRecuperaSenha');
 
     // Password Change Routes (fora do middleware check.password.reset para evitar loop)
     Route::get('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'index'])->name('alterar-senha.index')->middleware('auth');
@@ -106,23 +112,11 @@ Route::group(['prefix' => 'g'], function () {
 });
 
 Route::get('carteira/{curriculo}', [\App\Http\Controllers\TreinamentoController::class, 'carteiraIndividual'])->name('treinamento.carteira');
-Route::group(['prefix' => '3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS'], function () {
-    Route::get('verificaCliente', [\App\Http\Controllers\ClientesController::class, 'clientesProximoVencimento'])->name('vencimentoClientes');
-    Route::get('recrutamentos/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', [\App\Http\Controllers\RecrutamentoController::class, 'export'])->name('recrutamentos.excel');
-    Route::get('parecer_rh/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', [\App\Http\Controllers\ParecerRhController::class, 'export'])->name('parecerrh.excel');
-    Route::get('parecer_rota_transporte/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', [\App\Http\Controllers\ParecerRotaController::class, 'export'])->name('parecer_rota_transporte.excel');
-    Route::get('parecer_entrevista_tecnica/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'export'])->name('parecer_entrevista_tecnica.excel');
-    Route::get('parecer_teste_pratico/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', [\App\Http\Controllers\ParecerTestePraticoController::class, 'export'])->name('parecer_teste_pratico.excel');
-    Route::post('portaria/export', [\App\Http\Controllers\PortariaController::class, 'export'])->name('portaria.excel');
 
-    /* Route::get('resultado_integrado/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', 'ResultadoIntegradoController@export')->name('resultado_integrado.excel');
-     Route::get('admissao/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', 'AdmissaoController@export')->name('admissao.excel');
-     Route::get('clientes/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', 'ClientesController@export')->name('clientes.excel');
-     Route::get('carteira-etiqueta/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', 'TreinamentoController@export')->name('carteira.excel');
-
-     Route::get('parecer_entrevista_rh/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', 'EntrevistaRhClienteController@export')->name('parecerentrevistarh.excel');
-     Route::get('parecer_gestor_rh/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', 'EntrevistaGestorClienteController@export')->name('gestor_rh.excel');*/
-});
+// Cron legado: exige X-API-TOKEN (não usar obscuridade de URL). Exports públicos removidos — usar rotas g.* autenticadas.
+Route::get('cron/verifica-clientes-vencimento', [\App\Http\Controllers\ClientesController::class, 'clientesProximoVencimento'])
+    ->middleware(['apitoken', 'throttle:5,1'])
+    ->name('vencimentoClientes');
 
 
 Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], 'as' => 'g.', 'prefix' => 'g'], function () {

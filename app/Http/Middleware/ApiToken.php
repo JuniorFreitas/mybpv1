@@ -15,8 +15,10 @@ class ApiToken
      */
     public function handle(Request $request, Closure $next)
     {
+        $expected = (string) config('services.api.token', '');
+        $provided = (string) $request->header('X-API-TOKEN', '');
 
-        if (!$request->hasHeader('X-API-TOKEN') || $request->header('X-API-TOKEN') !== env('X_API_TOKEN')) {
+        if ($expected === '' || $provided === '' || !hash_equals($expected, $provided)) {
             return response()->json(['msg' => 'Não autorizado', 'success' => false], 403);
         }
 

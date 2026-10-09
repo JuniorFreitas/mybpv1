@@ -492,9 +492,11 @@ class Sistema
 
     public static function SenhaCpf($cpf)
     {
-        //Senha de 6 digitos do cpf
-        $sonumero = preg_replace("/[^0-9]/", "", $cpf);
-        return bcrypt(substr($sonumero, 0, 6));
+        // Senha aleatória forte (não derivada do CPF). O parâmetro $cpf é mantido
+        // por compatibilidade de assinatura; candidatos redefinem no 1º acesso / recuperação.
+        unset($cpf);
+
+        return bcrypt(\Illuminate\Support\Str::password(16));
     }
 
     public static function telegram($msg)
@@ -1120,7 +1122,13 @@ class Sistema
             $jsonData = json_encode($dados);
             Redis::set($nome_arquivo, $jsonData);
             $redisNome = env('REDIS_PREFIX') . $nome_arquivo;
-            $resultado = exec("python3 $caminho_script $nome_arquivo $redisNome");
+            $cmd = sprintf(
+                'python3 %s %s %s',
+                escapeshellarg($caminho_script),
+                escapeshellarg((string) $nome_arquivo),
+                escapeshellarg((string) $redisNome)
+            );
+            $resultado = exec($cmd);
             if ($resultado != "") {
                 $nomedoarquivo = "$nome_arquivo.xls";
                 Exportacao::create([

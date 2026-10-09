@@ -161,7 +161,13 @@ class IntegracaoVagaAbertaController extends Controller
 
     public function buscaCurriculo(Request $request)
     {
-        //BUSCA POR CPF
+        $escolaridades = Escolaridade::get();
+        $respostaVazia = [
+            'possuiCadastro' => false,
+            'escolaridades' => $escolaridades,
+            'success' => true,
+        ];
+
         $cpf = Sistema::transformCpfCnpj($request->cpf);
         if (!Sistema::validaCPF($cpf)) {
             return response()->json([
@@ -175,14 +181,8 @@ class IntegracaoVagaAbertaController extends Controller
                 $q->withoutGlobalScopes()->whereCpf($cpf);
             })->first();
 
-        $escolaridades = Escolaridade::get();
-
         if (!$user) {
-            return response()->json([
-                'possuiCadastro' => false,
-                'escolaridades' => $escolaridades,
-                'success' => true
-            ]);
+            return response()->json($respostaVazia);
         }
 
         $dataNascimento = Sistema::dataTransform($request->nascimento);
@@ -194,43 +194,35 @@ class IntegracaoVagaAbertaController extends Controller
                 'id', 'cpf', 'rg', 'rg_data_emissao', 'naturalidade', 'orgao_expeditor', 'carteira_trabalho',
                 'nome', 'cnh', 'nascimento', 'logradouro', 'end_numero', 'complemento', 'bairro', 'municipio',
                 'uf', 'cep', 'email', 'formacao', 'formacao_instituicao', 'formacao_curso', 'formacao_status',
-                'vaga_pretendida', 'uf_vaga', 'municipio_id', 'pcd', 'cid', 'viajar', 'filiacao_pai', 'filiacao_mae',
+                'vaga_pretendida', 'uf_vaga', 'municipio_id', 'pcd', 'viajar', 'filiacao_pai', 'filiacao_mae',
                 'disponibilidade_sabado', 'disponibilidade_domingo', 'sexo'
             ])->first();
 
-        if ($curriculo) {
-            $cpfNascimentoValido = $curriculo->nascimento == $nascimento->dataCompleta();
-            if ($cpfNascimentoValido) {
-                $curriculo = $curriculo->load('Qualificacoes', 'Experiencias', 'Telefones');
-                $curriculo->temqualificacao = $curriculo->Qualificacoes()->count() > 0 ? true : false;
-                $curriculo->temexperiencia = $curriculo->Experiencias()->count() > 0 ? true : false;
+        if ($curriculo && $curriculo->nascimento == $nascimento->dataCompleta()) {
+            $curriculo = $curriculo->load('Qualificacoes', 'Experiencias', 'Telefones');
+            $curriculo->temqualificacao = $curriculo->Qualificacoes()->count() > 0 ? true : false;
+            $curriculo->temexperiencia = $curriculo->Experiencias()->count() > 0 ? true : false;
+            $curriculo->cid = null;
 
-                $curriculo->pcd = $curriculo->pcd ?: '';
-                $curriculo->viajar = $curriculo->viajar ?: '';
-                $curriculo->municipio_id = $curriculo->municipio_id ?: '';
+            $curriculo->pcd = $curriculo->pcd ?: '';
+            $curriculo->viajar = $curriculo->viajar ?: '';
+            $curriculo->municipio_id = $curriculo->municipio_id ?: '';
 
-                $municipio = Municipio::find($curriculo->municipio_id);
-
+            $municipio = Municipio::find($curriculo->municipio_id);
+            if ($municipio) {
                 $curriculo->autocomplete_label_municipio_modal = $municipio->nome . ' - ' . $municipio->uf;
                 $curriculo->autocomplete_label_municipio_modal_anterior = $municipio->nome . ' - ' . $municipio->uf;
-
-                $curriculo->cpf = Sistema::maskCpf($curriculo->cpf);
-                return response()->json([
-                    'curriculo' => $curriculo,
-                    'possuiCadastro' => true,
-                    'escolaridades' => $escolaridades
-                ]);
             }
-            return response()->json(['msg' => 'CPF encontrado, porém data de nascimento não confere',
-                'success' => false
-            ], 400);
+
+            $curriculo->cpf = Sistema::maskCpf($curriculo->cpf);
+            return response()->json([
+                'curriculo' => $curriculo,
+                'possuiCadastro' => true,
+                'escolaridades' => $escolaridades
+            ]);
         }
 
-        return response()->json([
-            'possuiCadastro' => false,
-            'escolaridades' => $escolaridades,
-            'success' => true
-        ]);
+        return response()->json($respostaVazia);
     }
 
     public function atualizar(Request $request)
@@ -281,8 +273,20 @@ class IntegracaoVagaAbertaController extends Controller
 //        $dados['disponibilidade_sabado'] = $dados['disponibilidade_sabado'] == 'true';
 //        $dados['disponibilidade_domingo'] = $dados['disponibilidade_domingo'] == 'true';
 //        $dados['disponibilidade_domingo'] = $dados['disponibilidade_domingo'] == 'true';
-        $dados['email'] = mb_strtolower($dados['email']);
-        $vaga_aberta = VagasAbertas::whereId($dados['vaga_aberta_id'])->with('Municipio')->first();
+        $dados['email'] = mb_strtolower($dados['email'] ?? '');
+        $empresaId = (int) ($dados['empresa_id'] ?? 0);
+        $vaga_aberta = VagasAbertas::withoutGlobalScopes()
+            ->where('id', (int) ($dados['vaga_aberta_id'] ?? 0))
+            ->where('empresa_id', $empresaId)
+            ->with('Municipio')
+            ->first();
+
+        if (!$vaga_aberta || !$vaga_aberta->Municipio) {
+            return response()->json([
+                'msg' => 'Vaga inválida para esta empresa',
+                'success' => false,
+            ], 400);
+        }
 
         $dados['uf_vaga'] = mb_strtoupper($vaga_aberta->Municipio->uf);
         $dados['municipio_id'] = $vaga_aberta->municipio_id;
@@ -361,9 +365,11 @@ class IntegracaoVagaAbertaController extends Controller
                     'password' => Sistema::SenhaCpf($dados['cpf_padrao']),
                     'tipo' => User::CANDIDATO,
                     'ativo' => true,
-                    'temp' => false,
+                    'temp' => true,
                     'termos' => false,
-                    'empresa_id' => $dados['empresa_id']
+                    'empresa_id' => $dados['empresa_id'],
+                    'password_changed_at' => null,
+                    'require_password_reset' => true,
                 ];
 
                 $usuario = $user->create($userObj);
@@ -404,10 +410,20 @@ class IntegracaoVagaAbertaController extends Controller
                 $atualizacao = ['curriculo_id' => $curriculo->id];
                 CurriculoAtualizacao::create($atualizacao);
 
+                // Prova de posse: nascimento deve conferir para editar
+                $nascimentoInformado = (new DataHora(Sistema::dataTransform($dados['nascimento'] ?? '')))->dataCompleta();
+                if ($curriculo->nascimento !== $nascimentoInformado) {
+                    DB::rollBack();
+                    return response()->json([
+                        'msg' => 'Não foi possível atualizar o cadastro. Verifique os dados informados.',
+                        'success' => false,
+                    ], 400);
+                }
+
                 if (isset($dados['telefonesDelete'])) {
                     foreach ($dados['telefonesDelete'] as $index) {
                         if ($index > 0) {
-                            TelefoneCurriculo::find($index)->delete();
+                            $curriculo->Telefones()->where('id', $index)->delete();
                         }
                     }
                 }
@@ -420,7 +436,10 @@ class IntegracaoVagaAbertaController extends Controller
                             $dados['telefone_id'] = $telPrincipal;
                         }
                     } else {
-                        $curriculo->Telefones->find($linha['id'])->update($linha);
+                        $tel = $curriculo->Telefones()->find($linha['id']);
+                        if ($tel) {
+                            $tel->update($linha);
+                        }
                         if ($linha['principal']) {
                             $dados['telefone_id'] = $linha['id'];
                         }

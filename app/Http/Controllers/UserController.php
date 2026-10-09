@@ -474,16 +474,26 @@ class UserController extends Controller
 
     public function solicitaRecuperaSenha(Request $request)
     {
+        $msgPadrao = 'Se o usuário existir, enviamos um e-mail. Verifique a caixa de entrada e o SPAM.';
+
         $usuario = User::whereLogin(trim(mb_strtolower($request->login)))
             ->whereAtivo(true)
             ->first();
+
         if ($usuario) {
             try {
                 DB::beginTransaction();
+                // Invalida tokens anteriores ainda válidos
+                $usuario->RecuperacaoSenha()
+                    ->where('recuperado', false)
+                    ->where('expiracao', '>=', (new DataHora())->dataHoraInsert())
+                    ->update(['recuperado' => true]);
+
+                $tokenPlain = \Illuminate\Support\Str::random(64);
                 $exp = new DataHora();
-                $exp->addHora(6);
+                $exp->addHora(1);
                 $recSenha = $usuario->RecuperacaoSenha()->create([
-                    'token' => mb_strtoupper(\Str::random(6)),
+                    'token' => hash('sha256', $tokenPlain),
                     'expiracao' => $exp->dataHoraInsert(),
                     'ip_solicitacao' => $request->ip(),
                     'solicitacao' => (new DataHora())->dataHoraInsert(),
@@ -493,19 +503,18 @@ class UserController extends Controller
                 JobRecuperaSenha::dispatch([
                     'nome' => $usuario->nome,
                     'email' => $usuario->login,
-                    'token' => $recSenha->token,
+                    'token' => $tokenPlain,
                     'empresa_id' => $usuario->empresa_id,
                     'expiracao' => $recSenha->expiracao
                 ]);
-                return response()->json(['msg' => 'Olá enviamos um e-mail pra você verifique sua caixa e-mail (ENTRADA e SPAM)'], 200);
             } catch (\Exception $e) {
                 DB::rollBack();
-                return response()->json(['msg' => 'Erro ao enviar solicitação de recuperação de senha'], 400);
+                // Resposta uniforme mesmo em erro interno (sem enumerar)
+                return response()->json(['msg' => $msgPadrao], 200);
             }
-
-        } else {
-            return response()->json(['msg' => 'Usuário não encontrado'], 404);
         }
+
+        return response()->json(['msg' => $msgPadrao], 200);
     }
 
     public function recuperaSenhaPost(Request $request)
@@ -517,6 +526,7 @@ class UserController extends Controller
                 'min:8',
                 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/',
             ],
+            'token' => 'required|string|min:32',
         ], [
             'novaSenha.required' => 'A nova senha é obrigatória.',
             'novaSenha.min' => 'A senha deve ter no mínimo 8 caracteres.',
@@ -530,51 +540,95 @@ class UserController extends Controller
             ], 400);
         }
 
-        $recuperacao = RecuperacaoSenha::whereToken($request->token)
+        $tokenHash = hash('sha256', (string) $request->token);
+        $recuperacao = RecuperacaoSenha::whereToken($tokenHash)
             ->where('recuperado', false)
             ->where('expiracao', '>=', (new DataHora())->dataHoraInsert())
             ->first();
 
         if ($recuperacao) {
+            $usuario = User::find($recuperacao->user_id);
+            if (!$usuario || !$usuario->ativo) {
+                return response()->json(['msg' => 'Token inválido'], 404);
+            }
+
             $recuperacao->update([
                 'ip_recuperacao' => $request->ip(),
                 'recuperacao' => (new DataHora())->dataInsert(),
                 'recuperado' => true
             ]);
 
-            User::find($recuperacao->user_id)->update([
+            $usuario->update([
                 'password' => bcrypt($request->novaSenha),
-                'password_changed_at' => now()
+                'password_changed_at' => now(),
+                'require_password_reset' => false,
             ]);
 
-            \Auth::login($recuperacao->user);
+            // Invalida sessões Sanctum; usuário deve autenticar de novo
+            $usuario->tokens()->delete();
 
-            return response()->json(['msg' => 'Senha recuperada com sucesso'], 201);
-        } else {
-            return response()->json(['msg' => 'Token inválido'], 404);
+            return response()->json([
+                'msg' => 'Senha recuperada com sucesso. Faça login com a nova senha.',
+                'redirect_login' => true,
+            ], 201);
         }
+
+        return response()->json(['msg' => 'Token inválido'], 404);
     }
 
     public function recuperaSenha(Request $request, $token)
     {
-        $recuperacao = RecuperacaoSenha::whereToken($token)->whereRecuperado(false)
+        $tokenHash = hash('sha256', (string) $token);
+        $recuperacao = RecuperacaoSenha::whereToken($tokenHash)->whereRecuperado(false)
             ->where('expiracao', '>=', (new DataHora())->dataHoraInsert())
             ->first();
 
         if ($recuperacao) {
+            // View precisa do token em claro para o POST (não do hash)
+            $recuperacao->setAttribute('token_plain', $token);
+
             return view('recupera-senha', compact('recuperacao'));
-        } else {
-            abort(404);
         }
+
+        abort(404);
     }
 
     public function simularUsuario(Request $request)
     {
-        if (auth()->user()->grupo_id == 1) {
-            \Auth::loginUsingId($request->user_id);
-            return response()->json(['simulacao' => true], 200);
+        $ator = auth()->user();
+        if (!$ator || (int) $ator->grupo_id !== 1) {
+            return response()->json(['simulacao' => false], 403);
         }
-        return response()->json(['simulacao' => false], 400);
+
+        $alvoId = (int) $request->input('user_id');
+        $alvo = User::withoutGlobalScopes()
+            ->where('id', $alvoId)
+            ->where('ativo', true)
+            ->first();
+
+        if (!$alvo) {
+            return response()->json(['simulacao' => false, 'msg' => 'Usuário inválido'], 404);
+        }
+
+        // Bloqueia impersonar outro admin (grupo 1) ou usuário de outra empresa
+        if ((int) $alvo->grupo_id === 1 || (int) $alvo->empresa_id !== (int) $ator->empresa_id) {
+            return response()->json(['simulacao' => false, 'msg' => 'Impersonação não permitida para este usuário'], 403);
+        }
+
+        activity('impersonacao')
+            ->causedBy($ator)
+            ->performedOn($alvo)
+            ->withProperties([
+                'ator_id' => $ator->id,
+                'alvo_id' => $alvo->id,
+                'ip' => $request->ip(),
+            ])
+            ->log('simularUsuario');
+
+        $request->session()->put('impersonated_by', $ator->id);
+        \Auth::loginUsingId($alvo->id);
+
+        return response()->json(['simulacao' => true], 200);
     }
 
     public function uploadAnexos(Request $request)

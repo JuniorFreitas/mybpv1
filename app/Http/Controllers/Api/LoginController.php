@@ -13,11 +13,15 @@ class LoginController extends Controller
     {
         $usuario = User::whereLogin($request->login)->whereEmpresaId($request->empresa_id)->first();
 
-        if ($usuario && $usuario->ativo && password_verify($request->senha, $usuario->password)) {
+        $credenciaisValidas = $usuario
+            && $usuario->ativo
+            && password_verify($request->senha, $usuario->password);
+
+        if ($credenciaisValidas) {
+            // Revoga tokens anteriores e não grava plain text em users.api_token
+            $usuario->tokens()->delete();
             $habilidades = $usuario->Papel->Habilidades->pluck('nome')->toArray();
             $token = $usuario->createToken($usuario->tipo, $habilidades);
-
-            $usuario->update(['api_token' => $token->plainTextToken]);
 
             return response()->json([
                 "token" => $token->plainTextToken,
@@ -25,14 +29,7 @@ class LoginController extends Controller
             ]);
         }
 
-        if ($usuario && !$usuario->ativo && password_verify($request->senha, $usuario->password)) {
-            $usuario->tokens()->delete();
-            return response()->json([
-                'msg' => 'Usuário desativado',
-                'success' => false
-            ], 401);
-        }
-
+        // Resposta uniforme (não diferenciar desativado vs senha inválida)
         return response()->json([
             'msg' => 'Usuário ou senha inválidos',
             'success' => false

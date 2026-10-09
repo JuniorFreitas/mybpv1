@@ -40,7 +40,7 @@ Route::middleware('api')->get('/login', function (Request $request) {
     return response()->json(['erro' => 'Não autorizado'], 403);
 })->name("api.login.unauthorized");
 
-Route::middleware('api')
+Route::middleware(['api', 'throttle:10,1'])
     ->post('/login', [\App\Http\Controllers\Api\LoginController::class, 'login'])->name("api.login");
 
 
@@ -92,10 +92,13 @@ Route::middleware(['api'])
             Route::get('{apelido}/vagas-abertas', [\App\Http\Controllers\Api\IntegracaoSpaV2Controller::class, 'vagasAbertasPaginadas'])
                 ->where('apelido', $apelidoPattern);
             Route::post('{apelido}/busca-curriculo', [\App\Http\Controllers\Api\IntegracaoSpaCurriculoController::class, 'buscaCurriculo'])
+                ->middleware('throttle:20,1')
                 ->where('apelido', $apelidoPattern);
             Route::post('{apelido}/busca-cpf', [\App\Http\Controllers\Api\IntegracaoSpaCurriculoController::class, 'buscaCpf'])
+                ->middleware('throttle:20,1')
                 ->where('apelido', $apelidoPattern);
             Route::post('{apelido}/cadastra-curriculo', [\App\Http\Controllers\Api\IntegracaoSpaCurriculoController::class, 'cadastraCurriculo'])
+                ->middleware('throttle:20,1')
                 ->where('apelido', $apelidoPattern);
             Route::get('{apelido}', [\App\Http\Controllers\Api\IntegracaoSpaV2Controller::class, 'empresaComPreview'])
                 ->where('apelido', $apelidoPattern);
@@ -108,9 +111,12 @@ Route::group(['as' => 'vaga'], function () {
     //    Route::get('{empresa_id}/vaga-aberta/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'index']);
     Route::post('{empresa_id}/vaga-aberta/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'atualizar']);
 
-    Route::post('busca-curriculo', [\App\Http\Controllers\Api\VagaAbertaController::class, 'buscaCurriculo']);
-    Route::post('busca-cpf', [\App\Http\Controllers\Api\VagaAbertaController::class, 'buscaCpf']);
-    Route::post('cadastra-curriculo', [\App\Http\Controllers\Api\VagaAbertaController::class, 'store']);
+    Route::post('busca-curriculo', [\App\Http\Controllers\Api\VagaAbertaController::class, 'buscaCurriculo'])
+        ->middleware('throttle:10,1');
+    Route::post('busca-cpf', [\App\Http\Controllers\Api\VagaAbertaController::class, 'buscaCpf'])
+        ->middleware('throttle:10,1');
+    Route::post('cadastra-curriculo', [\App\Http\Controllers\Api\VagaAbertaController::class, 'store'])
+        ->middleware('throttle:10,1');
 });
 
 
