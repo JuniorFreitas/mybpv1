@@ -48,7 +48,7 @@ class SuppressConfiguredMailRecipientsTest extends TestCase
 
         $email = (new Email)
             ->from('from@example.com')
-            ->to('SISTEMA@MYBP.COM.BR')
+            ->to('SISTEMA@MyBPIN.COM.BR')
             ->text('corpo');
 
         $listener = new SuppressConfiguredMailRecipients;

@@ -33,7 +33,7 @@
 
                 <br><br>
                 Atenciosamente,<br>
-                <strong>Equipe MyBP</strong>
+                <strong>Equipe MyBPIN</strong>
             </td>
         </tr>
     </table>

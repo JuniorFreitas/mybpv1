@@ -28,8 +28,8 @@ class CodigoMfaLoginMail extends Mailable
         $this->minutosExpiracao = $minutosExpiracao;
         $this->nomeEmpresa = $nomeEmpresa;
         $this->dados = $empresaId !== null ? ['empresa_id' => $empresaId] : [];
-        $this->from(config('mail.from.address', 'naoresponda@mybp.com.br'), config('mail.from.name', 'MyBP'));
-        $this->subject = 'Código de verificação de login — MyBP';
+        $this->from(config('mail.from.address', 'naoresponda@mybp.com.br'), config('mail.from.name', 'MyBPIN'));
+        $this->subject = 'Código de verificação de login — MyBPIN';
     }
 
     public function build()

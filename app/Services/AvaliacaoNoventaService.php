@@ -566,7 +566,7 @@ class AvaliacaoNoventaService
             $sheet->setTitle('Avaliações 90 Dias');
 
             $spreadsheet->getProperties()
-                ->setCreator('Sistema MyBP')
+                ->setCreator('Sistema MyBPIN')
                 ->setTitle('Avaliações de 90 Dias - Vencimentos')
                 ->setSubject('Avaliações')
                 ->setDescription('Relatório de Avaliação de Experiência vencidas ou vencendo')

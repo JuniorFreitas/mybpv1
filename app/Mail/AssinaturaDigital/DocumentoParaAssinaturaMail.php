@@ -25,7 +25,7 @@ class DocumentoParaAssinaturaMail extends Mailable
         $this->nomeDocumento = $nomeDocumento;
         $this->nomeEmpresa = $nomeEmpresa;
         $this->dados = $empresaId !== null ? ['empresa_id' => $empresaId] : [];
-        $this->from(config('mail.from.address', 'naoresponda@mybp.com.br'), config('mail.from.name', 'MyBP'));
+        $this->from(config('mail.from.address', 'naoresponda@mybp.com.br'), config('mail.from.name', 'MyBPIN'));
         $this->subject = 'Documento para assinatura digital: ' . $nomeDocumento;
     }
 

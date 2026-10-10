@@ -605,10 +605,10 @@ class TreinamentoVencimento extends Command
                 ['html' => $viewTemplate],
                 $dadosEmail,
                 function ($m) use ($usuarioPrincipal, $usuariosCopia, $empresa, $numeroLote) {
-                    $m->from('naoresponda@mybp.com.br', 'Sistema MyBP');
+                    $m->from('naoresponda@mybp.com.br', 'Sistema MyBPIN');
 
                     // Assunto com indicação de Excel
-                    $assunto = "[MyBP] Relatório de Vencimentos de Treinamentos (Excel) - {$empresa->razao_social}";
+                    $assunto = "[MyBPIN] Relatório de Vencimentos de Treinamentos (Excel) - {$empresa->razao_social}";
                     $m->subject($assunto);
 
                     $m->to($usuarioPrincipal['email'], $usuarioPrincipal['nome']);
@@ -618,7 +618,7 @@ class TreinamentoVencimento extends Command
                         if (method_exists($m, 'getSwiftMessage') && $m->getSwiftMessage()) {
                             $headers = $m->getSwiftMessage()->getHeaders();
                             if ($headers) {
-                                $headers->addTextHeader('X-Mailer', 'MyBP Sistema v1.0');
+                                $headers->addTextHeader('X-Mailer', 'MyBPIN Sistema v1.0');
                                 $headers->addTextHeader('X-Batch-Number', (string)$numeroLote);
                                 $headers->addTextHeader('X-Priority', '3');
                                 $headers->addTextHeader('X-Report-Type', 'Excel');
@@ -838,8 +838,8 @@ class TreinamentoVencimento extends Command
 
         // Configurar propriedades do documento
         $spreadsheet->getProperties()
-            ->setCreator('Sistema MyBP')
-            ->setLastModifiedBy('Sistema MyBP')
+            ->setCreator('Sistema MyBPIN')
+            ->setLastModifiedBy('Sistema MyBPIN')
             ->setTitle('Relatório de Vencimentos de Treinamentos')
             ->setSubject('Treinamentos')
             ->setDescription("Relatório de treinamentos vencidos e próximos a vencer - {$empresa->razao_social}")

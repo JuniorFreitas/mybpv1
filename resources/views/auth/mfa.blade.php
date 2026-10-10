@@ -5,18 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ env('APP_NAME') }} — Verificação</title>
+    @include('layouts.favicon')
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css"
           integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
     <style>
         :root {
-            --login-ink: #0b2430;
-            --login-teal: #0F4C60;
-            --login-teal-deep: #083847;
-            --login-muted: #5b7380;
-            --login-line: rgba(15, 76, 96, 0.12);
+            --login-azul: #0047D6;
+            --login-azul-profundo: #022B9D;
+            --login-marinho: #0B1B3D;
+            --login-noite: #070B14;
+            --login-nevoa: #F4F6FA;
+            --login-ink: var(--login-marinho);
+            --login-teal: var(--login-marinho);
+            --login-teal-deep: var(--login-noite);
+            --login-muted: #5b6b86;
+            --login-line: rgba(11, 27, 61, 0.12);
             --login-surface: #ffffff;
-            --login-focus: rgba(15, 76, 96, 0.22);
+            --login-focus: rgba(11, 27, 61, 0.18);
+            --login-font-titulo: 'Montserrat', Arial, sans-serif;
+            --login-font-texto: 'Nunito', Verdana, sans-serif;
         }
 
         * { box-sizing: border-box; }
@@ -24,7 +35,7 @@
         body.my-login-page {
             min-height: 100vh;
             margin: 0;
-            font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: var(--login-font-texto);
             color: var(--login-ink);
             background-color: #072333;
             background-image:
@@ -60,9 +71,13 @@
         }
 
         .login-card__brand img {
-            height: 96px;
+            display: block;
             width: auto;
-            max-width: 100%;
+            height: auto;
+            max-width: min(280px, 100%);
+            max-height: 72px;
+            margin: 0 auto;
+            object-fit: contain;
         }
 
         .login-card__body {
@@ -71,8 +86,10 @@
 
         .login-card__title {
             margin: 0 0 1.25rem;
-            font-size: 1.35rem;
+            font-family: var(--login-font-titulo);
+            font-size: 1.25rem;
             font-weight: 700;
+            letter-spacing: -0.02em;
             color: var(--login-ink);
             line-height: 1.25;
         }
@@ -80,8 +97,10 @@
         .login-card__title span {
             display: block;
             margin-top: 0.35rem;
+            font-family: var(--login-font-texto);
             font-size: 0.92rem;
-            font-weight: 500;
+            font-weight: 400;
+            letter-spacing: 0;
             color: var(--login-muted);
         }
 
@@ -92,6 +111,7 @@
         .login-field label {
             display: block;
             margin-bottom: 0.35rem;
+            font-family: var(--login-font-texto);
             font-size: 0.86rem;
             font-weight: 600;
             color: var(--login-ink);
@@ -104,6 +124,7 @@
             letter-spacing: 0.28em;
             text-align: center;
             text-transform: uppercase;
+            font-family: var(--login-font-titulo);
             font-weight: 700;
             font-size: 1.15rem;
         }
@@ -122,7 +143,7 @@
             margin: 0 0 1rem;
             padding: 0.85rem 1rem;
             border-radius: 0.8rem;
-            background: rgba(15, 76, 96, 0.06);
+            background: rgba(11, 27, 61, 0.06);
             font-size: 0.88rem;
             color: var(--login-muted);
         }
@@ -135,30 +156,56 @@
             min-height: 48px;
             border: 0;
             border-radius: 0.8rem;
+            font-family: var(--login-font-titulo);
             font-weight: 700;
             color: #fff !important;
-            background: linear-gradient(180deg, #146078 0%, var(--login-teal) 100%) !important;
-            box-shadow: 0 10px 20px rgba(15, 76, 96, 0.28);
+            background: var(--login-marinho) !important;
+            box-shadow: 0 10px 20px rgba(11, 27, 61, 0.28);
+            transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+        }
+
+        .login-actions .btn.btn-primary:hover,
+        .login-actions .btn.btn-primary:focus {
+            background: #13264f !important;
+            box-shadow: 0 12px 24px rgba(11, 27, 61, 0.36);
+            transform: translateY(-1px);
+            color: #fff !important;
+        }
+
+        .login-actions .btn.btn-primary:active {
+            transform: translateY(0);
+            background: var(--login-noite) !important;
         }
 
         .login-actions .btn.btn-primary:disabled {
             opacity: 0.65;
             box-shadow: none;
             cursor: not-allowed;
+            transform: none;
         }
 
         .login-actions .btn.btn-secondary {
             min-height: 44px;
-            border: 0;
+            border: 1px solid var(--login-marinho) !important;
             border-radius: 0.8rem;
-            background: #e8eef1 !important;
-            color: var(--login-ink) !important;
+            background: #fff !important;
+            color: var(--login-marinho) !important;
+            font-family: var(--login-font-texto);
             font-weight: 600;
+            transition: background .15s ease, color .15s ease, box-shadow .2s ease;
+        }
+
+        .login-actions .btn.btn-secondary:hover,
+        .login-actions .btn.btn-secondary:focus {
+            background: var(--login-marinho) !important;
+            color: #fff !important;
+            box-shadow: 0 8px 16px rgba(11, 27, 61, 0.22);
         }
 
         .login-actions .btn.btn-secondary:disabled {
             opacity: 0.7;
             cursor: not-allowed;
+            box-shadow: none;
         }
 
         .login-alert {
@@ -200,7 +247,7 @@
 <div class="login-shell">
     <div class="login-card">
         <div class="login-card__brand">
-            <img src="{{ asset('images/bpin_mybp_color.svg') }}" alt="BPIN Gestão RH & SST">
+            <img src="{{ asset('images/mybpin-logo-fundo-claro.webp') }}" alt="MyBPIN" width="280" height="74">
         </div>
 
         <div class="login-card__body"

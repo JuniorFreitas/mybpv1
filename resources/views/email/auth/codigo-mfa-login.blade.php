@@ -6,7 +6,7 @@
             <td style="text-align: justify">
                 Prezado(a) <strong>{{ $nome }}</strong>,<br><br>
 
-                Recebemos uma solicitação de login no MyBP.<br><br>
+                Recebemos uma solicitação de login no MyBPIN.<br><br>
 
                 Seu código de verificação é:<br><br>
 

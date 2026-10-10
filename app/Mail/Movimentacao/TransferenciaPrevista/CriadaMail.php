@@ -22,7 +22,7 @@ class CriadaMail extends Mailable
     {
         $this->dados = $dados;
         $this->to($this->dados['email_para'], $this->dados['nome_para']);
-        $this->from('naoresponda@mybp.com.br', 'MyBP - SISTEMA INTEGRADO DE SOLUÇÕES EM GESTÃO');
+        $this->from('naoresponda@mybp.com.br', 'MyBPIN - SISTEMA INTEGRADO DE SOLUÇÕES EM GESTÃO');
         $this->subject = "TRANSFERÊNCIA PREVISTA - CÓD: ".$this->dados['id'];
         $this->assunto = $this->subject;
     }

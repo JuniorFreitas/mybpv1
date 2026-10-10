@@ -1465,7 +1465,7 @@ class TreinamentoController extends Controller
         $dados = $request->input();
         try {
             Mail::send('email.treinamento.carteira', $dados, function ($m) use ($dados) {
-                $m->from('naoresponda@mybp.com.br', 'MyBP');
+                $m->from('naoresponda@mybp.com.br', 'MyBPIN');
                 $m->subject("Carteira e etiqueta de treinamentos");
                 $m->to(trim(mb_strtolower($dados['email'])));
             });
@@ -1533,7 +1533,7 @@ class TreinamentoController extends Controller
             })];
             try {
                 Mail::send('email.treinamento.vencendo', $dados, function ($m) use ($dados, $data) {
-                    $m->from('naoresponda@mybp.com.br', 'MyBP - E-mail Automatico');
+                    $m->from('naoresponda@mybp.com.br', 'MyBPIN - E-mail Automatico');
                     $m->subject("Treinamentos Vencidos ou próximo ao vencimento");
                     $m->to(trim(mb_strtolower($data['email'])));
                 });

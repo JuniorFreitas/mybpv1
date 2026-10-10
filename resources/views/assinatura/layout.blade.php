@@ -206,7 +206,7 @@
 <body class="assin-page">
     <div class="container assin-shell py-4">
         <div class="assin-logo-wrap">
-            <img src="{{ asset('images/bpin_mybp_color.svg') }}" alt="BPIN MyBP" class="assin-brand-logo">
+            <img src="{{ asset('images/bpin_mybp_color.svg') }}" alt="BPIN MyBPIN" class="assin-brand-logo">
         </div>
         <div class="assin-brand">
             <span class="assin-brand-text">Assinatura Digital</span>

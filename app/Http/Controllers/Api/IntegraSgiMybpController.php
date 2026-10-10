@@ -285,7 +285,7 @@ class IntegraSgiMybpController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            Sistema::telegram('Erro ao integrar MyBP - ' . $e->getMessage());
+            Sistema::telegram('Erro ao integrar MyBPIN - ' . $e->getMessage());
             Sistema::telegram(print_r(json_encode($curriculoDados, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 1));
             Sistema::telegram(print_r(json_encode($feedbackDados, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 1));
             Sistema::telegram(print_r(json_encode($parecerRhDados, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 1));

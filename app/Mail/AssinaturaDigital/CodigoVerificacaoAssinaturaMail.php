@@ -28,7 +28,7 @@ class CodigoVerificacaoAssinaturaMail extends Mailable
         $this->minutosExpiracao = $minutosExpiracao;
         $this->nomeEmpresa = $nomeEmpresa;
         $this->dados = $empresaId !== null ? ['empresa_id' => $empresaId] : [];
-        $this->from(config('mail.from.address', 'naoresponda@mybp.com.br'), config('mail.from.name', 'MyBP'));
+        $this->from(config('mail.from.address', 'naoresponda@mybp.com.br'), config('mail.from.name', 'MyBPIN'));
         $this->subject = 'Código de verificação para assinatura digital';
     }
 

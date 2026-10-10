@@ -3,7 +3,7 @@
 return [
     'habilitado' => filter_var(env('NPS_HABILITADO', false), FILTER_VALIDATE_BOOLEAN),
 
-    /** ID da empresa que pode acessar gerenciamento e resultados do NPS (ex.: 100 = MyBP) */
+    /** ID da empresa que pode acessar gerenciamento e resultados do NPS (ex.: 100 = MyBPIN) */
     'empresa_id_gerenciamento' => (int) (env('NPS_EMPRESA_GERENCIAMENTO', 100)),
 
     'empresas_excluidas' => array_map('intval', array_filter(

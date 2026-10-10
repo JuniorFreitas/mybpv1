@@ -376,6 +376,7 @@
                             :simples="true"
                             :quantidade="1"
                             :multi="false"
+                            :bloquear-executaveis="true"
                             :dados-ajax="{ cloud_id: cloud, pertence_id: itemBusca, anterior_id: id_anterior_atualizar }"
                         />
                     </div>
@@ -499,6 +500,7 @@
                     @onfinalizado="uploadFinalizado"
                     :simples="true"
                     :somente-botao="true"
+                    :bloquear-executaveis="true"
                     :dados-ajax="{ cloud_id: cloud, pertence_id: itemBusca }"
                 />
             </div>

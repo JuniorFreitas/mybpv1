@@ -840,7 +840,7 @@ export default defineComponent({
                 : null
             this.lista_tipos = dados.lista_tipos || []
 
-            // MyBP: grupos da empresa selecionada no filtro (não zerar ao paginar)
+            // MyBPIN: grupos da empresa selecionada no filtro (não zerar ao paginar)
             if (this.isMybpEmpresa) {
                 if (this.controle.dados.campoEmpresa) {
                     this.controle.dados.listaPapeis = dados.lista_grupos || this.controle.dados.listaPapeis || []

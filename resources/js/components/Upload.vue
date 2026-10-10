@@ -339,6 +339,15 @@ export default {
       required: false,
       default: false,
     },
+    /**
+     * Aceita qualquer arquivo, bloqueando apenas executáveis/instaladores.
+     * Usado pelo Cloud.
+     */
+    bloquearExecutaveis: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     simples: {
       // interface simples sem tabela
       type: Boolean,
@@ -447,6 +456,9 @@ export default {
       return this.size * MB;
     },
     arquivosPermitidos() {
+      if (this.bloquearExecutaveis) {
+        return '';
+      }
       return this.mimeTypes.concat([
         ".csv", ".md", ".markdown", ".txt", ".webp",
         ".mp3", ".mp4", ".eps", ".ai", ".psd",
@@ -532,8 +544,41 @@ export default {
         "application/photoshop",
         "application/x-rar-compressed",
         "application/x-rar",
+        "application/vnd.rar",
         "application/zip",
+        "application/x-zip-compressed",
         "application/octet-stream",
+      ],
+      extensoesExecutaveis: [
+        "exe", "bat", "cmd", "com", "msi", "msp", "scr", "pif", "cpl", "msc",
+        "dll", "sys", "drv", "ocx",
+        "vbs", "vbe", "js", "jse", "wsf", "wsh", "ws", "ps1", "psm1", "psd1",
+        "sh", "bash", "csh", "ksh", "run",
+        "jar", "app", "deb", "rpm", "apk", "dmg", "pkg",
+        "reg", "hta", "inf", "lnk", "scf", "action", "command", "workflow",
+      ],
+      mimesExecutaveis: [
+        "application/x-msdownload",
+        "application/x-msdos-program",
+        "application/x-ms-installer",
+        "application/x-msi",
+        "application/vnd.microsoft.portable-executable",
+        "application/x-dosexec",
+        "application/x-executable",
+        "application/x-sharedlib",
+        "application/x-mach-binary",
+        "application/x-sh",
+        "application/x-shellscript",
+        "application/x-csh",
+        "application/java-archive",
+        "application/x-java-archive",
+        "application/x-debian-package",
+        "application/vnd.debian.binary-package",
+        "application/x-rpm",
+        "application/vnd.android.package-archive",
+        "application/x-apple-diskimage",
+        "application/x-ms-shortcut",
+        "application/hta",
       ],
       chave: null, // para identificar o upload
       previewAberto: false,
@@ -830,9 +875,24 @@ export default {
       }
       this.processarArquivos(listaArquivos);
     },
+    extensaoArquivo(nome) {
+      const partes = String(nome || "").split(".");
+      return partes.length > 1 ? partes.pop().toLowerCase() : "";
+    },
+    ehExecutavel(nome, mimeType) {
+      const ext = this.extensaoArquivo(nome);
+      if (ext && this.extensoesExecutaveis.includes(ext)) {
+        return true;
+      }
+      const mime = String(mimeType || "").toLowerCase();
+      if (!mime || mime === "application/octet-stream") {
+        return false;
+      }
+      return this.mimesExecutaveis.includes(mime);
+    },
     extensaoTextoPermitida(nome) {
       // Navegadores às vezes enviam MIME vazio/errado
-      const ext = String(nome || "").split(".").pop().toLowerCase();
+      const ext = this.extensaoArquivo(nome);
       const mapa = {
         csv: ["text/plain", "text/csv", "text/comma-separated-values", "application/csv"],
         md: ["text/plain", "text/markdown", "text/x-markdown"],
@@ -909,7 +969,17 @@ export default {
             return true;
           }
 
-          if (this.mimeTypes.indexOf(arquivo.type) === -1 && !this.extensaoTextoPermitida(arquivo.nome)) {
+          if (this.bloquearExecutaveis) {
+            if (this.ehExecutavel(arquivo.nome, arquivo.type)) {
+              mostraErro(
+                {},
+                'O arquivo "' +
+                arquivo.nome +
+                '" é executável e não é permitido para envio.'
+              );
+              return true;
+            }
+          } else if (this.mimeTypes.indexOf(arquivo.type) === -1 && !this.extensaoTextoPermitida(arquivo.nome)) {
             mostraErro(
               {},
               'O formato do arquivo "' +

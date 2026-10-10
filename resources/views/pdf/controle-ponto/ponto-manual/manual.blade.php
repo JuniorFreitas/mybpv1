@@ -269,7 +269,7 @@
         <div style="font-size: 8.4pt; margin-top: 7px">
             <p style="font-size: 7.4pt; color: #444444; margin-bottom: 2.5px;">
                 Esse documento foi gerado automaticamente pelo usuário {{ $dados['quem_gerou'] }} Via Sistema Integrado
-                MYBP em {{ $dados['data_geracao'] }}.
+                MyBPIN em {{ $dados['data_geracao'] }}.
             </p>
         </div>
     </div>

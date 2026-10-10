@@ -8,7 +8,7 @@ use App\Models\User;
 
 /**
  * Garante a habilidade weekly_report no papel (grupo) do usuário convidado.
- * No MyBP as permissões vêm de papeis_habilidades.
+ * No MyBPIN as permissões vêm de papeis_habilidades.
  */
 class GrantWeeklyReportAccess
 {

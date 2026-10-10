@@ -1,5 +1,5 @@
 @extends('layouts.mail.layout')
-@section('titulo', $dados['assunto'] ?? 'Notificação MyBP')
+@section('titulo', $dados['assunto'] ?? 'Notificação MyBPIN')
 @section('conteudo')
 @php
 $tipo = $dados['tipo'];

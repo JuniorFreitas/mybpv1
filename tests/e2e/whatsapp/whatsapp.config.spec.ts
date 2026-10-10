@@ -48,7 +48,7 @@ test.describe('Configuração WhatsApp — RH', () => {
 });
 
 test.describe('Configuração WhatsApp — Admin Clientes', () => {
-    test.skip(true, 'Requer perfil admin MyBP (administracao_clientes)');
+    test.skip(true, 'Requer perfil admin MyBPIN (administracao_clientes)');
 
     test('aba WHATSAPP no cliente', async ({ page }) => {
         await page.goto(ROTAS.adminClientes);

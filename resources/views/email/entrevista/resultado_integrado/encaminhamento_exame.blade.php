@@ -1,5 +1,5 @@
 @extends('layouts.mail.layout')
-@section('titulo', 'Bem vindo(a) ao MyBP')
+@section('titulo', 'Bem vindo(a) ao MyBPIN')
 @section('conteudo')
     <table border="0" cellpadding="0" width="100%" style="width: 100%;">
         <tr>

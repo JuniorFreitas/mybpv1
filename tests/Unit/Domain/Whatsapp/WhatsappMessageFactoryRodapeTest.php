@@ -34,7 +34,7 @@ class WhatsappMessageFactoryRodapeTest extends TestCase
             ['nome_destinatario' => 'João']
         );
 
-        $this->assertStringContainsString('MyBP', $mensagem);
+        $this->assertStringContainsString('MyBPIN', $mensagem);
         $this->assertStringContainsString('não responda', $mensagem);
     }
 
@@ -57,7 +57,7 @@ class WhatsappMessageFactoryRodapeTest extends TestCase
             []
         );
 
-        $this->assertSame(1, substr_count($mensagem, 'MyBP'));
+        $this->assertSame(1, substr_count($mensagem, 'MyBPIN'));
         $this->assertStringContainsString($rodape, $mensagem);
     }
 }

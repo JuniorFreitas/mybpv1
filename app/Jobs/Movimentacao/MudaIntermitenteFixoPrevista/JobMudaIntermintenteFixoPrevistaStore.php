@@ -90,7 +90,7 @@ class JobMudaIntermitenteFixoPrevistaStore implements ShouldQueue
             'intermitente_id' => $intermitente->id,
             'colaborador' => '',
             'empresa_id' => $this->empresaId,
-            'nome_empresa' => $empresa ? $empresa->nome_fantasia : 'MyBP seu negócio na sua mão',
+            'nome_empresa' => $empresa ? $empresa->nome_fantasia : 'MyBPIN seu negócio na sua mão',
         ];
 
         \Mail::send(new NotificacaoAprovacaoMail($dados));

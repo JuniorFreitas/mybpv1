@@ -163,7 +163,7 @@
                             @change="(e) => onTarefaChange(e, lista)"
                         >
                             <template #item="{ element: tarefa }">
-                                <div class="mb-2 wr-task-wrap">
+                                <div class="wr-task-wrap">
                                     <TaskCard
                                         :tarefa="tarefa"
                                         :lista="lista"

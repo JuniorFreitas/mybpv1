@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliação Enviada - MyBP</title>
+    <title>Avaliação Enviada - MyBPIN</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
@@ -137,7 +137,7 @@
             margin-right: 10px;
         }
 
-        /* Rodapé MyBP */
+        /* Rodapé MyBPIN */
         .mybp-footer {
             text-align: center;
             margin-top: 32px;
@@ -201,14 +201,14 @@
     </p>
 </div>
 
-<!-- Rodapé MyBP -->
+<!-- Rodapé MyBPIN -->
 <footer class="mybp-footer">
     <div class="brand">
-        <img src="https://sistema.mybp.com.br/images/bpin_mybp_color.svg" alt="Logo MyBP">
-        <strong>MyBP</strong>
+        <img src="https://sistema.mybp.com.br/images/bpin_mybp_color.svg" alt="Logo MyBPIN">
+        <strong>MyBPIN</strong>
     </div>
     <div>
-        <small>&copy; {{ date('Y') }} MyBP. Todos os direitos reservados.</small>
+        <small>&copy; {{ date('Y') }} MyBPIN. Todos os direitos reservados.</small>
     </div>
 </footer>
 </body>

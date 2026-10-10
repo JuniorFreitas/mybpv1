@@ -1768,7 +1768,7 @@ export default defineComponent({
                 <br><br>
                 Aceito total responsabilidade por quaisquer consequências decorrentes da retirada do treinamento realizado.
                 <br><br>
-                Assumo que, ao clicar em "Confirmar e desmarcar" no sistema MyBP, estou ciente e concordo com as disposições deste termo de responsabilidade.
+                Assumo que, ao clicar em "Confirmar e desmarcar" no sistema MyBPIN, estou ciente e concordo com as disposições deste termo de responsabilidade.
             </p>`
         },
         emTreinamentos() {

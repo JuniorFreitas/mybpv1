@@ -368,7 +368,7 @@ class UserController extends Controller
 
         $lista_tipos = $empresa == User::MYBP_EMPRESA_ID ? User::TIPOS_USUARIOS_GERENCIAIS : User::TIPOS_USUARIOS_COMUNS;
 
-        // MyBP: grupos da empresa filtrada; demais empresas: grupos da própria empresa
+        // MyBPIN: grupos da empresa filtrada; demais empresas: grupos da própria empresa
         $empresaGrupos = (int) $empresa;
         if ((int) $empresa === User::MYBP_EMPRESA_ID && $request->filled('campoEmpresa')) {
             $empresaGrupos = (int) $request->campoEmpresa;
@@ -405,7 +405,7 @@ class UserController extends Controller
         $empresaId = (int) $empresa_id;
         $authEmpresaId = (int) auth()->user()->empresa_id;
 
-        // Só MyBP pode consultar grupos de outra empresa
+        // Só MyBPIN pode consultar grupos de outra empresa
         if ($authEmpresaId !== User::MYBP_EMPRESA_ID && $empresaId !== $authEmpresaId) {
             return response()->json(['msg' => 'Não autorizado'], 403);
         }

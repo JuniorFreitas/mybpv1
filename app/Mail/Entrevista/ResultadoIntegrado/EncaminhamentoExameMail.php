@@ -23,7 +23,7 @@ class EncaminhamentoExameMail extends Mailable
         $this->dados = $dados;
         $this->to($this->dados['colaborador']->email, $this->dados['colaborador']->nome);
         $this->cc($this->dados['clinica']->dados['email'], $this->dados['clinica']->nome);
-        $this->from('naoresponda@mybp.com.br', "MyBP - SISTEMA INTEGRADO DE SOLUÇÕES EM GESTÃO");
+        $this->from('naoresponda@mybp.com.br', "MyBPIN - SISTEMA INTEGRADO DE SOLUÇÕES EM GESTÃO");
         $this->subject = "Encaminhamento de Exame - {$this->dados['colaborador']->nome}";
         $this->assunto = $this->subject;
     }

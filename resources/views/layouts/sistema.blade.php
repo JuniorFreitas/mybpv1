@@ -11,25 +11,9 @@
     @if(\App\Models\Sistema::verificaHdev())
         <meta name="robots" content="noindex">
     @endif
-    <meta name="msapplication-TileColor" content="#072433">
-    <meta name="msapplication-TileImage" content="{{asset('images/icons/ms-icon-144x144.png')}}">
-    <meta name="theme-color" content="#072433">
     <link rel="stylesheet" href="{{ mix('css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('css/icons.min.css') }}">
-    <link rel="apple-touch-icon" sizes="57x57" href="{{asset('images/icons/apple-icon-57x57.png')}}">
-    <link rel="apple-touch-icon" sizes="60x60" href="{{asset('images/icons/apple-icon-60x60.png')}}">
-    <link rel="apple-touch-icon" sizes="72x72" href="{{asset('images/icons/apple-icon-72x72.png')}}">
-    <link rel="apple-touch-icon" sizes="76x76" href="{{asset('images/icons/apple-icon-76x76.png')}}">
-    <link rel="apple-touch-icon" sizes="114x114" href="{{asset('images/icons/apple-icon-114x114.png')}}">
-    <link rel="apple-touch-icon" sizes="120x120" href="{{asset('images/icons/apple-icon-120x120.png')}}">
-    <link rel="apple-touch-icon" sizes="144x144" href="{{asset('images/icons/apple-icon-144x144.png')}}">
-    <link rel="apple-touch-icon" sizes="152x152" href="{{asset('images/icons/apple-icon-152x152.png')}}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{asset('images/icons/apple-icon-180x180.png')}}">
-    <link rel="icon" type="image/png" sizes="192x192" href="{{asset('images/icons/android-icon-192x192.png')}}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{asset('images/icons/favicon-32x32.png')}}">
-    <link rel="icon" type="image/png" sizes="96x96" href="{{asset('images/icons/favicon-96x96.png')}}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{asset('images/icons/favicon-16x16.png')}}">
-    <link rel="manifest" href="{{asset('manifest.json')}}">
+    @include('layouts.favicon')
     @if(env('APP_ENV') !== 'local')
         <script type="text/javascript">
             (function (c, l, a, r, i, t, y) {
@@ -105,7 +89,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-sm-6">
-                        © 2019 - <?= date('Y') ?> MyBP
+                        © 2019 - <?= date('Y') ?> MyBPIN
                     </div>
                     {{--                    <div class="col-sm-6">--}}
                     {{--                        <div class="text-sm-right d-none d-sm-block">--}}
@@ -132,13 +116,13 @@
 @if($bannerChamadosAtivo)
     <div id="bannerChamadosRoot" class="banner-chamados-overlay" hidden>
         <div class="banner-chamados-backdrop" data-banner-close></div>
-        <div class="banner-chamados-dialog" role="dialog" aria-modal="true" aria-label="Novo canal de suporte no MyBP">
+        <div class="banner-chamados-dialog" role="dialog" aria-modal="true" aria-label="Novo canal de suporte no MyBPIN">
             <button type="button" class="banner-chamados-close" aria-label="Fechar banner" data-banner-close>&times;</button>
             @if($bannerChamadosUrl !== '')
                 <a href="{{ $bannerChamadosUrl }}" class="banner-chamados-link" data-banner-close>
                     <img
                         src="{{ asset('img/banner/banner_chamado.webp') }}"
-                        alt="Novo canal de suporte já disponível no MyBP. Acesse o menu Chamados."
+                        alt="Novo canal de suporte já disponível no MyBPIN. Acesse o menu Chamados."
                         class="banner-chamados-img"
                         width="1200"
                         height="630"
@@ -147,7 +131,7 @@
             @else
                 <img
                     src="{{ asset('img/banner/banner_chamado.webp') }}"
-                    alt="Novo canal de suporte já disponível no MyBP. Acesse o menu Chamados."
+                    alt="Novo canal de suporte já disponível no MyBPIN. Acesse o menu Chamados."
                     class="banner-chamados-img"
                     width="1200"
                     height="630"

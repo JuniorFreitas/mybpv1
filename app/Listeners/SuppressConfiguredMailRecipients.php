@@ -74,7 +74,7 @@ class SuppressConfiguredMailRecipients
             return;
         }
 
-        $nome = $from[0]->getName() ?: 'MyBP';
+        $nome = $from[0]->getName() ?: 'MyBPIN';
         $message->from(new Address(self::FALLBACK_FROM, $nome));
     }
 

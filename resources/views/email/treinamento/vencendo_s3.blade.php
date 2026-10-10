@@ -214,7 +214,7 @@
 
                             </div>
                         @endif
-                        <p style="margin: 0 0 5px 0; font-size: 14px;">Este é um e-mail automático do sistema MyBP.</p>
+                        <p style="margin: 0 0 5px 0; font-size: 14px;">Este é um e-mail automático do sistema MyBPIN.</p>
                         <p style="margin: 0 0 5px 0; font-size: 14px;">Para dúvidas ou suporte, entre em contato com a
                             equipe responsável.</p>
                         <p style="margin: 0; font-size: 14px;"><strong>⚠️ Não responda este e-mail.</strong></p>

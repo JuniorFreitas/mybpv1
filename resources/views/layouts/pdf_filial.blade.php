@@ -1,4 +1,4 @@
-<title>@yield('titulo','PDF MYBP')</title>
+<title>@yield('titulo','PDF MyBPIN')</title>
 <style>
     table.dados, table.dados th, table.dados td {
         border: 1px solid black;

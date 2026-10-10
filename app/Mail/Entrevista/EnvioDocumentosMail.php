@@ -22,7 +22,7 @@ class EnvioDocumentosMail extends Mailable
     {
         $this->dados = $dados;
         $this->to($this->dados['email'], $this->dados['nome']);
-        $this->from('naoresponda@mybp.com.br', 'MyBP - SISTEMA INTEGRADO DE SOLUÇÕES EM GESTÃO');
+        $this->from('naoresponda@mybp.com.br', 'MyBPIN - SISTEMA INTEGRADO DE SOLUÇÕES EM GESTÃO');
         $this->subject = "Envio de Documentos";
         $this->assunto = $this->subject;
     }
