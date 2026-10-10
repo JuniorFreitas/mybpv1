@@ -1,5 +1,5 @@
 ========================================
-MYBP SISTEMA - RELATÓRIO DE TREINAMENTOS
+MyBPIN SISTEMA - RELATÓRIO DE TREINAMENTOS
 ========================================
 
 EMPRESA: {{ $dados['empresa'] }}
@@ -70,8 +70,8 @@ na versão HTML deste e-mail.
 INFORMAÇÕES DO SISTEMA
 ========================================
 
-Este é um relatório automático gerado pelo Sistema MyBP.
+Este é um relatório automático gerado pelo Sistema MyBPIN.
 Para dúvidas ou suporte técnico, entre em contato com nossa equipe.
 
-Sistema MyBP - Gestão de Pessoas e Treinamentos
+Sistema MyBPIN - Gestão de Pessoas e Treinamentos
 © {{ date('Y') }} - Todos os direitos reservados

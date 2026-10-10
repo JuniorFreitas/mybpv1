@@ -91,7 +91,7 @@ class JobNotificacaoAprovacaoExtra implements ShouldQueue
             'ferias_id' => $ferias->id,
             'colaborador' => '',
             'empresa_id' => $this->empresaId,
-            'nome_empresa' => $empresa ? $empresa->nome_fantasia : 'MyBP seu negócio na sua mão',
+            'nome_empresa' => $empresa ? $empresa->nome_fantasia : 'MyBPIN seu negócio na sua mão',
         ];
 
         if ($this->tipo) {

@@ -60,7 +60,7 @@
 @endphp
 <div class="wrap">
   <header class="hero">
-    <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.85;margin-bottom:8px">MyBP · Recrutamento e Admissão</div>
+    <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.85;margin-bottom:8px">MyBPIN · Recrutamento e Admissão</div>
     <h1>Relatório de recrutamento — {{ $r['dias'] }} dias</h1>
     <p>
       <strong>{{ $r['razao_social'] }}</strong> · cliente_id <strong>{{ $r['empresa_id'] }}</strong>
@@ -222,7 +222,7 @@
     </table>
   </section>
 
-  <footer>MyBP · Relatório de recrutamento · cliente_id {{ $r['empresa_id'] }}</footer>
+  <footer>MyBPIN · Relatório de recrutamento · cliente_id {{ $r['empresa_id'] }}</footer>
 </div>
 
 <script>

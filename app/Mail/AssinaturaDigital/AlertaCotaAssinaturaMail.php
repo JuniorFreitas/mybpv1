@@ -21,7 +21,7 @@ class AlertaCotaAssinaturaMail extends Mailable
         $this->percentual = $percentual;
         $this->resumo = $resumo;
         $this->dados = $empresaId !== null ? ['empresa_id' => $empresaId] : [];
-        $this->from(config('mail.from.address', 'naoresponda@mybp.com.br'), config('mail.from.name', 'MyBP'));
+        $this->from(config('mail.from.address', 'naoresponda@mybp.com.br'), config('mail.from.name', 'MyBPIN'));
         $this->subject = "Alerta de cota de assinatura digital ({$percentual}%)";
     }
 

@@ -11,12 +11,9 @@
     @if(\App\Models\Sistema::verificaHdev())
         <meta name="robots" content="noindex">
     @endif
-    <meta name="msapplication-TileColor" content="#072433">
-    <meta name="theme-color" content="#072433">
     <link rel="stylesheet" href="{{ mix('css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('css/icons.min.css') }}">
     @include('layouts.favicon')
-    <link rel="manifest" href="{{asset('manifest.json')}}">
     @if(env('APP_ENV') !== 'local')
         <script type="text/javascript">
             (function (c, l, a, r, i, t, y) {
@@ -92,7 +89,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-sm-6">
-                        © 2019 - <?= date('Y') ?> MyBP
+                        © 2019 - <?= date('Y') ?> MyBPIN
                     </div>
                     {{--                    <div class="col-sm-6">--}}
                     {{--                        <div class="text-sm-right d-none d-sm-block">--}}
@@ -119,13 +116,13 @@
 @if($bannerChamadosAtivo)
     <div id="bannerChamadosRoot" class="banner-chamados-overlay" hidden>
         <div class="banner-chamados-backdrop" data-banner-close></div>
-        <div class="banner-chamados-dialog" role="dialog" aria-modal="true" aria-label="Novo canal de suporte no MyBP">
+        <div class="banner-chamados-dialog" role="dialog" aria-modal="true" aria-label="Novo canal de suporte no MyBPIN">
             <button type="button" class="banner-chamados-close" aria-label="Fechar banner" data-banner-close>&times;</button>
             @if($bannerChamadosUrl !== '')
                 <a href="{{ $bannerChamadosUrl }}" class="banner-chamados-link" data-banner-close>
                     <img
                         src="{{ asset('img/banner/banner_chamado.webp') }}"
-                        alt="Novo canal de suporte já disponível no MyBP. Acesse o menu Chamados."
+                        alt="Novo canal de suporte já disponível no MyBPIN. Acesse o menu Chamados."
                         class="banner-chamados-img"
                         width="1200"
                         height="630"
@@ -134,7 +131,7 @@
             @else
                 <img
                     src="{{ asset('img/banner/banner_chamado.webp') }}"
-                    alt="Novo canal de suporte já disponível no MyBP. Acesse o menu Chamados."
+                    alt="Novo canal de suporte já disponível no MyBPIN. Acesse o menu Chamados."
                     class="banner-chamados-img"
                     width="1200"
                     height="630"

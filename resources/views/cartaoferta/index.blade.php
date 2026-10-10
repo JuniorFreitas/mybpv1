@@ -7,12 +7,10 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <meta name="msapplication-TileColor" content="#072433">
     <title>Carta Oferta</title>
     <link rel="preload" href="{{mix('js/app.js')}}" as="script">
     <link rel="preload" href="{{mix('js/funcoes.js')}}" as="script">
     @include('layouts.favicon')
-    <link rel="manifest" href="{{asset('/')}}manifest.json">
     <link href="{{ mix('css/app.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css"
           integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">

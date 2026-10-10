@@ -23,7 +23,7 @@ class AniversariantesMail extends Mailable
     public function __construct(array $dados)
     {
         $empresa = User::find($dados['empresa_id'] ?? null);
-        $empresaNome = $empresa?->nome ?: 'MyBP';
+        $empresaNome = $empresa?->nome ?: 'MyBPIN';
         $this->dados = $dados;
         $this->to($this->dados['email'], $this->dados['nome']);
         $this->from('naoresponda@mybp.com.br', $empresaNome);

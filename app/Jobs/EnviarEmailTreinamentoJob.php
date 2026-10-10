@@ -54,9 +54,9 @@ class EnviarEmailTreinamentoJob implements ShouldQueue
                 ['html' => $viewTemplate],
                 $this->dadosEmail,
                 function ($message) use ($usuarioPrincipal, $usuariosCopia) {
-                    $message->from('naoresponda@mybp.com.br', 'Sistema MyBP');
+                    $message->from('naoresponda@mybp.com.br', 'Sistema MyBPIN');
 
-                    $assunto = "[MyBP] Relatório de Vencimentos de Treinamentos (Excel) - {$this->empresa['razao_social']}";
+                    $assunto = "[MyBPIN] Relatório de Vencimentos de Treinamentos (Excel) - {$this->empresa['razao_social']}";
                     $message->subject($assunto);
 
                     $message->to($usuarioPrincipal['email'], $usuarioPrincipal['nome']);
@@ -121,7 +121,7 @@ class EnviarEmailTreinamentoJob implements ShouldQueue
             if (method_exists($message, 'getSwiftMessage') && $message->getSwiftMessage()) {
                 $headers = $message->getSwiftMessage()->getHeaders();
                 if ($headers) {
-                    $headers->addTextHeader('X-Mailer', 'MyBP Sistema v2.0 Async');
+                    $headers->addTextHeader('X-Mailer', 'MyBPIN Sistema v2.0 Async');
                     $headers->addTextHeader('X-Batch-Number', (string)$this->numeroLote);
                     $headers->addTextHeader('X-Priority', '3');
                     $headers->addTextHeader('X-Report-Type', 'Excel-Async');

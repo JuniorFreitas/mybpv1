@@ -24,7 +24,7 @@ setup('login manual — Chrome aguarda autenticação', async ({ page }) => {
     // eslint-disable-next-line no-console
     console.log('\n╔══════════════════════════════════════════════════════════════╗');
     // eslint-disable-next-line no-console
-    console.log('║  PLAYWRIGHT — LOGIN MANUAL (WhatsApp MyBP)                   ║');
+    console.log('║  PLAYWRIGHT — LOGIN MANUAL (WhatsApp MyBPIN)                   ║');
     // eslint-disable-next-line no-console
     console.log('╠══════════════════════════════════════════════════════════════╣');
     // eslint-disable-next-line no-console

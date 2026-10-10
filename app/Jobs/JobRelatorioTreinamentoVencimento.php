@@ -149,7 +149,7 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
         
         // Configurar propriedades do documento
         $spreadsheet->getProperties()
-            ->setCreator("MyBP Sistema")
+            ->setCreator("MyBPIN Sistema")
             ->setTitle("Relatório de Vencimento de Treinamentos")
             ->setSubject("Treinamentos Vencidos e Próximos ao Vencimento")
             ->setDescription("Relatório de treinamentos vencidos e próximos a vencer")

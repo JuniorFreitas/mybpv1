@@ -22,7 +22,7 @@ class AvaliacaoPendenciaMail extends Mailable
         return $this
             ->subject($this->dados['subject'])
             ->to($this->dados['email'], $this->dados['nome'])
-            ->from(config('mail.from.address', 'naoresponda@mybp.com.br'), config('mail.from.name', 'MyBP - SISTEMA INTEGRADO DE SOLUÇÕES EM GESTÃO'))
+            ->from(config('mail.from.address', 'naoresponda@mybp.com.br'), config('mail.from.name', 'MyBPIN - SISTEMA INTEGRADO DE SOLUÇÕES EM GESTÃO'))
             ->view('email.avaliacoes.pendencia-fluxo')
             ->with([
                 'dados' => $this->dados,

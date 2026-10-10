@@ -15,9 +15,9 @@ class NpsPerguntaSeeder extends Seeder
     public function run()
     {
         $perguntas = [
-            ['texto' => 'De 1 a 5, quanto você recomenda o MyBP para outras empresas?', 'ordem' => 1],
+            ['texto' => 'De 1 a 5, quanto você recomenda o MyBPIN para outras empresas?', 'ordem' => 1],
             ['texto' => 'Como você avalia a usabilidade da plataforma?', 'ordem' => 2],
-            ['texto' => 'Como você avalia o suporte oferecido pela equipe MyBP?', 'ordem' => 3],
+            ['texto' => 'Como você avalia o suporte oferecido pela equipe MyBPIN?', 'ordem' => 3],
         ];
 
         foreach ($perguntas as $item) {

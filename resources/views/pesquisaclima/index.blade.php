@@ -6,13 +6,10 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="msapplication-TileColor" content="#072433">
-    <meta name="theme-color" content="#072433">
     <title>@yield('title')</title>
     <link rel="preload" href="{{mix('js/app.js')}}" as="script">
     <link rel="preload" href="{{mix('js/funcoes.js')}}" as="script">
     @include('layouts.favicon')
-    <link rel="manifest" href="{{asset('/')}}manifest.json">
     <link href="{{ mix('css/app.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css"
           integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">

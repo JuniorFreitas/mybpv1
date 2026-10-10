@@ -403,7 +403,7 @@
 <div id="app" v-cloak class="login-shell">
     <div class="login-card">
         <div class="login-card__brand">
-            <img src="{{ asset('images/mybpin-logo-fundo-claro.webp') }}" alt="MyBPin" width="280" height="74">
+            <img src="{{ asset('images/mybpin-logo-fundo-claro.webp') }}" alt="MyBPIN" width="280" height="74">
         </div>
 
         <div class="login-card__body">

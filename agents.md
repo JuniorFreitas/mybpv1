@@ -1,6 +1,6 @@
-# AGENTS.md — MyBP
+# AGENTS.md — MyBPIN
 
-Guia para modelos de IA atuarem com seguranca, qualidade e performance no projeto MyBP.
+Guia para modelos de IA atuarem com seguranca, qualidade e performance no projeto MyBPIN.
 
 ## 1) Visao geral do projeto
 

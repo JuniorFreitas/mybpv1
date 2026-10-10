@@ -639,7 +639,7 @@
 <footer class="pdf-doc-footer">
     <p>
         Esse documento foi gerado automaticamente por {{ $dados['solicitante'] ?? '' }}:<br>
-        Sistema Integrado BPIN by MyBP em {{ (new \MasterTag\DataHora())->dataCompleta() }}
+        Sistema Integrado BPIN by MyBPIN em {{ (new \MasterTag\DataHora())->dataCompleta() }}
         &agrave;s {{ (new \MasterTag\DataHora())->horaCompleta() }}.
     </p>
 </footer>

@@ -289,7 +289,7 @@ class MfaLoginService
                 'enviado_id' => (int) $user->id,
                 'telefone' => $canais['whatsapp'],
                 'mensagem' => sprintf(
-                    'MyBP: seu código de verificação de login é %s. Válido por %d minutos. Se não solicitou, ignore.',
+                    'MyBPIN: seu código de verificação de login é %s. Válido por %d minutos. Se não solicitou, ignore.',
                     $codigo,
                     self::CODIGO_TTL_MINUTOS
                 ),

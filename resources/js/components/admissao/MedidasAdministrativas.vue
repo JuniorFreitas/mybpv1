@@ -387,7 +387,7 @@ export default {
                         <br><br>
                         Aceito total responsabilidade por quaisquer consequências decorrentes da remoção da medida administrativa.
                         <br><br>
-                        Assumo que, ao clicar em "Remover Medida Administrativa" no sistema MyBP, estou ciente e concordo com as disposições deste termo de responsabilidade.
+                        Assumo que, ao clicar em "Remover Medida Administrativa" no sistema MyBPIN, estou ciente e concordo com as disposições deste termo de responsabilidade.
                     </p>`
         }
     },

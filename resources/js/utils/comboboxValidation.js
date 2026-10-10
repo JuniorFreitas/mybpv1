@@ -1,5 +1,5 @@
 /**
- * Validação visual de ComboboxAutoComplete (MyBP).
+ * Validação visual de ComboboxAutoComplete (MyBPIN).
  *
  * NÃO usar valida_campo_vazio() no input do combobox: o feedback
  * entra dentro do .input-group e esmaga o campo.

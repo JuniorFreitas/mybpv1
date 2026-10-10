@@ -42,7 +42,7 @@ class WhatsappMessageFactoryTest extends TestCase
         );
 
         $this->assertStringStartsWith('Olá Maria, rota Linha 10 — Empresa Teste', $mensagem);
-        $this->assertStringContainsString('MyBP', $mensagem);
+        $this->assertStringContainsString('MyBPIN', $mensagem);
     }
 
     public function testRenderUsaTemplateRetornadoPeloConfigService(): void
@@ -65,6 +65,6 @@ class WhatsappMessageFactoryTest extends TestCase
         );
 
         $this->assertStringStartsWith('Custom Ana', $mensagem);
-        $this->assertStringContainsString('MyBP', $mensagem);
+        $this->assertStringContainsString('MyBPIN', $mensagem);
     }
 }

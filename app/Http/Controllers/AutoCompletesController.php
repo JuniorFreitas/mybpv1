@@ -220,7 +220,7 @@ class AutoCompletesController extends Controller
             ->take($quantidade)
             ->get()
             ->map(function ($item) {
-                $item->label = $item->empresa_id == User::MYBP_EMPRESA_ID ? $item->nome . ' - MyBP' : $item->nome;
+                $item->label = $item->empresa_id == User::MYBP_EMPRESA_ID ? $item->nome . ' - MyBPIN' : $item->nome;
                 return $item;
             });
     }

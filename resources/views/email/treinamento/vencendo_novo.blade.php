@@ -199,7 +199,7 @@
     <div
         style="margin-top: 30px; text-align: center; font-size: 12px; color: #777; padding-top: 15px; border-top: 1px solid #eee;">
         <p>Este é um e-mail automático. Por favor, não responda.</p>
-        <p>© {{ date('Y') }} MyBP - Todos os direitos reservados</p>
+        <p>© {{ date('Y') }} MyBPIN - Todos os direitos reservados</p>
     </div>
 </div>
 </body>

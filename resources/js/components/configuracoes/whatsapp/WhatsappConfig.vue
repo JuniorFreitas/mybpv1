@@ -2,7 +2,7 @@
     <div class="container-fluid">
         <div class="alert alert-warning" v-if="!whatsappLiberado">
             <i class="fa fa-info-circle"></i>
-            O envio de WhatsApp não está habilitado para esta empresa. Entre em contato com o administrador MyBP.
+            O envio de WhatsApp não está habilitado para esta empresa. Entre em contato com o administrador MyBPIN.
             Os campos abaixo estão em modo somente leitura.
         </div>
 
@@ -61,7 +61,7 @@
                     </div>
                     <div class="col-12">
                         <div class="alert alert-info py-2 mb-0">
-                            <small>Todas as mensagens incluem automaticamente o rodapé padrão MyBP.</small>
+                            <small>Todas as mensagens incluem automaticamente o rodapé padrão MyBPIN.</small>
                         </div>
                     </div>
                 </div>
@@ -159,7 +159,7 @@
                             <i :class="salvando ? 'fa fa-spinner fa-spin' : 'fa fa-save'"></i> Salvar template
                         </button>
                         <button v-if="!readonly && templateAtual.customizado" class="btn btn-warning btn-sm mr-1" :disabled="salvando" @click="restaurarPadrao">
-                            Restaurar padrão MyBP
+                            Restaurar padrão MyBPIN
                         </button>
                         <button class="btn btn-info btn-sm" @click="previewTemplateAtual">Preview</button>
                     </div>
@@ -322,7 +322,7 @@ export default defineComponent({
         }
 
         const restaurarPadrao = async () => {
-            if (!tipoSelecionado.value || !confirm('Restaurar template padrão MyBP?')) return
+            if (!tipoSelecionado.value || !confirm('Restaurar template padrão MyBPIN?')) return
             salvando.value = true
             try {
                 await axios.delete(`${BASE}/templates/${tipoSelecionado.value}`, { params: empresaParams() })

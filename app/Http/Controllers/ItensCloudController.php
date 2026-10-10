@@ -258,7 +258,7 @@ class ItensCloudController extends Controller
         $dados['texto_livre'] = isset($dados['texto_livre']) ? $dados['texto_livre'] : '';
         try {
             Mail::send('email.cloud.revisao', $dados, function ($m) use ($dados) {
-                $m->from('naoresponda@mybp.com.br', 'MyBP');
+                $m->from('naoresponda@mybp.com.br', 'MyBPIN');
                 $m->subject("CLOUD item Revisão - {$dados['quem_enviou']}");
                 $m->to(mb_strtolower($dados['email']));
             });
@@ -277,7 +277,7 @@ class ItensCloudController extends Controller
         $dados['texto_livre'] = isset($dados['texto_livre']) ? $dados['texto_livre'] : '';
         try {
             Mail::send('email.cloud.aprovacao', $dados, function ($m) use ($dados) {
-                $m->from('naoresponda@mybp.com.br', 'MyBP');
+                $m->from('naoresponda@mybp.com.br', 'MyBPIN');
                 $m->subject("CLOUD item Aprovação - {$dados['quem_enviou']}");
                 $m->to(mb_strtolower($dados['email']));
             });

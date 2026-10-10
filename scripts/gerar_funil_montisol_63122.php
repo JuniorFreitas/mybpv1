@@ -206,7 +206,7 @@ ob_start();
 <body>
 <div class="wrap">
   <header class="hero">
-    <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.85;margin-bottom:8px">MyBP · Funil de vagas / admissão</div>
+    <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.85;margin-bottom:8px">MyBPIN · Funil de vagas / admissão</div>
     <h1>Vagas preenchidas e pipeline — 90 dias</h1>
     <p><strong><?= $esc($cliente->razao_social) ?></strong> · cliente_id <strong>63122</strong> · apelido <strong>montisol</strong></p>
     <div class="meta">
@@ -310,7 +310,7 @@ ob_start();
       <?= $esc(basename($csvTreino)) ?>
     </p>
   </section>
-  <footer>MyBP · Funil Montisol 63122 · CPF omitido no HTML</footer>
+  <footer>MyBPIN · Funil Montisol 63122 · CPF omitido no HTML</footer>
 </div>
 </body>
 </html>

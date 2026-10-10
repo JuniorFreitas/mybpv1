@@ -1,11 +1,11 @@
 @extends('layouts.mail.layout')
-@section('titulo', 'Bem vindo(a) ao MyBP')
+@section('titulo', 'Bem vindo(a) ao MyBPIN')
 @section('conteudo')
     <table border="0" cellpadding="0" width="100%" style="width: 100%;">
         <tr>
             <td style="text-align: justify; padding: 30px;">
                 Olá, <strong>{{ $dados['nome'] }}</strong><br>
-                Estamos enviando o login e a senha para acesso na plataforma MyBP.<br><br>
+                Estamos enviando o login e a senha para acesso na plataforma MyBPIN.<br><br>
                 Onde poderá anexar os exames dos candidatos.
                 <br><br>
                 LOGIN: {{$dados['email']}} <br>

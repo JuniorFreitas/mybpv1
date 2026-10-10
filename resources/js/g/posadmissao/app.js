@@ -214,7 +214,7 @@ const app = createApp({
                         Aceito total responsabilidade por quaisquer consequências decorrentes da reversão do status.
                         <br><br>
                         Assumo que, ao clicar em "Remover Demissão" e reverter o status de demissão para admissão no
-                        sistema MyBP, estou ciente e concordo com as disposições deste termo de responsabilidade.
+                        sistema MyBPIN, estou ciente e concordo com as disposições deste termo de responsabilidade.
                     </p>`
         },
         comDemissao() {

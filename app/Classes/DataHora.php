@@ -278,7 +278,7 @@ class DataHora
 
         $valor = trim((string) $valor);
 
-        // "24/09/2026 às 18:00" (DatePicker MyBP)
+        // "24/09/2026 às 18:00" (DatePicker MyBPIN)
         if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})\s+às\s+(\d{2}:\d{2})(?::\d{2})?$/iu', $valor, $m)) {
             $dia = (int) $m[1];
             $mes = (int) $m[2];

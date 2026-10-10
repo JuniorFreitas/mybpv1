@@ -134,7 +134,7 @@
                         </div>
                         <br>
                         <span
-                            style="font-size: 11px;color: #696969;margin-left: 22px;">Enviado pelo sistema MyBP.</span><br>
+                            style="font-size: 11px;color: #696969;margin-left: 22px;">Enviado pelo sistema MyBPIN.</span><br>
                         <span style="font-size: 11px;color: #696969;margin-left: 22px;">E-mail automático. Por favor, não responda.</span>
                         <br><br>
                     </div>

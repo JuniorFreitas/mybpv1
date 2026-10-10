@@ -117,7 +117,7 @@ class CartaOferta extends Model
     const STATUS_RECUSADO_RH = 'Recusado pelo RH';
     const STATUS_EXPIRADO = 'Expirado';
 
-    const LOCAL_MYBP = 'MYBP';
+    const LOCAL_MYBP = 'MyBPIN';
     const LOCAL_SGI = 'SGI';
 
     const STATUS = [

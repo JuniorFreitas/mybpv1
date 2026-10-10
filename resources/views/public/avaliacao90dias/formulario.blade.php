@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Avaliação 90 Dias - MyBP</title>
+    <title>Avaliação 90 Dias - MyBPIN</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -233,7 +233,7 @@
             color: #2d2510;
         }
 
-        /* Tippy — tema alinhado ao MyBP */
+        /* Tippy — tema alinhado ao MyBPIN */
         .tippy-box[data-theme~='mybp-nota'] {
             background: #fff;
             color: #1a1a1a;
@@ -434,7 +434,7 @@
             }
         }
 
-        /* Rodapé MyBP */
+        /* Rodapé MyBPIN */
         .mybp-footer {
             text-align: center;
             margin: 32px auto 0;
@@ -807,14 +807,14 @@
         </div>
     </div>
 
-    <!-- Rodapé MyBP -->
+    <!-- Rodapé MyBPIN -->
     <footer class="mybp-footer">
         <div class="brand">
-            <img src="https://sistema.mybp.com.br/images/bpin_mybp_color.svg" alt="Logo MyBP">
-            <strong>MyBP</strong>
+            <img src="https://sistema.mybp.com.br/images/bpin_mybp_color.svg" alt="Logo MyBPIN">
+            <strong>MyBPIN</strong>
         </div>
         <div>
-            <small>&copy; {{ date('Y') }} MyBP. Todos os direitos reservados.</small>
+            <small>&copy; {{ date('Y') }} MyBPIN. Todos os direitos reservados.</small>
         </div>
     </footer>
 

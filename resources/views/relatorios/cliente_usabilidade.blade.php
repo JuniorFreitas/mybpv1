@@ -128,7 +128,7 @@
 @endphp
 <div class="wrap">
   <header class="hero">
-    <div class="eyebrow">MyBP · Usabilidade e Admissão</div>
+    <div class="eyebrow">MyBPIN · Usabilidade e Admissão</div>
     <h1>Relatório consolidado — {{ $r['dias'] }} dias</h1>
     <p>
       Cliente <strong>{{ $r['razao_social'] }}</strong>
@@ -475,7 +475,7 @@
   </section>
 
   <footer>
-    MyBP · Relatório interno · cliente_id {{ $r['empresa_id'] }} · CPF omitido neste HTML (detalhe nos CSVs).
+    MyBPIN · Relatório interno · cliente_id {{ $r['empresa_id'] }} · CPF omitido neste HTML (detalhe nos CSVs).
   </footer>
 </div>
 

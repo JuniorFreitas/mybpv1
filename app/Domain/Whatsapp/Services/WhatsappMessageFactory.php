@@ -121,12 +121,12 @@ class WhatsappMessageFactory
     {
         if ($quantidadeProvas > 1) {
             return "Parabéns, *{$nome}*. Você foi *selecionado(a)*!\n"
-                . "Você está recebendo um convite para realizar as avaliações abaixo relacionadas ao seu processo seletivo para a vaga de *{$vagaTitulo}* através da plataforma MyBP.\n"
+                . "Você está recebendo um convite para realizar as avaliações abaixo relacionadas ao seu processo seletivo para a vaga de *{$vagaTitulo}* através da plataforma MyBPIN.\n"
                 . "Uma vez iniciado o teste não existe a possibilidade de pausar, portanto se prepare e reserve um tempo para preenchê-los.\n";
         }
 
         return "Parabéns, *{$nome}*. Você foi *selecionado(a)*!\n"
-            . "Você está recebendo um convite para realizar a avaliação abaixo relacionada ao seu processo seletivo para a vaga de *{$vagaTitulo}* através da plataforma MyBP.\n"
+            . "Você está recebendo um convite para realizar a avaliação abaixo relacionada ao seu processo seletivo para a vaga de *{$vagaTitulo}* através da plataforma MyBPIN.\n"
             . "Uma vez iniciado o teste não existe a possibilidade de pausar, portanto se prepare e reserve um tempo para preenchê-los.\n";
     }
 

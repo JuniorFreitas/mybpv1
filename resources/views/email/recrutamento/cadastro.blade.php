@@ -5,7 +5,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>MyBP</title>
+    <title>MyBPIN</title>
     <style type="text/css">
         .footer--btn-confirm {
             width: 200px;
@@ -184,7 +184,7 @@
                     </div>
                     <br><br>
 
-                    <span style="font-size: 11px; color: #696969">Enviado pelo sistema MyBP.</span><br>
+                    <span style="font-size: 11px; color: #696969">Enviado pelo sistema MyBPIN.</span><br>
                     <span style="font-size: 11px; color: #696969">E-mail automático. Por favor, não responda.</span>
                 </div>
             </td>

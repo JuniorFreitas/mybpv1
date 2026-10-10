@@ -9,7 +9,7 @@ return [
         FILTER_VALIDATE_BOOLEAN
     ),
 
-    'rodape_padrao' => '_Esta mensagem foi enviada automaticamente pela plataforma *MyBP*, por favor não responda._',
+    'rodape_padrao' => '_Esta mensagem foi enviada automaticamente pela plataforma *MyBPIN*, por favor não responda._',
 
     'max_corpo_length' => 4096,
 

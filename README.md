@@ -1,4 +1,4 @@
-# MyBP — Seu negócio na sua mão
+# MyBPIN — Seu negócio na sua mão
 
 Sistema de Gestão de RH em Laravel: recrutamento, admissões, treinamentos, exames ocupacionais, controle de ponto, movimentações de pessoal, assinatura digital, relatórios e módulos administrativos.
 

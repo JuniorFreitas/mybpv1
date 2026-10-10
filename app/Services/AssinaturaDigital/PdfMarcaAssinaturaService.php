@@ -232,8 +232,8 @@ class PdfMarcaAssinaturaService
         $pdf->SetTextColor(120, 120, 120);
         $dataGeracao = $this->paraPdf((string) ($dadosPagina['data_geracao_ptbr'] ?? ''));
         $rodape = $dataGeracao !== ''
-            ? $this->paraPdf('Documento gerado eletronicamente em ') . $dataGeracao . $this->paraPdf('. Validade juridica conforme Lei 14.063/2020 e MP 2.200-2/2001. Para verificar a autenticidade, consulte o identificador e os eventos no sistema BPIN by MyBP.')
-            : $this->paraPdf('Documento gerado eletronicamente. Validade juridica conforme Lei 14.063/2020 e MP 2.200-2/2001. Para verificar a autenticidade, consulte o identificador e os eventos no sistema BPIN by MyBP.');
+            ? $this->paraPdf('Documento gerado eletronicamente em ') . $dataGeracao . $this->paraPdf('. Validade juridica conforme Lei 14.063/2020 e MP 2.200-2/2001. Para verificar a autenticidade, consulte o identificador e os eventos no sistema BPIN by MyBPIN.')
+            : $this->paraPdf('Documento gerado eletronicamente. Validade juridica conforme Lei 14.063/2020 e MP 2.200-2/2001. Para verificar a autenticidade, consulte o identificador e os eventos no sistema BPIN by MyBPIN.');
         $pdf->MultiCell(0, 4, $rodape, 0, 'L');
     }
 
