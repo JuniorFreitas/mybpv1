@@ -151,8 +151,10 @@ class Arquivo extends Model
     const MIME_PSD4 = "application/photoshop";
     const MIME_RAR = "application/x-rar-compressed";
     const MIME_RAR2 = "application/x-rar";
+    const MIME_RAR3 = "application/vnd.rar";
     const MIME_ZIP = "application/zip";
     const MIME_ZIP2 = "application/octet-stream";
+    const MIME_ZIP3 = "application/x-zip-compressed";
 
     const MIMEAPENASIMAGENS = [
         self::MIME_JPG,
@@ -200,6 +202,29 @@ class Arquivo extends Model
         self::MIME_WEBP,
     ];
 
+    /** Anexos do Weekly Report: imagens, PDF, Word, Excel, PowerPoint, ZIP e RAR */
+    const MIMEWEEKLYREPORT = [
+        self::MIME_JPG,
+        self::MIME_JPEG,
+        self::MIME_GIF,
+        self::MIME_PNG,
+        self::MIME_WEBP,
+        self::MIME_PDF,
+        self::MIME_DOC,
+        self::MIME_DOCX,
+        self::MIME_XLS,
+        self::MIME_XLSX,
+        self::MIME_PPT,
+        self::MIME_PPTX,
+        self::MIME_PPS,
+        self::MIME_PPSX,
+        self::MIME_ZIP,
+        self::MIME_ZIP3,
+        self::MIME_RAR,
+        self::MIME_RAR2,
+        self::MIME_RAR3,
+    ];
+
     const MIMESTODOS = [
         self::MIME_GIF,
         self::MIME_JPG,
@@ -240,9 +265,70 @@ class Arquivo extends Model
         self::MIME_PSD4,
         self::MIME_RAR,
         self::MIME_RAR2,
+        self::MIME_RAR3,
         self::MIME_ZIP,
         self::MIME_ZIP2,
+        self::MIME_ZIP3,
     ];
+
+    /** MIME types de executáveis / instaladores bloqueados no Cloud */
+    const MIMESEXECUTAVEIS = [
+        'application/x-msdownload',
+        'application/x-msdos-program',
+        'application/x-ms-installer',
+        'application/x-msi',
+        'application/vnd.microsoft.portable-executable',
+        'application/x-dosexec',
+        'application/x-executable',
+        'application/x-sharedlib',
+        'application/x-mach-binary',
+        'application/x-sh',
+        'application/x-shellscript',
+        'application/x-csh',
+        'application/java-archive',
+        'application/x-java-archive',
+        'application/x-debian-package',
+        'application/vnd.debian.binary-package',
+        'application/x-rpm',
+        'application/vnd.android.package-archive',
+        'application/x-apple-diskimage',
+        'application/x-ms-shortcut',
+        'application/hta',
+    ];
+
+    /** Extensões de executáveis / instaladores bloqueadas no Cloud */
+    const EXTENSOESEXECUTAVEIS = [
+        'exe', 'bat', 'cmd', 'com', 'msi', 'msp', 'scr', 'pif', 'cpl', 'msc',
+        'dll', 'sys', 'drv', 'ocx',
+        'vbs', 'vbe', 'js', 'jse', 'wsf', 'wsh', 'ws', 'ps1', 'psm1', 'psd1',
+        'sh', 'bash', 'csh', 'ksh', 'run',
+        'jar', 'app', 'deb', 'rpm', 'apk', 'dmg', 'pkg',
+        'reg', 'hta', 'inf', 'lnk', 'scf', 'action', 'command', 'workflow',
+    ];
+
+    /**
+     * Indica se o arquivo é executável/instalador (bloqueado no Cloud).
+     * Valida por extensão e por MIME (octet-stream sozinho não bloqueia).
+     */
+    public static function ehExecutavel(?string $mimeType, ?string $nomeArquivo): bool
+    {
+        $ext = strtolower(pathinfo((string) $nomeArquivo, PATHINFO_EXTENSION));
+        if ($ext !== '' && in_array($ext, self::EXTENSOESEXECUTAVEIS, true)) {
+            return true;
+        }
+
+        $mime = strtolower(trim((string) $mimeType));
+        if ($mime === '' || $mime === self::MIME_ZIP2) {
+            return false;
+        }
+
+        return in_array($mime, self::MIMESEXECUTAVEIS, true);
+    }
+
+    public static function permitidoNoCloud(?string $mimeType, ?string $nomeArquivo): bool
+    {
+        return !self::ehExecutavel($mimeType, $nomeArquivo);
+    }
 
     const S3 = 's3';
     const DISCO_CLOUD = 'disco-cloud';

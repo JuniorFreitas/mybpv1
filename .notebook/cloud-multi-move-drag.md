@@ -5,5 +5,6 @@
 - Drag interno usa MIME `application/x-mybp-cloud-itens` (não conflita com upload `Files`)
 - Modal/PastaCloud aceita `model.arquivos[]`; anti-ciclo pasta→subpasta no backend
 - Desabilitado em `modoBusca`
+- Upload Cloud: aceita qualquer arquivo exceto executáveis (`Arquivo::permitidoNoCloud` + Upload `bloquear-executaveis`)
 
 Tags: cloud, drag, move, ux

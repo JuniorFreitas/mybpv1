@@ -559,68 +559,66 @@ class ItensCloudController extends Controller
         }
 
         if ($request->file('arquivo')->isValid()) {
-            $mimeType = $request->file('arquivo')->getMimeType();
+            $file = $request->file('arquivo');
+            $nomeOriginal = $file->getClientOriginalName();
 
-            $permitidos = Arquivo::MIMESTODOS;
-
-            if (in_array($mimeType, $permitidos)) {
-                \DB::beginTransaction();
-
-                $extensao = $request->file('arquivo')->extension();
-                $tmExt = strlen('.' . $extensao);
-
-                $nome = substr($request->file('arquivo')->getClientOriginalName(), 0, -$tmExt);
-
-                $item = ItensCloud::whereCloudId($cloud->id)
-                    ->whereLabel($nome)
-                    ->whereTipo('arquivo')
-                    ->whereDeletedAt(null)
-                    ->wherePertence($request->pertence_id)
-                    ->whereHas('Arquivo', function ($q) use ($extensao) {
-                        $q->whereExtensao('.' . $extensao);
-                    })
-                    ->count();
-
-                if ($item > 0) {
-                    return response()->json(['msg' => 'Arquivo ja existe!'], 400);
-                }
-
-                $arquivo = Arquivo::gravaArquivoReal($request, 'arquivo', Arquivo::DISCO_CLOUD);
-
-                $arquivo->temporario = false;
-                $arquivo->chave = '';
-                $arquivo->save();
-
-                $dadosUpload = [
-                    'cloud_id' => $cloud->id,
-                    'arquivo_id' => $arquivo->id,
-                    'label' => $arquivo->nome,
-                    'tipo' => 'arquivo',
-                    'pertence' => $request->pertence_id,
-                    'quem_criou' => auth()->id(),
-                ];
-
-                $item = ItensCloud::create($dadosUpload);
-                $pasta = $request->pertence_id
-                    ? ItensCloud::query()->where('cloud_id', $cloud->id)->whereKey($request->pertence_id)->first()
-                    : null;
-                $permissoesPasta = $pasta
-                    ? $pasta->Permissoes()->pluck('grupo_cloud_id')
-                    : collect();
-                $empresaId = optional($item->Cloud()->first())->empresa_id ?? auth()->user()->empresa_id;
-                $permissoes = ItensCloud::permissoesComAdministradores($permissoesPasta, $empresaId);
-                $item->Permissoes()->sync($permissoes);
-
-                //get de permissoes da pasta
-                \DB::commit();
-                return response()->json($arquivo, 201);
+            if (!Arquivo::permitidoNoCloud($file->getMimeType(), $nomeOriginal)) {
+                return response()->json([
+                    'msg' => "O upload do arquivo \"{$nomeOriginal}\" falhou. Arquivos executáveis não são permitidos.",
+                    'erros' => [],
+                ], 400);
             }
 
-            \DB::rollBack();
-            return response()->json([
-                'msg' => "O upload do arquivo \"{$request->file('arquivo')->getClientOriginalName()}\" falhou. Arquivo não permitido.",
-                'erros' => []
-            ], 400);
+            \DB::beginTransaction();
+
+            $extensao = $file->extension();
+            $tmExt = strlen('.' . $extensao);
+
+            $nome = substr($nomeOriginal, 0, -$tmExt);
+
+            $item = ItensCloud::whereCloudId($cloud->id)
+                ->whereLabel($nome)
+                ->whereTipo('arquivo')
+                ->whereDeletedAt(null)
+                ->wherePertence($request->pertence_id)
+                ->whereHas('Arquivo', function ($q) use ($extensao) {
+                    $q->whereExtensao('.' . $extensao);
+                })
+                ->count();
+
+            if ($item > 0) {
+                \DB::rollBack();
+                return response()->json(['msg' => 'Arquivo ja existe!'], 400);
+            }
+
+            $arquivo = Arquivo::gravaArquivoReal($request, 'arquivo', Arquivo::DISCO_CLOUD);
+
+            $arquivo->temporario = false;
+            $arquivo->chave = '';
+            $arquivo->save();
+
+            $dadosUpload = [
+                'cloud_id' => $cloud->id,
+                'arquivo_id' => $arquivo->id,
+                'label' => $arquivo->nome,
+                'tipo' => 'arquivo',
+                'pertence' => $request->pertence_id,
+                'quem_criou' => auth()->id(),
+            ];
+
+            $item = ItensCloud::create($dadosUpload);
+            $pasta = $request->pertence_id
+                ? ItensCloud::query()->where('cloud_id', $cloud->id)->whereKey($request->pertence_id)->first()
+                : null;
+            $permissoesPasta = $pasta
+                ? $pasta->Permissoes()->pluck('grupo_cloud_id')
+                : collect();
+            $empresaId = optional($item->Cloud()->first())->empresa_id ?? auth()->user()->empresa_id;
+            $permissoes = ItensCloud::permissoesComAdministradores($permissoesPasta, $empresaId);
+            $item->Permissoes()->sync($permissoes);
+
+            \DB::commit();
+            return response()->json($arquivo, 201);
         }
 
         return response()->json([
@@ -642,42 +640,41 @@ class ItensCloudController extends Controller
         Cloud::encontrarAutorizadoOuAbortar($itemAtual->cloud_id);
 
         if ($request->file('arquivo')->isValid()) {
-            $mimeType = $request->file('arquivo')->getMimeType();
+            $file = $request->file('arquivo');
+            $nomeOriginal = $file->getClientOriginalName();
 
-            $permitidos = Arquivo::MIMESTODOS;
-
-            if (in_array($mimeType, $permitidos)) {
-                \DB::beginTransaction();
-
-                $arquivo = Arquivo::gravaArquivoReal($request, 'arquivo', Arquivo::DISCO_CLOUD);
-                $arquivo->temporario = false;
-                $arquivo->chave = '';
-                $arquivo->save();
-
-                $dadosUpload = [
-                    'arquivo_id' => $arquivo->id,
-                    'quem_editou' => auth()->id(),
-                    'revisado' => false,
-                    'quem_revisou' => null,
-                    'data_revisao' => null,
-                    'aprovado' => false,
-                    'quem_aprovou' => null,
-                    'data_aprovacao' => null,
-                ];
-
-                ItensCloud::where('id', $itemAtual->id)
-                    ->where('cloud_id', $itemAtual->cloud_id)
-                    ->update($dadosUpload);
-                Arquivo::find($request->anterior_id)->excluir();
-
-                \DB::commit();
-                return response()->json($arquivo, 201);
+            if (!Arquivo::permitidoNoCloud($file->getMimeType(), $nomeOriginal)) {
+                return response()->json([
+                    'msg' => "O upload do arquivo \"{$nomeOriginal}\" falhou. Arquivos executáveis não são permitidos.",
+                    'erros' => [],
+                ], 400);
             }
-            \DB::rollBack();
-            return response()->json([
-                'msg' => "O upload do arquivo \"{$request->file('arquivo')->getClientOriginalName()}\" falhou. Arquivo não permitido.",
-                'erros' => []
-            ], 400);
+
+            \DB::beginTransaction();
+
+            $arquivo = Arquivo::gravaArquivoReal($request, 'arquivo', Arquivo::DISCO_CLOUD);
+            $arquivo->temporario = false;
+            $arquivo->chave = '';
+            $arquivo->save();
+
+            $dadosUpload = [
+                'arquivo_id' => $arquivo->id,
+                'quem_editou' => auth()->id(),
+                'revisado' => false,
+                'quem_revisou' => null,
+                'data_revisao' => null,
+                'aprovado' => false,
+                'quem_aprovou' => null,
+                'data_aprovacao' => null,
+            ];
+
+            ItensCloud::where('id', $itemAtual->id)
+                ->where('cloud_id', $itemAtual->cloud_id)
+                ->update($dadosUpload);
+            Arquivo::find($request->anterior_id)->excluir();
+
+            \DB::commit();
+            return response()->json($arquivo, 201);
         }
         return response()->json([
             'msg' => "O upload do anexo falhou",

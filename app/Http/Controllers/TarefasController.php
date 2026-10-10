@@ -525,7 +525,7 @@ class TarefasController extends Controller
         if ($request->file('arquivo') && $request->file('arquivo')->isValid()) {
             $mimeType = $request->file('arquivo')->getMimeType();
 
-            if (in_array($mimeType, Arquivo::MIMEAPENASIMAGENSPDF)) {
+            if (in_array($mimeType, Arquivo::MIMEWEEKLYREPORT, true)) {
                 $arquivo = Arquivo::gravaArquivo($request, 'arquivo', Arquivo::DISCO_WEEKLY_REPORT);
                 $arquivo->temporario = false;
                 $arquivo->chave = null;
@@ -544,7 +544,7 @@ class TarefasController extends Controller
             }
 
             return response()->json([
-                'msg' => "O upload do arquivo \"{$request->file('arquivo')->getClientOriginalName()}\" falhou. Tipo de arquivo não permitido",
+                'msg' => "O upload do arquivo \"{$request->file('arquivo')->getClientOriginalName()}\" falhou. Tipos permitidos: imagens, PDF, Word, Excel, PowerPoint, ZIP e RAR.",
                 'erros' => [],
             ], 400);
         }

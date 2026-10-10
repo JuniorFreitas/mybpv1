@@ -639,6 +639,7 @@ body.wr-board-fullscreen {
     max-height: calc(100vh - 200px);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
     box-shadow: 0 1px 1px rgba(9, 30, 66, 0.18);
 }
 
@@ -766,11 +767,17 @@ body.wr-board-fullscreen {
 }
 
 .wr-lista__cards {
-    flex: 1;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
     overflow-y: auto;
-    min-height: 8px;
     margin: 0;
     padding: 0 0.1rem 0.15rem;
+
+    // Margem do último card não deve gerar scrollbar fantasma
+    > .wr-task-wrap:last-child {
+        margin-bottom: 0 !important;
+    }
 }
 
 .wr-lista__footer {
