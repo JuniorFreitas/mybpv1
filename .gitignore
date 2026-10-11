@@ -17,7 +17,6 @@ yarn-error.log
 clear.sh
 .DS_Store
 .vscode/
-.opencode
 /public/css
 /public/js
 /public/mix-manifest.json
@@ -27,11 +26,10 @@ supervisord.log
 supervisord.pid
 
 /.deploy/mybpin.pem
-./package-lock.json
-./composer.lock
 
 # AI
-.planning
+.planning/
+.opencode/
 
 # Export local de anexos CIH (dados sensiveis)
 /download_anexos_cih/
@@ -44,8 +42,6 @@ test-results/
 docs/database/audits/
 docs/security/audits/
 
-.cursor/
-.opencode/
 .phpunit.cache
-.planning/
-.playwright-cli/
+# Mascara temporaria usada na captura de telas do manual (docs/manual-completo/ferramentas)
+/public/_manual_mascara.js

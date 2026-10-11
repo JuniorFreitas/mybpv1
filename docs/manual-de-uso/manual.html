@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Manual de Uso — MyBPIN (Equipe de RH)</title>
+<!--
+  COMO EDITAR ESTE MANUAL
+  - Cada capítulo começa em um <h1 id="cN">. Seções usam <h2>, subseções <h3>.
+  - Para incluir uma tela: salve a imagem em img/ e use
+      <figure><img src="img/arquivo.jpg" alt="..."><figcaption>Legenda</figcaption></figure>
+  - Caminho de menu:  <span class="caminho">Menu › Item</span>
+  - Nome de botão:    <b class="btn">Salvar</b>
+  - Aviso amarelo:    <div class="nota">...</div>      Dica azul: <div class="dica">...</div>
+  - Ao criar um capítulo novo, inclua a linha correspondente no Sumário.
+  - Para gerar o PDF de novo, rode ./gerar-pdf.sh nesta pasta.
+-->
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; color: #1f2933; font-size: 10.5pt; line-height: 1.5; margin: 0; }
+  @media screen { body { max-width: 820px; margin: 24px auto; padding: 0 20px; } }
+  h1 { font-size: 20pt; color: #16324a; border-bottom: 3px solid #16324a; padding-bottom: 6px; margin: 0 0 14px; page-break-before: always; }
+  h2 { font-size: 13.5pt; color: #16324a; margin: 22px 0 6px; page-break-after: avoid; }
+  h3 { font-size: 11pt; color: #2b4a66; margin: 14px 0 4px; page-break-after: avoid; }
+  p { margin: 0 0 8px; }
+  ul, ol { margin: 0 0 10px; padding-left: 20px; }
+  li { margin-bottom: 3px; }
+  a { color: #16324a; text-decoration: none; }
+  .capa { height: 255mm; display: flex; flex-direction: column; justify-content: center; page-break-after: always; }
+  .capa .marca { font-size: 40pt; font-weight: 700; color: #16324a; letter-spacing: -1px; }
+  .capa .marca span { color: #2f6fed; }
+  .capa .titulo { font-size: 24pt; margin-top: 18px; color: #1f2933; }
+  .capa .sub { font-size: 13pt; color: #52606d; margin-top: 6px; }
+  .capa .meta { margin-top: 60px; font-size: 10pt; color: #52606d; border-top: 1px solid #cbd2d9; padding-top: 12px; }
+  .sumario { page-break-after: always; }
+  .sumario h1 { page-break-before: avoid; }
+  .sumario ol { columns: 2; column-gap: 28px; font-size: 10.5pt; }
+  .sumario li { margin-bottom: 5px; break-inside: avoid; }
+  .caminho { display: inline-block; background: #eef2f7; border: 1px solid #d5dde6; border-radius: 4px; padding: 2px 8px; font-size: 9.5pt; color: #16324a; font-weight: 600; margin-bottom: 8px; }
+  figure { margin: 10px 0 14px; page-break-inside: avoid; text-align: center; }
+  figure img { width: 100%; border: 1px solid #cbd2d9; border-radius: 4px; }
+  figure.estreita img { width: 46%; }
+  figcaption { font-size: 8.5pt; color: #616e7c; margin-top: 4px; }
+  .nota { background: #fff8e6; border-left: 4px solid #e0a800; padding: 8px 12px; margin: 10px 0; font-size: 9.8pt; page-break-inside: avoid; }
+  .dica { background: #eaf4ff; border-left: 4px solid #2f6fed; padding: 8px 12px; margin: 10px 0; font-size: 9.8pt; page-break-inside: avoid; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 9.6pt; page-break-inside: avoid; }
+  th, td { border: 1px solid #d5dde6; padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { background: #16324a; color: #fff; font-weight: 600; }
+  tr:nth-child(even) td { background: #f7f9fb; }
+  b.btn { background: #eef2f7; border: 1px solid #cbd2d9; border-radius: 3px; padding: 0 5px; font-weight: 600; font-size: 9.6pt; white-space: nowrap; }
+  .fluxo { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0 12px; font-size: 9.5pt; }
+  .fluxo span { background: #16324a; color: #fff; border-radius: 4px; padding: 4px 9px; }
+  .fluxo i { color: #52606d; font-style: normal; }
+  .req { color: #c0392b; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<section class="capa">
+  <div class="marca">MyBP<span>in</span></div>
+  <div class="titulo">Manual de Uso</div>
+  <div class="sub">Guia do sistema para a equipe de Recursos Humanos</div>
+  <div class="meta">
+    Versão 2.0 · Outubro de 2026<br>
+    Todas as telas deste manual usam dados fictícios: empresa, clientes, lotações, centros de custo, fornecedores, pessoas, documentos, contatos e valores foram substituídos por exemplos.
+  </div>
+</section>
+
+<section class="sumario">
+  <h1>Sumário</h1>
+  <ol>
+    <li><a href="#c1">Acesso e navegação</a></li>
+    <li><a href="#c2">Padrões das telas</a></li>
+    <li><a href="#c3">Administração</a></li>
+    <li><a href="#c4">Cadastros</a></li>
+    <li><a href="#c5">Planejamento</a></li>
+    <li><a href="#c6">Currículos</a></li>
+    <li><a href="#c7">Entrevistas</a></li>
+    <li><a href="#c8">Admissão</a></li>
+    <li><a href="#c9">Minhas Avaliações</a></li>
+    <li><a href="#c10">Ocorrências</a></li>
+    <li><a href="#c11">Treinamento</a></li>
+    <li><a href="#c12">Cloud</a></li>
+    <li><a href="#c13">Relatórios</a></li>
+    <li><a href="#c14">Usuários e grupos</a></li>
+    <li><a href="#c15">O ciclo completo do colaborador</a></li>
+    <li><a href="#c16">Observações sobre este manual</a></li>
+  </ol>
+</section>
+
+<!-- ============================================================ -->
+<h1 id="c1">1. Acesso e navegação</h1>
+
+<h2>1.1 Entrar no sistema</h2>
+<ol>
+  <li>Abra o endereço do MyBPIN no navegador.</li>
+  <li>Informe seu <b>Usuário</b> (e-mail) e sua <b>Senha</b>.</li>
+  <li>Clique em <b class="btn">Entrar no sistema</b>.</li>
+</ol>
+<p>Se não lembrar a senha, use o link <b>Esqueceu a senha?</b> na própria tela de login.</p>
+<figure class="estreita"><img src="img/login.jpg" alt="Tela de login"><figcaption>Tela de login</figcaption></figure>
+
+<h2>1.2 Tela inicial</h2>
+<p>Após o login o sistema abre o painel inicial, com Missão, Visão, Valores e Política de Gestão da Qualidade da empresa. Duas áreas ficam fixas em todo o sistema:</p>
+<ul>
+  <li><b>Menu lateral</b> (à esquerda): todos os módulos. O campo <b>Filtrar Menu</b> localiza um item pelo nome sem precisar abrir cada grupo.</li>
+  <li><b>Barra superior</b>: botão para recolher o menu, área de downloads, notificações, chat, tela cheia e o menu do seu usuário.</li>
+</ul>
+<figure><img src="img/dashboard.jpg" alt="Tela inicial"><figcaption>Tela inicial, com o menu lateral e a barra superior</figcaption></figure>
+
+<h2>1.3 Barra superior</h2>
+<table>
+  <tr><th style="width:28%">Ícone</th><th>Para que serve</th></tr>
+  <tr><td>✕ (ao lado do logotipo)</td><td>Recolhe ou expande o menu lateral, liberando espaço para a tela.</td></tr>
+  <tr><td>Downloads (seta para baixo)</td><td>Área onde ficam os arquivos gerados pelo sistema (planilhas Excel, PDFs). As exportações são processadas em segundo plano e aparecem aqui quando ficam prontas.</td></tr>
+  <tr><td>Sino</td><td>Notificações. O número em vermelho indica quantas ainda não foram lidas — por exemplo, “Seu excel está pronto” ou “Importação de treinamentos concluída”.</td></tr>
+  <tr><td>Balões</td><td>Chat interno e lista de contatos.</td></tr>
+  <tr><td>Quadro</td><td>Alterna para tela cheia.</td></tr>
+  <tr><td>Seu nome e foto</td><td>Menu do usuário, com acesso a <b>Alterar senha</b> e à saída do sistema.</td></tr>
+</table>
+<figure><img src="img/notificacoes.jpg" alt="Notificações"><figcaption>Painel “Minhas notificações” aberto a partir do sino</figcaption></figure>
+
+<h2>1.4 Alterar a senha</h2>
+<span class="caminho">Menu do usuário › Alterar senha</span>
+<p>A tela mostra a política de senhas e o botão <b class="btn">Alterar Minha Senha</b>, que abre o formulário de troca. A nova senha precisa ter:</p>
+<ul>
+  <li>8 ou mais caracteres;</li>
+  <li>1 letra minúscula e 1 letra MAIÚSCULA;</li>
+  <li>1 número;</li>
+  <li>1 símbolo especial (por exemplo @ $ ! % * ? &amp;).</li>
+</ul>
+<p>Não reutilize a senha atual, evite informações pessoais (nome, data de nascimento) e sequências simples.</p>
+<figure><img src="img/alterar-senha.jpg" alt="Política de senhas"><figcaption>Política de senhas seguras e botão de alteração</figcaption></figure>
+
+<!-- ============================================================ -->
+<h1 id="c2">2. Padrões das telas</h1>
+<p>Quase todas as telas do MyBPIN seguem a mesma estrutura. Entender esse padrão uma vez serve para o sistema inteiro.</p>
+
+<h2>2.1 Bloco FILTRO</h2>
+<p>No topo de cada listagem há um bloco <b>FILTRO</b> com os campos de busca daquela tela. Preencha o que quiser e clique em <b class="btn">Buscar</b> ou <b class="btn">Atualizar</b> (botão verde). Em algumas telas há também:</p>
+<ul>
+  <li><b class="btn">Mais filtros</b> — abre filtros adicionais menos usados;</li>
+  <li><b class="btn">Limpar filtros</b> — volta a listagem ao estado inicial;</li>
+  <li>caixa <b>Por período</b> — ao marcar, libera os campos de data inicial e final;</li>
+  <li><b>Exibir</b> / <b>Por página</b> — quantidade de registros por página.</li>
+</ul>
+
+<h2>2.2 Listagem em cards ou em tabela</h2>
+<p>Os resultados aparecem como <b>cards</b> (um bloco por registro, com número de identificação, título e campos) ou como <b>tabela</b>. Em ambos os casos:</p>
+<ul>
+  <li>o <b>selo de status</b> à direita (Ativo, Inativo, Pendente RH, Integrado, Em aberto…) mostra a situação do registro;</li>
+  <li>o botão de <b>três pontos (⋮)</b> ou os ícones à direita abrem as <b>ações</b> daquele registro (Editar, Visualizar, Aprovar, Gerar PDF…);</li>
+  <li>no rodapé ficam o <b>Total encontrado(s)</b> e o seletor de <b>Página</b>.</li>
+</ul>
+
+<h2>2.3 Cadastrar e editar</h2>
+<p>O padrão é o mesmo em todos os cadastros:</p>
+<ul>
+  <li><b>Cadastrar:</b> o botão ao lado de Atualizar (<b class="btn">Cadastrar</b>, <b class="btn">+ Cadastrar Cargo</b>, <b class="btn">Solicitar</b>…) abre o formulário em branco. O título da janela começa com “Cadastrando…”.</li>
+  <li><b>Editar:</b> em ⋮ › <b>Editar</b> (ou no ícone de lápis da linha) o mesmo formulário abre preenchido, com o título “Alterando…”. O botão de gravação passa a ser <b class="btn">Alterar</b> ou <b class="btn">Salvar</b>.</li>
+  <li><b>Ativar/inativar:</b> a chave <b>Ativo</b> dentro do formulário tira o registro de uso sem apagá-lo.</li>
+  <li>Campos marcados com <span class="req">*</span> são obrigatórios. Use <b class="btn">Fechar</b> ou <b class="btn">Cancelar</b> para sair sem gravar.</li>
+</ul>
+<div class="dica"><b>Dica:</b> em campos de busca como “Colaborador”, “Cargo” ou “Gestor”, comece a digitar o nome e escolha o item na lista que aparece. O campo fica com um ✓ verde quando o item foi selecionado corretamente.</div>
+
+<h2>2.4 Exportações</h2>
+<p>Onde existe o botão <b class="btn">Exportar Excel</b> (ou <b class="btn">Exportar PDF</b>), o arquivo é gerado em segundo plano respeitando os filtros aplicados. Quando fica pronto, o sistema avisa pelo sino e o arquivo fica disponível no ícone de <b>downloads</b> da barra superior.</p>
+
+<!-- ============================================================ -->
+<h1 id="c3">3. Administração</h1>
+
+<h2>3.1 Fornecedores</h2>
+<span class="caminho">Administração › Fornecedores</span>
+<p>Cadastro das empresas e prestadores que se relacionam com o RH. A listagem mostra ID, Nome, Tipo, Contato e Status, com filtros por nome, Tipo e Status.</p>
+<figure><img src="img/fornecedores.jpg" alt="Fornecedores"><figcaption>Listagem de fornecedores</figcaption></figure>
+<h3>Cadastrar ou editar um fornecedor</h3>
+<p>Clique em <b class="btn">Cadastrar</b> (novo) ou no ícone de lápis da linha (edição). O formulário tem:</p>
+<ul>
+  <li><b>Tipo</b> — a classificação do cadastro (por exemplo, Fornecedor);</li>
+  <li><b>Dados do fornecedor</b> — Tipo de pessoa, CNPJ, Razão Social e Nome Fantasia;</li>
+  <li><b>Endereço</b> — CEP <span class="req">*</span> (a lupa preenche o endereço a partir do CEP), Endereço <span class="req">*</span>, Número, Complemento, Bairro <span class="req">*</span>, Município <span class="req">*</span> e UF <span class="req">*</span>;</li>
+  <li><b>Contatos</b> — Responsável e E-mail;</li>
+  <li><b>Telefones</b> — Tipo, Número, observação e indicação do telefone principal;</li>
+  <li><b>Anexos</b> e a chave <b>Ativo</b>.</li>
+</ul>
+<figure><img src="img/fornecedor-form.jpg" alt="Formulário de fornecedor"><figcaption>Edição de fornecedor</figcaption></figure>
+
+<h2>3.2 Documentos Legais</h2>
+<span class="caminho">Administração › Documentos Legais</span>
+<p>Grupo de telas para manter a documentação legal. O submenu traz <b>Contrato</b>, <b>Documentos Empresa</b> e <b>Documentos SSMA</b> (os documentos em si) e as tabelas de apoio <b>Tipos Documentos</b>, <b>Tipos Serviços</b> e <b>Formas Contratos</b>. Todas têm busca por nome, filtro de Status e botão <b class="btn">Cadastrar</b>.</p>
+<p>O cadastro de <b>Contrato</b> tem duas abas: <b>Dados cadastrais</b> (dados do contratante, endereço, contatos, telefones e logotipo) e <b>Serviços</b>.</p>
+<figure><img src="img/doc-legais-form.jpg" alt="Cadastro de contrato"><figcaption>Cadastrando um contrato — aba Dados cadastrais</figcaption></figure>
+
+<h2>3.3 Ata Reunião e Planejamento Diário</h2>
+<span class="caminho">Administração › Ata Reunião</span> <span class="caminho">Administração › Planejamento Diário</span>
+<p>Registros simples de apoio à rotina. Cada tela tem um campo de busca e o botão de inclusão (<b class="btn">Cadastrar Ata de Reunião</b> / <b class="btn">Cadastrar Planejamento Diário</b>).</p>
+
+<h2>3.4 Aniversariantes</h2>
+<span class="caminho">Administração › Aniversariantes</span>
+<p>Lista os aniversariantes do mês com Data, E-mail, WhatsApp e a situação do envio da mensagem.</p>
+<ol>
+  <li>Use <b>Aniversariantes do dia</b> para filtrar apenas quem faz aniversário hoje.</li>
+  <li>Marque as caixas de seleção dos colaboradores desejados.</li>
+  <li>Clique em <b class="btn">Enviar Parabéns</b> (o contador mostra quantos estão selecionados).</li>
+</ol>
+<p>O texto enviado é configurado em <b class="btn">Mensagem de Aniversário</b>. Linhas em verde já tiveram a mensagem enviada.</p>
+<figure><img src="img/aniversariantes.jpg" alt="Aniversariantes"><figcaption>Aniversariantes do mês</figcaption></figure>
+
+<!-- ============================================================ -->
+<h1 id="c4">4. Cadastros</h1>
+<p>Os cadastros alimentam todos os outros módulos: uma requisição de vaga só pode ser aberta para um cargo, área e centro de custo já cadastrados. Mantenha-os atualizados antes de iniciar os processos. Para cada cadastro abaixo há a tela de listagem e o formulário de inclusão/edição.</p>
+
+<h2>4.1 Áreas</h2>
+<span class="caminho">Cadastro › Áreas</span>
+<p>Cada área tem um <b>Gestor responsável</b>, um <b>Centro de custo</b> e o telefone do <b>Supervisor</b> (usado na etiqueta).</p>
+<figure><img src="img/areas.jpg" alt="Áreas"><figcaption>Listagem de áreas</figcaption></figure>
+<h3>Cadastrar ou editar uma área</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Cadastrar Área</b> ou em ⋮ › <b>Editar</b>.</li>
+  <li>Informe o <b>Nome</b> <span class="req">*</span> da área.</li>
+  <li>Preencha o <b>Contato supervisor para etiqueta</b> (telefone).</li>
+  <li>Digite e selecione o <b>Gestor responsável</b>.</li>
+  <li>Escolha o <b>Centro de Custo</b>.</li>
+  <li>Deixe <b>Ativo</b> ligado e clique em <b class="btn">Alterar</b> (ou Cadastrar).</li>
+</ol>
+<figure><img src="img/area-form.jpg" alt="Formulário de área"><figcaption>Alterando uma área</figcaption></figure>
+
+<h2>4.2 Departamentos</h2>
+<span class="caminho">Cadastro › Departamentos</span>
+<p>Listagem com busca por nome e filtro de Status. O botão <b class="btn">+ Departamento</b> inclui um novo registro.</p>
+
+<h2>4.3 Centro de Custos</h2>
+<span class="caminho">Cadastro › Centro de Custos</span>
+<p>Cada centro de custo pertence a uma <b>Lotação</b> (CNPJ matriz ou filial) e tem um <b>Gestor principal</b> e um <b>Gestor substituto</b>. Filtre por nome/ID, Status ou CNPJ.</p>
+<div class="nota"><b>Importante:</b> o gestor principal e o substituto definidos aqui são usados automaticamente no fluxo de aprovação da transferência prevista. Um centro de custo sem gestor compromete esse fluxo.</div>
+<figure><img src="img/centro-custos.jpg" alt="Centro de custos"><figcaption>Centros de custo com seus gestores</figcaption></figure>
+<h3>Cadastrar ou editar um centro de custo</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Cadastrar</b> ou em ⋮ › <b>Editar</b>.</li>
+  <li>Informe o <b>Nome</b> <span class="req">*</span>.</li>
+  <li>Selecione o <b>Gestor responsável</b>.</li>
+  <li>Se houver, selecione o <b>Gestor substituto</b> — ele assume a aprovação quando o gestor principal estiver indisponível.</li>
+  <li>Em <b>CNPJ</b> <span class="req">*</span>, escolha a matriz ou a filial à qual o centro de custo pertence.</li>
+  <li>Clique em <b class="btn">Salvar</b>.</li>
+</ol>
+<figure><img src="img/cc-form.jpg" alt="Formulário de centro de custo"><figcaption>Editando um centro de custo</figcaption></figure>
+
+<h2>4.4 Benefícios</h2>
+<span class="caminho">Cadastro › Benefícios</span>
+<p>Cada benefício tem Tipo, Valor, Periodicidade, forma de Aplicação e Desconto. Os tipos são mantidos pelo botão <b class="btn">Tipo de Benefício</b>.</p>
+<figure><img src="img/beneficios.jpg" alt="Benefícios"><figcaption>Listagem de benefícios</figcaption></figure>
+<h3>Cadastrar ou editar um benefício</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Cadastrar Benefício</b> ou em ⋮ › <b>Editar</b>.</li>
+  <li>Informe o <b>Nome</b> e escolha o <b>Tipo</b>.</li>
+  <li>Informe o <b>Valor</b> e a <b>Aplicação</b> (por exemplo, Em Reais).</li>
+  <li>Escolha a <b>Periodicidade</b> (Mensal, Anual…).</li>
+  <li>Informe o <b>Valor Descontado</b> e a <b>Opção de Desconto</b> (por exemplo, Valor Fixo).</li>
+  <li>Grave com <b class="btn">Alterar</b> (ou Cadastrar).</li>
+</ol>
+<figure><img src="img/beneficio-form.jpg" alt="Formulário de benefício"><figcaption>Alterando um benefício</figcaption></figure>
+
+<h2>4.5 Cargos</h2>
+<span class="caminho">Cadastro › Cargos</span>
+<p>Lista os cargos com o CBO vinculado, a quantidade de <b>treinamentos do cargo</b> e a situação (Ativo/Inativo). Filtre por nome/ID e Status.</p>
+<figure><img src="img/cargos.jpg" alt="Cargos"><figcaption>Listagem de cargos</figcaption></figure>
+<h3>Cadastrar ou editar um cargo</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Cadastrar Cargo</b> (novo) ou em ⋮ › <b>Editar</b> (existente).</li>
+  <li>Em <b>Sobre o cargo</b>, informe o <b>Título do cargo</b> <span class="req">*</span>.</li>
+  <li>Mantenha a chave <b>Ativo</b> ligada para o cargo aparecer nas requisições e vagas. Desligue para inativar.</li>
+  <li>Em <b>CBO</b> (opcional), busque pelo código, título ou família e selecione a ocupação.</li>
+  <li>Clique em <b class="btn">Alterar</b> (ou Cadastrar).</li>
+</ol>
+<div class="nota"><b>Treinamentos do cargo são somente leitura nesta tela.</b> O vínculo entre treinamento e cargo é feito em <b>Cadastro › Lista de Treinamentos</b>; aqui aparece apenas o resumo do que já está configurado.</div>
+<figure><img src="img/cargo-form.jpg" alt="Formulário de cargo"><figcaption>Alterando um cargo</figcaption></figure>
+
+<h2>4.6 Vagas Abertas</h2>
+<span class="caminho">Cadastro › Vagas Abertas</span>
+<p>É aqui que uma vaga é publicada para receber candidatos. Cada vaga mostra Cargo, Local, data de atualização, descrição e o <b>link público</b> de candidatura, com botões para copiar o endereço ou compartilhar no WhatsApp, Facebook, Instagram e LinkedIn.</p>
+<p>Filtros: título/cargo/cidade/ID, Ativo no site, Ativo no sistema, Cargo, Cidade, Provas vinculadas e Projeto.</p>
+<figure><img src="img/vagas-abertas.jpg" alt="Vagas abertas"><figcaption>Vagas abertas, com link público e botões de compartilhamento</figcaption></figure>
+<h3>Cadastrar ou editar uma vaga aberta</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Cadastrar Vaga Aberta</b> ou em ⋮ › <b>Editar</b>.</li>
+  <li>Em <b>Cargo</b> <span class="req">*</span>, digite e selecione o cargo. A faixa <b>Treinamentos vinculados ao cargo</b> mostra os treinamentos exigidos.</li>
+  <li>Informe o <b>Título</b> <span class="req">*</span> — é o nome que o candidato verá.</li>
+  <li>Escreva a <b>Descrição</b> da vaga no editor de texto.</li>
+  <li>Em <b>Cidade</b> <span class="req">*</span>, digite e selecione o local da vaga.</li>
+</ol>
+<figure><img src="img/vaga-form-1.jpg" alt="Formulário de vaga aberta"><figcaption>Alterando uma vaga — cargo, título, descrição e cidade</figcaption></figure>
+<ol start="6">
+  <li>Em <b>Projetos</b> (opcional), clique em <b class="btn">+ Adicionar</b> para vincular a vaga a um ou mais projetos, respeitando a quantidade disponível em cada um.</li>
+  <li>Em <b>Provas</b> (opcional), use <b class="btn">+ Adicionar</b> para vincular provas que o candidato deverá fazer.</li>
+  <li>Defina a publicação: <b>Ativo no site</b> faz a vaga aparecer no site público de vagas; <b>Ativo no sistema</b> libera a vaga para uso nos processos internos.</li>
+  <li>Clique em <b class="btn">Alterar</b> (ou Cadastrar).</li>
+</ol>
+<figure><img src="img/vaga-form-2.jpg" alt="Formulário de vaga aberta - parte 2"><figcaption>Projetos, provas e chaves de publicação</figcaption></figure>
+
+<h2>4.7 Projetos</h2>
+<span class="caminho">Cadastro › Projetos</span>
+<p>Um projeto define uma <b>capacidade</b> de posições. O card mostra quanto já foi <b>distribuído</b> em vagas abertas, quanto está <b>disponível</b>, quantas posições estão <b>ocupadas</b> e a barra de ocupação.</p>
+<p>No formulário (<b class="btn">+ Cadastrar Projeto</b> ou ⋮ › Editar) informe o <b>Nome do projeto</b> <span class="req">*</span> e a <b>Capacidade total</b> <span class="req">*</span>. A seção <b>Distribuição por vaga aberta</b> permite reservar parte da capacidade para vagas específicas; a capacidade não pode ser menor do que o total já distribuído.</p>
+<figure><img src="img/projetos.jpg" alt="Projetos"><figcaption>Projeto com capacidade e ocupação</figcaption></figure>
+
+<h2>4.8 Exames (clínicas)</h2>
+<span class="caminho">Cadastro › Exames</span>
+<p>Cadastro das clínicas e empresas de medicina ocupacional usadas no encaminhamento de exames. O botão <b class="btn">+ PCMSO</b> dá acesso ao cadastro do PCMSO.</p>
+<figure><img src="img/exames-cadastro.jpg" alt="Empresa exame"><figcaption>Clínicas cadastradas</figcaption></figure>
+<p>No formulário informe CNPJ, Razão Social, Nome Fantasia, o endereço (CEP <span class="req">*</span>, Endereço <span class="req">*</span>, Bairro <span class="req">*</span>, Município <span class="req">*</span>, UF <span class="req">*</span>), Telefone e E-mail — este último é o endereço que recebe os encaminhamentos de exame.</p>
+<figure><img src="img/exame-form.jpg" alt="Formulário de clínica"><figcaption>Alterando uma clínica</figcaption></figure>
+
+<h2>4.9 Lista de Treinamentos</h2>
+<span class="caminho">Cadastro › Lista de Treinamentos</span>
+<p>Catálogo de treinamentos. Cada item traz o <b>Padrão</b> (cliente/segmento), os <b>Cargos vinculados</b>, o <b>Prazo fixo</b> de validade em dias, a <b>Ordem</b> de exibição, a quem se destina e como aparece na <b>carteira de treinamento</b>. O botão <b class="btn">+ Assinatura Carteira</b> cadastra a assinatura impressa na carteira.</p>
+<figure><img src="img/lista-treinamentos.jpg" alt="Lista de treinamentos"><figcaption>Catálogo de treinamentos</figcaption></figure>
+<h3>Cadastrar ou editar um treinamento</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Treinamento Indústria</b> ou em ⋮ › <b>Editar</b>.</li>
+  <li>Informe o <b>Nome</b> <span class="req">*</span> e o <b>Nome Reduzido</b> <span class="req">*</span> (o que é impresso na carteira).</li>
+  <li>Ligue <b>Exibir Carteira Treinamento</b> se ele deve aparecer na carteira.</li>
+  <li>Preencha <b>A quem se destina</b> <span class="req">*</span>.</li>
+  <li>Informe o <b>Prazo fixo (dias para vencimento)</b> e a <b>Ordem</b>.</li>
+  <li>Escolha o <b>Segmento / Padrão de treinamento</b>.</li>
+  <li>Ligue <b>Vincular a todos os cargos</b> para que o treinamento valha para qualquer cargo; desligado, escolha os cargos na lista.</li>
+  <li>Clique em <b class="btn">Salvar</b>.</li>
+</ol>
+<figure><img src="img/treinamento-form.jpg" alt="Formulário de treinamento"><figcaption>Alterando um treinamento</figcaption></figure>
+
+<h2>4.10 Instrutor, Certificados, Empresa Treinamento e Provas</h2>
+<p>Quatro cadastros de apoio a treinamento, todos com busca e botão de inclusão:</p>
+<ul>
+  <li><b>Instrutor</b> — Nome, Cargo, Registro, situação e o arquivo da <b>Assinatura</b>, usada nos certificados;</li>
+  <li><b>Certificados</b> — título do certificado, carga horária e validade;</li>
+  <li><b>Empresa Treinamento</b> — empresas que ministram treinamentos, com endereço;</li>
+  <li><b>Provas</b> — provas que podem ser vinculadas às vagas abertas.</li>
+</ul>
+<figure><img src="img/instrutor-form.jpg" alt="Formulário de instrutor"><figcaption>Cadastro de instrutor</figcaption></figure>
+
+<h2>4.11 Avaliações</h2>
+<span class="caminho">Cadastro › Avaliações</span> <span class="caminho">Cadastro › Peformance</span>
+<p>Os dois grupos têm a mesma estrutura de quatro telas, usadas nesta ordem:</p>
+<ol>
+  <li><b>Tipos de Avaliadores</b> — quem pode avaliar;</li>
+  <li><b>Tipos de Avaliações</b> — os modelos de avaliação;</li>
+  <li><b>Competências</b> — os tópicos avaliados e a quantidade de indicadores de cada um, por tipo de avaliação;</li>
+  <li><b>Avaliações</b> — os ciclos, com Ano, Título, Tipo, Data início, Data fim e Status.</li>
+</ol>
+<figure><img src="img/competencias.jpg" alt="Competências"><figcaption>Competências por tipo de avaliação</figcaption></figure>
+<figure><img src="img/avaliacoes.jpg" alt="Avaliações"><figcaption>Ciclos de avaliação</figcaption></figure>
+<h3>Montar um ciclo de avaliação</h3>
+<ol>
+  <li>Em <b>Avaliações</b>, clique em <b class="btn">+ Cadastrar</b>.</li>
+  <li>Em <b>Informações</b>, preencha Título, Tipo de avaliação, Data início, Data fim, Status, se há <b>Auto Avaliação</b>, se está Ativo e o Ano da avaliação.</li>
+  <li>Em <b>Fluxo</b>, defina a ordem dos avaliadores escolhendo o <b>Tipo de avaliador</b> de cada etapa. Se Auto Avaliação estiver como Sim, ela ocupa a primeira posição do fluxo.</li>
+  <li>Decida se deseja <b>mostrar as notas das etapas anteriores para o Avaliador Final</b>.</li>
+  <li>Grave com <b class="btn">Cadastrar</b>.</li>
+  <li>De volta à lista, use ⋮ › <b>Associar avaliadores</b> para ligar cada colaborador aos seus avaliadores.</li>
+</ol>
+<figure><img src="img/avaliacao-form.jpg" alt="Montagem da avaliação"><figcaption>Montagem da avaliação</figcaption></figure>
+
+<h2>4.12 Customizações</h2>
+<h3>Campos personalizados da Requisição de Vaga</h3>
+<span class="caminho">Cadastro › Customizações › Requisição de Vaga</span>
+<p>Cria campos extras que passam a aparecer no formulário de requisição de vaga — por exemplo “E-mail institucional” ou “Notebook”. Clique em <b class="btn">+ Novo campo</b>, informe o <b>Nome do campo (label)</b> <span class="req">*</span>, escolha o <b>Tipo</b> <span class="req">*</span> (Sim/Não, texto…) e marque <b>Campo obrigatório</b> se for o caso.</p>
+<figure><img src="img/campo-form.jpg" alt="Novo campo"><figcaption>Novo campo personalizado</figcaption></figure>
+
+<h3>Aprovações Extras</h3>
+<span class="caminho">Cadastro › Customizações › Aprovações Extras</span>
+<p>Inclui uma etapa adicional de aprovação em um tipo de movimentação (por exemplo Mudança de Cargo ou Transferência).</p>
+<div class="fluxo"><span>Gestor</span><i>→</i><span>Aprovação Extra</span><i>→</i><span>RH (final)</span></div>
+<figure><img src="img/aprovacoes-extras.jpg" alt="Aprovações extras"><figcaption>Configurações de aprovação extra</figcaption></figure>
+<ol>
+  <li>Clique em <b class="btn">+ Cadastrar</b>.</li>
+  <li>Escolha o <b>Tipo de Processo</b> <span class="req">*</span> que terá a aprovação extra.</li>
+  <li>Informe o <b>Nome da Aprovação</b> <span class="req">*</span> — é o texto que aparece no fluxo (ex.: “Aguardando aprovação do SESMT”).</li>
+  <li>Em <b>Colaborador</b>, selecione os usuários autorizados a aprovar.</li>
+  <li>Mantenha <b>Ativo</b> marcado e clique em <b class="btn">Salvar</b>.</li>
+</ol>
+<div class="nota"><b>Importante:</b> o RH é sempre a última aprovação do fluxo, e apenas uma configuração pode estar ativa por tipo de processo.</div>
+<figure class="estreita"><img src="img/aprovacao-form.jpg" alt="Nova aprovação extra" style="width:70%"><figcaption>Nova configuração de aprovação extra</figcaption></figure>
+
+<!-- ============================================================ -->
+<h1 id="c5">5. Planejamento</h1>
+
+<h2>5.1 Requisição de Vaga</h2>
+<span class="caminho">Planejamento › Requisição de Vaga</span>
+<p>Onde o gestor ou o RH formaliza a necessidade de contratação. Cada card mostra o cargo, Quantidade, Solicitante, Gestor, Lotação, Centro de custo, Área, datas, tipo de Contratação, Prioridade, previsão de Início e o <b>Fluxo de aprovação</b>, com a situação de cada etapa.</p>
+<figure><img src="img/requisicao-vaga.jpg" alt="Requisição de vagas"><figcaption>Requisição de vaga com o fluxo de aprovação</figcaption></figure>
+
+<h3>Abrir uma requisição</h3>
+<ol>
+  <li>Clique em <b class="btn">Solicitar</b>.</li>
+  <li>Em <b>Informações</b>, escolha o Cargo, a Área, o Tipo de Contratação, a Prioridade e a Quantidade.</li>
+  <li>Em <b>Lotação</b>, escolha a Lotação (CNPJ) e depois o Centro de Custo.</li>
+  <li>Em <b>Demais informações</b>, preencha Posição, Processo, Tipo, Horário, Gestor da vaga, se o cargo está no PPRA e PCMSO, Salário, Benefício, Treinamento, a Previsão de início (ou marque <b>Imediata</b>) e o Solicitante.</li>
+  <li>Use <b>Observação</b> para detalhes adicionais e clique em <b class="btn">Cadastrar</b>.</li>
+</ol>
+<figure><img src="img/requisicao-form.jpg" alt="Formulário de requisição"><figcaption>Formulário “Solicitando Vaga”</figcaption></figure>
+
+<h3>Acompanhar e aprovar</h3>
+<p>No menu ⋮ de cada requisição ficam <b>Visualizar</b>, <b>Aprovação Gestor</b> e <b>Aprovação RH</b>, conforme a etapa em que ela está e a sua permissão. Filtre por Período, cargo e Status, e ordene pelas mais recentes. A lista pode ser exportada em <b class="btn">Exportar Excel</b>.</p>
+
+<h2>5.2 Movimentação</h2>
+<span class="caminho">Planejamento › Movimentação</span>
+<p>Reúne, em abas, todas as movimentações de pessoal que dependem de aprovação:</p>
+<table>
+  <tr><th style="width:36%">Aba</th><th>Uso</th></tr>
+  <tr><td>Demissão</td><td>Solicitação de desligamento de um colaborador.</td></tr>
+  <tr><td>Férias</td><td>Programação de férias.</td></tr>
+  <tr><td>Admissão</td><td>Admissões previstas.</td></tr>
+  <tr><td>Liderança de Pessoal e Valor Extra</td><td>Solicitação de valor extra / liderança.</td></tr>
+  <tr><td>Mudança de Cargo</td><td>Alteração de cargo ou função.</td></tr>
+  <tr><td>Mudança de Intermitente p/ Fixo</td><td>Conversão de contrato intermitente em fixo.</td></tr>
+  <tr><td>Transferência</td><td>Mudança de centro de custo ou lotação.</td></tr>
+</table>
+<p>Em cada aba, os filtros são Período, Colaborador/CPF, Status, Lotação (CNPJ) e Centro de custo.</p>
+<figure><img src="img/movimentacao.jpg" alt="Movimentação"><figcaption>Movimentação — aba Demissão</figcaption></figure>
+<p>O card mostra os dados da solicitação e o <b>fluxo de aprovação</b>: cada etapa aparece em verde (concluída, com nome e data), laranja (aguardando) ou cinza (pendente). O selo à direita resume a situação — por exemplo <b>Pendente Gestor</b> ou <b>Pendente RH</b>.</p>
+<figure><img src="img/movimentacao-fluxo.jpg" alt="Fluxo de aprovação"><figcaption>Solicitações com o fluxo Solicitante → Gestor → RH</figcaption></figure>
+
+<h3>Exemplo: solicitar uma demissão</h3>
+<ol>
+  <li>Na aba <b>Demissão</b>, clique em <b class="btn">Solicitar</b>.</li>
+  <li>Digite o nome do <b>Colaborador</b>. Centro de Custo Atual e Lotação são preenchidos automaticamente.</li>
+  <li>Informe a <b>Data da Demissão</b>, o <b>Tipo de Aviso</b> e o <b>Gestor Aprovação</b>.</li>
+  <li>Se necessário, escreva uma <b>Observação</b> e inclua <b>Anexos</b> (arraste o arquivo ou clique em Escolher).</li>
+  <li>Clique em <b class="btn">Cadastrar</b>. A solicitação segue para aprovação do gestor e, por último, do RH.</li>
+</ol>
+<p>No menu ⋮ de cada solicitação ficam <b>Visualizar</b>, <b>Aprovação RH</b> e, na demissão, <b>Aviso Prévio (PDF)</b>.</p>
+<figure><img src="img/demissao-form.jpg" alt="Solicitação de demissão"><figcaption>Formulário “Solicitação de Demissão”</figcaption></figure>
+
+<h2>5.3 Mobilização</h2>
+<span class="caminho">Planejamento › Mobilização</span>
+<p>Acompanhamento da mobilização por projeto. Selecione um <b>Projeto</b> (e, se quiser, um período) e clique em <b class="btn">Buscar</b>; a tela só exibe dados depois que um projeto é escolhido.</p>
+
+<!-- ============================================================ -->
+<h1 id="c6">6. Currículos</h1>
+
+<h2>6.1 Recrutamento</h2>
+<span class="caminho">Currículos › Recrutamento</span>
+<p>Banco de currículos recebidos pelas vagas abertas. No topo, três indicadores: <b>Total cadastrados</b>, <b>Cadastrados</b> nos últimos 90 dias e <b>Selecionados</b> no período.</p>
+<ul>
+  <li><b>Filtros:</b> Por período, Candidato/CPF, Cargo, Estado, Lido e PCD.</li>
+  <li>Cada card mostra CPF, UF, Vaga, PCD, se já foi Selecionado, se houve Contato realizado, Experiências, Qualificações, Interesse, Data de cadastro e se o currículo já foi <b>Lido</b>.</li>
+</ul>
+<figure><img src="img/recrutamento.jpg" alt="Recrutamento"><figcaption>Recrutamento — banco de currículos</figcaption></figure>
+<h3>Analisar e recrutar um candidato</h3>
+<ol>
+  <li>Localize o currículo pelos filtros.</li>
+  <li>Abra o menu ⋮ e escolha <b>Recrutar</b>. A janela <b>Visualizando Currículo</b> abre com as seções Dados pessoais, Endereço, Contatos, Formação, Experiências e Qualificações.</li>
+  <li>Confira e, se preciso, corrija os dados do candidato. Em <b>Contatos</b>, use <b class="btn">+ Adicionar</b> para incluir outro telefone.</li>
+  <li>Na seção <b>Feedback</b>, ao final, registre o resultado da triagem.</li>
+  <li>Clique em <b class="btn">Salvar</b>.</li>
+</ol>
+<p>A opção <b>Gerar PDF</b>, no mesmo menu, baixa o currículo em arquivo.</p>
+<figure><img src="img/recrutar-form.jpg" alt="Visualizando currículo"><figcaption>Janela de recrutamento com o currículo do candidato</figcaption></figure>
+
+<h2>6.2 Selecionados</h2>
+<span class="caminho">Currículos › Selecionados</span>
+<p>Candidatos já selecionados para uma vaga. Além dos filtros básicos (período, Nome/Cód, CPF, Cargo, Estado, PCD), é possível filtrar por <b>Status</b>, <b>Prova</b> e <b>Etapa</b>. O ícone de olho abre os detalhes do candidato no processo.</p>
+<figure><img src="img/selecionados.jpg" alt="Selecionados"><figcaption>Candidatos selecionados</figcaption></figure>
+
+<!-- ============================================================ -->
+<h1 id="c7">7. Entrevistas</h1>
+<p>O grupo Entrevistas concentra as etapas de avaliação do candidato selecionado: <b>Parecer RH</b>, <b>Parecer Rota – Transporte</b>, <b>Parecer Entrevista Técnica</b>, <b>Parecer Teste Prático</b>, <b>Entrevista RH</b>, <b>Entrevista Gestor</b> e <b>Resultado Integrado</b>, que consolida tudo.</p>
+
+<h2>7.1 Parecer RH</h2>
+<span class="caminho">Entrevistas › Parecer RH</span>
+<p>Mostra, por candidato, a Vaga, a data e o local da <b>Entrevista</b> e a situação de cada etapa: Parecer RH (nota), Rota de transporte, Entrevista técnica (nota), Teste prático (nota), Parecer individual e Nota individual. Etapas ainda não realizadas aparecem como <b>aguardando</b>.</p>
+<ul>
+  <li><b>Filtros:</b> período, Nome, CPF, Cargo, Estado, Nota RH e Final RH.</li>
+  <li>Os ícones à direita de cada linha abrem o registro do parecer e os documentos do candidato.</li>
+  <li>Marque as caixas de seleção e use <b class="btn">Exportar Excel</b> para levar os dados; <b class="btn">Limpar seleção</b> desmarca tudo.</li>
+</ul>
+<figure><img src="img/parecer-rh.jpg" alt="Parecer RH"><figcaption>Entrevista — Parecer RH</figcaption></figure>
+
+<h2>7.2 Formulário de entrevista</h2>
+<p>A entrevista é registrada em uma janela identificada pelo código e nome do candidato. No topo ficam os <b>Dados pessoais</b> (somente leitura) e, abaixo, as seções a preencher:</p>
+<ul>
+  <li><b>Tipo de entrevista</b>;</li>
+  <li><b>Informações complementares</b> — domínio, ex-funcionário, CNH e tipo, rota/bairro;</li>
+  <li><b>EPI</b> — tamanhos de camisa, calça e bota;</li>
+  <li><b>Histórico familiar e social</b>;</li>
+  <li><b>Outras informações</b> — escolaridade, disponibilidade para hora extra, turnos e noturno, histórico de acidente ou afastamento, postura e comportamento seguro;</li>
+  <li><b>Cursos de formação</b>, <b>Histórico profissional</b>, <b>Histórico educacional</b> e <b>Objetivos e expectativas</b>.</li>
+</ul>
+<p>Grave com <b class="btn">Salvar</b>. Campos em cinza estão bloqueados para edição naquela etapa.</p>
+<figure><img src="img/entrevista-form.jpg" alt="Formulário de entrevista"><figcaption>Formulário de entrevista do candidato</figcaption></figure>
+
+<h2>7.3 Resultado Integrado</h2>
+<span class="caminho">Entrevistas › Resultado Integrado</span>
+<p>Reúne o resultado final do candidato e é o ponto de partida para a admissão. Cada card mostra o Cargo, PCD, o <b>Responsável pelo encaminhamento</b> e três marcos com a data em que ocorreram:</p>
+<ul>
+  <li><b>Enc. Documentos</b> — encaminhado para envio de documentos (pré-admissão);</li>
+  <li><b>Enc. Exame</b> — encaminhado para exames;</li>
+  <li><b>Enc. Treinamento</b> — encaminhado para treinamentos.</li>
+</ul>
+<p>No menu ⋮: <b>Encaminhar</b>, <b>Editar</b>, <b>Visualizar</b> e <b>Imprimir</b>. É possível marcar vários candidatos (ou <b>Selecionar todos</b>) para trabalhar em lote. Filtros: período, Candidato/CPF, Cargo, Estado, Classificação individual, Classificação RH e, em <b class="btn">Mais filtros</b>, Nota RH.</p>
+<figure><img src="img/resultado-integrado.jpg" alt="Resultado integrado"><figcaption>Resultado Integrado, com os três encaminhamentos</figcaption></figure>
+
+<!-- ============================================================ -->
+<h1 id="c8">8. Admissão</h1>
+<p>O menu Admissão acompanha o candidato do envio de documentos até o desligamento. A ordem natural de uso é:</p>
+<div class="fluxo"><span>Pré-admissão</span><i>→</i><span>Controle de Exames</span><i>→</i><span>Processo (Admitir)</span><i>→</i><span>Histórico</span><i>→</i><span>Pós-admissão</span></div>
+<p>Quem não passou pelo recrutamento entra direto pela <b>Admissão avulsa</b>, dentro de Processo.</p>
+
+<h2>8.1 Pré-admissão (documentos)</h2>
+<span class="caminho">Admissão › Documentos › Pré-admissão</span>
+<p>Acompanha os documentos enviados pelos candidatos encaminhados. A lista mostra Código, Nome, CPF, Vaga, <b>quantidade de anexos</b> recebidos e Status. Por padrão o filtro Status vem em <b>Em processo</b>.</p>
+<p>Cada linha tem três ações:</p>
+<table>
+  <tr><th style="width:26%">Ícone</th><th>Ação</th></tr>
+  <tr><td>Lupa</td><td><b>Visualizar</b> — abre os documentos enviados pelo candidato.</td></tr>
+  <tr><td>Seta</td><td><b>Reenviar E-mail</b> — manda novamente ao candidato o e-mail com o link de envio de documentos.</td></tr>
+  <tr><td>Check</td><td><b>Finalizar</b> — encerra a pré-admissão daquele candidato.</td></tr>
+</table>
+<figure><img src="img/pre-admissao.jpg" alt="Pré-admissão"><figcaption>Pré-admissão — documentos por candidato</figcaption></figure>
+<h3>Conferir os documentos</h3>
+<p>Em <b>Visualizar</b>, os documentos aparecem agrupados por tipo: Laudo médico (somente PCD), Currículo, Foto 3x4, RG/CPF, Comprovante de endereço, CTPS digital, Título de eleitor, Certificado de reservista, PIS, Certificado de escolaridade, Conta bancária, documentação de filhos, cartão de vacina, certificados de função e outros. Cada arquivo tem os botões <b class="btn">Ver</b> e <b class="btn">Baixar</b>. Tipos sem arquivo mostram “Nenhum anexo enviado”.</p>
+<figure><img src="img/pre-admissao-docs.jpg" alt="Documentos de pré-admissão"><figcaption>Documentos enviados pelo candidato</figcaption></figure>
+
+<h2>8.2 Controle de Exames</h2>
+<span class="caminho">Admissão › Controle de Exames</span>
+<p>Lista os colaboradores e candidatos com exames ocupacionais em andamento, mostrando o Cargo e a data do <b>último encaminhamento</b>. Filtros: período, Nome, CPF e Status.</p>
+<figure><img src="img/controle-exames.jpg" alt="Controle de exames"><figcaption>Controle de exames</figcaption></figure>
+<h3>Encaminhar para exame</h3>
+<ol>
+  <li>Clique em <b class="btn">Abrir</b> na linha da pessoa.</li>
+  <li>Confira os <b>Dados pessoais</b> no topo da janela.</li>
+  <li>Na aba <b>Encaminhar</b>, escolha o <b>Tipo de ordem</b>: Admissional, Periódico, Pericial, Mudança de Função, Retorno ao Trabalho ou Demissional.</li>
+  <li>Escolha a <b>Clínica</b>, a <b>Data para realização</b> e o <b>PCMSO</b>.</li>
+  <li>Ligue <b>Enviar E-mail</b> se quiser que o encaminhamento seja enviado por e-mail.</li>
+  <li>Clique em <b class="btn">Salvar</b>.</li>
+</ol>
+<p>A aba <b>Encaminhados</b> mostra o histórico de encaminhamentos da pessoa e a aba <b>Validação SESMT</b> registra a validação do resultado.</p>
+<figure><img src="img/exame-encaminhar.jpg" alt="Encaminhamento de exame"><figcaption>Encaminhamento para exame</figcaption></figure>
+
+<h2>8.3 Processo</h2>
+<span class="caminho">Admissão › Processo</span>
+<p>É a tela central da admissão. Cada card representa um candidato e mostra Centro de custo, Cargo, Contato, Unidade e uma linha de conferência com o que já foi cumprido:</p>
+<ul>
+  <li><b>Enc. Doc</b>, <b>Enc. Exame</b> e <b>Enc. Trein.</b> — encaminhamentos feitos no Resultado Integrado;</li>
+  <li><b>Resp. Enc.</b> — quem encaminhou;</li>
+  <li><b>Crachá</b> e <b>Foto 3x4</b> — itens pendentes aparecem com sinal vermelho;</li>
+  <li><b>Data ASO</b>, <b>Data Admissão</b> e <b>Tipo Admissão</b>.</li>
+</ul>
+<p>O selo ao lado do nome mostra a situação: <b>Admitido</b>, <b>Desistência</b> e outras. O menu ⋮ oferece <b>Admitir</b>, <b>Visualizar</b> e <b>Gerar PDF</b>.</p>
+<figure><img src="img/processo.jpg" alt="Processo de admissão"><figcaption>Processo de admissão, com o menu de ações aberto</figcaption></figure>
+<p>Filtros disponíveis: Por período, Data do ASO, Data da Admissão, Lotação, Centro de custo, Colaborador/CPF, Cargo, Estado, Status admissão, Tipo admissão e Por demitido. O botão <b class="btn">Colunas</b> escolhe o que entra na exportação feita por <b class="btn">Exportar Excel</b>; <b>Selecionar todos com admissão</b> marca os cards para exportar em lote.</p>
+
+<h3>Admitir um candidato do processo seletivo</h3>
+<ol>
+  <li>Localize o candidato pelos filtros.</li>
+  <li>Confira na linha de conferência se documentos, exame e treinamento estão concluídos.</li>
+  <li>Abra o menu ⋮ e escolha <b>Admitir</b>. A janela abre identificada pelo código e nome do candidato, já com os dados vindos do currículo e da entrevista.</li>
+  <li>Revise as seções de dados pessoais, endereço, contato, documentos, formação e EPI.</li>
+</ol>
+<figure><img src="img/admitir-1.jpg" alt="Admitir - dados pessoais"><figcaption>Janela de admissão — dados pessoais, endereço e contato</figcaption></figure>
+<ol start="5">
+  <li>Em <b>Exceção e responsável</b>, indique se há exceção e quem é o <b>Responsável pelo envio</b>.</li>
+  <li>Em <b>Lotação e contrato</b>, confira Área, Centro de Custo, Função e Salário.</li>
+  <li>Em <b>Documentos e tipo</b>, informe a situação do Documento e do Documento Portaria e o <b>Tipo de admissão</b>.</li>
+  <li>Em <b>Treinamento e status</b>, informe a situação do Treinamento, o <b>Número do Crachá</b>, o Padrão de treinamento, o <b>Status</b> <span class="req">*</span> e a <b>Data da Admissão</b> <span class="req">*</span>. A Data do ASO vem do controle de exames.</li>
+  <li>Complete PIS e CTPS, Férias, Dependentes, Dados bancários e a Foto escaneada.</li>
+  <li>Clique em <b class="btn">Salvar</b>.</li>
+</ol>
+<figure><img src="img/admitir-2.jpg" alt="Admitir - contrato e status"><figcaption>Janela de admissão — lotação, contrato, documentos e status</figcaption></figure>
+
+<h2>8.4 Admissão avulsa</h2>
+<span class="caminho">Admissão › Processo › + Admissão avulsa</span>
+<p>Use a admissão avulsa para admitir alguém que <b>não passou pelo fluxo de recrutamento</b> do sistema (sem currículo, entrevista ou resultado integrado). Em uma única janela você registra tudo o que, no fluxo normal, viria das etapas anteriores.</p>
+
+<h3>Passo 1 — Informar o CPF</h3>
+<ol>
+  <li>Em <b>Admissão › Processo</b>, clique em <b class="btn">+ Admissão avulsa</b>.</li>
+  <li>Digite o <b>CPF</b> <span class="req">*</span> e saia do campo (Tab ou clique fora).</li>
+</ol>
+<figure><img src="img/avulsa-0.jpg" alt="Admissão avulsa - CPF"><figcaption>A admissão avulsa começa apenas com o CPF</figcaption></figure>
+<p>O sistema procura o CPF na base e libera o restante do formulário:</p>
+<table>
+  <tr><th style="width:34%">Situação do CPF</th><th>O que acontece</th></tr>
+  <tr><td>Não encontrado</td><td>O formulário abre em branco para você preencher todos os dados.</td></tr>
+  <tr><td>Já cadastrado</td><td>O formulário abre com os dados que o sistema já tem dessa pessoa. Revise e complete.</td></tr>
+  <tr><td>Ex-funcionário</td><td>Aparece o aviso amarelo <b>Ex-Funcionário</b>. Se houver pendência, o botão <b class="btn">Verificar Pós Admissão</b> abre a pós-admissão dessa pessoa em outra aba para conferência antes de readmitir.</td></tr>
+</table>
+
+<h3>Passo 2 — Dados da pessoa</h3>
+<ul>
+  <li><b>Dados pessoais:</b> Nome <span class="req">*</span>, E-mail <span class="req">*</span>, Nascimento <span class="req">*</span>, Naturalidade, Cota PCD <span class="req">*</span> (ao marcar Sim, aparece o campo CID), Sexo, Estado civil, Pai e Mãe <span class="req">*</span>.</li>
+  <li><b>Endereço:</b> CEP (a lupa busca o endereço), Endereço, Número, Complemento, Bairro, Município e UF.</li>
+  <li><b>Contato</b> <span class="req">*</span>: Tipo, Número e indicação do contato Principal. Use <b class="btn">+ Adicionar</b> para mais de um telefone.</li>
+</ul>
+<figure><img src="img/avulsa-1.jpg" alt="Admissão avulsa - dados pessoais"><figcaption>Dados pessoais, endereço e contato</figcaption></figure>
+
+<h3>Passo 3 — Documentos, formação e vaga</h3>
+<ul>
+  <li><b>Documentos:</b> CNH, RG e data de emissão do RG.</li>
+  <li><b>Formação:</b> escolaridade (a partir de certo nível, aparece o campo Curso).</li>
+  <li><b>Sobre a vaga:</b> Vaga <span class="req">*</span> (digite e selecione), Data de admissão prevista, se é Ex-funcionário, se aceita Turno 6x2 e se foi Indicado <span class="req">*</span> — ao marcar Sim, informe quem indicou e para qual área.</li>
+  <li><b>EPI:</b> tamanhos de Calça, Bota, Camisa de proteção e Camisa de meia.</li>
+  <li><b>Rotas:</b> Bairro da rota e pontos de referência da rota e da residência.</li>
+</ul>
+<figure><img src="img/avulsa-2.jpg" alt="Admissão avulsa - vaga e EPI"><figcaption>Documentos, formação, vaga, EPI e rotas</figcaption></figure>
+
+<h3>Passo 4 — Encaminhamentos e contrato</h3>
+<ul>
+  <li><b>Documentos</b>, <b>Exame</b> e <b>Treinamento:</b> informe em cada um se a pessoa foi encaminhada. Documentos e Treinamento são obrigatórios <span class="req">*</span>.</li>
+  <li><b>Exceção e responsável:</b> Exceção <span class="req">*</span> (se Sim, informe quem autorizou), Responsável pelo envio <span class="req">*</span> e Observações.</li>
+  <li><b>Lotação e contrato:</b> Número do Contrato, Área, Centro de Custo, Função <span class="req">*</span> e Salário.</li>
+</ul>
+<figure><img src="img/avulsa-3.jpg" alt="Admissão avulsa - encaminhamentos"><figcaption>Encaminhamentos, exceção e início de lotação e contrato</figcaption></figure>
+
+<h3>Passo 5 — Documentos, treinamento e status</h3>
+<ul>
+  <li><b>Documentos e tipo:</b> situação do Documento e do Documento Portaria, e o Tipo de admissão.</li>
+  <li><b>Treinamento e status:</b> situação do Treinamento, Número do Crachá, Status da Carteira/Etiqueta, Padrão de treinamento, <b>Status</b> <span class="req">*</span>, Data do ASO, Data da Admissão, Data da entrega na área e Biometria.</li>
+  <li><b>PIS e CTPS:</b> PIS, número, série, UF e data de emissão da CTPS, certificado de reservista e título de eleitor (número, sessão e zona).</li>
+</ul>
+<figure><img src="img/avulsa-4.jpg" alt="Admissão avulsa - status"><figcaption>Documentos e tipo, treinamento e status, PIS e CTPS</figcaption></figure>
+
+<h3>Passo 6 — Férias, dependentes, banco e foto</h3>
+<ul>
+  <li><b>Férias:</b> <b class="btn">+ Adicionar período</b> registra períodos de férias já existentes.</li>
+  <li><b>Dependentes:</b> <b class="btn">+ Adicionar dependente</b> inclui cada dependente.</li>
+  <li><b>Dados bancários:</b> Banco <span class="req">*</span>, Agência <span class="req">*</span>, Conta <span class="req">*</span> e Tem PIX? <span class="req">*</span>.</li>
+  <li><b>Foto escaneada:</b> selecione ou arraste a imagem (JPG, PNG, WEBP ou GIF).</li>
+</ul>
+<p>Confira os campos obrigatórios e clique em <b class="btn">Salvar</b>. Ao concluir, o sistema exibe a mensagem <b>Admissão Concluída!</b>.</p>
+<figure><img src="img/avulsa-5.jpg" alt="Admissão avulsa - banco e foto"><figcaption>Férias, dependentes, dados bancários e foto</figcaption></figure>
+<div class="nota"><b>Atenção:</b> depois de digitado, o CPF fica bloqueado para edição. Se informou o CPF errado, feche a janela com <b class="btn">Fechar</b> e comece de novo.</div>
+
+<h2>8.5 Apontamento › CIH</h2>
+<span class="caminho">Admissão › Apontamento › CIH</span>
+<p>Registro de ocorrências do colaborador (por exemplo, ajuste de ponto). Cada lançamento tem Tipo, Data da ocorrência, quem fez o Lançamento, Lotação, Centro de custo, Gestor responsável, a descrição da Ação e o fluxo de aprovação, com status como <b>Pendente Gestor</b>.</p>
+<p>Filtros: período, nome ou código, Status, Tipo, Lotação, Centro de custo e Gestor. <b class="btn">Exportar PDF</b> e <b class="btn">Exportar Excel</b> geram os relatórios do que está filtrado. Os tipos são mantidos em <b>Apontamento › Tipos CIH</b>.</p>
+<figure><img src="img/cih.jpg" alt="CIH"><figcaption>Lançamentos de CIH</figcaption></figure>
+<h3>Lançar um CIH</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Cadastrar</b>.</li>
+  <li>Em <b>Ocorrência</b>, informe a Data da Ocorrência <span class="req">*</span>, o Tipo <span class="req">*</span>, a Lotação <span class="req">*</span> e o Centro de Custo <span class="req">*</span>.</li>
+  <li>Em <b>Envolvidos</b>, selecione o(s) Colaborador(es) <span class="req">*</span> — o campo é liberado após escolher lotação e centro de custo.</li>
+  <li>Em <b>Detalhes</b>, descreva a <b>Ação</b> <span class="req">*</span> tomada, anexe a evidência (PDF, imagem ou documento) e, se quiser, uma Observação.</li>
+  <li>Clique em <b class="btn">Lançar</b>.</li>
+</ol>
+<figure><img src="img/cih-form.jpg" alt="Cadastrando CIH"><figcaption>Cadastrando um CIH</figcaption></figure>
+
+<h2>8.6 Apontamento › Intermitente</h2>
+<span class="caminho">Admissão › Apontamento › Intermitente</span>
+<p>Controle das convocações de colaboradores intermitentes. A legenda indica convocações <b>Abertas</b> e <b>Encerradas</b>. Filtros: período, nome, Tipos, Áreas, Centros de Custo e Status. O botão <b class="btn">+ Cadastrar Tipo</b> mantém os tipos de convocação.</p>
+<h3>Convocar</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Convocar</b>.</li>
+  <li>Informe a <b>Data da Convocação</b>, o <b>Prazo de resposta do colaborador</b> e o <b>Tipo</b>.</li>
+  <li>Escolha a <b>Área</b> e o <b>Centro de Custo</b>.</li>
+  <li>Selecione o(s) <b>Colaborador(es)</b> e descreva a <b>Ação</b>.</li>
+  <li>Inclua anexo e observação, se houver, e clique em <b class="btn">Lançar</b>.</li>
+</ol>
+<figure><img src="img/intermitente-form.jpg" alt="Convocação de intermitente"><figcaption>Convocação de intermitente</figcaption></figure>
+
+<h2>8.7 Histórico</h2>
+<span class="caminho">Admissão › Histórico</span>
+<p>Ficha de cada colaborador: Cargo, Função, CPF, Empresa, Centro de custo, Lotação, Tipo de admissão, Data de admissão e última atualização, com o selo de situação. Filtros: Nome ou ID, CPF, Cargo, Matrícula, Função, Tipo admissão, Status, Lotação e Centro de custo.</p>
+<figure><img src="img/historico.jpg" alt="Histórico"><figcaption>Histórico dos colaboradores</figcaption></figure>
+<h3>Abrir o histórico de um colaborador</h3>
+<p>Em ⋮ › <b>Abrir histórico</b>, a janela mostra as informações do colaborador e uma aba para cada assunto:</p>
+<table>
+  <tr><th style="width:30%">Aba</th><th>Conteúdo</th></tr>
+  <tr><td>Dossiê</td><td>Documentos do colaborador: foto 3x4, documento de seleção, check list de admissão, ficha de registro, contrato de trabalho, termos assinados, ordem de serviço, certificados de treinamento e outros. Cada item aceita envio de arquivo e tem os botões Ver, Baixar e Apagar.</td></tr>
+  <tr><td>Feedback</td><td>Registros de feedback.</td></tr>
+  <tr><td>Medidas Administrativas</td><td>Advertências e suspensões.</td></tr>
+  <tr><td>Avaliação de Experiência / Avaliação Anual</td><td>Avaliações do colaborador.</td></tr>
+  <tr><td>Férias / Afastamento</td><td>Períodos de férias e afastamentos.</td></tr>
+  <tr><td>Benefício</td><td>Benefícios concedidos.</td></tr>
+  <tr><td>CIH</td><td>Lançamentos de CIH do colaborador.</td></tr>
+  <tr><td>Promoção / Metas</td><td>Histórico de promoções e metas.</td></tr>
+  <tr><td>Logs</td><td>Registro das alterações feitas no cadastro.</td></tr>
+</table>
+<figure><img src="img/historico-detalhe.jpg" alt="Histórico do colaborador"><figcaption>Histórico do colaborador — aba Dossiê</figcaption></figure>
+
+<h2>8.8 Pós-admissão</h2>
+<span class="caminho">Admissão › Pós-admissão</span>
+<p>Lista os colaboradores admitidos com CNPJ, Centro de custos, Cargo, Data da admissão, Data da demissão e documento de demissão. É por aqui que se conduz o desligamento. Filtros: nome, CPF, Cargo, Por demitidos, CNPJ, Centro de Custo e Entrevista de Desligamento. Selecione linhas e use <b class="btn">Exportar Excel</b> para exportar.</p>
+<figure><img src="img/pos-admissao.jpg" alt="Pós-admissão"><figcaption>Pós-admissão</figcaption></figure>
+<p>O menu de ações (⋮) de cada colaborador traz:</p>
+<ul>
+  <li><b>Demitir</b> — registra a demissão;</li>
+  <li><b>Desmobilizar</b> — registra a desmobilização;</li>
+  <li><b>Entrevistar</b> — registra a entrevista de desligamento;</li>
+  <li><b>Remover Demissão</b> — desfaz uma demissão lançada.</li>
+</ul>
+<h3>Registrar uma demissão</h3>
+<ol>
+  <li>Abra ⋮ › <b>Demitir</b>. A janela mostra as informações do colaborador.</li>
+  <li>Antes de fazer o aviso, confirme e marque <b>Checar Estabilidade</b>: CIPA, acidente de trabalho, sindicato, gestante e aposentadoria (itens da CLT ou CCT).</li>
+  <li>Informe a <b>Data de desmobilização</b>, o <b>Motivo da rescisão contratual</b> e o <b>Tipo de Aviso</b>.</li>
+  <li>Em <b>Observação</b>, registre quem solicitou e o comentário.</li>
+</ol>
+<figure><img src="img/demitir-form.jpg" alt="Demissão"><figcaption>Janela de demissão</figcaption></figure>
+
+<!-- ============================================================ -->
+<h1 id="c9">9. Minhas Avaliações</h1>
+<span class="caminho">Minhas Avaliações</span>
+<p>Mostra as avaliações de desempenho e de experiência em que você participa como avaliador ou avaliado. Escolha o <b>Ano</b> e a <b>Avaliação</b> (ciclo) e, se quiser, filtre por etapa do fluxo, Avaliador, Colaborador e papel (“Como”).</p>
+<p>O bloco <b>Fluxo da avaliação</b> mostra as etapas do ciclo, por exemplo:</p>
+<div class="fluxo"><span>1 · Auto Avaliação</span><i>→</i><span>2 · Gestão (Avaliador Final)</span></div>
+<p>Abaixo, cada colaborador aparece com a situação atual (como <b>Pendente avaliação gestor</b>), o percentual concluído, o <b>Progresso</b> das etapas e o <b>Próximo no fluxo</b>. Use <b class="btn">Visualizar</b> para abrir a avaliação.</p>
+<figure><img src="img/minhas-avaliacoes.jpg" alt="Minhas avaliações"><figcaption>Minhas Avaliações — fluxo e progresso</figcaption></figure>
+
+<!-- ============================================================ -->
+<h1 id="c10">10. Ocorrências</h1>
+<span class="caminho">Ocorrências</span>
+<p>Registro de solicitações e ocorrências internas, organizadas por <b>Setor</b>, <b>Tag</b>, <b>Tipo</b> e <b>Status</b>. A lista mostra número, Assunto, Status, última atualização, data de criação e usuário. A legenda de cores diferencia Anotação, Nova ocorrência, Ocorrência em andamento e Ocorrência finalizada. <b class="btn">Exibir</b> abre a ocorrência para leitura e acompanhamento.</p>
+<figure><img src="img/ocorrencias.jpg" alt="Ocorrências"><figcaption>Ocorrências</figcaption></figure>
+<h3>Abrir uma ocorrência</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Nova Ocorrência</b>.</li>
+  <li>Em <b>Para</b>, digite e selecione o usuário destinatário.</li>
+  <li>Informe o <b>Assunto</b> e escolha <b>Setor</b>, <b>Tipo</b> e <b>Tag</b>.</li>
+  <li>Escreva a mensagem e inclua anexos, se houver.</li>
+  <li>Clique em <b class="btn">Cadastrar</b>.</li>
+</ol>
+<p>Os botões <b class="btn">+ Cadastrar Tag</b> e <b class="btn">+ Cadastrar Setor</b> mantêm as classificações.</p>
+<figure><img src="img/ocorrencia-form.jpg" alt="Nova ocorrência"><figcaption>Nova ocorrência</figcaption></figure>
+
+<!-- ============================================================ -->
+<h1 id="c11">11. Treinamento</h1>
+
+<h2>11.1 Portaria</h2>
+<span class="caminho">Treinamento › Portaria</span>
+<p>Lista para liberação de acesso, com Nome, CPF, RG/Emitente, Filiação, Cargo, Função e se há Foto 3x4. Marque as pessoas e use <b class="btn">Imprimir</b> ou <b class="btn">Exportar Excel</b>. O ícone de lápis edita os dados da pessoa. Filtros: nome ou CPF, Vaga, Estado e PCD.</p>
+<figure><img src="img/portaria.jpg" alt="Portaria"><figcaption>Portaria</figcaption></figure>
+
+<h2>11.2 Carteira / Etiquetas</h2>
+<span class="caminho">Treinamento › Carteira/Etiquetas</span>
+<p>Controle dos treinamentos de cada colaborador e emissão da carteira. Cada colaborador aparece com Empresa, Centro de custo e Padrão de treinamento, seguido da tabela de treinamentos: Data do treinamento, Data de vencimento, Anexo FAT, Status e se é exibido na carteira.</p>
+<table>
+  <tr><th style="width:22%">Situação</th><th>Significado</th></tr>
+  <tr><td>Em dia</td><td>Treinamento válido.</td></tr>
+  <tr><td>Vencendo</td><td>Vencimento próximo — programe a reciclagem.</td></tr>
+  <tr><td>Vencido</td><td>Validade expirada.</td></tr>
+</table>
+<figure><img src="img/carteira.jpg" alt="Carteira e etiquetas"><figcaption>Carteira/Etiquetas — treinamentos por colaborador</figcaption></figure>
+<h3>Filtros</h3>
+<p>Período de vencimento, Período treinado, Treinados, Colaborador/CPF, CNPJ, Centro de custo, Vaga, Cargo, Situação e Treinamentos específicos. Em <b class="btn">Mais filtros</b>: Padrão, Foto 3x4, Crachá, PCD e UF. O botão <b class="btn">Filtrar treinamentos</b> restringe quais treinamentos aparecem na tabela.</p>
+<h3>Ações por colaborador (menu ⋮)</h3>
+<ul>
+  <li><b>Treinamento</b> — lança um treinamento;</li>
+  <li><b>Bloqueio</b> — registra um bloqueio;</li>
+  <li><b>Treinamento/Bloqueio</b> — os dois em uma única operação;</li>
+  <li><b>Atualizar treinamento</b> — corrige datas de um treinamento existente.</li>
+</ul>
+<h3>Gerar carteiras</h3>
+<ol>
+  <li>Filtre os colaboradores desejados.</li>
+  <li>Marque-os individualmente ou use <b>Selecionar todos</b>.</li>
+  <li>Clique em <b class="btn">Gerar carteira</b>.</li>
+</ol>
+<p><b class="btn">Exportar Excel</b> gera a planilha da carteira de treinamentos, entregue na área de downloads.</p>
+
+<h2>11.3 Importação de treinamentos</h2>
+<span class="caminho">Treinamento › Importação</span>
+<p>Lança treinamentos em lote a partir de uma planilha, com o mesmo comportamento da carteira: cria o treinamento se não existir e atualiza o vencimento se já existir.</p>
+<ol>
+  <li>Clique em <b class="btn">Baixar modelo Excel</b>. O modelo já vem com os colaboradores e treinamentos e tem uma aba de instruções.</li>
+  <li>Preencha a aba <b>Dados</b> sem alterar os cabeçalhos. Em <b>colaborador</b> e <b>treinamento</b>, use as listas suspensas da planilha.</li>
+  <li>Em <b>data_treinamento</b>, use o formato <b>dd/mm/aaaa</b> (ex.: 15/03/2026).</li>
+  <li><b>data_vencimento</b> é opcional: vazio, o sistema aplica o prazo do treinamento; preenchido, vale a data informada.</li>
+  <li>Em <b>Enviar planilha</b>, escolha o arquivo .xlsx e clique em <b class="btn">Enviar para importação</b>.</li>
+  <li>Acompanhe o resultado na aba <b>Importados</b>. O sistema também avisa pelo sino quantas linhas foram processadas, quantas tiveram sucesso e quantas tiveram erro.</li>
+</ol>
+<div class="nota"><b>Atenção às datas:</b> não use formatos como 15-03-2026 ou 3/15/2026, nem ano com dois dígitos.</div>
+<figure><img src="img/importacao.jpg" alt="Importação de treinamentos"><figcaption>Importação de treinamentos, com o passo a passo na própria tela</figcaption></figure>
+
+<h2>11.4 Emissão de Certificados (NR33/NR35)</h2>
+<span class="caminho">Treinamento › Emissão Certificados (NR33/NR35)</span>
+<p>Emite os certificados de NR33 e NR35. Filtre por período, nome, CPF, Vaga, Cliente, Área, Cargo, Estado, se há instrutor de NR33/NR35, situação de NR33/NR35 e Admitidos. Marque os colaboradores e clique em <b class="btn">Certificados</b>.</p>
+<figure><img src="img/certificado-nr.jpg" alt="Certificados NR"><figcaption>Emissão de certificados NR33/NR35</figcaption></figure>
+
+<!-- ============================================================ -->
+<h1 id="c12">12. Cloud</h1>
+<span class="caminho">Cloud › Cadastro</span>
+<p>Área de armazenamento de arquivos do sistema. Em <b>Cadastro</b>, use <b class="btn">+ Novo Cloud</b> para criar um espaço e a busca para localizar um existente. Os parâmetros gerais ficam em <b>Cloud › Configurações</b>.</p>
+
+<!-- ============================================================ -->
+<h1 id="c13">13. Relatórios</h1>
+<p>Os relatórios seguem um mesmo formato: filtros no topo, <b>indicadores</b> clicáveis, e duas visões — <b>Lista</b> (detalhe por colaborador) e <b>Gráficos</b>. Todos têm <b class="btn">Exportar Excel</b>.</p>
+
+<h2>13.1 Vencimento de ASOs</h2>
+<span class="caminho">Relatórios › Vencimento de Asos</span>
+<p>Controle da validade dos exames ocupacionais. Indicadores: <b>Total</b>, <b>Vencidos</b>, <b>A vencer (60 dias)</b> e <b>Em dia</b>. A lista mostra Colaborador, Lotação, Centro de custo, Tipo de exame, Data do ASO, Vencimento e Situação, com as linhas coloridas conforme a situação.</p>
+<p>Filtros: Período de vencimento, Colaborador, CNPJ, Centro de custo, Tipo de exame e Vencido.</p>
+<figure><img src="img/rel-asos.jpg" alt="Vencimento de ASOs"><figcaption>Relatório de vencimento de ASOs</figcaption></figure>
+
+<h2>13.2 Vencimento de Treinamentos</h2>
+<span class="caminho">Relatórios › Treinamentos</span>
+<p>Mesma lógica, para treinamentos: <b>Total</b>, <b>Vencidos</b>, <b>A vencer (≤ 30 dias)</b> e <b>Em dia</b>. A lista traz Colaborador, Centro de custo, Segmento, Treinamento, Data do treino, Vencimento e Situação. Filtros: Período de vencimento, Colaborador, CNPJ, Centro de custo, Segmento e Treinamento.</p>
+<figure><img src="img/rel-treinamentos.jpg" alt="Vencimento de treinamentos"><figcaption>Relatório de vencimento de treinamentos</figcaption></figure>
+
+<h2>13.3 Efetivo</h2>
+<span class="caminho">Relatórios › Efetivo</span>
+<p>Quadro de colaboradores ativos, agrupado por centro de custo, com Código, Nome, Cargo, Salário, Tipo de admissão e Data de admissão. O topo mostra o total de funcionários. Filtros: Colaborador, CNPJ, Centro de custo, Tipo de admissão, Cargo e Período de admissão.</p>
+<figure><img src="img/rel-efetivo.jpg" alt="Efetivo"><figcaption>Relatório de efetivo por centro de custo</figcaption></figure>
+
+<h2>13.4 Avaliação de Experiência</h2>
+<span class="caminho">Relatórios › Avaliação de Experiência</span>
+<p>Acompanha as avaliações do período de experiência. Indicadores: Total de avaliações, <b>Vencidas</b>, <b>Vence hoje</b>, <b>A vencer</b>, Sem avaliação, Com uma avaliação e Completas. O botão <b class="btn">Ocultar Resumo</b> esconde os indicadores.</p>
+<p>Filtros: Status, Colaborador, Centro de custo, Gestor, Avaliações e Cargo; em <b class="btn">Mais filtros</b>, Função e Definição. O botão <b class="btn">Gerar todos os links (página atual)</b> cria os links de avaliação dos colaboradores exibidos na página.</p>
+<figure><img src="img/rel-experiencia.jpg" alt="Avaliação de experiência"><figcaption>Relatório de avaliação de experiência</figcaption></figure>
+
+<h2>13.5 Demais relatórios</h2>
+<table>
+  <tr><th style="width:30%">Relatório</th><th>Conteúdo e filtros principais</th></tr>
+  <tr><td>Férias</td><td>Férias por colaborador, com Centro de custo, Quantidade de dias, período de Férias, Período aquisitivo, Data limite e Status. Filtros: tipo de data, período, Colaborador/CPF, Status, CNPJ e Centros de custo.</td></tr>
+  <tr><td>Vencimento Férias</td><td>Acompanhamento dos prazos de vencimento de férias.</td></tr>
+  <tr><td>Medidas Administrativas</td><td>Medidas aplicadas (advertências, suspensões), com data, retorno, colaborador, causa e descrição. Filtros: período, Colaborador, CNPJ, Status, Tipo, Causa e Centros de custo.</td></tr>
+  <tr><td>Centro de Custo</td><td>Visão por centro de custo.</td></tr>
+  <tr><td>Aniversariantes</td><td>Aniversariantes do período.</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h1 id="c14">14. Usuários e grupos</h1>
+
+<h2>14.1 Usuários do Sistema</h2>
+<span class="caminho">Usuários › Usuários do Sistema</span>
+<p>Lista todos os usuários com Nome, Grupo, Tipo (Gestor, Funcionário, Fornecedor…), E-mail de login e Status. Filtre por nome, e-mail, Grupo, Tipo e Status. O ícone verde de edição altera os dados e o grupo do usuário.</p>
+<figure><img src="img/usuarios.jpg" alt="Usuários"><figcaption>Usuários do sistema</figcaption></figure>
+<h3>Criar um usuário</h3>
+<ol>
+  <li>Clique em <b class="btn">Criar novo usuário</b>.</li>
+  <li>Informe o <b>Nome do usuário</b> e o <b>E-mail</b>, que será o login.</li>
+  <li>Escolha o <b>Grupo</b> (define as permissões) e o <b>Tipo de Usuário</b>.</li>
+  <li>Defina se está <b>Ativo</b> e se é <b>Gestor</b>.</li>
+  <li>Em <b>Contatos</b>, use <b class="btn">+ Adicionar</b> para incluir o telefone.</li>
+  <li>Em <b>Notificações WhatsApp</b>, ligue os assuntos que esse usuário deve receber: Recrutamento, Exames, Admissão, Intermitente, Carta Oferta, Transporte e Movimentação.</li>
+  <li>Clique em <b class="btn">Cadastrar</b>.</li>
+</ol>
+<figure><img src="img/usuario-form.jpg" alt="Cadastrando usuário"><figcaption>Cadastrando um usuário</figcaption></figure>
+
+<h2>14.2 Grupos de Usuários</h2>
+<span class="caminho">Configurações › Grupos de Usuários</span>
+<p>Os grupos definem o que cada usuário pode ver e fazer. A lista mostra Nome, Descrição, quantidade de usuários no grupo e Situação.</p>
+<figure><img src="img/grupos.jpg" alt="Grupos de usuários"><figcaption>Grupos de usuários</figcaption></figure>
+<h3>Criar ou editar um grupo</h3>
+<ol>
+  <li>Clique em <b class="btn">Novo grupo</b> (ou em <b class="btn">Editar</b> na linha do grupo).</li>
+  <li><b>Passo 1 — aba Dados do grupo:</b> informe o Nome do grupo <span class="req">*</span> e a Descrição <span class="req">*</span>, e mantenha <b>Grupo ativo</b> ligado. Desligar bloqueia o uso do perfil sem apagar o cadastro.</li>
+  <li><b>Passo 2 — aba Permissões:</b> marque as permissões (habilidades) que o grupo terá.</li>
+  <li>Clique em <b class="btn">Criar grupo</b>.</li>
+</ol>
+<div class="nota"><b>Importante:</b> os itens do menu e as ações de cada tela dependem do grupo do usuário. Se uma opção descrita neste manual não aparecer para alguém, é uma questão de permissão do grupo.</div>
+<figure><img src="img/grupo-form.jpg" alt="Novo grupo"><figcaption>Novo grupo de usuários</figcaption></figure>
+
+<!-- ============================================================ -->
+<h1 id="c15">15. O ciclo completo do colaborador</h1>
+<p>Este roteiro liga os módulos na ordem em que normalmente são usados, da necessidade de contratação ao desligamento.</p>
+<table>
+  <tr><th style="width:5%">#</th><th style="width:25%">Etapa</th><th style="width:32%">Onde</th><th>O que acontece</th></tr>
+  <tr><td>1</td><td>Preparar cadastros</td><td>Cadastro › Áreas, Centro de Custos, Cargos, Benefícios, Lista de Treinamentos</td><td>Garante que cargo, área, centro de custo e gestores existem.</td></tr>
+  <tr><td>2</td><td>Requisitar a vaga</td><td>Planejamento › Requisição de Vaga</td><td>Solicitação aprovada pelo gestor e, por último, pelo RH.</td></tr>
+  <tr><td>3</td><td>Publicar a vaga</td><td>Cadastro › Vagas Abertas</td><td>Vaga ativa no site, com link público para candidatura.</td></tr>
+  <tr><td>4</td><td>Triar currículos</td><td>Currículos › Recrutamento</td><td>Análise e seleção dos candidatos (ação Recrutar).</td></tr>
+  <tr><td>5</td><td>Acompanhar selecionados</td><td>Currículos › Selecionados</td><td>Status, prova e etapa de cada candidato.</td></tr>
+  <tr><td>6</td><td>Entrevistar e emitir pareceres</td><td>Entrevistas › Parecer RH e demais pareceres</td><td>Notas e pareceres de RH, rota, entrevista técnica e teste prático.</td></tr>
+  <tr><td>7</td><td>Consolidar e encaminhar</td><td>Entrevistas › Resultado Integrado</td><td>Encaminhamento para documentos, exame e treinamento.</td></tr>
+  <tr><td>8</td><td>Conferir documentos</td><td>Admissão › Documentos › Pré-admissão</td><td>Conferência dos anexos enviados pelo candidato.</td></tr>
+  <tr><td>9</td><td>Exames</td><td>Admissão › Controle de Exames</td><td>Encaminhamento à clínica e registro do ASO.</td></tr>
+  <tr><td>10</td><td>Treinamentos</td><td>Treinamento › Carteira/Etiquetas ou Importação</td><td>Lançamento dos treinamentos e emissão da carteira.</td></tr>
+  <tr><td>11</td><td>Admitir</td><td>Admissão › Processo</td><td>Ação Admitir — ou Admissão avulsa para quem não veio do recrutamento.</td></tr>
+  <tr><td>12</td><td>Acompanhar</td><td>Admissão › Histórico; Relatórios; Minhas Avaliações</td><td>Dossiê, vencimentos de ASO e treinamento, avaliação de experiência, CIH.</td></tr>
+  <tr><td>13</td><td>Movimentar</td><td>Planejamento › Movimentação</td><td>Férias, mudança de cargo, transferência, valor extra.</td></tr>
+  <tr><td>14</td><td>Desligar</td><td>Planejamento › Movimentação (Demissão) e Admissão › Pós-admissão</td><td>Solicitação aprovada, demissão registrada e entrevista de desligamento.</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h1 id="c16">16. Observações sobre este manual</h1>
+<ul>
+  <li><b>Dados fictícios:</b> todas as telas foram capturadas com dados de exemplo. Logotipo, nome da empresa, clientes, lotações, centros de custo, fornecedores, clínicas, endereços, pessoas, CPF, RG, filiação, e-mails, telefones, fotos, salários e os textos de missão, visão e valores não correspondem a dados reais.</li>
+  <li><b>Permissões:</b> o manual descreve o que está disponível para um usuário com perfil de RH. Menus e botões variam conforme o grupo de cada usuário.</li>
+  <li><b>Chamados:</b> o módulo de Chamados não carregou no ambiente em que as telas foram capturadas e, por isso, não está descrito.</li>
+  <li><b>Telas descritas sem imagem:</b> Departamentos, Certificados, Empresa Treinamento, Provas, Mobilização, Cloud e os relatórios de Férias, Vencimento Férias, Medidas Administrativas, Centro de Custo e Aniversariantes.</li>
+  <li><b>Telas apenas citadas:</b> Parecer Rota, Parecer Entrevista Técnica, Parecer Teste Prático, Entrevista RH, Entrevista Gestor, Tipos CIH e Cloud › Configurações.</li>
+</ul>
+
+</body>
+</html>

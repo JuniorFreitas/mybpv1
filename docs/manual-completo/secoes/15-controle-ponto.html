@@ -1,0 +1,135 @@
+<h1 id="controle-ponto">15. Controle de Ponto</h1>
+<p class="intro">O menu <b>Controle de Ponto</b> cobre todo o ciclo da jornada: as regras da empresa, os locais onde o ponto pode ser batido, as escalas, o registro diário pelo colaborador, a conferência pelo gestor e a emissão das folhas de ponto.</p>
+<div class="fluxo"><span>Configurar regras e perímetros</span><i>→</i><span>Cadastrar escalas</span><i>→</i><span>Associar aos colaboradores</span><i>→</i><span>Registrar ponto</span><i>→</i><span>Ajustar jornadas</span><i>→</i><span>Folha de ponto</span></div>
+
+<h2>15.1 Configurações</h2>
+<span class="caminho">Controle de Ponto › Configurações</span>
+<p>Define as regras gerais do ponto da empresa. A tela tem duas abas: <b>Controle de ponto</b> e <b>Perímetros</b>.</p>
+<figure><img src="img/ponto-config.jpg" alt="Configurações do ponto"><figcaption>Configurações — aba Controle de ponto</figcaption></figure>
+<table class="filtros">
+  <tr><th>Campo</th><th>O que define</th></tr>
+  <tr><td>Regime de compensação de horários</td><td><i>Horas extras</i>, <i>Banco de horas</i> ou <i>Híbrido</i>.</td></tr>
+  <tr><td>Tempo de tolerância para entrada e saída</td><td>Minutos de tolerância antes de considerar hora extra ou banco de horas.</td></tr>
+  <tr><td>Tempo limite para falta</td><td>Tempo máximo, em minutos, até o atraso ser considerado falta.</td></tr>
+  <tr><td>Tempo limite para saída</td><td>Minutos após o fim da jornada a partir dos quais o registro deve ser verificado pelo gestor.</td></tr>
+  <tr><td>Início de nova frequência</td><td>Dia do mês em que começa uma nova ficha de frequência.</td></tr>
+</table>
+<p>Grave com <b class="btn">Salvar</b>.</p>
+
+<h3>Perímetros</h3>
+<p>Perímetros são os locais onde o colaborador pode registrar o ponto. A aba lista os <b>perímetros cadastrados</b>, com busca por descrição e os botões <b class="btn">Editar</b> e <b class="btn">Excluir</b>.</p>
+<figure><img src="img/ponto-perimetros.jpg" alt="Perímetros"><figcaption>Aba Perímetros</figcaption></figure>
+<ol>
+  <li>Clique em <b class="btn">Adicionar perímetro</b>.</li>
+  <li>Informe a <b>Descrição</b> (nome do local).</li>
+  <li>Em <b>Registrar ponto em um local específico</b>, escolha <i>Sim</i> para exigir que o ponto seja batido dentro do perímetro, ou <i>Não</i> para casos de home office.</li>
+  <li>Use <b>Buscar por endereço</b> para posicionar o mapa. Arraste o círculo para ajustar o ponto exato; <b>Latitude</b>, <b>Longitude</b> e <b>Raio</b> (em metros) são preenchidos pelo mapa.</li>
+  <li>Em <b>Ajuste do perímetro</b>, aumente ou reduza o raio, e clique em <b class="btn">Cadastrar</b>.</li>
+</ol>
+<figure><img src="img/ponto-perimetro-form.jpg" alt="Adicionar perímetro"><figcaption>Adicionar perímetro (o mapa aparece logo abaixo)</figcaption></figure>
+<p>Na mesma aba, o bloco <b>Associar perímetro aos colaboradores</b> lista os colaboradores e o perímetro de cada um: marque os colaboradores, clique em <b class="btn">Associar perímetro</b> e escolha o local.</p>
+
+<h2>15.2 Ocorrências de jornada</h2>
+<span class="caminho">Controle de Ponto › Ocorrências</span>
+<p>Cadastro dos tipos de ocorrência usados para classificar cada dia da jornada (férias, atestado, folga, falta…). A lista mostra a <b>Descrição</b>, se é <b>Dia trabalhado</b> e se <b>Conta horas</b>.</p>
+<figure><img src="img/ponto-ocorrencias.jpg" alt="Ocorrências de jornada"><figcaption>Ocorrências de jornada</figcaption></figure>
+<p>Em <b class="btn">Cadastrar</b> (ou <b class="btn">Alterar</b>), informe:</p>
+<ul>
+  <li><b>Descrição</b> — nome da ocorrência;</li>
+  <li><b>Dia trabalhado</b> — se o dia conta como trabalhado;</li>
+  <li><b>Conta horas</b> — se entra no saldo de horas;</li>
+  <li><b>Ativo</b> — se está disponível para uso.</li>
+</ul>
+<figure class="media"><img src="img/ponto-ocorrencia-form.jpg" alt="Cadastro de ocorrência"><figcaption>Cadastrando ocorrência de jornada</figcaption></figure>
+
+<h2>15.3 Feriados</h2>
+<span class="caminho">Controle de Ponto › Feriados</span>
+<p>Feriados considerados no cálculo da jornada. Busque pelo nome ou clique em <b class="btn">Cadastrar</b> e informe <b>Descrição</b>, <b>Data</b> e <b>Ativo</b>.</p>
+<figure><img src="img/ponto-feriados.jpg" alt="Feriados"><figcaption>Feriados</figcaption></figure>
+<figure class="media"><img src="img/ponto-feriado-form.jpg" alt="Cadastro de feriado"><figcaption>Cadastrando feriado</figcaption></figure>
+
+<h2>15.4 Escalas</h2>
+<span class="caminho">Controle de Ponto › Escalas</span>
+<p>A escala define os horários previstos de trabalho. A tela tem duas partes: as escalas cadastradas e a associação das escalas aos colaboradores.</p>
+<figure><img src="img/ponto-escalas.jpg" alt="Escalas"><figcaption>Escalas cadastradas</figcaption></figure>
+<h3>Criar uma escala</h3>
+<ol>
+  <li>Clique em <b class="btn">Adicionar escala</b>.</li>
+  <li>Informe a <b>Descrição</b> e a <b>Data inicial</b> (a partir de quando a sequência de jornadas começa a contar).</li>
+  <li>Em cada <b>Jornada</b>, defina <b>Repetir por (dias)</b> e a <b>Ocorrência</b>: <i>Dia trabalhado</i>, <i>Folga</i> ou <i>Jornada externa</i>.</li>
+  <li>Preencha os <b>períodos trabalhados</b>: hora de entrada e de saída. O sistema calcula o descanso entre períodos e as horas trabalhadas. <b class="btn">Adicionar período</b> inclui mais um período no mesmo dia.</li>
+  <li>Use <b class="btn">Adicionar jornada</b> para montar sequências (por exemplo, 5 dias de trabalho e 2 de folga, ou 12x36).</li>
+  <li>Clique em <b class="btn">Cadastrar</b>.</li>
+</ol>
+<figure><img src="img/ponto-escala-form.jpg" alt="Adicionar escala"><figcaption>Adicionar escala — jornadas e períodos</figcaption></figure>
+<div class="nota"><b>Escala circular:</b> as jornadas se repetem em sequência a partir da data inicial. Com um único tipo de jornada, ela se repete todos os dias.</div>
+<h3>Associar escala aos colaboradores</h3>
+<ol>
+  <li>Role até <b>Associar escala aos colaboradores</b> e, se quiser, busque pelo nome.</li>
+  <li>Marque os colaboradores na lista. A coluna <b>Escala</b> mostra a escala atual de cada um.</li>
+  <li>Clique em <b class="btn">Associar escala</b> e escolha a escala.</li>
+</ol>
+<figure><img src="img/ponto-escalas-associar.jpg" alt="Associar escala"><figcaption>Associação de escala aos colaboradores</figcaption></figure>
+
+<h2>15.5 Ponto Eletrônico</h2>
+<span class="caminho">Controle de Ponto › Ponto Eletrônico</span>
+<p>É a tela em que o próprio colaborador bate o ponto. A aba <b>Marcações do dia</b> mostra a data e a hora atuais e os registros já feitos; <b>Histórico</b> traz os dias anteriores.</p>
+<figure><img src="img/ponto-eletronico.jpg" alt="Ponto eletrônico"><figcaption>Ponto Eletrônico — marcações do dia</figcaption></figure>
+<p>Para registrar, clique em <b class="btn">Registrar ponto</b>. Se o colaborador estiver vinculado a um perímetro com local obrigatório, o registro só é aceito dentro da área definida.</p>
+
+<h2>15.6 Ajustar Jornadas</h2>
+<span class="caminho">Controle de Ponto › Ajustar Jornadas</span>
+<p>Tela de conferência do gestor ou do RH. As jornadas ficam separadas em três abas: <b>Jornadas pendentes</b>, <b>Jornadas incompletas</b> e <b>Jornadas verificadas</b>.</p>
+<figure><img src="img/ponto-ajustar.jpg" alt="Ajuste de jornadas"><figcaption>Ajuste de jornadas — pendentes</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Intervalo</td><td>Período das jornadas (por padrão, o mês atual).</td></tr>
+  <tr><td>Colaborador</td><td>Jornadas de um funcionário.</td></tr>
+</table>
+<p><b>Colunas:</b> Dia, Funcionário, Ocorrência, Entrada, Saída, Trabalhado (com o saldo do dia) e Verificado. <b class="btn">Limpar</b> remove os filtros.</p>
+<h3>Verificar ou corrigir uma jornada</h3>
+<ol>
+  <li>Clique em <b class="btn">Verificar</b> na linha da jornada. A janela <b>Detalhes da jornada</b> mostra o colaborador e a data; a seta ao lado da data passa para a próxima.</li>
+  <li>Em <b>Ocorrência</b>, classifique o dia: Dia trabalhado, Abono, Afastado, Atestado, Falta, Falta BH, Feriado, Folga, Férias, Jornada externa, Suspensão ou Suspensão de contrato.</li>
+  <li>Compare a <b>Jornada prevista</b> com a <b>Jornada realizada</b>. Corrija as horas de entrada e saída ou use <b class="btn">Adicionar período ao início</b> / <b class="btn">Adicionar período ao fim</b>.</li>
+</ol>
+<figure><img src="img/ponto-ajustar-detalhe-1.jpg" alt="Detalhes da jornada"><figcaption>Detalhes da jornada</figcaption></figure>
+<ol start="4">
+  <li>Escreva a <b>Justificativa</b> do ajuste.</li>
+  <li>Clique em <b class="btn">Ajustar</b>. Com <b>Ajustar e buscar o próximo</b> marcado, a próxima jornada pendente abre em seguida.</li>
+</ol>
+<figure><img src="img/ponto-ajustar-detalhe-2.jpg" alt="Justificativa e ajuste"><figcaption>Justificativa e botão Ajustar</figcaption></figure>
+
+<h2>15.7 Folha de Ponto</h2>
+<span class="caminho">Controle de Ponto › Folha de Ponto</span>
+<p>Consulta e impressão da frequência de cada colaborador.</p>
+<figure><img src="img/ponto-folha.jpg" alt="Folha de ponto"><figcaption>Folha de Ponto — lista de colaboradores</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Buscar</td><td>Localiza pelo nome do colaborador.</td></tr>
+  <tr><td>Por Escala</td><td>Colaboradores de uma escala.</td></tr>
+  <tr><td>Status</td><td><i>Admitidos</i> ou <i>Demitidos</i>.</td></tr>
+</table>
+<p><b class="btn">Detalhes</b> abre a folha do colaborador, com os dados pessoais, o filtro de <b>Intervalo</b> e a tabela <b>Frequência</b>: Data, Escala, Períodos trabalhados, e as horas Prevista, Normal, Noturna, Extra e Negativa de cada dia.</p>
+<figure><img src="img/ponto-folha-detalhe-1.jpg" alt="Folha de ponto do colaborador"><figcaption>Folha de ponto do colaborador</figcaption></figure>
+<p>No fim da folha ficam os totais do período: <b>Faltas</b>, <b>Horas normais</b>, <b>Horas noturnas</b>, <b>Horas extra</b>, <b>Horas negativas</b> e <b>Saldo</b>. <b class="btn">Imprimir</b> gera a folha do intervalo escolhido.</p>
+<figure><img src="img/ponto-folha-detalhe-2.jpg" alt="Totais da folha"><figcaption>Totais do período</figcaption></figure>
+
+<h2>15.8 Folha de Ponto Manual</h2>
+<span class="caminho">Controle de Ponto › Folha de Ponto Manual</span>
+<p>Gera folhas de ponto em branco, para preenchimento à mão, dos colaboradores selecionados.</p>
+<figure><img src="img/ponto-folha-manual.jpg" alt="Folha de ponto manual"><figcaption>Folha de Ponto Manual</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Pesquisar</td><td>Localiza pelo nome do colaborador.</td></tr>
+  <tr><td>Por Centro de Custo</td><td>Colaboradores de um centro de custo.</td></tr>
+  <tr><td>Por Cargo</td><td>Colaboradores de um cargo.</td></tr>
+  <tr><td>Status</td><td><i>Admitidos</i> ou <i>Demitidos</i>.</td></tr>
+  <tr><td>Exibir</td><td>20, 50, 100 ou 150 por página.</td></tr>
+</table>
+<p>Marque os colaboradores (ou a caixa do cabeçalho para todos) e clique em <b class="btn">Gerar folha</b>; o contador mostra quantos estão selecionados. <b class="btn">Limpar seleção</b> desmarca todos.</p>
+
+<h2>15.9 Relatório Sintético</h2>
+<span class="caminho">Controle de Ponto › Relatório Sintético</span>
+<p>Resumo mensal do ponto por empresa. Escolha o <b>CNPJ</b>, o <b>Mês</b> e o <b>Ano</b> e clique em <b class="btn">Gerar relatório</b>.</p>
+<figure><img src="img/ponto-sintetico.jpg" alt="Relatório sintético"><figcaption>Relatório Sintético</figcaption></figure>

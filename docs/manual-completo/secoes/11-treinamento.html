@@ -1,0 +1,129 @@
+<h1 id="treinamento">11. Treinamento</h1>
+<p class="intro">O menu <b>Treinamento</b> controla os treinamentos de cada colaborador, os vencimentos, a emissão de carteiras e etiquetas, a importação em lote e os certificados de NR33 e NR35. A lista de treinamentos, os padrões por cliente e os instrutores são configurados em <b>Cadastro</b> (capítulo 4).</p>
+
+<h2>11.1 Portaria</h2>
+<span class="caminho">Treinamento › Portaria</span>
+<p>Lista de pessoas com os dados exigidos para liberação de acesso em portaria: documento, filiação, cargo, função e foto 3x4. É daqui que se imprime a relação para a portaria.</p>
+<figure><img src="img/trn-portaria.jpg" alt="Portaria"><figcaption>Portaria — filtros e listagem</figcaption></figure>
+<h3>Filtros</h3>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Buscar</td><td>Localiza por nome ou CPF.</td></tr>
+  <tr><td>Por Vaga</td><td>Pessoas vinculadas a uma vaga.</td></tr>
+  <tr><td>Estado</td><td>Filtra pela UF.</td></tr>
+  <tr><td>PCD</td><td><i>Geral</i>, <i>Sim</i> ou <i>Não</i>.</td></tr>
+  <tr><td>Exibir</td><td>20, 50, 100 ou 500 registros por página.</td></tr>
+</table>
+<h3>Imprimir e exportar</h3>
+<ol>
+  <li>Marque a caixa no início da linha de cada pessoa. O contador do botão <b class="btn">Imprimir</b> mostra quantas estão selecionadas.</li>
+  <li>Clique em <b class="btn">Imprimir</b> para gerar a relação dos selecionados. <b class="btn">Limpar seleção</b> desmarca todos.</li>
+  <li><b class="btn">Exportar Excel</b> gera a planilha conforme os filtros.</li>
+</ol>
+<p>A coluna <b>Foto 3x4</b> indica se a pessoa já tem foto cadastrada.</p>
+<h3>Atualizar dados</h3>
+<p>O ícone de lápis abre a janela <b>Atualizar dados</b>:</p>
+<ul>
+  <li><b>Dados pessoais:</b> Nome, Nascimento, RG, Emitente, Pai e Mãe;</li>
+  <li><b>Endereço:</b> CEP <span class="req">*</span> (a lupa busca o endereço), Endereço <span class="req">*</span>, Número, Complemento, Bairro <span class="req">*</span>, Município <span class="req">*</span> e UF <span class="req">*</span>;</li>
+  <li><b>Informações:</b> Cargo, Cidade, Função, <b>Acessará a área do porto</b> e <b>Avaliação Psicológica</b> (Não informado, Sim ou Não);</li>
+  <li><b>Foto escaneada:</b> imagem JPG, PNG, WEBP ou GIF.</li>
+</ul>
+<figure><img src="img/trn-portaria-edit-1.jpg" alt="Atualizar dados"><figcaption>Atualizar dados — dados pessoais e endereço</figcaption></figure>
+<figure><img src="img/trn-portaria-edit-2.jpg" alt="Atualizar dados - informações"><figcaption>Informações de acesso e foto</figcaption></figure>
+
+<h2>11.2 Carteira/Etiquetas</h2>
+<span class="caminho">Treinamento › Carteira/Etiquetas</span>
+<p>Tela central dos treinamentos. Cada card é um colaborador, com os treinamentos realizados, as datas de vencimento e a situação de cada um.</p>
+<figure><img src="img/trn-carteira.jpg" alt="Carteira/Etiquetas"><figcaption>Carteira/Etiquetas — filtros e card do colaborador</figcaption></figure>
+<h3>Filtros</h3>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Período de vencimento</td><td>Ao marcar, busca treinamentos que vencem entre as duas datas.</td></tr>
+  <tr><td>Período treinado</td><td>Ao marcar, busca treinamentos realizados entre as duas datas.</td></tr>
+  <tr><td>Treinados</td><td>Separa quem já tem treinamento lançado de quem não tem. “Sem filtro” mostra todos.</td></tr>
+  <tr><td>Colaborador / CPF</td><td>Localiza pelo nome ou CPF.</td></tr>
+  <tr><td>CNPJ</td><td>Colaboradores de uma das empresas (CNPJs) do grupo.</td></tr>
+  <tr><td>Centro de custo</td><td>Colaboradores de um centro de custo.</td></tr>
+  <tr><td>Vaga / Cargo</td><td>Filtram pela vaga ou pelo cargo.</td></tr>
+  <tr><td>Situação</td><td>Situação do colaborador. O padrão é <i>Ativos</i>.</td></tr>
+  <tr><td>Treinamentos específicos</td><td>Mostra apenas os colaboradores que têm os treinamentos escolhidos.</td></tr>
+</table>
+<p><b class="btn">Mais filtros</b> abre o bloco <b>Outros filtros</b>:</p>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Padrão</td><td>Padrão de treinamento (por cliente/segmento) do colaborador.</td></tr>
+  <tr><td>Foto 3x4</td><td>Com foto, sem foto ou <i>Geral</i>.</td></tr>
+  <tr><td>Crachá</td><td>Com crachá, sem crachá ou <i>Geral</i>.</td></tr>
+  <tr><td>PCD</td><td>Sim, Não ou <i>Geral</i>.</td></tr>
+  <tr><td>UF</td><td>Estado do colaborador.</td></tr>
+  <tr><td>Por página</td><td>Quantidade de colaboradores por página.</td></tr>
+</table>
+<figure><img src="img/trn-carteira-filtros.jpg" alt="Outros filtros"><figcaption>Bloco Outros filtros aberto</figcaption></figure>
+
+<h3>O card do colaborador</h3>
+<ul>
+  <li><b>Cabeçalho:</b> nome, quantidade de treinamentos, CPF, cargo, tipo de admissão e status;</li>
+  <li><b>Empresa</b>, <b>Centro de custo</b> e <b>Padrão de treinamento</b>;</li>
+  <li><b>Tabela:</b> Treinamento, Data do treinamento, Data de vencimento, Anexo FAT, Status e se é exibido na carteira.</li>
+</ul>
+<p>As cores seguem a legenda acima da lista: <b>Em dia</b> (verde), <b>Vencendo</b> (amarelo) e <b>Vencido</b> (vermelho).</p>
+<p><b class="btn">Filtrar treinamentos</b> abre a janela <b>Mostrar e Ocultar Treinamentos</b>, onde você liga e desliga as colunas de treinamento que quer ver nos cards.</p>
+<figure><img src="img/trn-filtrar.jpg" alt="Mostrar e ocultar treinamentos"><figcaption>Mostrar e Ocultar Treinamentos</figcaption></figure>
+
+<h3>Gerar carteira e etiquetas</h3>
+<ol>
+  <li>Filtre os colaboradores e marque a caixa de cada card (ou <b>Selecionar todos</b>).</li>
+  <li>Clique em <b class="btn">Gerar carteira</b> e escolha o modelo: <b>Treinamento</b>, <b>Bloqueio</b> ou <b>Treinamento/Bloqueio</b>.</li>
+</ol>
+<p><b class="btn">Exportar Excel</b> gera a planilha dos treinamentos filtrados.</p>
+<figure><img src="img/trn-carteira-acoes.jpg" alt="Gerar carteira"><figcaption>Opções de Gerar carteira e ação do card</figcaption></figure>
+
+<h3>Lançar ou atualizar treinamentos de um colaborador</h3>
+<ol>
+  <li>No card, abra ⋮ › <b>Atualizar treinamento</b>.</li>
+  <li>Confira os <b>dados do funcionário</b> e escolha o <b>Segmento</b> (padrão de treinamento) a aplicar.</li>
+  <li>Os contadores mostram <b>Todos</b>, <b>Não realizados</b>, <b>Realizados em dia</b>, <b>A vencer</b> e <b>Vencidos</b>; clique em um deles para filtrar a lista. Há também a busca por nome e o filtro <i>Com vínculo ao cargo</i> / <i>Sem vínculo ao cargo</i>.</li>
+</ol>
+<figure><img src="img/trn-atualizar-1.jpg" alt="Treinamentos do colaborador"><figcaption>Janela Treinamentos — resumo e lista</figcaption></figure>
+<ol start="4">
+  <li>Clique no nome do treinamento para abri-lo. A faixa <b>A quem se destina</b> lembra o público do treinamento.</li>
+  <li>Em <b>Realizou este treinamento?</b> marque <i>Sim</i> e informe a <b>Data do treinamento</b>. O <b>Vencimento</b> é calculado pelo prazo do treinamento.</li>
+  <li>No bloco <b>FAT</b>, informe o <b>Número da FAT</b> e anexe o arquivo, se houver.</li>
+  <li>Clique em <b class="btn">Salvar este treinamento</b>. Repita para os demais.</li>
+</ol>
+<figure><img src="img/trn-atualizar-2.jpg" alt="Lançamento do treinamento"><figcaption>Treinamento aberto para lançamento</figcaption></figure>
+
+<h2>11.3 Importação</h2>
+<span class="caminho">Treinamento › Importação</span>
+<p>Lança treinamentos em lote a partir de uma planilha, com o mesmo comportamento da carteira: cria o treinamento se não existir e atualiza o vencimento se já existir.</p>
+<figure><img src="img/trn-import-1.jpg" alt="Importação de treinamentos"><figcaption>Importação — instruções</figcaption></figure>
+<ol>
+  <li>Clique em <b class="btn">Baixar modelo Excel</b>. O modelo já vem com as listas de colaboradores e treinamentos da sua empresa.</li>
+  <li>Preencha a aba <b>Dados</b> sem alterar os cabeçalhos. Em <b>colaborador</b> e <b>treinamento</b>, use as listas da própria planilha.</li>
+  <li>Em <b>data_treinamento</b>, use o formato dd/mm/aaaa (ex.: 15/03/2026).</li>
+  <li><b>data_vencimento</b> é opcional: em branco, vale o prazo do treinamento; preenchida, vale a data informada.</li>
+  <li>Em <b>Enviar planilha</b>, escolha o arquivo .xlsx (até 20 MB) e clique em <b class="btn">Enviar para importação</b>.</li>
+</ol>
+<div class="nota">Evite formatos como 15-03-2026, 3/15/2026 ou ano com dois dígitos: a linha é recusada.</div>
+<figure><img src="img/trn-import-2.jpg" alt="Baixar modelo e enviar"><figcaption>Baixar o modelo e enviar a planilha</figcaption></figure>
+<h3>Aba Importados</h3>
+<p>O processamento ocorre em segundo plano; o resultado chega pelo sino, por e-mail e fica no <b>Histórico de importações</b>. Cada execução mostra a situação (<i>Concluída</i> ou <i>Falha</i>), o <b>Total</b> de linhas, os <b>Importados</b> e os <b>Erros</b>, além dos botões <b class="btn">Sucesso</b> e <b class="btn">Erro</b>, que baixam o CSV das linhas importadas e das recusadas com o motivo.</p>
+<figure><img src="img/trn-importados.jpg" alt="Histórico de importações"><figcaption>Aba Importados</figcaption></figure>
+
+<h2>11.4 Emissão de Certificados (NR33/NR35)</h2>
+<span class="caminho">Treinamento › Emissão Certificados (NR33/NR35)</span>
+<p>Emite os certificados de NR33 (espaço confinado) e NR35 (trabalho em altura) para os colaboradores que realizaram os treinamentos.</p>
+<figure><img src="img/trn-certificado.jpg" alt="Certificados"><figcaption>Emissão de certificados — filtros</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Filtrar por período / Período</td><td>Ao marcar, considera apenas o intervalo de datas informado.</td></tr>
+  <tr><td>Buscar / CPF</td><td>Localiza por nome ou CPF.</td></tr>
+  <tr><td>Por Vaga / Por Cliente</td><td>Filtram pela vaga ou pelo cliente.</td></tr>
+  <tr><td>Áreas / Cargo / Estado</td><td>Filtram pela área, pelo cargo e pela UF.</td></tr>
+  <tr><td>Tem Instrutor NR33 / NR35</td><td>Mostra quem tem (ou não) instrutor definido para o treinamento.</td></tr>
+  <tr><td>NR33 / NR35</td><td><i>Realizado</i>, <i>Não Realizado</i> ou <i>Não se aplica</i>.</td></tr>
+  <tr><td>Admitidos</td><td><i>Geral</i>, <i>Sim</i> ou <i>Não</i>.</td></tr>
+  <tr><td>Exibir</td><td>20, 50, 100 ou 500 registros por página.</td></tr>
+</table>
+<p>Marque os colaboradores na lista e clique em <b class="btn">Certificados</b> (o contador mostra quantos estão selecionados). <b class="btn">Limpar seleção</b> desmarca todos.</p>

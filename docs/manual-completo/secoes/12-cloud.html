@@ -1,0 +1,118 @@
+<h1 id="cloud">12. Cloud</h1>
+<p class="intro">O <b>Cloud</b> é o repositório de documentos do MyBPIN: espaços com pastas e arquivos, acesso controlado por grupo ou por pessoa e um fluxo simples de revisão e aprovação de arquivos.</p>
+<div class="fluxo"><span>Criar o cloud</span><i>→</i><span>Definir quem acessa</span><i>→</i><span>Criar pastas</span><i>→</i><span>Enviar arquivos</span><i>→</i><span>Revisar e aprovar</span></div>
+
+<h2>12.1 Cadastro de clouds</h2>
+<span class="caminho">Cloud › Cadastro</span>
+<p>Lista os clouds existentes, com <b>ID</b>, <b>Nome</b>, quantidade de <b>Membros</b>, o botão <b>Ativo</b> (ativa/desativa) e <b class="btn">Editar</b>. O campo <b>Buscar</b> localiza pelo nome.</p>
+<figure><img src="img/cloud-lista.jpg" alt="Clouds"><figcaption>Listagem de clouds</figcaption></figure>
+
+<h3>Criar um cloud</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Novo Cloud</b>.</li>
+  <li>Informe o <b>Nome</b> e mantenha <b>Ativo</b> em <i>Sim</i>.</li>
+  <li>Clique em <b class="btn">Cadastrar</b>.</li>
+</ol>
+<figure><img src="img/cloud-novo.jpg" alt="Novo cloud"><figcaption>Cadastrando cloud</figcaption></figure>
+<p>Depois de gravar, a tela passa para o modo de alteração e libera o bloco <b>Acesso</b>, onde se define quem enxerga o cloud.</p>
+<figure><img src="img/cloud-criado.jpg" alt="Cloud criado"><figcaption>Cloud criado — bloco Acesso liberado</figcaption></figure>
+
+<h3>Definir quem acessa</h3>
+<p>Há duas formas de incluir membros, escolhidas pelos botões <b class="btn">Grupo</b> e <b class="btn">Colaborador</b>:</p>
+<ul>
+  <li><b>Grupo:</b> selecione um grupo e clique em <b class="btn">+ Incluir membros do grupo</b>. Todos os colaboradores ativos do grupo entram na lista.</li>
+  <li><b>Colaborador:</b> digite o nome em <b>Buscar colaborador</b> e clique no resultado para incluir uma pessoa.</li>
+</ul>
+<figure><img src="img/cloud-colaborador.jpg" alt="Buscar colaborador"><figcaption>Inclusão por colaborador</figcaption></figure>
+<p>A lista mostra o nome, o grupo de cada membro e o botão ✕ para removê-lo. O campo <b>Filtrar membros da lista</b> ajuda em listas longas. Para gravar, clique em <b class="btn">Salvar alterações</b>.</p>
+<figure><img src="img/cloud-membros.jpg" alt="Membros do cloud"><figcaption>Membro incluído na lista de acesso</figcaption></figure>
+<div class="nota">Os membros do grupo <b>Administradores</b> entram automaticamente em todos os clouds e não podem ser removidos por esta tela.</div>
+
+<h2>12.2 Usar o cloud</h2>
+<span class="caminho">Cloud › (nome do cloud)</span>
+<p>Cada cloud ativo do qual você é membro aparece no menu <b>Cloud</b>, acima de Cadastro. Ao abrir, a tela mostra o conteúdo da pasta atual e o caminho percorrido (<b>Início / pasta / subpasta</b>).</p>
+<figure><img src="img/cloud-aberto.jpg" alt="Cloud aberto"><figcaption>Cloud recém-criado, já disponível no menu</figcaption></figure>
+<table class="filtros">
+  <tr><th>Botão</th><th>O que faz</th></tr>
+  <tr><td>Nova Pasta</td><td>Cria uma pasta no local atual.</td></tr>
+  <tr><td>Atualizar</td><td>Recarrega o conteúdo.</td></tr>
+  <tr><td>Pesquisar</td><td>Abre o campo de busca. Digite e pressione Enter; a lista ao lado restringe a <i>Todos</i>, <i>Pastas</i> ou <i>Arquivos</i>.</td></tr>
+  <tr><td>Upload</td><td>Envia arquivos para a pasta atual. Aparece depois que você entra em uma pasta.</td></tr>
+</table>
+
+<h3>Criar uma pasta</h3>
+<ol>
+  <li>Clique em <b class="btn">Nova Pasta</b> e informe o <b>Nome</b>.</li>
+  <li>Em <b>Grupos permitidos</b>, defina quais grupos enxergam a pasta: o botão ao lado de cada grupo alterna entre <i>Permitido</i> e <i>Negado</i>; <b class="btn">Nenhum</b> nega para todos.</li>
+  <li>Clique em <b class="btn">Salvar</b>.</li>
+</ol>
+<figure><img src="img/cloud-nova-pasta.jpg" alt="Nova pasta"><figcaption>Nova pasta e grupos permitidos</figcaption></figure>
+<p>A pasta passa a aparecer na lista com a data de criação, quem criou e a última atualização. O menu ⋮ da pasta traz <b>Mover</b>, <b>Editar</b> (nome e grupos permitidos) e <b>Deletar</b>.</p>
+<figure><img src="img/cloud-pasta-acoes.jpg" alt="Ações da pasta"><figcaption>Ações da pasta</figcaption></figure>
+
+<h3>Enviar arquivos</h3>
+<ol>
+  <li>Clique no nome da pasta para entrar nela.</li>
+  <li>Clique em <b class="btn">Upload</b> e escolha os arquivos, ou arraste-os para a tela.</li>
+  <li>Acompanhe a barra de progresso. Ao terminar, o arquivo aparece na lista.</li>
+</ol>
+<p>A linha <b>← Voltar</b> retorna à pasta anterior.</p>
+
+<h3>Ações do arquivo</h3>
+<p>Clique no nome do arquivo para abrir o menu de ações:</p>
+<figure><img src="img/cloud-arquivo-acoes.jpg" alt="Ações do arquivo"><figcaption>Menu de ações do arquivo</figcaption></figure>
+<table class="filtros">
+  <tr><th>Ação</th><th>O que faz</th></tr>
+  <tr><td>Download</td><td>Baixa o arquivo.</td></tr>
+  <tr><td>Visualizar</td><td>Abre o arquivo na tela (imagens e PDF).</td></tr>
+  <tr><td>Detalhes</td><td>Mostra nome, tamanho, data de criação e quem lançou.</td></tr>
+  <tr><td>Editar</td><td>Altera o nome e os grupos permitidos.</td></tr>
+  <tr><td>Mover</td><td>Transfere o arquivo para outra pasta: navegue até o destino na janela <b>Mover item</b>.</td></tr>
+  <tr><td>Deletar</td><td>Exclui o arquivo.</td></tr>
+  <tr><td>Atualizar</td><td>Substitui o arquivo por uma nova versão.</td></tr>
+  <tr><td>Revisar</td><td>Marca o arquivo como revisado.</td></tr>
+  <tr><td>Enviar para Revisão</td><td>Envia o arquivo por e-mail a um revisor.</td></tr>
+  <tr><td>Aprovar</td><td>Marca o arquivo como aprovado. Aparece para quem tem essa permissão, depois da revisão.</td></tr>
+  <tr><td>Enviar para Aprovação</td><td>Envia o arquivo por e-mail a um aprovador.</td></tr>
+</table>
+<figure class="media"><img src="img/cloud-detalhes.jpg" alt="Detalhes"><figcaption>Detalhes do arquivo</figcaption></figure>
+<figure><img src="img/cloud-editar.jpg" alt="Editar arquivo"><figcaption>Editar nome e grupos permitidos</figcaption></figure>
+<figure class="media"><img src="img/cloud-mover.jpg" alt="Mover item"><figcaption>Mover item</figcaption></figure>
+<p>As ações disponíveis para cada pessoa dependem das <b>habilidades</b> do grupo dela (seção 12.3).</p>
+
+<h3>Revisão e aprovação</h3>
+<p>A cor do nome do arquivo indica em que ponto ele está:</p>
+<ul>
+  <li><b>rosa</b> — ainda não revisado;</li>
+  <li><b>verde</b> — revisado.</li>
+</ul>
+<ol>
+  <li>Para pedir a revisão a alguém, use <b>Enviar para Revisão</b>: informe <b>Nome</b>, <b>E-mail</b> e <b>Mensagem</b> e clique em <b class="btn">Enviar</b>.</li>
+  <li>Quem revisa usa a ação <b>Revisar</b> e confirma em <b class="btn">SIM</b>. O arquivo fica verde.</li>
+  <li>Depois de revisado, o menu passa a oferecer <b>Enviar para Aprovação</b> (mesmo formulário) e, para quem tem permissão, <b>Aprovar</b>.</li>
+</ol>
+<figure class="media"><img src="img/cloud-enviar-revisao.jpg" alt="Enviar para revisão"><figcaption>Enviar para Revisão</figcaption></figure>
+<figure class="media"><img src="img/cloud-revisar.jpg" alt="Revisar"><figcaption>Confirmação da revisão</figcaption></figure>
+<figure><img src="img/cloud-revisado.jpg" alt="Arquivo revisado"><figcaption>Arquivo revisado (verde) e as ações seguintes</figcaption></figure>
+
+<h3>Pesquisar</h3>
+<figure><img src="img/cloud-pesquisar.jpg" alt="Pesquisar"><figcaption>Campo de pesquisa aberto</figcaption></figure>
+
+<h2>12.3 Configurações (grupos do Cloud)</h2>
+<span class="caminho">Cloud › Configurações</span>
+<p>Os grupos do Cloud definem <b>o que</b> cada pessoa pode fazer com pastas e arquivos. A lista mostra <b>Nome</b>, <b>Descrição</b>, <b>Qnt membros</b> e <b>Ativo</b>, com os ícones de editar e excluir.</p>
+<figure><img src="img/cloud-cfg-lista.jpg" alt="Grupos do cloud"><figcaption>Cloud › Configurações</figcaption></figure>
+<h3>Cadastrar um grupo</h3>
+<ol>
+  <li>Clique em <b class="btn">Cadastrar</b>.</li>
+  <li>Na aba <b>Identificação</b>, preencha <b>Nome</b>, <b>Descrição</b> e <b>Ativo</b>.</li>
+  <li>Em <b>Habilidades</b>, clique no botão de cada função para alternar entre <i>Negar</i> e <i>Permitir</i>; <b class="btn">Permitir todas</b> libera tudo de uma vez.</li>
+</ol>
+<figure><img src="img/cloud-cfg-form.jpg" alt="Cadastrando grupo"><figcaption>Cadastrando grupo — identificação</figcaption></figure>
+<p>As habilidades correspondem às ações do arquivo: <b>Download</b>, <b>Visualizar</b>, <b>Detalhes</b>, <b>Editar</b>, <b>Mover</b>, <b>Deletar</b>, <b>Atualizar</b>, <b>Revisar</b> e <b>Aprovar</b>.</p>
+<figure><img src="img/cloud-cfg-habilidades.jpg" alt="Habilidades"><figcaption>Habilidades do grupo</figcaption></figure>
+<ol start="4">
+  <li>Na aba <b>Membros</b>, busque cada colaborador em <b>Colaborador</b> para incluí-lo no grupo.</li>
+  <li>Clique em <b class="btn">Cadastrar</b>.</li>
+</ol>
+<figure class="media"><img src="img/cloud-cfg-membros.jpg" alt="Membros do grupo"><figcaption>Aba Membros</figcaption></figure>

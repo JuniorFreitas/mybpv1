@@ -166,3 +166,4 @@ Guia para modelos de IA atuarem com seguranca, qualidade e performance no projet
 - Validação ComboboxAutoComplete: `docs/PADRAO_VALIDACAO_COMBOBOX.md` · util `resources/js/utils/comboboxValidation.js` · mixin `ComboboxValidation` (não usar `valida_campo_vazio` no combo)
 - Card detalhe operacional: `docs/PADRAO_UX_CARD_DETALHE.md` e `.cursor/skills/mybp-card-detalhe/SKILL.md` (CSS: `resources/sass/_mybp-card-detalhe.scss`, ref: `SolicitacaoDemissao.vue`)
 - Relatorio usabilidade + admissao por cliente: `.cursor/skills/relatorio-cliente-usabilidade/SKILL.md` (`php artisan mybp:relatorio-cliente-usabilidade {cliente_id}` · recrutamento: `mybp:relatorio-cliente-recrutamento`)
+- Manual do usuário + base de conhecimento (RAG/chatbot): `agents/manual-usuario/README.md` e `.cursor/skills/manual-usuario/SKILL.md` (fonte: `docs/manual-completo/secoes/`, build: `docs/manual-completo/gerar-pdf.sh`, base: `docs/manual-completo/base-conhecimento/`)

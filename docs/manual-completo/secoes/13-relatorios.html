@@ -1,0 +1,132 @@
+<h1 id="relatorios">13. Relatórios</h1>
+<p class="intro">O menu <b>Relatórios</b> concentra as consultas gerenciais do RH. Todos seguem o mesmo desenho: filtros no topo, indicadores de resumo, alternância entre <b>Lista</b> e <b>Gráficos</b> e exportação para Excel (alguns também para PDF).</p>
+
+<h2>13.1 Como ler um relatório</h2>
+<ul>
+  <li><b>Filtro:</b> preencha e clique em <b class="btn">Buscar</b>.</li>
+  <li><b>Indicadores:</b> os cartões de resumo (Total, Vencidos, A vencer, Em dia…) mostram os números do resultado. Em alguns relatórios, clicar no cartão filtra a lista.</li>
+  <li><b>Lista / Gráficos:</b> dois botões alternam entre o detalhe por colaborador e a visão gráfica do mesmo resultado.</li>
+  <li><b>Exportar Excel / PDF:</b> gera o arquivo com os filtros aplicados; ele fica em <b>Meus Downloads</b>.</li>
+</ul>
+<figure><img src="img/rel-graficos.jpg" alt="Visão em gráficos"><figcaption>Exemplo da visão Gráficos (Medidas Administrativas)</figcaption></figure>
+
+<h2>13.2 Vencimento de ASOs</h2>
+<span class="caminho">Relatórios › Vencimento de Asos</span>
+<p>Acompanha a validade dos exames ocupacionais. O alerta padrão é de 60 dias antes do vencimento.</p>
+<figure><img src="img/rel-asos.jpg" alt="Vencimento de ASOs"><figcaption>Vencimento de ASOs</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Período de vencimento</td><td>Ao marcar, busca ASOs que vencem entre as duas datas.</td></tr>
+  <tr><td>Colaborador</td><td>Localiza pelo nome.</td></tr>
+  <tr><td>Por CNPJ</td><td>Colaboradores de uma das empresas (CNPJs).</td></tr>
+  <tr><td>Centro de custo</td><td>Colaboradores de um centro de custo.</td></tr>
+  <tr><td>Tipo de exame</td><td>Admissional, periódico e demais tipos.</td></tr>
+  <tr><td>Vencido</td><td>Apenas vencidos, apenas não vencidos ou <i>Indiferente</i>.</td></tr>
+  <tr><td>Por página</td><td>25, 50, 100 ou 250 linhas.</td></tr>
+</table>
+<p><b>Indicadores:</b> Total, Vencidos, A vencer (60 dias) e Em dia. <b>Colunas:</b> #, Colaborador, Lotação, Centro de custo, Tipo, Data ASO, Vencimento e Situação. As linhas são coloridas conforme a legenda (Vencido, A vencer, Em dia). <b>Gráficos:</b> visão por situação e lotação.</p>
+
+<h2>13.3 Treinamentos</h2>
+<span class="caminho">Relatórios › Treinamentos</span>
+<p>Mostra os treinamentos vencidos e a vencer. O alerta padrão é de até 30 dias.</p>
+<figure><img src="img/rel-treinamentos.jpg" alt="Vencimento de treinamentos"><figcaption>Treinamentos — vencimentos</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Período de vencimento</td><td>Intervalo de vencimento. Já vem marcado para os próximos 30 dias.</td></tr>
+  <tr><td>Colaborador</td><td>Localiza por nome ou cargo.</td></tr>
+  <tr><td>Por CNPJ / Centro de custo</td><td>Restringem à empresa e ao centro de custo.</td></tr>
+  <tr><td>Segmento</td><td>Padrão de treinamento (cliente/segmento).</td></tr>
+  <tr><td>Treinamento</td><td>Um ou mais treinamentos específicos.</td></tr>
+  <tr><td>Colaboradores / página</td><td>25, 50, 100 ou 250.</td></tr>
+</table>
+<p><b>Indicadores:</b> Total, Vencidos, A vencer (≤ 30 dias) e Em dia. <b>Colunas:</b> #, Colaborador (com cargo e empresa), Centro de custo, Segmento, Treinamento, Data do treino, Vencimento e Situação.</p>
+<figure><img src="img/rel-treinamentos-lista.jpg" alt="Lista de treinamentos"><figcaption>Lista por colaborador</figcaption></figure>
+
+<h2>13.4 Férias</h2>
+<span class="caminho">Relatórios › Férias</span>
+<p>Relaciona as férias programadas e em andamento.</p>
+<figure><img src="img/rel-ferias.jpg" alt="Relatório de férias"><figcaption>Relatório de Férias</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Filtrar por</td><td>Define qual data o período considera (por exemplo, data de saída).</td></tr>
+  <tr><td>Data de saída</td><td>Intervalo de datas da consulta.</td></tr>
+  <tr><td>Colaborador / CPF</td><td>Localiza por nome ou CPF.</td></tr>
+  <tr><td>Por status</td><td>Situação das férias (Aguardando, Gozando…).</td></tr>
+  <tr><td>CNPJ / Centros de custo</td><td>Restringem à empresa e a um ou mais centros de custo.</td></tr>
+</table>
+<p>A faixa azul mostra o <b>Total de férias</b>. Na lista, cada colaborador aparece com data de admissão, cargo e uma linha por período: Centro de custo, Qnt dias, Férias (início e fim), Período aquisitivo, Data limite e Status. <b>Gráficos:</b> por status e por centro de custo.</p>
+<figure><img src="img/rel-ferias-lista.jpg" alt="Lista de férias"><figcaption>Lista de férias por colaborador</figcaption></figure>
+
+<h2>13.5 Vencimento Férias</h2>
+<span class="caminho">Relatórios › Vencimento Férias</span>
+<p>Mostra o saldo e a situação de cada período aquisitivo, para evitar férias vencidas.</p>
+<figure><img src="img/rel-venc-ferias.jpg" alt="Vencimento de férias"><figcaption>Relatório de Vencimento de Férias</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Buscar</td><td>Localiza pelo nome.</td></tr>
+  <tr><td>Cargo</td><td>Colaboradores de um cargo.</td></tr>
+  <tr><td>Situação</td><td>Situação do período aquisitivo.</td></tr>
+  <tr><td>Período</td><td>Um período aquisitivo específico.</td></tr>
+  <tr><td>Centro de custo</td><td>Colaboradores de um centro de custo.</td></tr>
+</table>
+<p>Para cada colaborador: <b>Período aquisitivo</b>, <b>Situação</b> (com as datas da solicitação, quando houver), <b>Saldo</b> em dias e <b>Última atualização</b>.</p>
+
+<h2>13.6 Medidas Administrativas</h2>
+<span class="caminho">Relatórios › Medidas Administrativas</span>
+<p>Consulta as medidas disciplinares registradas (advertências e suspensões).</p>
+<figure><img src="img/rel-medidas.jpg" alt="Medidas administrativas"><figcaption>Medidas Administrativas</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Por período</td><td>Intervalo de datas da medida. Já vem marcado para o mês atual.</td></tr>
+  <tr><td>Colaborador</td><td>Localiza por nome ou código.</td></tr>
+  <tr><td>CNPJ</td><td>Empresa do colaborador.</td></tr>
+  <tr><td>Status</td><td>Situação da medida.</td></tr>
+  <tr><td>Tipo</td><td>Tipo de medida (advertência, suspensão…).</td></tr>
+  <tr><td>Causa</td><td>Motivo registrado.</td></tr>
+  <tr><td>Centros de custo</td><td>Um ou mais centros de custo.</td></tr>
+</table>
+<p><b class="btn">Limpar filtros</b> volta ao estado inicial. A lista apresenta um card por caso, com número, tipo, data da medida e de retorno, colaborador, cargo, centro de custo, causa, descrição e solicitante. <b>Gráficos:</b> por tipo de medida, principais causas e centros de custo.</p>
+
+<h2>13.7 Centro de Custo</h2>
+<span class="caminho">Relatórios › Centro de Custo</span>
+<p>Relaciona os colaboradores agrupados por centro de custo.</p>
+<figure><img src="img/rel-centro-custo.jpg" alt="Centros de custo"><figcaption>Relatório por Centro de Custo</figcaption></figure>
+<p><b>Filtros:</b> CNPJ e Centros de custo (um ou mais). <b>Exportação:</b> PDF e Excel. A faixa azul traz o <b>Total de funcionários</b>. Cada grupo mostra o código e o nome do centro, a quantidade de funcionários e as colunas Código, Nome, Cargo, Tipo de admissão e Data da admissão. <b>Gráficos:</b> tipo de admissão e centros.</p>
+
+<h2>13.8 Efetivo</h2>
+<span class="caminho">Relatórios › Efetivo</span>
+<p>Quadro de pessoal ativo, agrupado por centro de custo, com o salário de cada colaborador.</p>
+<figure><img src="img/rel-efetivo.jpg" alt="Efetivo"><figcaption>Relatório de Efetivo</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Colaborador</td><td>Localiza por nome ou código.</td></tr>
+  <tr><td>CNPJ / Centro de custo</td><td>Restringem à empresa e ao centro de custo.</td></tr>
+  <tr><td>Tipo de admissão</td><td>Fixo, intermitente e demais tipos.</td></tr>
+  <tr><td>Cargo</td><td>Busca pelo cargo.</td></tr>
+  <tr><td>Período de admissão</td><td>Ao marcar, considera admitidos entre as duas datas.</td></tr>
+</table>
+<p><b>Colunas:</b> Código, Nome, Cargo, Salário, Tipo de admissão e Data da admissão.</p>
+<div class="nota">Este relatório mostra salários. Libere o acesso apenas a quem deve ver essa informação.</div>
+
+<h2>13.9 Avaliação de Experiência</h2>
+<span class="caminho">Relatórios › Avaliação de Experiência</span>
+<p>Acompanha as avaliações do período de experiência e gera os links para os gestores avaliarem.</p>
+<figure><img src="img/rel-experiencia.jpg" alt="Avaliação de experiência"><figcaption>Avaliação de Experiência — filtros e resumo</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Status</td><td>Vencidas, vence hoje, a vencer.</td></tr>
+  <tr><td>Colaborador</td><td>Localiza pelo nome.</td></tr>
+  <tr><td>Centro de custo / Gestor / Cargo</td><td>Restringem ao centro de custo, ao gestor responsável e ao cargo.</td></tr>
+  <tr><td>Avaliações</td><td>Quantidade de avaliações já feitas (nenhuma, uma, completas).</td></tr>
+  <tr><td>Função / Definição / Exibir</td><td>Em <b class="btn">Mais filtros</b>: função, definição do gestor e registros por página.</td></tr>
+</table>
+<figure><img src="img/rel-experiencia-filtros.jpg" alt="Outros filtros"><figcaption>Mais filtros e orientações sobre os links</figcaption></figure>
+<p>O <b>resumo</b> (que pode ser ocultado em <b class="btn">Ocultar Resumo</b>) traz: Total de avaliações, Vencidas, Vence hoje, A vencer, Sem avaliação, Com uma avaliação, Completas, Gestores envolvidos e Sem gestor.</p>
+<p>Em <b>Avaliações Pendentes</b>, cada card mostra a situação, o colaborador, Gestor, Cargo, Função, Centro de custo, Vencimento, Dias, Avaliações e Definição.</p>
+<figure><img src="img/rel-experiencia-cards.jpg" alt="Avaliações pendentes"><figcaption>Cards de avaliações pendentes</figcaption></figure>
+<div class="nota">Os links de avaliação valem por 60 dias. Cada colaborador pode ter no máximo duas avaliações de 90 dias. Links expirados ou já usados não podem ser reaproveitados. <b class="btn">Gerar todos os links (página atual)</b> prepara os links de uma vez para enviar aos gestores.</div>
+
+<h2>13.10 Aniversariantes</h2>
+<span class="caminho">Relatórios › Aniversariantes</span>
+<p>Lista os aniversariantes do mês escolhido, com Nome, Data, E-mail e WhatsApp. Exporta em PDF e Excel.</p>
+<figure><img src="img/rel-aniversariantes.jpg" alt="Aniversariantes"><figcaption>Relatório de Aniversariantes</figcaption></figure>
