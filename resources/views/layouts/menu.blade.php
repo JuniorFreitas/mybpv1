@@ -750,7 +750,7 @@
             </a>
         </li>
     @endif
-    @if(\App\Models\Sistema::permitirLinks('treinamento_portaria','treinamento_carteira-etiquetas','treinamento_certificado'))
+    @if(\App\Models\Sistema::permitirLinks('treinamento_portaria','treinamento_carteira-etiquetas','treinamento_certificado','treinamento_importacao'))
         <li id="treinamento">
             <a href="javascript://" class="has-arrow waves-effect" parent="treinamento">
                 <i class="bx bx-aperture"></i>
@@ -769,6 +769,13 @@
                         <a href="{{route('g.treinamentos.treinamento.index' )}}" parent="treinamento"
                            key="carteira_etiquetas">
                             Carteira/Etiquetas
+                        </a>
+                    </li>
+                @endcan
+                @can('treinamento_importacao')
+                    <li>
+                        <a href="{{ route('g.treinamentos.import') }}" parent="treinamento" key="treinamento_importacao">
+                            Importação
                         </a>
                     </li>
                 @endcan

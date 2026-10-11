@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ env('APP_NAME') }}</title>
+    <title>{{ config('app.name', 'MyBPIN') }}</title>
     @if(\App\Models\Sistema::verificaHdev())
         <meta name="robots" content="noindex">
     @endif

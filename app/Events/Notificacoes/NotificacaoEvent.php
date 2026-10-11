@@ -20,6 +20,7 @@ class NotificacaoEvent implements ShouldBroadcastNow
     const EXPORTACAO_EXCEL = 'exportacao_excel';
     const EXPORTACAO_PDF = 'exportacao_pdf';
     const IMPORTACAO_ADMISSOES_CONCLUIDA = 'importacao_admissoes_concluida';
+    const IMPORTACAO_TREINAMENTOS_CONCLUIDA = 'importacao_treinamentos_concluida';
 
     const TIPO_PADRAO = 'padrao';
 
@@ -142,6 +143,26 @@ class NotificacaoEvent implements ShouldBroadcastNow
                     'icone' => 'fas fa-file-import',
                     'titulo' => 'Importação de admissões concluída',
                     'descricao' => "{$totalProcessadas} processadas, {$totalSucesso} com sucesso" . ($totalErros > 0 ? ", {$totalErros} com erro. Verifique seu e-mail para o relatório." : '.'),
+                ];
+                $notificacao = Notificacao::create([
+                    'tipo' => $this->tipo,
+                    'payload' => $saida,
+                    'user_id' => $this->dados['user_id'],
+                    'visto' => false
+                ]);
+                return $notificacao->toArray();
+
+            case self::IMPORTACAO_TREINAMENTOS_CONCLUIDA:
+                $totalProcessadas = $this->dados['total_processadas'] ?? 0;
+                $totalSucesso = $this->dados['total_sucesso'] ?? 0;
+                $totalErros = $this->dados['total_erros'] ?? 0;
+                $saida = [
+                    'icone' => 'fas fa-file-import',
+                    'titulo' => 'Importação de treinamentos concluída',
+                    'descricao' => "{$totalProcessadas} processadas, {$totalSucesso} com sucesso"
+                        . ($totalErros > 0
+                            ? ", {$totalErros} com erro. Veja os CSVs na aba Importados."
+                            : '. Relatório disponível na aba Importados.'),
                 ];
                 $notificacao = Notificacao::create([
                     'tipo' => $this->tipo,

@@ -197,6 +197,7 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'treinamento_carteira-etiquetas_update', 'descricao' => 'Pode alterar um treinamento'];
         $lista[] = ['nome' => 'treinamento_envio', 'descricao' => 'Pode enviar por email ou imprimir'];
         $lista[] = ['nome' => 'treinamento_carteira-etiquetas_retirar_treinamento_realizado', 'descricao' => 'Pode retirar treinamento marcado como realizado'];
+        $lista[] = ['nome' => 'treinamento_importacao', 'descricao' => 'Acessar rota/menu Importação de Treinamentos'];
 
 
         //Fornecedores------------------------------

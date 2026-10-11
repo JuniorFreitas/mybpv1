@@ -151,6 +151,10 @@ export default {
                     this.lista.push(e)
                     this.mostrarToast()
                 })
+                .listen('.importacao_treinamentos_concluida', (e) => {
+                    this.lista.push(e)
+                    this.mostrarToast()
+                })
         }
     },
     methods: {
