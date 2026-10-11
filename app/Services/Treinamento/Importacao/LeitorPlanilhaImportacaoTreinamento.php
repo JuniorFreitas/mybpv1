@@ -8,6 +8,9 @@ use RuntimeException;
 
 /**
  * Lê a planilha de importação de treinamentos (aba Dados) e converte para o payload do comando mybp:importa-treinamento.
+ *
+ * Colunas A–D: colaborador, treinamento, data_treinamento, data_vencimento (opcional).
+ * Compatível com planilhas antigas só A–C (sem data_vencimento).
  */
 class LeitorPlanilhaImportacaoTreinamento
 {
@@ -19,7 +22,9 @@ class LeitorPlanilhaImportacaoTreinamento
      *   cpf: string,
      *   contrato: string,
      *   matricula: string,
+     *   feedback_id: string,
      *   data_treinamento: string,
+     *   data_vencimento: string|null,
      *   empresa_id: string,
      *   vencimento_id: string,
      *   tipo: string
@@ -41,31 +46,40 @@ class LeitorPlanilhaImportacaoTreinamento
         }
 
         $headers = $this->normalizarCabecalhos(
-            $sheet->rangeToArray('A1:C1', null, true, true, false)[0] ?? []
+            $sheet->rangeToArray('A1:D1', null, true, true, false)[0] ?? []
         );
 
         $idxColaborador = $this->indiceColuna($headers, 'colaborador');
         $idxTreinamento = $this->indiceColuna($headers, 'treinamento');
         $idxData = $this->indiceColuna($headers, 'data_treinamento');
+        $idxDataVencimento = $this->indiceColuna($headers, 'data_vencimento');
 
         if ($idxColaborador === null || $idxTreinamento === null || $idxData === null) {
-            throw new RuntimeException('Cabeçalhos inválidos. Esperado: colaborador, treinamento, data_treinamento.');
+            throw new RuntimeException(
+                'Cabeçalhos inválidos. Esperado: colaborador, treinamento, data_treinamento[, data_vencimento].'
+            );
         }
 
         $registros = [];
         for ($row = 2; $row <= $highestRow; $row++) {
-            $rowData = $sheet->rangeToArray('A' . $row . ':C' . $row, null, true, true, false)[0] ?? [];
+            // formatData=false: datas do Excel vêm como serial numérico (mais confiável que string formatada)
+            $rowData = $sheet->rangeToArray('A' . $row . ':D' . $row, null, true, false, false)[0] ?? [];
             $colaboradorRaw = trim((string) ($rowData[$idxColaborador] ?? ''));
             $treinamentoRaw = trim((string) ($rowData[$idxTreinamento] ?? ''));
-            $dataRaw = $rowData[$idxData] ?? null;
+            $dataRaw = $this->valorCelulaData($sheet, $row, $idxData, $rowData[$idxData] ?? null);
+            $dataVencimentoRaw = $idxDataVencimento !== null
+                ? $this->valorCelulaData($sheet, $row, $idxDataVencimento, $rowData[$idxDataVencimento] ?? null)
+                : null;
 
-            if ($colaboradorRaw === '' && $treinamentoRaw === '' && ($dataRaw === null || $dataRaw === '')) {
+            $dataVencimentoVazia = $dataVencimentoRaw === null || $dataVencimentoRaw === '';
+            if ($colaboradorRaw === '' && $treinamentoRaw === '' && ($dataRaw === null || $dataRaw === '') && $dataVencimentoVazia) {
                 continue;
             }
 
             $colaborador = $this->parseColaborador($colaboradorRaw);
             $treinamento = $this->parseTreinamento($treinamentoRaw);
             $dataTreinamento = $this->normalizarData($dataRaw);
+            $dataVencimento = $dataVencimentoVazia ? null : $this->normalizarData($dataVencimentoRaw);
 
             if ($colaborador['cpf'] === '' || $treinamento['vencimento_id'] === '' || $dataTreinamento === '') {
                 throw new RuntimeException("Linha {$row}: colaborador, treinamento e data_treinamento são obrigatórios.");
@@ -77,6 +91,12 @@ class LeitorPlanilhaImportacaoTreinamento
                 );
             }
 
+            if ($dataVencimento !== null && $dataVencimento !== '' && !$this->dataNoFormatoBrasileiro($dataVencimento)) {
+                throw new RuntimeException(
+                    "Linha {$row}: data_vencimento inválida. Use o formato dd/mm/aaaa ou deixe em branco."
+                );
+            }
+
             $registros[] = [
                 'nome' => $colaborador['nome'],
                 'cpf' => $colaborador['cpf'],
@@ -85,6 +105,7 @@ class LeitorPlanilhaImportacaoTreinamento
                 'matricula' => $colaborador['feedback_id'],
                 'feedback_id' => $colaborador['feedback_id'],
                 'data_treinamento' => $dataTreinamento,
+                'data_vencimento' => ($dataVencimento !== null && $dataVencimento !== '') ? $dataVencimento : null,
                 'empresa_id' => (string) $empresaId,
                 'vencimento_id' => $treinamento['vencimento_id'],
                 'tipo' => 'Fixo',
@@ -179,33 +200,67 @@ class LeitorPlanilhaImportacaoTreinamento
         ];
     }
 
+    /**
+     * Obtém valor bruto da célula de data (serial Excel / DateTime / texto).
+     */
+    private function valorCelulaData(
+        \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet,
+        int $row,
+        int $colIndex,
+        mixed $fallback
+    ): mixed {
+        try {
+            // rangeToArray usa índice 0 = coluna A
+            $coordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1) . $row;
+            $cell = $sheet->getCell($coordinate);
+            $value = $cell->getValue();
+
+            if ($value instanceof \PhpOffice\PhpSpreadsheet\RichText\RichText) {
+                $value = $value->getPlainText();
+            }
+
+            if ($value !== null && $value !== '') {
+                return $value;
+            }
+        } catch (\Throwable) {
+            // fallback para o valor do rangeToArray
+        }
+
+        return $fallback;
+    }
+
     private function normalizarData(mixed $value): string
     {
         if ($value === null || $value === '') {
             return '';
         }
 
-        if (is_numeric($value)) {
-            try {
-                $date = ExcelDate::excelToDateTimeObject((float) $value);
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('d/m/Y');
+        }
 
-                return $date->format('d/m/Y');
+        // Serial Excel (célula de data real). Ex.: 20/01/2020 ≈ 43850
+        if (is_int($value) || is_float($value) || (is_string($value) && is_numeric($value) && !preg_match('/[\/.\-]/', (string) $value))) {
+            try {
+                return ExcelDate::excelToDateTimeObject((float) $value)->format('d/m/Y');
             } catch (\Throwable) {
-                return '';
+                // continua como texto
             }
         }
 
         $texto = trim((string) $value);
-        if (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $texto)) {
-            return $texto;
+        $texto = str_replace(["\u{00A0}", "\u{2009}", "\u{202F}"], ' ', $texto);
+        $texto = preg_replace('/\s+/', ' ', $texto) ?? $texto;
+        // Barras unicode → /
+        $texto = str_replace(['⁄', '／', '\\'], '/', $texto);
+
+        // dd/mm/aaaa[ hora...] (também aceita -, . e dígitos sem zero à esquerda)
+        if (preg_match('/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?$/', $texto, $m)) {
+            return sprintf('%02d/%02d/%04d', (int) $m[1], (int) $m[2], (int) $m[3]);
         }
 
-        if (preg_match('/^\d{4}-\d{2}-\d{2}/', $texto)) {
-            try {
-                return (new \DateTimeImmutable(substr($texto, 0, 10)))->format('d/m/Y');
-            } catch (\Throwable) {
-                return '';
-            }
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $texto, $m)) {
+            return sprintf('%02d/%02d/%04d', (int) $m[3], (int) $m[2], (int) $m[1]);
         }
 
         return $texto;

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Treinamento;
 use App\Models\TreinamentoVencimentoHistorico;
 use App\Models\Pivot\TreinamentoVencimento;
+use App\Services\Treinamento\Importacao\ImportadorLoteTreinamentoService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use MasterTag\DataHora;
@@ -227,21 +228,93 @@ class ImportaTreinamento extends Command
 
     private function processarComTransacoesPorChunk(\Illuminate\Support\LazyCollection $dadosJson): void
     {
+        // Caminho da tela/UI: lote (preload + multi-insert/update), paridade carteira.
+        // Flags legadas CLI mantêm o processamento linha a linha.
+        if (!$this->option('limpar-vencimentos-antigos') && !$this->option('substituir-vencimentos')) {
+            $this->processarChunksViaServiceLote($dadosJson);
+            return;
+        }
+
+        $this->processarChunksLinhaALinhaLegado($dadosJson);
+    }
+
+    /**
+     * Processamento em lote (padrão UI / carteira): chunks com multi-insert/update.
+     */
+    private function processarChunksViaServiceLote(\Illuminate\Support\LazyCollection $dadosJson): void
+    {
+        $chunkSize = (int) $this->option('chunk-size') ?: ImportadorLoteTreinamentoService::CHUNK_SIZE;
+        $userId = (int) ($this->option('user_id') ?: 0);
+        $service = app(ImportadorLoteTreinamentoService::class);
+
+        $this->info("Processando em lote (chunks de {$chunkSize}) — paridade carteira/etiquetas");
+
+        $totalProcessados = 0;
+        $totalErros = 0;
+
+        $dadosJson->chunk($chunkSize)->each(function ($chunk) use ($service, $userId, &$totalProcessados, &$totalErros) {
+            $linhas = $chunk->values()->all();
+            $this->info('=== Processando chunk de ' . count($linhas) . ' registros (lote) ===');
+
+            try {
+                $resultados = $service->processarChunk($linhas, $this->empresaId, $userId);
+                foreach ($resultados as $resultado) {
+                    $this->resultadosImportacao[] = $resultado;
+                    if (($resultado['status'] ?? '') === 'FALHA') {
+                        $totalErros++;
+                    }
+                }
+                $totalProcessados += count($linhas);
+                $this->info("Chunk em lote OK. Total acumulado: {$totalProcessados} registros");
+            } catch (\Exception $e) {
+                $this->error('Erro no chunk em lote: ' . $e->getMessage());
+                foreach ($linhas as $linha) {
+                    $this->resultadosImportacao[] = [
+                        'nome' => (string) ($linha['nome'] ?? 'Não informado'),
+                        'cpf' => (string) ($linha['cpf'] ?? 'N/A'),
+                        'treinamento' => 'N/A',
+                        'data_treinamento' => (string) ($linha['data_treinamento'] ?? 'N/A'),
+                        'data_vencimento' => (string) ($linha['data_vencimento'] ?? 'N/A'),
+                        'status' => 'FALHA',
+                        'mensagem' => $e->getMessage(),
+                        'treinamento_id' => null,
+                    ];
+                    $totalErros++;
+                }
+                $this->warn('Continuando com próximo chunk...');
+            }
+
+            $this->limparCache();
+            gc_collect_cycles();
+        });
+
+        $this->info('=== Resumo da Importação (lote) ===');
+        $this->info("Total de registros processados: {$totalProcessados}");
+        $this->info("Total de erros: {$totalErros}");
+
+        if ($totalErros > 0) {
+            $this->warn("Importação concluída com {$totalErros} erro(s)");
+        }
+    }
+
+    /**
+     * Modo legado CLI (--limpar-vencimentos-antigos / --substituir-vencimentos).
+     */
+    private function processarChunksLinhaALinhaLegado(\Illuminate\Support\LazyCollection $dadosJson): void
+    {
         $chunkSize = (int)$this->option('chunk-size') ?: 1000;
-        $this->info("Processando em chunks de {$chunkSize} registros com transações isoladas");
+        $this->info("Processando em chunks de {$chunkSize} registros com transações isoladas (modo legado)");
 
         $totalProcessados = 0;
         $totalErros = 0;
 
         $dadosJson->chunk($chunkSize)->each(function ($chunk) use (&$totalProcessados, &$totalErros) {
-            // Cada chunk tem sua própria transação
             \DB::beginTransaction();
             \DB::enableQueryLog();
 
             try {
                 $this->info("=== Processando chunk de {$chunk->count()} registros ===");
 
-                // Pré-carregar feedbacks para o chunk inteiro (otimização)
                 $cpfsDoChunk = $chunk->pluck('cpf')->map(function ($cpf) {
                     return preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $cpf);
                 })->unique()->toArray();
@@ -261,7 +334,6 @@ class ImportaTreinamento extends Command
                         $totalErros++;
                         $this->exibirErroRegistro($e, $globalIndex, $dados);
 
-                        // Decidir se deve parar o chunk ou continuar
                         if ($totalErros > 10) {
                             throw new \Exception("Muitos erros detectados ({$totalErros}). Abortando chunk.");
                         }
@@ -270,31 +342,23 @@ class ImportaTreinamento extends Command
                     }
                 }
 
-                // Commit da transação do chunk
                 \DB::commit();
 
                 $totalProcessados += $chunk->count();
                 $this->info("Chunk processado com sucesso. Total acumulado: {$totalProcessados} registros");
 
-                // Se estiver no modo substituir-vencimentos, fazer a limpeza final
                 if ($this->option('substituir-vencimentos')) {
                     $this->finalizarSubstituicaoVencimentos();
                 }
 
             } catch (\Exception $e) {
-                // Rollback apenas deste chunk
                 \DB::rollback();
                 $this->error("Erro no chunk. Fazendo rollback do chunk atual.");
                 $this->error("Erro: " . $e->getMessage());
-
-                // Decidir se deve continuar com próximo chunk ou abortar tudo
                 $this->warn("Continuando com próximo chunk...");
             }
 
-            // Limpar cache após cada chunk para economizar memória
             $this->limparCache();
-
-            // Liberar memória após cada chunk
             gc_collect_cycles();
         });
 

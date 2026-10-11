@@ -41,6 +41,7 @@ class GeradorModeloImportacaoTreinamento
         $dados->setCellValue('A1', 'colaborador');
         $dados->setCellValue('B1', 'treinamento');
         $dados->setCellValue('C1', 'data_treinamento');
+        $dados->setCellValue('D1', 'data_vencimento');
 
         $listas = $spreadsheet->createSheet();
         $listas->setTitle(self::ABA_LISTAS);
@@ -59,6 +60,7 @@ class GeradorModeloImportacaoTreinamento
         $dados->getColumnDimension('A')->setWidth(55);
         $dados->getColumnDimension('B')->setWidth(55);
         $dados->getColumnDimension('C')->setWidth(18);
+        $dados->getColumnDimension('D')->setWidth(18);
         $listas->getColumnDimension('A')->setWidth(55);
         $listas->getColumnDimension('B')->setWidth(55);
 
@@ -234,25 +236,40 @@ class GeradorModeloImportacaoTreinamento
             $sheetDados->setDataValidation("B2:B{$ultimaLinha}", $validationTreinamento);
         }
 
+        $this->aplicarValidacaoData(
+            $sheetDados,
+            "C2:C{$ultimaLinha}",
+            'Data do treinamento',
+            'Formato obrigatório: ' . self::FORMATO_DATA . '. Exemplo: ' . self::EXEMPLO_DATA,
+            'C2'
+        );
+        $this->aplicarValidacaoData(
+            $sheetDados,
+            "D2:D{$ultimaLinha}",
+            'Data de vencimento (opcional)',
+            'Opcional. Vazio = data_treinamento + prazo do treinamento. Preenchido: ' . self::FORMATO_DATA,
+            'D2'
+        );
+    }
+
+    private function aplicarValidacaoData($sheetDados, string $range, string $titulo, string $prompt, string $celulaFormula): void
+    {
         $validationData = new DataValidation();
         $validationData->setType(DataValidation::TYPE_CUSTOM);
         $validationData->setErrorStyle(DataValidation::STYLE_WARNING);
         $validationData->setAllowBlank(true);
         $validationData->setShowInputMessage(true);
         $validationData->setShowErrorMessage(true);
-        $validationData->setPromptTitle('Data do treinamento');
-        $validationData->setPrompt(
-            'Formato obrigatório: ' . self::FORMATO_DATA . '. Exemplo: ' . self::EXEMPLO_DATA
-        );
+        $validationData->setPromptTitle($titulo);
+        $validationData->setPrompt($prompt);
         $validationData->setErrorTitle('Formato de data');
         $validationData->setError(
-            'Use o formato ' . self::FORMATO_DATA . ' (exemplo: ' . self::EXEMPLO_DATA . ').'
+            'Use o formato ' . self::FORMATO_DATA . ' (exemplo: ' . self::EXEMPLO_DATA . ') ou deixe em branco.'
         );
-        // Aceita texto dd/mm/aaaa ou célula de data do Excel
         $validationData->setFormula1(
-            'OR(ISNUMBER(C2),AND(LEN(C2)=10,MID(C2,3,1)="/",MID(C2,6,1)="/"))'
+            'OR(' . $celulaFormula . '="",ISNUMBER(' . $celulaFormula . '),AND(LEN(' . $celulaFormula . ')=10,MID(' . $celulaFormula . ',3,1)="/",MID(' . $celulaFormula . ',6,1)="/"))'
         );
-        $sheetDados->setDataValidation("C2:C{$ultimaLinha}", $validationData);
+        $sheetDados->setDataValidation($range, $validationData);
     }
 
     private function aplicarFormatoData($sheetDados): void
@@ -261,10 +278,18 @@ class GeradorModeloImportacaoTreinamento
         $sheetDados->getStyle("C2:C{$ultimaLinha}")
             ->getNumberFormat()
             ->setFormatCode('DD/MM/YYYY');
+        $sheetDados->getStyle("D2:D{$ultimaLinha}")
+            ->getNumberFormat()
+            ->setFormatCode('DD/MM/YYYY');
         $sheetDados->getComment('C1')
             ->getText()
             ->createTextRun(
                 'Preencha a data no formato ' . self::FORMATO_DATA . '. Exemplo: ' . self::EXEMPLO_DATA
+            );
+        $sheetDados->getComment('D1')
+            ->getText()
+            ->createTextRun(
+                'Opcional. Vazio = calcula com o prazo do treinamento (igual carteira). Preenchido: ' . self::FORMATO_DATA
             );
     }
 
@@ -282,10 +307,12 @@ class GeradorModeloImportacaoTreinamento
             '4) Coluna data_treinamento: formato obrigatório ' . self::FORMATO_DATA . '.',
             '   Exemplo válido: ' . self::EXEMPLO_DATA,
             '   Evite: 15-03-2026, 15.03.2026, 3/15/2026 ou 15/03/26.',
-            '5) Salve o arquivo .xlsx e envie na tela Importação.',
-            '6) O resultado fica na aba Importados (CSV de sucesso e de erro), no sino e por e-mail.',
-            '',
-            'Documentação completa: docs/importacao/IMPORTACAO_TREINAMENTOS.md',
+            '5) Coluna data_vencimento (opcional):',
+            '   - Vazia: usa data_treinamento + prazo do treinamento (igual carteira).',
+            '   - Preenchida: usa o valor informado em ' . self::FORMATO_DATA . '.',
+            '6) Criar e atualizar seguem o mesmo fluxo da carteira/etiquetas.',
+            '7) Salve o arquivo .xlsx e envie na tela Importação.',
+            '8) O resultado fica na aba Importados (CSV de sucesso e de erro), no sino e por e-mail.',
         ];
 
         foreach ($linhas as $index => $texto) {

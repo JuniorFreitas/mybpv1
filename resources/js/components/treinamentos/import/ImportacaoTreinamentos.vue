@@ -44,19 +44,24 @@
               <code>dd/mm/aaaa</code> — exemplo: <code>15/03/2026</code>.
             </li>
             <li class="mb-2">
-              Se o treinamento já existir, a importação <strong>apenas atualiza</strong> a data e registra o histórico
-              (mesmo comportamento da carteira).
+              Em <strong>data_vencimento</strong> (opcional): deixe vazio para calcular com o prazo do treinamento
+             , ou preencha em <code>dd/mm/aaaa</code>.
+            </li>
+            <li class="mb-2">
+              Criar e atualizar seguem o <strong>mesmo fluxo da carteira/etiquetas</strong>:
+              cria se não existir; se existir, só altera aquele vencimento e registra o histórico.
             </li>
             <li class="mb-2">Envie o arquivo .xlsx nesta tela e acompanhe o resultado na aba <strong>Importados</strong>.</li>
           </ol>
           <div class="alert alert-light border mb-0">
-            <strong>Formato da data (obrigatório):</strong> <code>dd/mm/aaaa</code><br>
+            <strong>Datas:</strong> <code>dd/mm/aaaa</code> — <code>data_treinamento</code> obrigatória;
+            <code>data_vencimento</code> opcional.<br>
             <span class="text-muted">
               Exemplos válidos: <code>01/05/2026</code>, <code>15/03/2026</code>.
               Evite <code>15-03-2026</code>, <code>15.03.2026</code>, <code>3/15/2026</code> ou ano com 2 dígitos.
             </span>
             <div class="small text-muted mt-2 mb-0">
-              O modelo também traz a aba <strong>Instrucoes</strong> com este resumo.
+              Processamento em lote (chunks). O modelo também traz a aba <strong>Instrucoes</strong>.
             </div>
           </div>
         </div>
@@ -70,7 +75,8 @@
           <p class="text-muted mb-3">
             Baixe a planilha Excel com as listas de colaboradores e treinamentos da sua empresa.
             Use os dropdowns das colunas <strong>colaborador</strong> e <strong>treinamento</strong>.
-            Na coluna <strong>data_treinamento</strong>, use <code>dd/mm/aaaa</code>.
+            Em <strong>data_treinamento</strong>, use <code>dd/mm/aaaa</code>.
+            Em <strong>data_vencimento</strong> (opcional), deixe vazio para o prazo padrão da carteira.
           </p>
           <a :href="urlModelo" class="btn btn-outline-primary" :class="{ disabled: baixandoModelo }" @click="onBaixarModelo">
             <i class="fa fa-download"></i> Baixar modelo Excel

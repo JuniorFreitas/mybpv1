@@ -47,7 +47,13 @@ class GeradorModeloImportacaoTreinamentoTest extends TestCase
         $this->assertSame('colaborador', $dados->getCell('A1')->getValue());
         $this->assertSame('treinamento', $dados->getCell('B1')->getValue());
         $this->assertSame('data_treinamento', $dados->getCell('C1')->getValue());
-        $this->assertStringContainsString('dd/mm/aaaa', (string) $instrucoes->getCell('A1')->getValue() . $instrucoes->getCell('A6')->getValue());
+        $this->assertSame('data_vencimento', $dados->getCell('D1')->getValue());
+        $textoInstrucoes = '';
+        foreach ($instrucoes->toArray() as $linha) {
+            $textoInstrucoes .= implode(' ', $linha ?? []);
+        }
+        $this->assertStringContainsString('dd/mm/aaaa', $textoInstrucoes);
+        $this->assertStringContainsString('data_vencimento', $textoInstrucoes);
     }
 
     public function testGerarIncluiListasDoTenant(): void

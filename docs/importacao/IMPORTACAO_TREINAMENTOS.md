@@ -6,7 +6,7 @@ Guia para importar treinamentos em lote via planilha Excel no MyBP.
 
 ## 1. Objetivo
 
-Registrar ou atualizar treinamentos de colaboradores a partir de uma planilha `.xlsx`, com processamento em segundo plano, notificação no sino, e-mail e relatório na aba **Importados** (CSV de sucesso e de erro).
+Registrar ou atualizar treinamentos de colaboradores a partir de uma planilha `.xlsx`, com o **mesmo comportamento da carteira/etiquetas** (criar ou atualizar um vencimento por linha), processamento em segundo plano em **lotes**, notificação no sino, e-mail e relatório na aba **Importados**.
 
 **Público:** usuários de RH/treinamento com a habilidade `treinamento_importacao`.
 
@@ -28,7 +28,8 @@ Registrar ou atualizar treinamentos de colaboradores a partir de uma planilha `.
 3. Em cada linha (a partir da 2):
    - **colaborador** — escolha no dropdown (formato `feedback_id|cpf|nome|cargo`).
    - **treinamento** — escolha no dropdown (formato `vencimento_id|contrato|label`).
-   - **data_treinamento** — preencha a data no formato abaixo.
+   - **data_treinamento** — preencha a data no formato abaixo (obrigatório).
+   - **data_vencimento** — opcional (veja seção 5).
 4. Salve o `.xlsx` e envie pela dropzone da tela.
 5. Acompanhe o resultado na aba **Importados**, no sino e no e-mail.
 
@@ -36,102 +37,117 @@ Tamanho máximo recomendado do arquivo: **20 MB**.
 
 ---
 
-## 4. Formato da data (`data_treinamento`)
+## 4. Formato das datas
 
-| Regra | Detalhe |
-|-------|---------|
-| Formato obrigatório | **dd/mm/aaaa** |
-| Exemplo válido | `15/03/2026` |
-| Separador | barra `/` (não use ponto nem hífen na digitação) |
-| Dia e mês | sempre com 2 dígitos (`01/05/2026`, não `1/5/2026`) |
-| Ano | 4 dígitos |
+| Coluna | Obrigatório | Formato |
+|--------|-------------|---------|
+| `data_treinamento` | Sim | **dd/mm/aaaa** |
+| `data_vencimento` | Não | **dd/mm/aaaa** ou vazio |
 
-### O que o sistema aceita
-
-- Texto digitado como **dd/mm/aaaa** (recomendado).
-- Célula de data do Excel formatada como data (o sistema converte para dd/mm/aaaa).
-- Valor ISO `aaaa-mm-dd` (convertido internamente para dd/mm/aaaa).
+Exemplos válidos: `15/03/2026`, `01/05/2026`.
 
 ### O que evitar
 
 - `15-03-2026` ou `15.03.2026`
 - `3/15/2026` (padrão americano)
 - `15/03/26` (ano com 2 dígitos)
-- Célula vazia quando a linha tem colaborador/treinamento
 
-No modelo Excel, a coluna **data_treinamento** exibe uma mensagem de ajuda com o formato e o exemplo.
+O Excel também aceita célula de data nativa (convertida para dd/mm/aaaa).
 
 ---
 
-## 5. Estrutura da planilha
+## 5. `data_vencimento` (opcional)
 
-### 5.1 Aba Dados
+| Valor na planilha | Comportamento (igual carteira) |
+|-------------------|--------------------------------|
+| **Vazio** | `data_vencimento` = `data_treinamento` + `prazo_fixo` do vencimento |
+| **Preenchido** | Usa a data informada no Excel |
+
+---
+
+## 6. Estrutura da planilha
+
+### 6.1 Aba Dados
 
 | Coluna | Cabeçalho | Obrigatório | Conteúdo |
 |--------|-----------|-------------|----------|
 | A | colaborador | Sim | Valor do dropdown da aba Listas |
 | B | treinamento | Sim | Valor do dropdown da aba Listas |
 | C | data_treinamento | Sim | Data **dd/mm/aaaa** |
+| D | data_vencimento | Não | Data **dd/mm/aaaa** ou vazio |
 
 - Não renomeie nem remova a linha de cabeçalho.
+- Planilhas antigas só com A–C continuam válidas (`data_vencimento` = vazio → prazo_fixo).
 - Linhas totalmente vazias são ignoradas.
-- Uma linha = um treinamento para um colaborador.
+- Uma linha = um “salvar card” da carteira (um vencimento para um colaborador).
 
-### 5.2 Aba Listas
+### 6.2 Aba Listas
 
 Preenchida automaticamente pelo sistema (não edite):
 
 - Coluna A: treinamentos (`vencimento_id|contrato|label`)
 - Coluna B: colaboradores (`feedback_id|cpf|nome|cargo`)
 
-### 5.3 Aba Instrucoes
+### 6.3 Aba Instrucoes
 
-Resumo do manual dentro do próprio arquivo modelo (formato da data, colunas e fluxo).
+Resumo do manual dentro do próprio arquivo modelo.
 
 ---
 
-## 6. Criação, atualização e histórico
+## 7. Criação, atualização e histórico (paridade carteira)
+
+Salvar na carteira e importar uma linha usam o mesmo domínio:
 
 | Situação | Comportamento |
 |----------|----------------|
-| Colaborador ainda sem treinamento | Cria o treinamento, vincula o vencimento e registra histórico |
-| Treinamento já existe | **Somente atualiza** a data/vencimento importado; não apaga os demais vencimentos |
-| Mesmo vencimento já vinculado | Atualiza `data_treinamento` / `data_vencimento` e registra histórico |
-| Histórico | Igual à carteira (`atualizarVencimento`): registro **1 a 1** do vencimento alterado |
+| Sem `Treinamento` para o `feedback_id` | Cria (`tipo=Fixo`, `cadastrou=usuário`) e vincula o vencimento |
+| Já existe `Treinamento` | Não duplica; altera só aquele `vencimento_id` |
+| Vencimento já vinculado | Atualiza datas (equivalente a detach+attach); preserva `numero_fat` / `arquivo_id` |
+| Vencimento ainda não vinculado | Attach novo |
+| Outros vencimentos do colaborador | Permanecem intactos |
+| Histórico | Registro **1 a 1** do vencimento alterado (`removido=false`) |
 
-Ou seja: reimportar a mesma linha atualiza o que já existe e mantém o histórico, sem duplicar o treinamento.
+**Idempotência:** reimportar a mesma linha (`feedback_id` + `vencimento_id`) deixa o mesmo estado final.
+
+**Sem deduplicação da planilha:** linhas repetidas são processadas na ordem do arquivo; a **última** prevalece no banco; **todas** entram no CSV de resultado.
 
 ---
 
-## 7. Resultado da importação
+## 8. Performance (processamento em lote)
 
-Ao concluir:
+A importação da tela processa em chunks (~1000 linhas), com preload enxuto e multi-insert/update (mesmo espírito do export CIH), sem N+1 linha a linha.
+
+---
+
+## 9. Resultado da importação
 
 | Canal | O que aparece |
 |-------|----------------|
-| Aba **Importados** | Total, importados com sucesso, erros + CSV de sucesso e CSV de erro |
+| Aba **Importados** | Total, sucessos, erros + CSV de sucesso e de erro |
 | Sino | Notificação de conclusão com os totais |
-| E-mail | Relatório completo (mesmo conteúdo do CSV consolidado) |
+| E-mail | Relatório completo |
 | Meus Downloads | Cópia do relatório consolidado |
 
 ---
 
-## 8. Erros comuns
+## 10. Erros comuns
 
 | Situação | O que fazer |
 |----------|-------------|
-| Data rejeitada / inválida | Use **dd/mm/aaaa** (ex.: `15/03/2026`) |
-| Colaborador não aparece no dropdown | Confirme se está encaminhado a treinamento e ativo na empresa |
-| Treinamento não aparece | Confirme se o vencimento está ativo no cadastro |
-| Cabeçalhos inválidos | Baixe novamente o modelo e não altere A1/B1/C1 |
-| Planilha sem linhas válidas | Preencha colaborador, treinamento e data em pelo menos uma linha |
+| Data rejeitada / inválida | Use **dd/mm/aaaa** |
+| Colaborador não aparece no dropdown | Confirme encaminhamento a treinamento e vínculo ativo |
+| Treinamento não aparece | Confirme vencimento ativo no cadastro |
+| Cabeçalhos inválidos | Baixe novamente o modelo (A–D) |
+| Planilha sem linhas válidas | Preencha colaborador, treinamento e data_treinamento |
 
 ---
 
-## 9. Referência técnica (equipe)
+## 11. Referência técnica (equipe)
 
 - UI: `GET/POST /g/treinamento/import`, histórico e download de CSV
-- Job: `ImportacaoTreinamentoJob` → `mybp:importa-treinamento`
-- Modelo: `GeradorModeloImportacaoTreinamento`
-- Leitura: `LeitorPlanilhaImportacaoTreinamento` (normaliza data para `d/m/Y`)
+- Job: `ImportacaoTreinamentoJob` → `mybp:importa-treinamento` (sem flags legadas de limpar/substituir)
+- Lote: `ImportadorLoteTreinamentoService::processarChunk`
+- Modelo: `GeradorModeloImportacaoTreinamento` (coluna D `data_vencimento`)
+- Leitura: `LeitorPlanilhaImportacaoTreinamento` (A–D; compatível A–C)
+- Paridade: `TreinamentoController::atualizarVencimento`
 - Habilidade: `treinamento_importacao`

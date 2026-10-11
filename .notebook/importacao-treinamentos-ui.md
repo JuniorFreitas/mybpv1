@@ -7,15 +7,16 @@ Tela web para baixar Excel interativo por tenant e enviar planilha; job chama `m
 - UI: `GET/POST /g/treinamento/import` + `GET .../import/modelo` — `ImportacaoTreinamentoController` (`can:treinamento_importacao`)
 - Vue: `resources/js/components/treinamentos/import/ImportacaoTreinamentos.vue`
 - Job: `ImportacaoTreinamentoJob`
-- Modelo: `GeradorModeloImportacaoTreinamento` (abas Dados + Listas + DataValidation)
-- Leitor: `LeitorPlanilhaImportacaoTreinamento` → JSON shape do comando
+- Modelo: `GeradorModeloImportacaoTreinamento` (A–D: + `data_vencimento` opcional)
+- Leitor: `LeitorPlanilhaImportacaoTreinamento` → JSON (compatível A–C)
+- Lote: `ImportadorLoteTreinamentoService::processarChunk` (paridade `atualizarVencimento`)
 
 ## Flow
-1. Download modelo → abas Dados + Listas + Instrucoes; data_treinamento em **dd/mm/aaaa**
+1. Download modelo → Dados + Listas + Instrucoes; `data_treinamento` obrig.; `data_vencimento` opcional (vazio = prazo_fixo)
 2. Upload .xlsx → local + S3 → cria `importacao_treinamentos` (status processando) → job (lock por empresa)
 3. Job lê planilha → JSON em `storage/app/importacao_treinamentos/{empresa}/{uuid}.json`
 4. `Artisan::call('mybp:importa-treinamento', --path=..., --user_id, --gerar-relatorio, --relatorio-path, --enviar-email opcional)`
-5. Comando: se treinamento existe → só atualiza vencimento/data; histórico 1:1 (`salvarHistoricoVencimento`, igual carteira)
+5. Comando (sem flags limpar/substituir): chunks via `ImportadorLoteTreinamentoService` — cria/atualiza só por `feedback_id`, histórico 1:1, preserva FAT/arquivo
 6. `DivisorRelatorioImportacaoTreinamento` → CSV sucesso/erro no S3; `Exportacao` + sino + e-mail
 7. UI: abas Importação / Importados (`GET historico`, `GET historico/{id}/csv/{sucesso|erro}`)
 
