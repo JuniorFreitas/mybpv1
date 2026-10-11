@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyBPIN — sistema integrado de RH, DP, SST e processos digitais</title>
+<meta name="description" content="Sistema integrado de soluções em gestão de RH, DP, SST e processos 100% digitais. Desde 2019 no mercado.">
+<meta name="theme-color" content="#F6F7F9">
+<link rel="icon" type="image/webp" href="img/mybpin-logo-mono-escuro.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&display=swap">
+<!--
+  Tipografia Montserrat (400–800 + itálico).
+  WhatsApp: troque 5500000000000 pelo número comercial.
+-->
+<style>
+:root {
+  --bg: #F6F7F9;
+  --ink: #121826;
+  --muted: #5B6578;
+  --line: #E4E7EE;
+  --card: #FFFFFF;
+  --primary: #0047D6;
+  --primary-ink: #0039AD;
+  --sky: #2F6FED;
+  --sky-soft: #EEF3FC;
+  --success: #147A3D;
+  --success-soft: #EAF8F0;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(18, 24, 38, .04), 0 12px 28px -18px rgba(18, 24, 38, .22);
+  --shadow-lg: 0 1px 2px rgba(18, 24, 38, .05), 0 28px 56px -28px rgba(18, 24, 38, .28);
+  --titulo: 'Montserrat', 'Segoe UI', sans-serif;
+  --texto: 'Montserrat', 'Segoe UI', sans-serif;
+  --topo: 68px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--topo) + 12px); }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1.0625rem/1.65 var(--texto); letter-spacing: .01em; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; overflow-x: clip; }
+img { max-width: 100%; height: auto; display: block; }
+[hidden] { display: none !important; }
+h1, h2, h3 { font-family: var(--titulo); font-weight: 700; line-height: 1.12; letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+p, ul, ol { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--sky); outline-offset: 3px; border-radius: 6px; }
+.container { width: 100%; max-width: 1120px; margin-inline: auto; padding-inline: 24px; }
+.secao { padding-block: clamp(64px, 8vw, 104px); }
+.cabeca { max-width: 38em; margin-bottom: clamp(28px, 4vw, 44px); }
+.cabeca.centro { text-align: center; margin-inline: auto; }
+.cabeca h2 { font-size: clamp(1.75rem, 3.4vw, 2.5rem); font-weight: 700; }
+.cabeca p { margin-top: 14px; color: var(--muted); font-size: 1.125rem; font-weight: 400; line-height: 1.6; max-width: 36em; }
+.cabeca.centro p { margin-inline: auto; }
+
+.botao { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 12px 20px; border-radius: 8px; border: 1px solid transparent; background: var(--primary); color: #fff; font: 600 .9688rem/1.2 var(--texto); letter-spacing: .01em; text-decoration: none; cursor: pointer; transition: background .15s ease, border-color .15s ease, color .15s ease; box-shadow: none; }
+.botao:hover { background: var(--primary-ink); transform: none; }
+.botao svg { width: 16px; height: 16px; }
+.botao-ghost { background: transparent; color: var(--ink); border-color: #C9D0DC; box-shadow: none; }
+.botao-ghost:hover { background: #EEF1F6; border-color: #B8C0CF; }
+.botao-escuro { background: var(--ink); }
+.botao-escuro:hover { background: #0A101C; }
+
+.pill { display: inline-flex; align-items: center; gap: 10px; padding: 0; border-radius: 0; font: 600 .8125rem/1.2 var(--texto); letter-spacing: .04em; text-transform: uppercase; background: transparent; color: var(--muted); text-decoration: none; }
+.pill .novo { background: transparent; color: var(--primary); padding: 0; border-radius: 0; font-size: inherit; letter-spacing: inherit; text-transform: uppercase; }
+.pill .novo::after { content: "·"; margin-left: 10px; color: #A8B0BF; font-weight: 500; }
+.checks { display: flex; flex-wrap: wrap; gap: 12px 22px; margin-top: 2px; }
+.checks li { display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: .9375rem; color: var(--muted); }
+.checks svg { width: 18px; height: 18px; color: var(--success); flex: none; }
+
+.js [data-entra] { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .7s cubic-bezier(.2, .7, .2, 1); transition-delay: var(--d, 0ms); }
+.js [data-entra].entrou { opacity: 1; transform: none; }
+
+/* Topo */
+.topo { position: sticky; top: 0; z-index: 40; background: rgba(246, 247, 249, .9); backdrop-filter: blur(12px); border-bottom: 1px solid transparent; }
+.topo.solido { border-color: var(--line); background: rgba(255, 255, 255, .94); }
+.topo .container { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: var(--topo); }
+.topo-logo img { width: 124px; }
+.topo nav { display: flex; gap: 2px; }
+.topo nav a { text-decoration: none; font-weight: 500; font-size: .9375rem; color: var(--muted); padding: 8px 12px; border-radius: 6px; }
+.topo nav a:hover { color: var(--ink); background: transparent; }
+.topo-acoes { display: flex; align-items: center; gap: 10px; }
+.topo-acoes .entrar { font-weight: 600; font-size: .9375rem; color: var(--ink); text-decoration: none; padding: 8px 10px; }
+.topo-acoes .entrar:hover { color: var(--primary); }
+.topo .botao { min-height: 40px; padding: 8px 16px; font-size: .875rem; }
+
+/* Hero */
+.hero { position: relative; padding: clamp(36px, 5.5vw, 64px) 0 clamp(48px, 6vw, 80px); overflow: hidden; }
+.hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #EEF1F6 0%, transparent 62%); pointer-events: none; }
+.hero-grade { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(28px, 5vw, 56px); align-items: center; }
+.hero-copy { display: grid; gap: 20px; justify-items: start; }
+.hero h1 { font-size: clamp(2.25rem, 4.8vw, 3.5rem); max-width: 12em; font-weight: 800; line-height: 1.08; }
+.hero h1 .linha { display: block; }
+.hero h1 .marca { position: relative; display: inline; color: var(--primary); font-style: italic; font-weight: 700; }
+.hero h1 .marca::after { display: none; }
+.hero .lead { font-size: clamp(1.0625rem, 1.7vw, 1.1875rem); color: var(--muted); max-width: 36em; font-weight: 400; line-height: 1.65; }
+.hero-acoes { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.hero-cena { position: relative; min-height: 420px; display: grid; place-items: center; }
+.hero-blob { position: absolute; width: min(380px, 86%); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 40% 40%, rgba(0, 71, 214, .12), transparent 68%); filter: blur(2px); }
+.hero-tela { position: relative; z-index: 1; width: min(100%, 480px); border-radius: 12px; border: 1px solid var(--line); background: var(--card); box-shadow: var(--shadow-lg); overflow: hidden; }
+.hero-tela img { width: 100%; aspect-ratio: 16 / 11; object-fit: cover; object-position: top; }
+.flutuante { position: absolute; z-index: 2; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; box-shadow: var(--shadow); max-width: 210px; animation: flutuar 5.5s ease-in-out infinite alternate; }
+.flutuante.escuro { background: var(--ink); border-color: transparent; color: #E8ECF4; }
+.flutuante b { display: block; font: 600 .6875rem/1.2 var(--texto); letter-spacing: .06em; text-transform: uppercase; opacity: .65; margin-bottom: 4px; }
+.flutuante strong { display: block; font: 700 1.0625rem/1.25 var(--titulo); letter-spacing: -.01em; color: inherit; }
+.flutuante span { display: block; margin-top: 4px; font-size: .8125rem; font-weight: 500; color: var(--muted); }
+.flutuante.escuro span { color: #A8B2C4; }
+.flutuante .ok { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; padding: 3px 8px; border-radius: 6px; background: var(--success-soft); color: var(--success); font: 600 .75rem var(--texto); }
+.f1 { left: 0; top: 12%; animation-delay: 0s; }
+.f2 { right: 0; top: 28%; animation-delay: -.8s; }
+.f3 { left: 4%; bottom: 10%; animation-delay: -1.6s; }
+.f4 { right: 2%; bottom: 18%; animation-delay: -2.2s; }
+@keyframes flutuar { to { transform: translateY(-6px); } }
+
+/* Stats */
+.stats { border-block: 1px solid var(--line); background: var(--card); }
+.stats .container { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.stats div { padding: 28px 14px; text-align: center; }
+.stats div + div { border-left: 1px solid var(--line); }
+.stats b { display: block; font: 700 clamp(1.5rem, 2.8vw, 1.875rem)/1.15 var(--titulo); letter-spacing: -.015em; }
+.stats span { display: block; margin-top: 6px; color: var(--muted); font-size: .875rem; font-weight: 500; }
+
+
+/* Jornada (autoplay) */
+.jornada-wrap { background: #EFF1F5; border-block: 1px solid var(--line); }
+.jornada-cabecalho { padding-block: clamp(56px, 7vw, 88px) clamp(20px, 3vw, 32px); }
+.jornada-cabecalho h2 mark { background: transparent; color: var(--primary); font-style: italic; font-weight: 700; padding: 0; border-radius: 0; }
+.jornada-cabecalho .sub { margin-top: 14px; color: var(--muted); font-size: 1.125rem; font-weight: 400; max-width: 40em; line-height: 1.6; }
+.jornada { padding-block: 0 clamp(40px, 6vw, 72px); --px: 0; --py: 0; }
+.jornada-grade { display: grid; gap: 24px; }
+.trilho { display: none; }
+.ficha { display: none; }
+.arraste { display: none; }
+.jornada-controles { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 20px; }
+.jornada-play { appearance: none; position: relative; width: 48px; height: 48px; border: 0; padding: 0; border-radius: 50%; background: var(--card); box-shadow: var(--shadow); cursor: pointer; color: var(--ink); flex: none; }
+.jornada-play:hover { color: var(--primary); }
+.jornada-play svg.jornada-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.jornada-play .ring-bg { fill: none; stroke: var(--line); stroke-width: 3; }
+.jornada-play .ring-fg { fill: none; stroke: var(--primary); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 113.1; stroke-dashoffset: 113.1; }
+.jornada-play.playing .ring-fg { animation: jornada-load var(--jornada-ms, 6000ms) linear forwards; }
+.jornada-play.pausado .ring-fg { animation-play-state: paused; }
+@keyframes jornada-load { to { stroke-dashoffset: 0; } }
+.jornada-play .icone { position: absolute; inset: 0; display: grid; place-items: center; }
+.jornada-play .icone svg { width: 16px; height: 16px; }
+.jornada-play .ico-play { display: none; margin-left: 2px; }
+.jornada-play.pausado .ico-play { display: block; }
+.jornada-play.pausado .ico-pause { display: none; }
+.jornada-progresso { display: flex; gap: 6px; align-items: center; }
+.jornada-progresso button { appearance: none; border: 0; padding: 0; width: 28px; height: 4px; border-radius: 99px; background: #CBD5E1; cursor: pointer; position: relative; overflow: hidden; transition: background .25s ease, width .25s ease; }
+.jornada-progresso button.atual { background: #BFDBFE; width: 44px; }
+.jornada-progresso button.feito { background: #93C5FD; }
+.jornada-progresso button.atual::after { content: ""; position: absolute; inset: 0; width: 0; background: var(--primary); border-radius: inherit; }
+.jornada-play.playing:not(.pausado) ~ .jornada-progresso button.atual::after { animation: jornada-bar var(--jornada-ms, 6000ms) linear forwards; }
+.jornada-play.pausado ~ .jornada-progresso button.atual::after { animation-play-state: paused; }
+@keyframes jornada-bar { to { width: 100%; } }
+.passos { display: block; position: relative; min-height: 420px; }
+.passo { position: absolute; inset: 0; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 28px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: clamp(18px, 3vw, 28px); box-shadow: var(--shadow); opacity: 0; visibility: hidden; transform: translateY(18px); transition: opacity .45s ease, transform .55s cubic-bezier(.2, .7, .2, 1), visibility 0s .45s; }
+.passo.atual { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; z-index: 1; }
+.passo.passou { transform: translateY(-18px); }
+.passo-figura { position: relative; aspect-ratio: 1; display: grid; place-items: center; overflow: visible; max-width: 360px; margin-inline: auto; transform: translate3d(calc(var(--px, 0) * 10px), calc(var(--py, 0) * 8px), 0); transition: transform .3s ease-out; }
+.passo-figura::before { content: ""; position: absolute; left: 50%; top: 50%; height: 88%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; border: 2px dashed #B9C7E6; animation: girar 38s linear infinite; }
+.passo-figura::after { content: ""; position: absolute; left: 50%; top: 50%; height: 68%; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; background: radial-gradient(closest-side, rgba(0, 71, 214, .2), transparent); animation: pulsar 3.6s ease-in-out infinite; }
+.passo-figura img, .passo-figura b { position: relative; z-index: 1; }
+.passo-figura img { width: 100%; height: 100%; object-fit: contain; scale: 1.12; filter: drop-shadow(0 18px 18px rgba(11, 27, 61, .16)); animation: boiar 4.2s ease-in-out infinite alternate; transform: translate3d(calc(var(--px, 0) * 14px), calc(var(--py, 0) * 10px), 0); transition: transform .3s ease-out; }
+.passo:nth-child(even) .passo-figura img { animation-delay: -2.1s; }
+.passo:nth-child(even) .passo-figura::before { animation-direction: reverse; }
+.passo-texto { display: grid; gap: 10px; align-content: center; min-width: 0; }
+.passo-num { font: 600 1rem var(--texto); color: var(--primary); font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.passo-num span { color: var(--muted); font-weight: 500; }
+.passo h3 { font-size: clamp(1.45rem, 2.5vw, 2.05rem); font-weight: 700; }
+.passo-texto > p:not(.passo-num) { color: var(--muted); font-weight: 400; font-size: 1.0625rem; line-height: 1.6; }
+.passo a { font-weight: 600; color: var(--primary); text-underline-offset: 3px; }
+@keyframes girar { to { rotate: 360deg; } }
+@keyframes pulsar { 50% { scale: 1.22; opacity: .55; } }
+@keyframes boiar { from { translate: 0 7px; } to { translate: 0 -9px; } }
+@keyframes chegar { from { opacity: 0; scale: .55; rotate: -10deg; } 70% { scale: 1.06; rotate: 2deg; } }
+@keyframes subir { from { opacity: 0; translate: 0 18px; } }
+.passo.atual .selo-cena { animation: chegar .6s cubic-bezier(.3, 1.5, .5, 1) .35s both, boiar 3.4s ease-in-out .95s infinite alternate; }
+.passo.atual .passo-figura { animation: chegar .75s cubic-bezier(.3, 1.4, .5, 1) both; }
+.passo.atual .passo-texto > * { animation: subir .5s cubic-bezier(.2, .7, .2, 1) both; }
+.passo.atual .passo-texto > :nth-child(2) { animation-delay: 70ms; }
+.passo.atual .passo-texto > :nth-child(3) { animation-delay: 140ms; }
+.passo.atual .passo-texto > :nth-child(4) { animation-delay: 210ms; }
+.selo-cena { position: absolute; z-index: 2; right: 4%; top: 2%; width: clamp(54px, 27%, 92px); aspect-ratio: 1; padding: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 24%; box-shadow: 0 16px 30px -14px rgba(11, 27, 61, .45); animation: boiar 3.4s ease-in-out -1.2s infinite alternate; }
+.selo-cena.grande { position: relative; right: auto; top: auto; width: 46%; padding: 8%; }
+.selo-cena svg { width: 100%; height: 100%; overflow: visible; display: block; }
+.s-barra { transform-box: fill-box; transform-origin: 50% 100%; animation: s-barra 3s cubic-bezier(.3, 1.3, .5, 1) infinite; }
+@keyframes s-barra { 0%, 8% { transform: scaleY(.15); } 35%, 85% { transform: scaleY(1); } 100% { transform: scaleY(.15); } }
+.s-lupa { animation: s-lupa 3.6s ease-in-out infinite; }
+@keyframes s-lupa { 0%, 10% { transform: translate(-14px, -8px); } 45%, 55% { transform: translate(0, 2px); } 90%, 100% { transform: translate(-10px, 12px); } }
+.s-balao { animation: s-balao 4s cubic-bezier(.3, 1.5, .5, 1) infinite both; }
+.s-balao.b { animation-delay: 2s; }
+@keyframes s-balao { 0%, 4% { transform: scale(0); } 12%, 46% { transform: scale(1); } 54%, 100% { transform: scale(0); } }
+.s-sobe { animation: s-sobe 2.4s ease-in infinite; }
+@keyframes s-sobe { 0% { transform: translateY(6px); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-22px) scale(.6); opacity: 0; } }
+.s-traco { stroke-dasharray: 1; animation: s-traco 3s ease-in-out infinite; }
+@keyframes s-traco { 0%, 8% { stroke-dashoffset: 1; opacity: 1; } 60%, 88% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+.s-luz { fill: #FF6B6B; animation: s-luz 4s steps(1) infinite; }
+@keyframes s-luz { 0%, 80% { fill: #FF6B6B; } 25%, 72% { fill: #22B573; } }
+.s-cancela { animation: s-cancela 4s ease-in-out infinite; }
+@keyframes s-cancela { 0%, 22% { transform: rotate(0deg); } 34%, 70% { transform: rotate(-68deg); } 82%, 100% { transform: rotate(0deg); } }
+.s-gira { animation: s-gira 6s linear infinite; }
+.s-gira.rapido { animation-duration: 3.2s; animation-timing-function: cubic-bezier(.6, 0, .3, 1); }
+@keyframes s-gira { to { transform: rotate(360deg); } }
+.s-vai { animation: s-vai 1.6s ease-in-out infinite alternate; }
+.s-vai.b { animation-direction: alternate-reverse; }
+@keyframes s-vai { from { transform: translateX(-4px); } to { transform: translateX(5px); } }
+.s-risco { stroke-dasharray: 1; stroke-dashoffset: 1; animation: s-risco 4s ease-out infinite both; }
+@keyframes s-risco { 0%, 10% { stroke-dashoffset: 1; } 24%, 90% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 1; } }
+
+@media (min-width: 960px) {
+  .jornada-grade { grid-template-columns: 220px minmax(0, 1fr) 280px; gap: 28px; align-items: stretch; }
+  .trilho { display: block; position: relative; padding-left: 18px; align-self: center; }
+  .trilho::before, .trilho-barra { content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; background: var(--line); }
+  .trilho-barra { background: var(--primary); transform-origin: top; transform: scaleY(0); transition: transform .45s ease; }
+  .trilho-item { appearance: none; border: 0; background: none; cursor: pointer; display: flex; gap: 10px; align-items: baseline; width: 100%; text-align: left; padding: 5px 0; font: 500 .8125rem/1.35 var(--texto); color: #8A93A6; transition: color .2s ease, transform .2s ease; }
+  .trilho-item span { font-variant-numeric: tabular-nums; font-size: .75rem; }
+  .trilho-item:hover { color: var(--ink); }
+  .trilho-item.feito { color: var(--ink); }
+  .trilho-item.atual { color: var(--primary); transform: translateX(6px); }
+  .passos { min-height: 460px; }
+  .passo { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); background: transparent; border: 0; box-shadow: none; padding: 0; border-radius: 0; }
+  .ficha { display: block; position: relative; background: var(--card); border: 1px solid var(--line); border-top: 6px solid var(--primary); border-radius: 10px; padding: 18px 20px 16px; box-shadow: var(--shadow); transform: rotate(.6deg); align-self: center; }
+  .ficha-topo { display: flex; justify-content: space-between; font: 600 .6875rem var(--texto); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .ficha-pessoa { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: center; margin-block: 12px; padding-bottom: 12px; border-bottom: 1px dashed var(--line); }
+  .ficha-pessoa i { width: 52px; height: 52px; border-radius: 6px; background: var(--ink); color: #fff; display: grid; place-items: center; font: normal 700 1.0625rem var(--titulo); }
+  .ficha-pessoa b { display: block; font: 700 1.0625rem/1.25 var(--titulo); }
+  .ficha-pessoa span { font-size: .8125rem; color: var(--muted); line-height: 1.3; display: block; }
+  .ficha ol li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 3px 0; font-size: .75rem; font-weight: 600; color: #8A97AE; transition: color .2s ease; }
+  .ficha ol i { flex: none; width: 15px; height: 15px; border: 2px solid var(--line); border-radius: 3px; position: relative; transition: background-color .2s ease, border-color .2s ease; }
+  .ficha ol li.feito { color: var(--ink); }
+  .ficha ol li.feito i { background: var(--primary); border-color: var(--primary); }
+  .ficha ol li.feito i::after { content: ""; position: absolute; left: 2px; top: 2px; width: 7px; height: 4px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg); }
+  .ficha ol li.atual { color: var(--primary); }
+  .ficha ol li.atual i { border-color: var(--primary); }
+  .ficha-fim { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 4.6em; }
+  .ficha-status { font-size: .8125rem; color: var(--muted); }
+  .ficha-status b { display: block; color: var(--ink); font-size: .9375rem; line-height: 1.3; }
+  .carimbo { padding: 4px 8px; border: 2px solid currentColor; border-radius: 4px; font: 700 .6875rem var(--texto); letter-spacing: .06em; color: var(--primary); transform: rotate(-8deg); opacity: 0; background: rgba(255, 255, 255, .9); }
+  .carimbo.batido { opacity: .92; animation: carimbar .35s cubic-bezier(.3, 1.6, .5, 1) both; }
+  .carimbo.saida { color: #B3261E; }
+  @keyframes carimbar { from { opacity: 0; transform: rotate(-9deg) scale(2.4); } }
+  .jornada-controles { margin-top: 24px; }
+}
+@media (max-width: 959px) {
+  .passo { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .passo-figura { max-width: 280px; }
+  .passos { min-height: 560px; }
+}
+
+/* Dores grid */
+.dores { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.dor { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 24px; display: grid; gap: 10px; min-width: 0; transition: border-color .2s ease, box-shadow .2s ease; }
+.dor:hover { transform: none; box-shadow: var(--shadow); border-color: #D2D7E2; }
+.dor .tag { font: 600 .6875rem/1 var(--texto); letter-spacing: .08em; text-transform: uppercase; color: #9A6A18; }
+.dor h3 { font-size: 1.15rem; font-weight: 700; letter-spacing: -.015em; }
+.dor p { color: var(--muted); font-weight: 400; font-size: .9688rem; line-height: 1.55; }
+.dor .sol { margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--success); font-weight: 600; font-size: .875rem; }
+
+/* Soluções interativas */
+.modulos-secao { background: var(--card); border-block: 1px solid var(--line); }
+.solucoes-shell { border: 1px solid var(--line); border-radius: 16px; background: var(--bg); overflow: hidden; box-shadow: var(--shadow-lg); position: relative; }
+.solucoes-tabs { display: flex; gap: 4px; overflow-x: auto; padding: 12px 12px 0; scrollbar-width: none; border-bottom: 1px solid var(--line); background: #fff; }
+.solucoes-tabs::-webkit-scrollbar { display: none; }
+.solucoes-tab { appearance: none; flex: 1 1 0; min-width: 132px; cursor: pointer; border: 1px solid transparent; background: transparent; border-radius: 10px 10px 0 0; padding: 12px 14px; font: 600 .875rem/1.25 var(--texto); color: var(--muted); transition: color .2s ease, background .2s ease, border-color .2s ease; text-align: left; }
+.solucoes-tab:hover { color: var(--ink); background: #F1F4F9; }
+.solucoes-tab[aria-selected="true"] { color: var(--primary); background: var(--bg); border-color: var(--line); border-bottom-color: var(--bg); margin-bottom: -1px; box-shadow: inset 0 3px 0 var(--primary); }
+.solucoes-tab b { display: block; font: 700 .6875rem/1 var(--texto); letter-spacing: .06em; text-transform: uppercase; opacity: .7; margin-bottom: 4px; }
+.solucoes-progresso { height: 3px; background: #E8ECF4; }
+.solucoes-progresso i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--primary), var(--sky)); }
+.solucoes-shell.rodando:not(.pausado) .solucoes-progresso i { animation: sol-load var(--sol-ms, 7000ms) linear forwards; }
+@keyframes sol-load { to { width: 100%; } }
+.solucoes-painel { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: start; scroll-margin-top: calc(var(--topo) + 16px); }
+.solucoes-painel[hidden] { display: none !important; }
+.solucoes-midia { padding: clamp(20px, 3vw, 28px); display: grid; gap: 16px; align-content: start; border-right: 1px solid var(--line); background: linear-gradient(180deg, #fff 0%, var(--bg) 100%); position: sticky; top: calc(var(--topo) + 12px); }
+.solucoes-foto { border-radius: 12px; border: 1px solid var(--line); overflow: hidden; background: #fff; box-shadow: var(--shadow); }
+.solucoes-foto img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; transition: transform .5s ease; }
+.solucoes-painel:not([hidden]) .solucoes-foto img { animation: sol-foto .55s ease both; }
+@keyframes sol-foto { from { opacity: .55; transform: scale(1.03); } to { opacity: 1; transform: none; } }
+.solucoes-midia h3 { font-size: clamp(1.35rem, 2.4vw, 1.75rem); font-weight: 700; }
+.solucoes-midia .lead-mod { color: var(--muted); font-size: 1rem; line-height: 1.55; margin-top: 8px; }
+.solucoes-midia ul { display: grid; gap: 8px; }
+.solucoes-midia li { display: flex; gap: 10px; align-items: flex-start; font-weight: 600; font-size: .9063rem; }
+.solucoes-midia li svg { width: 18px; height: 18px; color: var(--success); flex: none; margin-top: 2px; }
+.solucoes-recursos { padding: clamp(20px, 3vw, 28px); display: grid; gap: 14px; align-content: start; background: linear-gradient(165deg, var(--sky-soft) 0%, #fff 48%); position: relative; }
+.solucoes-recursos::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--primary); }
+.solucoes-recursos-topo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.solucoes-recursos-topo h4 { font: 700 1.125rem/1.3 var(--texto); margin: 0; letter-spacing: -.01em; }
+.solucoes-badge { display: inline-flex; align-items: center; gap: 6px; padding: 7px 11px; border-radius: 8px; background: #fff; border: 1px solid #C5D4F5; color: var(--primary-ink); font: 700 .75rem/1 var(--texto); letter-spacing: .04em; text-transform: uppercase; box-shadow: 0 1px 0 rgba(0,71,214,.06); }
+.solucoes-badge i { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); animation: sol-pulse 1.6s ease-in-out infinite; }
+@keyframes sol-pulse { 50% { opacity: .35; } }
+.lista-rec { display: grid; gap: 0; background: #fff; border: 1px solid #D7E1F5; border-radius: 12px; box-shadow: inset 0 1px 0 rgba(255,255,255,.8); overflow: hidden; }
+.lista-rec li { color: var(--ink); font-weight: 500; font-size: .9063rem; line-height: 1.4; padding: 10px 14px 10px 46px; position: relative; border-bottom: 1px solid #EEF1F6; counter-increment: rec; animation: sol-item .4s cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i, 0) * 40ms); }
+.lista-rec { counter-reset: rec; }
+.lista-rec li:last-child { border-bottom: 0; }
+.lista-rec li:nth-child(odd) { background: rgba(238, 243, 252, .45); }
+.lista-rec li::before { content: counter(rec, decimal-leading-zero); position: absolute; left: 12px; top: 10px; width: 24px; height: 24px; border-radius: 6px; background: var(--sky-soft); color: var(--primary); font: 700 .6875rem/24px var(--texto); text-align: center; letter-spacing: -.02em; }
+@keyframes sol-item { from { transform: translateX(10px); filter: saturate(.7); } to { transform: none; filter: none; } }
+.solucoes-cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.solucoes-cta .botao { min-height: 44px; }
+.solucoes-hint { font-size: .8125rem; color: var(--muted); font-weight: 500; }
+
+.adicionais { margin-top: clamp(40px, 5vw, 64px); border: 1px solid #D7E1F5; border-radius: 16px; background: linear-gradient(145deg, #EEF3FC 0%, #fff 42%, #F7F8FB 100%); box-shadow: var(--shadow); overflow: hidden; position: relative; }
+.adicionais::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--primary); }
+.adicionais-topo { display: grid; gap: 8px; padding: clamp(22px, 3vw, 32px) clamp(22px, 3vw, 32px) 0; padding-left: clamp(28px, 3.5vw, 40px); }
+.adicionais-selo { display: inline-flex; align-items: center; gap: 8px; width: fit-content; font: 700 .75rem/1 var(--texto); letter-spacing: .06em; text-transform: uppercase; color: var(--primary); }
+.adicionais-selo i { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 0 4px rgba(0, 71, 214, .12); }
+.adicionais-topo h3 { font-size: clamp(1.35rem, 2.4vw, 1.75rem); font-weight: 700; margin: 0; letter-spacing: -.02em; }
+.adicionais-topo p { color: var(--muted); font-size: 1rem; line-height: 1.55; max-width: 42em; margin: 0; }
+.adicionais-grade { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: clamp(18px, 2.5vw, 24px) clamp(22px, 3vw, 32px) clamp(22px, 3vw, 32px); padding-left: clamp(28px, 3.5vw, 40px); }
+.adicionais-item { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; align-items: start; padding: 14px 14px; border: 1px solid #D7E1F5; border-radius: 12px; background: #fff; font: 600 .875rem/1.4 var(--texto); color: var(--ink); min-height: 100%; transition: border-color .15s ease, box-shadow .15s ease; }
+.adicionais-item:hover { border-color: #B8C9F0; box-shadow: var(--shadow); }
+.adicionais-item svg { width: 20px; height: 20px; color: var(--primary); margin-top: 1px; flex: none; }
+.adicionais-rodape { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 0 clamp(22px, 3vw, 32px) clamp(22px, 3vw, 32px); padding-left: clamp(28px, 3.5vw, 40px); }
+.adicionais-rodape p { color: var(--muted); font-size: .875rem; margin: 0; max-width: 36em; }
+.adicionais-rodape .botao { min-height: 44px; }
+
+/* FAQ */
+.faq { max-width: 720px; margin-inline: auto; display: grid; gap: 8px; }
+.faq details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 2px 18px; }
+.faq summary { cursor: pointer; list-style: none; font: 600 1.0625rem/1.4 var(--texto); padding: 16px 0; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font: 500 1.25rem/1 var(--texto); color: var(--muted); }
+.faq details[open] summary::after { content: "−"; }
+.faq details p { color: var(--muted); font-weight: 400; padding: 0 0 16px; line-height: 1.6; }
+
+/* Contato */
+.contato { background: var(--ink); color: #DCE2EE; }
+.contato-caixa { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(28px, 5vw, 56px); align-items: start; }
+.contato-intro { display: grid; gap: 14px; }
+.contato-intro h2 { color: #fff; font-size: clamp(1.75rem, 3.6vw, 2.5rem); font-weight: 700; max-width: 12em; }
+.contato-intro p { color: #A6B0C2; font-weight: 400; line-height: 1.6; max-width: 32em; }
+.contato-form { background: #fff; color: var(--ink); border-radius: 14px; padding: clamp(22px, 3vw, 32px); display: grid; gap: 14px; }
+.campo { display: grid; gap: 6px; }
+.campo label { font: 600 .8125rem/1.2 var(--texto); color: var(--ink); }
+.campo .req { color: #B3261E; }
+.campo input[type="text"],
+.campo input[type="email"],
+.campo input[type="tel"] { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: 500 1rem/1.3 var(--texto); color: var(--ink); background: #fff; }
+.campo input:focus { outline: 2px solid var(--sky); outline-offset: 1px; border-color: var(--sky); }
+.campo-dupla { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.whats-opcoes { display: flex; gap: 10px; flex-wrap: wrap; }
+.whats-opcoes label { display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 8px; font: 600 .9063rem var(--texto); cursor: pointer; background: var(--bg); }
+.whats-opcoes input { accent-color: var(--primary); }
+.whats-opcoes label:has(input:checked) { border-color: var(--primary); background: var(--sky-soft); color: var(--primary-ink); }
+.form-erro { color: #B3261E; font: 500 .875rem var(--texto); min-height: 1.2em; }
+.form-acoes { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 4px; }
+.form-acoes .botao { flex: 1; min-width: 180px; }
+
+/* Rodapé + FAB */
+.rodape { border-top: 1px solid var(--line); color: var(--muted); font-size: .875rem; margin-top: 40px; }
+.rodape .container { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding-block: 28px; }
+.rodape img { width: 110px; }
+.rodape nav { display: flex; flex-wrap: wrap; gap: 16px; }
+.rodape a { text-decoration: none; font-weight: 600; }
+.rodape a:hover { color: var(--ink); }
+.fab-zap { position: fixed; right: 18px; bottom: 18px; z-index: 50; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: #25D366; color: #fff; box-shadow: 0 10px 24px -12px rgba(37, 211, 102, .65); text-decoration: none; transition: transform .2s ease, opacity .25s ease, visibility .25s ease; }
+.fab-zap:hover { transform: translateY(-2px); }
+.fab-zap svg { width: 28px; height: 28px; }
+.fab-zap.oculto { opacity: 0; visibility: hidden; pointer-events: none; }
+
+@media (max-width: 959px) {
+  .topo nav, .topo-acoes .entrar { display: none; }
+  .hero-grade { grid-template-columns: minmax(0, 1fr); }
+  .hero-cena { min-height: 360px; margin-top: 8px; }
+  .flutuante { max-width: 170px; padding: 10px 12px; }
+  .flutuante strong { font-size: 1rem; }
+  .stats .container { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats div:nth-child(3) { border-left: 0; }
+  .stats div:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .dores { grid-template-columns: minmax(0, 1fr); }
+  .solucoes-painel { grid-template-columns: minmax(0, 1fr); }
+  .solucoes-midia { border-right: 0; border-bottom: 1px solid var(--line); position: static; }
+  .solucoes-recursos::before { inset: 0 0 auto 0; width: 100%; height: 4px; }
+  .solucoes-tab { flex: none; }
+  .adicionais-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .contato-caixa { grid-template-columns: minmax(0, 1fr); }
+  .campo-dupla { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .adicionais-grade { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .topo-logo img { width: 112px; }
+  .hero-acoes .botao, .form-acoes .botao { width: 100%; }
+  .f2, .f4 { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .js [data-entra] { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="topo" id="topo">
+  <div class="container">
+    <a class="topo-logo" href="#inicio" aria-label="MyBPIN, início"><img src="img/mybpin-logo-fundo-claro.webp" alt="MyBPIN" width="600" height="159"></a>
+    <nav aria-label="Seções">
+      <a href="#dores">Dores</a>
+      <a href="#jornada">Jornada</a>
+      <a href="#modulos">Módulos</a>
+      <a href="#duvidas">Dúvidas</a>
+      <a href="#contato">Contato</a>
+    </nav>
+    <div class="topo-acoes">
+      <a class="entrar" href="index.html">Ver produto</a>
+      <a class="botao botao-escuro" href="https://wa.me/5500000000000?text=Ol%C3%A1!%20Quero%20conhecer%20o%20MyBPIN." target="_blank" rel="noopener">Falar no WhatsApp</a>
+    </div>
+  </div>
+</header>
+
+<main id="inicio">
+  <section class="hero">
+    <div class="container hero-grade">
+      <div class="hero-copy">
+        <a class="pill" href="#jornada" data-entra><span class="novo">Desde 2019</span> Sistema integrado · 100% digital</a>
+        <h1 data-entra style="--d:60ms"><span class="linha">Gestão de <span class="marca">RH, DP e SST</span>.</span><span class="linha">Processos 100% digitais.</span></h1>
+        <p class="lead" data-entra style="--d:120ms">Sistema integrado de soluções em gestão de RH, DP, SST e processos 100% digitais — recrutamento, admissão, exames, treinamentos, ponto e movimentações num só lugar.</p>
+        <div class="hero-acoes" data-entra style="--d:180ms">
+          <a class="botao botao-escuro" href="https://wa.me/5500000000000?text=Ol%C3%A1!%20Quero%20conhecer%20o%20MyBPIN." target="_blank" rel="noopener">Falar com um consultor <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="botao botao-ghost" href="#modulos">Ver recursos</a>
+        </div>
+        <ul class="checks" data-entra style="--d:220ms">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>RH · DP · SST integrados</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>Processos 100% digitais</li>
+        </ul>
+      </div>
+
+      <div class="hero-cena" data-entra style="--d:100ms" aria-hidden="true">
+        <div class="hero-blob"></div>
+        <div class="hero-tela">
+          <img src="img/dashboard.jpg" alt="" width="800" height="500" fetchpriority="high">
+        </div>
+        <aside class="flutuante escuro f1">
+          <b>Admissões</b>
+          <strong>12 este mês</strong>
+          <span>+3 vs. mês anterior</span>
+        </aside>
+        <aside class="flutuante f2">
+          <b>Vaga aberta</b>
+          <strong>Analista SST</strong>
+          <span class="ok">● Em recrutamento</span>
+        </aside>
+        <aside class="flutuante f3">
+          <b>Novo currículo</b>
+          <strong>Marina Costa</strong>
+          <span>Portal · há 2 min</span>
+        </aside>
+        <aside class="flutuante f4">
+          <b>ASO</b>
+          <strong>Vence em 7 dias</strong>
+          <span class="ok">Alerta enviado</span>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats" aria-label="Números">
+    <div class="container">
+      <div><b>RH</b><span>recrutamento e gente</span></div>
+      <div><b>DP</b><span>admissão, ponto e folha</span></div>
+      <div><b>SST</b><span>ASO, exames e treinamentos</span></div>
+      <div><b>100%</b><span>processos digitais</span></div>
+    </div>
+  </section>
+
+  <section class="secao" id="dores">
+    <div class="container">
+      <div class="cabeca centro" data-entra>
+        <h2>O caos da operação, sem o caos.</h2>
+        <p>Dores de RH, DP e SST que a gente escuta todo dia — e o que muda quando o MyBPIN entra.</p>
+      </div>
+      <div class="dores">
+        <article class="dor" data-entra>
+          <p class="tag">Dor</p>
+          <h3>“Cadê o histórico dessa pessoa?”</h3>
+          <p>Currículo num lugar, exame em outro, pasta compartilhada sem dono.</p>
+          <p class="sol">→ Cadastro único, do currículo ao desligamento.</p>
+        </article>
+        <article class="dor" data-entra>
+          <p class="tag">Dor</p>
+          <h3>“A aprovação sumiu no e-mail”</h3>
+          <p>Vaga, férias e demissão travadas em mensagem.</p>
+          <p class="sol">→ Fluxo com quem aprovou e quando.</p>
+        </article>
+        <article class="dor" data-entra>
+          <p class="tag">Dor</p>
+          <h3>“Em que etapa está o candidato?”</h3>
+          <p>WhatsApp, planilha e memória do recrutador.</p>
+          <p class="sol">→ Portal, triagem e entrevistas rastreadas.</p>
+        </article>
+        <article class="dor" data-entra>
+          <p class="tag">Dor</p>
+          <h3>“Admissão é corre-corre de papel”</h3>
+          <p>Redigitar dados e correr atrás de exame.</p>
+          <p class="sol">→ Pré-admissão digital e processo em sequência.</p>
+        </article>
+        <article class="dor" data-entra>
+          <p class="tag">Dor</p>
+          <h3>“O ASO venceu e ninguém viu”</h3>
+          <p>Prazos de exame, treinamento e férias.</p>
+          <p class="sol">→ Alertas e relatórios de vencimento.</p>
+        </article>
+        <article class="dor" data-entra>
+          <p class="tag">Dor</p>
+          <h3>“A folha de ponto não bate”</h3>
+          <p>Escala num Excel, ocorrência no e-mail.</p>
+          <p class="sol">→ Ponto, conferência e folhas no sistema.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <div class="jornada-wrap" id="jornada">
+    <div class="container jornada-cabecalho">
+      <div class="cabeca" data-entra>
+        <h2>Acompanhe uma colaboradora <mark>da vaga à recontratação</mark>.</h2>
+        <p class="sub">Gestão de mobilização do MyBPIN: onze etapas, do planejamento da vaga ao retorno de quem já passou pela empresa — em RH, DP e SST.</p>
+      </div>
+    </div>
+    <section class="jornada" id="jornada-secao" aria-label="Gestão de mobilização">
+      <div class="container jornada-grade">
+        <nav class="trilho" aria-label="Etapas da mobilização">
+          <i class="trilho-barra" id="trilho-barra" aria-hidden="true"></i>
+          <ol>
+            <li><button type="button" class="trilho-item"><span>01</span>Planejamento de pessoal</button></li>
+            <li><button type="button" class="trilho-item"><span>02</span>Recrutamento</button></li>
+            <li><button type="button" class="trilho-item"><span>03</span>Seleção</button></li>
+            <li><button type="button" class="trilho-item"><span>04</span>Pré-admissão digital</button></li>
+            <li><button type="button" class="trilho-item"><span>05</span>Exames e treinamentos</button></li>
+            <li><button type="button" class="trilho-item"><span>06</span>Admissão</button></li>
+            <li><button type="button" class="trilho-item"><span>07</span>Acessos e portarias</button></li>
+            <li><button type="button" class="trilho-item"><span>08</span>Carteiras e certificados</button></li>
+            <li><button type="button" class="trilho-item"><span>09</span>Controle de movimentação</button></li>
+            <li><button type="button" class="trilho-item"><span>10</span>Desmobilização</button></li>
+            <li><button type="button" class="trilho-item"><span>11</span>Recontratação</button></li>
+          </ol>
+        </nav>
+        <ol class="passos" id="passos">
+          <li class="passo" data-status="Vaga planejada e aprovada"><div class="passo-figura"><img src="https://mybp.com.br/wp-content/uploads/2021/02/PLANEJAMENTO-PESSOAL-768x768.png" alt="" width="768" height="768" loading="lazy"><span class="selo-cena"><svg viewBox="0 0 48 48" aria-hidden="true"><rect class="s-barra" style="animation-delay:0.0s" x="8" y="30" width="6" height="10" rx="2" fill="#DCE7FF"/><rect class="s-barra" style="animation-delay:0.2s" x="17" y="21" width="6" height="19" rx="2" fill="#0047D6"/><rect class="s-barra" style="animation-delay:0.4s" x="26" y="26" width="6" height="14" rx="2" fill="#FFC83D"/><rect class="s-barra" style="animation-delay:0.6000000000000001s" x="35" y="13" width="6" height="27" rx="2" fill="#0047D6"/><rect x="6" y="40" width="36" height="2" rx="1" fill="#C3CEE2"/></svg></span></div><div class="passo-texto"><p class="passo-num">01<span>/11</span></p><h3>Planejamento de pessoal</h3><p>Requisição de vagas e planejamento mensal de movimentações: admissões, férias, demissões, promoções e transferências.</p><a href="#detalhe-rh" data-modulo="rh">Ver recursos de Gestão de RH</a></div></li>
+          <li class="passo" data-status="Currículo no banco de talentos"><div class="passo-figura"><img src="https://mybp.com.br/wp-content/uploads/2021/02/RECRUTAMENTO-768x768.png" alt="" width="768" height="768" loading="lazy"><span class="selo-cena"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="11" width="28" height="4" rx="2" fill="#C3CEE2"/><rect x="7" y="21" width="20" height="4" rx="2" fill="#C3CEE2"/><rect x="7" y="31" width="25" height="4" rx="2" fill="#C3CEE2"/><g class="s-lupa"><circle cx="29" cy="20" r="8" fill="rgba(0,71,214,.12)" stroke="#0047D6" stroke-width="3.5"/><line x1="35" y1="26" x2="41" y2="32" stroke="#0047D6" stroke-width="4" stroke-linecap="round"/></g></svg></span></div><div class="passo-texto"><p class="passo-num">02<span>/11</span></p><h3>Recrutamento</h3><p>Banco de talentos próprio, integração com o “Trabalhe conosco” do seu site e comunicação com candidatos por e-mail e WhatsApp.</p><a href="#detalhe-recrutamento" data-modulo="recrutamento">Ver recursos de Recrutamento &amp; Seleção</a></div></li>
+          <li class="passo" data-status="Aprovada nas entrevistas"><div class="passo-figura"><img src="https://mybp.com.br/wp-content/uploads/2021/02/SELEC%CC%A7A%CC%83O-768x768.png" alt="" width="768" height="768" loading="lazy"><span class="selo-cena"><svg viewBox="0 0 48 48" aria-hidden="true"><g class="s-balao" style="transform-origin:14px 24px"><rect x="5" y="7" width="26" height="17" rx="7" fill="#0047D6"/><path d="M11 23l-2 7 9-7z" fill="#0047D6"/><circle cx="12" cy="15.500" r="2" fill="#fff"/><circle cx="18" cy="15.500" r="2" fill="#fff"/><circle cx="24" cy="15.500" r="2" fill="#fff"/></g><g class="s-balao b" style="transform-origin:36px 42px"><rect x="17" y="24" width="26" height="17" rx="7" fill="#FFC83D"/><path d="M37 40l2 6-9-6z" fill="#FFC83D"/></g></svg></span></div><div class="passo-texto"><p class="passo-num">03<span>/11</span></p><h3>Seleção</h3><p>Entrevistas roteirizadas com RH, gestor e técnico, provas técnicas por e-mail e PDF de resultado integrado do candidato.</p><a href="#detalhe-recrutamento" data-modulo="recrutamento">Ver recursos de Recrutamento &amp; Seleção</a></div></li>
+          <li class="passo" data-status="Documentos enviados pelo celular"><div class="passo-figura"><img src="https://mybp.com.br/wp-content/uploads/2021/02/PRE%CC%81-ADMISSA%CC%83O-DIGITAL-768x768.png" alt="" width="768" height="768" loading="lazy"><span class="selo-cena"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M13 21a7 7 0 0 1 1-14 10 10 0 0 1 19 2 6 6 0 0 1-1 12z" fill="#DCE7FF"/><g class="s-sobe"><rect x="18" y="28" width="12" height="15" rx="2.500" fill="#FFFFFF" stroke="#0047D6" stroke-width="2.200"/><rect x="21" y="32" width="6" height="2" rx="1" fill="#0047D6"/><rect x="21" y="36" width="4" height="2" rx="1" fill="#C3CEE2"/></g></svg></span></div><div class="passo-texto"><p class="passo-num">04<span>/11</span></p><h3>Pré-admissão digital</h3><p>O candidato envia os documentos de admissão online e o RH controla o encaminhamento para exames.</p><a href="#detalhe-dp" data-modulo="dp">Ver recursos de Administração de Pessoal</a></div></li>
+          <li class="passo" data-status="Exame apto, treinamentos feitos"><div class="passo-figura"><img src="https://mybp.com.br/wp-content/uploads/2021/02/CONTROLE-DE-EXAMES-E-TREINAMENTO-768x768.png" alt="" width="768" height="768" loading="lazy"><span class="selo-cena"><svg viewBox="0 0 48 48" aria-hidden="true"><path class="s-traco" pathLength="1" d="M4 26h9l4-11 6 21 5-15 3 5h13" fill="none" stroke="#0047D6" stroke-width="3.200" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><div class="passo-texto"><p class="passo-num">05<span>/11</span></p><h3>Exames e treinamentos</h3><p>Encaminhamento e controle de exames, listas de frequência e avisos programados de vencimento.</p><a href="#detalhe-sst" data-modulo="sst">Ver recursos de Segurança e Treinamentos</a></div></li>
+          <li class="passo" data-status="Contrato emitido e assinado"><div class="passo-figura"><img src="https://mybp.com.br/wp-content/uploads/2021/02/ADMISSA%CC%83O-768x768.png" alt="" width="768" height="768" loading="lazy"><span class="selo-cena"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="10" y="5" width="28" height="38" rx="4" fill="#FFFFFF" stroke="#C3CEE2" stroke-width="2"/><rect x="15" y="12" width="18" height="3" rx="1.500" fill="#C3CEE2"/><rect x="15" y="19" width="12" height="3" rx="1.500" fill="#C3CEE2"/><path class="s-traco" pathLength="1" d="M14 34c3-7 5-7 6-1s3 1 5-4 4 7 9 1" fill="none" stroke="#0047D6" stroke-width="2.600" stroke-linecap="round"/></svg></span></div><div class="passo-texto"><p class="passo-num">06<span>/11</span></p><h3>Admissão</h3><p>Cadastro do colaborador e emissão de contratos, termos e documentos legais, reunidos no dossiê online.</p><a href="#detalhe-dp" data-modulo="dp">Ver recursos de Administração de Pessoal</a></div></li>
+          <li class="passo" data-status="Acesso liberado na portaria"><div class="passo-figura"><img src="https://mybp.com.br/wp-content/uploads/2021/02/ACESSOS-PORTARIA-768x768.png" alt="" width="768" height="768" loading="lazy"><span class="selo-cena"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="12" width="9" height="31" rx="3.500" fill="#0B1B3D"/><circle class="s-luz" cx="11.500" cy="19" r="3"/><rect class="s-cancela" style="transform-origin:13px 29px" x="13" y="26.500" width="30" height="5" rx="2.500" fill="#FFC83D"/></svg></span></div><div class="passo-texto"><p class="passo-num">07<span>/11</span></p><h3>Acessos e portarias</h3><p>Emissão online dos documentos de portaria para liberar o acesso do colaborador.</p><a href="#detalhe-dp" data-modulo="dp">Ver recursos de Administração de Pessoal</a></div></li>
+          <li class="passo" data-status="Carteira de treinamentos emitida"><div class="passo-figura"><img src="https://mybp.com.br/wp-content/uploads/2021/02/ADMISSA%CC%83O-DE-CARTEIRAS-E-CERTIFICADOS-768x768.png" alt="" width="768" height="768" loading="lazy"><span class="selo-cena"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="11" width="38" height="26" rx="5" fill="#FFFFFF" stroke="#C3CEE2" stroke-width="2"/><path d="M5 16a5 5 0 0 1 5-5h28a5 5 0 0 1 5 5v2H5z" fill="#0047D6"/><circle cx="15" cy="27" r="4.500" fill="#C68B5E"/><rect x="23" y="23" width="14" height="3" rx="1.500" fill="#C3CEE2"/><rect x="23" y="29" width="9" height="3" rx="1.500" fill="#C3CEE2"/><g class="s-gira" style="transform-origin:38px 36px"><path d="M38 29l2 4.500 5 .700-3.600 3.500.900 5-4.300-2.400-4.300 2.400.900-5-3.600-3.500 5-.700z" fill="#FFC83D"/></g></svg></span></div><div class="passo-texto"><p class="passo-num">08<span>/11</span></p><h3>Carteiras e certificados</h3><p>Carteiras de treinamentos, certificados e etiquetas de bloqueio emitidos pelo sistema.</p><a href="#detalhe-sst" data-modulo="sst">Ver recursos de Segurança e Treinamentos</a></div></li>
+          <li class="passo" data-status="Transferência registrada no histórico"><div class="passo-figura"><span class="selo-cena grande"><svg viewBox="0 0 48 48" aria-hidden="true"><g class="s-vai"><path d="M8 17h28m-7-7l7 7-7 7" fill="none" stroke="#0047D6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g><g class="s-vai b"><path d="M40 33H12m7-7l-7 7 7 7" fill="none" stroke="#FFC83D" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g></svg></span></div><div class="passo-texto"><p class="passo-num">09<span>/11</span></p><h3>Controle de movimentação</h3><p>Férias, promoções, transferências e ocorrências de ponto, registradas no histórico do colaborador.</p><a href="#detalhe-rh" data-modulo="rh">Ver recursos de Gestão de RH</a></div></li>
+          <li class="passo" data-status="Checklist e baixa de EPIs concluídos"><div class="passo-figura"><img src="https://mybp.com.br/wp-content/uploads/2021/02/DESMOBILIZAC%CC%A7A%CC%83O-768x768.png" alt="" width="768" height="768" loading="lazy"><span class="selo-cena"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="8" width="9" height="9" rx="2" fill="#FFFFFF" stroke="#C3CEE2" stroke-width="2"/><rect x="21" y="11" width="20" height="3" rx="1.500" fill="#C3CEE2"/><path class="s-risco" pathLength="1" style="animation-delay:0.0s" d="M9 12.5l2.500 2.500 4-5" fill="none" stroke="#0047D6" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round"/><rect x="7" y="20" width="9" height="9" rx="2" fill="#FFFFFF" stroke="#C3CEE2" stroke-width="2"/><rect x="21" y="23" width="14" height="3" rx="1.500" fill="#C3CEE2"/><path class="s-risco" pathLength="1" style="animation-delay:0.6s" d="M9 24.5l2.500 2.500 4-5" fill="none" stroke="#0047D6" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round"/><rect x="7" y="32" width="9" height="9" rx="2" fill="#FFFFFF" stroke="#C3CEE2" stroke-width="2"/><rect x="21" y="35" width="18" height="3" rx="1.500" fill="#C3CEE2"/><path class="s-risco" pathLength="1" style="animation-delay:1.2s" d="M9 36.5l2.500 2.500 4-5" fill="none" stroke="#0047D6" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div><div class="passo-texto"><p class="passo-num">10<span>/11</span></p><h3>Desmobilização</h3><p>Checklist de demissão integrado com almoxarifado e SST, baixa de EPIs e entrevista de desligamento.</p><a href="#detalhe-dp" data-modulo="dp">Ver recursos de Administração de Pessoal</a></div></li>
+          <li class="passo" data-status="Recontratação aprovada"><div class="passo-figura"><img src="https://mybp.com.br/wp-content/uploads/2021/02/RECONTRATAC%CC%A7A%CC%83O-768x768.png" alt="" width="768" height="768" loading="lazy"><span class="selo-cena"><svg viewBox="0 0 48 48" aria-hidden="true"><g class="s-gira rapido" style="transform-origin:24px 24px"><path d="M24 9a15 15 0 1 1-13 7.500" fill="none" stroke="#0047D6" stroke-width="4" stroke-linecap="round"/><path d="M5 12l7 .500-1 7.500z" fill="#0047D6" stroke="#0047D6" stroke-width="2" stroke-linejoin="round"/></g><circle cx="24" cy="21" r="4.500" fill="#FFC83D"/><path d="M15.500 33a8.500 8.500 0 0 1 17 0z" fill="#FFC83D"/></svg></span></div><div class="passo-texto"><p class="passo-num">11<span>/11</span></p><h3>Recontratação</h3><p>Histórico preservado e fluxo de aprovação para recontratar quem já passou pela empresa.</p><a href="#detalhe-rh" data-modulo="rh">Ver recursos de Gestão de RH</a></div></li>
+        </ol>
+        <aside class="ficha" aria-label="Ficha de exemplo do colaborador">
+          <p class="ficha-topo"><span>Ficha do colaborador</span><span>Exemplo</span></p>
+          <div class="ficha-pessoa"><i aria-hidden="true">MS</i><div><b>Marina Souza</b><span>Técnica de Segurança do Trabalho</span></div></div>
+          <ol id="ficha-linhas">
+              <li><span>Planejamento de pessoal</span><i aria-hidden="true"></i></li>
+              <li><span>Recrutamento</span><i aria-hidden="true"></i></li>
+              <li><span>Seleção</span><i aria-hidden="true"></i></li>
+              <li><span>Pré-admissão digital</span><i aria-hidden="true"></i></li>
+              <li><span>Exames e treinamentos</span><i aria-hidden="true"></i></li>
+              <li><span>Admissão</span><i aria-hidden="true"></i></li>
+              <li><span>Acessos e portarias</span><i aria-hidden="true"></i></li>
+              <li><span>Carteiras e certificados</span><i aria-hidden="true"></i></li>
+              <li><span>Controle de movimentação</span><i aria-hidden="true"></i></li>
+              <li><span>Desmobilização</span><i aria-hidden="true"></i></li>
+              <li><span>Recontratação</span><i aria-hidden="true"></i></li>
+          </ol>
+          <div class="ficha-fim"><p class="ficha-status">Situação agora<b id="ficha-status">Vaga planejada e aprovada</b></p><span class="carimbo" id="carimbo" aria-hidden="true">ADMITIDA</span></div>
+        </aside>
+      </div>
+      <div class="container">
+        <div class="jornada-controles">
+          <button type="button" class="jornada-play playing" id="jornada-play" aria-label="Pausar jornada" aria-pressed="false" title="Pausar">
+            <svg class="jornada-ring" viewBox="0 0 40 40" aria-hidden="true">
+              <circle class="ring-bg" cx="20" cy="20" r="18"></circle>
+              <circle class="ring-fg" cx="20" cy="20" r="18"></circle>
+            </svg>
+            <span class="icone" aria-hidden="true">
+              <svg class="ico-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+              <svg class="ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
+            </span>
+          </button>
+          <div class="jornada-progresso" id="jornada-dots" aria-label="Progresso da jornada"><button type="button" aria-label="Etapa 1" data-i="0"></button><button type="button" aria-label="Etapa 2" data-i="1"></button><button type="button" aria-label="Etapa 3" data-i="2"></button><button type="button" aria-label="Etapa 4" data-i="3"></button><button type="button" aria-label="Etapa 5" data-i="4"></button><button type="button" aria-label="Etapa 6" data-i="5"></button><button type="button" aria-label="Etapa 7" data-i="6"></button><button type="button" aria-label="Etapa 8" data-i="7"></button><button type="button" aria-label="Etapa 9" data-i="8"></button><button type="button" aria-label="Etapa 10" data-i="9"></button><button type="button" aria-label="Etapa 11" data-i="10"></button></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="secao modulos-secao" id="modulos">
+    <div class="container">
+      <div class="cabeca centro" data-entra>
+        <h2>Soluções do sistema.</h2>
+        <p>Clique em um módulo e veja, na hora, a tela e a lista completa de recursos.</p>
+      </div>
+      <div class="solucoes-shell rodando" data-entra id="solucoes-shell" style="--sol-ms:7000ms">
+        <div class="solucoes-tabs" role="tablist" aria-label="Módulos do sistema">
+          <button type="button" class="solucoes-tab" role="tab" id="tab-recrutamento" aria-controls="detalhe-recrutamento" aria-selected="true" data-modulo="recrutamento"><b>01</b>Recrutamento</button><button type="button" class="solucoes-tab" role="tab" id="tab-rh" aria-controls="detalhe-rh" aria-selected="false" data-modulo="rh"><b>02</b>Gestão de RH</button><button type="button" class="solucoes-tab" role="tab" id="tab-dp" aria-controls="detalhe-dp" aria-selected="false" data-modulo="dp"><b>03</b>Admin. de Pessoal</button><button type="button" class="solucoes-tab" role="tab" id="tab-sst" aria-controls="detalhe-sst" aria-selected="false" data-modulo="sst"><b>04</b>SST &amp; Treinamentos</button><button type="button" class="solucoes-tab" role="tab" id="tab-processos" aria-controls="detalhe-processos" aria-selected="false" data-modulo="processos"><b>05</b>Processos</button>
+        </div>
+        <div class="solucoes-progresso" aria-hidden="true"><i id="solucoes-barra"></i></div>
+        
+        <div class="solucoes-painel" role="tabpanel" id="detalhe-recrutamento" data-modulo="recrutamento" aria-labelledby="tab-recrutamento">
+          <div class="solucoes-midia">
+            <div class="solucoes-foto"><img src="img/cur-recrutamento.jpg" alt="Recrutamento e Seleção" width="800" height="500" loading="lazy"></div>
+            <div>
+              <p class="selo-mod" style="font:700 .6875rem/1 var(--texto);letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin:0 0 8px">Módulo 01</p>
+              <h3>Recrutamento &amp; Seleção</h3>
+              <p class="lead-mod">Otimização do processo seletivo, com qualidade e agilidade na contratação.</p>
+            </div>
+            <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>Banco de talentos e portal de vagas</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>Entrevistas roteirizadas com PDF integrado</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>Feedback em massa por e-mail</li></ul>
+          </div>
+          <div class="solucoes-recursos">
+            <div class="solucoes-recursos-topo">
+              <h4>O que você resolve neste módulo</h4>
+              <span class="solucoes-badge"><i aria-hidden="true"></i>11 recursos</span>
+            </div>
+            <ul class="lista-rec"><li style="--i:0">Avanço das etapas e feedback aos candidatos online em massa, por e-mail</li><li style="--i:1">Personalização e aplicação de provas técnicas por e-mail</li><li style="--i:2">Controle de encaminhamento para documentos, exames e admissão</li><li style="--i:3">Agendamento de todas as etapas, com comunicação direta ao candidato</li><li style="--i:4">API para integração do “Trabalhe conosco” por cliente</li><li style="--i:5">Entrevistas padronizadas e roteirizadas, com PDF de resultado integrado</li><li style="--i:6">Banco de talentos próprio, com cadastro e filtros</li><li style="--i:7">Classificação e desclassificação com rastreabilidade</li><li style="--i:8">Modelos de entrevista: RH, gestor, técnico, teste e resultado integrado</li><li style="--i:9">Integração opcional com WhatsApp para falar com candidatos</li><li style="--i:10">Exportação de dados para PDF e Excel, com filtros</li></ul>
+            <div class="solucoes-cta">
+              <a class="botao" href="https://wa.me/5500000000000?text=Ol%C3%A1%21%20Quero%20conhecer%20o%20m%C3%B3dulo%20Recrutamento%20%26%20Sele%C3%A7%C3%A3o%20do%20MyBPIN." target="_blank" rel="noopener">Falar sobre este módulo</a>
+            </div>
+            <p class="solucoes-hint">Troque de módulo nas abas acima — a lista muda sozinha a cada 7s.</p>
+          </div>
+        </div>
+        <div class="solucoes-painel" role="tabpanel" id="detalhe-rh" data-modulo="rh" aria-labelledby="tab-rh" hidden>
+          <div class="solucoes-midia">
+            <div class="solucoes-foto"><img src="img/aval-minhas-1.jpg" alt="Gestão de Recursos Humanos" width="800" height="500" loading="lazy"></div>
+            <div>
+              <p class="selo-mod" style="font:700 .6875rem/1 var(--texto);letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin:0 0 8px">Módulo 02</p>
+              <h3>Gestão de Recursos Humanos</h3>
+              <p class="lead-mod">Mais tranquilidade nos processos de RH e tempo para a gestão estratégica.</p>
+            </div>
+            <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>Avaliações, feedbacks e PDI</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>Requisição de vagas e movimentações</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>Histórico e clima organizacional</li></ul>
+          </div>
+          <div class="solucoes-recursos">
+            <div class="solucoes-recursos-topo">
+              <h4>O que você resolve neste módulo</h4>
+              <span class="solucoes-badge"><i aria-hidden="true"></i>13 recursos</span>
+            </div>
+            <ul class="lista-rec"><li style="--i:0">Controle de aniversariantes, com e-mail automático</li><li style="--i:1">Gestão do histórico dos colaboradores online</li><li style="--i:2">Geração e controle de medidas administrativas</li><li style="--i:3">Avaliação de experiência de 90 dias</li><li style="--i:4">Avaliação de desempenho anual</li><li style="--i:5">Feedbacks e PDI (Plano de Desenvolvimento Individual)</li><li style="--i:6">Controle de metas</li><li style="--i:7">Gestão de inativos e entrevista de desligamento</li><li style="--i:8">Pesquisa de clima organizacional</li><li style="--i:9">Requisição de vagas</li><li style="--i:10">Planejamento mensal de movimentações: admissão, férias, demissão, promoções, transferências e bonificações</li><li style="--i:11">Aprovação para recontratações</li><li style="--i:12">Exportação de dados para PDF e Excel, com filtros</li></ul>
+            <div class="solucoes-cta">
+              <a class="botao" href="https://wa.me/5500000000000?text=Ol%C3%A1%21%20Quero%20conhecer%20o%20m%C3%B3dulo%20Gest%C3%A3o%20de%20Recursos%20Humanos%20do%20MyBPIN." target="_blank" rel="noopener">Falar sobre este módulo</a>
+            </div>
+            <p class="solucoes-hint">Troque de módulo nas abas acima — a lista muda sozinha a cada 7s.</p>
+          </div>
+        </div>
+        <div class="solucoes-painel" role="tabpanel" id="detalhe-dp" data-modulo="dp" aria-labelledby="tab-dp" hidden>
+          <div class="solucoes-midia">
+            <div class="solucoes-foto"><img src="img/adm8-processo.jpg" alt="Administração de Pessoal" width="800" height="500" loading="lazy"></div>
+            <div>
+              <p class="selo-mod" style="font:700 .6875rem/1 var(--texto);letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin:0 0 8px">Módulo 03</p>
+              <h3>Administração de Pessoal</h3>
+              <p class="lead-mod">Solução padronizada para admissão, documentos, férias e ponto.</p>
+            </div>
+            <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>Pré-admissão e dossiê online</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>Contratos, portaria e férias</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>Ponto e ocorrências para a folha</li></ul>
+          </div>
+          <div class="solucoes-recursos">
+            <div class="solucoes-recursos-topo">
+              <h4>O que você resolve neste módulo</h4>
+              <span class="solucoes-badge"><i aria-hidden="true"></i>10 recursos</span>
+            </div>
+            <ul class="lista-rec"><li style="--i:0">Cadastro do colaborador com dados para o RH e foto</li><li style="--i:1">Recebimento online dos documentos de admissão</li><li style="--i:2">Dossiê online: documentos de contratação e histórico do funcionário</li><li style="--i:3">Controle de férias, com aviso de vencimento</li><li style="--i:4">Emissão de documentos de admissão: contratos, termos e documentos legais</li><li style="--i:5">Emissão online de documentos de portaria</li><li style="--i:6">Controle de ponto por geoprocessamento e reconhecimento facial</li><li style="--i:7">Ocorrências de ponto pelos gestores para a folha (CIH), com anexo e validação</li><li style="--i:8">Convocação de intermitentes, com exportação para PDF e Excel</li><li style="--i:9">Checklist de demissão integrado com almoxarifado e SST</li></ul>
+            <div class="solucoes-cta">
+              <a class="botao" href="https://wa.me/5500000000000?text=Ol%C3%A1%21%20Quero%20conhecer%20o%20m%C3%B3dulo%20Administra%C3%A7%C3%A3o%20de%20Pessoal%20do%20MyBPIN." target="_blank" rel="noopener">Falar sobre este módulo</a>
+            </div>
+            <p class="solucoes-hint">Troque de módulo nas abas acima — a lista muda sozinha a cada 7s.</p>
+          </div>
+        </div>
+        <div class="solucoes-painel" role="tabpanel" id="detalhe-sst" data-modulo="sst" aria-labelledby="tab-sst" hidden>
+          <div class="solucoes-midia">
+            <div class="solucoes-foto"><img src="img/trn-carteira.jpg" alt="Segurança e Treinamentos" width="800" height="500" loading="lazy"></div>
+            <div>
+              <p class="selo-mod" style="font:700 .6875rem/1 var(--texto);letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin:0 0 8px">Módulo 04</p>
+              <h3>Segurança e Treinamentos</h3>
+              <p class="lead-mod">Ambiente seguro, produtividade e prazos de ASO e treinamento sob controle.</p>
+            </div>
+            <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>Exames e alertas de vencimento</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>Carteiras e certificados</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>Listas de frequência e EPIs</li></ul>
+          </div>
+          <div class="solucoes-recursos">
+            <div class="solucoes-recursos-topo">
+              <h4>O que você resolve neste módulo</h4>
+              <span class="solucoes-badge"><i aria-hidden="true"></i>10 recursos</span>
+            </div>
+            <ul class="lista-rec"><li style="--i:0">Encaminhamento e controle de exames</li><li style="--i:1">Controle de afastamentos e estabilidade no histórico</li><li style="--i:2">Emissão e controle de listas de frequência em treinamentos</li><li style="--i:3">Emissão de carteiras de treinamentos</li><li style="--i:4">Emissão de etiquetas de bloqueio</li><li style="--i:5">Emissão de certificados de treinamentos</li><li style="--i:6">Controle de documentos legais e seus vencimentos</li><li style="--i:7">Checklist demissional para baixa de EPIs</li><li style="--i:8">Envio programado, por e-mail, dos vencimentos de exames e treinamentos</li><li style="--i:9">Exportação para PDF e Excel, com filtros</li></ul>
+            <div class="solucoes-cta">
+              <a class="botao" href="https://wa.me/5500000000000?text=Ol%C3%A1%21%20Quero%20conhecer%20o%20m%C3%B3dulo%20Seguran%C3%A7a%20e%20Treinamentos%20do%20MyBPIN." target="_blank" rel="noopener">Falar sobre este módulo</a>
+            </div>
+            <p class="solucoes-hint">Troque de módulo nas abas acima — a lista muda sozinha a cada 7s.</p>
+          </div>
+        </div>
+        <div class="solucoes-painel" role="tabpanel" id="detalhe-processos" data-modulo="processos" aria-labelledby="tab-processos" hidden>
+          <div class="solucoes-midia">
+            <div class="solucoes-foto"><img src="img/cloud-lista.jpg" alt="Processos e Rotinas" width="800" height="500" loading="lazy"></div>
+            <div>
+              <p class="selo-mod" style="font:700 .6875rem/1 var(--texto);letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin:0 0 8px">Módulo 05</p>
+              <h3>Processos e Rotinas</h3>
+              <p class="lead-mod">Otimização do desempenho operacional com rotinas e comunicação integradas.</p>
+            </div>
+            <ul><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>Clientes, propostas e contratos</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>Kanban de atividades</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>Atas, ocorrências e comunicação</li></ul>
+          </div>
+          <div class="solucoes-recursos">
+            <div class="solucoes-recursos-topo">
+              <h4>O que você resolve neste módulo</h4>
+              <span class="solucoes-badge"><i aria-hidden="true"></i>10 recursos</span>
+            </div>
+            <ul class="lista-rec"><li style="--i:0">Controle de clientes</li><li style="--i:1">Controle de fornecedores</li><li style="--i:2">Propostas, contratos e vencimentos, com aviso por e-mail</li><li style="--i:3">Chat interno</li><li style="--i:4">Quadro Kanban de atividades e processos</li><li style="--i:5">Geração e controle de atas de reuniões</li><li style="--i:6">Geração e controle de ocorrências</li><li style="--i:7">Planejamento de vagas</li><li style="--i:8">Cronograma previsto x realizado de projetos e mobilizações, em PDF e Excel</li><li style="--i:9">Envio em massa de e-mails e WhatsApp para comunicação interna</li></ul>
+            <div class="solucoes-cta">
+              <a class="botao" href="https://wa.me/5500000000000?text=Ol%C3%A1%21%20Quero%20conhecer%20o%20m%C3%B3dulo%20Processos%20e%20Rotinas%20do%20MyBPIN." target="_blank" rel="noopener">Falar sobre este módulo</a>
+            </div>
+            <p class="solucoes-hint">Troque de módulo nas abas acima — a lista muda sozinha a cada 7s.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="adicionais" data-entra id="adicionais">
+        <div class="adicionais-topo">
+          <span class="adicionais-selo"><i aria-hidden="true"></i>Opcionais · sob demanda</span>
+          <h3>Adicionais aos módulos</h3>
+          <p>Recursos contratados à parte para amarrar a operação — integrações, ponto facial, dashboards e personalização sob medida.</p>
+        </div>
+        <div class="adicionais-grade">
+          <div class="adicionais-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg><span>Ponto por geoprocessamento e reconhecimento facial</span></div>
+          <div class="adicionais-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7.1-7.1l-1.1 1"/><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7.1 7.1l1.1-1"/></svg><span>Token de integração para a clínica lançar exames</span></div>
+          <div class="adicionais-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7.1-7.1l-1.1 1"/><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7.1 7.1l1.1-1"/></svg><span>Token de integração para fichas de EPI</span></div>
+          <div class="adicionais-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Dashboards específicos</span></div>
+          <div class="adicionais-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>Relatórios específicos</span></div>
+          <div class="adicionais-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg><span>Relatórios de uso por usuário</span></div>
+          <div class="adicionais-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-1.2 4.3A8.5 8.5 0 0 1 12.5 20a8.4 8.4 0 0 1-4.3-1.2L3 20l1.2-5.2A8.4 8.4 0 0 1 3 10.5 8.5 8.5 0 0 1 11.5 2a8.5 8.5 0 0 1 9.5 9.5z"/></svg><span>Integração com WhatsApp</span></div>
+          <div class="adicionais-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 10h-1.3A8 8 0 1 0 16 16.7"/><path d="M18 6v4h-4"/></svg><span>Espaço acima de 100 GB</span></div>
+          <div class="adicionais-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg><span>Horas de desenvolvimento para personalização</span></div>
+        </div>
+        <div class="adicionais-rodape">
+          <p>Monte o pacote com o que a sua operação realmente precisa — sem pagar o que não vai usar.</p>
+          <a class="botao" href="#contato">Quero falar dos adicionais</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="secao" id="duvidas">
+    <div class="container">
+      <div class="cabeca centro" data-entra>
+        <h2>Perguntas rápidas.</h2>
+        <p>Não achou a sua? Chama a gente no WhatsApp.</p>
+      </div>
+      <div class="faq" data-entra>
+        <details open>
+          <summary>O MyBPIN é só para RH?</summary>
+          <p>Não. É um sistema integrado de soluções em gestão de RH, DP, SST e processos 100% digitais — do recrutamento ao desligamento, com exames, treinamentos, ponto e movimentações no mesmo cadastro.</p>
+        </details>
+        <details>
+          <summary>Serve para gestores, DP e SST também?</summary>
+          <p>Sim. Gestores requisitam vagas e aprovam férias e demissões; o DP cuida de admissão e ponto; o SST acompanha ASO e treinamentos. Cada perfil vê só o que a permissão libera.</p>
+        </details>
+        <details>
+          <summary>Dá para publicar vaga e receber currículo online?</summary>
+          <p>Sim. Há portal de vagas com link público de candidatura, banco de currículos e etapas de seleção rastreadas.</p>
+        </details>
+        <details>
+          <summary>Como ficam os prazos de ASO e treinamento?</summary>
+          <p>Há relatórios e alertas de vencimento, com notificações no sistema e por e-mail — para o prazo não passar batido.</p>
+        </details>
+        <details>
+          <summary>Vocês existem desde quando?</summary>
+          <p>Desde 2019 no mercado, ajudando operações de RH, DP e SST a sair da planilha e digitalizar processos de ponta a ponta.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="secao contato" id="contato">
+    <div class="container">
+      <div class="contato-caixa" data-entra>
+        <div class="contato-intro">
+          <h2>Seu negócio na sua mão.</h2>
+          <p>Preencha o formulário e o nosso time entra em contato. A mensagem chega pronta no WhatsApp — sem compromisso.</p>
+        </div>
+        <form class="contato-form" id="form-contato" novalidate>
+          <div class="campo">
+            <label for="contato-nome">Nome completo <span class="req" aria-hidden="true">*</span></label>
+            <input type="text" id="contato-nome" name="nome" autocomplete="name" required>
+          </div>
+          <div class="campo-dupla">
+            <div class="campo">
+              <label for="contato-empresa">Empresa <span class="req" aria-hidden="true">*</span></label>
+              <input type="text" id="contato-empresa" name="empresa" autocomplete="organization" required>
+            </div>
+            <div class="campo">
+              <label for="contato-cargo">Cargo</label>
+              <input type="text" id="contato-cargo" name="cargo" autocomplete="organization-title">
+            </div>
+          </div>
+          <div class="campo-dupla">
+            <div class="campo">
+              <label for="contato-email">E-mail <span class="req" aria-hidden="true">*</span></label>
+              <input type="email" id="contato-email" name="email" autocomplete="email" required>
+            </div>
+            <div class="campo">
+              <label for="contato-telefone">Telefone <span class="req" aria-hidden="true">*</span></label>
+              <input type="tel" id="contato-telefone" name="telefone" autocomplete="tel" inputmode="tel" required>
+            </div>
+          </div>
+          <div class="campo">
+            <label>O telefone é WhatsApp? <span class="req" aria-hidden="true">*</span></label>
+            <div class="whats-opcoes">
+              <label><input type="radio" name="whatsapp" value="Sim" required> Sim</label>
+              <label><input type="radio" name="whatsapp" value="Não" required> Não</label>
+            </div>
+          </div>
+          <p class="form-erro" id="contato-erro" role="alert" aria-live="polite"></p>
+          <div class="form-acoes">
+            <button type="submit" class="botao">Enviar pelo WhatsApp</button>
+            <a class="botao botao-ghost" href="index.html">Ver versão produto</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="rodape">
+  <div class="container">
+    <img src="img/mybpin-logo-mono-escuro.webp" alt="MyBPIN" width="600" height="159" loading="lazy">
+    <nav aria-label="Rodapé">
+      <a href="#dores">Dores</a>
+      <a href="#jornada">Jornada</a>
+      <a href="#modulos">Módulos</a>
+      <a href="#contato">Contato</a>
+      <a href="index.html">Produto</a>
+      <a href="#duvidas">Dúvidas</a>
+    </nav>
+    <p>© 2026 MyBPIN. Desde 2019 no mercado.</p>
+  </div>
+</footer>
+
+<a class="fab-zap" id="fab-zap" href="https://wa.me/5500000000000?text=Ol%C3%A1!%20Quero%20conhecer%20o%20MyBPIN." target="_blank" rel="noopener" aria-label="Falar no WhatsApp">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3.5A11.8 11.8 0 0 0 12.1 0C5.6 0 .3 5.3.3 11.8c0 2.1.5 4.1 1.6 5.9L0 24l6.5-1.7a11.7 11.7 0 0 0 5.6 1.4h.1c6.5 0 11.8-5.3 11.8-11.8 0-3.1-1.2-6.1-3.5-8.4zM12.1 21.5h-.1a9.7 9.7 0 0 1-4.9-1.3l-.4-.2-3.8 1 1-3.7-.2-.4a9.7 9.7 0 0 1-1.5-5.1c0-5.4 4.4-9.7 9.8-9.7 2.6 0 5.1 1 6.9 2.9a9.6 9.6 0 0 1 2.9 6.9c0 5.3-4.4 9.6-9.7 9.6zm5.3-7.3c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.2-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.4-2.3-1.4a8.4 8.4 0 0 1-1.5-1.9c-.2-.3 0-.4.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.7-1.7-1-2.3-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.3.2-1.4 0-.1-.2-.2-.5-.3z"/></svg>
+</a>
+
+<script>
+(function () {
+  document.documentElement.classList.add('js');
+  var calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var topo = document.getElementById('topo');
+  function topoSolido() { topo.classList.toggle('solido', scrollY > 6); }
+  addEventListener('scroll', topoSolido, { passive: true });
+  topoSolido();
+
+  var entram = [].slice.call(document.querySelectorAll('[data-entra]'));
+  [].slice.call(document.querySelectorAll('.dores, .solucoes-shell')).forEach(function (g) {
+    [].slice.call(g.querySelectorAll('[data-entra]')).forEach(function (el, i) {
+      el.style.setProperty('--d', (i % 3) * 60 + 'ms');
+    });
+  });
+  if ('IntersectionObserver' in window && !calmo) {
+    var olho = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('entrou'); olho.unobserve(e.target); } });
+    }, { threshold: .12, rootMargin: '0px 0px -24px 0px' });
+    entram.forEach(function (el) { olho.observe(el); });
+  } else entram.forEach(function (el) { el.classList.add('entrou'); });
+
+
+  /* Jornada: autoplay contínuo + play/pause com loading */
+  var secao = document.getElementById('jornada-secao');
+  var passos = [].slice.call(document.querySelectorAll('.passo'));
+  var itens = [].slice.call(document.querySelectorAll('.trilho-item'));
+  var linhas = [].slice.call(document.querySelectorAll('#ficha-linhas li'));
+  var dots = [].slice.call(document.querySelectorAll('#jornada-dots button'));
+  var playBtn = document.getElementById('jornada-play');
+  var barra = document.getElementById('trilho-barra');
+  var carimbo = document.getElementById('carimbo');
+  var statusEl = document.getElementById('ficha-status');
+  var JORNADA_MS = 6000;
+  var atual = -1, carimboAtual = '', jornadaTimer = null, jornadaPausado = false;
+  if (secao) secao.style.setProperty('--jornada-ms', JORNADA_MS + 'ms');
+  if (playBtn) playBtn.style.setProperty('--jornada-ms', JORNADA_MS + 'ms');
+
+  function reiniciarLoading() {
+    if (!playBtn) return;
+    playBtn.classList.remove('playing');
+    void playBtn.offsetWidth;
+    if (!calmo) playBtn.classList.add('playing');
+    playBtn.classList.toggle('pausado', jornadaPausado);
+  }
+  function atualizarPlayUi() {
+    if (!playBtn) return;
+    playBtn.classList.toggle('pausado', jornadaPausado);
+    playBtn.setAttribute('aria-pressed', jornadaPausado ? 'true' : 'false');
+    playBtn.setAttribute('aria-label', jornadaPausado ? 'Continuar jornada' : 'Pausar jornada');
+    playBtn.title = jornadaPausado ? 'Continuar' : 'Pausar';
+  }
+  function etapa(i, resetTimer) {
+    if (!passos.length) return;
+    var prox = ((i % passos.length) + passos.length) % passos.length;
+    if (prox === atual && resetTimer !== true) return;
+    atual = prox;
+    passos.forEach(function (p, k) { p.classList.toggle('atual', k === atual); p.classList.toggle('passou', k < atual); });
+    itens.forEach(function (b, k) {
+      b.classList.toggle('atual', k === atual);
+      b.classList.toggle('feito', k < atual);
+      if (k === atual) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+    });
+    linhas.forEach(function (l, k) { l.classList.toggle('feito', k < atual); l.classList.toggle('atual', k === atual); });
+    dots.forEach(function (d, k) { d.classList.toggle('atual', k === atual); d.classList.toggle('feito', k < atual); });
+    if (barra) barra.style.transform = 'scaleY(' + (((atual + 1) / passos.length)).toFixed(4) + ')';
+    if (statusEl) statusEl.textContent = passos[atual].dataset.status || '';
+    var texto = atual >= 10 ? 'RECONTRATADA' : atual === 9 ? 'DESMOBILIZADA' : atual >= 5 ? 'ADMITIDA' : '';
+    if (carimbo && texto !== carimboAtual) {
+      carimboAtual = texto;
+      carimbo.classList.remove('batido');
+      if (texto) {
+        carimbo.textContent = texto;
+        carimbo.classList.toggle('saida', atual === 9);
+        void carimbo.offsetWidth;
+        carimbo.classList.add('batido');
+      } else carimbo.textContent = '';
+    }
+    reiniciarLoading();
+  }
+  function reiniciarJornada() {
+    clearInterval(jornadaTimer);
+    jornadaTimer = null;
+    if (calmo || !secao || jornadaPausado) return;
+    jornadaTimer = setInterval(function () { etapa(atual + 1, true); }, JORNADA_MS);
+  }
+  function setPausa(pausa) {
+    jornadaPausado = !!pausa;
+    atualizarPlayUi();
+    if (jornadaPausado) {
+      clearInterval(jornadaTimer);
+      jornadaTimer = null;
+      if (playBtn) playBtn.classList.add('pausado');
+    } else {
+      if (playBtn) playBtn.classList.remove('pausado');
+      reiniciarLoading();
+      reiniciarJornada();
+    }
+  }
+  itens.forEach(function (b, i) {
+    b.addEventListener('click', function () { etapa(i, true); if (!jornadaPausado) reiniciarJornada(); });
+  });
+  dots.forEach(function (d, i) {
+    d.addEventListener('click', function () { etapa(i, true); if (!jornadaPausado) reiniciarJornada(); });
+  });
+  if (playBtn) {
+    playBtn.addEventListener('click', function () { setPausa(!jornadaPausado); });
+  }
+  if (secao && !calmo && matchMedia('(hover: hover)').matches) {
+    secao.addEventListener('pointermove', function (e) {
+      secao.style.setProperty('--px', (e.clientX / innerWidth * 2 - 1).toFixed(3));
+      secao.style.setProperty('--py', (e.clientY / innerHeight * 2 - 1).toFixed(3));
+    }, { passive: true });
+  }
+  etapa(0, true);
+  atualizarPlayUi();
+  reiniciarJornada();
+
+  /* Soluções: tabs interativas + auto-rotate + deep-link da jornada */
+  var solTabs = [].slice.call(document.querySelectorAll('.solucoes-tab'));
+  var solPaineis = [].slice.call(document.querySelectorAll('.solucoes-painel'));
+  var solShell = document.getElementById('solucoes-shell');
+  var solBarra = document.getElementById('solucoes-barra');
+  var SOL_MS = 7000;
+  var solTimer = null, solPausa = false, solIdx = 0;
+  function reiniciarBarra() {
+    if (!solShell || !solBarra) return;
+    solShell.classList.remove('rodando');
+    void solBarra.offsetWidth;
+    if (!calmo && !solPausa) solShell.classList.add('rodando');
+    solShell.classList.toggle('pausado', solPausa);
+  }
+  function abrirModulo(slug, scroll) {
+    if (!slug) return;
+    var det = document.getElementById('detalhe-' + slug);
+    if (!det) return;
+    solPaineis.forEach(function (p) { p.hidden = p !== det; });
+    solTabs.forEach(function (t) {
+      var on = t.getAttribute('data-modulo') === slug;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      if (on) solIdx = solTabs.indexOf(t);
+    });
+    [].slice.call(det.querySelectorAll('.lista-rec li')).forEach(function (li, i) {
+      li.style.setProperty('--i', i);
+      li.style.animation = 'none';
+      void li.offsetWidth;
+      li.style.animation = '';
+    });
+    reiniciarBarra();
+    if (scroll && solShell) {
+      solShell.scrollIntoView({ behavior: calmo ? 'auto' : 'smooth', block: 'nearest' });
+    }
+  }
+  function reiniciarSolucoes() {
+    clearInterval(solTimer);
+    solTimer = null;
+    if (calmo || !solShell || solPausa) return;
+    solTimer = setInterval(function () {
+      if (solPausa || !solTabs.length) return;
+      var next = (solIdx + 1) % solTabs.length;
+      abrirModulo(solTabs[next].getAttribute('data-modulo'), false);
+    }, SOL_MS);
+  }
+  function setSolPausa(pausa) {
+    solPausa = !!pausa;
+    if (solShell) solShell.classList.toggle('pausado', solPausa);
+    if (solPausa) {
+      clearInterval(solTimer);
+      solTimer = null;
+    } else {
+      reiniciarBarra();
+      reiniciarSolucoes();
+    }
+  }
+  solTabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      abrirModulo(tab.getAttribute('data-modulo'), false);
+      history.replaceState(null, '', '#detalhe-' + tab.getAttribute('data-modulo'));
+      reiniciarSolucoes();
+    });
+  });
+  if (solShell && matchMedia('(hover: hover)').matches) {
+    solShell.addEventListener('mouseenter', function () { setSolPausa(true); });
+    solShell.addEventListener('mouseleave', function () { setSolPausa(false); });
+  }
+  if (solShell) {
+    solShell.addEventListener('focusin', function () { setSolPausa(true); });
+    solShell.addEventListener('focusout', function (e) {
+      if (!solShell.contains(e.relatedTarget)) setSolPausa(false);
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var link = e.target.closest('a[data-modulo]');
+    if (!link) return;
+    var slug = link.getAttribute('data-modulo');
+    if (!slug) return;
+    e.preventDefault();
+    abrirModulo(slug, true);
+    history.replaceState(null, '', '#detalhe-' + slug);
+    reiniciarSolucoes();
+  });
+  if (location.hash && location.hash.indexOf('#detalhe-') === 0) {
+    abrirModulo(location.hash.replace('#detalhe-', ''), false);
+  } else {
+    abrirModulo('recrutamento', false);
+  }
+  reiniciarSolucoes();
+
+  /* Formulário de contato → WhatsApp */
+  var ZAP = '5500000000000';
+  var form = document.getElementById('form-contato');
+  var formErro = document.getElementById('contato-erro');
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      formErro.textContent = '';
+      if (!form.reportValidity()) {
+        formErro.textContent = 'Preencha os campos obrigatórios.';
+        return;
+      }
+      var nome = form.nome.value.trim();
+      var empresa = form.empresa.value.trim();
+      var cargo = form.cargo.value.trim() || 'Não informado';
+      var email = form.email.value.trim();
+      var telefone = form.telefone.value.trim();
+      var whats = (form.querySelector('input[name="whatsapp"]:checked') || {}).value || '';
+      var msg = [
+        'Olá! Quero conhecer o MyBPIN.',
+        '',
+        'Nome: ' + nome,
+        'Empresa: ' + empresa,
+        'Cargo: ' + cargo,
+        'E-mail: ' + email,
+        'Telefone: ' + telefone,
+        'WhatsApp: ' + whats
+      ].join('\n');
+      window.open('https://wa.me/' + ZAP + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+    });
+  }
+
+  var fab = document.getElementById('fab-zap');
+  var contato = document.getElementById('contato');
+  if (fab && contato && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) {
+      fab.classList.toggle('oculto', es[0].isIntersecting);
+    }, { threshold: .2 }).observe(contato);
+  }
+})();
+</script>
+</body>
+</html>

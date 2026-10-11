@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyBPIN | Gestão de RH do recrutamento ao desligamento</title>
+<meta name="description" content="MyBPIN reúne o ciclo de vida do colaborador em um só sistema: recrutamento, admissão, treinamentos, ponto, avaliações, movimentações e documentos — 100% digital.">
+<meta name="theme-color" content="#05070D">
+<link rel="icon" type="image/webp" href="img/mybpin-logo-mono-branco.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Nunito:wght@400;600;700&display=swap">
+<!--
+  WhatsApp: troque 5500000000000 pelo número comercial (DDI + DDD + número, só dígitos)
+  nos links wa.me e na constante ZAP do script no fim da página.
+  Imagens: screenshots do Manual Completo em ./img/
+-->
+<style>
+:root {
+  color-scheme: dark;
+  --fundo: #05070D;
+  --camada: #0B1020;
+  --camada-2: #10172B;
+  --borda: rgba(255, 255, 255, .09);
+  --borda-forte: rgba(255, 255, 255, .18);
+  --tinta: #E8EDF9;
+  --suave: #93A0BC;
+  --azul: #0047D6;
+  --azul-vivo: #4C82FF;
+  --ceu: #9DBAFF;
+  --marinho: #0B1B3D;
+  --papel: #F4F6FA;
+  --branco: #FFFFFF;
+  --ardosia: #55657F;
+  --linha: #D5DCE8;
+  --capacete: #FFC83D;
+  --ok: #4ADE80;
+  --titulo: 'Montserrat', Arial, sans-serif;
+  --texto: 'Nunito', Verdana, sans-serif;
+  --topo: 68px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--topo) + 20px); }
+body { margin: 0; background: var(--fundo); color: var(--tinta); font: 400 1.0625rem/1.6 var(--texto); -webkit-font-smoothing: antialiased; overflow-x: clip; }
+img { max-width: 100%; height: auto; display: block; }
+[hidden] { display: none !important; }
+h1, h2, h3, h4 { font-family: var(--titulo); font-weight: 700; line-height: 1.1; letter-spacing: -.025em; margin: 0; text-wrap: balance; }
+p, ul, ol { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+a { color: inherit; }
+button, input { font: inherit; color: inherit; }
+mark { background: linear-gradient(transparent 58%, var(--capacete) 58%, var(--capacete) 92%, transparent 92%); color: inherit; }
+:focus-visible { outline: 2px solid var(--ceu); outline-offset: 3px; border-radius: 8px; }
+.container { width: 100%; max-width: 1200px; margin-inline: auto; padding-inline: 20px; }
+.secao { padding-block: clamp(72px, 10vw, 120px); position: relative; }
+.cabeca { display: grid; gap: 16px; justify-items: center; text-align: center; margin-bottom: clamp(36px, 5vw, 56px); }
+.selo { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border: 1px solid var(--borda-forte); border-radius: 999px; font-size: .8438rem; font-weight: 700; color: var(--ceu); background: rgba(76, 130, 255, .08); }
+.selo i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 10px var(--ok); }
+.cabeca h2 { font-size: clamp(2rem, 4.8vw, 3.25rem); max-width: 18em; background: linear-gradient(180deg, #FFFFFF 30%, #A9B8DA 100%); -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: .08em; }
+.cabeca p { color: var(--suave); font-size: 1.125rem; max-width: 38em; }
+
+.botao { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 50px; padding: 12px 24px; border: 1px solid transparent; border-radius: 12px; background: var(--azul); color: var(--branco); font: 700 1rem/1.2 var(--texto); text-decoration: none; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 8px 30px -8px rgba(0, 71, 214, .9); transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease; }
+.botao:hover { transform: translateY(-2px); background: #1558E8; }
+.botao-vidro { background: rgba(255, 255, 255, .06); border-color: var(--borda-forte); box-shadow: none; }
+.botao-vidro:hover { background: rgba(255, 255, 255, .12); box-shadow: none; }
+
+.luz { position: relative; isolation: isolate; }
+.luz::before { content: ""; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), rgba(76, 130, 255, .28), transparent 60%); opacity: 0; transition: opacity .35s ease; pointer-events: none; }
+.luz:hover::before { opacity: 1; }
+
+.js [data-entra] { opacity: 0; transform: translateY(22px); filter: blur(5px); transition: opacity .7s ease, transform .8s cubic-bezier(.2, .7, .2, 1), filter .7s ease; transition-delay: var(--d, 0ms); }
+.js [data-entra].entrou { opacity: 1; transform: none; filter: none; }
+
+/* Topo */
+.topo { position: sticky; top: 0; z-index: 40; background: rgba(5, 7, 13, .92); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4); border-bottom: 1px solid var(--borda); }
+.topo .container { display: flex; align-items: center; justify-content: space-between; gap: 24px; height: var(--topo); }
+.topo-logo img { width: 132px; }
+.topo nav { display: flex; gap: 2px; padding: 4px; border: 1px solid var(--borda); border-radius: 999px; background: rgba(255, 255, 255, .03); }
+.topo nav a { text-decoration: none; font-weight: 700; font-size: .875rem; color: var(--suave); padding: 6px 12px; border-radius: 999px; transition: color .2s ease, background-color .2s ease; }
+.topo nav a:hover { color: var(--branco); background: rgba(255, 255, 255, .08); }
+.topo .botao { min-height: 40px; padding: 8px 16px; font-size: .9063rem; border-radius: 10px; }
+.leitura { position: absolute; left: 0; bottom: -1px; height: 1px; width: 100%; background: linear-gradient(90deg, transparent, var(--azul-vivo), var(--ceu)); transform: scaleX(0); transform-origin: left; }
+
+/* Hero */
+.capa { position: relative; overflow: hidden; padding-top: clamp(28px, 4vw, 48px); text-align: center; display: flex; flex-direction: column; }
+.capa::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(var(--borda) 1px, transparent 1px), linear-gradient(90deg, var(--borda) 1px, transparent 1px); background-size: 64px 64px; -webkit-mask-image: radial-gradient(ellipse 70% 55% at 50% 0%, #000 20%, transparent 75%); mask-image: radial-gradient(ellipse 70% 55% at 50% 0%, #000 20%, transparent 75%); }
+.capa::after { content: ""; position: absolute; left: 50%; top: 22%; width: min(1100px, 120vw); aspect-ratio: 2 / 1; transform: translateX(-50%); background: radial-gradient(closest-side, rgba(0, 71, 214, .5), transparent); filter: blur(40px); animation: respirar 9s ease-in-out infinite alternate; pointer-events: none; }
+@keyframes respirar { to { opacity: .55; transform: translateX(-50%) scale(1.1); } }
+.capa .container { position: relative; z-index: 1; display: grid; gap: 12px; justify-items: center; }
+.capa h1 { font-size: clamp(1.85rem, 4.6vw, 3.25rem); font-weight: 800; max-width: 16em; background: linear-gradient(180deg, #FFFFFF 40%, #9FB3DE 100%); -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: .06em; }
+.capa .sub { font-size: clamp(1rem, 1.8vw, 1.1875rem); color: var(--suave); max-width: 34em; }
+.capa-acoes { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 2px; }
+.vitrine { position: relative; z-index: 1; width: min(1180px, 100%); margin: clamp(20px, 3vw, 32px) auto 0; perspective: 1600px; padding-inline: 12px; }
+.vitrine::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 18%; background: linear-gradient(transparent, var(--fundo)); pointer-events: none; z-index: 2; }
+.vitrine-tela { width: 100%; border: 1px solid var(--borda-forte); border-bottom: 0; border-radius: 20px 20px 0 0; background: linear-gradient(180deg, rgba(16, 23, 43, .95), rgba(5, 7, 13, .35)); padding: clamp(8px, 1.5vw, 16px) clamp(8px, 1.5vw, 16px) 0; transform-origin: 50% 100%; transform: rotateX(calc(var(--inclina, 1) * 12deg)) scale(calc(1 - var(--inclina, 1) * .03)); will-change: transform; box-shadow: 0 -30px 100px -30px rgba(0, 71, 214, .65); overflow: hidden; }
+.vitrine-tela img { width: 100%; border-radius: 10px 10px 0 0; aspect-ratio: 800 / 499; object-fit: cover; object-position: top; }
+
+/* Números */
+.numeros { border-block: 1px solid var(--borda); background: var(--camada); }
+.numeros .container { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.numeros div { padding: 28px 12px; text-align: center; }
+.numeros div + div { border-left: 1px solid var(--borda); }
+.numeros b { display: block; font: 800 clamp(1.75rem, 4vw, 2.5rem)/1.1 var(--titulo); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.numeros span { color: var(--suave); font-size: .9063rem; font-weight: 600; }
+
+/* Resolve */
+.resolve-lista { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.resolve-item { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px 14px; align-items: start; padding: 18px 20px; border: 1px solid var(--borda); border-radius: 16px; background: linear-gradient(180deg, var(--camada-2), var(--camada)); transition: border-color .25s ease, transform .25s ease; min-width: 0; }
+.resolve-item:hover { border-color: var(--borda-forte); transform: translateY(-2px); }
+.resolve-num { font: 800 .8125rem/1 var(--titulo); color: var(--azul-vivo); letter-spacing: .06em; padding-top: 3px; }
+.resolve-item h3 { font-size: 1.0625rem; margin-bottom: 4px; }
+.resolve-item .problema { color: var(--suave); font-size: .9063rem; margin-bottom: 6px; }
+.resolve-item .solucao { color: var(--tinta); font-weight: 600; font-size: .9063rem; }
+.resolve-item .solucao span { color: var(--ceu); font-weight: 700; }
+
+/* Ciclo */
+.ciclo-shell { border: 1px solid var(--borda-forte); border-radius: 24px; background: linear-gradient(180deg, var(--camada-2), var(--camada)); overflow: hidden; box-shadow: 0 40px 100px -50px rgba(0, 71, 214, .55); }
+.ciclo-tabs { display: flex; gap: 6px; overflow-x: auto; padding: 14px 16px; border-bottom: 1px solid var(--borda); scrollbar-width: none; }
+.ciclo-tabs::-webkit-scrollbar { display: none; }
+.ciclo-tab { appearance: none; flex: none; cursor: pointer; border: 1px solid var(--borda); background: transparent; border-radius: 999px; padding: 8px 14px; font: 700 .8438rem var(--texto); color: var(--suave); transition: background-color .2s ease, color .2s ease, border-color .2s ease; white-space: nowrap; }
+.ciclo-tab:hover { color: var(--branco); border-color: var(--borda-forte); }
+.ciclo-tab[aria-selected="true"] { background: var(--branco); border-color: var(--branco); color: var(--fundo); }
+.ciclo-painel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 0; min-height: 380px; animation: ciclo-entra .45s cubic-bezier(.2, .7, .2, 1) both; }
+.ciclo-painel[hidden] { display: none !important; animation: none; }
+@keyframes ciclo-entra { from { opacity: 0; transform: translateY(10px); } }
+.ciclo-texto { padding: clamp(24px, 4vw, 40px); display: grid; gap: 14px; align-content: center; }
+.ciclo-texto .passo { font: 800 .8125rem var(--titulo); color: var(--azul-vivo); letter-spacing: .08em; text-transform: uppercase; }
+.ciclo-texto h3 { font-size: clamp(1.5rem, 3vw, 2rem); }
+.ciclo-texto p { color: var(--suave); font-size: 1.0625rem; max-width: 32em; }
+.ciclo-texto ul { display: grid; gap: 8px; margin-top: 4px; }
+.ciclo-texto li { color: var(--tinta); font-weight: 600; font-size: .9688rem; padding-left: 18px; position: relative; }
+.ciclo-texto li::before { content: ""; position: absolute; left: 0; top: .55em; width: 8px; height: 8px; border-radius: 50%; background: var(--azul-vivo); }
+.ciclo-foto { position: relative; background: #070B16; border-left: 1px solid var(--borda); display: grid; align-items: center; padding: 20px; }
+.ciclo-foto img { width: 100%; border-radius: 12px; border: 1px solid var(--borda); box-shadow: 0 20px 50px -20px rgba(0, 0, 0, .6); }
+
+/* Módulos */
+.modulo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: clamp(28px, 5vw, 56px); align-items: center; margin-bottom: clamp(48px, 8vw, 88px); }
+.modulo:last-child { margin-bottom: 0; }
+.modulo.inverso { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+.modulo.inverso .modulo-copy { order: 2; }
+.modulo.inverso .modulo-midia { order: 1; }
+.modulo-copy { display: grid; gap: 14px; align-content: start; }
+.modulo-copy .tag { font: 800 .75rem var(--titulo); letter-spacing: .1em; text-transform: uppercase; color: var(--azul-vivo); }
+.modulo-copy h3 { font-size: clamp(1.5rem, 3vw, 2.125rem); }
+.modulo-copy p { color: var(--suave); font-size: 1.0625rem; max-width: 34em; }
+.modulo-copy ul { display: grid; gap: 8px; margin-top: 4px; }
+.modulo-copy li { color: var(--tinta); font-weight: 600; font-size: .9688rem; padding-left: 18px; position: relative; }
+.modulo-copy li::before { content: ""; position: absolute; left: 0; top: .55em; width: 8px; height: 8px; border-radius: 50%; background: var(--capacete); }
+.modulo-midia { position: relative; }
+.modulo-midia img { width: 100%; border-radius: 16px; border: 1px solid var(--borda-forte); box-shadow: 0 30px 70px -30px rgba(0, 71, 214, .45); background: var(--camada); }
+.modulo-midia .stack { display: grid; gap: 12px; }
+.modulo-midia .stack img:nth-child(2) { width: 78%; margin-left: auto; margin-top: -28%; position: relative; z-index: 1; box-shadow: 0 24px 60px -20px rgba(0, 0, 0, .55); }
+
+/* Recursos (paleta) */
+.paleta { max-width: 860px; margin-inline: auto; border: 1px solid var(--borda-forte); border-radius: 24px; background: linear-gradient(180deg, var(--camada-2), var(--camada)); box-shadow: 0 40px 120px -40px rgba(0, 71, 214, .7), inset 0 1px 0 rgba(255, 255, 255, .08); overflow: hidden; }
+.paleta-campo { display: flex; align-items: center; gap: 14px; padding: 18px 22px; border-bottom: 1px solid var(--borda); }
+.paleta-campo svg { width: 22px; height: 22px; flex: none; color: var(--ceu); }
+.paleta input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: 600 clamp(1.0625rem, 2.2vw, 1.3125rem) var(--texto); }
+.paleta input::placeholder { color: #66738F; }
+.paleta output { font-size: .8438rem; font-weight: 700; color: var(--suave); white-space: nowrap; padding: 4px 10px; border: 1px solid var(--borda); border-radius: 8px; font-variant-numeric: tabular-nums; }
+.filtros { display: flex; gap: 8px; overflow-x: auto; padding: 12px 22px; border-bottom: 1px solid var(--borda); scrollbar-width: none; }
+.filtros::-webkit-scrollbar { display: none; }
+.filtro { appearance: none; flex: none; cursor: pointer; border: 1px solid var(--borda); background: transparent; border-radius: 999px; padding: 6px 12px; font: 700 .8438rem var(--texto); color: var(--suave); display: inline-flex; gap: 8px; transition: background-color .2s ease, color .2s ease, border-color .2s ease; }
+.filtro span { font-variant-numeric: tabular-nums; opacity: .7; }
+.filtro:hover { color: var(--branco); border-color: var(--borda-forte); }
+.filtro[aria-pressed="true"] { background: var(--branco); border-color: var(--branco); color: var(--fundo); }
+.paleta ul { max-height: 440px; overflow-y: auto; padding: 8px; scrollbar-width: thin; scrollbar-color: #2A3553 transparent; }
+.paleta li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 11px 14px; border-radius: 12px; line-height: 1.4; transition: background-color .15s ease, transform .15s ease; }
+.paleta li:hover { background: rgba(76, 130, 255, .14); transform: translateX(4px); }
+.paleta li em { font-style: normal; font-size: .75rem; font-weight: 700; color: var(--suave); padding: 3px 9px; border: 1px solid var(--borda); border-radius: 999px; white-space: nowrap; }
+.paleta li mark { background: rgba(255, 200, 61, .9); color: var(--fundo); border-radius: 4px; padding-inline: 2px; }
+.paleta ul.surge li { animation: surgir .35s cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i, 0) * 18ms); }
+@keyframes surgir { from { opacity: 0; transform: translateY(8px); } }
+.paleta-vazio { padding: 36px 22px; display: grid; gap: 14px; justify-items: center; text-align: center; color: var(--suave); }
+.paleta-pe { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 12px 22px; border-top: 1px solid var(--borda); font-size: .8438rem; color: var(--suave); }
+.paleta-pe button { appearance: none; cursor: pointer; border: 1px solid var(--borda); background: rgba(255, 255, 255, .04); border-radius: 8px; padding: 3px 10px; font-weight: 700; color: var(--tinta); transition: background-color .2s ease, border-color .2s ease; }
+.paleta-pe button:hover { background: rgba(76, 130, 255, .22); border-color: var(--azul-vivo); }
+
+/* Quem usa */
+.quem-grade { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.quem { border: 1px solid var(--borda); border-radius: 20px; background: linear-gradient(180deg, var(--camada-2), var(--camada)); padding: 24px; display: grid; gap: 10px; min-width: 0; transition: transform .3s ease, border-color .25s ease; }
+.quem:hover { transform: translateY(-4px); border-color: var(--borda-forte); }
+.quem h3 { font-size: 1.1875rem; }
+.quem p { color: var(--suave); font-size: .9688rem; }
+
+/* Contato */
+.contato-caixa { position: relative; border: 1px solid var(--borda-forte); border-radius: 32px; padding: clamp(24px, 5vw, 56px); display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: clamp(28px, 5vw, 56px); align-items: center; background: radial-gradient(120% 140% at 0% 0%, rgba(0, 71, 214, .5), transparent 55%), var(--camada); overflow: hidden; }
+.contato-intro { display: grid; gap: 16px; }
+.contato-intro h2 { font-size: clamp(2rem, 4.6vw, 3rem); }
+.contato-intro p { color: #C3CEE6; font-size: 1.125rem; max-width: 24em; }
+.interesse { display: grid; gap: 22px; }
+.interesse fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.interesse legend { font: 700 .9375rem var(--titulo); padding: 0; margin-bottom: 12px; color: var(--suave); }
+.caixas { display: flex; flex-wrap: wrap; gap: 8px; }
+.caixa { position: relative; cursor: pointer; }
+.caixa input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.caixa span { display: block; border: 1px solid var(--borda-forte); border-radius: 999px; padding: 8px 14px; font-weight: 700; font-size: .9063rem; line-height: 1.3; background: rgba(255, 255, 255, .04); transition: background-color .2s ease, border-color .2s ease, color .2s ease, transform .2s ease; }
+.caixa:hover span { border-color: var(--ceu); transform: translateY(-2px); }
+.caixa input:checked + span { background: var(--branco); border-color: var(--branco); color: var(--fundo); }
+.caixa input:focus-visible + span { outline: 2px solid var(--ceu); outline-offset: 3px; }
+.interesse-fim { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; padding-top: 20px; border-top: 1px solid var(--borda); }
+.interesse-fim p { font-weight: 700; color: var(--suave); }
+
+/* Rodapé */
+.rodape { border-top: 1px solid var(--borda); color: var(--suave); font-size: .9375rem; }
+.rodape .container { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; padding-block: 32px; }
+.rodape img { width: 120px; }
+.rodape nav { display: flex; flex-wrap: wrap; gap: 20px; }
+.rodape a { text-decoration: none; font-weight: 700; }
+.rodape a:hover { color: var(--branco); }
+
+/* FAB WhatsApp */
+.fab-zap { position: fixed; right: 18px; bottom: 18px; z-index: 50; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: #25D366; color: #fff; box-shadow: 0 12px 30px -8px rgba(37, 211, 102, .7); text-decoration: none; transition: transform .2s ease, opacity .25s ease, visibility .25s ease; }
+.fab-zap:hover { transform: translateY(-3px) scale(1.04); }
+.fab-zap svg { width: 28px; height: 28px; }
+.fab-zap.oculto { opacity: 0; visibility: hidden; pointer-events: none; }
+
+@media (max-width: 959px) {
+  .topo nav { display: none; }
+  .numeros .container { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .numeros div:nth-child(3) { border-left: 0; }
+  .numeros div:nth-child(n+3) { border-top: 1px solid var(--borda); }
+  .resolve-lista { grid-template-columns: minmax(0, 1fr); }
+  .ciclo-painel { grid-template-columns: minmax(0, 1fr); }
+  .ciclo-foto { border-left: 0; border-top: 1px solid var(--borda); }
+  .modulo, .modulo.inverso { grid-template-columns: minmax(0, 1fr); }
+  .modulo.inverso .modulo-copy, .modulo.inverso .modulo-midia { order: unset; }
+  .modulo-midia .stack img:nth-child(2) { width: 85%; margin-top: -18%; }
+  .quem-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .contato-caixa { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .topo-logo img { width: 110px; }
+  .topo .botao { padding-inline: 12px; }
+  .capa-acoes .botao, .interesse-fim .botao { width: 100%; }
+  .quem-grade { grid-template-columns: minmax(0, 1fr); }
+  .paleta li { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .paleta li em { justify-self: start; }
+  .paleta output { display: none; }
+  .resolve-item { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .js [data-entra] { opacity: 1; transform: none; filter: none; }
+  .vitrine-tela { transform: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="container">
+    <a class="topo-logo" href="#inicio" aria-label="MyBPIN, início"><img src="img/mybpin-logo-mono-branco.webp" alt="MyBPIN" width="600" height="159"></a>
+    <nav aria-label="Seções">
+      <a href="#resolve">O que resolve</a>
+      <a href="#ciclo">Ciclo</a>
+      <a href="#modulos">Módulos</a>
+      <a href="#recursos">Recursos</a>
+      <a href="#contato">Contato</a>
+    </nav>
+    <a class="botao" href="https://wa.me/5500000000000?text=Ol%C3%A1!%20Quero%20falar%20com%20um%20consultor%20do%20MyBPIN." target="_blank" rel="noopener">Falar com um consultor</a>
+  </div>
+  <div class="leitura" id="leitura" aria-hidden="true"></div>
+</header>
+
+<main id="inicio">
+  <section class="capa">
+    <div class="container">
+      <p class="selo" data-entra><i></i>Desde 2019 · Sistema em nuvem · 100% digital</p>
+      <h1 data-entra style="--d:80ms">Do recrutamento ao desligamento, em um só sistema</h1>
+      <p class="sub" data-entra style="--d:160ms">MyBPIN reúne vagas, currículos, entrevistas, admissão, treinamentos, ponto e movimentações — sem planilhas espalhadas.</p>
+      <div class="capa-acoes" data-entra style="--d:240ms">
+        <a class="botao" href="https://wa.me/5500000000000?text=Ol%C3%A1!%20Quero%20falar%20com%20um%20consultor%20do%20MyBPIN." target="_blank" rel="noopener">Falar no WhatsApp</a>
+        <a class="botao botao-vidro" href="#ciclo">Ver o sistema</a>
+      </div>
+    </div>
+    <div class="vitrine" data-entra style="--d:300ms">
+      <div class="vitrine-tela" id="vitrine-tela">
+        <img src="img/dashboard.jpg" alt="Dashboard do MyBPIN com indicadores e atalhos do RH" width="800" height="499" fetchpriority="high">
+      </div>
+    </div>
+  </section>
+
+  <section class="numeros" aria-label="MyBPIN em números">
+    <div class="container">
+      <div><b>2019</b><span>desde então no mercado</span></div>
+      <div><b data-contar="8">8</b><span>etapas do ciclo</span></div>
+      <div><b data-contar="54">54</b><span>recursos no sistema</span></div>
+      <div><b data-contar="100" data-sufixo="%">100%</b><span>digital, em nuvem</span></div>
+    </div>
+  </section>
+
+  <section class="secao" id="resolve">
+    <div class="container">
+      <div class="cabeca">
+        <p class="selo" data-entra>O que a plataforma resolve</p>
+        <h2 data-entra style="--d:80ms">Menos planilha. Menos e-mail. Mais controle.</h2>
+        <p data-entra style="--d:160ms">Em muitas empresas o RH trabalha com planilhas, pastas e sistemas que não conversam. O MyBPIN ataca esses pontos com um cadastro único e fluxos rastreados.</p>
+      </div>
+      <ol class="resolve-lista">
+        <li class="resolve-item luz" data-entra>
+          <span class="resolve-num">01</span>
+          <div>
+            <h3>Informação espalhada</h3>
+            <p class="problema">Histórico perdido entre pastas e planilhas.</p>
+            <p class="solucao"><span>Solução:</span> cadastro único com documentos, exames, treinamentos e avaliações.</p>
+          </div>
+        </li>
+        <li class="resolve-item luz" data-entra>
+          <span class="resolve-num">02</span>
+          <div>
+            <h3>Aprovações sem rastreio</h3>
+            <p class="problema">Vagas e férias travadas no e-mail.</p>
+            <p class="solucao"><span>Solução:</span> fluxos no sistema, com quem aprovou e quando.</p>
+          </div>
+        </li>
+        <li class="resolve-item luz" data-entra>
+          <span class="resolve-num">03</span>
+          <div>
+            <h3>Recrutamento solto</h3>
+            <p class="problema">Candidatos e etapas se perdem no WhatsApp.</p>
+            <p class="solucao"><span>Solução:</span> portal, banco de currículos e entrevistas por etapa.</p>
+          </div>
+        </li>
+        <li class="resolve-item luz" data-entra>
+          <span class="resolve-num">04</span>
+          <div>
+            <h3>Admissão manual</h3>
+            <p class="problema">Documentos redigitados e exames sem fila.</p>
+            <p class="solucao"><span>Solução:</span> pré-admissão digital, ASO e admissão em sequência.</p>
+          </div>
+        </li>
+        <li class="resolve-item luz" data-entra>
+          <span class="resolve-num">05</span>
+          <div>
+            <h3>Prazos que vencem</h3>
+            <p class="problema">ASO, treinamento e férias passam despercebidos.</p>
+            <p class="solucao"><span>Solução:</span> alertas e relatórios de vencimento.</p>
+          </div>
+        </li>
+        <li class="resolve-item luz" data-entra>
+          <span class="resolve-num">06</span>
+          <div>
+            <h3>Treinamentos sem controle</h3>
+            <p class="problema">Carteiras e certificados soltos.</p>
+            <p class="solucao"><span>Solução:</span> padrões por cargo, lote, carteiras e certificados.</p>
+          </div>
+        </li>
+        <li class="resolve-item luz" data-entra>
+          <span class="resolve-num">07</span>
+          <div>
+            <h3>Jornada e ponto</h3>
+            <p class="problema">Escalas e folhas fora do sistema.</p>
+            <p class="solucao"><span>Solução:</span> ponto eletrônico, conferência e folhas.</p>
+          </div>
+        </li>
+        <li class="resolve-item luz" data-entra>
+          <span class="resolve-num">08</span>
+          <div>
+            <h3>Documentos e acesso</h3>
+            <p class="problema">Arquivos sem dono e permissão ampla.</p>
+            <p class="solucao"><span>Solução:</span> Cloud com revisão e grupos de permissão.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="secao" id="ciclo">
+    <div class="container">
+      <div class="cabeca">
+        <p class="selo" data-entra>Ciclo do colaborador</p>
+        <h2 data-entra style="--d:80ms">Da vaga ao desligamento, em um só fluxo</h2>
+        <p data-entra style="--d:160ms">Os módulos seguem a ordem natural do RH. Clique em cada etapa para ver a tela real do MyBPIN.</p>
+      </div>
+      <div class="ciclo-shell" data-entra>
+        <div class="ciclo-tabs" role="tablist" aria-label="Etapas do ciclo">
+          <button type="button" class="ciclo-tab" role="tab" id="tab-0" aria-controls="painel-0" aria-selected="true">Planejar</button>
+          <button type="button" class="ciclo-tab" role="tab" id="tab-1" aria-controls="painel-1" aria-selected="false">Recrutar</button>
+          <button type="button" class="ciclo-tab" role="tab" id="tab-2" aria-controls="painel-2" aria-selected="false">Entrevistar</button>
+          <button type="button" class="ciclo-tab" role="tab" id="tab-3" aria-controls="painel-3" aria-selected="false">Admitir</button>
+          <button type="button" class="ciclo-tab" role="tab" id="tab-4" aria-controls="painel-4" aria-selected="false">Treinar</button>
+          <button type="button" class="ciclo-tab" role="tab" id="tab-5" aria-controls="painel-5" aria-selected="false">Acompanhar</button>
+          <button type="button" class="ciclo-tab" role="tab" id="tab-6" aria-controls="painel-6" aria-selected="false">Movimentar</button>
+          <button type="button" class="ciclo-tab" role="tab" id="tab-7" aria-controls="painel-7" aria-selected="false">Desligar</button>
+        </div>
+
+        <div class="ciclo-painel" role="tabpanel" id="painel-0" aria-labelledby="tab-0">
+          <div class="ciclo-texto">
+            <p class="passo">Etapa 01 / 08</p>
+            <h3>Planejar a contratação</h3>
+            <p>O gestor solicita a vaga; o RH aprova e publica. A necessidade deixa de viver só no e-mail.</p>
+            <ul>
+              <li>Requisição de vaga com fluxo de aprovação</li>
+              <li>Vagas abertas com link público de candidatura</li>
+              <li>Estrutura pronta: áreas, cargos e centros de custo</li>
+            </ul>
+          </div>
+          <div class="ciclo-foto"><img src="img/cad-vagas-abertas.jpg" alt="Tela de vagas abertas do MyBPIN" width="800" height="500" loading="lazy"></div>
+        </div>
+
+        <div class="ciclo-painel" role="tabpanel" id="painel-1" aria-labelledby="tab-1" hidden>
+          <div class="ciclo-texto">
+            <p class="passo">Etapa 02 / 08</p>
+            <h3>Recrutar e triar currículos</h3>
+            <p>O candidato se cadastra pelo portal; o RH analisa, filtra e seleciona sem perder o histórico.</p>
+            <ul>
+              <li>Portal de vagas e banco de currículos</li>
+              <li>Ação Recrutar com etapas rastreadas</li>
+              <li>Selecionados com status e prova por candidato</li>
+            </ul>
+          </div>
+          <div class="ciclo-foto"><img src="img/cur-recrutamento.jpg" alt="Tela de recrutamento com lista de currículos" width="800" height="500" loading="lazy"></div>
+        </div>
+
+        <div class="ciclo-painel" role="tabpanel" id="painel-2" aria-labelledby="tab-2" hidden>
+          <div class="ciclo-texto">
+            <p class="passo">Etapa 03 / 08</p>
+            <h3>Entrevistar e emitir pareceres</h3>
+            <p>Pareceres de RH, gestor e técnico, teste prático e resultado integrado — tudo no mesmo fluxo.</p>
+            <ul>
+              <li>Entrevistas roteirizadas</li>
+              <li>Resultado integrado do candidato</li>
+              <li>Encaminhamento para documentos, exame e treinamento</li>
+            </ul>
+          </div>
+          <div class="ciclo-foto"><img src="img/ent-resultado.jpg" alt="Tela de resultado integrado das entrevistas" width="800" height="500" loading="lazy"></div>
+        </div>
+
+        <div class="ciclo-painel" role="tabpanel" id="painel-3" aria-labelledby="tab-3" hidden>
+          <div class="ciclo-texto">
+            <p class="passo">Etapa 04 / 08</p>
+            <h3>Admitir com documentos e exames</h3>
+            <p>Pré-admissão digital, controle de exames e processo de admissão em sequência, sem redigitar.</p>
+            <ul>
+              <li>Conferência dos anexos enviados pelo candidato</li>
+              <li>Encaminhamento à clínica e registro do ASO</li>
+              <li>Ação Admitir ou admissão avulsa</li>
+            </ul>
+          </div>
+          <div class="ciclo-foto"><img src="img/adm8-processo.jpg" alt="Tela do processo de admissão no MyBPIN" width="800" height="500" loading="lazy"></div>
+        </div>
+
+        <div class="ciclo-painel" role="tabpanel" id="painel-4" aria-labelledby="tab-4" hidden>
+          <div class="ciclo-texto">
+            <p class="passo">Etapa 05 / 08</p>
+            <h3>Treinar e emitir carteiras</h3>
+            <p>Padrões por cargo e cliente, lançamento em lote, carteiras, etiquetas e certificados.</p>
+            <ul>
+              <li>Carteira e etiquetas de treinamento</li>
+              <li>Cadastro de treinamentos e certificados</li>
+              <li>Alertas de vencimento</li>
+            </ul>
+          </div>
+          <div class="ciclo-foto"><img src="img/trn-carteira.jpg" alt="Tela da carteira de treinamentos" width="800" height="500" loading="lazy"></div>
+        </div>
+
+        <div class="ciclo-painel" role="tabpanel" id="painel-5" aria-labelledby="tab-5" hidden>
+          <div class="ciclo-texto">
+            <p class="passo">Etapa 06 / 08</p>
+            <h3>Acompanhar histórico e jornada</h3>
+            <p>Dossiê, avaliações, ponto e relatórios no dia a dia do colaborador admitido.</p>
+            <ul>
+              <li>Histórico e dossiê online</li>
+              <li>Ponto eletrônico e folhas</li>
+              <li>Avaliações e vencimentos de ASO</li>
+            </ul>
+          </div>
+          <div class="ciclo-foto"><img src="img/adm8-historico.jpg" alt="Tela de histórico do colaborador" width="800" height="500" loading="lazy"></div>
+        </div>
+
+        <div class="ciclo-painel" role="tabpanel" id="painel-6" aria-labelledby="tab-6" hidden>
+          <div class="ciclo-texto">
+            <p class="passo">Etapa 07 / 08</p>
+            <h3>Movimentar com aprovação</h3>
+            <p>Férias, mudança de cargo, transferência e valores extras com fluxo e registro no histórico.</p>
+            <ul>
+              <li>Solicitação e aprovação de férias</li>
+              <li>Mudança de cargo e transferência</li>
+              <li>Planejamento mensal de movimentações</li>
+            </ul>
+          </div>
+          <div class="ciclo-foto"><img src="img/mov-ferias.jpg" alt="Tela de solicitação de férias" width="800" height="500" loading="lazy"></div>
+        </div>
+
+        <div class="ciclo-painel" role="tabpanel" id="painel-7" aria-labelledby="tab-7" hidden>
+          <div class="ciclo-texto">
+            <p class="passo">Etapa 08 / 08</p>
+            <h3>Desligar com checklist</h3>
+            <p>Demissão aprovada, pós-admissão, entrevista de desligamento e histórico preservado para recontratação.</p>
+            <ul>
+              <li>Fluxo de demissão com aprovação</li>
+              <li>Checklist e entrevista de desligamento</li>
+              <li>Histórico pronto para recontratar</li>
+            </ul>
+          </div>
+          <div class="ciclo-foto"><img src="img/mov-demissao.jpg" alt="Tela de solicitação de demissão" width="800" height="500" loading="lazy"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="secao" id="modulos">
+    <div class="container">
+      <div class="cabeca">
+        <p class="selo" data-entra>Módulos em evidência</p>
+        <h2 data-entra style="--d:80ms">Telas reais do MyBPIN</h2>
+        <p data-entra style="--d:160ms">Cada área trabalha no seu módulo, sobre o mesmo cadastro de pessoas.</p>
+      </div>
+
+      <article class="modulo" data-entra>
+        <div class="modulo-copy">
+          <p class="tag">Atração e seleção</p>
+          <h3>Recrutamento com portal e banco de talentos</h3>
+          <p>Publique vagas, receba candidaturas pelo portal e conduza a triagem com rastreabilidade até o encaminhamento.</p>
+          <ul>
+            <li>Portal “Trabalhe conosco” com vagas públicas</li>
+            <li>Lista de currículos com filtros e ações</li>
+            <li>Selecionados com status por etapa</li>
+          </ul>
+        </div>
+        <div class="modulo-midia">
+          <div class="stack">
+            <img src="img/cur-portal-vagas.jpg" alt="Portal de vagas do MyBPIN" width="800" height="500" loading="lazy">
+            <img src="img/cur-recrutamento.jpg" alt="Recrutamento interno" width="800" height="500" loading="lazy">
+          </div>
+        </div>
+      </article>
+
+      <article class="modulo inverso" data-entra>
+        <div class="modulo-copy">
+          <p class="tag">Entrevistas</p>
+          <h3>Pareceres roteirizados e resultado integrado</h3>
+          <p>RH, gestor e técnico registram pareceres no mesmo fluxo. O resultado consolidado encaminha o candidato para documentos, exame e treinamento.</p>
+          <ul>
+            <li>Parecer RH e demais modelos</li>
+            <li>Teste prático e entrevista técnica</li>
+            <li>PDF de resultado integrado</li>
+          </ul>
+        </div>
+        <div class="modulo-midia">
+          <div class="stack">
+            <img src="img/ent-parecer-rh.jpg" alt="Parecer de RH" width="800" height="500" loading="lazy">
+            <img src="img/ent-resultado.jpg" alt="Resultado integrado" width="800" height="500" loading="lazy">
+          </div>
+        </div>
+      </article>
+
+      <article class="modulo" data-entra>
+        <div class="modulo-copy">
+          <p class="tag">Entrada do colaborador</p>
+          <h3>Admissão digital, exames e processo</h3>
+          <p>Do envio dos documentos à emissão do contrato: pré-admissão, controle de exames e kanban do processo sem redigitar dados.</p>
+          <ul>
+            <li>Pré-admissão com conferência de anexos</li>
+            <li>Encaminhamento e ASO</li>
+            <li>Processo de admissão em colunas</li>
+          </ul>
+        </div>
+        <div class="modulo-midia">
+          <div class="stack">
+            <img src="img/adm8-preadmissao.jpg" alt="Pré-admissão digital" width="800" height="500" loading="lazy">
+            <img src="img/adm8-exames.jpg" alt="Controle de exames" width="800" height="500" loading="lazy">
+          </div>
+        </div>
+      </article>
+
+      <article class="modulo inverso" data-entra>
+        <div class="modulo-copy">
+          <p class="tag">SST e capacitação</p>
+          <h3>Treinamentos, carteiras e certificados</h3>
+          <p>Padronize treinamentos por cargo, lance em lote e emita carteiras e certificados com alerta de vencimento.</p>
+          <ul>
+            <li>Carteira e etiquetas</li>
+            <li>Cadastro de treinamentos</li>
+            <li>Relatórios de vencimento</li>
+          </ul>
+        </div>
+        <div class="modulo-midia">
+          <div class="stack">
+            <img src="img/trn-carteira.jpg" alt="Carteira de treinamentos" width="800" height="500" loading="lazy">
+            <img src="img/cad-treinamentos.jpg" alt="Cadastro de treinamentos" width="800" height="500" loading="lazy">
+          </div>
+        </div>
+      </article>
+
+      <article class="modulo" data-entra>
+        <div class="modulo-copy">
+          <p class="tag">Dia a dia</p>
+          <h3>Ponto, folhas e avaliações</h3>
+          <p>Escalas, ponto eletrônico, conferência de jornada e avaliações no mesmo fluxo do colaborador.</p>
+          <ul>
+            <li>Ponto eletrônico e folhas</li>
+            <li>Ocorrências de ponto (CIH)</li>
+            <li>Minhas avaliações</li>
+          </ul>
+        </div>
+        <div class="modulo-midia">
+          <div class="stack">
+            <img src="img/ponto-folha.jpg" alt="Folha de ponto" width="800" height="500" loading="lazy">
+            <img src="img/aval-minhas-1.jpg" alt="Minhas avaliações" width="800" height="500" loading="lazy">
+          </div>
+        </div>
+      </article>
+
+      <article class="modulo inverso" data-entra>
+        <div class="modulo-copy">
+          <p class="tag">Gestão e acesso</p>
+          <h3>Cloud, relatórios e permissões</h3>
+          <p>Arquivos com revisão, vencimentos sob controle e cada perfil vendo só o que precisa.</p>
+          <ul>
+            <li>Cloud com pastas e revisão</li>
+            <li>Relatórios de ASOs e gráficos</li>
+            <li>Grupos de permissão e 2FA</li>
+          </ul>
+        </div>
+        <div class="modulo-midia">
+          <div class="stack">
+            <img src="img/cloud-lista.jpg" alt="MyBP Cloud" width="800" height="500" loading="lazy">
+            <img src="img/grp-permissoes.jpg" alt="Permissões de grupos" width="800" height="500" loading="lazy">
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="secao" id="recursos">
+    <div class="container">
+      <div class="cabeca">
+        <p class="selo" data-entra>54 recursos</p>
+        <h2 data-entra style="--d:80ms">O que você precisa resolver?</h2>
+        <p data-entra style="--d:160ms">Digite uma palavra e veja onde o MyBPIN ajuda.</p>
+      </div>
+      <div class="paleta" data-entra>
+        <div class="paleta-campo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input type="search" id="busca" placeholder="Buscar um recurso…" aria-label="Buscar um recurso" autocomplete="off" data-dica="férias|avaliação de desempenho|exame|carteira de treinamento|contrato|banco de talentos">
+          <output id="busca-total" for="busca">54 recursos</output>
+        </div>
+        <div class="filtros" id="filtros">
+          <button type="button" class="filtro" aria-pressed="true" data-filtro="todos">Todos<span>54</span></button>
+          <button type="button" class="filtro" aria-pressed="false" data-filtro="recrutamento">Recrutamento &amp; Seleção<span>11</span></button>
+          <button type="button" class="filtro" aria-pressed="false" data-filtro="rh">Gestão de RH<span>13</span></button>
+          <button type="button" class="filtro" aria-pressed="false" data-filtro="dp">Administração de Pessoal<span>10</span></button>
+          <button type="button" class="filtro" aria-pressed="false" data-filtro="sst">Segurança e Treinamentos<span>10</span></button>
+          <button type="button" class="filtro" aria-pressed="false" data-filtro="processos">Processos e Rotinas<span>10</span></button>
+        </div>
+        <ul id="recursos-lista" tabindex="0" aria-label="Recursos encontrados">
+          <li data-m="recrutamento"><span>Avanço de etapas e feedback online aos candidatos, em massa, por e-mail</span><em>Recrutamento &amp; Seleção</em></li>
+          <li data-m="recrutamento"><span>Provas técnicas personalizadas, aplicadas por e-mail</span><em>Recrutamento &amp; Seleção</em></li>
+          <li data-m="recrutamento"><span>Controle de encaminhamento para documentos, exames e admissão</span><em>Recrutamento &amp; Seleção</em></li>
+          <li data-m="recrutamento"><span>Agendamento de todas as etapas, com comunicação direta ao candidato</span><em>Recrutamento &amp; Seleção</em></li>
+          <li data-m="recrutamento"><span>API para integrar o “Trabalhe conosco” ao site de cada cliente</span><em>Recrutamento &amp; Seleção</em></li>
+          <li data-m="recrutamento"><span>Entrevistas padronizadas e roteirizadas, com PDF de resultado integrado</span><em>Recrutamento &amp; Seleção</em></li>
+          <li data-m="recrutamento"><span>Banco de talentos próprio, com cadastro e filtros</span><em>Recrutamento &amp; Seleção</em></li>
+          <li data-m="recrutamento"><span>Classificação e desclassificação com rastreabilidade</span><em>Recrutamento &amp; Seleção</em></li>
+          <li data-m="recrutamento"><span>Modelos de entrevista: RH, gestor, técnico, teste e resultado integrado</span><em>Recrutamento &amp; Seleção</em></li>
+          <li data-m="recrutamento"><span>Integração opcional com WhatsApp para falar com candidatos</span><em>Recrutamento &amp; Seleção</em></li>
+          <li data-m="recrutamento"><span>Exportação para PDF e Excel, com filtros</span><em>Recrutamento &amp; Seleção</em></li>
+          <li data-m="rh"><span>Controle de aniversariantes, com e-mail automático</span><em>Gestão de RH</em></li>
+          <li data-m="rh"><span>Histórico dos colaboradores online</span><em>Gestão de RH</em></li>
+          <li data-m="rh"><span>Geração e controle de medidas administrativas</span><em>Gestão de RH</em></li>
+          <li data-m="rh"><span>Avaliação de experiência de 90 dias</span><em>Gestão de RH</em></li>
+          <li data-m="rh"><span>Avaliação de desempenho anual</span><em>Gestão de RH</em></li>
+          <li data-m="rh"><span>Feedbacks e PDI (Plano de Desenvolvimento Individual)</span><em>Gestão de RH</em></li>
+          <li data-m="rh"><span>Controle de metas</span><em>Gestão de RH</em></li>
+          <li data-m="rh"><span>Gestão de inativos e entrevista de desligamento</span><em>Gestão de RH</em></li>
+          <li data-m="rh"><span>Pesquisa de clima organizacional</span><em>Gestão de RH</em></li>
+          <li data-m="rh"><span>Requisição de vagas</span><em>Gestão de RH</em></li>
+          <li data-m="rh"><span>Planejamento mensal de movimentações: admissão, férias, demissão, promoções, transferências e bonificações</span><em>Gestão de RH</em></li>
+          <li data-m="rh"><span>Aprovação para recontratações</span><em>Gestão de RH</em></li>
+          <li data-m="rh"><span>Exportação para PDF e Excel, com filtros</span><em>Gestão de RH</em></li>
+          <li data-m="dp"><span>Cadastro do colaborador com dados para o RH e foto</span><em>Administração de Pessoal</em></li>
+          <li data-m="dp"><span>Recebimento online dos documentos de admissão</span><em>Administração de Pessoal</em></li>
+          <li data-m="dp"><span>Dossiê online: documentos de contratação e histórico do funcionário</span><em>Administração de Pessoal</em></li>
+          <li data-m="dp"><span>Controle de férias, com aviso de vencimento</span><em>Administração de Pessoal</em></li>
+          <li data-m="dp"><span>Emissão de documentos de admissão: contratos, termos e documentos legais</span><em>Administração de Pessoal</em></li>
+          <li data-m="dp"><span>Emissão online de documentos de portaria</span><em>Administração de Pessoal</em></li>
+          <li data-m="dp"><span>Controle de ponto por geoprocessamento e reconhecimento facial</span><em>Administração de Pessoal</em></li>
+          <li data-m="dp"><span>Ocorrências de ponto geradas pelos gestores para a folha (CIH), com anexo e validação</span><em>Administração de Pessoal</em></li>
+          <li data-m="dp"><span>Convocação de intermitentes, com exportação para PDF e Excel</span><em>Administração de Pessoal</em></li>
+          <li data-m="dp"><span>Checklist de demissão integrado com almoxarifado e SST</span><em>Administração de Pessoal</em></li>
+          <li data-m="sst"><span>Encaminhamento e controle de exames</span><em>Segurança e Treinamentos</em></li>
+          <li data-m="sst"><span>Controle de afastamentos e estabilidade no histórico</span><em>Segurança e Treinamentos</em></li>
+          <li data-m="sst"><span>Listas de frequência em treinamentos</span><em>Segurança e Treinamentos</em></li>
+          <li data-m="sst"><span>Emissão de carteiras de treinamentos</span><em>Segurança e Treinamentos</em></li>
+          <li data-m="sst"><span>Emissão de etiquetas de bloqueio</span><em>Segurança e Treinamentos</em></li>
+          <li data-m="sst"><span>Emissão de certificados de treinamentos</span><em>Segurança e Treinamentos</em></li>
+          <li data-m="sst"><span>Controle de documentos legais e seus vencimentos</span><em>Segurança e Treinamentos</em></li>
+          <li data-m="sst"><span>Checklist demissional para baixa de EPIs</span><em>Segurança e Treinamentos</em></li>
+          <li data-m="sst"><span>Envio programado, por e-mail, dos vencimentos de exames e treinamentos</span><em>Segurança e Treinamentos</em></li>
+          <li data-m="sst"><span>Exportação para PDF e Excel, com filtros</span><em>Segurança e Treinamentos</em></li>
+          <li data-m="processos"><span>Controle de clientes</span><em>Processos e Rotinas</em></li>
+          <li data-m="processos"><span>Controle de fornecedores</span><em>Processos e Rotinas</em></li>
+          <li data-m="processos"><span>Propostas, contratos e vencimentos, com aviso por e-mail</span><em>Processos e Rotinas</em></li>
+          <li data-m="processos"><span>Chat interno</span><em>Processos e Rotinas</em></li>
+          <li data-m="processos"><span>Quadro Kanban de atividades e processos</span><em>Processos e Rotinas</em></li>
+          <li data-m="processos"><span>Atas de reuniões</span><em>Processos e Rotinas</em></li>
+          <li data-m="processos"><span>Geração e controle de ocorrências</span><em>Processos e Rotinas</em></li>
+          <li data-m="processos"><span>Planejamento de vagas</span><em>Processos e Rotinas</em></li>
+          <li data-m="processos"><span>Cronograma previsto x realizado de projetos e mobilizações, em PDF e Excel</span><em>Processos e Rotinas</em></li>
+          <li data-m="processos"><span>Envio em massa de e-mails e WhatsApp para comunicação interna</span><em>Processos e Rotinas</em></li>
+        </ul>
+        <div class="paleta-vazio" id="sem-resultado" hidden>
+          <p>Não achamos esse recurso na lista. Pode ser que exista como personalização.</p>
+          <a class="botao" id="sem-resultado-zap" href="https://wa.me/5500000000000" target="_blank" rel="noopener">Perguntar a um consultor</a>
+        </div>
+        <div class="paleta-pe" id="sugestoes"><span>Experimente</span><button type="button">férias</button><button type="button">exame</button><button type="button">entrevista</button><button type="button">ponto</button><button type="button">WhatsApp</button><button type="button">PDF</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="secao" id="quem">
+    <div class="container">
+      <div class="cabeca">
+        <p class="selo" data-entra>Quem usa</p>
+        <h2 data-entra style="--d:80ms">Cada perfil vê só o que precisa</h2>
+        <p data-entra style="--d:160ms">Usuários vinculados a grupos de permissão. Cada pessoa enxerga apenas os menus e as ações liberados.</p>
+      </div>
+      <ul class="quem-grade">
+        <li class="quem luz" data-entra>
+          <h3>RH e DP</h3>
+          <p>Conduzem recrutamento, admissão, treinamentos, movimentações e relatórios.</p>
+        </li>
+        <li class="quem luz" data-entra>
+          <h3>Gestores</h3>
+          <p>Requisitam vagas, aprovam solicitações, avaliam a equipe e conferem jornadas.</p>
+        </li>
+        <li class="quem luz" data-entra>
+          <h3>Colaboradores</h3>
+          <p>Registram o ponto, respondem avaliações e acompanham ocorrências.</p>
+        </li>
+        <li class="quem luz" data-entra>
+          <h3>Administradores</h3>
+          <p>Configuram a empresa, grupos de permissão e usuários do sistema.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="secao" id="contato">
+    <div class="container">
+      <div class="contato-caixa" data-entra>
+        <div class="contato-intro">
+          <h2>Seu RH na sua mão.</h2>
+          <p>Marque o que interessa à sua empresa. A mensagem chega pronta para o nosso time no WhatsApp.</p>
+        </div>
+        <form class="interesse" id="interesse">
+          <fieldset>
+            <legend>Módulos</legend>
+            <div class="caixas">
+              <label class="caixa"><input type="checkbox" value="Recrutamento e Seleção"><span>Recrutamento &amp; Seleção</span></label>
+              <label class="caixa"><input type="checkbox" value="Gestão de RH"><span>Gestão de RH</span></label>
+              <label class="caixa"><input type="checkbox" value="Administração de Pessoal"><span>Administração de Pessoal</span></label>
+              <label class="caixa"><input type="checkbox" value="Segurança e Treinamentos"><span>Segurança e Treinamentos</span></label>
+              <label class="caixa"><input type="checkbox" value="Processos e Rotinas"><span>Processos e Rotinas</span></label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Adicionais, contratados à parte</legend>
+            <div class="caixas">
+              <label class="caixa"><input type="checkbox" value="Ponto por geoprocessamento e reconhecimento facial"><span>Ponto por geoprocessamento e reconhecimento facial</span></label>
+              <label class="caixa"><input type="checkbox" value="Token de integração para a clínica lançar exames"><span>Token de integração para a clínica lançar exames</span></label>
+              <label class="caixa"><input type="checkbox" value="Token de integração para fichas de EPI pelo almoxarifado"><span>Token de integração para fichas de EPI pelo almoxarifado</span></label>
+              <label class="caixa"><input type="checkbox" value="Dashboards específicos"><span>Dashboards específicos</span></label>
+              <label class="caixa"><input type="checkbox" value="Relatórios específicos"><span>Relatórios específicos</span></label>
+              <label class="caixa"><input type="checkbox" value="Integração com WhatsApp"><span>Integração com WhatsApp</span></label>
+              <label class="caixa"><input type="checkbox" value="Espaço acima de 100 GB"><span>Espaço acima de 100 GB</span></label>
+              <label class="caixa"><input type="checkbox" value="Horas de desenvolvimento para personalização"><span>Horas de desenvolvimento para personalização</span></label>
+            </div>
+          </fieldset>
+          <div class="interesse-fim">
+            <p id="interesse-total" aria-live="polite">Nada marcado ainda</p>
+            <a class="botao" id="interesse-zap" href="https://wa.me/5500000000000?text=Ol%C3%A1!%20Quero%20falar%20com%20um%20consultor%20do%20MyBPIN." target="_blank" rel="noopener">Enviar pelo WhatsApp</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="rodape">
+  <div class="container">
+    <img src="img/mybpin-logo-mono-branco.webp" alt="MyBPIN" width="600" height="159" loading="lazy">
+    <nav aria-label="Rodapé">
+      <a href="#resolve">O que resolve</a>
+      <a href="#ciclo">Ciclo</a>
+      <a href="#modulos">Módulos</a>
+      <a href="#recursos">Recursos</a>
+      <a href="marketing.html">Versão marketing</a>
+      <a href="#contato">Contato</a>
+    </nav>
+    <p>© 2026 MyBPIN. Desde 2019 no mercado.</p>
+  </div>
+</footer>
+
+<a class="fab-zap" id="fab-zap" href="https://wa.me/5500000000000?text=Ol%C3%A1!%20Quero%20falar%20com%20um%20consultor%20do%20MyBPIN." target="_blank" rel="noopener" aria-label="Falar no WhatsApp">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 3.5A11.8 11.8 0 0 0 12.1 0C5.6 0 .3 5.3.3 11.8c0 2.1.5 4.1 1.6 5.9L0 24l6.5-1.7a11.7 11.7 0 0 0 5.6 1.4h.1c6.5 0 11.8-5.3 11.8-11.8 0-3.1-1.2-6.1-3.5-8.4zM12.1 21.5h-.1a9.7 9.7 0 0 1-4.9-1.3l-.4-.2-3.8 1 1-3.7-.2-.4a9.7 9.7 0 0 1-1.5-5.1c0-5.4 4.4-9.7 9.8-9.7 2.6 0 5.1 1 6.9 2.9a9.6 9.6 0 0 1 2.9 6.9c0 5.3-4.4 9.6-9.7 9.6zm5.3-7.3c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.2-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.4-2.3-1.4a8.4 8.4 0 0 1-1.5-1.9c-.2-.3 0-.4.1-.6l.5-.6c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.7-1.7-1-2.3-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3 1.8.8 2.5.8 3.4.7.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.3.2-1.4 0-.1-.2-.2-.5-.3z"/></svg>
+</a>
+
+<script>
+(function () {
+  document.documentElement.classList.add('js');
+  var ZAP = '5500000000000';
+  var calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function (id) { return document.getElementById(id); };
+  var lista = function (sel, raiz) { return [].slice.call((raiz || document).querySelectorAll(sel)); };
+  function zap(texto) { return 'https://wa.me/' + ZAP + '?text=' + encodeURIComponent(texto); }
+
+  /* Entrada ao rolar */
+  lista('.resolve-lista, .quem-grade, #modulos').forEach(function (g) {
+    lista('[data-entra]', g).forEach(function (el, i) { el.style.setProperty('--d', (i % 4) * 70 + 'ms'); });
+  });
+  var entram = lista('[data-entra]');
+  if ('IntersectionObserver' in window && !calmo) {
+    var olho = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('entrou'); olho.unobserve(e.target); } });
+    }, { threshold: .12, rootMargin: '0px 0px -40px 0px' });
+    entram.forEach(function (el) { olho.observe(el); });
+  } else entram.forEach(function (el) { el.classList.add('entrou'); });
+
+  /* Barra de leitura + vitrine */
+  var leitura = $('leitura'), tela = $('vitrine-tela');
+  function rolagem() {
+    var total = document.documentElement.scrollHeight - innerHeight;
+    leitura.style.transform = 'scaleX(' + (total > 0 ? Math.min(1, scrollY / total) : 0) + ')';
+    if (!calmo && tela) tela.style.setProperty('--inclina', Math.max(0, 1 - scrollY / 420).toFixed(3));
+  }
+  addEventListener('scroll', rolagem, { passive: true });
+  rolagem();
+
+  /* Contagem dos números */
+  lista('[data-contar]').forEach(function (el) {
+    var fim = +el.dataset.contar, sufixo = el.dataset.sufixo || '';
+    if (calmo || !('IntersectionObserver' in window)) return;
+    el.textContent = '0' + sufixo;
+    new IntersectionObserver(function (es, obs) {
+      if (!es[0].isIntersecting) return;
+      obs.disconnect();
+      var inicio = performance.now();
+      (function passo(agora) {
+        var t = Math.min(1, (agora - inicio) / 1400);
+        el.textContent = Math.round(fim * (1 - Math.pow(1 - t, 3))) + sufixo;
+        if (t < 1) requestAnimationFrame(passo);
+      })(inicio);
+    }, { threshold: .6 }).observe(el);
+  });
+
+  /* Luz que segue o ponteiro */
+  document.addEventListener('pointermove', function (e) {
+    var el = e.target.closest ? e.target.closest('.luz') : null;
+    if (!el) return;
+    var r = el.getBoundingClientRect();
+    el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    el.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  }, { passive: true });
+
+  /* Ciclo: tabs + autoplay */
+  var tabs = lista('.ciclo-tab');
+  var paineis = lista('.ciclo-painel');
+  var cicloShell = document.querySelector('.ciclo-shell');
+  var cicloAtual = 0, cicloTimer = null, cicloPausa = false;
+  function ativarCiclo(i) {
+    cicloAtual = i;
+    tabs.forEach(function (t, k) {
+      var on = k === i;
+      t.setAttribute('aria-selected', on);
+      t.tabIndex = on ? 0 : -1;
+    });
+    paineis.forEach(function (p, k) { p.hidden = k !== i; });
+  }
+  function reiniciarAutoplay() {
+    if (calmo || !cicloShell) return;
+    clearInterval(cicloTimer);
+    cicloTimer = setInterval(function () {
+      if (cicloPausa) return;
+      ativarCiclo((cicloAtual + 1) % tabs.length);
+    }, 5000);
+  }
+  tabs.forEach(function (tab, i) {
+    tab.tabIndex = i === 0 ? 0 : -1;
+    tab.addEventListener('click', function () { ativarCiclo(i); reiniciarAutoplay(); });
+    tab.addEventListener('keydown', function (e) {
+      var next = null;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (i + 1) % tabs.length;
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (i - 1 + tabs.length) % tabs.length;
+      if (e.key === 'Home') next = 0;
+      if (e.key === 'End') next = tabs.length - 1;
+      if (next === null) return;
+      e.preventDefault();
+      ativarCiclo(next);
+      tabs[next].focus();
+      reiniciarAutoplay();
+    });
+  });
+  if (cicloShell) {
+    ['mouseenter', 'focusin'].forEach(function (ev) { cicloShell.addEventListener(ev, function () { cicloPausa = true; }); });
+    ['mouseleave', 'focusout'].forEach(function (ev) { cicloShell.addEventListener(ev, function () { cicloPausa = false; }); });
+    reiniciarAutoplay();
+  }
+
+  /* FAB some perto do contato */
+  var fab = $('fab-zap'), contato = $('contato');
+  if (fab && contato && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) {
+      fab.classList.toggle('oculto', es[0].isIntersecting);
+    }, { threshold: .15 }).observe(contato);
+  }
+
+  /* Recursos: busca e filtro */
+  var campo = $('busca'), caixa = $('recursos-lista'), filtros = lista('.filtro'), filtro = 'todos';
+  function limpo(t) { return String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+  function escapar(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  var recursos = lista('li', caixa).map(function (li) {
+    var s = li.querySelector('span');
+    return { li: li, alvo: s, texto: s.textContent, limpo: limpo(s.textContent), m: li.dataset.m };
+  });
+  function filtrar() {
+    var termo = limpo(campo.value.trim()), achados = 0;
+    recursos.forEach(function (r) {
+      var pos = termo ? r.limpo.indexOf(termo) : 0;
+      var ok = pos > -1 && (filtro === 'todos' || r.m === filtro);
+      r.li.hidden = !ok;
+      r.alvo.innerHTML = termo && ok
+        ? escapar(r.texto.slice(0, pos)) + '<mark>' + escapar(r.texto.slice(pos, pos + termo.length)) + '</mark>' + escapar(r.texto.slice(pos + termo.length))
+        : escapar(r.texto);
+      if (ok) r.li.style.setProperty('--i', Math.min(achados++, 14));
+    });
+    caixa.hidden = !achados;
+    caixa.scrollTop = 0;
+    caixa.classList.remove('surge');
+    void caixa.offsetWidth;
+    caixa.classList.add('surge');
+    $('busca-total').textContent = achados + (achados === 1 ? ' recurso' : ' recursos');
+    $('sem-resultado').hidden = achados > 0;
+    if (!achados) $('sem-resultado-zap').href = zap('Olá! Procurei por "' + campo.value.trim() + '" no site do MyBPIN e não encontrei. O sistema faz isso?');
+  }
+  function escolherFiltro(nome) {
+    filtro = nome;
+    filtros.forEach(function (f) { f.setAttribute('aria-pressed', f.dataset.filtro === nome); });
+    filtrar();
+  }
+  campo.addEventListener('input', filtrar);
+  filtros.forEach(function (f) { f.addEventListener('click', function () { escolherFiltro(f.dataset.filtro); }); });
+  lista('#sugestoes button').forEach(function (b) {
+    b.addEventListener('click', function () { campo.value = b.textContent; escolherFiltro('todos'); });
+  });
+
+  if (!calmo) (function () {
+    var dicas = campo.dataset.dica.split('|'), d = 0, c = 0, apagando = false;
+    setInterval(function () {
+      if (campo.value || document.activeElement === campo) { campo.placeholder = 'Buscar um recurso…'; c = 0; apagando = false; return; }
+      var p = dicas[d];
+      c += apagando ? -1 : 1;
+      campo.placeholder = 'Buscar “' + p.slice(0, Math.max(0, c)) + '”';
+      if (!apagando && c > p.length + 12) apagando = true;
+      if (apagando && c <= 0) { apagando = false; d = (d + 1) % dicas.length; }
+    }, 90);
+  })();
+
+  /* Contato → WhatsApp */
+  var form = $('interesse');
+  form.addEventListener('change', function () {
+    var marcados = lista('input:checked', form).map(function (c) { return c.value; });
+    $('interesse-total').textContent = !marcados.length ? 'Nada marcado ainda' : marcados.length === 1 ? '1 item marcado' : marcados.length + ' itens marcados';
+    $('interesse-zap').href = zap('Olá! Quero falar com um consultor do MyBPIN.' + (marcados.length ? ' Tenho interesse em: ' + marcados.join('; ') + '.' : ''));
+  });
+  form.addEventListener('submit', function (e) { e.preventDefault(); });
+})();
+</script>
+
+</body>
+</html>
