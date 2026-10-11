@@ -1,0 +1,200 @@
+<h1 id="planejamento">5. Planejamento</h1>
+<p class="intro">O menu <b>Planejamento</b> concentra tudo o que precisa de aprovação antes de acontecer: a abertura de vagas e as movimentações de pessoal (demissão, férias, admissão prevista, valor extra, mudança de cargo, troca de contrato e transferência). Cada solicitação percorre um <b>fluxo de aprovação</b> visível no próprio card.</p>
+
+<h2>5.1 Como funciona o fluxo de aprovação</h2>
+<p>Toda solicitação nasce com o solicitante, passa pelo gestor e termina no RH. Se houver uma <b>aprovação extra</b> configurada para o tipo de processo (ver <i>Cadastro › Customizações › Aprovações Extras</i>), ela entra entre o gestor e o RH.</p>
+<div class="fluxo"><span>Solicitante</span><i>→</i><span>Gestor</span><i>→</i><span>Aprovação extra (se houver)</span><i>→</i><span>RH</span></div>
+<table class="filtros">
+  <tr><th>No card</th><th>Significado</th></tr>
+  <tr><td>Etapa em verde, com nome e data</td><td>Etapa concluída — mostra quem aprovou e quando.</td></tr>
+  <tr><td>Etapa em laranja, “Aguardando”</td><td>É a etapa atual: a solicitação está parada com esse aprovador.</td></tr>
+  <tr><td>Etapa em cinza, “Pendente”</td><td>Etapa futura, ainda não alcançada.</td></tr>
+  <tr><td>Selo à direita do card</td><td>Resume a situação: <i>Em aberto</i>, <i>Pendente Gestor</i>, <i>Aprovado Gestor</i>, <i>Pendente Gerente de RH</i>, <i>Pendente RH</i>, <i>Aprovado RH</i>.</td></tr>
+</table>
+<p>As ações de aprovação ficam no menu ⋮ de cada card e só aparecem para quem tem permissão e quando a solicitação está na etapa correspondente.</p>
+
+<h2>5.2 Requisição de Vaga</h2>
+<span class="caminho">Planejamento › Requisição de Vaga</span>
+<p>É onde o gestor ou o RH formaliza a necessidade de contratação. Cada card mostra o cargo, a Quantidade, o Solicitante, o Gestor, a Lotação, o Centro de custo, a Área, a data da Solicitação, o tipo de Contratação, a Prioridade, a previsão de Início e o fluxo de aprovação.</p>
+<figure><img src="img/plan-requisicao.jpg" alt="Requisição de vagas"><figcaption>Requisição de vagas — filtros e primeiro card</figcaption></figure>
+
+<h3>Filtros</h3>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Período</td><td>Ao marcar a caixa, libera as datas inicial e final para buscar requisições abertas nesse intervalo.</td></tr>
+  <tr><td>Pesquisar</td><td>Localiza pelo nome do cargo.</td></tr>
+  <tr><td>Status</td><td>Mostra apenas as requisições em uma situação do fluxo (em aberto, aprovadas pelo gestor, aprovadas pelo RH…).</td></tr>
+  <tr><td>Ordenar por</td><td>Define a ordem da lista; o padrão é <i>Mais recentes</i>.</td></tr>
+</table>
+<p>Clique em <b class="btn">Buscar</b> para aplicar. <b class="btn">Exportar Excel</b> gera a planilha das requisições filtradas.</p>
+
+<h3>Abrir uma requisição</h3>
+<ol>
+  <li>Clique em <b class="btn">Solicitar</b>.</li>
+  <li><b>Informações:</b> selecione o cargo <span class="req">*</span> (digite e escolha na lista), a Área <span class="req">*</span>, o Tipo de Contratação <span class="req">*</span>, a Prioridade <span class="req">*</span> e a Quantidade <span class="req">*</span> de vagas.</li>
+  <li><b>Lotação:</b> escolha a Lotação (CNPJ) <span class="req">*</span>. O Centro de Custo <span class="req">*</span> é liberado depois dessa escolha e lista apenas os centros daquela lotação.</li>
+  <li><b>Demais informações:</b> Posição <span class="req">*</span>, Processo <span class="req">*</span>, Tipo <span class="req">*</span>, Horário, Gestor da vaga <span class="req">*</span>, se o cargo está no PPRA e PCMSO <span class="req">*</span>, Salário <span class="req">*</span>, Benefício <span class="req">*</span> e Treinamento.</li>
+</ol>
+<figure><img src="img/plan-requisicao-form-1.jpg" alt="Solicitando vaga"><figcaption>Formulário “Solicitando Vaga”</figcaption></figure>
+<ol start="5">
+  <li><b>Previsão de início:</b> ligue <b>Imediata</b> se a vaga é para já; caso contrário, informe a data em <b>Previsão</b> <span class="req">*</span>.</li>
+  <li>Informe o <b>Solicitante</b> <span class="req">*</span> e, se quiser, uma <b>Observação</b>.</li>
+  <li>Clique em <b class="btn">Cadastrar</b>. A requisição entra na lista como <i>Em aberto</i>, aguardando o gestor.</li>
+</ol>
+<p>Se a sua empresa criou campos personalizados para a requisição, eles aparecem neste mesmo formulário.</p>
+<figure><img src="img/plan-requisicao-form-2.jpg" alt="Solicitando vaga - final"><figcaption>Final do formulário, com previsão de início, solicitante e observação</figcaption></figure>
+
+<h3>Ações de cada requisição</h3>
+<figure><img src="img/plan-requisicao-acoes.jpg" alt="Ações da requisição"><figcaption>Menu de ações e fluxo de aprovação de uma requisição</figcaption></figure>
+<table class="filtros">
+  <tr><th>Ação</th><th>O que faz</th></tr>
+  <tr><td>Visualizar</td><td>Abre a requisição completa, somente para leitura, com o parecer de cada etapa.</td></tr>
+  <tr><td>Aprovação Gestor</td><td>Abre a requisição para o gestor registrar a decisão.</td></tr>
+  <tr><td>Aprovação extra (nome configurado)</td><td>Aparece quando há uma etapa extra — no exemplo das telas, “Gerente de RH”.</td></tr>
+  <tr><td>Aprovação RH</td><td>Decisão final do RH.</td></tr>
+</table>
+<p>Na visualização, todos os campos aparecem preenchidos e bloqueados. Enquanto ninguém decidiu, o sistema avisa: “Esta solicitação ainda não foi aprovada ou reprovada pelo gestor!”.</p>
+<figure><img src="img/plan-requisicao-visualizar.jpg" alt="Visualizando requisição"><figcaption>Requisição aberta para visualização</figcaption></figure>
+<h3>Aprovar ou reprovar</h3>
+<ol>
+  <li>No menu ⋮, escolha a ação da sua etapa (por exemplo, <b>Aprovação Gestor</b>).</li>
+  <li>Confira os dados da requisição e role até o final da janela.</li>
+  <li>No bloco da sua etapa, escolha o <b>Status</b> <span class="req">*</span> (aprovar ou reprovar) e escreva uma <b>Observação</b>. Os blocos das outras etapas ficam bloqueados.</li>
+  <li>Clique em <b class="btn">Aprovar</b> para gravar a decisão.</li>
+</ol>
+<figure><img src="img/plan-requisicao-aprovacao.jpg" alt="Aprovação da requisição"><figcaption>Blocos de aprovação: Gestor, aprovação extra e RH</figcaption></figure>
+
+<h2>5.3 Movimentação</h2>
+<span class="caminho">Planejamento › Movimentação</span>
+<p>Reúne, em sete abas, as movimentações de pessoal que dependem de aprovação. Todas funcionam do mesmo jeito: filtros no topo, botão <b class="btn">Solicitar</b> para abrir uma nova solicitação, <b class="btn">Exportar Excel</b> e um card por solicitação, com o fluxo de aprovação.</p>
+<table class="filtros">
+  <tr><th>Aba</th><th>Para que serve</th></tr>
+  <tr><td>Demissão</td><td>Solicitar o desligamento de um colaborador.</td></tr>
+  <tr><td>Férias</td><td>Programar as férias de um colaborador.</td></tr>
+  <tr><td>Admissão</td><td>Registrar uma admissão prevista (contratação planejada).</td></tr>
+  <tr><td>Liderança de Pessoal e Valor Extra</td><td>Solicitar pagamento adicional por liderança ou outro valor extra.</td></tr>
+  <tr><td>Mudança de Cargo</td><td>Alterar cargo, função ou salário.</td></tr>
+  <tr><td>Mudança de Intermitente p/ Fixo</td><td>Converter um contrato intermitente em fixo.</td></tr>
+  <tr><td>Transferência</td><td>Mudar o colaborador de centro de custo ou de lotação.</td></tr>
+</table>
+
+<h3>Filtros comuns a todas as abas</h3>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Período</td><td>Ao marcar, libera as datas para buscar solicitações de um intervalo.</td></tr>
+  <tr><td>Colaborador / CPF</td><td>Localiza pelo nome ou pelo CPF do colaborador.</td></tr>
+  <tr><td>Status</td><td>Situação no fluxo (pendente gestor, pendente RH, aprovado, reprovado…).</td></tr>
+  <tr><td>Lotação (CNPJ)</td><td>Solicitações de uma matriz ou filial.</td></tr>
+  <tr><td>Centro de custo</td><td>Solicitações de um centro de custo.</td></tr>
+  <tr><td>Ordenar por</td><td>Ordem da lista; o padrão é <i>Mais recentes</i>.</td></tr>
+  <tr><td>Por página</td><td>Quantidade de solicitações exibidas por página.</td></tr>
+</table>
+<p>O menu ⋮ de cada card traz <b>Visualizar</b> e as ações de aprovação da etapa atual (por exemplo, <b>Aprovação RH</b>).</p>
+
+<h3>Aba Demissão</h3>
+<p>Cada card mostra a Data da demissão, o Tipo de aviso, o Cargo, a Lotação, o Centro de custo e o Gestor responsável.</p>
+<figure><img src="img/mov-demissao.jpg" alt="Demissão"><figcaption>Movimentação — aba Demissão</figcaption></figure>
+<p>Além de Visualizar e Aprovação RH, a demissão tem a ação <b>Aviso Prévio (PDF)</b>, que gera o documento de aviso prévio.</p>
+<figure><img src="img/mov-demissao-fluxo.jpg" alt="Fluxo da demissão"><figcaption>Fluxo de aprovação e menu de ações de uma demissão</figcaption></figure>
+<h4>Solicitar uma demissão</h4>
+<ol>
+  <li>Clique em <b class="btn">Solicitar</b>.</li>
+  <li>Em <b>Colaborador</b> <span class="req">*</span>, digite o nome e selecione. <b>Centro de Custo Atual</b> e <b>Lotação</b> são preenchidos automaticamente.</li>
+  <li>Informe a <b>Data da Demissão</b> <span class="req">*</span> e o <b>Tipo de Aviso</b> <span class="req">*</span>.</li>
+  <li>Em <b>Gestor Aprovação</b> <span class="req">*</span>, selecione o gestor que deve aprovar.</li>
+  <li>Em <b>Detalhes</b>, escreva a <b>Observação</b> e inclua <b>Anexos</b> (arraste o arquivo ou clique em Escolher).</li>
+  <li>Clique em <b class="btn">Cadastrar</b>.</li>
+</ol>
+<figure><img src="img/mov-demissao-form.jpg" alt="Solicitação de demissão"><figcaption>Solicitação de demissão</figcaption></figure>
+
+<h3>Aba Férias</h3>
+<p>Cada card mostra o período de Férias, a quantidade de Dias (e o saldo), o Período aquisitivo com a data limite, a Lotação, o Centro de custo e a data de Admissão.</p>
+<figure><img src="img/mov-ferias.jpg" alt="Férias"><figcaption>Movimentação — aba Férias</figcaption></figure>
+<p>Esta aba tem filtros próprios, além dos comuns:</p>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Período aquisitivo</td><td>Restringe aos períodos aquisitivos mais recentes; o padrão é <i>Últimos 3 períodos</i>.</td></tr>
+  <tr><td>Período cadastrado</td><td>Solicitações cadastradas entre duas datas.</td></tr>
+  <tr><td>Período de vencimento</td><td>Férias cujo prazo limite vence entre duas datas — útil para evitar férias vencidas.</td></tr>
+  <tr><td>Início das férias</td><td>Férias que começam entre duas datas.</td></tr>
+</table>
+<h4>Solicitar férias</h4>
+<ol>
+  <li>Clique em <b class="btn">Solicitar</b> e selecione o <b>Colaborador</b> <span class="req">*</span>.</li>
+  <li>Escolha o <b>Período Aquisitivo</b> <span class="req">*</span>.</li>
+  <li>Indique em <b>Tem Falta?</b> se há faltas no período. O sistema calcula a <b>Quantidade de dias disponíveis</b>.</li>
+  <li>Escolha os <b>Dias de férias</b> <span class="req">*</span> e informe a <b>Data da saída</b> <span class="req">*</span>. A <b>Data do retorno</b> e os <b>Dias de saldo</b> são calculados automaticamente.</li>
+  <li>Indique se haverá <b>Abono Pecuniário</b> e <b>Adiantamento do Décimo Terceiro</b>.</li>
+  <li>Selecione o <b>Gestor Aprovação</b> <span class="req">*</span>, complete a observação e os anexos e clique em <b class="btn">Cadastrar</b>.</li>
+</ol>
+<figure><img src="img/mov-ferias-form.jpg" alt="Solicitação de férias"><figcaption>Solicitação de férias</figcaption></figure>
+
+<h3>Aba Admissão</h3>
+<p>Registra as admissões previstas. Cada card mostra a Data de admissão, o Tipo de contrato, o Salário, a Lotação, o Centro de custo e o Solicitante. Esta aba tem um filtro a mais: <b>Tipo contrato</b>.</p>
+<figure><img src="img/mov-admissao.jpg" alt="Admissão prevista"><figcaption>Movimentação — aba Admissão</figcaption></figure>
+<h4>Solicitar uma admissão</h4>
+<ol>
+  <li>Clique em <b class="btn">Solicitar</b>.</li>
+  <li>Em <b>Colaborador</b>, selecione o <b>Cargo</b> <span class="req">*</span> e, se já souber, informe o <b>Nome do Colaborador</b> a ser admitido.</li>
+  <li>Em <b>Lotação</b>, escolha a Lotação (CNPJ) <span class="req">*</span> e o Centro de Custo <span class="req">*</span>.</li>
+  <li>Em <b>Solicitação</b>, informe o <b>Tipo de admissão</b> <span class="req">*</span>, a <b>Data admissão</b> <span class="req">*</span>, o <b>Salário</b> <span class="req">*</span> e o <b>Gestor Aprovação</b> <span class="req">*</span>.</li>
+  <li>Complete observação e anexos e clique em <b class="btn">Cadastrar</b>.</li>
+</ol>
+<figure><img src="img/mov-admissao-form.jpg" alt="Solicitação de admissão"><figcaption>Solicitação de admissão</figcaption></figure>
+
+<h3>Aba Liderança de Pessoal e Valor Extra</h3>
+<p>Cada card mostra o Colaborador, o Tipo do valor extra, o Período (em dias), a Lotação, o Centro de custo e o Solicitante.</p>
+<figure><img src="img/mov-valorextra.jpg" alt="Valor extra"><figcaption>Movimentação — aba Liderança de Pessoal e Valor Extra</figcaption></figure>
+<h4>Solicitar</h4>
+<ol>
+  <li>Clique em <b class="btn">Solicitar</b> e selecione o <b>Colaborador</b> <span class="req">*</span>. A Lotação é preenchida automaticamente.</li>
+  <li>Escolha o <b>Centro de Custo</b>.</li>
+  <li>Informe o <b>Tipo</b> <span class="req">*</span> do valor extra e o <b>Período em dias</b> <span class="req">*</span>.</li>
+  <li>Selecione o <b>Gestor Aprovação</b> <span class="req">*</span>, complete observação e anexos e clique em <b class="btn">Cadastrar</b>.</li>
+</ol>
+<figure><img src="img/mov-valorextra-form.jpg" alt="Solicitação de valor extra"><figcaption>Liderança de Pessoal e Valor Extra</figcaption></figure>
+
+<h3>Aba Mudança de Cargo</h3>
+<p>Cada card mostra a Lotação, o Centro de custo, as <b>Alterações</b> pedidas (por exemplo, Função · Salário), o Solicitante e as datas.</p>
+<figure><img src="img/mov-mudancacargo.jpg" alt="Mudança de cargo"><figcaption>Movimentação — aba Mudança de Cargo</figcaption></figure>
+<p>Para solicitar, clique em <b class="btn">Solicitar</b> e selecione primeiro o <b>Colaborador</b> <span class="req">*</span>. Depois dessa escolha, o formulário mostra a situação atual do colaborador e os campos para informar o novo cargo, a nova função e o novo salário. Grave com <b class="btn">Cadastrar</b>.</p>
+<figure><img src="img/mov-mudancacargo-form.jpg" alt="Solicitação de mudança de cargo"><figcaption>Solicitação de mudança de cargo — comece pelo colaborador</figcaption></figure>
+
+<h3>Aba Mudança de Intermitente p/ Fixo</h3>
+<p>Cada card mostra o Cargo anterior, o Novo cargo, o Centro de custo, a Lotação, o Salário anterior, o Novo salário e o Solicitante.</p>
+<figure><img src="img/mov-intermitente.jpg" alt="Intermitente para fixo"><figcaption>Movimentação — aba Mudança de Intermitente p/ Fixo</figcaption></figure>
+<h4>Solicitar</h4>
+<ol>
+  <li>Clique em <b class="btn">Solicitar</b> e selecione o <b>Colaborador</b> <span class="req">*</span>. <b>Cargo anterior</b> e <b>Salário anterior</b> são preenchidos automaticamente.</li>
+  <li>Escolha a <b>Lotação (CNPJ)</b> <span class="req">*</span> e o <b>Centro de Custo</b> <span class="req">*</span>.</li>
+  <li>Informe o <b>Novo cargo</b> <span class="req">*</span> e o <b>Novo salário</b>.</li>
+  <li>Selecione o <b>Gestor Aprovação</b> <span class="req">*</span>.</li>
+  <li>Descreva os <b>Motivos para modificação</b>, inclua anexos e clique em <b class="btn">Salvar</b>.</li>
+</ol>
+<figure><img src="img/mov-intermitente-form.jpg" alt="Troca de contrato"><figcaption>Solicitação de troca de contrato intermitente para fixo</figcaption></figure>
+
+<h3>Aba Transferência</h3>
+<p>Cada card mostra o Centro de custo de origem e o de destino, a Data da transferência, a Lotação de origem e a de destino e o Solicitante.</p>
+<figure><img src="img/mov-transferencia.jpg" alt="Transferência"><figcaption>Movimentação — aba Transferência</figcaption></figure>
+<h4>Solicitar uma transferência</h4>
+<ol>
+  <li>Clique em <b class="btn">Solicitar</b> e selecione o <b>Colaborador</b> <span class="req">*</span>.</li>
+  <li>Confirme a <b>Lotação origem</b> <span class="req">*</span> e o <b>Centro de Custo Origem</b> <span class="req">*</span>.</li>
+  <li>Escolha a <b>Lotação destino</b> <span class="req">*</span> e o <b>Centro de Custo Destino</b> <span class="req">*</span>.</li>
+  <li>Informe a <b>Data para transferência</b> <span class="req">*</span>.</li>
+  <li>Em <b>Gestores responsáveis</b>, o sistema mostra automaticamente o gestor da origem e o do destino, conforme o cadastro de centros de custo.</li>
+  <li>Complete observação e anexos e clique em <b class="btn">Salvar</b>.</li>
+</ol>
+<div class="nota"><b>Importante:</b> na transferência, os aprovadores são os gestores cadastrados nos centros de custo de origem e de destino. Se um centro de custo estiver sem gestor, corrija o cadastro em <b>Cadastro › Centro de Custos</b> antes de solicitar.</div>
+<figure><img src="img/mov-transferencia-form.jpg" alt="Solicitação de transferência"><figcaption>Solicitação de transferência</figcaption></figure>
+
+<h2>5.4 Mobilização</h2>
+<span class="caminho">Planejamento › Mobilização</span>
+<p>Acompanha a mobilização de pessoal por projeto. A tela só exibe dados depois que um projeto é escolhido.</p>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Projeto</td><td>Obrigatório. Escolha o projeto que deseja acompanhar.</td></tr>
+  <tr><td>Período</td><td>Opcional. Ao marcar, restringe a consulta a um intervalo de datas.</td></tr>
+</table>
+<p>Selecione o projeto e clique em <b class="btn">Buscar</b>.</p>
+<figure><img src="img/plan-mobilizacao.jpg" alt="Mobilização"><figcaption>Mobilização — selecione um projeto para consultar</figcaption></figure>

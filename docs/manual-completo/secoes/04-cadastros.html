@@ -1,0 +1,302 @@
+<h1 id="cadastros">4. Cadastros</h1>
+<p class="intro">Os cadastros são a base do sistema: cargos, áreas, centros de custo, benefícios, treinamentos e avaliações definidos aqui aparecem como opções em todos os outros módulos. Uma requisição de vaga, por exemplo, só pode ser aberta para um cargo, uma área e um centro de custo já cadastrados. Comece a implantação por este menu.</p>
+<div class="dica"><b>Ordem sugerida de implantação:</b> Centro de Custos → Áreas → Cargos → Benefícios → Exames (clínicas e PCMSO) → Lista de Treinamentos → Vagas Abertas → Avaliações.</div>
+
+<h2>4.1 Áreas</h2>
+<span class="caminho">Cadastro › Áreas</span>
+<p>As áreas representam os setores da empresa. Cada uma tem um <b>Gestor responsável</b>, um <b>Centro de custo</b> e o telefone do <b>Supervisor</b>, que é impresso na etiqueta do colaborador.</p>
+<figure><img src="img/cad-areas.jpg" alt="Áreas"><figcaption>Listagem de áreas</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Buscar</td><td>Localiza pelo nome da área ou pelo número (ID) que aparece no selo do card.</td></tr>
+  <tr><td>Status</td><td><i>Ativo</i>, <i>Inativo</i> ou todos os status.</td></tr>
+</table>
+<h3>Cadastrar ou editar</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Cadastrar Área</b>, ou em ⋮ › <b>Editar</b> no card da área.</li>
+  <li>Informe o <b>Nome</b> <span class="req">*</span>.</li>
+  <li>Em <b>Contato supervisor para etiqueta</b>, informe o telefone do supervisor.</li>
+  <li>Em <b>Gestor responsável</b>, digite o nome e selecione na lista; o campo fica com ✓ verde quando o gestor foi reconhecido.</li>
+  <li>Escolha o <b>Centro de Custo</b> da área.</li>
+  <li>Mantenha <b>Ativo</b> ligado e clique em <b class="btn">Alterar</b> (ou <b class="btn">Cadastrar</b>).</li>
+</ol>
+<figure><img src="img/cad-area-form.jpg" alt="Formulário de área"><figcaption>Alterando uma área</figcaption></figure>
+
+<h2>4.2 Departamentos</h2>
+<span class="caminho">Cadastro › Departamentos</span>
+<p>Lista simples de departamentos. Os filtros são <b>Buscar</b> (por nome) e <b>Status</b> (<i>Apenas Ativos</i>, <i>Apenas Inativos</i> ou <i>Todos</i>). Para incluir, clique em <b class="btn">+ Departamento</b>, informe o <b>Nome</b> e mantenha <b>Ativo</b> ligado.</p>
+<figure class="media"><img src="img/cad-departamento-form.jpg" alt="Departamento"><figcaption>Cadastro de departamento</figcaption></figure>
+
+<h2>4.3 Centro de Custos</h2>
+<span class="caminho">Cadastro › Centro de Custos</span>
+<p>Cada centro de custo pertence a uma <b>Lotação</b> (o CNPJ da matriz ou de uma filial) e tem um <b>Gestor principal</b> e um <b>Gestor substituto</b>.</p>
+<div class="nota"><b>Importante:</b> o gestor principal e o substituto definidos aqui são usados automaticamente no fluxo de aprovação da transferência prevista (Planejamento › Movimentação). Mantenha os gestores sempre atualizados.</div>
+<figure><img src="img/cad-centro-custos.jpg" alt="Centro de custos"><figcaption>Centros de custo, com lotação e gestores</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Buscar</td><td>Localiza pelo nome ou pelo ID do centro de custo.</td></tr>
+  <tr><td>Status</td><td><i>Ativo</i>, <i>Inativo</i> ou todos.</td></tr>
+  <tr><td>Por CNPJ</td><td>Mostra apenas os centros de custo de uma lotação (matriz ou filial). Clique no campo para escolher.</td></tr>
+</table>
+<h3>Cadastrar ou editar</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Cadastrar</b> ou em ⋮ › <b>Editar</b>.</li>
+  <li>Informe o <b>Nome</b> <span class="req">*</span>.</li>
+  <li>Em <b>Gestor responsável</b>, digite e selecione o gestor principal.</li>
+  <li>Em <b>Gestor substituto</b>, selecione quem assume a aprovação quando o gestor principal estiver indisponível.</li>
+  <li>Em <b>CNPJ</b> <span class="req">*</span>, selecione a matriz ou a filial à qual o centro de custo pertence.</li>
+  <li>Clique em <b class="btn">Salvar</b>.</li>
+</ol>
+<figure><img src="img/cad-centro-custo-form.jpg" alt="Centro de custo"><figcaption>Editando um centro de custo</figcaption></figure>
+
+<h2>4.4 Benefícios</h2>
+<span class="caminho">Cadastro › Benefícios</span>
+<p>Catálogo dos benefícios que podem ser oferecidos nas vagas e concedidos aos colaboradores. Cada card mostra o Tipo, o Valor, a Periodicidade, a forma de <b>Aplicação</b> e o <b>Desconto</b>.</p>
+<figure><img src="img/cad-beneficios.jpg" alt="Benefícios"><figcaption>Listagem de benefícios</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Buscar</td><td>Localiza pelo nome do benefício ou pelo tipo.</td></tr>
+  <tr><td>Tipo de benefício</td><td>Mostra apenas os benefícios de um tipo.</td></tr>
+</table>
+<h3>Cadastrar ou editar</h3>
+<ol>
+  <li>Se o tipo ainda não existe, clique em <b class="btn">Tipo de Benefício</b> e cadastre-o (nome e situação).</li>
+  <li>Clique em <b class="btn">+ Cadastrar Benefício</b> ou em ⋮ › <b>Editar</b>.</li>
+  <li>Informe o <b>Nome</b> e escolha o <b>Tipo</b>.</li>
+  <li>Informe o <b>Valor</b> e a <b>Aplicação</b>: <i>Em Reais</i> (valor fixo) ou <i>Percentual do Salário</i>.</li>
+  <li>Escolha a <b>Periodicidade</b>: Diário, Semanal, Quinzenal, Mensal ou Anual.</li>
+  <li>Informe o <b>Valor Descontado</b> do colaborador e a <b>Opção de Desconto</b>: <i>Valor Fixo</i> ou <i>Percentual do Salário</i>.</li>
+  <li>Clique em <b class="btn">Alterar</b> (ou <b class="btn">Cadastrar</b>).</li>
+</ol>
+<figure><img src="img/cad-beneficio-form.jpg" alt="Benefício"><figcaption>Alterando um benefício</figcaption></figure>
+
+<h2>4.5 Cargos</h2>
+<span class="caminho">Cadastro › Cargos</span>
+<p>Lista de cargos da empresa. Cada card mostra o <b>CBO</b> vinculado e a quantidade de <b>treinamentos do cargo</b>.</p>
+<figure><img src="img/cad-cargos.jpg" alt="Cargos"><figcaption>Listagem de cargos</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Buscar</td><td>Localiza pelo nome do cargo ou pelo ID.</td></tr>
+  <tr><td>Status</td><td><i>Ativo</i>, <i>Inativo</i> ou todos. Cargos inativos não aparecem para escolha em novas vagas e requisições.</td></tr>
+</table>
+<h3>Cadastrar ou editar</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Cadastrar Cargo</b> ou em ⋮ › <b>Editar</b>.</li>
+  <li>Em <b>Sobre o cargo</b>, informe o <b>Título do cargo</b> <span class="req">*</span> (por exemplo, “Analista de RH”).</li>
+  <li>Mantenha <b>Ativo</b> ligado. Para tirar um cargo de uso sem apagá-lo, desligue a chave.</li>
+  <li>Em <b>CBO</b> (opcional), busque pelo código, título ou família da Classificação Brasileira de Ocupações e selecione.</li>
+  <li>Clique em <b class="btn">Alterar</b> (ou <b class="btn">Cadastrar</b>).</li>
+</ol>
+<div class="nota"><b>Treinamentos do cargo são somente leitura nesta tela.</b> O vínculo entre treinamento e cargo é feito em <b>Cadastro › Lista de Treinamentos</b>; aqui aparece apenas o resumo do que está configurado.</div>
+<figure><img src="img/cad-cargo-form.jpg" alt="Cargo"><figcaption>Alterando um cargo</figcaption></figure>
+
+<h2>4.6 Vagas Abertas</h2>
+<span class="caminho">Cadastro › Vagas Abertas</span>
+<p>É aqui que uma vaga é publicada para receber candidatos. Cada vaga aparece no portal de vagas da empresa (seção 6.1) e gera um <b>link público</b> de candidatura, que pode ser copiado ou compartilhado direto no WhatsApp, Facebook, Instagram e LinkedIn pelos ícones abaixo do link.</p>
+<figure><img src="img/cad-vagas-abertas.jpg" alt="Vagas abertas"><figcaption>Vagas abertas — filtros e primeiro card</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Buscar</td><td>Localiza pelo título da vaga, cargo, cidade ou ID.</td></tr>
+  <tr><td>Ativo no site</td><td>Vagas publicadas (ou não) no site público de vagas.</td></tr>
+  <tr><td>Ativo no sistema</td><td>Vagas liberadas (ou não) para uso nos processos internos.</td></tr>
+  <tr><td>Cargo</td><td>Vagas de um cargo específico.</td></tr>
+  <tr><td>Cidade</td><td>Vagas de uma cidade — a lista traz apenas as cidades que têm vaga aberta.</td></tr>
+  <tr><td>Provas vinculadas</td><td>Vagas com ou sem prova vinculada.</td></tr>
+  <tr><td>Projeto</td><td>Vagas vinculadas a um projeto.</td></tr>
+</table>
+<p>Em cada card você vê o Cargo, o Local, a data de atualização, a Descrição e três indicadores: <b>Treinamentos do cargo</b>, <b>Provas vinculadas</b> e <b>Projetos vinculados</b>. Os selos <b>Ativo site</b> e <b>Ativo sistema</b> mostram onde a vaga está valendo.</p>
+<figure><img src="img/cad-vagas-abertas-2.jpg" alt="Card de vaga aberta"><figcaption>Card de vaga com link público, descrição e vínculos</figcaption></figure>
+<h3>Cadastrar ou editar</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Cadastrar Vaga Aberta</b> ou em ⋮ › <b>Editar</b>.</li>
+  <li>Em <b>Cargo</b> <span class="req">*</span>, digite e selecione o cargo. A faixa <b>Treinamentos vinculados ao cargo</b> pode ser aberta para conferir os treinamentos exigidos.</li>
+  <li>Informe o <b>Título</b> <span class="req">*</span> — é o nome que o candidato verá.</li>
+  <li>Escreva a <b>Descrição</b> no editor (atividades, requisitos, benefícios).</li>
+  <li>Em <b>Cidade</b> <span class="req">*</span>, digite e selecione o município.</li>
+</ol>
+<figure><img src="img/cad-vaga-form-1.jpg" alt="Vaga - dados"><figcaption>Alterando uma vaga — cargo, título, descrição e cidade</figcaption></figure>
+<ol start="6">
+  <li>Em <b>Projetos</b> (opcional), clique em <b class="btn">+ Adicionar</b> para vincular a vaga a um ou mais projetos, respeitando a quantidade disponível em cada um.</li>
+  <li>Em <b>Provas</b> (opcional), clique em <b class="btn">+ Adicionar</b> para vincular provas que o candidato fará.</li>
+  <li>Defina a publicação com as chaves <b>Ativo no site</b> e <b>Ativo no sistema</b>.</li>
+  <li>Clique em <b class="btn">Alterar</b> (ou <b class="btn">Cadastrar</b>).</li>
+</ol>
+<figure><img src="img/cad-vaga-form-2.jpg" alt="Vaga - projetos e provas"><figcaption>Projetos, provas e chaves de publicação</figcaption></figure>
+
+<h2>4.7 Projetos</h2>
+<span class="caminho">Cadastro › Projetos</span>
+<p>Um projeto define uma <b>capacidade</b> de posições a preencher e permite distribuir essa capacidade entre vagas abertas.</p>
+<figure><img src="img/cad-projetos.jpg" alt="Projetos"><figcaption>Projeto com capacidade, distribuição e ocupação</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Buscar</td><td>Localiza pelo nome ou ID do projeto.</td></tr>
+  <tr><td>Disponibilidade</td><td>Projetos com vagas ainda disponíveis ou já esgotados.</td></tr>
+  <tr><td>Vagas abertas</td><td>Projetos com ou sem vagas abertas vinculadas.</td></tr>
+</table>
+<p>Os números do card:</p>
+<ul>
+  <li><b>Capacidade</b> — tamanho total do projeto;</li>
+  <li><b>Distribuído</b> — quanto já foi reservado em vagas abertas;</li>
+  <li><b>Disponível</b> — quanto ainda pode ser vinculado a novas vagas;</li>
+  <li><b>Ocupadas</b> — posições já contratadas.</li>
+</ul>
+<p>O selo <b>Esgotado</b> aparece quando toda a capacidade já foi distribuída.</p>
+<h3>Cadastrar ou editar</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Cadastrar Projeto</b> ou em ⋮ › <b>Editar</b>.</li>
+  <li>Informe o <b>Nome do projeto</b> <span class="req">*</span> e a <b>Capacidade total</b> <span class="req">*</span>. A capacidade não pode ser menor do que o total já distribuído.</li>
+</ol>
+<figure><img src="img/cad-projeto-form-1.jpg" alt="Projeto - dados"><figcaption>Alterando um projeto — dados e resumo</figcaption></figure>
+<ol start="3">
+  <li>Em <b>Distribuição por vaga aberta</b> (opcional), cada linha reserva parte da capacidade para uma vaga. Ajuste a quantidade em <b>Reservadas neste vínculo</b>; o ✕ vermelho remove o vínculo.</li>
+  <li>Clique em <b class="btn">Alterar</b>.</li>
+</ol>
+<div class="nota"><b>Restrição por vagas ocupadas:</b> se já existem contratados em um vínculo, a reserva não pode ficar abaixo dessa quantidade, e o vínculo não pode ser removido.</div>
+<figure><img src="img/cad-projeto-form-2.jpg" alt="Projeto - distribuição"><figcaption>Distribuição da capacidade por vaga aberta</figcaption></figure>
+
+<h2>4.8 Exames (clínicas e PCMSO)</h2>
+<span class="caminho">Cadastro › Exames</span>
+<p>Cadastro das clínicas de medicina ocupacional para onde os colaboradores são encaminhados. O e-mail cadastrado aqui é o que recebe os encaminhamentos de exame.</p>
+<figure><img src="img/cad-exames.jpg" alt="Clínicas"><figcaption>Clínicas cadastradas</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Buscar</td><td>Localiza pela razão social, nome fantasia, CNPJ ou ID.</td></tr>
+  <tr><td>Status</td><td><i>Apenas Ativos</i>, <i>Apenas Inativos</i> ou todos.</td></tr>
+</table>
+<h3>Cadastrar ou editar uma clínica</h3>
+<p>Em <b class="btn">+ Cadastrar</b> ou ⋮ › <b>Editar</b>, informe CNPJ, Razão Social e Nome Fantasia; o endereço (CEP <span class="req">*</span> com busca pela lupa, Endereço <span class="req">*</span>, Número, Complemento, Bairro <span class="req">*</span>, Município <span class="req">*</span>, UF <span class="req">*</span>); o Telefone e o E-mail. Mantenha <b>Ativo</b> ligado.</p>
+<figure><img src="img/cad-exame-form.jpg" alt="Clínica"><figcaption>Alterando uma clínica</figcaption></figure>
+<h3>PCMSO</h3>
+<p>O botão <b class="btn">+ PCMSO</b> abre a lista de programas de controle médico (PCMSO) usados no encaminhamento de exames. A janela tem busca por nome, filtro de Status, o botão <b class="btn">+ Cadastrar</b> e o ícone de lápis para editar cada programa.</p>
+<figure><img src="img/cad-pcmso.jpg" alt="PCMSO"><figcaption>Lista de PCMSO</figcaption></figure>
+
+<h2>4.9 Instrutor</h2>
+<span class="caminho">Cadastro › Instrutor</span>
+<p>Instrutores que ministram treinamentos e assinam os certificados. A listagem tem busca por nome. No cadastro (<b class="btn">+ Instrutor</b>) informe o <b>Nome</b>, o <b>Cargo</b>, o <b>Registro</b> profissional, a situação (<b>Ativo</b>: Sim/Não) e envie o arquivo da <b>Assinatura</b>, que será impressa nos certificados.</p>
+<figure><img src="img/cad-instrutor-form.jpg" alt="Instrutor"><figcaption>Cadastro de instrutor</figcaption></figure>
+
+<h2>4.10 Lista de Treinamentos</h2>
+<span class="caminho">Cadastro › Lista de Treinamentos</span>
+<p>Catálogo de treinamentos da empresa. É aqui que se define a validade de cada treinamento e para quais cargos ele é exigido.</p>
+<figure><img src="img/cad-treinamentos.jpg" alt="Lista de treinamentos"><figcaption>Catálogo de treinamentos</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Buscar</td><td>Localiza pelo nome, descrição ou ID do treinamento.</td></tr>
+  <tr><td>Status</td><td><i>Ativo</i>, <i>Inativo</i> ou todos.</td></tr>
+  <tr><td>Segmento</td><td>Treinamentos de um segmento ou padrão (por exemplo, os exigidos por um cliente).</td></tr>
+</table>
+<p>Cada card mostra o <b>Padrão</b> (segmento), os <b>Cargos vinculados</b>, o <b>Prazo fixo</b> de validade em dias, a <b>Ordem</b> de exibição, <b>A quem se destina</b> e o nome usado na <b>Carteira de treinamento</b>.</p>
+<h3>Cadastrar ou editar</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Treinamento Indústria</b> ou em ⋮ › <b>Editar</b>.</li>
+  <li>Informe o <b>Nome</b> <span class="req">*</span>.</li>
+  <li>Ligue <b>Exibir Carteira Treinamento</b> se ele deve ser impresso na carteira e informe o <b>Nome Reduzido</b> <span class="req">*</span>, que é o texto impresso.</li>
+  <li>Preencha <b>A quem se destina</b> <span class="req">*</span>.</li>
+  <li>Informe o <b>Prazo fixo (dias para vencimento)</b> — por exemplo, 365 — e a <b>Ordem</b> em que aparece nas listas.</li>
+  <li>Escolha o <b>Segmento / Padrão de treinamento</b>.</li>
+  <li>Ligue <b>Vincular a todos os cargos</b> se o treinamento vale para qualquer cargo. Desligado, escolha os cargos na lista que aparece.</li>
+  <li>Mantenha <b>Ativo</b> e clique em <b class="btn">Salvar</b>.</li>
+</ol>
+<figure><img src="img/cad-treinamento-form.jpg" alt="Treinamento"><figcaption>Alterando um treinamento</figcaption></figure>
+<h3>Assinatura da carteira</h3>
+<p>O botão <b class="btn">+ Assinatura Carteira</b> lista as assinaturas impressas na carteira de treinamento, com Nome, Tipo (<i>Gerente/RH</i> ou <i>Técnico de Segurança</i>), Segmento e situação. Use <b class="btn">+ Cadastrar</b> para incluir e o lápis para editar.</p>
+<figure><img src="img/cad-assinatura-carteira.jpg" alt="Assinatura da carteira"><figcaption>Assinaturas da carteira de treinamento</figcaption></figure>
+
+<h2>4.11 Certificados</h2>
+<span class="caminho">Cadastro › Certificados</span>
+<p>Modelos de certificado emitidos pelo sistema (por exemplo NR-33 e NR-35). A listagem mostra Nome, Título do certificado, Carga horária e Validade, com busca por nome.</p>
+<figure><img src="img/cad-certificados.jpg" alt="Certificados"><figcaption>Modelos de certificado</figcaption></figure>
+<p>No cadastro (<b class="btn">+ Treinamento</b>) informe o <b>Nome</b>, o <b>Título Certificado</b>, o <b>Conteúdo Abordado</b>, o <b>Conteúdo Programático</b>, a <b>Carga Horária</b> (em horas) e a <b>Validade</b> (em dias). Esses textos são impressos no certificado.</p>
+<figure><img src="img/cad-certificado-form.jpg" alt="Certificado"><figcaption>Cadastro de modelo de certificado</figcaption></figure>
+
+<h2>4.12 Empresa Treinamento</h2>
+<span class="caminho">Cadastro › Empresa Treinamento</span>
+<p>Empresas que ministram treinamentos. Listagem com busca por nome; no cadastro (<b class="btn">+ Empresa Treinamento</b>) informe <b>Nome</b>, <b>Endereço</b> e a situação (<b>Ativo</b>: Sim/Não).</p>
+<figure class="media"><img src="img/cad-empresa-treinamento-form.jpg" alt="Empresa de treinamento"><figcaption>Cadastro de empresa de treinamento</figcaption></figure>
+
+<h2>4.13 Provas</h2>
+<span class="caminho">Cadastro › Provas</span>
+<p>Provas aplicadas aos candidatos e vinculadas às vagas abertas. Listagem com busca por título. Em <b class="btn">+ Cadastrar</b> (janela “Montagem da Prova”), informe o <b>Título</b>, o <b>Tipo da prova</b> (<i>Objetiva</i> ou <i>Subjetiva</i>) e a situação. Depois de escolher o tipo, monte as questões.</p>
+<figure class="media"><img src="img/cad-prova-form.jpg" alt="Prova"><figcaption>Montagem da prova</figcaption></figure>
+
+<h2>4.14 Avaliações</h2>
+<span class="caminho">Cadastro › Avaliações</span> <span class="caminho">Cadastro › Peformance</span>
+<p>Os grupos <b>Avaliações</b> e <b>Peformance</b> têm exatamente as mesmas quatro telas e são usados para ciclos diferentes de avaliação. Em ambos, a montagem segue esta ordem:</p>
+<div class="fluxo"><span>1. Tipos de Avaliadores</span><i>→</i><span>2. Tipos de Avaliações</span><i>→</i><span>3. Competências</span><i>→</i><span>4. Avaliações</span></div>
+
+<h3>Tipos de Avaliadores</h3>
+<p>Definem quem pode avaliar: <i>Par</i> (colegas do mesmo nível), <i>Gestão</i> (líder avaliando o liderado), <i>Autoavaliação</i> e <i>Subordinado</i> (liderado avaliando o líder). Busca por nome; cadastro com <b>Nome</b>, <b>Descrição</b> e <b>Ativo</b>.</p>
+<figure><img src="img/cad-tipo-avaliador.jpg" alt="Tipos de avaliador"><figcaption>Tipos de avaliadores</figcaption></figure>
+<figure class="media"><img src="img/cad-tipo-avaliador-form.jpg" alt="Cadastro de tipo de avaliador"><figcaption>Cadastro de tipo de avaliador</figcaption></figure>
+
+<h3>Tipos de Avaliações</h3>
+<p>São os modelos de avaliação (desempenho, experiência, liderança, 360°…). Busca por nome; cadastro com <b>Nome</b>, <b>Descrição</b> e <b>Ativo</b>.</p>
+<figure><img src="img/cad-tipo-avaliacao.jpg" alt="Tipos de avaliação"><figcaption>Tipos de avaliações</figcaption></figure>
+<figure class="media"><img src="img/cad-tipo-avaliacao-form.jpg" alt="Cadastro de tipo de avaliação"><figcaption>Cadastro de tipo de avaliação</figcaption></figure>
+
+<h3>Competências</h3>
+<p>As competências são os tópicos avaliados. A listagem mostra a Competência, a quantidade de indicadores e o tipo de avaliação a que pertence.</p>
+<figure><img src="img/cad-competencias.jpg" alt="Competências"><figcaption>Competências por tipo de avaliação</figcaption></figure>
+<p>Em <b class="btn">+ Cadastrar</b> (“Montagem de competência”), informe a <b>Competência</b>, a <b>Descrição</b>, o <b>Tipo de avaliação</b> em que ela será usada e a situação. Depois inclua os indicadores (as perguntas) da competência.</p>
+<figure><img src="img/cad-competencia-form.jpg" alt="Montagem de competência"><figcaption>Montagem de competência</figcaption></figure>
+
+<h3>Avaliações (ciclos)</h3>
+<p>Cada linha é um ciclo de avaliação, com Ano, Título, Tipo, Data início, Data fim, Status e situação.</p>
+<figure><img src="img/cad-avaliacoes.jpg" alt="Avaliações"><figcaption>Ciclos de avaliação</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Buscar</td><td>Localiza pelo título do ciclo.</td></tr>
+  <tr><td>Ano Avaliação</td><td>Ciclos de um ano específico.</td></tr>
+  <tr><td>Tipo Avaliação</td><td>Ciclos de um tipo de avaliação.</td></tr>
+  <tr><td>Status</td><td><i>Aguardando Início</i>, <i>Aberta</i> ou <i>Encerrada</i>.</td></tr>
+</table>
+<p><b class="btn">Exportar Excel</b> gera a planilha dos ciclos filtrados.</p>
+<h4>Montar um ciclo</h4>
+<ol>
+  <li>Clique em <b class="btn">+ Cadastrar</b>.</li>
+  <li>Em <b>Informações</b>, preencha o <b>Título</b>, o <b>Tipo de avaliação</b>, a <b>Data Início</b> e a <b>Data Fim</b>, o <b>Status</b> (Aguardando Início, Aberta ou Encerrada), se há <b>Auto Avaliação</b>, se está <b>Ativo</b> e o <b>Ano</b>.</li>
+</ol>
+<figure><img src="img/cad-avaliacao-form-1.jpg" alt="Montagem da avaliação"><figcaption>Montagem da avaliação — informações</figcaption></figure>
+<ol start="3">
+  <li>Em <b>Fluxo</b>, defina se o avaliador final verá as notas das etapas anteriores (<b>Mostrar notas das etapas anteriores para o Avaliador Final</b>).</li>
+  <li>Em <b>Tipo de avaliador</b>, escolha cada etapa do fluxo, na ordem em que deve acontecer. Se Auto Avaliação estiver como <i>Sim</i>, ela ocupa automaticamente a primeira posição.</li>
+  <li>Clique em <b class="btn">Cadastrar</b>.</li>
+</ol>
+<figure><img src="img/cad-avaliacao-form-2.jpg" alt="Fluxo da avaliação"><figcaption>Montagem da avaliação — fluxo de avaliadores</figcaption></figure>
+<h4>Associar avaliadores</h4>
+<ol>
+  <li>Na listagem, abra ⋮ › <b>Associar avaliadores</b> no ciclo desejado.</li>
+  <li>Localize os colaboradores pela busca ou filtre por <b>Vinculados</b> / <b>Não vinculados</b>.</li>
+  <li>Marque os colaboradores e clique em <b class="btn">Associar Avaliadores</b> para indicar quem avalia cada um em cada etapa do fluxo.</li>
+</ol>
+<div class="nota"><b>Atenção:</b> só é permitido associar avaliadores enquanto o ciclo está com status <b>Aguardando Início</b>.</div>
+<figure><img src="img/cad-associar-avaliadores.jpg" alt="Associar avaliadores"><figcaption>Associação de avaliadores a um ciclo</figcaption></figure>
+
+<h2>4.15 Customizações</h2>
+<h3>Campos personalizados da Requisição de Vaga</h3>
+<span class="caminho">Cadastro › Customizações › Requisição de Vaga</span>
+<p>Permite criar campos extras no formulário de requisição de vaga, de acordo com a necessidade da sua empresa — por exemplo, “E-mail institucional”, “Notebook” ou “Acesso a sistemas”.</p>
+<figure><img src="img/cad-campos-personalizados.jpg" alt="Campos personalizados"><figcaption>Campos personalizados da requisição de vaga</figcaption></figure>
+<ol>
+  <li>Clique em <b class="btn">+ Novo campo</b>.</li>
+  <li>Informe o <b>Nome do campo (label)</b> <span class="req">*</span>, que é o texto exibido no formulário.</li>
+  <li>Escolha o <b>Tipo</b> <span class="req">*</span>: <i>Sim / Não</i>, <i>Texto simples</i>, <i>Caixa de texto</i> (várias linhas) ou <i>Select</i> (lista de opções que você define).</li>
+  <li>Marque <b>Campo obrigatório</b> se o preenchimento for exigido e clique em <b class="btn">Salvar</b>.</li>
+</ol>
+<figure><img src="img/cad-campo-form.jpg" alt="Novo campo"><figcaption>Novo campo personalizado</figcaption></figure>
+
+<h3>Aprovações Extras</h3>
+<span class="caminho">Cadastro › Customizações › Aprovações Extras</span>
+<p>Inclui uma etapa adicional de aprovação entre o gestor e o RH para um tipo de processo.</p>
+<div class="fluxo"><span>Gestor</span><i>→</i><span>Aprovação Extra</span><i>→</i><span>RH (final)</span></div>
+<figure><img src="img/cad-aprovacoes-extras.jpg" alt="Aprovações extras"><figcaption>Configurações de aprovação extra</figcaption></figure>
+<p>Cada card mostra o tipo de processo, o nome da aprovação, as datas de criação e alteração, os <b>usuários autorizados</b> e o fluxo resultante. A busca localiza por nome ou tipo.</p>
+<ol>
+  <li>Clique em <b class="btn">+ Cadastrar</b> (ou ⋮ › <b>Editar</b>).</li>
+  <li>Em <b>Tipo de Processo</b> <span class="req">*</span>, escolha onde a etapa será incluída: Demissão, Férias, Mudança de Cargo, Transferência, Intermitente para Fixo, Valor Extra, Requisição de Vaga ou Admissão Prevista.</li>
+  <li>Informe o <b>Nome da Aprovação</b> <span class="req">*</span> (por exemplo, “SESMT” ou “Gerente”). Ele aparece no fluxo como “Aguardando aprovação do …”.</li>
+  <li>Em <b>Colaborador</b>, selecione os usuários autorizados a aprovar essa etapa. Usuários com privilégio de RH também podem aprovar.</li>
+  <li>Mantenha <b>Ativo</b> marcado e clique em <b class="btn">Salvar</b>.</li>
+</ol>
+<div class="nota"><b>Importante:</b> o RH é sempre a última aprovação, e apenas uma configuração pode estar ativa por tipo de processo.</div>
+<figure class="media"><img src="img/cad-aprovacao-form.jpg" alt="Nova aprovação extra"><figcaption>Nova configuração de aprovação extra</figcaption></figure>

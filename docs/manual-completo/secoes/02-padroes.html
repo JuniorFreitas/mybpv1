@@ -1,0 +1,38 @@
+<h1 id="padroes">2. Padrões das telas</h1>
+<p class="intro">Quase todas as telas do MyBPIN seguem a mesma estrutura. Entender esse padrão uma vez serve para o sistema inteiro.</p>
+
+<h2>2.1 Bloco FILTRO</h2>
+<p>No topo de cada listagem há um bloco <b>FILTRO</b> com os campos de busca daquela tela. Preencha o que quiser e clique em <b class="btn">Buscar</b> ou <b class="btn">Atualizar</b> (botão verde). Em algumas telas há também:</p>
+<ul>
+  <li><b class="btn">Mais filtros</b> — abre o bloco <b>Outros filtros</b>, com os filtros menos usados; <b class="btn">Menos filtros</b> recolhe;</li>
+  <li><b class="btn">Limpar filtros</b> — volta a listagem ao estado inicial;</li>
+  <li>caixa <b>Por período</b> — ao marcar, libera os campos de data inicial e final;</li>
+  <li><b>Exibir</b> / <b>Por página</b> — quantidade de registros por página.</li>
+</ul>
+<div class="dica"><b>Dica:</b> nos filtros de lista (Cargo, Centro de custo, CNPJ…), clique no campo e comece a digitar para reduzir as opções. A opção “Todos” remove o filtro.</div>
+
+<h2>2.2 Listagem em cards ou em tabela</h2>
+<p>Os resultados aparecem como <b>cards</b> (um bloco por registro) ou como <b>tabela</b>. Em ambos os casos:</p>
+<ul>
+  <li>o <b>selo de status</b> (Ativo, Inativo, Pendente RH, Integrado, Em aberto…) mostra a situação do registro;</li>
+  <li>o botão de <b>três pontos (⋮)</b> ou os ícones à direita abrem as <b>ações</b> daquele registro (Editar, Visualizar, Aprovar, Gerar PDF…);</li>
+  <li>no rodapé ficam o <b>Total encontrado(s)</b> e o seletor de <b>Página</b>.</li>
+</ul>
+
+<h2>2.3 Cadastrar e editar</h2>
+<ul>
+  <li><b>Cadastrar:</b> o botão ao lado de Atualizar (<b class="btn">Cadastrar</b>, <b class="btn">+ Cadastrar Cargo</b>, <b class="btn">Solicitar</b>…) abre o formulário em branco. O título da janela começa com “Cadastrando…”.</li>
+  <li><b>Editar:</b> em ⋮ › <b>Editar</b> (ou no ícone de lápis da linha) o mesmo formulário abre preenchido, com o título “Alterando…”. O botão de gravação passa a ser <b class="btn">Alterar</b> ou <b class="btn">Salvar</b>.</li>
+  <li><b>Ativar/inativar:</b> o campo <b>Ativo</b> tira o registro de uso sem apagá-lo.</li>
+  <li>Campos marcados com <span class="req">*</span> são obrigatórios. Use <b class="btn">Fechar</b> ou <b class="btn">Cancelar</b> para sair sem gravar.</li>
+</ul>
+<div class="dica"><b>Dica:</b> em campos de busca como “Colaborador”, “Cargo” ou “Gestor”, comece a digitar o nome e escolha o item na lista que aparece. O campo fica com um ✓ verde quando o item foi selecionado corretamente.</div>
+
+<h2>2.4 Fluxos de aprovação</h2>
+<p>Requisições de vaga e movimentações passam por etapas de aprovação. O card mostra em que etapa a solicitação está e quem já aprovou; quem tem a etapa pendente encontra a ação <b>Aprovar</b> no menu ⋮. O detalhamento está no capítulo 5.</p>
+
+<h2>2.5 Exportações</h2>
+<p>Onde existe o botão <b class="btn">Exportar Excel</b> (ou <b class="btn">Exportar PDF</b>), o arquivo é gerado em segundo plano respeitando os filtros aplicados. Quando fica pronto, o sistema avisa pelo sino e o arquivo fica disponível em <b>Meus Downloads</b>, na barra superior.</p>
+
+<h2>2.6 Anexos</h2>
+<p>Os campos de arquivo aceitam arrastar o arquivo para a área indicada ou clicar em <b class="btn">Escolher</b>. O tamanho e os formatos aceitos aparecem logo abaixo do campo.</p>

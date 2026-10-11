@@ -1,0 +1,401 @@
+<h1 id="admissao">8. Admissão</h1>
+<p class="intro">O menu <b>Admissão</b> acompanha a pessoa do envio de documentos até o desligamento. É o módulo mais usado no dia a dia do RH.</p>
+<div class="fluxo"><span>Pré-admissão</span><i>→</i><span>Controle de Exames</span><i>→</i><span>Processo (Admitir)</span><i>→</i><span>Histórico</span><i>→</i><span>Pós-admissão</span></div>
+<p>Quem veio do recrutamento chega aqui pelo <b>Resultado Integrado</b>. Quem não passou pelo recrutamento entra pela <b>Admissão avulsa</b>, dentro de Processo. O grupo <b>Apontamento</b> (CIH e Intermitente) registra as ocorrências do colaborador já admitido.</p>
+
+<!-- ======================= -->
+<h2>8.1 Pré-admissão (documentos)</h2>
+<span class="caminho">Admissão › Documentos › Pré-admissão</span>
+<p>Acompanha os documentos enviados pelos candidatos encaminhados. A lista mostra o Código, Nome, CPF, Vaga, a <b>quantidade de anexos</b> já recebidos e o Status.</p>
+<figure><img src="img/adm8-preadmissao.jpg" alt="Pré-admissão"><figcaption>Pré-admissão — documentos por candidato</figcaption></figure>
+<h3>Filtros</h3>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Buscar</td><td>Localiza pelo nome ou pelo CPF.</td></tr>
+  <tr><td>Por Vaga</td><td>Candidatos de uma vaga.</td></tr>
+  <tr><td>Estado</td><td>Candidatos de um estado (UF).</td></tr>
+  <tr><td>Status</td><td><i>Em processo</i> (padrão), <i>Admitidos</i> ou <i>Demitidos</i>.</td></tr>
+  <tr><td>Exibir</td><td>20, 50 ou 100 por página.</td></tr>
+</table>
+<h3>Ações de cada linha</h3>
+<table class="filtros">
+  <tr><th>Ícone</th><th>Ação</th></tr>
+  <tr><td>Lupa</td><td><b>Visualizar</b> — abre os documentos enviados pelo candidato.</td></tr>
+  <tr><td>Seta</td><td><b>Reenviar E-mail</b> — manda de novo ao candidato o e-mail com o link de envio dos documentos.</td></tr>
+  <tr><td>Check</td><td><b>Finalizar</b> — encerra a pré-admissão do candidato.</td></tr>
+</table>
+<h3>Conferir os documentos</h3>
+<p>Em <b>Visualizar</b>, os documentos aparecem agrupados por tipo. Cada arquivo tem os botões <b class="btn">Ver</b> e <b class="btn">Baixar</b>; tipos sem arquivo mostram “Nenhum anexo enviado”. Os grupos são:</p>
+<ul class="colunas">
+  <li>Laudo médico (somente PCD)</li>
+  <li>Currículo (PDF)</li>
+  <li>Foto 3x4 (JPG/JPEG)</li>
+  <li>RG/CPF</li>
+  <li>Comprovante de endereço</li>
+  <li>CTPS digital</li>
+  <li>Cartão de vale-transporte digital</li>
+  <li>Título de eleitor</li>
+  <li>Certificado de reservista</li>
+  <li>Cartão do PIS ou rescisão de contrato</li>
+  <li>Certificado de escolaridade</li>
+  <li>Conta bancária</li>
+  <li>Carta de sindicalização</li>
+  <li>Documentação dos filhos (salário-família)</li>
+  <li>Cartão de vacina (até 6 anos)</li>
+  <li>Declaração escolar (7 a 14 anos)</li>
+  <li>Certificado de funções</li>
+  <li>Carteira de vacinação</li>
+</ul>
+<figure><img src="img/adm8-preadmissao-docs.jpg" alt="Documentos de pré-admissão"><figcaption>Documentos enviados pelo candidato</figcaption></figure>
+
+<!-- ======================= -->
+<h2>8.2 Controle de Exames</h2>
+<span class="caminho">Admissão › Controle de Exames</span>
+<p>Lista as pessoas com exames ocupacionais em andamento, com o Cargo e a data do <b>último encaminhamento</b>.</p>
+<figure><img src="img/adm8-exames.jpg" alt="Controle de exames"><figcaption>Controle de exames</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Por período</td><td>Ao marcar, libera o intervalo de datas.</td></tr>
+  <tr><td>Nome / CPF</td><td>Localizam a pessoa.</td></tr>
+  <tr><td>Status</td><td><i>Em processo</i> (padrão), <i>Admitidos</i> ou <i>Demitidos</i>.</td></tr>
+  <tr><td>Exibir</td><td>20, 50 ou 100 por página.</td></tr>
+</table>
+<p>Clique em <b class="btn">Abrir</b> na linha da pessoa. A janela mostra os dados pessoais e três abas.</p>
+<h3>Aba Encaminhar</h3>
+<ol>
+  <li>Escolha o <b>Tipo de ordem</b>: <i>Admissional</i>, <i>Periódico</i>, <i>Pericial</i>, <i>Mudança de Função</i>, <i>Retorno ao Trabalho</i> ou <i>Demissional</i>.</li>
+  <li>Escolha a <b>Clínica</b> (cadastrada em Cadastro › Exames).</li>
+  <li>Informe a <b>Data para realização</b> e o <b>PCMSO</b>.</li>
+  <li>Ligue <b>Enviar E-mail</b> para que o encaminhamento seja enviado por e-mail.</li>
+  <li>Clique em <b class="btn">Salvar</b>.</li>
+</ol>
+<figure><img src="img/adm8-exame-encaminhar.jpg" alt="Encaminhar exame"><figcaption>Controle de exames — aba Encaminhar</figcaption></figure>
+<h3>Aba Encaminhados</h3>
+<p>Histórico de encaminhamentos da pessoa: Código, Tipo de exame, Clínica, PCMSO, quem encaminhou e a data. O ícone no fim da linha abre o documento de encaminhamento.</p>
+<figure><img src="img/adm8-exame-encaminhados.jpg" alt="Exames encaminhados"><figcaption>Controle de exames — aba Encaminhados</figcaption></figure>
+<h3>Aba Validação SESMT</h3>
+<p>Antes de dar acesso aos resultados, o sistema apresenta o termo de <b>acesso ao prontuário</b>, com as regras de sigilo médico. Leia e clique em <b class="btn">Concordo</b> para prosseguir com a validação do exame pelo SESMT.</p>
+<figure><img src="img/adm8-exame-sesmt.jpg" alt="Validação SESMT"><figcaption>Controle de exames — aba Validação SESMT</figcaption></figure>
+
+<!-- ======================= -->
+<h2>8.3 Processo</h2>
+<span class="caminho">Admissão › Processo</span>
+<p>Tela central da admissão. Cada card representa uma pessoa em processo de admissão ou já admitida.</p>
+<figure><img src="img/adm8-processo.jpg" alt="Processo"><figcaption>Processo — filtros</figcaption></figure>
+<h3>Filtros</h3>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Por período</td><td>Intervalo de datas do processo.</td></tr>
+  <tr><td>Data do ASO</td><td>Pessoas com ASO emitido entre duas datas.</td></tr>
+  <tr><td>Data da Admissão</td><td>Pessoas admitidas entre duas datas.</td></tr>
+  <tr><td>Lotação / Centro de custo</td><td>Restringem a uma matriz/filial ou a um centro de custo.</td></tr>
+  <tr><td>Colaborador / CPF</td><td>Localiza pelo nome ou CPF.</td></tr>
+  <tr><td>Cargo / Estado</td><td>Restringem a um cargo ou a um estado.</td></tr>
+  <tr><td>Status admissão</td><td>Situação do processo (admitido, desistência, em andamento…).</td></tr>
+  <tr><td>Tipo admissão</td><td>Tipo de contrato: Fixo, Intermitente, Temporário, Determinado, PJ, Estágio, Aprendiz.</td></tr>
+  <tr><td>Por demitido</td><td><i>Não</i> (padrão) oculta os demitidos; <i>Sim</i> mostra apenas eles.</td></tr>
+  <tr><td>Exibir</td><td>Quantidade de cards por página.</td></tr>
+</table>
+<h3>O card do processo</h3>
+<p>Ao lado do nome, o selo mostra a situação (<b>Admitido</b>, <b>Desistência</b>…). Abaixo:</p>
+<table class="filtros">
+  <tr><th>Campo</th><th>Significado</th></tr>
+  <tr><td>Centro, Cargo, Contato, Unidade</td><td>Centro de custo, cargo e cidade da vaga, telefone e unidade (matriz/filial).</td></tr>
+  <tr><td>Enc. Doc / Enc. Exame / Enc. Trein.</td><td>Encaminhamentos feitos no Resultado Integrado. ✓ verde = feito.</td></tr>
+  <tr><td>Resp. Enc.</td><td>Quem fez o encaminhamento.</td></tr>
+  <tr><td>Crachá / Foto 3x4</td><td>✓ verde quando há crachá (com o número) e foto; sinal vermelho quando falta.</td></tr>
+  <tr><td>Data ASO / Data Admissão / Tipo Admissão</td><td>Datas do exame e da admissão e o tipo de contrato.</td></tr>
+</table>
+<p>O menu ⋮ oferece <b>Admitir</b>, <b>Visualizar</b> e <b>Gerar PDF</b>.</p>
+<figure><img src="img/adm8-processo-acoes.jpg" alt="Card do processo"><figcaption>Cards do processo e menu de ações</figcaption></figure>
+<h3>Exportar</h3>
+<p>Marque os cards (ou <b>Selecionar todos com admissão</b>) e clique em <b class="btn">Exportar Excel</b>. O botão <b class="btn">Colunas</b> abre a janela “Mostrar e Ocultar colunas”, onde você liga ou desliga o que aparece nos cards: PCD, CPF, Enc. Documento, Enc. Exame, Enc. Treinamento, Resp. Encaminhamento, Crachá, Foto 3x4, Data Admissão e Contato. <b class="btn">Limpar seleção</b> desmarca tudo.</p>
+<figure><img src="img/adm8-processo-colunas.jpg" alt="Colunas"><figcaption>Mostrar e ocultar colunas</figcaption></figure>
+
+<h3>Admitir um candidato do processo seletivo</h3>
+<ol>
+  <li>Localize o candidato e confira no card se documentos, exame e treinamento estão concluídos.</li>
+  <li>Escolha ⋮ › <b>Admitir</b>. A janela abre identificada pelo código e nome do candidato, com os dados que vieram do currículo e da entrevista.</li>
+  <li>Revise <b>Dados pessoais</b>, <b>Endereço</b> e <b>Contato</b>. Em seguida vêm <b>Documentos</b>, <b>Formação</b>, <b>EPI</b>, <b>Técnica</b> (experiência com cargas, plataforma móvel e ponte rolante) e <b>Sobre a vaga</b>.</li>
+</ol>
+<figure><img src="img/adm8-admitir-1.jpg" alt="Admitir - dados pessoais"><figcaption>Janela de admissão — dados pessoais, endereço e contato</figcaption></figure>
+<ol start="4">
+  <li>Confira os encaminhamentos (<b>Documentos</b>, <b>Exame</b>, <b>Treinamento</b>) e o bloco <b>Exceção e responsável</b>.</li>
+  <li>Em <b>Lotação e contrato</b>, confira o Número do contrato, a Área, o Centro de custo, a Função <span class="req">*</span> e o Salário.</li>
+  <li>Em <b>Documentos e tipo</b>, informe a situação do Documento e do Documento Portaria, o <b>Tipo de admissão</b> e a data de encerramento da documentação.</li>
+  <li>Em <b>Treinamento e status</b>, informe a situação do Treinamento, o <b>Número do Crachá</b>, o Status da Carteira/Etiqueta, o Padrão de treinamento, o <b>Status</b> <span class="req">*</span> e a <b>Data da Admissão</b> <span class="req">*</span>. A Data do ASO vem do controle de exames.</li>
+</ol>
+<figure><img src="img/adm8-admitir-2.jpg" alt="Admitir - contrato e status"><figcaption>Lotação e contrato, documentos e tipo, treinamento e status</figcaption></figure>
+<ol start="8">
+  <li>Preencha <b>PIS e CTPS</b> (PIS <span class="req">*</span>, CTPS, reservista e título de eleitor).</li>
+  <li>Em <b>Férias</b> e <b>Dependentes</b>, use os botões <b class="btn">+ Adicionar período</b> e <b class="btn">+ Adicionar dependente</b>, se houver.</li>
+  <li>Em <b>Dados bancários</b>, informe Banco <span class="req">*</span>, Agência <span class="req">*</span>, Conta <span class="req">*</span> e se tem PIX <span class="req">*</span>. Em <b>Foto escaneada</b>, confira ou envie a foto.</li>
+  <li>Clique em <b class="btn">Salvar</b>.</li>
+</ol>
+<figure><img src="img/adm8-admitir-3.jpg" alt="Admitir - PIS, banco e foto"><figcaption>PIS e CTPS, férias, dependentes e dados bancários</figcaption></figure>
+
+<!-- ======================= -->
+<h2>8.4 Admissão avulsa</h2>
+<span class="caminho">Admissão › Processo › + Admissão avulsa</span>
+<p>Use a admissão avulsa para admitir alguém que <b>não passou pelo recrutamento</b> do sistema — sem currículo, entrevista ou resultado integrado. Em uma única janela você registra tudo o que, no fluxo normal, viria das etapas anteriores.</p>
+<h3>Passo 1 — Informar o CPF</h3>
+<ol>
+  <li>Em <b>Admissão › Processo</b>, clique em <b class="btn">+ Admissão avulsa</b>.</li>
+  <li>Digite o <b>CPF</b> <span class="req">*</span> e saia do campo (tecla Tab ou clique fora).</li>
+</ol>
+<figure><img src="img/adm8-avulsa-0.jpg" alt="Admissão avulsa - CPF"><figcaption>A admissão avulsa começa apenas com o CPF</figcaption></figure>
+<p>O sistema procura o CPF na base e libera o restante do formulário:</p>
+<table class="filtros">
+  <tr><th>Situação do CPF</th><th>O que acontece</th></tr>
+  <tr><td>Não encontrado</td><td>O formulário abre em branco para você preencher todos os dados.</td></tr>
+  <tr><td>Já cadastrado</td><td>O formulário abre com os dados que o sistema já tem dessa pessoa. Revise e complete.</td></tr>
+  <tr><td>Ex-funcionário</td><td>Aparece o aviso amarelo <b>Ex-Funcionário</b>. Se houver pendência, o botão <b class="btn">Verificar Pós Admissão</b> abre a pós-admissão da pessoa em outra aba, para conferência antes de readmitir.</td></tr>
+</table>
+<div class="nota"><b>Atenção:</b> depois de digitado, o CPF fica bloqueado. Se informou o CPF errado, clique em <b class="btn">Fechar</b> e comece de novo.</div>
+
+<h3>Passo 2 — Dados da pessoa</h3>
+<ul>
+  <li><b>Dados pessoais:</b> Nome <span class="req">*</span>, E-mail <span class="req">*</span>, Nascimento <span class="req">*</span>, Naturalidade, Cota PCD <span class="req">*</span> (ao escolher Sim, aparece o campo CID), Sexo, Estado civil, Pai e Mãe <span class="req">*</span>.</li>
+  <li><b>Endereço:</b> CEP (a lupa busca o endereço), Endereço, Número, Complemento, Bairro, Município e UF.</li>
+  <li><b>Contato</b> <span class="req">*</span>: Tipo, Número e o contato Principal. Use <b class="btn">+ Adicionar</b> para mais de um telefone.</li>
+</ul>
+<figure><img src="img/adm8-avulsa-1.jpg" alt="Avulsa - dados pessoais"><figcaption>Dados pessoais, endereço e contato</figcaption></figure>
+
+<h3>Passo 3 — Documentos, formação e vaga</h3>
+<ul>
+  <li><b>Documentos:</b> CNH, RG e data de emissão do RG.</li>
+  <li><b>Formação:</b> escolaridade. A partir do ensino técnico/superior, aparece o campo Curso.</li>
+  <li><b>Sobre a vaga:</b> Vaga <span class="req">*</span> (digite e selecione), Data de admissão prevista, se é Ex-funcionário, se aceita Turno 6x2 e se foi Indicado <span class="req">*</span> — ao marcar Sim, informe quem indicou e para qual área.</li>
+  <li><b>EPI:</b> tamanhos de Calça, Bota, Camisa de proteção e Camisa de meia.</li>
+  <li><b>Rotas:</b> Bairro da rota e pontos de referência da rota e da residência.</li>
+</ul>
+<figure><img src="img/adm8-avulsa-2.jpg" alt="Avulsa - vaga e EPI"><figcaption>Documentos, formação, vaga, EPI e rotas</figcaption></figure>
+
+<h3>Passo 4 — Encaminhamentos e contrato</h3>
+<ul>
+  <li><b>Documentos</b>, <b>Exame</b> e <b>Treinamento:</b> informe em cada um se a pessoa foi encaminhada. Documentos e Treinamento são obrigatórios <span class="req">*</span>.</li>
+  <li><b>Exceção e responsável:</b> Exceção <span class="req">*</span> (se Sim, informe quem autorizou), Responsável pelo envio <span class="req">*</span> e Observações.</li>
+  <li><b>Lotação e contrato:</b> Número do Contrato, Área, Centro de Custo, Função <span class="req">*</span> e Salário.</li>
+</ul>
+<figure><img src="img/adm8-avulsa-3.jpg" alt="Avulsa - encaminhamentos"><figcaption>Encaminhamentos, exceção e lotação e contrato</figcaption></figure>
+
+<h3>Passo 5 — Documentos, treinamento e status</h3>
+<ul>
+  <li><b>Documentos e tipo:</b> situação do Documento e do Documento Portaria, e o Tipo de admissão.</li>
+  <li><b>Treinamento e status:</b> situação do Treinamento, Número do Crachá, Status da Carteira/Etiqueta, Padrão de treinamento, <b>Status</b> <span class="req">*</span>, Data do ASO, Data da Admissão, Data da entrega na área e Biometria.</li>
+  <li><b>PIS e CTPS:</b> PIS, número, série, UF e data de emissão da CTPS, certificado de reservista e título de eleitor (número, sessão e zona).</li>
+</ul>
+<figure><img src="img/adm8-avulsa-4.jpg" alt="Avulsa - status"><figcaption>Documentos e tipo, treinamento e status, PIS e CTPS</figcaption></figure>
+
+<h3>Passo 6 — Férias, dependentes, banco e foto</h3>
+<ul>
+  <li><b>Férias:</b> <b class="btn">+ Adicionar período</b> registra períodos de férias já existentes.</li>
+  <li><b>Dependentes:</b> <b class="btn">+ Adicionar dependente</b> inclui cada dependente.</li>
+  <li><b>Dados bancários:</b> Banco <span class="req">*</span>, Agência <span class="req">*</span>, Conta <span class="req">*</span> e Tem PIX? <span class="req">*</span>.</li>
+  <li><b>Foto escaneada:</b> selecione ou arraste a imagem (JPG, PNG, WEBP ou GIF).</li>
+</ul>
+<p>Confira os campos obrigatórios e clique em <b class="btn">Salvar</b>. Ao concluir, o sistema exibe a mensagem <b>Admissão Concluída!</b></p>
+<figure><img src="img/adm8-avulsa-5.jpg" alt="Avulsa - banco e foto"><figcaption>Férias, dependentes, dados bancários e foto</figcaption></figure>
+
+<!-- ======================= -->
+<h2>8.5 Apontamento › Tipos CIH</h2>
+<span class="caminho">Admissão › Apontamento › Tipos CIH</span>
+<p>Tabela dos tipos de ocorrência que podem ser lançados no CIH — por exemplo Abono de dia, Atraso, Compensação de horas, Exames, Falta, Folga. A coluna <b>Anexo Obrigatório</b> indica os tipos que exigem evidência.</p>
+<figure><img src="img/adm8-tipocih.jpg" alt="Tipos CIH"><figcaption>Tipos de CIH</figcaption></figure>
+<p>Em <b class="btn">+ Cadastrar Tipo CIH</b>, informe o <b>Nome</b>, mantenha <b>Ativo</b> ligado e ligue <b>Anexo Obrigatório</b> se todo lançamento desse tipo precisar de um arquivo de evidência. O lápis edita um tipo existente.</p>
+<figure class="media"><img src="img/adm8-tipocih-form.jpg" alt="Cadastro de tipo de CIH"><figcaption>Cadastro de tipo de CIH</figcaption></figure>
+
+<h2>8.6 Apontamento › CIH</h2>
+<span class="caminho">Admissão › Apontamento › CIH</span>
+<p>Registro de ocorrências do colaborador (ajuste de ponto, falta, atraso, abono…). Cada lançamento passa por aprovação do gestor e do RH.</p>
+<figure><img src="img/adm8-cih.jpg" alt="CIH"><figcaption>Lançamentos de CIH</figcaption></figure>
+<h3>Filtros</h3>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Por período</td><td>Ocorrências de um intervalo de datas.</td></tr>
+  <tr><td>Buscar</td><td>Localiza pelo nome do colaborador ou pelo código do lançamento.</td></tr>
+  <tr><td>Status</td><td>Situação da aprovação (pendente gestor, pendente RH, aprovado, reprovado).</td></tr>
+  <tr><td>Tipo</td><td>Tipo de ocorrência (ver Tipos CIH).</td></tr>
+  <tr><td>Lotação / Centro de custo</td><td>Restringem a uma matriz/filial ou a um centro de custo.</td></tr>
+  <tr><td>Gestor</td><td>Lançamentos sob responsabilidade de um gestor.</td></tr>
+</table>
+<p>Cada card mostra o Tipo, a Data da ocorrência, quem fez o Lançamento e quando, a Lotação, o Centro de custo, o Gestor responsável, a descrição da <b>Ação</b> e o fluxo <i>Lançamento → Gestor → RH</i>. <b class="btn">Exportar PDF</b> e <b class="btn">Exportar Excel</b> geram os relatórios do que está filtrado.</p>
+<h3>Lançar um CIH</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Cadastrar</b>.</li>
+  <li>Em <b>Ocorrência</b>, informe a Data da Ocorrência <span class="req">*</span>, o Tipo <span class="req">*</span>, a Lotação <span class="req">*</span> e o Centro de Custo <span class="req">*</span>.</li>
+  <li>Em <b>Envolvidos</b>, selecione o(s) Colaborador(es) <span class="req">*</span>. O campo é liberado depois de escolher lotação e centro de custo, e aceita mais de um colaborador.</li>
+  <li>Em <b>Detalhes</b>, descreva a <b>Ação</b> <span class="req">*</span> tomada, anexe a evidência (PDF, imagem ou documento) e, se quiser, uma Observação.</li>
+  <li>Clique em <b class="btn">Lançar</b>.</li>
+</ol>
+<figure><img src="img/adm8-cih-form.jpg" alt="Cadastrando CIH"><figcaption>Cadastrando um CIH</figcaption></figure>
+<h3>Visualizar e aprovar</h3>
+<p>No menu ⋮ do card, <b>Visualizar</b> abre o lançamento completo: a ocorrência, a tabela de envolvidos (Nome, Cargo, Centro de custo, Lotação), a ação, o anexo (com Ver e Baixar) e os blocos <b>Aprovação Gestor</b> e <b>Aprovação RH</b>, que mostram quem aprovou ou reprovou e quando. Quem tem a aprovação pendente encontra, no mesmo menu, a ação de aprovar: escolha o <b>Status</b>, escreva a observação e grave.</p>
+<figure><img src="img/adm8-cih-visualizar.jpg" alt="Visualizando CIH"><figcaption>Lançamento de CIH aberto para conferência</figcaption></figure>
+
+<h2>8.7 Apontamento › Intermitente</h2>
+<span class="caminho">Admissão › Apontamento › Intermitente</span>
+<p>Controle das convocações de colaboradores com contrato intermitente.</p>
+<figure><img src="img/adm8-intermitente.jpg" alt="Intermitente"><figcaption>Convocações de intermitentes</figcaption></figure>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Por período</td><td>Convocações de um intervalo de datas.</td></tr>
+  <tr><td>Buscar</td><td>Localiza pelo nome do colaborador.</td></tr>
+  <tr><td>Tipos</td><td>Tipo de convocação.</td></tr>
+  <tr><td>Áreas / Centros de Custo</td><td>Restringem a uma área ou a um centro de custo.</td></tr>
+  <tr><td>Status</td><td><i>Aberto</i>, <i>Encerrado</i> ou <i>Expirado</i>.</td></tr>
+</table>
+<p>A legenda de cores indica as convocações <b>Abertas</b> e as <b>Encerradas</b>.</p>
+<h3>Convocar</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Convocar</b>.</li>
+  <li>Informe a <b>Data da Convocação</b> e o <b>Prazo de resposta do colaborador</b> (em horas).</li>
+  <li>Escolha o <b>Tipo</b>, a <b>Área</b> e o <b>Centro de Custo</b>.</li>
+  <li>Selecione o(s) <b>Colaborador(es)</b> e descreva a <b>Ação</b>.</li>
+  <li>Inclua anexo e observação, se houver, e clique em <b class="btn">Lançar</b>.</li>
+</ol>
+<figure><img src="img/adm8-intermitente-form.jpg" alt="Convocação"><figcaption>Convocação de intermitente</figcaption></figure>
+<p>O botão <b class="btn">+ Cadastrar Tipo</b> inclui um novo tipo de convocação: basta informar o <b>Nome</b> e clicar em <b class="btn">Cadastrar</b>.</p>
+<figure class="media"><img src="img/adm8-intermitente-tipo.jpg" alt="Tipo de intermitente"><figcaption>Cadastro de tipo de intermitente</figcaption></figure>
+
+<!-- ======================= -->
+<h2>8.8 Histórico</h2>
+<span class="caminho">Admissão › Histórico</span>
+<p>Ficha de cada colaborador. O card mostra Cargo, Função, CPF, Empresa, Centro de custo, Lotação, Tipo de admissão, Data de admissão e última atualização, com o selo de situação.</p>
+<figure><img src="img/adm8-historico.jpg" alt="Histórico"><figcaption>Histórico dos colaboradores</figcaption></figure>
+<h3>Filtros</h3>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Nome ou ID</td><td>Localiza pelo nome ou pelo código do colaborador.</td></tr>
+  <tr><td>CPF / Matrícula</td><td>Localizam pelo CPF ou pela matrícula.</td></tr>
+  <tr><td>Cargo / Função</td><td>Colaboradores de um cargo ou de uma função.</td></tr>
+  <tr><td>Tipo admissão</td><td>Temporário, Intermitente, Determinado, Fixo, PJ, Estágio ou Aprendiz.</td></tr>
+  <tr><td>Status</td><td><i>Admitidos</i> (padrão) ou <i>Demitidos</i>.</td></tr>
+  <tr><td>Lotação / Centro de custo</td><td>Restringem a uma matriz/filial ou a um centro de custo.</td></tr>
+  <tr><td>Ordenar por</td><td>Mais recentes ou mais antigos; última atualização; nome (A–Z ou Z–A); data de admissão; cargo.</td></tr>
+  <tr><td>Exibir</td><td>10, 20, 50 ou 100 por página.</td></tr>
+</table>
+<p><b class="btn">Limpar filtros</b> volta a lista ao padrão.</p>
+
+<h3>Abrir o histórico de um colaborador</h3>
+<p>Em ⋮ › <b>Abrir histórico</b>, a janela mostra as informações do colaborador (nome, CPF, cargo, função e data de admissão) e doze abas.</p>
+
+<h4>Dossiê</h4>
+<p>Pasta digital do colaborador. Cada documento tem seu bloco: arraste o arquivo ou clique em <b class="btn">Escolher</b> para enviar; depois de enviado, ficam disponíveis <b class="btn">Ver</b>, <b class="btn">Baixar</b> e <b class="btn">Apagar</b>. Alguns blocos trazem <b class="btn">Baixar Modelo</b> com o modelo do documento, e os documentos que exigem assinatura podem ser <b>enviados para assinatura digital</b>. Entre os blocos: foto 3x4, documento de seleção, check list de admissão, ficha de registro, autodeclaração étnico-racial, contrato de trabalho, termo de confidencialidade, opção de vale-transporte, acordo de compensação de horas, termo de salário-família, declaração de dependentes, ordem de serviço, certificados de treinamento, ficha de EPI, contracheques, cartões de ponto, avisos de férias, ASOs e os documentos de rescisão.</p>
+<figure><img src="img/adm8-hist-dossie.jpg" alt="Dossiê"><figcaption>Histórico — aba Dossiê</figcaption></figure>
+
+<h4>Feedback</h4>
+<p><b class="btn">+ Adicionar Feedback</b> abre o registro de um feedback: <b>Situação</b>, <b>Descrição</b>, <b>Data</b> e o <b>Compromisso</b> assumido. Grave com <b class="btn">Salvar</b>.</p>
+<figure><img src="img/adm8-hist-feedback-form.jpg" alt="Feedback"><figcaption>Registro de feedback</figcaption></figure>
+
+<h4>Medidas Administrativas</h4>
+<p><b class="btn">+ Adicionar Medida</b> inclui uma medida disciplinar. Informe:</p>
+<ul>
+  <li><b>Tipo:</b> Re-orientação, Advertência Verbal, Advertência Escrita, Suspensão de 1 dia, Suspensão de 2 ou 3 dias, Suspensão acima de 3 dias ou Desligamento;</li>
+  <li><b>Causa:</b> por exemplo, comportamentos contrários aos valores, inadequação no desempenho, desrespeito às normas de SSMA, descumprimento de procedimentos internos, insubordinação, desídia;</li>
+  <li><b>Motivo</b>, <b>Solicitante</b> e <b>Data da Solicitação</b>;</li>
+  <li><b>Anexo</b> com a evidência.</li>
+</ul>
+<p><b class="btn">Gerar PDF</b> emite o documento da medida para assinatura e <b class="btn">Remover Medida</b> exclui o registro.</p>
+<figure><img src="img/adm8-hist-medidas.jpg" alt="Medidas administrativas"><figcaption>Histórico — aba Medidas Administrativas</figcaption></figure>
+
+<h4>Avaliação de Experiência</h4>
+<p>Mostra a situação da avaliação do período de experiência: Gestor, Cargo, Função, Centro de custo, Vencimento, Dias restantes, quantidade de Avaliações e a Definição. Regras do sistema:</p>
+<ul>
+  <li>os links de avaliação têm validade de 60 dias;</li>
+  <li>cada colaborador pode ter no máximo 2 avaliações de experiência;</li>
+  <li>links expirados ou já utilizados não podem ser reaproveitados.</li>
+</ul>
+<figure><img src="img/adm8-hist-experiencia.jpg" alt="Avaliação de experiência"><figcaption>Histórico — aba Avaliação de Experiência</figcaption></figure>
+
+<h4>Avaliação Anual</h4>
+<p><b class="btn">+ Adicionar Avaliação Anual</b> abre um formulário com três blocos — <b>Competências comportamentais</b>, <b>Desempenho</b> e <b>Outras informações</b>. Cada item recebe uma nota de 1 a 5; ao final, informe o <b>Gestor imediato</b> e a <b>Observação</b> e clique em <b class="btn">Salvar</b>.</p>
+
+<h4>Férias</h4>
+<p>Lista os períodos de férias do colaborador. Sem registros, mostra “Nenhum Registro Encontrado”. As férias são programadas em <b>Planejamento › Movimentação › Férias</b>.</p>
+<figure><img src="img/adm8-hist-ferias.jpg" alt="Férias"><figcaption>Histórico — aba Férias</figcaption></figure>
+
+<h4>Afastamento</h4>
+<p><b class="btn">+ Adicionar Afastamento</b> inclui um bloco com o <b>Período</b>, o <b>Motivo</b>, a <b>Observação</b> e o <b>Anexo</b> (atestado ou documento).</p>
+<figure><img src="img/adm8-hist-afastamento.jpg" alt="Afastamento"><figcaption>Histórico — aba Afastamento</figcaption></figure>
+
+<h4>Benefício</h4>
+<p><b class="btn">+ Adicionar Benefício</b> vincula ao colaborador um dos benefícios cadastrados em <b>Cadastro › Benefícios</b>.</p>
+<figure><img src="img/adm8-hist-beneficio.jpg" alt="Benefício"><figcaption>Vinculando um benefício ao colaborador</figcaption></figure>
+
+<h4>CIH</h4>
+<p>Todos os lançamentos de CIH do colaborador, com quem lançou, quem aprovou e quando, e o Status. A legenda de cores indica <i>Aberto</i>, <i>Aprovado</i> e <i>Reprovado</i>; <b class="btn">Visualizar</b> abre o lançamento.</p>
+<figure><img src="img/adm8-hist-cih.jpg" alt="CIH do colaborador"><figcaption>Histórico — aba CIH</figcaption></figure>
+
+<h4>Promoção</h4>
+<p><b class="btn">+ Adicionar Promoção</b> registra uma alteração salarial ou de cargo: <b>Novo Cargo</b>, <b>Salário</b>, <b>Percentual</b>, <b>Tipo</b> (<i>Promoção</i>, <i>Reajuste</i>, <i>Acordo Coletivo</i> ou <i>Mérito</i>) e o <b>Motivo</b>.</p>
+<figure><img src="img/adm8-hist-promocao.jpg" alt="Promoção"><figcaption>Registro de promoção</figcaption></figure>
+
+<h4>Metas</h4>
+<p><b class="btn">+ Adicionar Meta</b> registra uma meta do colaborador: <b>Nome</b>, <b>Descrição</b>, <b>Data Início</b> e <b>Data Fim</b>.</p>
+<figure><img src="img/adm8-hist-meta.jpg" alt="Meta"><figcaption>Registro de meta</figcaption></figure>
+
+<h4>Logs</h4>
+<p>Registro de auditoria: lista cada alteração feita na ficha do colaborador, com o <b>Usuário</b>, a <b>Ação</b> e a <b>Data</b>.</p>
+<figure><img src="img/adm8-hist-logs.jpg" alt="Logs"><figcaption>Histórico — aba Logs</figcaption></figure>
+
+<!-- ======================= -->
+<h2>8.9 Pós-admissão</h2>
+<span class="caminho">Admissão › Pós-admissão</span>
+<p>Lista os colaboradores admitidos e é por onde se conduz o desligamento. A tabela mostra ID, Nome, CNPJ, Centro de custos, Cargo, Data da admissão, Data da demissão e o <b>Documento de demissão</b>.</p>
+<figure><img src="img/adm8-pos.jpg" alt="Pós-admissão"><figcaption>Pós-admissão</figcaption></figure>
+<h3>Filtros</h3>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Buscar / CPF / Cargo</td><td>Localizam o colaborador pelo nome, CPF ou cargo.</td></tr>
+  <tr><td>Por demitidos</td><td><i>Sim</i> mostra apenas demitidos, <i>Não</i> apenas ativos.</td></tr>
+  <tr><td>Por CNPJ</td><td>Colaboradores de uma matriz ou filial.</td></tr>
+  <tr><td>Centro de Custo</td><td>Liberado depois de escolher o CNPJ.</td></tr>
+  <tr><td>Entrevista Desligamento</td><td>Quem já fez (<i>Sim</i>) ou ainda não fez (<i>Não</i>) a entrevista de desligamento.</td></tr>
+  <tr><td>Exibir</td><td>20, 50 ou 100 por página.</td></tr>
+</table>
+<p>Marque as linhas e use <b class="btn">Exportar Excel</b> para exportar. O ícone de PDF na coluna <b>Documento Demissão</b> gera o documento de demissão do colaborador.</p>
+<h3>Ações</h3>
+<table class="filtros">
+  <tr><th>Ação</th><th>O que faz</th></tr>
+  <tr><td>Demitir</td><td>Registra ou consulta a demissão.</td></tr>
+  <tr><td>Desmobilizar</td><td>Registra a desmobilização (devolução de EPIs e baixa nos setores).</td></tr>
+  <tr><td>Entrevistar</td><td>Registra a entrevista de desligamento.</td></tr>
+  <tr><td>Remover Demissão</td><td>Desfaz uma demissão lançada.</td></tr>
+</table>
+<figure><img src="img/adm8-pos-acoes.jpg" alt="Ações da pós-admissão"><figcaption>Menu de ações da pós-admissão</figcaption></figure>
+
+<h3>Demitir</h3>
+<ol>
+  <li>Escolha ⋮ › <b>Demitir</b>. A janela mostra as informações do colaborador.</li>
+  <li>Antes de fazer o aviso, confirme e ligue a chave <b>Checar Estabilidade</b>: CIPA, acidente de trabalho, sindicato, gestante e aposentadoria (itens da CLT ou da CCT).</li>
+  <li>Informe a <b>Data desmobilização</b>.</li>
+  <li>Escolha o <b>Motivo da rescisão contratual</b>: Término de Contrato; Pedido pelo Colaborador (trabalhado ou imediato); Demissão em Comum Acordo; Demissão com Justa Causa; Rescisão por outros motivos; Contrato temporário; Quebra de contrato (pelo colaborador ou pela empresa).</li>
+  <li>Escolha o <b>Tipo de Aviso</b>: <i>Trabalhado</i>, <i>Indenizado</i>, <i>Dispensado</i> ou <i>NA</i>.</li>
+</ol>
+<figure><img src="img/adm8-demitir-1.jpg" alt="Demissão"><figcaption>Janela de demissão — dados do colaborador e da rescisão</figcaption></figure>
+<ol start="6">
+  <li>Em <b>Observação</b>, registre quem solicitou (<b>Solicitado por</b>) e o <b>Comentário</b>.</li>
+</ol>
+<p>Quando a demissão já foi registrada, a janela abre somente para consulta, com os campos bloqueados.</p>
+<figure><img src="img/adm8-demitir-2.jpg" alt="Demissão - observação"><figcaption>Janela de demissão — observação</figcaption></figure>
+
+<h3>Desmobilizar</h3>
+<ol>
+  <li>Escolha ⋮ › <b>Desmobilizar</b>.</li>
+  <li>Em <b>Deu baixa em EPI’s</b>, indique <i>Sim</i> ou <i>Não</i>.</li>
+  <li>Em <b>Tipo de formulário</b>, escolha o setor que está dando a baixa: <i>Recursos Humanos</i>, <i>Almoxarifado / ADM</i> ou <i>Segurança do Trabalho / SSMA</i>.</li>
+  <li>Clique em <b class="btn">Desmobilizar</b>.</li>
+</ol>
+<figure><img src="img/adm8-desmobilizar.jpg" alt="Desmobilização"><figcaption>Desmobilização</figcaption></figure>
+
+<h3>Entrevista de desligamento</h3>
+<p>Escolha ⋮ › <b>Entrevistar</b>. A janela traz as orientações para a condução da entrevista — ela deve ser feita por um profissional de RH, em caráter confidencial e, de preferência, logo após a comunicação do desligamento — e os campos a preencher:</p>
+<ul>
+  <li><b>Superior imediato</b> e <b>Motivo do desligamento</b> (por iniciativa do empregado: mudança de cidade, proposta de outra empresa, saúde, outros; por iniciativa da empresa: questões comportamentais, redução de quadro, fim do contrato de experiência);</li>
+  <li><b>Você trabalharia na empresa novamente? Por quê?</b>;</li>
+  <li>avaliação, de <i>Excelente</i> a <i>Ruim</i>, de: relacionamento interpessoal; valores e normas da empresa; planejamento, organização e metas; superior imediato; direção da empresa; oportunidades de treinamento e crescimento; salário e benefícios; e a própria atividade;</li>
+  <li><b>Comentários</b> do colaborador e <b>Parecer do entrevistador</b>;</li>
+  <li>se <b>o colaborador poderá ser recontratado</b> pela empresa em outro momento, e por quê.</li>
+</ul>
+<figure><img src="img/adm8-entrevista-desligamento.jpg" alt="Entrevista de desligamento"><figcaption>Entrevista de desligamento</figcaption></figure>

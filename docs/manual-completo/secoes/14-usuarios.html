@@ -1,0 +1,63 @@
+<h1 id="usuarios">14. Usuários e Grupos</h1>
+<p class="intro">O acesso ao MyBPIN é definido por duas peças: o <b>usuário</b> (a pessoa que entra no sistema) e o <b>grupo</b> ao qual ele pertence, que determina os menus e as ações liberadas.</p>
+
+<h2>14.1 Usuários do Sistema</h2>
+<span class="caminho">Usuários › Usuários do Sistema</span>
+<figure><img src="img/usr-lista.jpg" alt="Usuários do sistema"><figcaption>Usuários do Sistema</figcaption></figure>
+<h3>Filtros</h3>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Buscar</td><td>Localiza pelo nome do usuário.</td></tr>
+  <tr><td>E-mail (login)</td><td>Localiza pelo e-mail usado no login.</td></tr>
+  <tr><td>Grupo</td><td>Usuários de um grupo de permissão.</td></tr>
+  <tr><td>Tipo</td><td><i>Administrador</i>, <i>Funcionario</i>, <i>Fornecedor</i> ou <i>Gestor</i>.</td></tr>
+  <tr><td>Status</td><td><i>Apenas Ativos</i>, <i>Apenas Inativos</i> ou <i>Todos os Status</i>.</td></tr>
+</table>
+<p><b>Colunas:</b> Nome, Grupo, Tipo, E-mail (login), Status e Ação. O botão de status (<b>Ativo</b>/<b>Inativo</b>) libera ou bloqueia o acesso; o ícone de lápis abre a edição.</p>
+
+<h3>Criar um usuário</h3>
+<ol>
+  <li>Clique em <b class="btn">Criar novo usuário</b>.</li>
+  <li>Preencha <b>Nome do usuário</b> e <b>E-mail</b> (será o login).</li>
+  <li>Escolha o <b>Grupo</b> (define as permissões) e o <b>Tipo de Usuário</b>.</li>
+  <li>Defina <b>Ativo</b> e, se a pessoa aprova solicitações da equipe, marque <b>Gestor</b> como <i>Sim</i>.</li>
+  <li>Em <b>Contatos</b>, use <b class="btn">+ Adicionar</b> para incluir telefones.</li>
+  <li>Em <b>Notificações WhatsApp</b>, ligue os avisos que a pessoa deve receber: Recrutamento, Exames, Admissão, Intermitente, Carta Oferta, Transporte e Movimentação.</li>
+  <li>Clique em <b class="btn">Cadastrar</b>.</li>
+</ol>
+<figure><img src="img/usr-novo-1.jpg" alt="Cadastrando usuário"><figcaption>Cadastrando usuário — dados e grupo</figcaption></figure>
+<figure><img src="img/usr-novo-2.jpg" alt="Notificações do usuário"><figcaption>Contatos e notificações por WhatsApp</figcaption></figure>
+<div class="nota">Um tipo de notificação aparece como “desabilitado pela empresa” quando o envio está desligado para toda a empresa.</div>
+
+<h3>Editar um usuário</h3>
+<p>Na edição aparecem dois blocos a mais:</p>
+<ul>
+  <li><b>Tipos de e-mails que esse usuário pode receber:</b> Avaliação 90 Dias, Vencimento Férias, Vencimento ASO e Vencimento Treinamento;</li>
+  <li><b>Privilégios:</b> <b>Gestor de área</b>, <b>Gestor de centro de custo</b> e <b>Gestor superior</b> (nome do gestor acima deste usuário, usado nos fluxos de aprovação).</li>
+</ul>
+<p>Grave com <b class="btn">Alterar</b>.</p>
+<figure><img src="img/usr-editar-1.jpg" alt="Alterando usuário"><figcaption>Alterando usuário</figcaption></figure>
+<figure><img src="img/usr-editar-2.jpg" alt="E-mails e privilégios"><figcaption>E-mails recebidos e privilégios de gestão</figcaption></figure>
+
+<h2>14.2 Grupos de Usuários</h2>
+<span class="caminho">Configurações › Grupos de Usuários</span>
+<p>Cada grupo é um perfil de acesso: reúne as permissões que valem para todos os usuários vinculados a ele.</p>
+<figure><img src="img/grp-lista.jpg" alt="Grupos de usuários"><figcaption>Grupos de Usuários</figcaption></figure>
+<p>O campo <b>Nome do grupo</b> filtra a lista enquanto você digita. <b>Colunas:</b> Nome, Descrição, Usuários no grupo, Situação (Ativo/Inativo) e Ações, com <b class="btn">Editar</b> para alterar nome, permissões e ver quem usa o grupo.</p>
+
+<h3>Criar um grupo</h3>
+<ol>
+  <li>Clique em <b class="btn">+ Novo grupo</b>.</li>
+  <li><b>Passo 1 — Dados do grupo:</b> informe o <b>Nome do grupo</b> <span class="req">*</span> e a <b>Descrição</b> <span class="req">*</span>. A chave <b>Situação</b> mantém o grupo ativo; desligada, bloqueia o uso do perfil sem apagar o cadastro.</li>
+</ol>
+<figure><img src="img/grp-novo.jpg" alt="Novo grupo"><figcaption>Novo grupo — dados</figcaption></figure>
+<ol start="3">
+  <li><b>Passo 2 — Permissões:</b> as permissões ficam agrupadas por categoria (Acesso, Administração, Admissão, Avaliação, Cadastro, Cloud, Currículos, Entrevista, Histórico, Ocorrência, Planejamento, Pós-admissão, Relatório, Treinamento, Usuário, entre outras).</li>
+  <li>Use <b>Buscar</b> e <b>Categoria</b> para reduzir a lista. O botão de cada linha alterna a permissão; <b class="btn">Permitir todas</b> e <b class="btn">Remover todas</b> atuam sobre o que estiver filtrado.</li>
+  <li>Clique em <b class="btn">Criar grupo</b>.</li>
+</ol>
+<figure><img src="img/grp-permissoes.jpg" alt="Permissões"><figcaption>Aba Permissões</figcaption></figure>
+<p>Cada módulo costuma ter uma permissão de acesso e permissões separadas para cadastrar e alterar — por exemplo, “Acessar Ata Reunião”, “Pode cadastrar Ata de Reunião” e “Pode alterar uma Ata de Reunião”. Os contadores no topo mostram quantas permissões estão na lista e quantas pertencem ao grupo.</p>
+<figure><img src="img/grp-permissoes-2.jpg" alt="Permissões por seção"><figcaption>Permissões da seção Administração</figcaption></figure>
+<div class="nota">Permissões marcadas como <b>Permitida (obrigatória)</b> valem para todos os grupos e não podem ser removidas.</div>
+<div class="dica"><b>Dica:</b> ao implantar o sistema, crie os grupos primeiro (por exemplo: RH, Gestores, Portaria, Treinamento) e só então cadastre os usuários, já vinculando cada um ao grupo certo.</div>

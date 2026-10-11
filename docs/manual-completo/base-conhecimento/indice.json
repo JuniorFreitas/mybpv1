@@ -1,0 +1,104 @@
+{
+  "produto": "MyBPIN",
+  "versao_manual": "3.0",
+  "gerado_em": "2026-10-11",
+  "idioma": "pt-BR",
+  "trechos": 177,
+  "capitulos": [
+    {
+      "id": "apresentacao",
+      "titulo": "Apresentação",
+      "arquivo": "md/00-apresentacao.md"
+    },
+    {
+      "id": "acesso",
+      "titulo": "1. Acesso e navegação",
+      "arquivo": "md/01-acesso.md"
+    },
+    {
+      "id": "padroes",
+      "titulo": "2. Padrões das telas",
+      "arquivo": "md/02-padroes.md"
+    },
+    {
+      "id": "administracao",
+      "titulo": "3. Administração",
+      "arquivo": "md/03-administracao.md"
+    },
+    {
+      "id": "cadastros",
+      "titulo": "4. Cadastros",
+      "arquivo": "md/04-cadastros.md"
+    },
+    {
+      "id": "planejamento",
+      "titulo": "5. Planejamento",
+      "arquivo": "md/05-planejamento.md"
+    },
+    {
+      "id": "curriculos",
+      "titulo": "6. Currículos",
+      "arquivo": "md/06-curriculos.md"
+    },
+    {
+      "id": "entrevistas",
+      "titulo": "7. Entrevistas",
+      "arquivo": "md/07-entrevistas.md"
+    },
+    {
+      "id": "admissao",
+      "titulo": "8. Admissão",
+      "arquivo": "md/08-admissao.md"
+    },
+    {
+      "id": "minhas-avaliacoes",
+      "titulo": "9. Minhas Avaliações",
+      "arquivo": "md/09-avaliacoes.md"
+    },
+    {
+      "id": "ocorrencias",
+      "titulo": "10. Ocorrências e Chamados",
+      "arquivo": "md/10-ocorrencias.md"
+    },
+    {
+      "id": "treinamento",
+      "titulo": "11. Treinamento",
+      "arquivo": "md/11-treinamento.md"
+    },
+    {
+      "id": "cloud",
+      "titulo": "12. Cloud",
+      "arquivo": "md/12-cloud.md"
+    },
+    {
+      "id": "relatorios",
+      "titulo": "13. Relatórios",
+      "arquivo": "md/13-relatorios.md"
+    },
+    {
+      "id": "usuarios",
+      "titulo": "14. Usuários e Grupos",
+      "arquivo": "md/14-usuarios.md"
+    },
+    {
+      "id": "controle-ponto",
+      "titulo": "15. Controle de Ponto",
+      "arquivo": "md/15-controle-ponto.md"
+    },
+    {
+      "id": "weekly-report",
+      "titulo": "16. Weekly Report",
+      "arquivo": "md/16-weekly-report.md"
+    },
+    {
+      "id": "ciclo",
+      "titulo": "17. O ciclo completo do colaborador",
+      "arquivo": "md/17-ciclo.md"
+    },
+    {
+      "id": "observacoes",
+      "titulo": "18. Observações sobre este manual",
+      "arquivo": "md/18-observacoes.md"
+    }
+  ]
+}

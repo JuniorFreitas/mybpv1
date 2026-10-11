@@ -1,0 +1,11 @@
+# 18. Observações sobre este manual
+- **Dados fictícios:** todas as telas foram preparadas com dados de exemplo. Nome da empresa, clientes, lotações, centros de custo, fornecedores, clínicas, grupos, endereços, pessoas, CPF, RG, filiação, e-mails, telefones, fotos e os textos de missão, visão e valores não correspondem a dados reais.
+- **Permissões:** o manual descreve os menus e ações disponíveis para um usuário com perfil completo de RH. O que cada pessoa enxerga depende do grupo ao qual ela pertence (capítulo 14).
+- **Atendimento:** todo atendimento é feito pelo menu Chamados (seção 10.2). Os canais oficiais de WhatsApp continuam disponíveis.
+- **Chamados:** as telas foram capturadas sem chamados abertos; por isso o manual mostra a lista e o formulário de abertura, mas não a tela de acompanhamento de um chamado.
+- **Controle de Ponto e Weekly Report:** as telas foram capturadas sem gravar nada. Não foi registrado ponto, ajustada jornada nem criado quadro; por isso a aba Histórico do ponto eletrônico, o mapa do perímetro e o conteúdo do Relatório Sintético não são mostrados.
+- **Portal de vagas:** o formulário do currículo foi capturado sem salvar a candidatura; os campos internos de cada experiência e de cada qualificação e a tela exibida após o envio não são mostrados.
+- **Personalizações:** listas como tipos de exame, treinamentos, padrões por cliente, competências de avaliação, tags e setores são configuradas por empresa; as opções mostradas aqui são exemplos.
+- **Opções dos filtros:** nos filtros em lista (centro de custo, cargo, status, tipo…), as opções vêm dos cadastros da empresa; o manual explica para que serve cada filtro, sem listar todas as opções possíveis.
+- **Gráficos dos relatórios:** todos os relatórios com a opção Gráficos seguem o modelo mostrado na seção 13.1; as demais visões gráficas não foram reproduzidas uma a uma.
+- **Evolução do sistema:** o MyBPIN é atualizado com frequência. Se uma tela estiver diferente do manual, vale o que o sistema apresenta.
