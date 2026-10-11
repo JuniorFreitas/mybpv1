@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Treinamento;
 use App\Models\TreinamentoVencimentoHistorico;
 use App\Models\Pivot\TreinamentoVencimento;
+use App\Services\Treinamento\Importacao\ImportadorLoteTreinamentoService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use MasterTag\DataHora;
@@ -15,10 +16,13 @@ class ImportaTreinamento extends Command
                             {--empresa_id= : ID da empresa}
                             {--chunk-size=1000 : Tamanho do chunk}
                             {--arquivo= : Nome do arquivo JSON}
+                            {--path= : Caminho absoluto do arquivo JSON}
                             {--possuiCampoVencimento : Indica se possui campo de vencimento}
                             {--limpar-vencimentos-antigos : Remove vencimentos anteriores ao atualizar}
                             {--substituir-vencimentos : Substitui todos os vencimentos pelos do arquivo}
                             {--gerar-relatorio : Gera arquivo CSV com relatório da importação}
+                            {--relatorio-path= : Caminho absoluto do CSV de relatório (opcional)}
+                            {--user_id= : ID do usuário que disparou a importação (histórico)}
                             {--enviar-email= : Email para enviar o relatório (ex: usuario@email.com)}
                             {--email-cc= : Emails em cópia separados por vírgula}';
 
@@ -224,21 +228,93 @@ class ImportaTreinamento extends Command
 
     private function processarComTransacoesPorChunk(\Illuminate\Support\LazyCollection $dadosJson): void
     {
+        // Caminho da tela/UI: lote (preload + multi-insert/update), paridade carteira.
+        // Flags legadas CLI mantêm o processamento linha a linha.
+        if (!$this->option('limpar-vencimentos-antigos') && !$this->option('substituir-vencimentos')) {
+            $this->processarChunksViaServiceLote($dadosJson);
+            return;
+        }
+
+        $this->processarChunksLinhaALinhaLegado($dadosJson);
+    }
+
+    /**
+     * Processamento em lote (padrão UI / carteira): chunks com multi-insert/update.
+     */
+    private function processarChunksViaServiceLote(\Illuminate\Support\LazyCollection $dadosJson): void
+    {
+        $chunkSize = (int) $this->option('chunk-size') ?: ImportadorLoteTreinamentoService::CHUNK_SIZE;
+        $userId = (int) ($this->option('user_id') ?: 0);
+        $service = app(ImportadorLoteTreinamentoService::class);
+
+        $this->info("Processando em lote (chunks de {$chunkSize}) — paridade carteira/etiquetas");
+
+        $totalProcessados = 0;
+        $totalErros = 0;
+
+        $dadosJson->chunk($chunkSize)->each(function ($chunk) use ($service, $userId, &$totalProcessados, &$totalErros) {
+            $linhas = $chunk->values()->all();
+            $this->info('=== Processando chunk de ' . count($linhas) . ' registros (lote) ===');
+
+            try {
+                $resultados = $service->processarChunk($linhas, $this->empresaId, $userId);
+                foreach ($resultados as $resultado) {
+                    $this->resultadosImportacao[] = $resultado;
+                    if (($resultado['status'] ?? '') === 'FALHA') {
+                        $totalErros++;
+                    }
+                }
+                $totalProcessados += count($linhas);
+                $this->info("Chunk em lote OK. Total acumulado: {$totalProcessados} registros");
+            } catch (\Exception $e) {
+                $this->error('Erro no chunk em lote: ' . $e->getMessage());
+                foreach ($linhas as $linha) {
+                    $this->resultadosImportacao[] = [
+                        'nome' => (string) ($linha['nome'] ?? 'Não informado'),
+                        'cpf' => (string) ($linha['cpf'] ?? 'N/A'),
+                        'treinamento' => 'N/A',
+                        'data_treinamento' => (string) ($linha['data_treinamento'] ?? 'N/A'),
+                        'data_vencimento' => (string) ($linha['data_vencimento'] ?? 'N/A'),
+                        'status' => 'FALHA',
+                        'mensagem' => $e->getMessage(),
+                        'treinamento_id' => null,
+                    ];
+                    $totalErros++;
+                }
+                $this->warn('Continuando com próximo chunk...');
+            }
+
+            $this->limparCache();
+            gc_collect_cycles();
+        });
+
+        $this->info('=== Resumo da Importação (lote) ===');
+        $this->info("Total de registros processados: {$totalProcessados}");
+        $this->info("Total de erros: {$totalErros}");
+
+        if ($totalErros > 0) {
+            $this->warn("Importação concluída com {$totalErros} erro(s)");
+        }
+    }
+
+    /**
+     * Modo legado CLI (--limpar-vencimentos-antigos / --substituir-vencimentos).
+     */
+    private function processarChunksLinhaALinhaLegado(\Illuminate\Support\LazyCollection $dadosJson): void
+    {
         $chunkSize = (int)$this->option('chunk-size') ?: 1000;
-        $this->info("Processando em chunks de {$chunkSize} registros com transações isoladas");
+        $this->info("Processando em chunks de {$chunkSize} registros com transações isoladas (modo legado)");
 
         $totalProcessados = 0;
         $totalErros = 0;
 
         $dadosJson->chunk($chunkSize)->each(function ($chunk) use (&$totalProcessados, &$totalErros) {
-            // Cada chunk tem sua própria transação
             \DB::beginTransaction();
             \DB::enableQueryLog();
 
             try {
                 $this->info("=== Processando chunk de {$chunk->count()} registros ===");
 
-                // Pré-carregar feedbacks para o chunk inteiro (otimização)
                 $cpfsDoChunk = $chunk->pluck('cpf')->map(function ($cpf) {
                     return preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $cpf);
                 })->unique()->toArray();
@@ -258,7 +334,6 @@ class ImportaTreinamento extends Command
                         $totalErros++;
                         $this->exibirErroRegistro($e, $globalIndex, $dados);
 
-                        // Decidir se deve parar o chunk ou continuar
                         if ($totalErros > 10) {
                             throw new \Exception("Muitos erros detectados ({$totalErros}). Abortando chunk.");
                         }
@@ -267,31 +342,23 @@ class ImportaTreinamento extends Command
                     }
                 }
 
-                // Commit da transação do chunk
                 \DB::commit();
 
                 $totalProcessados += $chunk->count();
                 $this->info("Chunk processado com sucesso. Total acumulado: {$totalProcessados} registros");
 
-                // Se estiver no modo substituir-vencimentos, fazer a limpeza final
                 if ($this->option('substituir-vencimentos')) {
                     $this->finalizarSubstituicaoVencimentos();
                 }
 
             } catch (\Exception $e) {
-                // Rollback apenas deste chunk
                 \DB::rollback();
                 $this->error("Erro no chunk. Fazendo rollback do chunk atual.");
                 $this->error("Erro: " . $e->getMessage());
-
-                // Decidir se deve continuar com próximo chunk ou abortar tudo
                 $this->warn("Continuando com próximo chunk...");
             }
 
-            // Limpar cache após cada chunk para economizar memória
             $this->limparCache();
-
-            // Liberar memória após cada chunk
             gc_collect_cycles();
         });
 
@@ -376,10 +443,15 @@ class ImportaTreinamento extends Command
 
     private function obterCaminhoArquivo(): string
     {
+        $path = $this->option('path');
+        if (!empty($path)) {
+            return (string) $path;
+        }
+
         $arquivo = $this->option('arquivo');
 
         if (empty($arquivo)) {
-            throw new \Exception('Nenhum arquivo informado');
+            throw new \Exception('Nenhum arquivo informado. Use --arquivo=nome ou --path=/caminho/arquivo.json');
         }
 
         return base_path("scripts/import_treinamento_json/{$arquivo}.json");
@@ -580,7 +652,7 @@ class ImportaTreinamento extends Command
 
     private function processarRegistroIndividual(array $dados): void
     {
-        $feedback = $this->buscarFeedback($dados['cpf']);
+        $feedback = $this->resolverFeedback($dados);
 
         if (!$feedback) {
             $this->error("Nenhum feedback encontrado para o CPF: {$dados['cpf']}");
@@ -588,17 +660,25 @@ class ImportaTreinamento extends Command
             return;
         }
 
-        $dados['feedback_id'] = (int)$feedback->feedback_id;
+        $dados['feedback_id'] = (int) $feedback->feedback_id;
 
         try {
             // Calcular data de vencimento antes de processar
             $dados = $this->calcularDataVencimento($dados);
 
-            $treinamentoModel = $this->buscarOuCriarTreinamento($dados);
-            $this->salvarHistorico($dados['feedback_id'], $treinamentoModel->id, $this->empresaId);
+            [$treinamentoModel, $acao] = $this->buscarOuCriarTreinamento($dados);
+            // Histórico 1:1 do vencimento — mesmo padrão de TreinamentoController::atualizarVencimento
+            $this->salvarHistoricoVencimento(
+                $dados['feedback_id'],
+                $treinamentoModel->id,
+                $this->empresaId,
+                (int) $dados['vencimento_id']
+            );
 
-            // Registrar sucesso
-            $this->registrarResultado($dados, 'SUCESSO', 'Treinamento processado com sucesso', $treinamentoModel);
+            $mensagem = $acao === 'atualizado'
+                ? 'Treinamento atualizado e histórico registrado'
+                : 'Treinamento criado e histórico registrado';
+            $this->registrarResultado($dados, 'SUCESSO', $mensagem, $treinamentoModel);
 
         } catch (\Exception $e) {
             $this->registrarResultado($dados, 'FALHA', $e->getMessage());
@@ -610,10 +690,35 @@ class ImportaTreinamento extends Command
     // MÉTODOS DE BUSCA
     // ========================================
 
+    private function resolverFeedback(array $dados): ?object
+    {
+        $feedbackId = (int) ($dados['feedback_id'] ?? $dados['matricula'] ?? 0);
+        if ($feedbackId > 0) {
+            $porId = \DB::table('feedback_curriculos')
+                ->select([
+                    'feedback_curriculos.id as feedback_id',
+                    'curriculos.cpf as cpf',
+                    'feedback_curriculos.empresa_id',
+                ])
+                ->join('curriculos', 'curriculos.id', '=', 'feedback_curriculos.curriculo_id')
+                ->where('feedback_curriculos.id', $feedbackId)
+                ->where('feedback_curriculos.empresa_id', $this->empresaId)
+                ->whereNull('feedback_curriculos.deleted_at')
+                ->whereNull('curriculos.deleted_at')
+                ->first();
+
+            if ($porId) {
+                return $porId;
+            }
+        }
+
+        return $this->buscarFeedback((string) ($dados['cpf'] ?? ''));
+    }
+
     private function buscarFeedback(string $cpf): ?object
     {
         // Usar cache para evitar queries repetidas
-        if (isset($this->feedbackCache[$cpf])) {
+        if ($cpf !== '' && isset($this->feedbackCache[$cpf])) {
             return $this->feedbackCache[$cpf];
         }
 
@@ -626,10 +731,14 @@ class ImportaTreinamento extends Command
             ->join('curriculos', 'curriculos.id', '=', 'feedback_curriculos.curriculo_id')
             ->where('curriculos.cpf', $cpf)
             ->where('feedback_curriculos.empresa_id', $this->empresaId)
+            ->whereNull('feedback_curriculos.deleted_at')
+            ->whereNull('curriculos.deleted_at')
             ->first();
 
         // Armazenar no cache
-        $this->feedbackCache[$cpf] = $feedback;
+        if ($cpf !== '') {
+            $this->feedbackCache[$cpf] = $feedback;
+        }
 
         return $feedback;
     }
@@ -687,15 +796,19 @@ class ImportaTreinamento extends Command
     // MÉTODOS DE CRIAÇÃO/ATUALIZAÇÃO
     // ========================================
 
-    private function buscarOuCriarTreinamento(array $dados): Treinamento
+    /**
+     * @return array{0: Treinamento, 1: string} [model, 'criado'|'atualizado']
+     */
+    private function buscarOuCriarTreinamento(array $dados): array
     {
         $treinamentoModel = $this->buscarTreinamentoExistente($dados);
 
         if (!$treinamentoModel) {
-            return $this->criarNovoTreinamento($dados);
+            return [$this->criarNovoTreinamento($dados), 'criado'];
         }
 
-        return $this->atualizarTreinamentoExistente($treinamentoModel, $dados);
+        // Já existe: só atualiza o vencimento/data e mantém o restante (como na carteira)
+        return [$this->atualizarTreinamentoExistente($treinamentoModel, $dados), 'atualizado'];
     }
 
     private function criarNovoTreinamento(array $dados): Treinamento
@@ -739,18 +852,14 @@ class ImportaTreinamento extends Command
     {
         $this->info("Atualizando dados do treinamento ID: {$treinamentoModel->id}");
 
-        $dadosAtualizacao = collect($dados)->except([
-            'vencimento_id',
-            'data_vencimento',
-            'data_treinamento'
-        ])->toArray();
+        // Não sobrescreve cadastrou/origem; só garante o tipo quando necessário
+        $tipo = $dados['tipo'] ?? null;
+        if (is_string($tipo) && $tipo !== '' && $treinamentoModel->tipo !== $tipo) {
+            $treinamentoModel->update(['tipo' => $tipo]);
+            $treinamentoModel->refresh();
+        }
 
-        $this->info("Dados que serão atualizados: " . json_encode($dadosAtualizacao, JSON_PRETTY_PRINT));
-
-        $treinamentoModel->update($dadosAtualizacao);
-        $treinamentoModel->refresh();
-
-        $this->info("Treinamento atualizado com sucesso!");
+        $this->info("Treinamento existente mantido para atualização de vencimento/histórico.");
     }
 
     // ========================================
@@ -999,52 +1108,50 @@ class ImportaTreinamento extends Command
     // MÉTODOS DE HISTÓRICO
     // ========================================
 
-    private function salvarHistorico(int $feedbackId, int $treinamentoId, int $empresaId): void
-    {
+    /**
+     * Histórico 1 a 1 do vencimento alterado — alinhado a TreinamentoController::salvarHistoricoVencimento.
+     */
+    private function salvarHistoricoVencimento(
+        int $feedbackId,
+        int $treinamentoId,
+        int $empresaId,
+        int $vencimentoId
+    ): void {
         try {
-            $this->info("=== INÍCIO salvarHistorico ===");
-            $this->info("Salvando histórico - Treinamento: {$treinamentoId}, Feedback: {$feedbackId}, Empresa: {$empresaId}");
+            $this->info("=== INÍCIO salvarHistoricoVencimento ===");
+            $this->info("Treinamento: {$treinamentoId}, Vencimento: {$vencimentoId}, Feedback: {$feedbackId}");
 
-            $treinamento = $this->buscarTreinamentoComVencimentos($treinamentoId);
+            $treinamento = Treinamento::with([
+                'Vencimentos' => fn ($q) => $q->where('vencimento_id', $vencimentoId),
+            ])->find($treinamentoId);
 
             if (!$treinamento) {
                 throw new \Exception("Treinamento ID {$treinamentoId} não encontrado");
             }
 
-            $this->criarRegistroHistorico($feedbackId, $empresaId, $treinamento);
+            TreinamentoVencimentoHistorico::create([
+                'feedback_id' => $feedbackId,
+                'empresa_id' => $empresaId,
+                'treinamento_id' => $treinamentoId,
+                'vencimento_id' => $vencimentoId,
+                'removido' => false,
+                'user_id' => $this->resolverUserIdHistorico(),
+                'treinamentos_vencimentos' => $treinamento->Vencimentos,
+            ]);
 
-            $this->info("=== FIM salvarHistorico ===");
-
+            $this->info("Histórico do vencimento salvo com sucesso");
+            $this->info("=== FIM salvarHistoricoVencimento ===");
         } catch (\Exception $e) {
-            $this->error("Erro em salvarHistorico: " . $e->getMessage());
+            $this->error("Erro em salvarHistoricoVencimento: " . $e->getMessage());
             throw $e;
         }
     }
 
-    private function buscarTreinamentoComVencimentos(int $treinamentoId): ?Treinamento
+    private function resolverUserIdHistorico(): int
     {
-        $this->info("Buscando treinamento com vencimentos...");
+        $userId = (int) ($this->option('user_id') ?? 0);
 
-        $treinamento = Treinamento::with('Vencimentos')->find($treinamentoId);
-
-        if ($treinamento) {
-            $this->info("Treinamento encontrado. Vencimentos: " . $treinamento->Vencimentos->count());
-        }
-
-        return $treinamento;
-    }
-
-    private function criarRegistroHistorico(int $feedbackId, int $empresaId, Treinamento $treinamento): void
-    {
-        TreinamentoVencimentoHistorico::create([
-            'feedback_id' => $feedbackId,
-            'empresa_id' => $empresaId,
-            'treinamento_id' => $treinamento->id,
-            'user_id' => $empresaId,
-            'treinamentos_vencimentos' => $treinamento->Vencimentos
-        ]);
-
-        $this->info("Histórico salvo com sucesso");
+        return $userId > 0 ? $userId : (int) $this->empresaId;
     }
 
     // ========================================
@@ -1147,9 +1254,12 @@ class ImportaTreinamento extends Command
     {
         $this->info("=== Gerando Relatório CSV ===");
 
-        $timestamp = date('Y-m-d_H-i-s');
-        $nomeArquivo = "relatorio_importacao_treinamento_{$this->empresaId}_{$timestamp}.csv";
-        $caminhoCompleto = storage_path("app/relatorios/{$nomeArquivo}");
+        $caminhoCompleto = trim((string) ($this->option('relatorio-path') ?? ''));
+        if ($caminhoCompleto === '') {
+            $timestamp = date('Y-m-d_H-i-s');
+            $nomeArquivo = "relatorio_importacao_treinamento_{$this->empresaId}_{$timestamp}.csv";
+            $caminhoCompleto = storage_path("app/relatorios/{$nomeArquivo}");
+        }
 
         // Criar diretório se não existir
         $diretorio = dirname($caminhoCompleto);

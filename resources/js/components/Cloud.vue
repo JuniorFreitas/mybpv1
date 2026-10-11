@@ -377,6 +377,8 @@
                             :quantidade="1"
                             :multi="false"
                             :bloquear-executaveis="true"
+                            :upload-direto-s3="true"
+                            :urls-multipart="urlsMultipart"
                             :dados-ajax="{ cloud_id: cloud, pertence_id: itemBusca, anterior_id: id_anterior_atualizar }"
                         />
                     </div>
@@ -501,7 +503,35 @@
                     :simples="true"
                     :somente-botao="true"
                     :bloquear-executaveis="true"
+                    :upload-direto-s3="true"
+                    :urls-multipart="urlsMultipart"
                     :dados-ajax="{ cloud_id: cloud, pertence_id: itemBusca }"
+                />
+            </div>
+        </div>
+        <div
+            class="alert alert-warning cloud-upload-pendente d-flex flex-wrap align-items-center justify-content-between"
+            v-if="uploadsPendentes.length && !arquivosUpload.length"
+        >
+            <div class="mb-1 mb-sm-0 mr-2">
+                <i class="fas fa-pause-circle"></i>
+                Upload pendente:
+                <strong>{{ uploadsPendentes[0].nome }}</strong>
+                <span v-if="uploadsPendentes.length > 1"> (+{{ uploadsPendentes.length - 1 }})</span>
+                <div class="small text-muted">Para continuar, selecione novamente o mesmo arquivo.</div>
+            </div>
+            <div class="d-flex" style="gap: 0.35rem">
+                <button type="button" class="btn btn-sm btn-primary" @click="continuarUploadsPendentes">
+                    Continuar
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" @click="descartarUploadsPendentes">
+                    Descartar
+                </button>
+                <input
+                    ref="inputRetomarUpload"
+                    type="file"
+                    class="d-none"
+                    @change="onArquivoRetomarSelecionado"
                 />
             </div>
         </div>
@@ -852,6 +882,11 @@
 import upload from '../components/Upload'
 import modal from '../components/Modal'
 import pasta from '../components/PastaCloud'
+import {
+    discardCloudUploadSessions,
+    listCloudUploadSessionsForCloud,
+} from '../utils/cloudUploadSessionStore'
+import { arquivoBateComSessao } from '../utils/cloudMultipartUpload'
 
 export default {
     components: {
@@ -947,10 +982,19 @@ export default {
             //Upload
             arquivosUpload: [],
             urlArquivoUpload: `${URL_ADMIN}/itenscloud/uploadAnexos`,
+            urlsMultipart: {
+                iniciar: `${URL_ADMIN}/itenscloud/multipart/iniciar`,
+                assinarParte: `${URL_ADMIN}/itenscloud/multipart/assinar-parte`,
+                parte: `${URL_ADMIN}/itenscloud/multipart/parte`,
+                completar: `${URL_ADMIN}/itenscloud/multipart/completar`,
+                abortar: `${URL_ADMIN}/itenscloud/multipart/abortar`,
+            },
             pctGeral: 0,
             arquivoUploadAtual: null,
             cloudArrastando: false,
             contadorCloudArrasto: 0,
+            uploadsPendentes: [],
+            _retomouUploadPasta: null,
 
             //AtualizarArquivo
             arquivosAtualizarUpload: [],
@@ -1684,6 +1728,66 @@ export default {
                 this.atualizar()
             }, 100)
         },
+        async tentarRetomarUploadsPendentes() {
+            if (this.itemBusca === '' || this.forbidden || this.modoBusca) {
+                this.uploadsPendentes = []
+                return
+            }
+            const chavePasta = String(this.itemBusca)
+            if (this._retomouUploadPasta === chavePasta) {
+                return
+            }
+            this._retomouUploadPasta = chavePasta
+            try {
+                this.uploadsPendentes = await listCloudUploadSessionsForCloud(this.cloud, this.itemBusca)
+            } catch (_) {
+                this.uploadsPendentes = []
+            }
+        },
+        continuarUploadsPendentes() {
+            if (!this.uploadsPendentes.length) {
+                return
+            }
+            const input = this.$refs.inputRetomarUpload
+            if (input) {
+                input.value = ''
+                input.click()
+            }
+        },
+        onArquivoRetomarSelecionado(event) {
+            const file = event && event.target && event.target.files && event.target.files[0]
+            if (!file || !this.uploadsPendentes.length || !this.$refs.uploadCloud) {
+                return
+            }
+            const sessao = this.uploadsPendentes[0]
+            if (!arquivoBateComSessao(file, sessao)) {
+                if (typeof mostraErro === 'function') {
+                    mostraErro(
+                        {},
+                        `Selecione o mesmo arquivo: "${sessao.nome}" (${Math.round((sessao.size || 0) / (1024 * 1024))} MB).`
+                    )
+                }
+                return
+            }
+            this.uploadsPendentes = this.uploadsPendentes.slice(1)
+            this.$refs.uploadCloud.retomarSessaoMultipartComArquivo(file, sessao)
+        },
+        async descartarUploadsPendentes() {
+            const sessoes = [...this.uploadsPendentes]
+            this.uploadsPendentes = []
+            try {
+                await discardCloudUploadSessions(sessoes)
+                for (const s of sessoes) {
+                    if (s && s.uploadSessionId) {
+                        await axios.post(this.urlsMultipart.abortar, {
+                            upload_session_id: s.uploadSessionId,
+                        }).catch(() => null)
+                    }
+                }
+            } catch (_) {
+                /* ignore */
+            }
+        },
 
         /*--------UPLOADS ATUALIZAR--------*/
         janelaAtualizar(obj) {
@@ -2150,6 +2254,7 @@ export default {
                     this.meu_grupo = this.habilidades[0].pivot.grupo_cloud_id
                     this.preload = false
                     this.fecharDropdown()
+                    this.$nextTick(() => this.tentarRetomarUploadsPendentes())
                 })
                 .catch((error) => {
                     if (error.response && error.response.status === 403) {

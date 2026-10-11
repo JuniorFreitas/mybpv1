@@ -232,6 +232,7 @@ let KB = 1024;
 let MB = 1024 * KB;
 
 import draggable from "vuedraggable";
+import { uploadCloudMultipart } from "../utils/cloudMultipartUpload";
 
 export default {
   components: {
@@ -347,6 +348,25 @@ export default {
       type: Boolean,
       required: false,
       default: false,
+    },
+    /**
+     * Ativa upload híbrido: arquivos >= limiarBytes usam multipart (S3/local).
+     * Usado pelo Cloud.
+     */
+    uploadDiretoS3: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    limiarBytes: {
+      type: Number,
+      required: false,
+      default: 20 * 1024 * 1024,
+    },
+    urlsMultipart: {
+      type: Object,
+      required: false,
+      default: () => ({}),
     },
     simples: {
       // interface simples sem tabela
@@ -500,6 +520,7 @@ export default {
     return {
       axiosSource: null,
       pediuCancelar: false,
+      multipartAbortController: null,
       prefixo_id: "upload",
       emAndamento: false, // se esta enviando arquivos ou não
       arrastando: false,
@@ -809,9 +830,24 @@ export default {
       }
       this.pediuCancelar = true;
       mostraErro("", "O envio foi cancelado");
+      if (this.multipartAbortController) {
+        this.multipartAbortController.abort();
+      }
       if (this.axiosSource) {
         this.axiosSource.cancel("Operação cancelada pelo usuário");
       }
+    },
+    /**
+     * Retoma upload grande: recebe File re-selecionado + sessão IndexedDB.
+     * @param {File} file
+     * @param {Object} sessao
+     */
+    retomarSessaoMultipartComArquivo(file, sessao) {
+      if (!this.uploadDiretoS3 || !file || !sessao) {
+        return;
+      }
+      file._resumeSession = sessao;
+      this.processarArquivos([file]);
     },
     proximo() {
       if (this.atual === this.total) {
@@ -1005,7 +1041,22 @@ export default {
       }
     },
 
+    deveUsarMultipart(file) {
+      return Boolean(
+        this.uploadDiretoS3 &&
+        file &&
+        file.size >= this.limiarBytes &&
+        this.urlsMultipart &&
+        this.urlsMultipart.iniciar
+      );
+    },
     enviarArquivo() {
+      const file = this.arquivo.file;
+      if (this.deveUsarMultipart(file)) {
+        this.enviarArquivoMultipart();
+        return;
+      }
+
       let dados = new FormData();
       dados.append(this.nomePost, this.arquivo.file);
       dados.append("chave", this.chave);
@@ -1072,6 +1123,72 @@ export default {
 
           refVue.proximo();
         });
+    },
+    async enviarArquivoMultipart() {
+      const refVue = this;
+      const file = this.arquivo.file;
+      Object.assign(this.arquivo, { enviando: true, aguardando: false, grande: true });
+      this.$emit("onStart", this.arquivo);
+
+      const controller = new AbortController();
+      this.multipartAbortController = controller;
+
+      try {
+        const arquivo = await uploadCloudMultipart({
+          file,
+          urls: this.urlsMultipart,
+          dadosAjax: this.dadosAjax,
+          signal: controller.signal,
+          resumeSession: file._resumeSession || null,
+          onProgress: (info) => {
+            refVue.arquivo.pctProgresso = info.pct;
+            refVue.arquivo.bytesCarregados = info.loaded;
+            refVue.arquivo.bytesTotal = info.total;
+            refVue.lista[refVue.atual - 1] = refVue.arquivo;
+            refVue.$emit("onprogresso", refVue.arquivo);
+            refVue.$emit("onProgresso", refVue.arquivo);
+            refVue.$emit("onprogressogeral", refVue.pctGeral);
+          },
+        });
+
+        Object.assign(refVue.arquivo, arquivo);
+        Object.assign(refVue.arquivo, { enviando: false, enviado: true });
+        refVue.multipartAbortController = null;
+        refVue.$emit("onComplete", arquivo);
+        refVue.proximo();
+      } catch (error) {
+        refVue.multipartAbortController = null;
+        if (refVue.pediuCancelar || (error && error.canceled)) {
+          refVue.pediuCancelar = false;
+          if (refVue.atual <= refVue.total) {
+            refVue.lista.splice(refVue.atual - 1, 1);
+          }
+          if (refVue.lista.length === 0 || refVue.atual > refVue.lista.length) {
+            refVue.$emit("onfinalizado");
+            refVue.$emit("onFinalizado");
+            refVue.emAndamento = false;
+            return;
+          }
+          refVue.proximo();
+          return;
+        }
+        const msg =
+          (error && error.response && error.response.data && error.response.data.msg) ||
+          (error && error.message) ||
+          "Falha no envio do arquivo grande";
+        if (typeof mostraErro === "function") {
+          mostraErro({}, msg);
+        }
+        Object.assign(refVue.arquivo, { enviando: false, enviado: true, falhou: true });
+        // Libera o botão mesmo se ainda houver itens na fila
+        if (refVue.atual >= refVue.total) {
+          refVue.emAndamento = false;
+          refVue.$emit("onfinalizado");
+          refVue.$emit("onFinalizado");
+          return;
+        }
+        refVue.proximo();
+      }
     },
   },
 };

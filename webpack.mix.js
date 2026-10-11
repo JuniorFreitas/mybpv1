@@ -143,6 +143,8 @@ mix.js('resources/js/app.js', 'public/js')
     .js('resources/js/g/portaria/app.js', 'public/js/g/portaria/')
     //treinamentos
     .js('resources/js/g/treinamentos/app.js', 'public/js/g/treinamentos/')
+    //treinamentos->import
+    .js('resources/js/g/treinamentos/import/app.js', 'public/js/g/treinamentos/import/')
     //treinamentos sgi
     .js('resources/js/g/treinamentos/sgi/app.js', 'public/js/g/treinamentos/sgi/')
     //certificado

@@ -1161,6 +1161,23 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::post('treinamento/desmarcar-treinamento-realizado', [\App\Http\Controllers\TreinamentoController::class, 'desmarcarTreinamentoRealizado'])->name('desmarcar-treinamento-realizado');
         Route::post('treinamento/atualizar-vencimento', [\App\Http\Controllers\TreinamentoController::class, 'atualizarVencimento'])->name('atualizar-vencimento');
 
+        Route::get('treinamento/import', [\App\Http\Controllers\Treinamento\ImportacaoTreinamentoController::class, 'index'])
+            ->name('import')
+            ->middleware('can:treinamento_importacao');
+        Route::get('treinamento/import/modelo', [\App\Http\Controllers\Treinamento\ImportacaoTreinamentoController::class, 'downloadModelo'])
+            ->name('import.modelo')
+            ->middleware('can:treinamento_importacao');
+        Route::get('treinamento/import/historico', [\App\Http\Controllers\Treinamento\ImportacaoTreinamentoController::class, 'historico'])
+            ->name('import.historico')
+            ->middleware('can:treinamento_importacao');
+        Route::get('treinamento/import/historico/{importacao}/csv/{tipo}', [\App\Http\Controllers\Treinamento\ImportacaoTreinamentoController::class, 'downloadCsv'])
+            ->name('import.historico.csv')
+            ->where(['importacao' => '[0-9]+', 'tipo' => 'sucesso|erro'])
+            ->middleware('can:treinamento_importacao');
+        Route::post('treinamento/import', [\App\Http\Controllers\Treinamento\ImportacaoTreinamentoController::class, 'upload'])
+            ->name('import.upload')
+            ->middleware('can:treinamento_importacao');
+
         Route::resource('treinamento', \App\Http\Controllers\TreinamentoController::class)->middleware('can:treinamento_carteira-etiquetas');
     });
 
@@ -1233,6 +1250,11 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         //ANEXO DE ITENS
         Route::post('itenscloud/uploadAnexos', [\App\Http\Controllers\ItensCloudController::class, 'uploadAnexos'])->name('upload-anexos');
         Route::post('itenscloud/uploadAtualizarAnexos', [\App\Http\Controllers\ItensCloudController::class, 'uploadAtualizarAnexos'])->name('uploadAtualizarAnexos');
+        Route::post('itenscloud/multipart/iniciar', [\App\Http\Controllers\CloudMultipartUploadController::class, 'iniciar'])->name('multipart.iniciar');
+        Route::post('itenscloud/multipart/assinar-parte', [\App\Http\Controllers\CloudMultipartUploadController::class, 'assinarParte'])->name('multipart.assinar-parte');
+        Route::post('itenscloud/multipart/parte', [\App\Http\Controllers\CloudMultipartUploadController::class, 'receberParte'])->name('multipart.parte');
+        Route::post('itenscloud/multipart/completar', [\App\Http\Controllers\CloudMultipartUploadController::class, 'completar'])->name('multipart.completar');
+        Route::post('itenscloud/multipart/abortar', [\App\Http\Controllers\CloudMultipartUploadController::class, 'abortar'])->name('multipart.abortar');
 
         Route::post('itenscloud/mover/{item}', [\App\Http\Controllers\ItensCloudController::class, 'moverArquivo']);
         Route::post('itenscloud/mover-varios', [\App\Http\Controllers\ItensCloudController::class, 'moverVarios']);
