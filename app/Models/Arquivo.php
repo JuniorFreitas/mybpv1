@@ -449,6 +449,10 @@ class Arquivo extends Model
             return $this->urlAssinadaCloud('g.cloud.anexo-show', $this->file);
         }
 
+        if ($this->disco === self::DISCO_DOCUMENTO_ASSINATURA && $this->file) {
+            return $this->urlAssinadaCloud('g.administracao.documento-assinatura.anexo-show', $this->file);
+        }
+
         if (in_array($this->disco, self::LISTAGEM_DISCOS)) {
             return config('filesystems.disks.' . $this->disco . '.urlShow') . "/{$this->file}";
         }
@@ -496,6 +500,10 @@ class Arquivo extends Model
 
         if ($this->disco === self::DISCO_CLOUD && $this->file) {
             return $this->urlAssinadaCloud('g.cloud.anexo-download', $this->file);
+        }
+
+        if ($this->disco === self::DISCO_DOCUMENTO_ASSINATURA && $this->file) {
+            return $this->urlAssinadaCloud('g.administracao.documento-assinatura.anexo-download', $this->file);
         }
 
         if (in_array($this->disco, self::LISTAGEM_DISCOS)) {

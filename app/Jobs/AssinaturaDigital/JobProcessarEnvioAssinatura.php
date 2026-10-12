@@ -213,35 +213,12 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
             ->orderBy('versao', 'desc')
             ->first();
 
-        $empresaNome = '';
-        $empresaRazao = '';
-        $empresaCnpj = '';
-        if ($cartaOferta->empresa) {
-            $empresaNome = $cartaOferta->empresa->nome_fantasia ?? $cartaOferta->empresa->razao_social ?? '';
-            $empresaRazao = $cartaOferta->empresa->razao_social ?? '';
-            $empresaCnpj = $cartaOferta->empresa->cnpj ?? '';
-        }
-
         $html = null;
         if ($template) {
-            $dados = [
-                'colaborador' => [
-                    'nome' => $cartaOferta->Curriculo->nome ?? '',
-                    'cpf' => $cartaOferta->Curriculo->cpf ?? '',
-                    'email' => $cartaOferta->Curriculo->email ?? '',
-                ],
-                'cargo' => $nomeCargo,
-                'setor' => '',
-                'salario' => '',
-                'data_inicio' => '',
-                'empresa' => [
-                    'nome_fantasia' => $empresaNome,
-                    'razao_social' => $empresaRazao,
-                    'cnpj' => $empresaCnpj,
-                ],
-                'data_emissao' => (new DataHora())->dataCompletaExt(),
-            ];
-
+            $dados = app(\App\Services\CartaOferta\CartaOfertaContextoBuilder::class)->paraCarta($cartaOferta);
+            if (($dados['cargo'] ?? '') === \App\Services\CartaOferta\CartaOfertaContextoBuilder::NAO_INFORMADO && $nomeCargo) {
+                $dados['cargo'] = $nomeCargo;
+            }
             $html = app(CartaOfertaTemplateRenderer::class)->render($template->conteudo_html, $dados);
         }
 

@@ -8,8 +8,7 @@ const app = createApp({
     },
     components: {
         CartaOfertaTemplate
-    },
-    template: '<CartaOfertaTemplate />'
+    }
 })
 
 registerGlobals(app)

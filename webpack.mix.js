@@ -58,6 +58,12 @@ mix.copyDirectory(folder.src + "template/images", out);*/
 // mix.sass('resources/template/scss/app-dark.scss', folder.dist_assets + "css").minify(folder.dist_assets + "css/app-dark.css");
 //
 
+// PDF.js worker (visualizadorPdf.vue)
+mix.copy(
+    'node_modules/pdfjs-dist/build/pdf.worker.min.js',
+    'public/js/vendor/pdf.worker.min.js'
+)
+
 mix.js('resources/js/app.js', 'public/js')
     //Configurações
     .js('resources/js/recuperasenha/app.js', 'public/js/recuperasenha/')

@@ -77,7 +77,9 @@ class CartaOferta extends Model
 
     protected $fillable = [
         'token',
+        'public_id',
         'empresa_id',
+        'user_id',
         'curriculo_id',
         'feedback_id',
         'vagas_abertas_id',
@@ -85,13 +87,21 @@ class CartaOferta extends Model
         'arquivo_id',
         'status',
         'local',
+        'setor',
+        'salario',
+        'data_inicio',
+        'acesso_codigo_hash',
+        'acesso_codigo_expira_em',
+        'acesso_codigo_usado_em',
         'logs',
     ];
 
     protected $casts = [
         'id' => 'int',
         'token' => 'string',
+        'public_id' => 'string',
         'empresa_id' => 'int',
+        'user_id' => 'int',
         'curriculo_id' => 'int',
         'feedback_id' => 'int',
         'vagas_abertas_id' => 'int',
@@ -99,16 +109,37 @@ class CartaOferta extends Model
         'arquivo_id' => 'int',
         'status' => 'string',
         'local' => 'string',
+        'setor' => 'string',
+        'salario' => 'string',
+        'data_inicio' => 'date',
+        'acesso_codigo_hash' => 'string',
+        'acesso_codigo_expira_em' => 'datetime',
+        'acesso_codigo_usado_em' => 'datetime',
         'logs' => 'json',
+    ];
+
+    protected $hidden = [
+        'acesso_codigo_hash',
+        'logs',
     ];
 
     protected $appends = [
         'ultima_atualizacao',
+        'data_inicio_br',
     ];
 
     public function getUltimaAtualizacaoAttribute()
     {
         return (new DataHora($this->updated_at))->dataHoraCompleta();
+    }
+
+    public function getDataInicioBrAttribute()
+    {
+        if (!$this->data_inicio) {
+            return null;
+        }
+
+        return (new DataHora($this->data_inicio))->dataCompleta();
     }
 
     const STATUS_PENDENTE_ANEXO = 'Pendente Anexo';
@@ -138,6 +169,11 @@ class CartaOferta extends Model
         return $this->hasOne(Cliente::class, 'id', 'empresa_id');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
     public function curriculo()
     {
         return $this->hasOne(Curriculo::class, 'id', 'curriculo_id');
@@ -163,9 +199,16 @@ class CartaOferta extends Model
         return $this->hasOne(Arquivo::class, 'id', 'arquivo_id');
     }
 
-    public static function checklistArquivo($empresa_apelido)
+    public static function checklistArquivo($empresa_apelido): string
     {
-        return env('AWS_URL') . "/public/checklist_{$empresa_apelido}.pdf";
+        return rtrim((string) env('AWS_URL'), '/') . '/' . self::checklistStorageKey($empresa_apelido);
+    }
+
+    public static function checklistStorageKey(string $empresaApelido): string
+    {
+        $apelido = preg_replace('/[^a-zA-Z0-9_\-]/', '', $empresaApelido) ?: 'empresa';
+
+        return "public/checklist_{$apelido}.pdf";
     }
 
 }

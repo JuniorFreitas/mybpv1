@@ -34,6 +34,22 @@ class DocumentoAssinaturaController extends Controller
     }
 
     /**
+     * Visualiza PDF privado do disco de assinatura digital (URL assinada).
+     */
+    public function anexoShow(string $arquivo)
+    {
+        return Arquivo::anexoShow(Arquivo::DISCO_DOCUMENTO_ASSINATURA, $arquivo);
+    }
+
+    /**
+     * Download do PDF privado do disco de assinatura digital (URL assinada).
+     */
+    public function anexoDownload(string $arquivo)
+    {
+        return Arquivo::anexoDownload(Arquivo::DISCO_DOCUMENTO_ASSINATURA, $arquivo);
+    }
+
+    /**
      * Lista documentos para assinatura da empresa (multi-tenant por empresa_id do usuário).
      */
     public function index(Request $request)

@@ -32,18 +32,51 @@ class CartaOfertaTemplateRenderer
         'hr',
     ];
 
+    /** @var list<string> */
+    protected array $allowedStyleProps = [
+        'text-align',
+        'font-weight',
+        'font-style',
+        'text-decoration',
+        'text-transform',
+        'line-height',
+        'margin',
+        'margin-top',
+        'margin-bottom',
+    ];
+
     public function render(string $html, array $dados): string
     {
         $sanitized = $this->sanitize($html);
 
-        return preg_replace_callback('/{{\s*([a-zA-Z0-9_.]+)\s*}}/', function ($matches) use ($dados) {
+        $rendered = preg_replace_callback('/{{\s*([a-zA-Z0-9_.]+)\s*}}/', function ($matches) use ($dados) {
             $path = $matches[1] ?? '';
             $value = data_get($dados, $path);
             if ($value === null) {
                 return '';
             }
             return is_scalar($value) ? (string) $value : '';
-        }, $sanitized);
+        }, $sanitized) ?? $sanitized;
+
+        return $this->removerLinhasSalarioVazias($rendered);
+    }
+
+    /**
+     * Templates customizados com "Salário: {{salario}}" não devem deixar linha vazia no PDF.
+     */
+    protected function removerLinhasSalarioVazias(string $html): string
+    {
+        $limpo = preg_replace(
+            '/<p\b[^>]*>\s*Sal[aá]rio\s*:\s*<strong>\s*<\/strong>\s*<\/p>/iu',
+            '',
+            $html
+        ) ?? $html;
+
+        return preg_replace(
+            '/<p\b[^>]*>\s*Sal[aá]rio\s*:\s*<\/p>/iu',
+            '',
+            $limpo
+        ) ?? $limpo;
     }
 
     protected function sanitize(string $html): string
@@ -53,6 +86,51 @@ class CartaOfertaTemplateRenderer
             $allowed .= "<{$tag}>";
         }
 
-        return strip_tags($html, $allowed);
+        // Preserva style seguro (ex.: text-align) antes do strip_tags remover atributos
+        $placeholders = [];
+        $withMarkers = preg_replace_callback(
+            '/\sstyle=("|\')(.*?)\1/i',
+            function ($m) use (&$placeholders) {
+                $safe = $this->filtrarEstilosSeguros($m[2] ?? '');
+                if ($safe === '') {
+                    return '';
+                }
+                $token = '___STYLE_' . count($placeholders) . '___';
+                $placeholders[$token] = ' style="' . $safe . '"';
+
+                return ' ' . $token;
+            },
+            $html
+        ) ?? $html;
+
+        $stripped = strip_tags($withMarkers, $allowed);
+
+        return str_replace(array_keys($placeholders), array_values($placeholders), $stripped);
+    }
+
+    protected function filtrarEstilosSeguros(string $style): string
+    {
+        $parts = [];
+        foreach (explode(';', $style) as $decl) {
+            $decl = trim($decl);
+            if ($decl === '' || !str_contains($decl, ':')) {
+                continue;
+            }
+            [$prop, $value] = array_map('trim', explode(':', $decl, 2));
+            $prop = strtolower($prop);
+            if (!in_array($prop, $this->allowedStyleProps, true)) {
+                continue;
+            }
+            // Bloqueia url()/expression e caracteres perigosos
+            if (preg_match('/url\s*\(|expression\s*\(|javascript:/i', $value)) {
+                continue;
+            }
+            if (!preg_match('/^[a-z0-9.\s\-%]+$/i', $value)) {
+                continue;
+            }
+            $parts[] = $prop . ': ' . strtolower($value);
+        }
+
+        return implode('; ', $parts);
     }
 }
