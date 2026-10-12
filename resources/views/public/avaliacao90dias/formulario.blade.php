@@ -810,7 +810,7 @@
     <!-- Rodapé MyBPIN -->
     <footer class="mybp-footer">
         <div class="brand">
-            <img src="https://sistema.mybp.com.br/images/bpin_mybp_color.svg" alt="Logo MyBPIN">
+            <img src="{{ asset('images/mybpin-logo-fundo-claro.webp') }}" alt="Logo MyBPIN">
             <strong>MyBPIN</strong>
         </div>
         <div>

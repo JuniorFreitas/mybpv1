@@ -1672,8 +1672,9 @@ Route::group(['as' => 'provas.'], function () {
 Route::group(['as' => 'documentospreadmissao.'], function () {
     //Provas
     Route::group(['prefix' => '{apelido}'], function () {
-        Route::post('documentos-pre-admissao/autenticar', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'autenticar'])->name('documentos.autenticar');
-        Route::get('documentos', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'index'])->name('documentos.index');
+        Route::post('documentos-pre-admissao/solicitar-codigo', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'solicitarCodigo'])->name('documentos.solicitarCodigo')->middleware('throttle:20,1');
+        Route::post('documentos-pre-admissao/validar-codigo', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'validarCodigo'])->name('documentos.validarCodigo')->middleware('throttle:20,1');
+        Route::get('documentos/{publicId?}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'index'])->name('documentos.index')->whereUuid('publicId');
         Route::put('documentos/{curriculo_id}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'update'])->name('documentos.update');
 
 

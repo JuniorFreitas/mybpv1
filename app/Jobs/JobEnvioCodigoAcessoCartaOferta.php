@@ -25,6 +25,8 @@ class JobEnvioCodigoAcessoCartaOferta implements ShouldQueue
             'empresa_id' => $dados['empresa_id'],
             'codigo' => $dados['codigo'],
             'minutos' => $dados['minutos'] ?? 60,
+            // Nome do que está sendo acessado (o mesmo e-mail serve às telas públicas com código).
+            'recurso' => $dados['recurso'] ?? 'Carta Oferta',
         ];
     }
 

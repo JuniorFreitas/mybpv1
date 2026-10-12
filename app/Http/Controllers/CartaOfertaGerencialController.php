@@ -286,7 +286,8 @@ class CartaOfertaGerencialController extends Controller
                         $empresaApelido = Cliente::withoutGlobalScopes()
                             ->where('id', $cartaOferta->empresa_id)
                             ->value('apelido') ?: '';
-                        $urlDocumentos = rtrim((string) env('APP_URL'), '/') . "/" . $empresaApelido . "/documentos";
+                        $urlDocumentos = app(\App\Services\Preadmissao\DocumentosPreAdmissaoAcessoService::class)
+                            ->urlPublica((int) $cartaOferta->empresa_id, (int) $cartaOferta->curriculo_id, $empresaApelido);
 
                         if ($cartaOferta->Curriculo && $cartaOferta->Curriculo->email) {
                             JobEnvioDocumento::dispatch([

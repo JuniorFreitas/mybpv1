@@ -18,7 +18,7 @@ class EnvioCodigoAcessoCartaOfertaMail extends Mailable
         $empresa = \App\Models\Cliente::withoutGlobalScopes()->find($this->dados['empresa_id']);
         $this->to($this->dados['email'], $this->dados['nome']);
         $this->from('naoresponda@mybp.com.br', $empresa->nome_fantasia ?? 'MyBPIN');
-        $this->subject = 'Código de acesso — Carta Oferta';
+        $this->subject = 'Código de acesso — ' . ($this->dados['recurso'] ?? 'Carta Oferta');
         $this->assunto = $this->subject;
     }
 

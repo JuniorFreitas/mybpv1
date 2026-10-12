@@ -1,149 +1,47 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title')</title>
+    <title>Documentos de Pré-admissão</title>
     <link rel="preload" href="{{mix('js/app.js')}}" as="script">
     <link rel="preload" href="{{mix('js/funcoes.js')}}" as="script">
     @include('layouts.favicon')
     <link href="{{ mix('css/app.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css"
-          integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
-    @stack('css')
+    @include('layouts.publico.estilos')
     <style>
-        .my-login-page .footer {
-            margin: inherit;
-        }
-
-        .footer {
-            margin-top: 20px;
-            width: 100%;
-            height: inherit;
-            line-height: inherit;
-        }
-
-        .social-links a {
-            font-size: 18px;
-            display: inline-block;
-            background: #0F4C60;
-            color: #fff;
-            line-height: 1;
-            padding: 8px 0;
-            margin-right: 4px;
-            border-radius: 50%;
-            text-align: center;
-            width: 36px;
-            height: 36px;
-            transition: .3s;
-        }
-
-        .social-links a:hover {
-            background: #031E2D;
-            color: #fff;
-        }
+        .co-card--largo { max-width: 860px; }
     </style>
 </head>
-<body class="my-login-page bg-white">
+<body class="co-page">
+@include('layouts.publico.cabecalho', ['marca' => $marca])
 <div id="app" v-cloak>
+    <input type="hidden" id="dd" value="{{ json_encode($payload) }}">
 
-    <div class="container-fluid"
-         style="background: url({{ asset('images/bg_login_bpin_mybp.jpg') }}) no-repeat #072333; background-size: cover;"
-         v-if="!autenticado">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-12 min-vh-100 d-flex flex-column justify-content-center">
-                    <div class="row">
-                        <div class="col-lg-6 col-md-8 mx-auto">
-                            <div class="card rounded shadow shadow-sm">
-                                <div class="card-header bg-white text-center">
-                                    <img src="{{ asset('images/bpin_mybp_color.svg') }}" style="height: 120px"
-                                         alt="logo_bpse" >
-                                </div>
-                                <div class="card-body">
-                                    <form @submit.prevent="autenticar" class="form" role="form" id="formAutenticar">
-                                        <div class="form-group">
-                                            <label for="cpf">CPF</label>
-                                            <input type="text" class="form-control" autofocus
-                                                   v-model="formUser.cpf" v-mascara:cpf onblur="valida_cpf_vazio(this)">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Data nascimento</label>
-                                            <input type="text" class="form-control"
-                                                   v-model="formUser.nascimento" v-mascara:data
-                                                   onblur="valida_data_vazio(this)">
-                                        </div>
-                                        <div class="form-group m-0">
-                                            <button type="submit" class="btn btn-primary btn-block">
-                                                ENTRAR
-                                            </button>
-                                        </div>
-                                    </form>
-                                    <div class="py-3" style="display: flex; justify-content: space-around; align-items: center;">
-                                        <img src="{{ asset('images/inova_maranhao.png') }}" alt=""
-                                             class=" " style="height: 60px">
-                                        <img src="{{ asset('images/fapema-logo.png') }}" alt=""
-                                             class=" " style="height: 60px">
-                                        <img src="https://bpse.com.br/img/logo_procem.png" alt=""
-                                             class=" " style="height: 90px">
-                                        <img src="https://bpse.com.br/img/selo_gptw.png" alt="" class=" "
-                                             style="height: 90px">
+    <main class="co-main">
+        {{-- Gate CPF + código --}}
+        <acesso-por-codigo
+            v-if="!dados.autenticado"
+            :url-base="urlBase"
+            :extras="extras"
+            :inicial="dados"
+            titulo="Documentos de Pré-admissão"
+            @autenticado="aoAutenticar"
+        ></acesso-por-codigo>
 
-                                    </div>
+        <section v-else class="co-card co-card--largo">
+            <h1 class="co-card__titulo">Documentos de Pré-admissão</h1>
+            <p class="co-card__texto">Confira seus dados e anexe os documentos solicitados.</p>
+            <documento :curriculo="dados.curriculo" :apelido="apelido"></documento>
+        </section>
+    </main>
 
-                                    <div class="social-links d-flex justify-content-around">
-                                        <a href="https://instagram.com/sejabpse" target="_blank" class="instagram"><i
-                                                class="fab fa-instagram"></i></a>
-                                        <a href="https://www.linkedin.com/company/bpse/" target="_blank" class="linkedin"><i
-                                                class="fab fa-linkedin"></i></a>
-                                        <a href="https://fb.com/bpse1" target="_blank" class="facebook"><i
-                                                class="fab fa-facebook"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <div class="container-fluid min-vh-100" v-if="autenticado && !preloadAutenticacao">
-
-        <div class="row py-3 bg-primary">
-            <div class="mx-auto">
-                <img src="{{ asset('images/bpin_mybp_branco.svg') }}" style="height: 100px"
-                     alt="logo_bpse" >
-            </div>
-        </div>
-
-        <div class="row py-3">
-            <div class="col-12">
-                <documento v-if="autenticado" :curriculo="curriculo" :apelido="formUser.apelido"></documento>
-            </div>
-        </div>
-
-        <div class="row py-3 bg-white" style="border-top: 1px solid #cccccc">
-            <div class="col-12">
-                <div class="py-3 d-flex justify-content-center">
-                    <img src="{{ asset('images/inova_maranhao.png') }}" alt=""
-                         class=" " style="height: 60px">
-                    <img src="{{ asset('images/fapema-logo.png') }}" alt=""
-                         class=" " style="height: 60px">
-                    <img src="https://bpse.com.br/img/logo_procem.png" alt=""
-                         class=" " style="height: 90px">
-                    <img src="https://bpse.com.br/img/selo_gptw.png" alt="" class=" "
-                         style="height: 90px">
-                </div>
-            </div>
-        </div>
-    </div>
-
+    @include('layouts.publico.rodape')
 </div>
+@include('layouts.publico.carregando')
 <script src="{{mix('js/app.js')}}"></script>
 <script src="{{mix('js/funcoes.js')}}"></script>
 <script src="{{mix('js/documentos/app.js')}}"></script>

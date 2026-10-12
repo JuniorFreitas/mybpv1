@@ -193,7 +193,7 @@
     <table border="0" cellpadding="0" width="607" style="margin-top: 15px">
         <tr style="background-color: #072433; padding-top: 15px;">
             <td align="middle" style="padding: 21px">
-                <img src="{{env('AWS_URL')}}/logo_mybp.png" alt="" style="height: 75px"> <br>
+                @include('layouts.mail.logo-mybpin', ['altura' => '75px']) <br>
             </td>
         </tr>
     </table>

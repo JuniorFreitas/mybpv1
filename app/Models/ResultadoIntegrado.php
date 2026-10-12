@@ -133,6 +133,14 @@ class ResultadoIntegrado extends Model
         "usuario_id" => 'int',
         "responsavel_envio" => 'string',
         "obs" => 'string',
+        'public_id' => 'string',
+        'acesso_codigo_hash' => 'string',
+        'acesso_codigo_expira_em' => 'datetime',
+        'acesso_codigo_usado_em' => 'datetime',
+    ];
+
+    protected $hidden = [
+        'acesso_codigo_hash',
     ];
 
     //Acessor ->documentos_entregue_data
@@ -285,7 +293,8 @@ class ResultadoIntegrado extends Model
     {
         $telWhatsapp = app(WhatsappCurriculoTelefoneResolver::class)
             ->resolverPrincipalWhatsapp((int) $feedback->curriculo_id);
-        $urlDocumento = env('APP_URL') . "/" . $user->Empresa->apelido . "/documentos";
+        $urlDocumento = app(\App\Services\Preadmissao\DocumentosPreAdmissaoAcessoService::class)
+            ->urlPublica((int) $feedback->empresa_id, (int) $feedback->curriculo_id, $user->Empresa->apelido);
         $indiceWhatsapp = 0;
         $gate = app(WhatsappNotificationGateService::class);
         $empresaId = (int) $user->empresa_id;

@@ -386,6 +386,8 @@ class PreAdmissaoController extends Controller
 
             DB::commit();
 
+            $urlDocumentos = app(\App\Services\Preadmissao\DocumentosPreAdmissaoAcessoService::class)
+                ->urlPublica((int) $feedback->empresa_id, (int) $curriculo->id, auth()->user()->Empresa->apelido);
 
             if (auth()->user()->empresa_id == 65974) { //Equatorial
                 JobEnvioFeedbackDocumento::dispatch([
@@ -400,7 +402,7 @@ class PreAdmissaoController extends Controller
                     'nome' => $curriculo->nome,
                     'email' => $feedback['email'],
                     'empresa_id' => $feedback->empresa_id,
-                    'url_documento' => env('APP_URL') . "/" . auth()->user()->Empresa->apelido . "/documentos",
+                    'url_documento' => $urlDocumentos,
                 ]);
             }
 
@@ -426,7 +428,7 @@ class PreAdmissaoController extends Controller
                         (int) auth()->user()->empresa_id,
                         [
                             'nome_destinatario' => $curriculo->nome,
-                            'url_documentos' => env('APP_URL') . '/' . auth()->user()->Empresa->apelido . '/documentos',
+                            'url_documentos' => $urlDocumentos,
                             'observacao' => $observacao !== '' ? $observacao . "\n\n" : '',
                         ]
                     );

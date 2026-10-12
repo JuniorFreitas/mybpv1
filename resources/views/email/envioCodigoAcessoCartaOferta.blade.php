@@ -8,7 +8,7 @@
         <tr>
             <td style="text-align: justify">
                 Prezado(a) <strong>{{ $dados['nome'] }}</strong>,<br><br>
-                Seu código de acesso à Carta Oferta é:
+                Seu código de acesso (<strong>{{ $dados['recurso'] ?? 'Carta Oferta' }}</strong>) é:
                 <br><br>
                 <div style="font-size: 28px; letter-spacing: 4px; font-weight: bold; text-align: center;">
                     {{ $dados['codigo'] }}
