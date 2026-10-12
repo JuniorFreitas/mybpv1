@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\CartaOferta;
 use App\Models\Cliente;
 use App\Services\AcessoPublico\AuditoriaAcessoService;
+use App\Models\CartaOfertaAceite;
+use App\Services\CartaOferta\CartaOfertaAceiteService;
 use App\Services\CartaOferta\CartaOfertaAcessoPublicoService;
+use App\Services\CartaOferta\CartaOfertaPdfService;
 use App\Services\Marca\MarcaClienteService;
 use App\Services\Preadmissao\AnexoPreAdmissaoAcessoService;
 use Illuminate\Http\Request;
@@ -127,6 +130,121 @@ class CartaOfertaController extends Controller
         }
     }
 
+    /**
+     * Carta da sessão autenticada (CPF + código) ou null.
+     */
+    protected function cartaAutenticada(Request $request, CartaOfertaAcessoPublicoService $acesso): ?CartaOferta
+    {
+        $publicId = (string) $request->segment(3);
+        if (!session($acesso->sessionKey($publicId))) {
+            return null;
+        }
+
+        return $acesso->encontrarPorPublicId((string) $request->segment(1), $publicId);
+    }
+
+    /**
+     * PDF da proposta exatamente como será aceita/recusada (congelado na primeira visualização).
+     */
+    public function proposta(Request $request, CartaOfertaAcessoPublicoService $acesso, CartaOfertaPdfService $pdfs)
+    {
+        $carta = $this->cartaAutenticada($request, $acesso);
+        abort_unless($carta, 403);
+
+        $arquivo = $pdfs->propostaCongelada($carta);
+        $this->auditar($request, $carta, AuditoriaAcessoService::EVENTO_PROPOSTA_VISUALIZADA, [
+            'dados' => ['proposta_hash' => $carta->proposta_hash],
+        ]);
+
+        return response($pdfs->conteudo($arquivo), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="carta-oferta.pdf"',
+            'Cache-Control' => 'private, no-store',
+        ]);
+    }
+
+    public function comprovante(Request $request, CartaOfertaAcessoPublicoService $acesso, CartaOfertaPdfService $pdfs)
+    {
+        $carta = $this->cartaAutenticada($request, $acesso);
+        abort_unless($carta, 403);
+
+        $aceite = CartaOfertaAceite::query()->where('carta_oferta_id', $carta->id)->first();
+        $arquivo = $aceite?->comprovante;
+        abort_unless($arquivo, 404);
+
+        return response($pdfs->conteudo($arquivo), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="carta-oferta-comprovante.pdf"',
+            'Cache-Control' => 'private, no-store',
+        ]);
+    }
+
+    public function aceitar(Request $request, CartaOfertaAcessoPublicoService $acesso, CartaOfertaAceiteService $aceites)
+    {
+        return $this->decidir($request, $acesso, function (CartaOferta $carta) use ($request, $aceites) {
+            if (!$request->boolean('consentimento')) {
+                throw new RuntimeException('Marque a declaração de aceite para continuar.');
+            }
+
+            return $aceites->aceitar($carta, $request);
+        });
+    }
+
+    public function recusar(Request $request, CartaOfertaAcessoPublicoService $acesso, CartaOfertaAceiteService $aceites)
+    {
+        $request->validate(['motivo' => 'nullable|string|max:1000']);
+
+        return $this->decidir($request, $acesso, fn (CartaOferta $carta) => $aceites->recusar($carta, $request, $request->input('motivo')));
+    }
+
+    protected function decidir(Request $request, CartaOfertaAcessoPublicoService $acesso, \Closure $acao)
+    {
+        $carta = $this->cartaAutenticada($request, $acesso);
+        if (!$carta) {
+            return response()->json(['message' => 'Autentique-se com CPF e código para continuar.'], 401);
+        }
+
+        try {
+            $acao($carta);
+
+            return response()->json($acesso->payloadAutenticado($carta->fresh()), 200);
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Página pública de verificação do comprovante (destino do QR code).
+     */
+    public function verificacao(Request $request, CartaOfertaAceiteService $aceites)
+    {
+        $codigo = (string) $request->query('c', '');
+        $hash = (string) $request->query('h', '');
+        $empresa = \App\Models\Cliente::withoutGlobalScopes()
+            ->select(['id', 'apelido', 'nome_fantasia', 'razao_social'])
+            ->where('apelido', (string) $request->segment(1))
+            ->first();
+
+        $aceite = ($empresa && \Illuminate\Support\Str::isUuid($codigo))
+            ? CartaOfertaAceite::query()
+                ->where('codigo_verificacao', $codigo)
+                ->where('empresa_id', $empresa->id)
+                ->first()
+            : null;
+
+        $valido = $aceite
+            && hash_equals((string) $aceite->hash_evidencia, $hash)
+            && $aceites->integro($aceite);
+
+        return view('cartaoferta.verificacao', [
+            'valido' => $valido,
+            'consultou' => $codigo !== '',
+            'aceite' => $valido ? $aceite : null,
+            'empresaNome' => $empresa->razao_social ?? $empresa->nome_fantasia ?? '',
+            'historico' => $valido ? $aceites->historico($aceite, false) : [],
+        ]);
+    }
+
     protected function auditar(Request $request, CartaOferta $carta, string $evento, array $info = []): void
     {
         app(AuditoriaAcessoService::class)->registrar(
@@ -170,6 +288,15 @@ class CartaOfertaController extends Controller
         }
 
         if ($row->status == CartaOferta::STATUS_PENDENTE_ANEXO) {
+            // Sem assinatura digital, o candidato precisa primeiro aceitar a proposta eletronicamente.
+            $aceitou = CartaOfertaAceite::query()
+                ->where('carta_oferta_id', $row->id)
+                ->where('decisao', CartaOfertaAceite::DECISAO_ACEITO)
+                ->exists();
+            if (!$aceitou && app(CartaOfertaAceiteService::class)->habilitado((int) $row->empresa_id)) {
+                return response()->json(['message' => 'Leia a carta oferta e registre o seu aceite antes de anexar.'], 422);
+            }
+
             $request->validate([
                 'arquivo.id' => 'required',
             ]);

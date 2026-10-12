@@ -126,6 +126,30 @@ class CartaOfertaAcessoPublicoService
                 'nome' => $empresa->nome_fantasia ?? $empresa->razao_social ?? null,
             ],
             'autenticado' => true,
+        ] + $this->payloadAceite($carta);
+    }
+
+    /**
+     * Empresas sem assinatura digital: o candidato vê a proposta e aceita/recusa eletronicamente.
+     */
+    protected function payloadAceite(CartaOferta $carta): array
+    {
+        $aceite = \App\Models\CartaOfertaAceite::query()->where('carta_oferta_id', $carta->id)->first();
+        $habilitado = app(CartaOfertaAceiteService::class)->habilitado((int) $carta->empresa_id);
+
+        return [
+            'aceite_eletronico' => $habilitado || $aceite !== null,
+            'textos_aceite' => [
+                'aceitar' => CartaOfertaAceiteService::TEXTO_CONSENTIMENTO,
+                'recusar' => CartaOfertaAceiteService::TEXTO_RECUSA,
+            ],
+            'aceite' => $aceite ? [
+                'decisao' => $aceite->decisao,
+                'data' => $aceite->data_decisao_br,
+                'codigo_verificacao' => $aceite->codigo_verificacao,
+                'comprovante_pronto' => (bool) $aceite->comprovante_arquivo_id,
+                'url_verificacao' => app(CartaOfertaAceiteService::class)->urlVerificacao($aceite, $this->resolverEmpresa($carta)?->apelido),
+            ] : null,
         ];
     }
 

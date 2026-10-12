@@ -21,6 +21,7 @@ class CartaOfertaAcessoPublicoServiceTest extends TestCase
         parent::setUp();
         config(['activitylog.enabled' => false]);
 
+        Schema::dropIfExists('curriculo_carta_oferta_aceites');
         Schema::dropIfExists('curriculo_carta_oferta');
         Schema::dropIfExists('curriculos');
         Schema::dropIfExists('users');
@@ -65,6 +66,8 @@ class CartaOfertaAcessoPublicoServiceTest extends TestCase
             $table->json('logs')->nullable();
             $table->timestamps();
         });
+
+        (require database_path('migrations/2026_10_12_110000_create_curriculo_carta_oferta_aceites_table.php'))->up();
 
         DB::table('clientes')->insert([
             'id' => 10,

@@ -1678,7 +1678,13 @@ Route::group(['as' => 'documentospreadmissao.'], function () {
         Route::put('documentos/{curriculo_id}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'update'])->name('documentos.update');
 
 
+        // "verificacao" antes de {publicId}: destino do QR code do comprovante de aceite
+        Route::get('carta-oferta/verificacao', [\App\Http\Controllers\CartaOfertaController::class, 'verificacao'])->name('carta-oferta.verificacao')->middleware('throttle:30,1');
         Route::get('carta-oferta/{publicId}', [\App\Http\Controllers\CartaOfertaController::class, 'index'])->name('carta-oferta.index');
+        Route::get('carta-oferta/{publicId}/proposta.pdf', [\App\Http\Controllers\CartaOfertaController::class, 'proposta'])->name('carta-oferta.proposta');
+        Route::get('carta-oferta/{publicId}/comprovante.pdf', [\App\Http\Controllers\CartaOfertaController::class, 'comprovante'])->name('carta-oferta.comprovante');
+        Route::post('carta-oferta/{publicId}/aceitar', [\App\Http\Controllers\CartaOfertaController::class, 'aceitar'])->name('carta-oferta.aceitar')->middleware('throttle:20,1');
+        Route::post('carta-oferta/{publicId}/recusar', [\App\Http\Controllers\CartaOfertaController::class, 'recusar'])->name('carta-oferta.recusar')->middleware('throttle:20,1');
         Route::post('carta-oferta/{publicId}/solicitar-codigo', [\App\Http\Controllers\CartaOfertaController::class, 'solicitarCodigo'])->name('carta-oferta.solicitarCodigo')->middleware('throttle:20,1');
         Route::post('carta-oferta/{publicId}/validar-codigo', [\App\Http\Controllers\CartaOfertaController::class, 'validarCodigo'])->name('carta-oferta.validarCodigo')->middleware('throttle:20,1');
         Route::post('carta-oferta/{publicId}/salvar', [\App\Http\Controllers\CartaOfertaController::class, 'salvarCartaOferta'])->name('carta-oferta.salvarCartaOferta');

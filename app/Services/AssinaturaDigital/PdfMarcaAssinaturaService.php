@@ -139,7 +139,8 @@ class PdfMarcaAssinaturaService
 
         // ---- Título central ----
         $pdf->SetFont('Helvetica', 'B', 18);
-        $pdf->Cell(0, 14, $this->paraPdf('Pagina de assinaturas'), 0, 1, 'C');
+        // `titulo` e o `rotulo` de cada signatário permitem reutilizar a página em outros atos (ex.: aceite).
+        $pdf->Cell(0, 14, $this->paraPdf((string) ($dadosPagina['titulo'] ?? 'Pagina de assinaturas')), 0, 1, 'C');
         $pdf->Ln(4);
 
         // ---- Blocos de assinatura: QR à esquerda + texto (Assinado digitalmente por, CPF, data, local, hash, identificação) + linha + nome ----
@@ -164,7 +165,7 @@ class PdfMarcaAssinaturaService
             $pdf->SetTextColor(0, 0, 0);
             $pdf->SetXY($xTexto, $yInicio);
             $nome = $this->paraPdf(mb_strtoupper($s['nome'] ?? '-', 'UTF-8'));
-            $linha1 = $this->paraPdf('Assinado digitalmente por: ') . $nome;
+            $linha1 = $this->paraPdf((string) ($s['rotulo'] ?? 'Assinado digitalmente por: ')) . $nome;
             $pdf->MultiCell($larguraTexto, 4, $this->truncar($linha1, 85), 0, 'L');
             $pdf->SetX($xTexto);
             $cpfPdf = $this->paraPdf((string) ($s['cpf'] ?? '-'));

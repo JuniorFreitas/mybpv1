@@ -200,6 +200,7 @@ const app = createApp({
             if (status === 'Aguardando RH') return 'rh'
             if (status === 'Pendente Anexo') return 'pendente'
             if (status === 'Recusado pelo RH') return 'reprovado'
+            if (status === 'Recusado pelo candidato') return 'reprovado'
             if (status === 'Expirado') return 'neutro'
             return 'aberto'
         },

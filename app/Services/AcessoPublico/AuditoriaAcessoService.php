@@ -22,6 +22,9 @@ class AuditoriaAcessoService
     public const EVENTO_DOCUMENTOS_ENVIADOS = 'documentos_enviados';
     public const EVENTO_COMPROVANTE_EMITIDO = 'comprovante_emitido';
     public const EVENTO_CARTA_ENVIADA = 'carta_enviada';
+    public const EVENTO_PROPOSTA_VISUALIZADA = 'proposta_visualizada';
+    public const EVENTO_CARTA_ACEITA = 'carta_aceita';
+    public const EVENTO_CARTA_RECUSADA = 'carta_recusada';
 
     /**
      * @param array{registro_id?: ?int, curriculo_id?: ?int, protocolo?: ?string, cpf?: ?string,

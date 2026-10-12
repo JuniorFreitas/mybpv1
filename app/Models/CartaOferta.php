@@ -85,6 +85,8 @@ class CartaOferta extends Model
         'vagas_abertas_id',
         'vaga_projeto_id',
         'arquivo_id',
+        'proposta_arquivo_id',
+        'proposta_hash',
         'status',
         'local',
         'setor',
@@ -107,6 +109,8 @@ class CartaOferta extends Model
         'vagas_abertas_id' => 'int',
         'vaga_projeto_id' => 'int',
         'arquivo_id' => 'int',
+        'proposta_arquivo_id' => 'int',
+        'proposta_hash' => 'string',
         'status' => 'string',
         'local' => 'string',
         'setor' => 'string',
@@ -147,6 +151,7 @@ class CartaOferta extends Model
     const STATUS_ACEITO_RH = 'Aceito pelo RH';
     const STATUS_RECUSADO_RH = 'Recusado pelo RH';
     const STATUS_EXPIRADO = 'Expirado';
+    const STATUS_RECUSADO_CANDIDATO = 'Recusado pelo candidato';
 
     const LOCAL_MYBP = 'MyBPIN';
     const LOCAL_SGI = 'SGI';
@@ -156,6 +161,7 @@ class CartaOferta extends Model
         self::STATUS_AGUARDANDO_RH,
         self::STATUS_ACEITO_RH,
         self::STATUS_RECUSADO_RH,
+        self::STATUS_RECUSADO_CANDIDATO,
         self::STATUS_EXPIRADO,
     ];
 
@@ -192,6 +198,11 @@ class CartaOferta extends Model
     public function vagaProjeto()
     {
         return $this->hasOne(VagaProjeto::class, 'id', 'vaga_projeto_id');
+    }
+
+    public function aceite()
+    {
+        return $this->hasOne(CartaOfertaAceite::class, 'carta_oferta_id');
     }
 
     public function anexo()
