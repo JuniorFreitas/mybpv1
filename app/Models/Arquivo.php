@@ -415,6 +415,20 @@ class Arquivo extends Model
     }
 
     /**
+     * URL assinada (60 min) dos anexos de pré-admissão/carta oferta. `$acao`: show, download ou delete.
+     * A rota ainda confere quem está acessando (AnexoPreAdmissaoAcessoService).
+     */
+    public static function urlAssinadaPreAdmissao(string $acao, string $arquivo): string
+    {
+        return URL::temporarySignedRoute(
+            'documentospreadmissao.documentos.anexo-' . $acao,
+            now()->addMinutes(self::CLOUD_URL_ASSINADA_MINUTOS),
+            ['arquivo' => $arquivo],
+            absolute: false
+        );
+    }
+
+    /**
      * FAT de treinamento: disco próprio ou legado ainda marcado como disco-cloud.
      */
     protected function usaRotasAssinadasTreinamento(): bool
@@ -449,6 +463,14 @@ class Arquivo extends Model
             return $this->urlAssinadaCloud('g.cloud.anexo-show', $this->file);
         }
 
+        if ($this->disco === self::DISCO_DOCUMENTO_ASSINATURA && $this->file) {
+            return $this->urlAssinadaCloud('g.administracao.documento-assinatura.anexo-show', $this->file);
+        }
+
+        if ($this->disco === self::DISCO_DOCUMENTOS_PRE_ADMISSAO && $this->file) {
+            return self::urlAssinadaPreAdmissao('show', $this->file);
+        }
+
         if (in_array($this->disco, self::LISTAGEM_DISCOS)) {
             return config('filesystems.disks.' . $this->disco . '.urlShow') . "/{$this->file}";
         }
@@ -478,6 +500,12 @@ class Arquivo extends Model
             return $this->urlAssinadaCloud('g.cloud.anexo-show', $path);
         }
 
+        if ($this->disco === self::DISCO_DOCUMENTOS_PRE_ADMISSAO) {
+            $path = ($this->imagem && $this->thumb) ? $this->thumb : $this->file;
+
+            return $path ? self::urlAssinadaPreAdmissao('show', $path) : '';
+        }
+
         if (in_array($this->disco, self::LISTAGEM_DISCOS)) {
             $path = ($this->imagem && $this->thumb) ? $this->thumb : $this->file;
             return config('filesystems.disks.' . $this->disco . '.urlThumb') . "/{$path}";
@@ -498,6 +526,14 @@ class Arquivo extends Model
             return $this->urlAssinadaCloud('g.cloud.anexo-download', $this->file);
         }
 
+        if ($this->disco === self::DISCO_DOCUMENTO_ASSINATURA && $this->file) {
+            return $this->urlAssinadaCloud('g.administracao.documento-assinatura.anexo-download', $this->file);
+        }
+
+        if ($this->disco === self::DISCO_DOCUMENTOS_PRE_ADMISSAO && $this->file) {
+            return self::urlAssinadaPreAdmissao('download', $this->file);
+        }
+
         if (in_array($this->disco, self::LISTAGEM_DISCOS)) {
             return config('filesystems.disks.' . $this->disco . '.urlDownload') . "/{$this->file}";
         }
@@ -515,6 +551,10 @@ class Arquivo extends Model
 
         if ($this->disco === self::DISCO_CLOUD && $this->file) {
             return $this->urlAssinadaCloud('g.cloud.anexo-delete', $this->file);
+        }
+
+        if ($this->disco === self::DISCO_DOCUMENTOS_PRE_ADMISSAO && $this->file) {
+            return self::urlAssinadaPreAdmissao('delete', $this->file);
         }
 
         if (in_array($this->disco, self::LISTAGEM_DISCOS)) {

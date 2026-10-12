@@ -219,7 +219,7 @@
                             equipe responsável.</p>
                         <p style="margin: 0; font-size: 14px;"><strong>⚠️ Não responda este e-mail.</strong></p>
 
-                        <img src="{{env('AWS_URL')}}/logo_mybp.png" alt="" style="height: 40px">
+                        @include('layouts.mail.logo-mybpin', ['altura' => '40px'])
                     </td>
                 </tr>
 

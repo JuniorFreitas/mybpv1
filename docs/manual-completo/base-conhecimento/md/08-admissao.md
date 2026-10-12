@@ -1,26 +1,79 @@
 # 8. Admissão
-O menu **Admissão** acompanha a pessoa do envio de documentos até o desligamento. É o módulo mais usado no dia a dia do RH.
-Pré-admissão*→*Controle de Exames*→*Processo (Admitir)*→*Histórico*→*Pós-admissão
+O menu **Admissão** acompanha a pessoa da carta oferta e do envio de documentos até o desligamento. É o módulo mais usado no dia a dia do RH.
+Carta Oferta*→*Pré-admissão*→*Controle de Exames*→*Processo (Admitir)*→*Histórico*→*Pós-admissão
 Quem veio do recrutamento chega aqui pelo **Resultado Integrado**. Quem não passou pelo recrutamento entra pela **Admissão avulsa**, dentro de Processo. O grupo **Apontamento** (CIH e Intermitente) registra as ocorrências do colaborador já admitido.
 
-## 8.1 Pré-admissão (documentos)
+## 8.1 Carta Oferta
+Caminho no menu: Admissão › Documentos › Carta Oferta
+Emite e acompanha as cartas oferta enviadas aos candidatos. O texto vem do template publicado em **Administração › Carta Oferta - Template** (seção 3.4); aqui se informam os dados de cada proposta e se acompanha a resposta.
+RH cria e envia a carta*→*Candidato confirma a identidade*→*Aceita ou recusa*→*RH confere
+
+### Filtros
+- **Período:** Ao marcar, libera o intervalo de datas.
+- **Buscar:** Localiza pelo nome ou pelo CPF do candidato.
+- **Status:** Situação da carta. “Todos” não filtra.
+- **Ordenar por:** Critério de ordenação; o padrão é a data de atualização.
+- **Exibir:** Quantidade de cartas por página.
+
+### O card da carta
+Cada card traz o número da carta, o candidato, o CPF parcialmente oculto e o **selo de status**, além de Cargo, Setor, Salário, Data de início, Projeto, Atualização, E-mail e Telefone. O bloco **Fluxo da carta** mostra as três etapas, com quem agiu e quando:
+- **Envio:** Quem criou e enviou a carta.
+- **Candidato:** A resposta do candidato: Aguardando, Aceito ou recusado.
+- **RH:** A conferência do RH: Pendente, aprovado ou Recusado.
+
+### Criar e enviar uma carta
+1. Clique em **+ Nova carta**.
+2. Em **Candidato** *, busque por nome ou CPF.
+3. Em **Vaga aberta** *, busque a vaga da proposta.
+4. Preencha **Setor**, **Salário** e **Data de início**.
+5. Clique em **Criar e enviar**. O candidato recebe o link da carta por e-mail.
+É necessário ter um template **publicado**. Com a assinatura digital habilitada, o PDF é enviado para o candidato assinar e passa a ser acompanhado em Documentos para Assinatura (seção 3.3).
+
+### Ações do card
+- **Ver / PDF:** Abre o detalhe da carta, com os dados do candidato, da oferta e o documento em PDF.
+- **Copiar link do candidato:** Copia o link da carta para enviar ao candidato por outro canal.
+- **Abrir link público:** Abre a página que o candidato vê.
+No detalhe, os blocos **Candidato** e **Oferta** resumem a proposta, e o bloco **Documento PDF** mostra a carta página a página. **Copiar link** e **Baixar PDF** ficam no topo.
+
+### O que o candidato vê
+1. O candidato abre o link recebido. A página traz a identificação da empresa e a **Validação de segurança**.
+2. **Etapa 1 de 2:** informa o CPF e clica em **Enviar código**. Um código de 8 caracteres é enviado ao e-mail cadastrado. Quem já tem o código usa **Já recebi o código**.
+3. **Etapa 2 de 2:** informa o código e acessa a carta.
+4. Lê a proposta e **aceita** ou **recusa**. A resposta aparece na etapa Candidato do fluxo.
+Depois de responder, o candidato vê a situação da carta: aceita com sucesso, aguardando verificação pelo RH, recusada ou com prazo expirado. No rodapé da página, os blocos **Por que pedimos o seu CPF?**, **Aviso de privacidade** e **Cookies** explicam o uso dos dados.
+
+## 8.2 Pré-admissão (documentos)
 Caminho no menu: Admissão › Documentos › Pré-admissão
-Acompanha os documentos enviados pelos candidatos encaminhados. A lista mostra o Código, Nome, CPF, Vaga, a **quantidade de anexos** já recebidos e o Status.
+Acompanha os documentos de admissão enviados pelos candidatos. O candidato envia os arquivos por um link seguro, direto no sistema, e o RH confere tudo nesta tela.
+Candidato recebe o link por e-mail*→*Confirma a identidade*→*Anexa os documentos*→*RH confere e finaliza
 
 ### Filtros
 - **Buscar:** Localiza pelo nome ou pelo CPF.
-- **Por Vaga:** Candidatos de uma vaga.
+- **Por vaga:** Candidatos de uma vaga.
 - **Estado:** Candidatos de um estado (UF).
-- **Status:** Em processo (padrão), Admitidos ou Demitidos.
-- **Exibir:** 20, 50 ou 100 por página.
+- **Situação do colaborador:** O padrão é Em processo.
+- **Documentos:** Situação dos documentos (por exemplo, pendentes). “Todos” não filtra.
+- **Exibir:** Quantidade de candidatos por página.
 
-### Ações de cada linha
-- **Lupa:** **Visualizar** — abre os documentos enviados pelo candidato.
-- **Seta:** **Reenviar E-mail** — manda de novo ao candidato o e-mail com o link de envio dos documentos.
-- **Check:** **Finalizar** — encerra a pré-admissão do candidato.
+### O card do candidato
+Cada card mostra o código, o nome e o CPF parcialmente oculto. À direita, dois selos resumem a situação: **Colaborador** (por exemplo, Em processo) e **Documentos** (por exemplo, Pendentes). Abaixo ficam Cargo/Vaga, Local da vaga, a quantidade de **Anexos** já recebidos, E-mail, Telefone e UF do currículo.
+
+### Ações do card
+- **Visualizar documentos:** Abre os documentos enviados pelo candidato.
+- **Reenviar e-mail:** Manda de novo ao candidato o e-mail com o link de envio dos documentos.
+- **Finalizar:** Encerra a pré-admissão do candidato.
+
+### Como o candidato envia os documentos
+1. O candidato abre o link recebido por e-mail. A página mostra a empresa e a **Validação de segurança**.
+2. **Etapa 1 de 2:** informa o CPF e clica em **Enviar código**. O sistema envia um código de 8 caracteres para o e-mail do cadastro. Quem já tem o código usa **Já recebi o código**.
+3. **Etapa 2 de 2:** informa o código recebido.
+4. Confere os seus dados e anexa cada documento solicitado.
+O CPF é usado apenas para confirmar que quem abriu o link é a pessoa a quem ele foi enviado. Cada tentativa de acesso é registrada com data, hora, endereço IP e navegador.
 
 ### Conferir os documentos
-Em **Visualizar**, os documentos aparecem agrupados por tipo. Cada arquivo tem os botões **Ver** e **Baixar**; tipos sem arquivo mostram “Nenhum anexo enviado”. Os grupos são:
+Em **Visualizar documentos**, o topo repete os dados do candidato e os selos de situação. Em **Documentos do candidato**, cada tipo de documento aparece com o selo **Enviado** ou **Pendente** e, quando houver, a observação do tipo (por exemplo, “Somente para PCD”).
+Cada arquivo enviado mostra a miniatura ou o tipo (PDF), a **Descrição** e os botões **Ver** e **Baixar**. Um mesmo tipo pode ter mais de um arquivo. Tipos sem arquivo mostram “Nenhum anexo enviado”.
+A lista de tipos é definida pela empresa. Na base usada neste manual, são:
 - Laudo médico (somente PCD)
 - Currículo (PDF)
 - Foto 3x4 (JPG/JPEG)
@@ -39,8 +92,9 @@ Em **Visualizar**, os documentos aparecem agrupados por tipo. Cada arquivo tem o
 - Declaração escolar (7 a 14 anos)
 - Certificado de funções
 - Carteira de vacinação
+Se faltar algum documento, use **Reenviar e-mail** para o candidato acessar o link de novo. Com tudo conferido, use **Finalizar**.
 
-## 8.2 Controle de Exames
+## 8.3 Controle de Exames
 Caminho no menu: Admissão › Controle de Exames
 Lista as pessoas com exames ocupacionais em andamento, com o Cargo e a data do **último encaminhamento**.
 - **Por período:** Ao marcar, libera o intervalo de datas.
@@ -62,7 +116,7 @@ Histórico de encaminhamentos da pessoa: Código, Tipo de exame, Clínica, PCMSO
 ### Aba Validação SESMT
 Antes de dar acesso aos resultados, o sistema apresenta o termo de **acesso ao prontuário**, com as regras de sigilo médico. Leia e clique em **Concordo** para prosseguir com a validação do exame pelo SESMT.
 
-## 8.3 Processo
+## 8.4 Processo
 Caminho no menu: Admissão › Processo
 Tela central da admissão. Cada card representa uma pessoa em processo de admissão ou já admitida.
 
@@ -103,7 +157,7 @@ Marque os cards (ou **Selecionar todos com admissão**) e clique em **Exportar E
 10. Em **Dados bancários**, informe Banco *, Agência *, Conta * e se tem PIX *. Em **Foto escaneada**, confira ou envie a foto.
 11. Clique em **Salvar**.
 
-## 8.4 Admissão avulsa
+## 8.5 Admissão avulsa
 Caminho no menu: Admissão › Processo › + Admissão avulsa
 Use a admissão avulsa para admitir alguém que **não passou pelo recrutamento** do sistema — sem currículo, entrevista ou resultado integrado. Em uma única janela você registra tudo o que, no fluxo normal, viria das etapas anteriores.
 
@@ -145,12 +199,12 @@ O sistema procura o CPF na base e libera o restante do formulário:
 - **Foto escaneada:** selecione ou arraste a imagem (JPG, PNG, WEBP ou GIF).
 Confira os campos obrigatórios e clique em **Salvar**. Ao concluir, o sistema exibe a mensagem **Admissão Concluída!**
 
-## 8.5 Apontamento › Tipos CIH
+## 8.6 Apontamento › Tipos CIH
 Caminho no menu: Admissão › Apontamento › Tipos CIH
 Tabela dos tipos de ocorrência que podem ser lançados no CIH — por exemplo Abono de dia, Atraso, Compensação de horas, Exames, Falta, Folga. A coluna **Anexo Obrigatório** indica os tipos que exigem evidência.
 Em **+ Cadastrar Tipo CIH**, informe o **Nome**, mantenha **Ativo** ligado e ligue **Anexo Obrigatório** se todo lançamento desse tipo precisar de um arquivo de evidência. O lápis edita um tipo existente.
 
-## 8.6 Apontamento › CIH
+## 8.7 Apontamento › CIH
 Caminho no menu: Admissão › Apontamento › CIH
 Registro de ocorrências do colaborador (ajuste de ponto, falta, atraso, abono…). Cada lançamento passa por aprovação do gestor e do RH.
 
@@ -173,7 +227,7 @@ Cada card mostra o Tipo, a Data da ocorrência, quem fez o Lançamento e quando,
 ### Visualizar e aprovar
 No menu ⋮ do card, **Visualizar** abre o lançamento completo: a ocorrência, a tabela de envolvidos (Nome, Cargo, Centro de custo, Lotação), a ação, o anexo (com Ver e Baixar) e os blocos **Aprovação Gestor** e **Aprovação RH**, que mostram quem aprovou ou reprovou e quando. Quem tem a aprovação pendente encontra, no mesmo menu, a ação de aprovar: escolha o **Status**, escreva a observação e grave.
 
-## 8.7 Apontamento › Intermitente
+## 8.8 Apontamento › Intermitente
 Caminho no menu: Admissão › Apontamento › Intermitente
 Controle das convocações de colaboradores com contrato intermitente.
 - **Por período:** Convocações de um intervalo de datas.
@@ -191,7 +245,7 @@ A legenda de cores indica as convocações **Abertas** e as **Encerradas**.
 5. Inclua anexo e observação, se houver, e clique em **Lançar**.
 O botão **+ Cadastrar Tipo** inclui um novo tipo de convocação: basta informar o **Nome** e clicar em **Cadastrar**.
 
-## 8.8 Histórico
+## 8.9 Histórico
 Caminho no menu: Admissão › Histórico
 Ficha de cada colaborador. O card mostra Cargo, Função, CPF, Empresa, Centro de custo, Lotação, Tipo de admissão, Data de admissão e última atualização, com o selo de situação.
 
@@ -253,7 +307,22 @@ Todos os lançamentos de CIH do colaborador, com quem lançou, quem aprovou e qu
 #### Logs
 Registro de auditoria: lista cada alteração feita na ficha do colaborador, com o **Usuário**, a **Ação** e a **Data**.
 
-## 8.9 Pós-admissão
+### Assinatura digital no dossiê
+Nas empresas com assinatura digital habilitada, os documentos do **Dossiê** que exigem assinatura (Contrato de Trabalho, Termo de Confidencialidade, Opção Vale Transporte e outros) trazem botões próprios abaixo do anexo:
+- **Baixar Modelo:** Baixa o modelo do documento, já preenchido com os dados do colaborador.
+- **Enviar para assinatura:** Envia o documento anexado para o colaborador assinar digitalmente.
+- **Gerenciar assinatura:** Aparece depois do envio: mostra o andamento, os signatários e a auditoria.
+
+#### Enviar um documento para assinatura
+1. Anexe o documento no bloco correspondente do dossiê (use **Baixar Modelo** para gerar o arquivo).
+2. Clique em **Enviar para assinatura**. A janela mostra o **Documento** e os **Signatários**, com Nome, E-mail e CPF do colaborador já preenchidos.
+3. Confira os dados e clique em **Enviar para assinatura**. O colaborador recebe o link por e-mail.
+
+#### Acompanhar a assinatura
+**Gerenciar assinatura** abre o resumo do envio: número, status, tipo, solicitante e data de criação; os **signatários** com ordem, situação, nome, e-mail e CPF; e os **eventos de auditoria** (enviado, visualizado e assinado, com data, IP e hash de evidência). Quando concluído, **Baixar assinado** entrega o PDF final.
+A visão geral de todos os envios, o consumo mensal e a cota ficam em **Administração › Documentos Legais › Documentos para Assinatura** (seção 3.3).
+
+## 8.10 Pós-admissão
 Caminho no menu: Admissão › Pós-admissão
 Lista os colaboradores admitidos e é por onde se conduz o desligamento. A tabela mostra ID, Nome, CNPJ, Centro de custos, Cargo, Data da admissão, Data da demissão e o **Documento de demissão**.
 

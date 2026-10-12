@@ -1,5 +1,5 @@
 # 3. Administração
-O menu **Administração** reúne os cadastros de empresas parceiras, a documentação legal e as rotinas de apoio do dia a dia (atas, planejamento e aniversariantes).
+O menu **Administração** reúne os cadastros de empresas parceiras, a documentação legal, o modelo da carta oferta e as rotinas de apoio do dia a dia (atas, planejamento e aniversariantes).
 
 ## 3.1 Fornecedores
 Caminho no menu: Administração › Fornecedores
@@ -58,7 +58,79 @@ Caminho no menu: … › Tipos Serviços
 Caminho no menu: … › Formas Contratos
 Duas tabelas simples, com busca por nome. Em ambas o cadastro pede apenas o **Nome** e a chave **Ativo**. Os tipos de serviço aparecem na aba Serviços do contrato; as formas de contrato classificam a modalidade contratada.
 
-## 3.3 Ata Reunião
+## 3.3 Documentos para Assinatura (assinatura digital)
+Caminho no menu: Administração › Documentos Legais › Documentos para Assinatura
+Painel de **gerenciamento da assinatura digital**. Reúne todos os documentos enviados para assinatura pelo sistema, de qualquer módulo, com a situação de cada signatário e a trilha de auditoria. Este menu aparece para as empresas com a assinatura digital habilitada.
+Documento enviado para assinatura*→*Signatário recebe o link por e-mail*→*Visualiza e assina*→*Documento concluído, com evidências
+Os documentos chegam aqui a partir de outros pontos do sistema, por exemplo a **Carta Oferta** (seção 8.1) e os documentos do **dossiê** do colaborador, em Histórico (seção 8.9).
+
+### Filtros
+- **Status:** Rascunho, Enviado, Em assinatura, Concluído, Cancelado ou Expirado.
+- **Tipo documento:** Contrato (Documentos Legais), Contrato de Trabalho, Carta Oferta, Termo de Demissão, Ficha de Encaminhamento, Termo de Confidencialidade, Opção Vale Transporte, Acordo de Compensação de Horas, Termo Salário Família, Declaração Dependentes IR, Medida Administrativa e Documento de Demissão (Aviso Prévio).
+- **Solicitante:** Quem enviou o documento para assinatura.
+- **Signatário:** Busca pelo nome, e-mail ou CPF de quem assina.
+- **Filtrar por período (criação):** Ao marcar, considera os documentos criados entre as duas datas.
+**Atualizar** aplica os filtros e **Limpar** volta ao estado inicial.
+
+### Consumo mensal de assinaturas
+O quadro mostra a **competência** (mês atual), o **limite mensal**, quantas assinaturas já foram **usadas** e quantas **restam**, além do extrato do mês por tipo de documento. **Extrato XLSX** e **Extrato PDF** baixam o detalhamento.
+
+### Configuração de cota e alertas
+1. Em **Limite mensal**, informe a quantidade máxima de assinaturas por mês. Em branco, não há limite.
+2. Em **Usuários para alerta** e **Grupos para alerta**, selecione quem deve ser avisado.
+3. Clique no botão verde de salvar.
+Os destinatários recebem alertas quando o consumo atinge **80%**, **90%** e **100%** do limite.
+
+### Cards dos documentos
+Cada card traz o número, o documento, o **selo de status**, o aviso de pendência quando ainda falta assinar, o **Solicitante**, a data de criação e a última atualização. Em **Signatários**, cada pessoa aparece com o ícone da sua situação (relógio = pendente, check = assinou) e o e-mail. **Ordem** indica se as assinaturas seguem uma sequência.
+
+### Ações do card
+- **Ver detalhes e eventos:** Abre o documento com os signatários e a trilha de auditoria.
+- **Cancelar documento:** Cancela o envio. Disponível enquanto o documento não foi concluído.
+- **Reenviar e-mail:** Manda de novo o link de assinatura aos signatários pendentes.
+- **Baixar documento assinado:** Baixa o PDF final. Disponível quando o documento está concluído.
+
+### Detalhes e eventos (auditoria)
+A janela mostra o ID, o tipo, o status, o solicitante e a data de criação. Em **Signatários**, a tabela traz a ordem, o nome, o e-mail e o status de cada um.
+Em **Eventos (auditoria)**, cada passo fica registrado com data e hora:
+- **Documento enviado:** Quem enviou e para quantos signatários.
+- **Visualizado pelo signatário:** Quem abriu o documento e o endereço IP.
+- **Assinado:** Signatário, e-mail, data e hora (UTC), endereço IP e o **hash de evidência** da assinatura.
+A trilha de auditoria é a evidência de que o documento foi enviado, visto e assinado por aquela pessoa. Guarde o documento assinado e, se precisar comprovar a assinatura, use esta tela.
+
+## 3.4 Carta Oferta - Template
+Caminho no menu: Administração › Carta Oferta - Template
+Define o texto padrão da **Carta Oferta**, o documento em que a empresa formaliza a proposta de trabalho ao candidato. É este modelo que o sistema usa ao gerar cada carta em **Admissão › Documentos › Carta Oferta** (seção 8.1).
+
+### Editar o template
+1. Informe o **Título** *.
+2. Escreva o **Conteúdo da Carta Oferta** * no editor. A barra de ferramentas permite escolher fonte e tamanho, negrito, itálico, sublinhado, alinhamento e listas.
+3. Onde o texto deve trazer um dado do candidato ou da vaga, insira um **placeholder**: clique nele no painel **Ferramentas** para copiar e cole no editor.
+4. Em **Status** *, escolha *Rascunho* enquanto estiver montando ou *Publicado* para colocar em uso.
+5. Clique em **Salvar**. Cada gravação gera uma nova versão.
+No topo, os selos mostram a **versão** aberta, o status e qual versão é a **publicada vigente**. **Restaurar padrão** traz de volta o texto original do sistema.
+
+### Placeholders
+São os campos trocados automaticamente pelos dados reais quando a carta é gerada:
+- **{{colaborador.nome}}:** Nome do candidato.
+- **{{colaborador.cpf}}:** CPF do candidato.
+- **{{colaborador.email}}:** E-mail do candidato.
+- **{{cargo}}:** Cargo da vaga.
+- **{{setor}}:** Setor informado na carta.
+- **{{projeto}}:** Projeto vinculado.
+- **{{salario}} / {{bloco_salario}}:** Salário informado na carta; o bloco traz o trecho completo de salário.
+- **{{data_inicio}}:** Data de início prevista.
+- **{{empresa.nome_fantasia}}, {{empresa.razao_social}}, {{empresa.cnpj}}:** Dados da empresa.
+- **{{data_emissao}}:** Data em que a carta é emitida.
+
+### Preview
+**Preview** mostra, ao lado, como a carta fica depois da troca dos placeholders. Por padrão usa dados simulados; ligue **Usar dados reais de um currículo** para conferir com um candidato de verdade.
+
+### Histórico de versões
+A aba **Histórico** lista as versões anteriores, com status, data e quem salvou. **Usar** carrega a versão no editor para ser ajustada e salva como nova.
+Só é possível criar cartas quando existe um template **publicado**.
+
+## 3.5 Ata Reunião
 Caminho no menu: Administração › Ata Reunião
 Registro das reuniões da equipe. A listagem tem busca por nome e o botão **+ Cadastrar Ata de Reunião**.
 1. Em **Informações**, escolha a **Área** e o **Centro de Custo**, informe o **Local** e as datas de **Início** e **Fim**.
@@ -69,11 +141,11 @@ Registro das reuniões da equipe. A listagem tem busca por nome e o botão **+ C
 - **+ Participantes** — quem esteve presente.
 3. Clique em **Cadastrar**.
 
-## 3.4 Planejamento Diário
+## 3.6 Planejamento Diário
 Caminho no menu: Administração › Planejamento Diário
 Agenda de tarefas do dia. A busca procura pelo conteúdo do planejamento. Em **+ Cadastrar Planejamento Diário**, informe a data de **Início**, descreva as **Tarefas Agendadas** e o que é **Importante**. O botão **+ Adicionar Tarefa** inclui tarefas individuais na lista.
 
-## 3.5 Aniversariantes
+## 3.7 Aniversariantes
 Caminho no menu: Administração › Aniversariantes
 Lista os aniversariantes do mês corrente, com Data, E-mail, WhatsApp e a situação do envio da mensagem de parabéns. As linhas em verde já receberam a mensagem.
 - **Buscar:** Localiza o colaborador pelo nome.

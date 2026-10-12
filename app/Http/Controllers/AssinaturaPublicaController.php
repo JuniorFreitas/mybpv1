@@ -143,6 +143,9 @@ class AssinaturaPublicaController extends Controller
 
         return view('assinatura.validar_codigo', [
             'signatario' => $signatario,
+            // Antes do código validado, o e-mail só aparece mascarado.
+            'emailMascarado' => app(\App\Services\AcessoPublico\CodigoAcessoService::class)
+                ->mascararEmail((string) $signatario->email),
             'validarCodigoUrl' => $validarCodigoUrl,
             'voltarCpfUrl' => $voltarCpfUrl,
             'empresaNome' => $empresaNome,

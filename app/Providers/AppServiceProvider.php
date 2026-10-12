@@ -38,6 +38,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        // Telas públicas de assinatura digital: cabeçalho com a logo da empresa da URL (/{apelido}/assinatura/...).
+        \Illuminate\Support\Facades\View::composer('assinatura.layout', function ($view) {
+            if (!$view->offsetExists('marca')) {
+                $view->with('marca', app(\App\Services\Marca\MarcaClienteService::class)
+                    ->dadosPorApelido(request()->segment(1)));
+            }
+        });
+
         if ($this->app->isProduction() || env('MIX_AMBIENTE') == 'prod') {
             \URL::forceScheme('https');
         }

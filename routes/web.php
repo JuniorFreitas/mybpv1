@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\CartaOferta;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', function () {
@@ -43,15 +42,8 @@ Route::post('/envia-recupera-senha', [\App\Http\Controllers\UserController::clas
 ////    dd($response);
 //});
 
-Route::get('download-checklist/{empresa}', function ($empresa) {
-    $path = CartaOferta::checklistArquivo($empresa);
-    $type = pathinfo($path, PATHINFO_EXTENSION);
-    $data = file_get_contents($path);
-
-    return response($data)
-        ->header('Content-Type', 'application/' . $type)
-        ->header('Content-Disposition', 'attachment; filename="checklist.' . $type . '"');
-})->name('download-checklist');
+Route::get('download-checklist/{empresa}', [\App\Http\Controllers\CartaOfertaController::class, 'downloadChecklist'])
+    ->name('download-checklist');
 
 Route::redirect('/', 'g/login');
 
@@ -324,6 +316,12 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                 ->name('index')->middleware('can:administracao_carta_oferta_template');
             Route::get('dados', [\App\Http\Controllers\CartaOfertaTemplateController::class, 'dados'])
                 ->name('dados')->middleware('can:administracao_carta_oferta_template');
+            Route::get('historico', [\App\Http\Controllers\CartaOfertaTemplateController::class, 'historico'])
+                ->name('historico')->middleware('can:administracao_carta_oferta_template');
+            Route::get('versao/{id}', [\App\Http\Controllers\CartaOfertaTemplateController::class, 'versao'])
+                ->name('versao')->middleware('can:administracao_carta_oferta_template');
+            Route::get('padrao', [\App\Http\Controllers\CartaOfertaTemplateController::class, 'padrao'])
+                ->name('padrao')->middleware('can:administracao_carta_oferta_template');
             Route::post('salvar', [\App\Http\Controllers\CartaOfertaTemplateController::class, 'salvar'])
                 ->name('salvar')->middleware('can:administracao_carta_oferta_template');
             Route::post('preview', [\App\Http\Controllers\CartaOfertaTemplateController::class, 'preview'])
@@ -348,6 +346,15 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::post('extrato/exportar', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'exportarExtrato'])->name('extrato-exportar')->middleware('can:administracao_documentos_legais');
             Route::post('criar-arquivo-existente', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'criarComArquivoExistente'])->name('criar-arquivo-existente')->middleware('can:administracao_documentos_legais');
             Route::get('solicitantes', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'solicitantes'])->name('solicitantes')->middleware('can:administracao_documentos_legais');
+            // Anexos privados (URLs assinadas) — antes de {id}
+            Route::get('anexo/{arquivo}', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'anexoShow'])
+                ->name('anexo-show')
+                ->middleware('signed:relative')
+                ->where('arquivo', '.*');
+            Route::get('anexoDownload/{arquivo}', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'anexoDownload'])
+                ->name('anexo-download')
+                ->middleware('signed:relative')
+                ->where('arquivo', '.*');
             Route::get('{id}/evidencias', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'exportarEvidencias'])->name('evidencias')->middleware('can:administracao_documentos_legais');
             Route::get('{id}/download-assinado', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'downloadAssinado'])->name('download-assinado')->middleware('can:administracao_documentos_legais');
             Route::get('{id}', [\App\Http\Controllers\DocumentoAssinaturaController::class, 'show'])->name('show');
@@ -996,10 +1003,11 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
 
             Route::group(['as' => 'documentos.', 'prefix' => 'documentos'], function () {
 
-                Route::group(['as' => 'cartaoferta.', 'prefix' => 'carta-oferta'], function () {
+                Route::group(['as' => 'cartaoferta.', 'prefix' => 'carta-oferta', 'middleware' => ['can:admissao_documentos_carta_oferta']], function () {
                     Route::post('atualizar', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'atualizar'])->name('atualizar'); // manter essa rota antes do resource
-                    Route::put('responder', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'responder'])->name('responder');
-                    Route::post('/enviar-email', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'enviarEmail'])->name('enviarEmail');
+                    Route::get('buscar-curriculos', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'buscarCurriculos'])->name('buscarCurriculos');
+                    Route::post('criar', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'criar'])->name('criar');
+                    Route::put('responder', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'responder'])->name('responder')->middleware('can:admissao_documentos_carta_oferta_aprova_reprova');
                     Route::post('/enviar-para-assinatura', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'enviarParaAssinatura'])->name('enviarParaAssinatura')->middleware('assinatura.digital.habilitada');
                     Route::get('/', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'index'])->name('index');
                 });
@@ -1642,6 +1650,16 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::post('acesso-clinica/atualizar', [\App\Http\Controllers\Clinica\ControleExamesController::class, 'atualizar'])->name('atualizar')->middleware('can:acesso_clinica');
         Route::resource('acesso-clinica', \App\Http\Controllers\Clinica\ControleExamesController::class)->middleware('can:acesso_clinica');
     });
+
+    // Ajuda (manual do usuário — disponível para todos autenticados)
+    Route::group(['as' => 'ajuda.', 'prefix' => 'ajuda'], function () {
+        Route::get('manual', [\App\Http\Controllers\AjudaController::class, 'index'])->name('manual');
+        Route::get('manual/conteudo', [\App\Http\Controllers\AjudaController::class, 'conteudo'])->name('manual.conteudo');
+        Route::get('manual/pdf', [\App\Http\Controllers\AjudaController::class, 'pdf'])->name('manual.pdf');
+        Route::get('manual/img/{path}', [\App\Http\Controllers\AjudaController::class, 'asset'])
+            ->where('path', '.*')
+            ->name('manual.asset');
+    });
 });
 
 
@@ -1664,13 +1682,22 @@ Route::group(['as' => 'provas.'], function () {
 Route::group(['as' => 'documentospreadmissao.'], function () {
     //Provas
     Route::group(['prefix' => '{apelido}'], function () {
-        Route::post('documentos-pre-admissao/autenticar', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'autenticar'])->name('documentos.autenticar');
-        Route::get('documentos', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'index'])->name('documentos.index');
+        Route::post('documentos-pre-admissao/solicitar-codigo', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'solicitarCodigo'])->name('documentos.solicitarCodigo')->middleware('throttle:20,1');
+        Route::post('documentos-pre-admissao/validar-codigo', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'validarCodigo'])->name('documentos.validarCodigo')->middleware('throttle:20,1');
+        Route::get('documentos/{publicId?}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'index'])->name('documentos.index')->whereUuid('publicId');
         Route::put('documentos/{curriculo_id}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'update'])->name('documentos.update');
 
 
-        Route::get('carta-oferta/{token}', [\App\Http\Controllers\CartaOfertaController::class, 'index'])->name('carta-oferta.index');
-        Route::post('carta-oferta/{token}/salvar', [\App\Http\Controllers\CartaOfertaController::class, 'salvarCartaOferta'])->name('carta-oferta.salvarCartaOferta');
+        // "verificacao" antes de {publicId}: destino do QR code do comprovante de aceite
+        Route::get('carta-oferta/verificacao', [\App\Http\Controllers\CartaOfertaController::class, 'verificacao'])->name('carta-oferta.verificacao')->middleware('throttle:30,1');
+        Route::get('carta-oferta/{publicId}', [\App\Http\Controllers\CartaOfertaController::class, 'index'])->name('carta-oferta.index');
+        Route::get('carta-oferta/{publicId}/proposta.pdf', [\App\Http\Controllers\CartaOfertaController::class, 'proposta'])->name('carta-oferta.proposta');
+        Route::get('carta-oferta/{publicId}/comprovante.pdf', [\App\Http\Controllers\CartaOfertaController::class, 'comprovante'])->name('carta-oferta.comprovante');
+        Route::post('carta-oferta/{publicId}/aceitar', [\App\Http\Controllers\CartaOfertaController::class, 'aceitar'])->name('carta-oferta.aceitar')->middleware('throttle:20,1');
+        Route::post('carta-oferta/{publicId}/recusar', [\App\Http\Controllers\CartaOfertaController::class, 'recusar'])->name('carta-oferta.recusar')->middleware('throttle:20,1');
+        Route::post('carta-oferta/{publicId}/solicitar-codigo', [\App\Http\Controllers\CartaOfertaController::class, 'solicitarCodigo'])->name('carta-oferta.solicitarCodigo')->middleware('throttle:20,1');
+        Route::post('carta-oferta/{publicId}/validar-codigo', [\App\Http\Controllers\CartaOfertaController::class, 'validarCodigo'])->name('carta-oferta.validarCodigo')->middleware('throttle:20,1');
+        Route::post('carta-oferta/{publicId}/salvar', [\App\Http\Controllers\CartaOfertaController::class, 'salvarCartaOferta'])->name('carta-oferta.salvarCartaOferta');
 
         Route::get('assinatura/{token}', [\App\Http\Controllers\AssinaturaPublicaController::class, 'index'])->name('assinatura.publica.index');
         Route::get('assinatura/verificacao', [\App\Http\Controllers\VerificacaoAssinaturaController::class, 'index'])->name('assinatura.verificacao');
@@ -1683,9 +1710,9 @@ Route::group(['as' => 'documentospreadmissao.'], function () {
     });
 
     Route::post('documentos/uploadAnexos', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'uploadAnexos'])->name('documentos.upload-anexos');
-    Route::get('documentos/anexo/{arquivo}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'anexoShow'])->name('documentos.anexo-show');
-    Route::get('documentos/anexoDownload/{arquivo}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'download'])->name('documentos.anexo-download');
-    Route::delete('documentos/anexo/{arquivo}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'anexoDelete'])->name('documentos.anexo-delete');
+    Route::get('documentos/anexo/{arquivo}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'anexoShow'])->name('documentos.anexo-show')->middleware('signed:relative');
+    Route::get('documentos/anexoDownload/{arquivo}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'download'])->name('documentos.anexo-download')->middleware('signed:relative');
+    Route::delete('documentos/anexo/{arquivo}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'anexoDelete'])->name('documentos.anexo-delete')->middleware('signed:relative');
 });
 
 //Rotas de pesquisa clima protegidas

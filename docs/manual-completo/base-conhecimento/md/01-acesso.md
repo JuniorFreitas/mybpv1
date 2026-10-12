@@ -29,13 +29,13 @@ Após o login o sistema abre o painel inicial, com a Missão, a Visão, os Valor
 - **Barra superior**: botão para recolher o menu, downloads, notificações, chat, tela cheia e o menu do seu usuário.
 
 ## 1.3 Menu lateral
-- **Administração:** Fornecedores, documentos legais, atas de reunião, planejamento diário e aniversariantes.
+- **Administração:** Fornecedores, documentos legais, assinatura digital, template da carta oferta, atas de reunião, planejamento diário e aniversariantes.
 - **Cadastro:** Áreas, departamentos, centros de custo, benefícios, cargos, vagas, projetos, exames, treinamentos, provas, avaliações e customizações.
 - **Planejamento:** Requisição de vaga, movimentações (férias, demissão, mudança de cargo, transferência, valor extra) e mobilização.
 - **Currículos:** Recrutamento e candidatos selecionados.
 - **Entrevistas:** Pareceres, entrevistas e resultado integrado.
 - **Controle de Ponto:** Regras, perímetros, escalas, ponto eletrônico, ajuste de jornadas e folhas de ponto.
-- **Admissão:** Pré-admissão, exames, processo de admissão, apontamentos, histórico e pós-admissão.
+- **Admissão:** Carta oferta, pré-admissão, exames, processo de admissão, apontamentos, histórico e pós-admissão.
 - **Minhas Avaliações:** Avaliações de desempenho e de experiência que cabem a você.
 - **Ocorrências:** Registro e acompanhamento de ocorrências internas.
 - **Weekly Report:** Quadros de tarefas (kanban) para acompanhar as entregas da semana.

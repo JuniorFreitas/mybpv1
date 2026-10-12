@@ -163,7 +163,7 @@
         <!-- Rodapé -->
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #888; font-size: 12px;">
             <div style="margin-bottom: 15px;">
-                <img src="https://sistema.mybp.com.br/images/bpin_mybp_color.svg" alt="Logo MyBPIN" style="height: 35px; width: auto;">
+                @include('layouts.mail.logo-mybpin', ['altura' => '35px', 'arquivo' => 'mybpin-logo-fundo-claro.png'])
             </div>
             <p>Este é um relatório automático gerado pelo Sistema MyBPIN.</p>
             <p style="margin: 5px 0;"><strong>MyBPIN - Business Partners Serviços Empresariais</strong></p>

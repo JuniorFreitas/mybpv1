@@ -352,7 +352,7 @@
             <div
                 style="background: #f8f9fb; border: 1px solid #ccc; border-radius: 10px; padding: 20px; max-width: 850px; margin: 20px auto; font-family: 'Segoe UI', sans-serif;">
                 <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                    <img src="https://sistema.mybp.com.br/images/bpin_mybp_color.svg" alt="Logo BPIN"
+                    <img src="{{ asset('images/mybpin-logo-fundo-claro.webp') }}" alt="Logo MyBPIN"
                          style="height: 60px; margin-right: 15px;"/>
                     <div>
                         <h2 style="font-weight: bold;margin: 0px;color: rgb(26, 43, 76);text-align: center;">🔒

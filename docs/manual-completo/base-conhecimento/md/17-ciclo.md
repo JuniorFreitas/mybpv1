@@ -8,7 +8,7 @@ Este roteiro liga os módulos na ordem em que normalmente são usados, da necess
 - #: 6 | Etapa: Acompanhar selecionados | Onde: Currículos › Selecionados | O que acontece: Status, prova e etapa de cada candidato.
 - #: 7 | Etapa: Entrevistar e emitir pareceres | Onde: Entrevistas › Parecer RH e demais pareceres | O que acontece: Pareceres de RH, rota, entrevista técnica e teste prático.
 - #: 8 | Etapa: Consolidar e encaminhar | Onde: Entrevistas › Resultado Integrado | O que acontece: Encaminhamento para documentos, exame e treinamento.
-- #: 9 | Etapa: Conferir documentos | Onde: Admissão › Pré-admissão | O que acontece: Conferência dos anexos enviados pelo candidato.
+- #: 9 | Etapa: Enviar a carta oferta e conferir documentos | Onde: Admissão › Documentos › Carta Oferta e Pré-admissão | O que acontece: Proposta aceita pelo candidato e anexos enviados por ele, conferidos pelo RH.
 - #: 10 | Etapa: Exames | Onde: Admissão › Controle de Exames | O que acontece: Encaminhamento à clínica e registro do ASO.
 - #: 11 | Etapa: Treinamentos | Onde: Treinamento › Carteira/Etiquetas ou Importação | O que acontece: Lançamento dos treinamentos e emissão da carteira.
 - #: 12 | Etapa: Admitir | Onde: Admissão › Processo | O que acontece: Ação Admitir — ou Admissão avulsa para quem não veio do recrutamento.

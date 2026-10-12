@@ -1,5 +1,5 @@
 <h1 id="administracao">3. Administração</h1>
-<p class="intro">O menu <b>Administração</b> reúne os cadastros de empresas parceiras, a documentação legal e as rotinas de apoio do dia a dia (atas, planejamento e aniversariantes).</p>
+<p class="intro">O menu <b>Administração</b> reúne os cadastros de empresas parceiras, a documentação legal, o modelo da carta oferta e as rotinas de apoio do dia a dia (atas, planejamento e aniversariantes).</p>
 
 <h2>3.1 Fornecedores</h2>
 <span class="caminho">Administração › Fornecedores</span>
@@ -82,7 +82,93 @@
 <figure class="media"><img src="img/adm-tipo-servico-form.jpg" alt="Tipo de serviço"><figcaption>Cadastro de tipo de serviço</figcaption></figure>
 <figure class="media"><img src="img/adm-forma-contrato-form.jpg" alt="Forma de contrato"><figcaption>Cadastro de forma de contrato</figcaption></figure>
 
-<h2>3.3 Ata Reunião</h2>
+<h2>3.3 Documentos para Assinatura (assinatura digital)</h2>
+<span class="caminho">Administração › Documentos Legais › Documentos para Assinatura</span>
+<p>Painel de <b>gerenciamento da assinatura digital</b>. Reúne todos os documentos enviados para assinatura pelo sistema, de qualquer módulo, com a situação de cada signatário e a trilha de auditoria. Este menu aparece para as empresas com a assinatura digital habilitada.</p>
+<div class="fluxo"><span>Documento enviado para assinatura</span><i>→</i><span>Signatário recebe o link por e-mail</span><i>→</i><span>Visualiza e assina</span><i>→</i><span>Documento concluído, com evidências</span></div>
+<p>Os documentos chegam aqui a partir de outros pontos do sistema, por exemplo a <b>Carta Oferta</b> (seção 8.1) e os documentos do <b>dossiê</b> do colaborador, em Histórico (seção 8.9).</p>
+<figure><img src="img/adm-assinatura-lista.jpg" alt="Documentos para Assinatura"><figcaption>Documentos para Assinatura — filtros, consumo mensal e cota</figcaption></figure>
+<h3>Filtros</h3>
+<table class="filtros">
+  <tr><th>Filtro</th><th>O que faz</th></tr>
+  <tr><td>Status</td><td><i>Rascunho</i>, <i>Enviado</i>, <i>Em assinatura</i>, <i>Concluído</i>, <i>Cancelado</i> ou <i>Expirado</i>.</td></tr>
+  <tr><td>Tipo documento</td><td>Contrato (Documentos Legais), Contrato de Trabalho, Carta Oferta, Termo de Demissão, Ficha de Encaminhamento, Termo de Confidencialidade, Opção Vale Transporte, Acordo de Compensação de Horas, Termo Salário Família, Declaração Dependentes IR, Medida Administrativa e Documento de Demissão (Aviso Prévio).</td></tr>
+  <tr><td>Solicitante</td><td>Quem enviou o documento para assinatura.</td></tr>
+  <tr><td>Signatário</td><td>Busca pelo nome, e-mail ou CPF de quem assina.</td></tr>
+  <tr><td>Filtrar por período (criação)</td><td>Ao marcar, considera os documentos criados entre as duas datas.</td></tr>
+</table>
+<p><b class="btn">Atualizar</b> aplica os filtros e <b class="btn">Limpar</b> volta ao estado inicial.</p>
+<h3>Consumo mensal de assinaturas</h3>
+<p>O quadro mostra a <b>competência</b> (mês atual), o <b>limite mensal</b>, quantas assinaturas já foram <b>usadas</b> e quantas <b>restam</b>, além do extrato do mês por tipo de documento. <b class="btn">Extrato XLSX</b> e <b class="btn">Extrato PDF</b> baixam o detalhamento.</p>
+<h3>Configuração de cota e alertas</h3>
+<ol>
+  <li>Em <b>Limite mensal</b>, informe a quantidade máxima de assinaturas por mês. Em branco, não há limite.</li>
+  <li>Em <b>Usuários para alerta</b> e <b>Grupos para alerta</b>, selecione quem deve ser avisado.</li>
+  <li>Clique no botão verde de salvar.</li>
+</ol>
+<p>Os destinatários recebem alertas quando o consumo atinge <b>80%</b>, <b>90%</b> e <b>100%</b> do limite.</p>
+<h3>Cards dos documentos</h3>
+<p>Cada card traz o número, o documento, o <b>selo de status</b>, o aviso de pendência quando ainda falta assinar, o <b>Solicitante</b>, a data de criação e a última atualização. Em <b>Signatários</b>, cada pessoa aparece com o ícone da sua situação (relógio = pendente, check = assinou) e o e-mail. <b>Ordem</b> indica se as assinaturas seguem uma sequência.</p>
+<figure><img src="img/adm-assinatura-cards.jpg" alt="Cards de documentos"><figcaption>Documentos em assinatura e concluídos</figcaption></figure>
+<h3>Ações do card</h3>
+<table class="filtros">
+  <tr><th>Ação (menu ⋮)</th><th>O que faz</th></tr>
+  <tr><td>Ver detalhes e eventos</td><td>Abre o documento com os signatários e a trilha de auditoria.</td></tr>
+  <tr><td>Cancelar documento</td><td>Cancela o envio. Disponível enquanto o documento não foi concluído.</td></tr>
+  <tr><td>Reenviar e-mail</td><td>Manda de novo o link de assinatura aos signatários pendentes.</td></tr>
+  <tr><td>Baixar documento assinado</td><td>Baixa o PDF final. Disponível quando o documento está concluído.</td></tr>
+</table>
+<figure><img src="img/adm-assinatura-acoes.jpg" alt="Ações do documento"><figcaption>Ações de um documento concluído</figcaption></figure>
+<h3>Detalhes e eventos (auditoria)</h3>
+<p>A janela mostra o ID, o tipo, o status, o solicitante e a data de criação. Em <b>Signatários</b>, a tabela traz a ordem, o nome, o e-mail e o status de cada um.</p>
+<figure><img src="img/adm-assinatura-detalhe-1.jpg" alt="Detalhes do documento"><figcaption>Documento para assinatura — signatários e eventos</figcaption></figure>
+<p>Em <b>Eventos (auditoria)</b>, cada passo fica registrado com data e hora:</p>
+<table class="filtros">
+  <tr><th>Evento</th><th>O que registra</th></tr>
+  <tr><td>Documento enviado</td><td>Quem enviou e para quantos signatários.</td></tr>
+  <tr><td>Visualizado pelo signatário</td><td>Quem abriu o documento e o endereço IP.</td></tr>
+  <tr><td>Assinado</td><td>Signatário, e-mail, data e hora (UTC), endereço IP e o <b>hash de evidência</b> da assinatura.</td></tr>
+</table>
+<figure><img src="img/adm-assinatura-detalhe-2.jpg" alt="Eventos de auditoria"><figcaption>Trilha de auditoria completa</figcaption></figure>
+<div class="nota">A trilha de auditoria é a evidência de que o documento foi enviado, visto e assinado por aquela pessoa. Guarde o documento assinado e, se precisar comprovar a assinatura, use esta tela.</div>
+
+<h2>3.4 Carta Oferta - Template</h2>
+<span class="caminho">Administração › Carta Oferta - Template</span>
+<p>Define o texto padrão da <b>Carta Oferta</b>, o documento em que a empresa formaliza a proposta de trabalho ao candidato. É este modelo que o sistema usa ao gerar cada carta em <b>Admissão › Documentos › Carta Oferta</b> (seção 8.1).</p>
+<figure><img src="img/adm-carta-template.jpg" alt="Template da Carta Oferta"><figcaption>Template da Carta Oferta — editor e placeholders</figcaption></figure>
+<h3>Editar o template</h3>
+<ol>
+  <li>Informe o <b>Título</b> <span class="req">*</span>.</li>
+  <li>Escreva o <b>Conteúdo da Carta Oferta</b> <span class="req">*</span> no editor. A barra de ferramentas permite escolher fonte e tamanho, negrito, itálico, sublinhado, alinhamento e listas.</li>
+  <li>Onde o texto deve trazer um dado do candidato ou da vaga, insira um <b>placeholder</b>: clique nele no painel <b>Ferramentas</b> para copiar e cole no editor.</li>
+  <li>Em <b>Status</b> <span class="req">*</span>, escolha <i>Rascunho</i> enquanto estiver montando ou <i>Publicado</i> para colocar em uso.</li>
+  <li>Clique em <b class="btn">Salvar</b>. Cada gravação gera uma nova versão.</li>
+</ol>
+<p>No topo, os selos mostram a <b>versão</b> aberta, o status e qual versão é a <b>publicada vigente</b>. <b class="btn">Restaurar padrão</b> traz de volta o texto original do sistema.</p>
+<h3>Placeholders</h3>
+<p>São os campos trocados automaticamente pelos dados reais quando a carta é gerada:</p>
+<table class="filtros">
+  <tr><th>Placeholder</th><th>É substituído por</th></tr>
+  <tr><td><code>{{colaborador.nome}}</code></td><td>Nome do candidato.</td></tr>
+  <tr><td><code>{{colaborador.cpf}}</code></td><td>CPF do candidato.</td></tr>
+  <tr><td><code>{{colaborador.email}}</code></td><td>E-mail do candidato.</td></tr>
+  <tr><td><code>{{cargo}}</code></td><td>Cargo da vaga.</td></tr>
+  <tr><td><code>{{setor}}</code></td><td>Setor informado na carta.</td></tr>
+  <tr><td><code>{{projeto}}</code></td><td>Projeto vinculado.</td></tr>
+  <tr><td><code>{{salario}}</code> / <code>{{bloco_salario}}</code></td><td>Salário informado na carta; o bloco traz o trecho completo de salário.</td></tr>
+  <tr><td><code>{{data_inicio}}</code></td><td>Data de início prevista.</td></tr>
+  <tr><td><code>{{empresa.nome_fantasia}}</code>, <code>{{empresa.razao_social}}</code>, <code>{{empresa.cnpj}}</code></td><td>Dados da empresa.</td></tr>
+  <tr><td><code>{{data_emissao}}</code></td><td>Data em que a carta é emitida.</td></tr>
+</table>
+<h3>Preview</h3>
+<p><b class="btn">Preview</b> mostra, ao lado, como a carta fica depois da troca dos placeholders. Por padrão usa dados simulados; ligue <b>Usar dados reais de um currículo</b> para conferir com um candidato de verdade.</p>
+<figure><img src="img/adm-carta-template-preview.jpg" alt="Preview do template"><figcaption>Preview com dados simulados</figcaption></figure>
+<h3>Histórico de versões</h3>
+<p>A aba <b>Histórico</b> lista as versões anteriores, com status, data e quem salvou. <b class="btn">Usar</b> carrega a versão no editor para ser ajustada e salva como nova.</p>
+<figure class="media"><img src="img/adm-carta-template-historico.jpg" alt="Histórico de versões"><figcaption>Histórico de versões do template</figcaption></figure>
+<div class="nota">Só é possível criar cartas quando existe um template <b>publicado</b>.</div>
+
+<h2>3.5 Ata Reunião</h2>
 <span class="caminho">Administração › Ata Reunião</span>
 <p>Registro das reuniões da equipe. A listagem tem busca por nome e o botão <b class="btn">+ Cadastrar Ata de Reunião</b>.</p>
 <ol>
@@ -99,12 +185,12 @@
 </ol>
 <figure><img src="img/adm-ata-form.jpg" alt="Ata de reunião"><figcaption>Cadastro de ata de reunião</figcaption></figure>
 
-<h2>3.4 Planejamento Diário</h2>
+<h2>3.6 Planejamento Diário</h2>
 <span class="caminho">Administração › Planejamento Diário</span>
 <p>Agenda de tarefas do dia. A busca procura pelo conteúdo do planejamento. Em <b class="btn">+ Cadastrar Planejamento Diário</b>, informe a data de <b>Início</b>, descreva as <b>Tarefas Agendadas</b> e o que é <b>Importante</b>. O botão <b class="btn">+ Adicionar Tarefa</b> inclui tarefas individuais na lista.</p>
 <figure><img src="img/adm-planejamento-form.jpg" alt="Planejamento diário"><figcaption>Cadastro de planejamento diário</figcaption></figure>
 
-<h2>3.5 Aniversariantes</h2>
+<h2>3.7 Aniversariantes</h2>
 <span class="caminho">Administração › Aniversariantes</span>
 <p>Lista os aniversariantes do mês corrente, com Data, E-mail, WhatsApp e a situação do envio da mensagem de parabéns. As linhas em verde já receberam a mensagem.</p>
 <figure><img src="img/adm-aniversariantes.jpg" alt="Aniversariantes"><figcaption>Aniversariantes do mês</figcaption></figure>

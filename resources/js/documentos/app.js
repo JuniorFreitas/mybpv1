@@ -1,49 +1,44 @@
 import { createApp } from 'vue'
 import { registerGlobals } from '../registerGlobals'
 import Documento from '../components/documento/Documento'
+import AcessoPorCodigo from '../components/publico/AcessoPorCodigo.vue'
 
 const app = createApp({
     components: {
-        Documento
+        Documento,
+        AcessoPorCodigo
     },
     data() {
         return {
-            autenticado: false,
-            preload: true,
-            curriculo: null,
-
-            formUser: {
-                cpf: '',
-                nascimento: '',
-                apelido: ''
+            apelido: '',
+            dados: {
+                autenticado: false,
+                public_id: null,
+                curriculo: null,
+                termo: null
             }
         }
     },
+    computed: {
+        urlBase() {
+            return `${URL_SITE}/${this.apelido}/documentos-pre-admissao`
+        },
+        // Link com public_id: o backend confere se o CPF é o do link.
+        extras() {
+            return this.dados.public_id ? { public_id: this.dados.public_id } : {}
+        }
+    },
     mounted() {
-        this.formVinculoDefault = _.cloneDeep(this.formVinculo) //copia
-        const pathArray = window.location.pathname.split('/')
-        this.formUser.apelido = pathArray[1]
+        this.apelido = window.location.pathname.split('/')[1] || ''
+        const raw = document.getElementById('dd')
+        if (raw) {
+            this.dados = Object.assign(this.dados, JSON.parse(raw.value || '{}'))
+            raw.remove()
+        }
     },
     methods: {
-        autenticar() {
-            this.autenticado = false
-            this.preloadAutenticacao = true
-            axios
-                .post(`${URL_SITE}/${this.formUser.apelido}/documentos-pre-admissao/autenticar`, this.formUser)
-                .then((response) => {
-                    let data = response.data
-                    this.curriculo = data.curriculo
-                    this.autenticado = data.autenticado
-                    setTimeout(() => {
-                        $('#componenteDocumentos').modal('show')
-                    }, 100)
-
-                    this.preloadAutenticacao = false
-                })
-                .catch((error) => {
-                    this.autenticado = false
-                    this.preloadAutenticacao = false
-                })
+        aoAutenticar(payload) {
+            this.dados = Object.assign(this.dados, payload, { autenticado: true })
         }
     }
 })

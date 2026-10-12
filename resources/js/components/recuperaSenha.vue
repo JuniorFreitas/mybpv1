@@ -1,7 +1,7 @@
 <template>
     <div class="card">
         <div class="card-header text-center">
-            <img src="https://sistema.mybp.com.br/images/bpin_mybp_color.svg" class="" alt="logo_bpse" style="height: 100px" />
+            <img src="/images/mybpin-logo-fundo-claro.webp" class="" alt="MyBPIN" style="height: 100px" />
             <h4 class="text-center">Recuperação de Senha</h4>
         </div>
         <div class="card-body">

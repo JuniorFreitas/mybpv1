@@ -77,33 +77,59 @@ class CartaOferta extends Model
 
     protected $fillable = [
         'token',
+        'public_id',
         'empresa_id',
+        'user_id',
         'curriculo_id',
         'feedback_id',
         'vagas_abertas_id',
         'vaga_projeto_id',
         'arquivo_id',
+        'proposta_arquivo_id',
+        'proposta_hash',
         'status',
         'local',
+        'setor',
+        'salario',
+        'data_inicio',
+        'acesso_codigo_hash',
+        'acesso_codigo_expira_em',
+        'acesso_codigo_usado_em',
         'logs',
     ];
 
     protected $casts = [
         'id' => 'int',
         'token' => 'string',
+        'public_id' => 'string',
         'empresa_id' => 'int',
+        'user_id' => 'int',
         'curriculo_id' => 'int',
         'feedback_id' => 'int',
         'vagas_abertas_id' => 'int',
         'vaga_projeto_id' => 'int',
         'arquivo_id' => 'int',
+        'proposta_arquivo_id' => 'int',
+        'proposta_hash' => 'string',
         'status' => 'string',
         'local' => 'string',
+        'setor' => 'string',
+        'salario' => 'string',
+        'data_inicio' => 'date',
+        'acesso_codigo_hash' => 'string',
+        'acesso_codigo_expira_em' => 'datetime',
+        'acesso_codigo_usado_em' => 'datetime',
         'logs' => 'json',
+    ];
+
+    protected $hidden = [
+        'acesso_codigo_hash',
+        'logs',
     ];
 
     protected $appends = [
         'ultima_atualizacao',
+        'data_inicio_br',
     ];
 
     public function getUltimaAtualizacaoAttribute()
@@ -111,11 +137,21 @@ class CartaOferta extends Model
         return (new DataHora($this->updated_at))->dataHoraCompleta();
     }
 
+    public function getDataInicioBrAttribute()
+    {
+        if (!$this->data_inicio) {
+            return null;
+        }
+
+        return (new DataHora($this->data_inicio))->dataCompleta();
+    }
+
     const STATUS_PENDENTE_ANEXO = 'Pendente Anexo';
     const STATUS_AGUARDANDO_RH = 'Aguardando RH';
     const STATUS_ACEITO_RH = 'Aceito pelo RH';
     const STATUS_RECUSADO_RH = 'Recusado pelo RH';
     const STATUS_EXPIRADO = 'Expirado';
+    const STATUS_RECUSADO_CANDIDATO = 'Recusado pelo candidato';
 
     const LOCAL_MYBP = 'MyBPIN';
     const LOCAL_SGI = 'SGI';
@@ -125,6 +161,7 @@ class CartaOferta extends Model
         self::STATUS_AGUARDANDO_RH,
         self::STATUS_ACEITO_RH,
         self::STATUS_RECUSADO_RH,
+        self::STATUS_RECUSADO_CANDIDATO,
         self::STATUS_EXPIRADO,
     ];
 
@@ -136,6 +173,11 @@ class CartaOferta extends Model
     public function empresa()
     {
         return $this->hasOne(Cliente::class, 'id', 'empresa_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
     public function curriculo()
@@ -158,14 +200,26 @@ class CartaOferta extends Model
         return $this->hasOne(VagaProjeto::class, 'id', 'vaga_projeto_id');
     }
 
+    public function aceite()
+    {
+        return $this->hasOne(CartaOfertaAceite::class, 'carta_oferta_id');
+    }
+
     public function anexo()
     {
         return $this->hasOne(Arquivo::class, 'id', 'arquivo_id');
     }
 
-    public static function checklistArquivo($empresa_apelido)
+    public static function checklistArquivo($empresa_apelido): string
     {
-        return env('AWS_URL') . "/public/checklist_{$empresa_apelido}.pdf";
+        return rtrim((string) env('AWS_URL'), '/') . '/' . self::checklistStorageKey($empresa_apelido);
+    }
+
+    public static function checklistStorageKey(string $empresaApelido): string
+    {
+        $apelido = preg_replace('/[^a-zA-Z0-9_\-]/', '', $empresaApelido) ?: 'empresa';
+
+        return "public/checklist_{$apelido}.pdf";
     }
 
 }

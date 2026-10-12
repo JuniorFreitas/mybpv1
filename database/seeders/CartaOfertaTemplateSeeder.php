@@ -10,7 +10,7 @@ class CartaOfertaTemplateSeeder extends Seeder
 {
     public function run()
     {
-        $templateHtml = $this->templatePadrao();
+        $templateHtml = CartaOfertaTemplate::htmlPadrao();
 
         Cliente::withoutGlobalScopes()->select(['id'])->chunkById(200, function ($clientes) use ($templateHtml) {
             foreach ($clientes as $cliente) {
@@ -30,19 +30,5 @@ class CartaOfertaTemplateSeeder extends Seeder
                 ]);
             }
         });
-    }
-
-    protected function templatePadrao(): string
-    {
-        return <<<HTML
-<p style="text-align: center; font-weight: bold; text-transform: uppercase;">CARTA OFERTA</p>
-<p>Prezado(a) <strong>{{colaborador.nome}}</strong>,</p>
-<p>Conforme processo seletivo, temos o prazer de formalizar a presente carta oferta para o cargo de <strong>{{cargo}}</strong>.</p>
-<p>Salario: <strong>{{salario}}</strong></p>
-<p>Data de inicio prevista: <strong>{{data_inicio}}</strong></p>
-<p>Ao assinar este documento, voce declara estar ciente e de acordo com as condicoes apresentadas.</p>
-<p>Data: {{data_emissao}}</p>
-<p style="text-align: center;">{{empresa.razao_social}}</p>
-HTML;
     }
 }

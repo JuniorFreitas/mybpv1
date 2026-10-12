@@ -786,6 +786,18 @@ class AssinaturaDigitalService
     }
 
     /**
+     * Mesma geolocalização usada na assinatura, para outros atos eletrônicos (ex.: aceite da carta oferta).
+     *
+     * @return array{dados: array, texto: string}
+     */
+    public function localPorIp(?string $ip): array
+    {
+        $dados = $this->obterGeolocalizacaoPorIp((string) $ip);
+
+        return ['dados' => $dados, 'texto' => $this->formatarLocalGeolocalizacao($dados)];
+    }
+
+    /**
      * Obtém geolocalização aproximada (cidade, estado, país) a partir do IP.
      * Usa ipinfo.io (HTTPS, sem chave). Fallback para ip-api.com (HTTP). Não falha a assinatura se as APIs estiverem indisponíveis.
      *

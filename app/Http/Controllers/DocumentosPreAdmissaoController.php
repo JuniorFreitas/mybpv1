@@ -7,89 +7,196 @@ use App\Models\Cliente;
 use App\Models\Curriculo;
 use App\Models\DocumentosCurriculosAdmissaoEmpresa;
 use App\Models\DocumentosPreAdmissao;
+use App\Models\ResultadoIntegrado;
 use App\Models\Sistema;
 use App\Models\User;
+use App\Jobs\JobComprovanteDocumentosPreAdmissao;
+use App\Services\AcessoPublico\AuditoriaAcessoService;
+use App\Services\Marca\MarcaClienteService;
+use App\Services\Preadmissao\AnexoPreAdmissaoAcessoService;
+use App\Services\Preadmissao\DocumentosPreAdmissaoAcessoService;
+use App\Services\Preadmissao\TermoDocumentosPreAdmissao;
 use DB;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
+use RuntimeException;
 
 class DocumentosPreAdmissaoController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\View\View
+     * Tela pública do candidato: `/{apelido}/documentos` (link geral) ou `/{apelido}/documentos/{publicId}`.
      */
-    public function index()
+    public function index(Request $request, DocumentosPreAdmissaoAcessoService $acesso, MarcaClienteService $marca, ?string $apelido = null, ?string $publicId = null)
     {
         auth()->logout();
-        $empresaId = $this->getEmpresa();
-        if (is_null($empresaId)) {
+        $empresa = $acesso->encontrarEmpresa((string) $request->segment(1));
+        if (!$empresa) {
             abort(404);
         }
-        return view('documentos.index');
-    }
 
-    protected function getEmpresa()
-    {
-        return DB::table('clientes')->select('id')->whereApelido(request()->segment(1))->first();
-    }
+        $payload = ['autenticado' => false, 'public_id' => $publicId];
+        $sessao = $this->sessaoDoLink($request, $acesso, $empresa, $publicId);
 
-    public function autenticar(Request $request)
-    {
-        try {
-            $empresaId = $this->getEmpresa()->id;
-            $cpf = Sistema::transformCpfCnpj($request->cpf);
-
-            $dataNascimento = Sistema::dataTransform($request->nascimento);
-            if (!Sistema::validaCPF($cpf)) {
-                return response()->json(['msg' => 'CPF inválido'], 400);
-            }
-
-            $candidato = Curriculo::withoutGlobalScopes()->whereCpf($cpf)
-                ->whereNascimento((new DataHora($dataNascimento))->dataInsert())
-                ->whereHas('Feedback', function ($q) use ($empresaId) {
-                    $q->withoutGlobalScopes();
-                    $q->whereEmpresaId($empresaId);
-                    $q->whereHas('ResultadoIntegrado', function ($qu) {
-                        $qu->whereDocumentosEntregue(true);
-                    });
-                })->with(['Telefones'])
-                ->first();
-
-
-            $candidato->docs_curriculo_pre_adm = DocumentosCurriculosAdmissaoEmpresa::getDocumentoCurriculoAdmissaoEmpresa($empresaId)
-                ->transform(function ($doc) use ($candidato) {
-                    $doc->docs_curriculo_anexos = \Illuminate\Support\Facades\DB::table('documentos_curriculos')
-                        ->whereTipo($doc->tipo)
-                        ->where('curriculo_id', $candidato->id)
-                        ->join('arquivos', 'arquivos.id', '=', 'documentos_curriculos.arquivo_id')
-                        ->get()->transform(function ($doc) {
-                            $doc->url = "";
-                            $doc->url_download = "";
-                            if (in_array($doc->disco, Arquivo::LISTAGEM_DISCOS)) {
-                                $doc->url = config('filesystems.disks.' . $doc->disco . '.urlShow') . "/{$doc->file}";
-                                $doc->urlDownload = config('filesystems.disks.' . $doc->disco . '.urlDownload') . "/{$doc->file}";
-                                $doc->urlThumb = config('filesystems.disks.' . $doc->disco . '.urlThumb') . "/{$doc->file}";
-                            };
-                            return $doc;
-                        });
-                    $doc->docs_curriculo_anexosDelete = [];
-                    $doc->qnt_anexos = count($doc->docs_curriculo_anexos);
-                    return $doc;
-                });
-
-            if (is_null($candidato)) {
-                return response()->json(['msg' => 'Não foi possivel autenticar, CPF e/ou Data de Nascimento inválido. Ou você já inseriu todos os documentos.', 'autenticado' => false], 400);
+        if ($sessao) {
+            [$dadosSessao, $registro] = $sessao;
+            if (!empty($dadosSessao['autenticado'])) {
+                $payload = $acesso->payloadAutenticado($registro, (int) $empresa->id) + ['public_id' => $publicId];
+                app(AnexoPreAdmissaoAcessoService::class)->liberarCandidato($request, (int) $acesso->curriculoId($registro));
             } else {
-                return response()->json(['curriculo' => $candidato, 'autenticado' => true]);
+                $payload += [
+                    'desafio_pendente' => true,
+                    'email_mascarado' => $acesso->emailMascarado($registro),
+                    'acesso' => $acesso->statusAcesso($registro),
+                ];
             }
-        } catch (\Exception $e) {
-            Sistema::LogFormatado($request->input());
-            return response()->json(['msg' => 'Erro ao buscar candidato'], 400);
         }
 
+        $payload['termo'] = app(TermoDocumentosPreAdmissao::class)->montar($empresa);
 
+        return view('documentos.index', [
+            'payload' => $payload,
+            'marca' => $marca->dados($empresa),
+        ]);
+    }
+
+    public function solicitarCodigo(Request $request, DocumentosPreAdmissaoAcessoService $acesso)
+    {
+        $request->validate([
+            'cpf' => 'nullable|string|min:11|max:20',
+            'public_id' => 'nullable|uuid',
+        ]);
+
+        $empresa = $acesso->encontrarEmpresa((string) $request->segment(1));
+        if (!$empresa) {
+            return response()->json(['message' => 'Empresa não encontrada.'], 404);
+        }
+
+        $publicId = $request->input('public_id');
+        $chave = $this->sessionKey($empresa->apelido);
+        $registro = null;
+
+        try {
+            if ($request->filled('cpf')) {
+                // "Já recebi o código": só confere o CPF, sem enviar outro código.
+                $jaTemCodigo = $request->boolean('ja_tenho_codigo');
+                $resultado = $jaTemCodigo
+                    ? $acesso->confirmarCpf($empresa, $request->input('cpf'), $publicId)
+                    : $acesso->solicitarCodigo($empresa, $request->input('cpf'), $publicId);
+                $registro = $resultado['registro'];
+                session([$chave => ['resultado_id' => $registro->id, 'autenticado' => false]]);
+                $evento = $jaTemCodigo ? AuditoriaAcessoService::EVENTO_CPF_CONFIRMADO : AuditoriaAcessoService::EVENTO_CODIGO_SOLICITADO;
+                $this->auditar($request, $acesso, $empresa, $evento, $registro, [
+                    'email_mascarado' => $resultado['resposta']['email_mascarado'],
+                ]);
+
+                return response()->json($resultado['resposta'], 200);
+            }
+
+            // Reenvio: só para quem já confirmou o CPF nesta sessão.
+            $sessao = $this->sessaoDoLink($request, $acesso, $empresa, $publicId);
+            if (!$sessao) {
+                return response()->json(['message' => 'Informe seu CPF para receber o código.'], 422);
+            }
+            $registro = $sessao[1];
+            $resposta = $acesso->reenviarCodigo($registro);
+            $this->auditar($request, $acesso, $empresa, AuditoriaAcessoService::EVENTO_CODIGO_REENVIADO, $registro, [
+                'email_mascarado' => $resposta['email_mascarado'],
+            ]);
+
+            return response()->json($resposta, 200);
+        } catch (RuntimeException $e) {
+            $this->auditar($request, $acesso, $empresa, AuditoriaAcessoService::EVENTO_CODIGO_NEGADO, $registro, [
+                'cpf' => $request->input('cpf'),
+                'dados' => ['motivo' => $e->getMessage(), 'public_id' => $publicId],
+            ]);
+
+            return response()->json([
+                'message' => $e->getMessage(),
+                'acesso' => $registro && session($chave) ? $acesso->statusAcesso($registro) : null,
+            ], 422);
+        }
+    }
+
+    public function validarCodigo(Request $request, DocumentosPreAdmissaoAcessoService $acesso)
+    {
+        $request->validate([
+            'codigo' => 'required|string|min:8|max:12',
+            'public_id' => 'nullable|uuid',
+        ]);
+
+        $empresa = $acesso->encontrarEmpresa((string) $request->segment(1));
+        if (!$empresa) {
+            return response()->json(['message' => 'Empresa não encontrada.'], 404);
+        }
+
+        $sessao = $this->sessaoDoLink($request, $acesso, $empresa, $request->input('public_id'));
+        if (!$sessao) {
+            return response()->json(['message' => 'Informe seu CPF para receber o código.'], 422);
+        }
+        $registro = $sessao[1];
+
+        try {
+            $acesso->validarCodigo($registro, $request->input('codigo'));
+            $payload = $acesso->payloadAutenticado($registro, (int) $empresa->id);
+            session([$this->sessionKey($empresa->apelido) => ['resultado_id' => $registro->id, 'autenticado' => true]]);
+            app(AnexoPreAdmissaoAcessoService::class)->liberarCandidato($request, (int) $acesso->curriculoId($registro));
+            $this->auditar($request, $acesso, $empresa, AuditoriaAcessoService::EVENTO_CODIGO_VALIDADO, $registro);
+
+            return response()->json($payload, 200);
+        } catch (RuntimeException $e) {
+            $this->auditar($request, $acesso, $empresa, AuditoriaAcessoService::EVENTO_CODIGO_INVALIDO, $registro, [
+                'dados' => ['motivo' => $e->getMessage()],
+            ]);
+
+            return response()->json([
+                'message' => $e->getMessage(),
+                'acesso' => $acesso->statusAcesso($registro),
+            ], 422);
+        }
+    }
+
+    /**
+     * Evidência do ato na trilha de auditoria (IP, navegador, data/hora e CPF mascarado).
+     */
+    protected function auditar(Request $request, DocumentosPreAdmissaoAcessoService $acesso, Cliente $empresa, string $evento, ?ResultadoIntegrado $registro, array $info = [])
+    {
+        return app(AuditoriaAcessoService::class)->registrar(
+            DocumentosPreAdmissaoAcessoService::CONTEXTO,
+            (int) $empresa->id,
+            $evento,
+            $request,
+            $info + ($registro ? [
+                'registro_id' => $registro->id,
+                'curriculo_id' => $acesso->curriculoId($registro),
+                'cpf' => $acesso->cpfDoCandidato($registro),
+            ] : [])
+        );
+    }
+
+    protected function sessionKey(string $apelido): string
+    {
+        return 'documentos_pre_adm_' . $apelido;
+    }
+
+    /**
+     * Sessão de acesso válida para este link: [dados da sessão, solicitação de documentos].
+     * Com `$publicId`, a sessão só vale se for da mesma solicitação do link.
+     *
+     * @return array{0: array, 1: \App\Models\ResultadoIntegrado}|null
+     */
+    protected function sessaoDoLink(Request $request, DocumentosPreAdmissaoAcessoService $acesso, Cliente $empresa, ?string $publicId): ?array
+    {
+        $dados = $request->session()->get($this->sessionKey($empresa->apelido));
+        if (!is_array($dados) || empty($dados['resultado_id'])) {
+            return null;
+        }
+
+        $registro = $acesso->encontrarPorId((int) $empresa->id, (int) $dados['resultado_id']);
+        if (!$registro || ($publicId && $registro->public_id !== $publicId)) {
+            return null;
+        }
+
+        return [$dados, $registro];
     }
 
     /**
@@ -136,10 +243,27 @@ class DocumentosPreAdmissaoController extends Controller
      * @param \App\Models\DocumentosPreAdmissao $documentosPreAdmissao
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, DocumentosPreAdmissao $documentosPreAdmissao)
+    public function update(Request $request, DocumentosPreAdmissaoAcessoService $acesso)
     {
+        $empresa = $acesso->encontrarEmpresa((string) $request->segment(1));
+        $sessao = $empresa ? $this->sessaoDoLink($request, $acesso, $empresa, null) : null;
+        if (!$sessao || empty($sessao[0]['autenticado'])) {
+            return response()->json(['msg' => 'Sua sessão expirou. Acesse novamente com CPF e código.'], 401);
+        }
+
+        // O currículo vem da sessão autenticada, nunca do corpo da requisição.
+        $curriculoId = $acesso->curriculoId($sessao[1]);
 
         $dados = $request->input();
+
+        // O aceite precisa ser do texto vigente: se o termo mudou com a tela aberta, pede para recarregar.
+        $termo = app(TermoDocumentosPreAdmissao::class)->montar($empresa);
+        if (!$request->boolean('termo_aceito')) {
+            return response()->json(['msg' => 'Para enviar, é necessário aceitar o termo de declaração e ciência.'], 422);
+        }
+        if ($request->input('termo_hash') !== $termo['hash']) {
+            return response()->json(['msg' => 'O termo foi atualizado. Recarregue a página e aceite novamente.'], 422);
+        }
 
         $dadosValidados = \Validator::make($dados, [
             'nome' => 'required',
@@ -155,7 +279,7 @@ class DocumentosPreAdmissaoController extends Controller
             try {
                 DB::beginTransaction();
 
-                $curriculo = Curriculo::withoutGlobalScopes()->find($dados['id']);
+                $curriculo = Curriculo::withoutGlobalScopes()->find($curriculoId);
 
                 $curriculo->update([
                     'nome' => $dados['nome'],
@@ -187,8 +311,14 @@ class DocumentosPreAdmissaoController extends Controller
                 foreach ($request->docs_curriculo_pre_adm as $doc) {
                     if (isset($doc['docs_curriculo_anexosDelete'])) {
                         foreach ($doc['docs_curriculo_anexosDelete'] as $anexo) {
-                            $arquivo = Arquivo::find($anexo);
-                            $arquivo->excluir();
+                            // Só exclui anexos que pertencem ao próprio candidato.
+                            $pertence = DB::table('documentos_curriculos')
+                                ->where('curriculo_id', $curriculo->id)
+                                ->where('arquivo_id', $anexo)
+                                ->exists();
+                            if ($pertence) {
+                                Arquivo::find($anexo)?->excluir();
+                            }
                         }
                     }
 
@@ -208,7 +338,34 @@ class DocumentosPreAdmissaoController extends Controller
                 }
 
                 DB::commit();
-                return response()->json([], 201);
+
+                $protocolo = app(AuditoriaAcessoService::class)->novoProtocolo('DOC');
+                $this->auditar($request, $acesso, $empresa, AuditoriaAcessoService::EVENTO_TERMO_ACEITO, $sessao[1], [
+                    'protocolo' => $protocolo,
+                    'dados' => ['termo' => $termo],
+                ]);
+                $this->auditar($request, $acesso, $empresa, AuditoriaAcessoService::EVENTO_DOCUMENTOS_ENVIADOS, $sessao[1], [
+                    'protocolo' => $protocolo,
+                    'dados' => [
+                        'arquivo_ids' => DB::table('documentos_curriculos')
+                            ->where('curriculo_id', $curriculo->id)
+                            ->orderBy('arquivo_id')
+                            ->pluck('arquivo_id')
+                            ->all(),
+                    ],
+                ]);
+
+                JobComprovanteDocumentosPreAdmissao::dispatch([
+                    'empresa_id' => (int) $empresa->id,
+                    'registro_id' => (int) $sessao[1]->id,
+                    'curriculo_id' => (int) $curriculo->id,
+                    'protocolo' => $protocolo,
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'termo_versao' => $termo['versao'],
+                ]);
+
+                return response()->json(['protocolo' => $protocolo], 201);
             } catch (\Exception $e) {
                 DB::rollback();
                 $msg = "error UPDATE DOCUMENTOS PRÉ ADMISSÃO:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . $dados['nome'];
@@ -229,14 +386,25 @@ class DocumentosPreAdmissaoController extends Controller
         //
     }
 
-    // Anexos-------------------------------------------------
-    public function uploadAnexos(Request $request)
+    // Anexos (regras de acesso em AnexoPreAdmissaoAcessoService) ---------------
+    public function uploadAnexos(Request $request, AnexoPreAdmissaoAcessoService $anexos)
     {
-        return Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENSPDF, Arquivo::DISCO_DOCUMENTOS_PRE_ADMISSAO);
+        if (!$anexos->podeEnviar($request)) {
+            return response()->json(['msg' => 'Sua sessão expirou. Acesse novamente com CPF e código.'], 401);
+        }
+
+        $resposta = Arquivo::uploadAnexos($request, Arquivo::MIMEAPENASIMAGENSPDF, Arquivo::DISCO_DOCUMENTOS_PRE_ADMISSAO);
+        if ($resposta->getStatusCode() === 201) {
+            $anexos->registrarEnvio($request, (int) ($resposta->getData(true)['id'] ?? 0));
+        }
+
+        return $resposta;
     }
 
-    public function anexoShow(Request $request, $arquivo)
+    public function anexoShow(Request $request, AnexoPreAdmissaoAcessoService $anexos, $arquivo)
     {
+        abort_unless($anexos->podeAcessar($request, $arquivo), 403);
+
         if ($request->query('thumb')) {
             $extensaoArquivo = substr($arquivo, strrpos($arquivo, '.') + 1);
             $nomeArquivo = substr($arquivo, 0, strrpos($arquivo, '.'));
@@ -246,13 +414,17 @@ class DocumentosPreAdmissaoController extends Controller
         return Arquivo::anexoShow(Arquivo::DISCO_DOCUMENTOS_PRE_ADMISSAO, $arquivo);
     }
 
-    public function anexoDelete(Request $request, $arquivo)
+    public function anexoDelete(Request $request, AnexoPreAdmissaoAcessoService $anexos, $arquivo)
     {
+        abort_unless($anexos->podeAcessar($request, $arquivo), 403);
+
         return Arquivo::anexoDelete(Arquivo::DISCO_DOCUMENTOS_PRE_ADMISSAO, $arquivo);
     }
 
-    public function download(Request $request, $arquivo)
+    public function download(Request $request, AnexoPreAdmissaoAcessoService $anexos, $arquivo)
     {
+        abort_unless($anexos->podeAcessar($request, $arquivo), 403);
+
         return Arquivo::anexoDownload(Arquivo::DISCO_DOCUMENTOS_PRE_ADMISSAO, $arquivo);
     }
 }

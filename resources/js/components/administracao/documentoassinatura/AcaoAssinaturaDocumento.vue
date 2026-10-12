@@ -1,151 +1,277 @@
 <template>
     <div>
-        <modal ref="modalEnviar" :id="modalEnviarId" :titulo="tituloEnviar" :fechar="!preloadEnvio" :size="75">
+        <modal ref="modalEnviar" :id="modalEnviarId" :titulo="tituloEnviar" :fechar="!preloadEnvio" size="g">
             <template #conteudo>
-                <div v-if="contextoEnvio">
-                    <p class="mb-2">
-                        Documento: <strong>{{ nomeDocumentoAtual }}</strong>
-                    </p>
-                    <fieldset>
+                <div v-if="contextoEnvio" class="mybp-modal-form mybp-filtros-compactos">
+                    <div class="mybp-card-corpo mb-3">
+                        <section class="mybp-card-secao">
+                            <div class="mybp-card-row">
+                                <mybp-card-campo
+                                    icon="fas fa-file-signature"
+                                    label="Documento"
+                                    :valor="nomeDocumentoAtual"
+                                    :forte="true"
+                                ></mybp-card-campo>
+                            </div>
+                        </section>
+                    </div>
+
+                    <fieldset class="mybp-modal-secao">
                         <legend>Signatários</legend>
-                        <div class="row mb-2" v-for="(s, idx) in signatarios" :key="s.id || idx">
-                            <div class="col-md-4">
-                                <input
-                                    type="text"
-                                    class="form-control form-control-sm"
-                                    v-model="s.nome"
-                                    placeholder="Nome"
-                                    :disabled="camposSignatarioBloqueados"
-                                />
-                            </div>
-                            <div class="col-md-4">
-                                <input
-                                    type="email"
-                                    class="form-control form-control-sm"
-                                    v-model="s.email"
-                                    placeholder="E-mail"
-                                    :disabled="camposSignatarioBloqueados"
-                                />
-                            </div>
-                            <div class="col-md-2">
-                                <input
-                                    type="text"
-                                    class="form-control form-control-sm"
-                                    v-model="s.cpf"
-                                    placeholder="CPF (opcional)"
-                                    :disabled="camposSignatarioBloqueados"
-                                />
-                            </div>
-                            <div class="col-md-2" v-if="!camposSignatarioBloqueados">
-                                <button type="button" class="btn btn-sm mr-1 btn-outline-danger" @click="removerSignatario(idx)">
-                                    <i class="fa fa-times"></i>
-                                </button>
+                        <p class="mybp-campo-obrigatorio-legenda mb-3" v-if="!camposSignatarioBloqueados">
+                            Campos com <span class="text-danger">*</span> são obrigatórios.
+                        </p>
+                        <div
+                            class="mybp-assinatura-signatario"
+                            v-for="(s, idx) in signatarios"
+                            :key="s.id || idx"
+                        >
+                            <div class="row">
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label">
+                                            Nome
+                                            <span class="text-danger" v-if="!camposSignatarioBloqueados">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            class="form-control form-control-sm"
+                                            v-model="s.nome"
+                                            placeholder="Nome completo"
+                                            :disabled="camposSignatarioBloqueados"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label">
+                                            E-mail
+                                            <span class="text-danger" v-if="!camposSignatarioBloqueados">*</span>
+                                        </label>
+                                        <input
+                                            type="email"
+                                            class="form-control form-control-sm"
+                                            v-model="s.email"
+                                            placeholder="E-mail"
+                                            :disabled="camposSignatarioBloqueados"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-3">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label">CPF</label>
+                                        <input
+                                            type="text"
+                                            class="form-control form-control-sm"
+                                            v-model="s.cpf"
+                                            placeholder="Opcional"
+                                            :disabled="camposSignatarioBloqueados"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-1 d-flex align-items-end" v-if="!camposSignatarioBloqueados">
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-danger mb-3"
+                                        title="Remover signatário"
+                                        @click="removerSignatario(idx)"
+                                    >
+                                        <i class="fa fa-times"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <button v-if="!camposSignatarioBloqueados" type="button" class="btn btn-sm mr-1 btn-primary" @click="adicionarSignatario">
+                        <button
+                            v-if="!camposSignatarioBloqueados"
+                            type="button"
+                            class="btn btn-sm btn-outline-primary mybp-btn-acao-compact"
+                            @click="adicionarSignatario"
+                        >
                             <i class="fa fa-plus"></i> Adicionar signatário
                         </button>
                     </fieldset>
                 </div>
             </template>
             <template #rodape>
-                <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="preloadEnvio || !signatariosValidos" @click="enviar">
+                <button
+                    type="button"
+                    class="btn btn-sm btn-success"
+                    :disabled="preloadEnvio || !signatariosValidos"
+                    @click="enviar"
+                >
                     <span v-if="preloadEnvio"><i class="fa fa-spinner fa-pulse"></i> Enviando...</span>
-                    <span v-else>Enviar para assinatura</span>
+                    <span v-else><i class="fa fa-paper-plane"></i> Enviar para assinatura</span>
                 </button>
             </template>
         </modal>
 
-        <modal ref="modalGerenciar" :id="modalGerenciarId" titulo="Gerenciar assinatura" :fechar="!preloadGerenciar" :size="75">
+        <modal
+            ref="modalGerenciar"
+            :id="modalGerenciarId"
+            titulo="Gerenciar assinatura"
+            :fechar="!preloadGerenciar"
+            size="g"
+        >
             <template #conteudo>
-                <div v-if="documentoDetalhe" class="container-fluid">
-                    <p>
-                        <strong>ID:</strong> {{ documentoDetalhe.id }} &nbsp;|&nbsp; <strong>Tipo:</strong>
-                        {{ labelTipoDoc(documentoDetalhe.tipo_documento) }} &nbsp;|&nbsp; <strong>Status:</strong>
-                        <span class="badge" :class="badgeStatusDoc(documentoDetalhe.status)">{{ labelStatusDoc(documentoDetalhe.status) }}</span>
-                    </p>
-                    <p>
-                        <strong>Solicitante:</strong> {{ (documentoDetalhe.solicitante && documentoDetalhe.solicitante.nome) || '—' }} &nbsp;|&nbsp;
-                        <strong>Criado em:</strong> {{ formatarDataDoc(documentoDetalhe.created_at) }}
-                    </p>
-                    <p v-if="documentoDetalhe.status === 'em_assinatura'" class="text-warning mb-2">
-                        <i class="fas fa-hourglass-half"></i> Documento pendente de assinatura
-                    </p>
-                    <p v-else-if="podeBaixarAssinadoDoc(documentoDetalhe)" class="mb-2">
-                        <a :href="urlDownloadAssinadoDoc(documentoDetalhe)" target="_blank" rel="noopener" class="btn btn-sm mr-1 btn-success"
-                            ><i class="fa fa-download"></i> Baixar documento assinado</a
+                <p v-if="preloadGerenciar && !documentoDetalhe" class="text-center mt-2 mb-0">
+                    <i class="fa fa-spinner fa-pulse"></i> Carregando...
+                </p>
+
+                <div v-if="documentoDetalhe" class="mybp-modal-form mybp-filtros-compactos">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap mb-2" style="gap: 8px;">
+                        <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+                            <span class="mybp-badge-id">#{{ documentoDetalhe.id }}</span>
+                            <mybp-status-badge
+                                :variante="varianteStatusDoc(documentoDetalhe.status)"
+                                :texto="labelStatusDoc(documentoDetalhe.status)"
+                            ></mybp-status-badge>
+                        </div>
+                        <a
+                            v-if="podeBaixarAssinadoDoc(documentoDetalhe)"
+                            :href="urlDownloadAssinadoDoc(documentoDetalhe)"
+                            target="_blank"
+                            rel="noopener"
+                            class="btn btn-sm btn-outline-success"
                         >
-                    </p>
-                    <fieldset>
+                            <i class="fa fa-download"></i> Baixar assinado
+                        </a>
+                    </div>
+
+                    <div class="mybp-card-corpo mb-3" :class="classeCorpoStatusDoc(documentoDetalhe.status)">
+                        <section class="mybp-card-secao">
+                            <div class="mybp-card-row">
+                                <mybp-card-campo
+                                    icon="fas fa-file-alt"
+                                    label="Tipo"
+                                    :valor="labelTipoDoc(documentoDetalhe.tipo_documento)"
+                                    :forte="true"
+                                ></mybp-card-campo>
+                                <mybp-card-campo
+                                    icon="fas fa-user"
+                                    label="Solicitante"
+                                    :valor="textoCampo(documentoDetalhe.solicitante && documentoDetalhe.solicitante.nome)"
+                                ></mybp-card-campo>
+                                <mybp-card-campo
+                                    icon="fas fa-clock"
+                                    label="Criado em"
+                                    :valor="formatarDataDoc(documentoDetalhe.created_at)"
+                                ></mybp-card-campo>
+                            </div>
+                        </section>
+                        <section class="mybp-card-secao" v-if="documentoDetalhe.status === 'em_assinatura'">
+                            <div class="alert alert-warning mb-0 py-2 px-3">
+                                <i class="fas fa-hourglass-half"></i>
+                                Documento pendente de assinatura
+                            </div>
+                        </section>
+                    </div>
+
+                    <fieldset class="mybp-modal-secao">
                         <legend>Signatários</legend>
-                        <table class="table table-sm table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Ordem</th>
-                                    <th>Nome</th>
-                                    <th>E-mail</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="s in documentoDetalhe.signatarios || []" :key="s.id">
-                                    <td>{{ s.ordem }}</td>
-                                    <td>{{ s.nome }}</td>
-                                    <td>{{ s.email }}</td>
-                                    <td>
-                                        <span class="badge badge-sm" :class="s.status === 'assinado' ? 'badge-success' : 'badge-secondary'">{{
-                                            s.status
-                                        }}</span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div
+                            class="alert alert-secondary mb-0"
+                            v-if="!(documentoDetalhe.signatarios || []).length"
+                        >
+                            Nenhum signatário encontrado.
+                        </div>
+                        <div
+                            class="mybp-assinatura-signatario"
+                            v-for="s in documentoDetalhe.signatarios || []"
+                            :key="s.id"
+                        >
+                            <div class="d-flex align-items-start justify-content-between flex-wrap mb-2" style="gap: 8px;">
+                                <span class="mybp-badge-id">Ordem {{ s.ordem }}</span>
+                                <mybp-status-badge
+                                    :variante="varianteStatusSignatario(s.status)"
+                                    :texto="labelStatusSignatario(s.status)"
+                                ></mybp-status-badge>
+                            </div>
+                            <div class="mybp-card-row">
+                                <mybp-card-campo
+                                    icon="fas fa-user"
+                                    label="Nome"
+                                    :valor="textoCampo(s.nome)"
+                                    :forte="true"
+                                ></mybp-card-campo>
+                                <mybp-card-campo
+                                    icon="fas fa-envelope"
+                                    label="E-mail"
+                                    :valor="textoCampo(s.email)"
+                                ></mybp-card-campo>
+                                <mybp-card-campo
+                                    v-if="s.cpf"
+                                    icon="fas fa-id-card"
+                                    label="CPF"
+                                    :valor="textoCampo(s.cpf)"
+                                ></mybp-card-campo>
+                            </div>
+                        </div>
                     </fieldset>
-                    <fieldset>
+
+                    <fieldset class="mybp-modal-secao">
                         <legend>Eventos (auditoria)</legend>
-                        <div class="eventos-auditoria">
-                            <div v-for="ev in documentoDetalhe.eventos || []" :key="ev.id" class="evento-item" :class="'evento-' + (ev.evento || '')">
-                                <div class="evento-cabecalho">
-                                    <span class="evento-icone"><i :class="iconeEventoDoc(ev.evento)"></i></span>
-                                    <span class="evento-titulo">{{ labelEventoDoc(ev.evento) }}</span>
-                                    <span class="evento-data">{{ formatarDataDoc(ev.created_at) }}</span>
+                        <div
+                            class="alert alert-secondary mb-0"
+                            v-if="!(documentoDetalhe.eventos || []).length"
+                        >
+                            Nenhum evento registrado.
+                        </div>
+                        <div class="mybp-assinatura-eventos" v-else>
+                            <div
+                                class="mybp-assinatura-evento"
+                                v-for="ev in documentoDetalhe.eventos || []"
+                                :key="ev.id"
+                                :class="'mybp-assinatura-evento--' + (ev.evento || 'neutro')"
+                            >
+                                <div class="mybp-assinatura-evento__cabecalho">
+                                    <span class="mybp-assinatura-evento__icone">
+                                        <i :class="iconeEventoDoc(ev.evento)"></i>
+                                    </span>
+                                    <span class="mybp-assinatura-evento__titulo">{{ labelEventoDoc(ev.evento) }}</span>
+                                    <span class="mybp-assinatura-evento__data">{{ formatarDataDoc(ev.created_at) }}</span>
                                 </div>
-                                <div class="evento-detalhes" v-if="detalhesEventoDoc(ev).length">
-                                    <div class="evento-detalhe" v-for="(linha, idx) in detalhesEventoDoc(ev)" :key="linha.id || idx">
-                                        <span class="evento-detalhe-label">{{ linha.label }}:</span>
-                                        <span class="evento-detalhe-value">{{ linha.value }}</span>
+                                <div
+                                    class="mybp-assinatura-evento__detalhes"
+                                    v-if="detalhesEventoDoc(ev).length"
+                                >
+                                    <div
+                                        class="mybp-assinatura-evento__detalhe"
+                                        v-for="(linha, idx) in detalhesEventoDoc(ev)"
+                                        :key="linha.id || idx"
+                                    >
+                                        <span class="mybp-assinatura-evento__label">{{ linha.label }}:</span>
+                                        <span class="mybp-assinatura-evento__value">{{ linha.value }}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </fieldset>
                 </div>
-                <p v-else class="text-center"><i class="fa fa-spinner fa-pulse"></i> Carregando...</p>
             </template>
             <template #rodape>
                 <button
                     v-if="documentoDetalhe && podeCancelarDoc(documentoDetalhe)"
                     type="button"
-                    class="btn btn-sm mr-1 btn-danger mr-1"
+                    class="btn btn-sm btn-outline-danger"
                     @click="cancelarDocNoModal"
                 >
-                    Cancelar documento
+                    <i class="fa fa-ban"></i> Cancelar documento
                 </button>
                 <button
                     v-if="documentoDetalhe && podeReenviarDoc(documentoDetalhe)"
                     type="button"
-                    class="btn btn-sm mr-1 btn-warning mr-1"
+                    class="btn btn-sm btn-warning"
                     @click="reenviarDocNoModal"
                 >
-                    Reenviar e-mail
+                    <i class="fa fa-envelope"></i> Reenviar e-mail
                 </button>
                 <button
                     v-if="documentoDetalhe && documentoExpiradoOuCanceladoDoc(documentoDetalhe)"
                     type="button"
-                    class="btn btn-sm mr-1 btn-success mr-1"
+                    class="btn btn-sm btn-success"
                     @click="enviarNovamenteNoModal"
                 >
-                    <span class="fas fa-redo"></span> Enviar novamente
+                    <i class="fas fa-redo"></i> Enviar novamente
                 </button>
             </template>
         </modal>
@@ -154,16 +280,21 @@
 
 <script>
 import Modal from '../../Modal'
+import MybpCardCampo from '../../ui/MybpCardCampo.vue'
+import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 
 export default {
     name: 'AcaoAssinaturaDocumento',
-    components: { Modal },
+    components: { Modal, MybpCardCampo, MybpStatusBadge },
     props: {
         idPrefix: { type: String, required: true },
         tituloEnviar: { type: String, default: 'Enviar para assinatura digital' },
         getNomeDocumento: { type: Function, default: () => 'Documento' },
         getSignatariosIniciais: { type: Function, default: () => [{ nome: '', email: '', cpf: '' }] },
-        validarSignatarios: { type: Function, default: (signatarios) => signatarios.length > 0 && signatarios.every((s) => s.nome && s.email) },
+        validarSignatarios: {
+            type: Function,
+            default: (signatarios) => signatarios.length > 0 && signatarios.every((s) => s.nome && s.email)
+        },
         camposSignatarioBloqueados: { type: Boolean, default: true },
         enviarHandler: { type: Function, required: true },
         atualizarHandler: { type: Function, default: null }
@@ -193,14 +324,16 @@ export default {
         }
     },
     methods: {
+        textoCampo(valor) {
+            const texto = String(valor ?? '').trim()
+            return texto !== '' ? texto : 'Não informado'
+        },
         abrirEnvio(contexto) {
             this.contextoEnvio = contexto
             this.signatarios = this.getSignatariosIniciais(contexto) || [{ nome: '', email: '', cpf: '' }]
             this.preloadEnvio = false
             this.$nextTick(() => {
-                if (this.$refs && this.$refs.modalEnviar && typeof this.$refs.modalEnviar.abrirModal === 'function') {
-                    this.$refs.modalEnviar.abrirModal()
-                }
+                this.$refs.modalEnviar?.abrirModal?.()
             })
         },
         abrirGerenciar(documento, contexto = null) {
@@ -208,9 +341,7 @@ export default {
             this.contextoGerenciar = contexto
             this.documentoDetalhe = null
             this.preloadGerenciar = true
-            if (this.$refs && this.$refs.modalGerenciar && typeof this.$refs.modalGerenciar.abrirModal === 'function') {
-                this.$refs.modalGerenciar.abrirModal()
-            }
+            this.$refs.modalGerenciar?.abrirModal?.()
             const idOrToken = documento.token || documento.id
             axios
                 .get(`${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}`)
@@ -235,9 +366,7 @@ export default {
             Promise.resolve(this.enviarHandler({ contexto: this.contextoEnvio, signatarios: this.signatarios }))
                 .then((res) => {
                     this.preloadEnvio = false
-                    if (this.$refs && this.$refs.modalEnviar && typeof this.$refs.modalEnviar.fecharModal === 'function') {
-                        this.$refs.modalEnviar.fecharModal()
-                    }
+                    this.$refs.modalEnviar?.fecharModal?.()
                     if (res && res.data) {
                         mostraSucesso(res.data.message || 'Documento enviado para assinatura.')
                         if (res.data.links && res.data.links.length && this.$swal) {
@@ -252,7 +381,7 @@ export default {
                 .catch((err) => {
                     this.preloadEnvio = false
                     const msg =
-                        err && err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao enviar para assinatura.'
+                        err?.response?.data?.message || 'Erro ao enviar para assinatura.'
                     mostraErro(msg)
                 })
         },
@@ -260,9 +389,7 @@ export default {
             return doc && (doc.status === 'expirado' || doc.status === 'cancelado')
         },
         enviarNovamenteNoModal() {
-            if (this.$refs && this.$refs.modalGerenciar && typeof this.$refs.modalGerenciar.fecharModal === 'function') {
-                this.$refs.modalGerenciar.fecharModal()
-            }
+            this.$refs.modalGerenciar?.fecharModal?.()
             this.$nextTick(() => this.abrirEnvio(this.contextoGerenciar))
         },
         labelTipoDoc(tipo) {
@@ -293,21 +420,50 @@ export default {
             }
             return map[status] || status || '—'
         },
-        badgeStatusDoc(status) {
+        varianteStatusDoc(status) {
             const map = {
-                em_assinatura: 'badge-warning',
-                concluido: 'badge-success',
-                cancelado: 'badge-danger',
-                expirado: 'badge-secondary',
-                rascunho: 'badge-secondary',
-                enviado: 'badge-info'
+                em_assinatura: 'pendente',
+                concluido: 'aprovado',
+                cancelado: 'reprovado',
+                expirado: 'neutro',
+                rascunho: 'aberto',
+                enviado: 'rh'
             }
-            return map[status] || 'badge-secondary'
+            return map[status] || 'neutro'
+        },
+        classeCorpoStatusDoc(status) {
+            return `mybp-card-corpo--${this.varianteStatusDoc(status)}`
+        },
+        labelStatusSignatario(status) {
+            const map = {
+                pendente: 'Pendente',
+                aguardando: 'Aguardando',
+                assinado: 'Assinado',
+                recusado: 'Recusado',
+                expirado: 'Expirado'
+            }
+            return map[status] || status || '—'
+        },
+        varianteStatusSignatario(status) {
+            const map = {
+                pendente: 'pendente',
+                aguardando: 'gestor',
+                assinado: 'aprovado',
+                recusado: 'reprovado',
+                expirado: 'neutro'
+            }
+            return map[status] || 'neutro'
         },
         formatarDataDoc(val) {
             if (!val) return '—'
             const d = typeof val === 'string' ? new Date(val) : val
-            return d.toLocaleDateString('pt-BR') + ' ' + (d.toLocaleTimeString ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '')
+            return (
+                d.toLocaleDateString('pt-BR') +
+                ' ' +
+                (d.toLocaleTimeString
+                    ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                    : '')
+            )
         },
         labelEventoDoc(evento) {
             const map = {
@@ -336,7 +492,7 @@ export default {
             return map[evento] || 'fas fa-circle text-muted'
         },
         getSignatarioByIdDoc(signatarioId) {
-            const list = this.documentoDetalhe && this.documentoDetalhe.signatarios ? this.documentoDetalhe.signatarios : []
+            const list = this.documentoDetalhe?.signatarios || []
             const s = list.find((x) => x.id === signatarioId)
             return s ? s.nome || s.email || `#${signatarioId}` : null
         },
@@ -347,7 +503,9 @@ export default {
             switch (ev.evento) {
                 case 'enviado':
                     if (p.nome) linhas.push({ label: 'Enviado por', value: p.nome })
-                    if (p.signatarios_count !== undefined) linhas.push({ label: 'Signatários', value: `${p.signatarios_count} signatário(s)` })
+                    if (p.signatarios_count !== undefined) {
+                        linhas.push({ label: 'Signatários', value: `${p.signatarios_count} signatário(s)` })
+                    }
                     break
                 case 'reenviado':
                     if (p.nome) linhas.push({ label: 'Reenviado por', value: p.nome })
@@ -362,11 +520,15 @@ export default {
                     if (p.email) linhas.push({ label: 'E-mail', value: p.email })
                     if (p.data_utc) linhas.push({ label: 'Data/hora (UTC)', value: this.formatarDataDoc(p.data_utc) })
                     if (p.ip) linhas.push({ label: 'IP', value: p.ip })
-                    if (p.hash_evidencia)
+                    if (p.hash_evidencia) {
                         linhas.push({
                             label: 'Hash evidência',
-                            value: p.hash_evidencia.length > 20 ? p.hash_evidencia.substring(0, 20) + '…' : p.hash_evidencia
+                            value:
+                                p.hash_evidencia.length > 20
+                                    ? p.hash_evidencia.substring(0, 20) + '…'
+                                    : p.hash_evidencia
                         })
+                    }
                     break
                 case 'recusado':
                     if (signatarioNome) linhas.push({ label: 'Signatário', value: signatarioNome })
@@ -397,7 +559,7 @@ export default {
             return item && item.status === 'concluido' && item.arquivo_assinado_id
         },
         urlDownloadAssinadoDoc(doc) {
-            const idOrToken = doc && doc.token ? doc.token : doc && doc.id ? doc.id : ''
+            const idOrToken = doc?.token || doc?.id || ''
             return `${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}/download-assinado`
         },
         cancelarDocNoModal() {
@@ -422,19 +584,17 @@ export default {
                 })
         },
         executarCancelarDoc(doc) {
-            const idOrToken = doc && doc.token ? doc.token : doc && doc.id ? doc.id : ''
+            const idOrToken = doc?.token || doc?.id || ''
             axios
                 .post(`${URL_ADMIN}/administracao/documento-assinatura/${idOrToken}/cancelar`)
                 .then((res) => {
                     mostraSucesso(res.data.message || 'Documento cancelado.')
                     this.documentoDetalhe = null
-                    if (this.$refs && this.$refs.modalGerenciar && typeof this.$refs.modalGerenciar.fecharModal === 'function') {
-                        this.$refs.modalGerenciar.fecharModal()
-                    }
+                    this.$refs.modalGerenciar?.fecharModal?.()
                     if (this.atualizarHandler) this.atualizarHandler()
                 })
                 .catch((err) => {
-                    const msg = err && err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao cancelar.'
+                    const msg = err?.response?.data?.message || 'Erro ao cancelar.'
                     mostraErro(msg)
                 })
         },
@@ -447,7 +607,7 @@ export default {
                     mostraSucesso(res.data.message || 'E-mail reenviado.')
                 })
                 .catch((err) => {
-                    const msg = err && err.response && err.response.data && err.response.data.message ? err.response.data.message : 'Erro ao reenviar e-mail.'
+                    const msg = err?.response?.data?.message || 'Erro ao reenviar e-mail.'
                     mostraErro(msg)
                 })
         }
@@ -456,80 +616,103 @@ export default {
 </script>
 
 <style scoped>
-.eventos-auditoria {
+.mybp-assinatura-signatario {
+    padding: 0.75rem 0.85rem;
+    margin-bottom: 0.65rem;
+    border: 1px solid #eef1f4;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.mybp-assinatura-signatario:last-child {
+    margin-bottom: 0;
+}
+
+.mybp-assinatura-eventos {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.65rem;
 }
-.evento-item {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
+
+.mybp-assinatura-evento {
+    background: #fff;
+    border: 1px solid #eef1f4;
     border-radius: 8px;
-    padding: 0.75rem 1rem;
-    border-left: 4px solid #6c757d;
+    padding: 0.7rem 0.85rem;
+    border-left: 4px solid #adb5bd;
 }
-.evento-item.evento-enviado {
+
+.mybp-assinatura-evento--enviado {
     border-left-color: #17a2b8;
 }
-.evento-item.evento-reenviado {
+
+.mybp-assinatura-evento--reenviado {
     border-left-color: #ffc107;
 }
-.evento-item.evento-visualizado {
-    border-left-color: #007bff;
+
+.mybp-assinatura-evento--visualizado {
+    border-left-color: #174257;
 }
-.evento-item.evento-assinado {
+
+.mybp-assinatura-evento--assinado,
+.mybp-assinatura-evento--download {
     border-left-color: #28a745;
 }
-.evento-item.evento-recusado {
+
+.mybp-assinatura-evento--recusado,
+.mybp-assinatura-evento--cancelado {
     border-left-color: #dc3545;
 }
-.evento-item.evento-expirado {
+
+.mybp-assinatura-evento--expirado {
     border-left-color: #6c757d;
 }
-.evento-item.evento-cancelado {
-    border-left-color: #dc3545;
-}
-.evento-item.evento-download {
-    border-left-color: #28a745;
-}
-.evento-cabecalho {
+
+.mybp-assinatura-evento__cabecalho {
     display: flex;
     align-items: center;
     gap: 0.5rem 0.75rem;
     flex-wrap: wrap;
-    margin-bottom: 0.35rem;
 }
-.evento-icone {
+
+.mybp-assinatura-evento__icone {
     font-size: 1rem;
     width: 1.25rem;
     text-align: center;
     flex-shrink: 0;
 }
-.evento-titulo {
+
+.mybp-assinatura-evento__titulo {
     font-weight: 600;
     color: #212529;
-    font-size: 0.938rem;
+    font-size: 0.875rem;
 }
-.evento-data {
+
+.mybp-assinatura-evento__data {
     margin-left: auto;
-    font-size: 0.813rem;
+    font-size: 0.75rem;
     color: #6c757d;
 }
-.evento-detalhes {
+
+.mybp-assinatura-evento__detalhes {
     padding-left: 1.9rem;
+    margin-top: 0.35rem;
     font-size: 0.813rem;
 }
-.evento-detalhe {
+
+.mybp-assinatura-evento__detalhe {
     display: flex;
     gap: 0.35rem;
-    margin-top: 0.2rem;
+    margin-top: 0.15rem;
 }
-.evento-detalhe-label {
+
+.mybp-assinatura-evento__label {
     color: #6c757d;
     font-weight: 500;
     flex-shrink: 0;
 }
-.evento-detalhe-value {
+
+.mybp-assinatura-evento__value {
     color: #212529;
     word-break: break-word;
 }

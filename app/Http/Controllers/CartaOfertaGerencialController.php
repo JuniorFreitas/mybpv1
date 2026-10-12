@@ -8,24 +8,97 @@ use App\Domain\Whatsapp\Services\WhatsappCurriculoTelefoneResolver;
 use App\Domain\Whatsapp\Services\WhatsappMessageFactory;
 use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
 use App\Http\Controllers\Api\IntegraSgiMybpController;
+use App\Http\Requests\CartaOfertaInternaStoreRequest;
 use App\Jobs\AssinaturaDigital\JobProcessarEnvioAssinatura;
 use App\Jobs\Entrevista\JobEnvioDocumento;
 use App\Models\CartaOferta;
+use App\Models\Cliente;
+use App\Models\Curriculo;
 use App\Models\DocumentoParaAssinatura;
-use App\Models\Projeto;
 use App\Models\Sistema;
-use App\Models\TelefoneCurriculo;
-use App\Models\User;
-use App\Models\VagaProjeto;
+use App\Services\CartaOferta\CartaOfertaInternaService;
+use App\Services\CartaOferta\CartaOfertaListagemPresenter;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
+use RuntimeException;
 
 class CartaOfertaGerencialController extends Controller
 {
     public function index()
     {
         return view('g.admissao.documentos.cartaoferta.index');
+    }
+
+    public function buscarCurriculos(Request $request)
+    {
+        $busca = trim((string) $request->query('busca', ''));
+        if ($busca === '') {
+            return response()->json([], 200);
+        }
+
+        $rows = (int) ($request->query('rows') ?: 20);
+
+        return Curriculo::query()
+            ->select(['id', 'nome', 'cpf', 'email'])
+            ->where(function ($q) use ($busca) {
+                $q->where('nome', 'like', '%' . $busca . '%')
+                    ->orWhere('cpf', 'like', '%' . $busca . '%');
+            })
+            ->orderBy('nome')
+            ->limit($rows)
+            ->get()
+            ->map(function ($item) {
+                $cpf = $item->cpf ? " — {$item->cpf}" : '';
+                $item->label = "{$item->nome}{$cpf}";
+                $item->curriculo_id = $item->id;
+
+                return $item;
+            });
+    }
+
+    public function criar(CartaOfertaInternaStoreRequest $request, CartaOfertaInternaService $service)
+    {
+        try {
+            $carta = $service->criar(
+                $request->validated(),
+                (int) auth()->user()->empresa_id,
+                (int) auth()->id()
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Carta oferta criada e envio iniciado.',
+                'carta' => $carta,
+            ], 201);
+        } catch (RuntimeException $e) {
+            if ($e instanceof \Illuminate\Database\QueryException) {
+                \Log::error('Erro ao criar carta oferta interna', [
+                    'message' => $e->getMessage(),
+                    'empresa_id' => auth()->user()->empresa_id ?? null,
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Não foi possível criar a carta oferta.',
+                ], 500);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        } catch (\Throwable $e) {
+            \Log::error('Erro ao criar carta oferta interna', [
+                'message' => $e->getMessage(),
+                'empresa_id' => auth()->user()->empresa_id ?? null,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Não foi possível criar a carta oferta.',
+            ], 500);
+        }
     }
 
     /**
@@ -90,15 +163,41 @@ class CartaOfertaGerencialController extends Controller
 
     public function filtro(Request $request)
     {
-        $filtroIntervalo = $request->filtroPeriodo == 'true';
+        $filtroIntervalo = filter_var($request->filtroPeriodo, FILTER_VALIDATE_BOOLEAN);
 
-        $query = CartaOferta::with(
-            'Curriculo:id,nome,nascimento,rg,orgao_expeditor,email',
-            'Curriculo.TelPrincipal:id,tipo,pais,numero,detalhe,curriculo_id,principal',
-            'vagaProjeto.Projeto:id,nome',
-            'vagaAberta.Cargo',
-            'Anexo'
-        )->join('curriculos as c', 'curriculo_carta_oferta.curriculo_id', '=', 'c.id');
+        $query = CartaOferta::query()
+            ->select([
+                'curriculo_carta_oferta.id',
+                'curriculo_carta_oferta.token',
+                'curriculo_carta_oferta.public_id',
+                'curriculo_carta_oferta.user_id',
+                'curriculo_carta_oferta.curriculo_id',
+                'curriculo_carta_oferta.vagas_abertas_id',
+                'curriculo_carta_oferta.vaga_projeto_id',
+                'curriculo_carta_oferta.arquivo_id',
+                'curriculo_carta_oferta.status',
+                'curriculo_carta_oferta.local',
+                'curriculo_carta_oferta.setor',
+                'curriculo_carta_oferta.salario',
+                'curriculo_carta_oferta.data_inicio',
+                'curriculo_carta_oferta.logs',
+                'curriculo_carta_oferta.created_at',
+                'curriculo_carta_oferta.updated_at',
+            ])
+            ->with([
+                'curriculo:id,nome,cpf,email',
+                'curriculo.TelPrincipal:id,numero,curriculo_id,principal',
+                'user:id,nome',
+                'vagaProjeto:id,projeto_id,vaga_aberta_id',
+                'vagaProjeto.Projeto:id,nome',
+                'vagaAberta:id,vaga_id,titulo',
+                'vagaAberta.Vaga:id,nome',
+                'vagaAberta.Projetos:id,vaga_aberta_id,projeto_id',
+                'vagaAberta.Projetos.Projeto:id,nome',
+                'anexo:id,file,disco,imagem,thumb',
+            ])
+            ->join('curriculos as c', 'curriculo_carta_oferta.curriculo_id', '=', 'c.id')
+            ->whereNull('c.deleted_at');
 
         if ($request['order'] == 'nome') {
             $query->orderBy('c.nome');
@@ -107,34 +206,37 @@ class CartaOfertaGerencialController extends Controller
         }
 
         if (isset($request['status']) && $request['status'] != '') {
-            $query->where('status', $request['status']);
+            $query->where('curriculo_carta_oferta.status', $request['status']);
         }
 
-        if ($filtroIntervalo) {
+        if ($filtroIntervalo && $request->filled('periodo') && str_contains((string) $request->periodo, ' até ')) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
-            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
+            $dataInicio = new DataHora(trim($periodo[0]) . ' 00:00:00');
+            $dataFim = new DataHora(trim($periodo[1]) . ' 23:59:59');
             $query->where('curriculo_carta_oferta.updated_at', '>=', $dataInicio->dataHoraInsert())
                 ->where('curriculo_carta_oferta.updated_at', '<=', $dataFim->dataHoraInsert());
         }
 
         if (isset($request['campoBusca']) && $request['campoBusca'] != '') {
-            $query->where('c.nome', 'like', '%' . $request['campoBusca'] . '%')
-                ->orWhere('c.cpf', 'like', '%' . $request['campoBusca'] . '%');
+            $busca = $request['campoBusca'];
+            $query->where(function ($q) use ($busca) {
+                $q->where('c.nome', 'like', '%' . $busca . '%')
+                    ->orWhere('c.cpf', 'like', '%' . $busca . '%');
+            });
         }
 
         if (isset($request['projeto_id']) && $request['projeto_id'] != '') {
-            $query->whereHas('vagaProjeto.Projeto', function ($query) use ($request) {
-                $query->where('projeto_id', $request['projeto_id']);
+            $query->whereHas('vagaProjeto.Projeto', function ($q) use ($request) {
+                $q->where('projetos.id', $request['projeto_id']);
             });
         }
 
         if (isset($request['curriculo_id']) && $request['curriculo_id'] != '') {
-            $query->where('curriculo_id', $request['curriculo_id']);
+            $query->where('curriculo_carta_oferta.curriculo_id', $request['curriculo_id']);
         }
 
         if (isset($request['vaga_projeto_id']) && $request['vaga_projeto_id'] != '') {
-            $query->where('vaga_projeto_id', $request['vaga_projeto_id']);
+            $query->where('curriculo_carta_oferta.vaga_projeto_id', $request['vaga_projeto_id']);
         }
 
         return $query;
@@ -157,7 +259,7 @@ class CartaOfertaGerencialController extends Controller
 
             try {
                 \DB::beginTransaction();
-                $logs = $cartaOferta->first()->logs;
+                $logs = is_array($cartaOferta->logs) ? $cartaOferta->logs : [];
 
                 $logs[] = [
                     'data' => (new DataHora())->dataHoraInsert(),
@@ -171,62 +273,77 @@ class CartaOfertaGerencialController extends Controller
                     'logs' => $logs
                 ]);
 
+                // Integração SGI apenas para cartas originadas no SGI
                 if ($cartaOferta->local == CartaOferta::LOCAL_SGI && $request->resposta == CartaOferta::STATUS_ACEITO_RH) {
                     IntegraSgiMybpController::integra($request->integraMybp);
                 }
 
                 \DB::commit();
 
-                $telefone = app(WhatsappCurriculoTelefoneResolver::class)
-                    ->resolverPrincipalWhatsapp((int) $cartaOferta->curriculo_id);
-                $urlDocumentos = env('APP_URL') . "/" . auth()->user()->Empresa->apelido . "/documentos";
-
                 if ($request->resposta == CartaOferta::STATUS_ACEITO_RH) {
-                    $checklistArquivo = CartaOferta::checklistArquivo(auth()->user()->Empresa->apelido);
-                    JobEnvioDocumento::dispatch([
-                        'nome' => $cartaOferta->Curriculo->nome,
-                        'email' => $cartaOferta->Curriculo->email,
-                        'empresa_id' => $cartaOferta->empresa_id,
-                        'url_documento' => $urlDocumentos,
-                        'url_checklist' => route('download-checklist', ['empresa' => auth()->user()->Empresa->apelido]),
-                    ]);
+                    try {
+                        $cartaOferta->loadMissing('Curriculo');
+                        $empresaApelido = Cliente::withoutGlobalScopes()
+                            ->where('id', $cartaOferta->empresa_id)
+                            ->value('apelido') ?: '';
+                        $urlDocumentos = app(\App\Services\Preadmissao\DocumentosPreAdmissaoAcessoService::class)
+                            ->urlPublica((int) $cartaOferta->empresa_id, (int) $cartaOferta->curriculo_id, $empresaApelido);
 
-                    if (
-                        $telefone
-                        && app(WhatsappNotificationGateService::class)->podeEnviar(
-                            TipoMensagemWhatsapp::CartaOfertaGerencial,
-                            (int) $cartaOferta->empresa_id,
-                        )
-                    ) {
-                        $dados['telefone'] = $telefone->sonumero;
-
-                        $ambiente = env('AMBIENTE', 'local') == 'prod' ?: 'local';
-                        if ($ambiente != 'prod') {
-                            $zapTelAtivo = \DB::table("zap_numeros")->where("ativo", true)->first();
-                            $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '559899023762';
+                        if ($cartaOferta->Curriculo && $cartaOferta->Curriculo->email) {
+                            JobEnvioDocumento::dispatch([
+                                'nome' => $cartaOferta->Curriculo->nome,
+                                'email' => $cartaOferta->Curriculo->email,
+                                'empresa_id' => $cartaOferta->empresa_id,
+                                'url_documento' => $urlDocumentos,
+                                'url_checklist' => route('download-checklist', ['empresa' => $empresaApelido]),
+                            ]);
                         }
 
-                        $mensagemWhats = app(WhatsappMessageFactory::class)->render(
-                            TipoMensagemWhatsapp::CartaOfertaGerencial,
-                            (int) $cartaOferta->empresa_id,
-                            [
-                                'nome_destinatario' => $cartaOferta->curriculo->nome,
-                                'url_documentos' => $urlDocumentos,
-                            ]
-                        );
+                        $telefone = app(WhatsappCurriculoTelefoneResolver::class)
+                            ->resolverPrincipalWhatsapp((int) $cartaOferta->curriculo_id);
 
-                        (new ZapNotificacao())->enviar([
-                            'enviado_id' => auth()->id(),
-                            'telefone' => preg_replace('/[^0-9]/', '', $dados['telefone']),
-                            'mensagem' => $mensagemWhats,
-                            '_whatsapp_meta' => ZapNotificacao::meta(
+                        if (
+                            $telefone
+                            && app(WhatsappNotificationGateService::class)->podeEnviar(
                                 TipoMensagemWhatsapp::CartaOfertaGerencial,
                                 (int) $cartaOferta->empresa_id,
-                            ),
-                            "anexo" => [
-                                "arquivo" => $checklistArquivo,
-                                "tipo" => "pdf"
-                            ]
+                            )
+                        ) {
+                            $dados['telefone'] = $telefone->sonumero;
+
+                            $ambiente = env('AMBIENTE', 'local') == 'prod' ?: 'local';
+                            if ($ambiente != 'prod') {
+                                $zapTelAtivo = \DB::table("zap_numeros")->where("ativo", true)->first();
+                                $dados['telefone'] = $zapTelAtivo ? $zapTelAtivo->telefone : '559899023762';
+                            }
+
+                            $mensagemWhats = app(WhatsappMessageFactory::class)->render(
+                                TipoMensagemWhatsapp::CartaOfertaGerencial,
+                                (int) $cartaOferta->empresa_id,
+                                [
+                                    'nome_destinatario' => $cartaOferta->Curriculo->nome ?? '',
+                                    'url_documentos' => $urlDocumentos,
+                                ]
+                            );
+
+                            (new ZapNotificacao())->enviar([
+                                'enviado_id' => auth()->id(),
+                                'telefone' => preg_replace('/[^0-9]/', '', $dados['telefone']),
+                                'mensagem' => $mensagemWhats,
+                                '_whatsapp_meta' => ZapNotificacao::meta(
+                                    TipoMensagemWhatsapp::CartaOfertaGerencial,
+                                    (int) $cartaOferta->empresa_id,
+                                ),
+                                'anexo' => [
+                                    'arquivo' => CartaOferta::checklistArquivo($empresaApelido),
+                                    'tipo' => 'pdf',
+                                ],
+                            ]);
+                        }
+                    } catch (\Throwable $e) {
+                        \Log::error('Carta oferta aceita, mas falhou notificação pós-aceite', [
+                            'message' => $e->getMessage(),
+                            'carta_id' => $cartaOferta->id,
                         ]);
                     }
                 }
@@ -235,9 +352,12 @@ class CartaOfertaGerencialController extends Controller
 
             } catch (\Exception $e) {
                 \DB::rollBack();
-                $msg = "Erro ao integrar: {$e->getFile()} , {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                Sistema::LogFormatado($request->input());
+                $nomeUsuario = auth()->user()->nome ?? ('user:' . auth()->id());
+                $msg = "Erro ao processar resposta da carta oferta | Usuario: {$nomeUsuario}";
+                \Log::error('Erro ao responder carta oferta', [
+                    'message' => $e->getMessage(),
+                    'carta_token' => $request['token'] ?? null,
+                ]);
                 return response()->json(['message' => $msg], 400);
             }
 
@@ -275,16 +395,13 @@ class CartaOfertaGerencialController extends Controller
             }
         }
 
-        $itens = $itens->map(function ($item) use ($docsByCartaId) {
-            $item->documento_para_assinatura = $docsByCartaId[$item->id] ?? null;
-            return $item;
-        })->values();
+        $apelido = optional(auth()->user()->Empresa)->apelido ?? '';
+        $baseUrl = rtrim((string) env('APP_URL'), '/');
+        $presenter = app(CartaOfertaListagemPresenter::class);
 
-        $vagasProjeto = Projeto::
-        select(['id', 'nome', 'preenchidas', 'empresa_id', 'qnt_total', 'preenchidas'])->with(
-            'VagasProjeto',
-            'VagasProjeto.VagaAberta:id,empresa_id,vaga_id,titulo,municipio_id,ativo,ativo_sistema'
-        )->orderBy('nome')->get();
+        $itens = $itens->map(function (CartaOferta $item) use ($presenter, $docsByCartaId, $apelido, $baseUrl) {
+            return $presenter->apresentar($item, $docsByCartaId, $apelido, $baseUrl);
+        })->values();
 
         return response()->json([
             'atual' => $resultado->currentPage(),
@@ -293,7 +410,7 @@ class CartaOfertaGerencialController extends Controller
             'dados' => [
                 'itens' => $itens,
                 'lista_status' => CartaOferta::STATUS,
-                'lista_projetos' => $vagasProjeto,
+                'lista_projetos' => [],
             ]
         ]);
     }
