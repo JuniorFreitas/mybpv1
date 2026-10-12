@@ -1064,6 +1064,20 @@
             </ul>
         </li>
     @endif
+
+    <li id="ajuda">
+        <a href="javascript://" class="has-arrow waves-effect" parent="ajuda">
+            <i class="bx bx-help-circle"></i>
+            <span>AJUDA</span>
+        </a>
+        <ul aria-expanded="false">
+            <li>
+                <a href="{{ route('g.ajuda.manual') }}" parent="ajuda" key="manual">
+                    Manual do usuário
+                </a>
+            </li>
+        </ul>
+    </li>
 </div>
 
 @push('js')
