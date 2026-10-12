@@ -142,6 +142,27 @@ class CartaOfertaAcessoPublicoService
 
     public function solicitarCodigo(CartaOferta $carta, string $cpfInformado): array
     {
+        $this->conferirCpf($carta, $cpfInformado);
+
+        return $this->enviarCodigo($carta);
+    }
+
+    /**
+     * "Já recebi o código": confere o CPF e devolve os prazos do código atual, sem enviar outro.
+     */
+    public function confirmarCpf(CartaOferta $carta, string $cpfInformado): array
+    {
+        $this->conferirCpf($carta, $cpfInformado);
+
+        return [
+            'message' => 'CPF confirmado.',
+            'email_mascarado' => $this->mascararEmail(trim((string) $carta->Curriculo->email)),
+            'acesso' => $this->statusAcesso($carta),
+        ];
+    }
+
+    protected function conferirCpf(CartaOferta $carta, string $cpfInformado): void
+    {
         if (!$this->codigos->cpfValido($cpfInformado)) {
             throw new RuntimeException('CPF inválido.');
         }
@@ -151,8 +172,6 @@ class CartaOfertaAcessoPublicoService
         if (!$this->codigos->cpfConfere($cpfInformado, (string) $carta->Curriculo->cpf)) {
             throw new RuntimeException('CPF não confere com o cadastro desta carta oferta.');
         }
-
-        return $this->enviarCodigo($carta);
     }
 
     /**

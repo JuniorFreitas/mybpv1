@@ -1,13 +1,24 @@
 <template>
     <section class="co-card">
-        <div class="co-passos" aria-hidden="true">
-            <span class="ativo"></span>
-            <span :class="{ ativo: passo === 'codigo' }"></span>
-        </div>
+        <header class="co-card__cabecalho">
+            <div class="co-passos" aria-hidden="true">
+                <span class="ativo"></span>
+                <span :class="{ ativo: passo === 'codigo' }"></span>
+            </div>
+            <div class="co-card__icone">
+                <i class="fa" :class="passo === 'cpf' ? 'fa-lock' : 'fa-envelope-open'"></i>
+            </div>
+            <h1 class="co-card__titulo">{{ passo === 'cpf' ? titulo : 'Confirme o código' }}</h1>
+            <p class="co-card__etapa">
+                {{ passo === 'cpf' ? 'Etapa 1 de 2: confirmação de identidade' : 'Etapa 2 de 2: confirmação por e-mail' }}
+            </p>
+        </header>
 
-        <form v-if="passo === 'cpf'" @submit.prevent="solicitarCodigo(false)" novalidate>
-            <div class="co-card__icone"><i class="fa fa-lock"></i></div>
-            <h1 class="co-card__titulo">{{ titulo }}</h1>
+        <div class="co-card__corpo">
+        <!-- Contexto do acesso (ex.: quem enviou e o quê), fornecido pela tela. -->
+        <slot name="origem"></slot>
+
+        <form v-if="passo === 'cpf'" class="co-form" @submit.prevent="solicitarCodigo(false)" novalidate>
             <p class="co-card__texto">
                 Por segurança, informe seu CPF. Enviaremos um código de {{ tamanhoCodigo }} caracteres
                 para o e-mail cadastrado.
@@ -28,15 +39,21 @@
                 :disabled="enviando"
                 @blur="validarCpf(false)"
             >
+            <!-- O aviso completo fica no rodapé da página (layouts/publico/avisos.blade.php). -->
+            <p class="co-ajuda">
+                Usamos seu CPF só para confirmar que é você antes de enviar o código.
+                <a href="#aviso-cpf" data-abre-aviso="aviso-cpf">Por que pedimos o CPF?</a>
+            </p>
             <button type="submit" class="co-btn" :disabled="enviando">
                 <i class="fa" :class="enviando ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
                 Enviar código
             </button>
+            <button type="button" class="co-link co-link--ao-lado" :disabled="enviando" @click="solicitarCodigo(false, true)">
+                Já recebi o código
+            </button>
         </form>
 
-        <form v-else @submit.prevent="validarCodigo" novalidate>
-            <div class="co-card__icone"><i class="fa fa-envelope-open"></i></div>
-            <h1 class="co-card__titulo">Digite o código</h1>
+        <form v-else class="co-form" @submit.prevent="validarCodigo" novalidate>
             <p class="co-card__texto">
                 Enviamos um código de {{ tamanhoCodigo }} caracteres
                 <template v-if="emailMascarado">para <strong>{{ emailMascarado }}</strong></template
@@ -83,6 +100,7 @@
 
         <div v-if="aviso" class="co-alert co-alert--ok" role="status">{{ aviso }}</div>
         <div v-if="erro" class="co-alert co-alert--erro" role="alert">{{ erro }}</div>
+        </div>
     </section>
 </template>
 
@@ -97,7 +115,8 @@ const TAMANHO_CODIGO = 8
  *
  * Endpoints esperados em `urlBase`: POST `/solicitar-codigo` ({ cpf } ou vazio para reenviar)
  * e POST `/validar-codigo` ({ codigo }). `extras` vai junto no corpo das duas chamadas.
- * Estilos: resources/views/layouts/publico/estilos.blade.php.
+ * Estilos: resources/views/layouts/publico/estilos.blade.php (padrão) e
+ * tema-assinatura.blade.php (mesmo visual das telas de assinatura digital).
  */
 export default {
     name: 'AcessoPorCodigo',
@@ -216,7 +235,8 @@ export default {
             this.focarCampoAtual()
         },
         // Sem `reenvio`, valida o CPF digitado; com `reenvio`, usa o CPF já confirmado na sessão.
-        async solicitarCodigo(reenvio = false) {
+        // `jaTenhoCodigo` só confere o CPF e abre a etapa do código, sem enviar outro e-mail.
+        async solicitarCodigo(reenvio = false, jaTenhoCodigo = false) {
             this.erro = ''
             this.aviso = ''
             if (reenvio && !this.podeReenviar) {
@@ -227,7 +247,9 @@ export default {
             }
             this.enviando = true
             try {
-                const corpo = reenvio ? { ...this.extras } : { ...this.extras, cpf: this.cpf }
+                const corpo = reenvio
+                    ? { ...this.extras }
+                    : { ...this.extras, cpf: this.cpf, ja_tenho_codigo: jaTenhoCodigo }
                 const { data } = await axios.post(`${this.urlBase}/solicitar-codigo`, corpo)
                 this.emailMascarado = data.email_mascarado || ''
                 this.aplicarAcesso(data.acesso)

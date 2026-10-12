@@ -20,7 +20,6 @@
                     <input v-model="formUser.filiacao_pai" onblur="valida_campo(this, 3)" class="form-control" />
                 </div>
                 <telefones :model="formUser.telefones" :model-delete="formUser.telefonesDelete" :ramal="false" :pais="false" :qnt_min="1"></telefones>
-                <button type="button" class="btn btn-success" v-show="formUser.telefones.length > 0" @click="alterar">Alterar</button>
             </fieldset>
             <div class="alert alert-info alert-dismissible">
                 <h6 class="text-left"><strong> Obs.: Os arquivos para anexar deve ser no formato PDF, JPG, PNG ou JPEG.</strong><br /></h6>
@@ -49,7 +48,30 @@
                 </div>
             </div>
         </div>
-        <button @click="alterar" class="btn btn-primary"><i class="fa fa-save"></i> Salvar</button>
+        <section v-if="termo && !preload && !salvando" class="doc-termo" aria-labelledby="doc-termo-titulo">
+            <h2 id="doc-termo-titulo" class="doc-termo__titulo">{{ termo.titulo }}</h2>
+            <ol class="doc-termo__itens">
+                <li v-for="(item, i) in termo.itens" :key="i">{{ item }}</li>
+            </ol>
+            <details class="doc-termo__privacidade">
+                <summary>Aviso de privacidade (LGPD)</summary>
+                <dl>
+                    <template v-for="(bloco, i) in termo.privacidade" :key="i">
+                        <dt>{{ bloco.titulo }}</dt>
+                        <dd>{{ bloco.texto }}</dd>
+                    </template>
+                </dl>
+            </details>
+            <label class="doc-termo__aceite">
+                <input type="checkbox" v-model="termoAceito" />
+                <span>{{ termo.declaracao }}</span>
+            </label>
+            <p class="doc-termo__versao">Versão do termo: {{ termo.versao }}</p>
+        </section>
+        <button @click="alterar" class="btn btn-primary" :disabled="salvando || (termo && !termoAceito)">
+            <i class="fa fa-save"></i> Salvar e enviar
+        </button>
+        <p v-if="termo && !termoAceito" class="doc-termo__dica">Marque o aceite do termo para enviar.</p>
     </div>
     <!--        </template>-->
     <!--    </modal>-->
@@ -85,6 +107,13 @@ export default {
             default: 20
         },
 
+        // Termo de declaração + aviso de privacidade vigente ({ versao, hash, titulo, itens, privacidade, declaracao }).
+        termo: {
+            type: Object,
+            required: false,
+            default: null
+        },
+
         modal: {
             // modal Pai
             type: String,
@@ -107,7 +136,7 @@ export default {
     data() {
         return {
             hash: String(Math.random()).substr(2),
-            titulo_janela: 'Documentos Pré Admissão',
+            titulo_janela: 'Documentos',
 
             anexoUploadAndamento: false,
             urlAnexoUpload: `${URL_SITE}/documentos/uploadAnexos`,
@@ -117,6 +146,7 @@ export default {
             exibindo: false,
             mensagem: false,
             salvando: false,
+            termoAceito: false,
 
             formUser: {
                 nome: '',
@@ -143,19 +173,28 @@ export default {
             this.salvando = true
             this.preload = true
             axios
-                .put(`${URL_SITE}/${this.apelido}/documentos/${this.formUser.id}`, this.formUser)
+                .put(`${URL_SITE}/${this.apelido}/documentos/${this.formUser.id}`, {
+                    ...this.formUser,
+                    termo_aceito: this.termoAceito,
+                    termo_hash: this.termo ? this.termo.hash : null
+                })
                 .then((response) => {
                     if (response.status === 201) {
-                        mostraSucesso('Suas informações foram alteradas com sucesso!')
+                        const protocolo = response.data && response.data.protocolo
+                        mostraSucesso(
+                            protocolo
+                                ? `Documentos enviados. Protocolo ${protocolo}. O comprovante vai para o seu e-mail.`
+                                : 'Suas informações foram alteradas com sucesso!'
+                        )
                         setTimeout(() => {
                             this.redirecionar()
-                        }, 2000)
-                        // this.preload = false;
+                        }, 4000)
                     }
                 })
                 .catch((error) => {
                     this.preload = false
                     this.salvando = false
+                    mostraErro('', (error.response && error.response.data && error.response.data.msg) || 'Não foi possível enviar. Tente novamente.')
                 })
         }
     }
@@ -163,6 +202,76 @@ export default {
 </script>
 
 <style scoped>
+.doc-termo {
+    margin: 1.25rem 0;
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(11, 27, 61, 0.14);
+    border-radius: 0.8rem;
+    background: #f4f6fa;
+    font-size: 0.9rem;
+}
+
+.doc-termo__titulo {
+    margin: 0 0 0.6rem;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.doc-termo__itens {
+    margin: 0 0 0.75rem;
+    padding-left: 1.2rem;
+}
+
+.doc-termo__itens li {
+    margin-bottom: 0.4rem;
+}
+
+.doc-termo__privacidade summary {
+    cursor: pointer;
+    font-weight: 700;
+    color: #0047d6;
+}
+
+.doc-termo__privacidade dl {
+    margin: 0.6rem 0 0;
+}
+
+.doc-termo__privacidade dt {
+    font-weight: 700;
+}
+
+.doc-termo__privacidade dd {
+    margin: 0 0 0.5rem;
+}
+
+.doc-termo__aceite {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    margin: 0.9rem 0 0;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.doc-termo__aceite input {
+    width: 20px;
+    height: 20px;
+    margin-top: 0.1rem;
+    flex-shrink: 0;
+}
+
+.doc-termo__versao {
+    margin: 0.5rem 0 0;
+    font-size: 0.78rem;
+    color: #5b6b86;
+}
+
+.doc-termo__dica {
+    margin: 0.4rem 0 0;
+    font-size: 0.85rem;
+    color: #5b6b86;
+}
+
 .card {
     border: none;
     background: transparent;

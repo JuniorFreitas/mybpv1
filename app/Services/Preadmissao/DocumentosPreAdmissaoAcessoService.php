@@ -24,7 +24,7 @@ use RuntimeException;
 class DocumentosPreAdmissaoAcessoService
 {
     public const CONTEXTO = 'documentos_pre_adm_acesso';
-    public const RECURSO = 'Documentos de Pré-admissão';
+    public const RECURSO = 'Documentos';
 
     /** @var array<int, object|null> */
     protected array $candidatos = [];
@@ -36,7 +36,7 @@ class DocumentosPreAdmissaoAcessoService
     public function encontrarEmpresa(string $apelido): ?Cliente
     {
         return Cliente::withoutGlobalScopes()
-            ->select(['id', 'apelido', 'nome_fantasia', 'razao_social'])
+            ->select(['id', 'apelido', 'nome_fantasia', 'razao_social', 'cnpj'])
             ->where('apelido', $apelido)
             ->first();
     }
@@ -75,6 +75,29 @@ class DocumentosPreAdmissaoAcessoService
      */
     public function solicitarCodigo(Cliente $empresa, string $cpfInformado, ?string $publicId = null): array
     {
+        $registro = $this->localizarPeloCpf($empresa, $cpfInformado, $publicId);
+
+        return ['registro' => $registro, 'resposta' => $this->enviarCodigo($registro)];
+    }
+
+    /**
+     * "Já recebi o código": confere o CPF e devolve os prazos do código atual, sem enviar outro.
+     *
+     * @return array{registro: ResultadoIntegrado, resposta: array}
+     */
+    public function confirmarCpf(Cliente $empresa, string $cpfInformado, ?string $publicId = null): array
+    {
+        $registro = $this->localizarPeloCpf($empresa, $cpfInformado, $publicId);
+
+        return ['registro' => $registro, 'resposta' => [
+            'message' => 'CPF confirmado.',
+            'email_mascarado' => $this->emailMascarado($registro),
+            'acesso' => $this->statusAcesso($registro),
+        ]];
+    }
+
+    protected function localizarPeloCpf(Cliente $empresa, string $cpfInformado, ?string $publicId): ResultadoIntegrado
+    {
         if (!$this->codigos->cpfValido($cpfInformado)) {
             throw new RuntimeException('CPF inválido.');
         }
@@ -87,14 +110,16 @@ class DocumentosPreAdmissaoAcessoService
             if (!$this->codigos->cpfConfere($cpfInformado, (string) $this->candidato($registro)?->cpf)) {
                 throw new RuntimeException('CPF não confere com o cadastro deste link.');
             }
-        } else {
-            $registro = $this->encontrarPorCpf((int) $empresa->id, $cpfInformado);
-            if (!$registro) {
-                throw new RuntimeException('Não encontramos solicitação de documentos para este CPF.');
-            }
+
+            return $registro;
         }
 
-        return ['registro' => $registro, 'resposta' => $this->enviarCodigo($registro)];
+        $registro = $this->encontrarPorCpf((int) $empresa->id, $cpfInformado);
+        if (!$registro) {
+            throw new RuntimeException('Não encontramos solicitação de documentos para este CPF.');
+        }
+
+        return $registro;
     }
 
     /**
@@ -121,6 +146,11 @@ class DocumentosPreAdmissaoAcessoService
     public function emailMascarado(ResultadoIntegrado $registro): string
     {
         return $this->codigos->mascararEmail(trim((string) $this->candidato($registro)?->email));
+    }
+
+    public function cpfDoCandidato(ResultadoIntegrado $registro): ?string
+    {
+        return $this->candidato($registro)?->cpf;
     }
 
     public function curriculoId(ResultadoIntegrado $registro): ?int
@@ -256,13 +286,12 @@ class DocumentosPreAdmissaoAcessoService
                     ->join('arquivos', 'arquivos.id', '=', 'documentos_curriculos.arquivo_id')
                     ->get()
                     ->transform(function ($anexo) {
-                        $anexo->url = '';
-                        $anexo->url_download = '';
-                        if (in_array($anexo->disco, Arquivo::LISTAGEM_DISCOS)) {
-                            $anexo->url = config('filesystems.disks.' . $anexo->disco . '.urlShow') . "/{$anexo->file}";
-                            $anexo->urlDownload = config('filesystems.disks.' . $anexo->disco . '.urlDownload') . "/{$anexo->file}";
-                            $anexo->urlThumb = config('filesystems.disks.' . $anexo->disco . '.urlThumb') . "/{$anexo->file}";
-                        }
+                        $thumb = ($anexo->imagem && $anexo->thumb) ? $anexo->thumb : $anexo->file;
+                        $anexo->url = Arquivo::urlAssinadaPreAdmissao('show', $anexo->file);
+                        $anexo->urlDownload = Arquivo::urlAssinadaPreAdmissao('download', $anexo->file);
+                        $anexo->url_download = $anexo->urlDownload;
+                        $anexo->urlThumb = Arquivo::urlAssinadaPreAdmissao('show', $thumb);
+                        $anexo->urlDelete = Arquivo::urlAssinadaPreAdmissao('delete', $anexo->file);
 
                         return $anexo;
                     });

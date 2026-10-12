@@ -161,6 +161,7 @@ class CartaOfertaAcessoPublicoServiceTest extends TestCase
 
     public function test_reenvio_respeita_cooldown(): void
     {
+        $this->freezeSecond();
         Queue::fake();
         $service = app(CartaOfertaAcessoPublicoService::class);
         $carta = $this->criarCarta('pub-3');

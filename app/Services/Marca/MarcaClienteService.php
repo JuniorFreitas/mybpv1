@@ -10,6 +10,23 @@ use App\Models\Cliente;
 class MarcaClienteService
 {
     /**
+     * Para telas públicas em `/{apelido}/...`, onde a empresa vem da URL.
+     *
+     * @return array{nome: string, logo_url: ?string}
+     */
+    public function dadosPorApelido(?string $apelido): array
+    {
+        $cliente = $apelido
+            ? Cliente::withoutGlobalScopes()
+                ->select(['id', 'apelido', 'nome_fantasia', 'razao_social'])
+                ->where('apelido', $apelido)
+                ->first()
+            : null;
+
+        return $this->dados($cliente);
+    }
+
+    /**
      * @return array{nome: string, logo_url: ?string}
      */
     public function dados(?Cliente $cliente): array

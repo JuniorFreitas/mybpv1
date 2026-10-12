@@ -14,7 +14,8 @@ const app = createApp({
             dados: {
                 autenticado: false,
                 public_id: null,
-                curriculo: null
+                curriculo: null,
+                termo: null
             }
         }
     },

@@ -49,6 +49,20 @@ class CartaOfertaListagemPresenterTest extends TestCase
             'local' => CartaOferta::LOCAL_MYBP,
             'setor' => 'RH',
             'salario' => 'R$ 2.000,00',
+            'logs' => json_encode([
+                [
+                    'data' => '2026-10-10 09:00:00',
+                    'mensagem' => 'Carta oferta criada',
+                    'status' => CartaOferta::STATUS_PENDENTE_ANEXO,
+                    'usuario' => 'Maria RH',
+                ],
+                [
+                    'data' => '2026-10-11 14:30:00',
+                    'mensagem' => 'Carta de oferta enviada pelo candidato',
+                    'status' => 'Enviado pelo candidato',
+                    'usuario' => 'João Candidato',
+                ],
+            ]),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -88,6 +102,8 @@ class CartaOfertaListagemPresenterTest extends TestCase
             'atualizacao_exibicao',
             'criador_nome',
             'envio_em',
+            'fluxo_candidato',
+            'fluxo_rh',
             'link_publico',
             'documento_para_assinatura',
             'anexo',
@@ -98,6 +114,12 @@ class CartaOfertaListagemPresenterTest extends TestCase
         $this->assertNull($payload['cpf']);
         $this->assertSame('Maria RH', $payload['criador_nome']);
         $this->assertSame('https://app.test/empresa-teste/carta-oferta/pub-1', $payload['link_publico']);
+        $this->assertSame('aprovado', $payload['fluxo_candidato']['status']);
+        $this->assertSame('Aceito', $payload['fluxo_candidato']['texto']);
+        $this->assertSame('João Candidato', $payload['fluxo_candidato']['nome']);
+        $this->assertNotEmpty($payload['fluxo_candidato']['data']);
+        $this->assertSame('aguardando', $payload['fluxo_rh']['status']);
+        $this->assertSame('Aguardando', $payload['fluxo_rh']['texto']);
         $this->assertArrayNotHasKey('logs', $payload);
         $this->assertArrayNotHasKey('curriculo', $payload);
         $this->assertArrayNotHasKey('acesso_codigo_hash', $payload);

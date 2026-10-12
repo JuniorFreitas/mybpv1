@@ -1694,9 +1694,9 @@ Route::group(['as' => 'documentospreadmissao.'], function () {
     });
 
     Route::post('documentos/uploadAnexos', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'uploadAnexos'])->name('documentos.upload-anexos');
-    Route::get('documentos/anexo/{arquivo}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'anexoShow'])->name('documentos.anexo-show');
-    Route::get('documentos/anexoDownload/{arquivo}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'download'])->name('documentos.anexo-download');
-    Route::delete('documentos/anexo/{arquivo}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'anexoDelete'])->name('documentos.anexo-delete');
+    Route::get('documentos/anexo/{arquivo}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'anexoShow'])->name('documentos.anexo-show')->middleware('signed:relative');
+    Route::get('documentos/anexoDownload/{arquivo}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'download'])->name('documentos.anexo-download')->middleware('signed:relative');
+    Route::delete('documentos/anexo/{arquivo}', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'anexoDelete'])->name('documentos.anexo-delete')->middleware('signed:relative');
 });
 
 //Rotas de pesquisa clima protegidas

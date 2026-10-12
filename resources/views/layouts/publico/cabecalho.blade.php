@@ -26,11 +26,23 @@
 
     .mybp-pub-topo__cliente {
         min-width: 0;
+        max-width: 70%;
         display: flex;
         align-items: center;
     }
 
-    .mybp-pub-topo__cliente img { display: block; max-height: 56px; max-width: 200px; width: auto; height: auto; object-fit: contain; }
+    /* Mesmo critério do site de vagas (site-header__logo): proporção mantida, um pouco menor — 60px de altura, 88px quando a logo é vertical. */
+    .mybp-pub-topo__cliente img {
+        display: block;
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: 60px;
+        object-fit: contain;
+        object-position: left center;
+    }
+
+    .mybp-pub-topo__cliente img.is-portrait { max-height: 88px; }
 
     .mybp-pub-topo__nome {
         font-family: 'Montserrat', Arial, sans-serif;
@@ -44,7 +56,6 @@
 
     @media (max-width: 420px) {
         .mybp-pub-topo__mybpin { height: 20px; }
-        .mybp-pub-topo__cliente img { max-height: 44px; max-width: 130px; }
         .mybp-pub-topo__nome { font-size: 0.82rem; }
     }
 </style>
@@ -54,6 +65,7 @@
             <div class="mybp-pub-topo__cliente">
                 @if($marcaLogo)
                     <img src="{{ $marcaLogo }}" alt="{{ $marcaNome }}"
+                         onload="this.classList.toggle('is-portrait', this.naturalHeight > this.naturalWidth)"
                          onerror="this.hidden = true; this.nextElementSibling.hidden = false;">
                 @endif
                 <span class="mybp-pub-topo__nome" @if($marcaLogo) hidden @endif>{{ $marcaNome }}</span>

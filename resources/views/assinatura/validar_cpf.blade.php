@@ -13,10 +13,7 @@
             <div class="assin-origin mb-3">
                 A empresa <strong>{{ $empresaNome }}</strong> enviou o documento <strong>{{ $nomeDocumento }}</strong> para ser assinado digitalmente.
             </div>
-            <div class="mb-3">
-                <span class="assin-chip">{{ $signatario->nome }}</span>
-                <span class="assin-chip">{{ $signatario->email }}</span>
-            </div>
+            {{-- Nome e e-mail do signatário só aparecem depois da validação (quem abre o link ainda não provou quem é). --}}
 
             <form action="{{ $validarCpfUrl }}" method="POST" class="assin-section">
                 @csrf
@@ -24,6 +21,10 @@
                 <div class="mb-3">
                     <label class="form-label">CPF</label>
                     <input type="text" name="cpf" class="form-control cpf-mask" placeholder="000.000.000-00" value="{{ old('cpf') }}" maxlength="14" required onblur="valida_cpf_vazio(this)">
+                    <small class="form-text text-muted">
+                        Usamos seu CPF só para confirmar que é você antes de enviar o código.
+                <a href="#aviso-cpf" data-abre-aviso="aviso-cpf">Por que pedimos o CPF?</a>
+                    </small>
                 </div>
 
                 <button type="submit" class="btn btn-primary">Enviar código por e-mail</button>

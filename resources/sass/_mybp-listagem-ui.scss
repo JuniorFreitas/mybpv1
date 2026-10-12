@@ -285,6 +285,19 @@
     overflow: hidden;
 }
 
+.mybp-card-titulo--stacked {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.mybp-card-titulo--stacked .text-muted,
+.mybp-card-titulo--stacked .mybp-card-subtitulo {
+    white-space: nowrap;
+    line-height: 1.3;
+}
+
 .mybp-card-titulo strong {
     white-space: nowrap;
     overflow: hidden;

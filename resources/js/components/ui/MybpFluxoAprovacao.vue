@@ -12,6 +12,11 @@
                     <div class="mybp-fluxo__info">
                         <small class="mybp-fluxo__etapa">{{ step.label }}</small>
                         <small
+                            v-if="step.statusTexto && mostrarNome(step)"
+                            class="mybp-fluxo__status"
+                            :class="classeNome(step.status)"
+                        >{{ step.statusTexto }}</small>
+                        <small
                             v-if="mostrarNome(step)"
                             class="mybp-fluxo__aprovador"
                             :class="classeNome(step.status)"

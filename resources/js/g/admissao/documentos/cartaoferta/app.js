@@ -6,6 +6,7 @@ import visualizadorPdf from '../../../../components/visualizadorPdf.vue'
 import AcaoAssinaturaDocumento from '../../../../components/administracao/documentoassinatura/AcaoAssinaturaDocumento.vue'
 import FiltroListagem from '../../../../components/ui/FiltroListagem'
 import ComboboxAutoComplete from '../../../../components/ComboboxAutoComplete'
+import DateRangeFilter from '../../../../components/DateRangeFilter.vue'
 import MybpCardCampo from '../../../../components/ui/MybpCardCampo.vue'
 import MybpFluxoAprovacao from '../../../../components/ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../../../components/ui/MybpStatusBadge.vue'
@@ -16,11 +17,11 @@ import {
     criarWatchQueryParams,
     aplicarPaginaInicialListagem,
     buscarListagem,
-    temFiltrosPreenchidos,
-    limparFiltrosListagem
+    limparFiltrosListagem,
+    montarExtrasPaginacao
 } from '../../../../utils/listagemQueryParams'
 
-const CAMPOS_FILTRO_URL = ['campoBusca', 'status', 'order']
+const CAMPOS_FILTRO_URL = ['campoBusca', 'status', 'order', 'dataInicio', 'dataFim']
 const PAGES_DEFAULT = 50
 
 const app = createApp({
@@ -31,6 +32,7 @@ const app = createApp({
         AcaoAssinaturaDocumento,
         FiltroListagem,
         ComboboxAutoComplete,
+        DateRangeFilter,
         MybpCardCampo,
         MybpFluxoAprovacao,
         MybpStatusBadge
@@ -69,6 +71,8 @@ const app = createApp({
                 carregando: false,
                 dados: {
                     filtroPeriodo: false,
+                    dataInicio: '',
+                    dataFim: '',
                     periodo: '',
                     pages: PAGES_DEFAULT,
                     campoBusca: '',
@@ -102,24 +106,41 @@ const app = createApp({
                 { value: 'nome', label: 'Nome' }
             ]
         },
+        filtroPagesOpcoes() {
+            return [
+                { value: 20, label: '20' },
+                { value: 50, label: '50' },
+                { value: 100, label: '100' }
+            ]
+        },
         temFiltrosAtivos() {
-            return temFiltrosPreenchidos(this.controle.dados, CAMPOS_FILTRO_URL)
+            const d = this.controle.dados
+            return !!(
+                d.campoBusca ||
+                d.status ||
+                (d.order && d.order !== 'data_atualizacao') ||
+                (d.filtroPeriodo && d.dataInicio && d.dataFim) ||
+                Number(d.pages) !== PAGES_DEFAULT
+            )
         }
+    },
+    watch: {
+        'controle.dados': criarWatchQueryParams(CAMPOS_FILTRO_URL, { pagesDefault: PAGES_DEFAULT })
     },
     mounted() {
         lerFiltrosDaUrl(this.controle.dados, CAMPOS_FILTRO_URL)
         if (!this.controle.dados.order) {
             this.controle.dados.order = 'data_atualizacao'
         }
+        if (this.controle.dados.dataInicio || this.controle.dados.dataFim) {
+            this.controle.dados.filtroPeriodo = true
+        }
+        this.sincronizarPeriodoString()
 
         const paginaInicial = lerPaginacaoDaUrl(this.controle.dados, { pagesDefault: PAGES_DEFAULT })
         this.$nextTick(() => {
             aplicarPaginaInicialListagem(this, paginaInicial)
             buscarListagem(this, { resetPagina: false })
-        })
-        criarWatchQueryParams(this, {
-            camposFiltro: CAMPOS_FILTRO_URL,
-            getDados: () => this.controle.dados
         })
         document.addEventListener('click', this.onClickOutside)
     },
@@ -131,6 +152,12 @@ const app = createApp({
             if (valor === null || valor === undefined) return ''
             const texto = String(valor).trim()
             return texto
+        },
+        primeiroUltimoNome(valor) {
+            const partes = this.textoCampo(valor).split(/\s+/).filter(Boolean)
+            if (partes.length === 0) return ''
+            if (partes.length === 1) return partes[0]
+            return `${partes[0]} ${partes[partes.length - 1]}`
         },
         nomeCandidato(item) {
             return this.textoCampo(item?.candidato_nome) || 'Sem nome'
@@ -162,10 +189,11 @@ const app = createApp({
             this.dropdownAbertoKey = null
         },
         onClickOutside(event) {
-            if (event?.target?.closest?.('.dropdown')) {
+            if (event?.target?.closest?.('.dropdown') || event?.target?.closest?.('.mybp-combobox-wrap')) {
                 return
             }
             this.dropdownAbertoKey = null
+            this.fecharOutrosComboboxes(null)
         },
         chaveStatus(status) {
             if (status === 'Aceito pelo RH') return 'aprovado'
@@ -181,50 +209,47 @@ const app = createApp({
         classeCorpoStatus(status) {
             return `mybp-card-corpo--${this.chaveStatus(status)}`
         },
+        passoFluxo(fluxo, fallbackStatus, fallbackTexto) {
+            const passo = fluxo && typeof fluxo === 'object' ? fluxo : {}
+            const status = this.textoCampo(passo.status) || fallbackStatus
+            const texto = this.textoCampo(passo.texto) || fallbackTexto
+            const nome = this.primeiroUltimoNome(passo.nome)
+            const data = this.textoCampo(passo.data)
+
+            return {
+                status,
+                statusTexto: texto,
+                nome: nome || undefined,
+                data: data || undefined
+            }
+        },
         fluxoSteps(item) {
-            const status = item?.status || ''
-            const candidatoStatus = (() => {
-                if (status === 'Expirado') return 'cancelado'
-                if (status === 'Pendente Anexo') return 'aguardando'
-                return 'aprovado'
-            })()
-            const rhStatus = (() => {
-                if (status === 'Aceito pelo RH') return 'aprovado'
-                if (status === 'Recusado pelo RH') return 'reprovado'
-                if (status === 'Aguardando RH') return 'aguardando'
-                if (status === 'Expirado') return 'cancelado'
-                return 'pendente'
-            })()
+            const candidato = this.passoFluxo(item?.fluxo_candidato, 'aguardando', 'Aguardando')
+            const rh = this.passoFluxo(item?.fluxo_rh, 'pendente', 'Pendente')
 
             return [
                 {
                     key: 'envio',
                     label: 'Envio',
                     status: 'aprovado',
-                    nome: this.textoCampo(item?.criador_nome) || 'Não informado',
+                    nome: this.primeiroUltimoNome(item?.criador_nome) || 'Não informado',
                     data: this.textoCampo(item?.envio_em || item?.ultima_atualizacao)
                 },
                 {
                     key: 'candidato',
                     label: 'Candidato',
-                    status: candidatoStatus,
-                    statusTexto: status === 'Pendente Anexo'
-                        ? 'Aguardando'
-                        : status === 'Expirado'
-                            ? 'Expirado'
-                            : 'Enviado'
+                    status: candidato.status,
+                    statusTexto: candidato.statusTexto,
+                    nome: candidato.nome,
+                    data: candidato.data
                 },
                 {
                     key: 'rh',
                     label: 'RH',
-                    status: rhStatus,
-                    statusTexto: status === 'Aceito pelo RH'
-                        ? 'Aceito'
-                        : status === 'Recusado pelo RH'
-                            ? 'Recusado'
-                            : status === 'Aguardando RH'
-                                ? 'Aguardando'
-                                : 'Pendente'
+                    status: rh.status,
+                    statusTexto: rh.statusTexto,
+                    nome: rh.nome,
+                    data: rh.data
                 }
             ]
         },
@@ -275,15 +300,57 @@ const app = createApp({
         enviarAssinaturaCartaOferta({ contexto }) {
             return axios.post(`${this.urlDefault}/enviar-para-assinatura`, { carta_oferta_id: contexto.id })
         },
-        onSelectStatus() {
+        formatarDataFiltro(valor) {
+            const raw = String(valor || '').trim()
+            if (!raw) return ''
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw)) return raw
+            if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+                const [y, m, d] = raw.split('-')
+                return `${d}/${m}/${y}`
+            }
+            return raw
+        },
+        sincronizarPeriodoString() {
+            const d = this.controle.dados
+            if (d.filtroPeriodo && d.dataInicio && d.dataFim) {
+                d.periodo = `${this.formatarDataFiltro(d.dataInicio)} até ${this.formatarDataFiltro(d.dataFim)}`
+            } else {
+                d.periodo = ''
+            }
+        },
+        onPeriodoChange() {
+            this.sincronizarPeriodoString()
             this.atualizar()
         },
-        onSelectOrder() {
+        onSubmitFiltro() {
+            this.sincronizarPeriodoString()
             this.atualizar()
+        },
+        onSelectFiltro() {
+            this.sincronizarPeriodoString()
+            this.atualizar()
+        },
+        fecharOutrosComboboxes(manter) {
+            const combos = [
+                ['filtro-status', 'comboFiltroStatus'],
+                ['filtro-order', 'comboFiltroOrder'],
+                ['filtro-pages', 'comboFiltroPages']
+            ]
+            combos.forEach(([id, refName]) => {
+                if (id !== manter && this.$refs[refName]?.close) {
+                    this.$refs[refName].close()
+                }
+            })
         },
         limparFiltros() {
             limparFiltrosListagem(this.controle.dados, CAMPOS_FILTRO_URL)
             this.controle.dados.order = 'data_atualizacao'
+            this.controle.dados.filtroPeriodo = false
+            this.controle.dados.dataInicio = ''
+            this.controle.dados.dataFim = ''
+            this.controle.dados.periodo = ''
+            this.controle.dados.pages = PAGES_DEFAULT
+            this.fecharOutrosComboboxes(null)
             this.atualizar()
         },
         abrirNovaCarta() {
@@ -446,12 +513,17 @@ const app = createApp({
             this.lista_projetos = dados.lista_projetos
             this.lista_status = dados.lista_status
             this.controle.carregando = false
-            sincronizarFiltrosNaUrl(this.controle.dados, CAMPOS_FILTRO_URL)
+            sincronizarFiltrosNaUrl(
+                this.controle.dados,
+                CAMPOS_FILTRO_URL,
+                montarExtrasPaginacao(this, { pagesDefault: PAGES_DEFAULT })
+            )
         },
         carregando() {
             this.controle.carregando = true
         },
         atualizar() {
+            this.sincronizarPeriodoString()
             buscarListagem(this, { resetPagina: true })
         }
     }

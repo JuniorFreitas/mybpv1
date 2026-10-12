@@ -23,13 +23,16 @@ class DocumentosPreAdmissaoAcessoServiceTest extends TestCase
         parent::setUp();
         config(['activitylog.enabled' => false, 'app.url' => 'https://mybp.test']);
 
-        foreach (['resultado_integrados', 'feedback_curriculos', 'curriculos', 'clientes'] as $tabela) {
+        foreach (['acessos_publicos_auditorias', 'resultado_integrados', 'feedback_curriculos', 'curriculos', 'clientes'] as $tabela) {
             Schema::dropIfExists($tabela);
         }
+
+        (require database_path('migrations/2026_10_12_100000_create_acessos_publicos_auditorias_table.php'))->up();
 
         Schema::create('clientes', function (Blueprint $table) {
             $table->id();
             $table->string('apelido')->nullable();
+            $table->string('cnpj')->nullable();
             $table->string('nome_fantasia')->nullable();
             $table->string('razao_social')->nullable();
             $table->timestamps();
@@ -98,6 +101,7 @@ class DocumentosPreAdmissaoAcessoServiceTest extends TestCase
 
     public function test_link_com_public_id_envia_codigo_e_valida_uso_unico(): void
     {
+        $this->freezeSecond();
         Queue::fake();
         $service = app(DocumentosPreAdmissaoAcessoService::class);
         $empresa = $service->encontrarEmpresa('empresa-teste');
@@ -198,5 +202,121 @@ class DocumentosPreAdmissaoAcessoServiceTest extends TestCase
             ->assertStatus(401);
 
         $this->assertSame('Candidato 1', DB::table('curriculos')->where('id', 1)->value('nome'));
+    }
+
+    public function test_http_grava_trilha_de_auditoria_com_cpf_mascarado_e_registro_integro(): void
+    {
+        Queue::fake();
+        $this->criarSolicitacao(1);
+
+        $this->postJson('/empresa-teste/documentos-pre-admissao/solicitar-codigo', ['cpf' => '529.982.247-25'])
+            ->assertStatus(422);
+        $this->postJson('/empresa-teste/documentos-pre-admissao/solicitar-codigo', ['cpf' => self::CPF])->assertOk();
+        $this->postJson('/empresa-teste/documentos-pre-admissao/validar-codigo', ['codigo' => '00000000'])
+            ->assertStatus(422);
+
+        $eventos = \App\Models\AcessoPublicoAuditoria::query()->orderBy('id')->get();
+        $this->assertSame(
+            ['codigo_negado', 'codigo_solicitado', 'codigo_invalido'],
+            $eventos->pluck('evento')->all()
+        );
+
+        $negado = $eventos[0];
+        $this->assertSame('***.982.247-**', $negado->cpf_mascarado);
+        $this->assertNull($negado->registro_id);
+
+        $solicitado = $eventos[1];
+        $this->assertSame(1, $solicitado->registro_id);
+        $this->assertSame('***.456.789-**', $solicitado->cpf_mascarado);
+        $this->assertSame('c***@teste.com', $solicitado->email_mascarado);
+        $this->assertNotEmpty($solicitado->ip);
+        $this->assertStringNotContainsString('12345678909', json_encode($eventos));
+
+        // Encadeamento: cada evento do registro aponta para o hash do anterior.
+        $this->assertSame($solicitado->hash, $eventos[2]->hash_anterior);
+
+        $auditoria = app(\App\Services\AcessoPublico\AuditoriaAcessoService::class);
+        $this->assertTrue($auditoria->integro($solicitado->fresh()));
+
+        DB::table('acessos_publicos_auditorias')->where('id', $solicitado->id)->update(['ip' => '10.0.0.9']);
+        $this->assertFalse($auditoria->integro($solicitado->fresh()), 'Alteração direta no banco precisa ser detectada.');
+    }
+
+    public function test_registro_de_auditoria_nao_pode_ser_alterado_nem_excluido(): void
+    {
+        $registro = app(\App\Services\AcessoPublico\AuditoriaAcessoService::class)
+            ->registrar('teste', self::EMPRESA_ID, 'evento');
+
+        try {
+            $registro->update(['evento' => 'outro']);
+            $this->fail('Não deveria permitir alterar.');
+        } catch (\LogicException $e) {
+        }
+
+        $this->expectException(\LogicException::class);
+        $registro->delete();
+    }
+
+    public function test_http_salvar_exige_aceite_do_termo_vigente(): void
+    {
+        $this->criarSolicitacao(1);
+        $sessao = ['documentos_pre_adm_empresa-teste' => ['resultado_id' => 1, 'autenticado' => true]];
+        $corpo = ['nome' => 'Novo Nome', 'filiacao_mae' => 'Mae'];
+
+        $this->withSession($sessao)->putJson('/empresa-teste/documentos/1', $corpo)->assertStatus(422);
+        $this->withSession($sessao)
+            ->putJson('/empresa-teste/documentos/1', $corpo + ['termo_aceito' => true, 'termo_hash' => 'hash-antigo'])
+            ->assertStatus(422);
+
+        $this->assertSame('Candidato 1', DB::table('curriculos')->where('id', 1)->value('nome'));
+        $this->assertSame(0, DB::table('acessos_publicos_auditorias')->where('evento', 'termo_aceito')->count());
+    }
+
+    public function test_termo_muda_de_hash_quando_o_texto_muda(): void
+    {
+        $termos = app(\App\Services\Preadmissao\TermoDocumentosPreAdmissao::class);
+        $service = app(DocumentosPreAdmissaoAcessoService::class);
+
+        $a = $termos->montar($service->encontrarEmpresa('empresa-teste'));
+        $b = $termos->montar($service->encontrarEmpresa('outra'));
+
+        $this->assertSame(64, strlen($a['hash']));
+        $this->assertNotSame($a['hash'], $b['hash'], 'O controlador faz parte do texto aceito.');
+    }
+
+    public function test_http_ja_recebi_o_codigo_confere_cpf_sem_enviar_outro_codigo(): void
+    {
+        Queue::fake();
+        $this->criarSolicitacao(1);
+        $url = '/empresa-teste/documentos-pre-admissao/solicitar-codigo';
+
+        $this->postJson($url, ['cpf' => '529.982.247-25', 'ja_tenho_codigo' => true])->assertStatus(422);
+
+        // Sem código emitido: abre a etapa do código já como expirado (para reenviar).
+        $this->postJson($url, ['cpf' => self::CPF, 'ja_tenho_codigo' => true])
+            ->assertOk()
+            ->assertJsonPath('acesso.codigo_segundos', 0)
+            ->assertJsonPath('email_mascarado', 'c***@teste.com');
+        Queue::assertNothingPushed();
+
+        // CPF confirmado na sessão: o reenvio (sem CPF) passa a funcionar.
+        $this->postJson($url, [])->assertOk();
+        Queue::assertPushed(JobEnvioCodigoAcessoCartaOferta::class, 1);
+
+        $this->assertSame(
+            ['codigo_negado', 'cpf_confirmado', 'codigo_reenviado'],
+            DB::table('acessos_publicos_auditorias')->orderBy('id')->pluck('evento')->all()
+        );
+    }
+
+    public function test_mascara_de_email_deixa_o_dono_reconhecer_sem_expor_o_endereco(): void
+    {
+        $codigos = app(CodigoAcessoService::class);
+
+        $this->assertSame('al***a@outlook.com', $codigos->mascararEmail('alessandra.sousa@outlook.com'));
+        $this->assertSame('jo***o@empresa.com.br', $codigos->mascararEmail('joao.pedro@empresa.com.br'));
+        $this->assertSame('c***@teste.com', $codigos->mascararEmail('cand@teste.com'));
+        $this->assertSame('a***@x.com', $codigos->mascararEmail('a@x.com'));
+        $this->assertSame('***', $codigos->mascararEmail('sem-arroba'));
     }
 }

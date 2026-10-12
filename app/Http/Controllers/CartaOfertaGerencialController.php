@@ -163,7 +163,7 @@ class CartaOfertaGerencialController extends Controller
 
     public function filtro(Request $request)
     {
-        $filtroIntervalo = $request->filtroPeriodo == 'true';
+        $filtroIntervalo = filter_var($request->filtroPeriodo, FILTER_VALIDATE_BOOLEAN);
 
         $query = CartaOferta::query()
             ->select([
@@ -209,10 +209,10 @@ class CartaOfertaGerencialController extends Controller
             $query->where('curriculo_carta_oferta.status', $request['status']);
         }
 
-        if ($filtroIntervalo) {
+        if ($filtroIntervalo && $request->filled('periodo') && str_contains((string) $request->periodo, ' até ')) {
             $periodo = explode(' até ', $request->periodo);
-            $dataInicio = new DataHora($periodo[0] . ' 00:00:00');
-            $dataFim = new DataHora($periodo[1] . ' 23:59:59');
+            $dataInicio = new DataHora(trim($periodo[0]) . ' 00:00:00');
+            $dataFim = new DataHora(trim($periodo[1]) . ' 23:59:59');
             $query->where('curriculo_carta_oferta.updated_at', '>=', $dataInicio->dataHoraInsert())
                 ->where('curriculo_carta_oferta.updated_at', '<=', $dataFim->dataHoraInsert());
         }

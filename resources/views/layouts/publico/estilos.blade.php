@@ -76,6 +76,9 @@
             padding: 1.75rem;
         }
 
+        /* Linha "Etapa X de 2": só aparece no tema da assinatura digital. */
+        .co-card__etapa { display: none; }
+
         .co-card__icone {
             width: 52px;
             height: 52px;
@@ -123,6 +126,9 @@
         }
 
         .co-input:focus { outline: 0; border-color: var(--co-azul); box-shadow: 0 0 0 3px var(--co-focus); }
+        .co-ajuda { margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--co-muted); }
+        .co-ajuda a { color: inherit; font-weight: 700; text-decoration: underline; }
+
         .co-input.is-invalid { border-color: var(--co-erro); }
         .co-input.is-invalid:focus { box-shadow: 0 0 0 3px rgba(176, 42, 55, 0.18); }
         .co-input ~ .invalid-feedback { margin-top: 0.4rem; font-size: 0.86rem; font-weight: 600; color: var(--co-erro); }
@@ -156,6 +162,9 @@
             font-weight: 700;
             color: var(--co-azul);
         }
+
+        /* Link ao lado do botão principal ("Já recebi o código"). */
+        .co-link--ao-lado { display: block; margin: 0.75rem auto 0; }
 
         .co-link:hover:not(:disabled) { text-decoration: underline; }
         .co-link:disabled { color: var(--co-muted); cursor: not-allowed; }

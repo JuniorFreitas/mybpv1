@@ -252,54 +252,110 @@
     </modal>
 
     <filtro-listagem
+        class="mt-2 mybp-filtros-compactos"
         titulo="Filtros"
         :desabilitado="controle.carregando"
         :mostrar-limpar-filtros="temFiltrosAtivos"
-        @submit="atualizar"
+        @submit="onSubmitFiltro"
         @limpar="limparFiltros"
     >
         <template #filtros>
+            <date-range-filter
+                v-model:enabled="controle.dados.filtroPeriodo"
+                v-model:start-date="controle.dados.dataInicio"
+                v-model:end-date="controle.dados.dataFim"
+                :disabled="controle.carregando"
+                :id-suffix="'carta-' + hash"
+                label="Período"
+                wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                @change="onPeriodoChange"
+            ></date-range-filter>
+
             <div class="col-12 col-md-4">
-                <label class="mybp-label">Buscar</label>
-                <input type="text"
-                       placeholder="Nome ou CPF"
-                       class="form-control form-control-sm"
-                       :disabled="controle.carregando"
-                       v-model="controle.dados.campoBusca">
-            </div>
-            <div class="col-12 col-md-4">
-                <label class="mybp-label" for="carta-filtro-status">Status</label>
-                <div class="mybp-combobox-wrap">
-                    <combobox-auto-complete
-                        input-id="carta-filtro-status"
-                        :options="filtroStatusOpcoes"
-                        v-model="controle.dados.status"
+                <div class="form-group mybp-filtro-campo mb-2 mb-md-0">
+                    <label class="mybp-label" for="carta-filtro-busca">Buscar</label>
+                    <input
+                        id="carta-filtro-busca"
+                        type="text"
+                        placeholder="Nome ou CPF"
+                        autocomplete="off"
+                        class="form-control form-control-sm"
                         :disabled="controle.carregando"
-                        placeholder-blur="Todos"
-                        @select="onSelectStatus"
-                    ></combobox-auto-complete>
+                        v-model="controle.dados.campoBusca"
+                    >
                 </div>
             </div>
+
             <div class="col-12 col-md-4">
-                <label class="mybp-label" for="carta-filtro-order">Ordenar por</label>
-                <div class="mybp-combobox-wrap">
-                    <combobox-auto-complete
-                        input-id="carta-filtro-order"
-                        :options="filtroOrderOpcoes"
-                        v-model="controle.dados.order"
-                        :disabled="controle.carregando"
-                        @select="onSelectOrder"
-                    ></combobox-auto-complete>
+                <div class="form-group mybp-filtro-campo mb-2 mb-md-0">
+                    <label class="mybp-label" for="carta-filtro-status">Status</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroStatus"
+                            instance-id="filtro-status"
+                            input-id="carta-filtro-status"
+                            :options="filtroStatusOpcoes"
+                            v-model="controle.dados.status"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Todos"
+                            empty-message="Nenhuma opção encontrada."
+                            :max-results="20"
+                            @opening="fecharOutrosComboboxes('filtro-status')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo mb-2 mb-md-0">
+                    <label class="mybp-label" for="carta-filtro-order">Ordenar por</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroOrder"
+                            instance-id="filtro-order"
+                            input-id="carta-filtro-order"
+                            :options="filtroOrderOpcoes"
+                            v-model="controle.dados.order"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Data de atualização"
+                            empty-message="Nenhuma opção encontrada."
+                            :max-results="10"
+                            @opening="fecharOutrosComboboxes('filtro-order')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo mb-2 mb-md-0">
+                    <label class="mybp-label" for="carta-filtro-pages">Exibir</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroPages"
+                            instance-id="filtro-pages"
+                            input-id="carta-filtro-pages"
+                            :options="filtroPagesOpcoes"
+                            v-model="controle.dados.pages"
+                            :disabled="controle.carregando"
+                            placeholder-blur="50"
+                            empty-message="Nenhuma opção encontrada."
+                            :max-results="10"
+                            @opening="fecharOutrosComboboxes('filtro-pages')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
                 </div>
             </div>
         </template>
         <template #acoes>
+            <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
+                Buscar
+            </button>
             <button type="button" class="btn btn-sm btn-primary" :disabled="controle.carregando" @click="abrirNovaCarta">
                 <i class="fa fa-plus"></i> Nova carta
-            </button>
-            <button type="button" class="btn btn-sm btn-success" :disabled="controle.carregando" @click="atualizar">
-                <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                Atualizar
             </button>
         </template>
     </filtro-listagem>
@@ -320,9 +376,9 @@
                 <div class="mybp-card-header-row">
                     <div class="mybp-card-left">
                         <span class="mybp-badge-id">#@{{ item.id }}</span>
-                        <div class="mybp-card-titulo">
+                        <div class="mybp-card-titulo mybp-card-titulo--stacked">
                             <strong>@{{ nomeCandidato(item) }}</strong>
-                            <div class="text-muted small" v-if="cpfExibicao(item)">
+                            <div class="text-muted small mybp-card-subtitulo" v-if="cpfExibicao(item)">
                                 CPF @{{ cpfExibicao(item) }}
                             </div>
                         </div>
@@ -425,12 +481,13 @@
                     </section>
 
                     <section class="mybp-card-secao">
-                        <div class="mybp-card-row mybp-card-row--2">
+                        <div class="mybp-card-row">
                             <mybp-card-campo
                                 icon="fas fa-envelope"
                                 label="E-mail"
                                 :valor="textoCampo(item.contato_email)"
                             ></mybp-card-campo>
+                            <div aria-hidden="true"></div>
                             <mybp-card-campo
                                 icon="fas fa-phone"
                                 label="Telefone"

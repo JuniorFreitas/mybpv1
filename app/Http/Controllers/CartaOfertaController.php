@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\CartaOferta;
 use App\Models\Cliente;
+use App\Services\AcessoPublico\AuditoriaAcessoService;
 use App\Services\CartaOferta\CartaOfertaAcessoPublicoService;
 use App\Services\Marca\MarcaClienteService;
+use App\Services\Preadmissao\AnexoPreAdmissaoAcessoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use MasterTag\DataHora;
@@ -29,6 +31,7 @@ class CartaOfertaController extends Controller
 
         if ($autenticado) {
             $payload = $acesso->payloadAutenticado($carta);
+            app(AnexoPreAdmissaoAcessoService::class)->liberarCandidato($request, (int) $carta->curriculo_id);
         } elseif (session($acesso->sessionKeyCpfConfirmado($publicId))) {
             $payload = $acesso->payloadDesafioPendente($carta);
         } else {
@@ -59,16 +62,28 @@ class CartaOfertaController extends Controller
 
         try {
             if ($request->filled('cpf')) {
-                $resultado = $acesso->solicitarCodigo($carta, $request->input('cpf'));
+                // "Já recebi o código": só confere o CPF, sem enviar outro código.
+                $jaTemCodigo = $request->boolean('ja_tenho_codigo');
+                $resultado = $jaTemCodigo
+                    ? $acesso->confirmarCpf($carta, $request->input('cpf'))
+                    : $acesso->solicitarCodigo($carta, $request->input('cpf'));
                 session([$cpfKey => true]);
+                $evento = $jaTemCodigo ? AuditoriaAcessoService::EVENTO_CPF_CONFIRMADO : AuditoriaAcessoService::EVENTO_CODIGO_SOLICITADO;
             } elseif (session($cpfKey)) {
                 $resultado = $acesso->reenviarCodigo($carta);
+                $evento = AuditoriaAcessoService::EVENTO_CODIGO_REENVIADO;
             } else {
                 return response()->json(['message' => 'Informe seu CPF para receber o código.'], 422);
             }
+            $this->auditar($request, $carta, $evento, ['email_mascarado' => $resultado['email_mascarado']]);
 
             return response()->json($resultado, 200);
         } catch (RuntimeException $e) {
+            $this->auditar($request, $carta, AuditoriaAcessoService::EVENTO_CODIGO_NEGADO, [
+                'cpf' => $request->input('cpf'),
+                'dados' => ['motivo' => $e->getMessage()],
+            ]);
+
             return response()->json([
                 'message' => $e->getMessage(),
                 'acesso' => session($cpfKey) ? $acesso->statusAcesso($carta) : null,
@@ -95,15 +110,32 @@ class CartaOfertaController extends Controller
         try {
             $payload = $acesso->validarCodigo($carta, $request->input('codigo'));
             session([$acesso->sessionKey($publicId) => true]);
+            app(AnexoPreAdmissaoAcessoService::class)->liberarCandidato($request, (int) $carta->curriculo_id);
             session()->forget($acesso->sessionKeyCpfConfirmado($publicId));
+            $this->auditar($request, $carta, AuditoriaAcessoService::EVENTO_CODIGO_VALIDADO);
 
             return response()->json($payload, 200);
         } catch (RuntimeException $e) {
+            $this->auditar($request, $carta, AuditoriaAcessoService::EVENTO_CODIGO_INVALIDO, [
+                'dados' => ['motivo' => $e->getMessage()],
+            ]);
+
             return response()->json([
                 'message' => $e->getMessage(),
                 'acesso' => $acesso->statusAcesso($carta),
             ], 422);
         }
+    }
+
+    protected function auditar(Request $request, CartaOferta $carta, string $evento, array $info = []): void
+    {
+        app(AuditoriaAcessoService::class)->registrar(
+            CartaOfertaAcessoPublicoService::CONTEXTO,
+            (int) $carta->empresa_id,
+            $evento,
+            $request,
+            $info + ['registro_id' => $carta->id, 'curriculo_id' => $carta->curriculo_id]
+        );
     }
 
     public function salvarCartaOferta(Request $request, CartaOfertaAcessoPublicoService $acesso)
@@ -142,6 +174,17 @@ class CartaOfertaController extends Controller
                 'arquivo.id' => 'required',
             ]);
 
+            // Só aceita o arquivo que o próprio candidato acabou de enviar (a chave vem do upload).
+            $arquivoEnviado = \DB::table('arquivos')
+                ->where('id', $request->input('arquivo.id'))
+                ->where('disco', \App\Models\Arquivo::DISCO_DOCUMENTOS_PRE_ADMISSAO)
+                ->where('chave', (string) $request->input('arquivo.chave'))
+                ->where('chave', '!=', '')
+                ->exists();
+            if (!$arquivoEnviado) {
+                return response()->json(['message' => 'Arquivo inválido. Anexe a carta novamente.'], 422);
+            }
+
             $logsAntigo = json_decode($row->logs, true) ?: [];
             $logsAntigo[] = [
                 'data' => (new DataHora())->dataHoraInsert(),
@@ -159,6 +202,18 @@ class CartaOfertaController extends Controller
                 'arquivo_id' => $request->arquivo['id'],
                 'logs' => json_encode($logsAntigo),
             ]);
+
+            app(AuditoriaAcessoService::class)->registrar(
+                CartaOfertaAcessoPublicoService::CONTEXTO,
+                (int) $row->empresa_id,
+                AuditoriaAcessoService::EVENTO_CARTA_ENVIADA,
+                $request,
+                [
+                    'registro_id' => $row->id,
+                    'curriculo_id' => $row->curriculo_id,
+                    'dados' => ['arquivo_id' => (int) $request->arquivo['id']],
+                ]
+            );
 
             return response()->json(['message' => 'Carta de oferta enviada com sucesso!'], 200);
         }

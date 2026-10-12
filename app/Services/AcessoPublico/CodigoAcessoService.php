@@ -129,14 +129,25 @@ class CodigoAcessoService
         return strlen($a) === 11 && hash_equals($b, $a);
     }
 
+    /**
+     * Mostra o suficiente para o dono reconhecer o próprio e-mail (2 primeiras letras, a última e o
+     * domínio), sem entregar o endereço: `alessandra.sousa@outlook.com` -> `al***a@outlook.com`.
+     * A quantidade de asteriscos é fixa para não revelar o tamanho.
+     */
     public function mascararEmail(string $email): string
     {
         if ($email === '' || !str_contains($email, '@')) {
             return '***';
         }
         [$user, $domain] = explode('@', $email, 2);
+        $tamanho = mb_strlen($user);
 
-        return mb_substr($user, 0, 1) . '***@' . $domain;
+        // Usuário curto: revelar início e fim entregaria quase tudo.
+        $visivel = $tamanho >= 5
+            ? mb_substr($user, 0, 2) . '***' . mb_substr($user, -1)
+            : mb_substr($user, 0, 1) . '***';
+
+        return $visivel . '@' . $domain;
     }
 
     /**

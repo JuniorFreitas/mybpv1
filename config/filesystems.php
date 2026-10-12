@@ -167,7 +167,8 @@ return [
                 'urlDownload' => env('APP_URL') . '/documentos/anexoDownload',
                 'urlThumb' => env('APP_URL') . '/documentos/anexo',
                 'urlDelete' => env('APP_URL') . '/documentos/anexo',
-                'visibility' => 'public',
+                // Documentos pessoais: nunca públicos no bucket; acesso só pelas rotas assinadas.
+                'visibility' => 'private',
             ]
         ),
 
