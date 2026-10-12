@@ -5,6 +5,8 @@
 - **Chamados:** as telas foram capturadas sem chamados abertos; por isso o manual mostra a lista e o formulário de abertura, mas não a tela de acompanhamento de um chamado.
 - **Controle de Ponto e Weekly Report:** as telas foram capturadas sem gravar nada. Não foi registrado ponto, ajustada jornada nem criado quadro; por isso a aba Histórico do ponto eletrônico, o mapa do perímetro e o conteúdo do Relatório Sintético não são mostrados.
 - **Portal de vagas:** o formulário do currículo foi capturado sem salvar a candidatura; os campos internos de cada experiência e de cada qualificação e a tela exibida após o envio não são mostrados.
+- **Carta Oferta e Pré-admissão:** as páginas do candidato foram capturadas até a validação de segurança (CPF); a tela seguinte, protegida pelo código enviado por e-mail, não é mostrada. O PDF da carta e as ações do RH sobre a resposta do candidato também não aparecem em imagem.
+- **Assinatura digital:** disponível para as empresas com o recurso habilitado. Nenhum documento foi enviado, cancelado ou reenviado para produzir o manual; a tela que o signatário vê ao abrir o link e assinar não foi capturada.
 - **Personalizações:** listas como tipos de exame, treinamentos, padrões por cliente, competências de avaliação, tags e setores são configuradas por empresa; as opções mostradas aqui são exemplos.
 - **Opções dos filtros:** nos filtros em lista (centro de custo, cargo, status, tipo…), as opções vêm dos cadastros da empresa; o manual explica para que serve cada filtro, sem listar todas as opções possíveis.
 - **Gráficos dos relatórios:** todos os relatórios com a opção Gráficos seguem o modelo mostrado na seção 13.1; as demais visões gráficas não foram reproduzidas uma a uma.

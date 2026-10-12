@@ -11,6 +11,7 @@ Em muitas empresas, o RH trabalha com planilhas, e-mails, pastas de documentos e
 - **Treinamentos sem controle:** Padrões de treinamento por cargo e cliente, lançamento individual ou por importação em lote, carteiras, etiquetas e certificados.
 - **Jornada e ponto:** Escalas, perímetros de marcação, ponto eletrônico, conferência de jornadas e folhas de ponto.
 - **Documentos sem dono:** Cloud com pastas por grupo, controle de quem acessa e fluxo de revisão e aprovação de arquivos.
+- **Assinatura em papel:** Assinatura digital de contratos, termos e cartas oferta, com acompanhamento por signatário e trilha de auditoria (data, IP e hash de evidência).
 - **Acesso sem controle:** Usuários vinculados a grupos de permissão, verificação em duas etapas no login e política de senhas seguras.
 
 ## Como a plataforma está organizada
