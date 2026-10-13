@@ -104,6 +104,18 @@ class MedidaAdministrativa extends Model
         'created_at' => 'date:d/m/Y'
     ];
 
+    protected $appends = ['public_id'];
+
+    public function getPublicIdAttribute(): ?string
+    {
+        $id = (int) ($this->attributes['id'] ?? 0);
+        if ($id <= 0) {
+            return null;
+        }
+
+        return \App\Support\RuntimePublicId::encode($id);
+    }
+
     const TIPOS = [
         'Re-orientação',
         'Advertência Verbal',

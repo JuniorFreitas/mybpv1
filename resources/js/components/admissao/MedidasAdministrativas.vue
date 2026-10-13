@@ -526,7 +526,10 @@ export default {
             this.form.medidas_administrativas.splice(index, 1)
         },
         gerarPdf(obj) {
-            let link = `${URL_ADMIN}/historico/medidas-administrativas/${obj.id}/${obj.feedback_id}/pdf`
+            if (!obj.public_id) {
+                return
+            }
+            const link = `${URL_ADMIN}/historico/medidas-administrativas/${obj.public_id}/pdf`
             open(link, 'blank')
         },
         /** Existe documento para assinatura vinculado → mostrar "Gerenciar assinatura" (qualquer status). */

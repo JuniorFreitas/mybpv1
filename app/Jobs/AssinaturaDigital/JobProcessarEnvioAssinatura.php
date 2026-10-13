@@ -272,8 +272,13 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
             ),
         ];
 
-        $pdf = PDF::loadView('pdf.admissao.historico.medidasadministrativas.carta-advertencia', compact('medida', 'dados'));
-        $pdf->setPaper('A4', 'portrait');
+        $solicitante = (string) (Auth::user()?->nome ?? '');
+
+        /** @var \Barryvdh\DomPDF\PDF $pdf */
+        $pdf = app('dompdf.wrapper');
+        $pdf->loadView('pdf.admissao.historico.medidasadministrativas.carta-advertencia', compact('medida', 'dados'));
+        app(ComunicadoDispensaSemJustaCausaPdfService::class)
+            ->aplicarPadraoDocumento($pdf, $solicitante);
         $pdfContent = $pdf->output();
         $nomeArquivo = 'carta_' . Str::slug($medida->tipo) . '_' . (new DataHora())->nomeUnico() . '.pdf';
 

@@ -1042,7 +1042,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::delete('/anexo/{arquivo}', [\App\Http\Controllers\MedidasAdministrativasController::class, 'anexoDelete'])->name('anexo-delete');
             Route::post('/uploadAnexos', [\App\Http\Controllers\MedidasAdministrativasController::class, 'uploadAnexos'])->name('upload-anexos');
             Route::put('/remover-medida-administrativa', [\App\Http\Controllers\MedidasAdministrativasController::class, 'removerMedidaAdministrativa'])->name('remover-medida-administrativa');
-            Route::get('/{medida}/{feedback_id}/pdf', [\App\Http\Controllers\MedidasAdministrativasController::class, 'medidasAdministrativasPDF'])->name('pdfMedidasAdministrativas');
+            Route::get('/{publicId}/pdf', [\App\Http\Controllers\MedidasAdministrativasController::class, 'medidasAdministrativasPDF'])->name('pdfMedidasAdministrativas');
             Route::post('/enviar-para-assinatura', [\App\Http\Controllers\MedidasAdministrativasController::class, 'enviarMedidaParaAssinatura'])->name('enviarParaAssinatura')->middleware('assinatura.digital.habilitada');
         });
 

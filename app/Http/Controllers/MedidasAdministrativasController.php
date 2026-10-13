@@ -6,11 +6,12 @@ use App\Jobs\AssinaturaDigital\JobProcessarEnvioAssinatura;
 use App\Models\Arquivo;
 use App\Models\Sistema;
 use App\Services\AssinaturaDigital\AssinaturaCotaService;
+use App\Services\Demissao\ComunicadoDispensaSemJustaCausaPdfService;
 use App\Services\Historico\MedidaAdministrativaService;
+use App\Support\RuntimePublicId;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use MasterTag\DataHora;
-use PDF;
 
 class MedidasAdministrativasController extends Controller
 {
@@ -19,9 +20,15 @@ class MedidasAdministrativasController extends Controller
     ) {
     }
 
-    public function medidasAdministrativasPDF($medida, $feedback_id)
+    public function medidasAdministrativasPDF(string $publicId)
     {
-        $medida = $this->medidaAdministrativaService->buscarParaPDF($medida);
+        try {
+            $medidaId = RuntimePublicId::decode($publicId);
+        } catch (\InvalidArgumentException $e) {
+            abort(404);
+        }
+
+        $medida = $this->medidaAdministrativaService->buscarParaPDF($medidaId);
 
         if (!$medida) {
             return abort(404);
@@ -34,10 +41,15 @@ class MedidasAdministrativasController extends Controller
             ),
         ];
 
-        $pdf = PDF::loadView('pdf.admissao.historico.medidasadministrativas.carta-advertencia', compact('medida', 'dados'));
-        $pdf->setPaper('A4', 'portrait');
+        $solicitante = (string) (auth()->user()?->nome ?? '');
 
-        return $pdf->stream("carta_" . Str::slug($medida->tipo) . (new DataHora())->nomeUnico() . ".pdf");
+        /** @var \Barryvdh\DomPDF\PDF $pdf */
+        $pdf = app('dompdf.wrapper');
+        $pdf->loadView('pdf.admissao.historico.medidasadministrativas.carta-advertencia', compact('medida', 'dados'));
+        app(ComunicadoDispensaSemJustaCausaPdfService::class)
+            ->aplicarPadraoDocumento($pdf, $solicitante);
+
+        return $pdf->stream('carta_' . Str::slug($medida->tipo) . (new DataHora())->nomeUnico() . '.pdf');
     }
 
     /**
