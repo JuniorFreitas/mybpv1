@@ -11,6 +11,7 @@ use App\Models\CentroCusto;
 use App\Models\DemissaoPrevista;
 use App\Models\Cliente;
 use App\Models\DocumentoParaAssinatura;
+use App\Services\Demissao\ComunicadoDispensaSemJustaCausaPdfService;
 use App\Services\DemissaoPrevista\DemissaoPrevistaEditPayloadMapper;
 use App\Services\DemissaoPrevista\DemissaoPrevistaFilterApplier;
 use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
@@ -527,7 +528,20 @@ class DemissaoPrevistaController extends Controller
 
     public function pdf(DemissaoPrevista $demissaoPrevista, Request $request)
     {
-        $pdf = PDF::loadView('pdf.planejamento.movimentacao.demissao.avisoprevio', compact('demissaoPrevista'));
+        $demissaoPrevista = DemissaoPrevista::query()
+            ->select(['id', 'colaborador_id', 'tipo_aviso', 'data_demissao', 'empresa_id'])
+            ->with([
+                'Colaborador:id,nome,empresa_id',
+                'Colaborador.DadosEmpresa:id,razao_social,cnpj,municipio,uf',
+                'Colaborador.Feedback:id,curriculo_id,empresa_id',
+                'Colaborador.Feedback.Empresa:id,razao_social,cnpj,municipio,uf',
+                'Colaborador.Feedback.Admissao:id,feedback_id,data_admissao',
+            ])
+            ->whereKey($demissaoPrevista->id)
+            ->firstOrFail();
+
+        $viewData = app(ComunicadoDispensaSemJustaCausaPdfService::class)->fromDemissaoPrevista($demissaoPrevista);
+        $pdf = PDF::loadView(ComunicadoDispensaSemJustaCausaPdfService::VIEW, $viewData);
         $pdf->setPaper('A4', 'portrait');
 
         return $pdf->stream("pdf_" . Str::slug($demissaoPrevista->Colaborador->nome) . (new DataHora())->nomeUnico() . ".pdf");

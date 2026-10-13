@@ -13,6 +13,7 @@ use App\Models\MedidaAdministrativa;
 use App\Models\Sistema;
 use App\Models\User;
 use App\Services\AssinaturaDigital\AssinaturaDigitalService;
+use App\Services\Demissao\ComunicadoDispensaSemJustaCausaPdfService;
 use App\Services\CartaOferta\CartaOfertaTemplateRenderer;
 use App\Services\Dossie\DossiePdfService;
 use App\Services\Dossie\DossieTipoService;
@@ -147,16 +148,25 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
             return;
         }
 
-        $demissaoPrevista = DemissaoPrevista::whereId($demissaoId)
+        $demissaoPrevista = DemissaoPrevista::query()
+            ->select(['id', 'colaborador_id', 'tipo_aviso', 'data_demissao', 'empresa_id'])
+            ->whereKey($demissaoId)
             ->where('empresa_id', $this->empresaId)
-            ->with('Colaborador')
+            ->with([
+                'Colaborador:id,nome,empresa_id',
+                'Colaborador.DadosEmpresa:id,razao_social,cnpj,municipio,uf',
+                'Colaborador.Feedback:id,curriculo_id,empresa_id',
+                'Colaborador.Feedback.Empresa:id,razao_social,cnpj,municipio,uf',
+                'Colaborador.Feedback.Admissao:id,feedback_id,data_admissao',
+            ])
             ->first();
         if (!$demissaoPrevista || !$demissaoPrevista->Colaborador) {
             Log::warning('JobProcessarEnvioAssinatura[demissao]: registro não encontrado', ['demissao_prevista_id' => $demissaoId]);
             return;
         }
 
-        $pdf = PDF::loadView('pdf.planejamento.movimentacao.demissao.avisoprevio', compact('demissaoPrevista'));
+        $viewData = app(ComunicadoDispensaSemJustaCausaPdfService::class)->fromDemissaoPrevista($demissaoPrevista);
+        $pdf = PDF::loadView(ComunicadoDispensaSemJustaCausaPdfService::VIEW, $viewData);
         $pdf->setPaper('A4', 'portrait');
         $pdfContent = $pdf->output();
         $nomeArquivo = 'aviso_previo_' . Str::slug($demissaoPrevista->Colaborador->nome) . '_' . (new DataHora())->nomeUnico() . '.pdf';

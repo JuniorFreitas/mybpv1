@@ -7,7 +7,6 @@ use App\Jobs\JobExportaExcel;
 use App\Models\Admissao;
 use App\Models\Arquivo;
 use App\Models\AuditoriaInterna;
-use App\Models\AvaliacaoNoventaVencimento;
 use App\Models\CentroCusto;
 use App\Models\ClassificacaoRescisao;
 use App\Models\DadosAdmissao;
@@ -18,6 +17,7 @@ use App\Models\Formulario;
 use App\Models\MotivoRescisao;
 use App\Models\TipoAviso;
 use App\Models\User;
+use App\Services\Demissao\ComunicadoDispensaSemJustaCausaPdfService;
 use Aws\S3\S3Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -115,34 +115,55 @@ class PosAdmissaoController extends Controller
 
     public function demissaoPdf($id)
     {
+        $dados = Demissao::query()
+            ->select([
+                'id',
+                'feedback_id',
+                'data_desmobilizacao',
+                'motivo_rescisao_id',
+                'tipo_aviso_id',
+                'user_id',
+            ])
+            ->with([
+                'motivoRescisao:id,descricao,nome_pdf',
+                'tipoAviso:id,descricao',
+                'User:id,empresa_id',
+                'User.DadosEmpresa:id,razao_social,cnpj,municipio,uf,logradouro,bairro,cep,numero,complemento',
+                'Feedback:id,curriculo_id,empresa_id,vagas_abertas_id',
+                'Feedback.Curriculo:id,nome',
+                'Feedback.Empresa:id,razao_social,cnpj,municipio,uf,logradouro,bairro,cep,numero,complemento',
+                'Feedback.Admissao:id,feedback_id,data_admissao',
+                'Feedback.AvaliacaoNoventaVencimento:id,feedback_id,prazo_dia_inicial,prazo_dia_final',
+                'Feedback.VagaAberta:id,vaga_id',
+                'Feedback.VagaAberta.Vaga:id,nome',
+            ])
+            ->whereKey($id)
+            ->first();
 
-        $dados = Demissao::whereId($id)->with('motivoRescisao', 'tipoAviso')->first();
+        $datasVencimento = $dados->Feedback->AvaliacaoNoventaVencimento ?? null;
+        if ($datasVencimento !== null) {
+            $data = new DataHora();
+            $dataInicial = $data->diferencaDias($dados->data_desmobilizacao, $datasVencimento->prazo_dia_inicial);
+            $dataFinal = $data->diferencaDias($dados->data_desmobilizacao, $datasVencimento->prazo_dia_final);
 
-        if ($dados->Feedback->AvaliacaoNoventaVencimento !== null) {
-            $datasVencimento = AvaliacaoNoventaVencimento::find($dados->Feedback->AvaliacaoNoventaVencimento->id);
-            if ($datasVencimento !== null) {
-                $data = new DataHora();
-                $dataInicial = $data->diferencaDias($dados->data_desmobilizacao, $datasVencimento->prazo_dia_inicial);
-                $dataFinal = $data->diferencaDias($dados->data_desmobilizacao, $datasVencimento->prazo_dia_final);
-
-                if ($dataInicial > 0) {
-                    $dados['termino_previsto'] = $datasVencimento->prazo_dia_inicial;
-                }
-                if ($dataFinal > 0 && $dataInicial < 0) {
-                    $dados['termino_previsto'] = $datasVencimento->prazo_dia_final;
-                }
-                if ($dataFinal < 0 && $dataInicial < 0) {
-                    $dados['termino_previsto'] = '';
-                }
+            if ($dataInicial > 0) {
+                $dados['termino_previsto'] = $datasVencimento->prazo_dia_inicial;
+            } elseif ($dataFinal > 0 && $dataInicial < 0) {
+                $dados['termino_previsto'] = $datasVencimento->prazo_dia_final;
             } else {
                 $dados['termino_previsto'] = '';
             }
         }
 
-
-        $pdf = PDF::loadView('pdf.admissao.posadmissao.' . $dados->motivoRescisao->nome_pdf, compact('dados'));
+        $nomePdf = $dados->motivoRescisao->nome_pdf;
+        if ($nomePdf === 'demissao_sem_justa_causa') {
+            $viewData = app(ComunicadoDispensaSemJustaCausaPdfService::class)->fromDemissao($dados);
+            $pdf = PDF::loadView(ComunicadoDispensaSemJustaCausaPdfService::VIEW, $viewData);
+        } else {
+            $pdf = PDF::loadView('pdf.admissao.posadmissao.' . $nomePdf, compact('dados'));
+        }
         $pdf->setPaper('A4', 'portrait');
-        return $pdf->stream($dados->motivoRescisao->nome_pdf . (new DataHora())->nomeUnico() . ".pdf");
+        return $pdf->stream($nomePdf . (new DataHora())->nomeUnico() . ".pdf");
     }
 
     /**

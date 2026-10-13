@@ -1072,7 +1072,7 @@
         </a>
         <ul aria-expanded="false">
             <li>
-                <a href="{{ route('g.ajuda.manual') }}" parent="ajuda" key="manual">
+                <a href="{{ route('g.ajuda.manual.pdf') }}" parent="ajuda" key="manual" download>
                     Manual do usuário
                 </a>
             </li>
