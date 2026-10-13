@@ -1,67 +1,70 @@
-@extends('layouts.pdf_filial')
-@section('title','Relatorio de ponto')
-@section('conteudo')
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Autorização de Descontos Vale Transporte</title>
     <style>
-        @page {
-            margin: 10mm 2mm 8mm 2mm;
+        @include('pdf.partials.documento_formal_styles')
+        .opcoes {
+            font-size: 11pt;
+            line-height: 1.8;
+            margin: 0 0 18pt;
+            padding-left: 12.5mm;
+        }
+        .secao-label {
+            font-size: 11pt;
+            font-weight: bold;
+            margin: 0 0 8pt;
         }
     </style>
-    <div style="margin-left: 9px">
-        @include('layouts.cabecalioFilialEmpresaJob')
+</head>
+<body>
+@php
+    $dados_empresa = is_array($dados['dados_empresa'] ?? null) ? $dados['dados_empresa'] : [];
+    $colaborador = $dados['dados_colaborador'] ?? null;
+    $nomeEmpregado = $colaborador->Curriculo->nome ?? '—';
+    $razaoSocial = $dados_empresa['razao_social'] ?? '';
+    $cnpj = $dados_empresa['cnpj'] ?? '';
+    $endereco = $dados_empresa['endereco_completo'] ?? '';
+    $contato = $cliente->contato ?? '';
+@endphp
+
+<div class="folha">
+    @include('pdf.partials.documento_formal_cabecalho', ['dados_empresa' => $dados_empresa])
+
+    <p class="titulo">Autorização de Descontos Vale Transporte</p>
+
+    <p class="paragrafo paragrafo--sem-recuo">
+        <strong>EMPRESA:</strong><br>
+        <strong>{{ $razaoSocial }}</strong>, inscrita no CNPJ/MF sob n.º <strong>{{ $cnpj }}</strong>, com atividade
+        localizada na {{ $endereco }}, neste ato representado(a) por
+        <span style="text-transform: uppercase">{{ $contato }}</span>.
+    </p>
+
+    <p class="paragrafo">
+        Autorizo descontarem mensalmente e por tempo indeterminado, dos meus vencimentos, as importâncias relativas
+        aos itens assinalados com SIM.
+    </p>
+
+    <p class="secao-label">De acordo:</p>
+    <div class="opcoes">
+        (&nbsp;&nbsp;&nbsp;) SIM<br>
+        (&nbsp;&nbsp;&nbsp;) NÃO
     </div>
-    <div style="position: fixed; left: 20px; bottom: 0; text-align: left; width: 90%; padding-bottom: 2px;">
-        @include('layouts.rodapePdfFilialJob')
-    </div>
-    <div style="margin-left: 2.5%; width: 93%; padding-bottom: 28px;">
-        <p class="f12"
-           style="text-align: center; margin-bottom: 1cm; margin-top: 0.5cm; text-transform: uppercase">
-            <b>AUTORIZAÇÃO DE DESCONTOS VALE TRANSPORTE</b><br>
-        </p>
-        <p class="f11">
-            EMPRESA: <br><br>
 
-            @include('layouts.dadosEmpresa')
+    <p class="secao-label">Identificação do Desconto:</p>
+    <p class="paragrafo paragrafo--sem-recuo">
+        Vale Transporte na forma prevista no D.L. 95.247/87.
+    </p>
 
-        </p>
-        <p class="f11 text-justify" style="">
-            Autorizo descontarem mensalmente e por tempo indeterminado, dos meus vencimentos, as importâncias relativas
-            aos
-            itens assinalados com SIM.
-            <br>
-            <br>
-            De acordo:
-            <br>
-            <br>
-            (&nbsp;&nbsp;&nbsp;) SIM<br><br>
-            (&nbsp;&nbsp;&nbsp;) NÃO
-            <br><br><br>
-            <b>Identificação do Desconto:</b>
-            <br>
-            <br>
-            Vale Transporte na forma prevista no D.L. 95.247/87.<br><br><br>
-        </p>
-        <div class="f11 text-justify" style="line-height: 26pt">
-            São Luís - MA, {{ (new \MasterTag\DataHora())->dataCompletaExt() }}.
-        </div>
-        <br><br><br><br><br><br>
-        <div class="f11" style="line-height: 18pt;text-align: center">
-            <hr style="width: 10cm; margin-left: 24%; border:none; border-top: 1px solid #333">
-            {{ $dados['dados_colaborador']->Curriculo->nome }}
-        </div>
-
-    </div>
-@stop
-
-
-@push('style')
-    <style type="text/css">
-
-
-        .obs {
-            font-size: 8.4pt;
-            color: #444444;
-            margin-bottom: 10px;
-        }
-
-    </style>
-@endpush
+    @include('pdf.partials.documento_formal_fechamento', [
+        'localData' => 'São Luís - MA, ' . (new \MasterTag\DataHora())->dataCompletaExt() . '.',
+        'assinantes' => [
+            ['nome' => $nomeEmpregado],
+        ],
+        'testemunhas' => 0,
+        'novaPagina' => false,
+    ])
+</div>
+</body>
+</html>

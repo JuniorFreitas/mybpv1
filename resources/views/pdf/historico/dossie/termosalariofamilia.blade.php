@@ -1,83 +1,128 @@
-@extends('layouts.pdf_filial')
-@section('title','Relatorio de ponto')
-@section('conteudo')
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Termo de Responsabilidade — Salário Família</title>
     <style>
+        @include('pdf.partials.documento_formal_styles')
         @page {
-            margin: 10mm 2mm 8mm 2mm;
+            size: A4 portrait;
+            margin: 5mm 10mm 14mm 10mm;
+        }
+        html, body {
+            font-size: 10pt;
+        }
+        .titulo {
+            font-size: 11pt;
+            margin: 0 0 4pt;
+            line-height: 1.3;
+        }
+        .titulo-sub {
+            text-align: center;
+            font-size: 9pt;
+            font-weight: normal;
+            text-transform: none;
+            line-height: 1.3;
+            margin: 0 0 12pt;
+        }
+        .paragrafo {
+            font-size: 10pt;
+            line-height: 1.4;
+            text-indent: 8mm;
+            margin: 0 0 8pt;
+        }
+        .paragrafo--sem-recuo {
+            text-indent: 0;
+        }
+        .lista-fatos {
+            font-size: 10pt;
+            line-height: 1.5;
+            margin: 0 0 8pt;
+            padding-left: 8mm;
+            text-transform: uppercase;
+        }
+        .campo-linha {
+            font-size: 10pt;
+            line-height: 1.7;
+            margin: 0 0 8pt;
+        }
+        .doc-fechamento {
+            margin-top: 12pt;
+        }
+        .doc-fechamento__local {
+            margin: 0 0 10pt;
+            font-size: 10pt;
+        }
+        .doc-fechamento__assinantes--unico {
+            margin-top: 18pt;
+        }
+        .doc-fechamento__assinantes--unico .doc-fechamento__espaco {
+            height: 28pt;
         }
     </style>
-    <div style="margin-left: 9px">
-        @include('layouts.cabecalioFilialEmpresaJob')
+</head>
+<body>
+@php
+    $dados_empresa = is_array($dados['dados_empresa'] ?? null) ? $dados['dados_empresa'] : [];
+    $colaborador = $dados['dados_colaborador'] ?? null;
+    $nomeEmpregado = $colaborador->Curriculo->nome ?? '—';
+    $rg = $colaborador->rg ?? ($colaborador->Curriculo->rg ?? '');
+    $ctps = $colaborador->Admissao->DadosAdmissoes->ctps_numero ?? '';
+    $razaoSocial = $dados_empresa['razao_social'] ?? '';
+    $cnpj = $dados_empresa['cnpj'] ?? '';
+    $endereco = $dados_empresa['endereco_completo'] ?? '';
+    $contato = $cliente->contato ?? '';
+@endphp
+
+<div class="folha">
+    @include('pdf.partials.documento_formal_cabecalho', ['dados_empresa' => $dados_empresa])
+
+    <p class="titulo">Termo de Responsabilidade</p>
+    <p class="titulo-sub">(Concessão de Salário Família - Portaria nº MPAS - 3.040/82)</p>
+
+    <p class="paragrafo paragrafo--sem-recuo">
+        <strong>EMPRESA:</strong><br>
+        <strong>{{ $razaoSocial }}</strong>, inscrita no CNPJ/MF sob n.º <strong>{{ $cnpj }}</strong>, com atividade
+        localizada na {{ $endereco }}, neste ato representado(a) por
+        <span style="text-transform: uppercase">{{ $contato }}</span>.
+    </p>
+
+    <p class="paragrafo paragrafo--sem-recuo">
+        <strong>EMPREGADO:</strong> {{ $nomeEmpregado }}<br>
+        <strong>RG:</strong> {{ $rg }}<br>
+        <strong>CTPS:</strong> {{ $ctps }}
+    </p>
+
+    <div class="campo-linha">
+        Nome do filho: _______________________________________________________________________<br>
+        Data de nascimento: __________________________________________________________________
     </div>
-    <div style="position: fixed; left: 20px; bottom: 0; text-align: left; width: 90%; padding-bottom: 2px;">
-        @include('layouts.rodapePdfFilialJob')
+
+    <p class="paragrafo">
+        Pelo presente TERMO DE RESPONSABILIDADE, declaro estar ciente de que deverei comunicar de imediato a
+        ocorrência dos seguintes fatos, que determinam a perda do direito ao salário família.
+    </p>
+
+    <div class="lista-fatos">
+        - Óbito do filho;<br>
+        - Cessação invalidez de filho inválido;<br>
+        - Sentença judicial para pagamento a outrem.
     </div>
-    <div style="margin-left: 2.5%; width: 93%; padding-bottom: 28px;">
-        <p class="f12"
-           style="text-align: center; margin-bottom: 1cm; margin-top: 0.5cm; text-transform: uppercase">
-            <b>TERMO DE RESPONSABILIDADE</b><br>
-            (Concessão de Salário Família - Portaria nº MPAS - 3.040/82)
-        </p>
-        <p class="f11" style="line-height: 18pt;text-align: justify">
-            EMPRESA: <br><br>
-            @include('layouts.dadosEmpresa')
-        </p>
-        <p class="f11" style="line-height: 18pt;text-align: justify">
-            EMPREGADO: {{$dados['dados_colaborador']->Curriculo->nome}}
-            <br>
-            RG: {{$dados['dados_colaborador']->rg ?? ''}}
-            <br>
-            CTPS: {{isset($dados['dados_colaborador']->Admissao->DadosAdmissoes) ? $dados['dados_colaborador']->Admissao->DadosAdmissoes->ctps_numero : ''}}
-            <br>
-            <br>
-            NOME DO FILHO:
-            <br>
-            DATA DE NASCIMENTO:
-        </p>
-        <p class="f11" style="line-height: 18pt;text-align: justify">
-            Pelo presente TERMO DE RESPONSABILIDADE, declaro estar ciente de que deverei comunicar de imediato a
-            ocorrência
-            dos seguintes fatos, que determinam a perda do direito ao salário família.
-        </p>
-        <p class="f11" style="text-transform: uppercase;line-height: 18pt;text-align: justify">
-            - ÓBITO DO FILHO;<br>
-            - CESSAÇÃO INVALIDEZ DE FILHO INVÁLIDO;<br>
-            - SENTENÇA JUDICIAL PARA PAGAMENTO A OUTREM.<br>
-        </p>
-        <p class="f11" style="line-height: 18pt;text-align: justify">
-            {{--        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--}}
-            Estou ciente, ainda, de que a falta de cumprimento do compromisso ora assumido, além de obrigar a devolução
-            das
-            importâncias recebidas indevidamente, sujeitar-me-á às penalidades previstas no artigo 171 do código penal e
-            à
-            rescisão do contrato de trabalho, por justa causa, nos termos do artigo 482 da CLT.
-        </p>
-        <br> <br>
-        <div class="f11" style="line-height: 26pt">
-            São Luís - MA, {{ (new \MasterTag\DataHora())->dataCompletaExt() }}.
-            <br>
-            <br>
-        </div>
-        <div class="f11" style="line-height: 26pt;text-align: center">
-            {{--        <hr style="width: 10cm; margin-left: 24%; border:none; border-top: 1px solid #333">--}}
-            {{--        {{$dados['dados_colaborador']->User->DadosEmpresa->razao_social}}--}}
-            <br>
-            <hr style="width: 10cm; margin-top: 5px;  margin-left: 24%;  border:none; border-top: 1px solid #333">
-            {{$dados['dados_colaborador']->Curriculo->nome}}
-        </div>
 
-    </div>
-@stop
+    <p class="paragrafo">
+        Estou ciente, ainda, de que a falta de cumprimento do compromisso ora assumido, além de obrigar a devolução
+        das importâncias recebidas indevidamente, sujeitar-me-á às penalidades previstas no artigo 171 do código penal e
+        à rescisão do contrato de trabalho, por justa causa, nos termos do artigo 482 da CLT.
+    </p>
 
-
-@push('style')
-    <style type="text/css">
-
-        .obs {
-            font-size: 8.4pt;
-            color: #444444;
-            margin-bottom: 10px;
-        }
-
-    </style>
-@endpush
+    @include('pdf.partials.documento_formal_fechamento', [
+        'localData' => 'São Luís - MA, ' . (new \MasterTag\DataHora())->dataCompletaExt() . '.',
+        'assinantes' => [
+            ['nome' => $nomeEmpregado],
+        ],
+        'testemunhas' => 0,
+        'novaPagina' => false,
+    ])
+</div>
+</body>
+</html>

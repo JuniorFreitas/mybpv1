@@ -205,7 +205,10 @@ export default {
             }
         },
         modelo(tipo_modelo) {
-            const link = `${URL_ADMIN}/historico/dossie/${tipo_modelo}/${this.form.curriculo_id}/${this.form.id}`
+            if (!this.form.public_id) {
+                return
+            }
+            const link = `${URL_ADMIN}/historico/dossie/${tipo_modelo}/${this.form.public_id}`
             open(link, 'blank')
         },
         abrirModalAssinatura(tipo_modelo) {

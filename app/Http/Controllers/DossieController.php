@@ -11,6 +11,7 @@ use App\Models\LogHistorico;
 use App\Models\User;
 use App\Services\Dossie\DossiePdfService;
 use App\Services\Dossie\DossieTipoService;
+use App\Support\RuntimePublicId;
 use DB;
 use Illuminate\Http\Request;
 use MasterTag\DataHora;
@@ -68,6 +69,8 @@ class DossieController extends Controller
                 ];
             }
         }
+
+        $formattedFeedback['public_id'] = RuntimePublicId::encode((int) $feedback_id);
 
         return [
             'dossie' => $formattedFeedback,
@@ -231,11 +234,20 @@ class DossieController extends Controller
 
 //    DOWNLOAD MODELOS DE IMPRESSÃO COM OS DADOS DOS FUNCIONÁRIOS
 
-    public function downloadModelo(DossiePdfService $dossiePdfService, $tipo_modelo, $curriculo_id, $feedback_id)
+    public function downloadModelo(DossiePdfService $dossiePdfService, string $tipo_modelo, string $publicId)
     {
-        $colaborador = FeedbackCurriculo::with(['Curriculo.User', 'Admissao'])
-            ->whereCurriculoId($curriculo_id)
-            ->whereId($feedback_id)
+        try {
+            $feedbackId = RuntimePublicId::decode($publicId);
+        } catch (\InvalidArgumentException $e) {
+            abort(404);
+        }
+
+        $colaborador = FeedbackCurriculo::with([
+                'Curriculo.User',
+                'Admissao.DadosAdmissoes',
+                'VagaAberta.VagaSelecionada',
+            ])
+            ->whereId($feedbackId)
             ->first();
 
         if (!$colaborador || !$colaborador->Curriculo?->User || !$colaborador->Admissao) {

@@ -1,136 +1,127 @@
-@extends('layouts.pdf_filial')
-@section('title','Relatorio de ponto')
-@section('conteudo')
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Documentos para Admissão</title>
     <style>
+        @include('pdf.partials.documento_formal_styles')
         @page {
-            margin: 10mm 2mm 8mm 2mm;
+            size: A4 portrait;
+            margin: 5mm 10mm 14mm 10mm;
+        }
+        html, body {
+            font-size: 9.5pt;
+        }
+        .titulo {
+            font-size: 11pt;
+            margin: 0 0 10pt;
+            line-height: 1.3;
+        }
+        .checklist {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0 0 10pt;
+            font-size: 9pt;
+        }
+        .checklist th,
+        .checklist td {
+            border: 0.6pt solid #333;
+            padding: 3pt 5pt;
+            vertical-align: middle;
+            line-height: 1.3;
+        }
+        .checklist th {
+            text-align: center;
+            font-weight: bold;
+            background: #f3f3f3;
+        }
+        .checklist td.status {
+            width: 18%;
+            text-align: center;
+        }
+        .obs-data {
+            font-size: 9.5pt;
+            text-align: center;
+            margin: 0 0 10pt;
+            line-height: 1.4;
+        }
+        .recebido {
+            font-size: 9.5pt;
+            line-height: 1.7;
+            margin: 0 0 10pt;
+        }
+        .lgpd {
+            font-size: 8.5pt;
+            line-height: 1.35;
+            text-align: justify;
+            margin: 0;
         }
     </style>
-    <div style="margin-left: 9px">
-        @include('layouts.cabecalioFilialEmpresaJob')
-    </div>
-    <div style="position: fixed; left: 20px; bottom: 0; text-align: left; width: 90%; padding-bottom: 2px;">
-        @include('layouts.rodapePdfFilialJob')
-    </div>
-    <div style="margin-left: 2.5%; width: 93%; padding-bottom: 28px;">
-        <p class="f12"
-           style="text-align: center; margin-bottom: 1cm; margin-top: 0.5cm; text-transform: uppercase">
-            <b>DOCUMENTOS PARA ADMISSÃO</b>
-        </p>
-        <table border="1" cellpadding="0" cellspacing="0" class="dados2" style="font-size: 0.85em; width: 97%">
-            <thead>
-            <tr class="f10">
-                <th class="text-center"></th>
-                <th class="text-center">Status</th>
-            </tr>
-            </thead>
-            <tbody class="f10">
-            <tr>
-                <td>Carteira Profissional (Somente no dia da ADMISSÃO)</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>03 fotos 3x4 recentes</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Cópia da Carteira de Identidade</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Cópia do CPF</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Cópia do Título de Eleitor</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Cópia da Carteira Profissional (frente, verso)</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Cópia do Comprovante de Residência (contas de água, luz ou telefone) com CEP</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Cópia do Cartão de PIS (Cartão do Cidadão)</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Cópia da Carteira Nacional de Habilitação (CNH)</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Cópia da Certidão de Nascimento, Casamento ou Declaração de União Estável Pública</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Cópia do Certificado de Reservista/Alistamento no Serviço Militar</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Cópia da Carteira de Vacina (Colaborador) (Febre/Hepatite B)</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Cópia do Certificado de Conclusão/Declaração ou Histórico Escolar</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Cópias dos Certificados dos Cursos de Capacitação</td>
-                <td></td>
-            </tr>
-            </tbody>
-        </table>
-        <div class="f10" style="line-height: 26pt;text-align: center">
-            <br>
-            Favor aprensentar todos os documentos no dia ____/____ /_______.<br><br>
-        </div>
-        <p class="f10">
-            Recebido por: __________________________________________________<br><br>
-            Em: ________________________________________________________
-        </p><br><br>
-        <p class="f10" style="line-height: 22pt;text-align: justify; width: 96.7%">
-            * Em atendimento a Lei nº 13.709/2018, Lei Geral de Proteção de Dados, viemos através deste solicitar o
-            consentimento do uso dos dados acima para fins de processsamento da admissão
-            na {{ $dados['dados_empresa']['razao_social']  }} por prazo
-            indeterminado assim como registro nos órgãos competetes e permitir a gestão de pessoas por parte da empresa.
-            Comunicamos ainda que as cópias das documentações solicitadas serão de uso exclusivo da contabilidade e
-            responsável pela recursos humanos da empresa. Após o processo de desligamento, a documentação será
-            armazenada
-            como funcionário inativo, pelo período de legal de 30 anos de forma digital e física. Pode ocorrer que
-            precisemos compartilhar seus dados com terceiros para cumprir exigencias legais, regulatórias os fiscais
-            envolvendo a divulgação dos seus dados pessoais a terceiros, a um tribunal, reguladores ou agencias
-            governamentais.
-        </p>
-    </div>
-@stop
+</head>
+<body>
+@php
+    $dados_empresa = is_array($dados['dados_empresa'] ?? null) ? $dados['dados_empresa'] : [];
+    $razaoSocial = $dados_empresa['razao_social'] ?? '';
+    $itens = [
+        'Carteira Profissional (Somente no dia da ADMISSÃO)',
+        '03 fotos 3x4 recentes',
+        'Cópia da Carteira de Identidade',
+        'Cópia do CPF',
+        'Cópia do Título de Eleitor',
+        'Cópia da Carteira Profissional (frente, verso)',
+        'Cópia do Comprovante de Residência (contas de água, luz ou telefone) com CEP',
+        'Cópia do Cartão de PIS (Cartão do Cidadão)',
+        'Cópia da Carteira Nacional de Habilitação (CNH)',
+        'Cópia da Certidão de Nascimento, Casamento ou Declaração de União Estável Pública',
+        'Cópia do Certificado de Reservista/Alistamento no Serviço Militar',
+        'Cópia da Carteira de Vacina (Colaborador) (Febre/Hepatite B)',
+        'Cópia do Certificado de Conclusão/Declaração ou Histórico Escolar',
+        'Cópias dos Certificados dos Cursos de Capacitação',
+    ];
+@endphp
 
-@push('style')
-    <style type="text/css">
+<div class="folha">
+    @include('pdf.partials.documento_formal_cabecalho', ['dados_empresa' => $dados_empresa])
 
-        .f14 {
-            font-size: 14pt !important
-        }
+    <p class="titulo">Documentos para Admissão</p>
 
-        .f11 {
-            font-size: 11pt !important
-        }
+    <table class="checklist" cellpadding="0" cellspacing="0">
+        <thead>
+        <tr>
+            <th>Documento</th>
+            <th class="status">Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach($itens as $item)
+            <tr>
+                <td>{{ $item }}</td>
+                <td class="status">&nbsp;</td>
+            </tr>
+        @endforeach
+        </tbody>
+    </table>
 
-        .f12 {
-            font-size: 12pt !important;
-        }
+    <p class="obs-data">
+        Favor aprensentar todos os documentos no dia ____/____ /_______.
+    </p>
 
-        .f10 {
-            font-size: 10pt !important;
-        }
+    <p class="recebido">
+        Recebido por: __________________________________________________<br>
+        Em: ________________________________________________________
+    </p>
 
-        .obs {
-            font-size: 8.4pt;
-            color: #444444;
-            margin-bottom: 10px;
-        }
-
-    </style>
-@endpush
+    <p class="lgpd">
+        * Em atendimento a Lei nº 13.709/2018, Lei Geral de Proteção de Dados, viemos através deste solicitar o
+        consentimento do uso dos dados acima para fins de processsamento da admissão
+        na {{ $razaoSocial }} por prazo indeterminado assim como registro nos órgãos competetes e permitir a gestão de
+        pessoas por parte da empresa. Comunicamos ainda que as cópias das documentações solicitadas serão de uso
+        exclusivo da contabilidade e responsável pela recursos humanos da empresa. Após o processo de desligamento, a
+        documentação será armazenada como funcionário inativo, pelo período de legal de 30 anos de forma digital e
+        física. Pode ocorrer que precisemos compartilhar seus dados com terceiros para cumprir exigências legais,
+        regulatórias os fiscais envolvendo a divulgação dos seus dados pessoais a terceiros, a um tribunal, reguladores
+        ou agencias governamentais.
+    </p>
+</div>
+</body>
+</html>

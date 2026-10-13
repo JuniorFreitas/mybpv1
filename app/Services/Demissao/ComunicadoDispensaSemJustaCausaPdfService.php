@@ -95,13 +95,26 @@ class ComunicadoDispensaSemJustaCausaPdfService
         return $pdf;
     }
 
+    public const RODAPE_GERACAO = 'geracao';
+    public const RODAPE_PAGINACAO = 'paginacao';
+
     /**
      * Aplica opções DomPDF + rodapé do padrão normatizado em um PDF já carregado.
+     *
+     * @param  self::RODAPE_*  $tipoRodape
      */
-    public function aplicarPadraoDocumento(\Barryvdh\DomPDF\PDF $pdf, ?string $solicitante = null): \Barryvdh\DomPDF\PDF
-    {
+    public function aplicarPadraoDocumento(
+        \Barryvdh\DomPDF\PDF $pdf,
+        ?string $solicitante = null,
+        string $tipoRodape = self::RODAPE_GERACAO
+    ): \Barryvdh\DomPDF\PDF {
         $this->aplicarOpcoesPadrao($pdf);
-        $this->anexarRodape($pdf, (string) ($solicitante ?? ''));
+
+        if ($tipoRodape === self::RODAPE_PAGINACAO) {
+            $this->anexarRodapePaginacao($pdf);
+        } else {
+            $this->anexarRodape($pdf, (string) ($solicitante ?? ''));
+        }
 
         return $pdf;
     }
@@ -147,6 +160,30 @@ class ComunicadoDispensaSemJustaCausaPdfService
                     $w2 = $fontMetrics->getTextWidth($linha2, $font, $size);
                     $canvas->text(($pageWidth - $w1) / 2, $y1, $linha1, $font, $size, $color);
                     $canvas->text(($pageWidth - $w2) / 2, $y2, $linha2, $font, $size, $color);
+                },
+            ],
+        ]);
+    }
+
+    private function anexarRodapePaginacao(\Barryvdh\DomPDF\PDF $pdf): void
+    {
+        $pdf->setCallbacks([
+            [
+                'event' => 'end_document',
+                'f' => function (
+                    int $pageNumber,
+                    int $pageCount,
+                    \Dompdf\Canvas $canvas,
+                    \Dompdf\FontMetrics $fontMetrics
+                ): void {
+                    $font = $fontMetrics->getFont('DejaVu Sans');
+                    $size = 8;
+                    $color = [0.25, 0.25, 0.25];
+                    $texto = 'Página ' . $pageNumber . ' de ' . $pageCount;
+                    $pageWidth = $canvas->get_width();
+                    $pageHeight = $canvas->get_height();
+                    $width = $fontMetrics->getTextWidth($texto, $font, $size);
+                    $canvas->text(($pageWidth - $width) / 2, $pageHeight - 32, $texto, $font, $size, $color);
                 },
             ],
         ]);

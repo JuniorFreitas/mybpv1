@@ -1077,7 +1077,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::post('enviar-para-assinatura', [\App\Http\Controllers\DossieController::class, 'enviarParaAssinatura'])->name('enviarParaAssinatura')->middleware('assinatura.digital.habilitada');
             Route::post('/{feedback}', [\App\Http\Controllers\DossieController::class, 'store'])->name('store');
             Route::get('/{feedback}', [\App\Http\Controllers\DossieController::class, 'show'])->name('show');
-            Route::get('/{tipo_modelo}/{curriculo_id}/{feedback_id}', [\App\Http\Controllers\DossieController::class, 'downloadModelo'])->name('downloadModelo');
+            Route::get('/{tipo_modelo}/{publicId}', [\App\Http\Controllers\DossieController::class, 'downloadModelo'])->name('downloadModelo');
         });
 
         //Rotas Avaliacao Anual

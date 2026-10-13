@@ -7,12 +7,32 @@ use App\Models\Cliente;
 use App\Models\EmpresaTemporaria;
 use App\Models\FeedbackCurriculo;
 use App\Models\Sistema;
+use App\Services\Demissao\ComunicadoDispensaSemJustaCausaPdfService;
 use Barryvdh\DomPDF\PDF;
 use Illuminate\Support\Str;
 
 class DossiePdfService
 {
     public const MODELO_CONTRATO_TRABALHO = 'contratotrabalhoassinado';
+
+    /** Views já migradas para o layout formal (cabeçalho + rodapé padronizados). */
+    private const VIEWS_DOCUMENTO_FORMAL = [
+        'pdf.historico.dossie.autodeclaracao_etnico_racial',
+        'pdf.historico.dossie.default.contratos.contratotrabalhoassinado',
+        'pdf.historico.dossie.termoconfiabilidade',
+        'pdf.historico.dossie.valetransporte',
+        'pdf.historico.dossie.declaracaodependentesimposto',
+        'pdf.historico.dossie.acordocompensacaohoras',
+        'pdf.historico.dossie.termosalariofamilia',
+        'pdf.historico.dossie.docchecklist',
+    ];
+
+    /** Views longas com rodapé de paginação (em vez do texto de geração). */
+    private const VIEWS_RODAPE_PAGINACAO = [
+        'pdf.historico.dossie.default.contratos.contratotrabalhoassinado',
+        'pdf.historico.dossie.termoconfiabilidade',
+        'pdf.historico.dossie.acordocompensacaohoras',
+    ];
 
     private const TIPOS_ADMISSAO_CONTRATO_ESPECIFICO = [
         Admissao::TIPO_ADMISSAO_TEMPORARIO,
@@ -28,8 +48,20 @@ class DossiePdfService
         $dados = $this->montarDados($colaborador, $solicitanteNome);
         [$view, $viewData] = $this->resolverView($tipoModelo, $colaborador, $cliente, $dados);
 
-        $pdf = \PDF::loadView($view, $viewData);
-        $pdf->setPaper('A4', 'portrait');
+        /** @var PDF $pdf */
+        $pdf = app('dompdf.wrapper');
+        $pdf->loadView($view, $viewData);
+
+        if (in_array($view, self::VIEWS_DOCUMENTO_FORMAL, true)) {
+            $tipoRodape = in_array($view, self::VIEWS_RODAPE_PAGINACAO, true)
+                ? ComunicadoDispensaSemJustaCausaPdfService::RODAPE_PAGINACAO
+                : ComunicadoDispensaSemJustaCausaPdfService::RODAPE_GERACAO;
+
+            app(ComunicadoDispensaSemJustaCausaPdfService::class)
+                ->aplicarPadraoDocumento($pdf, $solicitanteNome, $tipoRodape);
+        } else {
+            $pdf->setPaper('A4', 'portrait');
+        }
 
         return $pdf;
     }
