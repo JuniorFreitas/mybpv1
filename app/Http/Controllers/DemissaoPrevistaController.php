@@ -15,6 +15,7 @@ use App\Services\Demissao\ComunicadoDispensaSemJustaCausaPdfService;
 use App\Services\DemissaoPrevista\DemissaoPrevistaEditPayloadMapper;
 use App\Services\DemissaoPrevista\DemissaoPrevistaFilterApplier;
 use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
+use App\Support\RuntimePublicId;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -221,6 +222,7 @@ class DemissaoPrevistaController extends Controller
 
         $itens = $itens->map(function ($item) use ($docsByDemissaoId, $empresa, $filialMap) {
             $item->documento_para_assinatura = $docsByDemissaoId[$item->id] ?? null;
+            $item->public_id = RuntimePublicId::encode((int) $item->id);
 
             $ccfId = (int) ($item->centro_custo_filial_id ?? 0);
             $ehFilial = filter_var($item->filial ?? false, FILTER_VALIDATE_BOOLEAN);
@@ -526,8 +528,14 @@ class DemissaoPrevistaController extends Controller
         return response()->json(['msg' => 'Estamos gerando seu arquivo, assim que finalizado você será notificado.']);
     }
 
-    public function pdf(DemissaoPrevista $demissaoPrevista, Request $request)
+    public function pdf(string $publicId)
     {
+        try {
+            $id = RuntimePublicId::decode($publicId);
+        } catch (\InvalidArgumentException $e) {
+            abort(404);
+        }
+
         $demissaoPrevista = DemissaoPrevista::query()
             ->select(['id', 'colaborador_id', 'tipo_aviso', 'data_demissao', 'empresa_id', 'centro_custo_filial_id'])
             ->with([
@@ -535,7 +543,7 @@ class DemissaoPrevistaController extends Controller
                 'Colaborador.Feedback:id,curriculo_id,empresa_id',
                 'Colaborador.Feedback.Admissao:id,feedback_id,data_admissao,centro_custo_filial_id',
             ])
-            ->whereKey($demissaoPrevista->id)
+            ->whereKey($id)
             ->firstOrFail();
 
         $service = app(ComunicadoDispensaSemJustaCausaPdfService::class);

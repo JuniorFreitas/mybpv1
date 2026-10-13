@@ -1,67 +1,189 @@
-@extends('layouts.pdf')
-@section('title',$dados->motivoRescisao->descricao)
-@section('empresa')
-    @include('layouts.cabecalioEmpresa')
-@endsection
-@section('conteudo')
-
-    <p class="f14"
-       style="text-align: center; font-weight: bold; margin-bottom: 1.5cm; text-transform: uppercase">
-        COMUNICADO DE DISPENSA<br>
-    </p>
-    <p class="f12" style="">
-        A(o)<br>
-        Prezado(a) funcionário(a): {{$dados->Feedback->Curriculo->nome}}
-    </p>
-    <br>
-    <p class="f12">
-        Pela presente, notificamos que a partir do
-        dia {{ (new \MasterTag\DataHora($dados->data_desmobilizacao))->dataCompleta() }},
-        fica encerrado seu contrato de trabalho temporário.
-        Solicitamos o seu comparecimento na {{$dados->Feedback->Empresa->razao_social}} em
-        {{ (new \MasterTag\DataHora($dados->data_desmobilizacao))->addDia(6) }} para as devidas baixas.
-        <br><br>
-    </p>
-    <br>
-    <br><br>
-    <div class="f12" style="line-height: 26pt">
-        São Luís-MA, {{ (new \MasterTag\DataHora($dados->data_desmobilizacao))->dataCompletaExt() }}
-        <br>
-        <br>
-        Ciente:
-    </div>
-    <div class="f12" style="line-height: 26pt;text-align: center">
-        <br><br>
-        <hr style="width: 10cm; margin-top: 5px;  margin-left: 24%;  border:none; border-top: 1px solid #333">
-        {{$dados->Feedback->Curriculo->nome}}
-    </div>
-
-
-    @include('layouts.footerDemissao')
-@endsection
-
-@push('style')
-    <style type="text/css">
-        .footer {
-            position: absolute;
-            bottom: 0px;
-            font-size: 8.4pt;
-            /*width: 10cm;*/
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <title>{{ $dados->motivoRescisao->descricao ?? 'Comunicado de dispensa' }}</title>
+    <style>
+        /*
+         * Mesmo padrão visual do comunicado de demissão.
+         * IMPORTANTE (DomPDF): NÃO usar "* { margin:0 }" — isso anula @page margin.
+         */
+        html, body, .folha, .folha * {
+            font-family: DejaVu Sans, Arial, sans-serif !important;
         }
-
-        .f14 {
-            font-size: 14pt;
+        @page {
+            size: A4 portrait;
+            margin: 5mm 10mm 16mm 10mm;
         }
-
-        .f12 {
+        html, body {
+            font-size: 11pt;
+            color: #000;
+            background: #fff;
+        }
+        .folha { width: 100%; }
+        .cabecalho {
+            text-align: center;
+            margin: 0 0 18pt;
+            padding: 0 0 8pt;
+            border-bottom: 1pt solid #000;
+        }
+        .cabecalho__logo { margin: 0 auto 4pt; }
+        .cabecalho__logo img {
+            display: block;
+            margin: 0 auto;
+            max-height: 16mm;
+            max-width: 48mm;
+        }
+        .cabecalho__logo--compact img { max-height: 12mm; }
+        .cabecalho__razao {
+            font-size: 10.5pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            line-height: 1.35;
+            margin: 0 0 2pt;
+        }
+        .cabecalho__meta {
+            font-size: 8.5pt;
+            line-height: 1.35;
+            margin: 0;
+        }
+        .titulo {
+            text-align: center;
             font-size: 12pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            line-height: 1.5;
+            margin: 0 0 22pt;
         }
-
-        .obs {
-            font-size: 8.4pt;
-            color: #444444;
-            margin-bottom: 10px;
+        .destinatario {
+            font-size: 11pt;
+            line-height: 1.6;
+            margin: 0 0 18pt;
+            text-align: left;
         }
-
+        .paragrafo {
+            font-size: 11pt;
+            line-height: 1.7;
+            text-align: justify;
+            text-indent: 12.5mm;
+            margin: 0 0 14pt;
+            word-spacing: normal;
+            letter-spacing: normal;
+        }
+        .fechamento {
+            margin-top: 36pt;
+        }
+        .local-data {
+            font-size: 11pt;
+            line-height: 1.5;
+            text-align: left;
+            margin: 0 0 36pt;
+        }
+        .ciencia-label {
+            font-size: 11pt;
+            line-height: 1.5;
+            margin: 0 0 40pt;
+            text-align: left;
+        }
+        .assinatura {
+            text-align: center;
+            font-size: 11pt;
+            line-height: 1.5;
+            margin: 0;
+        }
+        .assinatura__linha {
+            width: 9cm;
+            margin: 0 auto 6pt;
+            border: none;
+            border-top: 1pt solid #000;
+        }
     </style>
-@endpush
+</head>
+<body>
+@php
+    $empresaPdf = is_array($dados_empresa ?? null)
+        ? $dados_empresa
+        : (json_decode(json_encode($dados_empresa ?? []), true) ?: []);
+    $razaoPdf = (string) ($empresaPdf['razao_social'] ?? ($dados->Feedback->Empresa->razao_social ?? ''));
+    $logoPdf = $empresaPdf['logo'] ?? null;
+    $logoCompacto = (int) ($empresaPdf['empresa_id'] ?? 0) === 63122;
+    $empregadoNome = $dados->Feedback->Curriculo->nome ?? '—';
+    $dataDesligamento = $dados->data_desmobilizacao;
+    $dataCiencia = $dataDesligamento
+        ? (new \MasterTag\DataHora($dataDesligamento))->dataCompleta()
+        : (new \MasterTag\DataHora())->dataCompleta();
+    $dataExtenso = $dataDesligamento
+        ? (new \MasterTag\DataHora($dataDesligamento))->dataCompletaExt()
+        : (new \MasterTag\DataHora())->dataCompletaExt();
+    $dataComparecimento = $dataDesligamento
+        ? (new \MasterTag\DataHora($dataDesligamento))->addDia(6)
+        : $dataCiencia;
+    $empresaNome = $razaoPdf !== ''
+        ? $razaoPdf
+        : (string) ($dados->Feedback->Empresa->razao_social ?? '—');
+    $cidade = 'São Luís-MA';
+    if (!empty($empresaPdf['endereco_completo']) && preg_match('/,\s*([^,]+)-([A-Z]{2})\s*$/u', $empresaPdf['endereco_completo'], $m)) {
+        $cidade = trim($m[1]) . '-' . $m[2];
+    } elseif (!empty($empresaPdf['municipio'])) {
+        $uf = trim((string) ($empresaPdf['uf'] ?? ''));
+        $cidade = $uf !== '' ? trim($empresaPdf['municipio']) . '-' . $uf : trim($empresaPdf['municipio']);
+    }
+@endphp
+
+<div class="folha">
+    <div class="cabecalho">
+        @if(!empty($logoPdf))
+            <div class="cabecalho__logo {{ $logoCompacto ? 'cabecalho__logo--compact' : '' }}">
+                <img src="{{ $logoPdf }}" alt="{{ $razaoPdf }}">
+            </div>
+        @endif
+        @if($razaoPdf !== '')
+            <div class="cabecalho__razao">{{ $razaoPdf }}</div>
+        @endif
+        @if(!empty($empresaPdf['cnpj']) || !empty($empresaPdf['endereco_completo']))
+            <div class="cabecalho__meta">
+                @if(!empty($empresaPdf['cnpj']))
+                    CNPJ: {{ $empresaPdf['cnpj'] }}
+                @endif
+                @if(!empty($empresaPdf['cnpj']) && !empty($empresaPdf['endereco_completo']))
+                    <br>
+                @endif
+                @if(!empty($empresaPdf['endereco_completo']))
+                    {{ $empresaPdf['endereco_completo'] }}
+                @endif
+            </div>
+        @endif
+    </div>
+
+    <p class="titulo">Comunicado de dispensa</p>
+
+    <p class="destinatario">
+        A(o)<br>
+        Prezado(a) funcionário(a): <strong>{{ $empregadoNome }}</strong>
+    </p>
+
+    <p class="paragrafo">
+        Pela presente, notificamos que a partir do dia <strong>{{ $dataCiencia }}</strong>,
+        fica encerrado seu contrato de trabalho temporário.
+    </p>
+
+    <p class="paragrafo">
+        Solicitamos o seu comparecimento na <strong>{{ $empresaNome }}</strong> em
+        <strong>{{ $dataComparecimento }}</strong> para as devidas baixas.
+    </p>
+
+    <div class="fechamento">
+        <p class="local-data">
+            {{ $cidade }}, {{ $dataExtenso }}.
+        </p>
+
+        <p class="ciencia-label">Ciente:</p>
+
+        <div class="assinatura">
+            <hr class="assinatura__linha">
+            <strong>{{ $empregadoNome }}</strong>
+        </div>
+    </div>
+</div>
+</body>
+</html>

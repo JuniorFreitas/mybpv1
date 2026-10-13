@@ -189,7 +189,17 @@ class DemissaoPrevista extends Model
         return $date->format('Y-m-d H:i:s');
     }
 
-    protected $appends = ['valor_format'];
+    protected $appends = ['valor_format', 'public_id'];
+
+    public function getPublicIdAttribute(): ?string
+    {
+        $id = (int) ($this->attributes['id'] ?? 0);
+        if ($id <= 0) {
+            return null;
+        }
+
+        return \App\Support\RuntimePublicId::encode($id);
+    }
 
     public function setDataDemissaoAttribute($value)
     {

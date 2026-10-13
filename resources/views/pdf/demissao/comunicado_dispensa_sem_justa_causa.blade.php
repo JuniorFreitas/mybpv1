@@ -7,7 +7,7 @@
         /*
          * Documento formal — margens em TODAS as páginas via @page:
          * superior 0,5cm | direita 1cm | inferior 1,6cm | esquerda 1cm
-         * Logo cola no topo da margem. Fonte 11pt | texto à esquerda
+         * Logo cola no topo da margem. Fonte 11pt | texto justificado
          *
          * IMPORTANTE (DomPDF): NÃO usar "* { margin:0 }" — isso anula @page margin.
          */

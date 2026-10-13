@@ -785,7 +785,7 @@
                                 <i class="fa fa-file-download"></i>
                             </a>
                             <button type="button" v-else class="btn btn-sm mr-1 btn-primary" title="Gerar Documento Demissão"
-                                    @click="gerarPdf(item.demissao.id)">
+                                    @click="gerarPdf(item.demissao.public_id)">
                                 <i class="fa fa-file-pdf"></i>
                             </button>
                         </div>

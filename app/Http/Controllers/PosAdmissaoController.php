@@ -18,10 +18,12 @@ use App\Models\MotivoRescisao;
 use App\Models\TipoAviso;
 use App\Models\User;
 use App\Services\Demissao\ComunicadoDispensaSemJustaCausaPdfService;
+use App\Support\RuntimePublicId;
 use Aws\S3\S3Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use MasterTag\DataHora;
 use PDF;
 
@@ -113,8 +115,14 @@ class PosAdmissaoController extends Controller
         }
     }
 
-    public function demissaoPdf($id)
+    public function demissaoPdf(string $publicId)
     {
+        try {
+            $id = RuntimePublicId::decode($publicId);
+        } catch (\InvalidArgumentException $e) {
+            abort(404);
+        }
+
         $dados = Demissao::query()
             ->select([
                 'id',
@@ -138,7 +146,7 @@ class PosAdmissaoController extends Controller
                 'Feedback.VagaAberta.Vaga:id,nome',
             ])
             ->whereKey($id)
-            ->first();
+            ->firstOrFail();
 
         $datasVencimento = $dados->Feedback->AvaliacaoNoventaVencimento ?? null;
         if ($datasVencimento !== null) {
@@ -155,16 +163,27 @@ class PosAdmissaoController extends Controller
             }
         }
 
-        $nomePdf = $dados->motivoRescisao->nome_pdf;
-        if ($nomePdf === 'demissao_sem_justa_causa') {
-            $service = app(ComunicadoDispensaSemJustaCausaPdfService::class);
-            $pdf = $service->makePdf($service->fromDemissao($dados));
+        $nomePdf = (string) ($dados->motivoRescisao->nome_pdf ?? '');
+        $viewKey = Str::ascii($nomePdf);
+        $service = app(ComunicadoDispensaSemJustaCausaPdfService::class);
+        $solicitante = (string) (auth()->user()?->nome ?? '');
+
+        if ($viewKey === 'demissao_sem_justa_causa') {
+            $pdf = $service->makePdf($service->fromDemissao($dados, $solicitante));
         } else {
-            $pdf = PDF::loadView('pdf.admissao.posadmissao.' . $nomePdf, compact('dados'));
-            $pdf->setPaper('A4', 'portrait');
+            $view = 'pdf.admissao.posadmissao.' . $viewKey;
+            if ($viewKey === '' || !view()->exists($view)) {
+                abort(404, 'Modelo de PDF não encontrado para este motivo de rescisão.');
+            }
+
+            $dados_empresa = $service->dadosEmpresaFromDemissao($dados);
+            /** @var \Barryvdh\DomPDF\PDF $pdf */
+            $pdf = app('dompdf.wrapper');
+            $pdf->loadView($view, compact('dados', 'dados_empresa'));
+            $service->aplicarPadraoDocumento($pdf, $solicitante);
         }
 
-        return $pdf->stream($nomePdf . (new DataHora())->nomeUnico() . ".pdf");
+        return $pdf->stream(($viewKey !== '' ? $viewKey : 'demissao') . (new DataHora())->nomeUnico() . '.pdf');
     }
 
     /**

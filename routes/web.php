@@ -733,7 +733,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
 
             Route::group(['as' => 'solicitacao_demissao.'], function () {
                 Route::post('demissao-prevista/atualizacao-status', [\App\Http\Controllers\DemissaoPrevistaController::class, 'atualizacaoStatus'])->name('demissao-prevista.atualizacaoStatus');
-                Route::get('demissao-prevista/{demissaoPrevista}/pdf', [\App\Http\Controllers\DemissaoPrevistaController::class, 'pdf'])->name('pdf');
+                Route::get('demissao-prevista/{publicId}/pdf', [\App\Http\Controllers\DemissaoPrevistaController::class, 'pdf'])->name('pdf');
                 Route::post('demissao-prevista/enviar-para-assinatura', [\App\Http\Controllers\DemissaoPrevistaController::class, 'enviarParaAssinatura'])->name('enviarParaAssinatura')->middleware('assinatura.digital.habilitada');
                 Route::post('demissao-prevista/atualizar', [\App\Http\Controllers\DemissaoPrevistaController::class, 'atualizar'])->name('atualizar');
                 Route::put('demissao-prevista/{demissaoPrevista}/aprovar', [\App\Http\Controllers\DemissaoPrevistaController::class, 'aprovar'])->name('aprovar');
@@ -1022,7 +1022,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::put('posadmissao/entrevistar/{entrevista}', [\App\Http\Controllers\PosAdmissaoController::class, 'entrevistarUpdate'])->name('posadmissao.entrevistarUpdate'); // manter essa rota antes do resource
         Route::get('posadmissao/entrevista/{curriculo}', [\App\Http\Controllers\PosAdmissaoController::class, 'entrevista'])->name('posadmissao.entrevista'); // manter essa rota antes do resource
         Route::post('posadmissao/demitir', [\App\Http\Controllers\PosAdmissaoController::class, 'demitir'])->name('posadmissao.demitir'); // manter essa rota antes do resource
-        Route::get('posadmissao/demitir/pdf/{id}', [\App\Http\Controllers\PosAdmissaoController::class, 'demissaoPdf'])->name('posadmissao.demissaoPdf'); // manter essa rota antes do resource
+        Route::get('posadmissao/demitir/pdf/{publicId}', [\App\Http\Controllers\PosAdmissaoController::class, 'demissaoPdf'])->name('posadmissao.demissaoPdf'); // manter essa rota antes do resource
         Route::post('posadmissao/export', [\App\Http\Controllers\PosAdmissaoController::class, 'export'])->name('posadmissao.excel');
         Route::put('posadmissao/remover-demissao', [\App\Http\Controllers\PosAdmissaoController::class, 'removerDemissao'])->middleware('can:privilegio_gestao_rh');
         Route::resource('posadmissao', \App\Http\Controllers\PosAdmissaoController::class, ['parameters' => ['posadmissao' => 'admissao']])->middleware('can:admissao_pos_admissao');

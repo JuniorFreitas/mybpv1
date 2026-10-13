@@ -644,7 +644,7 @@
                                     </a>
                                     <a
                                         class="dropdown-item"
-                                        :href="`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/${item.id}/pdf`"
+                                        :href="`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/${item.public_id}/pdf`"
                                         target="_blank"
                                         title="Aviso Prévio (PDF)"
                                     >

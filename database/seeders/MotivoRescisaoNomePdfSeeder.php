@@ -23,7 +23,7 @@ class MotivoRescisaoNomePdfSeeder extends Seeder
         $dados[4] = ['nome_pdf' => 'demissao_comum_acordo'];
         $dados[5] = ['nome_pdf' => 'demissao_com_justa_causa'];
         $dados[6] = ['nome_pdf' => 'outros_motivos'];
-        $dados[7] = ['nome_pdf' => 'contrato_temporário'];
+        $dados[7] = ['nome_pdf' => 'contrato_temporario'];
         $dados[8] = ['nome_pdf' => 'quebra_contrato_colaborador'];
         $dados[9] = ['nome_pdf' => 'quebra_contrato_empresa'];
 

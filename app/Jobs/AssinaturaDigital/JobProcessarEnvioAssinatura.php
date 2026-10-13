@@ -4,7 +4,6 @@ namespace App\Jobs\AssinaturaDigital;
 
 use App\Models\Arquivo;
 use App\Models\CartaOferta;
-use App\Models\CartaOfertaTemplate;
 use App\Models\Cliente;
 use App\Models\DemissaoPrevista;
 use App\Models\DocumentoContratos;
@@ -14,7 +13,7 @@ use App\Models\Sistema;
 use App\Models\User;
 use App\Services\AssinaturaDigital\AssinaturaDigitalService;
 use App\Services\Demissao\ComunicadoDispensaSemJustaCausaPdfService;
-use App\Services\CartaOferta\CartaOfertaTemplateRenderer;
+use App\Services\CartaOferta\CartaOfertaPdfService;
 use App\Services\Dossie\DossiePdfService;
 use App\Services\Dossie\DossieTipoService;
 use Illuminate\Bus\Queueable;
@@ -209,36 +208,8 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
             return;
         }
 
-        $nomeCargo = 'Cargo';
-        if ($cartaOferta->vagaAberta && $cartaOferta->vagaAberta->Vaga) {
-            $nomeCargo = $cartaOferta->vagaAberta->Vaga->nome;
-        } elseif ($cartaOferta->vagaProjeto && $cartaOferta->vagaProjeto->VagaAberta && $cartaOferta->vagaProjeto->VagaAberta->Vaga) {
-            $nomeCargo = $cartaOferta->vagaProjeto->VagaAberta->Vaga->nome;
-        }
-
-        $template = CartaOfertaTemplate::query()
-            ->where('empresa_id', $this->empresaId)
-            ->publicado()
-            ->orderBy('versao', 'desc')
-            ->first();
-
-        $html = null;
-        if ($template) {
-            $dados = app(\App\Services\CartaOferta\CartaOfertaContextoBuilder::class)->paraCarta($cartaOferta);
-            if (($dados['cargo'] ?? '') === \App\Services\CartaOferta\CartaOfertaContextoBuilder::NAO_INFORMADO && $nomeCargo) {
-                $dados['cargo'] = $nomeCargo;
-            }
-            $html = app(CartaOfertaTemplateRenderer::class)->render($template->conteudo_html, $dados);
-        }
-
-        if ($html) {
-            $pdf = PDF::loadView('pdf.admissao.carta-oferta-template', ['html' => $html]);
-        } else {
-            $pdf = PDF::loadView('pdf.admissao.carta-oferta', compact('cartaOferta', 'nomeCargo'));
-        }
-
-        $pdf->setPaper('A4', 'portrait');
-        $pdfContent = $pdf->output();
+        $solicitanteNome = (string) (User::query()->select('nome')->find($this->solicitanteId)?->nome ?? '');
+        $pdfContent = app(CartaOfertaPdfService::class)->gerar($cartaOferta, $solicitanteNome);
 
         $signatarios = [[
             'nome' => $cartaOferta->Curriculo->nome,

@@ -65,29 +65,67 @@ class ComunicadoDispensaSemJustaCausaPdfService
     }
 
     /**
+     * Dados de empresa/logo no mesmo padrão do comunicado (para outros PDFs de demissão).
+     *
+     * @return array<string, mixed>
+     */
+    public function dadosEmpresaFromDemissao(Demissao $dados): array
+    {
+        $admissao = optional($dados->Feedback)->Admissao;
+        $empresaId = (int) (optional($dados->Feedback)->empresa_id
+            ?? optional($dados->User)->empresa_id
+            ?? auth()->user()?->empresa_id
+            ?? 0);
+        $filialId = $admissao->centro_custo_filial_id ?? null;
+
+        return $this->resolverDadosEmpresa($filialId, $empresaId);
+    }
+
+    /**
      * @param  array<string, mixed>  $viewData
      */
     public function makePdf(array $viewData): \Barryvdh\DomPDF\PDF
     {
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = app('dompdf.wrapper');
+        $this->aplicarOpcoesPadrao($pdf);
+        $pdf->loadView(self::VIEW, $viewData);
+        $this->anexarRodape($pdf, (string) ($viewData['solicitante'] ?? ''));
+
+        return $pdf;
+    }
+
+    /**
+     * Aplica opções DomPDF + rodapé do padrão normatizado em um PDF já carregado.
+     */
+    public function aplicarPadraoDocumento(\Barryvdh\DomPDF\PDF $pdf, ?string $solicitante = null): \Barryvdh\DomPDF\PDF
+    {
+        $this->aplicarOpcoesPadrao($pdf);
+        $this->anexarRodape($pdf, (string) ($solicitante ?? ''));
+
+        return $pdf;
+    }
+
+    private function aplicarOpcoesPadrao(\Barryvdh\DomPDF\PDF $pdf): void
+    {
         $pdf->setPaper('a4', 'portrait');
         $pdf->setOption('defaultFont', 'dejavu sans');
         $pdf->setOption('isRemoteEnabled', true);
         $pdf->setOption('isJavascriptEnabled', false);
-        $pdf->loadView(self::VIEW, $viewData);
+    }
 
+    private function anexarRodape(\Barryvdh\DomPDF\PDF $pdf, string $solicitante): void
+    {
         $linha1 = 'Esse documento foi gerado automaticamente'
-            . (!empty($viewData['solicitante']) ? ' por ' . $viewData['solicitante'] : '')
+            . ($solicitante !== '' ? ' por ' . $solicitante : '')
             . ':';
         $agora = new DataHora();
-        $linha2 = 'Sistema Integrado BPIN by MyBPIN em '
+        $linha2 = 'Sistema Integrado MyBPIN em '
             . $agora->dataCompleta()
             . ' às '
             . $agora->horaCompleta()
             . '.';
 
-        // Rodapé em todas as páginas via canvas (não usa position:fixed — evita quebrar o layout DomPDF)
         $pdf->setCallbacks([
             [
                 'event' => 'end_document',
@@ -102,7 +140,6 @@ class ComunicadoDispensaSemJustaCausaPdfService
                     $color = [0.25, 0.25, 0.25];
                     $pageWidth = $canvas->get_width();
                     $pageHeight = $canvas->get_height();
-                    // Rodapé na margem inferior (~18mm), sem colar no texto
                     $y1 = $pageHeight - 40;
                     $y2 = $pageHeight - 29;
 
@@ -113,8 +150,6 @@ class ComunicadoDispensaSemJustaCausaPdfService
                 },
             ],
         ]);
-
-        return $pdf;
     }
 
     /**
