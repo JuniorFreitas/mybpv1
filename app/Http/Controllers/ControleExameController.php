@@ -23,6 +23,7 @@ use App\Models\Sistema;
 use App\Models\Cliente;
 use App\Models\User;
 use App\Services\AssinaturaDigital\AssinaturaDigitalService;
+use App\Services\Demissao\ComunicadoDispensaSemJustaCausaPdfService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use MasterTag\DataHora;
@@ -486,33 +487,47 @@ class ControleExameController extends Controller
             abort(404);
         }
 
-        if ($token) {
-            $ExameFuncionario = ExameFuncionario::withoutGlobalScopes()
-                ->with(['PcmsoDados' => function ($query) {
-                    $query->withoutGlobalScopes();
-                }])->with(['Formulario' => function ($query) {
-                    $query->withoutGlobalScopes();
-                }])->with(['EmpresaExame' => function ($query) {
-                    $query->withoutGlobalScopes();
-                }])->with(['Feedback' => function ($query) {
-                    $query->withoutGlobalScopes()
-                        ->with(['Curriculo' => function ($query) {
-                            $query->withoutGlobalScopes();
-                        }]);
-                }])->whereId($exame)->whereToken($request->token)
-                ->first();
-        }
+        $ExameFuncionario = ExameFuncionario::withoutGlobalScopes()
+            ->with(['PcmsoDados' => function ($query) {
+                $query->withoutGlobalScopes();
+            }])->with(['Formulario' => function ($query) {
+                $query->withoutGlobalScopes()->with(['Setores' => function ($q) {
+                    $q->with('Alternativas');
+                }]);
+            }])->with(['EmpresaExame' => function ($query) {
+                $query->withoutGlobalScopes();
+            }])->with(['ExameTipo' => function ($query) {
+                $query->withoutGlobalScopes();
+            }])->with(['Feedback' => function ($query) {
+                $query->withoutGlobalScopes()
+                    ->with(['Curriculo' => function ($query) {
+                        $query->withoutGlobalScopes();
+                    }]);
+            }])->whereId($exame)->whereToken($token)
+            ->first();
 
         if (!$ExameFuncionario) {
             abort(404);
         }
 
-        $ExameFuncionario->dados_empresa = Sistema::getEmpresaFilialMatriz($ExameFuncionario->Feedback->centro_custo_filial_id, $ExameFuncionario->Feedback->empresa_id);
+        $ExameFuncionario->dados_empresa = Sistema::getEmpresaFilialMatriz(
+            $ExameFuncionario->Feedback->centro_custo_filial_id,
+            $ExameFuncionario->Feedback->empresa_id
+        );
 
-        $tipoexame = $request->tipo_exame;
-        $pdf = PDF::loadView('pdf.controle-exames.ficha', compact('ExameFuncionario'));
-        $pdf->setPaper('A4', 'portrait');
-        return $pdf->stream("Exame {$tipoexame} " . Str::slug($ExameFuncionario->Feedback->Curriculo->nome) . ".pdf");
+        $tipoexame = $request->tipo_exame
+            ?? $ExameFuncionario->ExameTipo->label
+            ?? 'Exame';
+
+        $solicitante = auth()->guest() ? '' : (string) (auth()->user()?->nome ?? '');
+
+        /** @var \Barryvdh\DomPDF\PDF $pdf */
+        $pdf = app('dompdf.wrapper');
+        $pdf->loadView('pdf.controle-exames.ficha', compact('ExameFuncionario'));
+        app(ComunicadoDispensaSemJustaCausaPdfService::class)
+            ->aplicarPadraoDocumento($pdf, $solicitante);
+
+        return $pdf->stream('Exame ' . $tipoexame . ' ' . Str::slug($ExameFuncionario->Feedback->Curriculo->nome) . '.pdf');
     }
 
     /**
@@ -530,8 +545,9 @@ class ControleExameController extends Controller
         ]);
 
         $ExameFuncionario = ExameFuncionario::with(['PcmsoDados' => fn ($q) => $q->withoutGlobalScopes()])
-            ->with(['Formulario' => fn ($q) => $q->withoutGlobalScopes()])
+            ->with(['Formulario' => fn ($q) => $q->withoutGlobalScopes()->with(['Setores' => fn ($s) => $s->with('Alternativas')])])
             ->with(['EmpresaExame' => fn ($q) => $q->withoutGlobalScopes()])
+            ->with(['ExameTipo' => fn ($q) => $q->withoutGlobalScopes()])
             ->with(['Feedback' => fn ($q) => $q->withoutGlobalScopes()->with(['Curriculo' => fn ($q) => $q->withoutGlobalScopes()])])
             ->whereId($request->exame_id)
             ->whereHas('Feedback', fn ($q) => $q->where('empresa_id', auth()->user()->empresa_id))
@@ -541,14 +557,20 @@ class ControleExameController extends Controller
             return response()->json(['success' => false, 'message' => 'Exame não encontrado.'], 404);
         }
 
-        $ExameFuncionario->dados_empresa = Sistema::getEmpresaFilialMatriz($ExameFuncionario->Feedback->centro_custo_filial_id, $ExameFuncionario->Feedback->empresa_id);
+        $ExameFuncionario->dados_empresa = Sistema::getEmpresaFilialMatriz(
+            $ExameFuncionario->Feedback->centro_custo_filial_id,
+            $ExameFuncionario->Feedback->empresa_id
+        );
         $tipoexame = $request->input('tipo_exame', 'Exame');
         if ($ExameFuncionario->exame_tipo_id) {
             $tipoexame = ExameTipo::find($ExameFuncionario->exame_tipo_id)->label ?? $tipoexame;
         }
 
-        $pdf = PDF::loadView('pdf.controle-exames.ficha', compact('ExameFuncionario'));
-        $pdf->setPaper('A4', 'portrait');
+        /** @var \Barryvdh\DomPDF\PDF $pdf */
+        $pdf = app('dompdf.wrapper');
+        $pdf->loadView('pdf.controle-exames.ficha', compact('ExameFuncionario'));
+        app(ComunicadoDispensaSemJustaCausaPdfService::class)
+            ->aplicarPadraoDocumento($pdf, (string) (auth()->user()?->nome ?? ''));
         $pdfContent = $pdf->output();
 
         $nomeArquivo = 'ficha_encaminhamento_' . Str::slug($ExameFuncionario->Feedback->Curriculo->nome ?? 'documento') . '.pdf';
