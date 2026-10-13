@@ -149,15 +149,13 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
         }
 
         $demissaoPrevista = DemissaoPrevista::query()
-            ->select(['id', 'colaborador_id', 'tipo_aviso', 'data_demissao', 'empresa_id'])
+            ->select(['id', 'colaborador_id', 'tipo_aviso', 'data_demissao', 'empresa_id', 'centro_custo_filial_id'])
             ->whereKey($demissaoId)
             ->where('empresa_id', $this->empresaId)
             ->with([
                 'Colaborador:id,nome,empresa_id',
-                'Colaborador.DadosEmpresa:id,razao_social,cnpj,municipio,uf',
                 'Colaborador.Feedback:id,curriculo_id,empresa_id',
-                'Colaborador.Feedback.Empresa:id,razao_social,cnpj,municipio,uf',
-                'Colaborador.Feedback.Admissao:id,feedback_id,data_admissao',
+                'Colaborador.Feedback.Admissao:id,feedback_id,data_admissao,centro_custo_filial_id',
             ])
             ->first();
         if (!$demissaoPrevista || !$demissaoPrevista->Colaborador) {
@@ -165,10 +163,11 @@ class JobProcessarEnvioAssinatura implements ShouldQueue
             return;
         }
 
-        $viewData = app(ComunicadoDispensaSemJustaCausaPdfService::class)->fromDemissaoPrevista($demissaoPrevista);
-        $pdf = PDF::loadView(ComunicadoDispensaSemJustaCausaPdfService::VIEW, $viewData);
-        $pdf->setPaper('A4', 'portrait');
-        $pdfContent = $pdf->output();
+        $solicitanteNome = (string) (User::query()->select('nome')->find($this->solicitanteId)?->nome ?? '');
+        $servicePdf = app(ComunicadoDispensaSemJustaCausaPdfService::class);
+        $pdfContent = $servicePdf
+            ->makePdf($servicePdf->fromDemissaoPrevista($demissaoPrevista, $solicitanteNome))
+            ->output();
         $nomeArquivo = 'aviso_previo_' . Str::slug($demissaoPrevista->Colaborador->nome) . '_' . (new DataHora())->nomeUnico() . '.pdf';
 
         $service->criarEnvio(

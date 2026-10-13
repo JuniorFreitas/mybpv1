@@ -529,20 +529,17 @@ class DemissaoPrevistaController extends Controller
     public function pdf(DemissaoPrevista $demissaoPrevista, Request $request)
     {
         $demissaoPrevista = DemissaoPrevista::query()
-            ->select(['id', 'colaborador_id', 'tipo_aviso', 'data_demissao', 'empresa_id'])
+            ->select(['id', 'colaborador_id', 'tipo_aviso', 'data_demissao', 'empresa_id', 'centro_custo_filial_id'])
             ->with([
                 'Colaborador:id,nome,empresa_id',
-                'Colaborador.DadosEmpresa:id,razao_social,cnpj,municipio,uf',
                 'Colaborador.Feedback:id,curriculo_id,empresa_id',
-                'Colaborador.Feedback.Empresa:id,razao_social,cnpj,municipio,uf',
-                'Colaborador.Feedback.Admissao:id,feedback_id,data_admissao',
+                'Colaborador.Feedback.Admissao:id,feedback_id,data_admissao,centro_custo_filial_id',
             ])
             ->whereKey($demissaoPrevista->id)
             ->firstOrFail();
 
-        $viewData = app(ComunicadoDispensaSemJustaCausaPdfService::class)->fromDemissaoPrevista($demissaoPrevista);
-        $pdf = PDF::loadView(ComunicadoDispensaSemJustaCausaPdfService::VIEW, $viewData);
-        $pdf->setPaper('A4', 'portrait');
+        $service = app(ComunicadoDispensaSemJustaCausaPdfService::class);
+        $pdf = $service->makePdf($service->fromDemissaoPrevista($demissaoPrevista));
 
         return $pdf->stream("pdf_" . Str::slug($demissaoPrevista->Colaborador->nome) . (new DataHora())->nomeUnico() . ".pdf");
     }

@@ -132,7 +132,7 @@ class PosAdmissaoController extends Controller
                 'Feedback:id,curriculo_id,empresa_id,vagas_abertas_id',
                 'Feedback.Curriculo:id,nome',
                 'Feedback.Empresa:id,razao_social,cnpj,municipio,uf,logradouro,bairro,cep,numero,complemento',
-                'Feedback.Admissao:id,feedback_id,data_admissao',
+                'Feedback.Admissao:id,feedback_id,data_admissao,centro_custo_filial_id',
                 'Feedback.AvaliacaoNoventaVencimento:id,feedback_id,prazo_dia_inicial,prazo_dia_final',
                 'Feedback.VagaAberta:id,vaga_id',
                 'Feedback.VagaAberta.Vaga:id,nome',
@@ -157,12 +157,13 @@ class PosAdmissaoController extends Controller
 
         $nomePdf = $dados->motivoRescisao->nome_pdf;
         if ($nomePdf === 'demissao_sem_justa_causa') {
-            $viewData = app(ComunicadoDispensaSemJustaCausaPdfService::class)->fromDemissao($dados);
-            $pdf = PDF::loadView(ComunicadoDispensaSemJustaCausaPdfService::VIEW, $viewData);
+            $service = app(ComunicadoDispensaSemJustaCausaPdfService::class);
+            $pdf = $service->makePdf($service->fromDemissao($dados));
         } else {
             $pdf = PDF::loadView('pdf.admissao.posadmissao.' . $nomePdf, compact('dados'));
+            $pdf->setPaper('A4', 'portrait');
         }
-        $pdf->setPaper('A4', 'portrait');
+
         return $pdf->stream($nomePdf . (new DataHora())->nomeUnico() . ".pdf");
     }
 
