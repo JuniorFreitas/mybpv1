@@ -25,6 +25,11 @@ class DossiePdfService
         'pdf.historico.dossie.acordocompensacaohoras',
         'pdf.historico.dossie.termosalariofamilia',
         'pdf.historico.dossie.docchecklist',
+        'pdf.historico.dossie.concessaodispensa',
+        'pdf.historico.dossie.concessaoplanodependentes',
+        'pdf.historico.dossie.comunicadoplanosaude',
+        'pdf.historico.dossie.declaracaocienciaplanosaude',
+        'pdf.historico.dossie.declaracaonr1',
     ];
 
     /** Views longas com rodapé de paginação (em vez do texto de geração). */
