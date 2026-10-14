@@ -73,7 +73,7 @@ const app = createApp({
                 id: '',
                 curriculo_id: '',
                 candidato_nome: '',
-                candidato_cpf_mascarado: '',
+                candidato_cpf: '',
                 candidato_email: '',
                 candidato_uf: '',
                 contato_telefone: '',
@@ -99,7 +99,7 @@ const app = createApp({
                 envia_whatsapp: false,
                 numero_telefone: '',
                 candidato_nome: '',
-                candidato_cpf_mascarado: '',
+                candidato_cpf: '',
                 candidato_email: '',
                 candidato_uf: '',
                 contato_telefone: '',
@@ -261,7 +261,7 @@ const app = createApp({
             return this.textoCampo(item?.candidato_nome)
         },
         cpfExibicao(item) {
-            return item?.candidato_cpf_mascarado || ''
+            return item?.candidato_cpf || ''
         },
         clienteExibicao(item) {
             return this.textoCampo(item?.cliente_nome)

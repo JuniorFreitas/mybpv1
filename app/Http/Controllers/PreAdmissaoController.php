@@ -524,7 +524,7 @@ class PreAdmissaoController extends Controller
             'id' => $item->id,
             'curriculo_id' => $item->curriculo_id,
             'candidato_nome' => $item->Curriculo?->nome,
-            'candidato_cpf_mascarado' => $this->mascararCpfListagem($item->Curriculo?->cpf),
+            'candidato_cpf' => $this->formatarCpfExibicao($item->Curriculo?->cpf),
             'candidato_email' => $item->Curriculo?->email,
             'candidato_uf' => $item->Curriculo?->uf,
             'contato_telefone' => $item->TelPrincipal?->numero,
@@ -688,13 +688,13 @@ class PreAdmissaoController extends Controller
             ->keyBy('feedback_id');
     }
 
-    private function mascararCpfListagem(?string $cpf): ?string
+    private function formatarCpfExibicao(?string $cpf): ?string
     {
         $digitos = preg_replace('/\D+/', '', (string) $cpf);
-        if (strlen($digitos) < 11) {
+        if (strlen($digitos) !== 11) {
             return null;
         }
 
-        return substr($digitos, 0, 3) . '.***.***-' . substr($digitos, -2);
+        return Sistema::mascaraCpf($digitos);
     }
 }

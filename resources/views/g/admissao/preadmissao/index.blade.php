@@ -39,7 +39,7 @@
                             <mybp-card-campo
                                 icon="fas fa-id-card"
                                 label="CPF"
-                                :valor="textoCampo(form.candidato_cpf_mascarado)"
+                                :valor="textoCampo(form.candidato_cpf)"
                             ></mybp-card-campo>
                             <mybp-card-campo
                                 icon="fas fa-briefcase"
@@ -158,7 +158,7 @@
                     <section class="mybp-card-secao">
                         <div class="mybp-card-row">
                             <mybp-card-campo icon="fas fa-user" label="Candidato" :valor="textoCampo(dadosFinalizar.candidato_nome)" :forte="true"></mybp-card-campo>
-                            <mybp-card-campo icon="fas fa-id-card" label="CPF" :valor="textoCampo(dadosFinalizar.candidato_cpf_mascarado)"></mybp-card-campo>
+                            <mybp-card-campo icon="fas fa-id-card" label="CPF" :valor="textoCampo(dadosFinalizar.candidato_cpf)"></mybp-card-campo>
                             <mybp-card-campo icon="fas fa-briefcase" label="Cargo / Vaga" :valor="textoCampo(dadosFinalizar.cargo_nome)"></mybp-card-campo>
                         </div>
                     </section>
@@ -289,7 +289,7 @@
                     <section class="mybp-card-secao">
                         <div class="mybp-card-row">
                             <mybp-card-campo icon="fas fa-user" label="Candidato" :valor="textoCampo(formEmail.candidato_nome)" :forte="true"></mybp-card-campo>
-                            <mybp-card-campo icon="fas fa-id-card" label="CPF" :valor="textoCampo(formEmail.candidato_cpf_mascarado)"></mybp-card-campo>
+                            <mybp-card-campo icon="fas fa-id-card" label="CPF" :valor="textoCampo(formEmail.candidato_cpf)"></mybp-card-campo>
                             <mybp-card-campo icon="fas fa-briefcase" label="Cargo / Vaga" :valor="textoCampo(formEmail.cargo_nome)"></mybp-card-campo>
                         </div>
                     </section>
