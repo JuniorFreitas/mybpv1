@@ -92,7 +92,7 @@ class CentroCustoCnpjSyncService
         $this->invalidarCache($empresaId);
     }
 
-    private function ehCnpjMatriz(string $campoCnpj, int $empresaId, $info): bool
+    public function ehCnpjMatriz(string $campoCnpj, int $empresaId, $info): bool
     {
         if (is_array($info)) {
             return !empty($info['matriz']);
@@ -116,7 +116,7 @@ class CentroCustoCnpjSyncService
             ->update(['ativo' => false]);
     }
 
-    private function resolverClienteFilialIdPorCnpj(string $campoCnpj, int $empresaId): ?int
+    public function resolverClienteFilialIdPorCnpj(string $campoCnpj, int $empresaId): ?int
     {
         $cnpjDigits = preg_replace('/[^0-9]/', '', $campoCnpj);
 

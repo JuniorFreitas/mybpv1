@@ -8,15 +8,16 @@ use App\Models\CentroCustoGestor;
 use App\Models\ClienteFilial;
 use App\Services\CentroCusto\CentroCustoCnpjSyncService;
 use App\Services\CentroCusto\CentroCustoGestorSyncService;
+use App\Services\CentroCusto\CentroCustoUnicidadeService;
 use DB;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class CentroCustoController extends Controller
 {
     public function __construct(
         private readonly CentroCustoGestorSyncService $gestorSyncService,
-        private readonly CentroCustoCnpjSyncService $cnpjSyncService
+        private readonly CentroCustoCnpjSyncService $cnpjSyncService,
+        private readonly CentroCustoUnicidadeService $unicidadeService
     ) {
     }
 
@@ -52,17 +53,14 @@ class CentroCustoController extends Controller
         $dados = $request->input();
         $dados['ativo'] = $dados['ativo'] == 'true';
 
-        $regra = Rule::unique('centro_custos')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
-                ->whereLabel($dados['label']);
-        });
-
-        $regras = ['label' => ['required', $regra]];
+        $regras = ['label' => ['required', $this->unicidadeService->regraLabel($dados)]];
         if ((new ClienteFilial())->temFilial()) {
             $regras['campoCnpj'] = ['required', 'string'];
         }
 
-        $dadosValidados = \Validator::make($dados, $regras);
+        $dadosValidados = \Validator::make($dados, $regras, [
+            'label.unique' => 'Já existe um Centro de Custo ativo com este Nome no mesmo CNPJ.',
+        ]);
 
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
@@ -141,17 +139,14 @@ class CentroCustoController extends Controller
         $centro = CentroCusto::find($id);
         $dados['ativo'] = $dados['ativo'] == 'true';
 
-        $regra = Rule::unique('centro_custos')->where(function ($query) use ($dados) {
-            return $query->whereEmpresaId(auth()->user()->empresa_id)
-                ->whereLabel($dados['label']);
-        })->ignore($centro->id);
-
-        $regras = ['label' => ['required', $regra]];
+        $regras = ['label' => ['required', $this->unicidadeService->regraLabel($dados, $centro->id)]];
         if ((new ClienteFilial())->temFilial()) {
             $regras['campoCnpj'] = ['required', 'string'];
         }
 
-        $dadosValidados = \Validator::make($dados, $regras);
+        $dadosValidados = \Validator::make($dados, $regras, [
+            'label.unique' => 'Já existe um Centro de Custo ativo com este Nome no mesmo CNPJ.',
+        ]);
 
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
@@ -264,9 +259,26 @@ class CentroCustoController extends Controller
         $this->authorize('cadastro_centrocusto');
 
         $centro = CentroCusto::find($request->id);
-        $centro->ativo = !$centro->ativo;
+        if (!$centro) {
+            return response()->json(['msg' => 'Centro de custo não encontrado.'], 404);
+        }
+
+        $ativoAlvo = !$centro->ativo;
+
+        // Só bloqueia ao ativar: evita dois ativos com mesmo nome na mesma lotação.
+        if ($ativoAlvo && $this->unicidadeService->existeConflito($centro, true)) {
+            return response()->json([
+                'msg' => 'Não é possível ativar',
+                'erros' => [
+                    'label' => ['Já existe um Centro de Custo ativo com este Nome no mesmo CNPJ.'],
+                ],
+            ], 400);
+        }
+
+        $centro->ativo = $ativoAlvo;
         $centro->save();
         $centro->refresh();
+
         return response()->json(['ativo' => $centro->ativo], 201);
     }
 

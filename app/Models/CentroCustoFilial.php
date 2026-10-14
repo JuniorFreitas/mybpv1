@@ -61,6 +61,8 @@ class CentroCustoFilial extends Model
         $activity->descricao = "";
     }
 
+    protected $table = 'centro_custo_filials';
+
     protected $fillable = [
         'empresa_id',
         'centro_custo_id',
