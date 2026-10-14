@@ -101,6 +101,12 @@
         </footer>
     </div>
 
+    @if(config('services.assistente_manual.habilitado') && filled(config('services.gemini.api_key')))
+        <assistente-manual
+            usuario-id="{{ auth()->id() }}"
+            secao-url="{{ url('/g/ajuda/manual/secao') }}"
+        ></assistente-manual>
+    @endif
     <nps-modal />
 </div>
 

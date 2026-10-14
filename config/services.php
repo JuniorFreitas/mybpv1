@@ -49,6 +49,14 @@ return [
         'allowed_hosts' => array_filter(explode(',', (string) env('GEMINI_ALLOWED_HOSTS', 'generativelanguage.googleapis.com'))),
     ],
 
+    'assistente_manual' => [
+        'habilitado' => filter_var(env('ASSISTENTE_MANUAL_HABILITADO', true), FILTER_VALIDATE_BOOLEAN),
+        'base_path' => env('ASSISTENTE_MANUAL_BASE_PATH', 'docs/manual-completo/base-conhecimento/chunks.jsonl'),
+        'cache_ttl' => (int) env('ASSISTENTE_MANUAL_CACHE_TTL', 21600),
+        'limite_diario_usuario' => (int) env('ASSISTENTE_MANUAL_LIMITE_DIARIO_USUARIO', 80),
+        'limite_diario_global' => (int) env('ASSISTENTE_MANUAL_LIMITE_DIARIO_GLOBAL', 600),
+    ],
+
     'bp_chamados' => [
         'enabled' => filter_var(env('BP_CHAMADOS_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
         'api_base_url' => env('BP_CHAMADOS_API_BASE_URL'),

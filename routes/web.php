@@ -1651,14 +1651,19 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::resource('acesso-clinica', \App\Http\Controllers\Clinica\ControleExamesController::class)->middleware('can:acesso_clinica');
     });
 
-    // Ajuda (manual do usuário — disponível para todos autenticados)
+    // Ajuda (assistente do manual — disponível para todos autenticados).
+    // O manual completo (página inteira e PDF) não é exposto: só seções isoladas, citadas pelo assistente.
     Route::group(['as' => 'ajuda.', 'prefix' => 'ajuda'], function () {
-        Route::get('manual', [\App\Http\Controllers\AjudaController::class, 'index'])->name('manual');
-        Route::get('manual/conteudo', [\App\Http\Controllers\AjudaController::class, 'conteudo'])->name('manual.conteudo');
-        Route::get('manual/pdf', [\App\Http\Controllers\AjudaController::class, 'pdf'])->name('manual.pdf');
+        Route::get('manual/secao/{ancora}', [\App\Http\Controllers\AjudaController::class, 'secao'])
+            ->where('ancora', '[a-z0-9-]+')
+            ->name('manual.secao')
+            ->middleware('throttle:assistente-manual-secao');
         Route::get('manual/img/{path}', [\App\Http\Controllers\AjudaController::class, 'asset'])
             ->where('path', '.*')
             ->name('manual.asset');
+        Route::post('assistente/perguntar', [\App\Http\Controllers\AssistenteManualController::class, 'perguntar'])
+            ->name('assistente.perguntar')
+            ->middleware('throttle:assistente-manual');
     });
 });
 

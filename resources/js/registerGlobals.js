@@ -41,6 +41,7 @@ const components = {
     'bt-ativo': require('./components/AtivoInativo').default,
     'barra-top': require('./components/layout/BarraTop').default,
     'nps-modal': require('./components/NpsModal').default,
+    'assistente-manual': require('./components/ajuda/AssistenteManual.vue').default,
     'telefone-usuario-modal': require('./components/TelefoneUsuarioModal.vue').default,
     'whatsapp-preferencias-usuario': require('./components/WhatsappPreferenciasUsuario.vue').default,
     'whatsapp-preview-modal': require('./components/configuracoes/whatsapp/WhatsappPreviewModal.vue').default,
