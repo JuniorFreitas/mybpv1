@@ -1,0 +1,422 @@
+// Assistente do Manual — widget flutuante de dúvidas (chatbot)
+// Uso: <assistente-manual> em layouts/sistema.blade.php
+// Ref: resources/js/components/ajuda/AssistenteManual.vue
+
+$mybp-assistente-primary: var(--primary, #174257);
+$mybp-assistente-largura: 380px;
+
+.mybp-assistente {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    // Abaixo do backdrop dos modais do Bootstrap (1040) para nunca cobrir um modal aberto.
+    z-index: 1030;
+    font-size: 0.85rem;
+
+    @media print {
+        display: none !important;
+    }
+}
+
+.mybp-assistente-botao {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    margin-left: auto;
+    border: 0;
+    border-radius: 50%;
+    background: $mybp-assistente-primary;
+    color: #fff;
+    font-size: 1.6rem;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.26);
+    }
+
+    &:focus-visible {
+        outline: 3px solid rgba(23, 66, 87, 0.35);
+        outline-offset: 2px;
+    }
+}
+
+.mybp-assistente-painel {
+    display: flex;
+    flex-direction: column;
+    width: $mybp-assistente-largura;
+    max-width: calc(100vw - 24px);
+    height: 560px;
+    max-height: calc(100vh - 110px);
+    margin-bottom: 12px;
+    border: 1px solid #e9ecef;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.mybp-assistente-painel-enter-active,
+.mybp-assistente-painel-leave-active {
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    transform-origin: bottom right;
+}
+
+.mybp-assistente-painel-enter-from,
+.mybp-assistente-painel-leave-to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+}
+
+.mybp-assistente-cabecalho {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 12px 12px 14px;
+    background: $mybp-assistente-primary;
+    color: #fff;
+}
+
+.mybp-assistente-cabecalho-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.16);
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.mybp-assistente-cabecalho-titulos {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    line-height: 1.25;
+
+    strong {
+        font-size: 0.92rem;
+    }
+
+    span {
+        font-size: 0.72rem;
+        opacity: 0.85;
+    }
+}
+
+.mybp-assistente-acao {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.16);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+}
+
+.mybp-assistente-mensagens {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    overflow-y: auto;
+    background: #f6f8fa;
+}
+
+.mybp-assistente-boas-vindas {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #495057;
+
+    p {
+        margin: 0 0 4px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: #fff;
+        border: 1px solid #e9ecef;
+    }
+}
+
+.mybp-assistente-sugestoes-titulo {
+    margin-top: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #6c757d;
+}
+
+.mybp-assistente-sugestao {
+    padding: 7px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 999px;
+    background: #fff;
+    color: $mybp-assistente-primary;
+    font-size: 0.8rem;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+
+    &:hover {
+        border-color: $mybp-assistente-primary;
+        background: #f1f6f8;
+    }
+}
+
+.mybp-assistente-msg {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+
+    &--usuario {
+        justify-content: flex-end;
+
+        .mybp-assistente-balao {
+            background: $mybp-assistente-primary;
+            color: #fff;
+            border-color: transparent;
+            border-bottom-right-radius: 4px;
+            white-space: pre-wrap;
+        }
+    }
+
+    &--assistente .mybp-assistente-balao {
+        border-bottom-left-radius: 4px;
+    }
+}
+
+.mybp-assistente-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #e3ecf0;
+    color: $mybp-assistente-primary;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.mybp-assistente-balao {
+    max-width: 84%;
+    padding: 9px 12px;
+    border: 1px solid #e9ecef;
+    border-radius: 14px;
+    background: #fff;
+    color: #343a40;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+
+    &--erro {
+        border-color: #f1c0c5;
+        background: #fdf3f4;
+        color: #842029;
+    }
+}
+
+.mybp-assistente-texto {
+    p {
+        margin: 0 0 6px;
+    }
+
+    ol,
+    ul {
+        margin: 0 0 6px;
+        padding-left: 1.25rem;
+    }
+
+    li {
+        margin-bottom: 3px;
+    }
+
+    > :last-child {
+        margin-bottom: 0;
+    }
+}
+
+.mybp-assistente-fontes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #e9ecef;
+}
+
+.mybp-assistente-fontes-titulo {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #6c757d;
+}
+
+.mybp-assistente-fonte {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 0.76rem;
+    text-align: left;
+    color: $mybp-assistente-primary;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.mybp-assistente-fonte-titulo {
+    flex: 1;
+    min-width: 0;
+}
+
+.mybp-assistente-secao-caminho {
+    display: inline-block;
+    margin-bottom: 8px;
+    font-size: 0.78rem;
+    color: #6c757d;
+}
+
+.mybp-assistente-secao-frame {
+    display: block;
+    width: 100%;
+    height: calc(100vh - 260px);
+    min-height: 320px;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.mybp-assistente-digitando {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 14px;
+
+    span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #adb5bd;
+        animation: mybp-assistente-digitando 1.1s infinite ease-in-out;
+
+        &:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        &:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+    }
+}
+
+@keyframes mybp-assistente-digitando {
+    0%,
+    60%,
+    100% {
+        transform: translateY(0);
+        opacity: 0.5;
+    }
+
+    30% {
+        transform: translateY(-4px);
+        opacity: 1;
+    }
+}
+
+.mybp-assistente-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 10px 12px;
+    border-top: 1px solid #e9ecef;
+    background: #fff;
+}
+
+.mybp-assistente-campo {
+    flex: 1;
+    min-height: 38px;
+    max-height: 96px;
+    padding: 8px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    resize: none;
+    outline: none;
+
+    &:focus {
+        border-color: $mybp-assistente-primary;
+    }
+}
+
+.mybp-assistente-enviar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 12px;
+    background: $mybp-assistente-primary;
+    color: #fff;
+    font-size: 1.15rem;
+    cursor: pointer;
+    flex-shrink: 0;
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: default;
+    }
+}
+
+.mybp-assistente-rodape {
+    padding: 0 12px 9px;
+    background: #fff;
+    font-size: 0.66rem;
+    line-height: 1.35;
+    color: #868e96;
+
+    a {
+        color: $mybp-assistente-primary;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .mybp-assistente {
+        right: 12px;
+        bottom: 12px;
+    }
+
+    .mybp-assistente-painel {
+        width: calc(100vw - 24px);
+        height: calc(100vh - 96px);
+        max-height: none;
+    }
+}

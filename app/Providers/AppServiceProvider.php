@@ -25,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
         );
         $this->app->bind(\App\Domain\Ai\LlmClient::class, \App\Infrastructure\Ai\GeminiHttpClient::class);
         $this->app->bind(\App\Domain\Ai\LlmProxy::class, \App\Infrastructure\Ai\FallbackLlmProxy::class);
+        $this->app->singleton(\App\Domain\Ajuda\BaseConhecimentoManual::class, \App\Infrastructure\Ajuda\BaseConhecimentoManualJsonl::class);
 
         if ($this->app->isLocal()) {
             $this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);

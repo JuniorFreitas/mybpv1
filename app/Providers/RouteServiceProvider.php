@@ -59,5 +59,23 @@ class RouteServiceProvider extends ServiceProvider
 
             return Limit::perMinute($perMinute)->by(optional($request->user())->id ?: $request->ip());
         });
+
+        // Limita a leitura de seções para o manual não ser copiado inteiro, seção por seção.
+        RateLimiter::for('assistente-manual-secao', function (Request $request) {
+            return Limit::perMinute(20)->by(optional($request->user())->id ?: $request->ip());
+        });
+
+        // Três travas: ritmo por usuário, teto diário por usuário e teto diário do sistema inteiro,
+        // para que ninguém (nem um script com sessão válida) esgote a cota gratuita do provedor de IA.
+        RateLimiter::for('assistente-manual', function (Request $request) {
+            $perMinute = app()->environment('local') ? 60 : 8;
+            $usuario = optional($request->user())->id ?: $request->ip();
+
+            return [
+                Limit::perMinute($perMinute)->by('assistente:min:'.$usuario),
+                Limit::perDay((int) config('services.assistente_manual.limite_diario_usuario', 80))->by('assistente:dia:'.$usuario),
+                Limit::perDay((int) config('services.assistente_manual.limite_diario_global', 600))->by('assistente:dia:global'),
+            ];
+        });
     }
 }

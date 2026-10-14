@@ -1065,19 +1065,22 @@
         </li>
     @endif
 
-    <li id="ajuda">
-        <a href="javascript://" class="has-arrow waves-effect" parent="ajuda">
-            <i class="bx bx-help-circle"></i>
-            <span>AJUDA</span>
-        </a>
-        <ul aria-expanded="false">
-            <li>
-                <a href="{{ route('g.ajuda.manual.pdf') }}" parent="ajuda" key="manual" download>
-                    Manual do usuário
-                </a>
-            </li>
-        </ul>
-    </li>
+    @if(config('services.assistente_manual.habilitado') && filled(config('services.gemini.api_key')))
+        <li id="ajuda">
+            <a href="javascript://" class="has-arrow waves-effect" parent="ajuda">
+                <i class="bx bx-help-circle"></i>
+                <span>AJUDA</span>
+            </a>
+            <ul aria-expanded="false">
+                <li>
+                    <a href="javascript://" parent="ajuda" key="assistente"
+                       onclick="window.dispatchEvent(new Event('mybp:assistente-manual:abrir'))">
+                        Assistente (tire dúvidas)
+                    </a>
+                </li>
+            </ul>
+        </li>
+    @endif
 </div>
 
 @push('js')
