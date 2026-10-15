@@ -97,6 +97,7 @@ const app = createApp({
                     mfa_login_habilitado: false,
                     mfa_login_email: true,
                     mfa_login_whatsapp: false,
+                    mfa_login_periodo_dias: 30,
                     vencimento_aso: '',
                     modelo_cih: '',
                     supervisor_etiqueta_bloqueio: true,
@@ -143,6 +144,7 @@ const app = createApp({
             gruposAlertaAssinatura: [],
             buscaAlertaUsuario: '',
             buscaAlertaGrupo: '',
+            mfaPeriodoPreset: '30',
 
             controle: {
                 carregando: false,
@@ -236,6 +238,7 @@ const app = createApp({
 
             this.form = _.cloneDeep(this.formDefault) //copia
             this.garantirConfiguracoesCliente()
+            this.sincronizarMfaPeriodoPreset()
             this.leitura = false
             this.usuariosAlertaAssinatura = []
             this.gruposAlertaAssinatura = []
@@ -306,6 +309,7 @@ const app = createApp({
                             mfa_login_habilitado: false,
                             mfa_login_email: true,
                             mfa_login_whatsapp: false,
+                            mfa_login_periodo_dias: 30,
                             vencimento_aso: '',
                             modelo_cih: '',
                             supervisor_etiqueta_bloqueio: true,
@@ -329,6 +333,9 @@ const app = createApp({
                         this.form.cliente_config.mfa_login_habilitado = !!this.form.cliente_config.mfa_login_habilitado
                         this.form.cliente_config.mfa_login_email = this.form.cliente_config.mfa_login_email !== false
                         this.form.cliente_config.mfa_login_whatsapp = !!this.form.cliente_config.mfa_login_whatsapp
+                        this.form.cliente_config.mfa_login_periodo_dias = Number(
+                            this.form.cliente_config.mfa_login_periodo_dias ?? 30
+                        )
                         this.form.cliente_config.assinatura_digital_habilitada = !!this.form.cliente_config.assinatura_digital_habilitada
                         this.form.cliente_config.descricao_vaga_ia_habilitada = !!this.form.cliente_config.descricao_vaga_ia_habilitada
                         this.form.cliente_config.limite_assinaturas_mensal = this.form.cliente_config.limite_assinaturas_mensal ?? ''
@@ -340,6 +347,7 @@ const app = createApp({
                         )
                     }
                     this.garantirConfiguracoesCliente()
+                    this.sincronizarMfaPeriodoPreset()
 
                     this.usuariosAlertaAssinatura = response.data.usuariosAlertaAssinatura || []
                     this.gruposAlertaAssinatura = response.data.gruposAlertaAssinatura || []
@@ -522,6 +530,10 @@ const app = createApp({
                 this.form.cliente_config = _.cloneDeep(this.formDefault.cliente_config)
             }
 
+            if (this.form.cliente_config.mfa_login_periodo_dias === undefined || this.form.cliente_config.mfa_login_periodo_dias === null) {
+                this.form.cliente_config.mfa_login_periodo_dias = 30
+            }
+
             const atuais =
                 this.form.cliente_config.configuracoes && typeof this.form.cliente_config.configuracoes === 'object'
                     ? this.form.cliente_config.configuracoes
@@ -539,6 +551,25 @@ const app = createApp({
                 transferencia_exigir_aprovacao_gestor_origem:
                     exigirOrigem === undefined || exigirOrigem === null ? true : !!exigirOrigem,
             }
+        },
+        sincronizarMfaPeriodoPreset() {
+            const dias = Number(this.form.cliente_config?.mfa_login_periodo_dias ?? 30)
+            if ([0, 30, 90].includes(dias)) {
+                this.mfaPeriodoPreset = String(dias)
+            } else {
+                this.mfaPeriodoPreset = 'custom'
+            }
+        },
+        onMfaPeriodoPresetChange() {
+            if (this.mfaPeriodoPreset === 'custom') {
+                const atual = Number(this.form.cliente_config.mfa_login_periodo_dias ?? 0)
+                if ([0, 30, 90].includes(atual) || atual < 1) {
+                    this.form.cliente_config.mfa_login_periodo_dias = 1
+                }
+                return
+            }
+
+            this.form.cliente_config.mfa_login_periodo_dias = Number(this.mfaPeriodoPreset)
         },
     }
 })

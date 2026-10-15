@@ -773,7 +773,7 @@ class ClientesController extends Controller
     /**
      * Normaliza flags de MFA no login web.
      *
-     * @return array{mfa_login_habilitado?: bool, mfa_login_email?: bool, mfa_login_whatsapp?: bool}
+     * @return array{mfa_login_habilitado?: bool, mfa_login_email?: bool, mfa_login_whatsapp?: bool, mfa_login_periodo_dias?: int}
      */
     private function dadosConfigMfaLogin(array $dadosConfig): array
     {
@@ -785,6 +785,7 @@ class ClientesController extends Controller
         $email = filter_var($dadosConfig['mfa_login_email'] ?? true, FILTER_VALIDATE_BOOLEAN);
         $whatsapp = filter_var($dadosConfig['mfa_login_whatsapp'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $enviaWhatsapp = filter_var($dadosConfig['envia_whatsapp'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $periodoDias = (int) ($dadosConfig['mfa_login_periodo_dias'] ?? \App\Services\Auth\MfaLoginService::PERIODO_DIAS_PADRAO);
 
         if ($whatsapp && !$enviaWhatsapp) {
             throw new \InvalidArgumentException(
@@ -798,11 +799,25 @@ class ClientesController extends Controller
             );
         }
 
-        return [
+        if (!$habilitado) {
+            $periodoDias = 0;
+        } elseif ($periodoDias < 0 || $periodoDias > \App\Services\Auth\MfaLoginService::PERIODO_DIAS_MAX) {
+            throw new \InvalidArgumentException(
+                'O período de MFA deve ser entre 0 e ' . \App\Services\Auth\MfaLoginService::PERIODO_DIAS_MAX . ' dias.'
+            );
+        }
+
+        $resultado = [
             'mfa_login_habilitado' => $habilitado,
             'mfa_login_email' => $email,
             'mfa_login_whatsapp' => $whatsapp,
         ];
+
+        if (Schema::hasColumn('cliente_configs', 'mfa_login_periodo_dias')) {
+            $resultado['mfa_login_periodo_dias'] = $periodoDias;
+        }
+
+        return $resultado;
     }
 
     private function criaOuAtualizaGrupoAdm($empresa_id)

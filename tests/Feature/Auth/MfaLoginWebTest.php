@@ -7,7 +7,6 @@ use App\Jobs\Auth\JobEnvioCodigoMfaLoginEmail;
 use App\Models\User;
 use App\Services\Auth\MfaLoginService;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
@@ -140,6 +139,190 @@ class MfaLoginWebTest extends TestCase
         ]);
     }
 
+    public function testPeriodoZeroSemprePedeMfa(): void
+    {
+        $user = $this->criarUsuario();
+        DB::table('cliente_configs')->insert([
+            'cliente_id' => 10,
+            'envia_whatsapp' => false,
+            'mfa_login_habilitado' => true,
+            'mfa_login_email' => true,
+            'mfa_login_whatsapp' => false,
+            'mfa_login_periodo_dias' => 0,
+        ]);
+
+        $mfa = app(MfaLoginService::class);
+        $cookieValor = $mfa->valorCookieDispositivoConfiavel($user);
+
+        $this->withCookie(MfaLoginService::COOKIE_DEVICE_TRUST, $cookieValor)
+            ->post('/g/login', [
+                'login' => $user->login,
+                'password' => 'senha-segura',
+            ])
+            ->assertRedirect(route('login.mfa.show'));
+
+        $this->assertGuest();
+    }
+
+    public function testCookieValidoPulaMfaNoPeriodo(): void
+    {
+        $user = $this->criarUsuario();
+        DB::table('cliente_configs')->insert([
+            'cliente_id' => 10,
+            'envia_whatsapp' => false,
+            'mfa_login_habilitado' => true,
+            'mfa_login_email' => true,
+            'mfa_login_whatsapp' => false,
+            'mfa_login_periodo_dias' => 30,
+        ]);
+
+        $mfa = app(MfaLoginService::class);
+        $cookieValor = $mfa->valorCookieDispositivoConfiavel($user);
+
+        $this->withCookie(MfaLoginService::COOKIE_DEVICE_TRUST, $cookieValor)
+            ->post('/g/login', [
+                'login' => $user->login,
+                'password' => 'senha-segura',
+            ])
+            ->assertRedirect();
+
+        $this->assertAuthenticatedAs($user);
+        Queue::assertNotPushed(JobEnvioCodigoMfaLoginEmail::class);
+    }
+
+    public function testCookieDeOutroUsuarioNaoPulaMfa(): void
+    {
+        $user = $this->criarUsuario();
+        $outro = $this->criarUsuario([
+            'login' => 'outro.mfa@example.com',
+            'empresa_id' => 10,
+        ]);
+
+        DB::table('cliente_configs')->insert([
+            'cliente_id' => 10,
+            'envia_whatsapp' => false,
+            'mfa_login_habilitado' => true,
+            'mfa_login_email' => true,
+            'mfa_login_whatsapp' => false,
+            'mfa_login_periodo_dias' => 30,
+        ]);
+
+        $mfa = app(MfaLoginService::class);
+        $cookieValor = $mfa->valorCookieDispositivoConfiavel($outro);
+
+        $this->withCookie(MfaLoginService::COOKIE_DEVICE_TRUST, $cookieValor)
+            ->post('/g/login', [
+                'login' => $user->login,
+                'password' => 'senha-segura',
+            ])
+            ->assertRedirect(route('login.mfa.show'));
+
+        $this->assertGuest();
+    }
+
+    public function testCookieExpiradoPedeMfaNovamente(): void
+    {
+        $user = $this->criarUsuario();
+        DB::table('cliente_configs')->insert([
+            'cliente_id' => 10,
+            'envia_whatsapp' => false,
+            'mfa_login_habilitado' => true,
+            'mfa_login_email' => true,
+            'mfa_login_whatsapp' => false,
+            'mfa_login_periodo_dias' => 30,
+        ]);
+
+        $mfa = app(MfaLoginService::class);
+        $cookieValor = $mfa->valorCookieDispositivoConfiavel($user, now()->subDays(31));
+
+        $this->withCookie(MfaLoginService::COOKIE_DEVICE_TRUST, $cookieValor)
+            ->post('/g/login', [
+                'login' => $user->login,
+                'password' => 'senha-segura',
+            ])
+            ->assertRedirect(route('login.mfa.show'));
+
+        $this->assertGuest();
+    }
+
+    public function testMfaOkComPeriodoGravaCookie(): void
+    {
+        $user = $this->criarUsuario();
+        DB::table('cliente_configs')->insert([
+            'cliente_id' => 10,
+            'envia_whatsapp' => false,
+            'mfa_login_habilitado' => true,
+            'mfa_login_email' => true,
+            'mfa_login_whatsapp' => false,
+            'mfa_login_periodo_dias' => 30,
+        ]);
+
+        $this->post('/g/login', [
+            'login' => $user->login,
+            'password' => 'senha-segura',
+        ])->assertRedirect(route('login.mfa.show'));
+
+        $job = Queue::pushed(JobEnvioCodigoMfaLoginEmail::class)[0];
+        $prop = (new \ReflectionClass($job))->getProperty('codigo');
+        $prop->setAccessible(true);
+        $codigo = $prop->getValue($job);
+
+        $this->post(route('login.mfa.verify'), ['codigo' => $codigo])
+            ->assertRedirect()
+            ->assertCookie(MfaLoginService::COOKIE_DEVICE_TRUST);
+
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function testValidacaoConfigMfaPeriodoInvalido(): void
+    {
+        $controller = app(ClientesController::class);
+        $method = new ReflectionMethod(ClientesController::class, 'dadosConfigMfaLogin');
+        $method->setAccessible(true);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $method->invoke($controller, [
+            'mfa_login_habilitado' => true,
+            'mfa_login_email' => true,
+            'mfa_login_whatsapp' => false,
+            'envia_whatsapp' => false,
+            'mfa_login_periodo_dias' => 99999,
+        ]);
+    }
+
+    public function testValidacaoConfigMfaDesabilitadoZeraPeriodo(): void
+    {
+        $controller = app(ClientesController::class);
+        $method = new ReflectionMethod(ClientesController::class, 'dadosConfigMfaLogin');
+        $method->setAccessible(true);
+
+        $resultado = $method->invoke($controller, [
+            'mfa_login_habilitado' => false,
+            'mfa_login_email' => true,
+            'mfa_login_whatsapp' => false,
+            'envia_whatsapp' => false,
+            'mfa_login_periodo_dias' => 90,
+        ]);
+
+        $this->assertSame(0, $resultado['mfa_login_periodo_dias']);
+    }
+
+    public function testValidacaoConfigMfaPeriodoPadraoTrintaDias(): void
+    {
+        $controller = app(ClientesController::class);
+        $method = new ReflectionMethod(ClientesController::class, 'dadosConfigMfaLogin');
+        $method->setAccessible(true);
+
+        $resultado = $method->invoke($controller, [
+            'mfa_login_habilitado' => true,
+            'mfa_login_email' => true,
+            'mfa_login_whatsapp' => false,
+            'envia_whatsapp' => false,
+        ]);
+
+        $this->assertSame(MfaLoginService::PERIODO_DIAS_PADRAO, $resultado['mfa_login_periodo_dias']);
+    }
+
     private function criarUsuario(array $overrides = []): User
     {
         $id = DB::table('users')->insertGetId(array_merge([
@@ -192,6 +375,7 @@ class MfaLoginWebTest extends TestCase
             $table->boolean('mfa_login_habilitado')->default(false);
             $table->boolean('mfa_login_email')->default(true);
             $table->boolean('mfa_login_whatsapp')->default(false);
+            $table->unsignedInteger('mfa_login_periodo_dias')->default(30);
         });
 
         Schema::create('usuarios_telefone', function (Blueprint $table) {

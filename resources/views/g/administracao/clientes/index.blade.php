@@ -813,6 +813,30 @@
                                         <small class="text-muted">Exige notificação WhatsApp da empresa habilitada e telefone cadastrado no usuário.</small>
                                     </div>
                                 </div>
+                                <div class="col-12 col-sm-6 col-lg-4" v-if="form.cliente_config.mfa_login_habilitado">
+                                    <div class="form-group">
+                                        <label>Pedir MFA novamente</label>
+                                        <select v-model="mfaPeriodoPreset" class="form-control" @change="onMfaPeriodoPresetChange">
+                                            <option value="0">A cada login</option>
+                                            <option value="30">A cada 30 dias</option>
+                                            <option value="90">A cada 90 dias</option>
+                                            <option value="custom">Customizado</option>
+                                        </select>
+                                        <small class="text-muted">No mesmo navegador, o MFA só será pedido de novo após o período. Em outro dispositivo continua pedindo.</small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-6 col-lg-4" v-if="form.cliente_config.mfa_login_habilitado && mfaPeriodoPreset === 'custom'">
+                                    <div class="form-group">
+                                        <label>Período customizado (dias)</label>
+                                        <input type="number"
+                                               class="form-control"
+                                               v-model.number="form.cliente_config.mfa_login_periodo_dias"
+                                               min="1"
+                                               max="3650"
+                                               step="1">
+                                        <small class="text-muted">Informe um valor entre 1 e 3650 dias.</small>
+                                    </div>
+                                </div>
                             </div>
                         </fieldset>
 

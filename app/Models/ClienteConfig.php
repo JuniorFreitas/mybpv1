@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $mfa_login_habilitado
  * @property bool $mfa_login_email
  * @property bool $mfa_login_whatsapp
+ * @property int $mfa_login_periodo_dias
  * @property int|null $vencimento_aso
  * @property string $modelo_cih
  * @property bool $supervisor_etiqueta_bloqueio
@@ -80,6 +81,7 @@ class ClienteConfig extends Model
         'mfa_login_habilitado',
         'mfa_login_email',
         'mfa_login_whatsapp',
+        'mfa_login_periodo_dias',
         'verifica_mes_vencimento',
         'cliente_id',
         'vencimento_aso',
@@ -104,6 +106,7 @@ class ClienteConfig extends Model
         'mfa_login_habilitado' => 'boolean',
         'mfa_login_email' => 'boolean',
         'mfa_login_whatsapp' => 'boolean',
+        'mfa_login_periodo_dias' => 'integer',
         'verifica_mes_vencimento' => 'int',
         'cliente_id' => 'int',
         'vencimento_aso' => 'int',
