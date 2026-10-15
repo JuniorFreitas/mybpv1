@@ -273,6 +273,7 @@ class User extends Authenticatable
     public const FORNECEDOR = "Fornecedor";
     public const CANDIDATO = "Candidato";
     public const CLINICA_EXAME = "ClinicaExame";
+    public const API = "Api";
     public const LISTA_SUPORTE = [1, 54831];
 
     public const TIPOS_USUARIOS_GERENCIAIS = [
@@ -759,6 +760,9 @@ class User extends Authenticatable
         static::creating(function ($model) {
             if ($model->tipo == self::CLINICA_EXAME) {
                 $model->setAttribute('api_token', Str::uuid());
+            } elseif ($model->tipo === self::API) {
+                $model->setAttribute('require_password_reset', 0);
+                $model->setAttribute('password_reset_days', null);
             } else {
                 $model->setAttribute('require_password_reset', 1);
                 $model->setAttribute('password_reset_days', 120);

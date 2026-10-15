@@ -65,4 +65,13 @@ return [
         'token_ttl' => (int) env('BP_CHAMADOS_TOKEN_TTL', 900),
     ],
 
+    'api_externa' => [
+        'token_ttl_minutes' => max(5, (int) env('API_EXTERNA_TOKEN_TTL_MINUTES', 60)),
+        'token_throttle_per_minute' => max(1, (int) env('API_EXTERNA_TOKEN_THROTTLE_PER_MINUTE', 10)),
+        'list_throttle_per_minute' => max(1, (int) env('API_EXTERNA_LIST_THROTTLE_PER_MINUTE', 120)),
+        'max_per_page' => max(1, min(100, (int) env('API_EXTERNA_MAX_PER_PAGE', 50))),
+        /** Salt do public_id curto (padrão: APP_KEY). Trocar invalida IDs já emitidos. */
+        'public_id_salt' => env('API_EXTERNA_PUBLIC_ID_SALT'),
+    ],
+
 ];

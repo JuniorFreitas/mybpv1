@@ -1,9 +1,11 @@
 <?php
 
+use App\Support\ApiExterna\ApiExternaExceptionRenderer;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -57,9 +59,19 @@ return Application::configure(basePath: dirname(__DIR__))
             'usuario.ativo' => \App\Http\Middleware\UsuarioAtivo::class,
             'apitoken' => \App\Http\Middleware\ApiToken::class,
             'assinatura.digital.habilitada' => \App\Http\Middleware\VerificaAssinaturaDigitalHabilitada::class,
+            'api.externa.user' => \App\Http\Middleware\EnsureApiExternaUser::class,
+            'api.externa.scope' => \App\Http\Middleware\EnsureApiExternaScope::class,
+            'force.json' => \App\Http\Middleware\ForceJsonResponse::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Qualquer /api/* deve renderizar erro em JSON (não página HTML/Whoops).
+        $exceptions->shouldRenderJsonWhen(function (Request $request, \Throwable $e) {
+            return $request->is('api/*') || $request->expectsJson();
+        });
+
+        $exceptions->render(function (\Throwable $e, Request $request) {
+            return ApiExternaExceptionRenderer::render($e, $request);
+        });
     })
     ->create();

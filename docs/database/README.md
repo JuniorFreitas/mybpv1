@@ -2,6 +2,10 @@
 
 Relatórios de auditoria DBA (performance + segurança) gerados pelo agente e skill `dba-senior`.
 
+## API Externa v3
+
+Schema e índices da API de integração: [../API_V3_EXTERNA_BANCO.md](../API_V3_EXTERNA_BANCO.md).
+
 ## Estrutura
 
 ```

@@ -2,8 +2,24 @@
 
 use App\Classes\ZapNotificacao;
 use App\Http\Controllers\Api\CboController;
+use App\Http\Controllers\Api\Externa\AvaliacaoController as ApiExternaAvaliacaoController;
+use App\Http\Controllers\Api\Externa\CentroCustoController as ApiExternaCentroCustoController;
+use App\Http\Controllers\Api\Externa\CihController as ApiExternaCihController;
+use App\Http\Controllers\Api\Externa\CloudController as ApiExternaCloudController;
+use App\Http\Controllers\Api\Externa\CurriculoController as ApiExternaCurriculoController;
+use App\Http\Controllers\Api\Externa\DocsController as ApiExternaDocsController;
+use App\Http\Controllers\Api\Externa\FluxoController as ApiExternaFluxoController;
+use App\Http\Controllers\Api\Externa\FornecedorController as ApiExternaFornecedorController;
+use App\Http\Controllers\Api\Externa\HistoricoController as ApiExternaHistoricoController;
+use App\Http\Controllers\Api\Externa\MedidaAdministrativaController as ApiExternaMedidaController;
+use App\Http\Controllers\Api\Externa\OAuthTokenController as ApiExternaOAuthTokenController;
+use App\Http\Controllers\Api\Externa\PosAdmissaoController as ApiExternaPosAdmissaoController;
+use App\Http\Controllers\Api\Externa\ProcessoController as ApiExternaProcessoController;
+use App\Http\Controllers\Api\Externa\RelatorioController as ApiExternaRelatorioController;
+use App\Http\Controllers\Api\Externa\VagaAbertaController as ApiExternaVagaAbertaController;
 use App\Models\CartaOferta;
 use App\Models\Sistema;
+use App\Support\ApiExterna\ApiExternaScopes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -101,6 +117,182 @@ Route::middleware(['api'])
                 ->where('apelido', $apelidoPattern);
         });
     });
+
+/*
+|--------------------------------------------------------------------------
+| API v3 (agents / integrações por empresa)
+| Registrada ANTES das rotas com {empresa_slug} para não conflitar.
+|--------------------------------------------------------------------------
+*/
+Route::prefix('v3')->group(function () {
+    Route::get('docs', [ApiExternaDocsController::class, 'ui'])->name('api.v3.docs');
+    Route::get('openapi.yaml', [ApiExternaDocsController::class, 'openapi'])->name('api.v3.openapi');
+
+    Route::middleware(['api', 'force.json', 'throttle:api-externa-token'])
+        ->post('oauth/token', [ApiExternaOAuthTokenController::class, 'token'])
+        ->name('api.v3.oauth.token');
+
+    Route::middleware([
+        'api',
+        'force.json',
+        'auth:sanctum',
+        'usuario.ativo',
+        'api.externa.user',
+        'throttle:api-externa',
+    ])->group(function () {
+        $publicId = \App\Support\ApiExterna\ApiExternaId::routePattern();
+
+        Route::middleware('api.externa.scope:' . ApiExternaScopes::CLOUD_READ)->group(function () use ($publicId) {
+            Route::get('cloud', [ApiExternaCloudController::class, 'index']);
+            Route::get('cloud/{publicId}', [ApiExternaCloudController::class, 'show'])->where('publicId', $publicId);
+
+            // Rotas nomeadas ANTES de {itemPublicId}
+            Route::get('cloud/{publicId}/buscar', [ApiExternaCloudController::class, 'buscar'])->where('publicId', $publicId);
+            Route::get('cloud/{publicId}/pastas', [ApiExternaCloudController::class, 'pastas'])->where('publicId', $publicId);
+            Route::get('cloud/{publicId}/resolver-path', [ApiExternaCloudController::class, 'resolverPath'])->where('publicId', $publicId);
+            Route::get('cloud/{publicId}/itens', [ApiExternaCloudController::class, 'itens'])->where('publicId', $publicId);
+
+            Route::get('cloud/{publicId}/itens/{itemPublicId}/download', [ApiExternaCloudController::class, 'downloadItem'])
+                ->where(['publicId' => $publicId, 'itemPublicId' => $publicId]);
+            Route::get('cloud/{publicId}/itens/{itemPublicId}/arquivo', [ApiExternaCloudController::class, 'arquivoItem'])
+                ->where(['publicId' => $publicId, 'itemPublicId' => $publicId]);
+            Route::get('cloud/{publicId}/itens/{itemPublicId}/thumb', [ApiExternaCloudController::class, 'thumbItem'])
+                ->where(['publicId' => $publicId, 'itemPublicId' => $publicId]);
+            Route::get('cloud/{publicId}/itens/{itemPublicId}', [ApiExternaCloudController::class, 'showItem'])
+                ->where(['publicId' => $publicId, 'itemPublicId' => $publicId]);
+        });
+
+        Route::middleware('api.externa.scope:' . ApiExternaScopes::FORNECEDORES_READ)->group(function () use ($publicId) {
+            Route::get('fornecedores', [ApiExternaFornecedorController::class, 'index']);
+            Route::get('fornecedores/buscar', [ApiExternaFornecedorController::class, 'buscar']);
+            Route::get('fornecedores/tipos-servico', [ApiExternaFornecedorController::class, 'tiposServico']);
+
+            Route::get('fornecedores/{publicId}', [ApiExternaFornecedorController::class, 'show'])->where('publicId', $publicId);
+            Route::get('fornecedores/{publicId}/servicos', [ApiExternaFornecedorController::class, 'servicos'])->where('publicId', $publicId);
+            Route::get('fornecedores/{publicId}/servicos/{servicoPublicId}', [ApiExternaFornecedorController::class, 'showServico'])
+                ->where(['publicId' => $publicId, 'servicoPublicId' => $publicId]);
+
+            Route::get('fornecedores/{publicId}/anexos/{arquivoPublicId}/download', [ApiExternaFornecedorController::class, 'downloadAnexo'])
+                ->where(['publicId' => $publicId, 'arquivoPublicId' => $publicId]);
+            Route::get('fornecedores/{publicId}/anexos/{arquivoPublicId}/arquivo', [ApiExternaFornecedorController::class, 'arquivoAnexo'])
+                ->where(['publicId' => $publicId, 'arquivoPublicId' => $publicId]);
+
+            Route::get(
+                'fornecedores/{publicId}/servicos/{servicoPublicId}/anexos/{arquivoPublicId}/download',
+                [ApiExternaFornecedorController::class, 'downloadAnexoServico']
+            )->where([
+                'publicId' => $publicId,
+                'servicoPublicId' => $publicId,
+                'arquivoPublicId' => $publicId,
+            ]);
+            Route::get(
+                'fornecedores/{publicId}/servicos/{servicoPublicId}/anexos/{arquivoPublicId}/arquivo',
+                [ApiExternaFornecedorController::class, 'arquivoAnexoServico']
+            )->where([
+                'publicId' => $publicId,
+                'servicoPublicId' => $publicId,
+                'arquivoPublicId' => $publicId,
+            ]);
+        });
+
+        Route::middleware('api.externa.scope:' . ApiExternaScopes::AVALIACOES_READ)->group(function () use ($publicId) {
+            Route::get('avaliacoes', [ApiExternaAvaliacaoController::class, 'index']);
+            Route::get('avaliacoes/tipos', [ApiExternaAvaliacaoController::class, 'tipos']);
+            Route::get('avaliacoes/tipos-avaliador', [ApiExternaAvaliacaoController::class, 'tiposAvaliador']);
+            Route::get('avaliacoes/tipos/{tipoPublicId}/topicos', [ApiExternaAvaliacaoController::class, 'topicos'])
+                ->where('tipoPublicId', $publicId);
+
+            Route::get('avaliacoes/{publicId}', [ApiExternaAvaliacaoController::class, 'show'])->where('publicId', $publicId);
+            Route::get('avaliacoes/{publicId}/feedbacks', [ApiExternaAvaliacaoController::class, 'feedbacks'])->where('publicId', $publicId);
+            Route::get('avaliacoes/{publicId}/feedbacks/{feedbackPublicId}', [ApiExternaAvaliacaoController::class, 'showFeedback'])
+                ->where(['publicId' => $publicId, 'feedbackPublicId' => $publicId]);
+            Route::get(
+                'avaliacoes/{publicId}/feedbacks/{feedbackPublicId}/resultado',
+                [ApiExternaAvaliacaoController::class, 'feedbackResultado']
+            )->where(['publicId' => $publicId, 'feedbackPublicId' => $publicId]);
+            Route::get(
+                'avaliacoes/{publicId}/colaboradores/{funcionarioPublicId}/feedbacks',
+                [ApiExternaAvaliacaoController::class, 'colaboradorFeedbacks']
+            )->where(['publicId' => $publicId, 'funcionarioPublicId' => $publicId]);
+        });
+
+        Route::middleware('api.externa.scope:' . ApiExternaScopes::PROCESSOS_READ)->group(function () use ($publicId) {
+            Route::get('processos/ativos', [ApiExternaProcessoController::class, 'ativos']);
+            Route::get('processos/em-andamento', [ApiExternaProcessoController::class, 'emAndamento']);
+            Route::get('processos/demitidos', [ApiExternaProcessoController::class, 'demitidos']);
+            Route::get('processos/buscar', [ApiExternaProcessoController::class, 'buscar']);
+
+            Route::get('processos/{publicId}', [ApiExternaProcessoController::class, 'show'])->where('publicId', $publicId);
+            Route::get('processos/{publicId}/etapas', [ApiExternaProcessoController::class, 'etapas'])->where('publicId', $publicId);
+            Route::get('processos/{publicId}/exames', [ApiExternaProcessoController::class, 'exames'])->where('publicId', $publicId);
+            Route::get('processos/{publicId}/documentos', [ApiExternaProcessoController::class, 'documentos'])->where('publicId', $publicId);
+            Route::get('processos/{publicId}/ferias', [ApiExternaProcessoController::class, 'ferias'])->where('publicId', $publicId);
+            Route::get('processos/{publicId}/pre-admissao', [ApiExternaProcessoController::class, 'preAdmissao'])->where('publicId', $publicId);
+        });
+
+        Route::middleware('api.externa.scope:' . ApiExternaScopes::CURRICULOS_READ)->group(function () use ($publicId) {
+            Route::get('curriculos', [ApiExternaCurriculoController::class, 'index']);
+            Route::get('curriculos/buscar', [ApiExternaCurriculoController::class, 'buscar']);
+
+            Route::get('curriculos/{publicId}', [ApiExternaCurriculoController::class, 'show'])->where('publicId', $publicId);
+            Route::get('curriculos/{publicId}/feedbacks', [ApiExternaCurriculoController::class, 'feedbacks'])->where('publicId', $publicId);
+            Route::get('curriculos/{publicId}/documentos', [ApiExternaCurriculoController::class, 'documentos'])->where('publicId', $publicId);
+            Route::get('curriculos/{publicId}/experiencias', [ApiExternaCurriculoController::class, 'experiencias'])->where('publicId', $publicId);
+        });
+
+        Route::middleware('api.externa.scope:' . ApiExternaScopes::FLUXO_READ)->group(function () use ($publicId) {
+            Route::get('fluxo/{publicId}', [ApiExternaFluxoController::class, 'show'])->where('publicId', $publicId);
+        });
+
+        Route::middleware('api.externa.scope:' . ApiExternaScopes::VAGAS_READ)->group(function () use ($publicId) {
+            Route::get('vagas-abertas', [ApiExternaVagaAbertaController::class, 'index']);
+            Route::get('vagas-abertas/buscar', [ApiExternaVagaAbertaController::class, 'buscar']);
+            Route::get('vagas-abertas/{publicId}', [ApiExternaVagaAbertaController::class, 'show'])->where('publicId', $publicId);
+            Route::get('vagas-abertas/{publicId}/simulados', [ApiExternaVagaAbertaController::class, 'simulados'])->where('publicId', $publicId);
+            Route::get('vagas-abertas/{publicId}/projetos', [ApiExternaVagaAbertaController::class, 'projetos'])->where('publicId', $publicId);
+        });
+
+        Route::middleware('api.externa.scope:' . ApiExternaScopes::CENTROS_CUSTO_READ)->group(function () use ($publicId) {
+            Route::get('centros-custo', [ApiExternaCentroCustoController::class, 'index']);
+            Route::get('centros-custo/buscar', [ApiExternaCentroCustoController::class, 'buscar']);
+            Route::get('centros-custo/{publicId}', [ApiExternaCentroCustoController::class, 'show'])->where('publicId', $publicId);
+            Route::get('centros-custo/{publicId}/filiais', [ApiExternaCentroCustoController::class, 'filiais'])->where('publicId', $publicId);
+            Route::get('centros-custo/{publicId}/gestores', [ApiExternaCentroCustoController::class, 'gestores'])->where('publicId', $publicId);
+        });
+
+        Route::middleware('api.externa.scope:' . ApiExternaScopes::CIH_READ)->group(function () use ($publicId) {
+            Route::get('cih', [ApiExternaCihController::class, 'index']);
+            Route::get('cih/tags', [ApiExternaCihController::class, 'tags']);
+            Route::get('cih/{publicId}', [ApiExternaCihController::class, 'show'])->where('publicId', $publicId);
+            Route::get('cih/{publicId}/colaboradores', [ApiExternaCihController::class, 'colaboradores'])->where('publicId', $publicId);
+        });
+
+        Route::middleware('api.externa.scope:' . ApiExternaScopes::MEDIDAS_READ)->group(function () use ($publicId) {
+            Route::get('medidas-administrativas', [ApiExternaMedidaController::class, 'index']);
+            Route::get('medidas-administrativas/{publicId}', [ApiExternaMedidaController::class, 'show'])->where('publicId', $publicId);
+        });
+
+        Route::middleware('api.externa.scope:' . ApiExternaScopes::HISTORICO_READ)->group(function () use ($publicId) {
+            Route::get('historico', [ApiExternaHistoricoController::class, 'index']);
+            Route::get('historico/{publicId}', [ApiExternaHistoricoController::class, 'show'])->where('publicId', $publicId);
+            Route::get('historico/{publicId}/medidas', [ApiExternaHistoricoController::class, 'medidas'])->where('publicId', $publicId);
+            Route::get('historico/{publicId}/afastamentos', [ApiExternaHistoricoController::class, 'afastamentos'])->where('publicId', $publicId);
+        });
+
+        Route::middleware('api.externa.scope:' . ApiExternaScopes::POS_ADMISSAO_READ)->group(function () use ($publicId) {
+            Route::get('pos-admissao', [ApiExternaPosAdmissaoController::class, 'index']);
+            Route::get('pos-admissao/{publicId}', [ApiExternaPosAdmissaoController::class, 'show'])->where('publicId', $publicId);
+            Route::get('pos-admissao/{publicId}/entrevista-desligamento', [ApiExternaPosAdmissaoController::class, 'entrevistaDesligamento'])
+                ->where('publicId', $publicId);
+        });
+
+        Route::middleware('api.externa.scope:' . ApiExternaScopes::RELATORIOS_READ)->group(function () {
+            Route::get('relatorios', [ApiExternaRelatorioController::class, 'index']);
+            Route::get('relatorios/{slug}', [ApiExternaRelatorioController::class, 'show'])
+                ->where('slug', implode('|', \App\Services\ApiExterna\RelatorioApiService::SLUGS));
+        });
+    });
+});
 
 Route::group(['as' => 'vaga'], function () {
     Route::get('{empresa_slug}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'getVagasAbertasByEmpresa']);
