@@ -55,6 +55,7 @@ class MfaLoginServiceTest extends TestCase
             $table->boolean('mfa_login_habilitado')->default(false);
             $table->boolean('mfa_login_email')->default(true);
             $table->boolean('mfa_login_whatsapp')->default(false);
+            $table->unsignedInteger('mfa_login_periodo_dias')->default(30);
         });
 
         Schema::create('usuarios_telefone', function (Blueprint $table) {
@@ -196,6 +197,57 @@ class MfaLoginServiceTest extends TestCase
         $this->assertGreaterThan(0, $resultado['segundos_restantes']);
     }
 
+    public function testPeriodoZeroNaoConfiaEmDispositivo(): void
+    {
+        $user = $this->criarUsuario();
+        $this->habilitarMfa(email: true, whatsapp: false, periodoDias: 0);
+
+        $request = Request::create('/g/login', 'POST');
+        $request->cookies->set(
+            MfaLoginService::COOKIE_DEVICE_TRUST,
+            $this->service->valorCookieDispositivoConfiavel($user)
+        );
+
+        $this->assertSame(0, $this->service->periodoDias($user));
+        $this->assertFalse($this->service->dispositivoConfiavel($user, $request));
+    }
+
+    public function testDispositivoConfiavelComCookieValido(): void
+    {
+        $user = $this->criarUsuario();
+        $this->habilitarMfa(email: true, whatsapp: false, periodoDias: 30);
+
+        $request = Request::create('/g/login', 'POST');
+        $request->cookies->set(
+            MfaLoginService::COOKIE_DEVICE_TRUST,
+            $this->service->valorCookieDispositivoConfiavel($user)
+        );
+
+        $this->assertTrue($this->service->dispositivoConfiavel($user, $request));
+    }
+
+    public function testDispositivoNaoConfiavelComCookieExpiradoOuOutraEmpresa(): void
+    {
+        $user = $this->criarUsuario();
+        $this->habilitarMfa(email: true, whatsapp: false, periodoDias: 30);
+
+        $requestExpirado = Request::create('/g/login', 'POST');
+        $requestExpirado->cookies->set(
+            MfaLoginService::COOKIE_DEVICE_TRUST,
+            $this->service->valorCookieDispositivoConfiavel($user, now()->subDays(31))
+        );
+        $this->assertFalse($this->service->dispositivoConfiavel($user, $requestExpirado));
+
+        $payloadOutraEmpresa = json_encode([
+            'user_id' => (int) $user->id,
+            'empresa_id' => 999,
+            'verified_at' => now()->toIso8601String(),
+        ], JSON_THROW_ON_ERROR);
+        $requestEmpresa = Request::create('/g/login', 'POST');
+        $requestEmpresa->cookies->set(MfaLoginService::COOKIE_DEVICE_TRUST, $payloadOutraEmpresa);
+        $this->assertFalse($this->service->dispositivoConfiavel($user, $requestEmpresa));
+    }
+
     private function criarUsuario(array $overrides = []): User
     {
         $id = DB::table('users')->insertGetId(array_merge([
@@ -215,7 +267,7 @@ class MfaLoginServiceTest extends TestCase
         return User::withoutGlobalScopes()->findOrFail($id);
     }
 
-    private function habilitarMfa(bool $email, bool $whatsapp, bool $enviaWhatsapp = false): void
+    private function habilitarMfa(bool $email, bool $whatsapp, bool $enviaWhatsapp = false, int $periodoDias = 0): void
     {
         ClienteConfig::query()->create([
             'cliente_id' => 10,
@@ -223,6 +275,7 @@ class MfaLoginServiceTest extends TestCase
             'mfa_login_habilitado' => true,
             'mfa_login_email' => $email,
             'mfa_login_whatsapp' => $whatsapp,
+            'mfa_login_periodo_dias' => $periodoDias,
         ]);
     }
 }

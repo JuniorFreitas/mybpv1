@@ -1,13 +1,13 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-10-14
+Last updated: 2026-10-15
 
+- [mfa-login-web](mfa-login-web.md) — MFA por empresa + período (padrão 30d) via cookie | flow | auth, mfa, login
 - [centro-custo-unicidade-lotacao](centro-custo-unicidade-lotacao.md) — Unicidade CC: empresa+label+ativo+lotação (matriz/filial) | domain | centrocusto, validacao
 - [cloud-upload-multipart-s3](cloud-upload-multipart-s3.md) — Cloud: &lt;20MB POST; ≥20MB multipart S3/local + IndexedDB F5 | flow | cloud, upload, s3, multipart
 - [importacao-treinamentos-ui](importacao-treinamentos-ui.md) — Tela download Excel tenant + upload→job→mybp:importa-treinamento --path | flow | treinamento, importacao, excel
 - [importacao-treinamento-engeko](importacao-treinamento-engeko.md) — XLSX→JSON→mybp:importa-treinamento empresa 103967 | flow | treinamento, importacao, engeko
-- [mfa-login-web](mfa-login-web.md) — MFA login web por empresa (e-mail/WhatsApp, código 8 chars) | flow | auth, mfa, login
 - [email-plus-addressing](email-plus-addressing.md) — Regex email aceita `+` (plus addressing) | gotcha | email, validacao
 - [dados-bancarios-pix-nao-validacao](dados-bancarios-pix-nao-validacao.md) — Tem PIX=Não bloqueava avulsa (banco_conta + sync select) | gotcha | admissao, pix
 - [mudanca-cargo-novo-cargo-validacao](mudanca-cargo-novo-cargo-validacao.md) — Validar `nova_vaga_aberta_id` (não `novo_cargo_id`) | gotcha | mudanca-cargo, validacao

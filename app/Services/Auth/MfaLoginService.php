@@ -9,15 +9,22 @@ use App\Models\ClienteConfig;
 use App\Models\User;
 use App\Models\UsuarioTelefone;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\Cookie as SymfonyCookie;
+use Throwable;
 
 class MfaLoginService
 {
     public const SESSION_PENDING_KEY = 'mfa_login_pending';
+    public const COOKIE_DEVICE_TRUST = 'mfa_device_trust';
+    public const PERIODO_DIAS_PADRAO = 30;
+    public const PERIODO_DIAS_MAX = 3650;
 
     protected const CODIGO_TTL_MINUTOS = 10;
     protected const CODIGO_MAX_TENTATIVAS = 5;
@@ -33,6 +40,120 @@ class MfaLoginService
         $config = $this->configDaEmpresa($user);
 
         return $config && (bool) $config->mfa_login_habilitado;
+    }
+
+    public function periodoDias(User $user): int
+    {
+        if (!Schema::hasColumn('cliente_configs', 'mfa_login_periodo_dias')) {
+            return 0;
+        }
+
+        $config = $this->configDaEmpresa($user);
+        if (!$config) {
+            return 0;
+        }
+
+        return max(0, min(self::PERIODO_DIAS_MAX, (int) ($config->mfa_login_periodo_dias ?? self::PERIODO_DIAS_PADRAO)));
+    }
+
+    public function dispositivoConfiavel(User $user, Request $request): bool
+    {
+        $periodoDias = $this->periodoDias($user);
+        if ($periodoDias <= 0 || !$user->empresa_id) {
+            return false;
+        }
+
+        $payload = $this->lerPayloadCookie($request);
+        if ($payload === null) {
+            return false;
+        }
+
+        if ((int) ($payload['user_id'] ?? 0) !== (int) $user->id) {
+            return false;
+        }
+
+        if ((int) ($payload['empresa_id'] ?? 0) !== (int) $user->empresa_id) {
+            return false;
+        }
+
+        $verifiedAt = $this->parseVerifiedAt($payload['verified_at'] ?? null);
+        if ($verifiedAt === null) {
+            return false;
+        }
+
+        return $verifiedAt->copy()->addDays($periodoDias)->gte(now());
+    }
+
+    public function cookieDispositivoConfiavel(User $user): SymfonyCookie
+    {
+        $periodoDias = $this->periodoDias($user);
+        if ($periodoDias <= 0 || !$user->empresa_id) {
+            return Cookie::forget(self::COOKIE_DEVICE_TRUST);
+        }
+
+        $payload = json_encode([
+            'user_id' => (int) $user->id,
+            'empresa_id' => (int) $user->empresa_id,
+            'verified_at' => now()->toIso8601String(),
+        ], JSON_THROW_ON_ERROR);
+
+        $minutos = $periodoDias * 24 * 60;
+
+        return Cookie::make(
+            self::COOKIE_DEVICE_TRUST,
+            $payload,
+            $minutos,
+            '/',
+            null,
+            app()->environment('production'),
+            true,
+            false,
+            'lax'
+        );
+    }
+
+    /**
+     * Monta o valor plaintext do cookie (útil em testes com withUnencryptedCookie).
+     */
+    public function valorCookieDispositivoConfiavel(User $user, ?Carbon $verifiedAt = null): string
+    {
+        return json_encode([
+            'user_id' => (int) $user->id,
+            'empresa_id' => (int) $user->empresa_id,
+            'verified_at' => ($verifiedAt ?? now())->toIso8601String(),
+        ], JSON_THROW_ON_ERROR);
+    }
+
+    /**
+     * @return array{user_id?: int, empresa_id?: int, verified_at?: string}|null
+     */
+    protected function lerPayloadCookie(Request $request): ?array
+    {
+        $valor = $request->cookie(self::COOKIE_DEVICE_TRUST);
+        if (!is_string($valor) || $valor === '') {
+            return null;
+        }
+
+        try {
+            $dados = json_decode($valor, true, 512, JSON_THROW_ON_ERROR);
+        } catch (Throwable) {
+            return null;
+        }
+
+        return is_array($dados) ? $dados : null;
+    }
+
+    protected function parseVerifiedAt(mixed $valor): ?Carbon
+    {
+        if (!is_string($valor) || $valor === '') {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($valor);
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     public function iniciarChallenge(User $user, Request $request, bool $remember = false): array

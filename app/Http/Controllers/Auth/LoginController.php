@@ -94,6 +94,16 @@ class LoginController extends Controller
 
         $mfa = app(MfaLoginService::class);
         if ($mfa->empresaExigeMfa($user)) {
+            if ($mfa->dispositivoConfiavel($user, $request)) {
+                $this->guard()->login($user, $request->boolean('remember'));
+
+                if ($request->hasSession()) {
+                    $request->session()->put('auth.password_confirmed_at', time());
+                }
+
+                return $this->sendLoginResponse($request);
+            }
+
             try {
                 $mfa->iniciarChallenge($user, $request, $request->boolean('remember'));
             } catch (RuntimeException $e) {
@@ -187,7 +197,8 @@ class LoginController extends Controller
             $request->session()->put('auth.password_confirmed_at', time());
         }
 
-        return $this->sendLoginResponse($request);
+        return $this->sendLoginResponse($request)
+            ->withCookie($mfa->cookieDispositivoConfiavel($user));
     }
 
     public function reenviarMfa(Request $request, MfaLoginService $mfa)
