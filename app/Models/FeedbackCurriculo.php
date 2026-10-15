@@ -530,6 +530,11 @@ class FeedbackCurriculo extends Model
         return $this->hasOne(ParecerRh::class, 'feedback_id', 'id');
     }
 
+    public function CartaOferta()
+    {
+        return $this->hasOne(CartaOferta::class, 'feedback_id', 'id');
+    }
+
     public function parecerTecnica()
     {
         return $this->hasOne(ParecerEntrevistaTecnica::class, 'feedback_id', 'id');
@@ -538,6 +543,11 @@ class FeedbackCurriculo extends Model
     public function parecerRota()
     {
         return $this->hasOne(ParecerRota::class, 'feedback_id', 'id');
+    }
+
+    public function FeedbackPreadmissao()
+    {
+        return $this->hasOne(FeedbackPreadmissao::class, 'feedback_id', 'id');
     }
 
     public function parecerTeste()

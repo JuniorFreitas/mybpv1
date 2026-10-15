@@ -311,6 +311,23 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             });
         });
 
+        Route::group(['as' => 'etapas-seletivo.', 'prefix' => 'etapas-seletivo'], function () {
+            Route::get('/', [\App\Http\Controllers\EtapaTipoSeletivoController::class, 'index'])
+                ->name('index')->middleware('can:administracao_etapas_seletivo');
+            Route::get('listar', [\App\Http\Controllers\EtapaTipoSeletivoController::class, 'listar'])
+                ->name('listar')->middleware('can:administracao_etapas_seletivo');
+            Route::post('salvar', [\App\Http\Controllers\EtapaTipoSeletivoController::class, 'salvar'])
+                ->name('salvar')->middleware('can:administracao_etapas_seletivo');
+            Route::post('reordenar', [\App\Http\Controllers\EtapaTipoSeletivoController::class, 'reordenar'])
+                ->name('reordenar')->middleware('can:administracao_etapas_seletivo');
+            Route::post('restaurar-padrao', [\App\Http\Controllers\EtapaTipoSeletivoController::class, 'restaurarPadrao'])
+                ->name('restaurar-padrao')->middleware('can:administracao_etapas_seletivo');
+            Route::post('personalizar-cargo', [\App\Http\Controllers\EtapaTipoSeletivoController::class, 'personalizarCargo'])
+                ->name('personalizar-cargo')->middleware('can:administracao_etapas_seletivo');
+            Route::post('voltar-padrao-cargo', [\App\Http\Controllers\EtapaTipoSeletivoController::class, 'voltarPadraoCargo'])
+                ->name('voltar-padrao-cargo')->middleware('can:administracao_etapas_seletivo');
+        });
+
         Route::group(['as' => 'carta-oferta-template.', 'prefix' => 'carta-oferta-template'], function () {
             Route::get('/', [\App\Http\Controllers\CartaOfertaTemplateController::class, 'index'])
                 ->name('index')->middleware('can:administracao_carta_oferta_template');
@@ -1131,6 +1148,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
     //Componente Etapa Classifica e desclassifica
     Route::group(['as' => 'etapa.'], function () {
         //        Route::get('etapa/{curriculo}/selecionado', 'CurriculosSelecionadosController@getCurriculo')->name('etapa.getCurriculo');
+        Route::get('etapa/workflow', [\App\Http\Controllers\EtapaTipoSeletivoController::class, 'etapasOperacionais'])->name('etapa.workflow');
         Route::post('etapa/{feedback}/desclassificar', [\App\Http\Controllers\EtapasController::class, 'desclassificar'])->name('etapa.desclassificar');
         Route::post('etapa/{feedback}/classificar', [\App\Http\Controllers\EtapasController::class, 'classificar'])->name('etapa.classificar');
     });

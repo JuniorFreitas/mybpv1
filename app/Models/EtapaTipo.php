@@ -1,41 +1,20 @@
 <?php
 
 namespace App\Models;
+
 use Spatie\Activitylog\Traits\LogsActivity;
 use App\Models\Concerns\HasActivitylogOptions;
 use Spatie\Activitylog\Models\Activity;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * App\Models\EtapaTipo
- *
- * @property int $id
- * @property int $cliente_id
- * @property string $nome
- * @property bool $ativo
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Cliente|null $Cliente
- * @method static \Illuminate\Database\Eloquent\Builder|EtapaTipo newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|EtapaTipo newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|EtapaTipo query()
- * @method static \Illuminate\Database\Eloquent\Builder|EtapaTipo whereAtivo($value)
- * @method static \Illuminate\Database\Eloquent\Builder|EtapaTipo whereClienteId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|EtapaTipo whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|EtapaTipo whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|EtapaTipo whereNome($value)
- * @method static \Illuminate\Database\Eloquent\Builder|EtapaTipo whereUpdatedAt($value)
- * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
- * @property-read int|null $activities_count
- * @mixin \Eloquent
- */
 class EtapaTipo extends Model
 {
     use LogsActivity, HasActivitylogOptions, HasFactory;
 
     protected static $logName = 'EtapaTipo';
+
+    protected $table = 'etapa_tipos';
 
     public function getDescriptionForEvent(string $eventName): string
     {
@@ -50,17 +29,45 @@ class EtapaTipo extends Model
     protected $fillable = [
         'nome',
         'cliente_id',
-        'ativo'
+        'vaga_id',
+        'ordem',
+        'chave',
+        'tipo',
+        'obrigatoria',
+        'depende_de_id',
+        'is_apto_admissao',
+        'permite_email',
+        'habilidade',
+        'ativo',
     ];
 
     protected $casts = [
         'nome' => 'string',
         'cliente_id' => 'int',
-        'ativo' => 'boolean'
+        'vaga_id' => 'int',
+        'ordem' => 'int',
+        'chave' => 'string',
+        'tipo' => 'string',
+        'obrigatoria' => 'boolean',
+        'depende_de_id' => 'int',
+        'is_apto_admissao' => 'boolean',
+        'permite_email' => 'boolean',
+        'habilidade' => 'string',
+        'ativo' => 'boolean',
     ];
 
     public function Cliente()
     {
         return $this->hasOne(Cliente::class, 'id', 'cliente_id');
+    }
+
+    public function Vaga()
+    {
+        return $this->belongsTo(Vaga::class, 'vaga_id', 'id');
+    }
+
+    public function DependeDe()
+    {
+        return $this->belongsTo(self::class, 'depende_de_id', 'id');
     }
 }

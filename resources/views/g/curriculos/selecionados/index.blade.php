@@ -8,102 +8,197 @@
     <modal ref="janelaCadastrar" id="janelaCadastrar" :titulo="tituloJanela" :fechar="!preloadAjax" :size="90">
         <template #conteudo>
             <preload v-show="preloadAjax"></preload>
-            <div v-if="!preloadAjax && (!cadastrado && !atualizado) && form.id !== ''">
-                <fieldset>
-                    <legend>Dados Pessoais</legend>
-                    <p>
-                        Nome: @{{form.curriculo.nome}} | Nascimento: @{{form.curriculo.nascimento}} |
-                        Idade: @{{form.curriculo.idade}} anos<br>
-                        Contato: @{{form.tel_principal ? form.tel_principal.numero: 'não informado'}} | E-mail:
-                        @{{ form.curriculo.email }} <br/>
-                        Vaga: @{{form.vaga_aberta.vaga_selecionada ? form.vaga_aberta.vaga_selecionada.nome +' - '+
-                        form.vaga_aberta.municipio.nome +' - '+ form.vaga_aberta.municipio.uf : null}}
-                        | PCD: @{{form.curriculo.pcd ? 'Sim' : 'Não'}}
-                        <br>
-                        Endereco: @{{form.curriculo.endereco_completo}} <br>
-                        Escolaridade: @{{form.curriculo.formacao.tipo}} <span
-                            v-show="form.formacao_curso">(@{{form.formacao_curso}})</span><br>
-                        <br>
+            <div v-if="!preloadAjax && (!cadastrado && !atualizado) && form.id !== ''"
+                 class="mybp-modal-form mybp-filtros-compactos">
 
-                    </p>
+                <fieldset class="mybp-modal-secao">
+                    <legend>Dados pessoais</legend>
+                    <div class="row">
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Nome</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="form.curriculo?.nome || ''">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Nascimento</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="form.curriculo?.nascimento || ''">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Idade</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="form.curriculo?.idade ? form.curriculo.idade + ' anos' : ''">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Contato</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="form.tel_principal ? form.tel_principal.numero : 'não informado'">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">E-mail</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="form.curriculo?.email || ''">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">PCD</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="form.curriculo?.pcd ? 'Sim' : 'Não'">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Vaga</label>
+                                <input type="text" class="form-control form-control-sm" disabled :value="vagaLabelModal">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Disponibilidade sábado</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="textoSimNao(form.curriculo?.disponibilidade_sabado)">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Disponibilidade domingo</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="textoSimNao(form.curriculo?.disponibilidade_domingo)">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Endereço</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="form.curriculo?.endereco_completo || ''">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Escolaridade</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="formacaoTipo + (form.formacao_curso ? ' (' + form.formacao_curso + ')' : '')">
+                            </div>
+                        </div>
+                    </div>
 
-                    <fieldset v-if="form.vinculo">
+                    <fieldset class="mybp-modal-secao mt-2" v-if="form.vinculo">
                         <legend>Vínculo</legend>
-                        <p>
-                            Têm parentes trabalhando no Grupo Equatorial (consanguíneos, por afinidade ou relação
-                            íntima)? <strong>@{{ form.vinculo.parente ? 'Sim' : 'Não' }}</strong><br>
-
-                            <span v-if="form.vinculo.parente">
-                                Nome: <strong>@{{ form.vinculo.nome }}</strong><br>
-                                Função: <strong>@{{ form.vinculo.funcao }}</strong><br>
-                                Qual o grau de parentesco com esta pessoa: <strong>@{{ form.vinculo.grau_parentesco }}</strong><br>
-                            </span>
-
-                            Já foi empregado no Grupo Equatorial ou empresas parceiras: <strong>@{{
-                                form.vinculo.foi_empregado ? 'Sim' : 'Não' }}</strong><br>
-                            <span v-if="form.vinculo.foi_empregado">
-                                Já foi empregado no Grupo Equatorial ou empresas parceiras? <strong>@{{ form.vinculo.local_empregado }}</strong><br>
-
-                                <span v-if="form.vinculo.local_empregado === 'Outras empresas parceiras'">
-                                    Nome da empresa parceira: <strong>@{{ form.vinculo.local_empregado }}</strong><br>
-                                </span>
-                            </span>
+                        <p class="mb-1 small">
+                            Têm parentes trabalhando no Grupo Equatorial?
+                            <strong>@{{ form.vinculo.parente ? 'Sim' : 'Não' }}</strong>
+                        </p>
+                        <template v-if="form.vinculo.parente">
+                            <p class="mb-0 small">Nome: <strong>@{{ form.vinculo.nome }}</strong></p>
+                            <p class="mb-0 small">Função: <strong>@{{ form.vinculo.funcao }}</strong></p>
+                            <p class="mb-1 small">Grau: <strong>@{{ form.vinculo.grau_parentesco }}</strong></p>
+                        </template>
+                        <p class="mb-0 small">
+                            Já foi empregado no Grupo Equatorial ou empresas parceiras:
+                            <strong>@{{ form.vinculo.foi_empregado ? 'Sim' : 'Não' }}</strong>
+                        </p>
+                        <p class="mb-0 small" v-if="form.vinculo.foi_empregado">
+                            Local: <strong>@{{ form.vinculo.local_empregado }}</strong>
                         </p>
                     </fieldset>
-
                 </fieldset>
 
-                <fieldset v-for="prova in form.simulados">
-                    <legend>Teste: @{{ prova.simulado_vaga.simulado.titulo }} - (@{{ prova.simulado_vaga.online ?
-                        'Online' : 'Presencial' }})
+                <fieldset class="mybp-modal-secao" v-for="prova in form.simulados" :key="'prova-modal-' + prova.id">
+                    <legend>
+                        Teste: @{{ prova.simulado_vaga?.simulado?.titulo }}
+                        (@{{ prova.simulado_vaga?.online ? 'Online' : 'Presencial' }})
                     </legend>
                     <div v-show="prova.finalizado">
-                        <p>Acertos: @{{ prova.acertos }} | | Tempo restante: @{{
-                            prova.duracao_segundos }} min | | Finalizado em @{{ prova.data_finalizacao }}h</p>
+                        <p class="small mb-2">
+                            Acertos: @{{ prova.acertos }} · Tempo restante: @{{ prova.duracao_segundos }} min ·
+                            Finalizado em @{{ prova.data_finalizacao }}h
+                        </p>
                         <div v-show="!prova.status">
                             <classificar :usuario_id="{{intval(auth()->id())}}" :model="form" :simulado_id="prova.id"
                                          @salvou="atualizaClassificacao"></classificar>
                         </div>
                         <div class="text-uppercase alert"
-                             :class="prova.status === 'desclassificado' ? 'alert-danger' : 'alert-success' "
+                             :class="prova.status === 'desclassificado' ? 'alert-danger' : 'alert-success'"
                              v-show="prova.status">
                             @{{ prova.status }}
                         </div>
                     </div>
-
                     <div v-show="!prova.finalizado">
-                        <small class="alert alert-warning">Prova em Andamento</small>
+                        <small class="alert alert-warning d-inline-block mb-0">Prova em Andamento</small>
                     </div>
                 </fieldset>
 
-                <fieldset v-if="form.etapa_status.length > 0">
+                <fieldset class="mybp-modal-secao" v-if="form.etapa_status && form.etapa_status.length > 0">
                     <legend>Histórico</legend>
-                    <div class="card mb-2" v-for="etapa in form.etapa_status">
-                        <div class="card-header" :class="etapa.status === 'classificado' ? 'bg-primary text-white' : null ||
-                                        etapa.status === 'desclassificado' ? 'bg-danger text-white' : null ||
-                                        etapa.status === 'admitido' ? 'bg-success' : null
-                                        ">
+                    <div class="card mb-2" v-for="etapa in form.etapa_status" :key="'etapa-' + etapa.id">
+                        <div class="card-header" :class="headerEtapaClass(etapa)">
                             @{{ etapa.etapa }}
                         </div>
-                        <div class="card-body">
-                            <blockquote class="blockquote mb-0">
-                                <p>
-                                    <strong>Status: @{{ etapa.status }}</strong><br/>
-                                    <strong>Preenchido por: @{{ etapa.preenchido_por }}</strong><br/>
-                                    <strong>Data: @{{ etapa.created_at }}</strong><br/>
-                                    <strong>Observação: @{{ etapa.observacao }}</strong><br/>
-                                </p>
-
-                            </blockquote>
+                        <div class="card-body py-2">
+                            <p class="mb-0 small">
+                                <strong>Status:</strong> @{{ etapa.status }}<br>
+                                <strong>Preenchido por:</strong> @{{ etapa.preenchido_por }}<br>
+                                <strong>Data:</strong> @{{ etapa.created_at }}<br>
+                                <strong>Observação:</strong> @{{ etapa.observacao }}
+                            </p>
                         </div>
                     </div>
-
                 </fieldset>
 
-                <classificar :usuario_id="{{intval(auth()->id())}}" :model="form" janelapai="janelaCadastrar"
-                             @salvou="atualizaClassificacao"
-                             v-if="form.status == 'classificado'"></classificar>
+                <fieldset class="mybp-modal-secao">
+                    <legend>Carta Oferta</legend>
+                    <div v-if="form.carta_resumo" class="row">
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Status</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="form.carta_resumo.texto">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Enviado em</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="form.carta_resumo.envio_br || 'Não informado'">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Resposta</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="form.carta_resumo.resposta_br || 'Aguardando'">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label">Expirado</label>
+                                <input type="text" class="form-control form-control-sm" disabled
+                                       :value="form.carta_resumo.expirado ? 'Sim' : 'Não'">
+                            </div>
+                        </div>
+                    </div>
+                    <p class="small text-muted mb-2" v-else>Nenhuma carta oferta vinculada a este selecionado.</p>
+                    @can('admissao_documentos_carta_oferta')
+                        <a class="btn btn-sm btn-outline-primary" :href="urlGerenciarCarta()" target="_blank">
+                            <i class="fas fa-file-signature mr-1"></i> Abrir / Gerenciar carta oferta
+                        </a>
+                    @endcan
+                </fieldset>
 
+                <div class="mt-2" v-if="podeClassificar(form)">
+                    <classificar :usuario_id="{{intval(auth()->id())}}" :model="form" janelapai="janelaCadastrar"
+                                 @salvou="atualizaClassificacao"></classificar>
+                </div>
             </div>
         </template>
     </modal>
@@ -111,331 +206,623 @@
     <modal ref="janelaWhatsApp" id="janelaWhatsApp" titulo="Enviar Notificação WhatsApp" :fechar="!preloadAjax">
         <template #conteudo>
             <div v-show="preloadAjax"><i class="fa fa-spinner fa-pulse"></i> Aguarde...</div>
-            <fieldset v-if="!preloadAjax">
-                <legend>Dados Pessoais</legend>
-                <p>
-                    Nome: @{{form.nome}} | Nascimento: @{{form.nascimento}} |
-                    Idade: @{{form.idade}} anos<br>
-                    Contato: @{{form.feed_back ? form.feed_back.tel_principal.numero: 'não informado'}} | E-mail:
-                    @{{ form.email }}
+            <fieldset class="mybp-modal-secao" v-if="!preloadAjax">
+                <legend>Dados pessoais</legend>
+                <p class="small mb-0">
+                    Nome: @{{form.curriculo?.nome}} | Nascimento: @{{form.curriculo?.nascimento}} |
+                    Idade: @{{form.curriculo?.idade}} anos<br>
+                    Contato: @{{form.tel_principal ? form.tel_principal.numero : 'não informado'}} |
+                    E-mail: @{{form.curriculo?.email}}
                 </p>
-
             </fieldset>
         </template>
         <template #rodape>
             <button class="btn btn-primary"
-                    @click.prevent="enviarNotificacao(form.feed_back.tel_principal.sonumero, form.nome, form.id, form.feed_back.vaga_selecionada.id, form.etapa_status[0].id)"
-                    v-if="!preloadAjax">Enviar Notificação
+                    @click.prevent="enviarNotificacao(
+                        form.tel_principal?.sonumero,
+                        form.curriculo?.nome,
+                        form.curriculo_id || form.curriculo?.id,
+                        form.vaga_id || form.vaga_aberta?.id,
+                        form.etapa_status?.[0]?.id
+                    )"
+                    v-if="!preloadAjax && form.tel_principal">
+                Enviar Notificação
             </button>
         </template>
     </modal>
 
-    <fieldset>
-        <legend>Filtrar por:</legend>
-        <form class="row" @submit.prevent="$refs.componente.buscar()">
+    <filtro-listagem
+        class="mt-2 mybp-filtros-compactos"
+        :mostrar-limpar-filtros="totalFiltrosAtivos > 0"
+        :desabilitado="controle.carregando"
+        @submit="atualizar"
+        @limpar="limparFiltros"
+    >
+        <template #filtros>
+            <date-range-filter
+                :key="'sel-filtro-periodo'"
+                v-model:enabled="controle.dados.filtroPeriodo"
+                v-model:start-date="controle.dados.dataInicio"
+                v-model:end-date="controle.dados.dataFim"
+                :disabled="!!controle.carregando"
+                :id-suffix="'periodo-' + hash"
+                label="Por período"
+                wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                @change="onPeriodoChange"
+            ></date-range-filter>
+
             <div class="col-12 col-md-4">
-                <div class="form-check" style="margin-bottom: -11px;">
-                    <input type="checkbox" class="form-check-input" :disabled="controle.carregando" id="filtroIntervalo"
-                           v-model="controle.dados.filtroPeriodo">
-                    <label class="form-check-label cursor-pointer" for="filtroIntervalo">Por período</label>
-                </div>
-                <div class="form-group">
-                    <datepicker range formsm label="" :disabled="controle.carregando || !controle.dados.filtroPeriodo"
-                                v-model="controle.dados.periodo"></datepicker>
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
-                <div class="form-group">
-                    <label>Nome/Cód</label>
-                    <input type="text"
-                           placeholder="Buscar por nome"
-                           autocomplete="off"
-                           class="form-control form-control-sm" :disabled="controle.carregando"
-                           v-model="controle.dados.campoBusca">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="sel-filtro-busca">
+                        Candidato / CPF
+                        <span v-if="buscaUnificadaEhCpf" class="text-muted small">CPF</span>
+                    </label>
+                    <input
+                        id="sel-filtro-busca"
+                        type="text"
+                        placeholder="Nome, código ou CPF"
+                        autocomplete="off"
+                        inputmode="search"
+                        class="form-control form-control-sm"
+                        :disabled="controle.carregando"
+                        :value="campoBuscaUnificada"
+                        @input="onInputBuscaUnificada"
+                    />
                 </div>
             </div>
 
-            <div class="col-12 col-sm-6 col-md-6 col-lg-4">
-                <div class="form-group">
-                    <label>CPF</label>
-                    <input type="text"
-                           placeholder="Buscar por cpf"
-                           autocomplete="mastertag"
-                           onblur="valida_cpf(this)"
-                           v-mascara:cpf
-                           class="form-control form-control-sm" :disabled="controle.carregando"
-                           v-model="controle.dados.campoCPF">
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label">Cargo</label>
+                    <autocomplete
+                        :caminho="controle.dados.caminho_autocomplete"
+                        :valido="controle.dados.campoVaga !== ''"
+                        :formsm="true"
+                        v-model="controle.dados.autocomplete_label"
+                        :disabled="controle.carregando"
+                        placeholder="Por cargo"
+                        @onblur="resetaCampo"
+                        @onselect="selecionaVaga"
+                    ></autocomplete>
                 </div>
             </div>
 
-            <div class="col-12 col-sm-12 col-md-12 col-lg-12">
-                <div class="form-group">
-                    <label>Cargo</label>
-                    <autocomplete :caminho="controle.dados.caminho_autocomplete"
-                                  :valido="controle.dados.campoVaga !== ''"
-                                  v-model="controle.dados.autocomplete_label"
-                                  :disabled="controle.carregando"
-                                  placeholder="Por cargo"
-                                  @onblur="resetaCampo"
-                                  @onselect="selecionaVaga"></autocomplete>
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="sel-filtro-uf">Estado</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroUf"
+                            instance-id="sel-filtro-uf"
+                            input-id="sel-filtro-uf"
+                            v-model="controle.dados.campoUf"
+                            :options="filtroUfOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Todos os estados"
+                            empty-message="Nenhum estado encontrado."
+                            :max-results="30"
+                            @opening="fecharOutrosComboboxes('sel-filtro-uf')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                <div class="form-group">
-                    <label>Estado</label>
-                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                            v-model="controle.dados.campoUf">
-                        <option value="">SEM FILTRO</option>
-                        <option value="MA">MA</option>
-                        <option value="AC">AC</option>
-                        <option value="AL">AL</option>
-                        <option value="AP">AP</option>
-                        <option value="AM">AM</option>
-                        <option value="BA">BA</option>
-                        <option value="CE">CE</option>
-                        <option value="DF">DF</option>
-                        <option value="ES">ES</option>
-                        <option value="GO">GO</option>
-                        <option value="MT">MT</option>
-                        <option value="MS">MS</option>
-                        <option value="MG">MG</option>
-                        <option value="PA">PA</option>
-                        <option value="PB">PB</option>
-                        <option value="PR">PR</option>
-                        <option value="PE">PE</option>
-                        <option value="PI">PI</option>
-                        <option value="RJ">RJ</option>
-                        <option value="RN">RN</option>
-                        <option value="RS">RS</option>
-                        <option value="RO">RO</option>
-                        <option value="RR">RR</option>
-                        <option value="SC">SC</option>
-                        <option value="SP">SP</option>
-                        <option value="SE">SE</option>
-                        <option value="TO">TO</option>
-                    </select>
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="sel-filtro-status">Status</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroStatus"
+                            instance-id="sel-filtro-status"
+                            input-id="sel-filtro-status"
+                            v-model="controle.dados.campoStatus"
+                            :options="filtroStatusOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Sem filtro"
+                            empty-message="Nenhuma opção."
+                            :max-results="10"
+                            @opening="fecharOutrosComboboxes('sel-filtro-status')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                <div class="form-group">
-                    <label>PCD</label>
-                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                            v-model="controle.dados.campoPcd">
-                        <option value="">Geral</option>
-                        <option :value="true">Sim</option>
-                        <option :value="false">Não</option>
-                    </select>
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="sel-filtro-pcd">PCD</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroPcd"
+                            instance-id="sel-filtro-pcd"
+                            input-id="sel-filtro-pcd"
+                            v-model="controle.dados.campoPcd"
+                            :options="filtroSimNaoOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Geral"
+                            empty-message="Nenhuma opção."
+                            :max-results="5"
+                            @opening="fecharOutrosComboboxes('sel-filtro-pcd')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                <div class="form-group">
-                    <label>Status</label>
-                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                            v-model="controle.dados.campoStatus">
-                        <option value="">Sem filtro</option>
-                        <option value="classificado">Classificado</option>
-                        <option value="desclassificado">Desclassificado</option>
-                        <option value="sem_status">Sem status</option>
-                    </select>
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="sel-filtro-pages">Exibir</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroPages"
+                            instance-id="sel-filtro-pages"
+                            input-id="sel-filtro-pages"
+                            v-model="campoPagesCombo"
+                            :options="filtroPagesOpcoes"
+                            :disabled="controle.carregando"
+                            placeholder-blur="20"
+                            empty-message="Nenhuma opção."
+                            :max-results="10"
+                            @opening="fecharOutrosComboboxes('sel-filtro-pages')"
+                            @select="onSelectFiltro"
+                        ></combobox-auto-complete>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                <div class="form-group">
-                    <label>Prova</label>
-                    <select class="form-control form-control-sm" @change="filtraProva" :disabled="controle.carregando"
-                            v-model="controle.dados.campoProvas">
-                        <option value="">Sem filtro</option>
-                        <option value="sim">Finalizada</option>
-                        <option value="nao">Não realizada</option>
-                        <option value="andamento">Não finalizada andamento</option>
-                    </select>
+            <div
+                class="col-12 mybp-filtros-avancados-shell"
+                :class="{ 'is-open': filtrosAvancadosAbertos }"
+                :aria-hidden="filtrosAvancadosAbertos ? 'false' : 'true'"
+            >
+                <div class="mybp-filtros-avancados-shell__inner">
+                    <div class="mybp-filtros-avancados">
+                        <div class="mybp-filtros-avancados__block">
+                            <p class="mybp-filtros-avancados__title">Outros filtros</p>
+                            <div class="row">
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="sel-filtro-prova">Prova</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                ref="comboFiltroProva"
+                                                instance-id="sel-filtro-prova"
+                                                input-id="sel-filtro-prova"
+                                                v-model="controle.dados.campoProvas"
+                                                :options="filtroProvaOpcoes"
+                                                :disabled="controle.carregando"
+                                                placeholder-blur="Sem filtro"
+                                                empty-message="Nenhuma opção."
+                                                :max-results="10"
+                                                @opening="fecharOutrosComboboxes('sel-filtro-prova')"
+                                                @select="onSelectProva"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-4" v-show="controle.dados.campoProvas === 'sim'">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="sel-filtro-nota">Nota</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                ref="comboFiltroNota"
+                                                instance-id="sel-filtro-nota"
+                                                input-id="sel-filtro-nota"
+                                                v-model="controle.dados.campoNota"
+                                                :options="filtroNotaOpcoes"
+                                                :disabled="controle.carregando"
+                                                placeholder-blur="Sem filtro"
+                                                empty-message="Nenhuma opção."
+                                                :max-results="10"
+                                                @opening="fecharOutrosComboboxes('sel-filtro-nota')"
+                                                @select="onSelectFiltro"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="sel-filtro-etapa">Etapa</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                ref="comboFiltroEtapa"
+                                                instance-id="sel-filtro-etapa"
+                                                input-id="sel-filtro-etapa"
+                                                v-model="controle.dados.campoEtapa"
+                                                :options="filtroEtapaOpcoes"
+                                                :disabled="controle.carregando"
+                                                placeholder-blur="Sem filtro"
+                                                empty-message="Nenhuma opção."
+                                                :max-results="20"
+                                                @opening="fecharOutrosComboboxes('sel-filtro-etapa')"
+                                                @select="onSelectFiltro"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="sel-filtro-pendencia">Pendência workflow</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                ref="comboFiltroPendencia"
+                                                instance-id="sel-filtro-pendencia"
+                                                input-id="sel-filtro-pendencia"
+                                                v-model="controle.dados.campoPendenciaWorkflow"
+                                                :options="filtroPendenciaWorkflowOpcoes"
+                                                :disabled="controle.carregando"
+                                                placeholder-blur="Sem filtro"
+                                                empty-message="Nenhuma opção."
+                                                :max-results="15"
+                                                @opening="fecharOutrosComboboxes('sel-filtro-pendencia')"
+                                                @select="onSelectFiltro"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="sel-filtro-carta">Carta Oferta</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                ref="comboFiltroCarta"
+                                                instance-id="sel-filtro-carta"
+                                                input-id="sel-filtro-carta"
+                                                v-model="controle.dados.campoCartaOferta"
+                                                :options="filtroCartaOfertaOpcoes"
+                                                :disabled="controle.carregando"
+                                                placeholder-blur="Sem filtro"
+                                                empty-message="Nenhuma opção."
+                                                :max-results="10"
+                                                @opening="fecharOutrosComboboxes('sel-filtro-carta')"
+                                                @select="onSelectFiltro"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="sel-filtro-sabado">Disp. sábado</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                ref="comboFiltroSabado"
+                                                instance-id="sel-filtro-sabado"
+                                                input-id="sel-filtro-sabado"
+                                                v-model="controle.dados.campoDisponibilidadeSabado"
+                                                :options="filtroSimNaoOpcoes"
+                                                :disabled="controle.carregando"
+                                                placeholder-blur="Geral"
+                                                empty-message="Nenhuma opção."
+                                                :max-results="5"
+                                                @opening="fecharOutrosComboboxes('sel-filtro-sabado')"
+                                                @select="onSelectFiltro"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="sel-filtro-domingo">Disp. domingo</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                ref="comboFiltroDomingo"
+                                                instance-id="sel-filtro-domingo"
+                                                input-id="sel-filtro-domingo"
+                                                v-model="controle.dados.campoDisponibilidadeDomingo"
+                                                :options="filtroSimNaoOpcoes"
+                                                :disabled="controle.carregando"
+                                                placeholder-blur="Geral"
+                                                empty-message="Nenhuma opção."
+                                                :max-results="5"
+                                                @opening="fecharOutrosComboboxes('sel-filtro-domingo')"
+                                                @select="onSelectFiltro"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </template>
 
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                <div class="form-group">
-                    <label>Etapa</label>
-                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                            v-model="controle.dados.campoEtapa">
-                        <option value="">Sem filtro</option>
-                        <option value="Prova presencial">Classificado Prova presencial</option>
-                        <option value="Teste de digitação">Classificado Teste de digitação</option>
-                        <option value="Dinâmica de grupo">Classificado Dinâmica de grupo</option>
-                        <option value="Entrevista Individual">Classificado Entrevista Individual</option>
-                        <option value="Entrevista RH">Classificado Entrevista RH</option>
-                        <option value="Entrevista Gestor">Classificado Entrevista Gestor</option>
-                        <option value="Apto para Admissao">Apto para Admissao</option>
-                        <option value="Aviso Recesso">Aviso Recesso</option>
+        <template #acoes>
+            <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-search'"></i>
+                Buscar
+            </button>
+            <button
+                type="button"
+                class="btn btn-sm mybp-btn-mais-filtros"
+                :class="filtrosAvancadosAbertos ? 'btn-primary is-open' : 'btn-outline-primary'"
+                :disabled="controle.carregando"
+                :aria-expanded="filtrosAvancadosAbertos ? 'true' : 'false'"
+                @click="filtrosAvancadosAbertos = !filtrosAvancadosAbertos"
+            >
+                <i class="fa" :class="filtrosAvancadosAbertos ? 'fa-chevron-up' : 'fa-sliders-h'"></i>
+                @{{ filtrosAvancadosAbertos ? 'Menos filtros' : 'Mais filtros' }}
+                <span class="badge badge-light ml-1" v-if="totalFiltrosAtivosAvancados">
+                    @{{ totalFiltrosAtivosAvancados }}
+                </span>
+            </button>
+        </template>
+    </filtro-listagem>
 
-                        <option value="Desclassificado em prova presencial">Desclassificado em prova online</option>
-                        <option value="Desclassificado em prova presencial">Desclassificado em prova presencial
-                        </option>
-                        <option value="Desclassificado em teste de digitação">Desclassificado em teste de digitação
-                        </option>
-                        <option value="Desclassificado em dinâmica de grupo">Desclassificado em dinâmica de grupo
-                        </option>
-                        <option value="Desclassificado em entrevista Individual">Desclassificado em entrevista
-                            Individual
-                        </option>
-                        <option value="Desclassificado em entrevista RH">Desclassificado em entrevista RH</option>
-                        <option value="Desclassificado em entrevista Gestor">Desclassificado em entrevista Gestor
-                        </option>
-                    </select>
+    <p class="text-center" v-if="controle.carregando">
+        <preload></preload>
+    </p>
+
+    <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length === 0">
+        <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+    </div>
+
+    <div id="conteudo" v-show="!controle.carregando && lista.length > 0">
+        <div class="mybp-cards-lista">
+            <div class="mybp-card" v-for="feedback in lista" :key="feedback.id">
+                <div class="mybp-card-header-row">
+                    <div class="mybp-card-left">
+                        <span class="mybp-badge-id">#@{{ feedback.id }}</span>
+                        <div class="mybp-card-titulo">
+                            <strong>@{{ feedback.curriculo?.nome || 'Não informado' }}</strong>
+                            <span class="text-muted small d-block" v-if="cliente_id === 1">
+                                @{{ feedback.cliente?.razao_social }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mybp-card-right">
+                        <mybp-status-badge
+                            :variante="chaveStatusSel(feedback)"
+                            :texto="textoStatusSel(feedback)"
+                        ></mybp-status-badge>
+                        <div class="dropdown" :class="{ show: isDropdownOpen(feedback.id) }">
+                            <a
+                                class="mybp-btn-acoes-compact"
+                                href="#"
+                                role="button"
+                                :id="'sel-acoes-' + feedback.id"
+                                aria-haspopup="true"
+                                :aria-expanded="isDropdownOpen(feedback.id) ? 'true' : 'false'"
+                                @click.prevent.stop="toggleDropdown(feedback.id)"
+                            >
+                                <i class="fas fa-ellipsis-v"></i>
+                            </a>
+                            <div
+                                class="dropdown-menu mybp-dropdown-menu dropdown-menu-right"
+                                :class="{ show: isDropdownOpen(feedback.id) }"
+                                :aria-labelledby="'sel-acoes-' + feedback.id"
+                                @click="fecharDropdown"
+                            >
+                                <a class="dropdown-item" href="javascript://"
+                                   @click.prevent="abrirVisualizar(feedback.id)">
+                                    <i class="fa fa-eye mr-1"></i> Visualizar / Classificar
+                                </a>
+                                <a
+                                    class="dropdown-item"
+                                    :href="urlPdfCurriculo(feedback)"
+                                    target="_blank"
+                                    v-if="feedback.curriculo_ctoken"
+                                >
+                                    <i class="far fa-file-pdf mr-1"></i> Gerar PDF
+                                </a>
+                                <a
+                                    class="dropdown-item"
+                                    href="javascript://"
+                                    @click.prevent="toggle(feedback.id)"
+                                >
+                                    <i class="far mr-1"
+                                       :class="opened.includes(feedback.id) ? 'fa-minus-square' : 'fa-plus-square'"></i>
+                                    @{{ opened.includes(feedback.id) ? 'Ocultar detalhes' : 'Expandir detalhes' }}
+                                </a>
+                                @can('admissao_documentos_carta_oferta')
+                                    <a
+                                        class="dropdown-item"
+                                        :href="urlCartaOferta"
+                                        target="_blank"
+                                    >
+                                        <i class="fas fa-file-signature mr-1"></i> Carta oferta
+                                    </a>
+                                @endcan
+                                <a
+                                    class="dropdown-item"
+                                    href="javascript://"
+                                    v-if="podeWhatsApp(feedback)"
+                                    @click.prevent="abrirWhatsApp(feedback)"
+                                >
+                                    <i class="fab fa-whatsapp mr-1"></i> WhatsApp
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2" v-show="controle.dados.campoProvas === 'sim'">
-                <div class="form-group">
-                    <label>Nota</label>
-                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                            v-model="controle.dados.campoNota">
-                        <option value="">Sem filtro</option>
-                        <option value="0">0</option>
-                        <option value="1-5">1 à 5</option>
-                        <option value="5-7">5 à 7</option>
-                        <option value="8-10">8 à 10</option>
-                    </select>
-                </div>
-            </div>
+                <div class="mybp-card-corpo" :class="'mybp-card-corpo--' + chaveStatusSel(feedback)">
+                    <section class="mybp-card-secao">
+                        <div class="mybp-card-row">
+                            <mybp-card-campo
+                                icon="fas fa-id-card"
+                                label="CPF"
+                                :valor="feedback.curriculo?.cpf"
+                                forte
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-calendar-alt"
+                                label="Data seleção"
+                                :valor="feedback.data_selecao_br"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-briefcase"
+                                label="Vaga"
+                                :valor="labelVagaCard(feedback)"
+                            ></mybp-card-campo>
+                        </div>
+                    </section>
 
-            <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                <div class="form-group">
-                    <label>Exibir</label>
-                    <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                            v-model="controle.dados.pages">
-                        <option value="20">20</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
-                </div>
-            </div>
+                    <section class="mybp-card-secao">
+                        <div class="mybp-card-row">
+                            <mybp-card-campo
+                                icon="fas fa-user-check"
+                                label="Selecionado"
+                                :valor="textoSelecionadoCard(feedback)"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-clipboard-check"
+                                label="Prova"
+                                :valor="feedback.prova_label || '-'"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-stream"
+                                label="Etapa / Status"
+                                :valor="textoEtapaStatusCard(feedback)"
+                            ></mybp-card-campo>
+                        </div>
+                    </section>
 
-            <div class="col-12 col-md-9">
-                <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
-                    <i
-                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                    Atualizar
-                </button>
+                    <section class="mybp-card-secao">
+                        <div class="mybp-card-row">
+                            <mybp-card-campo
+                                icon="fas fa-phone"
+                                label="Contato"
+                                :valor="textoContatoCard(feedback)"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-envelope"
+                                label="E-mail"
+                                :valor="feedback.curriculo?.email"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-wheelchair"
+                                label="PCD"
+                                :valor="feedback.curriculo?.pcd ? 'Sim' : 'Não'"
+                                :tom="feedback.curriculo?.pcd ? 'positivo' : 'meta'"
+                            ></mybp-card-campo>
+                        </div>
+                    </section>
 
+                    <section class="mybp-card-secao">
+                        <div class="mybp-card-row">
+                            <mybp-card-campo
+                                icon="fas fa-file-signature"
+                                label="Carta Oferta"
+                                :valor="textoCartaSel(feedback)"
+                                :tom="tomCartaSel(feedback)"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-calendar-day"
+                                label="Disp. sábado"
+                                :valor="textoSimNao(feedback.curriculo?.disponibilidade_sabado)"
+                                :tom="tomSimNao(feedback.curriculo?.disponibilidade_sabado)"
+                            ></mybp-card-campo>
+                            <mybp-card-campo
+                                icon="fas fa-calendar-week"
+                                label="Disp. domingo"
+                                :valor="textoSimNao(feedback.curriculo?.disponibilidade_domingo)"
+                                :tom="tomSimNao(feedback.curriculo?.disponibilidade_domingo)"
+                            ></mybp-card-campo>
+                        </div>
+                    </section>
 
-                {{--                <a href="{{\App\Models\Sistema::UrlServidor}}/recrutamentos/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS"--}}
-                {{--                   class="btn btn-primary"><i--}}
-                {{--                        class="fas fa-file-excel"></i>--}}
-                {{--                    Exportar Excel</a>--}}
-            </div>
-        </form>
-    </fieldset>
-
-
-    <preload v-if="controle.carregando" class="text-center"></preload>
-
-    <div id="conteudo">
-        <div class="alert alert-warning" v-show="!controle.carregando && lista.length==0">
-            <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
-        </div>
-
-        <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-            <table class="tabela">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nome</th>
-                    <th v-if="cliente_id === 1">Cliente</th>
-                    <th>Vaga</th>
-                    <th>Prova</th>
-                    <th>Status</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody v-for="(feedback,  index) in lista">
-                <tr :class='feedback.etapa_status.length > 0 ? feedback.etapa_status[0].status === "desclassificado" ? "table-danger" : "" : ""'>
-                    <td class="text-center">
-                        @{{feedback.id}}
-                    </td>
-                    <td>
-                        @{{feedback.curriculo.nome}} <br>
-                        {{--                        @{{feedback.curriculo.cpf}}--}}
-                    </td>
-                    <td v-if="cliente_id === 1">
-                        @{{feedback.cliente.razao_social}}
-                    </td>
-                    <td class="text-center">
-                        @{{feedback.vaga_aberta.vaga_selecionada.nome +' - '+ feedback.vaga_aberta.municipio.nome +' - '+
-                        feedback.vaga_aberta.municipio.uf }}
-                    </td>
-                    <td class="text-center">
-                        @{{feedback.simulados.length > 0 ? "SIM" : "-"}}
-                    </td>
-                    <td class="text-center">
-                        @{{feedback.etapa_status.length > 0 ? feedback.etapa_status[0].etapa : ""}}
-                        <br/>
-                        @{{feedback.etapa_status.length > 0 ? feedback.etapa_status[0].status : ""}}
-                    </td>
-                    <td class="text-center">
-                        <a href="javascript://" class="btn btn-sm mr-1 btn-primary" content="Exibir" v-tippy
-                           @click.prevent="formAlterar(feedback.id); $refs.janelaCadastrar?.abrirModal()">
-                            <i class="fa fa-eye" aria-hidden="true"></i>
-                        </a>
-
-                        <button v-show="feedback.simulados.length > 0" class="btn btn-sm mr-1 btn-primary"
-                                @click="toggle(index); formAlterar(feedback.id)"
-                                :content="!opened.includes(index) ? 'Mostrar' : 'Ocultar'" v-tippy
-                                style="cursor: pointer">
-                            <i :class="!opened.includes(index) ? 'far fa-plus-square' : 'far fa-minus-square'"></i>
-                        </button>
-
-                        <span v-if="feedback.tel_principal">
-                        <button class="btn btn-sm mr-1 btn-success"
-                                content="enviar Notificação" v-tippy
-                                v-if="feedback.etapa_status.length > 0 && feedback.curriculo.tel_principal.tipo === 'whatsapp' && feedback.etapa_status[0].etapa === 'Apto para Admissao'"
-                                {{--                        <button class="btn btn-primary" title="Editar" v-if="curriculo.feed_back.tel_principal.tipo === 'whatsapp'"--}}
-                                @click.prevent="formAlterar(feedback.id); $refs.janelaWhatsApp?.abrirModal()"
-                                :disabled="curriculo.whats_app_notificacao">
-                            <i class="fab fa-whatsapp" aria-hidden="true"></i>
-                        </button>
+                    <div class="mb-2" v-if="pendenciasObrigatorias(feedback).length">
+                        <small class="text-muted d-block mb-1">Pendências obrigatórias</small>
+                        <span
+                            class="badge badge-warning mr-1 mb-1"
+                            v-for="p in pendenciasObrigatorias(feedback)"
+                            :key="'pend-' + feedback.id + '-' + p.id"
+                        >
+                            @{{ p.nome }}
                         </span>
-                    </td>
-                </tr>
-                <tr v-if="opened.includes(index)">
-                    <td class="text-left" :colspan="cliente_id === 1 ? 7 : 6">
-                        <fieldset v-for="prova in feedback.simulados">
-                            <legend>Teste:
-                                @{{ prova.simulado_vaga.simulado.titulo }} -
-                                (@{{ prova.simulado_vaga.online ? 'Online' : 'Presencial' }})
+                    </div>
+                    <div class="mb-2" v-else-if="prontoParaAdmissao(feedback)">
+                        <span class="badge badge-success">Pronto para admissão</span>
+                    </div>
+
+                    <div class="d-flex flex-wrap align-items-center mt-2 mb-1" style="gap: .4rem;">
+                        <button type="button" class="btn btn-sm btn-primary"
+                                @click.prevent="abrirVisualizar(feedback.id)">
+                            <i class="fa fa-eye"></i> Visualizar
+                        </button>
+                        <button type="button" class="btn btn-sm btn-success"
+                                v-if="podeClassificar(feedback)"
+                                @click.prevent="abrirVisualizar(feedback.id)">
+                            <i class="fa fa-check"></i> Classificar
+                        </button>
+                        <a
+                            class="btn btn-sm btn-outline-info"
+                            v-for="cta in ctasSistemaPendentes(feedback)"
+                            :key="'cta-' + feedback.id + '-' + cta.chave"
+                            :href="urlModuloWorkflow(cta.chave)"
+                            target="_blank"
+                        >
+                            <i class="fa fa-external-link-alt"></i> @{{ cta.nome }}
+                        </a>
+                        <a class="btn btn-sm btn-outline-primary"
+                           :href="urlPdfCurriculo(feedback)"
+                           target="_blank"
+                           v-if="feedback.curriculo_ctoken">
+                            <i class="far fa-file-pdf"></i> PDF
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                                @click.prevent="toggle(feedback.id)">
+                            <i class="far"
+                               :class="opened.includes(feedback.id) ? 'fa-minus-square' : 'fa-plus-square'"></i>
+                            @{{ opened.includes(feedback.id) ? 'Ocultar' : 'Detalhes' }}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-success"
+                                v-if="podeWhatsApp(feedback)"
+                                @click.prevent="abrirWhatsApp(feedback)">
+                            <i class="fab fa-whatsapp"></i>
+                        </button>
+                    </div>
+
+                    <div class="mt-2" v-if="opened.includes(feedback.id)">
+                        <fieldset v-if="feedback.simulados?.length"
+                                  v-for="prova in feedback.simulados" :key="'prova-card-' + prova.id">
+                            <legend>
+                                Teste: @{{ prova.simulado_vaga?.simulado?.titulo }}
+                                (@{{ prova.simulado_vaga?.online ? 'Online' : 'Presencial' }})
                             </legend>
                             <div v-show="prova.finalizado">
-                                <p>Acertos: @{{ prova.acertos }} | | Tempo restante: @{{
-                                    prova.duracao_segundos }} min | | Finalizado em @{{ prova.data_finalizacao }}h</p>
-                                <div v-show="!prova.status">
+                                <p class="small mb-2">
+                                    Acertos: @{{ prova.acertos }} · Tempo restante: @{{ prova.duracao_segundos }} min ·
+                                    Finalizado em @{{ prova.data_finalizacao }}h
+                                </p>
+                                <div v-show="!prova.status" v-if="podeClassificar(feedback)">
                                     <classificar :usuario_id="{{intval(auth()->id())}}" :model="feedback"
-                                                 :simulado_id="prova.id" @salvou="atualizaClassificacao"></classificar>
+                                                 :simulado_id="prova.id"
+                                                 @salvou="atualizaClassificacao"></classificar>
                                 </div>
                                 <div class="text-uppercase alert"
-                                     :class="prova.status === 'desclassificado' ? 'alert-danger' : 'alert-success' "
+                                     :class="prova.status === 'desclassificado' ? 'alert-danger' : 'alert-success'"
                                      v-show="prova.status">
                                     @{{ prova.status }}
                                 </div>
                             </div>
-
                             <div v-show="!prova.finalizado">
-                                <small class="alert alert-warning">Prova em Andamento</small>
+                                <small class="alert alert-warning d-inline-block mb-0">Prova em Andamento</small>
                             </div>
                         </fieldset>
-
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+                        <div class="alert alert-light border small mb-0" v-if="!feedback.simulados?.length">
+                            Nenhuma prova vinculada. Use <strong>Visualizar / Classificar</strong> para avançar a etapa.
+                        </div>
+                        <div class="mt-2" v-if="podeClassificar(feedback) && (!feedback.simulados || !feedback.simulados.length)">
+                            <classificar :usuario_id="{{intval(auth()->id())}}" :model="feedback"
+                                         @salvou="atualizaClassificacao"></classificar>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
                             url="{{route('g.curriculoselecao.curriculos-selecionados.atualizar')}}"
-                            :por-pagina="controle.dados.porPagina"
+                            :por-pagina="controle.dados.pages"
                             :dados="controle.dados"
                             v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
     </div>

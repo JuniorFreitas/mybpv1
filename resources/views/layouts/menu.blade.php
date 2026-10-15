@@ -118,6 +118,14 @@
                         </a>
                     </li>
                 @endcan
+                @can('administracao_etapas_seletivo')
+                    <li>
+                        <a href="{{route('g.administracao.etapas-seletivo.index')}}" parent="administracao"
+                           key="etapas-seletivo">
+                            Workflow do Seletivo
+                        </a>
+                    </li>
+                @endcan
                 @can('administracao_atareuniao')
                     <li>
                         <a href="{{route('g.administracao.atareuniao.atareuniao.index')}}" parent="administracao"

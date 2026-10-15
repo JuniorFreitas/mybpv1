@@ -21,20 +21,22 @@
                             <label>Próxima etapa:</label>
                             <select
                                 class="form-control"
-                                v-model="formClassificar.etapa"
+                                v-model="formClassificar.passo_id"
                                 onblur="valida_campo_vazio(this, 1)"
                                 onchange="valida_campo_vazio(this, 1)"
+                                @change="onChangeEtapaAvanco"
                             >
                                 <option value="">Selecione</option>
-                                <option value="Prova presencial">Prova presencial</option>
-                                <option value="Teste de digitação">Teste de digitação</option>
-                                <option value="Dinâmica de grupo">Dinâmica de grupo</option>
-                                <option value="Entrevista Individual">Entrevista Individual</option>
-                                <option value="Entrevista RH">Entrevista RH</option>
-                                <option value="Entrevista Gestor">Entrevista Gestor</option>
-                                <option value="Apto para Admissao">Apto para Admissao</option>
-                                <option value="Aviso Recesso">Aviso Recesso</option>
+                                <option
+                                    v-for="etapa in etapasAvanco"
+                                    :key="'av-' + etapa.id"
+                                    :value="etapa.id"
+                                    :disabled="etapaBloqueada(etapa)"
+                                >
+                                    {{ etapa.nome }}{{ etapaBloqueada(etapa) ? ' (bloqueada)' : '' }}
+                                </option>
                             </select>
+                            <small class="text-danger d-block" v-if="motivoBloqueioSelecionado">{{ motivoBloqueioSelecionado }}</small>
                         </div>
 
                         <div class="form-group">
@@ -42,21 +44,13 @@
                             <input type="text" class="form-control" v-model="formClassificar.preenchido_por" onblur="valida_campo_vazio(this, 1)" />
                         </div>
 
-                        <div class="form-group" v-if="usuario_id === 46">
+                        <div class="form-group" v-if="usuario_id === 46 || etapaSelecionadaPermiteEmail">
                             <label>Enviar e-mail:</label>
                             <select class="form-control" v-model="formClassificar.enviarEmail">
                                 <option :value="true">Sim</option>
                                 <option :value="false">Não</option>
                             </select>
                         </div>
-
-                        <!--                        <div class="form-group" v-if="formClassificar.etapa === 'Apto para Admissao'">-->
-                        <!--                            <label>Enviar e-mail:</label>-->
-                        <!--                            <select class="form-control" v-model="formClassificar.enviaWhats">-->
-                        <!--                                <option :value="true">Sim</option>-->
-                        <!--                                <option :value="false">Não</option>-->
-                        <!--                            </select>-->
-                        <!--                        </div>-->
 
                         <div class="form-group">
                             <label>Observação: </label>
@@ -93,18 +87,15 @@
                         <label>Qual etapa?</label>
                         <select
                             class="form-control"
-                            v-model="formDesclassificar.etapa"
+                            v-model="formDesclassificar.passo_id"
                             onblur="valida_campo_vazio(this, 1)"
                             onchange="valida_campo_vazio(this, 1)"
+                            @change="onChangeEtapaDesclass"
                         >
                             <option value="">Selecione</option>
-                            <option value="Desclassificado em prova presencial">Desclassificado em prova online</option>
-                            <option value="Desclassificado em prova presencial">Desclassificado em prova presencial</option>
-                            <option value="Desclassificado em teste de digitação">Desclassificado em teste de digitação</option>
-                            <option value="Desclassificado em dinâmica de grupo">Desclassificado em dinâmica de grupo</option>
-                            <option value="Desclassificado em entrevista Individual">Desclassificado em entrevista Individual</option>
-                            <option value="Desclassificado em entrevista RH">Desclassificado em entrevista RH</option>
-                            <option value="Desclassificado em entrevista Gestor">Desclassificado em entrevista Gestor</option>
+                            <option v-for="etapa in etapasDesclass" :key="'dc-' + etapa.id" :value="etapa.id">
+                                {{ etapa.nome }}
+                            </option>
                         </select>
                     </div>
 
@@ -132,8 +123,8 @@
             </template>
         </modal>
 
-        <button class="btn btn-primary" @click="$refs[`janelaProximaEtapa_${hash}`] && $refs[`janelaProximaEtapa_${hash}`].abrirModal()">Classificar</button>
-        <button class="btn btn-danger" @click="$refs[`janelaDesclassificar_${hash}`] && $refs[`janelaDesclassificar_${hash}`].abrirModal()">Desclassificar</button>
+        <button class="btn btn-primary" @click="abrirClassificar">Classificar</button>
+        <button class="btn btn-danger" @click="abrirDesclassificar">Desclassificar</button>
     </div>
 </template>
 
@@ -167,11 +158,16 @@ export default {
     data() {
         return {
             hash: `${parseInt(Math.random() * 999999)}`,
+            carregandoEtapas: false,
+            etapasAvanco: [],
+            etapasDesclass: [],
+            progressoMap: {},
             formClassificar: {
                 feedback_id: '',
                 user_id: '',
                 vaga_id: '',
                 etapa: '',
+                passo_id: '',
                 mensagem: '',
                 enviado_email: '',
                 text_email: '',
@@ -190,6 +186,7 @@ export default {
                 feedback_id: '',
                 vaga_id: '',
                 etapa: '',
+                passo_id: '',
                 enviado_email: '',
                 text_email: '',
                 observacao: '',
@@ -204,10 +201,89 @@ export default {
             formDesclassificarDefault: null
         }
     },
+    computed: {
+        etapaSelecionada() {
+            const id = Number(this.formClassificar.passo_id)
+            return this.etapasAvanco.find((e) => Number(e.id) === id) || null
+        },
+        etapaSelecionadaPermiteEmail() {
+            return this.etapaSelecionada ? this.etapaSelecionada.permite_email !== false : true
+        },
+        motivoBloqueioSelecionado() {
+            if (!this.etapaSelecionada) return ''
+            const p = this.progressoMap[this.etapaSelecionada.id]
+            if (p && p.liberada === false) return p.motivo_bloqueio || 'Etapa bloqueada por dependência'
+            return ''
+        }
+    },
+    mounted() {
+        this.formClassificarDefault = _.cloneDeep(this.formClassificar)
+        this.formDesclassificarDefault = _.cloneDeep(this.formDesclassificar)
+    },
     methods: {
+        etapaBloqueada(etapa) {
+            const p = this.progressoMap[etapa.id]
+            return !!(p && p.liberada === false)
+        },
+        onChangeEtapaAvanco() {
+            const etapa = this.etapaSelecionada
+            this.formClassificar.etapa = etapa ? etapa.nome : ''
+            if (etapa && etapa.permite_email === false) {
+                this.formClassificar.enviarEmail = false
+            }
+        },
+        onChangeEtapaDesclass() {
+            const id = Number(this.formDesclassificar.passo_id)
+            const etapa = this.etapasDesclass.find((e) => Number(e.id) === id)
+            this.formDesclassificar.etapa = etapa ? etapa.nome : ''
+        },
+        abrirClassificar() {
+            this.carregarEtapas().then(() => {
+                this.$refs[`janelaProximaEtapa_${this.hash}`] && this.$refs[`janelaProximaEtapa_${this.hash}`].abrirModal()
+            })
+        },
+        abrirDesclassificar() {
+            this.carregarEtapas().then(() => {
+                this.$refs[`janelaDesclassificar_${this.hash}`] && this.$refs[`janelaDesclassificar_${this.hash}`].abrirModal()
+            })
+        },
+        carregarEtapas() {
+            if (!this.model?.id) {
+                return Promise.resolve()
+            }
+            this.carregandoEtapas = true
+            return axios
+                .get(`${URL_ADMIN}/etapa/workflow`, {
+                    params: {
+                        feedback_id: this.model.id,
+                        vaga_id: this.model.vaga_id || null
+                    }
+                })
+                .then((r) => {
+                    const data = r.data || {}
+                    // Avanços manuais + apto (sistema classificado via Classificar)
+                    const avanco = (data.avanco || []).filter((e) => {
+                        if (e.tipo === 'sistema') {
+                            return e.chave === 'apto_admissao' || e.is_apto_admissao
+                        }
+                        return e.tipo === 'avanco'
+                    })
+                    this.etapasAvanco = avanco
+                    this.etapasDesclass = data.desclassificacao || []
+                    this.progressoMap = {}
+                    ;(data.progresso?.etapas || []).forEach((p) => {
+                        this.progressoMap[p.id] = p
+                    })
+                    this.carregandoEtapas = false
+                })
+                .catch(() => {
+                    this.carregandoEtapas = false
+                })
+        },
         desclassificar() {
             this.formDesclassificar.feedback_id = this.model.id
             this.formDesclassificar.vaga_id = this.model.vaga_id
+            this.onChangeEtapaDesclass()
 
             $(`#janelaDesclassificar_${this.hash} :input:visible`).trigger('blur')
             if ($(`#janelaDesclassificar_${this.hash} :input:visible.is-invalid`).length) {
@@ -232,12 +308,20 @@ export default {
                 })
                 .catch((error) => {
                     this.formDesclassificar.preload = false
+                    const msg = error?.response?.data?.msg
+                    if (msg) mostraErro('', msg)
                 })
         },
 
         classificar() {
             this.formClassificar.feedback_id = this.model.id
             this.formClassificar.vaga_id = this.model.vaga_id
+            this.onChangeEtapaAvanco()
+
+            if (this.motivoBloqueioSelecionado) {
+                mostraErro('', this.motivoBloqueioSelecionado)
+                return false
+            }
 
             $(`#janelaProximaEtapa_${this.hash} :input:visible`).trigger('blur')
             if ($(`#janelaProximaEtapa_${this.hash} :input:visible.is-invalid`).length) {
@@ -262,6 +346,8 @@ export default {
                 })
                 .catch((error) => {
                     this.formClassificar.preload = false
+                    const msg = error?.response?.data?.msg
+                    if (msg) mostraErro('', msg)
                 })
         }
     }

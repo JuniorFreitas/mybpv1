@@ -3,6 +3,7 @@
 
 Last updated: 2026-10-14
 
+- [etapas-seletivo-workflow-fluxo](etapas-seletivo-workflow-fluxo.md) — Workflow do Seletivo: trilha visual drag&drop + modal em cartões + endpoint reordenar | pattern | etapas-seletivo, workflow, modal, fluxo
 - [centro-custo-unicidade-lotacao](centro-custo-unicidade-lotacao.md) — Unicidade CC: empresa+label+ativo+lotação (matriz/filial) | domain | centrocusto, validacao
 - [cloud-upload-multipart-s3](cloud-upload-multipart-s3.md) — Cloud: &lt;20MB POST; ≥20MB multipart S3/local + IndexedDB F5 | flow | cloud, upload, s3, multipart
 - [importacao-treinamentos-ui](importacao-treinamentos-ui.md) — Tela download Excel tenant + upload→job→mybp:importa-treinamento --path | flow | treinamento, importacao, excel
@@ -14,6 +15,7 @@ Last updated: 2026-10-14
 - [ferias-status-em-aberto](ferias-status-em-aberto.md) — Abas de movimentação: card e filtro na etapa atual | flow | ferias, filtro, status
 - [aniversariante-mensagem](aniversariante-mensagem.md) — Lista só status ADMITIDO; scopeAdmitidos ≠ ADMITIDO | flow | aniversariante, email
 - [recrutamentos-filtros-compactos](recrutamentos-filtros-compactos.md) — Recrutamentos: filtros compactos + período ISO | pattern | curriculo, filtro, compactos
+- [selecionados-filtros-compactos](selecionados-filtros-compactos.md) — Selecionados: filtros compactos + cards + carta oferta (paridade SGI) | pattern | curriculo, filtro, compactos, carta-oferta
 - [form-parecer-rh-modal-padrao](form-parecer-rh-modal-padrao.md) — FormParecerRh mybp + combos + MybpBoolCombobox + validarCampos | pattern | entrevista, modal, combobox
 - [resultado-integrado-filtros-modal](resultado-integrado-filtros-modal.md) — RI: filtros compactos + modal validação | pattern | entrevista, filtro, modal, combobox
 - [admissao-processo-modal-validacao](admissao-processo-modal-validacao.md) — Avulsa/Admitir: seções flat + col-md-4 + combos estáticos + validação | pattern | admissao, modal, combobox
