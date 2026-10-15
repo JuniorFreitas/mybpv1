@@ -2,6 +2,10 @@
 
 Relatórios de pentest gerados pelo agente e skill `pentest-owasp`.
 
+## API Externa v3
+
+Controles de autenticação/tenant/LGPD: [../API_V3_EXTERNA_SEGURANCA.md](../API_V3_EXTERNA_SEGURANCA.md).
+
 ## Estrutura
 
 ```

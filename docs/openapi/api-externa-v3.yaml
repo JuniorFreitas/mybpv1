@@ -1,0 +1,2199 @@
+openapi: 3.0.3
+info:
+  title: MyBP API Externa v3
+  description: |
+    # Introdução
+
+    A **API Externa v3** é a interface oficial do MyBP para sistemas externos, agents de IA
+    e integrações **lerem** dados de RH da sua empresa — com isolamento por credencial,
+    identificadores públicos (UUID) e tratamento LGPD.
+
+    Use esta API quando precisar consultar efetivo, processos de admissão, currículos,
+    vagas, CIH, medidas, relatórios (ASO, férias, aniversariantes, NPS etc.) sem acessar
+    o painel web e sem misturar dados de outros clientes.
+
+    ### O que ela oferece
+
+    - REST em JSON no prefixo `/api/v3` — **somente leitura** (GET)
+    - Auth por empresa: `client_id` + `client_secret` → Bearer (`POST /oauth/token`)
+    - Escopos (`processos:read`, `relatorios:read`, …) controlam o que o token pode acessar
+    - Paginação (`page` / `per_page`), envelopes `{ success, data, meta }` e `links` nos recursos
+    - Sem IDs numéricos internos; `empresa_id` não aparece no JSON
+
+    ### O que não faz nesta versão
+
+    - Não grava nem altera dados de negócio
+    - Não gera Excel/PDF (exports ficam no MyBP web)
+    - Não permite escolher outra empresa além da credencial
+
+    ### Para quem
+
+    Integrações ERP/BI, agents, portais parceiros e times de dados que precisam de bases
+    de RH em JSON paginado.
+
+    ---
+
+    ## Comece em 3 passos
+
+    1. Solicite ao MyBP o par `client_id` + `client_secret` da sua empresa  
+       (`php artisan api-externa:credencial {empresa_id}` — o secret aparece **apenas uma vez**).
+    2. Obtenha o token (veja o endpoint **Auth → Obter access_token** abaixo).
+    3. Chame um recurso com header `Authorization: Bearer {access_token}` e `Accept: application/json`  
+       (exemplo: `GET /processos/ativos?page=1&per_page=20`).
+
+    Renove o token perto de `expires_in` (padrão ~3600s). **Nunca** envie `client_secret` nas rotas de dados.
+
+    ## Convenções
+
+    | Tema | Regra |
+    |------|--------|
+    | IDs | Sempre `public_id` (UUID). Nunca IDs numéricos internos. |
+    | Tenant | `empresa_id` implícito no token — **não** vem no JSON. |
+    | Paginação | `page` + `per_page` (máx. 100). Meta em `meta`. |
+    | Relatórios | Itens em `data`; totais/resumo extras em `context` (quando houver). |
+    | LGPD | CPF mascarado (`***.***.***-XX`); Pix/PIS com sufixo mascarado. |
+    | Erros | Sempre JSON `{ "success": false, "msg": "..." }` (nunca HTML). |
+
+    ## Envelope de sucesso
+
+    **Item único**
+    ```json
+    { "success": true, "data": { "public_id": "3fa85f64-..." } }
+    ```
+
+    **Lista paginada**
+    ```json
+    {
+      "success": true,
+      "data": [ { "public_id": "..." } ],
+      "meta": { "current_page": 1, "per_page": 20, "total": 42, "last_page": 3 },
+      "context": { "resumo": {} }
+    }
+    ```
+    (`context` só aparece em relatórios / respostas com metadados agregados.)
+
+    ## Fluxo típico de integração (RH)
+
+    1. `GET /processos/ativos` — colaboradores admitidos  
+    2. `GET /processos/{public_id}` — detalhe (currículo, pareceres, admissão, `empresa`)  
+    3. Nested: `/etapas`, `/exames`, `/documentos`, `/ferias`, `/pre-admissao`  
+    4. Ou `GET /relatorios/efetivo` / `vencimento-asos` para visão consolidada  
+
+    ## Scopes
+
+    O token só acessa os scopes gravados na credencial. Falta de scope → **403**.
+
+    | Scope | Módulo |
+    |-------|--------|
+    | `cloud:read` | Arquivos Cloud |
+    | `fornecedores:read` | Fornecedores e anexos |
+    | `avaliacoes:read` | Avaliações de desempenho |
+    | `processos:read` | Processos / admissão |
+    | `curriculos:read` | Currículos |
+    | `fluxo:read` | Fluxo completo |
+    | `vagas:read` | Vagas abertas |
+    | `centros-custo:read` | Centros de custo |
+    | `cih:read` | CIH |
+    | `medidas:read` | Medidas administrativas |
+    | `historico:read` | Histórico |
+    | `pos-admissao:read` | Pós-admissão |
+    | `relatorios:read` | Relatórios do menu RH |
+
+    ## Códigos HTTP
+
+    | HTTP | Significado |
+    |------|-------------|
+    | 200 | OK |
+    | 401 | Token/credencial inválidos |
+    | 403 | Escopo insuficiente |
+    | 404 | Recurso inexistente **nesta** empresa |
+    | 422 | Payload inválido (`errors` nos campos) |
+    | 429 | Rate limit |
+    | 500 | Erro interno (JSON) |
+
+    ## Documentação
+
+    - Swagger UI: `/api/v3/docs`  
+    - Spec OpenAPI: `/api/v3/openapi.yaml`
+  version: 3.0.0
+  contact:
+    name: MyBP Suporte
+  license:
+    name: Uso restrito — clientes MyBP
+
+servers:
+  - url: /api/v3
+    description: Relativo ao host MyBP (ex. https://sistema.mybp.com.br/api/v3)
+  - url: "http://localhost:8000/api/v3"
+    description: Ambiente local
+
+tags:
+  - name: Auth
+    description: |
+      Client credentials (OAuth2-like). Obtenha o Bearer antes de qualquer outra chamada.
+      Rate limit dedicado no endpoint de token.
+  - name: Cloud
+    description: Metadados de pastas/arquivos do Cloud. Downloads retornam binário/stream.
+  - name: Fornecedores
+    description: Cadastro de fornecedores, serviços e anexos (metadados + download).
+  - name: Avaliacoes
+    description: Campanhas de avaliação de desempenho, feedbacks e resultado consolidado.
+  - name: Processos
+    description: |
+      Pipeline de admissão (ativos, em andamento, demitidos).
+      Payload alinhado às telas internas; IDs públicos; CPF mascarado.
+  - name: Curriculos
+    description: Currículos vinculados à empresa via processos (feedback).
+  - name: Fluxo
+    description: Visão completa do processo + mapa booleano de etapas (`fluxo:read`).
+  - name: VagasAbertas
+    description: Vagas abertas, simulados e projetos.
+  - name: CentrosCusto
+    description: Centros de custo, filiais e gestores (sem login).
+  - name: CIH
+    description: Controle de Início Homologado — listagem, tags e colaboradores.
+  - name: Medidas
+    description: Medidas administrativas (motivo só no detalhe).
+  - name: Historico
+    description: Histórico de admitidos + nested medidas/afastamentos.
+  - name: PosAdmissao
+    description: Pós-admissão e entrevista de desligamento sanitizada.
+  - name: Relatorios
+    description: |
+      Relatórios do menu RH em JSON paginado.
+      Catálogo em `GET /relatorios`; execute com `GET /relatorios/{slug}`.
+      Totais agregados em `context` (ex.: `resumo`, `graficos`, `mes`).
+
+paths:
+  /oauth/token:
+    post:
+      tags: [Auth]
+      summary: Obter access_token (client credentials)
+      description: |
+        Troca `client_id` + `client_secret` por um Personal Access Token Sanctum.
+
+        **Exemplo cURL**
+        ```bash
+        curl -s -X POST "$BASE/api/v3/oauth/token" \
+          -H "Accept: application/json" \
+          -H "Content-Type: application/json" \
+          -d '{"grant_type":"client_credentials","client_id":"'"$CLIENT_ID"'","client_secret":"'"$CLIENT_SECRET"'"}'
+        ```
+
+        Use o `access_token` no header `Authorization: Bearer ...` das demais rotas.
+        Guarde `scope` para saber o que a credencial pode acessar.
+      operationId: oauthToken
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRequest'
+            examples:
+              padrao:
+                summary: Credenciais da empresa
+                value:
+                  grant_type: client_credentials
+                  client_id: mybp_9f3c2a1b8e7d6c5b
+                  client_secret: s3cr3t_exemplo_nao_usar_em_producao
+      responses:
+        '200':
+          description: Token emitido com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              examples:
+                sucesso:
+                  summary: Token válido por 1h
+                  value:
+                    success: true
+                    access_token: "1|abcDefGhIjKlMnOpQrStUvWxYz0123456789"
+                    token_type: Bearer
+                    expires_in: 3600
+                    scope: "cloud:read processos:read curriculos:read relatorios:read"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /cloud:
+    get:
+      tags: [Cloud]
+      summary: Listar clouds da empresa
+      description: |
+        Retorna os clouds (espaços de arquivo) da empresa autenticada.
+
+        Campos úteis: `public_id`, `nome`, `slug`, `ativo`, `usuarios_count`, `itens_count`.
+
+        **Exemplo:** `GET /cloud?ativo=true&q=rh&page=1&per_page=20`
+      operationId: cloudIndex
+      security:
+        - bearerAuth: []
+        - oauth2: [cloud:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: ativo
+          in: query
+          schema: { type: boolean }
+          description: Filtra clouds ativos/inativos
+          example: true
+        - name: q
+          in: query
+          schema: { type: string }
+          description: Busca por nome ou slug
+          example: documentos
+      responses:
+        '200':
+          description: Lista paginada de clouds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCloud'
+              examples:
+                exemplo:
+                  value:
+                    success: true
+                    data:
+                      - public_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                        nome: Documentos RH
+                        slug: documentos-rh
+                        ativo: true
+                        usuarios_count: 12
+                        itens_count: 340
+                        links:
+                          self: /api/v3/cloud/3fa85f64-5717-4562-b3fc-2c963f66afa6
+                          itens: /api/v3/cloud/3fa85f64-5717-4562-b3fc-2c963f66afa6/itens
+                    meta:
+                      current_page: 1
+                      per_page: 20
+                      total: 1
+                      last_page: 1
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /cloud/{publicId}:
+    get:
+      tags: [Cloud]
+      summary: Detalhe do cloud
+      description: Membros (admin/grupo) e grupos ativos da empresa.
+      security:
+        - bearerAuth: []
+        - oauth2: [cloud:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cloud/{publicId}/buscar:
+    get:
+      tags: [Cloud]
+      summary: Buscar itens no cloud
+      description: Busca global por label (mín. 2 caracteres). Filtro opcional `tipo`.
+      security:
+        - bearerAuth: []
+        - oauth2: [cloud:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 2 }
+        - name: tipo
+          in: query
+          schema: { type: string, enum: [pasta, arquivo] }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+        '422':
+          $ref: '#/components/responses/Error'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cloud/{publicId}/pastas:
+    get:
+      tags: [Cloud]
+      summary: Listar pastas (árvore)
+      description: Somente pastas com contagem de filhos. Use `pasta_public_id` para descer.
+      security:
+        - bearerAuth: []
+        - oauth2: [cloud:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - name: pasta_public_id
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cloud/{publicId}/resolver-path:
+    get:
+      tags: [Cloud]
+      summary: Resolver path por slugs
+      description: Ex. `path=documentos/rh` → pasta_public_id + breadcrumb.
+      security:
+        - bearerAuth: []
+        - oauth2: [cloud:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - name: path
+          in: query
+          schema: { type: string }
+          example: documentos/rh
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cloud/{publicId}/itens:
+    get:
+      tags: [Cloud]
+      summary: Itens/metadados do cloud
+      description: |
+        Navegação na raiz ou em pasta. Filtros: tipo, aprovado, revisado, q, recursivo.
+        Cada item traz `links`.
+      security:
+        - bearerAuth: []
+        - oauth2: [cloud:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: pasta_public_id
+          in: query
+          schema: { type: string, format: uuid }
+        - name: tipo
+          in: query
+          schema: { type: string, enum: [pasta, arquivo] }
+        - name: aprovado
+          in: query
+          schema: { type: boolean }
+        - name: revisado
+          in: query
+          schema: { type: boolean }
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: recursivo
+          in: query
+          schema: { type: boolean }
+          description: Inclui descendentes (com ou sem pasta_public_id)
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cloud/{publicId}/itens/{itemPublicId}:
+    get:
+      tags: [Cloud]
+      summary: Detalhe do item + breadcrumb
+      description: Inclui `caminho` e `path` (slugs) além do payload completo do item.
+      security:
+        - bearerAuth: []
+        - oauth2: [cloud:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - $ref: '#/components/parameters/itemPublicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cloud/{publicId}/itens/{itemPublicId}/download:
+    get:
+      tags: [Cloud]
+      summary: Download do arquivo do item
+      security:
+        - bearerAuth: []
+        - oauth2: [cloud:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - $ref: '#/components/parameters/itemPublicId'
+      responses:
+        '200':
+          description: Stream do arquivo
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cloud/{publicId}/itens/{itemPublicId}/arquivo:
+    get:
+      tags: [Cloud]
+      summary: Preview/visualização do arquivo
+      security:
+        - bearerAuth: []
+        - oauth2: [cloud:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - $ref: '#/components/parameters/itemPublicId'
+      responses:
+        '200':
+          description: Conteúdo para visualização
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cloud/{publicId}/itens/{itemPublicId}/thumb:
+    get:
+      tags: [Cloud]
+      summary: Miniatura (quando imagem) ou arquivo
+      security:
+        - bearerAuth: []
+        - oauth2: [cloud:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - $ref: '#/components/parameters/itemPublicId'
+      responses:
+        '200':
+          description: Thumb ou arquivo
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /fornecedores:
+    get:
+      tags: [Fornecedores]
+      summary: Listar fornecedores
+      description: |
+        Cadastro, endereco_completo, telefones, serviços e links.
+        Filtros: q, tipo, tipo_pessoa, ativo, uf, tipo_servico_public_id.
+      security:
+        - bearerAuth: []
+        - oauth2: [fornecedores:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: ativo
+          in: query
+          schema: { type: boolean }
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: tipo
+          in: query
+          schema: { type: string }
+        - name: tipo_pessoa
+          in: query
+          schema: { type: string }
+        - name: uf
+          in: query
+          schema: { type: string }
+        - name: tipo_servico_public_id
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+
+  /fornecedores/buscar:
+    get:
+      tags: [Fornecedores]
+      summary: Buscar fornecedores
+      security:
+        - bearerAuth: []
+        - oauth2: [fornecedores:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 2 }
+        - name: ativo
+          in: query
+          schema: { type: boolean }
+        - name: tipo
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+        '422':
+          $ref: '#/components/responses/Error'
+
+  /fornecedores/tipos-servico:
+    get:
+      tags: [Fornecedores]
+      summary: Catálogo de tipos de serviço
+      security:
+        - bearerAuth: []
+        - oauth2: [fornecedores:read]
+      parameters:
+        - name: ativo
+          in: query
+          schema: { type: boolean, default: true }
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+
+  /fornecedores/{publicId}:
+    get:
+      tags: [Fornecedores]
+      summary: Detalhe do fornecedor (CPF mascarado)
+      description: Detalhe + anexos/serviços com links de download autenticados.
+      security:
+        - bearerAuth: []
+        - oauth2: [fornecedores:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /fornecedores/{publicId}/servicos:
+    get:
+      tags: [Fornecedores]
+      summary: Serviços do fornecedor
+      security:
+        - bearerAuth: []
+        - oauth2: [fornecedores:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - name: ativo
+          in: query
+          schema: { type: boolean }
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: tipo_servico_public_id
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /fornecedores/{publicId}/servicos/{servicoPublicId}:
+    get:
+      tags: [Fornecedores]
+      summary: Detalhe do serviço
+      security:
+        - bearerAuth: []
+        - oauth2: [fornecedores:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - name: servicoPublicId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /fornecedores/{publicId}/anexos/{arquivoPublicId}/download:
+    get:
+      tags: [Fornecedores]
+      summary: Download anexo do fornecedor
+      security:
+        - bearerAuth: []
+        - oauth2: [fornecedores:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - $ref: '#/components/parameters/arquivoPublicId'
+      responses:
+        '200':
+          description: Stream do arquivo
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /fornecedores/{publicId}/anexos/{arquivoPublicId}/arquivo:
+    get:
+      tags: [Fornecedores]
+      summary: Preview anexo do fornecedor
+      security:
+        - bearerAuth: []
+        - oauth2: [fornecedores:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - $ref: '#/components/parameters/arquivoPublicId'
+      responses:
+        '200':
+          description: Conteúdo para visualização
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /fornecedores/{publicId}/servicos/{servicoPublicId}/anexos/{arquivoPublicId}/download:
+    get:
+      tags: [Fornecedores]
+      summary: Download anexo do serviço
+      security:
+        - bearerAuth: []
+        - oauth2: [fornecedores:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - name: servicoPublicId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/arquivoPublicId'
+      responses:
+        '200':
+          description: Stream do arquivo
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /fornecedores/{publicId}/servicos/{servicoPublicId}/anexos/{arquivoPublicId}/arquivo:
+    get:
+      tags: [Fornecedores]
+      summary: Preview anexo do serviço
+      security:
+        - bearerAuth: []
+        - oauth2: [fornecedores:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - name: servicoPublicId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/arquivoPublicId'
+      responses:
+        '200':
+          description: Conteúdo para visualização
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /avaliacoes:
+    get:
+      tags: [Avaliacoes]
+      summary: Listar campanhas de avaliação de desempenho
+      description: Tipo, fluxo_etapas, contagens de feedbacks e links.
+      security:
+        - bearerAuth: []
+        - oauth2: [avaliacoes:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: ativo
+          in: query
+          schema: { type: boolean }
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: ano_avaliacao
+          in: query
+          schema: { type: integer }
+        - name: tipo_pj
+          in: query
+          schema: { type: boolean }
+        - name: avaliacao_tipo_public_id
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+
+  /avaliacoes/tipos:
+    get:
+      tags: [Avaliacoes]
+      summary: Catálogo de tipos de avaliação
+      security:
+        - bearerAuth: []
+        - oauth2: [avaliacoes:read]
+      parameters:
+        - name: ativo
+          in: query
+          schema: { type: boolean, default: true }
+        - name: tipo_pj
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+
+  /avaliacoes/tipos-avaliador:
+    get:
+      tags: [Avaliacoes]
+      summary: Catálogo de tipos de avaliador
+      security:
+        - bearerAuth: []
+        - oauth2: [avaliacoes:read]
+      parameters:
+        - name: ativo
+          in: query
+          schema: { type: boolean, default: true }
+        - name: tipo_pj
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+
+  /avaliacoes/tipos/{tipoPublicId}/topicos:
+    get:
+      tags: [Avaliacoes]
+      summary: Árvore de tópicos do tipo
+      security:
+        - bearerAuth: []
+        - oauth2: [avaliacoes:read]
+      parameters:
+        - name: tipoPublicId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: ativo
+          in: query
+          schema: { type: boolean, default: true }
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /avaliacoes/{publicId}:
+    get:
+      tags: [Avaliacoes]
+      summary: Detalhe da campanha
+      description: Inclui fluxo bruto, fluxo_etapas e contagens.
+      security:
+        - bearerAuth: []
+        - oauth2: [avaliacoes:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /avaliacoes/{publicId}/feedbacks:
+    get:
+      tags: [Avaliacoes]
+      summary: Feedbacks da campanha
+      description: Nomes de colaborador/avaliador, tipo de avaliador e links (sem comentário).
+      security:
+        - bearerAuth: []
+        - oauth2: [avaliacoes:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: origem_feedback
+          in: query
+          schema: { type: string }
+        - name: principal
+          in: query
+          schema: { type: boolean }
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: funcionario_public_id
+          in: query
+          schema: { type: string, format: uuid }
+        - name: avaliador_public_id
+          in: query
+          schema: { type: string, format: uuid }
+        - name: tipo_avaliador_public_id
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /avaliacoes/{publicId}/feedbacks/{feedbackPublicId}:
+    get:
+      tags: [Avaliacoes]
+      summary: Detalhe do feedback (respostas e comentário)
+      security:
+        - bearerAuth: []
+        - oauth2: [avaliacoes:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - name: feedbackPublicId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /avaliacoes/{publicId}/feedbacks/{feedbackPublicId}/resultado:
+    get:
+      tags: [Avaliacoes]
+      summary: Resultado consolidado (médias, etapas, PDI)
+      security:
+        - bearerAuth: []
+        - oauth2: [avaliacoes:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - name: feedbackPublicId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /avaliacoes/{publicId}/colaboradores/{funcionarioPublicId}/feedbacks:
+    get:
+      tags: [Avaliacoes]
+      summary: Fluxo completo do colaborador na campanha
+      security:
+        - bearerAuth: []
+        - oauth2: [avaliacoes:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - name: funcionarioPublicId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /processos/ativos:
+    get:
+      tags: [Processos]
+      summary: Colaboradores admitidos e ativos (sem demissão)
+      description: |
+        Payload alinhado à listagem de Admissão. CPF/Pix/PIS mascarados.
+        Inclui `curriculo`, `admissao`, `empresa`, pareceres resumidos e `links`.
+
+        **Como usar**
+        ```
+        GET /processos/ativos?q=Maria&uf=MA&page=1&per_page=20
+        GET /processos/ativos?empresa_public_id={uuid}&tipo_admissao=CLT
+        GET /processos/ativos?data_admissao_de=2026-01-01&data_admissao_ate=2026-12-31
+        ```
+
+        Em seguida: `GET /processos/{public_id}` para o detalhe completo.
+      operationId: processosAtivos
+      security:
+        - bearerAuth: []
+        - oauth2: [processos:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - $ref: '#/components/parameters/processoQ'
+        - $ref: '#/components/parameters/processoCpf'
+        - $ref: '#/components/parameters/processoCliente'
+        - $ref: '#/components/parameters/processoVagaAberta'
+        - $ref: '#/components/parameters/processoUf'
+        - name: tipo_admissao
+          in: query
+          schema: { type: string }
+          example: CLT
+        - name: data_admissao_de
+          in: query
+          schema: { type: string, format: date }
+          example: '2026-01-01'
+        - name: data_admissao_ate
+          in: query
+          schema: { type: string, format: date }
+          example: '2026-12-31'
+      responses:
+        '200':
+          description: Lista paginada de processos ativos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProcesso'
+              examples:
+                exemplo:
+                  $ref: '#/components/examples/ProcessosAtivosResponse'
+
+  /processos/em-andamento:
+    get:
+      tags: [Processos]
+      summary: Processos de admissão em andamento
+      description: Com resultado integrado e ainda não admitidos (sem demissão).
+      security:
+        - bearerAuth: []
+        - oauth2: [processos:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - $ref: '#/components/parameters/processoQ'
+        - $ref: '#/components/parameters/processoCpf'
+        - $ref: '#/components/parameters/processoCliente'
+        - $ref: '#/components/parameters/processoVagaAberta'
+        - $ref: '#/components/parameters/processoUf'
+        - name: status_admissao
+          in: query
+          schema: { type: string }
+        - name: parecer_de
+          in: query
+          schema: { type: string, format: date }
+        - name: parecer_ate
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+
+  /processos/demitidos:
+    get:
+      tags: [Processos]
+      summary: Processos com demissão
+      security:
+        - bearerAuth: []
+        - oauth2: [processos:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - $ref: '#/components/parameters/processoQ'
+        - $ref: '#/components/parameters/processoCliente'
+        - $ref: '#/components/parameters/processoUf'
+        - name: data_desmobilizacao_de
+          in: query
+          schema: { type: string, format: date }
+        - name: data_desmobilizacao_ate
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+
+  /processos/buscar:
+    get:
+      tags: [Processos]
+      summary: Buscar processos por nome/CPF
+      security:
+        - bearerAuth: []
+        - oauth2: [processos:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 2 }
+        - $ref: '#/components/parameters/processoCliente'
+        - $ref: '#/components/parameters/processoUf'
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+        '422':
+          $ref: '#/components/responses/Error'
+
+  /processos/{publicId}:
+    get:
+      tags: [Processos]
+      summary: Detalhe de um processo (feedback)
+      description: |
+        Equivalente ao `edit` da Admissão + links nested (etapas, exames,
+        documentos, férias, pré-admissão, fluxo).
+      security:
+        - bearerAuth: []
+        - oauth2: [processos:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /processos/{publicId}/etapas:
+    get:
+      tags: [Processos]
+      summary: Mapa de etapas do fluxo RH
+      security:
+        - bearerAuth: []
+        - oauth2: [processos:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /processos/{publicId}/exames:
+    get:
+      tags: [Processos]
+      summary: Exames/ASO do processo
+      security:
+        - bearerAuth: []
+        - oauth2: [processos:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /processos/{publicId}/documentos:
+    get:
+      tags: [Processos]
+      summary: Documentos do currículo (metadados, sem download)
+      security:
+        - bearerAuth: []
+        - oauth2: [processos:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /processos/{publicId}/ferias:
+    get:
+      tags: [Processos]
+      summary: Férias adquiridas da admissão
+      security:
+        - bearerAuth: []
+        - oauth2: [processos:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /processos/{publicId}/pre-admissao:
+    get:
+      tags: [Processos]
+      summary: Registro de pré-admissão
+      security:
+        - bearerAuth: []
+        - oauth2: [processos:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /curriculos:
+    get:
+      tags: [Curriculos]
+      summary: Currículos vinculados à empresa (CPF mascarado)
+      description: Contagens, último feedback e links. Filtros de recrutamento.
+      security:
+        - bearerAuth: []
+        - oauth2: [curriculos:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: cpf
+          in: query
+          schema: { type: string }
+        - name: uf
+          in: query
+          schema: { type: string }
+        - name: pcd
+          in: query
+          schema: { type: boolean }
+        - name: lido
+          in: query
+          schema: { type: boolean }
+        - name: vaga_public_id
+          in: query
+          schema: { type: string, format: uuid }
+        - name: status
+          in: query
+          schema: { type: string }
+          description: Status do feedback vinculado
+        - name: selecionado
+          in: query
+          schema: { type: string }
+        - name: updated_de
+          in: query
+          schema: { type: string, format: date }
+        - name: updated_ate
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+
+  /curriculos/buscar:
+    get:
+      tags: [Curriculos]
+      summary: Buscar currículos por nome/CPF
+      security:
+        - bearerAuth: []
+        - oauth2: [curriculos:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 2 }
+        - name: uf
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+        '422':
+          $ref: '#/components/responses/Error'
+
+  /curriculos/{publicId}:
+    get:
+      tags: [Curriculos]
+      summary: Detalhe do currículo
+      description: |
+        Endereço, formação, escolaridade, telefones, dependentes (CPF mascarado),
+        feedbacks resumidos, contagens e links nested.
+      security:
+        - bearerAuth: []
+        - oauth2: [curriculos:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /curriculos/{publicId}/feedbacks:
+    get:
+      tags: [Curriculos]
+      summary: Feedbacks do currículo
+      security:
+        - bearerAuth: []
+        - oauth2: [curriculos:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: selecionado
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /curriculos/{publicId}/documentos:
+    get:
+      tags: [Curriculos]
+      summary: Documentos do currículo (metadados, sem download)
+      security:
+        - bearerAuth: []
+        - oauth2: [curriculos:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /curriculos/{publicId}/experiencias:
+    get:
+      tags: [Curriculos]
+      summary: Experiências profissionais
+      security:
+        - bearerAuth: []
+        - oauth2: [curriculos:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /fluxo/{publicId}:
+    get:
+      tags: [Fluxo]
+      summary: Fluxo agregado currículo → pós-admissão
+      description: |
+        Mesmo payload enriquecido do detalhe de processo (dados da Admissão)
+        mais o mapa `etapas`: currículo, parecer RH, resultado integrado,
+        pré-admissão, admissão, pós-admissão (quando ADMITIDO) e demissão.
+      security:
+        - bearerAuth: []
+        - oauth2: [fluxo:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /vagas-abertas:
+    get:
+      tags: [VagasAbertas]
+      summary: Listar vagas abertas
+      security:
+        - bearerAuth: []
+        - oauth2: [vagas:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: ativo
+          in: query
+          schema: { type: boolean }
+        - name: uf
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+
+  /vagas-abertas/buscar:
+    get:
+      tags: [VagasAbertas]
+      summary: Buscar vagas abertas
+      security:
+        - bearerAuth: []
+        - oauth2: [vagas:read]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 2 }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+        '422':
+          $ref: '#/components/responses/Error'
+
+  /vagas-abertas/{publicId}:
+    get:
+      tags: [VagasAbertas]
+      summary: Detalhe da vaga aberta
+      security:
+        - bearerAuth: []
+        - oauth2: [vagas:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /vagas-abertas/{publicId}/simulados:
+    get:
+      tags: [VagasAbertas]
+      summary: Simulados da vaga aberta
+      security:
+        - bearerAuth: []
+        - oauth2: [vagas:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /vagas-abertas/{publicId}/projetos:
+    get:
+      tags: [VagasAbertas]
+      summary: Projetos vinculados
+      security:
+        - bearerAuth: []
+        - oauth2: [vagas:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /centros-custo:
+    get:
+      tags: [CentrosCusto]
+      summary: Listar centros de custo
+      security:
+        - bearerAuth: []
+        - oauth2: [centros-custo:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: ativo
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+
+  /centros-custo/{publicId}:
+    get:
+      tags: [CentrosCusto]
+      summary: Detalhe do centro de custo
+      security:
+        - bearerAuth: []
+        - oauth2: [centros-custo:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /centros-custo/{publicId}/filiais:
+    get:
+      tags: [CentrosCusto]
+      summary: Filiais do centro de custo
+      security:
+        - bearerAuth: []
+        - oauth2: [centros-custo:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /centros-custo/{publicId}/gestores:
+    get:
+      tags: [CentrosCusto]
+      summary: Gestores do centro de custo
+      security:
+        - bearerAuth: []
+        - oauth2: [centros-custo:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cih:
+    get:
+      tags: [CIH]
+      summary: Listar CIHs
+      security:
+        - bearerAuth: []
+        - oauth2: [cih:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: q
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+
+  /cih/tags:
+    get:
+      tags: [CIH]
+      summary: Catálogo de tags CIH
+      security:
+        - bearerAuth: []
+        - oauth2: [cih:read]
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+
+  /cih/{publicId}:
+    get:
+      tags: [CIH]
+      summary: Detalhe do CIH
+      security:
+        - bearerAuth: []
+        - oauth2: [cih:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /cih/{publicId}/colaboradores:
+    get:
+      tags: [CIH]
+      summary: Colaboradores do CIH
+      security:
+        - bearerAuth: []
+        - oauth2: [cih:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /medidas-administrativas:
+    get:
+      tags: [Medidas]
+      summary: Listar medidas administrativas
+      security:
+        - bearerAuth: []
+        - oauth2: [medidas:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: tipo
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+
+  /medidas-administrativas/{publicId}:
+    get:
+      tags: [Medidas]
+      summary: Detalhe da medida
+      security:
+        - bearerAuth: []
+        - oauth2: [medidas:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /historico:
+    get:
+      tags: [Historico]
+      summary: Listar histórico de admitidos
+      security:
+        - bearerAuth: []
+        - oauth2: [historico:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: demitido
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+
+  /historico/{publicId}:
+    get:
+      tags: [Historico]
+      summary: Detalhe do histórico (payload de admissão)
+      security:
+        - bearerAuth: []
+        - oauth2: [historico:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /historico/{publicId}/medidas:
+    get:
+      tags: [Historico]
+      summary: Medidas do colaborador
+      security:
+        - bearerAuth: []
+        - oauth2: [historico:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /historico/{publicId}/afastamentos:
+    get:
+      tags: [Historico]
+      summary: Afastamentos do colaborador
+      security:
+        - bearerAuth: []
+        - oauth2: [historico:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /pos-admissao:
+    get:
+      tags: [PosAdmissao]
+      summary: Listar pós-admissão
+      security:
+        - bearerAuth: []
+        - oauth2: [pos-admissao:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: demitido
+          in: query
+          schema: { type: boolean }
+        - name: com_entrevista
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+
+  /pos-admissao/{publicId}:
+    get:
+      tags: [PosAdmissao]
+      summary: Detalhe pós-admissão
+      security:
+        - bearerAuth: []
+        - oauth2: [pos-admissao:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /pos-admissao/{publicId}/entrevista-desligamento:
+    get:
+      tags: [PosAdmissao]
+      summary: Entrevista de desligamento (sanitizada)
+      security:
+        - bearerAuth: []
+        - oauth2: [pos-admissao:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /relatorios:
+    get:
+      tags: [Relatorios]
+      summary: Catálogo de relatórios disponíveis
+      description: |
+        Lista os slugs liberados para a credencial (`relatorios:read`).
+        Cada item traz `filtros` sugeridos e `links.self` para execução.
+
+        **Fluxo:** `GET /relatorios` → escolha o `slug` → `GET /relatorios/{slug}?page=1`
+      operationId: relatoriosCatalogo
+      security:
+        - bearerAuth: []
+        - oauth2: [relatorios:read]
+      responses:
+        '200':
+          description: Catálogo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RelatorioCatalogItem'
+              examples:
+                catalogo:
+                  $ref: '#/components/examples/RelatoriosCatalogoResponse'
+
+  /relatorios/{slug}:
+    get:
+      tags: [Relatorios]
+      summary: Executar relatório (JSON paginado)
+      description: |
+        Executa o relatório e devolve linhas em `data` + paginação em `meta`.
+        Agregados (resumo, gráficos, mês) vêm em `context` quando aplicável.
+
+        | Slug | Uso rápido |
+        |------|------------|
+        | `efetivo` | `?q=Ana&cargo=Operador` |
+        | `centro-custo` | totais por CC |
+        | `vencimento-asos` | `?somente_alerta=true` |
+        | `vencimento-treinamentos` | `?data_vencimento_de=2026-01-01&data_vencimento_ate=2026-03-31` |
+        | `vencimento-ferias` | avos / períodos |
+        | `ferias` | `?status_ferias=aguardando` |
+        | `medidas-administrativas` | `context.graficos` |
+        | `avaliacao-experiencia` | `context.resumo` |
+        | `aniversariantes` | `?mes=10` |
+        | `nps` | `?data_de=2026-01-01&data_ate=2026-12-31` |
+      operationId: relatoriosExecutar
+      security:
+        - bearerAuth: []
+        - oauth2: [relatorios:read]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - efetivo
+              - centro-custo
+              - vencimento-asos
+              - vencimento-treinamentos
+              - vencimento-ferias
+              - ferias
+              - medidas-administrativas
+              - avaliacao-experiencia
+              - aniversariantes
+              - nps
+          example: efetivo
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: q
+          in: query
+          schema: { type: string }
+          description: Busca por nome (quando o relatório suportar)
+          example: Maria
+        - name: centro_custo_public_id
+          in: query
+          schema: { type: string, format: uuid }
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+        - name: mes
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 12 }
+          description: Obrigatório/útil em `aniversariantes` (1–12)
+          example: 10
+        - name: somente_alerta
+          in: query
+          schema: { type: boolean }
+          description: Em `vencimento-asos`, restringe a itens em alerta
+          example: true
+        - name: cargo
+          in: query
+          schema: { type: string }
+        - name: tipo_admissao
+          in: query
+          schema: { type: string }
+        - name: status_ferias
+          in: query
+          schema: { type: string }
+          example: aguardando
+        - name: data_admissao_de
+          in: query
+          schema: { type: string, format: date }
+        - name: data_admissao_ate
+          in: query
+          schema: { type: string, format: date }
+        - name: data_vencimento_de
+          in: query
+          schema: { type: string, format: date }
+        - name: data_vencimento_ate
+          in: query
+          schema: { type: string, format: date }
+        - name: data_de
+          in: query
+          schema: { type: string, format: date }
+          description: Filtro de data (NPS)
+        - name: data_ate
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Relatório paginado (itens em data; extras em context)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRelatorio'
+              examples:
+                efetivo:
+                  $ref: '#/components/examples/RelatorioEfetivoResponse'
+                aniversariantes:
+                  $ref: '#/components/examples/RelatorioAniversariantesResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+      description: |
+        Cole o `access_token` retornado por `POST /oauth/token`.
+        Formato do header: `Authorization: Bearer {access_token}`
+    oauth2:
+      type: oauth2
+      description: Fluxo client_credentials (mesmo endpoint de token)
+      flows:
+        clientCredentials:
+          tokenUrl: /api/v3/oauth/token
+          scopes:
+            cloud:read: Leitura de Cloud (metadados e download)
+            fornecedores:read: Leitura de fornecedores e anexos
+            avaliacoes:read: Leitura de avaliações de desempenho
+            processos:read: Processos ativos, em andamento e demitidos
+            curriculos:read: Leitura de currículos
+            fluxo:read: Fluxo completo até pós-admissão
+            vagas:read: Vagas abertas, simulados e projetos
+            centros-custo:read: Centros de custo, filiais e gestores
+            cih:read: CIH
+            medidas:read: Medidas administrativas
+            historico:read: Histórico de admissão
+            pos-admissao:read: Pós-admissão e entrevista de desligamento
+            relatorios:read: Relatórios do menu RH (somente leitura)
+
+  schemas:
+    TokenRequest:
+      type: object
+      required: [grant_type, client_id, client_secret]
+      properties:
+        grant_type:
+          type: string
+          enum: [client_credentials]
+          example: client_credentials
+        client_id:
+          type: string
+          example: mybp_9f3c2a1b8e7d6c5b
+        client_secret:
+          type: string
+          format: password
+          example: s3cr3t_exemplo
+    TokenResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        access_token:
+          type: string
+          example: "1|abcDefGhIjKlMnOpQrStUvWxYz0123456789"
+        token_type: { type: string, example: Bearer }
+        expires_in: { type: integer, example: 3600, description: Segundos até expirar }
+        scope:
+          type: string
+          example: "cloud:read processos:read relatorios:read"
+    Meta:
+      type: object
+      properties:
+        current_page: { type: integer, example: 1 }
+        per_page: { type: integer, example: 20 }
+        total: { type: integer, example: 42 }
+        last_page: { type: integer, example: 3 }
+    ErrorBody:
+      type: object
+      properties:
+        success: { type: boolean, example: false }
+        msg: { type: string, example: Não encontrado }
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items: { type: string }
+          description: Presente em 422
+    Links:
+      type: object
+      additionalProperties: { type: string }
+      example:
+        self: /api/v3/processos/3fa85f64-5717-4562-b3fc-2c963f66afa6
+        etapas: /api/v3/processos/3fa85f64-5717-4562-b3fc-2c963f66afa6/etapas
+    EmpresaResumo:
+      type: object
+      description: Dados da empresa do processo (única chave — sem duplicar `cliente`)
+      properties:
+        public_id: { type: string, format: uuid }
+        razao_social: { type: string, example: ACME Serviços Ltda }
+        nome: { type: string, example: ACME }
+        cnpj: { type: string, example: "12.345.678/0001-99" }
+        cpf: { type: string, nullable: true, example: null }
+        area:
+          type: object
+          nullable: true
+          properties:
+            public_id: { type: string, format: uuid }
+            nome: { type: string, example: Operações }
+    CurriculoResumo:
+      type: object
+      properties:
+        public_id: { type: string, format: uuid }
+        nome: { type: string, example: Maria Silva }
+        cpf: { type: string, example: "***.***.***-99", description: Sempre mascarado }
+        email: { type: string, example: maria@example.com }
+    AdmissaoResumo:
+      type: object
+      properties:
+        status: { type: string, example: ADMITIDO }
+        cargo: { type: string, example: Operador }
+        tipo_admissao: { type: string, example: CLT }
+        data_admissao: { type: string, example: "2026-01-10" }
+        matricula: { type: string, example: M001 }
+    ProcessoListItem:
+      type: object
+      properties:
+        public_id: { type: string, format: uuid }
+        status: { type: string }
+        curriculo: { $ref: '#/components/schemas/CurriculoResumo' }
+        admissao: { $ref: '#/components/schemas/AdmissaoResumo' }
+        empresa: { $ref: '#/components/schemas/EmpresaResumo' }
+        links: { $ref: '#/components/schemas/Links' }
+    PaginatedProcesso:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/ProcessoListItem' }
+        meta: { $ref: '#/components/schemas/Meta' }
+    CloudItem:
+      type: object
+      properties:
+        public_id: { type: string, format: uuid }
+        nome: { type: string }
+        slug: { type: string }
+        ativo: { type: boolean }
+        usuarios_count: { type: integer }
+        itens_count: { type: integer }
+        links: { $ref: '#/components/schemas/Links' }
+    PaginatedCloud:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/CloudItem' }
+        meta: { $ref: '#/components/schemas/Meta' }
+    RelatorioCatalogItem:
+      type: object
+      properties:
+        slug: { type: string, example: efetivo }
+        nome: { type: string, example: Efetivo }
+        descricao: { type: string }
+        filtros:
+          type: array
+          items: { type: string }
+          example: [q, cargo, centro_custo_public_id]
+        links:
+          type: object
+          properties:
+            self: { type: string, example: /api/v3/relatorios/efetivo }
+    RelatorioEfetivoItem:
+      type: object
+      properties:
+        processo_public_id: { type: string, format: uuid }
+        nome: { type: string, example: Ana Relatorio }
+        cpf: { type: string, example: "***.***.***-88" }
+        cargo: { type: string, example: Analista }
+        tipo_admissao: { type: string, example: CLT }
+        data_admissao: { type: string, example: "2026-02-01" }
+        centro_custo: { type: string, example: CC Operações }
+        centro_custo_public_id: { type: string, format: uuid }
+        links: { $ref: '#/components/schemas/Links' }
+    PaginatedRelatorio:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        data:
+          type: array
+          items: { type: object }
+        meta: { $ref: '#/components/schemas/Meta' }
+        context:
+          type: object
+          description: Presente quando o relatório agrega totais/resumo
+          additionalProperties: true
+
+  examples:
+    ProcessosAtivosResponse:
+      summary: Um admitido com currículo e empresa
+      value:
+        success: true
+        data:
+          - public_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+            status: Admitido
+            curriculo:
+              public_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+              nome: Maria Silva
+              cpf: "***.***.***-99"
+              email: maria@example.com
+            admissao:
+              status: ADMITIDO
+              cargo: Operador
+              tipo_admissao: CLT
+              data_admissao: "2026-01-10"
+              matricula: M001
+            empresa:
+              public_id: 550e8400-e29b-41d4-a716-446655440000
+              razao_social: ACME Serviços Ltda
+              nome: ACME
+              cnpj: "12.345.678/0001-99"
+              area:
+                public_id: 6ba7b810-9dad-11d1-80b4-00c04fd430c8
+                nome: Operações
+            links:
+              self: /api/v3/processos/3fa85f64-5717-4562-b3fc-2c963f66afa6
+              etapas: /api/v3/processos/3fa85f64-5717-4562-b3fc-2c963f66afa6/etapas
+        meta:
+          current_page: 1
+          per_page: 20
+          total: 1
+          last_page: 1
+    RelatoriosCatalogoResponse:
+      summary: Catálogo (trecho)
+      value:
+        success: true
+        data:
+          - slug: efetivo
+            nome: Efetivo
+            descricao: Colaboradores admitidos (sem demissão)
+            filtros: [q, cargo, tipo_admissao, centro_custo_public_id, data_admissao_de, data_admissao_ate]
+            links: { self: /api/v3/relatorios/efetivo }
+          - slug: vencimento-asos
+            nome: Vencimento de ASO
+            descricao: Último ASO atual/aprovado e dias para vencer
+            filtros: [q, centro_custo_public_id, somente_alerta]
+            links: { self: /api/v3/relatorios/vencimento-asos }
+          - slug: aniversariantes
+            nome: Aniversariantes
+            descricao: Admitidos aniversariantes do mês
+            filtros: [mes]
+            links: { self: /api/v3/relatorios/aniversariantes }
+    RelatorioEfetivoResponse:
+      summary: Relatório efetivo
+      value:
+        success: true
+        data:
+          - processo_public_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+            nome: Ana Relatorio
+            cpf: "***.***.***-88"
+            cargo: Analista
+            tipo_admissao: CLT
+            data_admissao: "2026-02-01"
+            centro_custo: CC Relatorio
+            centro_custo_public_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+            links:
+              processo: /api/v3/processos/3fa85f64-5717-4562-b3fc-2c963f66afa6
+              historico: /api/v3/historico/3fa85f64-5717-4562-b3fc-2c963f66afa6
+        meta:
+          current_page: 1
+          per_page: 20
+          total: 1
+          last_page: 1
+    RelatorioAniversariantesResponse:
+      summary: Aniversariantes de outubro
+      value:
+        success: true
+        data:
+          - processo_public_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+            curriculo_public_id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+            nome: Ana Relatorio
+            email: ana@example.com
+            aniversario: "15/10"
+            hoje: false
+            links:
+              processo: /api/v3/processos/3fa85f64-5717-4562-b3fc-2c963f66afa6
+        meta:
+          current_page: 1
+          per_page: 20
+          total: 1
+          last_page: 1
+        context:
+          mes: 10
+
+  parameters:
+    publicId:
+      name: publicId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Identificador público UUID (nunca use ID numérico interno)
+      example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+    itemPublicId:
+      name: itemPublicId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: public_id do item (pasta ou arquivo) do Cloud
+      example: 8f14e45f-ceea-467a-9a92-575a3e6f5524
+    arquivoPublicId:
+      name: arquivoPublicId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: public_id do arquivo/anexo
+      example: 9b74c989-7572-4859-88c0-8f5b2e8b1c2a
+    processoQ:
+      name: q
+      in: query
+      schema: { type: string }
+      description: Busca por nome ou CPF (parcial)
+      example: Maria
+    processoCpf:
+      name: cpf
+      in: query
+      schema: { type: string }
+      description: CPF (com ou sem máscara); busca por dígitos
+      example: "12345678999"
+    processoCliente:
+      name: empresa_public_id
+      in: query
+      schema: { type: string, format: uuid }
+      description: Filtra pela empresa (cliente) do processo
+      example: 550e8400-e29b-41d4-a716-446655440000
+    processoVagaAberta:
+      name: vaga_aberta_public_id
+      in: query
+      schema: { type: string, format: uuid }
+      example: 6ba7b810-9dad-11d1-80b4-00c04fd430c8
+    processoUf:
+      name: uf
+      in: query
+      schema: { type: string, maxLength: 2 }
+      description: UF do município da vaga/currículo
+      example: MA
+    page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+      description: Página (1-based)
+      example: 1
+    per_page:
+      name: per_page
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+      description: Itens por página (máximo 100)
+      example: 20
+
+  responses:
+    Ok:
+      description: Sucesso (objeto único em `data`)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success: { type: boolean, example: true }
+              data: { type: object }
+          examples:
+            generico:
+              value:
+                success: true
+                data:
+                  public_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+    Paginated:
+      description: Lista paginada (`data` + `meta`; opcionalmente `context`)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success: { type: boolean, example: true }
+              data:
+                type: array
+                items: { type: object }
+              meta: { $ref: '#/components/schemas/Meta' }
+              context:
+                type: object
+                additionalProperties: true
+          examples:
+            lista:
+              value:
+                success: true
+                data: []
+                meta:
+                  current_page: 1
+                  per_page: 20
+                  total: 0
+                  last_page: 1
+    Unauthorized:
+      description: Não autenticado / credenciais inválidas
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorBody' }
+          examples:
+            sem_token:
+              value: { success: false, msg: Não autenticado }
+            credencial:
+              value: { success: false, msg: Credenciais inválidas }
+    Forbidden:
+      description: Escopo insuficiente para este endpoint
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorBody' }
+          examples:
+            scope:
+              value: { success: false, msg: Escopo insuficiente }
+    NotFound:
+      description: Registro inexistente na empresa autenticada (ou filtro UUID inválido)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorBody' }
+          examples:
+            padrao:
+              value: { success: false, msg: Não encontrado }
+    ValidationError:
+      description: Payload inválido
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorBody' }
+          examples:
+            token:
+              value:
+                success: false
+                msg: Dados inválidos
+                errors:
+                  client_id: [O campo client id é obrigatório.]
+    RateLimited:
+      description: Muitas requisições — aguarde e tente novamente
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorBody' }
+          examples:
+            throttle:
+              value: { success: false, msg: Too Many Attempts. }
+    Error:
+      description: Erro de validação / negócio
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorBody' }
+
+security:
+  - bearerAuth: []

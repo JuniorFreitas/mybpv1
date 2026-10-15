@@ -1,0 +1,1783 @@
+{
+    "info": {
+        "_postman_id": "c3e8a1f0-api-externa-v3-0002",
+        "name": "MyBP — API Externa v3",
+        "description": "# MyBP — API Externa v3\n\nAPI **somente leitura** por empresa (client credentials + Bearer Sanctum).\n\n## Setup rápido\n\n1. Importe esta collection **e** o environment `Api-Externa-v3.postman_environment.json`\n2. Preencha `client_id` e `client_secret`\n3. Rode **0. Getting Started → 1. Obter token** (grava `access_token`)\n4. Rode **2. Listar processos ativos** (captura `processo_public_id`)\n5. Explore detalhe / nested / relatórios\n\n## Swagger\n\n`{{base_url}}/api/v3/docs`\n\n## Convenções\n\n| Tema | Regra |\n|------|--------|\n| IDs | UUID em `public_id` / `*_public_id` |\n| Paginação | `page` + `per_page` (máx. 100) |\n| Erros | `{ \"success\": false, \"msg\": \"...\" }` |\n| Relatórios | extras em `context` |\n| LGPD | CPF mascarado |\n\n## Ordem sugerida\n\nAuth → Processos ativos → Detalhe → Relatórios/efetivo → módulos do seu escopo",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8000"
+        },
+        {
+            "key": "client_id",
+            "value": ""
+        },
+        {
+            "key": "client_secret",
+            "value": ""
+        },
+        {
+            "key": "access_token",
+            "value": ""
+        },
+        {
+            "key": "token_scope",
+            "value": ""
+        },
+        {
+            "key": "page",
+            "value": "1"
+        },
+        {
+            "key": "per_page",
+            "value": "20"
+        },
+        {
+            "key": "mes",
+            "value": "10"
+        },
+        {
+            "key": "public_id",
+            "value": ""
+        },
+        {
+            "key": "cloud_public_id",
+            "value": ""
+        },
+        {
+            "key": "item_public_id",
+            "value": ""
+        },
+        {
+            "key": "fornecedor_public_id",
+            "value": ""
+        },
+        {
+            "key": "servico_public_id",
+            "value": ""
+        },
+        {
+            "key": "arquivo_public_id",
+            "value": ""
+        },
+        {
+            "key": "avaliacao_public_id",
+            "value": ""
+        },
+        {
+            "key": "tipo_public_id",
+            "value": ""
+        },
+        {
+            "key": "feedback_public_id",
+            "value": ""
+        },
+        {
+            "key": "funcionario_public_id",
+            "value": ""
+        },
+        {
+            "key": "processo_public_id",
+            "value": ""
+        },
+        {
+            "key": "curriculo_public_id",
+            "value": ""
+        },
+        {
+            "key": "empresa_public_id",
+            "value": ""
+        },
+        {
+            "key": "vaga_aberta_public_id",
+            "value": ""
+        },
+        {
+            "key": "centro_custo_public_id",
+            "value": ""
+        },
+        {
+            "key": "cih_public_id",
+            "value": ""
+        },
+        {
+            "key": "medida_public_id",
+            "value": ""
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{access_token}}",
+                "type": "string"
+            }
+        ]
+    },
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "if (!pm.request.headers.has(\"Accept\")) {",
+                    "  pm.request.headers.add({ key: \"Accept\", value: \"application/json\" });",
+                    "}"
+                ]
+            }
+        }
+    ],
+    "item": [
+        {
+            "name": "0. Getting Started",
+            "description": "Rode nesta ordem:\n1) Obter token\n2) Listar processos ativos\n3) Catálogo de relatórios",
+            "item": [
+                {
+                    "name": "1. Obter token (client_credentials)",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"grant_type\": \"client_credentials\",\n    \"client_id\": \"{{client_id}}\",\n    \"client_secret\": \"{{client_secret}}\"\n}"
+                        },
+                        "url": "{{base_url}}/api/v3/oauth/token",
+                        "description": "## Autenticação\n\nTroca credenciais por Bearer.\n\n**Pré-requisito:** `client_id` e `client_secret` preenchidos.\n\nO script grava `access_token` na collection."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Token emitido\", function () {",
+                                    "  pm.response.to.have.status(200);",
+                                    "  const j = pm.response.json();",
+                                    "  pm.expect(j.success).to.eql(true);",
+                                    "  pm.expect(j.access_token).to.be.a(\"string\");",
+                                    "  pm.collectionVariables.set(\"access_token\", j.access_token);",
+                                    "  if (j.scope) { pm.collectionVariables.set(\"token_scope\", j.scope); }",
+                                    "  console.log(\"expires_in=\", j.expires_in, \"scope=\", j.scope);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "response": [
+                        {
+                            "name": "Token OK",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": true,\n    \"access_token\": \"1|exemploTokenNaoUsarEmProducao\",\n    \"token_type\": \"Bearer\",\n    \"expires_in\": 3600,\n    \"scope\": \"cloud:read processos:read curriculos:read relatorios:read\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "2. Listar processos ativos (captura IDs)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/processos/ativos?page={{page}}&per_page={{per_page}}",
+                        "description": "## Processos ativos\n\nLista admitidos sem demissão.\n\nFiltros: `q`, `cpf`, `uf`, `empresa_public_id`, `tipo_admissao`, `data_admissao_de/ate`.\n\nScript salva `processo_public_id`, `curriculo_public_id`, `empresa_public_id`."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code !== 200) { return; }",
+                                    "const j = pm.response.json();",
+                                    "const row = (j.data && j.data[0]) || null;",
+                                    "if (!row) { console.warn(\"lista vazia\"); return; }",
+                                    "pm.collectionVariables.set(\"processo_public_id\", row.public_id);",
+                                    "pm.collectionVariables.set(\"public_id\", row.public_id);",
+                                    "if (row.curriculo && row.curriculo.public_id) {",
+                                    "  pm.collectionVariables.set(\"curriculo_public_id\", row.curriculo.public_id);",
+                                    "}",
+                                    "if (row.empresa && row.empresa.public_id) {",
+                                    "  pm.collectionVariables.set(\"empresa_public_id\", row.empresa.public_id);",
+                                    "}",
+                                    "console.log(\"processo=\", row.public_id);"
+                                ]
+                            }
+                        }
+                    ],
+                    "response": [
+                        {
+                            "name": "Processos ativos",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"public_id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n            \"status\": \"Admitido\",\n            \"curriculo\": {\n                \"public_id\": \"7c9e6679-7425-40de-944b-e07fc1f90ae7\",\n                \"nome\": \"Maria Silva\",\n                \"cpf\": \"***.***.***-99\"\n            },\n            \"admissao\": {\n                \"status\": \"ADMITIDO\",\n                \"cargo\": \"Operador\",\n                \"data_admissao\": \"2026-01-10\"\n            },\n            \"empresa\": {\n                \"public_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n                \"razao_social\": \"ACME Serviços Ltda\",\n                \"cnpj\": \"12.345.678\\/0001-99\"\n            },\n            \"links\": {\n                \"self\": \"\\/api\\/v3\\/processos\\/3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n                \"etapas\": \"\\/api\\/v3\\/processos\\/3fa85f64-5717-4562-b3fc-2c963f66afa6\\/etapas\"\n            }\n        }\n    ],\n    \"meta\": {\n        \"current_page\": 1,\n        \"per_page\": 20,\n        \"total\": 1,\n        \"last_page\": 1\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "3. Catálogo de relatórios",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/relatorios",
+                        "description": "Lista slugs. Scope: `relatorios:read`.\n\nDepois: `/relatorios/{slug}` (ex. efetivo, aniversariantes?mes=10)."
+                    },
+                    "response": [
+                        {
+                            "name": "Catálogo",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"slug\": \"efetivo\",\n            \"nome\": \"Efetivo\",\n            \"filtros\": [\n                \"q\",\n                \"cargo\"\n            ],\n            \"links\": {\n                \"self\": \"\\/api\\/v3\\/relatorios\\/efetivo\"\n            }\n        },\n        {\n            \"slug\": \"aniversariantes\",\n            \"nome\": \"Aniversariantes\",\n            \"filtros\": [\n                \"mes\"\n            ]\n        }\n    ]\n}"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Cloud",
+            "description": "Scope `cloud:read`.\n\n1) Listar → captura `cloud_public_id`\n2) Itens / pastas / download",
+            "item": [
+                {
+                    "name": "Listar clouds",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/cloud?page={{page}}&per_page={{per_page}}&ativo=true",
+                        "description": "Filtros: `q`, `ativo`.\n\nCampos: `public_id`, `nome`, `slug`, `usuarios_count`, `itens_count`."
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status esperado\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                                    "});",
+                                    "if (pm.response.code === 200) {",
+                                    "  try {",
+                                    "    const j = pm.response.json();",
+                                    "    const parts = \"data.0.public_id\".split(\".\");",
+                                    "    let cur = j;",
+                                    "    for (const p of parts) { if (cur == null) break; cur = cur[p]; }",
+                                    "    if (cur) { pm.collectionVariables.set(\"cloud_public_id\", cur); console.log(\"saved cloud_public_id=\", cur); }",
+                                    "  } catch (e) { console.warn(e); }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "response": [
+                        {
+                            "name": "Clouds",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"public_id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n            \"nome\": \"Documentos RH\",\n            \"slug\": \"documentos-rh\",\n            \"ativo\": true,\n            \"usuarios_count\": 12,\n            \"itens_count\": 340\n        }\n    ],\n    \"meta\": {\n        \"current_page\": 1,\n        \"per_page\": 20,\n        \"total\": 1,\n        \"last_page\": 1\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Detalhe cloud",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/cloud/{{cloud_public_id}}",
+                        "description": "Membros admin/grupo e grupos ativos."
+                    }
+                },
+                {
+                    "name": "Buscar itens",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/cloud/{{cloud_public_id}}/buscar?q=contrato"
+                    }
+                },
+                {
+                    "name": "Pastas",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/cloud/{{cloud_public_id}}/pastas"
+                    }
+                },
+                {
+                    "name": "Resolver path",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/cloud/{{cloud_public_id}}/resolver-path?path=/RH/Contratos"
+                    }
+                },
+                {
+                    "name": "Listar itens",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/cloud/{{cloud_public_id}}/itens?page={{page}}&per_page={{per_page}}"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status esperado\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                                    "});",
+                                    "if (pm.response.code === 200) {",
+                                    "  try {",
+                                    "    const j = pm.response.json();",
+                                    "    const parts = \"data.0.public_id\".split(\".\");",
+                                    "    let cur = j;",
+                                    "    for (const p of parts) { if (cur == null) break; cur = cur[p]; }",
+                                    "    if (cur) { pm.collectionVariables.set(\"item_public_id\", cur); console.log(\"saved item_public_id=\", cur); }",
+                                    "  } catch (e) { console.warn(e); }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Detalhe item",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/cloud/{{cloud_public_id}}/itens/{{item_public_id}}"
+                    }
+                },
+                {
+                    "name": "Download item",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "*/*"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/cloud/{{cloud_public_id}}/itens/{{item_public_id}}/download"
+                    }
+                },
+                {
+                    "name": "Arquivo (stream)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "*/*"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/cloud/{{cloud_public_id}}/itens/{{item_public_id}}/arquivo"
+                    }
+                },
+                {
+                    "name": "Thumb",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "*/*"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/cloud/{{cloud_public_id}}/itens/{{item_public_id}}/thumb"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Fornecedores",
+            "description": "Scope `fornecedores:read`. Detalhe captura `servico_public_id` e `arquivo_public_id`.",
+            "item": [
+                {
+                    "name": "Listar fornecedores",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/fornecedores?page={{page}}&per_page={{per_page}}"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status esperado\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                                    "});",
+                                    "if (pm.response.code === 200) {",
+                                    "  try {",
+                                    "    const j = pm.response.json();",
+                                    "    const parts = \"data.0.public_id\".split(\".\");",
+                                    "    let cur = j;",
+                                    "    for (const p of parts) { if (cur == null) break; cur = cur[p]; }",
+                                    "    if (cur) { pm.collectionVariables.set(\"fornecedor_public_id\", cur); console.log(\"saved fornecedor_public_id=\", cur); }",
+                                    "  } catch (e) { console.warn(e); }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Buscar fornecedores",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/fornecedores/buscar?q=forn&page={{page}}&per_page={{per_page}}",
+                        "description": "Mínimo 2 caracteres em `q`."
+                    }
+                },
+                {
+                    "name": "Tipos de serviço",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/fornecedores/tipos-servico"
+                    }
+                },
+                {
+                    "name": "Detalhe fornecedor",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/fornecedores/{{fornecedor_public_id}}"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code!==200) return;",
+                                    "const d = pm.response.json().data || {};",
+                                    "if (d.servicos && d.servicos[0]) pm.collectionVariables.set(\"servico_public_id\", d.servicos[0].public_id);",
+                                    "if (d.anexos && d.anexos[0]) pm.collectionVariables.set(\"arquivo_public_id\", d.anexos[0].public_id);"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Serviços",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/fornecedores/{{fornecedor_public_id}}/servicos"
+                    }
+                },
+                {
+                    "name": "Detalhe serviço",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/fornecedores/{{fornecedor_public_id}}/servicos/{{servico_public_id}}"
+                    }
+                },
+                {
+                    "name": "Download anexo fornecedor",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "*/*"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/fornecedores/{{fornecedor_public_id}}/anexos/{{arquivo_public_id}}/download"
+                    }
+                },
+                {
+                    "name": "Download anexo serviço",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "*/*"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/fornecedores/{{fornecedor_public_id}}/servicos/{{servico_public_id}}/anexos/{{arquivo_public_id}}/download"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Avaliacoes",
+            "description": "Scope `avaliacoes:read`. Campanhas → feedbacks → resultado.",
+            "item": [
+                {
+                    "name": "Listar avaliacoes",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/avaliacoes?page={{page}}&per_page={{per_page}}"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status esperado\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                                    "});",
+                                    "if (pm.response.code === 200) {",
+                                    "  try {",
+                                    "    const j = pm.response.json();",
+                                    "    const parts = \"data.0.public_id\".split(\".\");",
+                                    "    let cur = j;",
+                                    "    for (const p of parts) { if (cur == null) break; cur = cur[p]; }",
+                                    "    if (cur) { pm.collectionVariables.set(\"avaliacao_public_id\", cur); console.log(\"saved avaliacao_public_id=\", cur); }",
+                                    "  } catch (e) { console.warn(e); }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Tipos de avaliacao",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/avaliacoes/tipos"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status esperado\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                                    "});",
+                                    "if (pm.response.code === 200) {",
+                                    "  try {",
+                                    "    const j = pm.response.json();",
+                                    "    const parts = \"data.0.public_id\".split(\".\");",
+                                    "    let cur = j;",
+                                    "    for (const p of parts) { if (cur == null) break; cur = cur[p]; }",
+                                    "    if (cur) { pm.collectionVariables.set(\"tipo_public_id\", cur); console.log(\"saved tipo_public_id=\", cur); }",
+                                    "  } catch (e) { console.warn(e); }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Tipos de avaliador",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/avaliacoes/tipos-avaliador"
+                    }
+                },
+                {
+                    "name": "Tópicos do tipo",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/avaliacoes/tipos/{{tipo_public_id}}/topicos"
+                    }
+                },
+                {
+                    "name": "Detalhe avaliacao",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/avaliacoes/{{avaliacao_public_id}}"
+                    }
+                },
+                {
+                    "name": "Feedbacks",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/avaliacoes/{{avaliacao_public_id}}/feedbacks?page={{page}}&per_page={{per_page}}"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code!==200) return;",
+                                    "const row = (pm.response.json().data||[])[0];",
+                                    "if (!row) return;",
+                                    "pm.collectionVariables.set(\"feedback_public_id\", row.public_id);",
+                                    "if (row.funcionario && row.funcionario.public_id) pm.collectionVariables.set(\"funcionario_public_id\", row.funcionario.public_id);"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Detalhe feedback",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/avaliacoes/{{avaliacao_public_id}}/feedbacks/{{feedback_public_id}}"
+                    }
+                },
+                {
+                    "name": "Resultado consolidado",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/avaliacoes/{{avaliacao_public_id}}/feedbacks/{{feedback_public_id}}/resultado"
+                    }
+                },
+                {
+                    "name": "Feedbacks do colaborador",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/avaliacoes/{{avaliacao_public_id}}/colaboradores/{{funcionario_public_id}}/feedbacks"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Processos",
+            "description": "Scope `processos:read`.\n\nListagens + nested. Use `processo_public_id` do Getting Started.",
+            "item": [
+                {
+                    "name": "Ativos",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/processos/ativos?page={{page}}&per_page={{per_page}}&q=&uf=",
+                        "description": "Admitidos sem demissão.\n\nExemplos:\n- `?q=Maria&uf=MA`\n- `?empresa_public_id={{empresa_public_id}}`\n- `?data_admissao_de=2026-01-01&data_admissao_ate=2026-12-31`"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status esperado\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                                    "});",
+                                    "if (pm.response.code === 200) {",
+                                    "  try {",
+                                    "    const j = pm.response.json();",
+                                    "    const parts = \"data.0.public_id\".split(\".\");",
+                                    "    let cur = j;",
+                                    "    for (const p of parts) { if (cur == null) break; cur = cur[p]; }",
+                                    "    if (cur) { pm.collectionVariables.set(\"processo_public_id\", cur); console.log(\"saved processo_public_id=\", cur); }",
+                                    "  } catch (e) { console.warn(e); }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "response": [
+                        {
+                            "name": "Ativos",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"public_id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n            \"status\": \"Admitido\",\n            \"curriculo\": {\n                \"public_id\": \"7c9e6679-7425-40de-944b-e07fc1f90ae7\",\n                \"nome\": \"Maria Silva\",\n                \"cpf\": \"***.***.***-99\"\n            },\n            \"admissao\": {\n                \"status\": \"ADMITIDO\",\n                \"cargo\": \"Operador\",\n                \"data_admissao\": \"2026-01-10\"\n            },\n            \"empresa\": {\n                \"public_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n                \"razao_social\": \"ACME Serviços Ltda\",\n                \"cnpj\": \"12.345.678\\/0001-99\"\n            },\n            \"links\": {\n                \"self\": \"\\/api\\/v3\\/processos\\/3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n                \"etapas\": \"\\/api\\/v3\\/processos\\/3fa85f64-5717-4562-b3fc-2c963f66afa6\\/etapas\"\n            }\n        }\n    ],\n    \"meta\": {\n        \"current_page\": 1,\n        \"per_page\": 20,\n        \"total\": 1,\n        \"last_page\": 1\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Em andamento",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/processos/em-andamento?page={{page}}&per_page={{per_page}}",
+                        "description": "Filtros: `status_admissao`, `parecer_de/ate`."
+                    }
+                },
+                {
+                    "name": "Demitidos",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/processos/demitidos?page={{page}}&per_page={{per_page}}"
+                    }
+                },
+                {
+                    "name": "Buscar",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/processos/buscar?q=Maria",
+                        "description": "Mínimo 2 caracteres."
+                    }
+                },
+                {
+                    "name": "Detalhe",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/processos/{{processo_public_id}}",
+                        "description": "Payload completo. Apenas `empresa` (sem campo `cliente` duplicado)."
+                    },
+                    "response": [
+                        {
+                            "name": "Detalhe",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": true,\n    \"data\": {\n        \"public_id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n        \"status\": \"Admitido\",\n        \"curriculo\": {\n            \"public_id\": \"7c9e6679-7425-40de-944b-e07fc1f90ae7\",\n            \"nome\": \"Maria Silva\",\n            \"cpf\": \"***.***.***-99\"\n        },\n        \"admissao\": {\n            \"status\": \"ADMITIDO\",\n            \"cargo\": \"Operador\",\n            \"data_admissao\": \"2026-01-10\"\n        },\n        \"empresa\": {\n            \"public_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n            \"razao_social\": \"ACME Serviços Ltda\",\n            \"cnpj\": \"12.345.678\\/0001-99\"\n        },\n        \"links\": {\n            \"self\": \"\\/api\\/v3\\/processos\\/3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n            \"etapas\": \"\\/api\\/v3\\/processos\\/3fa85f64-5717-4562-b3fc-2c963f66afa6\\/etapas\",\n            \"exames\": \"\\/api\\/v3\\/processos\\/3fa85f64-5717-4562-b3fc-2c963f66afa6\\/exames\",\n            \"fluxo\": \"\\/api\\/v3\\/fluxo\\/3fa85f64-5717-4562-b3fc-2c963f66afa6\"\n        }\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Etapas",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/processos/{{processo_public_id}}/etapas",
+                        "description": "Mapa booleano das etapas do fluxo."
+                    }
+                },
+                {
+                    "name": "Exames",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/processos/{{processo_public_id}}/exames"
+                    }
+                },
+                {
+                    "name": "Documentos",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/processos/{{processo_public_id}}/documentos"
+                    }
+                },
+                {
+                    "name": "Ferias",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/processos/{{processo_public_id}}/ferias"
+                    }
+                },
+                {
+                    "name": "Pre-admissao",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/processos/{{processo_public_id}}/pre-admissao"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Curriculos",
+            "description": "Scope `curriculos:read`.",
+            "item": [
+                {
+                    "name": "Listar",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/curriculos?page={{page}}&per_page={{per_page}}"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status esperado\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                                    "});",
+                                    "if (pm.response.code === 200) {",
+                                    "  try {",
+                                    "    const j = pm.response.json();",
+                                    "    const parts = \"data.0.public_id\".split(\".\");",
+                                    "    let cur = j;",
+                                    "    for (const p of parts) { if (cur == null) break; cur = cur[p]; }",
+                                    "    if (cur) { pm.collectionVariables.set(\"curriculo_public_id\", cur); console.log(\"saved curriculo_public_id=\", cur); }",
+                                    "  } catch (e) { console.warn(e); }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Buscar",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/curriculos/buscar?q=Maria"
+                    }
+                },
+                {
+                    "name": "Detalhe",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/curriculos/{{curriculo_public_id}}"
+                    }
+                },
+                {
+                    "name": "Feedbacks",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/curriculos/{{curriculo_public_id}}/feedbacks?page={{page}}&per_page={{per_page}}"
+                    }
+                },
+                {
+                    "name": "Documentos",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/curriculos/{{curriculo_public_id}}/documentos"
+                    }
+                },
+                {
+                    "name": "Experiencias",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/curriculos/{{curriculo_public_id}}/experiencias"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Fluxo",
+            "description": "Scope `fluxo:read`.",
+            "item": [
+                {
+                    "name": "Detalhe fluxo",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/fluxo/{{processo_public_id}}",
+                        "description": "Detalhe completo + etapas."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Vagas Abertas",
+            "description": "Scope `vagas:read`.",
+            "item": [
+                {
+                    "name": "Listar",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/vagas-abertas?page={{page}}&per_page={{per_page}}"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status esperado\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                                    "});",
+                                    "if (pm.response.code === 200) {",
+                                    "  try {",
+                                    "    const j = pm.response.json();",
+                                    "    const parts = \"data.0.public_id\".split(\".\");",
+                                    "    let cur = j;",
+                                    "    for (const p of parts) { if (cur == null) break; cur = cur[p]; }",
+                                    "    if (cur) { pm.collectionVariables.set(\"vaga_aberta_public_id\", cur); console.log(\"saved vaga_aberta_public_id=\", cur); }",
+                                    "  } catch (e) { console.warn(e); }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Buscar",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/vagas-abertas/buscar?q=Oper"
+                    }
+                },
+                {
+                    "name": "Detalhe",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/vagas-abertas/{{vaga_aberta_public_id}}"
+                    }
+                },
+                {
+                    "name": "Simulados",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/vagas-abertas/{{vaga_aberta_public_id}}/simulados"
+                    }
+                },
+                {
+                    "name": "Projetos",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/vagas-abertas/{{vaga_aberta_public_id}}/projetos"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Centros de Custo",
+            "description": "Scope `centros-custo:read`. Gestores sem login.",
+            "item": [
+                {
+                    "name": "Listar",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/centros-custo?page={{page}}&per_page={{per_page}}"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status esperado\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                                    "});",
+                                    "if (pm.response.code === 200) {",
+                                    "  try {",
+                                    "    const j = pm.response.json();",
+                                    "    const parts = \"data.0.public_id\".split(\".\");",
+                                    "    let cur = j;",
+                                    "    for (const p of parts) { if (cur == null) break; cur = cur[p]; }",
+                                    "    if (cur) { pm.collectionVariables.set(\"centro_custo_public_id\", cur); console.log(\"saved centro_custo_public_id=\", cur); }",
+                                    "  } catch (e) { console.warn(e); }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Buscar",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/centros-custo/buscar?q=CC"
+                    }
+                },
+                {
+                    "name": "Detalhe",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/centros-custo/{{centro_custo_public_id}}"
+                    }
+                },
+                {
+                    "name": "Filiais",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/centros-custo/{{centro_custo_public_id}}/filiais"
+                    }
+                },
+                {
+                    "name": "Gestores",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/centros-custo/{{centro_custo_public_id}}/gestores"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "CIH",
+            "description": "Scope `cih:read`.",
+            "item": [
+                {
+                    "name": "Listar",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/cih?page={{page}}&per_page={{per_page}}"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status esperado\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                                    "});",
+                                    "if (pm.response.code === 200) {",
+                                    "  try {",
+                                    "    const j = pm.response.json();",
+                                    "    const parts = \"data.0.public_id\".split(\".\");",
+                                    "    let cur = j;",
+                                    "    for (const p of parts) { if (cur == null) break; cur = cur[p]; }",
+                                    "    if (cur) { pm.collectionVariables.set(\"cih_public_id\", cur); console.log(\"saved cih_public_id=\", cur); }",
+                                    "  } catch (e) { console.warn(e); }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Tags",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/cih/tags"
+                    }
+                },
+                {
+                    "name": "Detalhe",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/cih/{{cih_public_id}}"
+                    }
+                },
+                {
+                    "name": "Colaboradores",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/cih/{{cih_public_id}}/colaboradores"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Medidas Administrativas",
+            "description": "Scope `medidas:read`. Motivo só no detalhe.",
+            "item": [
+                {
+                    "name": "Listar",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/medidas-administrativas?page={{page}}&per_page={{per_page}}"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status esperado\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                                    "});",
+                                    "if (pm.response.code === 200) {",
+                                    "  try {",
+                                    "    const j = pm.response.json();",
+                                    "    const parts = \"data.0.public_id\".split(\".\");",
+                                    "    let cur = j;",
+                                    "    for (const p of parts) { if (cur == null) break; cur = cur[p]; }",
+                                    "    if (cur) { pm.collectionVariables.set(\"medida_public_id\", cur); console.log(\"saved medida_public_id=\", cur); }",
+                                    "  } catch (e) { console.warn(e); }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Detalhe",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/medidas-administrativas/{{medida_public_id}}"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Historico",
+            "description": "Scope `historico:read`.",
+            "item": [
+                {
+                    "name": "Listar",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/historico?page={{page}}&per_page={{per_page}}"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status esperado\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                                    "});",
+                                    "if (pm.response.code === 200) {",
+                                    "  try {",
+                                    "    const j = pm.response.json();",
+                                    "    const parts = \"data.0.public_id\".split(\".\");",
+                                    "    let cur = j;",
+                                    "    for (const p of parts) { if (cur == null) break; cur = cur[p]; }",
+                                    "    if (cur) { pm.collectionVariables.set(\"processo_public_id\", cur); console.log(\"saved processo_public_id=\", cur); }",
+                                    "  } catch (e) { console.warn(e); }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Detalhe",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/historico/{{processo_public_id}}"
+                    }
+                },
+                {
+                    "name": "Medidas",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/historico/{{processo_public_id}}/medidas"
+                    }
+                },
+                {
+                    "name": "Afastamentos",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/historico/{{processo_public_id}}/afastamentos"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Pos Admissao",
+            "description": "Scope `pos-admissao:read`. Entrevista sanitizada.",
+            "item": [
+                {
+                    "name": "Listar",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/pos-admissao?page={{page}}&per_page={{per_page}}"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status esperado\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                                    "});",
+                                    "if (pm.response.code === 200) {",
+                                    "  try {",
+                                    "    const j = pm.response.json();",
+                                    "    const parts = \"data.0.public_id\".split(\".\");",
+                                    "    let cur = j;",
+                                    "    for (const p of parts) { if (cur == null) break; cur = cur[p]; }",
+                                    "    if (cur) { pm.collectionVariables.set(\"processo_public_id\", cur); console.log(\"saved processo_public_id=\", cur); }",
+                                    "  } catch (e) { console.warn(e); }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Detalhe",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/pos-admissao/{{processo_public_id}}"
+                    }
+                },
+                {
+                    "name": "Entrevista desligamento",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/pos-admissao/{{processo_public_id}}/entrevista-desligamento"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Relatorios",
+            "description": "Scope `relatorios:read`.\n\n1) Catalogo\n2) Execute o slug\n\nResposta: `data` + `meta` + opcional `context`.",
+            "item": [
+                {
+                    "name": "Catalogo",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/relatorios",
+                        "description": "Lista slugs + filtros sugeridos."
+                    }
+                },
+                {
+                    "name": "Efetivo",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/relatorios/efetivo?page={{page}}&per_page={{per_page}}",
+                        "description": "Admitidos. Filtros: q, cargo, tipo_admissao, centro_custo_public_id, datas"
+                    },
+                    "response": [
+                        {
+                            "name": "Efetivo",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"processo_public_id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n            \"nome\": \"Ana Relatorio\",\n            \"cpf\": \"***.***.***-88\",\n            \"cargo\": \"Analista\",\n            \"centro_custo\": \"CC Relatorio\"\n        }\n    ],\n    \"meta\": {\n        \"current_page\": 1,\n        \"per_page\": 20,\n        \"total\": 1,\n        \"last_page\": 1\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Centro custo",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/relatorios/centro-custo?page={{page}}&per_page={{per_page}}",
+                        "description": "Totais por centro de custo"
+                    }
+                },
+                {
+                    "name": "Vencimento asos",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/relatorios/vencimento-asos?page={{page}}&per_page={{per_page}}&somente_alerta=false",
+                        "description": "Use somente_alerta=true para foco em vencidos/próximos"
+                    }
+                },
+                {
+                    "name": "Vencimento treinamentos",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/relatorios/vencimento-treinamentos?page={{page}}&per_page={{per_page}}",
+                        "description": "Período: data_vencimento_de / data_vencimento_ate"
+                    }
+                },
+                {
+                    "name": "Vencimento ferias",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/relatorios/vencimento-ferias?page={{page}}&per_page={{per_page}}",
+                        "description": "Avos / períodos aquisitivos"
+                    }
+                },
+                {
+                    "name": "Ferias",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/relatorios/ferias?page={{page}}&per_page={{per_page}}",
+                        "description": "status_ferias=aguardando|gozando"
+                    }
+                },
+                {
+                    "name": "Medidas administrativas",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/relatorios/medidas-administrativas?page={{page}}&per_page={{per_page}}",
+                        "description": "context.graficos.tipos"
+                    }
+                },
+                {
+                    "name": "Avaliacao experiencia",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/relatorios/avaliacao-experiencia?page={{page}}&per_page={{per_page}}",
+                        "description": "context.resumo"
+                    }
+                },
+                {
+                    "name": "Aniversariantes",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/relatorios/aniversariantes?page={{page}}&per_page={{per_page}}&mes={{mes}}",
+                        "description": "mes=1..12 (variável {{mes}})"
+                    },
+                    "response": [
+                        {
+                            "name": "Aniversariantes",
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": true,\n    \"data\": [\n        {\n            \"nome\": \"Ana Relatorio\",\n            \"aniversario\": \"15\\/10\",\n            \"hoje\": false\n        }\n    ],\n    \"meta\": {\n        \"current_page\": 1,\n        \"per_page\": 20,\n        \"total\": 1,\n        \"last_page\": 1\n    },\n    \"context\": {\n        \"mes\": 10\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Nps",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/relatorios/nps?page={{page}}&per_page={{per_page}}",
+                        "description": "context.resumo.media_geral"
+                    }
+                }
+            ]
+        }
+    ]
+}

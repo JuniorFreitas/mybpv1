@@ -54,6 +54,21 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
         });
 
+        RateLimiter::for('api-externa-token', function (Request $request) {
+            $perMinute = (int) config('services.api_externa.token_throttle_per_minute', 10);
+            $clientId = (string) $request->input('client_id', '');
+
+            return Limit::perMinute($perMinute)->by('api-externa-token:' . ($clientId !== '' ? $clientId : $request->ip()));
+        });
+
+        RateLimiter::for('api-externa', function (Request $request) {
+            $perMinute = (int) config('services.api_externa.list_throttle_per_minute', 120);
+
+            return Limit::perMinute($perMinute)->by(
+                'api-externa:' . (optional($request->user())->id ?: $request->ip())
+            );
+        });
+
         RateLimiter::for('ai-vaga-descricao', function (Request $request) {
             $perMinute = app()->environment('local') ? 60 : 10;
 

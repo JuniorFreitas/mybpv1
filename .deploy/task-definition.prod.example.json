@@ -208,6 +208,22 @@
           "value": "900"
         },
         {
+          "name": "API_EXTERNA_TOKEN_TTL_MINUTES",
+          "value": "60"
+        },
+        {
+          "name": "API_EXTERNA_TOKEN_THROTTLE_PER_MINUTE",
+          "value": "10"
+        },
+        {
+          "name": "API_EXTERNA_LIST_THROTTLE_PER_MINUTE",
+          "value": "120"
+        },
+        {
+          "name": "API_EXTERNA_MAX_PER_PAGE",
+          "value": "50"
+        },
+        {
           "name": "ASSISTENTE_MANUAL_HABILITADO",
           "value": "true"
         },
