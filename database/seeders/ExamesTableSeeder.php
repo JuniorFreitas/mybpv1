@@ -24,6 +24,7 @@ class ExamesTableSeeder extends Seeder
         $listaTipoExame[] = ['label' => 'Mudança de Função', 'ativo' => true];
         $listaTipoExame[] = ['label' => 'Retorno Trabalho', 'ativo' => true];
         $listaTipoExame[] = ['label' => 'Demissional', 'ativo' => true];
+        $listaTipoExame[] = ['label' => 'Monitoramento/Avaliação', 'ativo' => true];
 
         $listaRiscoTipo[] = ['label' => 'Físico', 'ativo' => true];
         $listaRiscoTipo[] = ['label' => 'Químico', 'ativo' => true];
