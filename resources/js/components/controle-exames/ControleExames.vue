@@ -177,22 +177,35 @@
                                 <td>{{ item.pcmso_label }}</td>
                                 <td>{{ item.quem_encaminhou.nome }}</td>
                                 <td>{{ item.created_at }}</td>
-                                <td>
-                                    
-                                    
-                                    
-                                    
-                                    
-                                    
-                                    
-                                    
-                                    
-                                    
-
+                                <td class="text-nowrap">
                                     <a :href="`${URL_ADMIN}/controle-exames/ficha-encaminhamento/${item.id}/${item.token}`"
-                                       target="_blank" content="Gerar PDF" class="btn btn-sm mr-1 btn-primary mb-2">
+                                       target="_blank" content="Gerar PDF" v-tippy
+                                       class="btn btn-sm mr-1 btn-primary mb-2">
                                         <i class="fa fa-file-pdf" aria-hidden="true"></i>
                                     </a>
+                                    <span class="d-inline-block mr-1 mb-2"
+                                          v-tippy
+                                          :content="tooltipReenviarEncaminhamento(item, 'e-mail')">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-secondary"
+                                                :disabled="preload || reenviandoId === item.id || !podeReenviarEncaminhamento(item)"
+                                                :style="!podeReenviarEncaminhamento(item) ? { pointerEvents: 'none' } : null"
+                                                @click.prevent="reenviarEncaminhamento(item, { email: true, whatsapp: false })">
+                                            <i class="fa fa-envelope" aria-hidden="true"></i>
+                                        </button>
+                                    </span>
+                                    <span class="d-inline-block mr-1 mb-2"
+                                          v-if="whatsappPodeNotificar('exame_encaminhamento', dados.tel_principal)"
+                                          v-tippy
+                                          :content="tooltipReenviarEncaminhamento(item, 'WhatsApp')">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-success"
+                                                :disabled="preload || reenviandoId === item.id || !podeReenviarEncaminhamento(item)"
+                                                :style="!podeReenviarEncaminhamento(item) ? { pointerEvents: 'none' } : null"
+                                                @click.prevent="reenviarEncaminhamento(item, { email: false, whatsapp: true })">
+                                            <i class="fab fa-whatsapp" aria-hidden="true"></i>
+                                        </button>
+                                    </span>
                                 </td>
                             </tr>
                             </tbody>
@@ -985,6 +998,7 @@ export default defineComponent({
             previewWhatsappAberto: false,
             previewWhatsappTipo: 'exame_encaminhamento',
             previewWhatsappContexto: {},
+            reenviandoId: null,
             lista_ccs: null,
             controle: {
                 carregando: true,
@@ -1262,6 +1276,93 @@ export default defineComponent({
             }
             this.previewWhatsappTipo = 'exame_encaminhamento'
             this.previewWhatsappAberto = true
+        },
+        parseDataRealizacaoEncaminhamento(valor) {
+            if (!valor) {
+                return null
+            }
+
+            if (valor instanceof Date && !Number.isNaN(valor.getTime())) {
+                const d = new Date(valor)
+                d.setHours(0, 0, 0, 0)
+                return d
+            }
+
+            const texto = String(valor).trim()
+            const br = texto.match(/^(\d{2})\/(\d{2})\/(\d{4})/)
+            if (br) {
+                const d = new Date(Number(br[3]), Number(br[2]) - 1, Number(br[1]))
+                d.setHours(0, 0, 0, 0)
+                return Number.isNaN(d.getTime()) ? null : d
+            }
+
+            const iso = texto.match(/^(\d{4})-(\d{2})-(\d{2})/)
+            if (iso) {
+                const d = new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]))
+                d.setHours(0, 0, 0, 0)
+                return Number.isNaN(d.getTime()) ? null : d
+            }
+
+            const d = new Date(texto)
+            if (Number.isNaN(d.getTime())) {
+                return null
+            }
+            d.setHours(0, 0, 0, 0)
+            return d
+        },
+        podeReenviarEncaminhamento(item) {
+            const dataRealizacao = this.parseDataRealizacaoEncaminhamento(item?.encaminhamento_data)
+            if (!dataRealizacao) {
+                return false
+            }
+
+            const hoje = new Date()
+            hoje.setHours(0, 0, 0, 0)
+
+            // Prazo válido até a data de realização (inclusive). Depois disso, fora do prazo.
+            return dataRealizacao.getTime() >= hoje.getTime()
+        },
+        tooltipReenviarEncaminhamento(item, canal) {
+            if (!this.podeReenviarEncaminhamento(item)) {
+                return 'Fora do prazo — a data de realização já passou. Não é possível reenviar.'
+            }
+
+            return `Reenviar ${canal}`
+        },
+        async reenviarEncaminhamento(item, canais = { email: false, whatsapp: false }) {
+            if (!item?.id || (!canais.email && !canais.whatsapp)) {
+                return
+            }
+
+            if (!this.podeReenviarEncaminhamento(item)) {
+                mostraErro('', 'Não é possível reenviar: a data de realização está fora do prazo.')
+                return
+            }
+
+            const canalLabel = canais.email && canais.whatsapp
+                ? 'e-mail e WhatsApp'
+                : (canais.email ? 'e-mail' : 'WhatsApp')
+
+            if (!confirm(`Reenviar encaminhamento por ${canalLabel}?`)) {
+                return
+            }
+
+            this.reenviandoId = item.id
+            this.preload = true
+            try {
+                const { data } = await axios.post(`${URL_ADMIN}/${API_PATHS.reenviarEncaminhamento}`, {
+                    exame_funcionario_id: item.id,
+                    envia_email: !!canais.email,
+                    envia_whatsapp: !!canais.whatsapp,
+                })
+                mostraSucesso('', data?.msg || 'Reenvio solicitado com sucesso!')
+            } catch (e) {
+                const msg = e?.response?.data?.msg || 'Houve um erro ao reenviar o encaminhamento.'
+                mostraErro('', msg)
+            } finally {
+                this.reenviandoId = null
+                this.preload = false
+            }
         }
     }
 })

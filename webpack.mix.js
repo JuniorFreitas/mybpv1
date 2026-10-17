@@ -58,9 +58,9 @@ mix.copyDirectory(folder.src + "template/images", out);*/
 // mix.sass('resources/template/scss/app-dark.scss', folder.dist_assets + "css").minify(folder.dist_assets + "css/app-dark.css");
 //
 
-// PDF.js worker (visualizadorPdf.vue)
+// PDF.js worker (visualizadorPdf.vue) — pdfjs-dist 6+ só publica .mjs
 mix.copy(
-    'node_modules/pdfjs-dist/build/pdf.worker.min.js',
+    'node_modules/pdfjs-dist/build/pdf.worker.min.mjs',
     'public/js/vendor/pdf.worker.min.js'
 )
 

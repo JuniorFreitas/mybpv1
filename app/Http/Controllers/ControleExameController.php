@@ -2,12 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Classes\ZapNotificacao;
-use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
-use App\Domain\Whatsapp\Services\WhatsappCurriculoTelefoneResolver;
-use App\Domain\Whatsapp\Services\WhatsappMessageFactory;
-use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
-use App\Jobs\ControleExames\JobExame;
 use App\Models\Admissao;
 use App\Models\AlternativaFormulario;
 use App\Models\Arquivo;
@@ -23,11 +17,13 @@ use App\Models\Sistema;
 use App\Models\Cliente;
 use App\Models\User;
 use App\Services\AssinaturaDigital\AssinaturaDigitalService;
+use App\Services\ControleExames\ExameEncaminhamentoNotificacaoService;
 use App\Services\Demissao\ComunicadoDispensaSemJustaCausaPdfService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use MasterTag\DataHora;
 use PDF;
+use RuntimeException;
 
 class ControleExameController extends Controller
 {
@@ -120,79 +116,31 @@ class ControleExameController extends Controller
                     ]);
                 }
 
-                $colaborador = FeedbackCurriculo::select(['curriculo_id', 'id', 'telefone_id'])->find($request->feedback_id);
+                $colaborador = FeedbackCurriculo::with(['Curriculo', 'TelPrincipal'])
+                    ->select(['curriculo_id', 'id', 'telefone_id'])
+                    ->find($request->feedback_id);
+                $notificacao = app(ExameEncaminhamentoNotificacaoService::class);
 
-                if ($request->envia_email) {
-                    $dtEmailClinica = [
-                        'clinica' => $empExame->nome,
-                        'email' => trim(mb_strtolower($empExame->dados['email'])),
-                        'assunto' => "Encaminhamento de Exame {$tipoExame->label} colaborador {$colaborador->Curriculo->nome}",
-                        'colaborador' => $colaborador->Curriculo->nome,
-                        'colaborador_email' => trim(mb_strtolower($colaborador->Curriculo->email)),
-                        'idade' => $colaborador->Curriculo->idade,
-                        'tipoExame' => $tipoExame->label,
-                        'empresa_id' => $empExame->empresa_id,
-                        'encaminhamento_data' => $data_encaminhamento,
-                        'data_realizacao' => $data_realizacao,
-                        'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
-                    ];
-
-                    $dtEmailColaborador = [
-                        'clinica' => $empExame,
-                        'email' => trim(mb_strtolower($colaborador->Curriculo->email)),
-                        'assunto' => "Encaminhamento de Exame {$tipoExame->label}",
-                        'colaborador' => $colaborador->Curriculo->nome,
-                        'tipoExame' => $tipoExame->label,
-                        'empresa_id' => $empExame->empresa_id,
-                        'encaminhamento_data' => $data_encaminhamento,
-                        'data_realizacao' => $data_realizacao,
-                        'link' => route('publico.encaminhamento_exame_fichapdf', ['exame' => $exame, 'token' => $token])
-                    ];
-
-                    $dados_email = [
-                        'dtEmailClinica' => $dtEmailClinica,
-                        'dtEmailColaborador' => $dtEmailColaborador
-                    ];
-
-                    JobExame::dispatch($dados_email);
+                if ($request->envia_email && !is_null($empExame)) {
+                    $notificacao->enviarEmail(
+                        $exame,
+                        $colaborador,
+                        $empExame,
+                        (string) $tipoExame->label,
+                        $token,
+                        $data_encaminhamento,
+                        $data_realizacao
+                    );
                 }
 
-                if ($request->envia_whatsapp) {
-                    $podeEnviarWhatsapp = app(WhatsappNotificationGateService::class)->podeEnviar(
-                        TipoMensagemWhatsapp::ExameEncaminhamento,
-                        (int) auth()->user()->empresa_id,
+                if ($request->envia_whatsapp && !is_null($empExame)) {
+                    $notificacao->enviarWhatsapp(
+                        $colaborador,
+                        $empExame,
+                        (string) $tipoExame->label,
+                        $data_encaminhamento,
+                        $data_realizacao
                     );
-
-                    $telefoneResolver = app(WhatsappCurriculoTelefoneResolver::class);
-                    $telefonePrincipal = $telefoneResolver->telefonePrincipalPermiteWhatsapp($colaborador->TelPrincipal)
-                        ? $colaborador->TelPrincipal
-                        : null;
-
-                    if ($podeEnviarWhatsapp && $telefonePrincipal && !is_null($empExame)) {
-                        $mensagem = app(WhatsappMessageFactory::class)->render(
-                            TipoMensagemWhatsapp::ExameEncaminhamento,
-                            (int) auth()->user()->empresa_id,
-                            [
-                                'nome_destinatario' => $colaborador->Curriculo->nome,
-                                'tipo_exame' => $tipoExame->label,
-                                'clinica_nome' => $empExame->nome,
-                                'clinica_endereco' => $empExame->dados['endereco']['endereco_completo'] ?? '',
-                                'clinica_telefone' => $empExame->dados['telefone'] ?? '',
-                                'data_encaminhamento' => $data_encaminhamento,
-                                'data_realizacao' => $data_realizacao,
-                            ]
-                        );
-
-                        (new ZapNotificacao())->enviar([
-                            'enviado_id' => $colaborador->curriculo_id,
-                            'telefone' => $telefonePrincipal->sonumero,
-                            'mensagem' => $mensagem,
-                            '_whatsapp_meta' => ZapNotificacao::meta(
-                                TipoMensagemWhatsapp::ExameEncaminhamento,
-                                (int) auth()->user()->empresa_id,
-                            ),
-                        ]);
-                    }
                 }
 
                 \DB::commit();
@@ -211,6 +159,42 @@ class ControleExameController extends Controller
             Sistema::LogFormatado($request->input());
             \Log::debug($msg);
             return response()->json(['msg' => 'Houve um erro ao encaminhar!'], 400);
+        }
+    }
+
+    public function reenviarEncaminhamento(Request $request, ExameEncaminhamentoNotificacaoService $notificacao)
+    {
+        $request->validate([
+            'exame_funcionario_id' => 'required|integer',
+            'envia_email' => 'sometimes|boolean',
+            'envia_whatsapp' => 'sometimes|boolean',
+        ]);
+
+        $enviaEmail = $request->boolean('envia_email');
+        $enviaWhatsapp = $request->boolean('envia_whatsapp');
+
+        try {
+            $empresaId = (int) auth()->user()->empresa_id;
+            $exame = ExameFuncionario::query()
+                ->where('empresa_id', $empresaId)
+                ->whereHas('Feedback', fn ($q) => $q->where('empresa_id', $empresaId))
+                ->findOrFail((int) $request->input('exame_funcionario_id'));
+            $resultado = $notificacao->reenviar($exame, $enviaEmail, $enviaWhatsapp);
+
+            return response()->json([
+                'msg' => implode(' ', $resultado['mensagens']),
+                'email' => $resultado['email'],
+                'whatsapp' => $resultado['whatsapp'],
+            ]);
+        } catch (RuntimeException $e) {
+            return response()->json(['msg' => $e->getMessage()], 422);
+        } catch (\Throwable $e) {
+            \Log::debug('Erro ao reenviar encaminhamento de exame: ' . $e->getMessage(), [
+                'exame_funcionario_id' => $request->input('exame_funcionario_id'),
+                'user_id' => auth()->id(),
+            ]);
+
+            return response()->json(['msg' => 'Houve um erro ao reenviar o encaminhamento.'], 400);
         }
     }
 

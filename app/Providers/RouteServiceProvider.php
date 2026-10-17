@@ -92,5 +92,19 @@ class RouteServiceProvider extends ServiceProvider
                 Limit::perDay((int) config('services.assistente_manual.limite_diario_global', 600))->by('assistente:dia:global'),
             ];
         });
+
+        // Reenvio de encaminhamento: teto alto por usuário (lote RH no mesmo dia);
+        // por exame fica baixo para evitar spam no mesmo colaborador.
+        RateLimiter::for('controle-exames-reenviar', function (Request $request) {
+            $usuario = optional($request->user())->id ?: $request->ip();
+            $exameId = (string) $request->input('exame_funcionario_id', '0');
+            $porHoraUsuario = app()->environment('local') ? 300 : 120;
+            $porHoraExame = app()->environment('local') ? 120 : 60;
+
+            return [
+                Limit::perHour($porHoraUsuario)->by('reenviar-exame:user:'.$usuario),
+                Limit::perHour($porHoraExame)->by('reenviar-exame:exame:'.$usuario.':'.$exameId),
+            ];
+        });
     }
 }
