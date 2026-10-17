@@ -1,8 +1,9 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-10-15
+Last updated: 2026-10-16
 
+- [controle-exames-reenvio](controle-exames-reenvio.md) — Reenvio e-mail/WhatsApp na aba Encaminhados | flow | exame, encaminhamento, whatsapp
 - [mfa-login-web](mfa-login-web.md) — MFA por empresa + período (padrão 30d) via cookie | flow | auth, mfa, login
 - [centro-custo-unicidade-lotacao](centro-custo-unicidade-lotacao.md) — Unicidade CC: empresa+label+ativo+lotação (matriz/filial) | domain | centrocusto, validacao
 - [cloud-upload-multipart-s3](cloud-upload-multipart-s3.md) — Cloud: &lt;20MB POST; ≥20MB multipart S3/local + IndexedDB F5 | flow | cloud, upload, s3, multipart

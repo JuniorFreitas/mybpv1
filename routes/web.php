@@ -922,6 +922,9 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::post('controle-exames/salvaResultado', [\App\Http\Controllers\ControleExameController::class, 'salvaResultado'])->name('salvaResultado');
         Route::put('controle-exames/salvaResultado/{resultado}', [\App\Http\Controllers\ControleExameController::class, 'updateResultado'])->name('updateResultado');
         Route::match(['post', 'put'], 'controle-exames/salvaUpdate', [\App\Http\Controllers\ControleExameController::class, 'salvaUpdate'])->name('salvaUpdate');
+        Route::post('controle-exames/reenviar-encaminhamento', [\App\Http\Controllers\ControleExameController::class, 'reenviarEncaminhamento'])
+            ->name('reenviarEncaminhamento')
+            ->middleware(['can:admissao_controle_exames', 'throttle:controle-exames-reenviar']);
         Route::post('controle-exames/atualizar', [\App\Http\Controllers\ControleExameController::class, 'atualizar'])->name('atualizar');
         Route::get('controle-exames', [\App\Http\Controllers\ControleExameController::class, 'index'])->name('index');
     });

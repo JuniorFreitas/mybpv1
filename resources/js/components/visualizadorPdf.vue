@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import * as pdfjsLib from 'pdfjs-dist/build/pdf'
+import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/vendor/pdf.worker.min.js'
 

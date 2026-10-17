@@ -19,6 +19,7 @@ export const MODAL_IDS = {
 export const API_PATHS = {
     carregaResposta: 'controle-exames/carregaResposta',
     salvaUpdate: 'controle-exames/salvaUpdate',
+    reenviarEncaminhamento: 'controle-exames/reenviar-encaminhamento',
     resultado: 'controle-exames/resultado',
     salvaResultado: 'controle-exames/salvaResultado',
     atualizar: 'controle-exames/atualizar',
