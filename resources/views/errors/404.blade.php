@@ -1,80 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Erro 404</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
-        }
+@extends('errors.layout')
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 50px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            text-align: center;
-        }
+@section('title', 'Página não encontrada')
+@section('badge', 'Página não encontrada')
+@section('icon', '404')
+@section('heading', 'Não encontramos esta página')
+@section('message', 'O endereço pode estar incorreto, ou a página foi removida ou movida. Confira o link e tente novamente.')
+@section('hint', 'Se você veio de um e-mail ou favorito, o link pode estar desatualizado.')
+@section('code', 'HTTP 404')
 
-        .heading {
-            font-size: 72px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #333;
-            text-shadow: 1px 1px 2px #ccc;
-        }
-
-        .subheading {
-            font-size: 24px;
-            margin-bottom: 40px;
-            color: #666;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 10px 30px;
-            border-radius: 30px;
-            background-color: #3366cc;
-            color: #fff;
-            font-size: 18px;
-            font-weight: bold;
-            text-transform: uppercase;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-        }
-
-        .btn:hover {
-            background-color: #6699cc;
-        }
-
-        @media only screen and (max-width: 768px) {
-            .heading {
-                font-size: 48px;
-            }
-
-            .subheading {
-                font-size: 18px;
-            }
-
-            .btn {
-                font-size: 16px;
-            }
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h1 class="heading">Erro 404</h1>
-    <p class="subheading">Desculpe, a página que você está procurando não foi encontrada.</p>
-    <a href="/" class="btn">Voltar à página inicial</a>
-</div>
-</body>
-</html>
+@section('actions')
+    @include('errors.partials.actions-padrao')
+@endsection

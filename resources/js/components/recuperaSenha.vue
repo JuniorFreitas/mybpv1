@@ -1,72 +1,102 @@
 <template>
-    <div class="card">
-        <div class="card-header text-center">
-            <img src="/images/mybpin-logo-fundo-claro.webp" class="" alt="MyBPIN" style="height: 100px" />
-            <h4 class="text-center">Recuperação de Senha</h4>
+    <div class="login-card">
+        <div class="login-card__brand">
+            <img src="/images/mybpin-logo-fundo-claro.webp" alt="MyBPIN" />
         </div>
-        <div class="card-body">
-            <preload v-if="preload"></preload>
-            <form v-if="!preload" @submit.prevent="validatePassword">
-                <div class="mb-3">
-                    <label class="form-label">CODIGO DE SEGURANÇA:</label>
-                    <div class="input-group">
-                        <input
-                            v-for="(digit, index) in token"
-                            :key="digit.id || index"
-                            ref="tokenInputs"
-                            v-model="token[index]"
-                            type="text"
-                            class="form-control token-input"
-                            autocomplete="off"
-                            maxlength="1"
-                            @input="moveToNextInput($event, index)"
-                            @paste="handlePaste($event, index)"
-                            required
-                        />
-                    </div>
-                </div>
-                <div class="alert alert-info">
-                    <h6><i class="fa fa-info-circle"></i> Requisitos para senha segura:</h6>
-                    <ul class="mb-0 small">
-                        <li>Mínimo de 8 caracteres</li>
-                        <li>Pelo menos 1 letra minúscula (a-z)</li>
-                        <li>Pelo menos 1 letra maiúscula (A-Z)</li>
-                        <li>Pelo menos 1 número (0-9)</li>
-                        <li>Pelo menos 1 caractere especial (@$!%*?&)</li>
-                    </ul>
-                </div>
 
-                <div class="mb-3">
-                    <label for="novaSenha" class="form-label">Nova Senha:</label>
-                    <div class="input-group">
-                        <input
-                            :type="revealPassword ? 'text' : 'password'"
-                            class="form-control"
-                            v-model="novaSenha"
-                            autocomplete="off"
-                            placeholder="Digite a nova senha (min. 8 caracteres)"
-                            @input="checkPasswordStrength"
-                            required
-                        />
-                        <button type="button" class="btn btn-outline-secondary reveal-password-btn" @click="togglePasswordVisibility">
-                            <i class="fa fa-eye"></i>
+        <div class="login-card__body">
+            <preload v-if="preload"></preload>
+
+            <template v-else>
+                <h1 class="login-card__title">Definir nova senha</h1>
+                <p class="login-card__subtitle">
+                    Escolha uma senha forte para acessar o MyBPIN.
+                </p>
+
+                <form @submit.prevent="validatePassword" novalidate>
+                    <ul class="recupera-checklist" aria-label="Requisitos da senha">
+                        <li v-for="item in requisitos" :key="item.id" :class="{ 'is-ok': item.ok }">
+                            <i :class="item.ok ? 'fas fa-check-circle' : 'far fa-circle'" aria-hidden="true"></i>
+                            {{ item.label }}
+                        </li>
+                    </ul>
+
+                    <div class="login-field">
+                        <label for="novaSenha">Nova senha</label>
+                        <div class="login-password">
+                            <input
+                                id="novaSenha"
+                                ref="novaSenhaInput"
+                                :type="revealPassword ? 'text' : 'password'"
+                                class="form-control"
+                                :value="novaSenha"
+                                autocomplete="new-password"
+                                placeholder="Crie uma senha segura"
+                                @input="onNovaSenhaInput"
+                                @change="onNovaSenhaInput"
+                                required
+                            />
+                            <button
+                                type="button"
+                                class="login-password__toggle"
+                                :aria-label="revealPassword ? 'Ocultar senha' : 'Mostrar senha'"
+                                @click="revealPassword = !revealPassword"
+                            >
+                                <i :class="revealPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                            </button>
+                        </div>
+
+                        <div class="recupera-meter" aria-hidden="true">
+                            <div
+                                v-for="n in 4"
+                                :key="'bar-' + n"
+                                class="recupera-meter__bar"
+                                :class="{ 'is-on': passwordLevel >= n, ['is-l' + passwordLevel]: passwordLevel >= n }"
+                            ></div>
+                        </div>
+                        <p v-if="novaSenha" class="recupera-meter__label">{{ passwordStrength }}</p>
+                    </div>
+
+                    <div class="login-field">
+                        <label for="confirmarSenha">Confirmar senha</label>
+                        <div class="login-password">
+                            <input
+                                id="confirmarSenha"
+                                ref="confirmarSenhaInput"
+                                :type="revealConfirm ? 'text' : 'password'"
+                                class="form-control"
+                                :class="{ 'is-invalid': mostrarErroConfirmacao }"
+                                :value="confirmarSenha"
+                                autocomplete="new-password"
+                                placeholder="Repita a nova senha"
+                                @input="onConfirmarSenhaInput"
+                                @change="onConfirmarSenhaInput"
+                                @blur="confirmTouched = true"
+                                required
+                            />
+                            <button
+                                type="button"
+                                class="login-password__toggle"
+                                :aria-label="revealConfirm ? 'Ocultar confirmação' : 'Mostrar confirmação'"
+                                @click="revealConfirm = !revealConfirm"
+                            >
+                                <i :class="revealConfirm ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                            </button>
+                        </div>
+                        <p v-if="mostrarErroConfirmacao" class="recupera-hint-erro">
+                            As senhas não coincidem.
+                        </p>
+                    </div>
+
+                    <div class="login-actions">
+                        <button type="submit" class="btn btn-primary" :disabled="!podeEnviar">
+                            Salvar nova senha
                         </button>
                     </div>
-                    <div>
-                        {{ passwordStrength }}
-                        <div class="password-level-indicator" :class="'level-' + passwordLevel"></div>
-                        <div class="password-hints mt-2" v-if="passwordHints.length > 0">
-                            <div v-for="(hint, index) in passwordHints" :key="hint.id || index" class="text-danger small">
-                                <i class="fa fa-times-circle"></i> {{ hint }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                </form>
 
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-block btn-primary" :disabled="isPasswordWeak || !isTokenAllFilled">Redefinir Senha</button>
-                </div>
-            </form>
+                <a class="login-footer-link" :href="urlLogin">Voltar ao login</a>
+            </template>
         </div>
     </div>
 </template>
@@ -74,166 +104,222 @@
 <script>
 export default {
     name: 'RecuperaSenha',
+    props: {
+        token: {
+            type: String,
+            required: true,
+        },
+    },
     data() {
         return {
-            token: Array(6).fill(''),
             novaSenha: '',
             confirmarSenha: '',
             passwordStrength: '',
             passwordLevel: 0,
-            passwordHints: [],
             revealPassword: false,
-            preload: false
+            revealConfirm: false,
+            confirmTouched: false,
+            preload: false,
+            requisitos: [
+                { id: 'len', label: 'Mínimo de 8 caracteres', ok: false },
+                { id: 'lower', label: '1 letra minúscula (a–z)', ok: false },
+                { id: 'upper', label: '1 letra maiúscula (A–Z)', ok: false },
+                { id: 'num', label: '1 número (0–9)', ok: false },
+                { id: 'special', label: '1 caractere especial (@$!%*?&)', ok: false },
+            ],
         }
     },
     computed: {
-        isPasswordWeak() {
-            // A senha é considerada fraca se não atende a todos os 5 critérios
-            return this.passwordHints.length > 0
+        tokenValido() {
+            return typeof this.token === 'string' && this.token.length >= 32
         },
-        isTokenAllFilled() {
-            return this.token.every((digit) => digit !== '')
-        }
+        senhasIguais() {
+            return this.novaSenha !== '' && this.novaSenha === this.confirmarSenha
+        },
+        mostrarErroConfirmacao() {
+            return this.confirmTouched && this.confirmarSenha !== '' && !this.senhasIguais
+        },
+        requisitosOk() {
+            return this.requisitos.every((r) => r.ok)
+        },
+        podeEnviar() {
+            return this.tokenValido && this.requisitosOk && this.senhasIguais && !this.preload
+        },
+        urlLogin() {
+            return typeof URL_ADMIN !== 'undefined' ? `${URL_ADMIN}/login` : '/g/login'
+        },
     },
     methods: {
-        moveToNextInput(event, index) {
-            if (event.inputType === 'deleteContentBackward' && index > 0) {
-                this.$refs.tokenInputs[index - 1].focus()
-            } else if (index < this.token.length - 1) {
-                this.$refs.tokenInputs[index + 1].focus()
+        valorDoEvento(event) {
+            return event?.target?.value ?? ''
+        },
+
+        onNovaSenhaInput(event) {
+            this.novaSenha = this.valorDoEvento(event)
+            this.atualizarRequisitos()
+        },
+
+        onConfirmarSenhaInput(event) {
+            this.confirmarSenha = this.valorDoEvento(event)
+        },
+
+        syncCamposDoDom() {
+            const nova = this.$refs.novaSenhaInput?.value
+            const conf = this.$refs.confirmarSenhaInput?.value
+            if (typeof nova === 'string' && nova !== this.novaSenha) {
+                this.novaSenha = nova
+                this.atualizarRequisitos()
+            }
+            if (typeof conf === 'string' && conf !== this.confirmarSenha) {
+                this.confirmarSenha = conf
             }
         },
-        handlePaste(event, index) {
-            event.preventDefault()
-            const pastedText = event.clipboardData.getData('text')
-            for (let i = 0; i < pastedText.length && index + i < this.token.length; i++) {
-                this.token[index + i] = pastedText[i]
-            }
-            if (index + pastedText.length < this.token.length) {
-                this.$refs.tokenInputs[index + pastedText.length].focus()
-            }
-        },
-        validatePassword() {
+
+        atualizarRequisitos() {
             const password = this.novaSenha
-            this.preload = true
-            const form = {
-                token: this.token.join(''),
-                novaSenha: this.novaSenha
+            const checks = {
+                len: password.length >= 8,
+                lower: /[a-z]/.test(password),
+                upper: /[A-Z]/.test(password),
+                num: /\d/.test(password),
+                special: /[@$!%*?&]/.test(password),
             }
 
+            this.requisitos = this.requisitos.map((r) => ({ ...r, ok: !!checks[r.id] }))
+
+            const strength = Object.values(checks).filter(Boolean).length
+            if (!password) {
+                this.passwordLevel = 0
+                this.passwordStrength = ''
+            } else if (strength <= 2) {
+                this.passwordLevel = 1
+                this.passwordStrength = 'Força: muito fraca'
+            } else if (strength === 3) {
+                this.passwordLevel = 2
+                this.passwordStrength = 'Força: fraca'
+            } else if (strength === 4) {
+                this.passwordLevel = 3
+                this.passwordStrength = 'Força: moderada'
+            } else {
+                this.passwordLevel = 4
+                this.passwordStrength = 'Força: forte'
+            }
+        },
+
+        validatePassword() {
+            this.confirmTouched = true
+            this.syncCamposDoDom()
+
+            if (!this.podeEnviar) {
+                return
+            }
+
+            this.preload = true
             axios
-                .post(`${URL_SITE}/envia-recupera-senha`, form)
+                .post(`${URL_SITE}/envia-recupera-senha`, {
+                    token: this.token,
+                    novaSenha: this.novaSenha,
+                })
                 .then((response) => {
-                    mostraSucesso('', 'Senha alterada com sucesso!')
-                    window.location.href = `${URL_ADMIN}/login`
+                    const redirect = response.data?.redirect
+                    if (response.data?.mfa_required && redirect) {
+                        mostraSucesso('', response.data.msg || 'Senha alterada. Continue a verificação.')
+                        window.location.href = redirect
+                        return
+                    }
+                    mostraSucesso('', response.data?.msg || 'Senha alterada com sucesso!')
+                    window.location.href = this.urlLogin
                 })
                 .catch((error) => {
                     this.preload = false
+                    if (error?.response?.status === 429) {
+                        window.location.href = '/erro/muitas-tentativas'
+                    }
                 })
-            return true
         },
-
-        checkPasswordStrength() {
-            const password = this.novaSenha
-            let strength = 0
-            const hints = []
-
-            // Verificar critérios específicos
-            const hasMinLength = password.length >= 8
-            const hasLowerCase = /[a-z]/.test(password)
-            const hasUpperCase = /[A-Z]/.test(password)
-            const hasNumbers = /\d/.test(password)
-            const hasSpecialChars = /[@$!%*?&]/.test(password)
-
-            if (hasMinLength) strength++
-            if (hasLowerCase) strength++
-            if (hasUpperCase) strength++
-            if (hasNumbers) strength++
-            if (hasSpecialChars) strength++
-
-            // Adicionar dicas para critérios não atendidos
-            if (!hasMinLength) hints.push('Deve ter pelo menos 8 caracteres')
-            if (!hasLowerCase) hints.push('Deve conter pelo menos 1 letra minúscula')
-            if (!hasUpperCase) hints.push('Deve conter pelo menos 1 letra maiúscula')
-            if (!hasNumbers) hints.push('Deve conter pelo menos 1 número')
-            if (!hasSpecialChars) hints.push('Deve conter pelo menos 1 caractere especial (@$!%*?&)')
-
-            this.passwordHints = hints
-
-            // Definir força da senha
-            if (strength <= 2) {
-                this.updatePasswordStrength('Muito Fraca', 1)
-            } else if (strength === 3) {
-                this.updatePasswordStrength('Fraca', 2)
-            } else if (strength === 4) {
-                this.updatePasswordStrength('Moderada', 3)
-            } else if (strength === 5) {
-                this.updatePasswordStrength('Forte', 4)
-            }
-        },
-        updatePasswordStrength(message, level) {
-            this.passwordStrength = 'Força da Senha: ' + message
-            this.passwordLevel = level
-        },
-        togglePasswordVisibility() {
-            this.revealPassword = !this.revealPassword
-        },
-        checkPasswordMatch() {
-            const password = this.novaSenha
-            const confirmPassword = this.confirmarSenha
-
-            if (password !== confirmPassword) {
-                this.showAlert('As senhas não coincidem.')
-            }
-        }
-    }
+    },
 }
 </script>
 
-<style>
-.token-input {
-    width: 2rem;
-    height: 4rem;
-    font-size: 1.8rem;
+<style scoped>
+.recupera-meter {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.35rem;
+    margin-top: 0.65rem;
+}
+
+.recupera-meter__bar {
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(11, 27, 61, 0.1);
+    transition: background 0.2s ease;
+}
+
+.recupera-meter__bar.is-on.is-l1 {
+    background: #d64545;
+}
+
+.recupera-meter__bar.is-on.is-l2 {
+    background: #e08a1e;
+}
+
+.recupera-meter__bar.is-on.is-l3 {
+    background: #c9a227;
+}
+
+.recupera-meter__bar.is-on.is-l4 {
+    background: #1b7a4a;
+}
+
+.recupera-meter__label {
+    margin: 0.4rem 0 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--login-muted, #5b6b86);
+}
+
+.recupera-hint-erro {
+    margin: 0.4rem 0 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #c0392b;
+}
+
+.recupera-checklist {
+    list-style: none;
+    margin: 0 0 1.15rem;
+    padding: 0.85rem 1rem;
+    border-radius: 0.85rem;
+    background: var(--login-nevoa, #f4f6fa);
+    border: 1px solid var(--login-line, rgba(11, 27, 61, 0.12));
+}
+
+.recupera-checklist li {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--login-muted, #5b6b86);
+    line-height: 1.35;
+}
+
+.recupera-checklist li + li {
+    margin-top: 0.4rem;
+}
+
+.recupera-checklist li i {
+    width: 1rem;
     text-align: center;
 }
 
-.password-level-indicator {
-    height: 10px;
-    margin-top: 10px;
+.recupera-checklist li.is-ok {
+    color: var(--login-ok, #1b7a4a);
 }
 
-.level-1 {
-    background-color: red;
-}
-
-.level-2 {
-    background-color: orange;
-}
-
-.level-3 {
-    background-color: yellow;
-}
-
-.level-4 {
-    background-color: lightgreen;
-}
-
-.level-5 {
-    background-color: green;
-}
-
-.password-hints {
-    font-size: 14px;
-    margin-top: 10px;
-}
-
-.reveal-password-btn {
-    cursor: pointer;
-}
-
-.alert {
-    color: red;
-    margin-top: 10px;
+.login-field .form-control.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15);
 }
 </style>

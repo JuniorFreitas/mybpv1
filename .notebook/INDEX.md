@@ -1,7 +1,12 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-10-16
+Last updated: 2026-10-17
+
+- [portal-vagas-vitrine-exclusoes](portal-vagas-vitrine-exclusoes.md) — Vitrine BFF omite apelidos `_bpservice` e `mybp` | flow | portal, vagas, bff
+- [email-candidatura-recrutamento](email-candidatura-recrutamento.md) — Confirmação de candidatura: JobRecrutamento → RecrutamentoMail + layout padrão | flow | email, recrutamento, candidatura
+
+- [remediacao-seguranca-audit](remediacao-seguranca-audit.md) — Inventário findings×rotas ondas 0–4 (BFF portal, ApiToken, XSS, CORS) | security | audit, api, portal
 
 - [controle-exames-reenvio](controle-exames-reenvio.md) — Reenvio e-mail/WhatsApp na aba Encaminhados | flow | exame, encaminhamento, whatsapp
 - [mfa-login-web](mfa-login-web.md) — MFA por empresa + período (padrão 30d) via cookie | flow | auth, mfa, login

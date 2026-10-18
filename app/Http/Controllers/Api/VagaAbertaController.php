@@ -47,7 +47,8 @@ class VagaAbertaController extends Controller
      */
     public function getVagaAberta($empresa_slug, $vaga_aberta_id): object
     {
-        $vaga = VagasAbertas::whereHas('Empresa', function ($query) use ($empresa_slug) {
+        // Rota pública (guest): o ScopeEmpresa fail-closed zeraria o resultado; o filtro é feito por apelido + ativo.
+        $vaga = VagasAbertas::withoutGlobalScopes()->whereHas('Empresa', function ($query) use ($empresa_slug) {
             $query->withoutGlobalScopes()->where('apelido', $empresa_slug);
         })
             ->with(['Empresa' => function ($query) {
@@ -288,7 +289,12 @@ class VagaAbertaController extends Controller
 //        $dados['disponibilidade_domingo'] = $dados['disponibilidade_domingo'] == 'true';
 //        $dados['disponibilidade_domingo'] = $dados['disponibilidade_domingo'] == 'true';
         $dados['email'] = mb_strtolower($dados['email']);
-        $vaga_aberta = VagasAbertas::whereId($dados['vaga_aberta_id'])->with('Municipio')->first();
+        // Guest: sem withoutGlobalScopes o ScopeEmpresa devolve vazio; restringe à empresa da própria requisição.
+        $vaga_aberta = VagasAbertas::withoutGlobalScopes()
+            ->where('empresa_id', $dados['empresa_id'])
+            ->whereId($dados['vaga_aberta_id'])
+            ->with('Municipio')
+            ->first();
 
         $dados['uf_vaga'] = mb_strtoupper($vaga_aberta->Municipio->uf);
         $dados['municipio_id'] = $vaga_aberta->municipio_id;
@@ -304,7 +310,8 @@ class VagaAbertaController extends Controller
             'vaga_aberta_id' => ['required', new VagaAbertaEmpresaRules($dados['empresa_id'])],
 
             'nascimento' => 'required|min:10',
-            'email' => 'required|email:rfc,dns',
+            // DNS só é checado fora de APP_ENV=local (permite e-mails de teste como example.com em dev).
+            'email' => app()->environment('local') ? 'required|email:rfc' : 'required|email:rfc,dns',
             'cep' => 'required|min:9',
             'logradouro' => 'required',
             'bairro' => 'required',

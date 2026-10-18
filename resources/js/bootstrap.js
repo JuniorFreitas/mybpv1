@@ -126,6 +126,12 @@ window.axios.interceptors.response.use(
             }
             return Promise.reject(error)
         }
+        if (status === 429) {
+            if (typeof window.toastr !== 'undefined') {
+                window.toastr.error('Por segurança, tente novamente mais tarde.', 'Limite temporário')
+            }
+            return Promise.reject(error)
+        }
         const { message, title } = axiosErrorMessage(error.response.data)
         if (typeof window.toastr !== 'undefined') {
             window.toastr.error(message, title)

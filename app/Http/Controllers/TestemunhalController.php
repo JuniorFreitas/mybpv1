@@ -59,7 +59,7 @@ class TestemunhalController extends Controller
             }
 
             $dados['texto'] = html_entity_decode($dados['texto']);
-            $dados['texto'] = strip_tags($dados['texto'], "<p><a><strong><i><ul><li><ol><table><tbody><tr><td>"); // permitir apenas essas tags
+            $dados['texto'] = \App\Support\SafeHtmlSanitizer::sanitize($dados['texto']);
 
             $testemunhal = Testemunhal::create($dados);
             foreach ($dados['anexo'] as $index => $anexo) {

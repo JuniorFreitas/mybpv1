@@ -785,7 +785,8 @@ class TreinamentoVencimento extends Command
                 throw new \Exception("Falha ao fazer upload do arquivo para S3");
             }
 
-            $urlTemporaria = Storage::disk('s3')->temporaryUrl($caminhoS3, now()->addDays(7));
+            $ttlMinutos = max(5, (int) config('filesystems.s3_temporary_url_ttl_minutes', 60));
+            $urlTemporaria = Storage::disk('s3')->temporaryUrl($caminhoS3, now()->addMinutes($ttlMinutos));
 
             $this->info("✓ Arquivo enviado para S3: {$caminhoS3}");
             $this->info("✓ URL temporária gerada (válida por 7 dias)");

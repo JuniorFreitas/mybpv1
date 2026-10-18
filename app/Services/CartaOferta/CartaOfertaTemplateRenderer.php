@@ -55,7 +55,9 @@ class CartaOfertaTemplateRenderer
             if ($value === null) {
                 return '';
             }
-            return is_scalar($value) ? (string) $value : '';
+            return is_scalar($value)
+                ? htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
+                : '';
         }, $sanitized) ?? $sanitized;
 
         return $this->removerLinhasSalarioVazias($rendered);

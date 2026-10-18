@@ -11,27 +11,29 @@ class ScopeEmpresa implements Scope
     /**
      * Apply the scope to a given Eloquent query builder.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $builder
-     * @param \Illuminate\Database\Eloquent\Model $model
-     * @return void
+     * Fail-closed: guests em HTTP sem sessão não veem dados cross-tenant.
+     * Console/fila: não aplica filtro (jobs usam withoutGlobalScopes ou setam tenant).
      */
     public function apply(Builder $builder, Model $model)
     {
-        if ($model->hasCast('empresa_id')) { // pro nao aceitar Nome de classe statico, exemplo:  Curriculo:get();
-            if(auth()->user()){
-                return $builder->where('empresa_id', auth()->user()->empresa_id);
+        $user = auth()->user();
+
+        if (!$user) {
+            if (app()->runningInConsole()) {
+                return;
             }
+
+            $builder->whereRaw('0 = 1');
+            return;
         }
 
-      /*  if ($model->hasCast('cliente_id')) { // pro nao aceitar Nome de classe statico, exemplo:  Curriculo:get();
-            if(auth()->user()){
-                return $builder->where('cliente_id', auth()->user()->empresa_id);
-            }
-        } */
-        else {
-            return $builder->whereHas('Pessoa', function ($query) {
-                $query->whereEmpresaId(auth()->user()->empresa_id);
-            });
+        if ($model->hasCast('empresa_id')) {
+            $builder->where('empresa_id', $user->empresa_id);
+            return;
         }
+
+        $builder->whereHas('Pessoa', function ($query) use ($user) {
+            $query->whereEmpresaId($user->empresa_id);
+        });
     }
 }

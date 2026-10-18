@@ -12,8 +12,14 @@ Route::get('/health', function () {
 
 Route::get('/verificacao-assinatura', [\App\Http\Controllers\VerificacaoAssinaturaController::class, 'index'])->name('verificacao-assinatura');
 
-Route::get('/recupera-senha/{token}', [\App\Http\Controllers\UserController::class, 'recuperaSenha'])->name('recuperaSenhanew');
-Route::post('/envia-recupera-senha', [\App\Http\Controllers\UserController::class, 'recuperaSenhaPost'])->name('recuperaSenhaPost');
+Route::view('/erro/muitas-tentativas', 'errors.429')->name('erro.429');
+
+Route::get('/recupera-senha/{token}', [\App\Http\Controllers\UserController::class, 'recuperaSenha'])
+    ->middleware('throttle:recupera-senha')
+    ->name('recuperaSenhanew');
+Route::post('/envia-recupera-senha', [\App\Http\Controllers\UserController::class, 'recuperaSenhaPost'])
+    ->middleware('throttle:recupera-senha')
+    ->name('recuperaSenhaPost');
 
 //Route::get('testezap', function () {
 //
@@ -72,6 +78,15 @@ Route::group(['prefix' => 'publico', 'as' => 'publico.'], function () {
     Route::post('upload', [\App\Http\Controllers\PublicoController::class, 'upload'])->name('upload');
     Route::get('foto/{nome}', [\App\Http\Controllers\PublicoController::class, 'download'])->name('foto-download');
 
+    // BFF portal de vagas (sem X-API-TOKEN no browser; empresa amarrada na rota)
+    Route::middleware('throttle:api-integracao-spa')->prefix('portal-vagas/{empresa_id}')->whereNumber('empresa_id')->group(function () {
+        Route::post('vaga-aberta/{vaga_aberta_id}', [\App\Http\Controllers\PortalVagasBffController::class, 'atualizarVaga'])
+            ->whereNumber('vaga_aberta_id');
+        Route::post('busca-curriculo', [\App\Http\Controllers\PortalVagasBffController::class, 'buscaCurriculo']);
+        Route::post('busca-cpf', [\App\Http\Controllers\PortalVagasBffController::class, 'buscaCpf']);
+        Route::post('cadastra-curriculo', [\App\Http\Controllers\PortalVagasBffController::class, 'cadastraCurriculo']);
+    });
+
     // Cloud: rotas públicas removidas (arquivos sensíveis → URLs assinadas em /g/cloud/*)
 });
 
@@ -93,7 +108,9 @@ Route::group(['prefix' => 'g'], function () {
     Route::get('password/reset/{token}', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('password/reset', [\App\Http\Controllers\Auth\ResetPasswordController::class, 'reset']);
 
-    Route::post('/enviaSolicitacaoSenha', [\App\Http\Controllers\UserController::class, 'solicitaRecuperaSenha'])->name('solicitaRecuperaSenha');
+    Route::post('/enviaSolicitacaoSenha', [\App\Http\Controllers\UserController::class, 'solicitaRecuperaSenha'])
+        ->middleware('throttle:recupera-senha')
+        ->name('solicitaRecuperaSenha');
 
     // Password Change Routes (fora do middleware check.password.reset para evitar loop)
     Route::get('alterar-senha', [\App\Http\Controllers\AlterarSenhaController::class, 'index'])->name('alterar-senha.index')->middleware('auth');
@@ -101,23 +118,6 @@ Route::group(['prefix' => 'g'], function () {
 });
 
 Route::get('carteira/{curriculo}', [\App\Http\Controllers\TreinamentoController::class, 'carteiraIndividual'])->name('treinamento.carteira');
-Route::group(['prefix' => '3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS'], function () {
-    Route::get('verificaCliente', [\App\Http\Controllers\ClientesController::class, 'clientesProximoVencimento'])->name('vencimentoClientes');
-    Route::get('recrutamentos/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', [\App\Http\Controllers\RecrutamentoController::class, 'export'])->name('recrutamentos.excel');
-    Route::get('parecer_rh/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', [\App\Http\Controllers\ParecerRhController::class, 'export'])->name('parecerrh.excel');
-    Route::get('parecer_rota_transporte/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', [\App\Http\Controllers\ParecerRotaController::class, 'export'])->name('parecer_rota_transporte.excel');
-    Route::get('parecer_entrevista_tecnica/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', [\App\Http\Controllers\ParecerEntrevistaTecnicaController::class, 'export'])->name('parecer_entrevista_tecnica.excel');
-    Route::get('parecer_teste_pratico/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', [\App\Http\Controllers\ParecerTestePraticoController::class, 'export'])->name('parecer_teste_pratico.excel');
-    Route::post('portaria/export', [\App\Http\Controllers\PortariaController::class, 'export'])->name('portaria.excel');
-
-    /* Route::get('resultado_integrado/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', 'ResultadoIntegradoController@export')->name('resultado_integrado.excel');
-     Route::get('admissao/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', 'AdmissaoController@export')->name('admissao.excel');
-     Route::get('clientes/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', 'ClientesController@export')->name('clientes.excel');
-     Route::get('carteira-etiqueta/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', 'TreinamentoController@export')->name('carteira.excel');
-
-     Route::get('parecer_entrevista_rh/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', 'EntrevistaRhClienteController@export')->name('parecerentrevistarh.excel');
-     Route::get('parecer_gestor_rh/export/3hmMaxB0QB0zvE48exportsBGQG3bheYiaQP1cWIqdhPL1lbv5g9tWBnBhRUDIJCRFM2gqbZSALev3zPcZVbHlZS', 'EntrevistaGestorClienteController@export')->name('gestor_rh.excel');*/
-});
 
 
 Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], 'as' => 'g.', 'prefix' => 'g'], function () {
@@ -1012,6 +1012,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
                     Route::post('criar', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'criar'])->name('criar');
                     Route::put('responder', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'responder'])->name('responder')->middleware('can:admissao_documentos_carta_oferta_aprova_reprova');
                     Route::post('/enviar-para-assinatura', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'enviarParaAssinatura'])->name('enviarParaAssinatura')->middleware('assinatura.digital.habilitada');
+                    Route::post('{token}/integra-sgi', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'requestSgi'])->name('integraSgi');
                     Route::get('/', [\App\Http\Controllers\CartaOfertaGerencialController::class, 'index'])->name('index');
                 });
             });

@@ -479,29 +479,9 @@ const app = createApp({
                 })
         },
         async getIntegraMybp(token) {
-            let endpoint = ''
-            switch (window.location.hostname) {
-                case 'qa.mybp.com.br':
-                    endpoint = `https://qasgi.bpse.com.br/api/carta-oferta/${token}/integramybp`
-                    break
-                case 'sistema.mybp.com.br':
-                    endpoint = `https://sgi.bpse.com.br/api/carta-oferta/${token}/integramybp`
-                    break
-                default:
-                    endpoint = `http://localhost:8884/api/carta-oferta/${token}/integramybp`
-                    break
-            }
-
+            // Proxy server-side: token SGI nunca vai no browser
             await axios
-                .post(
-                    `${endpoint}/`,
-                    {},
-                    {
-                        headers: {
-                            'X-API-TOKEN': 'gTyF2ErmclLMRjzxBHo20OoXVqNhgnDKqCtQVRtsrfF1sOU4s6wK'
-                        }
-                    }
-                )
+                .post(`${this.urlDefault}/${token}/integra-sgi`)
                 .then(({ data }) => {
                     if (this.objopen) this.objopen.integraMybp = data
                 })

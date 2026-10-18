@@ -936,8 +936,72 @@ class Arquivo extends Model
      * @param $arquivo
      * @return \Illuminate\Http\Response|\Symfony\Component\HttpFoundation\StreamedResponse
      */
+    public static function sanitizarPathStorage(?string $arquivo): string
+    {
+        $arquivo = str_replace(["\0", '\\'], ['', '/'], (string) $arquivo);
+        $arquivo = ltrim($arquivo, '/');
+        if ($arquivo === '' || str_contains($arquivo, '..')) {
+            abort(404);
+        }
+
+        return $arquivo;
+    }
+
+    public static function findByArquivo(string $arquivo): ?self
+    {
+        $arquivo = self::sanitizarPathStorage($arquivo);
+
+        return self::query()
+            ->where(function ($query) use ($arquivo) {
+                $query->where('file', $arquivo)->orWhere('thumb', $arquivo);
+            })
+            ->first();
+    }
+
+    public static function nomeDisco(string $arquivo): ?string
+    {
+        return self::findByArquivo($arquivo)?->disco;
+    }
+
+    /**
+     * Retorna true se o path existe no disco do registro (bind obrigatório à row).
+     */
+    public static function buscaPath(string $arquivo): bool|string
+    {
+        $model = self::findByArquivo($arquivo);
+        if (!$model || !$model->disco) {
+            return false;
+        }
+
+        $path = self::sanitizarPathStorage($arquivo);
+        if (!Storage::disk($model->disco)->exists($path)) {
+            return false;
+        }
+
+        return $path;
+    }
+
+    public static function apagar(string $arquivo): void
+    {
+        $model = self::findByArquivo($arquivo);
+        if (!$model) {
+            return;
+        }
+
+        $path = self::sanitizarPathStorage($arquivo);
+        if ($model->disco && Storage::disk($model->disco)->exists($path)) {
+            Storage::disk($model->disco)->delete($path);
+        }
+
+        if ($model->file === $path || $model->thumb === $path) {
+            $model->delete();
+        }
+    }
+
     public static function anexoShow($disco, $arquivo)
     {
+        $arquivo = self::sanitizarPathStorage($arquivo);
+
         if ($disco === self::DISCO_PERFIL_USUARIO) {
             $key = 'perfil_anexo:' . $arquivo;
             $ttl = (int) config('cache.ttl.perfil_anexo', 86400);
@@ -997,6 +1061,8 @@ class Arquivo extends Model
      */
     public static function anexoDownload($disco, $arquivo)
     {
+        $arquivo = self::sanitizarPathStorage($arquivo);
+
         if (!Storage::disk($disco)->exists($arquivo)) {
             abort(404);
         }

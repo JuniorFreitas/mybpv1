@@ -434,7 +434,7 @@ class CartaOfertaGerencialController extends Controller
 
         $client = new Client();
         $headers = [
-            'X-API-TOKEN' => 'gTyF2ErmclLMRjzxBHo20OoXVqNhgnDKqCtQVRtsrfF1sOU4s6wK',
+            'X-API-TOKEN' => (string) env('SGI_X_API_TOKEN', env('X_API_TOKEN')),
             'Content-Type' => 'application/json',
             'User-Agent' => 'MyBPIN'
         ];

@@ -222,7 +222,7 @@ function focarCampo() {
 
 function historicoParaEnvio() {
     return mensagens.value
-        .filter((mensagem) => !mensagem.erro)
+        .filter((mensagem) => !mensagem.erro && mensagem.papel === 'usuario')
         .slice(-MAX_HISTORICO_ENVIADO)
         .map(({ papel, texto: conteudo }) => ({ papel, texto: conteudo }))
 }

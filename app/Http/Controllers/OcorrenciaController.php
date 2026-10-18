@@ -100,7 +100,7 @@ class OcorrenciaController extends Controller
             $dados['user_id'] = auth()->id();
 
             $dados['resposta'] = html_entity_decode($dados['resposta']);
-            $dados['resposta'] = strip_tags($dados['resposta'], "<p><a><strong><i><ul><li><ol><table><tbody><tr><td>"); // permitir apenas essas tags
+            $dados['resposta'] = \App\Support\SafeHtmlSanitizer::sanitize($dados['resposta']);
             $resposta = RespostaOcorrencia::create($dados);
             $dados['resposta_id'] = $resposta->id;
 
@@ -156,7 +156,7 @@ class OcorrenciaController extends Controller
             ]);
 
             $dados['resposta'] = html_entity_decode($dados['resposta']);
-            $dados['resposta'] = strip_tags($dados['resposta'], "<p><a><strong><i><ul><li><ol><table><tbody><tr><td>"); // permitir apenas essas tags
+            $dados['resposta'] = \App\Support\SafeHtmlSanitizer::sanitize($dados['resposta']);
 
             $resposta = RespostaOcorrencia::create($dados);
             if ($request->filled('anexos')) {
