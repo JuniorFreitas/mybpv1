@@ -13,7 +13,7 @@ Fonte: `~/security-audit-skill/mybp/run-1/`. Escopo 1C + portal BFF/v2 (2B).
 | X-API-TOKEN literals | cartaoferta JS + CartaOfertaGerencial | SGI | 2 | done |
 | X-API-TOKEN sem escopo | `/api/envia-whats`, `/api/v2/integracao/*` | BFF/SPA | 2 | done |
 | legacy vaga PII | `/api/busca-*`, `/api/cadastra-curriculo` | VagasAbertas.vue → BFF | 2 | done |
-| /publico unscoped | `/publico/lista-*` | público | 3 | done |
+| /publico unscoped | `/publico/lista-*` | público + UI auth (fallback `auth()->user()->empresa_id`) | 3 | done |
 | simularUsuario | PUT `/g/usuarios/simularUsuario` | Usuarios.vue | 3 | done |
 | TrustProxies * | global | deploy | 3 | done |
 | Horizon id==1 | `/horizon` | ops | 3 | done |

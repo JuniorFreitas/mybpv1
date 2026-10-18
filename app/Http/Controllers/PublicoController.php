@@ -116,6 +116,12 @@ class PublicoController extends Controller
     private function empresaIdObrigatorio(Request $request): int
     {
         $empresaId = (int) $request->input('empresa_id', $request->query('empresa_id', 0));
+
+        // Telas autenticadas (/g/*) chamam /publico/lista-* sem query; usa a empresa da sessão.
+        if ($empresaId <= 0 && auth()->check()) {
+            $empresaId = (int) auth()->user()->empresa_id;
+        }
+
         abort_unless($empresaId > 0, 400, 'empresa_id é obrigatório');
 
         $ativa = Cliente::withoutGlobalScopes()
