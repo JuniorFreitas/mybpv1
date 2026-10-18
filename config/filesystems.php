@@ -15,6 +15,9 @@ return [
     'default' => env('FILESYSTEM_DRIVER', 'local'),
     'cloud' => env('FILESYSTEM_CLOUD', 's3'),
 
+    // TTL de URLs pré-assinadas S3 (minutos). Evitar TTL longo (ex.: 7 dias).
+    's3_temporary_url_ttl_minutes' => (int) env('S3_TEMPORARY_URL_TTL_MINUTES', 60),
+
     'disks' => [
 
         'local' => [

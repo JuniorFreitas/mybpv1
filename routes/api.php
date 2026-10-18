@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('convocacao/{resposta}/{hash}/', [\App\Http\Controllers\IntermitenteController::class, "respostaConvocacao"])->name('respostaConvocacao');
 
-Route::middleware('apitoken')->post('envia-whats', function (Request $request) {
+Route::middleware(['apitoken:whatsapp', 'throttle:api-integracao-spa'])->post('envia-whats', function (Request $request) {
     //     $arquivo =  Sistema::convertBase2(CartaOferta::checklistArquivo('equatorialservicos'), true);
     try {
         (new ZapNotificacao())->enviar([
@@ -98,7 +98,7 @@ Route::middleware(['api'])
 
         $apelidoPattern = '(?!media$)[a-zA-Z0-9_-]+';
 
-        Route::middleware('apitoken')->group(function () use ($apelidoPattern) {
+        Route::middleware(['apitoken:spa_read', 'throttle:api-integracao-spa'])->group(function () use ($apelidoPattern) {
             Route::get('/', [\App\Http\Controllers\Api\IntegracaoSpaV2Controller::class, 'empresasAtivas']);
             Route::get('/empresas-ativas', [\App\Http\Controllers\Api\IntegracaoSpaV2Controller::class, 'empresasAtivas']);
             Route::get('{apelido}/vagas-abertas/{vaga_aberta_id}/{slug_vaga_aberta}', [\App\Http\Controllers\Api\IntegracaoSpaV2Controller::class, 'vagaAbertaDetalhe'])
@@ -107,13 +107,16 @@ Route::middleware(['api'])
                 ->where('slug_vaga_aberta', '[a-zA-Z0-9\-]+');
             Route::get('{apelido}/vagas-abertas', [\App\Http\Controllers\Api\IntegracaoSpaV2Controller::class, 'vagasAbertasPaginadas'])
                 ->where('apelido', $apelidoPattern);
+            Route::get('{apelido}', [\App\Http\Controllers\Api\IntegracaoSpaV2Controller::class, 'empresaComPreview'])
+                ->where('apelido', $apelidoPattern);
+        });
+
+        Route::middleware(['apitoken:spa_write', 'throttle:api-integracao-spa'])->group(function () use ($apelidoPattern) {
             Route::post('{apelido}/busca-curriculo', [\App\Http\Controllers\Api\IntegracaoSpaCurriculoController::class, 'buscaCurriculo'])
                 ->where('apelido', $apelidoPattern);
             Route::post('{apelido}/busca-cpf', [\App\Http\Controllers\Api\IntegracaoSpaCurriculoController::class, 'buscaCpf'])
                 ->where('apelido', $apelidoPattern);
             Route::post('{apelido}/cadastra-curriculo', [\App\Http\Controllers\Api\IntegracaoSpaCurriculoController::class, 'cadastraCurriculo'])
-                ->where('apelido', $apelidoPattern);
-            Route::get('{apelido}', [\App\Http\Controllers\Api\IntegracaoSpaV2Controller::class, 'empresaComPreview'])
                 ->where('apelido', $apelidoPattern);
         });
     });
@@ -294,15 +297,24 @@ Route::prefix('v3')->group(function () {
     });
 });
 
+// Vitrine do portal de vagas (whitelist de campos). Exige X-API-TOKEN com spa_read.
+// Registrada ANTES de {empresa_slug} para não ser capturada pelo catálogo por slug.
+Route::middleware(['api', 'apitoken:spa_read', 'throttle:api-integracao-spa'])
+    ->get('portal-vagas/empresas', [\App\Http\Controllers\PortalVagasBffController::class, 'empresasAtivas'])
+    ->name('portal-vagas.empresas');
+
 Route::group(['as' => 'vaga'], function () {
+    // Catálogo público por slug (sem PII)
     Route::get('{empresa_slug}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'getVagasAbertasByEmpresa']);
     Route::get('{empresa_slug}/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'getVagaAberta']);
-    //    Route::get('{empresa_id}/vaga-aberta/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'index']);
-    Route::post('{empresa_id}/vaga-aberta/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'atualizar']);
 
-    Route::post('busca-curriculo', [\App\Http\Controllers\Api\VagaAbertaController::class, 'buscaCurriculo']);
-    Route::post('busca-cpf', [\App\Http\Controllers\Api\VagaAbertaController::class, 'buscaCpf']);
-    Route::post('cadastra-curriculo', [\App\Http\Controllers\Api\VagaAbertaController::class, 'store']);
+    // POSTs de currículo: exigem apitoken (portal candidato usa BFF /publico/portal-vagas)
+    Route::middleware(['apitoken:spa_write', 'throttle:api-integracao-spa'])->group(function () {
+        Route::post('{empresa_id}/vaga-aberta/{vaga_aberta_id}', [\App\Http\Controllers\Api\VagaAbertaController::class, 'atualizar']);
+        Route::post('busca-curriculo', [\App\Http\Controllers\Api\VagaAbertaController::class, 'buscaCurriculo']);
+        Route::post('busca-cpf', [\App\Http\Controllers\Api\VagaAbertaController::class, 'buscaCpf']);
+        Route::post('cadastra-curriculo', [\App\Http\Controllers\Api\VagaAbertaController::class, 'store']);
+    });
 });
 
 

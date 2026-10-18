@@ -16,7 +16,8 @@ class AssistenteManualPerguntaRequest extends FormRequest
         return [
             'pergunta' => 'required|string|min:2|max:500',
             'historico' => 'nullable|array|max:12',
-            'historico.*.papel' => 'required|string|in:usuario,assistente',
+            // Apenas turns do usuário: respostas do assistente vêm do servidor, não do client
+            'historico.*.papel' => 'required|string|in:usuario',
             'historico.*.texto' => 'required|string|max:4000',
         ];
     }

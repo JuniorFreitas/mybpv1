@@ -669,7 +669,8 @@ class AvaliacaoNoventaService
                 'ContentDisposition' => 'attachment; filename="' . $nomeArquivo . '"',
             ]);
 
-            $urlTemporaria = Storage::disk('s3')->temporaryUrl($caminhoS3, now()->addDays(7));
+            $ttlMinutos = max(5, (int) config('filesystems.s3_temporary_url_ttl_minutes', 60));
+            $urlTemporaria = Storage::disk('s3')->temporaryUrl($caminhoS3, now()->addMinutes($ttlMinutos));
 
             if (file_exists($caminhoTempLocal)) {
                 unlink($caminhoTempLocal);

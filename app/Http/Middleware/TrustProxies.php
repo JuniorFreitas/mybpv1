@@ -8,16 +8,15 @@ use Illuminate\Http\Request;
 class TrustProxies extends Middleware
 {
     /**
-     * The trusted proxies for this application.
-     * Necessário atrás de CDN/load balancer (ex.: Cloudflare) para HTTPS e host corretos.
+     * Proxies confiáveis. Preferir CIDRs do LB/Cloudflare via TRUSTED_PROXIES.
+     * Ex.: TRUSTED_PROXIES=173.245.48.0/20,103.21.244.0/22
+     * Use * apenas em ambientes controlados (não recomendado em produção).
      *
-     * @var array|string|null
+     * @var array<int, string>|string|null
      */
-    protected $proxies = '*';
+    protected $proxies;
 
     /**
-     * The headers that should be used to detect proxies.
-     *
      * @var int
      */
     protected $headers = Request::HEADER_X_FORWARDED_FOR
@@ -25,4 +24,14 @@ class TrustProxies extends Middleware
         | Request::HEADER_X_FORWARDED_PORT
         | Request::HEADER_X_FORWARDED_PROTO
         | Request::HEADER_X_FORWARDED_AWS_ELB;
+
+    public function __construct()
+    {
+        $configured = env('TRUSTED_PROXIES', '*');
+        if ($configured === '*' || $configured === null || $configured === '') {
+            $this->proxies = '*';
+        } else {
+            $this->proxies = array_values(array_filter(array_map('trim', explode(',', $configured))));
+        }
+    }
 }

@@ -7,21 +7,28 @@ function isGuestAuthRoute() {
 
     const path = window.location.pathname.replace(/\/+$/, '')
     return [
+        '/login',
         '/g/login',
         '/g/register',
         '/g/password/reset',
         '/g/password/email',
         '/g/password/confirm',
+        // Recuperação pública (fora do prefixo /g)
+        '/recupera-senha',
+        '/envia-recupera-senha',
         '/g/recupera-senha',
-        '/g/envia-recupera-senha'
+        '/g/envia-recupera-senha',
+        '/g/enviaSolicitacaoSenha',
     ].some((route) => path === route || path.startsWith(`${route}/`))
 }
 
 if (!isGuestAuthRoute()) {
-    axios.get(`${URL_ADMIN}/usuario/autenticado/`)
-        .then(response => {
+    axios
+        .get(`${URL_ADMIN}/usuario/autenticado/`, { errorHandle: false })
+        .then((response) => {
             Object.assign(GETAUTH, response.data)
         })
+        .catch(() => {})
 }
 
 exports.ESTADOS = [

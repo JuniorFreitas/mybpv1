@@ -11,14 +11,15 @@ use MasterTag\DataHora;
 
 class UsuarioController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Database\Query\Builder
-     */
+    private function escopoEmpresa()
+    {
+        return User::where('empresa_id', auth()->user()->empresa_id);
+    }
+
     private function filtro(Request $request)
     {
-        $resultado = User::orderBy($request->ordemCampo ?: 'nome', $request->ordem ?: 'Asc');
+        $resultado = $this->escopoEmpresa()
+            ->orderBy($request->ordemCampo ?: 'nome', $request->ordem ?: 'Asc');
 
         if ($request->filtroPeriodo) {
             $periodo = explode(' até ', $request->periodo);
@@ -29,8 +30,10 @@ class UsuarioController extends Controller
         }
 
         if ($request->filled('campoBusca')) {
-            $resultado->where('nome', 'like', '%' . $request->campoBusca . '%')
-                ->orWhere('id', $request->campoBusca);
+            $resultado->where(function ($q) use ($request) {
+                $q->where('nome', 'like', '%' . $request->campoBusca . '%')
+                    ->orWhere('id', $request->campoBusca);
+            });
         }
 
         if ($request->filled('campoAtivo')) {
@@ -40,24 +43,20 @@ class UsuarioController extends Controller
         return $resultado;
     }
 
+    private function garantirMesmaEmpresa(User $usuario)
+    {
+        if ((int) $usuario->empresa_id !== (int) auth()->user()->empresa_id) {
+            abort(403, 'Acesso negado');
+        }
+    }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function index(Request $request)
     {
         $resultado = $this->filtro($request)->paginate($request->porPag ?: 20);
+
         return Sistema::pg($resultado);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function store(Request $request)
     {
         if (!auth()->user()->tokenCan('usuario_create')) {
@@ -81,31 +80,28 @@ class UsuarioController extends Controller
         }
 
         try {
-            $user = User::create($request->input());
+            $dados = $validator->validated();
+            $dados['empresa_id'] = auth()->user()->empresa_id;
+            $dados['grupo_id'] = $request->input('papel_id', $request->input('grupo_id'));
+            unset($dados['password_confirmation']);
+            if (isset($dados['password'])) {
+                $dados['password'] = bcrypt($dados['password']);
+            }
+            $user = User::create($dados);
+
             return response()->json($user, 201);
         } catch (\Exception $e) {
             return response()->json(['msg' => $e->getMessage(), 'error' => true], 400);
         }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param \App\Models\User $usuario
-     * @return User|\Illuminate\Http\Response
-     */
     public function show(User $usuario)
     {
+        $this->garantirMesmaEmpresa($usuario);
+
         return $usuario;
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\User $usuario
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
-     */
     public function update(Request $request, User $usuario)
     {
         if (!auth()->user()->tokenCan('usuario_update')) {
@@ -114,6 +110,8 @@ class UsuarioController extends Controller
                 'error' => true
             ], 403);
         }
+
+        $this->garantirMesmaEmpresa($usuario);
 
         $validator = Validator::make($request->input(), [
             'nome' => 'required|max:255',
@@ -131,25 +129,28 @@ class UsuarioController extends Controller
         }
 
         try {
-            $dados = $request->input();
+            $dados = $validator->validated();
+            unset($dados['password_confirmation'], $dados['alterar_senha']);
+            $dados['grupo_id'] = $request->input('papel_id');
+            unset($dados['papel_id']);
 
-            if (!$dados['alterar_senha']) {
+            if (!$request->boolean('alterar_senha')) {
                 unset($dados['password']);
+            } elseif (isset($dados['password'])) {
+                $dados['password'] = bcrypt($dados['password']);
             }
 
+            // Nunca permitir mudança de tenant/token via API genérica
+            unset($dados['empresa_id'], $dados['api_token']);
+
             $usuario->update($dados);
+
             return response()->json($usuario);
         } catch (\Exception $e) {
             return response()->json(['msg' => $e->getMessage(), 'error' => true], 400);
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param \App\Models\User $usuario
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function ativaDesativa(User $usuario)
     {
         if (!auth()->user()->tokenCan('usuario_ativar_desativar')) {
@@ -159,7 +160,8 @@ class UsuarioController extends Controller
             ], 403);
         }
 
+        $this->garantirMesmaEmpresa($usuario);
+
         return Sistema::ativaDesativa($usuario);
     }
-
 }

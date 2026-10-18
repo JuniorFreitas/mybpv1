@@ -42,7 +42,9 @@ class VerificacaoAssinaturaController extends Controller
                     ->first();
 
                 if ($signatario) {
-                    $hashOk = $hashInformado === '' || hash_equals((string) $signatario->hash_evidencia, $hashInformado);
+                    $hashInformado = (string) $hashInformado;
+                    $hashOk = $hashInformado !== ''
+                        && hash_equals((string) $signatario->hash_evidencia, $hashInformado);
                     if ($hashOk) {
                         $empresa = Cliente::withoutGlobalScopes()->find($documento->empresa_id);
                         if ($apelido && $empresa && $empresa->apelido && $empresa->apelido !== $apelido) {

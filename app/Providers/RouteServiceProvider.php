@@ -95,11 +95,39 @@ class RouteServiceProvider extends ServiceProvider
 
         // Reenvio de encaminhamento: teto alto por usuário (lote RH no mesmo dia);
         // por exame fica baixo para evitar spam no mesmo colaborador.
+        RateLimiter::for('recupera-senha', function (Request $request) {
+            // Token da URL (GET), do body (POST reset) ou login (solicitação).
+            $identificador = (string) (
+                $request->route('token')
+                ?? $request->input('token')
+                ?? $request->input('login')
+                ?? ''
+            );
+            $identificador = trim(mb_strtolower($identificador));
+            $fingerprint = $identificador !== ''
+                ? substr(hash('sha256', $identificador), 0, 16)
+                : 'sem-id';
+
+            return [
+                // Por IP + token/login: limita abuso do mesmo link/conta
+                Limit::perMinute(5)->by('recupera-senha:'.$request->ip().':'.$fingerprint),
+                // Teto por IP: evita spray de muitos tokens do mesmo endereço
+                Limit::perMinute(20)->by('recupera-senha-ip:'.$request->ip()),
+            ];
+        });
+
+        RateLimiter::for('api-integracao-spa', function (Request $request) {
+            $token = (string) $request->header('X-API-TOKEN', '');
+            $key = $token !== '' ? substr(hash('sha256', $token), 0, 16) : $request->ip();
+
+            return Limit::perMinute(60)->by('api-integracao:' . $key);
+        });
+
         RateLimiter::for('controle-exames-reenviar', function (Request $request) {
             $usuario = optional($request->user())->id ?: $request->ip();
             $exameId = (string) $request->input('exame_funcionario_id', '0');
-            $porHoraUsuario = app()->environment('local') ? 300 : 120;
-            $porHoraExame = app()->environment('local') ? 120 : 60;
+            $porHoraUsuario = app()->environment('local') ? 300 : 200;
+            $porHoraExame = app()->environment('local') ? 120 : 100;
 
             return [
                 Limit::perHour($porHoraUsuario)->by('reenviar-exame:user:'.$usuario),

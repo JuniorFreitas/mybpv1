@@ -27,11 +27,24 @@ function sdd()
 }
 
 Artisan::command('mybp:dump', function () {
+    if (!filter_var(env('MYBP_DUMP_ENABLED', false), FILTER_VALIDATE_BOOLEAN)) {
+        $this->error('mybp:dump desabilitado. Defina MYBP_DUMP_ENABLED=true e MYBP_DUMP_SSH_COMMAND apenas em ops controlado.');
+        return 1;
+    }
+
+    $ssh = (string) env('MYBP_DUMP_SSH_COMMAND', '');
+    if ($ssh === '') {
+        $this->error('MYBP_DUMP_SSH_COMMAND não configurado.');
+        return 1;
+    }
+
     $this->comment(sdd()['saudacao']);
-    $this->comment("Aguarde enquanto estamos criando o dump");
-    exec("ssh root@159.89.154.53 'sh /var/www/shell/npmdump.sh'", $output);
+    $this->comment('Aguarde enquanto estamos criando o dump');
+    exec($ssh, $output);
     $this->comment(implode(PHP_EOL, $output));
-})->describe("Dump do banco de dados e envio para o S3");
+
+    return 0;
+})->describe('Dump do banco (ops). Desabilitado por padrão — ver MYBP_DUMP_ENABLED.');
 
 Artisan::command('mybp:model {nome}', function () {
     $tipodemodel = $this->choice('Qual tipo da aplicação?', ['web', 'api'], 'web');

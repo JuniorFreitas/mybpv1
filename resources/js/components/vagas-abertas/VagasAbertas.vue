@@ -841,7 +841,9 @@ export default {
         async atualizar() {
             this.preload = true
             try {
-                const response = await axios.post(`${URL_SITE}/api/${this.empresa_id}/vaga-aberta/${this.vaga_aberta_id}`)
+                const response = await axios.post(
+                    `${URL_SITE}/publico/portal-vagas/${this.empresa_id}/vaga-aberta/${this.vaga_aberta_id}`
+                )
                 if (response.status === 200) {
                     this.dados_vaga = response.data.dados
                     this.form.empresa_id = this.empresa_id
@@ -862,7 +864,7 @@ export default {
             if (this.form.cpf.length === 14 && this.form.nascimento.length === 10) {
                 this.preloadAjax = true
                 axios
-                    .post(`${URL_SITE}/api/busca-curriculo`, {
+                    .post(`${URL_SITE}/publico/portal-vagas/${this.empresa_id}/busca-curriculo`, {
                         cpf: this.form.cpf,
                         nascimento: this.form.nascimento
                     })
@@ -948,7 +950,7 @@ export default {
             this.preloadAjax = true
 
             axios
-                .post(`${URL_SITE}/api/cadastra-curriculo`, this.form)
+                .post(`${URL_SITE}/publico/portal-vagas/${this.empresa_id}/cadastra-curriculo`, this.form)
                 .then((response) => {
                     this.preloadAjax = false
                     if (this.possuiCadastro) {
@@ -972,7 +974,9 @@ export default {
         buscaCpf() {
             if (this.form.cpf.length === 14) {
                 axios
-                    .post(`${URL_SITE}/api/busca-cpf/`, { cpf: this.form.cpf })
+                    .post(`${URL_SITE}/publico/portal-vagas/${this.empresa_id}/busca-cpf`, {
+                        cpf: this.form.cpf
+                    })
                     .then((response) => {
                         let data = response.data
                         if (data.length > 0) {

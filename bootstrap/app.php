@@ -73,5 +73,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (\Throwable $e, Request $request) {
             return ApiExternaExceptionRenderer::render($e, $request);
         });
+
+        $exceptions->render(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                // Sem retry_after no body: evita vazar timing do rate limit
+                return response()->json([
+                    'success' => false,
+                    'msg' => 'Muitas tentativas',
+                    'message' => 'Por segurança, tente novamente mais tarde.',
+                ], 429);
+            }
+
+            // HTML: usa resources/views/errors/429.blade.php
+            return null;
+        });
     })
     ->create();

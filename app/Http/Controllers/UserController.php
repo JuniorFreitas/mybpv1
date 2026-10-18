@@ -426,54 +426,70 @@ class UserController extends Controller
 
     public function perfilUsuario($id)
     {
-        $user = User::find($id)->load('FotoPerfil');
+        if ((int) auth()->id() !== (int) $id) {
+            return response()->json(['msg' => 'Não autorizado'], 403);
+        }
+
+        $user = User::findOrFail($id)->load('FotoPerfil');
+
         return response()->json(['user' => $user]);
     }
 
     public function atualizaPerfilUsuario(Request $request, $id)
     {
-        $dados = $request->input();
+        if ((int) auth()->id() !== (int) $id) {
+            return response()->json(['msg' => 'Não autorizado'], 403);
+        }
 
-        $usuario = User::find($id);
+        $usuario = User::findOrFail($id);
 
-        $dadosValidados = \Validator::make($dados, [
+        $dadosValidados = \Validator::make($request->all(), [
             'nome' => 'required|min:3',
             'login' => 'required|min:3',
+            'foto_perfil' => 'sometimes|array',
+            'foto_perfilDel' => 'sometimes|array',
         ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+        if ($dadosValidados->fails()) {
             return response()->json([
                 'msg' => 'Erro ao atualizar os dados do usuário',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            $usuario->update($dados);
+        }
 
-            if (isset($dados['foto_perfilDel'])) {
-                foreach ($dados['foto_perfilDel'] as $id_anexo) {
-                    $arquivo = Arquivo::find($id_anexo);
+        $dados = $dadosValidados->validated();
+        $usuario->update([
+            'nome' => $dados['nome'],
+            'login' => $dados['login'],
+        ]);
+
+        if (isset($dados['foto_perfilDel'])) {
+            foreach ($dados['foto_perfilDel'] as $id_anexo) {
+                $arquivo = Arquivo::find($id_anexo);
+                if ($arquivo) {
                     $arquivo->excluir();
                 }
             }
+        }
 
-            // inseri uma nova foto de anexo
-            if (isset($dados['foto_perfil'])) {
-                foreach ($dados['foto_perfil'] as $index => $anexo) {
-                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                    if ($arquivo) {
-                        $arquivo->temporario = false;
-                        $arquivo->chave = '';
-                        $arquivo->save();
-                        $usuario->FotoPerfil()->attach($arquivo->id);
-                    }
+        if (isset($dados['foto_perfil'])) {
+            foreach ($dados['foto_perfil'] as $anexo) {
+                $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                if ($arquivo) {
+                    $arquivo->temporario = false;
+                    $arquivo->chave = '';
+                    $arquivo->save();
+                    $usuario->FotoPerfil()->attach($arquivo->id);
                 }
             }
-
-            return response()->json([], 201);
         }
+
+        return response()->json([], 201);
     }
 
     public function solicitaRecuperaSenha(Request $request)
     {
+        $mensagemGenerica = 'Se o login informado existir, enviaremos um e-mail com instruções. Verifique a caixa de entrada e o SPAM.';
+
         $usuario = User::whereLogin(trim(mb_strtolower($request->login)))
             ->whereAtivo(true)
             ->first();
@@ -483,7 +499,7 @@ class UserController extends Controller
                 $exp = new DataHora();
                 $exp->addHora(6);
                 $recSenha = $usuario->RecuperacaoSenha()->create([
-                    'token' => mb_strtoupper(\Str::random(6)),
+                    'token' => \Str::random(64),
                     'expiracao' => $exp->dataHoraInsert(),
                     'ip_solicitacao' => $request->ip(),
                     'solicitacao' => (new DataHora())->dataHoraInsert(),
@@ -497,15 +513,13 @@ class UserController extends Controller
                     'empresa_id' => $usuario->empresa_id,
                     'expiracao' => $recSenha->expiracao
                 ]);
-                return response()->json(['msg' => 'Olá enviamos um e-mail pra você verifique sua caixa e-mail (ENTRADA e SPAM)'], 200);
             } catch (\Exception $e) {
                 DB::rollBack();
                 return response()->json(['msg' => 'Erro ao enviar solicitação de recuperação de senha'], 400);
             }
-
-        } else {
-            return response()->json(['msg' => 'Usuário não encontrado'], 404);
         }
+
+        return response()->json(['msg' => $mensagemGenerica], 200);
     }
 
     public function recuperaSenhaPost(Request $request)
@@ -542,12 +556,32 @@ class UserController extends Controller
                 'recuperado' => true
             ]);
 
-            User::find($recuperacao->user_id)->update([
+            $usuario = User::find($recuperacao->user_id);
+            $usuario->update([
                 'password' => bcrypt($request->novaSenha),
                 'password_changed_at' => now()
             ]);
 
-            \Auth::login($recuperacao->user);
+            $mfa = app(\App\Services\Auth\MfaLoginService::class);
+            if ($mfa->empresaExigeMfa($usuario) && !$mfa->dispositivoConfiavel($usuario, $request)) {
+                try {
+                    $mfa->iniciarChallenge($usuario, $request, false);
+                } catch (\RuntimeException $e) {
+                    return response()->json([
+                        'msg' => 'Senha alterada. Faça login e conclua a verificação em duas etapas.',
+                        'mfa_required' => true,
+                        'redirect' => route('login'),
+                    ], 201);
+                }
+
+                return response()->json([
+                    'msg' => 'Senha recuperada. Informe o código de verificação para continuar.',
+                    'mfa_required' => true,
+                    'redirect' => route('login.mfa.show'),
+                ], 201);
+            }
+
+            \Auth::login($usuario);
 
             return response()->json(['msg' => 'Senha recuperada com sucesso'], 201);
         } else {
@@ -570,11 +604,31 @@ class UserController extends Controller
 
     public function simularUsuario(Request $request)
     {
-        if (auth()->user()->grupo_id == 1) {
-            \Auth::loginUsingId($request->user_id);
-            return response()->json(['simulacao' => true], 200);
+        $ator = auth()->user();
+        if ((int) $ator->grupo_id !== 1 || (int) $ator->empresa_id !== User::MYBP_EMPRESA_ID) {
+            return response()->json(['simulacao' => false, 'msg' => 'Não autorizado'], 403);
         }
-        return response()->json(['simulacao' => false], 400);
+
+        $alvoId = (int) $request->input('user_id');
+        $alvo = User::find($alvoId);
+        if (!$alvo) {
+            return response()->json(['simulacao' => false, 'msg' => 'Usuário não encontrado'], 404);
+        }
+
+        $request->session()->put('impersonator_id', $ator->id);
+        \Auth::loginUsingId($alvo->id);
+
+        activity('simular_usuario')
+            ->causedBy($ator)
+            ->performedOn($alvo)
+            ->withProperties([
+                'ator_id' => $ator->id,
+                'alvo_id' => $alvo->id,
+                'alvo_empresa_id' => $alvo->empresa_id,
+            ])
+            ->log('simular_usuario');
+
+        return response()->json(['simulacao' => true], 200);
     }
 
     public function uploadAnexos(Request $request)

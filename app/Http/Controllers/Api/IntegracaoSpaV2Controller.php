@@ -16,9 +16,18 @@ class IntegracaoSpaV2Controller extends Controller
     ) {
     }
 
-    public function empresasAtivas(): JsonResponse
+    public function empresasAtivas(Request $request): JsonResponse
     {
         $lista = $this->empresas->listarEmpresasAtivas();
+        $credencial = $request->attributes->get('api_integracao');
+        $allow = is_array($credencial) ? ($credencial['empresa_ids'] ?? []) : [];
+        if ($allow !== []) {
+            $allowFlip = array_flip(array_map('intval', $allow));
+            $lista = array_values(array_filter(
+                $lista,
+                static fn ($dto) => isset($allowFlip[(int) $dto->id])
+            ));
+        }
 
         return response()->json([
             'success' => true,

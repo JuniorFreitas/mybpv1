@@ -1,6 +1,16 @@
 # API v2 — Integração SPA (BFF)
 
-API somente leitura para sites ou BFF que divulgam empresas e vagas abertas. **Não** substitui o grupo legado em `routes/api.php` (`as` => `vaga`); convive em paralelo com contrato e arquitetura novos.
+API para sites ou BFF que divulgam empresas e vagas abertas e recebem candidaturas. O portal embutido MyBP (`VagasAbertas.vue`) usa o BFF web `/publico/portal-vagas/{apelido}/...` (sessão/servidor anexa o token); integradores externos devem usar **somente** esta v2 com `X-API-TOKEN`.
+
+## Breaking change (legado anônimo)
+
+| Antes | Depois |
+|-------|--------|
+| `POST /api/busca-curriculo`, `busca-cpf`, `cadastra-curriculo` sem token | Exigem middleware `apitoken` + escopos; uso anônimo **não** é mais suportado |
+| Front chamava `/api/{empresa_id}/vaga-aberta/...` e POSTs de PII direto | Portal MyBP → BFF `/publico/portal-vagas/{apelido}/...` → v2 |
+| Token global sem restrição de empresa | `X_API_TOKEN_EMPRESA_IDS` + escopos (`spa_read`, `spa_write`, `whatsapp`, …) em `config/api_integracao.php` |
+
+Integradores: migrar para `/api/v2/integracao/{apelido}/...` e rotacionar `X_API_TOKEN` após deploy.
 
 ## Fases de entrega (implementação)
 

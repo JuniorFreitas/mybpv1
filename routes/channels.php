@@ -8,70 +8,66 @@ use Illuminate\Support\Facades\Broadcast;
 | Broadcast Channels
 |--------------------------------------------------------------------------
 |
-| Here you may register all of the event broadcasting channels that your
-| application supports. The given channel authorization callbacks are
-| used to check if an authenticated user can listen to the channel.
+| Authorization: usuário autenticado só escuta canais da própria empresa
+| ou canais privados do próprio usuário.
 |
 */
 
-/*Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
-});*/
-
 // Weekly report ===============================================================================================
-//Quadros
 Broadcast::channel('weekly-report.quadros.{empresaId}', function (User $user, int $empresaId) {
     return (int) $user->empresa_id === (int) $empresaId ? $user : false;
 });
-// Listas de tarefas
+
 Broadcast::channel('weekly-report.listas.{empresaId}', function (User $user, int $empresaId) {
     return (int) $user->empresa_id === (int) $empresaId ? $user : false;
 });
 
-
-// Tarefas > Checklists > Itens
 Broadcast::channel('weekly-report.tarefas.checklists.itens.{empresaId}', function (User $user, int $empresaId) {
     return (int) $user->empresa_id === (int) $empresaId ? $user : false;
 });
 
-// Tarefas > Checklists
 Broadcast::channel('weekly-report.tarefas.checklists.{empresaId}', function (User $user, int $empresaId) {
     return (int) $user->empresa_id === (int) $empresaId ? $user : false;
 });
 
-// Tarefas > Comentários
 Broadcast::channel('weekly-report.tarefas.comentarios.{empresaId}', function (User $user, int $empresaId) {
     return (int) $user->empresa_id === (int) $empresaId ? $user : false;
 });
 
-// Anexos das tarefas
 Broadcast::channel('weekly-report.tarefas.anexos.{empresaId}', function (User $user, int $empresaId) {
     return (int) $user->empresa_id === (int) $empresaId ? $user : false;
 });
-// Tarefas
+
 Broadcast::channel('weekly-report.tarefas.{empresaId}', function (User $user, int $empresaId) {
     return (int) $user->empresa_id === (int) $empresaId ? $user : false;
 });
-//logs
+
 Broadcast::channel('weekly-report.log.{empresaId}', function (User $user, int $empresaId) {
     return (int) $user->empresa_id === (int) $empresaId ? $user : false;
 });
 
 // Chat ===============================================================================================
-Broadcast::channel('chat.{empresa}.mensagens.contato.{contato}', function (User $user, User $empresa, User $contato) {
-    if($user->empresa_id === $empresa->id && $contato->id== auth()->id()){
+// {empresa} = empresa_id (inteiro), não model User
+Broadcast::channel('chat.{empresa}.mensagens.contato.{contato}', function (User $user, int $empresa, int $contato) {
+    if ((int) $user->empresa_id === $empresa && (int) $user->id === $contato) {
         return $user;
     }
+
+    return false;
 });
 
-Broadcast::channel('chat.{empresa}', function (User $user, User $empresa) { //serve só para saber quais pessoas da emrpesa estão on-line ou não
-    if($user->empresa_id === $empresa->id){
+Broadcast::channel('chat.{empresa}', function (User $user, int $empresa) {
+    if ((int) $user->empresa_id === $empresa) {
         return $user;
     }
+
+    return false;
 });
 
-Broadcast::channel('notificacoes.{usuario}', function (User $user,User $usuario) { //serve só para saber quais pessoas da emrpesa estão on-line ou não
-    if($usuario->id === auth()->id()){ // só escuta se for o mesmo que está autenticado
+Broadcast::channel('notificacoes.{usuario}', function (User $user, int $usuario) {
+    if ((int) $user->id === $usuario) {
         return $user;
     }
+
+    return false;
 });
