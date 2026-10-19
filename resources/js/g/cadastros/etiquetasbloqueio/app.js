@@ -1,10 +1,10 @@
 import { createApp } from 'vue'
 import { registerGlobals } from '../../../registerGlobals'
-import SegmentosTreinamentoCadastro from '../../../components/cadastros/segmentostreinamento/SegmentosTreinamentoCadastro'
+import EtiquetasBloqueioCadastro from '../../../components/cadastros/etiquetasbloqueio/EtiquetasBloqueioCadastro'
 
 const app = createApp({
     components: {
-        SegmentosTreinamentoCadastro
+        EtiquetasBloqueioCadastro
     }
 })
 

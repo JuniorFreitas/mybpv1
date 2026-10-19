@@ -14,7 +14,7 @@ Documento de referência da migração da tela Treinamentos (Carteira/Etiquetas)
 
 - **REFS_MODAL**: `modalFiltroColunas`, `janelaTreinamento`, `janelaTreinamentoMassa`, `janelaEnviar`, `janelaEnviarAviso`
 - **MODAL_IDS**: ids das modais (filtroColunas, janelaTreinamento, etc.)
-- **API_PATHS**: vencimentos-por-segmento, carteiras, editar, store, salvar-massa, enviar-carteira, proximovencimento, uploadAnexos, export; segmentos habilitados (cadastro)
+- **API_PATHS**: vencimentos-por-segmento, carteiras, editar, store, salvar-massa, enviar-carteira, proximovencimento, uploadAnexos, export; `padroesHabilitados` (preferencial) + `segmentosHabilitados` (fallback legado)
 
 ## Helpers de modal (no container)
 
@@ -48,3 +48,4 @@ Documento de referência da migração da tela Treinamentos (Carteira/Etiquetas)
 ## Documentação relacionada
 
 - **[TREINAMENTOS_CARTEIRA_ETIQUETAS_AUDITORIA_E_HISTORICO.md](TREINAMENTOS_CARTEIRA_ETIQUETAS_AUDITORIA_E_HISTORICO.md)** — Modal de auditoria (termo de responsabilidade, desmarcar com motivo), salvamento 1 a 1 por vencimento, histórico por vencimento (`vencimento_id`, `removido`), regra de config do cliente e habilidades para desmarcar, componente `ModalAuditoriaTermoResponsabilidade`, APIs e fluxos.
+- **[PADRAO_TREINAMENTO.md](PADRAO_TREINAMENTO.md)** — Spec v1: Padrão de treinamento por empresa (carteira/etiqueta global ou custom, lotação Matriz/Filial, migração a partir de Segmento).

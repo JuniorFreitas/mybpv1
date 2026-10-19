@@ -25,7 +25,7 @@ export const MODAL_IDS = {
 export const API_PATHS = {
     treinamento: 'treinamento',
     atualizar: 'treinamento/atualizar',
-    vencimentosPorSegmento: 'treinamento/vencimentos-por-segmento',
+    vencimentosPorPadrao: 'treinamento/vencimentos-por-padrao',
     carteiras: 'treinamento/carteiras',
     editar: 'treinamento',
     store: 'treinamento',
@@ -34,7 +34,7 @@ export const API_PATHS = {
     proximovencimento: 'treinamento/proximovencimento',
     uploadAnexos: 'treinamento/uploadAnexos',
     export: 'treinamento/export',
-    segmentosHabilitados: 'cadastro/segmentostreinamento/habilitados-empresa',
+    padroesHabilitados: 'cadastro/padroestreinamento/habilitados-empresa',
     desmarcarTreinamentoRealizado: 'treinamento/desmarcar-treinamento-realizado',
     atualizarVencimento: 'treinamento/atualizar-vencimento'
 }

@@ -35,11 +35,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura whereNome($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura whereTipo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CarteiraAssinatura whereUpdatedAt($value)
- * @property int|null $segmento_treinamento_id
- * @property-read \App\Models\SegmentoTreinamento|null $SegmentoTreinamento
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
  * @property-read int|null $activities_count
- * @method static \Illuminate\Database\Eloquent\Builder<static>|CarteiraAssinatura whereSegmentoTreinamentoId($value)
  * @mixin \Eloquent
  */
 class CarteiraAssinatura extends Model
@@ -63,7 +60,7 @@ class CarteiraAssinatura extends Model
         'arquivo_id',
         'nome',
         'tipo',
-        'segmento_treinamento_id',
+        'padrao_treinamento_id',
         'ativo',
     ];
 
@@ -73,7 +70,7 @@ class CarteiraAssinatura extends Model
         'arquivo_id' => 'int',
         'nome' => 'string',
         'tipo' => 'string',
-        'segmento_treinamento_id' => 'int',
+        'padrao_treinamento_id' => 'int',
         'ativo' => 'boolean',
     ];
 
@@ -95,9 +92,9 @@ class CarteiraAssinatura extends Model
         return $this->belongsTo(Cliente::class, 'empresa_id');
     }
 
-    public function SegmentoTreinamento()
+    public function PadraoTreinamento()
     {
-        return $this->belongsTo(SegmentoTreinamento::class, 'segmento_treinamento_id');
+        return $this->belongsTo(PadraoTreinamento::class, 'padrao_treinamento_id');
     }
 
     public function Anexos()

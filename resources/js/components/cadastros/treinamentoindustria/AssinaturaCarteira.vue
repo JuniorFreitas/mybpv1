@@ -31,13 +31,13 @@
                             </div>
                             <div class="col-12 col-md-12">
                                 <div class="form-group">
-                                    <label>Segmento de treinamento</label>
-                                    <select v-model="form.segmento_treinamento_id" class="form-control form-control-sm">
-                                        <option :value="null">Padrão (todos os segmentos)</option>
-                                        <option v-for="s in listaSegmentos" :key="s.id" :value="s.id">{{ s.nome }}</option>
+                                    <label>Padrão de treinamento</label>
+                                    <select v-model="form.padrao_treinamento_id" class="form-control form-control-sm">
+                                        <option :value="null">Padrão (todos)</option>
+                                        <option v-for="p in listaPadroes" :key="p.id" :value="p.id">{{ p.nome }}</option>
                                     </select>
                                     <small class="text-muted"
-                                        >Opcional. Se não escolher, esta assinatura será usada quando não houver assinatura específica do segmento na
+                                        >Opcional. Se não escolher, esta assinatura será usada quando não houver assinatura específica do padrão na
                                         carteira.</small
                                     >
                                 </div>
@@ -110,7 +110,7 @@
                             <td class="text-center">Nº</td>
                             <td class="text-center">Nome</td>
                             <td class="text-center">Tipo</td>
-                            <td class="text-center">Segmento</td>
+                            <td class="text-center">Padrão</td>
                             <td class="text-center">Ativo</td>
                             <td class="text-center">Ação</td>
                         </tr>
@@ -120,7 +120,7 @@
                             <td class="text-center">{{ item.id }}</td>
                             <td class="text-center">{{ item.nome }}</td>
                             <td class="text-center">{{ item.tipo }}</td>
-                            <td class="text-center">{{ item.segmento_treinamento ? item.segmento_treinamento.nome : 'Padrão' }}</td>
+                            <td class="text-center">{{ labelPadraoAssinatura(item) }}</td>
                             <td class="text-center">{{ item.ativo === true ? 'Ativo' : 'Inativo' }}</td>
                             <td class="text-center">
                                 <button
@@ -180,7 +180,7 @@ export default {
     mounted() {
         this.atualizar()
         this.formDefault = _.cloneDeep(this.form)
-        this.carregarSegmentos()
+        this.carregarPadroes()
     },
     data() {
         return {
@@ -198,7 +198,7 @@ export default {
             form: {
                 nome: '',
                 tipo: '',
-                segmento_treinamento_id: null,
+                padrao_treinamento_id: null,
                 anexos: [],
                 anexosDel: [],
                 ativo: true
@@ -208,7 +208,7 @@ export default {
 
             lista: [],
             listaTiposAssinatura: [],
-            listaSegmentos: [],
+            listaPadroes: [],
 
             urlPaginacao: `${URL_ADMIN}/cadastro/assinaturacarteira/atualizar`,
             controle: {
@@ -254,15 +254,22 @@ export default {
                     this.preload = false
                 })
         },
-        carregarSegmentos() {
+        carregarPadroes() {
             axios
-                .get(`${URL_ADMIN}/cadastro/segmentostreinamento/lista`)
+                .get(`${URL_ADMIN}/cadastro/padroestreinamento/habilitados-empresa`)
                 .then((res) => {
-                    this.listaSegmentos = Array.isArray(res.data) ? res.data : []
+                    this.listaPadroes = Array.isArray(res.data) ? res.data : []
                 })
                 .catch(() => {
-                    this.listaSegmentos = []
+                    this.listaPadroes = []
                 })
+        },
+        labelPadraoAssinatura(item) {
+            const padrao = item.padrao_treinamento || item.PadraoTreinamento
+            if (padrao && padrao.nome) {
+                return padrao.nome
+            }
+            return 'Padrão (todos)'
         },
         alterarAssinatura(assinatura) {
             this.cadastrado = false
@@ -276,6 +283,9 @@ export default {
                 .get(`${URL_ADMIN}/cadastro/assinaturacarteira/${assinatura}/editar`)
                 .then((response) => {
                     Object.assign(this.form, response.data)
+                    if (!this.form.padrao_treinamento_id) {
+                        this.form.padrao_treinamento_id = null
+                    }
                     this.editando = true
                     this.preload = false
                     setupCampo()

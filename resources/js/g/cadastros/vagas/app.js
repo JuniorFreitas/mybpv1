@@ -141,15 +141,17 @@ const app = createApp({
         normalizarVencimentosResposta(data) {
             const lista = data?.vencimentos || data?.Vencimentos || []
 
-            return lista.map((item) => ({
-                id: item.id,
-                label: item.label,
-                segmento_nome:
-                    item.segmento_treinamento?.nome ||
-                    item.SegmentoTreinamento?.nome ||
-                    item.segmento_nome ||
-                    'Geral'
-            }))
+            return lista.map((item) => {
+                const padroes = item.padroes_treinamento || item.PadroesTreinamento || []
+                const nomes = (Array.isArray(padroes) ? padroes : [])
+                    .map((p) => p?.nome)
+                    .filter(Boolean)
+                return {
+                    id: item.id,
+                    label: item.label,
+                    padrao_nome: nomes.length ? nomes.join(', ') : (item.padrao_nome || 'Geral'),
+                }
+            })
         },
         resumoTreinamentos(vaga) {
             const vinculados = Number(vaga?.treinamentos_vinculados_count ?? 0)

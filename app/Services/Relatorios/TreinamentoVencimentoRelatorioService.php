@@ -5,7 +5,6 @@ namespace App\Services\Relatorios;
 use App\Models\Admissao;
 use App\Models\CentroCusto;
 use App\Models\FeedbackCurriculo;
-use App\Models\SegmentoTreinamento;
 use App\Models\User;
 use App\Services\Treinamento\FeedbackCurriculoFilter;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,7 +17,7 @@ use MasterTag\DataHora;
  *
  * - sem demissão (Admitidos) + encaminhado a treinamento
  * - filtro por data_vencimento no período
- * - exclusão por segmento divergente da admissão
+ * - escopo por padrao_treinamento_id (pivot padrao_treinamento_vencimento)
  * - PROXIMO / pintar: <= 30 dias | ATENCAO: <= 60 dias
  */
 class TreinamentoVencimentoRelatorioService
@@ -112,10 +111,10 @@ class TreinamentoVencimentoRelatorioService
         $filter->apply($filtros);
         $query = $filter->getQuery();
 
-        $segmentoId = $filtrosRequest['segmento_treinamento_id'] ?? null;
-        if (!empty($segmentoId)) {
-            $query->whereHas('Admissao', function ($q) use ($segmentoId) {
-                $q->where('segmento_treinamento_id', $segmentoId);
+        $padraoId = $filtrosRequest['padrao_treinamento_id'] ?? null;
+        if (!empty($padraoId)) {
+            $query->whereHas('Admissao', function ($q) use ($padraoId) {
+                $q->where('padrao_treinamento_id', (int) $padraoId);
             });
         }
 
@@ -126,7 +125,8 @@ class TreinamentoVencimentoRelatorioService
                     $dataFim->dataInsert(),
                 ]);
             },
-            'Admissao.SegmentoTreinamento:id,nome,slug',
+            'Treinamento.Vencimentos.PadroesTreinamento:id,nome',
+            'Admissao.PadraoTreinamento:id,nome,slug',
             'VagaSelecionada',
             'Curriculo',
         ]);
@@ -192,7 +192,7 @@ class TreinamentoVencimentoRelatorioService
                     'emp_cnpj' => $item['emp_cnpj'],
                     'emp_nome_fantasia' => $item['emp_nome_fantasia'],
                     'emp_centro_custo' => $item['emp_centro_custo'],
-                    'segmento' => $item['segmento'],
+                    'padrao' => $item['padrao'],
                     'tipo' => $item['tipo'],
                 ],
                 'treinamento' => $treinamento,
@@ -227,15 +227,20 @@ class TreinamentoVencimentoRelatorioService
             return null;
         }
 
-        $segmentoId = $feedback->Admissao
-            ? ($feedback->Admissao->segmento_treinamento_id ?? SegmentoTreinamento::getIdAlumar())
-            : SegmentoTreinamento::getIdAlumar();
+        $padraoId = $feedback->Admissao && $feedback->Admissao->padrao_treinamento_id
+            ? (int) $feedback->Admissao->padrao_treinamento_id
+            : null;
 
         $vencimentos = collect();
         foreach ($feedback->Treinamento->Vencimentos as $vencimento) {
-            if ($segmentoId && $vencimento->segmento_treinamento_id !== null
-                && (int) $vencimento->segmento_treinamento_id !== (int) $segmentoId) {
-                continue;
+            if ($padraoId) {
+                $padroes = $vencimento->relationLoaded('PadroesTreinamento')
+                    ? $vencimento->PadroesTreinamento
+                    : $vencimento->PadroesTreinamento()->get(['padroes_treinamento.id']);
+                $noEscopo = $padroes->contains(fn ($p) => (int) $p->id === $padraoId);
+                if (!$noEscopo) {
+                    continue;
+                }
             }
 
             $diasVencer = DataHora::diferencaDias(
@@ -261,8 +266,8 @@ class TreinamentoVencimentoRelatorioService
 
         $ccColaborador = $this->resolverCentroCusto($feedback->Admissao, $cc);
 
-        $segmentoNome = $feedback->Admissao && $feedback->Admissao->SegmentoTreinamento
-            ? $feedback->Admissao->SegmentoTreinamento->nome
+        $padraoNome = $feedback->Admissao && $feedback->Admissao->PadraoTreinamento
+            ? $feedback->Admissao->PadraoTreinamento->nome
             : '--';
 
         return [
@@ -272,7 +277,7 @@ class TreinamentoVencimentoRelatorioService
             'emp_nome_fantasia' => $ccColaborador['nome_fantasia'] ?? '--',
             'emp_centro_custo' => $ccColaborador['label'] ?? '--',
             'emp_tipo' => ($ccColaborador['matriz'] ?? false) ? 'Matriz' : 'Filial',
-            'segmento' => $segmentoNome,
+            'padrao' => $padraoNome,
             'tipo' => $feedback->tipo ?? 'N/A',
             'treinamentos' => $vencimentos->sortBy('dias_vencer')->values()->all(),
         ];

@@ -202,6 +202,18 @@ class Arquivo extends Model
         self::MIME_WEBP,
     ];
 
+    /** Anexos FAT da carteira: Word, PDF e imagens (máx. 5 no upload). */
+    const MIMEFAT = [
+        self::MIME_PDF,
+        self::MIME_DOCX,
+        self::MIME_DOC,
+        self::MIME_JPG,
+        self::MIME_JPEG,
+        self::MIME_GIF,
+        self::MIME_PNG,
+        self::MIME_WEBP,
+    ];
+
     /** Anexos do Weekly Report: imagens, PDF, Word, Excel, PowerPoint, ZIP e RAR */
     const MIMEWEEKLYREPORT = [
         self::MIME_JPG,

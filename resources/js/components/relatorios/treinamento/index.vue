@@ -79,19 +79,19 @@
 
                 <div class="col-12 col-md-4">
                     <div class="form-group mybp-filtro-campo">
-                        <label class="mybp-label" for="trn-filtro-segmento">Segmento</label>
+                        <label class="mybp-label" for="trn-filtro-padrao">Padrão</label>
                         <div class="mybp-combobox-wrap">
                             <combobox-auto-complete
-                                ref="comboFiltroSegmento"
-                                input-id="trn-filtro-segmento"
-                                instance-id="trn-filtro-segmento"
+                                ref="comboFiltroPadrao"
+                                input-id="trn-filtro-padrao"
+                                instance-id="trn-filtro-padrao"
                                 :disabled="preload"
-                                :options="opcoesSegmento"
-                                placeholder-blur="Todos os segmentos"
-                                empty-message="Nenhum segmento encontrado."
+                                :options="opcoesPadrao"
+                                placeholder-blur="Todos os padrões"
+                                empty-message="Nenhum padrão encontrado."
                                 :max-results="30"
-                                v-model="segmentoTreinamentoId"
-                                @opening="fecharOutrosComboboxes('trn-filtro-segmento')"
+                                v-model="padraoTreinamentoId"
+                                @opening="fecharOutrosComboboxes('trn-filtro-padrao')"
                                 @select="buscarDados"
                             />
                         </div>
@@ -315,9 +315,9 @@
                                         Centro de Custo
                                         <i :class="iconeOrdenacao('emp_centro_custo')"></i>
                                     </th>
-                                    <th class="trn-th-sort" @click="ordenarPor('segmento')">
-                                        Segmento
-                                        <i :class="iconeOrdenacao('segmento')"></i>
+                                    <th class="trn-th-sort" @click="ordenarPor('padrao')">
+                                        Padrão
+                                        <i :class="iconeOrdenacao('padrao')"></i>
                                     </th>
                                     <th class="trn-th-sort" @click="ordenarPor('label')">
                                         Treinamento
@@ -378,7 +378,7 @@
                                             class="align-middle"
                                             :rowspan="grupo.treinamentos.length"
                                         >
-                                            {{ grupo.segmento || '—' }}
+                                            {{ grupo.padrao || '—' }}
                                         </td>
                                         <td>
                                             <div class="trn-treino-label">{{ row.label }}</div>
@@ -478,8 +478,8 @@ export default {
             periodo: '',
             campoCnpj: '',
             campoCentroCusto: '',
-            segmentoTreinamentoId: '',
-            segmentosTreinamento: [],
+            padraoTreinamentoId: '',
+            padroesTreinamento: [],
             filtroColaborador: '',
             filtroTreinamentos: [],
             comboTreinamento: '',
@@ -495,7 +495,7 @@ export default {
     },
     async mounted() {
         this.aplicarPeriodoPadrao()
-        await this.carregarSegmentos()
+        await this.carregarPadroes()
         await this.buscarDados()
     },
     beforeUnmount() {
@@ -512,7 +512,7 @@ export default {
                 periodo: this.periodo,
                 campoCnpj: this.campoCnpj,
                 campoCentroCusto: this.campoCentroCusto,
-                segmento_treinamento_id: this.segmentoTreinamentoId
+                padrao_treinamento_id: this.padraoTreinamentoId
             }
         },
         filtroListaCentroCustoCnpj() {
@@ -558,9 +558,9 @@ export default {
             })
             return opts
         },
-        opcoesSegmento() {
-            const opts = [{ value: '', label: 'Todos os segmentos' }]
-            ;(this.segmentosTreinamento || []).forEach((s) => {
+        opcoesPadrao() {
+            const opts = [{ value: '', label: 'Todos os padrões' }]
+            ;(this.padroesTreinamento || []).forEach((s) => {
                 opts.push({ value: String(s.id), label: s.nome })
             })
             return opts
@@ -569,7 +569,7 @@ export default {
             return !!(
                 this.campoCnpj ||
                 this.campoCentroCusto ||
-                this.segmentoTreinamentoId ||
+                this.padraoTreinamentoId ||
                 (this.filtroColaborador || '').trim() ||
                 this.filtroTreinamentos.length
             )
@@ -601,7 +601,7 @@ export default {
                         emp_nome_fantasia: pessoa.emp_nome_fantasia,
                         emp_centro_custo: pessoa.emp_centro_custo,
                         emp_tipo: pessoa.emp_tipo,
-                        segmento: pessoa.segmento,
+                        padrao: pessoa.padrao,
                         tipo: pessoa.tipo,
                         label: tr.label,
                         descricao: tr.descricao,
@@ -661,7 +661,7 @@ export default {
                         emp_nome_fantasia: row.emp_nome_fantasia,
                         emp_centro_custo: row.emp_centro_custo,
                         emp_tipo: row.emp_tipo,
-                        segmento: row.segmento,
+                        padrao: row.padrao,
                         tipo: row.tipo,
                         treinamentos: []
                     })
@@ -683,7 +683,7 @@ export default {
             })
 
             grupos.sort((a, b) => {
-                if (campo === 'nome' || campo === 'emp_centro_custo' || campo === 'segmento') {
+                if (campo === 'nome' || campo === 'emp_centro_custo' || campo === 'padrao') {
                     return this.compararValores(a[campo], b[campo], dir)
                 }
                 if (campo === 'dias_vencer') {
@@ -807,7 +807,7 @@ export default {
             const mapa = {
                 'trn-filtro-cnpj': 'comboFiltroCnpj',
                 'trn-filtro-cc': 'comboFiltroCc',
-                'trn-filtro-segmento': 'comboFiltroSegmento',
+                'trn-filtro-padrao': 'comboFiltroPadrao',
                 'trn-filtro-treinamento': 'comboFiltroTreinamento'
             }
             Object.keys(mapa).forEach((id) => {
@@ -865,7 +865,7 @@ export default {
         async limparFiltros() {
             this.campoCnpj = ''
             this.campoCentroCusto = ''
-            this.segmentoTreinamentoId = ''
+            this.padraoTreinamentoId = ''
             this.filtroColaborador = ''
             this.filtroTreinamentos = []
             this.comboTreinamento = ''
@@ -908,12 +908,12 @@ export default {
             if (cat === 'avencer') return 'trn-row--alerta'
             return ''
         },
-        async carregarSegmentos() {
+        async carregarPadroes() {
             try {
-                const res = await axios.get(`${URL_ADMIN}/cadastro/segmentostreinamento/habilitados-empresa`)
-                this.segmentosTreinamento = res.data || []
+                const res = await axios.get(`${URL_ADMIN}/cadastro/padroestreinamento/habilitados-empresa`)
+                this.padroesTreinamento = res.data || []
             } catch (e) {
-                this.segmentosTreinamento = []
+                this.padroesTreinamento = []
             }
         },
         async buscarDados() {
@@ -924,7 +924,7 @@ export default {
                     periodo: this.periodo,
                     campoCnpj: this.campoCnpj,
                     campoCentroCusto: this.campoCentroCusto,
-                    segmento_treinamento_id: this.segmentoTreinamentoId
+                    padrao_treinamento_id: this.padraoTreinamentoId
                 })
                 this.dados = res.data.itens || []
                 this.lista_ccs = res.data.cc

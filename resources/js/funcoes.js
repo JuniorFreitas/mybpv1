@@ -183,9 +183,13 @@ function pctDoValor(valor, valorTotal) {
 
 //remove aparencia
 function formReset() {
-    $('div.invalid-feedback').remove()
-    $('.is-invalid').popover('disable')
-    $('.is-invalid').removeClass('is-invalid')
+    // data-vue-keep: feedback/classe gerenciados pelo Vue (ex.: DateInputHtml5) —
+    // remover do DOM quebra o patch (insertBefore null).
+    $('div.invalid-feedback').not('[data-vue-keep]').remove()
+    $('.is-invalid')
+        .not('[data-vue-keep]')
+        .popover('disable')
+        .removeClass('is-invalid')
 }
 
 function mascaraTelefone() {

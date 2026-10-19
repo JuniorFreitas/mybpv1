@@ -482,11 +482,25 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::resource('treinamentoindustria', \App\Http\Controllers\TreinamentoIndustriaController::class)->middleware('can:cadastro_treinamento_industria');
         });
 
-        Route::group(['as' => 'segmentostreinamento.'], function () {
-            Route::get('segmentostreinamento/lista', [\App\Http\Controllers\SegmentoTreinamentoController::class, 'listar'])->name('lista');
-            Route::get('segmentostreinamento/habilitados-empresa', [\App\Http\Controllers\SegmentoTreinamentoController::class, 'habilitadosEmpresa'])->name('habilitados-empresa');
-            Route::post('segmentostreinamento/atualizar', [\App\Http\Controllers\SegmentoTreinamentoController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_treinamento_industria');
-            Route::resource('segmentostreinamento', \App\Http\Controllers\SegmentoTreinamentoController::class)->only(['index', 'store', 'update'])->middleware('can:cadastro_treinamento_industria');
+        Route::group(['as' => 'carteirastreinamento.', 'middleware' => 'can:cadastro_treinamento_industria'], function () {
+            Route::get('carteirastreinamento/lista', [\App\Http\Controllers\CarteiraTreinamentoController::class, 'listar'])->name('lista');
+            Route::get('carteirastreinamento/empresas', [\App\Http\Controllers\CarteiraTreinamentoController::class, 'empresas'])->name('empresas');
+            Route::post('carteirastreinamento/atualizar', [\App\Http\Controllers\CarteiraTreinamentoController::class, 'atualizar'])->name('atualizar');
+            Route::resource('carteirastreinamento', \App\Http\Controllers\CarteiraTreinamentoController::class)->only(['index', 'store', 'update']);
+        });
+
+        Route::group(['as' => 'etiquetasbloqueio.', 'middleware' => 'can:cadastro_treinamento_industria'], function () {
+            Route::get('etiquetasbloqueio/lista', [\App\Http\Controllers\EtiquetaBloqueioController::class, 'listar'])->name('lista');
+            Route::post('etiquetasbloqueio/atualizar', [\App\Http\Controllers\EtiquetaBloqueioController::class, 'atualizar'])->name('atualizar');
+            Route::resource('etiquetasbloqueio', \App\Http\Controllers\EtiquetaBloqueioController::class)->only(['index', 'store', 'update']);
+        });
+
+        Route::group(['as' => 'padroestreinamento.'], function () {
+            Route::get('padroestreinamento/lista', [\App\Http\Controllers\PadraoTreinamentoController::class, 'listar'])->name('lista');
+            Route::get('padroestreinamento/habilitados-empresa', [\App\Http\Controllers\PadraoTreinamentoController::class, 'habilitadosEmpresa'])->name('habilitados-empresa');
+            Route::get('padroestreinamento/opcoes-formulario', [\App\Http\Controllers\PadraoTreinamentoController::class, 'opcoesFormulario'])->name('opcoes-formulario')->middleware('can:cadastro_treinamento_industria');
+            Route::post('padroestreinamento/atualizar', [\App\Http\Controllers\PadraoTreinamentoController::class, 'atualizar'])->name('atualizar')->middleware('can:cadastro_treinamento_industria');
+            Route::resource('padroestreinamento', \App\Http\Controllers\PadraoTreinamentoController::class)->only(['index', 'store', 'update'])->middleware('can:cadastro_treinamento_industria');
         });
 
         Route::group(['as' => 'treinamentosgi.'], function () {
@@ -1163,7 +1177,7 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
         Route::post('treinamento/carteiras', [\App\Http\Controllers\TreinamentoController::class, 'carteiraPdf'])->name('carteiraPdf');
         Route::post('treinamento/export', [\App\Http\Controllers\TreinamentoController::class, 'export'])->name('excel');
         Route::post('treinamento/atualizar', [\App\Http\Controllers\TreinamentoController::class, 'atualizar'])->name('atualizar');
-        Route::post('treinamento/vencimentos-por-segmento', [\App\Http\Controllers\TreinamentoController::class, 'vencimentosPorSegmento'])->name('vencimentos-por-segmento');
+        Route::post('treinamento/vencimentos-por-padrao', [\App\Http\Controllers\TreinamentoController::class, 'vencimentosPorPadrao'])->name('vencimentos-por-padrao');
 
         Route::get('treinamento/vencimentos', [\App\Http\Controllers\TreinamentoController::class, 'vencimentos'])->name('vencimentos');
 
@@ -1190,7 +1204,10 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             ->name('import.upload')
             ->middleware('can:treinamento_importacao');
 
-        Route::resource('treinamento', \App\Http\Controllers\TreinamentoController::class)->middleware('can:treinamento_carteira-etiquetas');
+        // whereNumber: evita GET /treinamento/carteiras cair em show() com id="carteiras" → 404
+        Route::resource('treinamento', \App\Http\Controllers\TreinamentoController::class)
+            ->middleware('can:treinamento_carteira-etiquetas')
+            ->whereNumber('treinamento');
     });
 
     //PORTARIA

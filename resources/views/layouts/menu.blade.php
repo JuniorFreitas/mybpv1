@@ -245,11 +245,19 @@
                            Lista de Treinamentos
                         </a>
                     </li>
-                    @if(Route::has('g.segmentostreinamento.segmentostreinamento.index') && (int) auth()->user()->empresa_id === \App\Http\Controllers\SegmentoTreinamentoController::EMPRESA_ID_CADASTRO_SEGMENTOS)
+                    @if(Route::has('g.padroestreinamento.padroestreinamento.index'))
                     <li>
-                        <a href="{{ route('g.segmentostreinamento.segmentostreinamento.index') }}" parent="cadastro"
-                           key="segmentostreinamento">
-                            Segmentos de Treinamento
+                        <a href="{{ route('g.padroestreinamento.padroestreinamento.index') }}" parent="cadastro"
+                           key="padroestreinamento">
+                            Padrões de Treinamento
+                        </a>
+                    </li>
+                    @endif
+                    @if(Route::has('g.carteirastreinamento.carteirastreinamento.index') && (int) auth()->user()->empresa_id === 100)
+                    <li>
+                        <a href="{{ route('g.carteirastreinamento.carteirastreinamento.index') }}" parent="cadastro"
+                           key="carteirastreinamento">
+                            Carteiras e Etiquetas
                         </a>
                     </li>
                     @endif

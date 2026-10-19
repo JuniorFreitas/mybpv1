@@ -97,8 +97,8 @@ class VagaController extends Controller
     public function edit(Vaga $vaga)
     {
         $vaga->load(
-            'Vencimentos:id,label,segmento_treinamento_id,vinculo_todos_cargos',
-            'Vencimentos.SegmentoTreinamento:id,nome',
+            'Vencimentos:id,label,vinculo_todos_cargos',
+            'Vencimentos.PadroesTreinamento:id,nome',
             'Cbo:id,codigo,titulo,codigo_familia',
             'Cbo.familia:codigo,titulo,descricao_sumaria'
         );
@@ -187,8 +187,8 @@ class VagaController extends Controller
         $resultado = Vaga::with(
             'Cbo:id,codigo,titulo,codigo_familia',
             'Cbo.familia:codigo,titulo',
-            'Vencimentos:id,label,segmento_treinamento_id,vinculo_todos_cargos',
-            'Vencimentos.SegmentoTreinamento:id,nome'
+            'Vencimentos:id,label,vinculo_todos_cargos',
+            'Vencimentos.PadroesTreinamento:id,nome'
         )->orderBy('nome');
         if ($request->filled('campoBusca')) {
             $termo = $request->campoBusca;

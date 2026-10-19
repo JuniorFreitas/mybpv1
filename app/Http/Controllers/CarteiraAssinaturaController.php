@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Arquivo;
 use App\Models\CarteiraAssinatura;
+use App\Models\PadraoTreinamento;
 use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
@@ -24,7 +25,7 @@ class CarteiraAssinaturaController extends Controller
             [
                 'nome' => 'required',
                 'tipo' => 'required',
-                'segmento_treinamento_id' => 'nullable|exists:segmentos_treinamento,id',
+                'padrao_treinamento_id' => 'nullable|exists:padroes_treinamento,id',
             ]
         );
         if ($dadosValidados->fails()) {
@@ -32,32 +33,40 @@ class CarteiraAssinaturaController extends Controller
                 'msg' => 'Erro ao Cadastrar Assinatura Carteira',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $dados['segmento_treinamento_id'] = !empty($dados['segmento_treinamento_id']) ? $dados['segmento_treinamento_id'] : null;
-                $resposta = CarteiraAssinatura::create($dados);
+        }
 
-                if (isset($dados['anexos'])) {
-                    foreach ($dados['anexos'] as $index => $anexo) {
-                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                        if ($arquivo) {
-                            $arquivo->temporario = false;
-                            $arquivo->chave = '';
-                            $arquivo->save();
-                            $resposta->Anexos()->attach($arquivo->id);
-                        }
+        $padraoId = $this->resolverPadraoId($dados['padrao_treinamento_id'] ?? null);
+        if (($dados['padrao_treinamento_id'] ?? null) && !$padraoId) {
+            return response()->json([
+                'msg' => 'Padrão de treinamento inválido ou de outra empresa.',
+                'erros' => ['padrao_treinamento_id' => ['Padrão inválido.']],
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+            $dados['padrao_treinamento_id'] = $padraoId;
+            $resposta = CarteiraAssinatura::create($dados);
+
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $resposta->Anexos()->attach($arquivo->id);
                     }
                 }
-
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE ASSINATURA CARTEIRA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
             }
+
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE ASSINATURA CARTEIRA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
         }
     }
 
@@ -69,7 +78,10 @@ class CarteiraAssinaturaController extends Controller
      */
     public function edit($id)
     {
-        $assinatura = CarteiraAssinatura::with(['Anexos', 'SegmentoTreinamento:id,nome'])->find($id);
+        $assinatura = CarteiraAssinatura::with([
+            'Anexos',
+            'PadraoTreinamento:id,nome',
+        ])->find($id);
         $assinatura->anexosDel = [];
         return $assinatura;
     }
@@ -89,54 +101,62 @@ class CarteiraAssinaturaController extends Controller
             [
                 'nome' => 'required',
                 'tipo' => 'required',
-                'segmento_treinamento_id' => 'nullable|exists:segmentos_treinamento,id',
+                'padrao_treinamento_id' => 'nullable|exists:padroes_treinamento,id',
             ]
         );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+        if ($dadosValidados->fails()) {
             return response()->json([
                 'msg' => 'Erro ao Cadastrar Assinatura Carteira',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
-                $dados['segmento_treinamento_id'] = !empty($dados['segmento_treinamento_id']) ? $dados['segmento_treinamento_id'] : null;
+        }
 
-                $assinatura = CarteiraAssinatura::where('id', $id)->first();
-                $assinatura->update($dados);
+        $padraoId = $this->resolverPadraoId($dados['padrao_treinamento_id'] ?? null);
+        if (($dados['padrao_treinamento_id'] ?? null) && !$padraoId) {
+            return response()->json([
+                'msg' => 'Padrão de treinamento inválido ou de outra empresa.',
+                'erros' => ['padrao_treinamento_id' => ['Padrão inválido.']],
+            ], 400);
+        }
 
-                if (isset($dados['anexosDel'])) {
-                    foreach ($dados['anexosDel'] as $id_anexo) {
-                        $arquivo = Arquivo::find($id_anexo);
-                        $arquivo->excluir();
-                    }
+        try {
+            DB::beginTransaction();
+            $dados['padrao_treinamento_id'] = $padraoId;
+
+            $assinatura = CarteiraAssinatura::where('id', $id)->first();
+            $assinatura->update($dados);
+
+            if (isset($dados['anexosDel'])) {
+                foreach ($dados['anexosDel'] as $id_anexo) {
+                    $arquivo = Arquivo::find($id_anexo);
+                    $arquivo->excluir();
                 }
-                if (isset($dados['anexos'])) {
-                    foreach ($dados['anexos'] as $index => $anexo) {
-                        if ($anexo['chave'] == null) {
-                            Arquivo::whereId($anexo['id'])->update([
-                                'nome' => $anexo['nome'],
-                            ]);
-                            $assinatura->Anexos()->updateExistingPivot($anexo['id'], ['ordem' => $index]);
-                        } else {
-                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                            if ($arquivo) {
-                                $arquivo->temporario = false;
-                                $arquivo->chave = '';
-                                $arquivo->save();
-                                $assinatura->Anexos()->attach($arquivo->id, ['ordem' => $index]);
-                            }
+            }
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    if ($anexo['chave'] == null) {
+                        Arquivo::whereId($anexo['id'])->update([
+                            'nome' => $anexo['nome'],
+                        ]);
+                        $assinatura->Anexos()->updateExistingPivot($anexo['id'], ['ordem' => $index]);
+                    } else {
+                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                        if ($arquivo) {
+                            $arquivo->temporario = false;
+                            $arquivo->chave = '';
+                            $arquivo->save();
+                            $assinatura->Anexos()->attach($arquivo->id, ['ordem' => $index]);
                         }
                     }
                 }
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error UPDATE ASSINATURA CARTEIRA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
             }
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error UPDATE ASSINATURA CARTEIRA:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
         }
     }
 
@@ -144,7 +164,9 @@ class CarteiraAssinaturaController extends Controller
     {
         $this->authorize('cadastro_carteira_assinatura');
         $porPagina = $request->get('porPagina');
-        $resultado = CarteiraAssinatura::with('SegmentoTreinamento:id,nome')->orderBy('id');
+        $resultado = CarteiraAssinatura::with([
+            'PadraoTreinamento:id,nome',
+        ])->orderBy('id');
 
         $resultado = $resultado->paginate($porPagina);
         return response()->json([
@@ -237,5 +259,20 @@ class CarteiraAssinaturaController extends Controller
         } else {
             return response("", 404);
         }
+    }
+
+    private function resolverPadraoId($padraoId): ?int
+    {
+        if (empty($padraoId)) {
+            return null;
+        }
+
+        $empresaId = (int) auth()->user()->empresa_id;
+        $existe = PadraoTreinamento::query()
+            ->where('id', (int) $padraoId)
+            ->where('empresa_id', $empresaId)
+            ->exists();
+
+        return $existe ? (int) $padraoId : null;
     }
 }

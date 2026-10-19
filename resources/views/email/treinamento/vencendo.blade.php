@@ -67,7 +67,7 @@
                     <div
                         style="border: 1px solid #666666; padding: 10px; margin-bottom: 10px;font-size: 13.5px; line-height: 20px; font-family: 'Arial'; color: #555555">
                         Funcionário: <strong>{{$linha->Curriculo->nome}}</strong> <br>
-                        Segmento: <strong>{{ optional(optional(optional($linha->FeedbackCurriculo)->Admissao)->SegmentoTreinamento)->nome ?? '-' }}</strong>
+                        Padrão: <strong>{{ optional(optional(optional($linha->FeedbackCurriculo)->Admissao)->PadraoTreinamento)->nome ?? '-' }}</strong>
                         <br><br>
 
                         @foreach($linha->Vencimentos as $item)

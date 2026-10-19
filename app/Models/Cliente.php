@@ -114,8 +114,6 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @method static Builder|Cliente whereUpdatedAt($value)
  * @method static Builder|Cliente whereValores($value)
  * @method static Builder|Cliente whereVisao($value)
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SegmentoTreinamento> $SegmentosTreinamento
- * @property-read int|null $segmentos_treinamento_count
  * @mixin \Eloquent
  */
 class Cliente extends Model
@@ -402,11 +400,6 @@ class Cliente extends Model
         return $this->hasOne(ClienteConfig::class, 'cliente_id', 'id');
     }
 
-    public function SegmentosTreinamento()
-    {
-        return $this->belongsToMany(SegmentoTreinamento::class, 'cliente_segmento_treinamento', 'cliente_id', 'segmento_treinamento_id');
-    }
-
     public function EmpresaFuncionarios()
     {
         return $this->belongsToMany(User::class, 'empresa_funcionarios', 'empresa_id', 'funcionario_id');
@@ -427,16 +420,26 @@ class Cliente extends Model
         return $this->hasOne(CarteiraAssinatura::class, 'empresa_id', 'id');
     }
 
-    /** Assinatura padrão Gestor/RH (segmento_treinamento_id nulo = uso em qualquer segmento quando não houver assinatura específica). */
+    /** Assinatura padrão Gestor/RH (padrao nulo = fallback quando não houver assinatura específica). */
     public function CarteiraAssinaturaGestorRh()
     {
-        return $this->CarteiraAssinatura()->whereAtivo(true)->whereTipo(CarteiraAssinatura::TIPO_GERENTE_OU_RH)->whereNull('segmento_treinamento_id')->with('Anexos')->first();
+        return $this->CarteiraAssinatura()
+            ->whereAtivo(true)
+            ->whereTipo(CarteiraAssinatura::TIPO_GERENTE_OU_RH)
+            ->whereNull('padrao_treinamento_id')
+            ->with('Anexos')
+            ->first();
     }
 
-    /** Assinatura padrão SESMT (segmento_treinamento_id nulo = uso em qualquer segmento quando não houver assinatura específica). */
+    /** Assinatura padrão SESMT (padrao nulo = fallback quando não houver assinatura específica). */
     public function CarteiraAssinaturaSesmt()
     {
-        return $this->CarteiraAssinatura()->whereAtivo(true)->whereTipo(CarteiraAssinatura::TIPO_SESMT)->whereNull('segmento_treinamento_id')->with('Anexos')->first();
+        return $this->CarteiraAssinatura()
+            ->whereAtivo(true)
+            ->whereTipo(CarteiraAssinatura::TIPO_SESMT)
+            ->whereNull('padrao_treinamento_id')
+            ->with('Anexos')
+            ->first();
     }
 
     public function Papel()

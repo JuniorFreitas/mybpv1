@@ -156,13 +156,45 @@ const app = createApp({
             }
         },
 
-        gerarCarteiras() {
-            axios
-                .get(`${URL_ADMIN}/treinamento/carteiras`, { selecionados: this.selecionados })
-                .then((response) => {
-                    let data = response.data
+        async gerarCarteiras() {
+            const ids = (this.selecionados || [])
+                .map((id) => Number(id))
+                .filter((id) => Number.isFinite(id) && id > 0)
+            if (!ids.length) return
+
+            const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+            const body = new URLSearchParams()
+            if (token) body.append('_token', token)
+            body.append('tipo', 'treinamento')
+            ids.forEach((id) => body.append('selecionados[]', String(id)))
+
+            const novaAba = window.open('about:blank', '_blank')
+            if (novaAba) {
+                novaAba.document.write('<p style="font-family:sans-serif;padding:16px">Gerando carteira…</p>')
+                novaAba.document.close()
+            }
+
+            try {
+                const response = await fetch(`${URL_ADMIN}/treinamento/carteiras`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                        'Accept': 'text/html,application/xhtml+xml',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        ...(token ? { 'X-CSRF-TOKEN': token } : {}),
+                    },
+                    body,
+                    credentials: 'same-origin',
                 })
-                .catch((error) => {})
+                const html = await response.text()
+                if (novaAba) {
+                    novaAba.document.open()
+                    novaAba.document.write(html || `<p>Erro ao gerar carteira (${response.status}).</p>`)
+                    novaAba.document.close()
+                }
+            } catch (e) {
+                if (novaAba) novaAba.close()
+            }
         },
 
         formAlterar(curriculo_id) {

@@ -423,7 +423,7 @@ class AdmissaoApiAssembler
                 'data_nr_trinta_tres', 'nr_trinta_cinco', 'data_nr_trinta_cinco',
                 'trinta_dois_sessenta', 'data_trinta_dois_sessenta', 'numero_cracha',
                 'data_aso', 'foto_escaneada', 'status_carteira_treinamento',
-                'segmento_treinamento_id', 'data_admissao', 'data_adm_prevista',
+                'padrao_treinamento_id', 'data_admissao', 'data_adm_prevista',
                 'data_desmobilizacao', 'avaliacao', 'obs_avaliacao', 'responsavel_feedback',
                 'data_avaliacao', 'area_etiqueta_id', 'cipa', 'deu_baixa_epi', 'alternativas',
                 'data_desmob', 'pendencia', 'pendencias_quais', 'outros',
@@ -786,7 +786,7 @@ class AdmissaoApiAssembler
             'centro_custo_filial_id',
             'formulario_id',
             'centro_custo_id',
-            'segmento_treinamento_id',
+            'padrao_treinamento_id',
             'area_etiqueta_id',
         ], ['usuario_id', 'editado_usuario_id', 'user_avaliacao', 'usuario_desmob']);
 

@@ -28,7 +28,7 @@ class FeedbackCurriculoFilter
             'Curriculo:id,nome,cpf,nascimento,pcd,uf_vaga,email,rg,orgao_expeditor',
             'Curriculo.FotoTres:id',
             'Admissao.AreaEtiqueta',
-            'Admissao.SegmentoTreinamento:id,nome,slug',
+            'Admissao.PadraoTreinamento:id,nome,slug',
             'VagaSelecionada:id,nome',
             'Treinamento:id,cadastrou,feedback_id,tipo,created_at,updated_at',
             'Treinamento.Vencimentos',
@@ -366,11 +366,12 @@ class FeedbackCurriculoFilter
             });
         }
 
-        // Filtro Padrão de treinamento (Segmento da admissão)
-        if (isset($this->filters['segmento_treinamento_id']) && $this->filters['segmento_treinamento_id'] !== '') {
-            $segmentoTreinamentoId = (int) $this->filters['segmento_treinamento_id'];
-            $this->query->whereHas('Admissao', function ($query) use ($segmentoTreinamentoId) {
-                $query->where('segmento_treinamento_id', $segmentoTreinamentoId);
+        // Filtro Padrão de treinamento
+        $padraoFiltro = $this->filters['padrao_treinamento_id'] ?? null;
+        if ($padraoFiltro !== null && $padraoFiltro !== '') {
+            $padraoTreinamentoId = (int) $padraoFiltro;
+            $this->query->whereHas('Admissao', function ($query) use ($padraoTreinamentoId) {
+                $query->where('padrao_treinamento_id', $padraoTreinamentoId);
             });
         }
 

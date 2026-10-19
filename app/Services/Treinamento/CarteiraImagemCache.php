@@ -23,6 +23,11 @@ class CarteiraImagemCache
     /** TTL menor para miniatura de impressão: renova rápido se a foto for substituída. */
     private const TTL_FOTO_PRINT_DAYS = 7;
 
+    /** Memo por request — evita N× Redis/file para o mesmo path na mesma geração. */
+    private static array $memoPublic = [];
+    private static array $memoAssinatura = [];
+    private static array $memoFoto = [];
+
     /**
      * Converte imagem do diretório public para base64 (data:image/...;base64,...) com cache.
      * Chave de cache inclui filemtime: ao atualizar o arquivo, o cache é naturalmente renovado.
@@ -41,8 +46,11 @@ class CarteiraImagemCache
 
         $mtime = @filemtime($fullPath);
         $cacheKey = self::PREFIX_PUBLIC . md5($pathRelativo) . ':' . ($mtime ?: 0);
+        if (array_key_exists($cacheKey, self::$memoPublic)) {
+            return self::$memoPublic[$cacheKey];
+        }
 
-        return Cache::remember($cacheKey, now()->addDays(self::TTL_DAYS), function () use ($fullPath) {
+        $result = Cache::remember($cacheKey, now()->addDays(self::TTL_DAYS), function () use ($fullPath) {
             $data = @file_get_contents($fullPath);
             if ($data === false) {
                 return null;
@@ -51,15 +59,17 @@ class CarteiraImagemCache
             $mime = ($ext === 'pdf') ? 'application' : 'image';
             return "data:{$mime}/{$ext};base64," . base64_encode($data);
         });
+
+        return self::$memoPublic[$cacheKey] = $result;
     }
 
     /**
-     * Retorna array da assinatura com url_thumb em base64 (cache por assinatura + anexo + updated_at).
-     * Ao alterar o anexo da assinatura, a chave muda e o cache é renovado.
+     * Retorna array da assinatura com url_thumb.
+     * HTML (impressão no browser): URL remota leve. PDF DomPDF: base64 embutido (cache).
      *
      * @return array|null ['nome' => string, 'tipo' => string, 'url_thumb' => string|null]
      */
-    public static function assinaturaParaArray(CarteiraAssinatura $a): ?array
+    public static function assinaturaParaArray(CarteiraAssinatura $a, bool $embedBase64 = true): ?array
     {
         $a->loadMissing('Anexos');
         $anexo = $a->Anexos->first();
@@ -67,12 +77,20 @@ class CarteiraImagemCache
             return ['nome' => $a->nome, 'tipo' => $a->tipo, 'url_thumb' => null];
         }
 
+        if (!$embedBase64) {
+            return ['nome' => $a->nome, 'tipo' => $a->tipo, 'url_thumb' => $anexo->urlThumb];
+        }
+
         $updatedAt = $anexo->updated_at ? $anexo->updated_at->format('U') : '0';
         $cacheKey = self::PREFIX_ASSINATURA . $a->id . ':' . $anexo->id . ':' . $updatedAt;
-
-        $urlThumb = Cache::remember($cacheKey, now()->addDays(self::TTL_DAYS), function () use ($anexo) {
-            return Sistema::convertBase3($anexo->urlThumb, true);
-        });
+        if (array_key_exists($cacheKey, self::$memoAssinatura)) {
+            $urlThumb = self::$memoAssinatura[$cacheKey];
+        } else {
+            $urlThumb = Cache::remember($cacheKey, now()->addDays(self::TTL_DAYS), function () use ($anexo) {
+                return Sistema::convertBase3($anexo->urlThumb, true);
+            });
+            self::$memoAssinatura[$cacheKey] = $urlThumb;
+        }
 
         return ['nome' => $a->nome, 'tipo' => $a->tipo, 'url_thumb' => $urlThumb];
     }
@@ -103,8 +121,11 @@ class CarteiraImagemCache
 
         $mtime = (int) $disk->lastModified($file);
         $cacheKey = self::PREFIX_FOTO_PRINT . md5($file) . ':' . $mtime;
+        if (array_key_exists($cacheKey, self::$memoFoto)) {
+            return self::$memoFoto[$cacheKey];
+        }
 
-        return Cache::remember($cacheKey, now()->addDays(self::TTL_FOTO_PRINT_DAYS), function () use ($file) {
+        $result = Cache::remember($cacheKey, now()->addDays(self::TTL_FOTO_PRINT_DAYS), function () use ($file) {
             $data = Arquivo::getFotocurriculoAnexoContentAndMime($file);
             if ($data === null) {
                 return null;
@@ -122,5 +143,7 @@ class CarteiraImagemCache
                 return 'data:' . $data['mime'] . ';base64,' . base64_encode($data['content']);
             }
         });
+
+        return self::$memoFoto[$cacheKey] = $result;
     }
 }

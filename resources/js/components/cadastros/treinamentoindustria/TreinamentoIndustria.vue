@@ -16,156 +16,212 @@
         >
             <template #conteudo>
                 <preload class="text-center" v-if="preload"></preload>
-                <fieldset class="mt-0" v-if="!preload">
-                    <legend>Informações</legend>
-                    <p class="mybp-campo-obrigatorio-legenda mb-3">
+                <div class="mybp-modal-form mybp-filtros-compactos" v-if="!preload">
+                    <p class="mybp-campo-obrigatorio-legenda mb-2">
                         Campos com <span class="text-danger">*</span> são obrigatórios.
                     </p>
-                    <div class="row">
-                        <div class="col-12 col-md-12">
-                            <div class="form-group">
-                                <label class="mybp-label" for="ti-form-nome">Nome <span class="text-danger">*</span></label>
-                                <input
-                                    id="ti-form-nome"
-                                    v-model="form.label"
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="Informe o nome"
-                                    onblur="valida_campo_vazio(this, 1)"
-                                />
+
+                    <fieldset class="mybp-modal-secao">
+                        <legend>Identificação</legend>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" for="ti-form-nome">Nome <span class="text-danger">*</span></label>
+                                    <input
+                                        id="ti-form-nome"
+                                        v-model="form.label"
+                                        class="form-control form-control-sm"
+                                        type="text"
+                                        placeholder="Informe o nome do treinamento"
+                                        onblur="valida_campo_vazio(this, 1)"
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" for="ti-form-descricao">A quem se destina <span class="text-danger">*</span></label>
+                                    <input
+                                        id="ti-form-descricao"
+                                        v-model="form.descricao"
+                                        class="form-control form-control-sm"
+                                        type="text"
+                                        placeholder="Informe para quem se destina"
+                                        onblur="valida_campo_vazio(this, 1)"
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" for="ti-form-prazo-fixo">Prazo fixo (dias)</label>
+                                    <input
+                                        id="ti-form-prazo-fixo"
+                                        v-model="form.prazo_fixo"
+                                        class="form-control form-control-sm"
+                                        type="number"
+                                        placeholder="Ex: 365"
+                                        min="1"
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="form-group mybp-filtro-campo">
+                                    <label class="mybp-label" for="ti-form-ordem">Ordem</label>
+                                    <input id="ti-form-ordem" v-model="form.ordem" class="form-control form-control-sm" type="number" />
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4 d-flex align-items-end">
+                                <div class="form-group mb-0 pb-1">
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="ativo" />
+                                        <label class="custom-control-label" for="ativo">{{ form.ativo ? 'Ativo' : 'Inativo' }}</label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-12 mb-2">
-                            <div class="custom-control custom-switch">
+
+                        <div class="ti-doc-bloco mt-1">
+                            <div class="custom-control custom-switch mb-2">
                                 <input type="checkbox" v-model="form.exibir_na_carteira" class="custom-control-input" id="exibir_na_carteira" />
-                                <label class="custom-control-label" for="exibir_na_carteira">Exibir Carteira Treinamento</label>
+                                <label class="custom-control-label" for="exibir_na_carteira">Exibir na carteira de treinamento</label>
                             </div>
-                        </div>
-                        <div class="col-12 col-md-12" v-if="form.exibir_na_carteira">
-                            <div class="form-group">
+                            <div class="form-group mybp-filtro-campo mb-0" v-if="form.exibir_na_carteira">
                                 <label class="mybp-label" for="ti-form-nome-reduzido">
-                                    Nome Reduzido <span class="text-danger">*</span>
+                                    Nome reduzido <span class="text-danger">*</span>
                                 </label>
                                 <input
                                     id="ti-form-nome-reduzido"
                                     v-model="form.label_reduzida"
                                     class="form-control form-control-sm"
                                     type="text"
-                                    placeholder="Informe o nome reduzido"
+                                    placeholder="Nome curto para a carteira"
                                     onblur="valida_campo_vazio(this, 1)"
                                 />
                             </div>
                         </div>
-                        <div class="col-12 col-md-12">
-                            <div class="form-group">
-                                <label class="mybp-label" for="ti-form-descricao">A quem se destina <span class="text-danger">*</span></label>
-                                <input
-                                    id="ti-form-descricao"
-                                    v-model="form.descricao"
-                                    class="form-control form-control-sm"
-                                    type="text"
-                                    placeholder="Informe para quem se destina"
-                                    onblur="valida_campo_vazio(this, 1)"
-                                />
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-group">
-                                <label class="mybp-label" for="ti-form-prazo-fixo">Prazo fixo (dias para vencimento)</label>
-                                <input
-                                    id="ti-form-prazo-fixo"
-                                    v-model="form.prazo_fixo"
-                                    class="form-control form-control-sm"
-                                    type="number"
-                                    placeholder="Ex: 365"
-                                    min="1"
-                                />
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <div class="form-group">
-                                <label class="mybp-label" for="ti-form-ordem">Ordem</label>
-                                <input id="ti-form-ordem" v-model="form.ordem" class="form-control form-control-sm" type="number" />
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-12 mybp-combobox-wrap">
-                            <div class="form-group">
-                                <label class="mybp-label" for="ti-form-segmento-input">Segmento / Padrão de treinamento</label>
-                                <combobox-auto-complete
-                                    ref="comboFormSegmento"
-                                    instance-id="form-segmento"
-                                    v-model="form.segmento_treinamento_id"
-                                    :options="segmentoComboboxOpcoesForm"
-                                    :disabled="preload || !segmentos.length"
-                                    input-id="ti-form-segmento-input"
-                                    placeholder-blur="Selecione o segmento"
-                                    empty-message="Nenhum segmento encontrado."
-                                    :max-results="50"
-                                    @opening="fecharOutrosComboboxes('form-segmento')"
-                                />
-                            </div>
-                        </div>
-                        <div class="col-12 mb-2">
-                            <div class="custom-control custom-switch">
-                                <input
-                                    type="checkbox"
-                                    v-model="form.vinculo_todos_cargos"
-                                    class="custom-control-input"
-                                    id="vinculo_todos_cargos"
-                                    @change="onToggleVinculoTodosCargos"
-                                />
-                                <label class="custom-control-label" for="vinculo_todos_cargos">Vincular a todos os cargos</label>
-                            </div>
-                            <small v-if="form.vinculo_todos_cargos" class="text-muted d-block">
-                                Quando ativo, o treinamento vale para qualquer cargo, independentemente da lista abaixo.
-                            </small>
-                        </div>
-                        <div class="col-12 col-md-12" v-show="!form.vinculo_todos_cargos">
-                            <fieldset>
-                                <legend>Cargos vinculados</legend>
-                                <p class="text-muted small mb-2">
-                                    O mesmo vínculo é exibido no cadastro de Cargo (somente leitura).
-                                </p>
-                                <div class="form-group">
-                                    <label class="mybp-label" :for="`ti-form-cargo_${hash}`">Adicionar cargo</label>
-                                    <autocomplete
-                                        :caminho="`autocomplete/cargos_ativos`"
-                                        :formsm="true"
-                                        v-model="form.autocomplete_label_cargo"
-                                        placeholder="Selecione um cargo"
-                                        :id="`cargo_${hash}`"
-                                        @onselect="selecionaCargo"
-                                    ></autocomplete>
-                                </div>
+                    </fieldset>
 
-                                <div v-if="form.cargos.length > 0" class="mybp-cargos-vinculados-lista">
-                                    <div
-                                        class="mybp-cargo-vinculado-item"
-                                        v-for="(cargo, index) in form.cargos"
-                                        :key="cargo.id"
-                                    >
-                                        <span class="mybp-cargo-vinculado-nome">{{ cargo.nome }}</span>
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm btn-outline-danger"
-                                            title="Remover cargo"
-                                            @click.prevent="removerCargo(index)"
-                                        >
-                                            <i class="fa fa-times" aria-hidden="true"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <p v-else class="text-muted small mb-0">Nenhum cargo vinculado.</p>
-                            </fieldset>
-                        </div>
-                        <div class="col-12 mt-2">
-                            <div class="custom-control custom-switch">
-                                <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="ativo" />
-                                <label class="custom-control-label" for="ativo">{{ form.ativo ? 'Ativo' : 'Inativo' }}</label>
+                    <fieldset class="mybp-modal-secao">
+                        <legend>Padrões</legend>
+                        <p class="mybp-modal-legenda mb-2">
+                            Vincule este treinamento a um ou mais padrões.
+                            <span v-if="padroes.length">
+                                <strong>{{ form.padroes.length }}</strong> de {{ padroes.length }} selecionado(s).
+                            </span>
+                        </p>
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label" for="ti-form-padrao-input">Buscar padrão</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    ref="comboFormPadrao"
+                                    instance-id="form-padrao"
+                                    v-model="padraoSelecionado"
+                                    :options="padraoComboboxOpcoesForm"
+                                    :disabled="preload || !padroesDisponiveisForm.length"
+                                    input-id="ti-form-padrao-input"
+                                    placeholder-blur="Digite o nome e selecione para adicionar"
+                                    empty-message="Nenhum padrão disponível ou todos já foram adicionados."
+                                    :max-results="50"
+                                    @opening="fecharOutrosComboboxes('form-padrao')"
+                                    @select="onSelectPadraoForm"
+                                />
                             </div>
                         </div>
-                    </div>
-                </fieldset>
+
+                        <div class="ti-padrao-chip-lista" v-if="form.padroes.length">
+                            <div class="ti-padrao-chip" v-for="(p, idx) in form.padroes" :key="p.id">
+                                <span class="ti-padrao-chip-texto" :title="p.nome">{{ p.nome }}</span>
+                                <span v-if="p.ativo === false" class="ti-padrao-chip-meta">Inativo</span>
+                                <button
+                                    type="button"
+                                    class="ti-padrao-chip-remove"
+                                    :aria-label="`Remover ${p.nome}`"
+                                    :disabled="preload"
+                                    @click="removerPadrao(idx)"
+                                >
+                                    <i class="fa fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="ti-empty-hint" v-else>
+                            <i class="fas fa-layer-group text-muted mr-1"></i>
+                            Nenhum padrão vinculado. Busque e selecione para adicionar.
+                        </div>
+                        <div class="mt-2 d-flex flex-wrap" style="gap: 0.75rem;" v-if="padroesDisponiveisForm.length || form.padroes.length">
+                            <button
+                                v-if="padroesDisponiveisForm.length > 1"
+                                type="button"
+                                class="btn btn-sm btn-link p-0"
+                                :disabled="preload"
+                                @click="adicionarTodosPadroes"
+                            >
+                                Adicionar todos os restantes ({{ padroesDisponiveisForm.length }})
+                            </button>
+                            <button
+                                v-if="form.padroes.length"
+                                type="button"
+                                class="btn btn-sm btn-link text-danger p-0"
+                                :disabled="preload"
+                                @click="limparPadroes"
+                            >
+                                Remover todos
+                            </button>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="mybp-modal-secao">
+                        <legend>Cargos</legend>
+                        <div class="custom-control custom-switch mb-2">
+                            <input
+                                type="checkbox"
+                                v-model="form.vinculo_todos_cargos"
+                                class="custom-control-input"
+                                id="vinculo_todos_cargos"
+                                @change="onToggleVinculoTodosCargos"
+                            />
+                            <label class="custom-control-label" for="vinculo_todos_cargos">Vincular a todos os cargos</label>
+                        </div>
+                        <p class="mybp-modal-legenda mb-2" v-if="form.vinculo_todos_cargos">
+                            O treinamento vale para qualquer cargo, sem lista específica.
+                        </p>
+                        <template v-else>
+                            <p class="mybp-modal-legenda mb-2">
+                                O mesmo vínculo aparece no cadastro de Cargo (somente leitura).
+                            </p>
+                            <div class="form-group mybp-filtro-campo">
+                                <label class="mybp-label" :for="`ti-form-cargo_${hash}`">Adicionar cargo</label>
+                                <autocomplete
+                                    :caminho="`autocomplete/cargos_ativos`"
+                                    :formsm="true"
+                                    v-model="form.autocomplete_label_cargo"
+                                    placeholder="Digite o nome do cargo"
+                                    :id="`cargo_${hash}`"
+                                    @onselect="selecionaCargo"
+                                ></autocomplete>
+                            </div>
+
+                            <div v-if="form.cargos.length > 0" class="mybp-cargos-vinculados-lista">
+                                <div
+                                    class="mybp-cargo-vinculado-item"
+                                    v-for="(cargo, index) in form.cargos"
+                                    :key="cargo.id"
+                                >
+                                    <span class="mybp-cargo-vinculado-nome">{{ cargo.nome }}</span>
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-danger"
+                                        title="Remover cargo"
+                                        @click.prevent="removerCargo(index)"
+                                    >
+                                        <i class="fa fa-times" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="ti-empty-hint" v-else>
+                                Nenhum cargo vinculado.
+                            </div>
+                        </template>
+                    </fieldset>
+                </div>
             </template>
             <template #rodape>
                 <button type="button" class="btn btn-sm mr-1 btn-secondary" :disabled="preload" @click="fecharModal">
@@ -245,19 +301,19 @@
 
                 <div class="col-12 col-lg-5">
                     <div class="form-group mb-2 mb-lg-0">
-                        <label class="mybp-label" for="treinamento-industria-filtro-segmento">Segmento</label>
+                        <label class="mybp-label" for="treinamento-industria-filtro-padrao">Padrão</label>
                         <div class="mybp-combobox-wrap">
                             <combobox-auto-complete
-                                ref="comboFiltroSegmento"
-                                instance-id="filtro-segmento"
-                                v-model="controle.dados.segmento_treinamento_id"
-                                :options="segmentoComboboxOpcoesFiltro"
-                                :disabled="controle.carregando || !segmentos.length"
-                                input-id="treinamento-industria-filtro-segmento"
-                                placeholder-blur="Todos os segmentos"
-                                empty-message="Nenhum segmento encontrado."
+                                ref="comboFiltroPadrao"
+                                instance-id="filtro-padrao"
+                                v-model="controle.dados.padrao_treinamento_id"
+                                :options="padraoComboboxOpcoesFiltro"
+                                :disabled="controle.carregando || !padroes.length"
+                                input-id="treinamento-industria-filtro-padrao"
+                                placeholder-blur="Todos os padrões"
+                                empty-message="Nenhum padrão encontrado."
                                 :max-results="50"
-                                @opening="fecharOutrosComboboxes('filtro-segmento')"
+                                @opening="fecharOutrosComboboxes('filtro-padrao')"
                                 @select="onSelectFiltro"
                             />
                         </div>
@@ -328,13 +384,8 @@
 
                     <div class="mybp-card-details-row">
                         <div class="mybp-detail-item">
-                            <i class="fas fa-layer-group text-muted"></i>
-                            <span class="mybp-detail-label">Padrão</span>
-                            <span class="mybp-detail-value">{{ nomeSegmento(item) }}</span>
-                        </div>
-                        <div class="mybp-detail-item">
                             <i class="fas fa-briefcase text-muted"></i>
-                            <span class="mybp-detail-label">Cargos vinculados</span>
+                            <span class="mybp-detail-label">Cargos</span>
                             <span class="mybp-detail-value">{{ resumoCargos(item) }}</span>
                         </div>
                         <div class="mybp-detail-item">
@@ -351,6 +402,16 @@
                             <i class="fas fa-info-circle text-muted"></i>
                             <span class="mybp-detail-label">A quem se destina</span>
                             <span class="mybp-detail-value">{{ valorOuNaoInformado(item.descricao) }}</span>
+                        </div>
+                        <div class="mybp-detail-item mybp-detail-item--full">
+                            <i class="fas fa-layer-group text-muted"></i>
+                            <span class="mybp-detail-label">Padrões</span>
+                            <span class="mybp-detail-value">
+                                <span class="ti-card-padroes" v-if="padroesDoItem(item).length">
+                                    <span class="ti-card-padrao-chip" v-for="p in padroesDoItem(item)" :key="p.id">{{ p.nome }}</span>
+                                </span>
+                                <span v-else>Nenhum padrão</span>
+                            </span>
                         </div>
                     </div>
                     <div class="mybp-card-secoes-row mt-2" v-if="item.exibir_na_carteira || item.label_reduzida">
@@ -395,7 +456,7 @@ import {
     limparFiltrosListagem
 } from '../../../utils/listagemQueryParams'
 
-const CAMPOS_FILTRO_URL = ['campoBusca', 'campoStatus', 'segmento_treinamento_id']
+const CAMPOS_FILTRO_URL = ['campoBusca', 'campoStatus', 'padrao_treinamento_id']
 
 export default {
     components: {
@@ -424,7 +485,7 @@ export default {
         }
     },
     mounted() {
-        this.carregarSegmentos()
+        this.carregarPadroes()
         this.formDefault = _.cloneDeep(this.form)
         lerFiltrosDaUrl(this.controle.dados, CAMPOS_FILTRO_URL)
         const paginaInicial = lerPaginacaoDaUrl(this.controle.dados, { pagesDefault: this.qntPag })
@@ -448,20 +509,26 @@ export default {
                 { value: 'false', label: 'Apenas inativos' }
             ]
         },
-        segmentoComboboxOpcoesFiltro() {
-            const segmentos = (this.segmentos || []).map((segmento) => ({
-                value: segmento.id,
-                label: segmento.nome,
-                raw: segmento
+        padroesDisponiveisForm() {
+            const usados = new Set((this.form.padroes || []).map((p) => Number(p.id)))
+            return (this.padroes || []).filter((p) => !usados.has(Number(p.id)))
+        },
+        padraoComboboxOpcoesFiltro() {
+            const padroes = (this.padroes || []).map((padrao) => ({
+                value: String(padrao.id),
+                label: padrao.nome,
+                meta: padrao.ativo === false ? 'Inativo' : '',
+                raw: padrao
             }))
 
-            return [{ value: '', label: 'Todos os segmentos' }, ...segmentos]
+            return [{ value: '', label: 'Todos os padrões' }, ...padroes]
         },
-        segmentoComboboxOpcoesForm() {
-            return (this.segmentos || []).map((segmento) => ({
-                value: segmento.id,
-                label: segmento.nome,
-                raw: segmento
+        padraoComboboxOpcoesForm() {
+            return this.padroesDisponiveisForm.map((padrao) => ({
+                value: String(padrao.id),
+                label: padrao.nome,
+                meta: padrao.ativo === false ? 'Inativo' : '',
+                raw: padrao
             }))
         },
         temFiltrosAtivos() {
@@ -499,7 +566,8 @@ export default {
                 prazo_fixo: 365,
                 ordem: 1,
                 ativo: true,
-                segmento_treinamento_id: null,
+                padroes: [],
+                padrao_treinamento_ids: [],
                 vinculo_todos_cargos: false,
                 cargos: [],
                 cargo_ids: [],
@@ -508,7 +576,8 @@ export default {
             },
 
             formDefault: null,
-            segmentos: [],
+            padroes: [],
+            padraoSelecionado: '',
 
             lista: [],
             dropdownAbertoKey: null,
@@ -520,7 +589,7 @@ export default {
                 dados: {
                     campoBusca: '',
                     campoStatus: '',
-                    segmento_treinamento_id: '',
+                    padrao_treinamento_id: '',
                     pages: this.qntPag
                 }
             }
@@ -534,11 +603,11 @@ export default {
             if (manter !== 'filtro-status' && this.$refs.comboFiltroStatus?.close) {
                 this.$refs.comboFiltroStatus.close()
             }
-            if (manter !== 'filtro-segmento' && this.$refs.comboFiltroSegmento?.close) {
-                this.$refs.comboFiltroSegmento.close()
+            if (manter !== 'filtro-padrao' && this.$refs.comboFiltroPadrao?.close) {
+                this.$refs.comboFiltroPadrao.close()
             }
-            if (manter !== 'form-segmento' && this.$refs.comboFormSegmento?.close) {
-                this.$refs.comboFormSegmento.close()
+            if (manter !== 'form-padrao' && this.$refs.comboFormPadrao?.close) {
+                this.$refs.comboFormPadrao.close()
             }
         },
         onSelectFiltro() {
@@ -596,8 +665,49 @@ export default {
         fecharModal() {
             this.$refs.modal_janelaCadastrar?.fecharModal?.()
         },
-        nomeSegmento(item) {
-            return item?.segmento_treinamento?.nome || item?.SegmentoTreinamento?.nome || 'Não informado'
+        padroesDoItem(item) {
+            return item?.padroes_treinamento || item?.padroesTreinamento || item?.PadroesTreinamento || []
+        },
+        resumoPadroes(item) {
+            const padroes = this.padroesDoItem(item)
+            if (!padroes.length) return 'Nenhum padrão'
+            return padroes.map((p) => p.nome).filter(Boolean).join(', ') || 'Nenhum padrão'
+        },
+        onSelectPadraoForm() {
+            this.$nextTick(() => this.adicionarPadrao())
+        },
+        adicionarPadrao() {
+            const id = this.padraoSelecionado ? Number(this.padraoSelecionado) : null
+            if (!id) return
+            const padrao = (this.padroes || []).find((p) => Number(p.id) === id)
+            if (!padrao) {
+                this.padraoSelecionado = ''
+                return
+            }
+            if ((this.form.padroes || []).some((p) => Number(p.id) === id)) {
+                this.padraoSelecionado = ''
+                return
+            }
+            this.form.padroes.push({ id: padrao.id, nome: padrao.nome, slug: padrao.slug, ativo: padrao.ativo })
+            this.form.padrao_treinamento_ids = this.form.padroes.map((p) => p.id)
+            this.padraoSelecionado = ''
+        },
+        adicionarTodosPadroes() {
+            this.padroesDisponiveisForm.forEach((padrao) => {
+                if ((this.form.padroes || []).some((p) => Number(p.id) === Number(padrao.id))) return
+                this.form.padroes.push({ id: padrao.id, nome: padrao.nome, slug: padrao.slug, ativo: padrao.ativo })
+            })
+            this.form.padrao_treinamento_ids = this.form.padroes.map((p) => p.id)
+            this.padraoSelecionado = ''
+        },
+        removerPadrao(index) {
+            this.form.padroes.splice(index, 1)
+            this.form.padrao_treinamento_ids = this.form.padroes.map((p) => p.id)
+        },
+        limparPadroes() {
+            this.form.padroes = []
+            this.form.padrao_treinamento_ids = []
+            this.padraoSelecionado = ''
         },
         prazoFixoTreinamento(item) {
             return item?.prazo_fixo ? `${item.prazo_fixo} dias` : 'Não informado'
@@ -655,18 +765,19 @@ export default {
                 this.form.autocomplete_label_cargo = ''
             }
         },
-        carregarSegmentos() {
+        carregarPadroes() {
             axios
-                .get(`${URL_ADMIN}/cadastro/segmentostreinamento/lista`)
+                .get(`${URL_ADMIN}/cadastro/padroestreinamento/lista`, { params: { com_inativos: 1 } })
                 .then((res) => {
-                    this.segmentos = res.data || []
+                    this.padroes = res.data || []
                 })
                 .catch(() => {
-                    this.segmentos = []
+                    this.padroes = []
                 })
         },
         formNovo() {
             this.form = _.cloneDeep(this.formDefault)
+            this.padraoSelecionado = ''
             this.titulo_janela = 'Treinamento Indústria'
             this.editando = false
             this.cadastrado = false
@@ -695,8 +806,10 @@ export default {
             const payload = {
                 ...this.form,
                 prazo_parada: null,
-                cargo_ids: this.form.vinculo_todos_cargos ? [] : this.form.cargos.map((item) => item.id)
+                cargo_ids: this.form.vinculo_todos_cargos ? [] : this.form.cargos.map((item) => item.id),
+                padrao_treinamento_ids: (this.form.padroes || []).map((item) => item.id)
             }
+            delete payload.padroes
             axios
                 .post(`${URL_ADMIN}/cadastro/treinamentoindustria`, payload)
                 .then((res) => {
@@ -738,6 +851,19 @@ export default {
                     this.form.cargo_ids = this.form.cargos.map((item) => item.id)
                 }
 
+                const padroes = response.data.padroes_treinamento
+                    || response.data.padroesTreinamento
+                    || response.data.PadroesTreinamento
+                    || []
+                this.form.padroes = padroes.map((item) => ({
+                    id: item.id,
+                    nome: item.nome,
+                    slug: item.slug,
+                    ativo: item.ativo
+                }))
+                this.form.padrao_treinamento_ids = this.form.padroes.map((item) => item.id)
+                this.padraoSelecionado = ''
+
                 this.form.autocomplete_label_cargo = ''
                 setupCampo()
             } catch (error) {
@@ -757,8 +883,10 @@ export default {
             const payload = {
                 ...this.form,
                 prazo_parada: null,
-                cargo_ids: this.form.vinculo_todos_cargos ? [] : this.form.cargos.map((item) => item.id)
+                cargo_ids: this.form.vinculo_todos_cargos ? [] : this.form.cargos.map((item) => item.id),
+                padrao_treinamento_ids: (this.form.padroes || []).map((item) => item.id)
             }
+            delete payload.padroes
             axios
                 .put(`${URL_ADMIN}/cadastro/treinamentoindustria/${this.form.id}`, payload)
                 .then(() => {
@@ -789,6 +917,77 @@ export default {
 </script>
 
 <style scoped>
+.ti-doc-bloco {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem 0.85rem;
+}
+
+.ti-padrao-chip-lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.35rem;
+}
+
+.ti-padrao-chip,
+.ti-card-padrao-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: 100%;
+    padding: 0.28rem 0.45rem 0.28rem 0.55rem;
+    background: #fff;
+    border: 1px solid #d7dde3;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
+.ti-card-padroes {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.ti-card-padrao-chip {
+    padding: 0.15rem 0.45rem;
+    background: #f8fafc;
+}
+
+.ti-padrao-chip-texto {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 16rem;
+}
+
+.ti-padrao-chip-meta {
+    color: #6c757d;
+    font-size: 0.68rem;
+    white-space: nowrap;
+}
+
+.ti-padrao-chip-remove {
+    border: 0;
+    background: transparent;
+    color: #6c757d;
+    padding: 0 0.15rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.ti-padrao-chip-remove:hover:not(:disabled) {
+    color: #c82333;
+}
+
+.ti-empty-hint {
+    color: #6c757d;
+    font-size: 0.78rem;
+    padding: 0.45rem 0.1rem;
+}
+
 .mybp-cargos-vinculados-lista {
     display: flex;
     flex-direction: column;
@@ -802,7 +1001,7 @@ export default {
     gap: 0.75rem;
     padding: 0.5rem 0.75rem;
     border: 1px solid #dee2e6;
-    border-radius: 0.25rem;
+    border-radius: 0.35rem;
     background: #fff;
 }
 
