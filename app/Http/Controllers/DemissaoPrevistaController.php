@@ -220,13 +220,16 @@ class DemissaoPrevistaController extends Controller
             $itens->pluck('centro_custo_filial_id')->all()
         );
 
-        $itens = $itens->map(function ($item) use ($docsByDemissaoId, $empresa, $filialMap) {
+        $itens = $itens->map(function ($item) use ($docsByDemissaoId, $empresa, $filialMap, $empresaId) {
             $item->documento_para_assinatura = $docsByDemissaoId[$item->id] ?? null;
             $item->public_id = RuntimePublicId::encode((int) $item->id);
 
             $ccfId = (int) ($item->centro_custo_filial_id ?? 0);
             $ehFilial = filter_var($item->filial ?? false, FILTER_VALIDATE_BOOLEAN);
-            $item->lotacao = LotacaoLabelResolver::resolve(
+            $ccId = (int) ($item->centro_custo_id ?? 0);
+            $item->lotacao = LotacaoLabelResolver::resolvePreferindoCentroCusto(
+                $empresaId,
+                $ccId > 0 ? $ccId : null,
                 $ehFilial,
                 $filialMap[$ccfId] ?? null,
                 $empresa

@@ -284,25 +284,37 @@ export default {
         validarCampos() {
             if (this.disabled || !this.obrigatorio) return true
 
-            if (!String(this.model.cep || '').trim()) {
+            if (
+                !this.campoIgnorarValidacao(`end-cep-${this.hash}`) &&
+                !String(this.model.cep || '').trim()
+            ) {
                 const el = document.getElementById(`end-cep-${this.hash}`)
                 if (el && typeof valida_cep_vazio === 'function') valida_cep_vazio(el)
                 if (typeof mostraErro === 'function') mostraErro('', 'Informe o CEP')
                 return false
             }
-            if (!String(this.model.logradouro || '').trim()) {
+            if (
+                !this.campoIgnorarValidacao(`end-logradouro-${this.hash}`) &&
+                !String(this.model.logradouro || '').trim()
+            ) {
                 const el = document.getElementById(`end-logradouro-${this.hash}`)
                 if (el && typeof valida_campo_vazio === 'function') valida_campo_vazio(el, 3)
                 if (typeof mostraErro === 'function') mostraErro('', 'Informe o endereço')
                 return false
             }
-            if (!String(this.model.bairro || '').trim()) {
+            if (
+                !this.campoIgnorarValidacao(`end-bairro-${this.hash}`) &&
+                !String(this.model.bairro || '').trim()
+            ) {
                 const el = document.getElementById(`end-bairro-${this.hash}`)
                 if (el && typeof valida_campo_vazio === 'function') valida_campo_vazio(el, 3)
                 if (typeof mostraErro === 'function') mostraErro('', 'Informe o bairro')
                 return false
             }
-            if (!String(this.model.municipio || '').trim()) {
+            if (
+                !this.campoIgnorarValidacao(`end-municipio-${this.hash}`) &&
+                !String(this.model.municipio || '').trim()
+            ) {
                 const el = document.getElementById(`end-municipio-${this.hash}`)
                 if (el && typeof valida_campo_vazio === 'function') valida_campo_vazio(el, 3)
                 if (typeof mostraErro === 'function') mostraErro('', 'Informe o município')

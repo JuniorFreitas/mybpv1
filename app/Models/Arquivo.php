@@ -907,6 +907,13 @@ class Arquivo extends Model
             if ($this->disco === self::DISCO_FOTOCURRICULO) {
                 self::forgetFotocurriculoAnexoCache($this->file, $this->imagem ? $this->thumb : null);
             }
+            if ($this->disco === self::DISCO_DOCUMENTOS_PRE_ADMISSAO) {
+                \App\Services\Curriculo\Foto3x4ListagemCache::forget(
+                    self::DISCO_DOCUMENTOS_PRE_ADMISSAO,
+                    $this->file,
+                    $this->imagem ? $this->thumb : null
+                );
+            }
             $this->delete();
             return true;
         }
@@ -1032,10 +1039,10 @@ class Arquivo extends Model
         }
         if ($disco === self::DISCO_FOTOCURRICULO) {
             $key = 'fotocurriculo_anexo:' . $arquivo;
-            $ttl = (int) config('cache.ttl.fotocurriculo_anexo', 86400);
+            $ttl = (int) config('cache.ttl.fotocurriculo_anexo', 10800);
             $cached = Cache::get($key);
             if ($cached !== null && isset($cached['content'], $cached['mime'])) {
-                return response($cached['content'])->header('Content-Type', $cached['mime']);
+                return self::respostaAnexoCacheado($cached['content'], $cached['mime'], $ttl);
             }
             $storage = Storage::disk($disco);
             if (!$storage->exists($arquivo)) {
@@ -1044,7 +1051,8 @@ class Arquivo extends Model
             $content = $storage->get($arquivo);
             $mime = $storage->mimeType($arquivo) ?: 'application/octet-stream';
             Cache::put($key, ['content' => $content, 'mime' => $mime], $ttl);
-            return response($content)->header('Content-Type', $mime);
+
+            return self::respostaAnexoCacheado($content, $mime, $ttl);
         }
         if (Storage::disk($disco)->exists($arquivo)) {
             return \Storage::disk($disco)->response($arquivo);
@@ -1125,6 +1133,13 @@ class Arquivo extends Model
                 if ($disco === self::DISCO_FOTOCURRICULO) {
                     self::forgetFotocurriculoAnexoCache($model->file, $model->imagem ? $model->thumb : null);
                 }
+                if ($disco === self::DISCO_DOCUMENTOS_PRE_ADMISSAO) {
+                    \App\Services\Curriculo\Foto3x4ListagemCache::forget(
+                        self::DISCO_DOCUMENTOS_PRE_ADMISSAO,
+                        $model->file,
+                        $model->imagem ? $model->thumb : null
+                    );
+                }
                 $model->delete();
                 return true;
             }
@@ -1186,6 +1201,19 @@ class Arquivo extends Model
         if ($thumb !== null) {
             Cache::forget('fotocurriculo_anexo:' . $thumb);
         }
+        \App\Services\Curriculo\Foto3x4ListagemCache::forget(self::DISCO_FOTOCURRICULO, $file, $thumb);
+    }
+
+    /**
+     * Resposta HTTP de anexo com cache no browser alinhado ao TTL do Redis.
+     */
+    private static function respostaAnexoCacheado(string $content, string $mime, int $ttlSeconds)
+    {
+        $maxAge = max(0, $ttlSeconds);
+
+        return response($content)
+            ->header('Content-Type', $mime)
+            ->header('Cache-Control', 'private, max-age=' . $maxAge);
     }
 
     /**
@@ -1198,7 +1226,7 @@ class Arquivo extends Model
     public static function getFotocurriculoAnexoContentAndMime(string $arquivo): ?array
     {
         $key = 'fotocurriculo_anexo:' . $arquivo;
-        $ttl = (int) config('cache.ttl.fotocurriculo_anexo', 86400);
+        $ttl = (int) config('cache.ttl.fotocurriculo_anexo', 10800);
         $cached = Cache::get($key);
         if ($cached !== null && isset($cached['content'], $cached['mime'])) {
             return $cached;

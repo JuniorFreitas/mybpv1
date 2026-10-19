@@ -1419,6 +1419,38 @@
                                 </div>
                             </div>
 
+                            <div class="col-auto pl-0">
+                                <div class="colab-foto-3x4-wrap">
+                                    <img
+                                        v-if="item.curriculo && item.curriculo.foto_3x4_thumb"
+                                        :src="item.curriculo.foto_3x4_thumb"
+                                        alt=""
+                                        width="40"
+                                        height="53"
+                                        loading="lazy"
+                                        decoding="async"
+                                        class="colab-foto-3x4"
+                                        :class="{ 'is-ready': item._foto3x4Ready }"
+                                        @load="onFoto3x4ThumbLoad(item)"
+                                        @error="onFoto3x4ThumbError(item)"
+                                    >
+                                    <div
+                                        v-if="item.curriculo && item.curriculo.foto_3x4_thumb && !item._foto3x4Ready"
+                                        class="colab-foto-3x4 colab-foto-3x4--loading"
+                                        aria-hidden="true"
+                                    >
+                                        <i class="fa fa-spinner fa-spin"></i>
+                                    </div>
+                                    <div
+                                        v-else-if="!(item.curriculo && item.curriculo.foto_3x4_thumb)"
+                                        class="colab-foto-3x4 colab-foto-3x4--vazia"
+                                        aria-hidden="true"
+                                    >
+                                        <i class="fa fa-user"></i>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="col">
                                 <div class="d-flex flex-wrap align-items-center">
                                     <h5 class="mb-0 mr-2">{{item.curriculo.nome}}</h5>
@@ -2334,6 +2366,17 @@ export default defineComponent({
         }
     },
     methods: {
+        onFoto3x4ThumbLoad(item) {
+            if (item) {
+                item._foto3x4Ready = true
+            }
+        },
+        onFoto3x4ThumbError(item) {
+            if (item && item.curriculo) {
+                item.curriculo.foto_3x4_thumb = null
+                item._foto3x4Ready = false
+            }
+        },
         boolFromParam(value, fallback = '') {
             if (value === null || value === '') return fallback
             if (value === 'true' || value === '1' || value === 'S') return true
@@ -3669,6 +3712,60 @@ export default defineComponent({
     border-radius: 8px;
     font-weight: 600;
     white-space: nowrap;
+}
+
+.colab-foto-3x4-wrap {
+    position: relative;
+    width: 40px;
+    height: 53px;
+    flex-shrink: 0;
+}
+
+.colab-foto-3x4 {
+    display: block;
+    width: 40px;
+    height: 53px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: #eef1f4;
+    flex-shrink: 0;
+}
+
+.colab-foto-3x4-wrap > img.colab-foto-3x4 {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.colab-foto-3x4-wrap > img.colab-foto-3x4.is-ready {
+    opacity: 1;
+}
+
+.colab-foto-3x4--vazia,
+.colab-foto-3x4--loading {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #8a93a0;
+    font-size: 0.85rem;
+}
+
+.colab-foto-3x4--loading {
+    position: absolute;
+    inset: 0;
+    background: #eef1f4;
+}
+
+.card-header.bg-danger .colab-foto-3x4 {
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.card-header.bg-danger .colab-foto-3x4--vazia,
+.card-header.bg-danger .colab-foto-3x4--loading {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.85);
 }
 
 .colab-meta {

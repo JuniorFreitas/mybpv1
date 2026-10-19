@@ -30,6 +30,7 @@ use App\Models\UsuarioConta;
 use App\Models\UsuarioDependente;
 use App\Models\VagaProjeto;
 use App\Models\VagasAbertas;
+use App\Services\Curriculo\Foto3x4ListagemCache;
 use App\Rules\CpfValidoEmpresaRules;
 use App\Rules\VagaAbertaEmpresaRules;
 use App\Rules\VerificaCpfEmpresaRules;
@@ -1413,29 +1414,33 @@ class AdmissaoController extends Controller
     public function filtro(Request $request)
     {
 
-        $resultado = FeedbackCurriculo::select(['id', 'curriculo_id', 'vaga_id', 'telefone_id', 'vagas_abertas_id', 'vaga_projeto_id', 'empresa_id'])
+        // Listagem do processo: só colunas/relações usadas nos cards (DBA: payload enxuto, sem N+1)
+        $resultado = FeedbackCurriculo::select([
+            'id', 'curriculo_id', 'vagas_abertas_id', 'empresa_id', 'created_at',
+        ])
             ->whereHas('ResultadoIntegrado')
             ->with([
-                'BancoConta',
-                'ResultadoIntegrado:id,feedback_id,documentos_entregue,documentos_entregue,encaminhado_exame,encaminhado_exame,encaminhado_treinamento,encaminhado_treinamento,responsavel_envio',
-                'Curriculo:id,nome,estado_civil,naturalidade,nacionalidade,carteira_trabalho,cnh,cnh_vencimento,sexo,cpf,rg,rg_data_emissao,orgao_expeditor,logradouro,end_numero,complemento,bairro,municipio,uf,cep,filiacao_pai,filiacao_mae,pcd,nascimento,email,disponibilidade_sabado,disponibilidade_domingo',
-                'Curriculo.FotoTres:id',
-                'Curriculo.TelPrincipal',
-                'parecerRh:id,feedback_id,destro,cnh_tipo,calca,bota,camisa_meia,camisa_protecao,ex_funcionario,turnos_seis_por_dois,indicado_por',
-                'parecerTecnica:id,feedback_id,indicado_area,experiencia_cargas_rigger,opera_plat_movel,opera_plat_ponte',
-                'parecerRota:id,feedback_id,tem_rota,qual,bairro_rota,ponto_referencia_rota,pega_onibus,pega_onibus_qual_ponto,bairro_residencia,ponto_referencia_residencia',
-                'parecerTeste:id,feedback_id,qual_teste,nota_teste',
-                'parecerTecnica:id,feedback_id,experiencia_cargas_rigger,opera_plat_movel,opera_plat_ponte',
-                'VagaAberta:id,empresa_id,vaga_id,titulo,municipio_id,ativo',
-                'VagaAberta.VagaSelecionada:id,nome,empresa_id,ativo',
+                'ResultadoIntegrado:id,feedback_id,documentos_entregue,documentos_entregue_data,encaminhado_exame,encaminhado_exame_data,encaminhado_treinamento,encaminhado_treinamento_data,responsavel_envio',
+                'Curriculo:id,nome,cpf,pcd',
+                'Curriculo.FotoTres' => function ($q) {
+                    $q->select('arquivos.id', 'arquivos.file', 'arquivos.thumb', 'arquivos.disco', 'arquivos.imagem');
+                },
+                'Curriculo.TelPrincipal' => function ($q) {
+                    $q->select(
+                        'curriculo_telefone.id',
+                        'curriculo_telefone.curriculo_id',
+                        'curriculo_telefone.numero',
+                        'curriculo_telefone.tipo'
+                    );
+                },
+                // Accessor vaga_aberta_municipio usa Vaga (não VagaSelecionada)
+                'VagaAberta:id,vaga_id,municipio_id',
+                'VagaAberta.Vaga:id,nome',
                 'VagaAberta.Municipio:id,nome,uf',
-                'Empresa:id,razao_social,cnpj,nome,cpf,area_id',
-                'Empresa.Area',
-                'VagaAberta.Projetos.Projeto',
-                'Admissao',
-                'Admissao.UltimoAso:id,feedback_id,data_realizacao,data_vencimento',
+                'Admissao:id,feedback_id,status,tipo_admissao,data_admissao,numero_cracha,centro_custo_id,cargo,funcao',
+                'Admissao.UltimoAso:id,feedback_id,data_realizacao',
                 'Admissao.Demissao:id,feedback_id,data_desmobilizacao',
-                'UltimoAso:id,feedback_id,data_realizacao,data_vencimento'
+                'UltimoAso:id,feedback_id,data_realizacao',
             ])->filtrarPorCnpjECentroCusto($request);
 
         $filtroPeriodo = $request->filtroPeriodo === true || $request->filtroPeriodo === 'true' || $request->filtroPeriodo === '1';
@@ -1635,6 +1640,60 @@ class AdmissaoController extends Controller
         $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
 
         $itens = collect($pg->items())->transform(function ($item) use ($cc) {
+            // Mantém só appends da listagem; materializa cargo antes de esconder VagaAberta
+            $item->setAppends(['vaga_aberta_municipio', 'fc_token']);
+            $item->setAttribute('vaga_aberta_municipio', $item->vaga_aberta_municipio);
+            $item->unsetRelation('VagaAberta');
+            $item->makeHidden(['empresa_id', 'curriculo_id', 'vagas_abertas_id', 'created_at']);
+
+            if ($item->Curriculo) {
+                $foto = $item->Curriculo->relationLoaded('FotoTres')
+                    ? $item->Curriculo->FotoTres->first()
+                    : null;
+                $item->Curriculo->setAppends([]);
+                $item->Curriculo->setAttribute(
+                    'foto_3x4_thumb',
+                    Foto3x4ListagemCache::paraListagem($foto)
+                );
+                $item->Curriculo->unsetRelation('FotoTres');
+
+                // Materializa telefone principal (evita sumir no setVisible / appends do model)
+                $telPrincipal = $item->Curriculo->relationLoaded('TelPrincipal')
+                    ? $item->Curriculo->TelPrincipal
+                    : null;
+                $numeroTel = $telPrincipal?->numero;
+                $tipoTel = $telPrincipal?->tipo;
+                $item->Curriculo->unsetRelation('TelPrincipal');
+                $item->Curriculo->setAttribute(
+                    'tel_principal',
+                    ($numeroTel !== null && $numeroTel !== '')
+                        ? [
+                            'numero' => (string) $numeroTel,
+                            'tipo' => $tipoTel ? (string) $tipoTel : null,
+                            'whatsapp' => $tipoTel === TelefoneCurriculo::TIPO_WHATS,
+                        ]
+                        : null
+                );
+
+                $item->Curriculo->setVisible(['id', 'nome', 'cpf', 'pcd', 'foto_3x4_thumb', 'tel_principal']);
+            }
+
+            if ($item->ResultadoIntegrado) {
+                $item->ResultadoIntegrado->setVisible([
+                    'documentos_entregue',
+                    'documentos_entregue_data',
+                    'encaminhado_exame',
+                    'encaminhado_exame_data',
+                    'encaminhado_treinamento',
+                    'encaminhado_treinamento_data',
+                    'responsavel_envio',
+                ]);
+            }
+
+            if ($item->UltimoAso) {
+                $item->UltimoAso->setVisible(['data_realizacao']);
+            }
+
             if ($item->admissao) {
                 $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $item->admissao->centro_custo_id)->first();
                 $item->admissao->emp_cnpj = null;
@@ -1648,7 +1707,33 @@ class AdmissaoController extends Controller
                     $item->admissao->emp_centro_custo = $cc_colaborador['label'];
                     $item->admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
                 }
+
+                if ($item->admissao->relationLoaded('UltimoAso') && $item->admissao->UltimoAso) {
+                    $item->admissao->UltimoAso->setVisible(['data_realizacao']);
+                }
+                if ($item->admissao->relationLoaded('Demissao') && $item->admissao->Demissao) {
+                    $item->admissao->Demissao->setVisible(['data_desmobilizacao']);
+                }
+
+                $item->admissao->setVisible([
+                    'id',
+                    'feedback_id',
+                    'status',
+                    'tipo_admissao',
+                    'data_admissao',
+                    'numero_cracha',
+                    'centro_custo_id',
+                    'cargo',
+                    'funcao',
+                    'emp_cnpj',
+                    'emp_nome_fantasia',
+                    'emp_centro_custo',
+                    'emp_tipo',
+                    'ultimo_aso',
+                    'demissao',
+                ]);
             }
+
             return $item;
         });
 
@@ -1671,6 +1756,8 @@ class AdmissaoController extends Controller
             ],
             'cc' => $cc
         ];
+
+        Foto3x4ListagemCache::agendarAquecimentoAposResposta();
 
         return response()->json([
             'atual' => $pg->currentPage(),

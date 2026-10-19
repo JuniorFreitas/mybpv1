@@ -574,7 +574,11 @@ export default {
                 return false
             }
 
-            if (this.form.excessao === true && !String(this.form.autorizado_por || '').trim()) {
+            if (
+                this.form.excessao === true &&
+                !this.campoIgnorarValidacao(`ri-autorizado-${this.hash}`) &&
+                !String(this.form.autorizado_por || '').trim()
+            ) {
                 const el = document.getElementById(`ri-autorizado-${this.hash}`)
                 if (el && typeof valida_campo_vazio === 'function') valida_campo_vazio(el, 3)
                 if (typeof mostraErro === 'function') mostraErro('', 'Informe quem autorizou a exceção')
@@ -591,7 +595,10 @@ export default {
                 this.form.autorizado_por = ''
             }
 
-            if (!String(this.form.responsavel_envio || '').trim()) {
+            if (
+                !this.campoIgnorarValidacao(`ri-responsavel-${this.hash}`) &&
+                !String(this.form.responsavel_envio || '').trim()
+            ) {
                 const el = document.getElementById(`ri-responsavel-${this.hash}`)
                 if (el && typeof valida_campo_vazio === 'function') valida_campo_vazio(el, 3)
                 if (typeof mostraErro === 'function') mostraErro('', 'Informe o responsável pelo envio')

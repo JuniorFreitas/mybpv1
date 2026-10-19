@@ -1721,10 +1721,40 @@
                             <input type="checkbox" class="custom-checkbox" v-model="selecionados" :value="item.id" :id="'chk_' + item.id">
                         </label>
                         <input type="checkbox" class="custom-checkbox" v-else disabled title="Sem cadastro em Admissão">
-                        <span class="badge-id">#@{{ item.id }}</span>
+                        <div class="colab-foto-3x4-wrap">
+                            <img
+                                v-if="item.curriculo && item.curriculo.foto_3x4_thumb"
+                                :src="item.curriculo.foto_3x4_thumb"
+                                alt=""
+                                width="40"
+                                height="53"
+                                loading="lazy"
+                                decoding="async"
+                                class="colab-foto-3x4"
+                                :class="{ 'is-ready': item._foto3x4Ready }"
+                                @load="onFoto3x4ThumbLoad(item)"
+                                @@error="onFoto3x4ThumbError(item)"
+                            >
+                            <div
+                                v-if="item.curriculo && item.curriculo.foto_3x4_thumb && !item._foto3x4Ready"
+                                class="colab-foto-3x4 colab-foto-3x4--loading"
+                                aria-hidden="true"
+                            >
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                            <div
+                                v-else-if="!(item.curriculo && item.curriculo.foto_3x4_thumb)"
+                                class="colab-foto-3x4 colab-foto-3x4--vazia"
+                                aria-hidden="true"
+                            >
+                                <i class="fa fa-user"></i>
+                            </div>
+                        </div>
                         <div class="colaborador-principal">
-                            <i class="fas fa-user-circle mr-1"></i>
                             <strong>@{{ item.curriculo.nome }}</strong>
+                            <div class="colaborador-cpf" v-if="item.curriculo && item.curriculo.cpf">
+                                CPF: @{{ item.curriculo.cpf }}
+                            </div>
                         </div>
                         <span class="status-badge" :class="{
                             'status-admitido': item.admissao && (item.admissao.status === 'ADMITIDO' || item.admissao.status === 'Admitido'),
@@ -1765,11 +1795,6 @@
                 </div>
 
                 <div class="card-details-row card-details-main">
-                    <div class="detail-item" v-if="colunasTabela.find(c => c.id === 'tbl_cpf')?.checked">
-                        <i class="fas fa-id-card"></i>
-                        <span class="detail-label">CPF</span>
-                        <span class="detail-value" :class="{ 'detail-value-empty': !item.curriculo.cpf }">@{{ item.curriculo.cpf || 'Não informado' }}</span>
-                    </div>
                     <div class="detail-item">
                         <i class="fas fa-building"></i>
                         <span class="detail-label">Centro</span>
@@ -1781,14 +1806,28 @@
                         <span class="detail-value" :class="{ 'detail-value-empty': !item.vaga_aberta_municipio }">@{{ item.vaga_aberta_municipio || 'Não informado' }}</span>
                     </div>
                     <div class="detail-item" v-if="colunasTabela.find(c => c.id === 'tbl_contato')?.checked">
-                        <i class="fas fa-phone"></i>
+                        <i :class="item.curriculo.tel_principal && item.curriculo.tel_principal.whatsapp ? 'fab fa-whatsapp text-contato-whatsapp' : 'fas fa-phone'"></i>
                         <span class="detail-label">Contato</span>
-                        <span class="detail-value" :class="{ 'detail-value-empty': !item.curriculo.tel_principal || !item.curriculo.tel_principal.numero }">@{{ item.curriculo.tel_principal && item.curriculo.tel_principal.numero ? item.curriculo.tel_principal.numero : 'Não informado' }}</span>
+                        <span
+                            class="detail-value"
+                            :class="{
+                                'detail-value-empty': !item.curriculo.tel_principal || !item.curriculo.tel_principal.numero,
+                                'text-contato-whatsapp': item.curriculo.tel_principal && item.curriculo.tel_principal.whatsapp
+                            }"
+                        >@{{ item.curriculo.tel_principal && item.curriculo.tel_principal.numero ? item.curriculo.tel_principal.numero : 'Não informado' }}</span>
                     </div>
-                    <div class="detail-item" v-if="AUTENTICADO.temFilial && item.admissao && item.admissao.emp_cnpj">
+                    <div class="detail-item" v-if="AUTENTICADO.temFilial">
                         <i class="fas fa-building"></i>
-                        <span class="detail-label">Unidade</span>
-                        <span class="detail-value">@{{ item.admissao.emp_nome_fantasia }} (@{{ item.admissao.emp_tipo }})</span>
+                        <span class="detail-label">Lotação</span>
+                        <span
+                            class="detail-value"
+                            :class="{ 'detail-value-empty': !(item.admissao && (item.admissao.emp_nome_fantasia || item.admissao.emp_cnpj)) }"
+                        >
+                            <template v-if="item.admissao && (item.admissao.emp_nome_fantasia || item.admissao.emp_cnpj)">
+                                @{{ item.admissao.emp_nome_fantasia || '—' }}<template v-if="item.admissao.emp_cnpj"> - @{{ item.admissao.emp_cnpj }}</template>
+                            </template>
+                            <template v-else>Não informado</template>
+                        </span>
                     </div>
                 </div>
 
@@ -1823,7 +1862,7 @@
                         <span class="detail-value detail-value-small" v-if="item.admissao && item.admissao.numero_cracha">@{{ item.admissao.numero_cracha }}</span>
                     </div>
                     <div class="detail-item" v-if="colunasTabela.find(c => c.id === 'foto_3x4').checked">
-                        <span class="detail-check" :class="(item.curriculo.foto_tres && item.curriculo.foto_tres.length > 0) ? 'detail-check-yes' : 'detail-check-no'"><i :class="(item.curriculo.foto_tres && item.curriculo.foto_tres.length > 0) ? 'fas fa-check' : 'fas fa-minus'"></i></span>
+                        <span class="detail-check" :class="item.curriculo.foto_3x4_thumb ? 'detail-check-yes' : 'detail-check-no'"><i :class="item.curriculo.foto_3x4_thumb ? 'fas fa-check' : 'fas fa-minus'"></i></span>
                         <span class="detail-label">Foto 3x4</span>
                     </div>
                 </div>
@@ -1970,6 +2009,44 @@
             border-bottom: 1px solid #f1f3f5;
         }
         .card-left { display: flex; align-items: center; gap: 0.75rem; flex: 1; overflow: hidden; min-width: 0; }
+        .colab-foto-3x4-wrap {
+            position: relative;
+            width: 40px;
+            height: 53px;
+            flex-shrink: 0;
+        }
+        .colab-foto-3x4 {
+            display: block;
+            width: 40px;
+            height: 53px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            background: #eef1f4;
+            flex-shrink: 0;
+        }
+        .colab-foto-3x4-wrap > img.colab-foto-3x4 {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .colab-foto-3x4-wrap > img.colab-foto-3x4.is-ready {
+            opacity: 1;
+        }
+        .colab-foto-3x4--vazia,
+        .colab-foto-3x4--loading {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #8a93a0;
+            font-size: 0.85rem;
+        }
+        .colab-foto-3x4--loading {
+            position: absolute;
+            inset: 0;
+            background: #eef1f4;
+        }
         .card-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
         .checkbox-inline { margin: 0; cursor: pointer; display: flex; align-items: center; flex-shrink: 0; }
         .custom-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #174257; }
@@ -1985,11 +2062,14 @@
         }
         .colaborador-principal {
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
             font-size: 1rem;
             color: #212529;
             overflow: hidden;
             min-width: 0;
+            line-height: 1.25;
         }
         .colaborador-principal i { color: #174257; flex-shrink: 0; }
         .colaborador-principal strong {
@@ -1997,6 +2077,14 @@
             overflow: hidden;
             text-overflow: ellipsis;
             font-weight: 600;
+            max-width: 100%;
+        }
+        .colaborador-cpf {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #6c757d;
+            white-space: nowrap;
+            margin-top: 0.1rem;
         }
         .status-badge {
             display: inline-flex;
@@ -2059,6 +2147,12 @@
             min-width: 0;
         }
         .detail-item i:first-child { flex-shrink: 0; font-size: 0.875rem; color: #6c757d; }
+        .detail-item i.text-contato-whatsapp,
+        .detail-value.text-contato-whatsapp {
+            color: #128c7e !important;
+            font-style: normal;
+            font-weight: 600;
+        }
         .detail-label { font-weight: 500; color: #6c757d; white-space: nowrap; }
         .detail-value { color: #212529; font-weight: 400; }
         .detail-value-small { font-size: 0.75rem; color: #6c757d; }

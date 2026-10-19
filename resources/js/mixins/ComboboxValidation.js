@@ -5,12 +5,15 @@ import {
     marcarCampoDataObrigatorio,
     limparCampoDataInvalido,
     exigirCampoData,
-    validarInputsAtivosVisiveis
+    validarInputsAtivosVisiveis,
+    campoIgnorarValidacao,
+    campoDesabilitadoParaValidacao
 } from '../utils/comboboxValidation'
 
 /**
  * Mixin Vue — validação visual de ComboboxAutoComplete e data obrigatória.
  * Preferir exigirCombobox / exigirCampoData no submit; limpar* no @select.
+ * Ignora disabled, readonly e campos não visíveis na tela.
  */
 export default {
     methods: {
@@ -21,6 +24,8 @@ export default {
         limparCampoDataInvalido,
         exigirCampoData,
         validarInputsAtivosVisiveis,
+        campoIgnorarValidacao,
+        campoDesabilitadoParaValidacao,
         /** @deprecated use marcarComboboxObrigatorio */
         marcarStatusObrigatorio(inputId, mensagem) {
             return marcarComboboxObrigatorio(inputId, mensagem)

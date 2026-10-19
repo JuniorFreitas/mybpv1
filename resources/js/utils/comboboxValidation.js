@@ -24,6 +24,50 @@ function resolverWrap(el) {
     return el.closest('.mybp-combobox-wrap') || el.closest('.combobox-ac-wrap')
 }
 
+/**
+ * Campo visível na tela (não oculto por display/v-show/etc.).
+ * @param {HTMLElement|null} el
+ * @returns {boolean}
+ */
+function campoVisivelNaTela(el) {
+    if (!el || !el.isConnected) return false
+    if (typeof $ !== 'undefined') {
+        return $(el).is(':visible')
+    }
+    const style = window.getComputedStyle(el)
+    if (style.display === 'none' || style.visibility === 'hidden') return false
+    if (el.offsetParent === null && style.position !== 'fixed') return false
+    return true
+}
+
+/**
+ * Ignora validação: disabled, readonly ou fora da tela.
+ * @param {string|HTMLElement|null} inputIdOuEl
+ * @returns {boolean} true = não validar
+ */
+export function campoIgnorarValidacao(inputIdOuEl) {
+    const el =
+        typeof inputIdOuEl === 'string' ? resolverElemento(inputIdOuEl) : inputIdOuEl
+    if (!el) return true
+
+    if (el.disabled || el.getAttribute('disabled') !== null) return true
+    if (typeof el.matches === 'function' && el.matches(':disabled')) return true
+    if (el.readOnly || el.getAttribute('readonly') !== null) return true
+    if (typeof el.matches === 'function' && el.matches('[readonly]')) return true
+
+    const fieldset = typeof el.closest === 'function' ? el.closest('fieldset') : null
+    if (fieldset && fieldset.disabled) return true
+
+    if (!campoVisivelNaTela(el)) return true
+
+    return false
+}
+
+/** @deprecated use campoIgnorarValidacao */
+export function campoDesabilitadoParaValidacao(inputIdOuEl) {
+    return campoIgnorarValidacao(inputIdOuEl)
+}
+
 function removerFeedbacks(root) {
     if (!root) return
     root.querySelectorAll('.invalid-feedback').forEach((n) => n.remove())
@@ -86,6 +130,12 @@ export function exigirCombobox(valor, inputId, opts = {}) {
         toast = true,
         toastMsg = 'Selecione uma opção'
     } = opts
+
+    // disabled / readonly / oculto: não valida e limpa marca residual
+    if (campoIgnorarValidacao(inputId)) {
+        limparComboboxInvalido(inputId)
+        return true
+    }
 
     const vazio = valor === null || valor === undefined || valor === ''
     if (vazio) {
@@ -156,6 +206,12 @@ export function exigirCampoData(valor, inputId, opts = {}) {
         toastMsg = 'Informe a data'
     } = opts
 
+    // disabled / readonly / oculto: não valida
+    if (campoIgnorarValidacao(inputId)) {
+        limparCampoDataInvalido(inputId)
+        return true
+    }
+
     const texto = valor == null ? '' : String(valor).trim()
     const vazio = !texto || texto === 'Invalid date'
     if (vazio) {
@@ -179,11 +235,19 @@ export function exigirCampoData(valor, inputId, opts = {}) {
 export function validarInputsAtivosVisiveis(modalId, opts = {}) {
     if (typeof $ === 'undefined' || !modalId) return true
     const preservar = new Set(opts.preservarIds || [])
+    const $root = $(`#${modalId}`)
 
-    $(`#${modalId} :input:disabled, #${modalId} :input[readonly]`).each(function () {
+    // Limpa marcas em disabled, readonly ou ocultos
+    $root.find(':input').each(function () {
         if (preservar.has(this.id)) return
-        $(this).removeClass('is-invalid')
-        $(this).siblings('div.invalid-feedback').remove()
+        if (campoIgnorarValidacao(this)) {
+            $(this).removeClass('is-invalid')
+            $(this).siblings('div.invalid-feedback').remove()
+            const wrap = this.closest && (this.closest('.mybp-combobox-wrap') || this.closest('.combobox-ac-wrap'))
+            if (wrap) {
+                wrap.querySelectorAll('.invalid-feedback').forEach((n) => n.remove())
+            }
+        }
     })
 
     const seletor = `#${modalId} :input:visible:not(:disabled):not([readonly])`

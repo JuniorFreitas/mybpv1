@@ -263,11 +263,14 @@ class ValorExtraPrevistaController extends Controller
 
         $resultado = $this->filtro($request)->paginate($request->pages);
         $empresaMatriz = auth()->user()->Empresa;
-        $itens = collect($resultado->items())->map(function ($item) use ($empresaMatriz) {
+        $empresaId = (int) (auth()->user()->empresa_id ?? 0);
+        $itens = collect($resultado->items())->map(function ($item) use ($empresaMatriz, $empresaId) {
             $item->lotacao = LotacaoLabelResolver::forCentroCustoFilialFlags(
                 $item->filial,
                 $item->CentroCustoFilial,
-                $empresaMatriz
+                $empresaMatriz,
+                $empresaId,
+                isset($item->centro_custo_id) ? (int) $item->centro_custo_id : null
             );
 
             return $item;

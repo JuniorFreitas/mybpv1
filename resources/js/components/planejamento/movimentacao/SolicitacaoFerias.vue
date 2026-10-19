@@ -958,6 +958,7 @@ import MybpCardCampo from '../../ui/MybpCardCampo.vue'
 import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
+import { resolverLabelLotacaoAtual } from '../../../utils/lotacaoLabel'
 import {
     etapaAtualFluxoAprovacao,
     normalizarStatusUrlFluxo,
@@ -1350,66 +1351,14 @@ export default {
             if ([undefined, null, ''].includes(this.form.colaborador_id) && [undefined, null, ''].includes(this.form.centro_custo_id)) {
                 return ''
             }
-
-            const formatLotacao = (nomeFantasia, razaoSocial, cnpj) => {
-                const nome = String(nomeFantasia || razaoSocial || '').trim()
-                const doc = String(cnpj || '').trim()
-                if (!nome && !doc) return ''
-                if (!nome) return doc
-                if (!doc) return nome
-                return `${nome} - ${doc}`
-            }
-
-            const ehFilial =
-                this.form.filial === true || this.form.filial === 1 || this.form.filial === '1'
-            const filiaisAuth =
-                (this.authconfiguracao && this.authconfiguracao.cnpjs && this.authconfiguracao.cnpjs.filiais) || []
-
-            if (ehFilial && this.form.centro_custo_filial_id) {
-                const ccfId = Number(this.form.centro_custo_filial_id)
-                const vinculo =
-                    _.find(this.centroCustoSelecionado, { id: ccfId }) ||
-                    _.find(this.centroCustoSelecionado, { id: this.form.centro_custo_filial_id })
-                const filialRel = vinculo && (vinculo.filial || vinculo.Filial)
-                if (filialRel) {
-                    let viaRel = formatLotacao(filialRel.nome_fantasia, filialRel.razao_social, filialRel.cnpj)
-                    if (viaRel && String(filialRel.cnpj || '').trim()) return viaRel
-
-                    const clienteFilialId = vinculo.cliente_filial_id
-                    if (clienteFilialId != null && clienteFilialId !== '') {
-                        const cf = _.find(filiaisAuth, { id: clienteFilialId })
-                        if (cf) {
-                            const viaAuth = formatLotacao(cf.nome_fantasia || cf.nome_fntasia, cf.razao_social, cf.cnpj)
-                            if (viaAuth) return viaAuth
-                        }
-                    }
-
-                    if (viaRel) return viaRel
-                }
-
-                if (vinculo && vinculo.cliente_filial_id != null && vinculo.cliente_filial_id !== '') {
-                    const cf = _.find(filiaisAuth, { id: vinculo.cliente_filial_id })
-                    if (cf) {
-                        const viaAuth = formatLotacao(cf.nome_fantasia || cf.nome_fntasia, cf.razao_social, cf.cnpj)
-                        if (viaAuth) return viaAuth
-                    }
-                }
-            }
-
-            const matrizAuth = this.authconfiguracao && this.authconfiguracao.cnpjs && this.authconfiguracao.cnpjs.matriz
-            if (matrizAuth) {
-                const viaMatriz = formatLotacao(matrizAuth.nome_fantasia, matrizAuth.razao_social, matrizAuth.cnpj)
-                if (viaMatriz) return viaMatriz
-            }
-
-            if (this.lista_ccs && this.lista_ccs.cnpjs) {
-                const matrizLista = Object.values(this.lista_ccs.cnpjs).find((item) => item && item.matriz)
-                if (matrizLista) {
-                    return formatLotacao(matrizLista.nome_fantasia, matrizLista.razao_social, matrizLista.cnpj)
-                }
-            }
-
-            return ''
+            return resolverLabelLotacaoAtual({
+                centroCustoId: this.form.centro_custo_id,
+                filial: this.form.filial,
+                centroCustoFilialId: this.form.centro_custo_filial_id,
+                centroCustoSelecionado: this.centroCustoSelecionado,
+                listaCcs: this.lista_ccs,
+                authconfiguracao: this.authconfiguracao
+            })
         },
         formPeriodoAquisitivoOpcoes() {
             const opts = [{ value: '', label: 'Selecione...' }]
@@ -1726,8 +1675,8 @@ export default {
                 this.form.centro_custo_id = ''
             }
             this.form.filial = !!(this.form.filial === true || this.form.filial === 1 || this.form.filial === '1')
-            if (!this.form.filial) {
-                this.form.centro_custo_filial_id = ''
+            if (!this.form.filial && this.form.centro_custo_filial_id) {
+                this.form.filial = true
             }
             this.listaCentroCusto()
             this.dataAdmissao()

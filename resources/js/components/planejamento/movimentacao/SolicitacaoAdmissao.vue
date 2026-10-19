@@ -754,6 +754,7 @@ import MybpCardCampo from '../../ui/MybpCardCampo.vue'
 import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
+import { resolverCnpjKeyViaListaCcs } from '../../../utils/lotacaoLabel'
 import {
     etapaAtualFluxoAprovacao,
     normalizarStatusUrlFluxo,
@@ -1353,32 +1354,17 @@ export default {
                 return
             }
 
-            const ehFilial =
-                this.form.filial === true || this.form.filial === 1 || this.form.filial === '1'
-            const ccId = this.form.centro_custo_id != null ? String(this.form.centro_custo_id) : ''
-            const ccfId =
-                this.form.centro_custo_filial_id != null ? String(this.form.centro_custo_filial_id) : ''
-
             if (!this.temFilial) {
                 const keys = Object.keys(this.lista_ccs.centros_custos || {})
                 this.formLotacaoCnpj = keys[0] || ''
                 return
             }
 
-            Object.keys(this.lista_ccs.centros_custos).some((cnpjKey) => {
-                const lista = this.lista_ccs.centros_custos[cnpjKey] || []
-                const encontrado = _.find(lista, (item) => {
-                    if (ehFilial) {
-                        return String(item.filial_id) === ccfId
-                    }
-                    return item.matriz && String(item.id) === ccId
-                })
-                if (encontrado) {
-                    this.formLotacaoCnpj = cnpjKey
-                    return true
-                }
-                return false
-            })
+            this.formLotacaoCnpj = resolverCnpjKeyViaListaCcs(
+                this.lista_ccs,
+                this.form.centro_custo_id,
+                this.form.centro_custo_filial_id
+            )
         },
 
         selecionaTodos() {

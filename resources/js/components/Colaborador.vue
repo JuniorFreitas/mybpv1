@@ -89,10 +89,16 @@ export default {
     methods: {
         selecionaColaborador(obj) {
             this.model.colaborador_id = this.tipo === 'ferias' ? obj.feedback_id : obj.curriculo_id
-            this.model.admissao_id = obj.id
-            this.model.centro_custo_id = obj.centro_custo_id ?? ''
-            this.model.filial = !!(obj.filial === true || obj.filial === 1 || obj.filial === '1')
-            this.model.centro_custo_filial_id = this.model.filial ? (obj.centro_custo_filial_id ?? null) : null
+            this.model.admissao_id = this.tipo === 'ferias' ? obj.id : obj.admissao?.id || obj.id
+            this.model.centro_custo_id = obj.centro_custo_id ?? obj.admissao?.centro_custo_id ?? ''
+            const flagFilial = obj.filial ?? obj.admissao?.filial
+            this.model.filial = !!(flagFilial === true || flagFilial === 1 || flagFilial === '1')
+            // Mantém vínculo filial quando existir (flag inconsistente não zera o id)
+            this.model.centro_custo_filial_id =
+                obj.centro_custo_filial_id ?? obj.admissao?.centro_custo_filial_id ?? null
+            if (!this.model.filial && this.model.centro_custo_filial_id) {
+                this.model.filial = true
+            }
             this.model.autocomplete_label_colaborador = obj.label
             this.model.autocomplete_label_colaborador_anterior = obj.label
 
