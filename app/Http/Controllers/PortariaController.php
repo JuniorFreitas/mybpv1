@@ -202,8 +202,12 @@ class PortariaController extends Controller
             $curriculo = $candidato->Curriculo;
             if ($curriculo && $curriculo->fotoTres->isNotEmpty()) {
                 $firstFoto = $curriculo->fotoTres->first();
-                $dataUrl = CarteiraImagemCache::fotoCurriculo3x4ParaDataUrl($firstFoto->file);
-                $firstFoto->setAttribute('url_base64', $dataUrl);
+                $dataUrl = CarteiraImagemCache::fotoCurriculo3x4ParaDataUrl(
+                    (string) $firstFoto->file,
+                    $firstFoto->disco ? (string) $firstFoto->disco : null
+                );
+                // Accessor regenera url no render; guarda só em atributo sem accessor.
+                $firstFoto->setAttribute('url_base64', $dataUrl ?: asset('sem_foto.png'));
             }
         }
         return view('pdf.portaria.ficha', compact('feedbacks'));

@@ -67,16 +67,21 @@
                                         </h6>
                                     </div>
 
+                                    @php
+                                        $fotoSrc = asset('sem_foto.png');
+                                        $fotoTres = $treinamento['feedback_curriculo']['curriculo']['foto_tres'][0] ?? null;
+                                        if (is_array($fotoTres)) {
+                                            $candidato = $fotoTres['url_base64'] ?? $fotoTres['url'] ?? null;
+                                            // Nunca usar /documentos/anexo na impressão (signed + ACL de pré-admissão).
+                                            if (is_string($candidato) && $candidato !== '' && !str_contains($candidato, '/documentos/anexo')) {
+                                                $fotoSrc = $candidato;
+                                            }
+                                        }
+                                    @endphp
                                     <div class="fotoTres"
                                          style="object-fit: cover;
                                                 background-size: cover;
-                                                background-image: url(
-                                                @if(count($treinamento['feedback_curriculo']['curriculo']['foto_tres']) > 0)
-                                                    {{ $treinamento['feedback_curriculo']['curriculo']['foto_tres'][0]['url_base64'] ?? $treinamento['feedback_curriculo']['curriculo']['foto_tres'][0]['url'] ?? asset('sem_foto.png') }}
-                                                @else
-                                                    {{ asset('sem_foto.png') }}
-                                                @endif
-                                                )">
+                                                background-image: url({{ $fotoSrc }})">
                                     </div>
                                 </div>
 

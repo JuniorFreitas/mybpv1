@@ -333,7 +333,17 @@
 
                 <div class="b-bottom b-right b-left float-right" style="width: 3cm; height: 4cm">
                     <img
-                        src="{{ count($candidato->Curriculo->FotoTres) > 0 ? ($candidato->Curriculo->FotoTres[0]->url_base64 ?? $candidato->Curriculo->FotoTres[0]->url) : asset('sem_foto.png')}}"
+                        @php
+                            $fotoPortaria = asset('sem_foto.png');
+                            if ($candidato->Curriculo && $candidato->Curriculo->FotoTres->isNotEmpty()) {
+                                $f = $candidato->Curriculo->FotoTres[0];
+                                $c = $f->url_base64 ?? null;
+                                if (is_string($c) && $c !== '' && !str_contains($c, '/documentos/anexo')) {
+                                    $fotoPortaria = $c;
+                                }
+                            }
+                        @endphp
+                        src="{{ $fotoPortaria }}"
                         style="max-height: 4cm; max-width: 3cm;" alt="">
                 </div>
 

@@ -2041,20 +2041,14 @@ class TreinamentoController extends Controller
             $item->setAttribute('vencimentos_nao_vinculados_cargo', $vencimentosNaoVinculadosCargo->values()->all());
             $item->setRelation('vencimentos', $vencimentosFiltrados);
 
-            // DomPDF precisa de base64; HTML de impressão usa URL da foto (bem mais leve)
-            if ($embedBase64) {
-                $curriculo = $feedback->Curriculo ?? null;
-                if ($curriculo && $curriculo->fotoTres->isNotEmpty()) {
-                    $firstFoto = $curriculo->fotoTres->first();
-                    $firstFoto->setAttribute(
-                        'url_base64',
-                        CarteiraImagemCache::fotoCurriculo3x4ParaDataUrl($firstFoto->file)
-                    );
-                }
-            }
-
             return $item;
         })->values()->toArray();
+
+        // Accessor de Arquivo::url regenera /documentos/anexo no toArray — normaliza depois.
+        foreach ($treinamentos as &$treinamentoArr) {
+            CarteiraImagemCache::normalizarFotoTresNoArrayCarteira($treinamentoArr);
+        }
+        unset($treinamentoArr);
 
         $empresa = Sistema::getEmpresa($empresaId);
 
