@@ -258,26 +258,105 @@ class AutoCompletesController extends Controller
 
     public function colaboradores(Request $request)
     {
-        $busca = $request->query('busca');
-
-        if ($busca == '') {
+        $busca = trim((string) $request->query('busca', ''));
+        if ($busca === '') {
             return response()->json([], 201);
         }
-        $quantidade = $request->query('rows');
 
-        $busca = $request->query('busca');
+        $quantidade = (int) ($request->query('rows') ?: 20);
+        if ($quantidade < 1) {
+            $quantidade = 20;
+        }
+        if ($quantidade > 50) {
+            $quantidade = 50;
+        }
 
-        return FeedbackCurriculo::Admitidos()->whereHas('Admissao', function ($q) {
-            $q->whereIn('status', [Admissao::STATUS_ADMISSAO_ADMITIDO]);
-        })->whereHas('Curriculo', function ($q) use ($busca) {
-            $q->where('nome', 'like', '%' . $busca . '%');
-        })->with('Curriculo:id,nome,nascimento,rg,orgao_expeditor', 'VagaAberta.Municipio', 'VagaSelecionada:id,nome', 'Admissao')->take($quantidade)
-            ->get()->map(function ($item) {
-                $item->label = "{$item->Curriculo->nome} - {$item->VagaAberta->VagaSelecionada->nome} - {$item->VagaAberta->Municipio->nome} - {$item->VagaAberta->Municipio->uf}";
-                $item->curriculo_id = $item->Curriculo->id ?? null;
-                $item->centro_custo_id = $item->Admissao->centro_custo_id ?? null;
-                return $item;
-            });
+        $empresaId = auth()->user()?->empresa_id;
+        if (!$empresaId) {
+            return response()->json([], 201);
+        }
+
+        // Query Builder: joins + select enxuto (evita hidratar Feedback/Admissão completos).
+        $rows = DB::table('feedback_curriculos as fc')
+            ->select([
+                'fc.id',
+                'fc.curriculo_id',
+                'fc.vaga_id',
+                'fc.vagas_abertas_id',
+                'c.nome as curriculo_nome',
+                'v.nome as vaga_nome',
+                'm.nome as municipio_nome',
+                'm.uf as municipio_uf',
+                'a.id as admissao_id',
+                'a.centro_custo_id',
+                'a.filial',
+                'a.centro_custo_filial_id',
+                'a.funcao',
+                'a.salario',
+            ])
+            ->join('curriculos as c', function ($join) {
+                $join->on('fc.curriculo_id', '=', 'c.id')
+                    ->whereNull('c.deleted_at');
+            })
+            ->join('admissoes as a', function ($join) {
+                $join->on('fc.id', '=', 'a.feedback_id')
+                    ->where('a.status', '=', Admissao::STATUS_ADMISSAO_ADMITIDO)
+                    ->whereNull('a.deleted_at');
+            })
+            ->leftJoin('demissaos as d', 'fc.id', '=', 'd.feedback_id')
+            ->leftJoin('vagas_abertas as va', 'fc.vagas_abertas_id', '=', 'va.id')
+            ->leftJoin('vagas as v', 'va.vaga_id', '=', 'v.id')
+            ->leftJoin('municipios as m', 'va.municipio_id', '=', 'm.id')
+            ->whereNull('fc.deleted_at')
+            ->where('fc.empresa_id', '=', $empresaId)
+            ->whereNull('d.id')
+            ->where('c.nome', 'like', '%' . $busca . '%')
+            ->orderBy('c.nome')
+            ->limit($quantidade)
+            ->get();
+
+        return $rows->map(function ($item) {
+            $filial = filter_var($item->filial ?? false, FILTER_VALIDATE_BOOLEAN);
+            $salario = null;
+            if ($item->salario !== null && $item->salario !== '') {
+                $salario = number_format((float) $item->salario, 2, ',', '.');
+            }
+
+            $partes = array_filter([
+                $item->curriculo_nome ?: null,
+                $item->vaga_nome ?: null,
+                $item->municipio_nome ?: null,
+                $item->municipio_uf ?: null,
+            ]);
+
+            return [
+                'id' => (int) $item->id,
+                'curriculo_id' => (int) $item->curriculo_id,
+                'vaga_id' => $item->vaga_id !== null ? (int) $item->vaga_id : null,
+                'centro_custo_id' => $item->centro_custo_id !== null ? (int) $item->centro_custo_id : null,
+                'filial' => $filial,
+                'centro_custo_filial_id' => $item->centro_custo_filial_id !== null
+                    ? (int) $item->centro_custo_filial_id
+                    : null,
+                'label' => implode(' - ', $partes),
+                'admissao' => [
+                    'id' => $item->admissao_id !== null ? (int) $item->admissao_id : null,
+                    'centro_custo_id' => $item->centro_custo_id !== null ? (int) $item->centro_custo_id : null,
+                    'filial' => $filial,
+                    'centro_custo_filial_id' => $item->centro_custo_filial_id !== null
+                        ? (int) $item->centro_custo_filial_id
+                        : null,
+                    'funcao' => $item->funcao,
+                    'salario' => $salario,
+                ],
+                'vaga_aberta' => [
+                    'id' => $item->vagas_abertas_id !== null ? (int) $item->vagas_abertas_id : null,
+                    'vaga' => [
+                        'nome' => $item->vaga_nome,
+                    ],
+                ],
+            ];
+        });
     }
 
     public function colaboradoresFerias(Request $request)

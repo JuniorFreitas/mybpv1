@@ -84,15 +84,44 @@ class LotacaoLabelResolver
     public static function forCentroCustoFilialFlags(
         bool|int|string|null $filial,
         ?CentroCustoFilial $centroCustoFilial,
-        ?Cliente $empresaMatriz
+        ?Cliente $empresaMatriz,
+        ?int $empresaId = null,
+        ?int $centroCustoId = null
     ): string {
         $ehFilial = filter_var($filial, FILTER_VALIDATE_BOOLEAN);
 
-        return self::resolve(
+        return self::resolvePreferindoCentroCusto(
+            $empresaId ?? (int) ($empresaMatriz?->id ?? 0),
+            $centroCustoId,
             $ehFilial,
             $centroCustoFilial?->Filial,
             $empresaMatriz
         );
+    }
+
+    /**
+     * Prefere lotação pelo mapa do CC (lista_ccs / CihLotacaoResolver).
+     * Só cai em matriz/filial por flag quando o CC não está no mapa.
+     */
+    public static function resolvePreferindoCentroCusto(
+        int $empresaId,
+        ?int $centroCustoId,
+        bool $ehFilial,
+        ?ClienteFilial $filial,
+        ?Cliente $empresaMatriz
+    ): string {
+        if ($empresaId > 0 && $centroCustoId) {
+            $resolver = new CihLotacaoResolver($empresaId);
+            $raw = $resolver->format((int) $centroCustoId);
+            if ($raw !== '') {
+                $normalized = trim((string) preg_replace('/\s*\((Matriz|Filial)\)\s*$/u', '', $raw));
+                if ($normalized !== '') {
+                    return $normalized;
+                }
+            }
+        }
+
+        return self::resolve($ehFilial, $filial, $empresaMatriz);
     }
 
     public static function forMudancaCargo(MudancaCargo $item, array $filialMap, ?Cliente $empresaMatriz): string
@@ -103,8 +132,16 @@ class LotacaoLabelResolver
             FILTER_VALIDATE_BOOLEAN
         );
         $ccfId = (int) ($mantemCentro ? $item->anterior_centro_custo_filial_id : $item->novo_centro_custo_filial_id);
+        $ccId = (int) ($mantemCentro ? $item->anterior_centro_custo_id : $item->novo_centro_custo_id);
+        $empresaId = (int) ($item->empresa_id ?? $empresaMatriz?->id ?? 0);
 
-        return self::resolve($ehFilial, $filialMap[$ccfId] ?? null, $empresaMatriz);
+        return self::resolvePreferindoCentroCusto(
+            $empresaId,
+            $ccId > 0 ? $ccId : null,
+            $ehFilial,
+            $filialMap[$ccfId] ?? null,
+            $empresaMatriz
+        );
     }
 
     public static function fromCentroCustoId(

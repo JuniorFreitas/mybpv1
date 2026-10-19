@@ -1007,6 +1007,12 @@ import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
 import {
+    normalizarCcFilialDaAdmissao,
+    resolverCnpjKeyViaListaCcs,
+    resolverLabelLotacaoAtual,
+    resolverLabelLotacaoViaListaCcs as resolverLabelLotacaoViaListaCcsUtil
+} from '../../../utils/lotacaoLabel'
+import {
     etapaAtualFluxoAprovacao,
     normalizarStatusUrlFluxo,
     opcoesStatusFluxoAtual,
@@ -1251,59 +1257,14 @@ export default {
             if ([undefined, null, ''].includes(this.form.anterior_centro_custo_id)) {
                 return ''
             }
-
-            const formatLotacao = (nomeFantasia, razaoSocial, cnpj) => {
-                const nome = String(nomeFantasia || razaoSocial || '').trim()
-                const doc = String(cnpj || '').trim()
-                if (!nome && !doc) return ''
-                if (!nome) return doc
-                if (!doc) return nome
-                return `${nome} - ${doc}`
-            }
-
-            const ehFilial =
-                this.form.anterior_filial === true ||
-                this.form.anterior_filial === 1 ||
-                this.form.anterior_filial === '1'
-            const filiaisAuth =
-                (this.authconfiguracao && this.authconfiguracao.cnpjs && this.authconfiguracao.cnpjs.filiais) || []
-
-            if (ehFilial && this.form.anterior_centro_custo_filial_id) {
-                const ccfId = String(this.form.anterior_centro_custo_filial_id)
-                const vinculo = _.find(this.centroCustoSelecionado, (v) => String(v.id) === ccfId)
-                const filialRel = vinculo && (vinculo.filial || vinculo.Filial)
-                if (filialRel) {
-                    let viaRel = formatLotacao(filialRel.nome_fantasia, filialRel.razao_social, filialRel.cnpj)
-                    if (viaRel && String(filialRel.cnpj || '').trim()) return viaRel
-
-                    const clienteFilialId = vinculo.cliente_filial_id
-                    if (clienteFilialId != null && clienteFilialId !== '') {
-                        const cf = _.find(filiaisAuth, { id: clienteFilialId })
-                        if (cf) {
-                            const viaAuth = formatLotacao(cf.nome_fantasia || cf.nome_fntasia, cf.razao_social, cf.cnpj)
-                            if (viaAuth) return viaAuth
-                        }
-                    }
-                    if (viaRel) return viaRel
-                }
-            }
-
-            if (this.lista_ccs && this.lista_ccs.cnpjs) {
-                const viaLista = this.resolverLabelLotacaoViaListaCcs(
-                    this.form.anterior_centro_custo_id,
-                    ehFilial ? this.form.anterior_centro_custo_filial_id : null,
-                    ehFilial
-                )
-                if (viaLista) return viaLista
-            }
-
-            const matrizAuth = this.authconfiguracao && this.authconfiguracao.cnpjs && this.authconfiguracao.cnpjs.matriz
-            if (matrizAuth) {
-                const viaMatriz = formatLotacao(matrizAuth.nome_fantasia, matrizAuth.razao_social, matrizAuth.cnpj)
-                if (viaMatriz) return viaMatriz
-            }
-
-            return ''
+            return resolverLabelLotacaoAtual({
+                centroCustoId: this.form.anterior_centro_custo_id,
+                filial: this.form.anterior_filial,
+                centroCustoFilialId: this.form.anterior_centro_custo_filial_id,
+                centroCustoSelecionado: this.centroCustoSelecionado,
+                listaCcs: this.lista_ccs,
+                authconfiguracao: this.authconfiguracao
+            })
         },
         formListaCentroCustoLotacaoNova() {
             if (!this.lista_ccs) return []
@@ -1779,31 +1740,8 @@ export default {
             }
             this.limparComboboxInvalido(`mudacargo-cc-novo-${this.hash}`)
         },
-        resolverLabelLotacaoViaListaCcs(centroCustoId, centroCustoFilialId, ehFilial) {
-            if (!this.lista_ccs || !this.lista_ccs.centros_custos || !this.lista_ccs.cnpjs) return ''
-            const ccId = centroCustoId != null ? String(centroCustoId) : ''
-            const ccfId = centroCustoFilialId != null ? String(centroCustoFilialId) : ''
-            let cnpjKey = ''
-            Object.keys(this.lista_ccs.centros_custos).some((key) => {
-                const lista = this.lista_ccs.centros_custos[key] || []
-                const encontrado = _.find(lista, (item) => {
-                    if (ehFilial) return String(item.filial_id) === ccfId
-                    return item.matriz && String(item.id) === ccId
-                })
-                if (encontrado) {
-                    cnpjKey = key
-                    return true
-                }
-                return false
-            })
-            if (!cnpjKey || !this.lista_ccs.cnpjs[cnpjKey]) return ''
-            const info = this.lista_ccs.cnpjs[cnpjKey]
-            const nome = String(info.nome_fantasia || info.razao_social || '').trim()
-            const doc = String(info.cnpj || '').trim()
-            if (!nome && !doc) return ''
-            if (!nome) return doc
-            if (!doc) return nome
-            return `${nome} - ${doc}`
+        resolverLabelLotacaoViaListaCcs(centroCustoId, centroCustoFilialId) {
+            return resolverLabelLotacaoViaListaCcsUtil(this.lista_ccs, centroCustoId, centroCustoFilialId)
         },
         resolverLotacaoNovaDoForm() {
             this.formLotacaoCnpjNovo = ''
@@ -1815,34 +1753,17 @@ export default {
                 return
             }
 
-            const ehFilial =
-                this.form.novo_filial === true ||
-                this.form.novo_filial === 1 ||
-                this.form.novo_filial === '1'
-            const ccId = this.form.novo_centro_custo_id != null ? String(this.form.novo_centro_custo_id) : ''
-            const ccfId =
-                this.form.novo_centro_custo_filial_id != null
-                    ? String(this.form.novo_centro_custo_filial_id)
-                    : ''
-
             if (!this.temFilial) {
                 const keys = Object.keys(this.lista_ccs.centros_custos || {})
                 this.formLotacaoCnpjNovo = keys[0] || ''
                 return
             }
 
-            Object.keys(this.lista_ccs.centros_custos).some((cnpjKey) => {
-                const lista = this.lista_ccs.centros_custos[cnpjKey] || []
-                const encontrado = _.find(lista, (item) => {
-                    if (ehFilial) return String(item.filial_id) === ccfId
-                    return item.matriz && String(item.id) === ccId
-                })
-                if (encontrado) {
-                    this.formLotacaoCnpjNovo = cnpjKey
-                    return true
-                }
-                return false
-            })
+            this.formLotacaoCnpjNovo = resolverCnpjKeyViaListaCcs(
+                this.lista_ccs,
+                this.form.novo_centro_custo_id,
+                this.form.novo_centro_custo_filial_id
+            )
         },
         changeMantemCentroDeCusto() {
             this.limparFormCentroCustoNovo()
@@ -1908,18 +1829,24 @@ export default {
             this.form.autocomplete_label_vaga_nova = nomeVaga
         },
         selecionaColaborador(obj) {
+            const admissao = (obj && obj.admissao) || {}
             this.form.colaborador_id = obj.curriculo_id
             this.form.autocomplete_label_colaborador = obj.label
             this.form.autocomplete_label_colaborador_anterior = obj.label
 
-            this.form.anterior_centro_custo_id = obj.admissao.centro_custo_id
-            this.form.anterior_filial = obj.admissao.filial
-            this.form.anterior_centro_custo_filial_id = this.form.anterior_filial ? obj.admissao.centro_custo_filial_id : null
-            this.form.admissao_id = obj.admissao.id
-            this.form.anterior_funcao = obj.admissao.funcao
-            this.form.anterior_vaga_aberta_id = obj.vaga_aberta.id
-            this.form.autocomplete_label_vaga_anterior = obj.vaga_aberta.vaga.nome
-            this.form.anterior_salario = obj.admissao.salario
+            const cc = normalizarCcFilialDaAdmissao({
+                centro_custo_id: obj.centro_custo_id || admissao.centro_custo_id,
+                filial: obj.filial ?? admissao.filial,
+                centro_custo_filial_id: obj.centro_custo_filial_id || admissao.centro_custo_filial_id
+            })
+            this.form.anterior_centro_custo_id = cc.centro_custo_id
+            this.form.anterior_filial = cc.filial
+            this.form.anterior_centro_custo_filial_id = cc.centro_custo_filial_id
+            this.form.admissao_id = admissao.id
+            this.form.anterior_funcao = admissao.funcao
+            this.form.anterior_vaga_aberta_id = obj.vaga_aberta?.id
+            this.form.autocomplete_label_vaga_anterior = obj.vaga_aberta?.vaga?.nome || ''
+            this.form.anterior_salario = admissao.salario
         },
         resetaCampoColaborador() {
             if (this.form.autocomplete_label_colaborador_anterior !== this.form.autocomplete_label_colaborador) {

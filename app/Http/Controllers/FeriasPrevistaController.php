@@ -545,13 +545,17 @@ class FeriasPrevistaController extends Controller
             collect($itens)->map(fn ($item) => $item->Admissao?->centro_custo_filial_id)->all()
         );
 
+        $empresaId = (int) (auth()->user()->empresa_id ?? 0);
         foreach ($itens as $item) {
             $item->aprovacao_extra_nome = $item->AprovacaoExtra ? $item->AprovacaoExtra->nome : null;
 
             $admissao = $item->Admissao;
             $ccfId = (int) ($admissao?->centro_custo_filial_id ?? 0);
             $ehFilial = filter_var($admissao?->filial ?? false, FILTER_VALIDATE_BOOLEAN);
-            $item->lotacao = LotacaoLabelResolver::resolve(
+            $ccId = (int) ($admissao?->centro_custo_id ?? 0);
+            $item->lotacao = LotacaoLabelResolver::resolvePreferindoCentroCusto(
+                $empresaId,
+                $ccId > 0 ? $ccId : null,
                 $ehFilial,
                 $filialMap[$ccfId] ?? null,
                 $empresa

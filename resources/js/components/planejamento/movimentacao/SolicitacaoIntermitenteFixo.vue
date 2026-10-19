@@ -721,6 +721,7 @@ import MybpCardCampo from '../../ui/MybpCardCampo.vue'
 import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
+import { normalizarCcFilialDaAdmissao, resolverCnpjKeyViaListaCcs } from '../../../utils/lotacaoLabel'
 import {
     etapaAtualFluxoAprovacao,
     normalizarStatusUrlFluxo,
@@ -1266,38 +1267,17 @@ export default {
                 return
             }
 
-            const ehFilial =
-                this.form.filial === true || this.form.filial === 1 || this.form.filial === '1'
-            const ccId = this.form.centro_custo_id != null ? String(this.form.centro_custo_id) : ''
-            const ccfId =
-                this.form.centro_custo_filial_id != null && this.form.centro_custo_filial_id !== ''
-                    ? String(this.form.centro_custo_filial_id)
-                    : ''
-
             if (!this.temFilial) {
                 const keys = Object.keys(this.lista_ccs.centros_custos || {})
                 this.formLotacaoCnpj = keys[0] || ''
                 return
             }
 
-            if (!ccId && !ccfId) {
-                return
-            }
-
-            Object.keys(this.lista_ccs.centros_custos).some((cnpjKey) => {
-                const lista = this.lista_ccs.centros_custos[cnpjKey] || []
-                const encontrado = _.find(lista, (item) => {
-                    if (ehFilial && ccfId) {
-                        return String(item.filial_id) === ccfId || String(item.id) === ccId
-                    }
-                    return String(item.id) === ccId
-                })
-                if (encontrado) {
-                    this.formLotacaoCnpj = cnpjKey
-                    return true
-                }
-                return false
-            })
+            this.formLotacaoCnpj = resolverCnpjKeyViaListaCcs(
+                this.lista_ccs,
+                this.form.centro_custo_id,
+                this.form.centro_custo_filial_id
+            )
         },
         selecionaTodos() {
             this.selecionaTudo = !this.selecionaTudo
@@ -1372,13 +1352,17 @@ export default {
             this.form.area_etiqueta_id = obj.admissao.area_etiqueta_id
 
             const admissao = (obj && obj.admissao) || {}
-            const ccId = admissao.centro_custo_id
-            if (ccId != null && ccId !== '') {
-                this.form.centro_custo_id = String(ccId)
-                this.form.filial = !!(admissao.filial === true || admissao.filial === 1 || admissao.filial === '1')
+            const cc = normalizarCcFilialDaAdmissao({
+                centro_custo_id: obj.centro_custo_id || admissao.centro_custo_id,
+                filial: obj.filial ?? admissao.filial,
+                centro_custo_filial_id: obj.centro_custo_filial_id || admissao.centro_custo_filial_id
+            })
+            if (cc.centro_custo_id != null && cc.centro_custo_id !== '') {
+                this.form.centro_custo_id = String(cc.centro_custo_id)
+                this.form.filial = cc.filial
                 this.form.centro_custo_filial_id =
-                    this.form.filial && admissao.centro_custo_filial_id != null && admissao.centro_custo_filial_id !== ''
-                        ? String(admissao.centro_custo_filial_id)
+                    cc.centro_custo_filial_id != null && cc.centro_custo_filial_id !== ''
+                        ? String(cc.centro_custo_filial_id)
                         : ''
             } else {
                 this.limparFormCentroCusto()

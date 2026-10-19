@@ -79,15 +79,18 @@
                         <div class="row">
                             <div class="col-12 col-md-4">
                                 <div class="form-group mybp-filtro-campo mybp-modal-campo-data">
-                                    <label class="mybp-label">Data da Demissão <span class="text-danger">*</span></label>
+                                    <label class="mybp-label" :for="`demissao-data-${hash}`">
+                                        Data da Demissão <span class="text-danger">*</span>
+                                    </label>
                                     <datepicker
                                         :id="`demissao-data-${hash}`"
+                                        ref="datepickerDataDemissao"
                                         label=""
-                                        class="corrigiDatepicker"
                                         formsm
+                                        obrigatorio
                                         v-model="form.data_demissao"
                                         :disabled="visualizar || aprovando || aprovandoExtra || aprovandoRh"
-                                        @onselect="onSelectDataDemissao"
+                                        @input="onInputDataDemissao"
                                     ></datepicker>
                                 </div>
                             </div>
@@ -748,6 +751,7 @@ import Upload from '../../Upload'
 import Utils from '../../../mixins/Utils'
 import configuracoes from '../../../mixins/Configuracoes'
 import DateRangeFilter from '../../DateRangeFilter.vue'
+import datepicker from '../../DateInputHtml5.vue'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete'
 import FiltroListagem from '../../ui/FiltroListagem.vue'
 import MybpCardCampo from '../../ui/MybpCardCampo.vue'
@@ -755,6 +759,11 @@ import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import AcaoAssinaturaDocumento from '../../administracao/documentoassinatura/AcaoAssinaturaDocumento.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
+import {
+    normalizarCcFilialDaAdmissao,
+    resolverLabelLotacaoAtual,
+    resolverLabelLotacaoViaListaCcs as resolverLabelLotacaoViaListaCcsUtil
+} from '../../../utils/lotacaoLabel'
 import {
     etapaAtualFluxoAprovacao,
     normalizarStatusUrlFluxo,
@@ -772,6 +781,7 @@ export default {
         gestoraprovacao,
         Upload,
         DateRangeFilter,
+        datepicker,
         ComboboxAutoComplete,
         FiltroListagem,
         MybpCardCampo,
@@ -953,7 +963,8 @@ export default {
             if ([undefined, null, ''].includes(this.form.centro_custo_id)) {
                 return []
             }
-            let centroSelecionado = _.find(this.centro_custos, { id: this.form.centro_custo_id })
+            const ccId = String(this.form.centro_custo_id)
+            let centroSelecionado = _.find(this.centro_custos, (cc) => String(cc.id) === ccId)
             if (centroSelecionado && centroSelecionado.filiais && centroSelecionado.filiais.length) {
                 return centroSelecionado.filiais
             }
@@ -1065,8 +1076,24 @@ export default {
             if ([undefined, null, ''].includes(this.form.centro_custo_id)) {
                 return ''
             }
-            const item = _.find(this.centro_custos, { id: this.form.centro_custo_id })
-            return item && item.label ? item.label : ''
+            const ccId = String(this.form.centro_custo_id)
+            const item = _.find(this.centro_custos, (cc) => String(cc.id) === ccId)
+            if (item && item.label) return item.label
+
+            // Fallback: label do CC na lista agrupada por CNPJ
+            if (this.lista_ccs && this.lista_ccs.centros_custos) {
+                let label = ''
+                Object.values(this.lista_ccs.centros_custos).some((lista) => {
+                    const encontrado = _.find(lista || [], (cc) => String(cc.id) === ccId)
+                    if (encontrado && encontrado.label) {
+                        label = encontrado.label
+                        return true
+                    }
+                    return false
+                })
+                if (label) return label
+            }
+            return ''
         },
         colaboradorSemCentroCusto() {
             return !!this.form.colaborador_id && [undefined, null, '', 0, '0'].includes(this.form.centro_custo_id)
@@ -1075,66 +1102,20 @@ export default {
             if ([undefined, null, ''].includes(this.form.colaborador_id) && [undefined, null, ''].includes(this.form.centro_custo_id)) {
                 return ''
             }
-
-            const formatLotacao = (nomeFantasia, razaoSocial, cnpj) => {
-                const nome = String(nomeFantasia || razaoSocial || '').trim()
-                const doc = String(cnpj || '').trim()
-                if (!nome && !doc) return ''
-                if (!nome) return doc
-                if (!doc) return nome
-                return `${nome} - ${doc}`
-            }
-
-            const ehFilial =
-                this.form.filial === true || this.form.filial === 1 || this.form.filial === '1'
-            const filiaisAuth =
-                (this.authconfiguracao && this.authconfiguracao.cnpjs && this.authconfiguracao.cnpjs.filiais) || []
-
-            if (ehFilial && this.form.centro_custo_filial_id) {
-                const vinculo = _.find(this.centroCustoSelecionado, { id: this.form.centro_custo_filial_id })
-                const filialRel = vinculo && (vinculo.filial || vinculo.Filial)
-                if (filialRel) {
-                    let viaRel = formatLotacao(filialRel.nome_fantasia, filialRel.razao_social, filialRel.cnpj)
-                    if (viaRel && String(filialRel.cnpj || '').trim()) return viaRel
-
-                    const clienteFilialId = vinculo.cliente_filial_id
-                    if (clienteFilialId != null && clienteFilialId !== '') {
-                        const cf = _.find(filiaisAuth, { id: clienteFilialId })
-                        if (cf) {
-                            const viaAuth = formatLotacao(cf.nome_fantasia || cf.nome_fntasia, cf.razao_social, cf.cnpj)
-                            if (viaAuth) return viaAuth
-                        }
-                    }
-
-                    if (viaRel) return viaRel
-                }
-
-                if (vinculo && vinculo.cliente_filial_id != null && vinculo.cliente_filial_id !== '') {
-                    const cf = _.find(filiaisAuth, { id: vinculo.cliente_filial_id })
-                    if (cf) {
-                        const viaAuth = formatLotacao(cf.nome_fantasia || cf.nome_fntasia, cf.razao_social, cf.cnpj)
-                        if (viaAuth) return viaAuth
-                    }
-                }
-            }
-
-            const matrizAuth = this.authconfiguracao && this.authconfiguracao.cnpjs && this.authconfiguracao.cnpjs.matriz
-            if (matrizAuth) {
-                const viaMatriz = formatLotacao(matrizAuth.nome_fantasia, matrizAuth.razao_social, matrizAuth.cnpj)
-                if (viaMatriz) return viaMatriz
-            }
-
-            if (this.lista_ccs && this.lista_ccs.cnpjs) {
-                const matrizLista = Object.values(this.lista_ccs.cnpjs).find((item) => item && item.matriz)
-                if (matrizLista) {
-                    return formatLotacao(matrizLista.nome_fantasia, matrizLista.razao_social, matrizLista.cnpj)
-                }
-            }
-
-            return ''
+            return resolverLabelLotacaoAtual({
+                centroCustoId: this.form.centro_custo_id,
+                filial: this.form.filial,
+                centroCustoFilialId: this.form.centro_custo_filial_id,
+                centroCustoSelecionado: this.centroCustoSelecionado,
+                listaCcs: this.lista_ccs,
+                authconfiguracao: this.authconfiguracao
+            })
         }
     },
     methods: {
+        resolverLabelLotacaoViaListaCcs(centroCustoId, centroCustoFilialId) {
+            return resolverLabelLotacaoViaListaCcsUtil(this.lista_ccs, centroCustoId, centroCustoFilialId)
+        },
         toggleDropdown(itemId) {
             if (!itemId) {
                 return
@@ -1700,6 +1681,13 @@ export default {
             }
 
             const dataId = `demissao-data-${this.hash}`
+            const refData = this.$refs.datepickerDataDemissao
+            if (refData && typeof refData.validar === 'function' && !refData.validar()) {
+                if (typeof mostraErro === 'function') {
+                    mostraErro('', 'Campo DATA DA DEMISSÃO não pode ficar vazio')
+                }
+                return false
+            }
             if (
                 !this.exigirCampoData(this.form.data_demissao, dataId, {
                     toastMsg: 'Campo DATA DA DEMISSÃO não pode ficar vazio'
@@ -1809,9 +1797,14 @@ export default {
             this.form.colaborador_id = obj.curriculo_id
             this.form.autocomplete_label_colaborador = obj.label
             this.form.autocomplete_label_colaborador_anterior = obj.label
-            this.form.centro_custo_id = admissao.centro_custo_id || ''
-            this.form.filial = !!admissao.filial
-            this.form.centro_custo_filial_id = this.form.filial ? admissao.centro_custo_filial_id || null : null
+            const cc = normalizarCcFilialDaAdmissao({
+                centro_custo_id: obj.centro_custo_id || admissao.centro_custo_id,
+                filial: obj.filial ?? admissao.filial,
+                centro_custo_filial_id: obj.centro_custo_filial_id || admissao.centro_custo_filial_id
+            })
+            this.form.centro_custo_id = cc.centro_custo_id
+            this.form.filial = cc.filial
+            this.form.centro_custo_filial_id = cc.centro_custo_filial_id
 
             if (this.colaboradorSemCentroCusto && typeof mostraWarning === 'function') {
                 mostraWarning(
@@ -1829,26 +1822,24 @@ export default {
             }
             return payload
         },
-        onSelectDataDemissao(valor) {
-            const texto = typeof valor === 'string' ? valor : valor && valor.value ? valor.value : ''
+        onInputDataDemissao(valor) {
+            const texto = typeof valor === 'string' ? valor : ''
             this.form.data_demissao = String(texto || '').trim()
             this.limparCampoDataInvalido(`demissao-data-${this.hash}`)
         },
         sincronizarDataDemissaoDoInput() {
             const seletor = `#demissao-data-${this.hash}`
-            let valor = ''
             const input = document.querySelector(seletor)
-            if (input && input.value) {
-                valor = String(input.value).trim()
-            } else {
-                const fallback = $(`#${this.hash} .mybp-modal-campo-data input:text`).first()
-                if (fallback.length) {
-                    valor = String(fallback.val() || '').trim()
-                }
+            if (!input || !input.value) {
+                return
             }
-            if (valor && valor !== 'Invalid date') {
-                this.form.data_demissao = valor
+            const bruto = String(input.value).trim()
+            if (!bruto || bruto === 'Invalid date') {
+                return
             }
+            // input type="date" devolve ISO; o form usa dd/mm/aaaa
+            const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(bruto)
+            this.form.data_demissao = iso ? `${iso[3]}/${iso[2]}/${iso[1]}` : bruto
         },
         resetaCampoColaborador() {
             if (this.form.autocomplete_label_colaborador_anterior !== this.form.autocomplete_label_colaborador) {

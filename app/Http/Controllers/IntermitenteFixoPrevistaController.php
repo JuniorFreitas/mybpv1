@@ -356,9 +356,13 @@ class IntermitenteFixoPrevistaController extends Controller
             collect($itens)->pluck('centro_custo_filial_id')->all()
         );
 
+        $empresaId = (int) (auth()->user()->empresa_id ?? 0);
         foreach ($itens as $item) {
             $ccfId = (int) ($item->centro_custo_filial_id ?? 0);
-            $item->lotacao = LotacaoLabelResolver::resolve(
+            $ccId = (int) ($item->centro_custo_id ?? 0);
+            $item->lotacao = LotacaoLabelResolver::resolvePreferindoCentroCusto(
+                $empresaId,
+                $ccId > 0 ? $ccId : null,
                 filter_var($item->filial ?? false, FILTER_VALIDATE_BOOLEAN),
                 $filialMap[$ccfId] ?? null,
                 $empresa
