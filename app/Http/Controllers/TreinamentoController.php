@@ -8,6 +8,7 @@ use App\Models\AuditoriaInterna;
 use App\Models\Arquivo;
 use App\Models\CarteiraAssinatura;
 use App\Models\CentroCusto;
+use App\Models\Cliente;
 use App\Models\ClienteConfig;
 use App\Models\PadraoTreinamento;
 use App\Models\Pivot\TreinamentoVencimento;
@@ -354,35 +355,118 @@ class TreinamentoController extends Controller
      */
     private function carregarAnexosFat(int $treinamentoId, int $vencimentoId, $arquivoIdLegado = null): array
     {
-        $ids = [];
-        if (Schema::hasTable('treinamento_vencimento_anexos')) {
-            $ids = DB::table('treinamento_vencimento_anexos')
+        $mapa = $this->mapearAnexosFatPorVencimento(
+            $treinamentoId,
+            [$vencimentoId => $arquivoIdLegado]
+        );
+
+        return $mapa[$vencimentoId] ?? [];
+    }
+
+    /**
+     * Anexos FAT por vencimento (1 query anexos + 1 query arquivos).
+     *
+     * @param  array<int, mixed>  $arquivoIdLegadoPorVencimento  vencimento_id => arquivo_id legado|null
+     * @return array<int, list<\App\Models\Arquivo>>
+     */
+    private function mapearAnexosFatPorVencimento(int $treinamentoId, array $arquivoIdLegadoPorVencimento): array
+    {
+        $idsPorVencimento = [];
+
+        if (Schema::hasTable('treinamento_vencimento_anexos') && $arquivoIdLegadoPorVencimento !== []) {
+            $rows = DB::table('treinamento_vencimento_anexos')
                 ->where('treinamento_id', $treinamentoId)
-                ->where('vencimento_id', $vencimentoId)
+                ->whereIn('vencimento_id', array_keys($arquivoIdLegadoPorVencimento))
                 ->orderBy('ordem')
-                ->pluck('arquivo_id')
-                ->map(fn ($id) => (int) $id)
-                ->all();
-        }
+                ->get(['vencimento_id', 'arquivo_id']);
 
-        if (!$ids && $arquivoIdLegado) {
-            $ids = [(int) $arquivoIdLegado];
-        }
-
-        if (!$ids) {
-            return [];
-        }
-
-        $porId = Arquivo::query()->whereIn('id', $ids)->get()->keyBy('id');
-
-        $lista = [];
-        foreach ($ids as $id) {
-            if (isset($porId[$id])) {
-                $lista[] = $porId[$id];
+            foreach ($rows as $row) {
+                $vid = (int) $row->vencimento_id;
+                $idsPorVencimento[$vid][] = (int) $row->arquivo_id;
             }
         }
 
-        return $lista;
+        foreach ($arquivoIdLegadoPorVencimento as $vencimentoId => $arquivoIdLegado) {
+            $vid = (int) $vencimentoId;
+            if (empty($idsPorVencimento[$vid]) && $arquivoIdLegado) {
+                $idsPorVencimento[$vid] = [(int) $arquivoIdLegado];
+            }
+        }
+
+        $todosIds = collect($idsPorVencimento)->flatten()->unique()->filter()->values()->all();
+        $porId = $todosIds
+            ? Arquivo::query()->whereIn('id', $todosIds)->get()->keyBy('id')
+            : collect();
+
+        $mapa = [];
+        foreach ($arquivoIdLegadoPorVencimento as $vencimentoId => $_legado) {
+            $vid = (int) $vencimentoId;
+            $mapa[$vid] = [];
+            foreach ($idsPorVencimento[$vid] ?? [] as $arquivoId) {
+                if (isset($porId[$arquivoId])) {
+                    $mapa[$vid][] = $porId[$arquivoId];
+                }
+            }
+        }
+
+        return $mapa;
+    }
+
+    /**
+     * Payload enxuto do Upload.vue (sem file/thumb/disco/etc.).
+     *
+     * @return array<string, mixed>
+     */
+    private function serializarArquivoFat(Arquivo $arquivo): array
+    {
+        return [
+            'id' => $arquivo->id,
+            'nome' => $arquivo->nome,
+            'imagem' => (bool) $arquivo->imagem,
+            'extensao' => $arquivo->extensao,
+            'bytes' => $arquivo->bytes,
+            'temporario' => (bool) $arquivo->temporario,
+            'chave' => $arquivo->chave,
+            'url' => $arquivo->url,
+            'urlThumb' => $arquivo->urlThumb,
+            'urlDownload' => $arquivo->urlDownload,
+            'urlDelete' => $arquivo->urlDelete,
+        ];
+    }
+
+    /**
+     * Item da lista da modal (sem Vagas/Padroes/relações Eloquent).
+     *
+     * @param  list<\App\Models\Arquivo>|list<array<string, mixed>>  $arquivos
+     * @return array<string, mixed>
+     */
+    private function serializarItemListaVencimento($item, array $arquivos = []): array
+    {
+        $arquivosSlim = array_map(function ($arquivo) {
+            return $arquivo instanceof Arquivo
+                ? $this->serializarArquivoFat($arquivo)
+                : $arquivo;
+        }, $arquivos);
+
+        return [
+            'id' => (int) $item->id,
+            'label' => $item->label,
+            'label_reduzida' => $item->label_reduzida,
+            'descricao' => $item->descricao,
+            'prazo_fixo' => $item->prazo_fixo,
+            'prazo_parada' => $item->prazo_parada,
+            'ordem' => $item->ordem,
+            'fez_treinamento' => (bool) ($item->fez_treinamento ?? false),
+            'data_treinamento' => $item->data_treinamento,
+            'data_vencimento' => $item->data_vencimento,
+            'numero_fat' => $item->numero_fat,
+            'dias_vencer' => $item->dias_vencer ?? PHP_INT_MAX,
+            'nao_vinculado_ao_cargo' => (bool) ($item->nao_vinculado_ao_cargo ?? false),
+            'de_outro_padrao' => (bool) ($item->de_outro_padrao ?? false),
+            'padrao_origem_nome' => $item->padrao_origem_nome,
+            'arquivo' => $arquivosSlim,
+            'arquivoDel' => [],
+        ];
     }
 
     /**
@@ -738,56 +822,45 @@ class TreinamentoController extends Controller
             ->whereHas('Feedback', function ($q) {
                 $q->where('empresa_id', auth()->user()->empresa_id);
             })
+            ->with([
+                'Treinamento:id,feedback_id,tipo,gerou_id,data_envio,enviado_email,enviou_id,email_envio,email_aberto,data_email_aberto',
+                'Treinamento.Vencimentos' => function ($q) {
+                    $q->select(
+                        'vencimentos.id',
+                        'vencimentos.label',
+                        'vencimentos.label_reduzida',
+                        'vencimentos.vinculo_todos_cargos'
+                    );
+                },
+                'Admissao:id,feedback_id,status,tipo_admissao,padrao_treinamento_id,centro_custo_id,numero_cracha,nr_trinta_tres,nr_trinta_cinco,cargo',
+                'Admissao.PadraoTreinamento:id,nome,tem_carteira,carteira_treinamento_id,tem_etiqueta_bloqueio,etiqueta_bloqueio_id',
+                'Feedback:id,vaga_id,cliente_id,curriculo_id,telefone_id',
+                'Feedback.TelPrincipal:id,tipo,numero',
+                'Feedback.Curriculo:id,nome,nascimento,cpf,email,uf,logradouro,complemento,end_numero,bairro,municipio,cep',
+                'Feedback.VagaAberta:id,vaga_id,titulo,municipio_id',
+                'Feedback.VagaAberta.Vaga:id,nome',
+                'Feedback.VagaAberta.Municipio:id,nome,uf',
+                'Feedback.Demissao:id,feedback_id',
+                'Feedback.Cliente:id,nome_fantasia,razao_social',
+            ])
             ->first();
 
         if (!$treinamento) {
             return response()->json(['msg' => 'Treinamento não encontrado'], 404);
         }
 
-        $treinamento = $treinamento->load(
-            'Treinamento',
-            'Treinamento.Vencimentos',
-            'Treinamento.QuemCadastrou:id,nome',
-            'Curriculo:id,nome,nascimento,cpf,pcd,uf,uf_vaga,email,rg,orgao_expeditor,logradouro,complemento,end_numero,bairro,municipio,cep',
-            'Admissao.PadraoTreinamento:id,nome,tem_carteira,carteira_treinamento_id,tem_etiqueta_bloqueio,etiqueta_bloqueio_id',
-            'Feedback.Exame',
-            'Feedback.TelPrincipal:id,tipo,numero',
-            'Feedback.Curriculo:id,nome,cpf,nascimento,pcd,uf,uf_vaga,email,rg,orgao_expeditor,logradouro,complemento,end_numero,bairro,municipio,cep',
-            'Feedback.VagaAberta:id,vaga_id,titulo,municipio_id',
-            'Feedback.VagaAberta.Vaga:id,nome',
-            'Feedback.VagaAberta.Municipio:id,nome,uf',
-            'Feedback.Demissao:id,feedback_id',
-            'Feedback.Cliente:id,nome_fantasia,razao_social',
-        );
-
+        $nrTrintaTres = true;
+        $nrTrintaCinco = true;
         if (!is_null($treinamento->Admissao)) {
-            $treinamento->nr_trinta_tres = $treinamento->Admissao->nr_trinta_tres == 'NÃO SE APLICA' ? false : true;
-            $treinamento->nr_trinta_cinco = $treinamento->Admissao->nr_trinta_cinco == 'NÃO SE APLICA' ? false : true;
-        } else {
-            $treinamento->nr_trinta_tres = true;
-            $treinamento->nr_trinta_cinco = true;
+            $nrTrintaTres = $treinamento->Admissao->nr_trinta_tres != 'NÃO SE APLICA';
+            $nrTrintaCinco = $treinamento->Admissao->nr_trinta_cinco != 'NÃO SE APLICA';
         }
 
-        // Obter todos os relacionamentos treinamento_vencimento com seus arquivos
         $treinamentoVencimentos = null;
         if ($treinamento->Treinamento) {
-            $treinamentoVencimentos = TreinamentoVencimento::with('arquivo')
+            $treinamentoVencimentos = TreinamentoVencimento::query()
                 ->where('treinamento_id', $treinamento->Treinamento->id)
-                ->get();
-
-            // Adicionar os arquivos FAT aos vencimentos já carregados (até 5)
-            foreach ($treinamento->Treinamento->Vencimentos as $vencimento) {
-                $pivotData = $treinamentoVencimentos->where('vencimento_id', $vencimento->id)->first();
-                $vencimento->arquivo = [];
-                $vencimento->arquivoDel = [];
-                if ($pivotData) {
-                    $vencimento->arquivo = $this->carregarAnexosFat(
-                        (int) $treinamento->Treinamento->id,
-                        (int) $vencimento->id,
-                        optional($pivotData)->arquivo_id ?? optional($pivotData->arquivo)->id
-                    );
-                }
-            }
+                ->get(['treinamento_id', 'vencimento_id', 'arquivo_id', 'data_treinamento', 'data_vencimento', 'numero_fat']);
         }
 
         $empresaId = (int) auth()->user()->empresa_id;
@@ -797,64 +870,46 @@ class TreinamentoController extends Controller
                 ? (int) $treinamento->Admissao->padrao_treinamento_id
                 : $this->resolverPadraoDefaultEmpresa($empresaId));
 
-        $treinamento->padrao_treinamento_id = $padraoId;
         $dadosVinculoCargo = $this->montarListaVencimentosPorPadrao($treinamento, $treinamentoVencimentos, $padraoId);
-        // setAttribute + array: garante que extras (outro padrão) saem no JSON do edit
-        $treinamento->setAttribute('listaVencimentos', $dadosVinculoCargo['listaVencimentos']->values()->all());
-        $treinamento->setAttribute('listaVencimentosNaoVinculadosCargo', $dadosVinculoCargo['listaVencimentosNaoVinculadosCargo']->values()->all());
-        $treinamento->setAttribute('alertaSemCargoVinculo', $dadosVinculoCargo['alertaSemCargoVinculo']);
+        $clienteConfig = ClienteConfig::whereClienteId($empresaId)->first();
+        $curriculo = $treinamento->Feedback?->Curriculo;
+        $modelTreinamento = $treinamento->Treinamento;
 
-        /*  $treinamento->listaVencimentos = Vencimento::whereAtivo(true)->orderBy('ordem')->get()->transform(function ($item) use ($treinamento, $treinamentoVencimentos) {
-              if ($treinamento->Treinamento) {
-                  $pivo = $treinamento->Treinamento->Vencimentos()->whereId($item->id);
-                  $item->data_treinamento = $pivo->count() > 0 ? $pivo->first()->pivot->data_treinamento : null;
-                  $item->data_vencimento = $pivo->count() > 0 ? $pivo->first()->pivot->data_vencimento : null;
-                  $item->numero_fat = $pivo->count() > 0 ? $pivo->first()->pivot->numero_fat : null;
-                  $item->fez_treinamento = $pivo->count() > 0 ? true : false;
-                  $item->arquivo = [];
-                  $item->arquivoDel = [];
-
-
-  //                $item->Treinamento->Vencimentos->transform(function ($i) use ($item) {
-  //                    $i->fez_treinamento = $item->Treinamento->Vencimentos()->where('vencimento_id', $i->id)->count() > 0 ? true : false;
-  //                    $i->pivot->status = $this->StatusTreinamento($i->pivot->data_vencimento);
-  //                    $i->dias_vencer = DataHora::diferencaDias((new DataHora())->dataInsert() . ' 00:00:00', (new DataHora($i->pivot->data_vencimento))->dataInsert() . ' 23:59:59');
-  //                    return $i;
-  //                });
-  //
-  //                $item->treinamento->vencimentos = $item->Treinamento->Vencimentos->sortBy('dias_vencer')->values()->all();
-                  // Adicionar informações do arquivo
-                  if ($treinamentoVencimentos) {
-                      $pivotData = $treinamentoVencimentos->where('vencimento_id', $item->id)->first();
-                      if ($pivotData) {
-                          $item->arquivo = $pivotData->arquivo ? [$pivotData->arquivo] : [];
-                      }
-                  }
-              } else {
-                  $item->data_treinamento = null;
-                  $item->data_vencimento = null;
-                  $item->fez_treinamento = false;
-                  $item->numero_fat = null;
-                  $item->arquivo = [];
-                  $item->arquivoDel = [];
-              }
-
-              return $item;
-          });*/
-
-        $treinamento->dadosFuncionario = $this->montarDadosFuncionarioModal(
-            $treinamento,
-            $padraoId,
-            $empresaId
-        );
-
-        $clienteConfig = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
-        $treinamento->privilegio_gestao_rh = auth()->user()->can('privilegio_gestao_rh');
-        $treinamento->treinamento_permitir_desmarcar_realizado = $clienteConfig ? (bool) ($clienteConfig->treinamento_permitir_desmarcar_realizado ?? false) : false;
-        $treinamento->treinamento_retirar_treinamento_realizado = auth()->user()->can('treinamento_carteira-etiquetas_retirar_treinamento_realizado');
-        $treinamento->treinamento_fat_obrigatorio = $clienteConfig ? $clienteConfig->getConfig('treinamento_fat_obrigatorio', false) : false;
-
-        return response()->json($treinamento);
+        return response()->json([
+            'feedback_id' => $treinamento->feedback_id,
+            'padrao_treinamento_id' => $padraoId,
+            'nr_trinta_tres' => $nrTrintaTres,
+            'nr_trinta_cinco' => $nrTrintaCinco,
+            'dadosFuncionario' => $this->montarDadosFuncionarioModal($treinamento, $padraoId, $empresaId),
+            'listaVencimentos' => $dadosVinculoCargo['listaVencimentos'],
+            'listaVencimentosNaoVinculadosCargo' => $dadosVinculoCargo['listaVencimentosNaoVinculadosCargo'],
+            'alertaSemCargoVinculo' => $dadosVinculoCargo['alertaSemCargoVinculo'],
+            'privilegio_gestao_rh' => auth()->user()->can('privilegio_gestao_rh'),
+            'treinamento_permitir_desmarcar_realizado' => $clienteConfig
+                ? (bool) ($clienteConfig->treinamento_permitir_desmarcar_realizado ?? false)
+                : false,
+            'treinamento_retirar_treinamento_realizado' => auth()->user()->can('treinamento_carteira-etiquetas_retirar_treinamento_realizado'),
+            'treinamento_fat_obrigatorio' => $clienteConfig
+                ? $clienteConfig->getConfig('treinamento_fat_obrigatorio', false)
+                : false,
+            // Shape mínimo p/ formAlterar (Object.assign) — sem Vencimentos/token/relações
+            'Treinamento' => $modelTreinamento ? [
+                'id' => $modelTreinamento->id,
+                'feedback_id' => $modelTreinamento->feedback_id,
+                'tipo' => $modelTreinamento->tipo,
+                'gerou_id' => $modelTreinamento->gerou_id,
+                'data_envio' => $modelTreinamento->data_envio,
+                'enviado_email' => $modelTreinamento->enviado_email,
+                'enviou_id' => $modelTreinamento->enviou_id,
+                'email_envio' => $modelTreinamento->email_envio,
+                'email_aberto' => $modelTreinamento->email_aberto,
+                'data_email_aberto' => $modelTreinamento->data_email_aberto,
+            ] : null,
+            'Curriculo' => $curriculo ? ['nome' => $curriculo->nome] : null,
+            'Feedback' => [
+                'id' => $treinamento->feedback_id,
+            ],
+        ]);
     }
 
     /**
@@ -892,15 +947,12 @@ class TreinamentoController extends Controller
         $empCentroCusto = null;
         $empTipo = null;
         if ($admissao?->centro_custo_id) {
-            $cc = (new CentroCusto())->listaCentroCustoPorCnpj($empresaId);
-            $ccColaborador = collect($cc['centros_custos'] ?? [])->collapse()
-                ->where('id', $admissao->centro_custo_id)
-                ->first();
-            if ($ccColaborador) {
-                $empCnpj = $ccColaborador['cnpj_format'] ?? null;
-                $empNomeFantasia = $ccColaborador['nome_fantasia'] ?? null;
-                $empCentroCusto = $ccColaborador['label'] ?? null;
-                $empTipo = !empty($ccColaborador['matriz']) ? 'Matriz' : 'Filial';
+            $lotacao = $this->resolverLotacaoPorCentroCustoId($empresaId, (int) $admissao->centro_custo_id);
+            if ($lotacao) {
+                $empCnpj = $lotacao['cnpj_format'] ?? null;
+                $empNomeFantasia = $lotacao['nome_fantasia'] ?? null;
+                $empCentroCusto = $lotacao['label'] ?? null;
+                $empTipo = !empty($lotacao['matriz']) ? 'Matriz' : 'Filial';
             }
         }
 
@@ -946,6 +998,70 @@ class TreinamentoController extends Controller
                 ? ((bool) $padraoInfo->tem_etiqueta_bloqueio && !empty($padraoInfo->etiqueta_bloqueio_id))
                 : null,
             'cliente_nome' => $cliente?->nome_fantasia ?: $cliente?->razao_social,
+        ];
+    }
+
+    /**
+     * Pivot do primeiro vencimento realizado cujo label contém algum dos trechos.
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Vencimento>  $realizados
+     * @param  list<string>  $trechos
+     */
+    private function pivotPorLabelContem($realizados, array $trechos)
+    {
+        $match = collect($realizados)->first(function ($v) use ($trechos) {
+            $label = mb_strtoupper((string) ($v->label ?? ''));
+            foreach ($trechos as $trecho) {
+                if ($trecho !== '' && str_contains($label, mb_strtoupper($trecho))) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        return $match?->pivot;
+    }
+
+    /**
+     * Resolve lotação (CNPJ/nome/tipo) de um único centro de custo sem montar a árvore inteira.
+     *
+     * @return array{cnpj_format:?string,nome_fantasia:?string,label:?string,matriz:bool}|null
+     */
+    private function resolverLotacaoPorCentroCustoId(int $empresaId, int $centroCustoId): ?array
+    {
+        $centro = CentroCusto::query()
+            ->select(['id', 'label', 'ativo'])
+            ->with(['Filiais' => function ($query) {
+                $query->select(['id', 'centro_custo_id', 'cliente_filial_id', 'empresa_id'])
+                    ->whereAtivo(true)
+                    ->with('Filial:id,dados->razao_social as razao_social,dados->nome_fantasia as nome_fantasia,dados->cnpj as cnpj');
+            }])
+            ->find($centroCustoId);
+
+        if (!$centro) {
+            return null;
+        }
+
+        $filialAtiva = $centro->Filiais->first();
+        if ($filialAtiva?->Filial) {
+            return [
+                'cnpj_format' => $filialAtiva->Filial->cnpj ?? null,
+                'nome_fantasia' => $filialAtiva->Filial->nome_fantasia ?? null,
+                'label' => $centro->label,
+                'matriz' => false,
+            ];
+        }
+
+        $matriz = Cliente::query()
+            ->select(['id', 'razao_social', 'nome_fantasia', 'cnpj'])
+            ->find($empresaId);
+
+        return [
+            'cnpj_format' => $matriz?->cnpj,
+            'nome_fantasia' => $matriz?->nome_fantasia,
+            'label' => $centro->label,
+            'matriz' => true,
         ];
     }
 
@@ -1103,7 +1219,21 @@ class TreinamentoController extends Controller
     {
         $vagaId = optional($treinamento->Feedback)->vaga_id ? (int) $treinamento->Feedback->vaga_id : null;
 
-        $mapearItemLista = function ($item) use ($treinamento, $treinamentoVencimentos, $padraoId, $vagaId) {
+        $pivotsPorVencimento = collect($treinamentoVencimentos ?? [])->keyBy('vencimento_id');
+        $realizadosEager = $treinamento->Treinamento
+            ? $treinamento->Treinamento->Vencimentos->keyBy('id')
+            : collect();
+
+        $legadoPorVencimento = [];
+        foreach ($pivotsPorVencimento as $vencimentoId => $pivot) {
+            $legadoPorVencimento[(int) $vencimentoId] = $pivot->arquivo_id ?? null;
+        }
+
+        $anexosPorVencimento = $treinamento->Treinamento && $legadoPorVencimento !== []
+            ? $this->mapearAnexosFatPorVencimento((int) $treinamento->Treinamento->id, $legadoPorVencimento)
+            : [];
+
+        $mapearItemLista = function ($item) use ($treinamento, $realizadosEager, $padraoId, $vagaId, $anexosPorVencimento) {
             $this->aplicarMarcacaoOutroPadrao($item, $padraoId);
             $item->nao_vinculado_ao_cargo = false;
             if ($vagaId) {
@@ -1114,13 +1244,11 @@ class TreinamentoController extends Controller
             }
 
             if ($treinamento->Treinamento) {
-                $pivo = $treinamento->Treinamento->Vencimentos()->whereId($item->id);
-                $item->data_treinamento = $pivo->count() > 0 ? $pivo->first()->pivot->data_treinamento : null;
-                $item->data_vencimento = $pivo->count() > 0 ? $pivo->first()->pivot->data_vencimento : null;
-                $item->numero_fat = $pivo->count() > 0 ? $pivo->first()->pivot->numero_fat : null;
-                $item->fez_treinamento = $pivo->count() > 0 ? true : false;
-                $item->arquivo = [];
-                $item->arquivoDel = [];
+                $realizado = $realizadosEager->get($item->id);
+                $item->data_treinamento = $realizado?->pivot?->data_treinamento;
+                $item->data_vencimento = $realizado?->pivot?->data_vencimento;
+                $item->numero_fat = $realizado?->pivot?->numero_fat;
+                $item->fez_treinamento = (bool) $realizado;
 
                 if ($item->data_vencimento) {
                     $item->dias_vencer = DataHora::diferencaDias(
@@ -1130,29 +1258,26 @@ class TreinamentoController extends Controller
                 } else {
                     $item->dias_vencer = PHP_INT_MAX;
                 }
-
-                if ($treinamentoVencimentos) {
-                    $pivotData = $treinamentoVencimentos->where('vencimento_id', $item->id)->first();
-                    $item->arquivo = $this->carregarAnexosFat(
-                        (int) $treinamento->Treinamento->id,
-                        (int) $item->id,
-                        optional($pivotData)->arquivo_id ?? optional(optional($pivotData)->arquivo)->id
-                    );
-                }
             } else {
                 $item->data_treinamento = null;
                 $item->data_vencimento = null;
                 $item->fez_treinamento = false;
                 $item->numero_fat = null;
-                $item->arquivo = [];
-                $item->arquivoDel = [];
                 $item->dias_vencer = PHP_INT_MAX;
             }
 
-            return $item;
+            $arquivos = $anexosPorVencimento[(int) $item->id] ?? [];
+
+            return $this->serializarItemListaVencimento($item, $arquivos);
         };
 
-        $vencimentosQuery = Vencimento::whereAtivo(true)->orderBy('ordem')->with(['Vagas:id', 'PadroesTreinamento:id,nome']);
+        $vencimentosQuery = Vencimento::whereAtivo(true)
+            ->orderBy('ordem')
+            ->select([
+                'id', 'label', 'label_reduzida', 'descricao', 'prazo_fixo', 'prazo_parada',
+                'ordem', 'vinculo_todos_cargos', 'ativo',
+            ])
+            ->with(['Vagas:id', 'PadroesTreinamento:id,nome']);
         $this->aplicarFiltroEscopoPadrao($vencimentosQuery, $padraoId);
         if ($vagaId) {
             $vencimentosQuery->where(function ($q) use ($vagaId) {
@@ -1163,14 +1288,12 @@ class TreinamentoController extends Controller
             });
         }
 
-        $listaVencimentos = $vencimentosQuery->get()->transform($mapearItemLista)->values();
+        $listaVencimentos = $vencimentosQuery->get()->map($mapearItemLista)->values();
 
         $listaNaoVinculadosCargo = collect();
         if ($treinamento->Treinamento) {
-            // Todos os realizados (qualquer padrão): não some ao trocar o padrão — mesma ideia do legado
-            $realizados = $treinamento->Treinamento->Vencimentos()
-                ->with(['Vagas:id', 'PadroesTreinamento:id,nome'])
-                ->get();
+            $treinamento->Treinamento->loadMissing(['Vencimentos.Vagas:id', 'Vencimentos.PadroesTreinamento:id,nome']);
+            $realizados = $treinamento->Treinamento->Vencimentos;
 
             $idsListaAtual = $listaVencimentos->pluck('id')->map(fn ($id) => (int) $id)->all();
             $idsExtras = $realizados
@@ -1203,13 +1326,16 @@ class TreinamentoController extends Controller
             }
 
             if (!empty($idsExtras)) {
-                // Mesmo shape Eloquent da lista principal (evita stdClass sumir no JSON do edit)
                 $extrasMapeados = Vencimento::query()
                     ->whereIn('id', $idsExtras)
+                    ->select([
+                        'id', 'label', 'label_reduzida', 'descricao', 'prazo_fixo', 'prazo_parada',
+                        'ordem', 'vinculo_todos_cargos', 'ativo',
+                    ])
                     ->with(['Vagas:id', 'PadroesTreinamento:id,nome'])
                     ->orderBy('ordem')
                     ->get()
-                    ->transform($mapearItemLista);
+                    ->map($mapearItemLista);
 
                 $listaVencimentos = $listaVencimentos
                     ->concat($extrasMapeados)
@@ -1219,16 +1345,17 @@ class TreinamentoController extends Controller
 
         $listaVencimentos = $listaVencimentos
             ->sortBy(function ($v) {
-                $deOutro = !empty($v->de_outro_padrao) ? 1 : 0;
-                $dias = $v->dias_vencer ?? PHP_INT_MAX;
+                $deOutro = !empty($v['de_outro_padrao']) ? 1 : 0;
+                $dias = $v['dias_vencer'] ?? PHP_INT_MAX;
 
                 return $deOutro . '-' . str_pad((string) $dias, 10, '0', STR_PAD_LEFT);
             })
-            ->values();
+            ->values()
+            ->all();
 
         return [
             'listaVencimentos' => $listaVencimentos,
-            'listaVencimentosNaoVinculadosCargo' => $listaNaoVinculadosCargo->values(),
+            'listaVencimentosNaoVinculadosCargo' => $listaNaoVinculadosCargo->values()->all(),
             'alertaSemCargoVinculo' => $vagaId === null,
         ];
     }
@@ -1386,6 +1513,13 @@ class TreinamentoController extends Controller
             ->get(['id', 'nome', 'tem_carteira', 'carteira_treinamento_id', 'tem_etiqueta_bloqueio', 'etiqueta_bloqueio_id'])
             ->keyBy('id');
 
+        // Batch: evita loadMissing N+1 de PadroesTreinamento por item da página
+        $treinamentosPagina = $itens->pluck('Treinamento')->filter()->values();
+        if ($treinamentosPagina->isNotEmpty()) {
+            (new \Illuminate\Database\Eloquent\Collection($treinamentosPagina->all()))
+                ->loadMissing('Vencimentos.PadroesTreinamento:id,nome');
+        }
+
         $itens->transform(function ($item) use ($cc, $padraoDefaultEmpresa, $padroesInfo) {
             // Evita appends desnecessários (e possíveis acessos a relações não carregadas)
             $item->setAppends([]);
@@ -1396,23 +1530,14 @@ class TreinamentoController extends Controller
                 : ($padraoDefaultEmpresa ? (int) $padraoDefaultEmpresa : null);
 
             if ($item->Treinamento) {
-                $item->nr_33 = $item->Treinamento->Vencimentos()->where(function ($q) {
-                    $q->where('label', 'like', '%NR33%')->orWhere('label', 'like', '%NR-33%');
-                })->count() > 0 ? $item->Treinamento->Vencimentos()->where(function ($q) {
-                    $q->where('label', 'like', '%NR33%')->orWhere('label', 'like', '%NR-33%');
-                })->first()->pivot : null;
-                $item->nr_35 = $item->Treinamento->Vencimentos()->where(function ($q) {
-                    $q->where('label', 'like', '%NR35%')->orWhere('label', 'like', '%NR-35%');
-                })->count() > 0 ? $item->Treinamento->Vencimentos()->where(function ($q) {
-                    $q->where('label', 'like', '%NR35%')->orWhere('label', 'like', '%NR-35%');
-                })->first()->pivot : null;
-                $item->ebtv = $item->Treinamento->Vencimentos()->where('label', 'like', '%EBTV%')->count() > 0 ? $item->Treinamento->Vencimentos()->where('label', 'like', '%EBTV%')->first()->pivot : null;
-
-                // Eager PadroesTreinamento (id+nome) para escopo e mensagem "outro padrão"
-                $item->Treinamento->loadMissing('Vencimentos.PadroesTreinamento:id,nome');
+                $realizados = $item->Treinamento->Vencimentos;
+                $item->nr_33 = $this->pivotPorLabelContem($realizados, ['NR33', 'NR-33']);
+                $item->nr_35 = $this->pivotPorLabelContem($realizados, ['NR35', 'NR-35']);
+                $item->ebtv = $this->pivotPorLabelContem($realizados, ['EBTV']);
 
                 $item->Treinamento->Vencimentos->transform(function ($i) use ($item) {
-                    $i->fez_treinamento = $item->Treinamento->Vencimentos()->where('vencimento_id', $i->id)->count() > 0 ? true : false;
+                    // Já está na coleção de realizados (eager) — sem query extra
+                    $i->fez_treinamento = true;
                     $i->pivot->status = $this->StatusTreinamento($i->pivot->data_vencimento);
                     $i->dias_vencer = DataHora::diferencaDias((new DataHora())->dataInsert() . ' 00:00:00', (new DataHora($i->pivot->data_vencimento))->dataInsert() . ' 23:59:59');
                     $vagaId = $item->vaga_id ? (int) $item->vaga_id : null;

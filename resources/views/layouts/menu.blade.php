@@ -253,7 +253,7 @@
                         </a>
                     </li>
                     @endif
-                    @if(Route::has('g.carteirastreinamento.carteirastreinamento.index'))
+                    @if(Route::has('g.carteirastreinamento.carteirastreinamento.index') && (int) auth()->user()->empresa_id === 100)
                     <li>
                         <a href="{{ route('g.carteirastreinamento.carteirastreinamento.index') }}" parent="cadastro"
                            key="carteirastreinamento">

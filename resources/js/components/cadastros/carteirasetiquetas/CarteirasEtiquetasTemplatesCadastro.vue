@@ -28,22 +28,12 @@
         </ul>
 
         <p class="text-muted small mb-3" v-if="abaAtiva === 'carteiras'">
-            Modelos visuais do PDF da carteira.
-            <template v-if="isAdminGlobal">
-                Cadastre templates <strong>globais</strong> (todas as empresas) ou <strong>customizados</strong> para uma empresa específica.
-            </template>
-            <template v-else>
-                Cadastre templates <strong>customizados</strong> da sua empresa (globais entram só no combo do padrão).
-            </template>
+            Modelos visuais do PDF da carteira. Cadastre templates <strong>globais</strong> (todas as empresas)
+            ou <strong>customizados</strong> para uma empresa específica. Somente a MyBP gerencia estes modelos.
         </p>
         <p class="text-muted small mb-3" v-else>
-            Modelos de textos/ramal do PDF de etiqueta de bloqueio.
-            <template v-if="isAdminGlobal">
-                Cadastre templates <strong>globais</strong> ou <strong>customizados</strong> para uma empresa específica.
-            </template>
-            <template v-else>
-                Cadastre templates <strong>customizados</strong> da sua empresa.
-            </template>
+            Modelos de textos/ramal do PDF de etiqueta de bloqueio. Cadastre templates <strong>globais</strong>
+            ou <strong>customizados</strong> para uma empresa específica. Somente a MyBP gerencia estes modelos.
         </p>
 
         <carteiras-treinamento-cadastro

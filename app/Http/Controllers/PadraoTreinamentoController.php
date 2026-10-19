@@ -13,7 +13,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class PadraoTreinamentoController extends Controller
@@ -187,9 +186,7 @@ class PadraoTreinamentoController extends Controller
 
         DB::transaction(function () use ($validated, $empresaId, $lotacoes, $vencimentoIds) {
             $validated['empresa_id'] = $empresaId;
-            $validated['slug'] = filled($validated['slug'] ?? null)
-                ? $validated['slug']
-                : Str::slug($validated['nome']);
+            $validated['slug'] = $this->gerarSlugUnicoPadrao($validated['nome'], $empresaId);
             $padrao = PadraoTreinamento::create($validated);
             $this->syncLotacoes($padrao, $lotacoes);
             $padrao->Vencimentos()->sync($vencimentoIds);
@@ -202,12 +199,13 @@ class PadraoTreinamentoController extends Controller
     {
         $empresaId = (int) auth()->user()->empresa_id;
         $padrao = PadraoTreinamento::query()->where('empresa_id', $empresaId)->findOrFail($id);
-        $validated = $this->validarPayload($request, $empresaId, $id);
+        $validated = $this->validarPayload($request, $empresaId);
         $this->validarTemplates($validated, $empresaId);
         $lotacoes = $this->normalizarLotacoes($request->input('lotacoes', []), $empresaId);
         $vencimentoIds = $this->normalizarVencimentos($request->input('vencimento_ids', []), $empresaId);
 
         DB::transaction(function () use ($padrao, $validated, $lotacoes, $vencimentoIds) {
+            unset($validated['slug']); // slug é interno — gerado só no create
             $padrao->update($validated);
             $this->syncLotacoes($padrao, $lotacoes);
             $padrao->Vencimentos()->sync($vencimentoIds);
@@ -216,18 +214,10 @@ class PadraoTreinamentoController extends Controller
         return response()->json([], 201);
     }
 
-    private function validarPayload(Request $request, int $empresaId, ?int $ignoreId = null): array
+    private function validarPayload(Request $request, int $empresaId): array
     {
         $validated = $request->validate([
             'nome' => 'required|string|max:255',
-            'slug' => [
-                'nullable',
-                'string',
-                'max:50',
-                Rule::unique('padroes_treinamento', 'slug')
-                    ->where(fn ($q) => $q->where('empresa_id', $empresaId))
-                    ->ignore($ignoreId),
-            ],
             'ativo' => 'boolean',
             'tem_carteira' => 'boolean',
             'carteira_treinamento_id' => 'nullable|integer|exists:carteiras_treinamento,id',
@@ -379,5 +369,26 @@ class PadraoTreinamentoController extends Controller
         foreach ($lotacoes as $lotacao) {
             $padrao->Lotacoes()->create($lotacao);
         }
+    }
+
+    /** Slug interno (não exposto ao cliente), único por empresa. */
+    private function gerarSlugUnicoPadrao(string $nome, int $empresaId): string
+    {
+        $base = Str::limit(Str::slug($nome) ?: 'padrao', 50, '');
+        $candidate = $base;
+        $i = 2;
+
+        while (
+            PadraoTreinamento::query()
+                ->where('empresa_id', $empresaId)
+                ->where('slug', $candidate)
+                ->exists()
+        ) {
+            $suffix = '-' . $i;
+            $candidate = Str::limit($base, 50 - strlen($suffix), '') . $suffix;
+            $i++;
+        }
+
+        return $candidate;
     }
 }

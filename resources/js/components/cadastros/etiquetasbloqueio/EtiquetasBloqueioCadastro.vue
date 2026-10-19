@@ -44,10 +44,6 @@
                         <input id="etq_nome" v-model="form.nome" class="form-control form-control-sm" type="text" placeholder="Ex: ALUMAR">
                     </div>
                     <div class="form-group">
-                        <label class="mybp-label" for="etq_slug">Slug</label>
-                        <input id="etq_slug" v-model="form.slug" class="form-control form-control-sm" type="text" placeholder="Gerado automaticamente se vazio">
-                    </div>
-                    <div class="form-group">
                         <div class="custom-control custom-switch">
                             <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="etq_ativo">
                             <label class="custom-control-label" for="etq_ativo">{{ form.ativo ? 'Ativo' : 'Inativo' }}</label>
@@ -95,7 +91,7 @@
                         <input
                             id="etiqueta-filtro-busca"
                             type="text"
-                            placeholder="Buscar por nome, slug ou ID"
+                            placeholder="Buscar por nome ou ID"
                             autocomplete="off"
                             class="form-control form-control-sm"
                             :disabled="controle.carregando"
@@ -221,11 +217,6 @@
                     </div>
                     <div class="mybp-card-details-row">
                         <div class="mybp-detail-item">
-                            <i class="fas fa-code text-muted"></i>
-                            <span class="mybp-detail-label">Slug</span>
-                            <span class="mybp-detail-value"><code>{{ item.slug || '—' }}</code></span>
-                        </div>
-                        <div class="mybp-detail-item">
                             <i class="fas fa-globe text-muted"></i>
                             <span class="mybp-detail-label">Escopo</span>
                             <span class="mybp-detail-value">{{ labelEscopoItem(item) }}</span>
@@ -328,7 +319,6 @@ export default {
             return {
                 id: null,
                 nome: '',
-                slug: '',
                 ativo: true,
                 empresa_id: null,
                 ramal_emergencia: '1199',
@@ -422,7 +412,6 @@ export default {
 
             const payload = {
                 nome: this.form.nome,
-                slug: this.form.slug,
                 ativo: Boolean(this.form.ativo),
                 ramal_emergencia: this.form.ramal_emergencia,
                 bloqueio_texto_nao_use: this.form.bloqueio_texto_nao_use,

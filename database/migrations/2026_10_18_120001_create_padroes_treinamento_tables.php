@@ -14,7 +14,8 @@ class CreatePadroesTreinamentoTables extends Migration
     {
         Schema::create('padroes_treinamento', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('empresa_id')->index();
+            // Sem index isolado: coberto por unique (empresa_id, slug) e (empresa_id, ativo)
+            $table->unsignedBigInteger('empresa_id');
             $table->string('nome');
             $table->string('slug', 50);
             $table->boolean('ativo')->default(true);

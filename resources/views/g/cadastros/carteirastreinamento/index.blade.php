@@ -4,7 +4,7 @@
 @section('content')
     <div class="pt-1">
         <carteiras-etiquetas-templates-cadastro
-            :is-admin-global="{{ (int) auth()->user()->empresa_id === 100 ? 'true' : 'false' }}"
+            :is-admin-global="true"
             aba-inicial="{{ request('aba', 'carteiras') }}"
         ></carteiras-etiquetas-templates-cadastro>
     </div>

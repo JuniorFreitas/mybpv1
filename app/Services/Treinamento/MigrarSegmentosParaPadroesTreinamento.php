@@ -225,6 +225,8 @@ class MigrarSegmentosParaPadroesTreinamento
         $admissoes = DB::table('admissoes as a')
             ->join('feedback_curriculos as f', 'f.id', '=', 'a.feedback_id')
             ->whereNull('a.padrao_treinamento_id')
+            ->whereNull('a.deleted_at')
+            ->whereNull('f.deleted_at')
             ->select(['a.id', 'f.empresa_id', 'a.segmento_treinamento_id'])
             ->get();
 
@@ -303,6 +305,8 @@ class MigrarSegmentosParaPadroesTreinamento
         $ids = $ids->merge(
             DB::table('admissoes as a')
                 ->join('feedback_curriculos as f', 'f.id', '=', 'a.feedback_id')
+                ->whereNull('a.deleted_at')
+                ->whereNull('f.deleted_at')
                 ->pluck('f.empresa_id')
         );
 
@@ -335,6 +339,8 @@ class MigrarSegmentosParaPadroesTreinamento
             ->join('feedback_curriculos as f', 'f.id', '=', 'a.feedback_id')
             ->where('f.empresa_id', $empresaId)
             ->where('a.segmento_treinamento_id', $segmentoId)
+            ->whereNull('a.deleted_at')
+            ->whereNull('f.deleted_at')
             ->exists();
 
         if ($usaEmVencimento || $usaEmAdmissao) {
@@ -348,6 +354,8 @@ class MigrarSegmentosParaPadroesTreinamento
                 || DB::table('admissoes as a')
                     ->join('feedback_curriculos as f', 'f.id', '=', 'a.feedback_id')
                     ->where('f.empresa_id', $empresaId)
+                    ->whereNull('a.deleted_at')
+                    ->whereNull('f.deleted_at')
                     ->exists();
         }
 

@@ -6,19 +6,13 @@
                     <fieldset class="mybp-modal-secao">
                         <legend>Identificação</legend>
                         <div class="row">
-                            <div class="col-12 col-md-6">
+                            <div class="col-12 col-md-9">
                                 <div class="form-group mybp-filtro-campo">
                                     <label class="mybp-label" for="pad_nome">Nome <span class="text-danger">*</span></label>
                                     <input id="pad_nome" v-model="form.nome" class="form-control form-control-sm" type="text" placeholder="Ex.: Padrão ALUMAR Matriz">
                                 </div>
                             </div>
-                            <div class="col-12 col-md-4">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label" for="pad_slug">Slug</label>
-                                    <input id="pad_slug" v-model="form.slug" class="form-control form-control-sm" type="text" placeholder="Gerado se vazio">
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-2 d-flex align-items-end">
+                            <div class="col-12 col-md-3 d-flex align-items-end">
                                 <div class="form-group mb-0 pb-1">
                                     <div class="custom-control custom-switch">
                                         <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="pad_ativo">
@@ -229,7 +223,7 @@
                         <input
                             id="padrao-filtro-busca"
                             type="text"
-                            placeholder="Buscar por nome, slug ou ID"
+                            placeholder="Buscar por nome ou ID"
                             autocomplete="off"
                             class="form-control form-control-sm"
                             :disabled="controle.carregando"
@@ -314,11 +308,6 @@
                         </div>
                     </div>
                     <div class="mybp-card-details-row">
-                        <div class="mybp-detail-item">
-                            <i class="fas fa-code text-muted"></i>
-                            <span class="mybp-detail-label">Slug</span>
-                            <span class="mybp-detail-value"><code>{{ item.slug || '—' }}</code></span>
-                        </div>
                         <div class="mybp-detail-item">
                             <i class="fas fa-id-card text-muted"></i>
                             <span class="mybp-detail-label">Carteira</span>
@@ -460,7 +449,6 @@ export default {
             return {
                 id: null,
                 nome: '',
-                slug: '',
                 ativo: true,
                 tem_carteira: false,
                 carteira_treinamento_id: null,
@@ -605,7 +593,6 @@ export default {
             this.form = {
                 id: item.id,
                 nome: item.nome,
-                slug: item.slug,
                 ativo: item.ativo,
                 tem_carteira: !!item.tem_carteira,
                 carteira_treinamento_id: item.carteira_treinamento_id,
@@ -721,7 +708,6 @@ export default {
             }
             const payload = {
                 nome: this.form.nome,
-                slug: this.form.slug || null,
                 ativo: Boolean(this.form.ativo),
                 tem_carteira: Boolean(this.form.tem_carteira),
                 carteira_treinamento_id: this.form.tem_carteira ? this.form.carteira_treinamento_id : null,

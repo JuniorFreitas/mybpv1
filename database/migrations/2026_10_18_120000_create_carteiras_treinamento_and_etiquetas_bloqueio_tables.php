@@ -14,7 +14,8 @@ class CreateCarteirasTreinamentoAndEtiquetasBloqueioTables extends Migration
     {
         Schema::create('carteiras_treinamento', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('empresa_id')->nullable()->index();
+            // Sem index isolado em empresa_id: coberto pelo unique (empresa_id, slug)
+            $table->unsignedBigInteger('empresa_id')->nullable();
             $table->string('nome');
             $table->string('slug', 50);
             $table->boolean('ativo')->default(true);
@@ -28,7 +29,8 @@ class CreateCarteirasTreinamentoAndEtiquetasBloqueioTables extends Migration
 
         Schema::create('etiquetas_bloqueio', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('empresa_id')->nullable()->index();
+            // Sem index isolado em empresa_id: coberto pelo unique (empresa_id, slug)
+            $table->unsignedBigInteger('empresa_id')->nullable();
             $table->string('nome');
             $table->string('slug', 50);
             $table->boolean('ativo')->default(true);

@@ -44,10 +44,6 @@
                         <input id="cart_nome" v-model="form.nome" class="form-control form-control-sm" type="text" placeholder="Ex: ALUMAR">
                     </div>
                     <div class="form-group">
-                        <label class="mybp-label" for="cart_slug">Slug</label>
-                        <input id="cart_slug" v-model="form.slug" class="form-control form-control-sm" type="text" placeholder="Gerado automaticamente se vazio">
-                    </div>
-                    <div class="form-group">
                         <div class="custom-control custom-switch">
                             <input type="checkbox" v-model="form.ativo" class="custom-control-input" id="cart_ativo">
                             <label class="custom-control-label" for="cart_ativo">{{ form.ativo ? 'Ativo' : 'Inativo' }}</label>
@@ -85,7 +81,7 @@
                         <input
                             id="carteira-filtro-busca"
                             type="text"
-                            placeholder="Buscar por nome, slug ou ID"
+                            placeholder="Buscar por nome ou ID"
                             autocomplete="off"
                             class="form-control form-control-sm"
                             :disabled="controle.carregando"
@@ -211,11 +207,6 @@
                     </div>
                     <div class="mybp-card-details-row">
                         <div class="mybp-detail-item">
-                            <i class="fas fa-code text-muted"></i>
-                            <span class="mybp-detail-label">Slug</span>
-                            <span class="mybp-detail-value"><code>{{ item.slug || '—' }}</code></span>
-                        </div>
-                        <div class="mybp-detail-item">
                             <i class="fas fa-globe text-muted"></i>
                             <span class="mybp-detail-label">Escopo</span>
                             <span class="mybp-detail-value">{{ labelEscopoItem(item) }}</span>
@@ -315,7 +306,7 @@ export default {
     },
     methods: {
         formDefault() {
-            return { id: null, nome: '', slug: '', ativo: true, cabecalho_img: '', verso_img: '', empresa_id: null }
+            return { id: null, nome: '', ativo: true, cabecalho_img: '', verso_img: '', empresa_id: null }
         },
         onSubmitFiltro() {
             this.atualizar()
@@ -401,7 +392,6 @@ export default {
 
             const payload = {
                 nome: this.form.nome,
-                slug: this.form.slug,
                 ativo: Boolean(this.form.ativo),
                 cabecalho_img: this.form.cabecalho_img || '',
                 verso_img: this.form.verso_img || '',

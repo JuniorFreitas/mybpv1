@@ -72,7 +72,7 @@
                                 :texto="textoSituacaoColaboradorModal(form.dadosFuncionario)"
                             ></mybp-status-badge>
                         </div>
-                        <div class="mybp-card-status-item" v-if="form.dadosFuncionario.status_admissao">
+                        <div class="mybp-card-status-item" v-if="mostrarStatusAdmissaoModal(form.dadosFuncionario)">
                             <span class="mybp-card-status-label">Status admissão</span>
                             <mybp-status-badge
                                 variante="aberto"
@@ -2518,6 +2518,14 @@ export default defineComponent({
             if (situacao === 'demitido') return 'Demitido'
             return 'Em processo'
         },
+        /** Evita "Admitido" + "ADMITIDO" duplicados no header da modal. */
+        mostrarStatusAdmissaoModal(dados) {
+            const status = String(dados?.status_admissao || '').trim()
+            if (!status) return false
+            const situacao = dados?.situacao_colaborador || 'em_processo'
+            if (situacao === 'admitido' || situacao === 'demitido') return false
+            return true
+        },
         classeCorpoStatusModal(dados) {
             const situacao = dados?.situacao_colaborador || 'em_processo'
             if (situacao === 'admitido') return 'mybp-card-corpo--aprovado'
@@ -2953,16 +2961,20 @@ export default defineComponent({
             this.cadastrando = false
             this.visualizar = false
             this.cadastrado = false
+            this.editando = false
             this.form = _.cloneDeep(this.formDefault)
             this.form.curriculo_id = curriculo_id
+            this.tituloJanela = 'Treinamentos'
+
+            // Abre a modal já com preload — senão o "Aguarde" não aparece
+            this.$nextTick(() => this.abrirModal(REFS_MODAL.JANELA_TREINAMENTO))
 
             try {
                 const response = await axios.get(`${URL_ADMIN}/${API_PATHS.editar}/${this.form.curriculo_id}/editar`)
                 const data = response.data
-                // API retorna relações com maiúscula (Treinamento, Curriculo, Feedback)
+                // API enxuta: Treinamento/Curriculo/Feedback só com campos da modal
                 const treinamento = data.Treinamento || data.treinamento
                 const curriculo = data.Curriculo || data.curriculo
-                const feedback = data.Feedback || data.feedback
 
                 this.form.dadosFuncionario = data.dadosFuncionario || {}
                 this.tituloJanela = `Treinamentos - ${this.textoCampoModal(this.form.dadosFuncionario.nome)}`
@@ -2972,40 +2984,37 @@ export default defineComponent({
                 this.treinamento_permitir_desmarcar_realizado = data.treinamento_permitir_desmarcar_realizado ?? false
                 this.treinamento_retirar_treinamento_realizado = data.treinamento_retirar_treinamento_realizado ?? false
                 this.treinamento_fat_obrigatorio = data.treinamento_fat_obrigatorio ?? false
+                this.form.feedback_id = data.feedback_id ?? treinamento?.feedback_id ?? ''
+                this.form.curriculo_id = curriculo_id
+                this.form.nr_trinta_tres = data.nr_trinta_tres
+                this.form.nr_trinta_cinco = data.nr_trinta_cinco
+                this.form.padrao_treinamento_id = data.padrao_treinamento_id ?? null
+                this.form.exame.feedback_id = this.form.feedback_id
+                this.form.nome = curriculo?.nome ?? this.form.dadosFuncionario.nome ?? ''
 
                 if (treinamento) {
                     this.editando = true
-                    Object.assign(this.form, treinamento)
-                    this.form.listaVencimentos = (data.listaVencimentos || []).map((t) => ({
-                        ...t,
-                        _fez_treinamento_ja_salvo: !!t.fez_treinamento,
-                        _alterado: false,
-                    }))
-                    this.form.nr_trinta_tres = data.nr_trinta_tres
-                    this.form.nr_trinta_cinco = data.nr_trinta_cinco
-                    this.form.nome = curriculo?.nome ?? ''
+                    Object.assign(this.form, {
+                        id: treinamento.id,
+                        feedback_id: treinamento.feedback_id ?? this.form.feedback_id,
+                        tipo: treinamento.tipo,
+                        gerou_id: treinamento.gerou_id,
+                        data_envio: treinamento.data_envio,
+                        enviado_email: treinamento.enviado_email,
+                        enviou_id: treinamento.enviou_id,
+                        email_envio: treinamento.email_envio,
+                        email_aberto: treinamento.email_aberto,
+                        data_email_aberto: treinamento.data_email_aberto,
+                    })
                 } else {
-                    this.form.feedback_id = data.feedback_id
-                    this.form.curriculo_id = curriculo_id
                     this.editando = false
-                    this.form.nr_trinta_tres = data.nr_trinta_tres
-                    this.form.nr_trinta_cinco = data.nr_trinta_cinco
                     this.form.vencimentos = []
-                }
-
-                // Depois do assign: padrão fica na admissão (não no model Treinamento)
-                this.form.padrao_treinamento_id = data.padrao_treinamento_id
-                    ?? data.Admissao?.padrao_treinamento_id
-                    ?? data.admissao?.padrao_treinamento_id
-                    ?? null
-                if (feedback?.exame) {
-                    Object.assign(this.form.exame, feedback.exame)
-                } else if (feedback?.id) {
-                    this.form.exame.feedback_id = feedback.id
                 }
 
                 this.form.listaVencimentos = (data.listaVencimentos || []).map((t) => ({
                     ...t,
+                    arquivo: Array.isArray(t.arquivo) ? t.arquivo : [],
+                    arquivoDel: Array.isArray(t.arquivoDel) ? t.arquivoDel : [],
                     _fez_treinamento_ja_salvo: !!t.fez_treinamento,
                     _alterado: false,
                 }))
@@ -3018,9 +3027,9 @@ export default defineComponent({
                     const index = _.findIndex(this.form.listaVencimentos, { id: 6 })
                     if (index >= 0) this.form.listaVencimentos.splice(index, 1)
                 }
-                this.$nextTick(() => this.abrirModal(REFS_MODAL.JANELA_TREINAMENTO))
             } catch (err) {
                 console.error('formAlterar:', err)
+                mostraErro('', 'Não foi possível carregar os treinamentos.')
             } finally {
                 this.preload = false
             }

@@ -7,18 +7,20 @@ use App\Models\CarteiraTreinamento;
 use App\Models\Cliente;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
-
 class CarteiraTreinamentoController extends Controller
 {
     use AutorizaTemplateTreinamentoGlobal;
 
     public function index()
     {
+        $this->autorizarTemplateGlobal();
+
         return view('g.cadastros.carteirastreinamento.index');
     }
 
+    /**
+     * Combo do Padrão de treinamento — leitura para qualquer tenant (globais + próprias).
+     */
     public function listar(Request $request): JsonResponse
     {
         $empresaId = $this->empresaIdUsuario();
@@ -42,7 +44,7 @@ class CarteiraTreinamentoController extends Controller
     }
 
     /**
-     * Empresas ativas para combobox de template customizado (admin 100).
+     * Empresas ativas para combobox de template customizado (somente MyBP / empresa 100).
      */
     public function empresas(): JsonResponse
     {
@@ -60,6 +62,8 @@ class CarteiraTreinamentoController extends Controller
 
     public function atualizar(Request $request): JsonResponse
     {
+        $this->autorizarTemplateGlobal();
+
         $query = CarteiraTreinamento::query()
             ->with(['Empresa:id,apelido,nome_fantasia,razao_social'])
             ->orderBy('nome');
@@ -93,14 +97,13 @@ class CarteiraTreinamentoController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $this->autorizarTemplateGlobal();
         $empresaId = $this->resolverEmpresaIdParaStore($request);
 
-        $validated = $this->validar($request, $empresaId);
+        $validated = $this->validar($request);
         $validated['empresa_id'] = $empresaId;
         $validated['ativo'] = $request->boolean('ativo', true);
-        $validated['slug'] = filled($validated['slug'] ?? null)
-            ? $validated['slug']
-            : Str::slug($validated['nome']);
+        $validated['slug'] = $this->gerarSlugUnico('carteiras_treinamento', $validated['nome'], $empresaId);
 
         CarteiraTreinamento::create($validated);
 
@@ -109,28 +112,21 @@ class CarteiraTreinamentoController extends Controller
 
     public function update(Request $request, int $id): JsonResponse
     {
+        $this->autorizarTemplateGlobal();
         $carteira = CarteiraTreinamento::findOrFail($id);
         $this->autorizarEscritaTemplate($carteira->empresa_id);
 
-        $validated = $this->validar($request, $carteira->empresa_id, $id);
+        $validated = $this->validar($request);
         $validated['ativo'] = $request->boolean('ativo', true);
         $carteira->update($validated);
 
         return response()->json([], 201);
     }
 
-    private function validar(Request $request, ?int $empresaId, ?int $ignoreId = null): array
+    private function validar(Request $request): array
     {
         return $request->validate([
             'nome' => 'required|string|max:255',
-            'slug' => [
-                'nullable',
-                'string',
-                'max:50',
-                Rule::unique('carteiras_treinamento', 'slug')
-                    ->where(fn ($q) => $empresaId === null ? $q->whereNull('empresa_id') : $q->where('empresa_id', $empresaId))
-                    ->ignore($ignoreId),
-            ],
             'ativo' => 'boolean',
             'cabecalho_img' => 'nullable|string|max:500',
             'verso_img' => 'nullable|string|max:500',

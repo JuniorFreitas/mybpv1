@@ -32,29 +32,15 @@ class CreateTreinamentoVencimentoAnexosTable extends Migration
             });
         }
 
-        // Backfill: arquivo_id legado → primeiro anexo
+        // Backfill: arquivo_id legado → primeiro anexo (set-based; idempotente via PK)
         if (Schema::hasTable('treinamento_vencimento') && Schema::hasColumn('treinamento_vencimento', 'arquivo_id')) {
-            $rows = DB::table('treinamento_vencimento')
-                ->whereNotNull('arquivo_id')
-                ->select(['treinamento_id', 'vencimento_id', 'arquivo_id'])
-                ->get();
-
-            foreach ($rows as $row) {
-                $exists = DB::table('treinamento_vencimento_anexos')
-                    ->where('treinamento_id', $row->treinamento_id)
-                    ->where('vencimento_id', $row->vencimento_id)
-                    ->where('arquivo_id', $row->arquivo_id)
-                    ->exists();
-                if ($exists) {
-                    continue;
-                }
-                DB::table('treinamento_vencimento_anexos')->insert([
-                    'treinamento_id' => $row->treinamento_id,
-                    'vencimento_id' => $row->vencimento_id,
-                    'arquivo_id' => $row->arquivo_id,
-                    'ordem' => 0,
-                ]);
-            }
+            DB::statement('
+                INSERT IGNORE INTO treinamento_vencimento_anexos
+                    (treinamento_id, vencimento_id, arquivo_id, ordem)
+                SELECT treinamento_id, vencimento_id, arquivo_id, 0
+                FROM treinamento_vencimento
+                WHERE arquivo_id IS NOT NULL
+            ');
         }
     }
 

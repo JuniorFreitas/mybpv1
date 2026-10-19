@@ -6,20 +6,22 @@ use App\Http\Controllers\Concerns\AutorizaTemplateTreinamentoGlobal;
 use App\Models\EtiquetaBloqueio;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
-
 class EtiquetaBloqueioController extends Controller
 {
     use AutorizaTemplateTreinamentoGlobal;
 
     public function index()
     {
+        $this->autorizarTemplateGlobal();
+
         return redirect()->route('g.carteirastreinamento.carteirastreinamento.index', [
             'aba' => 'etiquetas',
         ]);
     }
 
+    /**
+     * Combo do Padrão de treinamento — leitura para qualquer tenant (globais + próprias).
+     */
     public function listar(Request $request): JsonResponse
     {
         $empresaId = $this->empresaIdUsuario();
@@ -42,6 +44,8 @@ class EtiquetaBloqueioController extends Controller
 
     public function atualizar(Request $request): JsonResponse
     {
+        $this->autorizarTemplateGlobal();
+
         $query = EtiquetaBloqueio::query()
             ->with(['Empresa:id,apelido,nome_fantasia,razao_social'])
             ->orderBy('nome');
@@ -75,14 +79,13 @@ class EtiquetaBloqueioController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $this->autorizarTemplateGlobal();
         $empresaId = $this->resolverEmpresaIdParaStore($request);
 
-        $validated = $this->validar($request, $empresaId);
+        $validated = $this->validar($request);
         $validated['empresa_id'] = $empresaId;
         $validated['ativo'] = $request->boolean('ativo', true);
-        $validated['slug'] = filled($validated['slug'] ?? null)
-            ? $validated['slug']
-            : Str::slug($validated['nome']);
+        $validated['slug'] = $this->gerarSlugUnico('etiquetas_bloqueio', $validated['nome'], $empresaId);
 
         EtiquetaBloqueio::create($validated);
 
@@ -91,28 +94,21 @@ class EtiquetaBloqueioController extends Controller
 
     public function update(Request $request, int $id): JsonResponse
     {
+        $this->autorizarTemplateGlobal();
         $etiqueta = EtiquetaBloqueio::findOrFail($id);
         $this->autorizarEscritaTemplate($etiqueta->empresa_id);
 
-        $validated = $this->validar($request, $etiqueta->empresa_id, $id);
+        $validated = $this->validar($request);
         $validated['ativo'] = $request->boolean('ativo', true);
         $etiqueta->update($validated);
 
         return response()->json([], 201);
     }
 
-    private function validar(Request $request, ?int $empresaId, ?int $ignoreId = null): array
+    private function validar(Request $request): array
     {
         return $request->validate([
             'nome' => 'required|string|max:255',
-            'slug' => [
-                'nullable',
-                'string',
-                'max:50',
-                Rule::unique('etiquetas_bloqueio', 'slug')
-                    ->where(fn ($q) => $empresaId === null ? $q->whereNull('empresa_id') : $q->where('empresa_id', $empresaId))
-                    ->ignore($ignoreId),
-            ],
             'ativo' => 'boolean',
             'ramal_emergencia' => 'nullable|string|max:50',
             'bloqueio_texto_nao_use' => 'nullable|string|max:500',

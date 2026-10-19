@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Concerns;
 use App\Models\Cliente;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 trait AutorizaTemplateTreinamentoGlobal
@@ -24,7 +26,7 @@ trait AutorizaTemplateTreinamentoGlobal
     protected function autorizarTemplateGlobal(): void
     {
         if (!$this->isAdminTemplatesGlobais()) {
-            abort(403, 'O cadastro de templates globais de treinamento é restrito à empresa responsável pela configuração global.');
+            abort(403, 'O cadastro de Carteiras e Etiquetas é restrito à MyBP (empresa 100).');
         }
     }
 
@@ -45,34 +47,37 @@ trait AutorizaTemplateTreinamentoGlobal
     }
 
     /**
-     * Resolve empresa_id no store: global (null), custom do tenant, ou custom de empresa alvo (admin 100).
+     * Resolve empresa_id no store (somente MyBP / empresa 100):
+     * - global=true → null (template de todas as empresas)
+     * - empresa_id → custom da empresa alvo
      */
     protected function resolverEmpresaIdParaStore(Request $request): ?int
     {
-        if ($request->boolean('global')) {
-            $this->autorizarTemplateGlobal();
+        $this->autorizarTemplateGlobal();
 
+        if ($request->boolean('global')) {
             return null;
         }
 
-        if ($this->isAdminTemplatesGlobais() && $request->filled('empresa_id')) {
-            $this->autorizarTemplateGlobal();
-            $empresaId = (int) $request->input('empresa_id');
-            $existe = Cliente::query()
-                ->where('id', $empresaId)
-                ->where('ativo', true)
-                ->exists();
-
-            if (!$existe) {
-                throw ValidationException::withMessages([
-                    'empresa_id' => 'Empresa inválida ou inativa.',
-                ]);
-            }
-
-            return $empresaId;
+        if (!$request->filled('empresa_id')) {
+            throw ValidationException::withMessages([
+                'empresa_id' => 'Informe a empresa do template customizado ou marque como global.',
+            ]);
         }
 
-        return $this->empresaIdUsuario();
+        $empresaId = (int) $request->input('empresa_id');
+        $existe = Cliente::query()
+            ->where('id', $empresaId)
+            ->where('ativo', true)
+            ->exists();
+
+        if (!$existe) {
+            throw ValidationException::withMessages([
+                'empresa_id' => 'Empresa inválida ou inativa.',
+            ]);
+        }
+
+        return $empresaId;
     }
 
     /**
@@ -104,6 +109,34 @@ trait AutorizaTemplateTreinamentoGlobal
             } else {
                 $query->whereNotNull('empresa_id');
             }
+        }
+    }
+
+    /**
+     * Slug interno (não exposto ao cliente). Único por escopo global ou por empresa.
+     */
+    protected function gerarSlugUnico(string $table, string $nome, ?int $empresaId, ?int $ignoreId = null): string
+    {
+        $base = Str::limit(Str::slug($nome) ?: 'item', 50, '');
+        $candidate = $base;
+        $i = 2;
+
+        while (true) {
+            $query = DB::table($table)->where('slug', $candidate);
+            if ($empresaId === null) {
+                $query->whereNull('empresa_id');
+            } else {
+                $query->where('empresa_id', $empresaId);
+            }
+            if ($ignoreId) {
+                $query->where('id', '!=', $ignoreId);
+            }
+            if (!$query->exists()) {
+                return $candidate;
+            }
+            $suffix = '-' . $i;
+            $candidate = Str::limit($base, 50 - strlen($suffix), '') . $suffix;
+            $i++;
         }
     }
 }
