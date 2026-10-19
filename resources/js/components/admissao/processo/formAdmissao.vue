@@ -758,7 +758,8 @@ export default {
         validarCampos() {
             if (this.visualizar || this.disabled) return true
 
-            if (!String(this.form.funcao || '').trim()) {
+            // Não validar função se disabled / readonly / oculto (ex.: status ADMITIDO)
+            if (!this.campoIgnorarValidacao('fa-funcao') && !String(this.form.funcao || '').trim()) {
                 const el = document.getElementById('fa-funcao')
                 if (el && typeof valida_campo_vazio === 'function') valida_campo_vazio(el, 2)
                 if (typeof mostraErro === 'function') mostraErro('', 'Informe a função')

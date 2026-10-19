@@ -20,6 +20,7 @@ use App\Models\FeedbackCurriculo;
 use App\Models\Treinamento;
 use App\Models\TreinamentoVencimentoHistorico;
 use App\Models\Vencimento;
+use App\Services\Curriculo\Foto3x4ListagemCache;
 use App\Services\Treinamento\CarteiraEtiquetaBloqueioLayout;
 use App\Services\Treinamento\CarteiraImagemCache;
 use App\Services\Treinamento\FeedbackCurriculoFilter;
@@ -1460,6 +1461,10 @@ class TreinamentoController extends Controller
             'Curriculo' => function ($q) {
                 $q->select('id', 'nome', 'cpf');
             },
+            // Só campos do thumb — payload da listagem não embute base64
+            'Curriculo.FotoTres' => function ($q) {
+                $q->select('arquivos.id', 'arquivos.file', 'arquivos.thumb', 'arquivos.disco', 'arquivos.imagem');
+            },
             'Admissao' => function ($q) {
                 $q->select('id', 'feedback_id', 'status', 'tipo_admissao', 'padrao_treinamento_id', 'centro_custo_id');
             },
@@ -1526,6 +1531,17 @@ class TreinamentoController extends Controller
             // Evita appends desnecessários (e possíveis acessos a relações não carregadas)
             $item->setAppends([]);
             $item->makeHidden(['vaga_aberta_municipio', 'fc_token']);
+
+            if ($item->Curriculo) {
+                $item->Curriculo->setAppends([]);
+                $foto = $item->Curriculo->FotoTres->first();
+                // Cache hit (base64) ou URL leve — geração AWS fica afterResponse
+                $item->Curriculo->setAttribute(
+                    'foto_3x4_thumb',
+                    Foto3x4ListagemCache::paraListagem($foto)
+                );
+                $item->Curriculo->unsetRelation('FotoTres');
+            }
 
             $padraoId = $item->admissao && $item->admissao->padrao_treinamento_id
                 ? (int) $item->admissao->padrao_treinamento_id
@@ -1624,6 +1640,8 @@ class TreinamentoController extends Controller
             return $item;
         });
 
+
+        Foto3x4ListagemCache::agendarAquecimentoAposResposta();
 
         return response()->json([
             'atual' => $resultado->currentPage(),

@@ -108,7 +108,9 @@ return [
     */
     'ttl' => [
         'perfil_anexo' => (int) env('CACHE_TTL_PERFIL_ANEXO', 86400),
-        'fotocurriculo_anexo' => (int) env('CACHE_TTL_FOTOCURRICULO_ANEXO', 86400),
+        'fotocurriculo_anexo' => (int) env('CACHE_TTL_FOTOCURRICULO_ANEXO', 10800),
+        /** Thumb 3x4 embutido (base64) nas listagens — evita hits repetidos na AWS. */
+        'foto3x4_listagem' => (int) env('CACHE_TTL_FOTO3X4_LISTAGEM', 10800),
     ],
 
 ];

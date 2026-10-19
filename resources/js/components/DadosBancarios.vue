@@ -245,19 +245,28 @@ export default {
                 return false
             }
 
-            if (!String(this.model.banco || '').trim()) {
+            if (
+                !this.campoIgnorarValidacao(`db-banco-${this.hash}`) &&
+                !String(this.model.banco || '').trim()
+            ) {
                 const el = document.getElementById(`db-banco-${this.hash}`)
                 if (el && typeof valida_campo_vazio === 'function') valida_campo_vazio(el, 1)
                 if (typeof mostraErro === 'function') mostraErro('', 'Informe o banco')
                 return false
             }
-            if (!String(this.model.agencia || '').trim()) {
+            if (
+                !this.campoIgnorarValidacao(`db-agencia-${this.hash}`) &&
+                !String(this.model.agencia || '').trim()
+            ) {
                 const el = document.getElementById(`db-agencia-${this.hash}`)
                 if (el && typeof valida_campo_vazio === 'function') valida_campo_vazio(el, 1)
                 if (typeof mostraErro === 'function') mostraErro('', 'Informe a agência')
                 return false
             }
-            if (!String(this.model.conta || '').trim()) {
+            if (
+                !this.campoIgnorarValidacao(`db-conta-${this.hash}`) &&
+                !String(this.model.conta || '').trim()
+            ) {
                 const el = document.getElementById(`db-conta-${this.hash}`)
                 if (el && typeof valida_campo_vazio === 'function') valida_campo_vazio(el, 1)
                 if (typeof mostraErro === 'function') mostraErro('', 'Informe a conta')

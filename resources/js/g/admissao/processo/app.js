@@ -1069,6 +1069,17 @@ const app = createApp({
             }
         },
         fecharOutrosComboboxesModal() {},
+        onFoto3x4ThumbLoad(item) {
+            if (item) {
+                item._foto3x4Ready = true
+            }
+        },
+        onFoto3x4ThumbError(item) {
+            if (item && item.curriculo) {
+                item.curriculo.foto_3x4_thumb = null
+                item._foto3x4Ready = false
+            }
+        },
         getDataAso(item) {
             if (item.admissao && item.admissao.ultimo_aso && item.admissao.ultimo_aso.data_realizacao) return item.admissao.ultimo_aso.data_realizacao
             if (item.ultimo_aso && item.ultimo_aso.data_realizacao) return item.ultimo_aso.data_realizacao
@@ -1436,21 +1447,38 @@ const app = createApp({
         },
 
         /**
-         * Dispara blur apenas em .validacampo visíveis e habilitados dentro do modal (evita validar outros modais/ocultos).
+         * Dispara blur só em .validacampo visíveis, habilitados e sem readonly.
          */
         validaBlurNoModal(selector) {
             const $root = $(selector)
-            $root.find('.validacampo:visible:enabled').each(function () {
+            $root.find('.validacampo:visible:enabled:not([readonly])').each(function () {
                 this.focus()
                 this.blur()
             })
         },
 
         /**
-         * Conta erros só em campos visíveis e habilitados (não valida desabilitados nem trechos ocultos).
+         * Erros só em campos visíveis + enabled + sem readonly.
+         * Limpa marcas em disabled/readonly/ocultos.
          */
         temErroValidacaoModal(selector) {
-            return $(selector).find(':input:visible:enabled.is-invalid').length > 0
+            const $root = $(selector)
+            $root.find(':input.is-invalid').each(function () {
+                const ignorar =
+                    this.disabled ||
+                    this.readOnly ||
+                    this.getAttribute('disabled') !== null ||
+                    this.getAttribute('readonly') !== null ||
+                    !$(this).is(':visible')
+                if (!ignorar) return
+                $(this).removeClass('is-invalid')
+                $(this).siblings('div.invalid-feedback').remove()
+                const wrap = this.closest && (this.closest('.mybp-combobox-wrap') || this.closest('.combobox-ac-wrap'))
+                if (wrap) {
+                    wrap.querySelectorAll('.invalid-feedback').forEach((n) => n.remove())
+                }
+            })
+            return $root.find(':input:visible:enabled:not([readonly]).is-invalid').length > 0
         },
 
         CadastraAvulsa() {
