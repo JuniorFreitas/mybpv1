@@ -48,6 +48,12 @@ $mybp-primary: var(--primary, #174257);
     border-color: #f5c6cb;
 }
 
+.mybp-status-badge--neutro {
+    background: #eef1f4;
+    color: #495057;
+    border-color: #dee2e6;
+}
+
 .mybp-card-corpo {
     margin-top: 0.15rem;
     border: 1px solid #e4e8ec;
