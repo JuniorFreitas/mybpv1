@@ -9,8 +9,10 @@ use App\Models\Arquivo;
 use App\Models\CarteiraAssinatura;
 use App\Models\CentroCusto;
 use App\Models\Cliente;
+use App\Models\ClienteAreaEtiqueta;
 use App\Models\ClienteConfig;
 use App\Models\PadraoTreinamento;
+use App\Models\TelefoneCurriculo;
 use App\Models\Pivot\TreinamentoVencimento;
 use App\Models\ResultadoIntegrado;
 use App\Models\Sistema;
@@ -1776,7 +1778,6 @@ class TreinamentoController extends Controller
 
     public function carteiraPdf(Request $request)
     {
-        //ToDo: Melhoria ajustar query para trazer apenas os dados necessários
         $tipo = $request->tipo;
         // Aceita selecionados[] (form) ou selecionados (array/único) em POST
         $rawSelecionados = $request->input('selecionados', $request->query('selecionados', []));
@@ -1798,19 +1799,20 @@ class TreinamentoController extends Controller
             );
         }
 
+        $empresaId = (int) auth()->user()->empresa_id;
+        $asPdf = $request->boolean('as_pdf');
+        // HTML (impressão no browser): URLs leves. DomPDF: base64 embutido.
+        $embedBase64 = $asPdf;
+
         $clienteConfig = ClienteConfig::select(['id', 'supervisor_etiqueta_bloqueio', 'cliente_id'])
-            ->where('cliente_id', auth()->user()->empresa_id)
+            ->where('cliente_id', $empresaId)
             ->first();
-        $telefone_supervisor = (bool) optional($clienteConfig)->supervisor_etiqueta_bloqueio;
+        $telefoneSupervisor = (bool) optional($clienteConfig)->supervisor_etiqueta_bloqueio;
 
-        $embedImagensSegmentoBase64 = $request->boolean('as_pdf');
-
-        $treinamentos = Treinamento::select([
-            'id',
-            'feedback_id',
-            'tipo',
-        ])->whereIn('feedback_id', $selecionados)
-            ->with(['FeedbackCurriculo:id,curriculo_id,cliente_id,empresa_id',
+        $colecao = Treinamento::select(['id', 'feedback_id', 'tipo'])
+            ->whereIn('feedback_id', $selecionados)
+            ->with([
+                'FeedbackCurriculo:id,curriculo_id,cliente_id,empresa_id,vaga_id',
                 'FeedbackCurriculo.Empresa:id,razao_social,nome_fantasia,cnpj',
                 'FeedbackCurriculo.Empresa.Logo:id,nome,file,disco',
                 'FeedbackCurriculo.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
@@ -1819,120 +1821,247 @@ class TreinamentoController extends Controller
                 'FeedbackCurriculo.Admissao.PadraoTreinamento:id,nome,slug,tem_carteira,carteira_treinamento_id,tem_etiqueta_bloqueio,etiqueta_bloqueio_id',
                 'FeedbackCurriculo.Admissao.PadraoTreinamento.CarteiraTreinamento:id,cabecalho_img,verso_img,slug',
                 'FeedbackCurriculo.Admissao.PadraoTreinamento.EtiquetaBloqueio:id,ramal_emergencia,bloqueio_texto_nao_use,bloqueio_texto_demissao,bloqueio_texto_cuidado,bloqueio_texto_homens_trabalhando,slug',
-                'Vencimentos.Vagas:id',
-                'Vencimentos.PadroesTreinamento:id',
             ])
             ->get()
             ->filter(fn ($item) => $item->FeedbackCurriculo !== null)
-            ->transform(function ($item) use ($telefone_supervisor, $embedImagensSegmentoBase64) {
-                $telefone = "";
-                if ($item->FeedbackCurriculo->Admissao) {
-                    $telefone = $telefone_supervisor ? Admissao::getNumeroSupervisor($item->FeedbackCurriculo->empresa_id, $item->FeedbackCurriculo->Admissao->area_etiqueta_id) : \App\Models\Curriculo::getTelPrincipal($item->FeedbackCurriculo->curriculo_id, false);
-                }
-                $admissao = optional($item->FeedbackCurriculo)->Admissao;
-                $padrao = optional($admissao)->PadraoTreinamento;
-                $padraoId = $padrao ? (int) $padrao->id : (optional($admissao)->padrao_treinamento_id ? (int) $admissao->padrao_treinamento_id : null);
-                if (!$padrao && $padraoId) {
-                    $padrao = PadraoTreinamento::query()
-                        ->with(['CarteiraTreinamento:id,cabecalho_img,verso_img,slug', 'EtiquetaBloqueio:id,ramal_emergencia,bloqueio_texto_nao_use,bloqueio_texto_demissao,bloqueio_texto_cuidado,bloqueio_texto_homens_trabalhando,slug'])
-                        ->find($padraoId);
-                }
+            ->values();
 
-                // Templates só do Padrão (chave segmento_config mantida pela view PDF)
-                $segmentoConfig = $padrao ? $padrao->toConfigCarteira() : [
-                    'cabecalho_img' => '',
-                    'verso_img' => '',
-                    'exibir_etiqueta_bloqueio' => false,
-                    'ramal_emergencia' => '1199',
-                    'bloqueio_texto_nao_use' => '',
-                    'bloqueio_texto_demissao' => '',
-                    'bloqueio_texto_cuidado' => '',
-                    'bloqueio_texto_homens_trabalhando' => '',
-                ];
-                $segmentoSlug = $padrao
-                    ? (optional($padrao->CarteiraTreinamento)->slug ?: $padrao->slug)
-                    : 'padrao';
+        // Prefetch: telefones, supervisores, assinaturas e escopo padrão→vencimento (elimina N+1 / pivots)
+        $curriculoIds = $colecao->pluck('FeedbackCurriculo.curriculo_id')->filter()->unique()->values()->all();
+        $telsPorCurriculo = $curriculoIds === []
+            ? collect()
+            : TelefoneCurriculo::query()
+                ->whereIn('curriculo_id', $curriculoIds)
+                ->where('principal', true)
+                ->get(['curriculo_id', 'numero'])
+                ->keyBy('curriculo_id');
 
-                $pathCabecalho = !empty($segmentoConfig['cabecalho_img']) ? $segmentoConfig['cabecalho_img'] : 'images/carteira/cabecalho_carteira_alumar.webp';
-                $pathVerso = !empty($segmentoConfig['verso_img']) ? $segmentoConfig['verso_img'] : 'images/carteira/verso_carteira_alumar.webp';
-                if ($embedImagensSegmentoBase64) {
-                    $segmentoConfig['cabecalho_img_base64'] = CarteiraImagemCache::imagemPublicaParaBase64($pathCabecalho);
-                    $segmentoConfig['verso_img_base64'] = CarteiraImagemCache::imagemPublicaParaBase64($pathVerso);
+        $areaIds = $colecao
+            ->map(fn ($item) => optional($item->FeedbackCurriculo->Admissao)->area_etiqueta_id)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+        $supervisoresPorArea = ($telefoneSupervisor && $areaIds !== [])
+            ? ClienteAreaEtiqueta::query()
+                ->where('cliente_id', $empresaId)
+                ->whereIn('area_etiqueta_id', $areaIds)
+                ->pluck('numero_supervisor', 'area_etiqueta_id')
+            : collect();
+
+        $assinaturasPorChave = $this->mapaAssinaturasCarteira($empresaId, $embedBase64);
+
+        $padraoIdsNaColecao = $colecao
+            ->map(fn ($item) => optional($item->FeedbackCurriculo->Admissao)->padrao_treinamento_id)
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        // Set de vencimento_id por padrão (1 query) — evita eager PadroesTreinamento em cada vencimento
+        $vencimentoIdsPorPadrao = $padraoIdsNaColecao === []
+            ? []
+            : DB::table('padrao_treinamento_vencimento')
+                ->whereIn('padrao_treinamento_id', $padraoIdsNaColecao)
+                ->get(['padrao_treinamento_id', 'vencimento_id'])
+                ->groupBy(fn ($row) => (int) $row->padrao_treinamento_id)
+                ->map(function ($rows) {
+                    $set = [];
+                    foreach ($rows as $row) {
+                        $set[(int) $row->vencimento_id] = true;
+                    }
+
+                    return $set;
+                })
+                ->all();
+
+        // Fase 2: carrega só vencimentos do escopo dos padrões (não o pivot inteiro do treinamento)
+        $escopoVencimentoIds = [];
+        foreach ($vencimentoIdsPorPadrao as $set) {
+            foreach (array_keys($set) as $vencimentoId) {
+                $escopoVencimentoIds[$vencimentoId] = true;
+            }
+        }
+        $escopoVencimentoIds = array_keys($escopoVencimentoIds);
+
+        $colecao->load([
+            'Vencimentos' => function ($q) use ($escopoVencimentoIds) {
+                $q->select([
+                    'vencimentos.id',
+                    'vencimentos.label',
+                    'vencimentos.label_reduzida',
+                    'vencimentos.vinculo_todos_cargos',
+                ]);
+                if ($escopoVencimentoIds === []) {
+                    $q->whereRaw('0 = 1');
                 } else {
-                    $segmentoConfig['cabecalho_img_base64'] = null;
-                    $segmentoConfig['verso_img_base64'] = null;
+                    $q->whereIn('vencimentos.id', $escopoVencimentoIds);
                 }
-                $item->setAttribute('segmento_config', $segmentoConfig);
-                $item->setAttribute('segmento_slug', $segmentoSlug);
-                $item->setAttribute('telefone', $telefone);
-                $empresaId = auth()->user()->empresa_id;
-                $assinaturaSesmt = $this->resolverAssinaturaCarteira($empresaId, $padraoId, CarteiraAssinatura::TIPO_SESMT);
-                $assinaturaGestorRh = $this->resolverAssinaturaCarteira($empresaId, $padraoId, CarteiraAssinatura::TIPO_GERENTE_OU_RH);
-                $item->setAttribute('assinatura_sesmt', $assinaturaSesmt);
-                $item->setAttribute('assinatura_gestor_rh', $assinaturaGestorRh);
-                $vencimentosFiltrados = $padraoId
-                    ? $item->vencimentos->filter(function ($v) use ($padraoId) {
-                        return $this->vencimentoNoEscopoPadrao($v, $padraoId);
+            },
+            'Vencimentos.Vagas:id',
+        ]);
+
+        // Prefetch padrões órfãos (quando Admissao tem id mas relação não veio)
+        $padraoIdsFaltantes = $colecao
+            ->map(function ($item) {
+                $admissao = $item->FeedbackCurriculo->Admissao;
+                if (!$admissao || $admissao->PadraoTreinamento) {
+                    return null;
+                }
+
+                return $admissao->padrao_treinamento_id ? (int) $admissao->padrao_treinamento_id : null;
+            })
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+        $padroesExtras = $padraoIdsFaltantes === []
+            ? collect()
+            : PadraoTreinamento::query()
+                ->with([
+                    'CarteiraTreinamento:id,cabecalho_img,verso_img,slug',
+                    'EtiquetaBloqueio:id,ramal_emergencia,bloqueio_texto_nao_use,bloqueio_texto_demissao,bloqueio_texto_cuidado,bloqueio_texto_homens_trabalhando,slug',
+                ])
+                ->whereIn('id', $padraoIdsFaltantes)
+                ->get()
+                ->keyBy('id');
+
+        $treinamentos = $colecao->transform(function ($item) use (
+            $telefoneSupervisor,
+            $embedBase64,
+            $telsPorCurriculo,
+            $supervisoresPorArea,
+            $assinaturasPorChave,
+            $padroesExtras,
+            $vencimentoIdsPorPadrao
+        ) {
+            $feedback = $item->FeedbackCurriculo;
+            $admissao = $feedback->Admissao;
+            $padrao = optional($admissao)->PadraoTreinamento;
+            $padraoId = $padrao
+                ? (int) $padrao->id
+                : (optional($admissao)->padrao_treinamento_id ? (int) $admissao->padrao_treinamento_id : null);
+            if (!$padrao && $padraoId) {
+                $padrao = $padroesExtras->get($padraoId);
+            }
+
+            $telefone = '';
+            if ($admissao) {
+                if ($telefoneSupervisor) {
+                    $areaId = $admissao->area_etiqueta_id;
+                    $telefone = $areaId
+                        ? (string) ($supervisoresPorArea->get($areaId) ?? 'NÃO ENCONTRADO')
+                        : 'NÃO ENCONTRADO';
+                } else {
+                    $telefone = (string) (optional($telsPorCurriculo->get($feedback->curriculo_id))->numero ?? '');
+                }
+            }
+
+            $segmentoConfig = $padrao ? $padrao->toConfigCarteira() : [
+                'cabecalho_img' => '',
+                'verso_img' => '',
+                'exibir_etiqueta_bloqueio' => false,
+                'ramal_emergencia' => '1199',
+                'bloqueio_texto_nao_use' => '',
+                'bloqueio_texto_demissao' => '',
+                'bloqueio_texto_cuidado' => '',
+                'bloqueio_texto_homens_trabalhando' => '',
+            ];
+            $segmentoSlug = $padrao
+                ? (optional($padrao->CarteiraTreinamento)->slug ?: $padrao->slug)
+                : 'padrao';
+
+            $pathCabecalho = !empty($segmentoConfig['cabecalho_img'])
+                ? $segmentoConfig['cabecalho_img']
+                : 'images/carteira/cabecalho_carteira_alumar.webp';
+            $pathVerso = !empty($segmentoConfig['verso_img'])
+                ? $segmentoConfig['verso_img']
+                : 'images/carteira/verso_carteira_alumar.webp';
+            if ($embedBase64) {
+                $segmentoConfig['cabecalho_img_base64'] = CarteiraImagemCache::imagemPublicaParaBase64($pathCabecalho);
+                $segmentoConfig['verso_img_base64'] = CarteiraImagemCache::imagemPublicaParaBase64($pathVerso);
+            } else {
+                $segmentoConfig['cabecalho_img_base64'] = null;
+                $segmentoConfig['verso_img_base64'] = null;
+            }
+
+            $item->setAttribute('segmento_config', $segmentoConfig);
+            $item->setAttribute('segmento_slug', $segmentoSlug);
+            $item->setAttribute('telefone', $telefone);
+            $item->setAttribute(
+                'assinatura_sesmt',
+                $this->assinaturaDoMapa($assinaturasPorChave, $padraoId, CarteiraAssinatura::TIPO_SESMT)
+            );
+            $item->setAttribute(
+                'assinatura_gestor_rh',
+                $this->assinaturaDoMapa($assinaturasPorChave, $padraoId, CarteiraAssinatura::TIPO_GERENTE_OU_RH)
+            );
+
+            $escopoPadrao = $padraoId ? ($vencimentoIdsPorPadrao[$padraoId] ?? []) : [];
+            $vencimentosFiltrados = $padraoId
+                ? $item->vencimentos->filter(fn ($v) => isset($escopoPadrao[(int) $v->id]))
+                : collect();
+            $vagaId = $feedback->vaga_id ? (int) $feedback->vaga_id : null;
+            $alertaSemCargoVinculo = $vagaId === null;
+
+            $vencimentosNaoVinculadosCargo = collect();
+            if (!$alertaSemCargoVinculo) {
+                $vencimentosNaoVinculadosCargo = $vencimentosFiltrados
+                    ->filter(function ($v) use ($vagaId) {
+                        if ($v->vinculo_todos_cargos) {
+                            return false;
+                        }
+
+                        return !$v->Vagas->contains(fn ($vaga) => (int) $vaga->id === (int) $vagaId);
                     })
-                    : collect();
-                $vagaId = optional($item->FeedbackCurriculo)->vaga_id ? (int) $item->FeedbackCurriculo->vaga_id : null;
-                $alertaSemCargoVinculo = $vagaId === null;
+                    ->values()
+                    ->map(function ($v) {
+                        return [
+                            'id' => $v->id,
+                            'label' => $v->label,
+                            'label_reduzida' => $v->label_reduzida,
+                            'data_treinamento' => optional($v->pivot)->data_treinamento,
+                            'data_vencimento' => optional($v->pivot)->data_vencimento,
+                        ];
+                    });
 
-                $vencimentosNaoVinculadosCargo = collect();
-                if (!$alertaSemCargoVinculo) {
-                    $vencimentosNaoVinculadosCargo = $vencimentosFiltrados
-                        ->filter(function ($v) use ($vagaId) {
-                            if ($v->vinculo_todos_cargos) {
-                                return false;
-                            }
+                $vencimentosFiltrados = $vencimentosFiltrados
+                    ->filter(function ($v) use ($vagaId) {
+                        if ($v->vinculo_todos_cargos) {
+                            return true;
+                        }
 
-                            return !$v->Vagas->contains(function ($vaga) use ($vagaId) {
-                                return (int) $vaga->id === (int) $vagaId;
-                            });
-                        })
-                        ->values()
-                        ->map(function ($v) {
-                            return [
-                                'id' => $v->id,
-                                'label' => $v->label,
-                                'label_reduzida' => $v->label_reduzida,
-                                'data_treinamento' => optional($v->pivot)->data_treinamento,
-                                'data_vencimento' => optional($v->pivot)->data_vencimento,
-                            ];
-                        });
+                        return $v->Vagas->contains(fn ($vaga) => (int) $vaga->id === (int) $vagaId);
+                    })
+                    ->values();
+            }
 
-                    $vencimentosFiltrados = $vencimentosFiltrados
-                        ->filter(function ($v) use ($vagaId) {
-                            if ($v->vinculo_todos_cargos) {
-                                return true;
-                            }
+            $item->setAttribute('alerta_sem_cargo_vinculo', $alertaSemCargoVinculo);
+            $item->setAttribute('vencimentos_nao_vinculados_cargo', $vencimentosNaoVinculadosCargo->values()->all());
+            $item->setRelation('vencimentos', $vencimentosFiltrados);
 
-                            return $v->Vagas->contains(function ($vaga) use ($vagaId) {
-                                return (int) $vaga->id === (int) $vagaId;
-                            });
-                        })
-                        ->values();
-                }
-
-                $item->setAttribute('alerta_sem_cargo_vinculo', $alertaSemCargoVinculo);
-                $item->setAttribute('vencimentos_nao_vinculados_cargo', $vencimentosNaoVinculadosCargo->values()->all());
-                $item->setRelation('vencimentos', $vencimentosFiltrados);
-                // Foto 3x4 em base64 (cache do disco fotocurriculo) para PDF carteira/bloqueio evitar requisições HTTP
-                $curriculo = $item->FeedbackCurriculo->Curriculo ?? null;
+            // DomPDF precisa de base64; HTML de impressão usa URL da foto (bem mais leve)
+            if ($embedBase64) {
+                $curriculo = $feedback->Curriculo ?? null;
                 if ($curriculo && $curriculo->fotoTres->isNotEmpty()) {
                     $firstFoto = $curriculo->fotoTres->first();
-                    $dataUrl = CarteiraImagemCache::fotoCurriculo3x4ParaDataUrl($firstFoto->file);
-                    $firstFoto->setAttribute('url_base64', $dataUrl);
+                    $firstFoto->setAttribute(
+                        'url_base64',
+                        CarteiraImagemCache::fotoCurriculo3x4ParaDataUrl($firstFoto->file)
+                    );
                 }
-                return $item;
-            })->values()->toArray();
+            }
 
-        $empresa = Sistema::getEmpresa(auth()->user()->empresa_id);
+            return $item;
+        })->values()->toArray();
 
-        // Bloqueio: apenas itens cujo padrão permite exibir etiqueta de bloqueio
+        $empresa = Sistema::getEmpresa($empresaId);
+
         if (in_array($tipo, ['bloqueio', 'treinamento_bloqueio'], true)) {
             $treinamentos = array_values(array_filter($treinamentos, function ($item) {
                 $exibir = $item['segmento_config']['exibir_etiqueta_bloqueio'] ?? true;
+
                 return $exibir !== false;
             }));
         }
@@ -1940,12 +2069,12 @@ class TreinamentoController extends Controller
         $viewData = array_merge(
             compact('treinamentos', 'tipo', 'empresa'),
             [
-                'forPdf' => $request->boolean('as_pdf'),
+                'forPdf' => $asPdf,
                 'bloqueio_altura_linha_par_mm' => CarteiraEtiquetaBloqueioLayout::alturaLinhaParMm(),
             ]
         );
 
-        if ($request->boolean('as_pdf')) {
+        if ($asPdf) {
             $pdf = app('dompdf.wrapper');
             $pdf->setPaper('a4', 'portrait');
             $pdf->setOption('isRemoteEnabled', true);
@@ -1962,30 +2091,60 @@ class TreinamentoController extends Controller
     }
 
     /**
+     * Prefetch de assinaturas ativas da empresa → mapa "tipo:padraoId|null" → array view.
+     *
+     * @return array<string, array{nome:string,tipo:string,url_thumb:?string}>
+     */
+    private function mapaAssinaturasCarteira(int $empresaId, bool $embedBase64): array
+    {
+        $rows = CarteiraAssinatura::query()
+            ->where('empresa_id', $empresaId)
+            ->where('ativo', true)
+            ->whereIn('tipo', [CarteiraAssinatura::TIPO_SESMT, CarteiraAssinatura::TIPO_GERENTE_OU_RH])
+            ->with('Anexos')
+            ->get();
+
+        $mapa = [];
+        foreach ($rows as $assinatura) {
+            $chavePadrao = $assinatura->padrao_treinamento_id !== null
+                ? (string) (int) $assinatura->padrao_treinamento_id
+                : 'null';
+            $chave = $assinatura->tipo . ':' . $chavePadrao;
+            $mapa[$chave] = CarteiraImagemCache::assinaturaParaArray($assinatura, $embedBase64);
+        }
+
+        return $mapa;
+    }
+
+    /**
+     * Resolve assinatura: padrão específico → fallback da empresa (padrao null).
+     *
+     * @param  array<string, array{nome:string,tipo:string,url_thumb:?string}|null>  $mapa
+     * @return array{nome:string,tipo:string,url_thumb:?string}|null
+     */
+    private function assinaturaDoMapa(array $mapa, ?int $padraoId, string $tipo): ?array
+    {
+        if ($padraoId) {
+            $especifica = $mapa[$tipo . ':' . $padraoId] ?? null;
+            if ($especifica) {
+                return $especifica;
+            }
+        }
+
+        return $mapa[$tipo . ':null'] ?? null;
+    }
+
+    /**
      * Resolve assinatura da carteira: padrão específico → fallback da empresa (padrao null).
+     * Uso pontual (ex.: e-mail); geração em lote usa mapaAssinaturasCarteira.
      *
      * @return array|null ['nome' => string, 'tipo' => string, 'url_thumb' => string|null]
      */
-    private function resolverAssinaturaCarteira(int $empresaId, ?int $padraoId, string $tipo): ?array
+    private function resolverAssinaturaCarteira(int $empresaId, ?int $padraoId, string $tipo, bool $embedBase64 = true): ?array
     {
-        $queryBase = function () use ($empresaId, $tipo) {
-            return CarteiraAssinatura::where('empresa_id', $empresaId)
-                ->where('ativo', true)
-                ->where('tipo', $tipo)
-                ->with('Anexos');
-        };
+        $mapa = $this->mapaAssinaturasCarteira($empresaId, $embedBase64);
 
-        $a = null;
-        if ($padraoId) {
-            $a = $queryBase()->where('padrao_treinamento_id', $padraoId)->first();
-        }
-        if (!$a) {
-            $a = $queryBase()->whereNull('padrao_treinamento_id')->first();
-        }
-        if (!$a) {
-            return null;
-        }
-        return CarteiraImagemCache::assinaturaParaArray($a);
+        return $this->assinaturaDoMapa($mapa, $padraoId, $tipo);
     }
 
     public function enviarCarteiraEmail(Request $request)
