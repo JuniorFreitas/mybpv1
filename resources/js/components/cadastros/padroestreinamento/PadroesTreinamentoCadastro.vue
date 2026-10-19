@@ -80,7 +80,7 @@
                         </div>
                     </fieldset>
 
-                    <fieldset class="mybp-modal-secao">
+                    <fieldset class="mybp-modal-secao" v-if="temOpcoesFilial">
                         <legend>Válido para <span class="text-danger">*</span></legend>
                         <p class="mybp-modal-legenda mb-2">Selecione os CNPJs onde este padrão pode ser usado. A escolha é adicionada na hora.</p>
                         <div class="form-group mybp-filtro-campo">
@@ -323,7 +323,7 @@
                             <span class="mybp-detail-label">Treinamentos</span>
                             <span class="mybp-detail-value">{{ (item.vencimentos && item.vencimentos.length) || 0 }}</span>
                         </div>
-                        <div class="mybp-detail-item mybp-detail-item--full">
+                        <div class="mybp-detail-item mybp-detail-item--full" v-if="temOpcoesFilial">
                             <i class="fas fa-building text-muted"></i>
                             <span class="mybp-detail-label">CNPJs</span>
                             <span class="mybp-detail-value">{{ resumoLotacoes(item) }}</span>
@@ -424,6 +424,10 @@ export default {
         temFiltrosAtivos() {
             return temFiltrosPreenchidos(this.controle.dados, CAMPOS_FILTRO_URL)
         },
+        /** Empresa sem filiais: só matriz — lotação/CNPJs não precisa aparecer na UI. */
+        temOpcoesFilial() {
+            return (this.opcoesLotacao || []).some((o) => !o.is_matriz)
+        },
     },
     watch: {
         'controle.dados': {
@@ -511,7 +515,20 @@ export default {
             this.formCarteiraId = ''
             this.formEtiquetaId = ''
             this.buscaVencimento = ''
+            this.garantirLotacaoMatrizSemFilial()
             this.abrirModal()
+        },
+        garantirLotacaoMatrizSemFilial() {
+            if (this.temOpcoesFilial) return
+            if (this.form.lotacoes.some((l) => l.is_matriz || l.key === 'matriz')) return
+            const matriz = (this.opcoesLotacao || []).find((o) => o.is_matriz || o.key === 'matriz')
+            this.form.lotacoes = [{
+                key: matriz?.key || 'matriz',
+                label: matriz?.label || 'Matriz',
+                meta: matriz?.meta || 'Matriz',
+                is_matriz: true,
+                cliente_filial_id: null,
+            }]
         },
         abrirModalAlterar(item) {
             this.fecharDropdown()
@@ -694,6 +711,7 @@ export default {
                 if (typeof mostraErro === 'function') mostraErro('', 'Informe o nome')
                 return
             }
+            this.garantirLotacaoMatrizSemFilial()
             if (!this.form.lotacoes.length) {
                 if (typeof mostraErro === 'function') mostraErro('', 'Selecione ao menos um CNPJ')
                 return

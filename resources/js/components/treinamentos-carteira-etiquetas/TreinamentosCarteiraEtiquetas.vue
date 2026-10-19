@@ -1468,24 +1468,29 @@
 
                     <div class="card-body py-2">
                         <div class="row text-left colab-meta">
-                            <div class="col-12 col-md-4">
+                            <div
+                                v-if="AUTENTICADO.temFilial"
+                                class="col-12 col-md-4"
+                            >
                                 <div class="meta-item">
                                     <div class="meta-icon">
                                         <i class="fa fa-building"></i>
                                     </div>
                                     <div class="meta-content">
                                         <div class="meta-label">Lotação</div>
-                                        <div class="meta-value" v-if="AUTENTICADO.temFilial">
+                                        <div class="meta-value">
                                             <span v-if="item.admissao && (item.admissao.emp_nome_fantasia || item.admissao.emp_cnpj)">
                                                 {{ item.admissao.emp_nome_fantasia || '—' }}<template v-if="item.admissao.emp_cnpj"> - {{ item.admissao.emp_cnpj }}</template>
                                             </span>
                                             <span v-else>---</span>
                                         </div>
-                                        <div class="meta-value" v-else>---</div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-4">
+                            <div
+                                class="col-12"
+                                :class="AUTENTICADO.temFilial ? 'col-md-4' : 'col-md-6'"
+                            >
                                 <div class="meta-item">
                                     <div class="meta-icon">
                                         <i class="fa fa-sitemap"></i>
@@ -1501,7 +1506,10 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-4">
+                            <div
+                                class="col-12"
+                                :class="AUTENTICADO.temFilial ? 'col-md-4' : 'col-md-6'"
+                            >
                                 <div class="meta-item">
                                     <div class="meta-icon">
                                         <i class="fa fa-graduation-cap"></i>
