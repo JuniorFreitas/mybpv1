@@ -118,7 +118,7 @@
                             <tr v-for="(vencimento, index) in form.vencimentos" :key="vencimento.id">
                                 <td class="text-center">@{{ index + 1 }}</td>
                                 <td>@{{ vencimento.label }}</td>
-                                <td>@{{ vencimento.segmento_nome || 'Geral' }}</td>
+                                <td>@{{ vencimento.padrao_nome || 'Geral' }}</td>
                             </tr>
                             </tbody>
                         </table>

@@ -1263,18 +1263,18 @@
 
                                                 <div class="col-12 col-md-4">
                             <div class="form-group mybp-filtro-campo">
-                                <label class="mybp-label" for="massa-segmento">Padrão de treinamento</label>
+                                <label class="mybp-label" for="massa-padrao">Padrão de treinamento</label>
                                 <div class="mybp-combobox-wrap">
                                     <combobox-auto-complete
-                                        instance-id="massa-segmento"
-                                        input-id="massa-segmento"
-                                        v-model="form_massa.segmento_treinamento_id"
-                                        :options="opcoesMassaSegmento"
+                                        instance-id="massa-padrao"
+                                        input-id="massa-padrao"
+                                        v-model="form_massa.padrao_treinamento_id"
+                                        :options="opcoesMassaPadrao"
                                         placeholder-blur="Selecione..."
                                         empty-message="Nenhuma opção."
                                         :max-results="40"
-                                        @opening="fecharOutrosComboboxesModal('massa-segmento')"
-                                        @select="limparComboboxInvalido('massa-segmento')"
+                                        @opening="fecharOutrosComboboxesModal('massa-padrao')"
+                                        @select="limparComboboxInvalido('massa-padrao')"
                                     ></combobox-auto-complete>
                                 </div>
                             </div>

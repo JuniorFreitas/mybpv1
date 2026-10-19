@@ -150,8 +150,8 @@ class VagasAbertasController extends Controller
             'Municipio',
             'Vaga',
             'Vaga.Cbo.familia',
-            'Vaga.Vencimentos:id,label,segmento_treinamento_id,vinculo_todos_cargos',
-            'Vaga.Vencimentos.SegmentoTreinamento:id,nome',
+            'Vaga.Vencimentos:id,label,vinculo_todos_cargos',
+            'Vaga.Vencimentos.PadroesTreinamento:id,nome',
             'Simulados.Simulado:id,titulo,tipo_prova',
             'Projetos.Projeto:id,nome,qnt_total,qnt_total_restante'
         );
@@ -184,11 +184,11 @@ class VagasAbertasController extends Controller
             return $vagaProjeto;
         });
 
-        $vencimentosTodosCargos = Vencimento::with('SegmentoTreinamento:id,nome')
+        $vencimentosTodosCargos = Vencimento::with('PadroesTreinamento:id,nome')
             ->where('vinculo_todos_cargos', true)
             ->where('ativo', true)
             ->whereNotNull('label')
-            ->get(['id', 'label', 'segmento_treinamento_id', 'vinculo_todos_cargos']);
+            ->get(['id', 'label', 'vinculo_todos_cargos']);
 
         if ($vagas_aberta->Vaga) {
             $merged = $vagas_aberta->Vaga->Vencimentos->concat($vencimentosTodosCargos)->unique('id')->values();
@@ -346,9 +346,10 @@ class VagasAbertasController extends Controller
             'Vaga.Cbo:id,codigo,titulo,codigo_familia',
             'Vaga.Cbo.familia:codigo,titulo',
             'Vaga.Vencimentos' => function ($q) {
-                $q->select('vencimentos.id', 'vencimentos.label', 'vencimentos.segmento_treinamento_id', 'vencimentos.vinculo_todos_cargos', 'vencimentos.ativo')
+                $q->select('vencimentos.id', 'vencimentos.label', 'vencimentos.vinculo_todos_cargos', 'vencimentos.ativo')
                     ->where('vencimentos.ativo', true);
             },
+            'Vaga.Vencimentos.PadroesTreinamento:id,nome',
             'Municipio',
             'Simulados.Simulado:id,titulo,tipo_prova',
             'Projetos.Projeto:id,nome',
@@ -550,17 +551,17 @@ class VagasAbertasController extends Controller
 
         $vaga->load([
             'Vencimentos' => function ($q) {
-                $q->select('vencimentos.id', 'vencimentos.label', 'vencimentos.segmento_treinamento_id', 'vencimentos.vinculo_todos_cargos')
+                $q->select('vencimentos.id', 'vencimentos.label', 'vencimentos.vinculo_todos_cargos')
                     ->where('vencimentos.ativo', true);
             },
-            'Vencimentos.SegmentoTreinamento:id,nome',
+            'Vencimentos.PadroesTreinamento:id,nome',
         ]);
 
-        $globais = Vencimento::with('SegmentoTreinamento:id,nome')
+        $globais = Vencimento::with('PadroesTreinamento:id,nome')
             ->where('vinculo_todos_cargos', true)
             ->where('ativo', true)
             ->whereNotNull('label')
-            ->get(['id', 'label', 'segmento_treinamento_id', 'vinculo_todos_cargos']);
+            ->get(['id', 'label', 'vinculo_todos_cargos']);
 
         $merged = $vaga->Vencimentos->concat($globais)->unique('id')->values();
 
@@ -569,7 +570,7 @@ class VagasAbertasController extends Controller
                 return [
                     'id' => $v->id,
                     'label' => $v->label,
-                    'padrao_treinamento' => optional($v->SegmentoTreinamento)->nome ?? 'Geral',
+                    'padrao_treinamento' => $v->PadroesTreinamento->pluck('nome')->filter()->implode(', ') ?: 'Geral',
                     'todos_cargos' => (bool) ($v->vinculo_todos_cargos ?? false),
                 ];
             })

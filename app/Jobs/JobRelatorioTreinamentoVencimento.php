@@ -204,7 +204,7 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
                                 $baseData['emp_cnpj'],
                                 $baseData['emp_nome_fantasia'],
                                 $baseData['emp_centro_custo'],
-                                $baseData['segmento'],
+                                $baseData['padrao'] ?? '--',
                                 $baseData['tipo'],
                                 $treinamento['label'],
                                 $treinamento['descricao'],

@@ -1042,7 +1042,11 @@ const app = createApp({
                     this.treinamentosCargo = vencimentos.map((v) => ({
                         id: v.id,
                         label: v.label,
-                        padrao_treinamento: (v.segmento_treinamento || v.SegmentoTreinamento)?.nome || 'Geral',
+                        padrao_treinamento: (() => {
+                            const padroes = v.padroes_treinamento || v.PadroesTreinamento || []
+                            const nomes = (Array.isArray(padroes) ? padroes : []).map((p) => p?.nome).filter(Boolean)
+                            return nomes.length ? nomes.join(', ') : (v.padrao_treinamento || 'Geral')
+                        })(),
                         todos_cargos: !!v.vinculo_todos_cargos
                     }))
 

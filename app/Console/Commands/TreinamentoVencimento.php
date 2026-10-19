@@ -278,7 +278,7 @@ class TreinamentoVencimento extends Command
                             'data_treinamento' => $treinamento['data_treinamento'],
                             'data_vencimento' => $treinamento['data_vencimento'],
                             'numero_fat' => null,
-                            'segmento_nome' => $itemTela['segmento'] ?? '--',
+                            'padrao_nome' => $itemTela['padrao'] ?? '--',
                             'dias_vencer' => $diasVencer,
                             'vencimento_nome' => $treinamento['label']
                                 ?? $this->obterNomeVencimento($vencimentoId, $vencimentos),
@@ -342,8 +342,8 @@ class TreinamentoVencimento extends Command
             $centroCustoLabel = $centroCusto ? $centroCusto->label : 'N/A';
         }
 
-        $segmentoNome = $admissao && $admissao->SegmentoTreinamento
-            ? $admissao->SegmentoTreinamento->nome
+        $padraoNome = $admissao && $admissao->PadraoTreinamento
+            ? $admissao->PadraoTreinamento->nome
             : '--';
 
         return [
@@ -368,8 +368,8 @@ class TreinamentoVencimento extends Command
                 'cnpj_lotacao' => $admissao
                     ? (Sistema::getEmpresaFilialMatriz($admissao->centro_custo_filial_id, $feedback->empresa_id) ?? null)
                     : null,
-                'segmento' => $segmentoNome,
-                'segmento_id' => $admissao->segmento_treinamento_id ?? null,
+                'padrao' => $padraoNome,
+                'padrao_treinamento_id' => $admissao->padrao_treinamento_id ?? null,
             ],
             'treinamentos' => [],
         ];
@@ -430,7 +430,7 @@ class TreinamentoVencimento extends Command
             'id' => $treinamento->id,
             'vencimento_id' => $treinamento->vencimento_id,
             'vencimento_nome' => $treinamento->vencimento_nome,
-            'segmento' => $treinamento->segmento_nome ?? '--',
+            'padrao' => $treinamento->padrao_nome ?? '--',
             'data_treinamento' => $treinamento->data_treinamento,
             'data_vencimento' => $treinamento->data_vencimento,
             'dias_vencer' => $treinamento->dias_vencer,
@@ -965,7 +965,7 @@ class TreinamentoVencimento extends Command
             'C' => $funcionarioData['funcao'],
             'D' => $dataAdmissao,
             'E' => $funcionarioData['centro_custo_label'],
-            'F' => $funcionarioData['segmento'] ?? '--',
+            'F' => $funcionarioData['padrao'] ?? '--',
             'G' => $funcionarioData['numero_cracha'] ?? '',
             'H' => $funcionarioData['matricula'] ?? '',
             'I' => $treinamento['vencimento_nome'],

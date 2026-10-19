@@ -22,7 +22,6 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @property int|null $ordem
  * @property bool $ativo
  * @property int|null $empresa_id
- * @property int|null $segmento_treinamento_id
  * @property string|null $label_reduzida
  * @property bool|null $exibir_na_carteira
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Activity> $activities
@@ -40,10 +39,8 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento whereOrdem($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento wherePrazoFixo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Vencimento wherePrazoParada($value)
- * @property-read \App\Models\SegmentoTreinamento|null $SegmentoTreinamento
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Arquivo> $arquivosVencimentos
  * @property-read int|null $arquivos_vencimentos_count
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Vencimento whereSegmentoTreinamentoId($value)
  * @mixin \Eloquent
  */
 class Vencimento extends Model
@@ -77,7 +74,6 @@ class Vencimento extends Model
         'ativo',
         'ordem',
         'empresa_id',
-        'segmento_treinamento_id',
         'vinculo_todos_cargos',
     ];
 
@@ -92,7 +88,6 @@ class Vencimento extends Model
         'ativo' => 'boolean',
         'ordem' => 'int',
         'empresa_id' => 'int',
-        'segmento_treinamento_id' => 'int',
         'vinculo_todos_cargos' => 'boolean',
     ];
 
@@ -113,9 +108,14 @@ class Vencimento extends Model
         });
     }
 
-    public function SegmentoTreinamento()
+    public function PadroesTreinamento()
     {
-        return $this->belongsTo(SegmentoTreinamento::class, 'segmento_treinamento_id', 'id');
+        return $this->belongsToMany(
+            PadraoTreinamento::class,
+            'padrao_treinamento_vencimento',
+            'vencimento_id',
+            'padrao_treinamento_id'
+        );
     }
 
     public function arquivosVencimentos()

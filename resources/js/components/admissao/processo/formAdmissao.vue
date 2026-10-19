@@ -301,19 +301,19 @@
                     </div>
                     <div class="col-12 col-md-4">
                         <div class="form-group mybp-filtro-campo">
-                            <label class="mybp-label" for="fa-segmento">Padrão de treinamento</label>
+                            <label class="mybp-label" for="fa-padrao">Padrão de treinamento</label>
                             <div class="mybp-combobox-wrap">
                                 <combobox-auto-complete
-                                    instance-id="fa-segmento"
-                                    input-id="fa-segmento"
-                                    v-model="form.segmento_treinamento_id"
-                                    :options="opcoesSegmento"
+                                    instance-id="fa-padrao"
+                                    input-id="fa-padrao"
+                                    v-model="form.padrao_treinamento_id"
+                                    :options="opcoesPadrao"
                                     :disabled="visualizar || disabled"
                                     placeholder-blur="Selecione..."
                                     empty-message="Nenhum padrão."
                                     :max-results="50"
-                                    @opening="fecharOutrosComboboxes('fa-segmento')"
-                                    @select="limparComboboxInvalido('fa-segmento')"
+                                    @opening="fecharOutrosComboboxes('fa-padrao')"
+                                    @select="limparComboboxInvalido('fa-padrao')"
                                 ></combobox-auto-complete>
                             </div>
                         </div>
@@ -686,8 +686,8 @@ export default {
         opcoesStatusCarteira() {
             return mapStr(this.listSelects.status_carteira_treinamento)
         },
-        opcoesSegmento() {
-            return (this.listSelects.segmentos_treinamento || []).map((s) => ({ value: s.id, label: s.nome }))
+        opcoesPadrao() {
+            return (this.listSelects.padroes_treinamento || []).map((s) => ({ value: s.id, label: s.nome }))
         },
         opcoesStatus() {
             return mapStr(this.listSelects.status_admissao)

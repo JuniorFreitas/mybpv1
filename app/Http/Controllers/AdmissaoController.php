@@ -20,6 +20,7 @@ use App\Models\EntrevistaDesligamento;
 use App\Models\ExameFuncionario;
 use App\Models\FeedbackCurriculo;
 use App\Models\Formulario;
+use App\Models\PadraoTreinamento;
 use App\Models\Pcmso;
 use App\Models\ResultadoIntegrado;
 use App\Models\Sistema;
@@ -115,6 +116,7 @@ class AdmissaoController extends Controller
         $dadosAdmissao = $dados['admissao'];
 
         $dadosAdmissao['usuario_id'] = auth()->id();
+        $dadosAdmissao['padrao_treinamento_id'] = $this->resolverPadraoTreinamentoIdEmpresa($dadosAdmissao['padrao_treinamento_id'] ?? null);
 
         $somenteDadosAdmissao = $dadosAdmissao['dados_admissoes'];
         $tableDadosAdmissao['ctps_numero'] = $somenteDadosAdmissao['ctps_numero'];
@@ -885,14 +887,25 @@ class AdmissaoController extends Controller
             'curriculo.telefones' => 'required|array|min:1|tel_principal_mark',
             'admissao.status' => 'required|in:' . implode(',', Admissao::TODOS_STATUS_ADMISSAO),
             'admissao.status_carteira_treinamento' => 'sometimes|nullable|string|in:' . implode(',', Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO),
-            'admissao.segmento_treinamento_id' => 'sometimes|nullable|integer|exists:segmentos_treinamento,id',
+            'admissao.padrao_treinamento_id' => 'sometimes|nullable|integer|exists:padroes_treinamento,id',
         ]);
         if ($dadosValidados->fails()) {
             return response()->json([
                 'msg' => 'Erro ao Salvar Admissão',
                 'erros' => $dadosValidados->errors()
             ], 400);
-        } else {
+        }
+
+        $padraoId = $this->resolverPadraoTreinamentoIdEmpresa($admissaoDados['padrao_treinamento_id'] ?? null);
+        if (!empty($admissaoDados['padrao_treinamento_id']) && !$padraoId) {
+            return response()->json([
+                'msg' => 'Padrão de treinamento inválido ou de outra empresa.',
+                'erros' => ['admissao.padrao_treinamento_id' => ['Padrão inválido.']],
+            ], 400);
+        }
+        $admissaoDados['padrao_treinamento_id'] = $padraoId;
+
+        {
             try {
                 DB::beginTransaction();
 
@@ -1281,7 +1294,7 @@ class AdmissaoController extends Controller
                         "data_encerramento" => $dados['data_encerramento'],
                         "documento_portaria" => $dados['documento_portaria'],
                         "status_carteira_treinamento" => $dados['status_carteira_treinamento'],
-                        "segmento_treinamento_id" => $dados['segmento_treinamento_id'] ?? null,
+                        "padrao_treinamento_id" => $this->resolverPadraoTreinamentoIdEmpresa($dados['padrao_treinamento_id'] ?? null),
                         "status" => $dados['status'],
                         "data_admissao" => $dados['data_admissao'],
                         "data_entrega_area" => $dados['data_entrega_area'],
@@ -1639,17 +1652,17 @@ class AdmissaoController extends Controller
             return $item;
         });
 
-        $cliente = \App\Models\Cliente::find(auth()->user()->empresa_id);
-        $segmentosTreinamento = $cliente && $cliente->SegmentosTreinamento()->where('segmentos_treinamento.ativo', true)->count() > 0
-            ? $cliente->SegmentosTreinamento()->where('segmentos_treinamento.ativo', true)->orderBy('nome')->get(['segmentos_treinamento.id', 'nome', 'slug'])
-            : \App\Models\SegmentoTreinamento::where('ativo', true)->orderBy('nome')->get(['id', 'nome', 'slug']);
+        $padroesTreinamento = PadraoTreinamento::query()
+            ->ativos()
+            ->orderBy('nome')
+            ->get(['id', 'nome', 'slug']);
         $dados = [
             'itens' => $itens,
             'admissao_processo_dados_editar' => auth()->user()->can('privilegio_admissao_processo_dados_editar'),
             'status_admissao' => array_merge(['EM PROCESSO'], Admissao::TODOS_STATUS_ADMISSAO),
             'tipos_admissao' => Admissao::TODOS_TIPOS_ADMISSAO,
             'status_carteira_treinamento' => Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO,
-            'segmentos_treinamento' => $segmentosTreinamento,
+            'padroes_treinamento' => $padroesTreinamento,
             'lista_sexos' => Curriculo::TIPOS_SEXOS,
             'lista_estados_civis' => Curriculo::ESTADOS_CIVIS,
             'permissoes' => [
@@ -1738,22 +1751,40 @@ class AdmissaoController extends Controller
      */
     public function listSelects()
     {
-        $segmentos = \App\Models\Cliente::find(auth()->user()->empresa_id)
-            ? \App\Models\Cliente::find(auth()->user()->empresa_id)->SegmentosTreinamento()->where('segmentos_treinamento.ativo', true)->orderBy('nome')->get(['segmentos_treinamento.id', 'nome', 'slug'])
-            : \App\Models\SegmentoTreinamento::where('ativo', true)->orderBy('nome')->get(['id', 'nome', 'slug']);
-        if ($segmentos->isEmpty()) {
-            $segmentos = \App\Models\SegmentoTreinamento::where('ativo', true)->orderBy('nome')->get(['id', 'nome', 'slug']);
-        }
+        $padroes = PadraoTreinamento::query()
+            ->ativos()
+            ->orderBy('nome')
+            ->get(['id', 'nome', 'slug']);
+
         return response()->json([
             'tipos_admissao' => Admissao::TODOS_TIPOS_ADMISSAO,
             'status_admissao' => Admissao::TODOS_STATUS_ADMISSAO,
             'status_carteira_treinamento' => Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO,
-            'segmentos_treinamento' => $segmentos,
+            'padroes_treinamento' => $padroes,
             'todos_prazos' => Admissao::TODOS_PRAZOS,
             'todos_status_treinamentos' => Admissao::TODOS_STATUS_TREINAMENTOS,
             'todos_status_documentos' => Admissao::TODOS_STATUS_DOCUMENTOS,
             'todos_status_documentos_portaria' => Admissao::TODOS_STATUS_DOCUMENTOS_PORTARIA,
         ]);
+    }
+
+    private function resolverPadraoTreinamentoIdEmpresa($padraoId): ?int
+    {
+        if ($padraoId === null || $padraoId === '' || $padraoId === 0 || $padraoId === '0') {
+            return null;
+        }
+
+        $padraoId = (int) $padraoId;
+        if ($padraoId <= 0) {
+            return null;
+        }
+
+        $existe = PadraoTreinamento::query()
+            ->where('id', $padraoId)
+            ->where('empresa_id', (int) auth()->user()->empresa_id)
+            ->exists();
+
+        return $existe ? $padraoId : null;
     }
 
 // Anexos-------------------------------------------------

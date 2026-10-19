@@ -463,9 +463,9 @@ class AutoCompletesController extends Controller
 
         $quantidade = (int) $request->query('rows', 20);
         $quantidade = $quantidade > 0 ? $quantidade : 20;
-        $segmentoTreinamentoId = $request->query('segmento_treinamento_id');
+        $padraoTreinamentoId = $request->query('padrao_treinamento_id');
 
-        $query = Vencimento::with('SegmentoTreinamento:id,nome')
+        $query = Vencimento::with('PadroesTreinamento:id,nome')
             ->whereAtivo(true)
             ->whereNotNull('label');
 
@@ -473,10 +473,10 @@ class AutoCompletesController extends Controller
             $query->where('vinculo_todos_cargos', false);
         }
 
-        if ($segmentoTreinamentoId) {
-            $query->where(function ($q) use ($segmentoTreinamentoId) {
-                $q->where('segmento_treinamento_id', $segmentoTreinamentoId)
-                    ->orWhereNull('segmento_treinamento_id');
+        if ($padraoTreinamentoId) {
+            $padraoId = (int) $padraoTreinamentoId;
+            $query->whereHas('PadroesTreinamento', function ($q) use ($padraoId) {
+                $q->where('padroes_treinamento.id', $padraoId);
             });
         }
 
@@ -488,7 +488,8 @@ class AutoCompletesController extends Controller
             ->take($quantidade)
             ->get()
             ->map(function ($item) {
-                $item->segmento_nome = optional($item->SegmentoTreinamento)->nome ?? 'Geral';
+                $nomes = $item->PadroesTreinamento->pluck('nome')->filter()->values();
+                $item->padrao_nome = $nomes->isNotEmpty() ? $nomes->implode(', ') : 'Geral';
                 $item->vinculo_todos_cargos = (bool) $item->vinculo_todos_cargos;
                 if ($item->vinculo_todos_cargos) {
                     $item->label = $item->label . ' — todos os cargos';

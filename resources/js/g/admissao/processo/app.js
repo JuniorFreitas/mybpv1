@@ -569,14 +569,14 @@ const app = createApp({
                     data_realizacao: ''
                 },
                 status_carteira_treinamento: '',
-                segmento_treinamento_id: null,
+                padrao_treinamento_id: null,
                 status: '',
                 data_admissao: '',
                 data_entrega_area: '',
                 biometria: ''
             },
             form_massaDefault: null,
-            segmentos_treinamento: [],
+            padroes_treinamento: [],
 
             formResultadoIntegrado: {
                 curriculo_id: null
@@ -796,8 +796,8 @@ const app = createApp({
         opcoesMassaCarteira() {
             return ['PENDENTE', 'AGUARDANDO TREINAMENTO', 'ENTREGUE'].map((v) => ({ value: v, label: v }))
         },
-        opcoesMassaSegmento() {
-            return (this.segmentos_treinamento || []).map((s) => ({ value: s.id, label: s.nome }))
+        opcoesMassaPadrao() {
+            return (this.padroes_treinamento || []).map((s) => ({ value: s.id, label: s.nome }))
         },
         opcoesMassaStatus() {
             return (this.listaStatusAdmissao || []).map((item) => {
@@ -1813,7 +1813,7 @@ const app = createApp({
             this.editando = dados.admissao_processo_dados_editar
             this.lista_sexos = dados.lista_sexos
             this.lista_estados_civis = dados.lista_estados_civis
-            this.segmentos_treinamento = dados.segmentos_treinamento || []
+            this.padroes_treinamento = dados.padroes_treinamento || []
             this.selecionaTudo = this.tudoMarcado
             this.permissoes = dados.permissoes
             this.lista_ccs = dados.cc

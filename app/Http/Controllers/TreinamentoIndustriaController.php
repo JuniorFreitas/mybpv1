@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SegmentoTreinamento;
+use App\Models\PadraoTreinamento;
 use App\Models\User;
 use App\Models\Vencimento;
 use DB;
@@ -43,7 +43,8 @@ class TreinamentoIndustriaController extends Controller
         $dados = $request->input();
         $dados['vinculo_todos_cargos'] = $this->normalizeBoolean($dados['vinculo_todos_cargos'] ?? false);
         $cargoIds = $this->normalizeIds($dados['cargo_ids'] ?? []);
-        unset($dados['cargo_ids']);
+        $padraoIds = $this->normalizeIds($dados['padrao_treinamento_ids'] ?? []);
+        unset($dados['cargo_ids'], $dados['padrao_treinamento_ids'], $dados['padroes'], $dados['padroes_treinamento']);
         if ($dados['vinculo_todos_cargos']) {
             $cargoIds = [];
         }
@@ -76,6 +77,11 @@ class TreinamentoIndustriaController extends Controller
             }
         }
 
+        $padroesValidados = $this->validarPadroesEmpresa($padraoIds);
+        if ($padroesValidados !== null) {
+            return $padroesValidados;
+        }
+
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao Cadastrar Treinamento Indústria',
@@ -88,10 +94,10 @@ class TreinamentoIndustriaController extends Controller
                 if(!$dados['exibir_na_carteira']){
                     $dados['label_reduzida'] = null;
                 }
-                $dados['segmento_treinamento_id'] = $dados['segmento_treinamento_id'] ?? SegmentoTreinamento::getIdAlumar();
 
                 $vencimento = Vencimento::create($dados);
                 $vencimento->Vagas()->sync($dados['vinculo_todos_cargos'] ? [] : $cargoIds);
+                $vencimento->PadroesTreinamento()->sync($padraoIds);
 
                 DB::commit();
                 return response()->json([], 201);
@@ -123,12 +129,17 @@ class TreinamentoIndustriaController extends Controller
      */
     public function edit($id)
     {
-        $vencimento = Vencimento::with('SegmentoTreinamento:id,nome,slug', 'Vagas:id,nome')->whereId($id)->first();
+        $vencimento = Vencimento::with([
+            'PadroesTreinamento:id,nome,slug,ativo',
+            'Vagas:id,nome',
+        ])->whereId($id)->first();
         if (!$vencimento) {
             return $vencimento;
         }
 
         $vencimento->cargo_ids = $vencimento->Vagas->pluck('id')->values();
+        $vencimento->padrao_treinamento_ids = $vencimento->PadroesTreinamento->pluck('id')->values();
+
         return $vencimento;
     }
 
@@ -146,7 +157,8 @@ class TreinamentoIndustriaController extends Controller
         $dados = $request->input();
         $dados['vinculo_todos_cargos'] = $this->normalizeBoolean($dados['vinculo_todos_cargos'] ?? false);
         $cargoIds = $this->normalizeIds($dados['cargo_ids'] ?? []);
-        unset($dados['cargo_ids']);
+        $padraoIds = $this->normalizeIds($dados['padrao_treinamento_ids'] ?? []);
+        unset($dados['cargo_ids'], $dados['padrao_treinamento_ids'], $dados['padroes'], $dados['padroes_treinamento']);
         if ($dados['vinculo_todos_cargos']) {
             $cargoIds = [];
         }
@@ -179,6 +191,11 @@ class TreinamentoIndustriaController extends Controller
             }
         }
 
+        $padroesValidados = $this->validarPadroesEmpresa($padraoIds);
+        if ($padroesValidados !== null) {
+            return $padroesValidados;
+        }
+
         if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
             return response()->json([
                 'msg' => 'Erro ao Editar Treinamento Indústria',
@@ -193,12 +210,10 @@ class TreinamentoIndustriaController extends Controller
                 if(!$dados['exibir_na_carteira']){
                     $dados['label_reduzida'] = null;
                 }
-                if (array_key_exists('segmento_treinamento_id', $dados)) {
-                    $dados['segmento_treinamento_id'] = $dados['segmento_treinamento_id'] ?: SegmentoTreinamento::getIdAlumar();
-                }
 
                 $vencimento->update($dados);
                 $vencimento->Vagas()->sync($dados['vinculo_todos_cargos'] ? [] : $cargoIds);
+                $vencimento->PadroesTreinamento()->sync($padraoIds);
 
                 DB::commit();
                 return response()->json([], 201);
@@ -227,7 +242,7 @@ class TreinamentoIndustriaController extends Controller
         $porPagina = (int) $request->get('porPagina', $request->get('pages', 20));
         $porPagina = $porPagina > 0 ? $porPagina : 20;
 
-        $resultado = Vencimento::with('SegmentoTreinamento:id,nome,slug')
+        $resultado = Vencimento::with('PadroesTreinamento:id,nome,slug,ativo')
             ->withCount('Vagas')
             ->whereNotNull('label');
 
@@ -250,8 +265,11 @@ class TreinamentoIndustriaController extends Controller
             }
         }
 
-        if ($request->filled('segmento_treinamento_id')) {
-            $resultado->where('segmento_treinamento_id', $request->segmento_treinamento_id);
+        if ($request->filled('padrao_treinamento_id')) {
+            $padraoFiltro = (int) $request->input('padrao_treinamento_id');
+            $resultado->whereHas('PadroesTreinamento', function ($query) use ($padraoFiltro) {
+                $query->where('padroes_treinamento.id', $padraoFiltro);
+            });
         }
 
         $resultado = $resultado->paginate($porPagina);
@@ -306,5 +324,31 @@ class TreinamentoIndustriaController extends Controller
         }
 
         return false;
+    }
+
+    /**
+     * @param  list<int>  $padraoIds
+     * @return \Illuminate\Http\JsonResponse|null
+     */
+    private function validarPadroesEmpresa(array $padraoIds)
+    {
+        if ($padraoIds === []) {
+            return null;
+        }
+
+        $validos = PadraoTreinamento::query()
+            ->whereIn('id', $padraoIds)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if (count($validos) !== count($padraoIds)) {
+            return response()->json([
+                'msg' => 'Um ou mais padrões de treinamento são inválidos para esta empresa.',
+                'erros' => ['padrao_treinamento_ids' => ['Padrão inválido ou de outra empresa.']],
+            ], 400);
+        }
+
+        return null;
     }
 }

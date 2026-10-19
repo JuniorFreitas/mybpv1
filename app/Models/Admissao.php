@@ -42,7 +42,6 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @property string|null $data_aso
  * @property bool|null $foto_escaneada
  * @property string|null $status_carteira_treinamento
- * @property int|null $segmento_treinamento_id
  * @property int|null $usuario_id
  * @property int|null $editado_usuario_id
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -175,8 +174,6 @@ use App\Models\Concerns\HasActivitylogOptions;
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao naoAfastados()
  * @property bool $usa_lentes_corretivas
  * @method static \Illuminate\Database\Eloquent\Builder|Admissao whereUsaLentesCorretivas($value)
- * @property-read \App\Models\SegmentoTreinamento|null $SegmentoTreinamento
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Admissao whereSegmentoTreinamentoId($value)
  * @mixin \Eloquent
  */
 class Admissao extends Model
@@ -232,7 +229,7 @@ class Admissao extends Model
         'data_aso',
         'foto_escaneada',
         'status_carteira_treinamento',
-        'segmento_treinamento_id',
+        'padrao_treinamento_id',
         'usuario_id',
         'editado_usuario_id',
         'data_admissao',
@@ -295,7 +292,7 @@ class Admissao extends Model
         'data_aso' => 'string',
         'foto_escaneada' => 'boolean',
         'status_carteira_treinamento' => 'string',
-        'segmento_treinamento_id' => 'int',
+        'padrao_treinamento_id' => 'int',
         'usuario_id' => 'int',
         'editado_usuario_id' => 'int',
         'data_admissao' => 'string',
@@ -819,9 +816,9 @@ class Admissao extends Model
         return $this->hasOne(AreaEtiqueta::class, 'id', 'area_etiqueta_id');
     }
 
-    public function SegmentoTreinamento()
+    public function PadraoTreinamento()
     {
-        return $this->belongsTo(SegmentoTreinamento::class, 'segmento_treinamento_id', 'id');
+        return $this->belongsTo(PadraoTreinamento::class, 'padrao_treinamento_id', 'id');
     }
 
     public function DadosAdmissoes()

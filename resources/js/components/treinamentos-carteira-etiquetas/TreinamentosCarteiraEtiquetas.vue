@@ -38,7 +38,7 @@
         <ol class="pl-3 mb-3">
             <li>Acesse o menu de cadastros e abra <strong>Cargos</strong> (lista de cargos / vagas).</li>
             <li>Localize o <strong>mesmo cargo</strong> vinculado ao colaborador e clique para <strong>editar</strong>.</li>
-            <li>Na seção <strong>Treinamentos</strong>, escolha o <strong>padrão de treinamento</strong> (segmento), se aplicável.</li>
+            <li>Na seção <strong>Treinamentos</strong>, escolha o <strong>padrão de treinamento</strong>, se aplicável.</li>
             <li>Use <strong>Adicionar treinamento</strong> para incluir o treinamento desejado na lista do cargo.</li>
             <li>Salve o cargo com <strong>Alterar</strong>.</li>
         </ol>
@@ -54,29 +54,118 @@
     </template>
 </modal>
 
-<modal ref="janelaTreinamento" id="janelaTreinamento" titulo="Treinamentos" :size="95">
+<modal ref="janelaTreinamento" id="janelaTreinamento" :titulo="tituloJanela" :size="95">
     <template #conteudo>
         <p class=" mt-2 text-center" v-if="preload">
             <i class="fa fa-spinner fa-pulse"></i> Aguarde ...
         </p>
 
-        <div v-if="!preload && (!cadastrado && !atualizado)">
+        <div v-if="!preload && (!cadastrado && !atualizado)" class="mybp-modal-form mybp-filtros-compactos">
 
-            <fieldset>
-                <legend>Dados do funcionário</legend>
-
-                <div class="row">
-                    <div class="col-12">
-                        <p>
-                            Nome: <strong>{{ form.dadosFuncionario.nome }}</strong> - {{
-                                form.dadosFuncionario.idade }} anos <br>
-                            Cargo: <strong>{{ form.dadosFuncionario.cargo }}</strong> <br>
-                            E-mail: <strong>{{ form.dadosFuncionario.email }}</strong>
-                            <br>
-                        </p>
+            <div class="mybp-card-corpo mb-3" :class="classeCorpoStatusModal(form.dadosFuncionario)">
+                <section class="mybp-card-secao mybp-card-secao--meta">
+                    <div class="mybp-card-status-botoes">
+                        <div class="mybp-card-status-item">
+                            <span class="mybp-card-status-label">Colaborador</span>
+                            <mybp-status-badge
+                                :variante="chaveSituacaoColaboradorModal(form.dadosFuncionario)"
+                                :texto="textoSituacaoColaboradorModal(form.dadosFuncionario)"
+                            ></mybp-status-badge>
+                        </div>
+                        <div class="mybp-card-status-item" v-if="form.dadosFuncionario.status_admissao">
+                            <span class="mybp-card-status-label">Status admissão</span>
+                            <mybp-status-badge
+                                variante="aberto"
+                                :texto="textoCampoModal(form.dadosFuncionario.status_admissao)"
+                            ></mybp-status-badge>
+                        </div>
                     </div>
-                </div>
-            </fieldset>
+                </section>
+                <section class="mybp-card-secao">
+                    <div class="mybp-card-row">
+                        <mybp-card-campo
+                            icon="fas fa-user"
+                            label="Colaborador"
+                            :valor="nomeIdadeModal(form.dadosFuncionario)"
+                            :forte="true"
+                        ></mybp-card-campo>
+                        <mybp-card-campo
+                            icon="fas fa-id-card"
+                            label="CPF"
+                            :valor="textoCampoModal(form.dadosFuncionario.cpf)"
+                        ></mybp-card-campo>
+                        <mybp-card-campo
+                            icon="fas fa-briefcase"
+                            label="Cargo / Vaga"
+                            :valor="textoCampoModal(form.dadosFuncionario.cargo)"
+                        ></mybp-card-campo>
+                    </div>
+                </section>
+                <section class="mybp-card-secao">
+                    <div class="mybp-card-row">
+                        <mybp-card-campo
+                            icon="fas fa-envelope"
+                            label="E-mail"
+                            :valor="textoCampoModal(form.dadosFuncionario.email)"
+                        ></mybp-card-campo>
+                        <mybp-card-campo
+                            icon="fas fa-phone"
+                            label="Telefone"
+                            :valor="textoCampoModal(form.dadosFuncionario.telefone)"
+                        ></mybp-card-campo>
+                        <mybp-card-campo
+                            icon="fas fa-map-marker-alt"
+                            label="Local da vaga"
+                            :valor="textoCampoModal(form.dadosFuncionario.local_vaga)"
+                        ></mybp-card-campo>
+                    </div>
+                </section>
+                <section class="mybp-card-secao">
+                    <div class="mybp-card-row">
+                        <mybp-card-campo
+                            icon="fas fa-home"
+                            label="Endereço"
+                            :valor="textoCampoModal(form.dadosFuncionario.endereco_completo)"
+                        ></mybp-card-campo>
+                        <mybp-card-campo
+                            icon="fas fa-file-signature"
+                            label="Tipo admissão"
+                            :valor="textoCampoModal(form.dadosFuncionario.tipo_admissao)"
+                        ></mybp-card-campo>
+                        <mybp-card-campo
+                            icon="fas fa-id-badge"
+                            label="Crachá"
+                            :valor="textoCampoModal(form.dadosFuncionario.numero_cracha)"
+                        ></mybp-card-campo>
+                    </div>
+                </section>
+                <section class="mybp-card-secao">
+                    <div class="mybp-card-row">
+                        <mybp-card-campo
+                            v-if="AUTENTICADO.temFilial"
+                            icon="fas fa-building"
+                            label="Lotação"
+                            :valor="lotacaoModal(form.dadosFuncionario)"
+                        ></mybp-card-campo>
+                        <mybp-card-campo
+                            icon="fas fa-sitemap"
+                            label="Centro de custo"
+                            :valor="textoCampoModal(form.dadosFuncionario.emp_centro_custo)"
+                        ></mybp-card-campo>
+                        <mybp-card-campo
+                            icon="fas fa-graduation-cap"
+                            label="Padrão de treinamento"
+                            :valor="padraoModal(form.dadosFuncionario)"
+                        ></mybp-card-campo>
+                        <mybp-card-campo
+                            v-if="Number(cliente_id) === 1"
+                            icon="fas fa-building"
+                            label="Cliente"
+                            :valor="textoCampoModal(form.dadosFuncionario.cliente_nome)"
+                        ></mybp-card-campo>
+                    </div>
+                </section>
+            </div>
 
             <div class="alert alert-warning" v-if="form.alertaSemCargoVinculo">
                 <i class="fa fa-exclamation-triangle"></i>
@@ -97,12 +186,16 @@
                 <div class="row">
                     <div class="col-12 col-md-6">
                         <div class="form-group">
-                            <label>Segmento</label>
-                            <select class="form-control" v-model="form.segmento_treinamento_id"
-                                @change="trocarSegmentoTreinamento" :disabled="preload">
+                            <label>Padrão</label>
+                            <select
+                                class="form-control"
+                                v-model="form.padrao_treinamento_id"
+                                @change="trocarPadraoTreinamento"
+                                :disabled="preload"
+                            >
                                 <option :value="null">Selecione</option>
-                                <option v-for="s in segmentosTreinamento" :key="s.id" :value="s.id">
-                                    {{ s.nome }}
+                                <option v-for="p in padroesTreinamento" :key="p.id" :value="p.id">
+                                    {{ p.nome }}
                                 </option>
                             </select>
                         </div>
@@ -214,6 +307,9 @@
                         <span v-if="treinamento.nao_vinculado_ao_cargo" class="text-danger">
                             (treinamento sem vínculo com o cargo)
                         </span>
+                        <span v-if="isDeOutroPadrao(treinamento)" class="text-warning font-weight-bold">
+                            ({{ textoOutroPadrao(treinamento) }})
+                        </span>
                     </button>
                 </h5>
                 <span class="badge"
@@ -270,9 +366,9 @@
                                 <datepicker v-model="treinamento.data_treinamento"
                                     label="Data do treinamento"
                                     :disabled="salvandoVencimentoId === treinamento.id"
-                                    @input="calculoDataExpiracao(treinamento)"
-                                    max="{{ (new \MasterTag\DataHora())->dataCompleta() }}"
-                                    onblur="valida_data_vazio(this)"></datepicker>
+                                    :max="dataHojeBr"
+                                    obrigatorio
+                                    @input="calculoDataExpiracao(treinamento)"></datepicker>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group mt-2">
@@ -287,16 +383,16 @@
                                 <datepicker v-model="treinamento.data_treinamento"
                                     label="Data do treinamento"
                                     :disabled="salvandoVencimentoId === treinamento.id"
-                                    max="{{ (new \MasterTag\DataHora())->dataCompleta() }}"
-                                    onblur="valida_data_vazio(this)"
+                                    :max="dataHojeBr"
+                                    obrigatorio
                                     @input="marcarAlterado(treinamento)"></datepicker>
                             </div>
                             <div class="col-md-6 mt-2">
                                 <datepicker v-model="treinamento.data_vencimento"
                                     label="Data Vencimento"
                                     :disabled="salvandoVencimentoId === treinamento.id"
-                                    min="{{ (new \MasterTag\DataHora())->dataCompleta() }}"
-                                    onblur="valida_data_vazio(this)"
+                                    :min="dataHojeBr"
+                                    obrigatorio
                                     @input="marcarAlterado(treinamento)"></datepicker>
                             </div>
                         </template>
@@ -319,11 +415,13 @@
                                 <upload :model="treinamento.arquivo"
                                     :model-delete="treinamento.arquivoDel"
                                     :url="url_anexo"
-                                    :quantidade="1"
-                                    :multi="false"
+                                    :quantidade="5"
+                                    :multi="true"
+                                    :apenas-doc-pdf-img="true"
                                     :label="treinamento_fat_obrigatorio && treinamento.fez_treinamento ? 'ANEXAR FAT *' : 'ANEXAR FAT'"
                                     @onProgresso="anexoUploadAndamento=true"
                                     @onFinalizado="onUploadFinalizado(treinamento)"></upload>
+                                <small class="form-text text-muted">Word, PDF ou imagens — até 5 arquivos.</small>
                                 <div class="invalid-feedback" v-if="anexoFatInvalido(treinamento)">Anexo da FAT é obrigatório para este cliente em treinamentos realizados.</div>
                             </div>
                         </div>
@@ -353,6 +451,11 @@
     <div class="alert alert-info"
         v-if="form.listaVencimentos && form.listaVencimentos.length > 0 && (!treinamentosFiltrados || treinamentosFiltrados.length === 0)">
         <i class="fa fa-info-circle"></i> Nenhum treinamento encontrado com os filtros atuais.
+    </div>
+    <div class="alert alert-warning"
+        v-if="!preload && form.padrao_treinamento_id && (!form.listaVencimentos || form.listaVencimentos.length === 0)">
+        <i class="fa fa-exclamation-triangle"></i>
+        Este padrão não possui treinamentos vinculados. Cadastre ou vincule treinamentos no Padrão de treinamento.
     </div>
     </div>
     </template>
@@ -431,8 +534,9 @@
                                                 </span>
                                             </label>
                                             <datepicker v-model="treinamento.data_treinamento"
-                                                max="{{ (new \MasterTag\DataHora())->dataCompleta() }}"
-                                                onblur="valida_data_vazio(this)"></datepicker>
+                                                :max="dataHojeBr"
+                                                obrigatorio
+                                                @input="calculoDataExpiracao(treinamento)"></datepicker>
                                         </template>
                                     </div>
                                     <div class="form-group">
@@ -790,19 +894,19 @@
                         <div class="row">
                             <div class="col-12 col-md-6 col-xl-3">
                                 <div class="form-group trn-carteira-filtro-campo mybp-filtro-campo">
-                                    <label class="mybp-label" for="trn-carteira-segmento">Padrão</label>
+                                    <label class="mybp-label" for="trn-carteira-padrao">Padrão</label>
                                     <div class="mybp-combobox-wrap">
                                         <combobox-auto-complete
-                                            ref="comboFiltroSegmento"
-                                            input-id="trn-carteira-segmento"
-                                            instance-id="trn-carteira-segmento"
+                                            ref="comboFiltroPadrao"
+                                            input-id="trn-carteira-padrao"
+                                            instance-id="trn-carteira-padrao"
                                             :disabled="controle.carregando"
-                                            :options="opcoesSegmento"
+                                            :options="opcoesPadrao"
                                             placeholder-blur="Todos"
                                             empty-message="Nenhum padrão encontrado."
                                             :max-results="30"
-                                            v-model="controle.dados.segmento_treinamento_id"
-                                            @opening="fecharOutrosComboboxes('trn-carteira-segmento')"
+                                            v-model="controle.dados.padrao_treinamento_id"
+                                            @opening="fecharOutrosComboboxes('trn-carteira-padrao')"
                                             @select="onSelectFiltro"
                                         />
                                     </div>
@@ -940,12 +1044,12 @@
                 id="dropdownCarteira"
                 aria-haspopup="true"
                 :aria-expanded="isDropdownOpen('carteira') ? 'true' : 'false'"
-                :disabled="!selecionados.length"
+                :disabled="!selecionados.length || preloadCarteira"
                 @click.prevent.stop="toggleDropdown('carteira')"
             >
-                <i class="fa fa-id-card"></i>
-                Gerar carteira
-                <span class="badge badge-light ml-1" v-if="selecionados.length">{{ selecionados.length }}</span>
+                <i :class="preloadCarteira ? 'fa fa-sync fa-spin' : 'fa fa-id-card'" aria-hidden="true"></i>
+                {{ preloadCarteira ? 'Gerando…' : 'Gerar carteira' }}
+                <span class="badge badge-light ml-1" v-if="selecionados.length && !preloadCarteira">{{ selecionados.length }}</span>
             </button>
             <div
                 class="dropdown-menu"
@@ -956,7 +1060,7 @@
                 <button
                     type="button"
                     class="dropdown-item"
-                    :disabled="!selecionados.length"
+                    :disabled="!selecionados.length || preloadCarteira"
                     @click.prevent="gerarCarteiras('treinamento')"
                 >
                     <i class="fas fa-graduation-cap mr-2"></i>Treinamento
@@ -964,7 +1068,7 @@
                 <button
                     type="button"
                     class="dropdown-item"
-                    :disabled="!selecionados.length"
+                    :disabled="!selecionados.length || preloadCarteira"
                     @click.prevent="gerarCarteiras('bloqueio')"
                 >
                     <i class="fas fa-ban mr-2"></i>Bloqueio
@@ -972,7 +1076,7 @@
                 <button
                     type="button"
                     class="dropdown-item"
-                    :disabled="!selecionados.length"
+                    :disabled="!selecionados.length || preloadCarteira"
                     @click.prevent="gerarCarteiras('treinamento_bloqueio')"
                 >
                     <i class="fas fa-list mr-2"></i>Treinamento/Bloqueio
@@ -1370,10 +1474,10 @@
                                         <i class="fa fa-building"></i>
                                     </div>
                                     <div class="meta-content">
-                                        <div class="meta-label">Empresa</div>
+                                        <div class="meta-label">Lotação</div>
                                         <div class="meta-value" v-if="AUTENTICADO.temFilial">
-                                            <span v-if="item.admissao && item.admissao.emp_cnpj">
-                                                {{item.admissao.emp_nome_fantasia}} ({{item.admissao.emp_tipo}})
+                                            <span v-if="item.admissao && (item.admissao.emp_nome_fantasia || item.admissao.emp_cnpj)">
+                                                {{ item.admissao.emp_nome_fantasia || '—' }}<template v-if="item.admissao.emp_cnpj"> - {{ item.admissao.emp_cnpj }}</template>
                                             </span>
                                             <span v-else>---</span>
                                         </div>
@@ -1405,9 +1509,13 @@
                                     <div class="meta-content">
                                         <div class="meta-label">Padrão de treinamento</div>
                                         <div class="meta-value">
-                                            <span v-if="item.admissao && (item.admissao.segmento_treinamento || item.admissao.segmento_treinamento_nome)">
-                                                {{ (item.admissao.segmento_treinamento && item.admissao.segmento_treinamento.nome) ? item.admissao.segmento_treinamento.nome : item.admissao.segmento_treinamento_nome }}
-                                            </span>
+                                            <template v-if="nomePadraoAdmissao(item)">
+                                                <div>{{ nomePadraoAdmissao(item) }}</div>
+                                                <small class="d-block text-muted">
+                                                    Carteira: <strong>{{ simNaoPadrao(item.admissao && item.admissao.padrao_tem_carteira) }}</strong>
+                                                    · Etiqueta: <strong>{{ simNaoPadrao(item.admissao && item.admissao.padrao_tem_etiqueta) }}</strong>
+                                                </small>
+                                            </template>
                                             <span v-else>---</span>
                                         </div>
                                     </div>
@@ -1436,6 +1544,9 @@
                                             {{ v.label }}
                                             <small v-if="v.nao_vinculado_ao_cargo" class="text-danger d-block">
                                                 (treinamento sem vínculo do cargo)
+                                            </small>
+                                            <small v-if="isDeOutroPadrao(v)" class="text-warning d-block font-weight-bold">
+                                                {{ textoOutroPadrao(v) }}
                                             </small>
                                         </td>
                                         <td>{{ v.pivot.data_treinamento }}</td>
@@ -1473,13 +1584,33 @@
     :por-pagina="controle.dados.pages"
     :dados="controle.dados"
     v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>
+
+<!-- Form nativo permanente: target=_blank + POST com selecionados[] (evita form dinâmico virar GET) -->
+<form
+    ref="formGerarCarteira"
+    method="post"
+    :action="urlGerarCarteira"
+    target="_blank"
+    accept-charset="UTF-8"
+    style="display: none"
+>
+    <input type="hidden" name="_token" :value="csrfToken">
+    <input type="hidden" name="tipo" :value="carteiraTipoGeracao">
+    <input
+        v-for="id in selecionadosParaCarteira"
+        :key="`sel-cart-${id}`"
+        type="hidden"
+        name="selecionados[]"
+        :value="id"
+    >
+</form>
 </div>
 </template>
 
 <script>
 import { defineComponent } from 'vue'
 import { REFS_MODAL, API_PATHS } from './constants'
-import datepicker from '../DatePicker'
+import datepicker from '../DateInputHtml5.vue'
 import ExportacaoMixin from '../../mixins/Exportacoes'
 import Upload from '../Upload.vue'
 import DateRangeFilter from '../DateRangeFilter.vue'
@@ -1488,6 +1619,8 @@ import ModalAuditoriaTermoResponsabilidade from '../ModalAuditoriaTermoResponsab
 import ControlePaginacao from '../ControlePaginacao.vue'
 import ComboboxAutoComplete from '../ComboboxAutoComplete.vue'
 import FiltroListagem from '../ui/FiltroListagem.vue'
+import MybpCardCampo from '../ui/MybpCardCampo.vue'
+import MybpStatusBadge from '../ui/MybpStatusBadge.vue'
 
 const UF_OPTIONS = [
     'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
@@ -1505,7 +1638,9 @@ export default defineComponent({
         ModalAuditoriaTermoResponsabilidade,
         ControlePaginacao,
         ComboboxAutoComplete,
-        FiltroListagem
+        FiltroListagem,
+        MybpCardCampo,
+        MybpStatusBadge
     },
     data() {
         return {
@@ -1519,6 +1654,7 @@ export default defineComponent({
             visualizar: false,
             disabled: true,
             preloadExportacao: false,
+            preloadCarteira: false,
             comboTreinamento: '',
 
             URL_ADMIN,
@@ -1535,6 +1671,7 @@ export default defineComponent({
 
             selecionados: [],
             selecionaTudo: false,
+            carteiraTipoGeracao: 'treinamento',
 
             selecionadosMassa: [],
             selecionaTudoMassa: false,
@@ -1550,8 +1687,26 @@ export default defineComponent({
                 dadosFuncionario: {
                     nome: '',
                     idade: '',
+                    cpf: '',
                     cargo: '',
-                    email: ''
+                    email: '',
+                    telefone: '',
+                    telefone_tipo: '',
+                    endereco_completo: '',
+                    uf: '',
+                    local_vaga: '',
+                    status_admissao: '',
+                    tipo_admissao: '',
+                    numero_cracha: '',
+                    situacao_colaborador: '',
+                    emp_cnpj: '',
+                    emp_nome_fantasia: '',
+                    emp_centro_custo: '',
+                    emp_tipo: '',
+                    padrao_treinamento_nome: '',
+                    padrao_tem_carteira: null,
+                    padrao_tem_etiqueta: null,
+                    cliente_nome: ''
                 },
 
                 feedback_id: '',
@@ -1570,7 +1725,7 @@ export default defineComponent({
 
                 nr_trinta_tres: true,
                 nr_trinta_cinco: true,
-                segmento_treinamento_id: null,
+                padrao_treinamento_id: null,
                 exame: {
                     feedback_id: '',
                     exame_realizado: '',
@@ -1636,7 +1791,7 @@ export default defineComponent({
             lista: [],
             vagas: [],
             listaAreas: [],
-            segmentosTreinamento: [],
+            padroesTreinamento: [],
 
             dropdownAbertoKey: null,
             dropdownJustOpened: false,
@@ -1681,7 +1836,7 @@ export default defineComponent({
                     periodoTreinado: '',
                     campoCnpj: '',
                     campoCentroCusto: '',
-                    segmento_treinamento_id: ''
+                    padrao_treinamento_id: ''
                 }
             },
 
@@ -1711,7 +1866,7 @@ export default defineComponent({
         this.urlParamGet()
         this.listaVagas()
         this.listaAreasGeral()
-        this.carregarSegmentosTreinamento()
+        this.carregarPadroesTreinamento()
         if (this.initialPage != null && this.initialPage >= 1) {
             this.$nextTick(() => {
                 if (this.$refs.componente) {
@@ -1745,12 +1900,41 @@ export default defineComponent({
         if (this._syncUrlTimer) clearTimeout(this._syncUrlTimer)
     },
     computed: {
+        csrfToken() {
+            return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
+        /** Hoje em dd/mm/aaaa para min/max do date HTML5 */
+        dataHojeBr() {
+            const d = new Date()
+            const dd = String(d.getDate()).padStart(2, '0')
+            const mm = String(d.getMonth() + 1).padStart(2, '0')
+            return `${dd}/${mm}/${d.getFullYear()}`
+        },
+        urlGerarCarteira() {
+            return `${URL_ADMIN}/${API_PATHS.carteiras}`
+        },
+        selecionadosParaCarteira() {
+            return (this.selecionados || [])
+                .map((id) => Number(id))
+                .filter((id) => Number.isFinite(id) && id > 0)
+        },
         isColunaTreinamentoSelecionada() {
             return (treinamento) => {
-                if (!treinamento || !this.listaColunasTreinamentos) {
+                if (!treinamento) {
                     return false
                 }
-                return this.listaColunasTreinamentos.some((col) => col.id === treinamento.id && col.checked)
+                // Sem lista de colunas ainda: exibe (evita sumir treinamentos de outro padrão)
+                if (!this.listaColunasTreinamentos || !this.listaColunasTreinamentos.length) {
+                    return true
+                }
+                const col = this.listaColunasTreinamentos.find(
+                    (c) => Number(c.id) === Number(treinamento.id)
+                )
+                // Fora do catálogo de colunas (ex.: outro padrão / inativo): sempre exibir
+                if (!col) {
+                    return true
+                }
+                return !!col.checked
             }
         },
         textoTermoResponsabilidadeDesmarcar() {
@@ -1861,10 +2045,10 @@ export default defineComponent({
                 { value: 'false', label: 'Não' }
             ]
         },
-        opcoesSegmento() {
+        opcoesPadrao() {
             const opts = [{ value: '', label: 'Todos os padrões' }]
-            ;(this.segmentosTreinamento || []).forEach((s) => {
-                opts.push({ value: String(s.id), label: s.nome })
+            ;(this.padroesTreinamento || []).forEach((p) => {
+                opts.push({ value: String(p.id), label: p.nome })
             })
             return opts
         },
@@ -2040,7 +2224,7 @@ export default defineComponent({
                 d.campoUf,
                 d.campoArea,
                 d.campoCargo,
-                d.segmento_treinamento_id,
+                d.padrao_treinamento_id,
                 d.campo_treinados,
                 d.campoNr_trinta_tres,
                 d.campoNr_trinta_cinco,
@@ -2061,7 +2245,7 @@ export default defineComponent({
         totalFiltrosAtivosAvancados() {
             const d = this.controle.dados
             const lista = [
-                d.segmento_treinamento_id,
+                d.padrao_treinamento_id,
                 d.campoUf,
                 d.campoArea,
                 d.campoCracha,
@@ -2082,7 +2266,7 @@ export default defineComponent({
         },
         activeFilterChips() {
             const d = this.controle.dados
-            const segmentoSelecionado = this.segmentosTreinamento.find((s) => String(s.id) === String(d.segmento_treinamento_id))
+            const padraoSelecionado = this.padroesTreinamento.find((p) => String(p.id) === String(d.padrao_treinamento_id))
             const chips = []
             if (d.campoCPF) chips.push({ key: 'campoCPF', label: `CPF: ${d.campoCPF}`, primario: true })
             else if (d.campoBusca) chips.push({ key: 'campoBusca', label: `Busca: ${d.campoBusca}`, primario: true })
@@ -2115,10 +2299,10 @@ export default defineComponent({
             if (Array.isArray(d.treinamentos_selecionados) && d.treinamentos_selecionados.length > 0) {
                 chips.push({ key: 'treinamentos_selecionados', label: `Treinamentos: ${d.treinamentos_selecionados.length}`, primario: true })
             }
-            if (d.segmento_treinamento_id) {
+            if (d.padrao_treinamento_id) {
                 chips.push({
-                    key: 'segmento_treinamento_id',
-                    label: `Padrão: ${segmentoSelecionado ? segmentoSelecionado.nome : d.segmento_treinamento_id}`
+                    key: 'padrao_treinamento_id',
+                    label: `Padrão: ${padraoSelecionado ? padraoSelecionado.nome : d.padrao_treinamento_id}`
                 })
             }
             if (d.campoUf) chips.push({ key: 'campoUf', label: `UF: ${d.campoUf}` })
@@ -2158,7 +2342,7 @@ export default defineComponent({
             if (urlParams.get('campoUf')) d.campoUf = urlParams.get('campoUf')
             if (urlParams.get('campoArea')) d.campoArea = urlParams.get('campoArea')
             if (urlParams.get('campoCargo')) d.campoCargo = urlParams.get('campoCargo')
-            if (urlParams.get('segmento_treinamento_id')) d.segmento_treinamento_id = urlParams.get('segmento_treinamento_id')
+            if (urlParams.get('padrao_treinamento_id')) d.padrao_treinamento_id = urlParams.get('padrao_treinamento_id')
             if (urlParams.get('campo_treinados')) d.campo_treinados = urlParams.get('campo_treinados')
             if (urlParams.get('campoAdmitido')) d.campoAdmitido = urlParams.get('campoAdmitido')
             d.campoDemitido = this.boolFromParam(urlParams.get('campoDemitido'), false)
@@ -2207,7 +2391,7 @@ export default defineComponent({
             if (d.campoUf) params.campoUf = d.campoUf
             if (d.campoArea) params.campoArea = d.campoArea
             if (d.campoCargo) params.campoCargo = d.campoCargo
-            if (d.segmento_treinamento_id) params.segmento_treinamento_id = d.segmento_treinamento_id
+            if (d.padrao_treinamento_id) params.padrao_treinamento_id = d.padrao_treinamento_id
             if (d.campo_treinados) params.campo_treinados = d.campo_treinados
             if (d.campoAdmitido) params.campoAdmitido = d.campoAdmitido
             if (d.campoDemitido === true) params.campoDemitido = 'true'
@@ -2273,24 +2457,95 @@ export default defineComponent({
             }
             this.dropdownAbertoKey = null
         },
-        async carregarSegmentosTreinamento() {
+        async carregarPadroesTreinamento() {
             try {
-                const res = await axios.get(`${URL_ADMIN}/${API_PATHS.segmentosHabilitados}`)
-                this.segmentosTreinamento = res.data || []
+                const resPadroes = await axios.get(`${URL_ADMIN}/${API_PATHS.padroesHabilitados}`)
+                this.padroesTreinamento = resPadroes.data || []
             } catch {
-                this.segmentosTreinamento = []
+                this.padroesTreinamento = []
             }
         },
-        async trocarSegmentoTreinamento() {
+        nomePadraoAdmissao(item) {
+            const adm = item && item.admissao
+            if (!adm) return ''
+            return adm.padrao_treinamento_nome
+                || (adm.padrao_treinamento && adm.padrao_treinamento.nome)
+                || ''
+        },
+        simNaoPadrao(valor) {
+            if (valor === true || valor === 1 || valor === '1') return 'SIM'
+            if (valor === false || valor === 0 || valor === '0') return 'NÃO'
+            return '—'
+        },
+        textoCampoModal(valor) {
+            const texto = String(valor ?? '').trim()
+            return texto !== '' ? texto : 'Não informado'
+        },
+        nomeIdadeModal(dados) {
+            const nome = this.textoCampoModal(dados?.nome)
+            const idade = dados?.idade
+            if (idade !== null && idade !== undefined && String(idade).trim() !== '') {
+                return `${nome} — ${idade} anos`
+            }
+            return nome
+        },
+        lotacaoModal(dados) {
+            const nome = (dados?.emp_nome_fantasia || '').trim()
+            const cnpj = (dados?.emp_cnpj || '').trim()
+            const tipo = (dados?.emp_tipo || '').trim()
+            if (!nome && !cnpj) return 'Não informado'
+            let texto = nome || '—'
+            if (cnpj) texto += ` - ${cnpj}`
+            if (tipo) texto += ` (${tipo})`
+            return texto
+        },
+        padraoModal(dados) {
+            const nome = (dados?.padrao_treinamento_nome || '').trim()
+            if (!nome) return 'Não informado'
+            const carteira = this.simNaoPadrao(dados?.padrao_tem_carteira)
+            const etiqueta = this.simNaoPadrao(dados?.padrao_tem_etiqueta)
+            return `${nome} · Carteira: ${carteira} · Etiqueta: ${etiqueta}`
+        },
+        chaveSituacaoColaboradorModal(dados) {
+            const situacao = dados?.situacao_colaborador || 'em_processo'
+            if (situacao === 'admitido') return 'aprovado'
+            if (situacao === 'demitido') return 'reprovado'
+            return 'aberto'
+        },
+        textoSituacaoColaboradorModal(dados) {
+            const situacao = dados?.situacao_colaborador || 'em_processo'
+            if (situacao === 'admitido') return 'Admitido'
+            if (situacao === 'demitido') return 'Demitido'
+            return 'Em processo'
+        },
+        classeCorpoStatusModal(dados) {
+            const situacao = dados?.situacao_colaborador || 'em_processo'
+            if (situacao === 'admitido') return 'mybp-card-corpo--aprovado'
+            if (situacao === 'demitido') return 'mybp-card-corpo--reprovado'
+            return 'mybp-card-corpo--pendente'
+        },
+        isDeOutroPadrao(treinamento) {
+            if (!treinamento) return false
+            const v = treinamento.de_outro_padrao
+            return v === true || v === 1 || v === '1'
+        },
+        textoOutroPadrao(treinamento) {
+            const nome = treinamento && (treinamento.padrao_origem_nome || '').trim()
+            if (nome) {
+                return `Este treinamento é do padrão ${nome}`
+            }
+            return 'Este treinamento é de outro padrão'
+        },
+        async trocarPadraoTreinamento() {
             if (!this.form.feedback_id) {
                 return
             }
 
             this.preload = true
             try {
-                const response = await axios.post(`${URL_ADMIN}/${API_PATHS.vencimentosPorSegmento}`, {
+                const response = await axios.post(`${URL_ADMIN}/${API_PATHS.vencimentosPorPadrao}`, {
                     feedback_id: this.form.feedback_id,
-                    segmento_treinamento_id: this.form.segmento_treinamento_id
+                    padrao_treinamento_id: this.form.padrao_treinamento_id
                 })
                 this.form.listaVencimentos = (response.data.listaVencimentos || []).map((t) => ({
                     ...t,
@@ -2314,12 +2569,14 @@ export default defineComponent({
         marcarAlterado(treinamento) {
             if (treinamento) treinamento._alterado = true
         },
-        /** Verifica se o item tem anexo FAT válido (existente ou novo upload). */
+        /** Verifica se o item tem ao menos um anexo FAT válido (existente ou novo upload). */
         itemTemAnexoFat(treinamento) {
             if (!treinamento.arquivo || !Array.isArray(treinamento.arquivo) || treinamento.arquivo.length === 0) return false
-            const arq = treinamento.arquivo[0]
-            if (arq.id && !arq.temporario) return true
-            return !!(arq.temporario && arq.chave && !arq.falhou)
+            return treinamento.arquivo.some((arq) => {
+                if (!arq) return false
+                if (arq.id && !arq.temporario) return true
+                return !!(arq.temporario && arq.chave && !arq.falhou)
+            })
         },
         /** Exibe is-invalid no bloco de anexo FAT quando obrigatório, sem anexo e falhou na validação ao salvar. */
         anexoFatInvalido(treinamento) {
@@ -2433,7 +2690,7 @@ export default defineComponent({
         fecharOutrosComboboxes(excetoId) {
             const mapa = {
                 'trn-carteira-treinados': 'comboFiltroTreinados',
-                'trn-carteira-segmento': 'comboFiltroSegmento',
+                'trn-carteira-padrao': 'comboFiltroPadrao',
                 'trn-carteira-situacao': 'comboFiltroSituacao',
                 'trn-carteira-foto': 'comboFiltroFoto',
                 'trn-carteira-pcd': 'comboFiltroPcd',
@@ -2557,45 +2814,113 @@ export default defineComponent({
             this.selecionadosMassa = Array.from(selectedSet)
         },
 
+        mensagemErroGeracaoDocumento() {
+            return 'Houve um erro ao gerar. Tente novamente. Se o problema persistir, entre em contato com o suporte técnico e abra um chamado.'
+        },
+        htmlErroGeracaoDocumento() {
+            const msg = this.mensagemErroGeracaoDocumento()
+            return `<!doctype html><html><head><meta charset="utf-8"><title>Erro na geração</title></head>
+<body style="font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#fff5f5;color:#333">
+<div style="text-align:center;max-width:420px;padding:24px">
+<p style="font-size:18px;margin:0 0 12px;color:#c0392b">Não foi possível gerar</p>
+<p style="font-size:14px;line-height:1.5;margin:0;color:#555">${msg}</p>
+</div></body></html>`
+        },
+        exibirErroGeracaoDocumento(novaAba) {
+            const msg = this.mensagemErroGeracaoDocumento()
+            if (typeof toastr !== 'undefined') toastr.error(msg)
+            else mostraErro('', msg)
+
+            const blobUrl = URL.createObjectURL(new Blob([this.htmlErroGeracaoDocumento()], { type: 'text/html;charset=utf-8' }))
+            if (novaAba && !novaAba.closed) {
+                novaAba.location.href = blobUrl
+            } else {
+                window.open(blobUrl, '_blank')
+            }
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 120000)
+        },
         /**
-         * Gera carteira/etiqueta em nova aba (comportamento igual ao Blade: form POST target _blank).
+         * Blob URL: o HTML vem do POST; viramos um arquivo temporário no browser
+         * (blob:) e abrimos nessa URL — evita form.submit virar GET e document.write preso.
          * @param {string} tipo - 'treinamento' | 'bloqueio' | 'treinamento_bloqueio'
          */
-        gerarCarteiras(tipo) {
-            if (!this.selecionados.length) return
-
-            const form = document.createElement('form')
-            form.method = 'post'
-            form.action = `${URL_ADMIN}/${API_PATHS.carteiras}`
-            form.target = '_blank'
-            form.style.display = 'none'
-
-            const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-            if (token) {
-                const inputToken = document.createElement('input')
-                inputToken.type = 'hidden'
-                inputToken.name = '_token'
-                inputToken.value = token
-                form.appendChild(inputToken)
+        async gerarCarteiras(tipo) {
+            if (this.preloadCarteira) return
+            if (!this.selecionadosParaCarteira.length) {
+                if (typeof toastr !== 'undefined') toastr.warning('Selecione ao menos um colaborador com treinamento.')
+                else mostraErro('', 'Selecione ao menos um colaborador com treinamento.')
+                return
             }
 
-            const inputTipo = document.createElement('input')
-            inputTipo.type = 'hidden'
-            inputTipo.name = 'tipo'
-            inputTipo.value = tipo
-            form.appendChild(inputTipo)
+            this.carteiraTipoGeracao = tipo
+            this.preloadCarteira = true
+            this.fecharDropdown()
 
-            this.selecionados.forEach((id) => {
-                const input = document.createElement('input')
-                input.type = 'hidden'
-                input.name = 'selecionados[]'
-                input.value = id
-                form.appendChild(input)
-            })
+            const token = this.csrfToken
+            const body = new URLSearchParams()
+            if (token) body.append('_token', token)
+            body.append('tipo', tipo)
+            this.selecionadosParaCarteira.forEach((id) => body.append('selecionados[]', String(id)))
 
-            document.body.appendChild(form)
-            form.submit()
-            document.body.removeChild(form)
+            const htmlAguarde = `<!doctype html><html><head><meta charset="utf-8"><title>Gerando…</title>
+<style>
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:36px;height:36px;border:3px solid #dee2e6;border-top-color:#0d6efd;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
+</style></head>
+<body style="font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f8f9fa;color:#333">
+<div style="text-align:center">
+<div class="spinner" role="status" aria-label="Carregando"></div>
+<p style="font-size:18px;margin:0 0 8px">Gerando…</p>
+<p style="font-size:13px;color:#666;margin:0">Aguarde, isso pode levar alguns segundos.</p>
+</div></body></html>`
+
+            // Mesmo gesto do clique → evita bloqueio de popup; já mostra aviso na aba
+            let novaAba = window.open('about:blank', '_blank')
+            let urlAguarde = null
+            try {
+                urlAguarde = URL.createObjectURL(new Blob([htmlAguarde], { type: 'text/html;charset=utf-8' }))
+                if (novaAba && !novaAba.closed) {
+                    novaAba.location.href = urlAguarde
+                } else {
+                    novaAba = window.open(urlAguarde, '_blank')
+                }
+            } catch (_) { /* ignore */ }
+
+            try {
+                const response = await fetch(this.urlGerarCarteira, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                        Accept: 'text/html,application/xhtml+xml',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        ...(token ? { 'X-CSRF-TOKEN': token } : {}),
+                    },
+                    body,
+                    credentials: 'same-origin',
+                })
+                const html = await response.text()
+
+                if (!response.ok) {
+                    this.exibirErroGeracaoDocumento(novaAba)
+                    return
+                }
+
+                const blobUrl = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }))
+                if (novaAba && !novaAba.closed) {
+                    novaAba.location.href = blobUrl
+                } else {
+                    window.open(blobUrl, '_blank')
+                }
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 120000)
+            } catch (err) {
+                console.error('gerarCarteiras:', err)
+                this.exibirErroGeracaoDocumento(novaAba)
+            } finally {
+                this.preloadCarteira = false
+                if (urlAguarde) {
+                    setTimeout(() => URL.revokeObjectURL(urlAguarde), 5000)
+                }
+            }
         },
 
         formCadastra() {
@@ -2640,7 +2965,7 @@ export default defineComponent({
                 const feedback = data.Feedback || data.feedback
 
                 this.form.dadosFuncionario = data.dadosFuncionario || {}
-                this.form.segmento_treinamento_id = data.segmento_treinamento_id ?? null
+                this.tituloJanela = `Treinamentos - ${this.textoCampoModal(this.form.dadosFuncionario.nome)}`
                 this.form.listaVencimentosNaoVinculadosCargo = data.listaVencimentosNaoVinculadosCargo || []
                 this.form.alertaSemCargoVinculo = !!data.alertaSemCargoVinculo
                 this.privilegio_gestao_rh = data.privilegio_gestao_rh ?? false
@@ -2668,6 +2993,11 @@ export default defineComponent({
                     this.form.vencimentos = []
                 }
 
+                // Depois do assign: padrão fica na admissão (não no model Treinamento)
+                this.form.padrao_treinamento_id = data.padrao_treinamento_id
+                    ?? data.Admissao?.padrao_treinamento_id
+                    ?? data.admissao?.padrao_treinamento_id
+                    ?? null
                 if (feedback?.exame) {
                     Object.assign(this.form.exame, feedback.exame)
                 } else if (feedback?.id) {
@@ -2724,6 +3054,20 @@ export default defineComponent({
             }
 
             const vencimentoId = treinamento ? treinamento.id : null
+
+            // Datas obrigatórias / válidas (HTML5 date + regra de negócio)
+            const itensParaValidarData = vencimentoId
+                ? (this.form.listaVencimentos || []).filter((t) => t.id === vencimentoId && t.fez_treinamento)
+                : (this.form.listaVencimentos || []).filter((t) => t.fez_treinamento)
+            for (const item of itensParaValidarData) {
+                const erroData = this.validarDatasTreinamento(item)
+                if (erroData) {
+                    if (typeof toastr !== 'undefined') toastr.error(erroData)
+                    else mostraErro('', erroData)
+                    return false
+                }
+            }
+
             // Validação FAT obrigatório (apenas anexo): bloqueio no frontend antes de enviar (config ativa)
             if (this.treinamento_fat_obrigatorio) {
                 if (vencimentoId) {
@@ -2767,10 +3111,13 @@ export default defineComponent({
                     }
                     response = await axios.post(`${URL_ADMIN}/${API_PATHS.atualizarVencimento}`, {
                         feedback_id: this.form.feedback_id,
+                        padrao_treinamento_id: this.form.padrao_treinamento_id,
                         vencimento: item
                     })
                 } else {
-                    response = await axios.post(`${URL_ADMIN}/${API_PATHS.store}`, this.form)
+                    const payload = { ...this.form }
+                    payload.padrao_treinamento_id = this.form.padrao_treinamento_id
+                    response = await axios.post(`${URL_ADMIN}/${API_PATHS.store}`, payload)
                 }
                 if (response.status === 201) {
                     if (vencimentoId && this.form.listaVencimentos) {
@@ -2818,9 +3165,9 @@ export default defineComponent({
             // Com FAT obrigatório, o salvamento em massa não permite anexo por item; exige edição individual.
             if (this.treinamento_fat_obrigatorio && (this.formMassa.listaVencimentos || []).some((t) => t.fez_treinamento)) {
                 if (typeof toastr !== 'undefined') {
-                    toastr.error('Para este cliente o anexo da FAT é obrigatório. Salve cada treinamento individualmente pela carteira para anexar a FAT.')
+                    toastr.error('O anexo da FAT é obrigatório. Salve cada treinamento individualmente pela carteira para anexar a FAT.')
                 } else {
-                    mostraErro('', 'Para este cliente o anexo da FAT é obrigatório. Salve cada treinamento individualmente pela carteira para anexar a FAT.')
+                    mostraErro('', 'O anexo da FAT é obrigatório. Salve cada treinamento individualmente pela carteira para anexar a FAT.')
                 }
                 return
             }
@@ -3005,7 +3352,7 @@ export default defineComponent({
             d.campoUf = ''
             d.campoArea = ''
             d.campoCargo = ''
-            d.segmento_treinamento_id = ''
+            d.padrao_treinamento_id = ''
             d.campo_treinados = ''
             d.campoNr_trinta_tres = ''
             d.campoNr_trinta_cinco = ''
@@ -3037,7 +3384,7 @@ export default defineComponent({
             const resetMap = {
                 campoBusca: () => this.limparBuscaUnificada(),
                 campoCPF: () => this.limparBuscaUnificada(),
-                segmento_treinamento_id: () => (d.segmento_treinamento_id = ''),
+                padrao_treinamento_id: () => (d.padrao_treinamento_id = ''),
                 campo_treinados: () => {
                     d.campo_treinados = ''
                     d.treinamentos = ''
@@ -3193,9 +3540,48 @@ export default defineComponent({
             }
         },
 
+        dataBrValida(br) {
+            const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(br || '').trim())
+            if (!m) return false
+            const d = Number(m[1])
+            const mo = Number(m[2])
+            const y = Number(m[3])
+            const dt = new Date(y, mo - 1, d)
+            return dt.getFullYear() === y && dt.getMonth() === mo - 1 && dt.getDate() === d
+        },
+        compararDataBr(a, b) {
+            // retorna <0 se a<b, 0 se iguais, >0 se a>b (dd/mm/aaaa)
+            const toKey = (br) => {
+                const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(br || '').trim())
+                return m ? `${m[3]}${m[2]}${m[1]}` : ''
+            }
+            const ka = toKey(a)
+            const kb = toKey(b)
+            if (!ka || !kb) return 0
+            return ka < kb ? -1 : ka > kb ? 1 : 0
+        },
+        validarDatasTreinamento(treinamento) {
+            if (!treinamento || !treinamento.fez_treinamento) return null
+            if (!this.dataBrValida(treinamento.data_treinamento)) {
+                return `Informe a data do treinamento${treinamento.label ? ` (${treinamento.label})` : ''}.`
+            }
+            if (this.compararDataBr(treinamento.data_treinamento, this.dataHojeBr) > 0) {
+                return `A data do treinamento não pode ser futura${treinamento.label ? ` (${treinamento.label})` : ''}.`
+            }
+            if (!treinamento.prazo_fixo) {
+                if (!this.dataBrValida(treinamento.data_vencimento)) {
+                    return `Informe a data de vencimento${treinamento.label ? ` (${treinamento.label})` : ''}.`
+                }
+                if (this.compararDataBr(treinamento.data_vencimento, this.dataHojeBr) < 0) {
+                    return `A data de vencimento não pode ser anterior a hoje${treinamento.label ? ` (${treinamento.label})` : ''}.`
+                }
+            }
+            return null
+        },
         calculoDataExpiracao(treinamento) {
             if (treinamento) treinamento._alterado = true
             if (!treinamento.data_treinamento) return
+            if (!this.dataBrValida(treinamento.data_treinamento)) return
 
             const dateParts = treinamento.data_treinamento.split('/')
             if (dateParts.length !== 3) return

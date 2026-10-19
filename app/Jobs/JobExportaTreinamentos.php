@@ -408,17 +408,18 @@ class JobExportaTreinamentos implements ShouldQueue
             }
         }
 
-        $padraoTreinamento = $itemArray['admissao']['segmento_treinamento']['nome']
-            ?? $itemArray['admissao']['segmento_treinamento_nome']
-            ?? '';
+        $admissao = $itemArray['admissao'] ?? [];
+        $padraoTreinamento = $admissao['padrao_treinamento']['nome']
+            ?? $admissao['padrao_treinamento_nome']
+            ?? 'Não informado';
 
         return [
             $itemArray['curriculo']['nome'] ?? '',
-            $itemArray['admissao']['cargo'] ?? '',
-            $itemArray['admissao']['status'] ?? '',
-            $itemArray['admissao']['data_admissao'] ?? '',
+            $admissao['cargo'] ?? '',
+            $admissao['status'] ?? '',
+            $admissao['data_admissao'] ?? '',
             ($itemArray['curriculo']['pcd'] ?? false) ? 'Sim' : 'Não',
-            $itemArray['admissao']['area_etiqueta']['label'] ?? 'Não informado',
+            $admissao['area_etiqueta']['label'] ?? 'Não informado',
             $padraoTreinamento,
             ($itemArray['curriculo']['foto_tres'] ?? false) ? 'Sim' : 'Não',
             $vencimento['label'] ?? '',

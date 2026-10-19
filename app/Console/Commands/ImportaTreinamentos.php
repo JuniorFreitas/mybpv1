@@ -570,7 +570,8 @@ class ImportaTreinamentos extends Command
         $dados['vencimento_id'] = isset($dados['vencimento_id'])
             ? trim((string)$dados['vencimento_id'])
             : null;
-        $dados['segmento_treinamento_id'] = $this->normalizarSegmentoTreinamentoId($dados['segmento_treinamento_id'] ?? null);
+        $dados['padrao_treinamento_id'] = $this->resolverPadraoTreinamentoIdDoPayload($dados);
+        unset($dados['segmento_treinamento_id']); // JSON legado; ignorado se tabela já dropada
         $dados['tipo'] = 'Fixo';
         $dados['empresa_id'] = $this->empresaId;
         $dados['cadastrou'] = $this->empresaId;
@@ -593,9 +594,9 @@ class ImportaTreinamentos extends Command
         $dados['feedback_id'] = (int)$feedback->feedback_id;
 
         try {
-            $this->atualizarSegmentoTreinamentoAdmissaoSeExistir(
+            $this->atualizarPadraoTreinamentoAdmissaoSeExistir(
                 $dados['feedback_id'],
-                $dados['segmento_treinamento_id']
+                $dados['padrao_treinamento_id']
             );
 
             $dados['vencimento_id'] = $this->obterVencimentoValidoOuFalhar($dados['vencimento_id']);
@@ -1083,31 +1084,66 @@ class ImportaTreinamentos extends Command
         return $vencimentoIdNormalizado > 0 ? $vencimentoIdNormalizado : null;
     }
 
-    private function normalizarSegmentoTreinamentoId($segmentoTreinamentoId): ?int
+    private function normalizarIdPositivo($valor): ?int
     {
-        if ($segmentoTreinamentoId === null) {
+        if ($valor === null) {
             return null;
         }
 
-        $segmentoTreinamentoId = trim((string)$segmentoTreinamentoId);
+        $valor = trim((string) $valor);
 
-        if ($segmentoTreinamentoId === '' || !ctype_digit($segmentoTreinamentoId)) {
+        if ($valor === '' || !ctype_digit($valor)) {
             return null;
         }
 
-        $segmentoTreinamentoIdNormalizado = (int)$segmentoTreinamentoId;
+        $id = (int) $valor;
 
-        return $segmentoTreinamentoIdNormalizado > 0 ? $segmentoTreinamentoIdNormalizado : null;
+        return $id > 0 ? $id : null;
     }
 
-    private function atualizarSegmentoTreinamentoAdmissaoSeExistir(int $feedbackId, ?int $segmentoTreinamentoId): void
+    private function resolverPadraoTreinamentoIdDoPayload(array $dados): ?int
     {
-        if ($segmentoTreinamentoId === null) {
+        $padraoId = $this->normalizarIdPositivo($dados['padrao_treinamento_id'] ?? null);
+        if ($padraoId) {
+            $existe = \DB::table('padroes_treinamento')
+                ->where('id', $padraoId)
+                ->where('empresa_id', $this->empresaId)
+                ->exists();
+
+            return $existe ? $padraoId : null;
+        }
+
+        // Compatibilidade com JSON antigo que ainda traz segmento_treinamento_id.
+        if (!\Illuminate\Support\Facades\Schema::hasTable('segmentos_treinamento')) {
+            return null;
+        }
+
+        $segmentoId = $this->normalizarIdPositivo($dados['segmento_treinamento_id'] ?? null);
+        if (!$segmentoId) {
+            return null;
+        }
+
+        $slug = \DB::table('segmentos_treinamento')->where('id', $segmentoId)->value('slug');
+        if (!$slug) {
+            return null;
+        }
+
+        $padraoId = \DB::table('padroes_treinamento')
+            ->where('empresa_id', $this->empresaId)
+            ->where('slug', $slug)
+            ->value('id');
+
+        return $padraoId ? (int) $padraoId : null;
+    }
+
+    private function atualizarPadraoTreinamentoAdmissaoSeExistir(int $feedbackId, ?int $padraoTreinamentoId): void
+    {
+        if ($padraoTreinamentoId === null) {
             return;
         }
 
         $admissao = \DB::table('admissoes')
-            ->select(['id', 'segmento_treinamento_id'])
+            ->select(['id', 'padrao_treinamento_id'])
             ->where('feedback_id', $feedbackId)
             ->whereNull('deleted_at')
             ->first();
@@ -1116,15 +1152,17 @@ class ImportaTreinamentos extends Command
             return;
         }
 
-        if ((int)$admissao->segmento_treinamento_id === $segmentoTreinamentoId) {
+        if ((int) $admissao->padrao_treinamento_id === $padraoTreinamentoId) {
             return;
         }
 
         \DB::table('admissoes')
             ->where('id', $admissao->id)
-            ->update(['segmento_treinamento_id' => $segmentoTreinamentoId]);
+            ->update([
+                'padrao_treinamento_id' => $padraoTreinamentoId,
+            ]);
 
-        $this->info("Admissão {$admissao->id} atualizada com segmento_treinamento_id {$segmentoTreinamentoId}");
+        $this->info("Admissão {$admissao->id} atualizada com padrao_treinamento_id {$padraoTreinamentoId}");
     }
 
     private function obterVencimentoValidoOuFalhar($vencimentoId): int

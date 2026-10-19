@@ -340,6 +340,12 @@ export default {
       required: false,
       default: false,
     },
+    /** Word (.doc/.docx), PDF e imagens — usado no anexo FAT. */
+    apenasDocPdfImg: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     /**
      * Aceita qualquer arquivo, bloqueando apenas executáveis/instaladores.
      * Usado pelo Cloud.
@@ -507,6 +513,17 @@ export default {
   mounted() {
     if (this.apenasPdf) {
       this.mimeTypes = ["application/pdf"];
+    } else if (this.apenasDocPdfImg) {
+      this.mimeTypes = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/webp",
+        "image/gif",
+      ];
     } else if (this.apenasPdfImg) {
       this.mimeTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
     } else if (this.apenasImagens) {
@@ -935,6 +952,13 @@ export default {
         markdown: ["text/plain", "text/markdown", "text/x-markdown"],
         txt: ["text/plain"],
         webp: ["image/webp"],
+        doc: ["application/msword"],
+        docx: ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+        pdf: ["application/pdf"],
+        jpg: ["image/jpeg", "image/jpg"],
+        jpeg: ["image/jpeg", "image/jpg"],
+        png: ["image/png"],
+        gif: ["image/gif"],
         mp3: ["audio/mpeg", "audio/mpeg3", "audio/x-mpeg-3", "audio/mp3"],
         mp4: ["video/mp4", "application/mp4", "video/x-m4v"],
         eps: ["application/postscript", "application/eps", "image/x-eps", "application/x-eps"],
