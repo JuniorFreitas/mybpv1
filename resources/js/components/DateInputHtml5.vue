@@ -24,7 +24,7 @@
         />
         <div
             v-show="invalido && mensagemErro"
-            class="invalid-feedback d-block"
+            class="invalid-feedback"
             data-vue-keep
         >
             {{ mensagemErro }}
@@ -111,6 +111,9 @@ export default {
             this.invalido = true
             this.mensagemErro = msg || 'Data inválida'
             this.$emit('valido', false)
+        },
+        marcarErro(msg) {
+            this.setErro(msg)
         },
         limparErro() {
             this.invalido = false
@@ -226,8 +229,9 @@ export default {
         box-shadow: 0 0 0 3px rgba(0, 71, 214, 0.18);
     }
 
+    &.is-invalid,
     &.is-invalid:focus {
-        border-color: #dc3545;
+        border-color: #dc3545 !important;
         box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2);
     }
 }

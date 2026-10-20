@@ -216,15 +216,18 @@
 
                             <div class="col-12 col-md-4">
                                 <div class="form-group mybp-filtro-campo mybp-modal-campo-data">
-                                    <label class="mybp-label">Data da saída <span class="text-danger">*</span></label>
+                                    <label class="mybp-label" :for="`ferias-data-saida-${hash}`">
+                                        Data da saída <span class="text-danger">*</span>
+                                    </label>
                                     <datepicker
                                         :id="`ferias-data-saida-${hash}`"
+                                        ref="datepickerDataSaida"
                                         label=""
                                         formsm
-                                        class="corrigiDatepicker"
+                                        obrigatorio
                                         v-model="form.data_saida"
                                         :disabled="modalCamposBloqueados"
-                                        @onselect="limparCampoDataInvalido('ferias-data-saida-' + hash)"
+                                        @input="onInputDataSaida"
                                     ></datepicker>
                                 </div>
                             </div>
@@ -958,6 +961,7 @@ import MybpCardCampo from '../../ui/MybpCardCampo.vue'
 import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
+import datepicker from '../../DateInputHtml5.vue'
 import { resolverLabelLotacaoAtual } from '../../../utils/lotacaoLabel'
 import {
     etapaAtualFluxoAprovacao,
@@ -1118,7 +1122,8 @@ export default {
         FiltroListagem,
         MybpCardCampo,
         MybpFluxoAprovacao,
-        MybpStatusBadge
+        MybpStatusBadge,
+        datepicker
     },
     mounted() {
         this.urlParamGet()
@@ -1193,13 +1198,18 @@ export default {
             return this.form.dias_saldo
         },
         dataRetorno() {
-            let dias_ferias = this.form.qnt_dias
-            let data_saida = this.form.data_saida.split('/')
-            let data_saida_convert = data_saida[2] + '-' + data_saida[1] + '-' + data_saida[0]
-
-            let data_retorno = new Date(data_saida_convert)
-            data_retorno.setDate(data_retorno.getDate() + dias_ferias)
-            let data_retorno_ptbr =
+            const partes = String(this.form.data_saida || '').split('/')
+            if (partes.length !== 3 || partes.some((parte) => !parte)) {
+                this.form.data_retorno = ''
+                return ''
+            }
+            const data_retorno = new Date(Number(partes[2]), Number(partes[1]) - 1, Number(partes[0]))
+            if (Number.isNaN(data_retorno.getTime())) {
+                this.form.data_retorno = ''
+                return ''
+            }
+            data_retorno.setDate(data_retorno.getDate() + (Number(this.form.qnt_dias) || 0))
+            const data_retorno_ptbr =
                 this.padTo2Digits(data_retorno.getDate()) + '/' + this.padTo2Digits(data_retorno.getMonth() + 1) + '/' + data_retorno.getFullYear()
             this.form.data_retorno = data_retorno_ptbr
 
@@ -1912,6 +1922,25 @@ export default {
                 })
         },
 
+        onInputDataSaida(valor) {
+            const texto = typeof valor === 'string' ? valor : ''
+            this.form.data_saida = String(texto || '').trim()
+            this.limparCampoDataInvalido(`ferias-data-saida-${this.hash}`)
+        },
+        sincronizarDataSaidaDoInput() {
+            const seletor = `#ferias-data-saida-${this.hash}`
+            const input = document.querySelector(seletor)
+            if (!input || !input.value) {
+                return
+            }
+            const bruto = String(input.value).trim()
+            if (!bruto || bruto === 'Invalid date') {
+                return
+            }
+            const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(bruto)
+            this.form.data_saida = iso ? `${iso[3]}/${iso[2]}/${iso[1]}` : bruto
+        },
+
         validarCamposSolicitacao(opts = {}) {
             const exigirColaborador = opts.exigirColaborador !== false
 
@@ -1944,6 +1973,14 @@ export default {
             }
 
             const dataId = `ferias-data-saida-${this.hash}`
+            this.sincronizarDataSaidaDoInput()
+            const refData = this.$refs.datepickerDataSaida
+            const msgData = 'Informe a data de saída'
+            if (refData && typeof refData.validar === 'function' && !refData.validar()) {
+                if (typeof refData.marcarErro === 'function') refData.marcarErro(msgData)
+                if (typeof mostraErro === 'function') mostraErro('', msgData)
+                return false
+            }
             if (
                 !this.exigirCampoData(this.form.data_saida, dataId, {
                     toastMsg: 'Informe a data de saída'

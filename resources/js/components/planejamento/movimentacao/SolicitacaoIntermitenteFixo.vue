@@ -1614,11 +1614,6 @@ export default {
                 return false
             }
 
-            if (this.form.filial && !this.form.centro_custo_filial_id) {
-                mostraErro('', 'Centro de custo de filial inválido')
-                return false
-            }
-
             if (!this.form.novo_cargo_id) {
                 valida_campo_vazio($(`#novo_cargo_${this.hash}`), 1)
                 $(`#${this.hash} #novo_cargo_${this.hash}`).focus().trigger('blur')

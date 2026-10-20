@@ -1333,6 +1333,7 @@ export default {
                 .post(`${URL_PUBLICO}/centro-custos/`)
                 .then((res) => {
                     this.centro_custos = res.data.centro_custos
+                    this.sincronizarFilialPeloCentroCusto()
                 })
                 .catch((error) => {
                     this.preload = false
@@ -1682,10 +1683,10 @@ export default {
 
             const dataId = `demissao-data-${this.hash}`
             const refData = this.$refs.datepickerDataDemissao
+            const msgData = 'Campo DATA DA DEMISSÃO não pode ficar vazio'
             if (refData && typeof refData.validar === 'function' && !refData.validar()) {
-                if (typeof mostraErro === 'function') {
-                    mostraErro('', 'Campo DATA DA DEMISSÃO não pode ficar vazio')
-                }
+                if (typeof refData.marcarErro === 'function') refData.marcarErro(msgData)
+                if (typeof mostraErro === 'function') mostraErro('', msgData)
                 return false
             }
             if (
@@ -1805,6 +1806,7 @@ export default {
             this.form.centro_custo_id = cc.centro_custo_id
             this.form.filial = cc.filial
             this.form.centro_custo_filial_id = cc.centro_custo_filial_id
+            this.sincronizarFilialPeloCentroCusto()
 
             if (this.colaboradorSemCentroCusto && typeof mostraWarning === 'function') {
                 mostraWarning(
@@ -1813,12 +1815,46 @@ export default {
                 )
             }
         },
+        sincronizarFilialPeloCentroCusto() {
+            const lotacao = this.lotacaoDefinidaPeloCentroCusto(this.form)
+            if (!lotacao) {
+                return
+            }
+            this.form.filial = lotacao.filial
+            this.form.centro_custo_filial_id = lotacao.centro_custo_filial_id
+        },
+        lotacaoDefinidaPeloCentroCusto(origem) {
+            if ([undefined, null, '', 0, '0'].includes(origem.centro_custo_id)) {
+                return { filial: false, centro_custo_filial_id: null }
+            }
+            if (!this.centro_custos || !this.centro_custos.length) {
+                return null
+            }
+            const ccId = String(origem.centro_custo_id)
+            const centro = _.find(this.centro_custos, (cc) => String(cc.id) === ccId)
+            if (!centro) {
+                return null
+            }
+            const filiais = (centro.filiais || centro.Filiais || []).filter((item) => item && item.id)
+            if (!filiais.length) {
+                return { filial: false, centro_custo_filial_id: null }
+            }
+            const atual = origem.centro_custo_filial_id
+            const escolhida = _.find(filiais, (item) => String(item.id) === String(atual)) || filiais[0]
+            return { filial: true, centro_custo_filial_id: escolhida.id }
+        },
         montarPayloadDemissao() {
             const payload = _.cloneDeep(this.form)
             if ([undefined, null, '', 0, '0'].includes(payload.centro_custo_id)) {
                 payload.centro_custo_id = null
                 payload.filial = false
                 payload.centro_custo_filial_id = null
+                return payload
+            }
+            const lotacao = this.lotacaoDefinidaPeloCentroCusto(payload)
+            if (lotacao) {
+                payload.filial = lotacao.filial
+                payload.centro_custo_filial_id = lotacao.centro_custo_filial_id
             }
             return payload
         },

@@ -13,6 +13,7 @@ use App\Models\LogHistorico;
 use App\Models\MudancaCargo;
 use App\Models\PeriodoAquisitivo;
 use App\Models\Sistema;
+use App\Services\Planejamento\Movimentacao\LotacaoCentroCustoNormalizer;
 use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
 use DB;
 use Illuminate\Http\Request;
@@ -49,11 +50,12 @@ class MudancaCargoController extends Controller
     public function store(Request $request)
     {
         $dados = $request->input();
+        $dados = $this->normalizarLotacaoMudancaCargo($dados);
 
         $dadosValidados = \Validator::make($dados,
             [
                 'novo_centro_custo_id' => 'required_if:mantem_centro_custo,false',
-                'novo_centro_custo_filial_id' => 'required_if:novo_filial,true',
+                'novo_centro_custo_filial_id' => 'nullable|integer',
                 'nova_vaga_aberta_id' => 'required_if:mantem_cargo,false',
                 'nova_funcao' => 'required_if:mantem_funcao,false',
                 'novo_salario' => 'required_if:mantem_salario,false',
@@ -472,6 +474,7 @@ class MudancaCargoController extends Controller
             ]);
 
             $admissao = Admissao::with('Feedback')->find($dados['admissao_id']);
+            $dados = $this->normalizarLotacaoMudancaCargo($dados);
 
             if ($dados['status_aprovacao_rh'] === 'aprovado') {
 
@@ -660,5 +663,31 @@ class MudancaCargoController extends Controller
         $nomeArquivo = 'mudanca_cargo_' . rand(1000, 9999) . '_' . date('YmdHis') . '.csv';
         JobMudaCargoPrevistaExportaExcel::dispatch(auth()->id(), 'Planejamento - Movimentação - Mudança de Cargo', $nomeArquivo, $filtros);
         return response()->json(['msg' => 'Estamos gerando seu arquivo, assim que finalizado você será notificado.']);
+    }
+
+    private function normalizarLotacaoMudancaCargo(array $dados): array
+    {
+        $normalizer = app(LotacaoCentroCustoNormalizer::class);
+        $dados = $normalizer->aplicar(
+            $dados,
+            'anterior_centro_custo_id',
+            'anterior_filial',
+            'anterior_centro_custo_filial_id'
+        );
+
+        $mantemCentroCusto = filter_var($dados['mantem_centro_custo'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        if ($mantemCentroCusto) {
+            $dados['novo_filial'] = false;
+            $dados['novo_centro_custo_filial_id'] = null;
+
+            return $dados;
+        }
+
+        return $normalizer->aplicar(
+            $dados,
+            'novo_centro_custo_id',
+            'novo_filial',
+            'novo_centro_custo_filial_id'
+        );
     }
 }

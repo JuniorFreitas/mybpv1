@@ -158,6 +158,13 @@ export function exigirCombobox(valor, inputId, opts = {}) {
 export function marcarCampoDataObrigatorio(inputId, mensagem = MSG_PADRAO) {
     const el = resolverElemento(inputId)
     if (!el) return false
+    const datepicker = el.closest('.dp')
+    const vm = datepicker && el.__vueParentComponent && el.__vueParentComponent.proxy
+    if (vm && typeof vm.marcarErro === 'function') {
+        vm.marcarErro(mensagem || MSG_PADRAO)
+        if (typeof el.focus === 'function') el.focus()
+        return true
+    }
     el.classList.add('is-invalid')
     const parent = el.parentElement
     if (parent) {
@@ -182,10 +189,15 @@ export function marcarCampoDataObrigatorio(inputId, mensagem = MSG_PADRAO) {
 export function limparCampoDataInvalido(inputId) {
     const el = resolverElemento(inputId)
     if (!el) return
+    if (el.closest('.dp')) {
+        const vm = el.__vueParentComponent && el.__vueParentComponent.proxy
+        if (vm && typeof vm.limparErro === 'function') vm.limparErro()
+        return
+    }
     el.classList.remove('is-invalid')
     const parent = el.parentElement
     if (parent) {
-        parent.querySelectorAll(':scope > .invalid-feedback').forEach((n) => n.remove())
+        parent.querySelectorAll(':scope > .invalid-feedback:not([data-vue-keep])').forEach((n) => n.remove())
     }
     if (typeof $ !== 'undefined') {
         $(el).siblings('div.invalid-feedback').remove()

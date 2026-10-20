@@ -14,6 +14,7 @@ use App\Models\DocumentoParaAssinatura;
 use App\Services\Demissao\ComunicadoDispensaSemJustaCausaPdfService;
 use App\Services\DemissaoPrevista\DemissaoPrevistaEditPayloadMapper;
 use App\Services\DemissaoPrevista\DemissaoPrevistaFilterApplier;
+use App\Services\DemissaoPrevista\DemissaoPrevistaLotacaoNormalizer;
 use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
 use App\Support\RuntimePublicId;
 use DB;
@@ -37,18 +38,13 @@ class DemissaoPrevistaController extends Controller
         $dados = $request->input();
         $dados['valor'] = $dados['valor_format'];
         $dados['user_id'] = auth()->user()->id;
-        $dados['centro_custo_id'] = $this->normalizarCentroCustoId($dados['centro_custo_id'] ?? null);
-
-        if ($dados['centro_custo_id'] === null) {
-            $dados['filial'] = false;
-            $dados['centro_custo_filial_id'] = null;
-        }
+        $dados = app(DemissaoPrevistaLotacaoNormalizer::class)->aplicar($dados);
 
         $dadosValidados = \Validator::make(
             $dados,
             [
                 'centro_custo_id' => 'nullable|integer|exists:centro_custos,id',
-                'centro_custo_filial_id' => 'nullable|required_if:filial,true|integer',
+                'centro_custo_filial_id' => 'nullable|integer',
                 'colaborador_id' => 'required',
                 'valor_format' => 'required',
             ]
@@ -129,12 +125,7 @@ class DemissaoPrevistaController extends Controller
     {
         $dados = $request->input();
         $dados['valor'] = $dados['valor_format'];
-        $dados['centro_custo_id'] = $this->normalizarCentroCustoId($dados['centro_custo_id'] ?? null);
-
-        if ($dados['centro_custo_id'] === null) {
-            $dados['filial'] = false;
-            $dados['centro_custo_filial_id'] = null;
-        }
+        $dados = app(DemissaoPrevistaLotacaoNormalizer::class)->aplicar($dados);
 
         $dadosValidados = \Validator::make(
             $dados,
@@ -634,14 +625,4 @@ class DemissaoPrevistaController extends Controller
         }
     }
 
-    private function normalizarCentroCustoId(mixed $valor): ?int
-    {
-        if ($valor === null || $valor === '' || $valor === false) {
-            return null;
-        }
-
-        $id = (int) $valor;
-
-        return $id > 0 ? $id : null;
-    }
 }

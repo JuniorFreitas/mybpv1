@@ -11,6 +11,7 @@ use App\Models\Arquivo;
 use App\Models\CentroCusto;
 use App\Services\AdmissoesPrevista\AdmissoesPrevistaEditPayloadMapper;
 use App\Services\AdmissoesPrevista\AdmissoesPrevistaFilterApplier;
+use App\Services\Planejamento\Movimentacao\LotacaoCentroCustoNormalizer;
 use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,12 +30,13 @@ class AdmissoesPrevistaController extends Controller
         $dados = $request->input();
         $dados['salario'] = $dados['salario_format'];
         $dados['user_id'] = auth()->user()->id;
+        $dados = app(LotacaoCentroCustoNormalizer::class)->aplicar($dados);
 
         $dadosValidados = \Validator::make(
             $dados,
             [
                 'centro_custo_id' => 'required',
-                'centro_custo_filial_id' => 'required_if:filial,true',
+                'centro_custo_filial_id' => 'nullable|integer',
                 'tipo_contrato' => 'required|in:' . implode(',', Admissao::TODOS_TIPOS_ADMISSAO),
                 'cargo_id' => 'required',
                 'salario_format' => 'required',
@@ -122,6 +124,7 @@ class AdmissoesPrevistaController extends Controller
     {
         $dados = $request->input();
         $dados['salario'] = $dados['salario_format'];
+        $dados = app(LotacaoCentroCustoNormalizer::class)->aplicar($dados);
 
         $dadosValidados = \Validator::make(
             $dados,

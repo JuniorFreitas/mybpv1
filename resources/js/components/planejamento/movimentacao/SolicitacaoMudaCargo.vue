@@ -285,30 +285,32 @@
                                 </div>
                             </div>
                             <div class="col-12 col-md-3" v-if="form.treinamento_funcao">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Data Início</label>
+                                <div class="form-group mybp-filtro-campo mybp-modal-campo-data">
+                                    <label class="mybp-label" :for="`mudacargo-trein-inicio-${hash}`">Data Início</label>
                                     <datepicker
                                         :id="`mudacargo-trein-inicio-${hash}`"
+                                        ref="datepickerTreinamentoInicio"
                                         formsm
                                         label=""
-                                        class="corrigiDatepicker"
+                                        obrigatorio
                                         v-model="form.treinamento_data_inicio"
                                         :disabled="visualizar || aprovandoRh || aprovando"
-                                        @onselect="limparCampoDataInvalido('mudacargo-trein-inicio-' + hash)"
+                                        @input="onInputDataTreinamentoInicio"
                                     ></datepicker>
                                 </div>
                             </div>
                             <div class="col-12 col-md-3" v-if="form.treinamento_funcao">
-                                <div class="form-group mybp-filtro-campo">
-                                    <label class="mybp-label">Data Fim</label>
+                                <div class="form-group mybp-filtro-campo mybp-modal-campo-data">
+                                    <label class="mybp-label" :for="`mudacargo-trein-fim-${hash}`">Data Fim</label>
                                     <datepicker
                                         :id="`mudacargo-trein-fim-${hash}`"
+                                        ref="datepickerTreinamentoFim"
                                         formsm
                                         label=""
-                                        class="corrigiDatepicker"
+                                        obrigatorio
                                         v-model="form.treinamento_data_fim"
                                         :disabled="visualizar || aprovandoRh || aprovando"
-                                        @onselect="limparCampoDataInvalido('mudacargo-trein-fim-' + hash)"
+                                        @input="onInputDataTreinamentoFim"
                                     ></datepicker>
                                 </div>
                             </div>
@@ -1006,6 +1008,7 @@ import MybpCardCampo from '../../ui/MybpCardCampo.vue'
 import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
+import datepicker from '../../DateInputHtml5.vue'
 import {
     normalizarCcFilialDaAdmissao,
     resolverCnpjKeyViaListaCcs,
@@ -1036,7 +1039,8 @@ export default {
         ComboboxAutoComplete,
         MybpCardCampo,
         MybpFluxoAprovacao,
-        MybpStatusBadge
+        MybpStatusBadge,
+        datepicker
     },
     data() {
         return {
@@ -1947,7 +1951,16 @@ export default {
 
             const inicioId = `mudacargo-trein-inicio-${this.hash}`
             const fimId = `mudacargo-trein-fim-${this.hash}`
+            this.sincronizarDataDoInput(inicioId, 'treinamento_data_inicio')
+            this.sincronizarDataDoInput(fimId, 'treinamento_data_fim')
 
+            const refInicio = this.$refs.datepickerTreinamentoInicio
+            const msgInicio = 'A data de início do treinamento é obrigatória'
+            if (refInicio && typeof refInicio.validar === 'function' && !refInicio.validar()) {
+                if (typeof refInicio.marcarErro === 'function') refInicio.marcarErro(msgInicio)
+                mostraErro('', msgInicio)
+                return false
+            }
             if (
                 !this.exigirCampoData(this.form.treinamento_data_inicio, inicioId, {
                     toastMsg: 'A data de início do treinamento é obrigatória'
@@ -1956,6 +1969,13 @@ export default {
                 return false
             }
 
+            const refFim = this.$refs.datepickerTreinamentoFim
+            const msgFim = 'A data de fim do treinamento é obrigatória'
+            if (refFim && typeof refFim.validar === 'function' && !refFim.validar()) {
+                if (typeof refFim.marcarErro === 'function') refFim.marcarErro(msgFim)
+                mostraErro('', msgFim)
+                return false
+            }
             if (
                 !this.exigirCampoData(this.form.treinamento_data_fim, fimId, {
                     toastMsg: 'A data de fim do treinamento é obrigatória'
@@ -1974,7 +1994,14 @@ export default {
                     const dataFim = new Date(parseInt(dataFimParts[2]), parseInt(dataFimParts[1]) - 1, parseInt(dataFimParts[0]))
 
                     if (dataInicio > dataFim) {
-                        mostraErro('', 'A data de início do treinamento não pode ser maior que a data de fim do treinamento')
+                        const msgOrdem = 'A data de início do treinamento não pode ser maior que a data de fim do treinamento'
+                        if (this.$refs.datepickerTreinamentoInicio && typeof this.$refs.datepickerTreinamentoInicio.marcarErro === 'function') {
+                            this.$refs.datepickerTreinamentoInicio.marcarErro(msgOrdem)
+                        }
+                        if (this.$refs.datepickerTreinamentoFim && typeof this.$refs.datepickerTreinamentoFim.marcarErro === 'function') {
+                            this.$refs.datepickerTreinamentoFim.marcarErro('A data de fim do treinamento não pode ser menor que a data de início')
+                        }
+                        mostraErro('', msgOrdem)
                         return false
                     }
                 }
@@ -1991,6 +2018,26 @@ export default {
             }
 
             return true
+        },
+        onInputDataTreinamentoInicio(valor) {
+            this.form.treinamento_data_inicio = String(valor || '').trim()
+            this.limparCampoDataInvalido(`mudacargo-trein-inicio-${this.hash}`)
+        },
+        onInputDataTreinamentoFim(valor) {
+            this.form.treinamento_data_fim = String(valor || '').trim()
+            this.limparCampoDataInvalido(`mudacargo-trein-fim-${this.hash}`)
+        },
+        sincronizarDataDoInput(id, campo) {
+            const input = document.querySelector(`#${id}`)
+            if (!input || !input.value) {
+                return
+            }
+            const bruto = String(input.value).trim()
+            if (!bruto || bruto === 'Invalid date') {
+                return
+            }
+            const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(bruto)
+            this.form[campo] = iso ? `${iso[3]}/${iso[2]}/${iso[1]}` : bruto
         },
         async cadastrar() {
             if (!this.validarCamposSolicitacao()) {
@@ -2055,10 +2102,6 @@ export default {
                         { toastMsg: 'Selecione o novo centro de custo' }
                     )
                 ) {
-                    return false
-                }
-                if (this.form.novo_filial && !this.form.novo_centro_custo_filial_id) {
-                    mostraErro('', 'Centro de custo de filial inválido')
                     return false
                 }
             }

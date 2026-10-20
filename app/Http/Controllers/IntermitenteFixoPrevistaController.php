@@ -10,6 +10,7 @@ use App\Models\Arquivo;
 use App\Models\CentroCusto;
 use App\Models\Cliente;
 use App\Models\IntermitenteFixoPrevista;
+use App\Services\Planejamento\Movimentacao\LotacaoCentroCustoNormalizer;
 use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
 use App\Models\LogHistorico;
 use App\Models\VagasAbertas;
@@ -33,13 +34,13 @@ class IntermitenteFixoPrevistaController extends Controller
         $dados['salario_anterior'] = $dados['salario_anterior_format'];
         $dados['novo_salario'] = $dados['novo_salario_format'];
         $dados['user_id'] = auth()->user()->id;
-        $dados['centro_custo_filial_id'] = $dados['filial'] ? $dados['centro_custo_filial_id'] : null;
+        $dados = app(LotacaoCentroCustoNormalizer::class)->aplicar($dados);
 
         $dadosValidados = \Validator::make(
             $dados,
             [
                 'centro_custo_id' => 'required',
-                'centro_custo_filial_id' => 'required_if:filial,true',
+                'centro_custo_filial_id' => 'nullable|integer',
                 'colaborador_id' => 'required',
                 'cargo_anterior_id' => 'required',
                 'salario_anterior_format' => 'required',
@@ -131,7 +132,7 @@ class IntermitenteFixoPrevistaController extends Controller
         $dados['salario_anterior'] = $dados['salario_anterior_format'];
         $dados['novo_salario'] = $dados['novo_salario_format'];
         $dados['user_id'] = auth()->user()->id;
-
+        $dados = app(LotacaoCentroCustoNormalizer::class)->aplicar($dados);
 
         $dadosValidados = \Validator::make(
             $dados,
@@ -303,6 +304,7 @@ class IntermitenteFixoPrevistaController extends Controller
                 $admissao_id = $intermitenteFixoPrevista->Colaborador->Curriculo->FeedBack->Admissao->id;
                 $admissao = Admissao::find($admissao_id);
                 $admissao->load('CentroCusto');
+                $dados = app(LotacaoCentroCustoNormalizer::class)->aplicar($dados);
 
                 $admissao->update([
                     'centro_custo_id' => $dados['centro_custo_id'],

@@ -138,15 +138,18 @@
 
                             <div class="col-12 col-md-4">
                                 <div class="form-group mybp-filtro-campo mybp-modal-campo-data">
-                                    <label class="mybp-label">Data admissão <span class="text-danger">*</span></label>
+                                    <label class="mybp-label" :for="`admissao-data-${hash}`">
+                                        Data admissão <span class="text-danger">*</span>
+                                    </label>
                                     <datepicker
                                         :id="`admissao-data-${hash}`"
-                                        formsm
+                                        ref="datepickerDataAdmissao"
                                         label=""
-                                        class="corrigiDatepicker"
+                                        formsm
+                                        obrigatorio
                                         v-model="form.data_admissao"
                                         :disabled="modalCamposBloqueados"
-                                        @onselect="onSelectDataAdmissao"
+                                        @input="onSelectDataAdmissao"
                                     ></datepicker>
                                 </div>
                             </div>
@@ -754,6 +757,7 @@ import MybpCardCampo from '../../ui/MybpCardCampo.vue'
 import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
+import datepicker from '../../DateInputHtml5.vue'
 import { resolverCnpjKeyViaListaCcs } from '../../../utils/lotacaoLabel'
 import {
     etapaAtualFluxoAprovacao,
@@ -776,7 +780,8 @@ export default {
         FiltroListagem,
         MybpCardCampo,
         MybpFluxoAprovacao,
-        MybpStatusBadge
+        MybpStatusBadge,
+        datepicker
     },
     data() {
         return {
@@ -1603,11 +1608,6 @@ export default {
                 return false
             }
 
-            if (this.form.filial && !this.form.centro_custo_filial_id) {
-                mostraErro('', 'Centro de custo de filial inválido')
-                return false
-            }
-
             if (
                 !this.exigirCombobox(this.form.tipo_contrato, `admissao-tipo-${this.hash}`, {
                     toastMsg: 'Selecione o tipo de admissão'
@@ -1617,6 +1617,13 @@ export default {
             }
 
             const dataId = `admissao-data-${this.hash}`
+            const refData = this.$refs.datepickerDataAdmissao
+            const msgData = 'Campo DATA ADMISSÃO não pode ficar vazio'
+            if (refData && typeof refData.validar === 'function' && !refData.validar()) {
+                if (typeof refData.marcarErro === 'function') refData.marcarErro(msgData)
+                if (typeof mostraErro === 'function') mostraErro('', msgData)
+                return false
+            }
             if (
                 !this.exigirCampoData(this.form.data_admissao, dataId, {
                     toastMsg: 'Campo DATA ADMISSÃO não pode ficar vazio'

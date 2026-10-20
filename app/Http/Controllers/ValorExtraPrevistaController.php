@@ -8,6 +8,7 @@ use App\Models\Arquivo;
 use App\Models\CentroCusto;
 use App\Models\LogHistorico;
 use App\Models\ValorExtraPrevista;
+use App\Services\Planejamento\Movimentacao\LotacaoCentroCustoNormalizer;
 use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
 use App\Services\ValorExtraPrevista\ValorExtraPrevistaEditPayloadMapper;
 use Illuminate\Http\Request;
@@ -27,12 +28,13 @@ class ValorExtraPrevistaController extends Controller
         $dados = $request->input();
 
         $dados['user_id'] = auth()->user()->id;
+        $dados = app(LotacaoCentroCustoNormalizer::class)->aplicar($dados);
         $dadosValidados = \Validator::make(
             $dados,
             [
                 'centro_custo_id' => 'required',
                 'colaborador_id' => 'required',
-                'centro_custo_filial_id' => 'required_if:filial,true',
+                'centro_custo_filial_id' => 'nullable|integer',
                 'tipo' => 'required',
                 'periodo_dias' => 'required',
             ]
@@ -114,6 +116,7 @@ class ValorExtraPrevistaController extends Controller
     public function update(Request $request, ValorExtraPrevista $valorExtraPrevista)
     {
         $dados = $request->input();
+        $dados = app(LotacaoCentroCustoNormalizer::class)->aplicar($dados);
 
         $dadosValidados = \Validator::make(
             $dados,

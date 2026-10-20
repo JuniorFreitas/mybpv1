@@ -84,6 +84,26 @@
     box-sizing: border-box !important;
 }
 
+.mybp-filtros-compactos .mybp-filtro-campo input.is-invalid:not([type='checkbox']):not([type='radio']):not([type='hidden']),
+.mybp-filtros-compactos .mybp-filtro-campo .form-control.is-invalid:not(textarea),
+.mybp-filtros-compactos .mybp-modal-campo-data input.is-invalid,
+.mybp-filtros-compactos .dp input.is-invalid,
+.mybp-modal-form .mybp-modal-campo-data .form-control.is-invalid,
+.mybp-modal-form .dp .form-control.is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.15rem rgba(220, 53, 69, 0.18) !important;
+    background-image: none;
+}
+
+.mybp-modal-form .dp > .invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.2rem;
+    font-size: 0.68rem;
+    line-height: 1.25;
+    color: #dc3545;
+}
+
 .mybp-filtros-compactos .mybp-filtro-campo textarea.form-control,
 .mybp-filtros-compactos .mybp-filtro-campo textarea.form-control-sm,
 .mybp-filtros-compactos textarea.form-control,

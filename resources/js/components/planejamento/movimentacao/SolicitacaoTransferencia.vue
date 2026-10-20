@@ -129,15 +129,18 @@
 
                             <div class="col-12 col-md-4">
                                 <div class="form-group mybp-filtro-campo mybp-modal-campo-data">
-                                    <label class="mybp-label">Data para transferência <span class="text-danger">*</span></label>
+                                    <label class="mybp-label" :for="`transferencia-data-${hash}`">
+                                        Data para transferência <span class="text-danger">*</span>
+                                    </label>
                                     <datepicker
                                         :id="`transferencia-data-${hash}`"
-                                        formsm
+                                        ref="datepickerDataTransferencia"
                                         label=""
-                                        class="corrigiDatepicker"
+                                        formsm
+                                        obrigatorio
                                         v-model="form.data_transferencia"
                                         :disabled="visualizar || aprovando || aprovandoGestorDestino || aprovandoExtra || aprovandoRh"
-                                        @onselect="limparCampoDataInvalido(`transferencia-data-${hash}`)"
+                                        @input="onInputDataTransferencia"
                                     ></datepicker>
                                 </div>
                             </div>
@@ -906,6 +909,7 @@ import _ from 'lodash'
 import Upload from '../../Upload'
 import colaborador from '../../Colaborador'
 import DateRangeFilter from '../../DateRangeFilter'
+import datepicker from '../../DateInputHtml5.vue'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete.vue'
 import FiltroListagem from '../../ui/FiltroListagem.vue'
 import MybpCardCampo from '../../ui/MybpCardCampo.vue'
@@ -983,7 +987,8 @@ export default defineComponent({
         FiltroListagem,
         MybpCardCampo,
         MybpFluxoAprovacao,
-        MybpStatusBadge
+        MybpStatusBadge,
+        datepicker
     },
     mixins: [Validacoes, configuracoes],
     inject: {
@@ -994,6 +999,7 @@ export default defineComponent({
         const modalRef = ref(null)
         const modalStatusRef = ref(null)
         const componenteRef = ref(null)
+        const datepickerDataTransferencia = ref(null)
         const hash = `mybp_${Math.floor(Math.random() * 999999)}`
         const formStatusAprovacaoOpcoes = [
             { value: '', label: 'Selecione...' },
@@ -1390,6 +1396,24 @@ export default defineComponent({
             return ''
         }
 
+        function onInputDataTransferencia(valor) {
+            form.data_transferencia = String(valor || '').trim()
+            limparCampoDataInvalido(`transferencia-data-${hash}`)
+        }
+
+        function sincronizarDataTransferenciaDoInput() {
+            const input = document.querySelector(`#transferencia-data-${hash}`)
+            if (!input || !input.value) {
+                return
+            }
+            const bruto = String(input.value).trim()
+            if (!bruto || bruto === 'Invalid date') {
+                return
+            }
+            const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(bruto)
+            form.data_transferencia = iso ? `${iso[3]}/${iso[2]}/${iso[1]}` : bruto
+        }
+
         function validarColaboradorEGestor() {
             if (!form.colaborador_id) {
                 const inputId = `colaborador_${hash}`
@@ -1437,6 +1461,14 @@ export default defineComponent({
                     mostraErro('', 'O centro de custo de destino está inativo. Selecione um centro de custo ativo.')
                 }
                 form.centro_custo_destino_id = ''
+                return false
+            }
+            sincronizarDataTransferenciaDoInput()
+            const refData = datepickerDataTransferencia.value
+            const msgData = 'Informe a data para transferência'
+            if (refData && typeof refData.validar === 'function' && !refData.validar()) {
+                if (typeof refData.marcarErro === 'function') refData.marcarErro(msgData)
+                if (typeof mostraErro === 'function') mostraErro('', msgData)
                 return false
             }
             if (
@@ -2426,6 +2458,8 @@ export default defineComponent({
             modalRef,
             modal_janelaAtualizaStatus: modalStatusRef,
             componente: componenteRef,
+            datepickerDataTransferencia,
+            onInputDataTransferencia,
             hash,
             formStatusAprovacaoOpcoes,
             limparComboboxInvalido,
