@@ -825,6 +825,7 @@ class AdmissaoController extends Controller
             $feedback->Admissao->foto_escaneada = $feedback->Admissao->foto_escaneada ?? "";
             $feedback->Admissao->status = $feedback->Admissao->status ?? "";
             $feedback->Admissao->data_admissao = $feedback->Admissao->data_admissao ?? "";
+            $feedback->Admissao->matricula = $feedback->Admissao->matricula ?? "";
 //            $feedback->Admissao->data_aso = $feedback->UltimoAso->data_realizacao ?? "";
             $feedback->Admissao->salario = $feedback->Admissao->salario ?? "0,00";
             $feedback->Admissao->prazo_experiencia = $feedback->Admissao->prazo_experiencia ?? "";
@@ -889,6 +890,7 @@ class AdmissaoController extends Controller
             'admissao.status' => 'required|in:' . implode(',', Admissao::TODOS_STATUS_ADMISSAO),
             'admissao.status_carteira_treinamento' => 'sometimes|nullable|string|in:' . implode(',', Admissao::TODOS_STATUS_CARTEIRA_TREINAMETO),
             'admissao.padrao_treinamento_id' => 'sometimes|nullable|integer|exists:padroes_treinamento,id',
+            'admissao.matricula' => 'sometimes|nullable|string|max:255',
         ]);
         if ($dadosValidados->fails()) {
             return response()->json([

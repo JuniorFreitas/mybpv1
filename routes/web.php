@@ -486,12 +486,14 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::get('carteirastreinamento/lista', [\App\Http\Controllers\CarteiraTreinamentoController::class, 'listar'])->name('lista');
             Route::get('carteirastreinamento/empresas', [\App\Http\Controllers\CarteiraTreinamentoController::class, 'empresas'])->name('empresas');
             Route::post('carteirastreinamento/atualizar', [\App\Http\Controllers\CarteiraTreinamentoController::class, 'atualizar'])->name('atualizar');
+            Route::post('carteirastreinamento/{id}/clonar', [\App\Http\Controllers\CarteiraTreinamentoController::class, 'clonar'])->name('clonar')->whereNumber('id');
             Route::resource('carteirastreinamento', \App\Http\Controllers\CarteiraTreinamentoController::class)->only(['index', 'store', 'update']);
         });
 
         Route::group(['as' => 'etiquetasbloqueio.', 'middleware' => 'can:cadastro_treinamento_industria'], function () {
             Route::get('etiquetasbloqueio/lista', [\App\Http\Controllers\EtiquetaBloqueioController::class, 'listar'])->name('lista');
             Route::post('etiquetasbloqueio/atualizar', [\App\Http\Controllers\EtiquetaBloqueioController::class, 'atualizar'])->name('atualizar');
+            Route::post('etiquetasbloqueio/{id}/clonar', [\App\Http\Controllers\EtiquetaBloqueioController::class, 'clonar'])->name('clonar')->whereNumber('id');
             Route::resource('etiquetasbloqueio', \App\Http\Controllers\EtiquetaBloqueioController::class)->only(['index', 'store', 'update']);
         });
 

@@ -21,6 +21,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string|null $bloqueio_texto_demissao
  * @property string|null $bloqueio_texto_cuidado
  * @property string|null $bloqueio_texto_homens_trabalhando
+ * @property string $identificador
+ * @property string|null $blade
  */
 class EtiquetaBloqueio extends Model
 {
@@ -40,6 +42,8 @@ class EtiquetaBloqueio extends Model
         'bloqueio_texto_demissao',
         'bloqueio_texto_cuidado',
         'bloqueio_texto_homens_trabalhando',
+        'identificador',
+        'blade',
     ];
 
     protected $casts = [
@@ -92,6 +96,8 @@ class EtiquetaBloqueio extends Model
             'bloqueio_texto_demissao' => (string) ($this->bloqueio_texto_demissao ?? ''),
             'bloqueio_texto_cuidado' => (string) ($this->bloqueio_texto_cuidado ?? ''),
             'bloqueio_texto_homens_trabalhando' => (string) ($this->bloqueio_texto_homens_trabalhando ?? ''),
+            'identificador_etiqueta' => (string) ($this->identificador ?: 'chapa'),
+            'blade_etiqueta' => $this->blade,
         ];
     }
 }

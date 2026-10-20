@@ -155,6 +155,7 @@ Guia para modelos de IA atuarem com seguranca, qualidade e performance no projet
 ## 19) Referencias rapidas
 
 - Documentacao principal: `docs/README.md`
+- Implantacao de cliente (cadastro, flags, cadastros e modulos): `docs/CONFIGURACAO_NOVO_CLIENTE.md`
 - Deploy: `docs/README-DEPLOY.md`
 - Scripts de agents: `agents/scripts/README.md`
 - Padroes internos: `agents/*/README.md`

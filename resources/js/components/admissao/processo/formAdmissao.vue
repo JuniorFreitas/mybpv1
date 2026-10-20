@@ -282,6 +282,20 @@
                     </div>
                     <div class="col-12 col-md-4">
                         <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label" for="fa-matricula">Matrícula</label>
+                            <input
+                                id="fa-matricula"
+                                type="text"
+                                class="form-control form-control-sm"
+                                maxlength="255"
+                                onblur="valida_campo(this, 1)"
+                                :disabled="visualizar || disabled"
+                                v-model="form.matricula"
+                            />
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="form-group mybp-filtro-campo">
                             <label class="mybp-label" for="fa-status-carteira">Status Carteira / Etiqueta</label>
                             <div class="mybp-combobox-wrap">
                                 <combobox-auto-complete

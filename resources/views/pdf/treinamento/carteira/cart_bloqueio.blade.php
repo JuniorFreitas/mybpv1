@@ -94,8 +94,8 @@
                                     </strong>
                                 </h6>
                                 <h6 class="etiqueta-meta-linha">
-                                    CHAPA/ID: <strong>
-                                        {{ mb_strtoupper($treinamento['feedback_curriculo']['admissao'] ? $treinamento['feedback_curriculo']['admissao']['numero_cracha'] : null) }}
+                                    {{ mb_strtoupper($segmento_config['identificador_etiqueta_label'] ?? 'Chapa') }}: <strong>
+                                        {{ mb_strtoupper($segmento_config['identificador_etiqueta_valor'] ?? '') }}
                                     </strong>
                                 </h6>
                                 <h6 class="etiqueta-meta-linha">AREA/EMPRESA:

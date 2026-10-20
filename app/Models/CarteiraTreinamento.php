@@ -18,6 +18,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property bool $ativo
  * @property string|null $cabecalho_img
  * @property string|null $verso_img
+ * @property string $identificador
+ * @property string|null $blade
  */
 class CarteiraTreinamento extends Model
 {
@@ -34,6 +36,8 @@ class CarteiraTreinamento extends Model
         'ativo',
         'cabecalho_img',
         'verso_img',
+        'identificador',
+        'blade',
     ];
 
     protected $casts = [
