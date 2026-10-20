@@ -59,6 +59,29 @@
                         <input id="cart_verso" v-model="form.verso_img" class="form-control form-control-sm" type="text"
                                placeholder="images/carteira/...">
                     </div>
+                    <div class="form-group">
+                        <label class="mybp-label" for="cart_identificador">Identificador <span class="text-danger">*</span></label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFormIdentificador"
+                                instance-id="form-identificador"
+                                v-model="form.identificador"
+                                :options="identificadorOpcoes"
+                                input-id="cart_identificador"
+                                placeholder-blur="Selecione"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @opening="fecharOutrosComboboxes('form-identificador')"
+                            />
+                        </div>
+                        <small class="text-muted">Chapa usa o número do crachá. Matrícula usa o campo matrícula da admissão.</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="mybp-label" for="cart_blade">Arquivo blade (opcional)</label>
+                        <input id="cart_blade" v-model="form.blade" class="form-control form-control-sm" type="text"
+                               placeholder="cart_treinamento">
+                        <small class="text-muted">Nome do arquivo em resources/views/pdf/treinamento/carteira/, sem .blade.php. Vazio usa o modelo padrão.</small>
+                    </div>
                 </div>
             </template>
             <template #rodape>
@@ -201,6 +224,9 @@
                                     <a class="dropdown-item" href="javascript://" title="Editar" @click.prevent="abrirModalAlterar(item)">
                                         <i class="fa fa-edit mr-1"></i> Editar
                                     </a>
+                                    <a class="dropdown-item" href="javascript://" title="Clonar" @click.prevent="clonar(item)">
+                                        <i class="fa fa-clone mr-1"></i> Clonar
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -220,6 +246,16 @@
                             <i class="fas fa-images text-muted"></i>
                             <span class="mybp-detail-label">Verso</span>
                             <span class="mybp-detail-value">{{ item.verso_img || 'Não informado' }}</span>
+                        </div>
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-id-badge text-muted"></i>
+                            <span class="mybp-detail-label">Identificador</span>
+                            <span class="mybp-detail-value">{{ labelIdentificador(item.identificador) }}</span>
+                        </div>
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-file-code text-muted"></i>
+                            <span class="mybp-detail-label">Blade</span>
+                            <span class="mybp-detail-value">{{ item.blade || 'Padrão' }}</span>
                         </div>
                     </div>
                 </div>
@@ -270,6 +306,12 @@ export default {
         tituloModal() {
             return this.editando ? 'Editar carteira' : 'Nova carteira'
         },
+        identificadorOpcoes() {
+            return [
+                { value: 'chapa', label: 'Chapa (número do crachá)' },
+                { value: 'matricula', label: 'Matrícula' },
+            ]
+        },
         filtroStatusOpcoes() {
             return [
                 { value: '', label: 'Todos os status' },
@@ -306,7 +348,19 @@ export default {
     },
     methods: {
         formDefault() {
-            return { id: null, nome: '', ativo: true, cabecalho_img: '', verso_img: '', empresa_id: null }
+            return {
+                id: null,
+                nome: '',
+                ativo: true,
+                cabecalho_img: '',
+                verso_img: '',
+                identificador: 'chapa',
+                blade: '',
+                empresa_id: null,
+            }
+        },
+        labelIdentificador(valor) {
+            return valor === 'matricula' ? 'Matrícula' : 'Chapa'
         },
         onSubmitFiltro() {
             this.atualizar()
@@ -321,6 +375,7 @@ export default {
                 ['filtro-empresa', 'comboFiltroEmpresa'],
                 ['form-escopo', 'comboFormEscopo'],
                 ['form-empresa', 'comboFormEmpresa'],
+                ['form-identificador', 'comboFormIdentificador'],
             ]
             combos.forEach(([id, refName]) => {
                 if (id !== manter && this.$refs[refName]?.close) {
@@ -361,7 +416,7 @@ export default {
         abrirModalAlterar(item) {
             this.fecharDropdown()
             this.editando = true
-            this.form = { ...item }
+            this.form = { ...this.formDefault(), ...item, identificador: item.identificador || 'chapa', blade: item.blade || '' }
             this.aplicarEscopoNoForm(item)
             this.$refs.modal_modalCarteira?.abrirModal?.()
         },
@@ -383,6 +438,19 @@ export default {
                 })
                 .finally(() => { this.controle.carregando = false })
         },
+        clonar(item) {
+            this.fecharDropdown()
+            axios.post(`${URL_ADMIN}/cadastro/carteirastreinamento/${item.id}/clonar`)
+                .then(() => {
+                    if (typeof mostraSucesso === 'function') mostraSucesso('', 'Carteira clonada como inativa')
+                    this.atualizar()
+                })
+                .catch((err) => {
+                    const data = err.response && err.response.data
+                    const msg = data && (data.message || data.msg)
+                    if (typeof mostraErro === 'function') mostraErro('', msg || 'Erro ao clonar')
+                })
+        },
         salvar() {
             if (!this.form.nome) {
                 if (typeof mostraErro === 'function') mostraErro('', 'Informe o nome')
@@ -395,6 +463,8 @@ export default {
                 ativo: Boolean(this.form.ativo),
                 cabecalho_img: this.form.cabecalho_img || '',
                 verso_img: this.form.verso_img || '',
+                identificador: this.form.identificador || 'chapa',
+                blade: this.form.blade || '',
             }
             if (!this.editando) {
                 Object.assign(payload, this.payloadEscopoStore())

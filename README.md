@@ -129,6 +129,7 @@ Mais comandos úteis: [COMANDOS_UTEIS.md](COMANDOS_UTEIS.md).
 ## Documentação e referências
 
 - **Visão geral e módulos:** `docs/01-visao-geral.md`, `docs/03-modulos-de-negocio.md`
+- **Implantação de cliente:** `docs/CONFIGURACAO_NOVO_CLIENTE.md`
 - **Arquitetura e banco:** `docs/04-arquitetura-tecnica.md`, `docs/05-banco-de-dados.md`
 - **Fluxos e integrações:** `docs/07-fluxos-criticos.md`, `docs/08-integracoes.md`, `docs/API_V2_INTEGRACAO_SPA.md` (API BFF: empresas e vagas v2), `docs/postman/Integracao-SPA-v2.postman_collection.json` (Postman)
 - **Vue 3:** `docs/ANALISE_VUE3_CONFORMIDADE.md`, `docs/PLANO_MIGRACAO_COMPOSITION_API_SERVICES.md`, `agents/migracao-frontend/README.md`

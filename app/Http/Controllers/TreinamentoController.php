@@ -22,6 +22,7 @@ use App\Models\TreinamentoVencimentoHistorico;
 use App\Models\Vencimento;
 use App\Services\Curriculo\Foto3x4ListagemCache;
 use App\Services\Treinamento\CarteiraEtiquetaBloqueioLayout;
+use App\Services\Treinamento\CarteiraMontagem;
 use App\Services\Treinamento\CarteiraImagemCache;
 use App\Services\Treinamento\FeedbackCurriculoFilter;
 use Illuminate\Http\JsonResponse;
@@ -1854,10 +1855,10 @@ class TreinamentoController extends Controller
                 'FeedbackCurriculo.Empresa.Logo:id,nome,file,disco',
                 'FeedbackCurriculo.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
                 'FeedbackCurriculo.Curriculo.FotoTres:id,nome,file,disco',
-                'FeedbackCurriculo.Admissao:id,feedback_id,numero_cracha,cargo,usa_lentes_corretivas,area_etiqueta_id,padrao_treinamento_id',
+                'FeedbackCurriculo.Admissao:id,feedback_id,numero_cracha,matricula,cargo,usa_lentes_corretivas,area_etiqueta_id,padrao_treinamento_id',
                 'FeedbackCurriculo.Admissao.PadraoTreinamento:id,nome,slug,tem_carteira,carteira_treinamento_id,tem_etiqueta_bloqueio,etiqueta_bloqueio_id',
-                'FeedbackCurriculo.Admissao.PadraoTreinamento.CarteiraTreinamento:id,cabecalho_img,verso_img,slug',
-                'FeedbackCurriculo.Admissao.PadraoTreinamento.EtiquetaBloqueio:id,ramal_emergencia,bloqueio_texto_nao_use,bloqueio_texto_demissao,bloqueio_texto_cuidado,bloqueio_texto_homens_trabalhando,slug',
+                'FeedbackCurriculo.Admissao.PadraoTreinamento.CarteiraTreinamento:id,cabecalho_img,verso_img,slug,identificador,blade',
+                'FeedbackCurriculo.Admissao.PadraoTreinamento.EtiquetaBloqueio:id,ramal_emergencia,bloqueio_texto_nao_use,bloqueio_texto_demissao,bloqueio_texto_cuidado,bloqueio_texto_homens_trabalhando,slug,identificador,blade',
             ])
             ->get()
             ->filter(fn ($item) => $item->FeedbackCurriculo !== null)
@@ -1957,8 +1958,8 @@ class TreinamentoController extends Controller
             ? collect()
             : PadraoTreinamento::query()
                 ->with([
-                    'CarteiraTreinamento:id,cabecalho_img,verso_img,slug',
-                    'EtiquetaBloqueio:id,ramal_emergencia,bloqueio_texto_nao_use,bloqueio_texto_demissao,bloqueio_texto_cuidado,bloqueio_texto_homens_trabalhando,slug',
+                    'CarteiraTreinamento:id,cabecalho_img,verso_img,slug,identificador,blade',
+                    'EtiquetaBloqueio:id,ramal_emergencia,bloqueio_texto_nao_use,bloqueio_texto_demissao,bloqueio_texto_cuidado,bloqueio_texto_homens_trabalhando,slug,identificador,blade',
                 ])
                 ->whereIn('id', $padraoIdsFaltantes)
                 ->get()
@@ -2005,6 +2006,8 @@ class TreinamentoController extends Controller
                 'bloqueio_texto_cuidado' => '',
                 'bloqueio_texto_homens_trabalhando' => '',
             ];
+            $admissaoArr = $admissao ? $admissao->only(['numero_cracha', 'matricula']) : null;
+            $segmentoConfig = CarteiraMontagem::aplicarNoConfig($segmentoConfig, $admissaoArr);
             $segmentoSlug = $padrao
                 ? (optional($padrao->CarteiraTreinamento)->slug ?: $padrao->slug)
                 : 'padrao';
@@ -2102,6 +2105,16 @@ class TreinamentoController extends Controller
             [
                 'forPdf' => $asPdf,
                 'bloqueio_altura_linha_par_mm' => CarteiraEtiquetaBloqueioLayout::alturaLinhaParMm(),
+                'grupos_carteira' => CarteiraMontagem::agruparPorView(
+                    $treinamentos,
+                    'blade_carteira',
+                    CarteiraMontagem::VIEW_CARTEIRA
+                ),
+                'grupos_etiqueta' => CarteiraMontagem::agruparPorView(
+                    $treinamentos,
+                    'blade_etiqueta',
+                    CarteiraMontagem::VIEW_ETIQUETA
+                ),
             ]
         );
 

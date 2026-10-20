@@ -134,6 +134,8 @@ class PadraoTreinamento extends Model
         if ($this->tem_carteira && $this->CarteiraTreinamento) {
             $config['cabecalho_img'] = (string) ($this->CarteiraTreinamento->cabecalho_img ?? '');
             $config['verso_img'] = (string) ($this->CarteiraTreinamento->verso_img ?? '');
+            $config['identificador'] = (string) ($this->CarteiraTreinamento->identificador ?: 'chapa');
+            $config['blade_carteira'] = $this->CarteiraTreinamento->blade;
         }
 
         if ($this->tem_etiqueta_bloqueio && $this->EtiquetaBloqueio) {

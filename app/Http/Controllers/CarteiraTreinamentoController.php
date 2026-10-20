@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\AutorizaTemplateTreinamentoGlobal;
 use App\Models\CarteiraTreinamento;
 use App\Models\Cliente;
+use App\Services\Treinamento\CarteiraMontagem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 class CarteiraTreinamentoController extends Controller
@@ -39,7 +40,7 @@ class CarteiraTreinamentoController extends Controller
         }
 
         return response()->json($query->get([
-            'id', 'empresa_id', 'nome', 'slug', 'ativo', 'cabecalho_img', 'verso_img',
+            'id', 'empresa_id', 'nome', 'slug', 'ativo', 'cabecalho_img', 'verso_img', 'identificador', 'blade',
         ]));
     }
 
@@ -110,6 +111,28 @@ class CarteiraTreinamentoController extends Controller
         return response()->json([], 201);
     }
 
+    public function clonar(int $id): JsonResponse
+    {
+        $this->autorizarTemplateGlobal();
+        $origem = CarteiraTreinamento::findOrFail($id);
+        $this->autorizarEscritaTemplate($origem->empresa_id);
+
+        $nome = $this->nomeClone($origem->nome);
+
+        CarteiraTreinamento::create([
+            'empresa_id' => $origem->empresa_id,
+            'nome' => $nome,
+            'slug' => $this->gerarSlugUnico('carteiras_treinamento', $nome, $origem->empresa_id),
+            'ativo' => false,
+            'cabecalho_img' => $origem->cabecalho_img,
+            'verso_img' => $origem->verso_img,
+            'identificador' => $origem->identificador ?: CarteiraMontagem::IDENTIFICADOR_CHAPA,
+            'blade' => $origem->blade,
+        ]);
+
+        return response()->json([], 201);
+    }
+
     public function update(Request $request, int $id): JsonResponse
     {
         $this->autorizarTemplateGlobal();
@@ -125,11 +148,17 @@ class CarteiraTreinamentoController extends Controller
 
     private function validar(Request $request): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'nome' => 'required|string|max:255',
             'ativo' => 'boolean',
             'cabecalho_img' => 'nullable|string|max:500',
             'verso_img' => 'nullable|string|max:500',
+            'identificador' => 'nullable|string|in:' . implode(',', CarteiraMontagem::identificadores()),
+            'blade' => 'nullable|string|max:80',
         ]);
+        $validated['identificador'] = CarteiraMontagem::normalizarIdentificador($validated['identificador'] ?? null);
+        $validated['blade'] = CarteiraMontagem::normalizarBlade($validated['blade'] ?? null);
+
+        return $validated;
     }
 }

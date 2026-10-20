@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\AutorizaTemplateTreinamentoGlobal;
 use App\Models\EtiquetaBloqueio;
+use App\Services\Treinamento\CarteiraMontagem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 class EtiquetaBloqueioController extends Controller
@@ -92,6 +93,31 @@ class EtiquetaBloqueioController extends Controller
         return response()->json([], 201);
     }
 
+    public function clonar(int $id): JsonResponse
+    {
+        $this->autorizarTemplateGlobal();
+        $origem = EtiquetaBloqueio::findOrFail($id);
+        $this->autorizarEscritaTemplate($origem->empresa_id);
+
+        $nome = $this->nomeClone($origem->nome);
+
+        EtiquetaBloqueio::create([
+            'empresa_id' => $origem->empresa_id,
+            'nome' => $nome,
+            'slug' => $this->gerarSlugUnico('etiquetas_bloqueio', $nome, $origem->empresa_id),
+            'ativo' => false,
+            'ramal_emergencia' => $origem->ramal_emergencia,
+            'bloqueio_texto_nao_use' => $origem->bloqueio_texto_nao_use,
+            'bloqueio_texto_demissao' => $origem->bloqueio_texto_demissao,
+            'bloqueio_texto_cuidado' => $origem->bloqueio_texto_cuidado,
+            'bloqueio_texto_homens_trabalhando' => $origem->bloqueio_texto_homens_trabalhando,
+            'identificador' => $origem->identificador ?: CarteiraMontagem::IDENTIFICADOR_CHAPA,
+            'blade' => $origem->blade,
+        ]);
+
+        return response()->json([], 201);
+    }
+
     public function update(Request $request, int $id): JsonResponse
     {
         $this->autorizarTemplateGlobal();
@@ -107,7 +133,7 @@ class EtiquetaBloqueioController extends Controller
 
     private function validar(Request $request): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'nome' => 'required|string|max:255',
             'ativo' => 'boolean',
             'ramal_emergencia' => 'nullable|string|max:50',
@@ -115,6 +141,12 @@ class EtiquetaBloqueioController extends Controller
             'bloqueio_texto_demissao' => 'nullable|string|max:500',
             'bloqueio_texto_cuidado' => 'nullable|string|max:255',
             'bloqueio_texto_homens_trabalhando' => 'nullable|string|max:500',
+            'identificador' => 'nullable|string|in:' . implode(',', CarteiraMontagem::identificadores()),
+            'blade' => 'nullable|string|max:80',
         ]);
+        $validated['identificador'] = CarteiraMontagem::normalizarIdentificador($validated['identificador'] ?? null);
+        $validated['blade'] = CarteiraMontagem::normalizarBlade($validated['blade'] ?? null);
+
+        return $validated;
     }
 }

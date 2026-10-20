@@ -45,7 +45,7 @@
                                         </div>
                                         <div
                                             style="float: left; width: 23%; margin-bottom: 0; margin-left: 1%; background: #d9d9d9; padding: 1mm; border-radius: 1mm">
-                                            <strong>Chapa:</strong> {!! $treinamento['feedback_curriculo']['admissao']['numero_cracha'] ??"&nbsp" !!}
+                                            <strong>{{ $segmento_config['identificador_label'] ?? 'Chapa' }}:</strong> {!! ($segmento_config['identificador_valor'] ?? null) ?: '&nbsp;' !!}
                                         </div>
                                     </li>
                                     {{--TODO incrementado para PILLAR em 27/06/2024 uma acao deles --}}

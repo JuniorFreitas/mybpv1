@@ -115,6 +115,15 @@ trait AutorizaTemplateTreinamentoGlobal
     /**
      * Slug interno (não exposto ao cliente). Único por escopo global ou por empresa.
      */
+    protected function nomeClone(string $nome): string
+    {
+        $sufixo = '_clone';
+        $base = rtrim($nome);
+        $limite = 255 - strlen($sufixo);
+
+        return Str::limit($base, $limite, '') . $sufixo;
+    }
+
     protected function gerarSlugUnico(string $table, string $nome, ?int $empresaId, ?int $ignoreId = null): string
     {
         $base = Str::limit(Str::slug($nome) ?: 'item', 50, '');

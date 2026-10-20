@@ -69,6 +69,29 @@
                         <label class="mybp-label" for="etq_homens">Texto Homens trabalhando</label>
                         <input id="etq_homens" v-model="form.bloqueio_texto_homens_trabalhando" class="form-control form-control-sm" type="text">
                     </div>
+                    <div class="form-group">
+                        <label class="mybp-label" for="etq_identificador">Identificador <span class="text-danger">*</span></label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFormIdentificador"
+                                instance-id="form-identificador"
+                                v-model="form.identificador"
+                                :options="identificadorOpcoes"
+                                input-id="etq_identificador"
+                                placeholder-blur="Selecione"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @opening="fecharOutrosComboboxes('form-identificador')"
+                            />
+                        </div>
+                        <small class="text-muted">Chapa usa o número do crachá. Matrícula usa o campo matrícula da admissão.</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="mybp-label" for="etq_blade">Arquivo blade (opcional)</label>
+                        <input id="etq_blade" v-model="form.blade" class="form-control form-control-sm" type="text"
+                               placeholder="cart_bloqueio">
+                        <small class="text-muted">Nome do arquivo em resources/views/pdf/treinamento/carteira/, sem .blade.php. Vazio usa o modelo padrão.</small>
+                    </div>
                 </div>
             </template>
             <template #rodape>
@@ -211,6 +234,9 @@
                                     <a class="dropdown-item" href="javascript://" title="Editar" @click.prevent="abrirModalAlterar(item)">
                                         <i class="fa fa-edit mr-1"></i> Editar
                                     </a>
+                                    <a class="dropdown-item" href="javascript://" title="Clonar" @click.prevent="clonar(item)">
+                                        <i class="fa fa-clone mr-1"></i> Clonar
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -225,6 +251,16 @@
                             <i class="fas fa-phone text-muted"></i>
                             <span class="mybp-detail-label">Ramal</span>
                             <span class="mybp-detail-value">{{ item.ramal_emergencia || 'Não informado' }}</span>
+                        </div>
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-id-badge text-muted"></i>
+                            <span class="mybp-detail-label">Identificador</span>
+                            <span class="mybp-detail-value">{{ labelIdentificador(item.identificador) }}</span>
+                        </div>
+                        <div class="mybp-detail-item">
+                            <i class="fas fa-file-code text-muted"></i>
+                            <span class="mybp-detail-label">Blade</span>
+                            <span class="mybp-detail-value">{{ item.blade || 'Padrão' }}</span>
                         </div>
                         <div class="mybp-detail-item mybp-detail-item--full">
                             <i class="fas fa-ban text-muted"></i>
@@ -280,6 +316,12 @@ export default {
         tituloModal() {
             return this.editando ? 'Editar etiqueta' : 'Nova etiqueta'
         },
+        identificadorOpcoes() {
+            return [
+                { value: 'chapa', label: 'Chapa (número do crachá)' },
+                { value: 'matricula', label: 'Matrícula' },
+            ]
+        },
         filtroStatusOpcoes() {
             return [
                 { value: '', label: 'Todos os status' },
@@ -326,7 +368,12 @@ export default {
                 bloqueio_texto_demissao: 'QUEM OPERAR O EQUIPAMENTO OU REMOVER A ETIQUETA ESTÁ SUJEITO A DEMISSÃO',
                 bloqueio_texto_cuidado: 'CUIDADO!',
                 bloqueio_texto_homens_trabalhando: 'HOMENS TRABALHANDO NÃO OPERE ESTE EQUIPAMENTO',
+                identificador: 'chapa',
+                blade: '',
             }
+        },
+        labelIdentificador(valor) {
+            return valor === 'matricula' ? 'Matrícula' : 'Chapa'
         },
         onSubmitFiltro() {
             this.atualizar()
@@ -341,6 +388,7 @@ export default {
                 ['filtro-empresa', 'comboFiltroEmpresa'],
                 ['form-escopo', 'comboFormEscopo'],
                 ['form-empresa', 'comboFormEmpresa'],
+                ['form-identificador', 'comboFormIdentificador'],
             ]
             combos.forEach(([id, refName]) => {
                 if (id !== manter && this.$refs[refName]?.close) {
@@ -403,6 +451,19 @@ export default {
                 })
                 .finally(() => { this.controle.carregando = false })
         },
+        clonar(item) {
+            this.fecharDropdown()
+            axios.post(`${URL_ADMIN}/cadastro/etiquetasbloqueio/${item.id}/clonar`)
+                .then(() => {
+                    if (typeof mostraSucesso === 'function') mostraSucesso('', 'Etiqueta clonada como inativa')
+                    this.atualizar()
+                })
+                .catch((err) => {
+                    const data = err.response && err.response.data
+                    const msg = data && (data.message || data.msg)
+                    if (typeof mostraErro === 'function') mostraErro('', msg || 'Erro ao clonar')
+                })
+        },
         salvar() {
             if (!this.form.nome) {
                 if (typeof mostraErro === 'function') mostraErro('', 'Informe o nome')
@@ -418,6 +479,8 @@ export default {
                 bloqueio_texto_demissao: this.form.bloqueio_texto_demissao,
                 bloqueio_texto_cuidado: this.form.bloqueio_texto_cuidado,
                 bloqueio_texto_homens_trabalhando: this.form.bloqueio_texto_homens_trabalhando,
+                identificador: this.form.identificador || 'chapa',
+                blade: this.form.blade || '',
             }
             if (!this.editando) {
                 Object.assign(payload, this.payloadEscopoStore())
