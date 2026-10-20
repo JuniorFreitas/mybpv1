@@ -839,7 +839,10 @@ class TreinamentoController extends Controller
                 'Admissao.PadraoTreinamento:id,nome,tem_carteira,carteira_treinamento_id,tem_etiqueta_bloqueio,etiqueta_bloqueio_id',
                 'Feedback:id,vaga_id,cliente_id,curriculo_id,telefone_id',
                 'Feedback.TelPrincipal:id,tipo,numero',
-                'Feedback.Curriculo:id,nome,nascimento,cpf,email,uf,logradouro,complemento,end_numero,bairro,municipio,cep',
+                'Feedback.Curriculo:id,nome,nascimento,cpf,email',
+                'Feedback.Curriculo.FotoTres' => function ($q) {
+                    $q->select('arquivos.id', 'arquivos.file', 'arquivos.thumb', 'arquivos.disco', 'arquivos.imagem');
+                },
                 'Feedback.VagaAberta:id,vaga_id,titulo,municipio_id',
                 'Feedback.VagaAberta.Vaga:id,nome',
                 'Feedback.VagaAberta.Municipio:id,nome,uf',
@@ -928,14 +931,23 @@ class TreinamentoController extends Controller
         $vagaAberta = $feedback?->VagaAberta;
 
         $cargo = $vagaAberta?->Vaga?->nome
-            ?? $vagaAberta?->titulo
             ?? $admissao?->cargo
             ?? null;
 
-        $municipio = $vagaAberta?->Municipio;
-        $localVaga = $municipio
-            ? trim(($municipio->nome ?? '') . ' - ' . ($municipio->uf ?? ''), ' -')
-            : null;
+        // Mesmo formato do processo (FeedbackCurriculo::vaga_aberta_municipio): "Vaga - Município - UF"
+        $nomeVaga = null;
+        if ($vagaAberta?->Vaga?->nome) {
+            $nomeVaga = $vagaAberta->Vaga->nome;
+            $municipio = $vagaAberta->Municipio;
+            if ($municipio?->nome) {
+                $nomeVaga .= ' - ' . $municipio->nome;
+                if ($municipio->uf) {
+                    $nomeVaga .= ' - ' . $municipio->uf;
+                }
+            }
+        } elseif ($admissao?->cargo) {
+            $nomeVaga = $admissao->cargo;
+        }
 
         $padraoInfo = $admissao?->PadraoTreinamento;
         if (!$padraoInfo && $padraoId) {
@@ -974,17 +986,23 @@ class TreinamentoController extends Controller
 
         $cliente = $feedback?->Cliente;
 
+        $foto = null;
+        if ($curriculo && $curriculo->relationLoaded('FotoTres')) {
+            $foto = $curriculo->FotoTres->first();
+        }
+
+        Foto3x4ListagemCache::agendarAquecimentoAposResposta();
+
         return [
+            'feedback_id' => $treinamento->feedback_id,
             'nome' => $curriculo?->nome,
             'idade' => $curriculo?->idade,
             'cpf' => $cpfFormatado,
             'email' => $curriculo?->email,
-            'uf' => $curriculo?->uf,
-            'endereco_completo' => $curriculo?->endereco_completo,
             'telefone' => $tel?->numero,
             'telefone_tipo' => $tel?->tipo,
             'cargo' => $cargo,
-            'local_vaga' => $localVaga,
+            'nome_vaga' => $nomeVaga,
             'status_admissao' => $admissao?->status,
             'tipo_admissao' => $admissao?->tipo_admissao,
             'numero_cracha' => $admissao?->numero_cracha,
@@ -1001,6 +1019,7 @@ class TreinamentoController extends Controller
                 ? ((bool) $padraoInfo->tem_etiqueta_bloqueio && !empty($padraoInfo->etiqueta_bloqueio_id))
                 : null,
             'cliente_nome' => $cliente?->nome_fantasia ?: $cliente?->razao_social,
+            'foto_3x4_thumb' => Foto3x4ListagemCache::paraListagem($foto),
         ];
     }
 

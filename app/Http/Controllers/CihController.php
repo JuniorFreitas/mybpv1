@@ -17,6 +17,7 @@ use App\Models\FeedbackCurriculo;
 use App\Models\User;
 use App\Services\Cih\CihAcessoService;
 use App\Services\Cih\CihColaboradorPayloadMapper;
+use App\Services\Cih\CihLotacaoResolver;
 use App\Services\Cih\CihQueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -331,16 +332,96 @@ class CihController extends Controller
      */
     public function atualizarHistorico($feedback)
     {
-        $feedback_id = \Crypt::decrypt($feedback);
-        $resultado = FeedbackCurriculo::select(['id', 'vagas_abertas_id'])->find($feedback_id)->load([
-            'Cih.Tag',
-            'Cih.Area',
-            'Cih.Colaboradores.Curriculo:id,nome,nascimento,rg,orgao_expeditor',
-            'Cih.ResponsavelLancamento:id,nome',
-            'Cih.ResponsavelAprovacao:id,nome'
-        ]);
+        try {
+            $feedbackId = (int) \Crypt::decrypt($feedback);
+        } catch (\Throwable $e) {
+            return response()->json(['msg' => 'Registro não encontrado'], 404);
+        }
 
-        return response()->json($resultado);
+        $usuario = auth()->user();
+        $empresaId = (int) $usuario->empresa_id;
+
+        $feedbackExiste = FeedbackCurriculo::query()
+            ->where('id', $feedbackId)
+            ->where('empresa_id', $empresaId)
+            ->whereNull('deleted_at')
+            ->exists();
+
+        if (!$feedbackExiste) {
+            return response()->json(['msg' => 'Registro não encontrado'], 404);
+        }
+
+        $cihs = Cih::query()
+            ->where('empresa_id', $empresaId)
+            ->whereNull('deleted_at')
+            ->whereHas('Colaboradores', function ($q) use ($feedbackId) {
+                $q->where('feedback_curriculos.id', $feedbackId);
+            })
+            ->with([
+                'Colaboradores' => function ($query) {
+                    $query->select(['feedback_curriculos.id', 'feedback_curriculos.curriculo_id']);
+                },
+                'Colaboradores.Curriculo:id,nome',
+                'Colaboradores.Demissao:id,feedback_id',
+                'Colaboradores.Admissao:id,feedback_id,cargo,centro_custo_id',
+                'Colaboradores.Admissao.CentroCusto:id,label',
+                'Tag:id,label',
+                'Area:id,label',
+                'CentroDeCusto:id,label',
+                'GestorAprovacao:id,nome',
+                'ResponsavelLancamento:id,nome',
+                'ResponsavelAprovacao:id,nome',
+                'RhAprovacao:id,nome',
+            ])
+            ->orderByDesc('created_at')
+            ->get([
+                'id',
+                'tag_id',
+                'outra_tag',
+                'area_id',
+                'outra_area',
+                'centro_custo_id',
+                'gestor_id',
+                'status',
+                'resposta_rh',
+                'user_aprovacao_id',
+                'user_rh_id',
+                'user_lancamento_id',
+                'data_lancamento',
+                'data_aprovacao',
+                'data_aprovacao_rh',
+                'acao',
+                'varios_colaboradores',
+                'created_at',
+                'empresa_id',
+            ]);
+
+        $mapper = new CihColaboradorPayloadMapper();
+        $lotacaoResolver = new CihLotacaoResolver($empresaId);
+
+        $itens = $cihs->map(function (Cih $item) use ($mapper, $lotacaoResolver) {
+            $colaboradores = collect($mapper->mapForModal($item->Colaboradores))
+                ->map(function (array $colaborador) use ($lotacaoResolver) {
+                    $colaborador['lotacao'] = $lotacaoResolver->format(
+                        isset($colaborador['centro_custo_id']) ? (int) $colaborador['centro_custo_id'] : null
+                    );
+
+                    return $colaborador;
+                })
+                ->values()
+                ->all();
+
+            $item->setAttribute('colaboradores', $colaboradores);
+            $item->unsetRelation('Colaboradores');
+
+            return $item;
+        })->values();
+
+        return response()->json([
+            'cih' => $itens,
+            'config_modelo_cih' => $usuario->EmpresaConfiguracoes->modelo_cih ?? null,
+            'cc' => (new CentroCusto())->listaCentroCustoPorCnpj($empresaId),
+        ]);
     }
 
     /**
