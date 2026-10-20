@@ -3,67 +3,109 @@
 @section('content_header','Planejamento - Movimentação')
 @section('content')
 
-    <nav class="mt-3 tabbable">
-        <div class="nav nav-tabs" id="nav-tab" role="tablist">
-            <a class="nav-item nav-link" :class="aba_ativa === 'demissao' ? 'active' : ''" id="nav-solicitacao-demissao-tab" data-toggle="tab"
-               v-if="permissoes_abas.demissao"
-               @click="trocaAba('demissao')"
-               href="#nav-solicitacao-demissao" role="tab"
-               aria-controls="nav-solicitacao-demissao" aria-selected="true">Demissão</a>
-            <a class="nav-item nav-link" :class="aba_ativa === 'ferias' ? 'active' : ''" id="nav-ferias-tab" data-toggle="tab" href="#nav-ferias" role="tab"
-               v-if="permissoes_abas.ferias"
-               @click="trocaAba('ferias')"
-               aria-controls="nav-ferias" aria-selected="false">Férias</a>
-            <a class="nav-item nav-link" :class="aba_ativa === 'admissao' ? 'active' : ''" id="nav-admissao-tab" data-toggle="tab" href="#nav-admissao" role="tab"
-               @click="trocaAba('admissao')"
-               v-if="permissoes_abas.admissao"
-               aria-controls="nav-admissao" aria-selected="false">Admissão</a>
-            <a class="nav-item nav-link" :class="aba_ativa === 'valorextra' ? 'active' : ''" id="nav-valorextra-tab" data-toggle="tab" href="#nav-valorextra" role="tab"
-               v-if="permissoes_abas.valorextra"
-               @click="trocaAba('valorextra')"
-               aria-controls="nav-valorextra" aria-selected="false">Liderança de Pessoal e Valor Extra</a>
-            <a class="nav-item nav-link" :class="aba_ativa === 'mudacargo' ? 'active' : ''" id="nav-mudacargo-tab" data-toggle="tab" href="#nav-mudacargo" role="tab"
-               v-if="permissoes_abas.mudacargo"
-               @click="trocaAba('mudacargo')"
-               aria-controls="nav-mudacargo" aria-selected="false">Mudança de Cargo</a>
-            <a class="nav-item nav-link" :class="aba_ativa === 'intermitente' ? 'active' : ''" id="nav-intermitente-tab" data-toggle="tab" href="#nav-intermitente" role="tab"
-               v-if="permissoes_abas.intermitente"
-               @click="trocaAba('intermitente')"
-               aria-controls="nav-intermitente" aria-selected="false">Mudança de Intermitente p/ Fixo</a>
-            <a class="nav-item nav-link" :class="aba_ativa === 'transferencia' ? 'active' : ''" id="nav-transferencia-tab" data-toggle="tab" href="#nav-transferencia" role="tab"
-               v-if="permissoes_abas.transferencia"
-               @click="trocaAba('transferencia')"
-               aria-controls="nav-transferencia" aria-selected="false">Transferência</a>
-        </div>
-    </nav>
-    <div class="tab-content" id="nav-tabContent">
-        <div class="tab-pane fade p-3" :class="aba_ativa === 'demissao' ? 'show active' : ''" id="nav-solicitacao-demissao" role="tabpanel"
-             v-if="abas.demissao"
-             aria-labelledby="nav-solicitacao-demissao-tab">
+    <div class="movimentacao-page">
+        <nav class="movimentacao-abas" aria-label="Tipos de movimentação">
+            <button
+                type="button"
+                class="movimentacao-abas__arrow"
+                :class="{ 'is-disabled': !abasPodeVoltar }"
+                :disabled="!abasPodeVoltar"
+                aria-label="Abas anteriores"
+                @click="rolarAbas(-1)"
+            >
+                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <div
+                class="movimentacao-abas__viewport"
+                ref="abasViewport"
+                @scroll.passive="atualizarSetasAbas"
+            >
+                <div class="movimentacao-abas__track" role="tablist">
+                    <button
+                        v-for="aba in abasDisponiveis"
+                        :key="aba.key"
+                        type="button"
+                        class="movimentacao-abas__item"
+                        role="tab"
+                        :id="aba.tabId"
+                        :title="aba.title || aba.label"
+                        :aria-controls="aba.panelId"
+                        :aria-selected="aba_ativa === aba.key"
+                        :tabindex="aba_ativa === aba.key ? 0 : -1"
+                        :class="{ 'is-active': aba_ativa === aba.key }"
+                        @click="trocaAba(aba.key)"
+                    >
+                        <i :class="aba.icon" aria-hidden="true"></i>
+                        <span>@{{ aba.label }}</span>
+                    </button>
+                </div>
+            </div>
+            <button
+                type="button"
+                class="movimentacao-abas__arrow"
+                :class="{ 'is-disabled': !abasPodeAvancar }"
+                :disabled="!abasPodeAvancar"
+                aria-label="Próximas abas"
+                @click="rolarAbas(1)"
+            >
+                <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </button>
+        </nav>
+
+        <div
+            v-if="abas.demissao"
+            id="nav-solicitacao-demissao"
+            role="tabpanel"
+            aria-labelledby="nav-solicitacao-demissao-tab"
+        >
             <solicitacao-demissao :cliente_id="cliente_id"></solicitacao-demissao>
         </div>
-        <div class="tab-pane fade p-3" :class="aba_ativa === 'ferias' ? 'show active' : ''" id="nav-ferias" role="tabpanel" aria-labelledby="nav-ferias-tab"
-             v-if="abas.ferias">
+        <div
+            v-if="abas.ferias"
+            id="nav-ferias"
+            role="tabpanel"
+            aria-labelledby="nav-ferias-tab"
+        >
             <solicitacao-ferias :cliente_id="cliente_id"></solicitacao-ferias>
         </div>
-        <div class="tab-pane fade p-3" :class="aba_ativa === 'admissao' ? 'show active' : ''" id="nav-admissao" role="tabpanel" aria-labelledby="nav-admissao-tab"
-             v-if="abas.admissao">
+        <div
+            v-if="abas.admissao"
+            id="nav-admissao"
+            role="tabpanel"
+            aria-labelledby="nav-admissao-tab"
+        >
             <solicitacao-admissao :cliente_id="cliente_id"></solicitacao-admissao>
         </div>
-        <div class="tab-pane fade p-3" :class="aba_ativa === 'valorextra' ? 'show active' : ''" id="nav-valorextra" role="tabpanel" aria-labelledby="nav-valorextra-tab"
-             v-if="abas.valorextra">
+        <div
+            v-if="abas.valorextra"
+            id="nav-valorextra"
+            role="tabpanel"
+            aria-labelledby="nav-valorextra-tab"
+        >
             <solicitacao-valor-extra :cliente_id="cliente_id"></solicitacao-valor-extra>
         </div>
-        <div class="tab-pane fade p-3" :class="aba_ativa === 'mudacargo' ? 'show active' : ''" id="nav-mudacargo" role="tabpanel" aria-labelledby="nav-mudacargo-tab"
-             v-if="abas.mudacargo">
+        <div
+            v-if="abas.mudacargo"
+            id="nav-mudacargo"
+            role="tabpanel"
+            aria-labelledby="nav-mudacargo-tab"
+        >
             <solicitacao-muda-cargo :cliente_id="cliente_id"></solicitacao-muda-cargo>
         </div>
-        <div class="tab-pane fade p-3" :class="aba_ativa === 'intermitente' ? 'show active' : ''" id="nav-intermitente" role="tabpanel" aria-labelledby="nav-intermitente-tab"
-             v-if="abas.intermitente">
+        <div
+            v-if="abas.intermitente"
+            id="nav-intermitente"
+            role="tabpanel"
+            aria-labelledby="nav-intermitente-tab"
+        >
             <solicitacao-intermitente-fixo :cliente_id="cliente_id"></solicitacao-intermitente-fixo>
         </div>
-        <div class="tab-pane fade p-3" :class="aba_ativa === 'transferencia' ? 'show active' : ''" id="nav-transferencia" role="tabpanel" aria-labelledby="nav-transferencia-tab"
-             v-if="abas.transferencia">
+        <div
+            v-if="abas.transferencia"
+            id="nav-transferencia"
+            role="tabpanel"
+            aria-labelledby="nav-transferencia-tab"
+        >
             <solicitacao-transferencia :cliente_id="cliente_id"></solicitacao-transferencia>
         </div>
     </div>
@@ -74,15 +116,100 @@
 @endpush
 @push('css')
     <style>
-        .tabbable .nav-tabs {
+        .movimentacao-page .movimentacao-abas {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin: 0.75rem 0;
+            background: #f4f7f9;
+            border: 1px solid #e4e8ec;
+            border-radius: 8px;
+            padding: 0.4rem;
+        }
+        .movimentacao-page .movimentacao-abas__viewport {
+            flex: 1;
+            min-width: 0;
             overflow-x: auto;
             overflow-y: hidden;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .movimentacao-page .movimentacao-abas__viewport::-webkit-scrollbar {
+            display: none;
+        }
+        .movimentacao-page .movimentacao-abas__track {
+            display: flex;
             flex-wrap: nowrap;
+            gap: 0.35rem;
+            width: max-content;
         }
-
-        .tabbable .nav-tabs .nav-link {
+        .movimentacao-page .movimentacao-abas__arrow {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+            width: 32px;
+            height: 32px;
+            margin: 0;
+            padding: 0;
+            border: 1px solid #d5dde3;
+            border-radius: 50%;
+            background: #fff;
+            color: #174257;
+            cursor: pointer;
+            transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+        }
+        .movimentacao-page .movimentacao-abas__arrow:hover:not(:disabled) {
+            background: #174257;
+            border-color: #174257;
+            color: #fff;
+        }
+        .movimentacao-page .movimentacao-abas__arrow:disabled,
+        .movimentacao-page .movimentacao-abas__arrow.is-disabled {
+            opacity: 0.35;
+            cursor: default;
+        }
+        .movimentacao-page .movimentacao-abas__arrow:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(23, 66, 87, 0.25);
+        }
+        .movimentacao-page .movimentacao-abas__item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex: 0 0 auto;
+            margin: 0;
+            padding: 0.45rem 0.75rem;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            background: transparent;
+            color: #495057;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            line-height: 1.2;
             white-space: nowrap;
+            cursor: pointer;
+            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
         }
-
+        .movimentacao-page .movimentacao-abas__item i {
+            font-size: 0.78rem;
+            opacity: 0.85;
+        }
+        .movimentacao-page .movimentacao-abas__item:hover {
+            background: rgba(23, 66, 87, 0.08);
+            color: #174257;
+        }
+        .movimentacao-page .movimentacao-abas__item:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(23, 66, 87, 0.25);
+        }
+        .movimentacao-page .movimentacao-abas__item.is-active {
+            background: #174257;
+            border-color: #174257;
+            color: #fff;
+        }
+        .movimentacao-page .movimentacao-abas__item.is-active i {
+            opacity: 1;
+        }
     </style>
 @endpush
