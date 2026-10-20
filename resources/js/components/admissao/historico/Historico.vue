@@ -1,6 +1,12 @@
 <template>
     <div class="historico-admissao">
-        <modal id="janelaHistorico" :titulo="tituloJanela" :size="95" ref="modal_janelaHistorico">
+        <modal
+            id="janelaHistorico"
+            :titulo="tituloJanela"
+            :size="95"
+            ref="modal_janelaHistorico"
+            @abriu="onModalHistoricoAbriu"
+        >
             <template #conteudo>
                 <div v-if="!openHistorico">
                     <aside
@@ -77,208 +83,165 @@
                         </div>
                     </aside>
 
-                    <ul class="nav nav-tabs bg-light historico-modal-tabs" id="tabslist" role="tablist">
-                        <li class="nav-item" v-if="permissoes.dossie">
-                            <a
-                                class="nav-item nav-link active"
-                                id="nav-dossie-tab"
-                                data-toggle="tab"
-                                @click.prevent="trocaAba('abrirDossie')"
-                                href="#nav-dossie"
-                                role="tab"
-                                aria-controls="nav-dossie"
-                                aria-selected="true"
-                                >DOSSIÊ</a
-                            >
-                        </li>
-                        <li class="nav-item" v-if="permissoes.feedback">
-                            <a
-                                class="nav-item nav-link"
-                                id="nav-feedback-historico-tab"
-                                @click.prevent="trocaAba('abrirFeedbackHistorico')"
-                                data-toggle="tab"
-                                href="#nav-feedback-historico"
-                                role="tab"
-                                aria-controls="nav-feedback-historico"
-                                aria-selected="true"
-                                >FEEDBACK</a
-                            >
-                        </li>
-                        <li class="nav-item" v-if="permissoes.medida_administrativa">
-                            <a
-                                class="nav-item nav-link"
-                                id="nav-medidas-administrativas-tab"
-                                @click.prevent="trocaAba('abrirMedidas')"
-                                data-toggle="tab"
-                                href="#nav-medidas-administrativas"
-                                role="tab"
-                                aria-controls="nav-medidas-administrativas"
-                                aria-selected="true"
-                                >MEDIDAS ADMINISTRATIVAS</a
-                            >
-                        </li>
-                        <li class="nav-item" v-if="permissoes.avaliacao_noventa_dias">
-                            <a
-                                class="nav-item nav-link"
-                                id="nav-formulario-noventa-tab"
-                                data-toggle="tab"
-                                @click.prevent="trocaAba('abrirFormularioNoventa')"
-                                href="#nav-formulario-noventa"
-                                role="tab"
-                                aria-controls="nav-formulario-noventa"
-                                aria-selected="false"
-                                >AVALIAÇÃO DE EXPERIÊNCIA</a
-                            >
-                        </li>
-                        <li class="nav-item" v-if="permissoes.avaliacao_anual">
-                            <a
-                                class="nav-item nav-link"
-                                id="nav-avaliacao-anual-tab"
-                                data-toggle="tab"
-                                @click.prevent="trocaAba('abrirAvaliacaoAnual')"
-                                href="#nav-avaliacao-anual"
-                                role="tab"
-                                aria-controls="nav-avaliacao-anual"
-                                aria-selected="false"
-                                >AVALIAÇÃO ANUAL</a
-                            >
-                        </li>
-                        <li class="nav-item" v-if="permissoes.ferias">
-                            <a
-                                class="nav-item nav-link"
-                                id="nav-ferias-tab"
-                                data-toggle="tab"
-                                @click.prevent="trocaAba('abrirFerias')"
-                                href="#nav-ferias"
-                                role="tab"
-                                aria-controls="nav-ferias"
-                                aria-selected="false"
-                                >FÉRIAS</a
-                            >
-                        </li>
-                        <li class="nav-item" v-if="permissoes.afastamento">
-                            <a
-                                class="nav-item nav-link"
-                                id="nav-afastamento-tab"
-                                data-toggle="tab"
-                                @click.prevent="trocaAba('abrirAfastamento')"
-                                href="#nav-afastamento"
-                                role="tab"
-                                aria-controls="nav-ferias"
-                                aria-selected="false"
-                                >AFASTAMENTO</a
-                            >
-                        </li>
-                        <li class="nav-item" v-if="permissoes.beneficio">
-                            <a
-                                class="nav-item nav-link"
-                                id="nav-beneficio-tab"
-                                data-toggle="tab"
-                                @click.prevent="trocaAba('abrirBeneficio')"
-                                href="#nav-beneficio"
-                                role="tab"
-                                aria-controls="nav-beneficio"
-                                aria-selected="false"
-                                >BENEFÍCIO</a
-                            >
-                        </li>
-                        <li class="nav-item" v-if="permissoes.cih">
-                            <a
-                                class="nav-item nav-link"
-                                id="nav-cih-tab"
-                                data-toggle="tab"
-                                @click.prevent="trocaAba('abrirCih')"
-                                href="#nav-cih"
-                                role="tab"
-                                aria-controls="nav-cih"
-                                aria-selected="false"
-                                >CIH</a
-                            >
-                        </li>
-                        <li class="nav-item" v-if="permissoes.promocao">
-                            <a
-                                class="nav-item nav-link"
-                                id="nav-promocao-tab"
-                                data-toggle="tab"
-                                @click.prevent="trocaAba('abrirPromocao')"
-                                href="#nav-promocao"
-                                role="tab"
-                                aria-controls="nav-promocao"
-                                aria-selected="false"
-                                >PROMOÇÃO</a
-                            >
-                        </li>
-                        <li class="nav-item" v-if="permissoes.metas">
-                            <a
-                                class="nav-item nav-link"
-                                id="nav-meta-tab"
-                                data-toggle="tab"
-                                @click.prevent="trocaAba('abrirMetas')"
-                                href="#nav-meta"
-                                role="tab"
-                                aria-controls="nav-meta"
-                                aria-selected="false"
-                                >METAS</a
-                            >
-                        </li>
-                        <li class="nav-item" v-if="permissoes.logs">
-                            <a
-                                class="nav-item nav-link"
-                                id="nav-log-historico-tab"
-                                @click.prevent="trocaAba('abrirLogHistorico')"
-                                data-toggle="tab"
-                                href="#nav-log-historico"
-                                role="tab"
-                                aria-controls="nav-log-historico"
-                                aria-selected="true"
-                                >LOGS</a
-                            >
-                        </li>
-                    </ul>
+                    <nav class="historico-abas" aria-label="Seções do histórico">
+                        <button
+                            type="button"
+                            class="historico-abas__arrow"
+                            :class="{ 'is-disabled': !abasPodeVoltar }"
+                            :disabled="!abasPodeVoltar"
+                            aria-label="Abas anteriores"
+                            @click="rolarAbas(-1)"
+                        >
+                            <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                        </button>
+                        <div
+                            class="historico-abas__viewport"
+                            ref="abasViewport"
+                            @scroll.passive="atualizarSetasAbas"
+                        >
+                            <div class="historico-abas__track" role="tablist">
+                                <button
+                                    v-for="aba in modalAbasDisponiveis"
+                                    :key="aba.key"
+                                    type="button"
+                                    class="historico-abas__item"
+                                    role="tab"
+                                    :id="aba.tabId"
+                                    :title="aba.title || aba.label"
+                                    :aria-controls="aba.panelId"
+                                    :aria-selected="abaAtiva === aba.key"
+                                    :tabindex="abaAtiva === aba.key ? 0 : -1"
+                                    :class="{ 'is-active': abaAtiva === aba.key }"
+                                    @click="trocaAba(aba.key)"
+                                >
+                                    <i :class="aba.icon" aria-hidden="true"></i>
+                                    <span>{{ aba.label }}</span>
+                                </button>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            class="historico-abas__arrow"
+                            :class="{ 'is-disabled': !abasPodeAvancar }"
+                            :disabled="!abasPodeAvancar"
+                            aria-label="Próximas abas"
+                            @click="rolarAbas(1)"
+                        >
+                            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                        </button>
+                    </nav>
 
-                    <div class="tab-content py-3 p-2">
-                        <div class="tab-pane fade show active" id="nav-dossie" role="tabpanel" aria-labelledby="nav-dossie-tab">
-                            <dossie v-if="abas.abrirDossie && permissoes.dossie" :feedback_id="form.feedback_id"></dossie>
+                    <div class="historico-abas-painel">
+                        <div
+                            v-if="abas.abrirDossie && permissoes.dossie"
+                            id="nav-dossie"
+                            class="historico-abas-painel__item"
+                            role="tabpanel"
+                            aria-labelledby="nav-dossie-tab"
+                        >
+                            <dossie :feedback_id="form.feedback_id"></dossie>
                         </div>
-                        <div class="tab-pane fade show" id="nav-feedback-historico" role="tabpanel" aria-labelledby="nav-feedback-historico-tab">
-                            <feedback-historico v-if="abas.abrirFeedbackHistorico && permissoes.feedback" :feedback_id="form.feedback_id"></feedback-historico>
+                        <div
+                            v-if="abas.abrirFeedbackHistorico && permissoes.feedback"
+                            id="nav-feedback-historico"
+                            class="historico-abas-painel__item"
+                            role="tabpanel"
+                            aria-labelledby="nav-feedback-historico-tab"
+                        >
+                            <feedback-historico :feedback_id="form.feedback_id"></feedback-historico>
                         </div>
-                        <div class="tab-pane fade show" id="nav-medidas-administrativas" role="tabpanel" aria-labelledby="nav-medidas-administrativas-tab">
-                            <medidas-administrativas
-                                v-if="abas.abrirMedidas && permissoes.medida_administrativa"
-                                :feedback_id="form.feedback_id"
-                            ></medidas-administrativas>
+                        <div
+                            v-if="abas.abrirMedidas && permissoes.medida_administrativa"
+                            id="nav-medidas-administrativas"
+                            class="historico-abas-painel__item"
+                            role="tabpanel"
+                            aria-labelledby="nav-medidas-administrativas-tab"
+                        >
+                            <medidas-administrativas :feedback_id="form.feedback_id"></medidas-administrativas>
                         </div>
-                        <div class="tab-pane fade show" id="nav-formulario-noventa" role="tabpanel" aria-labelledby="nav-formulario-noventa-tab">
+                        <div
+                            v-if="abas.abrirFormularioNoventa && permissoes.avaliacao_noventa_dias"
+                            id="nav-formulario-noventa"
+                            class="historico-abas-painel__item"
+                            role="tabpanel"
+                            aria-labelledby="nav-formulario-noventa-tab"
+                        >
                             <formulario-noventa-dias
-                                v-if="abas.abrirFormularioNoventa && permissoes.avaliacao_noventa_dias"
                                 :feedback_id="form.feedback_id"
                                 :url-base-gerar-link="urlGerarLinkAvaliacaoExperiencia"
                             ></formulario-noventa-dias>
                         </div>
-                        <div class="tab-pane fade show" id="nav-avaliacao-anual" role="tabpanel" aria-labelledby="nav-avaliacao-anual-tab">
-                            <avaliacao-anual v-if="abas.abrirAvaliacaoAnual && permissoes.avaliacao_anual" :feedback_id="form.feedback_id"></avaliacao-anual>
+                        <div
+                            v-if="abas.abrirAvaliacaoAnual && permissoes.avaliacao_anual"
+                            id="nav-avaliacao-anual"
+                            class="historico-abas-painel__item"
+                            role="tabpanel"
+                            aria-labelledby="nav-avaliacao-anual-tab"
+                        >
+                            <avaliacao-anual :feedback_id="form.feedback_id"></avaliacao-anual>
                         </div>
-                        <div class="tab-pane fade show" id="nav-ferias" role="tabpanel" aria-labelledby="nav-ferias-tab">
-                            <ferias v-if="abas.abrirFerias && permissoes.ferias" :feedback_id="form.feedback_id" :curriculo_id="form.curriculo_id"></ferias>
+                        <div
+                            v-if="abas.abrirFerias && permissoes.ferias"
+                            id="nav-ferias"
+                            class="historico-abas-painel__item"
+                            role="tabpanel"
+                            aria-labelledby="nav-ferias-tab"
+                        >
+                            <ferias :feedback_id="form.feedback_id" :curriculo_id="form.curriculo_id"></ferias>
                         </div>
-                        <div class="tab-pane fade show" id="nav-afastamento" role="tabpanel" aria-labelledby="nav-afastamento-tab">
-                            <afastamento v-if="abas.abrirAfastamento && permissoes.afastamento" :feedback_id="form.feedback_id"></afastamento>
+                        <div
+                            v-if="abas.abrirAfastamento && permissoes.afastamento"
+                            id="nav-afastamento"
+                            class="historico-abas-painel__item"
+                            role="tabpanel"
+                            aria-labelledby="nav-afastamento-tab"
+                        >
+                            <afastamento :feedback_id="form.feedback_id"></afastamento>
                         </div>
-                        <div class="tab-pane fade show" id="nav-beneficio" role="tabpanel" aria-labelledby="nav-beneficio-tab">
-                            <beneficio v-if="abas.abrirBeneficio && permissoes.beneficio" :feedback_id="form.feedback_id"></beneficio>
+                        <div
+                            v-if="abas.abrirBeneficio && permissoes.beneficio"
+                            id="nav-beneficio"
+                            class="historico-abas-painel__item"
+                            role="tabpanel"
+                            aria-labelledby="nav-beneficio-tab"
+                        >
+                            <beneficio :feedback_id="form.feedback_id"></beneficio>
                         </div>
-                        <div class="tab-pane fade show" id="nav-cih" role="tabpanel" aria-labelledby="nav-cih-tab">
-                            <cih v-if="abas.abrirCih && permissoes.cih" :fc_token="form.fc_token" modal-pai="janelaHistorico"></cih>
+                        <div
+                            v-if="abas.abrirCih && permissoes.cih"
+                            id="nav-cih"
+                            class="historico-abas-painel__item"
+                            role="tabpanel"
+                            aria-labelledby="nav-cih-tab"
+                        >
+                            <cih :fc_token="form.fc_token" modal-pai="janelaHistorico"></cih>
                         </div>
-                        <div class="tab-pane fade show" id="nav-promocao" role="tabpanel" aria-labelledby="nav-promocao-tab">
-                            <promocao v-if="abas.abrirPromocao && permissoes.promocao" :feedback_id="form.feedback_id"></promocao>
+                        <div
+                            v-if="abas.abrirPromocao && permissoes.promocao"
+                            id="nav-promocao"
+                            class="historico-abas-painel__item"
+                            role="tabpanel"
+                            aria-labelledby="nav-promocao-tab"
+                        >
+                            <promocao :feedback_id="form.feedback_id"></promocao>
                         </div>
-                        <div class="tab-pane fade show" id="nav-meta" role="tabpanel" aria-labelledby="nav-meta-tab">
-                            <metas v-if="abas.abrirMetas && permissoes.metas" :feedback_id="form.feedback_id"></metas>
+                        <div
+                            v-if="abas.abrirMetas && permissoes.metas"
+                            id="nav-meta"
+                            class="historico-abas-painel__item"
+                            role="tabpanel"
+                            aria-labelledby="nav-meta-tab"
+                        >
+                            <metas :feedback_id="form.feedback_id"></metas>
                         </div>
-                        <div class="tab-pane fade show" id="nav-log-historico" role="tabpanel" aria-labelledby="nav-log-historico-tab">
-                            <logs-historico v-if="abas.abrirLogHistorico && permissoes.logs" :feedback_id="form.feedback_id"></logs-historico>
+                        <div
+                            v-if="abas.abrirLogHistorico && permissoes.logs"
+                            id="nav-log-historico"
+                            class="historico-abas-painel__item"
+                            role="tabpanel"
+                            aria-labelledby="nav-log-historico-tab"
+                        >
+                            <logs-historico :feedback_id="form.feedback_id"></logs-historico>
                         </div>
                     </div>
                 </div>
@@ -784,6 +747,9 @@ export default {
             openHistorico: true,
             abas: { ...abasDefault, abrirDossie: true },
             abasDefault,
+            abaAtiva: 'abrirDossie',
+            abasPodeVoltar: false,
+            abasPodeAvancar: false,
             permissoes: {},
             form: {
                 feedback_id: 0,
@@ -908,6 +874,23 @@ export default {
             }
             return [linha1, linha2, linha3]
         },
+        modalAbasDisponiveis() {
+            const todas = [
+                { key: 'abrirDossie', perm: 'dossie', label: 'Dossiê', icon: 'fas fa-folder-open', tabId: 'nav-dossie-tab', panelId: 'nav-dossie' },
+                { key: 'abrirFeedbackHistorico', perm: 'feedback', label: 'Feedback', icon: 'fas fa-comments', tabId: 'nav-feedback-historico-tab', panelId: 'nav-feedback-historico' },
+                { key: 'abrirMedidas', perm: 'medida_administrativa', label: 'Medidas', title: 'Medidas administrativas', icon: 'fas fa-gavel', tabId: 'nav-medidas-administrativas-tab', panelId: 'nav-medidas-administrativas' },
+                { key: 'abrirFormularioNoventa', perm: 'avaliacao_noventa_dias', label: 'Experiência', title: 'Avaliação de experiência', icon: 'fas fa-clipboard-check', tabId: 'nav-formulario-noventa-tab', panelId: 'nav-formulario-noventa' },
+                { key: 'abrirAvaliacaoAnual', perm: 'avaliacao_anual', label: 'Avaliação anual', icon: 'fas fa-chart-line', tabId: 'nav-avaliacao-anual-tab', panelId: 'nav-avaliacao-anual' },
+                { key: 'abrirFerias', perm: 'ferias', label: 'Férias', icon: 'fas fa-umbrella-beach', tabId: 'nav-ferias-tab', panelId: 'nav-ferias' },
+                { key: 'abrirAfastamento', perm: 'afastamento', label: 'Afastamento', icon: 'fas fa-user-clock', tabId: 'nav-afastamento-tab', panelId: 'nav-afastamento' },
+                { key: 'abrirBeneficio', perm: 'beneficio', label: 'Benefício', icon: 'fas fa-hand-holding-heart', tabId: 'nav-beneficio-tab', panelId: 'nav-beneficio' },
+                { key: 'abrirCih', perm: 'cih', label: 'CIH', icon: 'fas fa-file-invoice', tabId: 'nav-cih-tab', panelId: 'nav-cih' },
+                { key: 'abrirPromocao', perm: 'promocao', label: 'Promoção', icon: 'fas fa-level-up-alt', tabId: 'nav-promocao-tab', panelId: 'nav-promocao' },
+                { key: 'abrirMetas', perm: 'metas', label: 'Metas', icon: 'fas fa-bullseye', tabId: 'nav-meta-tab', panelId: 'nav-meta' },
+                { key: 'abrirLogHistorico', perm: 'logs', label: 'Logs', icon: 'fas fa-history', tabId: 'nav-log-historico-tab', panelId: 'nav-log-historico' }
+            ]
+            return todas.filter((aba) => !!this.permissoes[aba.perm])
+        },
         opcoesCnpj() {
             const opts = [{ value: '', label: 'Todas as lotações' }]
             Object.keys(this.listaCnpjs || {}).forEach((key) => {
@@ -999,7 +982,6 @@ export default {
 
     mounted() {
         this.urlParamGet()
-        this.abasDefault = _.cloneDeep(this.abas)
         if (this.initialPage != null && this.initialPage >= 1) {
             this.$nextTick(() => {
                 if (this.$refs.componente) {
@@ -1011,9 +993,11 @@ export default {
             this.atualizar()
         }
         document.addEventListener('click', this.onClickOutside)
+        window.addEventListener('resize', this.atualizarSetasAbas)
     },
     beforeUnmount() {
         document.removeEventListener('click', this.onClickOutside)
+        window.removeEventListener('resize', this.atualizarSetasAbas)
     },
 
     methods: {
@@ -1162,15 +1146,96 @@ export default {
             }
         },
 
+        cloneDeepLocal(valor) {
+            if (typeof window !== 'undefined' && window._ && typeof window._.cloneDeep === 'function') {
+                return window._.cloneDeep(valor)
+            }
+            return JSON.parse(JSON.stringify(valor))
+        },
+
         trocaAba(aba) {
-            this.abas = _.cloneDeep(this.abasDefault)
-            this.abas[aba] = true
+            const next = {}
+            Object.keys(this.abasDefault).forEach((key) => {
+                next[key] = false
+            })
+            next[aba] = true
+            this.abas = next
+            this.abaAtiva = aba
+            this.$nextTick(() => {
+                this.garantirAbaVisivel(aba)
+                this.agendarAtualizacaoSetasAbas()
+            })
+        },
+
+        rolarAbas(direcao) {
+            const el = this.$refs.abasViewport
+            if (!el) return
+            const passo = Math.max(180, Math.floor(el.clientWidth * 0.7))
+            el.scrollBy({ left: direcao * passo, behavior: 'smooth' })
+            this.agendarAtualizacaoSetasAbas()
+        },
+
+        onModalHistoricoAbriu() {
+            this.agendarAtualizacaoSetasAbas()
+        },
+
+        agendarAtualizacaoSetasAbas() {
+            const rodar = () => this.atualizarSetasAbas()
+            this.$nextTick(() => {
+                if (typeof requestAnimationFrame === 'function') {
+                    requestAnimationFrame(() => {
+                        rodar()
+                        requestAnimationFrame(rodar)
+                    })
+                } else {
+                    rodar()
+                }
+                ;[50, 150, 300, 500].forEach((ms) => setTimeout(rodar, ms))
+            })
+        },
+
+        atualizarSetasAbas() {
+            const viewport = this.$refs.abasViewport
+            if (!viewport || viewport.clientWidth <= 0) {
+                this.abasPodeVoltar = false
+                this.abasPodeAvancar = false
+                return
+            }
+            const track = viewport.querySelector('.historico-abas__track')
+            const conteudo = track ? track.scrollWidth : viewport.scrollWidth
+            const max = Math.max(0, conteudo - viewport.clientWidth)
+            if (max <= 2) {
+                this.abasPodeVoltar = false
+                this.abasPodeAvancar = false
+                return
+            }
+            const left = viewport.scrollLeft || 0
+            this.abasPodeVoltar = left > 2
+            this.abasPodeAvancar = left < max - 2
+        },
+
+        garantirAbaVisivel(abaKey) {
+            const viewport = this.$refs.abasViewport
+            if (!viewport) return
+            const meta = this.modalAbasDisponiveis.find((a) => a.key === abaKey)
+            if (!meta || !meta.tabId) return
+            const btn = viewport.querySelector('#' + meta.tabId)
+            if (!btn) return
+            const left = btn.offsetLeft
+            const right = left + btn.offsetWidth
+            const viewLeft = viewport.scrollLeft
+            const viewRight = viewLeft + viewport.clientWidth
+            if (left < viewLeft) {
+                viewport.scrollTo({ left: Math.max(0, left - 12), behavior: 'smooth' })
+            } else if (right > viewRight) {
+                viewport.scrollTo({ left: right - viewport.clientWidth + 12, behavior: 'smooth' })
+            }
         },
 
         abrirHistorico(obj) {
             this.openHistorico = true
             this.tituloJanela = 'Histórico do colaborador'
-            this.form = _.cloneDeep(obj)
+            this.form = this.cloneDeepLocal(obj)
             this.form.feedback_id = obj.id
             this.form.curriculo_id = obj.curriculo_id
             this.form.fc_token = obj.fc_token || null
@@ -1193,14 +1258,15 @@ export default {
             }
 
             setTimeout(() => {
-                this.trocaAba('abrirDossie')
+                const primeira =
+                    (this.modalAbasDisponiveis[0] && this.modalAbasDisponiveis[0].key) || 'abrirDossie'
+                this.trocaAba(primeira)
                 this.openHistorico = false
+                this.$nextTick(() => {
+                    if (this.$refs.abasViewport) this.$refs.abasViewport.scrollLeft = 0
+                    this.agendarAtualizacaoSetasAbas()
+                })
             }, 100)
-            this.$nextTick(() => {
-                if (typeof $ !== 'undefined' && $('#nav-dossie-tab').length) {
-                    $('#nav-dossie-tab').tab('show')
-                }
-            })
         },
 
         onFoto3x4ThumbLoad(item) {
@@ -1558,8 +1624,111 @@ export default {
     margin: 0 0.4rem;
     color: #ced4da;
 }
-.historico-admissao .historico-modal-tabs {
-    border-bottom: 1px solid #174257 !important;
+/* Abas da modal — chips + setas (sem barra de rolagem) */
+.historico-admissao .historico-abas {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0 0 0.75rem;
+    background: #f4f7f9;
+    border: 1px solid #e4e8ec;
+    border-radius: 8px;
+    padding: 0.4rem;
+}
+.historico-admissao .historico-abas__viewport {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.historico-admissao .historico-abas__viewport::-webkit-scrollbar {
+    display: none;
+}
+.historico-admissao .historico-abas__track {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+    width: max-content;
+}
+.historico-admissao .historico-abas__arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #d5dde3;
+    border-radius: 50%;
+    background: #fff;
+    color: #174257;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+.historico-admissao .historico-abas__arrow:hover:not(:disabled) {
+    background: #174257;
+    border-color: #174257;
+    color: #fff;
+}
+.historico-admissao .historico-abas__arrow:disabled,
+.historico-admissao .historico-abas__arrow.is-disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+.historico-admissao .historico-abas__arrow:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(23, 66, 87, 0.25);
+}
+.historico-admissao .historico-abas__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    color: #495057;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.historico-admissao .historico-abas__item i {
+    font-size: 0.78rem;
+    opacity: 0.85;
+}
+.historico-admissao .historico-abas__item:hover {
+    background: rgba(23, 66, 87, 0.08);
+    color: #174257;
+}
+.historico-admissao .historico-abas__item:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(23, 66, 87, 0.25);
+}
+.historico-admissao .historico-abas__item.is-active {
+    background: #174257;
+    border-color: #174257;
+    color: #fff;
+}
+.historico-admissao .historico-abas__item.is-active i {
+    opacity: 1;
+}
+.historico-admissao .historico-abas-painel {
+    border: 1px solid #e4e8ec;
+    border-radius: 8px;
+    background: #fff;
+    padding: 0.85rem 0.95rem;
+    min-height: 8rem;
+}
+.historico-admissao .historico-abas-painel__item {
+    min-width: 0;
 }
 @media (max-width: 575.98px) {
     .historico-admissao .historico-modal-perfil {

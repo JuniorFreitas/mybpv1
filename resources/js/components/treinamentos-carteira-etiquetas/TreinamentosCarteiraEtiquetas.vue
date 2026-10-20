@@ -62,110 +62,83 @@
 
         <div v-if="!preload && (!cadastrado && !atualizado)" class="mybp-modal-form mybp-filtros-compactos">
 
-            <div class="mybp-card-corpo mb-3" :class="classeCorpoStatusModal(form.dadosFuncionario)">
-                <section class="mybp-card-secao mybp-card-secao--meta">
-                    <div class="mybp-card-status-botoes">
-                        <div class="mybp-card-status-item">
-                            <span class="mybp-card-status-label">Colaborador</span>
-                            <mybp-status-badge
-                                :variante="chaveSituacaoColaboradorModal(form.dadosFuncionario)"
-                                :texto="textoSituacaoColaboradorModal(form.dadosFuncionario)"
-                            ></mybp-status-badge>
-                        </div>
-                        <div class="mybp-card-status-item" v-if="mostrarStatusAdmissaoModal(form.dadosFuncionario)">
-                            <span class="mybp-card-status-label">Status admissão</span>
-                            <mybp-status-badge
-                                variante="aberto"
-                                :texto="textoCampoModal(form.dadosFuncionario.status_admissao)"
-                            ></mybp-status-badge>
-                        </div>
+            <aside
+                class="treino-modal-perfil"
+                :class="'treino-modal-perfil--' + chaveSituacaoColaboradorModal(form.dadosFuncionario)"
+                aria-label="Dados do colaborador"
+            >
+                <div class="treino-modal-perfil__foto-wrap">
+                    <img
+                        v-if="form.dadosFuncionario && form.dadosFuncionario.foto_3x4_thumb"
+                        :src="form.dadosFuncionario.foto_3x4_thumb"
+                        :alt="(form.dadosFuncionario && form.dadosFuncionario.nome) || 'Foto 3x4'"
+                        width="48"
+                        height="64"
+                        loading="lazy"
+                        decoding="async"
+                        class="treino-modal-perfil__foto"
+                        :class="{ 'is-ready': form._modalFoto3x4Ready }"
+                        @load="onModalFoto3x4Load"
+                        @error="onModalFoto3x4Error"
+                    />
+                    <div
+                        v-if="form.dadosFuncionario && form.dadosFuncionario.foto_3x4_thumb && !form._modalFoto3x4Ready"
+                        class="treino-modal-perfil__foto treino-modal-perfil__foto--loading"
+                        aria-hidden="true"
+                    >
+                        <i class="fa fa-spinner fa-spin"></i>
                     </div>
-                </section>
-                <section class="mybp-card-secao">
-                    <div class="mybp-card-row">
-                        <mybp-card-campo
-                            icon="fas fa-user"
-                            label="Colaborador"
-                            :valor="nomeIdadeModal(form.dadosFuncionario)"
-                            :forte="true"
-                        ></mybp-card-campo>
-                        <mybp-card-campo
-                            icon="fas fa-id-card"
-                            label="CPF"
-                            :valor="textoCampoModal(form.dadosFuncionario.cpf)"
-                        ></mybp-card-campo>
-                        <mybp-card-campo
-                            icon="fas fa-briefcase"
-                            label="Cargo / Vaga"
-                            :valor="textoCampoModal(form.dadosFuncionario.cargo)"
-                        ></mybp-card-campo>
+                    <div
+                        v-else-if="!(form.dadosFuncionario && form.dadosFuncionario.foto_3x4_thumb)"
+                        class="treino-modal-perfil__foto treino-modal-perfil__foto--vazia"
+                        aria-hidden="true"
+                    >
+                        <i class="fa fa-user"></i>
                     </div>
-                </section>
-                <section class="mybp-card-secao">
-                    <div class="mybp-card-row">
-                        <mybp-card-campo
-                            icon="fas fa-envelope"
-                            label="E-mail"
-                            :valor="textoCampoModal(form.dadosFuncionario.email)"
-                        ></mybp-card-campo>
-                        <mybp-card-campo
-                            icon="fas fa-phone"
-                            label="Telefone"
-                            :valor="textoCampoModal(form.dadosFuncionario.telefone)"
-                        ></mybp-card-campo>
-                        <mybp-card-campo
-                            icon="fas fa-map-marker-alt"
-                            label="Local da vaga"
-                            :valor="textoCampoModal(form.dadosFuncionario.local_vaga)"
-                        ></mybp-card-campo>
+                </div>
+
+                <div class="treino-modal-perfil__corpo">
+                    <div class="treino-modal-perfil__titulo">
+                        <h3 class="treino-modal-perfil__nome">{{ nomeIdadeModal(form.dadosFuncionario) }}</h3>
+                        <p class="treino-modal-perfil__meta-id">
+                            <span class="treino-modal-perfil__id">#{{ form.dadosFuncionario.feedback_id || form.feedback_id || '—' }}</span>
+                            <span class="treino-modal-perfil__sep" aria-hidden="true">·</span>
+                            <span
+                                class="treino-modal-perfil__status"
+                                :class="'treino-modal-perfil__status--' + chaveSituacaoColaboradorModal(form.dadosFuncionario)"
+                            >
+                                {{ textoSituacaoColaboradorModal(form.dadosFuncionario) }}
+                            </span>
+                            <template v-if="mostrarStatusAdmissaoModal(form.dadosFuncionario)">
+                                <span class="treino-modal-perfil__sep" aria-hidden="true">·</span>
+                                <span class="treino-modal-perfil__status treino-modal-perfil__status--aberto">
+                                    {{ textoCampoModal(form.dadosFuncionario.status_admissao) }}
+                                </span>
+                            </template>
+                        </p>
                     </div>
-                </section>
-                <section class="mybp-card-secao">
-                    <div class="mybp-card-row">
-                        <mybp-card-campo
-                            icon="fas fa-home"
-                            label="Endereço"
-                            :valor="textoCampoModal(form.dadosFuncionario.endereco_completo)"
-                        ></mybp-card-campo>
-                        <mybp-card-campo
-                            icon="fas fa-file-signature"
-                            label="Tipo admissão"
-                            :valor="textoCampoModal(form.dadosFuncionario.tipo_admissao)"
-                        ></mybp-card-campo>
-                        <mybp-card-campo
-                            icon="fas fa-id-badge"
-                            label="Crachá"
-                            :valor="textoCampoModal(form.dadosFuncionario.numero_cracha)"
-                        ></mybp-card-campo>
+
+                    <div class="treino-modal-perfil__linhas">
+                        <p
+                            v-for="(linha, linhaIdx) in modalPerfilLinhasTreinamento"
+                            :key="'treino-linha-' + linhaIdx"
+                            class="treino-modal-perfil__linha"
+                        >
+                            <span
+                                v-for="(campo, idx) in linha"
+                                :key="'treino-campo-' + linhaIdx + '-' + idx"
+                                class="treino-modal-perfil__item"
+                            >
+                                <template v-if="idx > 0">
+                                    <span class="treino-modal-perfil__sep" aria-hidden="true">·</span>
+                                </template>
+                                <span class="treino-modal-perfil__k">{{ campo.label }}:</span>
+                                {{ campo.valor }}
+                            </span>
+                        </p>
                     </div>
-                </section>
-                <section class="mybp-card-secao">
-                    <div class="mybp-card-row">
-                        <mybp-card-campo
-                            v-if="AUTENTICADO.temFilial"
-                            icon="fas fa-building"
-                            label="Lotação"
-                            :valor="lotacaoModal(form.dadosFuncionario)"
-                        ></mybp-card-campo>
-                        <mybp-card-campo
-                            icon="fas fa-sitemap"
-                            label="Centro de custo"
-                            :valor="textoCampoModal(form.dadosFuncionario.emp_centro_custo)"
-                        ></mybp-card-campo>
-                        <mybp-card-campo
-                            icon="fas fa-graduation-cap"
-                            label="Padrão de treinamento"
-                            :valor="padraoModal(form.dadosFuncionario)"
-                        ></mybp-card-campo>
-                        <mybp-card-campo
-                            v-if="Number(cliente_id) === 1"
-                            icon="fas fa-building"
-                            label="Cliente"
-                            :valor="textoCampoModal(form.dadosFuncionario.cliente_nome)"
-                        ></mybp-card-campo>
-                    </div>
-                </section>
-            </div>
+                </div>
+            </aside>
 
             <div class="alert alert-warning" v-if="form.alertaSemCargoVinculo">
                 <i class="fa fa-exclamation-triangle"></i>
@@ -1659,8 +1632,6 @@ import ModalAuditoriaTermoResponsabilidade from '../ModalAuditoriaTermoResponsab
 import ControlePaginacao from '../ControlePaginacao.vue'
 import ComboboxAutoComplete from '../ComboboxAutoComplete.vue'
 import FiltroListagem from '../ui/FiltroListagem.vue'
-import MybpCardCampo from '../ui/MybpCardCampo.vue'
-import MybpStatusBadge from '../ui/MybpStatusBadge.vue'
 
 const UF_OPTIONS = [
     'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG',
@@ -1679,8 +1650,6 @@ export default defineComponent({
         ControlePaginacao,
         ComboboxAutoComplete,
         FiltroListagem,
-        MybpCardCampo,
-        MybpStatusBadge
     },
     data() {
         return {
@@ -1725,6 +1694,7 @@ export default defineComponent({
 
             form: {
                 dadosFuncionario: {
+                    feedback_id: '',
                     nome: '',
                     idade: '',
                     cpf: '',
@@ -1732,9 +1702,7 @@ export default defineComponent({
                     email: '',
                     telefone: '',
                     telefone_tipo: '',
-                    endereco_completo: '',
-                    uf: '',
-                    local_vaga: '',
+                    nome_vaga: '',
                     status_admissao: '',
                     tipo_admissao: '',
                     numero_cracha: '',
@@ -1746,8 +1714,10 @@ export default defineComponent({
                     padrao_treinamento_nome: '',
                     padrao_tem_carteira: null,
                     padrao_tem_etiqueta: null,
-                    cliente_nome: ''
+                    cliente_nome: '',
+                    foto_3x4_thumb: null
                 },
+                _modalFoto3x4Ready: false,
 
                 feedback_id: '',
                 curriculo_id: '',
@@ -1940,6 +1910,29 @@ export default defineComponent({
         if (this._syncUrlTimer) clearTimeout(this._syncUrlTimer)
     },
     computed: {
+        modalPerfilLinhasTreinamento() {
+            const d = this.form.dadosFuncionario || {}
+            const lotacao = this.lotacaoModal(d)
+            const linha1 = [
+                { label: 'CPF', valor: this.textoCampoModal(d.cpf) },
+                { label: 'Vaga', valor: this.textoCampoModal(d.nome_vaga || d.cargo) },
+                { label: 'Tipo admissão', valor: this.textoCampoModal(d.tipo_admissao) }
+            ]
+            const linha2 = [
+                { label: 'Lotação', valor: lotacao },
+                { label: 'Centro de custo', valor: this.textoCampoModal(d.emp_centro_custo) },
+                { label: 'Crachá', valor: this.textoCampoModal(d.numero_cracha) }
+            ]
+            const linha3 = [
+                { label: 'E-mail', valor: this.textoCampoModal(d.email) },
+                { label: 'Telefone', valor: this.textoCampoModal(d.telefone) }
+            ]
+            const linha4 = [{ label: 'Padrão', valor: this.padraoModal(d) }]
+            if (Number(this.cliente_id) === 1) {
+                linha4.push({ label: 'Cliente', valor: this.textoCampoModal(d.cliente_nome) })
+            }
+            return [linha1, linha2, linha3, linha4]
+        },
         csrfToken() {
             return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
         },
@@ -2377,6 +2370,15 @@ export default defineComponent({
                 item._foto3x4Ready = false
             }
         },
+        onModalFoto3x4Load() {
+            this.form._modalFoto3x4Ready = true
+        },
+        onModalFoto3x4Error() {
+            if (this.form.dadosFuncionario) {
+                this.form.dadosFuncionario.foto_3x4_thumb = null
+            }
+            this.form._modalFoto3x4Ready = false
+        },
         boolFromParam(value, fallback = '') {
             if (value === null || value === '') return fallback
             if (value === 'true' || value === '1' || value === 'S') return true
@@ -2576,12 +2578,6 @@ export default defineComponent({
             const situacao = dados?.situacao_colaborador || 'em_processo'
             if (situacao === 'admitido' || situacao === 'demitido') return false
             return true
-        },
-        classeCorpoStatusModal(dados) {
-            const situacao = dados?.situacao_colaborador || 'em_processo'
-            if (situacao === 'admitido') return 'mybp-card-corpo--aprovado'
-            if (situacao === 'demitido') return 'mybp-card-corpo--reprovado'
-            return 'mybp-card-corpo--pendente'
         },
         isDeOutroPadrao(treinamento) {
             if (!treinamento) return false
@@ -3015,7 +3011,37 @@ export default defineComponent({
             this.editando = false
             this.form = _.cloneDeep(this.formDefault)
             this.form.curriculo_id = curriculo_id
-            this.tituloJanela = 'Treinamentos'
+            this.tituloJanela = 'Treinamentos do colaborador'
+
+            const itemLista = (this.lista || []).find((i) => Number(i.id) === Number(curriculo_id))
+            if (itemLista && itemLista.curriculo) {
+                this.form.dadosFuncionario.nome = itemLista.curriculo.nome || ''
+                this.form.dadosFuncionario.cpf = itemLista.curriculo.cpf || ''
+                this.form.dadosFuncionario.foto_3x4_thumb = itemLista.curriculo.foto_3x4_thumb || null
+                this.form.dadosFuncionario.feedback_id = itemLista.id || ''
+                this.form._modalFoto3x4Ready = !!(itemLista.curriculo.foto_3x4_thumb && itemLista._foto3x4Ready)
+                if (itemLista.admissao) {
+                    this.form.dadosFuncionario.tipo_admissao = itemLista.admissao.tipo_admissao || ''
+                    this.form.dadosFuncionario.status_admissao = itemLista.admissao.status || ''
+                    this.form.dadosFuncionario.emp_nome_fantasia = itemLista.admissao.emp_nome_fantasia || ''
+                    this.form.dadosFuncionario.emp_cnpj = itemLista.admissao.emp_cnpj || ''
+                    this.form.dadosFuncionario.emp_centro_custo = itemLista.admissao.emp_centro_custo || ''
+                    this.form.dadosFuncionario.emp_tipo = itemLista.admissao.emp_tipo || ''
+                }
+                if (itemLista.vaga_aberta_municipio) {
+                    this.form.dadosFuncionario.nome_vaga = itemLista.vaga_aberta_municipio
+                } else if (itemLista.vaga_aberta) {
+                    const nomeVaga = (itemLista.vaga_aberta.vaga && itemLista.vaga_aberta.vaga.nome) || ''
+                    const mun = itemLista.vaga_aberta.municipio
+                    if (nomeVaga && mun && mun.nome) {
+                        this.form.dadosFuncionario.nome_vaga =
+                            nomeVaga + ' - ' + mun.nome + (mun.uf ? ' - ' + mun.uf : '')
+                    } else {
+                        this.form.dadosFuncionario.nome_vaga = nomeVaga
+                    }
+                    this.form.dadosFuncionario.cargo = nomeVaga
+                }
+            }
 
             // Abre a modal já com preload — senão o "Aguarde" não aparece
             this.$nextTick(() => this.abrirModal(REFS_MODAL.JANELA_TREINAMENTO))
@@ -3027,8 +3053,13 @@ export default defineComponent({
                 const treinamento = data.Treinamento || data.treinamento
                 const curriculo = data.Curriculo || data.curriculo
 
-                this.form.dadosFuncionario = data.dadosFuncionario || {}
-                this.tituloJanela = `Treinamentos - ${this.textoCampoModal(this.form.dadosFuncionario.nome)}`
+                const fotoLista = this.form.dadosFuncionario.foto_3x4_thumb
+                this.form.dadosFuncionario = {
+                    ...(data.dadosFuncionario || {}),
+                    foto_3x4_thumb: (data.dadosFuncionario && data.dadosFuncionario.foto_3x4_thumb) || fotoLista || null
+                }
+                this.form._modalFoto3x4Ready = !!this.form.dadosFuncionario.foto_3x4_thumb && !!this.form._modalFoto3x4Ready
+                this.tituloJanela = 'Treinamentos do colaborador'
                 this.form.listaVencimentosNaoVinculadosCargo = data.listaVencimentosNaoVinculadosCargo || []
                 this.form.alertaSemCargoVinculo = !!data.alertaSemCargoVinculo
                 this.privilegio_gestao_rh = data.privilegio_gestao_rh ?? false
@@ -4084,5 +4115,134 @@ export default defineComponent({
 }
 .dropdown-carteira-etiquetas.show .dropdown-menu {
     z-index: 1041;
+}
+
+/* Cabeçalho compacto da modal — mesmo modelo do histórico */
+.treino-modal-perfil {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin: 0 0 0.85rem;
+    padding: 0.7rem 0.9rem;
+    background: #fff;
+    border: 1px solid #e4e8ec;
+    border-radius: 8px;
+    border-left: 4px solid #174257;
+}
+.treino-modal-perfil--aprovado {
+    border-left-color: #1e7e34;
+}
+.treino-modal-perfil--reprovado {
+    border-left-color: #dc3545;
+}
+.treino-modal-perfil--aberto {
+    border-left-color: #174257;
+}
+.treino-modal-perfil__foto-wrap {
+    position: relative;
+    width: 48px;
+    height: 64px;
+    flex-shrink: 0;
+}
+.treino-modal-perfil__foto {
+    display: block;
+    width: 48px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #eef1f4;
+}
+.treino-modal-perfil__foto-wrap > img.treino-modal-perfil__foto {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.treino-modal-perfil__foto-wrap > img.treino-modal-perfil__foto.is-ready {
+    opacity: 1;
+}
+.treino-modal-perfil__foto--vazia,
+.treino-modal-perfil__foto--loading {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #8a93a0;
+    font-size: 0.9rem;
+}
+.treino-modal-perfil__foto--loading {
+    position: absolute;
+    inset: 0;
+    background: #eef1f4;
+}
+.treino-modal-perfil__corpo {
+    min-width: 0;
+    flex: 1;
+}
+.treino-modal-perfil__titulo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    margin-bottom: 0.3rem;
+}
+.treino-modal-perfil__nome {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #174257;
+    word-break: break-word;
+}
+.treino-modal-perfil__meta-id {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+}
+.treino-modal-perfil__id {
+    font-weight: 600;
+    color: #6c757d;
+}
+.treino-modal-perfil__status {
+    font-weight: 600;
+    color: #6c757d;
+}
+.treino-modal-perfil__status--aprovado {
+    color: #1e7e34;
+}
+.treino-modal-perfil__status--reprovado {
+    color: #dc3545;
+}
+.treino-modal-perfil__status--aberto {
+    color: #174257;
+}
+.treino-modal-perfil__linhas {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+.treino-modal-perfil__linha {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: #495057;
+}
+.treino-modal-perfil__k {
+    font-weight: 600;
+    color: #6c757d;
+    margin-right: 0.2rem;
+}
+.treino-modal-perfil__sep {
+    margin: 0 0.4rem;
+    color: #ced4da;
+}
+@media (max-width: 575.98px) {
+    .treino-modal-perfil {
+        gap: 0.65rem;
+        padding: 0.65rem 0.75rem;
+    }
 }
 </style>
