@@ -5,17 +5,28 @@ import datepicker from '../../../components/DatePicker'
 import DadosPessoais from '../../../components/entrevistas/DadosPessoaisTexto'
 import FormRh from '../../../components/entrevistas/FormParecerRh'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
+import EntrevistaListagem from '../../../mixins/EntrevistaListagem'
+import FiltroEntrevistaCompacto from '../../../components/entrevistas/FiltroEntrevistaCompacto.vue'
+import ComboFiltroEntrevista from '../../../components/entrevistas/ComboFiltroEntrevista.vue'
+import CartaoEntrevistaLista from '../../../components/entrevistas/CartaoEntrevistaLista.vue'
+import MybpCardCampo from '../../../components/ui/MybpCardCampo.vue'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
 const app = createApp({
-    mixins: [ExportacaoMixin],
+    mixins: [ExportacaoMixin, EntrevistaListagem],
     components: {
         endereco,
         datepicker,
         DadosPessoais,
-        FormRh
+        FormRh,
+        FiltroEntrevistaCompacto,
+        ComboFiltroEntrevista,
+        CartaoEntrevistaLista,
+        MybpCardCampo
     },
     data() {
         return {
             tituloJanela: 'Parecer Entrevista RH',
+            visualizacao: lerVisualizacaoListagem('entrevista-rh', 'lista'),
             preload: false,
             editando: false,
             apagado: false,
@@ -214,6 +225,8 @@ const app = createApp({
                     cliente_custom: '',
                     parecer_individual: '',
                     filtroPeriodo: false,
+                    dataInicio: '',
+                    dataFim: '',
                     periodo: ''
                 }
             }

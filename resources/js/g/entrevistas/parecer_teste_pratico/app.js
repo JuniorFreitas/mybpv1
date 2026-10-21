@@ -4,16 +4,27 @@ import endereco from '../../../components/Endereco'
 import datepicker from '../../../components/DatePicker'
 import DadosPessoais from '../../../components/entrevistas/DadosPessoaisTexto'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
+import EntrevistaListagem from '../../../mixins/EntrevistaListagem'
+import FiltroEntrevistaCompacto from '../../../components/entrevistas/FiltroEntrevistaCompacto.vue'
+import ComboFiltroEntrevista from '../../../components/entrevistas/ComboFiltroEntrevista.vue'
+import CartaoEntrevistaLista from '../../../components/entrevistas/CartaoEntrevistaLista.vue'
+import MybpCardCampo from '../../../components/ui/MybpCardCampo.vue'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
 const app = createApp({
-    mixins: [ExportacaoMixin],
+    mixins: [ExportacaoMixin, EntrevistaListagem],
     components: {
         endereco,
         datepicker,
-        DadosPessoais
+        DadosPessoais,
+        FiltroEntrevistaCompacto,
+        ComboFiltroEntrevista,
+        CartaoEntrevistaLista,
+        MybpCardCampo
     },
     data() {
         return {
             tituloJanela: 'Parecer Entrevista Teste Prático',
+            visualizacao: lerVisualizacaoListagem('entrevista-teste-pratico', 'lista'),
             preload: false,
             editando: false,
             apagado: false,
@@ -103,6 +114,8 @@ const app = createApp({
                     campoUf: '',
 
                     filtroPeriodo: false,
+                    dataInicio: '',
+                    dataFim: '',
                     periodo: ''
                 }
             }

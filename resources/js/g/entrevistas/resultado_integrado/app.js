@@ -12,8 +12,10 @@ import ComboboxValidation from '../../../mixins/ComboboxValidation'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 import MybpCardCampo from '../../../components/ui/MybpCardCampo.vue'
 import MybpStatusBadge from '../../../components/ui/MybpStatusBadge.vue'
+import EntrevistaListagem from '../../../mixins/EntrevistaListagem'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
 const app = createApp({
-    mixins: [ExportacaoMixin, ComboboxValidation],
+    mixins: [ExportacaoMixin, ComboboxValidation, EntrevistaListagem],
     components: {
         endereco,
         datepicker,
@@ -29,6 +31,7 @@ const app = createApp({
     data() {
         return {
             tituloJanela: 'Resultado Integrado',
+            visualizacao: lerVisualizacaoListagem('entrevista-resultado-integrado', 'lista'),
             preload: false,
             editando: false,
             apagado: false,

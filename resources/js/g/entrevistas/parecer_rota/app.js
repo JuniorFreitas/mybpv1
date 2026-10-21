@@ -6,16 +6,23 @@ import DadosPessoais from '../../../components/entrevistas/DadosPessoaisTexto'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 import Utils from '../../../mixins/Utils'
 import Configuracoes from '../../../mixins/Configuracoes'
+import EntrevistaListagem from '../../../mixins/EntrevistaListagem'
+import FiltroEntrevistaCompacto from '../../../components/entrevistas/FiltroEntrevistaCompacto.vue'
+import ComboFiltroEntrevista from '../../../components/entrevistas/ComboFiltroEntrevista.vue'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
 const app = createApp({
-    mixins: [ExportacaoMixin, Utils, Configuracoes],
+    mixins: [ExportacaoMixin, Utils, Configuracoes, EntrevistaListagem],
     components: {
         endereco,
         datepicker,
-        DadosPessoais
+        DadosPessoais,
+        FiltroEntrevistaCompacto,
+        ComboFiltroEntrevista
     },
     data() {
         return {
             tituloJanela: 'Parecer Entrevista RH',
+            visualizacao: lerVisualizacaoListagem('entrevista-rota', 'lista'),
             preload: false,
             editando: false,
             apagado: false,
@@ -135,6 +142,8 @@ const app = createApp({
                     campoUf: '',
 
                     filtroPeriodo: false,
+                    dataInicio: '',
+                    dataFim: '',
                     periodo: '',
                     page: 1
                 }

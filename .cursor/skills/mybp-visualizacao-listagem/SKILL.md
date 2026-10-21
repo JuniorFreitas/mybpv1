@@ -5,7 +5,7 @@ description: Aplica o padrão MyBP de visualização lista (cards) e tabela na m
 
 # MyBP — Visualização lista e tabela
 
-Duas formas de ver os mesmos registros. A **tabela é o padrão** do sistema. Em Planejamento (cada aba da movimentação e a requisição de vaga), nas telas de admissão CIH, Processo, Histórico e Pré-admissão, e nos cadastros (exceto Projetos, Avaliações e Performance), sem escolha salva naquela tela, o padrão é **lista**. A escolha é **por tela**, não do sistema inteiro.
+Duas formas de ver os mesmos registros. A **tabela é o padrão** do sistema. Em Planejamento (cada aba da movimentação e a requisição de vaga), nas telas de admissão CIH, Processo, Histórico e Pré-admissão, nos cadastros (exceto Projetos, Avaliações e Performance) e nas Entrevistas (Parecer RH, Rota, Técnica, Teste prático, Entrevista RH, Entrevista Gestor e Resultado Integrado), sem escolha salva naquela tela, o padrão é **lista**. A escolha é **por tela**, não do sistema inteiro. Pós-admissão segue o padrão do sistema e inicia em **tabela**.
 
 ## Antes de editar
 
@@ -27,7 +27,7 @@ O componente já está no `registerGlobals`. Não registrar de novo na tela.
 
 ## Ligar na tela
 
-Estado inicial vem do util, com um identificador da tela. Sem valor salvo nessa tela, retorna `tabela`. Em Planejamento, nas telas de admissão CIH, Processo, Histórico e Pré-admissão, e nos cadastros (exceto Projetos, Avaliações e Performance), chamar `lerVisualizacaoListagem('id-da-tela', 'lista')`.
+Estado inicial vem do util, com um identificador da tela. Sem valor salvo nessa tela, retorna `tabela`. Em Planejamento, nas telas de admissão CIH, Processo, Histórico e Pré-admissão, nos cadastros (exceto Projetos, Avaliações e Performance) e nas Entrevistas (Parecer RH, Rota, Técnica, Teste prático, Entrevista RH, Entrevista Gestor e Resultado Integrado), chamar `lerVisualizacaoListagem('id-da-tela', 'lista')`. Pós-admissão usa `lerVisualizacaoListagem('pos-admissao')`, sem o segundo argumento, para iniciar em tabela.
 
 ```javascript
 import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
@@ -65,7 +65,7 @@ Ajuste o caminho do import conforme a pasta do `app.js` ou do `.vue`. O identifi
 
 ## Regras
 
-- Padrão do sistema: **tabela**. Planejamento (cada aba da movimentação e a requisição de vaga), admissão (CIH, Processo, Histórico, Pré-admissão) e cadastros (exceto Projetos, Avaliações e Performance), sem escolha salva naquela tela: **lista**.
+- Padrão do sistema: **tabela**. Planejamento (cada aba da movimentação e a requisição de vaga), admissão (CIH, Processo, Histórico, Pré-admissão), cadastros (exceto Projetos, Avaliações e Performance) e Entrevistas, sem escolha salva naquela tela: **lista**. Pós-admissão, sem escolha salva, inicia em **tabela**.
 - A escolha fica em `mybp_visualizacao_listagem`, um mapa por tela. Trocar em uma tela não altera as outras.
 - O atributo `tela` do controle é o identificador dessa listagem. Não reutilizar o mesmo id em telas diferentes.
 - Não duplicar os botões Lista/Tabela na tela.

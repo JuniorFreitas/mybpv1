@@ -536,164 +536,76 @@
         </template>
     </modal>
 
-    <fieldset>
-        <legend>Filtro</legend>
-        <form @submit.prevent="atualizar">
-            <div class="row">
-                <div class="col-12 col-md-4">
-                    <div class="form-check" style="margin-bottom: -11px;">
-                        <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
-                               id="filtroIntervalo"
-                               v-model="controle.dados.filtroPeriodo"
-                        >
-                        <label class="form-check-label cursor-pointer" for="filtroIntervalo">Por período</label>
-                    </div>
-                    <div class="form-group">
-                        <datepicker range formsm label=""
-                                    :disabled="controle.carregando || !controle.dados.filtroPeriodo"
-                                    v-model="controle.dados.periodo"
-                        ></datepicker>
-                    </div>
-                </div>
+    <filtro-entrevista-compacto
+        :dados="controle.dados"
+        :carregando="controle.carregando"
+        :abertos="filtrosAvancadosAbertos"
+        :tem-filtros="temFiltrosEntrevista"
+        :total-avancados="totalFiltrosAvancadosEntrevista"
+        id-prefix="parecer-rota"
+        label-cargo="Cargo"
+        @update:abertos="filtrosAvancadosAbertos = $event"
+        @submit="atualizar"
+        @limpar="limparFiltrosEntrevista"
+        @periodo="onPeriodoEntrevista"
+        @select-vaga="selecionaVaga"
+        @blur-vaga="resetaCampo"
+    >
+        <template #avancados>
 
-                <div class="col-12 col-sm-6 col-md-6 col-lg-4">
-                    <div class="form-group">
-                        <label>Nome</label>
-                        <input type="text"
-                               placeholder="Buscar por nome"
-                               autocomplete="off"
-                               class="form-control form-control-sm" :disabled="controle.carregando"
-                               v-model="controle.dados.campoBusca"
-                               @keyup.enter.prevent="atualizar"
-                        >
-                    </div>
-                </div>
+                <combo-filtro-entrevista
+                    ref="comboFiltroUf"
+                    input-id="parecer-rota-uf"
+                    label="Estado"
+                    placeholder="Todos os estados"
+                    v-model="controle.dados.campoUf"
+                    :options="opcoesUfFiltro"
+                    :disabled="controle.carregando"
+                    @opening="fecharCombosEntrevista"
+                    @select="atualizar"
+                ></combo-filtro-entrevista>
 
-                <div class="col-12 col-sm-6 col-md-6 col-lg-4">
-                    <div class="form-group">
-                        <label>CPF</label>
-                        <input type="text"
-                               placeholder="Buscar por cpf"
-                               autocomplete="mastertag"
-                               onblur="valida_cpf(this)"
-                               v-mascara:cpf
-                               class="form-control form-control-sm" :disabled="controle.carregando"
-                               v-model="controle.dados.campoCPF"
-                               @keyup.enter.prevent="atualizar"
-                        >
-                    </div>
-                </div>
+                <combo-filtro-entrevista
+                    ref="comboFiltroRota"
+                    input-id="parecer-rota-rota"
+                    label="Rota"
+                    placeholder="Geral"
+                    v-model="controle.dados.campoRota"
+                    :options="opcoesRotaParecer"
+                    :disabled="controle.carregando"
+                    @opening="fecharCombosEntrevista"
+                    @select="atualizar"
+                ></combo-filtro-entrevista>
 
-                <div class="col-12 col-sm-12 col-md-12 col-lg-12">
-                    <div class="form-group">
-                        <label>Cargo</label>
-                        <autocomplete :caminho="controle.dados.caminho_autocomplete"
-                                      :valido="controle.dados.campoVaga !== ''"
-                                      v-model="controle.dados.autocomplete_label"
-                                      :disabled="controle.carregando"
-                                      placeholder="Por cargo"
-                                      @onblur="resetaCampo"
-                                      @onselect="selecionaVaga"
-                                      @onenter="atualizar"
-                        ></autocomplete>
-                    </div>
-                </div>
+                <combo-filtro-entrevista
+                    ref="comboFiltroPages"
+                    input-id="parecer-rota-pages"
+                    label="Exibir"
+                    placeholder="20"
+                    v-model="controle.dados.pages"
+                    :options="opcoesPagesFiltro"
+                    :disabled="controle.carregando"
+                    @opening="fecharCombosEntrevista"
+                    @select="atualizar"
+                ></combo-filtro-entrevista>
+        </template>
+        <template #acoes>
 
-                <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                    <div class="form-group">
-                        <label>Estado</label>
-                        <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                                v-model="controle.dados.campoUf"
-                        >
-                            <option value="">SEM FILTRO</option>
-                            <option value="MA">MA</option>
-                            <option value="AC">AC</option>
-                            <option value="AL">AL</option>
-                            <option value="AP">AP</option>
-                            <option value="AM">AM</option>
-                            <option value="BA">BA</option>
-                            <option value="CE">CE</option>
-                            <option value="DF">DF</option>
-                            <option value="ES">ES</option>
-                            <option value="GO">GO</option>
-                            <option value="MT">MT</option>
-                            <option value="MS">MS</option>
-                            <option value="MG">MG</option>
-                            <option value="PA">PA</option>
-                            <option value="PB">PB</option>
-                            <option value="PR">PR</option>
-                            <option value="PE">PE</option>
-                            <option value="PI">PI</option>
-                            <option value="RJ">RJ</option>
-                            <option value="RN">RN</option>
-                            <option value="RS">RS</option>
-                            <option value="RO">RO</option>
-                            <option value="RR">RR</option>
-                            <option value="SC">SC</option>
-                            <option value="SP">SP</option>
-                            <option value="SE">SE</option>
-                            <option value="TO">TO</option>
-                        </select>
-                    </div>
-                </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary mybp-btn-acao-compact"
+                    v-show="selecionados.length" @click.prevent="selecionados = []">
+                <i class="fa fa-times"></i> Limpar seleção
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-primary mybp-btn-acao-compact"
+                    @click.prevent="exportaExcel()"
+                    :disabled="controle.carregando || preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0)">
+                <i class="fas fa-file-excel"></i> Exportar Excel
+                <span class="badge badge-light" v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
+            </button>
 
-                <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                    <div class="form-group">
-                        <label for="">Rota</label>
-                        <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                                v-model="controle.dados.campoRota"
-                        >
-                            <option value="">Geral</option>
-                            <option value="sem_parecer">Sem parecer</option>
-                            <option value="sim">Tem Rota</option>
-                            <option value="não">Não tem Rota</option>
-                        </select>
-                    </div>
-                </div>
+        </template>
+    </filtro-entrevista-compacto>
+    @include('g.entrevistas.partials.barra_visualizacao', ['tela' => 'entrevista-rota'])
 
-                <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                    <div class="form-group">
-                        <label for="">Exibir</label>
-                        <select class="form-control form-control-sm" @change="atualizar"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.pages"
-                        >
-                            <option value="20">20</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </form>
-
-        <div class="col-12">
-            <div class="row">
-                <button type="button" class="btn btn-sm mr-1 btn-success mb-1 mr-1" :disabled="controle.carregando"
-                        @click="atualizar"
-                ><i
-                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"
-                    ></i>
-                    Atualizar
-                </button>
-                <button class="btn btn-sm mr-1 btn-danger mb-1 mr-1"
-                        :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                        :disabled="selecionados.length === 0" @click="selecionados = []"
-                >
-                    <i class="fa fa-times"></i> Limpar seleção
-                </button>
-                <button type="button" class="btn btn-sm mr-1 btn-primary mb-1 mr-1"
-                        @click.prevent="exportaExcel()"
-                        :disabled="controle.carregando || preloadExportacao || lista.length===0"
-                >
-                    <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
-                                                                           v-show="selecionados.length > 0"
-                    >@{{ selecionados.length }}</span>
-                </button>
-            </div>
-        </div>
-
-    </fieldset>
     <preload class="text-center" v-if="controle.carregando"></preload>
 
     <div id="conteudo">
@@ -719,7 +631,7 @@
             </button>
         </div>
 
-        <div class="cards-lista" v-show="!controle.carregando && lista.length > 0">
+        <div class="cards-lista" v-if="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
             <div class="solicitacao-card" v-for="entrevista in lista" :key="entrevista.id"
                  :class="getCardStatusClass(entrevista)">
                 <div class="card-header-row">
@@ -730,8 +642,13 @@
                         <input type="checkbox" class="custom-checkbox" v-else disabled title="Sem parecer de rota">
                         <span class="badge-id">#@{{ entrevista.id }}</span>
                         <div class="colaborador-principal">
-                            <i class="fas fa-user-circle mr-1"></i>
-                            <strong>@{{ entrevista.curriculo.nome }}</strong>
+                            <span class="d-flex align-items-center min-w-0">
+                                <i class="fas fa-user-circle mr-1"></i>
+                                <strong>@{{ entrevista.curriculo.nome }}</strong>
+                            </span>
+                            <div class="colaborador-cpf" v-if="entrevista.curriculo && entrevista.curriculo.cpf">
+                                CPF @{{ entrevista.curriculo.cpf }}
+                            </div>
                         </div>
                         <span class="status-badge" :class="getStatusBadgeClass(entrevista)">
                             @{{ getStatusRotaLabel(entrevista) }}
@@ -840,6 +757,83 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        
+        <div class="table-responsive mybp-tabela-wrap" v-if="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+            <table class="tabela mybp-tabela">
+                <thead>
+                <tr>
+                    <th style="width: 1em;"></th>
+                    <th>Cód</th>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>Vaga</th>
+                    <th v-if="colunasTabela.pcd">PCD</th>
+                    <th v-if="colunasTabela.parecer_rh">Parecer RH</th>
+                    <th>Tem rota</th>
+                    <th v-if="colunasTabela.tecnica_nota">Ent. técnica</th>
+                    <th v-if="colunasTabela.teste_pratico_nota">Teste prático</th>
+                    <th>WhatsApp</th>
+                    <th>Status</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="entrevista in lista" :key="'tab-' + entrevista.id">
+                    <td class="text-center">
+                        <input v-if="entrevista.parecer_rota" type="checkbox" v-model="selecionados" :value="entrevista.id" />
+                        <input v-else type="checkbox" disabled />
+                    </td>
+                    <td class="text-center">@{{ entrevista.id }}</td>
+                    <td class="mybp-col-texto">@{{ entrevista.curriculo.nome }}</td>
+                    <td>@{{ entrevista.curriculo && entrevista.curriculo.cpf ? entrevista.curriculo.cpf : 'Não informado' }}</td>
+                    <td class="mybp-col-texto">@{{ entrevista.vaga_aberta_municipio || 'Não informado' }}</td>
+                    <td class="text-center" v-if="colunasTabela.pcd">@{{ entrevista.curriculo.pcd ? 'Sim' : 'Não' }}</td>
+                    <td class="text-center" v-if="colunasTabela.parecer_rh">@{{ entrevista.parecer_rh ? entrevista.parecer_rh.nota : 'Aguardando' }}</td>
+                    <td class="text-center">@{{ entrevista.parecer_rota && entrevista.parecer_rota.tem_rota != null ? (entrevista.parecer_rota.tem_rota ? 'Sim' : 'Não') : 'Aguardando' }}</td>
+                    <td class="text-center" v-if="colunasTabela.tecnica_nota">@{{ entrevista.parecer_tecnica ? entrevista.parecer_tecnica.nota : 'Aguardando' }}</td>
+                    <td class="text-center" v-if="colunasTabela.teste_pratico_nota">@{{ entrevista.parecer_teste ? entrevista.parecer_teste.NotaTesteFormat : 'Aguardando' }}</td>
+                    <td>@{{ entrevista.parecer_rota ? getWhatsappEnviadoLabel(entrevista) : 'Não informado' }}</td>
+                    <td>@{{ getStatusRotaLabel(entrevista) }}</td>
+                    <td class="text-center">
+                        <div class="dropdown" :class="{ show: isDropdownOpen(entrevista.id) }">
+                            <a class="mybp-btn-acoes-compact" href="#" role="button"
+                               @click.prevent.stop="toggleDropdown(entrevista.id); posicionarMenuAcoes($event)">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </a>
+                            <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right"
+                                 :class="{ show: isDropdownOpen(entrevista.id) }"
+                                 @click="fecharDropdown">
+                                <a class="dropdown-item" href="javascript://" v-if="!entrevista.parecer_rota"
+                                   @click.prevent="formEntrevistar(entrevista.id); $refs.janelaParecerEntrevista?.abrirModal()">
+                                    <i class="far fa-list-alt mr-2 text-primary"></i> Entrevistar
+                                </a>
+                                @can('entrevista_parecer_rota_update')
+                                <a class="dropdown-item" href="javascript://" v-if="entrevista.parecer_rota"
+                                   @click.prevent="formEntrevistar(entrevista.id); editando = true; $refs.janelaParecerEntrevista?.abrirModal()">
+                                    <i class="fa fa-edit mr-2 text-warning"></i> Editar
+                                </a>
+                                @endcan
+                                <a class="dropdown-item" href="javascript://" v-if="entrevista.parecer_rota"
+                                   @click.prevent="formEntrevistar(entrevista.id); visualizar = true; $refs.janelaParecerEntrevista?.abrirModal()">
+                                    <i class="fas fa-eye mr-2 text-info"></i> Visualizar
+                                </a>
+                                <a class="dropdown-item" href="javascript://"
+                                   v-if="whatsappTipoHabilitado('parecer_rota_transporte') && entrevista.parecer_rota && entrevista.parecer_rota.tem_rota"
+                                   @click.prevent="abrirModalWhatsapp(entrevista)">
+                                    <i class="fab fa-whatsapp mr-2 text-success"></i> Enviar WhatsApp
+                                </a>
+                                <a class="dropdown-item" href="javascript://" v-if="entrevista.parecer_rota"
+                                   @click.prevent="gerarPdf(entrevista)">
+                                    <i class="fas fa-file-pdf mr-2 text-danger"></i> Gerar PDF
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
 
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
@@ -953,11 +947,21 @@
         }
         .colaborador-principal {
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
             font-size: 1rem;
             color: #212529;
             overflow: hidden;
             min-width: 0;
+            line-height: 1.25;
+        }
+        .colaborador-cpf {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #6c757d;
+            white-space: nowrap;
+            margin-top: 0.1rem;
         }
         .colaborador-principal i { color: #174257; flex-shrink: 0; }
         .colaborador-principal strong {
