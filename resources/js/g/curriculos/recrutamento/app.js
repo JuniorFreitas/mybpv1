@@ -11,6 +11,7 @@ import MybpCardCampo from '../../../components/ui/MybpCardCampo.vue'
 import MybpStatusBadge from '../../../components/ui/MybpStatusBadge.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
 
 // ===== CONSTANTES E CONFIGURAÇÕES =====
 const SELECOES = {
@@ -60,6 +61,7 @@ const app = createApp({
             cadastrado: false,
             atualizado: false,
             dropdownAbertoId: null,
+            visualizacao: lerVisualizacaoListagem(),
 
             // ===== CONFIGURAÇÕES =====
             permite_envio_whatsapp: null,
@@ -874,6 +876,15 @@ const app = createApp({
         },
         tomTemCountRec(item, key) {
             return this.countRec(item, key) > 0 ? 'positivo' : 'negativo'
+        },
+        textoVagaRec(item) {
+            const vagaAberta = item && item.vaga_aberta ? item.vaga_aberta : null
+            const nome = vagaAberta && vagaAberta.vaga_selecionada ? vagaAberta.vaga_selecionada.nome : ''
+            const municipio = vagaAberta && vagaAberta.municipio ? vagaAberta.municipio : null
+            const cidade = municipio && municipio.nome ? municipio.nome : ''
+            const uf = municipio && municipio.uf ? municipio.uf : ''
+            const texto = [nome, cidade, uf].filter(Boolean).join(' - ')
+            return texto || 'Não informado'
         },
         textoInteresseRec(item) {
             if (!item || !item.feed_back) return ''

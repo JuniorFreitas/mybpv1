@@ -690,13 +690,16 @@
         <preload></preload>
     </p>
 
-    <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length === 0">
-        <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
+    <div class="d-flex justify-content-end mb-2" v-show="!controle.carregando">
+        <mybp-visualizacao-listagem
+            v-model="visualizacao"
+            @update:model-value="fecharDropdown"
+        ></mybp-visualizacao-listagem>
     </div>
 
-    <div id="conteudo" v-show="!controle.carregando && lista.length > 0">
-        <div class="mybp-cards-lista">
-            <div class="mybp-card" v-for="curriculo in lista" :key="curriculo.id">
+    <div id="conteudo">
+        <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
+            <div class="mybp-card" v-for="curriculo in lista" :key="'card-' + curriculo.id">
                 <div class="mybp-card-header-row">
                     <div class="mybp-card-left">
                         <span class="mybp-badge-id">#@{{ curriculo.id }}</span>
@@ -727,18 +730,10 @@
                                 :aria-labelledby="'rec-acoes-' + curriculo.id"
                                 @click="fecharDropdown"
                             >
-                                <a
-                                    class="dropdown-item"
-                                    href="javascript://"
-                                    @click.prevent="formAlterar(curriculo.id)"
-                                >
+                                <a class="dropdown-item" href="javascript://" @click.prevent="formAlterar(curriculo.id)">
                                     <i class="fa fa-edit mr-1"></i> Recrutar
                                 </a>
-                                <a
-                                    class="dropdown-item"
-                                    :href="`recrutamentos/${curriculo.ctoken}`"
-                                    target="_blank"
-                                >
+                                <a class="dropdown-item" :href="`recrutamentos/${curriculo.ctoken}`" target="_blank">
                                     <i class="far fa-file-pdf mr-1"></i> Gerar PDF
                                 </a>
                                 @can('curriculos_recrutamento_delete')
@@ -754,91 +749,126 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="mybp-card-corpo" :class="'mybp-card-corpo--' + chaveStatusRec(curriculo)">
                     <section class="mybp-card-secao">
                         <div class="mybp-card-row">
-                            <mybp-card-campo
-                                icon="fas fa-id-card"
-                                label="CPF"
-                                :valor="curriculo.cpf"
-                                forte
-                            ></mybp-card-campo>
-                            <mybp-card-campo
-                                icon="fas fa-map-marker-alt"
-                                label="UF"
-                                :valor="curriculo.uf_vaga"
-                            ></mybp-card-campo>
-                            <mybp-card-campo
-                                icon="fas fa-briefcase"
-                                label="Vaga"
-                                :valor="curriculo.vaga_aberta?.vaga_selecionada?.nome"
-                            ></mybp-card-campo>
+                            <mybp-card-campo icon="fas fa-id-card" label="CPF" :valor="curriculo.cpf" forte></mybp-card-campo>
+                            <mybp-card-campo icon="fas fa-map-marker-alt" label="UF" :valor="curriculo.uf_vaga"></mybp-card-campo>
+                            <mybp-card-campo icon="fas fa-briefcase" label="Vaga" :valor="textoVagaRec(curriculo)"></mybp-card-campo>
                         </div>
                     </section>
-
                     <section class="mybp-card-secao">
                         <div class="mybp-card-row">
-                            <mybp-card-campo
-                                icon="fas fa-wheelchair"
-                                label="PCD"
-                                :valor="curriculo.pcd ? 'Sim' : 'Não'"
-                                :tom="curriculo.pcd ? 'positivo' : 'meta'"
-                            ></mybp-card-campo>
-                            <mybp-card-campo
-                                icon="fas fa-user-check"
-                                label="Selecionado"
-                                :valor="textoSelecionadoRec(curriculo)"
-                            ></mybp-card-campo>
-                            <mybp-card-campo
-                                icon="fas fa-phone"
-                                label="Contato realizado"
-                                :valor="textoSimNaoFeed(curriculo, 'contato_realizado')"
-                                :tom="tomSimNaoFeed(curriculo, 'contato_realizado')"
-                            ></mybp-card-campo>
+                            <mybp-card-campo icon="fas fa-wheelchair" label="PCD" :valor="curriculo.pcd ? 'Sim' : 'Não'" :tom="curriculo.pcd ? 'positivo' : 'meta'"></mybp-card-campo>
+                            <mybp-card-campo icon="fas fa-user-check" label="Selecionado" :valor="textoSelecionadoRec(curriculo)"></mybp-card-campo>
+                            <mybp-card-campo icon="fas fa-phone" label="Contato realizado" :valor="textoSimNaoFeed(curriculo, 'contato_realizado')" :tom="tomSimNaoFeed(curriculo, 'contato_realizado')"></mybp-card-campo>
                         </div>
                     </section>
-
                     <section class="mybp-card-secao">
                         <div class="mybp-card-row">
-                            <mybp-card-campo
-                                icon="fas fa-briefcase"
-                                label="Experiências"
-                                :valor="textoTemCountRec(curriculo, 'experiencias_count')"
-                                :tom="tomTemCountRec(curriculo, 'experiencias_count')"
-                            ></mybp-card-campo>
-                            <mybp-card-campo
-                                icon="fas fa-graduation-cap"
-                                label="Qualificações"
-                                :valor="textoTemCountRec(curriculo, 'qualificacoes_count')"
-                                :tom="tomTemCountRec(curriculo, 'qualificacoes_count')"
-                            ></mybp-card-campo>
-                            <mybp-card-campo
-                                icon="fas fa-heart"
-                                label="Interesse"
-                                :valor="textoInteresseRec(curriculo)"
-                                :tom="tomInteresseRec(curriculo)"
-                            ></mybp-card-campo>
+                            <mybp-card-campo icon="fas fa-briefcase" label="Experiências" :valor="textoTemCountRec(curriculo, 'experiencias_count')" :tom="tomTemCountRec(curriculo, 'experiencias_count')"></mybp-card-campo>
+                            <mybp-card-campo icon="fas fa-graduation-cap" label="Qualificações" :valor="textoTemCountRec(curriculo, 'qualificacoes_count')" :tom="tomTemCountRec(curriculo, 'qualificacoes_count')"></mybp-card-campo>
+                            <mybp-card-campo icon="fas fa-heart" label="Interesse" :valor="textoInteresseRec(curriculo)" :tom="tomInteresseRec(curriculo)"></mybp-card-campo>
                         </div>
                     </section>
-
                     <section class="mybp-card-secao">
                         <div class="mybp-card-row">
-                            <mybp-card-campo
-                                icon="fas fa-calendar"
-                                label="Data cadastro"
-                                :valor="curriculo.created_at"
-                            ></mybp-card-campo>
-                            <mybp-card-campo
-                                icon="fas fa-eye"
-                                label="Lido"
-                                :valor="curriculo.lido ? 'Sim' : 'Não'"
-                                :tom="curriculo.lido ? 'positivo' : 'negativo'"
-                            ></mybp-card-campo>
+                            <mybp-card-campo icon="fas fa-calendar" label="Data cadastro" :valor="curriculo.created_at"></mybp-card-campo>
+                            <mybp-card-campo icon="fas fa-eye" label="Lido" :valor="curriculo.lido ? 'Sim' : 'Não'" :tom="curriculo.lido ? 'positivo' : 'negativo'"></mybp-card-campo>
                         </div>
                     </section>
                 </div>
             </div>
+        </div>
+
+        <div class="table-responsive rec-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+            <table class="tabela rec-tabela">
+                <thead>
+                <tr class="bg-default">
+                    <th>Cód</th>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>UF</th>
+                    <th>Vaga</th>
+                    <th>PCD</th>
+                    <th>Selecionado</th>
+                    <th>Contato</th>
+                    <th>Interesse</th>
+                    <th>Data</th>
+                    <th>Lido</th>
+                    <th>Ação</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="curriculo in lista" :key="curriculo.id">
+                    <td data-label="Cód">
+                        @{{curriculo.id}}
+                    </td>
+                    <td class="rec-col-texto" data-label="Nome" :title="curriculo.nome">
+                        @{{curriculo.nome}}
+                    </td>
+                    <td data-label="CPF">
+                        @{{curriculo.cpf}}
+                    </td>
+                    <td data-label="UF">
+                        @{{curriculo.uf_vaga ? curriculo.uf_vaga : 'Não informado'}}
+                    </td>
+                    <td class="rec-col-texto" data-label="Vaga" :title="textoVagaRec(curriculo)">
+                        @{{ textoVagaRec(curriculo) }}
+                    </td>
+                    <td data-label="PCD">
+                        @{{curriculo.pcd ? "SIM" : "NÃO"}}
+                    </td>
+                    <td data-label="Selecionado">
+                        @{{curriculo.feed_back && curriculo.feed_back.selecionado
+                        ? curriculo.feed_back.selecionado.toUpperCase() : "--"}}
+                    </td>
+                    <td data-label="Contato">
+                        @{{curriculo.feed_back && curriculo.feed_back.contato_realizado ? "SIM" : "NÃO"}}
+                    </td>
+                    <td data-label="Interesse">
+                        @{{curriculo.feed_back && (curriculo.feed_back.interesse === true || curriculo.feed_back.interesse === false)
+                        ? (curriculo.feed_back.interesse ? "SIM" : "NÃO") : "--"}}
+                    </td>
+                    <td data-label="Data">
+                        @{{curriculo.created_at}}
+                    </td>
+                    <td data-label="Lido">
+                        <span v-show="curriculo.lido">
+                            <i class="fa fa-check text-success"></i> SIM
+                        </span>
+                        <span v-show="!curriculo.lido">
+                            <i class="fa fa-ban text-warning"></i> NÃO
+                        </span>
+                    </td>
+                    <td class="rec-col-acoes" data-label="Ação">
+                        <a href="javascript://" class="btn btn-sm mr-1 btn-primary"
+                           @click.prevent="formAlterar(curriculo.id)"
+                           content="Recrutar" v-tippy
+                        >
+                            <i class="fa fa-edit" aria-hidden="true"></i>
+                        </a>
+                        <a :href="`recrutamentos/${curriculo.ctoken}`" target="_blank"
+                           class="btn btn-sm mr-1 btn-primary"
+                           content="Gerar PDF" v-tippy
+                        >
+                            <i class="far fa-file-pdf"></i>
+                        </a>
+                        @can('curriculos_recrutamento_delete')
+                            <a href="javascript://" class="btn btn-sm btn-danger" content="Remover" v-tippy
+                               @click.prevent="janelaConfirmar(curriculo.id); $refs.janelaConfirmar?.abrirModal()"
+                            >
+                                <i class="fa fa-trash" aria-hidden="true"></i>
+                            </a>
+                        @endcan
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="alert alert-warning" v-show="!controle.carregando && lista.length === 0">
+            <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
         </div>
 
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"
@@ -855,6 +885,58 @@
         />
     </div>
 @stop
+@push('css')
+    <style>
+        @media screen and (min-width: 601px) {
+            .rec-tabela-wrap {
+                max-height: calc(100vh - 14rem);
+                overflow: auto;
+            }
+
+            table.tabela.rec-tabela {
+                table-layout: auto;
+                width: max-content;
+                min-width: 100%;
+                border-collapse: separate;
+                border-spacing: 0;
+            }
+
+            table.tabela.rec-tabela th {
+                position: sticky;
+                top: 0;
+                z-index: 2;
+                letter-spacing: 0.02em;
+                white-space: nowrap;
+                font-size: 0.72rem;
+                background: #f4f6f8;
+                box-shadow: inset 0 -1px 0 #d0d5dd;
+            }
+
+            table.tabela.rec-tabela th,
+            table.tabela.rec-tabela td {
+                border-bottom: 1px solid #e6e6e6;
+            }
+
+            table.tabela.rec-tabela td {
+                vertical-align: middle;
+                white-space: nowrap;
+            }
+
+            table.tabela.rec-tabela td.rec-col-texto {
+                text-align: left;
+                white-space: normal;
+                width: 180px;
+                max-width: 220px;
+                min-width: 140px;
+                overflow-wrap: break-word;
+            }
+
+            table.tabela.rec-tabela td.rec-col-acoes {
+                white-space: nowrap;
+            }
+        }
+    </style>
+@endpush
 @push('js')
     <script src="{{mix('js/g/recrutamento/app.js')}}"></script>
 @endpush

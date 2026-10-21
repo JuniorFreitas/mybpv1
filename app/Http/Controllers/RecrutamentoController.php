@@ -788,6 +788,7 @@ class RecrutamentoController extends Controller
         ])
             ->whereHas('VagaAberta')
             ->with('VagaAberta.VagaSelecionada',
+                'VagaAberta.Municipio:id,nome,uf',
                 'FeedBack:id,curriculo_id,interesse,selecionado,contato_realizado')
             ->withCount([
                 'Experiencias as experiencias_count',

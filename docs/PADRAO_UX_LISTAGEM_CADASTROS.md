@@ -171,6 +171,37 @@ Prefixo **`mybp-`** evita conflito com estilos locais. Principais:
 
 Estilos carregados via `resources/sass/app.scss` → `@import "mybp-listagem-ui"`.
 
+## Visualização lista e tabela
+
+Telas que oferecem as duas formas de ver os mesmos registros usam um controle único do sistema. A **tabela é o padrão**. A escolha do usuário vale para todas as telas e fica em `localStorage` na chave `mybp_visualizacao_listagem`.
+
+| Recurso | Caminho |
+|---|---|
+| Botões Lista / Tabela | `resources/js/components/ui/MybpVisualizacaoListagem.vue` |
+| Leitura e gravação | `resources/js/utils/visualizacaoListagem.js` |
+| Skill | `.cursor/skills/mybp-visualizacao-listagem/SKILL.md` |
+| Registro global | `mybp-visualizacao-listagem` em `registerGlobals.js` |
+| Referência | Recrutamento (`resources/views/g/curriculos/recrutamento/index.blade.php`) |
+
+Na tela:
+
+```javascript
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
+
+data() {
+    return { visualizacao: lerVisualizacaoListagem() }
+}
+```
+
+```html
+<mybp-visualizacao-listagem v-model="visualizacao"></mybp-visualizacao-listagem>
+
+<div class="mybp-cards-lista" v-show="visualizacao === 'lista'"><!-- cards --></div>
+<div class="table-responsive" v-show="visualizacao === 'tabela'"><!-- tabela --></div>
+```
+
+Não criar outra chave de `localStorage` por tela. Sem valor salvo, abrir em tabela.
+
 ## Checklist ao migrar uma tela
 
 - [ ] Importar `FiltroListagem` e `ComboboxAutoComplete`

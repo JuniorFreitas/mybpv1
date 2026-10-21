@@ -45,6 +45,7 @@ const components = {
     'telefone-usuario-modal': require('./components/TelefoneUsuarioModal.vue').default,
     'whatsapp-preferencias-usuario': require('./components/WhatsappPreferenciasUsuario.vue').default,
     'whatsapp-preview-modal': require('./components/configuracoes/whatsapp/WhatsappPreviewModal.vue').default,
+    'mybp-visualizacao-listagem': require('./components/ui/MybpVisualizacaoListagem.vue').default,
     'tiny-mce-editor': require('./components/TinyMceEditor.vue').default,
 }
 
