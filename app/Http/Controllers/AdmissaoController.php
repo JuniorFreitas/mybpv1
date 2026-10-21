@@ -31,6 +31,7 @@ use App\Models\UsuarioDependente;
 use App\Models\VagaProjeto;
 use App\Models\VagasAbertas;
 use App\Services\Curriculo\Foto3x4ListagemCache;
+use App\Services\Treinamento\CarteiraImagemCache;
 use App\Rules\CpfValidoEmpresaRules;
 use App\Rules\VagaAbertaEmpresaRules;
 use App\Rules\VerificaCpfEmpresaRules;
@@ -2014,7 +2015,16 @@ class AdmissaoController extends Controller
                 'ResultadoIntegrado:id,feedback_id',
                 'Admissao',
                 'UltimoAso',
+                'Curriculo.FotoTres',
             );
+
+        $foto = $feedback->Curriculo?->FotoTres?->first();
+        if ($foto && $foto->file) {
+            $foto->setAttribute('url_base64', CarteiraImagemCache::fotoCurriculo3x4ParaDataUrl(
+                (string) $foto->file,
+                $foto->disco ? (string) $foto->disco : null
+            ));
+        }
 
         $dados = [
             'dados_empresa' => Sistema::getEmpresaFilialMatriz($feedback->Admissao->centro_custo_filial_id, $feedback['empresa_id']),

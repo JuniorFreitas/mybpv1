@@ -95,6 +95,10 @@ class JobExportaAdmissoes implements ShouldQueue
             // Usa o filtro do AdmissaoController
             $request = new \Illuminate\Http\Request($this->requestData);
             $query = (new AdmissaoController())->filtro($request);
+            // A listagem só traz nome, CPF e PCD. O Excel precisa do endereço e dos demais campos do currículo.
+            $query->with([
+                'Curriculo:id,nome,cpf,rg,orgao_expeditor,pcd,cid,naturalidade,estado_civil,sexo,filiacao_pai,filiacao_mae,nascimento,email,formacao,formacao_curso,logradouro,end_numero,complemento,bairro,municipio,uf,cep',
+            ]);
 
             // Aplica filtro de selecionados se existir
             if (isset($this->requestData['selecionados']) && !empty($this->requestData['selecionados'])) {
@@ -234,13 +238,13 @@ class JobExportaAdmissoes implements ShouldQueue
     private function processDataInChunks($query): void
     {
         $head = [
-            "Nome", "Naturalidade", "Estado Civil", "Sexo", "CPF", "Pai", "Mãe", "PCD",
+            "Nome", "Naturalidade", "Estado Civil", "Sexo", "CPF", "RG", "Órgão emissor", "Pai", "Mãe", "PCD", "CID",
             "Destro/Canhoto", "CNH", "Nascimento", "Idade", "Formação", "Calça", "Bota",
             "Camisa Meia", "Camisa Proteção", "Empresa", "Vaga", "Ex Funcionário", "Contato",
-            "E-mail", "Disponibilidade para turnos 6X2", "Indicado por quem", "Indicado para qual área",
+            "E-mail", "Disponibilidade para turnos 6X2", "Indicado", "Indicado por quem", "Indicado para qual área",
             "Endereço", "Tem Rota que atende", "Qual", "Bairro Rota", "Ponto de referência Rota",
             "Informado sobre ponto de referência", "Qual", "Bairro Residência", "Ponto de referência Residência",
-            "Teste aplicado", "Resultado Teste Prático", "Rigger", "Plataforma Móvel", "Ponte Rolante",
+            "Teste aplicado", "Resultado Teste Prático", "Parecer final do teste", "Rigger", "Plataforma Móvel", "Ponte Rolante",
             "Encaminhado para Documentos", "Data Encaminhado para Documentos", "Encaminhado para Exame",
             "Data Encaminhado para Exame", "Encaminhado para treinamento", "Data Encaminhado para Treinamento",
             "Área", "Centro de Custo", "CNPJ Filial", "Centro de custo filial", "Função", "Cargo",
@@ -268,7 +272,8 @@ class JobExportaAdmissoes implements ShouldQueue
             ]
         ];
 
-        $sheet->getStyle('A1:BF1')->applyFromArray($headerStyle);
+        $ultimaColuna = $this->colunaExcel(count($head));
+        $sheet->getStyle('A1:' . $ultimaColuna . '1')->applyFromArray($headerStyle);
 
         $currentRow = 2;
         $chunkCount = 0;
@@ -321,8 +326,8 @@ class JobExportaAdmissoes implements ShouldQueue
         \Log::info("Processamento concluído. Total: {$totalProcessed} registros em {$chunkCount} chunks");
 
         // Auto-ajusta largura das colunas
-        foreach (range('A', 'BF') as $column) {
-            $sheet->getColumnDimension($column)->setAutoSize(true);
+        for ($indice = 1; $indice <= count($head); $indice++) {
+            $sheet->getColumnDimension($this->colunaExcel($indice))->setAutoSize(true);
         }
 
         // Salva arquivo
@@ -357,11 +362,14 @@ class JobExportaAdmissoes implements ShouldQueue
             $item->Curriculo?->estado_civil ?? 'NÃO INFORMADO',
             $item->Curriculo?->sexo ?? 'NÃO INFORMADO',
             $item->Curriculo?->cpf ?? '',
+            $item->Curriculo?->rg ?? 'NÃO INFORMADO',
+            $item->Curriculo?->orgao_expeditor ?? 'NÃO INFORMADO',
             $item->Curriculo?->filiacao_pai ?? "",
             $item->Curriculo?->filiacao_mae ?? "",
             $item->Curriculo?->pcd ? 'SIM' : 'NÃO',
+            $item->Curriculo?->cid ?? 'NÃO INFORMADO',
             $item->parecerRh?->destro ?? 'NÃO INFORMADO',
-            $item->parecerRh?->cnh_tipo ?? 'NÃO INFORMADO',
+            $item->parecerRh ? ($item->parecerRh->cnh ? ($item->parecerRh->cnh_tipo ?: 'NÃO INFORMADO') : 'Não possui') : 'NÃO INFORMADO',
             $item->Curriculo?->nascimento ?? '',
             $item->Curriculo?->idade ?? '',
             $item->Curriculo?->formacao <= 7 ? $item->Curriculo?->Escolaridade?->tipo : $this->getEscolaridade($item),
@@ -375,9 +383,10 @@ class JobExportaAdmissoes implements ShouldQueue
             $item->TelPrincipal ? $item->TelPrincipal?->numero : 'NÃO INFORMADO',
             $item->Curriculo->email ?? '',
             $item->parecerRh ? $item->parecerRh?->turnos_seis_por_dois ? 'SIM' : 'NÃO' : 'NÃO INFORMADO',
+            $item->parecerRh ? ($item->parecerRh->indicacao ? 'SIM' : 'NÃO') : 'NÃO INFORMADO',
             $item->parecerRh->indicado_por ?? "",
             $item->parecerTecnica?->indicado_area ?? "",
-            $item->Curriculo?->endereco_completo ?? '',
+            $this->enderecoFuncionario($item->Curriculo),
             $item->parecerRota ? $item->parecerRota?->tem_rota ? 'SIM' : 'NÃO' : 'NÃO INFORMADO',
             $item->parecerRota ? $item->parecerRota?->qual ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
             $item->parecerRota ? $item->parecerRota?->bairro_rota ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
@@ -388,6 +397,7 @@ class JobExportaAdmissoes implements ShouldQueue
             $item->parecerRota ? $item->parecerRota?->ponto_referencia_residencia ?: 'NÃO INFORMADO' : 'NÃO INFORMADO',
             $item->parecerTeste->qual_teste ?? 'NÃO INFORMADO',
             $item->parecerTeste ? $item->parecerTeste?->nota_teste == 0 ? 'Não se Aplica' : $item->parecerTeste?->nota_teste : 'Aguardando',
+            $item->parecerTeste?->parecer_final_teste ?: 'NÃO INFORMADO',
             $item->parecerTecnica ? $item->parecerTecnica?->experiencia_cargas_rigger ? 'SIM' : 'NÃO' : 'NÃO INFORMADO',
             $item->parecerTecnica ? $item->parecerTecnica?->opera_plat_movel ? 'SIM' : 'NÃO' : 'NÃO INFORMADO',
             $item->parecerTecnica ? $item->parecerTecnica?->opera_plat_ponte ? 'SIM' : 'NÃO' : 'NÃO INFORMADO',
@@ -436,6 +446,54 @@ class JobExportaAdmissoes implements ShouldQueue
             $item->Admissao?->QuemAdmitiu?->nome ?? "",
             $item->Admissao?->QuemAlterou?->nome ?? "",
         ];
+    }
+
+    private function colunaExcel(int $indice): string
+    {
+        $letra = '';
+        while ($indice > 0) {
+            $indice--;
+            $letra = chr(65 + ($indice % 26)) . $letra;
+            $indice = intdiv($indice, 26);
+        }
+
+        return $letra;
+    }
+
+    /**
+     * Endereço do funcionário para a planilha.
+     * Usa o endereço completo quando os campos obrigatórios existem e, se faltar algum, monta o que estiver preenchido.
+     */
+    private function enderecoFuncionario($curriculo): string
+    {
+        if (!$curriculo) {
+            return 'NÃO INFORMADO';
+        }
+
+        $completo = $curriculo->endereco_completo;
+        if (is_string($completo) && trim($completo) !== '') {
+            return $completo;
+        }
+
+        $municipioUf = trim(implode(' / ', array_filter([
+            $curriculo->municipio,
+            $curriculo->uf,
+        ], fn ($parte) => $parte !== null && trim((string) $parte) !== '')));
+
+        $partes = array_filter([
+            $curriculo->logradouro,
+            $curriculo->complemento,
+            $curriculo->end_numero,
+            $curriculo->cep,
+            $curriculo->bairro,
+            $municipioUf !== '' ? $municipioUf : null,
+        ], fn ($parte) => $parte !== null && trim((string) $parte) !== '');
+
+        if ($partes === []) {
+            return 'NÃO INFORMADO';
+        }
+
+        return implode(', ', $partes);
     }
 
     public function getEscolaridade($row)
