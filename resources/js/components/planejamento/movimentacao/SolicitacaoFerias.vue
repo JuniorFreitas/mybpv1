@@ -746,6 +746,10 @@
             </template>
         </FiltroListagem>
 
+        <div class="d-flex justify-content-end my-2">
+            <mybp-visualizacao-listagem :model-value="visualizacao" @update:model-value="$emit('update:visualizacao', $event)"></mybp-visualizacao-listagem>
+        </div>
+
         <preload class="text-center" v-if="controle.carregando"></preload>
 
         <div id="conteudo">
@@ -769,7 +773,7 @@
             </div> -->
 
             <!-- Cards -->
-            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
                 <div class="mybp-card" v-for="item in lista" :key="item.id">
                     <div class="mybp-card-header-row">
                         <div class="mybp-card-left">
@@ -929,6 +933,55 @@
                     </div>
                 </div>
             </div>
+
+            <div class="table-responsive mov-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+                <table class="tabela mov-tabela">
+                    <thead>
+                    <tr>
+                        <th>Cód</th>
+                        <th>Nome</th>
+                        <th>Férias</th>
+                        <th>Dias</th>
+                        <th>Período aquisitivo</th>
+                        <th>Lotação</th>
+                        <th>Centro de custo</th>
+                        <th>Admissão</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in lista" :key="'tab-' + item.id">
+                        <td data-label="Cód">{{ item.id }}</td>
+                        <td class="mov-col-texto" data-label="Nome">{{ nomeColaboradorLista(item) }}</td>
+                        <td class="mov-col-texto" data-label="Férias">{{ periodoFeriasLista(item) || 'Não informado' }}</td>
+                        <td data-label="Dias">{{ diasFeriasLista(item) || 'Não informado' }}</td>
+                        <td class="mov-col-texto" data-label="Período aquisitivo">{{ periodoAquisitivoLista(item) || 'Não informado' }}</td>
+                        <td class="mov-col-texto" data-label="Lotação">{{ item.lotacao || 'Não informado' }}</td>
+                        <td class="mov-col-texto" data-label="Centro de custo">{{ centroCustoLista(item) || 'Não informado' }}</td>
+                        <td data-label="Admissão">{{ dataAdmissaoLista(item) || 'Não informado' }}</td>
+                        <td data-label="Status">
+                            <mybp-status-badge :variante="chaveStatusLista(item)" :texto="textoStatusLista(item)" />
+                        </td>
+                        <td data-label="Ações">
+                            <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(item.id) }">
+                                <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(item.id); posicionarMenuAcoes($event)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(item.id) }" @click="fecharDropdown">
+                                    <a class="dropdown-item" href="javascript://" v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor" @click.prevent="formOpen(item.id); visualizar = false; aprovando = true; aprovandoExtra = false; aprovandoRh = false; podeanexar = false; editando = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"><i class="fa fa-user-check mr-1"></i> Aprovação Gestor</a>
+                                    <a class="dropdown-item" href="javascript://" v-if="temAprovacaoExtra && podeAprovarExtra && item.status_aprovacao_gestor === 'aprovado' && !item.aprovacao_extra_nome && !item.aprovado_via_script && !item.rh_aprovacao_id" @click.prevent="formOpen(item.id); visualizar = false; aprovando = false; aprovandoExtra = true; aprovandoRh = false; podeanexar = false; editando = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"><i class="fa fa-user-check mr-1"></i> {{ nomeAprovacaoExtra || 'Aprovação Extra' }}</a>
+                                    <a class="dropdown-item" href="javascript://" v-if="((item.status_aprovacao_gestor === 'aprovado' && !temAprovacaoExtra) || item.status_aprovacao_extra === 'aprovado') && !item.aprovado_via_script && item.rh_aprovacao_id === null && aprovaRh" @click.prevent="formOpen(item.id); visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = true; editando = false; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"><i class="fa fa-users mr-1"></i> Aprovação Rh</a>
+                                    <a class="dropdown-item" href="javascript://" v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor && permissoes.update" @click.prevent="formOpen(item.id); visualizar = false; aprovando = false; aprovandoExtra = false; aprovandoRh = false; editando = true; podeanexar = true; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"><i class="fa fa-edit mr-1"></i> Editar</a>
+                                    <a class="dropdown-item" href="javascript://" v-if="item.gestor_aprovacao_id === null && !item.aprovado_via_script && aprovaGestor && permissoes.delete" @click.prevent="formApagarFerias(item.id); $refs.modal_janelaApagarFerias && $refs.modal_janelaApagarFerias.abrirModal()"><i class="fa fa-trash mr-1"></i> Apagar</a>
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="formOpen(item.id); visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = false; editando = false; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"><i class="fa fa-search mr-1"></i> Visualizar</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <controle-paginacao
@@ -961,6 +1014,7 @@ import MybpCardCampo from '../../ui/MybpCardCampo.vue'
 import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
+import MovimentacaoListagem from '../../../mixins/MovimentacaoListagem'
 import datepicker from '../../DateInputHtml5.vue'
 import { resolverLabelLotacaoAtual } from '../../../utils/lotacaoLabel'
 import {
@@ -972,7 +1026,7 @@ import {
 } from '../../../utils/opcoesStatusFluxoAprovacao'
 
 export default {
-    mixins: [configselect2, ExportacaoMixin, Utils, Validacoes, configuracoes, ComboboxValidation],
+    mixins: [configselect2, ExportacaoMixin, Utils, Validacoes, configuracoes, ComboboxValidation, MovimentacaoListagem],
     inject: {
         atualizarUrlMovimentacao: { default: () => () => {} }
     },

@@ -7,6 +7,7 @@ import SolicitacaoValorExtra from '../../../components/planejamento/movimentacao
 import SolicitacaoMudaCargo from '../../../components/planejamento/movimentacao/SolicitacaoMudaCargo'
 import SolicitacaoIntermitenteFixo from '../../../components/planejamento/movimentacao/SolicitacaoIntermitenteFixo'
 import SolicitacaoTransferencia from '../../../components/planejamento/movimentacao/SolicitacaoTransferencia'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
 
 const ABAS_META = [
     {
@@ -98,7 +99,8 @@ const app = createApp({
             permissoes_abas: {},
             aba_ativa: '',
             abasPodeVoltar: false,
-            abasPodeAvancar: false
+            abasPodeAvancar: false,
+            visualizacao: lerVisualizacaoListagem('lista')
         }
     },
     computed: {

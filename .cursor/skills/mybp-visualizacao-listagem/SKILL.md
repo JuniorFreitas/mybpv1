@@ -5,7 +5,7 @@ description: Aplica o padrão MyBP de visualização lista (cards) e tabela na m
 
 # MyBP — Visualização lista e tabela
 
-Duas formas de ver os mesmos registros. A **tabela é o padrão**. A escolha do usuário é **uma só para o sistema**, não por tela.
+Duas formas de ver os mesmos registros. A **tabela é o padrão** do sistema. Em Planejamento, sem escolha salva, o padrão é **lista**. A escolha do usuário é **uma só para o sistema**, não por tela.
 
 ## Antes de editar
 
@@ -27,7 +27,7 @@ O componente já está no `registerGlobals`. Não registrar de novo na tela.
 
 ## Ligar na tela
 
-Estado inicial vem do util. Sem valor salvo, retorna `tabela`.
+Estado inicial vem do util. Sem valor salvo, retorna `tabela`. Em Planejamento, chamar `lerVisualizacaoListagem('lista')`.
 
 ```javascript
 import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
@@ -65,7 +65,7 @@ Ajuste o caminho do import conforme a pasta do `app.js` ou do `.vue`.
 
 ## Regras
 
-- Padrão do sistema: **tabela**.
+- Padrão do sistema: **tabela**. Planejamento, sem escolha salva: **lista**.
 - Chave única: `mybp_visualizacao_listagem`. Valores: `tabela` ou `lista`.
 - Não duplicar os botões Lista/Tabela na tela.
 - Não mudar regra de negócio, rota, permissão ou payload da API só para trocar a visualização.

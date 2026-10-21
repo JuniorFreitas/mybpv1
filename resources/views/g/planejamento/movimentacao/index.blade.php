@@ -58,7 +58,7 @@
             role="tabpanel"
             aria-labelledby="nav-solicitacao-demissao-tab"
         >
-            <solicitacao-demissao :cliente_id="cliente_id"></solicitacao-demissao>
+            <solicitacao-demissao :cliente_id="cliente_id" v-model:visualizacao="visualizacao"></solicitacao-demissao>
         </div>
         <div
             v-if="abas.ferias"
@@ -66,7 +66,7 @@
             role="tabpanel"
             aria-labelledby="nav-ferias-tab"
         >
-            <solicitacao-ferias :cliente_id="cliente_id"></solicitacao-ferias>
+            <solicitacao-ferias :cliente_id="cliente_id" v-model:visualizacao="visualizacao"></solicitacao-ferias>
         </div>
         <div
             v-if="abas.admissao"
@@ -74,7 +74,7 @@
             role="tabpanel"
             aria-labelledby="nav-admissao-tab"
         >
-            <solicitacao-admissao :cliente_id="cliente_id"></solicitacao-admissao>
+            <solicitacao-admissao :cliente_id="cliente_id" v-model:visualizacao="visualizacao"></solicitacao-admissao>
         </div>
         <div
             v-if="abas.valorextra"
@@ -82,7 +82,7 @@
             role="tabpanel"
             aria-labelledby="nav-valorextra-tab"
         >
-            <solicitacao-valor-extra :cliente_id="cliente_id"></solicitacao-valor-extra>
+            <solicitacao-valor-extra :cliente_id="cliente_id" v-model:visualizacao="visualizacao"></solicitacao-valor-extra>
         </div>
         <div
             v-if="abas.mudacargo"
@@ -90,7 +90,7 @@
             role="tabpanel"
             aria-labelledby="nav-mudacargo-tab"
         >
-            <solicitacao-muda-cargo :cliente_id="cliente_id"></solicitacao-muda-cargo>
+            <solicitacao-muda-cargo :cliente_id="cliente_id" v-model:visualizacao="visualizacao"></solicitacao-muda-cargo>
         </div>
         <div
             v-if="abas.intermitente"
@@ -98,7 +98,7 @@
             role="tabpanel"
             aria-labelledby="nav-intermitente-tab"
         >
-            <solicitacao-intermitente-fixo :cliente_id="cliente_id"></solicitacao-intermitente-fixo>
+            <solicitacao-intermitente-fixo :cliente_id="cliente_id" v-model:visualizacao="visualizacao"></solicitacao-intermitente-fixo>
         </div>
         <div
             v-if="abas.transferencia"
@@ -106,7 +106,7 @@
             role="tabpanel"
             aria-labelledby="nav-transferencia-tab"
         >
-            <solicitacao-transferencia :cliente_id="cliente_id"></solicitacao-transferencia>
+            <solicitacao-transferencia :cliente_id="cliente_id" v-model:visualizacao="visualizacao"></solicitacao-transferencia>
         </div>
     </div>
 
@@ -210,6 +210,36 @@
         }
         .movimentacao-page .movimentacao-abas__item.is-active i {
             opacity: 1;
+        }
+        .movimentacao-page .mov-tabela-wrap {
+            overflow: auto;
+            max-height: calc(100vh - 16rem);
+        }
+        .movimentacao-page table.tabela.mov-tabela {
+            table-layout: auto;
+            width: max-content;
+            min-width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        .movimentacao-page table.tabela.mov-tabela th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: #f4f6f8;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+            font-size: 0.72rem;
+        }
+        .movimentacao-page table.tabela.mov-tabela td {
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+        .movimentacao-page table.tabela.mov-tabela td.mov-col-texto {
+            text-align: left;
+            white-space: normal;
+            min-width: 140px;
+            max-width: 220px;
         }
     </style>
 @endpush

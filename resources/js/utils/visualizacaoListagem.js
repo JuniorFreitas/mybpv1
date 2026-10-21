@@ -9,9 +9,11 @@ function normalizarVisualizacao(valor) {
 
 /**
  * Lê a visualização escolhida pelo usuário no sistema.
- * Sem escolha salva, o padrão é tabela.
+ * Sem escolha salva, usa `padrao` (tabela no sistema; Planejamento passa lista).
  */
-export function lerVisualizacaoListagem() {
+export function lerVisualizacaoListagem(padrao = VISUALIZACAO_PADRAO) {
+    const fallback = padrao === 'lista' ? 'lista' : VISUALIZACAO_PADRAO
+
     try {
         const atual = normalizarVisualizacao(localStorage.getItem(CHAVE_VISUALIZACAO_LISTAGEM))
         if (atual) {
@@ -24,10 +26,10 @@ export function lerVisualizacaoListagem() {
             return legada
         }
     } catch (e) {
-        return VISUALIZACAO_PADRAO
+        return fallback
     }
 
-    return VISUALIZACAO_PADRAO
+    return fallback
 }
 
 /**

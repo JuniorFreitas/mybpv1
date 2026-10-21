@@ -173,7 +173,7 @@ Estilos carregados via `resources/sass/app.scss` → `@import "mybp-listagem-ui"
 
 ## Visualização lista e tabela
 
-Telas que oferecem as duas formas de ver os mesmos registros usam um controle único do sistema. A **tabela é o padrão**. A escolha do usuário vale para todas as telas e fica em `localStorage` na chave `mybp_visualizacao_listagem`.
+Telas que oferecem as duas formas de ver os mesmos registros usam um controle único do sistema. A **tabela é o padrão**. Planejamento inicia em **lista** quando ainda não há escolha salva. A escolha do usuário vale para todas as telas e fica em `localStorage` na chave `mybp_visualizacao_listagem`.
 
 | Recurso | Caminho |
 |---|---|
