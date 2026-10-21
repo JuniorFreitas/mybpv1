@@ -234,6 +234,7 @@ export default {
                     readonly: this.disabled,
                     setup: (ed) => {
                         this.editor = ed
+                        let conteudoInicialAplicado = false
                         if (typeof originalSetup === 'function') {
                             originalSetup(ed)
                         }
@@ -249,6 +250,7 @@ export default {
                             ed.setContent(initial)
                             this.lastEmitted = ed.getContent()
                             this.syncingFromParent = false
+                            conteudoInicialAplicado = true
                             if (this.disabled && ed.setMode) {
                                 ed.setMode('readonly')
                             }
@@ -265,7 +267,12 @@ export default {
                                 /* ignore */
                             }
                         })
-                        ed.on('change keyup undo redo input blur', () => this.emitContent())
+                        ed.on('change keyup undo redo input blur', () => {
+                            if (!conteudoInicialAplicado) {
+                                return
+                            }
+                            this.emitContent()
+                        })
                     }
                 })
             } catch (err) {
@@ -300,3 +307,10 @@ export default {
     }
 }
 </script>
+
+<style>
+.tox-tinymce-aux,
+.tox-dialog-wrap {
+    z-index: 20050 !important;
+}
+</style>

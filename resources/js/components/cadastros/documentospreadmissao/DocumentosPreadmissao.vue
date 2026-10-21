@@ -479,10 +479,149 @@ const comboFormCategoria = ref(null)
 const comboFormArquivo = ref(null)
 let syncUrlTimer = null
 
+function ancoraDaSelecao(editor) {
+    const no = editor.selection.getNode()
+    if (!no) {
+        return null
+    }
+    if (no.nodeName === 'A' && no.getAttribute('href')) {
+        return no
+    }
+    return editor.dom.getParent(no, 'a[href]')
+}
+
+function cursorNoFimDoLink(editor, ancora) {
+    const atual = editor.selection.getRng()
+    if (!atual.collapsed) {
+        return false
+    }
+    if (atual.endContainer !== ancora && !ancora.contains(atual.endContainer)) {
+        return false
+    }
+    const depois = atual.cloneRange()
+    try {
+        depois.selectNodeContents(ancora)
+        depois.setStart(atual.endContainer, atual.endOffset)
+    } catch (e) {
+        return false
+    }
+    return depois.toString().replace(/[\s\u00a0\ufeff\u200b]/g, '') === ''
+}
+
+function colocarCursorDepoisDoLink(editor, ancora, texto) {
+    const doc = editor.getDoc()
+    let no = ancora.nextSibling
+    const prefixo = texto || ''
+    if (!no || no.nodeType !== 3) {
+        no = doc.createTextNode(prefixo)
+        editor.dom.insertAfter(no, ancora)
+    } else if (prefixo && no.data.slice(0, prefixo.length) !== prefixo) {
+        no.insertData(0, prefixo)
+    }
+    const range = doc.createRange()
+    range.setStart(no, prefixo ? prefixo.length : 0)
+    range.collapse(true)
+    editor.selection.setRng(range)
+}
+
+function retirarEspacosFinaisDoLink(ancora) {
+    let removido = ''
+    let no = ancora.lastChild
+    while (no && no.nodeType === 3) {
+        const espacos = no.data.match(/[\s\u00a0\ufeff\u200b]+$/)
+        if (!espacos) {
+            break
+        }
+        removido = espacos[0] + removido
+        no.data = no.data.slice(0, no.data.length - espacos[0].length)
+        if (no.data !== '') {
+            break
+        }
+        const anterior = no.previousSibling
+        no.parentNode.removeChild(no)
+        no = anterior
+    }
+    return removido
+}
+
+function sairDoLinkNoEspaco(editor) {
+    editor.on('keydown', (evento) => {
+        if (evento.key !== ' ' || evento.ctrlKey || evento.metaKey || evento.altKey) {
+            return
+        }
+        const ancora = ancoraDaSelecao(editor)
+        if (!ancora || !cursorNoFimDoLink(editor, ancora)) {
+            return
+        }
+        evento.preventDefault()
+        if (typeof evento.stopImmediatePropagation === 'function') {
+            evento.stopImmediatePropagation()
+        }
+        editor.undoManager.transact(() => {
+            retirarEspacosFinaisDoLink(ancora)
+            colocarCursorDepoisDoLink(editor, ancora, ' ')
+        })
+    })
+    editor.on('keyup', (evento) => {
+        if (evento.key !== ' ' && evento.keyCode !== 32) {
+            return
+        }
+        window.setTimeout(() => {
+            const ancora = ancoraDaSelecao(editor)
+            if (!ancora) {
+                return
+            }
+            const noFim = cursorNoFimDoLink(editor, ancora)
+            const terminaComEspaco = /[\s\u00a0\ufeff\u200b]$/.test(ancora.textContent || '')
+            if (!noFim && !terminaComEspaco) {
+                return
+            }
+            editor.undoManager.transact(() => {
+                const espacos = retirarEspacosFinaisDoLink(ancora)
+                colocarCursorDepoisDoLink(editor, ancora, espacos)
+            })
+        }, 0)
+    })
+}
+
+function prepararEditorDescricao(editor) {
+    sairDoLinkNoEspaco(editor)
+    editor.on('OpenWindow', (evento) => {
+        const dialogo = evento.dialog
+        if (!dialogo || typeof dialogo.getData !== 'function' || typeof dialogo.setData !== 'function') {
+            return
+        }
+        const dados = dialogo.getData()
+        const url = dados && dados.url
+        if (!url || typeof url.value !== 'string' || url.value.trim() !== '') {
+            return
+        }
+        dialogo.setData({
+            url: {
+                value: 'https://',
+                meta: url.meta || {}
+            }
+        })
+        window.setTimeout(() => {
+            const campo = document.querySelector('.tox-dialog input[type="url"]')
+            if (!campo || campo.value !== 'https://') {
+                return
+            }
+            campo.focus()
+            campo.setSelectionRange(campo.value.length, campo.value.length)
+        }, 0)
+    })
+}
+
 const tinyDescricaoInit = {
     height: 220,
-    plugins: 'paste link',
-    toolbar: 'undo redo | bold italic underline | link'
+    plugins: 'paste link autolink',
+    toolbar: 'undo redo | bold italic underline | link unlink',
+    link_assume_external_targets: 'https',
+    default_link_target: '_blank',
+    target_list: false,
+    link_title: false,
+    setup: prepararEditorDescricao
 }
 
 const form = reactive({

@@ -12,6 +12,27 @@ try {
 
     require('bootstrap')
 
+    // A modal devolve o foco para si e impede digitar na janela de link do TinyMCE.
+    const ModalBootstrap = $.fn.modal && $.fn.modal.Constructor
+    if (ModalBootstrap && ModalBootstrap.prototype && !ModalBootstrap.prototype._mybpFocoTinyMce) {
+        ModalBootstrap.prototype._mybpFocoTinyMce = true
+        ModalBootstrap.prototype._enforceFocus = function () {
+            $(document)
+                .off('focusin.bs.modal')
+                .on('focusin.bs.modal', (event) => {
+                    const alvo = event.target
+                    if (alvo && typeof alvo.closest === 'function' && alvo.closest('.tox-tinymce-aux, .tox-dialog-wrap, .tox-dialog')) {
+                        return
+                    }
+                    if (document !== alvo &&
+                        this._element !== alvo &&
+                        $(this._element).has(alvo).length === 0) {
+                        this._element.focus()
+                    }
+                })
+        }
+    }
+
     /**
      * Limpa o backdrop da modal atual e o body quando não houver mais nenhuma modal aberta.
      * @param {string} [modalId] - id da modal que está fechando (modal atual)

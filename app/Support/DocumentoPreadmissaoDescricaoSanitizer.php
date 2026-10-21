@@ -117,13 +117,16 @@ final class DocumentoPreadmissaoDescricaoSanitizer
                 continue;
             }
 
-            $href = strtolower($elemento->tagName) === 'a' ? trim($elemento->getAttribute('href')) : '';
+            $ehLink = strtolower($elemento->tagName) === 'a';
+            $href = $ehLink ? trim($elemento->getAttribute('href')) : '';
             while ($elemento->hasAttributes()) {
                 $elemento->removeAttribute($elemento->attributes->item(0)->name);
             }
 
             if ($href !== '' && self::hrefSeguro($href)) {
                 $elemento->setAttribute('href', $href);
+                $elemento->setAttribute('target', '_blank');
+                $elemento->setAttribute('rel', 'noopener noreferrer');
             }
         }
     }
