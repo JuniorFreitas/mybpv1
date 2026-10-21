@@ -102,14 +102,15 @@
 
         <div id="componente">
             <FiltroListagem
+                class="mt-2 mybp-filtros-compactos"
                 @submit="onSubmitFiltro"
                 :mostrar-limpar-filtros="temFiltrosAtivos"
                 :desabilitado="controle.carregando"
                 @limpar="limparFiltros"
             >
                 <template #filtros>
-                    <div class="col-12" :class="temFilial ? 'col-lg-4' : 'col-lg-6'">
-                        <div class="form-group mb-2 mb-lg-0">
+                    <div class="col-12" :class="temFilial ? 'col-md-4' : 'col-md-6'">
+                        <div class="form-group mybp-filtro-campo">
                             <label class="mybp-label" for="cc-filtro-busca">Buscar</label>
                             <input
                                 id="cc-filtro-busca"
@@ -123,8 +124,8 @@
                         </div>
                     </div>
 
-                    <div class="col-12" :class="temFilial ? 'col-lg-3' : 'col-lg-6'">
-                        <div class="form-group mb-2 mb-lg-0">
+                    <div class="col-12" :class="temFilial ? 'col-md-4' : 'col-md-6'">
+                        <div class="form-group mybp-filtro-campo">
                             <label class="mybp-label" for="cc-filtro-status">Status</label>
                             <div class="mybp-combobox-wrap">
                                 <combobox-auto-complete
@@ -144,8 +145,8 @@
                         </div>
                     </div>
 
-                    <div class="col-12 col-lg-5 mybp-combobox-wrap" v-if="temFilial && listaCcs?.cnpjs">
-                        <div class="form-group mb-2 mb-lg-0">
+                    <div class="col-12 col-md-4 mybp-combobox-wrap" v-if="temFilial && listaCcs?.cnpjs">
+                        <div class="form-group mybp-filtro-campo">
                             <label class="mybp-label" for="cc-filtro-cnpj-input">Por Cnpj</label>
                             <combobox-auto-complete
                                 ref="comboFiltroCnpj"
@@ -172,6 +173,9 @@
                     </button>
                 </template>
             </FiltroListagem>
+            <div class="d-flex justify-content-end my-2">
+                <mybp-visualizacao-listagem v-model="visualizacao" tela="cadastro-centro-custo"></mybp-visualizacao-listagem>
+            </div>
 
             <div class="alert alert-info border-0 py-2" role="alert">
                 <i class="fa fa-info-circle me-2"></i>
@@ -184,7 +188,7 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
                 <div class="mybp-card" v-for="centrocusto in lista" :key="centrocusto.id">
                     <div class="mybp-card-header-row">
                         <div class="mybp-card-left">
@@ -263,6 +267,47 @@
                     </div>
                 </div>
             </div>
+            <div class="table-responsive mybp-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+                <table class="tabela mybp-tabela">
+                    <thead>
+                    <tr>
+                        <th>Cód</th>
+                        <th>Nome</th>
+                        <th v-if="temFilial">Lotação</th>
+                        <th>Gestor principal</th>
+                        <th>Gestor substituto</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="centrocusto in lista" :key="'tab-' + centrocusto.id">
+                        <td data-label="Cód">{{ centrocusto.id }}</td>
+                        <td class="mybp-col-texto" data-label="Nome">{{ centrocusto.label || 'Não informado' }}</td>
+                        <td class="mybp-col-texto" data-label="Lotação" v-if="temFilial">{{ lotacaoCentroCusto(centrocusto) }}</td>
+                        <td class="mybp-col-texto" data-label="Gestor principal">{{ nomeGestorPrincipal(centrocusto) }}</td>
+                        <td class="mybp-col-texto" data-label="Gestor substituto">{{ nomeGestorSubstituto(centrocusto) }}</td>
+                        <td data-label="Status">
+                            <bt-ativo
+                                :rota="`cadastro/centrocusto/${centrocusto.id}/ativa-desativa`"
+                                :model="centrocusto"
+                                @atualizou="atualizar()"
+                            ></bt-ativo>
+                        </td>
+                        <td data-label="Ações">
+                            <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(centrocusto.id) }">
+                                <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(centrocusto.id); posicionarMenuAcoes($event)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(centrocusto.id) }" @click="fecharDropdown">
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="abrirModalAlterar(centrocusto.id)"><i class="fa fa-edit mr-1"></i> Editar</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <controle-paginacao
                 class="d-flex justify-content-center mt-3"
@@ -295,6 +340,8 @@ import {
     temFiltrosPreenchidos,
     limparFiltrosListagem
 } from '../../../utils/listagemQueryParams'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
+import { posicionarMenuAcoes } from '../../../utils/posicionarMenuAcoes'
 
 const CAMPOS_FILTRO_URL = ['campoBusca', 'campoStatus', 'campoCnpj']
 
@@ -319,6 +366,7 @@ const props = defineProps({
 
 const hash = ref(String(Math.random()).substr(2))
 const titulo_janela_form = ref('Centro de Custos')
+const visualizacao = ref(lerVisualizacaoListagem('cadastro-centro-custo', 'lista'))
 const carregandoModal = ref(false)
 const editando = ref(false)
 const cadastrado = ref(false)

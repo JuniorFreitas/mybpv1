@@ -141,14 +141,15 @@
 
     <div>
         <filtro-listagem
+            class="mt-2 mybp-filtros-compactos"
             @submit="onSubmitFiltro"
             :mostrar-limpar-filtros="temFiltrosAtivos"
             :desabilitado="controle.carregando"
             @limpar="limparFiltros"
         >
             <template #filtros>
-                <div class="col-12 col-lg-6">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div class="col-12 col-md-6">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="vaga-filtro-busca">Buscar</label>
                         <input
                             id="vaga-filtro-busca"
@@ -162,8 +163,8 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-6">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div class="col-12 col-md-6">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="vaga-filtro-status">Status</label>
                         <div class="mybp-combobox-wrap">
                             <combobox-auto-complete
@@ -198,6 +199,9 @@
                 </button>
             </template>
         </filtro-listagem>
+        <div class="d-flex justify-content-end my-2">
+            <mybp-visualizacao-listagem v-model="visualizacao" tela="cadastro-cargos"></mybp-visualizacao-listagem>
+        </div>
 
         <div id="conteudo">
             <preload class="text-center" v-if="controle.carregando"></preload>
@@ -206,7 +210,7 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
                 <div class="mybp-card" v-for="vaga in lista" :key="vaga.id">
                     <div class="mybp-card-header-row">
                         <div class="mybp-card-left">
@@ -289,6 +293,41 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="table-responsive mybp-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+                <table class="tabela mybp-tabela">
+                    <thead>
+                    <tr>
+                        <th>Cód</th>
+                        <th>Cargo</th>
+                        <th>CBO</th>
+                        <th>Treinamentos</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="vaga in lista" :key="'tab-' + vaga.id">
+                        <td data-label="Cód">@{{ vaga.id }}</td>
+                        <td class="mybp-col-texto" data-label="Cargo">@{{ vaga.nome || 'Não informado' }}</td>
+                        <td class="mybp-col-texto" data-label="CBO">@{{ temCbo(vaga) ? ((vaga.cbo_codigo || '—') + ' ' + (vaga.cbo_titulo || '')) : 'Não vinculado' }}</td>
+                        <td data-label="Treinamentos">@{{ resumoTreinamentos(vaga) }}</td>
+                        <td data-label="Status">
+                            <bt-ativo :rota="`cadastro/vagas/${vaga.id}/ativa-desativa`" :model="vaga" @atualizou="atualizar()"></bt-ativo>
+                        </td>
+                        <td data-label="Ações">
+                            <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(vaga.id) }">
+                                <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(vaga.id); posicionarMenuAcoes($event)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(vaga.id) }" @click="fecharDropdown">
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="abrirEdicaoVaga(vaga.id)"><i class="fa fa-edit mr-1"></i> Editar</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
 
             <controle-paginacao

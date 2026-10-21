@@ -190,16 +190,21 @@
             </template>
         </modal>
 
-        <!-- Filtro -->
-        <fieldset>
-            <legend>Filtro</legend>
-            <form class="row" @submit.prevent="this.$refs && this.$refs.componente && this.$refs.componente.buscar ? this.$refs.componente.buscar() : null">
-                <div class="col-12 col-md-4">
-                    <div class="form-group">
-                        <label>Buscar</label>
+        <FiltroListagem
+            class="mt-2 mybp-filtros-compactos"
+            @submit="atualizar"
+            :mostrar-limpar-filtros="temFiltrosAtivos"
+            :desabilitado="controle.carregando"
+            @limpar="limparFiltros"
+        >
+            <template #filtros>
+                <div class="col-12 col-md-6">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="prova-filtro-busca">Buscar</label>
                         <input
+                            id="prova-filtro-busca"
                             type="text"
-                            placeholder="Buscar por título"
+                            placeholder="Buscar por título ou ID"
                             autocomplete="off"
                             class="form-control form-control-sm"
                             :disabled="controle.carregando"
@@ -207,24 +212,20 @@
                         />
                     </div>
                 </div>
-
-                <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
-                        <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                        Atualizar
-                    </button>
-
-                    <button
-                        type="button"
-                        class="btn btn-sm mr-1 btn-primary"
-                        :disabled="controle.carregando"
-                        @click="formNovo(); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
-                    >
-                        <i class="fa fa-plus"></i> Cadastrar
-                    </button>
-                </div>
-            </form>
-        </fieldset>
+            </template>
+            <template #acoes>
+                <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
+                    Atualizar
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" :disabled="controle.carregando" @click="formNovo(); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()">
+                    <i class="fa fa-plus"></i> Cadastrar
+                </button>
+            </template>
+        </FiltroListagem>
+        <div class="d-flex justify-content-end my-2">
+            <mybp-visualizacao-listagem v-model="visualizacao" tela="cadastro-provas"></mybp-visualizacao-listagem>
+        </div>
 
         <div id="conteudo">
             <p class="mt-2 text-center" v-if="controle.carregando">
@@ -235,15 +236,37 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-                <table class="tabela">
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
+                <div class="mybp-card" v-for="item in lista" :key="'card-' + item.id">
+                    <div class="mybp-card-header-row">
+                        <div class="mybp-card-left">
+                            <span class="mybp-badge-id">#{{ item.id }}</span>
+                            <div class="mybp-card-titulo"><strong>{{ item.titulo || 'Não informado' }}</strong></div>
+                        </div>
+                        <div class="mybp-card-right">
+                            <bt-ativo :rota="`cadastro/provas/${item.id}/ativa-desativa`" :model="item"></bt-ativo>
+                            <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
+                                <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(item.id)"><i class="fas fa-ellipsis-v"></i></a>
+                                <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(item.id) }">
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="fecharDropdown(); alterarForm(item); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"><i class="fa fa-edit mr-1"></i> Editar</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mybp-card-details-row">
+                        <div class="mybp-detail-item"><span class="mybp-detail-label">Questões</span><span class="mybp-detail-value">{{ item.qnt_questoes }}</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive mybp-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+                <table class="tabela mybp-tabela">
                     <thead>
-                        <tr class="bg-default">
-                            <td class="text-center">Nº</td>
-                            <td class="text-center">Titulo</td>
-                            <td class="text-center">Qnt Quesões</td>
-                            <td class="text-center">Ativo</td>
-                            <td class="text-center">Ação</td>
+                        <tr>
+                            <th>Cód</th>
+                            <th>Título</th>
+                            <th>Questões</th>
+                            <th>Status</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -254,14 +277,13 @@
                             <td class="text-center">
                                 <bt-ativo :rota="`cadastro/provas/${item.id}/ativa-desativa`" :model="item"></bt-ativo>
                             </td>
-                            <td class="text-center">
-                                <button
-                                    type="button"
-                                    class="btn btn-sm mr-1 btn-primary mb-1"
-                                    @click="alterarForm(item); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"
-                                >
-                                    <i class="fa fa-edit"></i>
-                                </button>
+                            <td data-label="Ações">
+                                <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(item.id) }">
+                                    <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(item.id); posicionarMenuAcoes($event)"><i class="fas fa-ellipsis-v"></i></a>
+                                    <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(item.id) }" @click="fecharDropdown">
+                                        <a class="dropdown-item" href="javascript://" @click.prevent="fecharDropdown(); alterarForm(item); $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"><i class="fa fa-edit mr-1"></i> Editar</a>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -285,11 +307,15 @@
 <script>
 import controlePaginacao from '../../ControlePaginacao'
 import modal from '../../Modal'
+import FiltroListagem from '../../ui/FiltroListagem'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
+import { posicionarMenuAcoes } from '../../../utils/posicionarMenuAcoes'
 
 export default {
     components: {
         modal,
-        controlePaginacao
+        controlePaginacao,
+        FiltroListagem
     },
     props: {
         qntPag: {
@@ -312,11 +338,22 @@ export default {
     mounted() {
         this.atualizar()
         this.formDefault = _.cloneDeep(this.form)
+        document.addEventListener('click', this.onClickOutside)
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
+    },
+    computed: {
+        temFiltrosAtivos() {
+            return !!this.controle.dados.campoBusca
+        }
     },
     data() {
         return {
             hash: String(Math.random()).substr(2),
             titulo_janela: 'Montagem da Prova',
+            visualizacao: lerVisualizacaoListagem('cadastro-provas', 'lista'),
+            dropdownAbertoKey: null,
 
             preload: false,
             editando: false,
@@ -345,6 +382,25 @@ export default {
         }
     },
     methods: {
+        posicionarMenuAcoes,
+        limparFiltros() {
+            this.controle.dados.campoBusca = ''
+            this.atualizar()
+        },
+        onClickOutside(event) {
+            if (event?.target?.closest?.('.dropdown')) return
+            this.dropdownAbertoKey = null
+        },
+        toggleDropdown(id) {
+            const key = `prova:${id}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(id) {
+            return this.dropdownAbertoKey === `prova:${id}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
         addLiQuestao() {
             let objperg = {}
             objperg.nova = true

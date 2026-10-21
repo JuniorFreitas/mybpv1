@@ -128,14 +128,15 @@
         </ModalComponent>
 
         <FiltroListagem
+            class="mt-2 mybp-filtros-compactos"
             @submit="onSubmitFiltro"
             :mostrar-limpar-filtros="temFiltrosAtivos"
             :desabilitado="controle.carregando"
             @limpar="limparFiltros"
         >
             <template #filtros>
-                <div class="col-12 col-lg-4">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="dossie-tipo-filtro-busca">Buscar</label>
                         <input
                             id="dossie-tipo-filtro-busca"
@@ -148,8 +149,8 @@
                         />
                     </div>
                 </div>
-                <div class="col-12 col-lg-4">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="dossie-tipo-filtro-status">Status</label>
                         <div class="mybp-combobox-wrap">
                             <combobox-auto-complete
@@ -168,8 +169,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-lg-4">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="dossie-tipo-filtro-escopo">Escopo</label>
                         <div class="mybp-combobox-wrap">
                             <combobox-auto-complete
@@ -198,6 +199,9 @@
                 </button>
             </template>
         </FiltroListagem>
+        <div class="d-flex justify-content-end my-2">
+            <mybp-visualizacao-listagem v-model="visualizacao" tela="cadastro-dossie-tipos"></mybp-visualizacao-listagem>
+        </div>
 
         <div id="conteudo">
             <p class="mt-2 text-center" v-if="controle.carregando">
@@ -208,7 +212,7 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
                 <div class="mybp-card" v-for="item in lista" :key="item.id">
                     <div class="mybp-card-header-row">
                         <div class="mybp-card-left">
@@ -286,6 +290,49 @@
                     </div>
                 </div>
             </div>
+            <div class="table-responsive mybp-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+                <table class="tabela mybp-tabela">
+                    <thead>
+                    <tr>
+                        <th>Cód</th>
+                        <th>Nome</th>
+                        <th>Tipo</th>
+                        <th>Chave</th>
+                        <th>Escopo</th>
+                        <th>Ordem</th>
+                        <th>Modelo</th>
+                        <th v-if="assinaturaDigitalHabilitada">Assinatura digital</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in lista" :key="'tab-' + item.id">
+                        <td data-label="Cód">{{ item.id }}</td>
+                        <td class="mybp-col-texto" data-label="Nome">{{ item.label || 'Não informado' }}</td>
+                        <td data-label="Tipo">{{ valorOuNaoInformado(item.tipo) }}</td>
+                        <td data-label="Chave">{{ valorOuNaoInformado(item.chave) }}</td>
+                        <td data-label="Escopo">{{ valorOuNaoInformado(item.escopo_label) }}</td>
+                        <td data-label="Ordem">{{ valorOuNaoInformado(item.ordem) }}</td>
+                        <td class="mybp-col-texto" data-label="Modelo">{{ item.modelo_origem_label || 'Não informado' }}</td>
+                        <td data-label="Assinatura digital" v-if="assinaturaDigitalHabilitada">{{ item.permite_assinatura ? 'Sim' : 'Não' }}</td>
+                        <td data-label="Status">
+                            <bt-ativo :rota="`cadastro/dossietipos/${item.id}/ativa-desativa`" :model="item" @atualizou="atualizar()"></bt-ativo>
+                        </td>
+                        <td data-label="Ações">
+                            <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(item.id) }">
+                                <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(item.id); posicionarMenuAcoes($event)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(item.id) }" @click="fecharDropdown">
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="abrirModalAlterar(item.id)"><i class="fa fa-edit mr-1"></i> Editar</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <controle-paginacao
                 class="d-flex justify-content-center mt-3"
@@ -317,6 +364,8 @@ import {
     temFiltrosPreenchidos,
     limparFiltrosListagem
 } from '../../../utils/listagemQueryParams'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
+import { posicionarMenuAcoes } from '../../../utils/posicionarMenuAcoes'
 
 const CAMPOS_FILTRO_URL = ['campoBusca', 'campoStatus', 'campoEscopo']
 
@@ -334,6 +383,7 @@ const props = defineProps({
 })
 
 const titulo_janela = ref('Tipo de Dossiê')
+const visualizacao = ref(lerVisualizacaoListagem('cadastro-dossie-tipos', 'lista'))
 const dropdownAbertoKey = ref(null)
 const anexoUploadAndamento = ref(false)
 const carregandoModal = ref(false)

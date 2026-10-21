@@ -173,14 +173,15 @@
 
         <!-- Filtro -->
         <FiltroListagem
+            class="mt-2 mybp-filtros-compactos"
             @submit="onSubmitFiltro"
             :mostrar-limpar-filtros="temFiltrosAtivos"
             :desabilitado="controle.carregando"
             @limpar="limparFiltros"
         >
             <template #filtros>
-                <div class="col-12 col-lg-5">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div class="col-12 col-md-6">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="beneficio-filtro-busca">Buscar</label>
                         <input
                             id="beneficio-filtro-busca"
@@ -194,8 +195,8 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-4 mybp-combobox-wrap">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div class="col-12 col-md-6 mybp-combobox-wrap">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="beneficio-filtro-tipo-input">Tipo de benefício</label>
                         <combobox-auto-complete
                             ref="comboFiltroTipo"
@@ -229,6 +230,9 @@
                 </button>
             </template>
         </FiltroListagem>
+        <div class="d-flex justify-content-end my-2">
+            <mybp-visualizacao-listagem v-model="visualizacao" tela="cadastro-beneficios"></mybp-visualizacao-listagem>
+        </div>
 
         <div id="conteudo">
             <preload class="text-center" v-if="controle.carregando"></preload>
@@ -237,7 +241,7 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
                 <div class="mybp-card" v-for="beneficio in lista" :key="beneficio.id">
                     <div class="mybp-card-header-row">
                         <div class="mybp-card-left">
@@ -314,6 +318,43 @@
                     </div>
                 </div>
             </div>
+            <div class="table-responsive mybp-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+                <table class="tabela mybp-tabela">
+                    <thead>
+                    <tr>
+                        <th>Cód</th>
+                        <th>Nome</th>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                        <th>Periodicidade</th>
+                        <th>Aplicação</th>
+                        <th>Desconto</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="beneficio in lista" :key="'tab-' + beneficio.id">
+                        <td data-label="Cód">{{ beneficio.id }}</td>
+                        <td class="mybp-col-texto" data-label="Nome">{{ beneficio.nome || 'Não informado' }}</td>
+                        <td data-label="Tipo">{{ nomeTipoBeneficio(beneficio) }}</td>
+                        <td data-label="Valor">R$ {{ beneficio.valor_format }}</td>
+                        <td data-label="Periodicidade">{{ labelPeriodicidade(beneficio.periodicidade) }}</td>
+                        <td data-label="Aplicação">{{ labelAplicacao(beneficio.aplicacao) }}</td>
+                        <td class="mybp-col-texto" data-label="Desconto">{{ labelOpcaoDesconto(beneficio.opcao_desconto) }} — R$ {{ beneficio.valordescontado_format }}</td>
+                        <td data-label="Ações">
+                            <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(beneficio.id) }">
+                                <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(beneficio.id); posicionarMenuAcoes($event)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(beneficio.id) }" @click="fecharDropdown">
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="abrirEdicaoBeneficio(beneficio.id)"><i class="fa fa-edit mr-1"></i> Editar</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <controle-paginacao
                 class="d-flex justify-content-center mt-3"
@@ -335,6 +376,8 @@ import modal from '../../Modal'
 import FiltroListagem from '../../ui/FiltroListagem'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete'
 import { temFiltrosPreenchidos, limparFiltrosListagem } from '../../../utils/listagemQueryParams'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
+import { posicionarMenuAcoes } from '../../../utils/posicionarMenuAcoes'
 
 const CAMPOS_FILTRO_URL = ['campoBusca', 'campoTipoBeneficio']
 
@@ -438,6 +481,7 @@ export default {
             tiposAtivos: [],
             clientes: [],
             permissoes: [],
+            visualizacao: lerVisualizacaoListagem('cadastro-beneficios', 'lista'),
             dropdownAbertoKey: null,
 
             urlPaginacao: `${URL_ADMIN}/cadastro/beneficios/atualizar`,
@@ -451,6 +495,7 @@ export default {
         }
     },
     methods: {
+        posicionarMenuAcoes,
         onSubmitFiltro() {
             this.atualizar()
         },

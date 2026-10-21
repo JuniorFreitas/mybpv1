@@ -29,16 +29,21 @@
             </template>
         </modal>
 
-        <!-- Filtro -->
-        <fieldset>
-            <legend>Filtro</legend>
-            <form class="row" @submit.prevent="$refs.componente && $refs.componente.buscar ? $refs.componente.buscar() : null">
-                <div class="col-12 col-md-5">
-                    <div class="form-group">
-                        <label>Buscar</label>
+        <FiltroListagem
+            class="mt-2 mybp-filtros-compactos"
+            @submit="atualizar"
+            :mostrar-limpar-filtros="temFiltrosAtivos"
+            :desabilitado="controle.carregando"
+            @limpar="limparFiltros"
+        >
+            <template #filtros>
+                <div class="col-12 col-md-6">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="departamento-filtro-busca">Buscar</label>
                         <input
+                            id="departamento-filtro-busca"
                             type="text"
-                            placeholder="Buscar por nome"
+                            placeholder="Buscar por nome ou ID"
                             autocomplete="off"
                             class="form-control form-control-sm"
                             :disabled="controle.carregando"
@@ -46,30 +51,39 @@
                         />
                     </div>
                 </div>
-
-                <div class="col-12 col-md-4">
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select class="form-control form-control-sm" :disabled="controle.carregando" v-model="controle.dados.campoStatus" @change="atualizar()">
-                            <option value="">Todos os Status</option>
-                            <option :value="true">Apenas Ativos</option>
-                            <option :value="false">Apenas Inativos</option>
-                        </select>
+                <div class="col-12 col-md-6">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" for="departamento-filtro-status">Status</label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                ref="comboFiltroStatus"
+                                instance-id="filtro-status-departamento"
+                                v-model="controle.dados.campoStatus"
+                                :options="filtroStatusOpcoes"
+                                :disabled="controle.carregando"
+                                input-id="departamento-filtro-status"
+                                placeholder-blur="Todos os status"
+                                empty-message="Nenhuma opção encontrada."
+                                :max-results="10"
+                                @select="atualizar"
+                            ></combobox-auto-complete>
+                        </div>
                     </div>
                 </div>
-
-                <div class="col-12 col-md-12">
-                    <button type="button" class="btn btn-sm mr-1 btn-success" :disabled="controle.carregando" @click="atualizar">
-                        <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                        Atualizar
-                    </button>
-
-                    <button type="button" class="btn btn-sm mr-1 btn-primary" :disabled="controle.carregando" @click="formNovo">
-                        <i class="fa fa-plus"></i> Departamento
-                    </button>
-                </div>
-            </form>
-        </fieldset>
+            </template>
+            <template #acoes>
+                <button type="submit" class="btn btn-sm btn-success" :disabled="controle.carregando">
+                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
+                    Atualizar
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" :disabled="controle.carregando" @click="formNovo">
+                    <i class="fa fa-plus"></i> Departamento
+                </button>
+            </template>
+        </FiltroListagem>
+        <div class="d-flex justify-content-end my-2">
+            <mybp-visualizacao-listagem v-model="visualizacao" tela="cadastro-departamentos"></mybp-visualizacao-listagem>
+        </div>
 
         <div id="conteudo">
             <p class="mt-2 text-center" v-if="controle.carregando">
@@ -80,14 +94,40 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="table-responsive" v-show="!controle.carregando && lista.length > 0">
-                <table class="tabela">
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
+                <div class="mybp-card" v-for="item in lista" :key="'card-' + item.id">
+                    <div class="mybp-card-header-row">
+                        <div class="mybp-card-left">
+                            <span class="mybp-badge-id">#{{ item.id }}</span>
+                            <div class="mybp-card-titulo"><strong>{{ item.label || 'Não informado' }}</strong></div>
+                        </div>
+                        <div class="mybp-card-right">
+                            <div class="dropdown" :class="{ show: isDropdownOpen(item.id) }">
+                                <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(item.id)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(item.id) }">
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="fecharDropdown(); alterarDepartamento(item.id)"><i class="fa fa-edit mr-1"></i> Editar</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mybp-card-details-row">
+                        <div class="mybp-detail-item">
+                            <span class="mybp-detail-label">Status</span>
+                            <span class="mybp-detail-value">{{ item.ativo === true ? 'Ativo' : 'Inativo' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive mybp-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+                <table class="tabela mybp-tabela">
                     <thead>
-                        <tr class="bg-default">
-                            <td class="text-center">Nº</td>
-                            <td class="text-center">Nome</td>
-                            <td class="text-center">Ativo</td>
-                            <td class="text-center">Ação</td>
+                        <tr>
+                            <th>Cód</th>
+                            <th>Nome</th>
+                            <th>Status</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -95,10 +135,15 @@
                             <td class="text-center">{{ item.id }}</td>
                             <td class="text-center">{{ item.label }}</td>
                             <td class="text-center">{{ item.ativo === true ? 'Ativo' : 'Inativo' }}</td>
-                            <td class="text-center">
-                                <button type="button" class="btn btn-sm mr-1 btn-primary mb-1" @click="alterarDepartamento(item.id)">
-                                    <i class="fa fa-edit"></i>
-                                </button>
+                            <td class="text-center" data-label="Ações">
+                                <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(item.id) }">
+                                    <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(item.id); posicionarMenuAcoes($event)">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </a>
+                                    <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(item.id) }">
+                                        <a class="dropdown-item" href="javascript://" @click.prevent="fecharDropdown(); alterarDepartamento(item.id)"><i class="fa fa-edit mr-1"></i> Editar</a>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -120,11 +165,17 @@
 <script>
 import controlePaginacao from '../../ControlePaginacao'
 import modal from '../../Modal'
+import FiltroListagem from '../../ui/FiltroListagem'
+import ComboboxAutoComplete from '../../ComboboxAutoComplete'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
+import { posicionarMenuAcoes } from '../../../utils/posicionarMenuAcoes'
 
 export default {
     components: {
         modal,
-        controlePaginacao
+        controlePaginacao,
+        FiltroListagem,
+        ComboboxAutoComplete
     },
     props: {
         qntPag: {
@@ -147,11 +198,29 @@ export default {
     mounted() {
         this.atualizar()
         this.formDefault = _.cloneDeep(this.form)
+        document.addEventListener('click', this.onClickOutside)
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.onClickOutside)
+    },
+    computed: {
+        temFiltrosAtivos() {
+            return !!(this.controle.dados.campoBusca || this.controle.dados.campoStatus !== '')
+        },
+        filtroStatusOpcoes() {
+            return [
+                { value: '', label: 'Todos os status' },
+                { value: 'true', label: 'Apenas ativos' },
+                { value: 'false', label: 'Apenas inativos' }
+            ]
+        }
     },
     data() {
         return {
             hash: String(Math.random()).substr(2),
             titulo_janela: 'Departamento',
+            visualizacao: lerVisualizacaoListagem('cadastro-departamentos', 'lista'),
+            dropdownAbertoKey: null,
 
             preload: false,
             editando: false,
@@ -179,6 +248,28 @@ export default {
         }
     },
     methods: {
+        posicionarMenuAcoes,
+        limparFiltros() {
+            this.controle.dados.campoBusca = ''
+            this.controle.dados.campoStatus = ''
+            if (this.$refs.comboFiltroStatus?.close) this.$refs.comboFiltroStatus.close()
+            this.atualizar()
+        },
+        onClickOutside(event) {
+            if (event?.target?.closest?.('.dropdown')) return
+            if (event?.target?.closest?.('.mybp-combobox-wrap')) return
+            this.dropdownAbertoKey = null
+        },
+        toggleDropdown(id) {
+            const key = `departamento:${id}`
+            this.dropdownAbertoKey = this.dropdownAbertoKey === key ? null : key
+        },
+        isDropdownOpen(id) {
+            return this.dropdownAbertoKey === `departamento:${id}`
+        },
+        fecharDropdown() {
+            this.dropdownAbertoKey = null
+        },
         abrirModalDepartamento() {
             if (this.$refs && this.$refs.modalDepartamento && typeof this.$refs.modalDepartamento.abrirModal === 'function') {
                 this.$refs.modalDepartamento.abrirModal()

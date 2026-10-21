@@ -173,7 +173,7 @@ Estilos carregados via `resources/sass/app.scss` → `@import "mybp-listagem-ui"
 
 ## Visualização lista e tabela
 
-Telas que oferecem as duas formas de ver os mesmos registros têm a própria configuração de lista ou tabela. A **tabela é o padrão**. Planejamento (cada aba da movimentação e a requisição de vaga) e as telas de admissão CIH, Processo, Histórico e Pré-admissão iniciam em **lista** quando ainda não há escolha salva naquela tela. A escolha fica em `localStorage` na chave `mybp_visualizacao_listagem`, separada por tela.
+Telas que oferecem as duas formas de ver os mesmos registros têm a própria configuração de lista ou tabela. A **tabela é o padrão**. Planejamento (cada aba da movimentação e a requisição de vaga), as telas de admissão CIH, Processo, Histórico e Pré-admissão, e os cadastros (exceto Projetos, Avaliações e Performance) iniciam em **lista** quando ainda não há escolha salva naquela tela. A escolha fica em `localStorage` na chave `mybp_visualizacao_listagem`, separada por tela.
 
 | Recurso | Caminho |
 |---|---|

@@ -3,6 +3,8 @@ import { registerGlobals } from '../../../registerGlobals'
 import FiltroListagem from '../../../components/ui/FiltroListagem'
 import ComboboxAutoComplete from '../../../components/ComboboxAutoComplete'
 import { lerFiltrosDaUrl, lerPaginacaoDaUrl, sincronizarFiltrosNaUrl, criarWatchQueryParams, montarExtrasPaginacao, aplicarPaginaInicialListagem, buscarListagem, temFiltrosPreenchidos, limparFiltrosListagem } from '../../../utils/listagemQueryParams'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
+import { posicionarMenuAcoes } from '../../../utils/posicionarMenuAcoes'
 
 const CAMPOS_FILTRO_URL = ['campoBusca', 'campoStatus']
 const PAGES_DEFAULT = 100
@@ -54,6 +56,7 @@ const app = createApp({
                 }
             },
 
+            visualizacao: lerVisualizacaoListagem('cadastro-cargos', 'lista'),
             dropdownAbertoKey: null
         }
     },
@@ -116,6 +119,7 @@ const app = createApp({
                 }
             })
         },
+        posicionarMenuAcoes,
         onClickOutside(event) {
             if (event?.target?.closest?.('.dropdown')) return
             if (event?.target?.closest?.('.mybp-combobox-wrap')) return

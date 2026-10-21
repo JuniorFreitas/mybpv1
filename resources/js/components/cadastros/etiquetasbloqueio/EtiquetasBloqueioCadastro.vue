@@ -102,14 +102,15 @@
         </modal>
 
         <FiltroListagem
+            class="mt-2 mybp-filtros-compactos"
             @submit="onSubmitFiltro"
             :mostrar-limpar-filtros="temFiltrosAtivos"
             :desabilitado="controle.carregando"
             @limpar="limparFiltros"
         >
             <template #filtros>
-                <div :class="isAdminGlobal ? 'col-12 col-lg-4' : 'col-12 col-lg-6'">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div :class="isAdminGlobal ? 'col-12 col-md-4' : 'col-12 col-md-6'">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="etiqueta-filtro-busca">Buscar</label>
                         <input
                             id="etiqueta-filtro-busca"
@@ -122,8 +123,8 @@
                         />
                     </div>
                 </div>
-                <div :class="isAdminGlobal ? 'col-12 col-lg-2' : 'col-12 col-lg-6'">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div :class="isAdminGlobal ? 'col-12 col-md-4' : 'col-12 col-md-6'">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="etiqueta-filtro-status">Status</label>
                         <div class="mybp-combobox-wrap">
                             <combobox-auto-complete
@@ -142,8 +143,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-lg-3" v-if="isAdminGlobal">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div class="col-12 col-md-4" v-if="isAdminGlobal">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="etiqueta-filtro-escopo">Escopo</label>
                         <div class="mybp-combobox-wrap">
                             <combobox-auto-complete
@@ -162,8 +163,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-lg-3" v-if="isAdminGlobal && controle.dados.campoEscopo === 'empresa'">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div class="col-12 col-md-4" v-if="isAdminGlobal && controle.dados.campoEscopo === 'empresa'">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="etiqueta-filtro-empresa">Empresa</label>
                         <div class="mybp-combobox-wrap">
                             <combobox-auto-complete
@@ -192,6 +193,9 @@
                 </button>
             </template>
         </FiltroListagem>
+        <div class="d-flex justify-content-end my-2">
+            <mybp-visualizacao-listagem v-model="visualizacao" tela="cadastro-etiquetas-bloqueio"></mybp-visualizacao-listagem>
+        </div>
 
         <div id="conteudo">
             <p class="mt-2 text-center" v-if="controle.carregando">
@@ -202,7 +206,7 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
                 <div class="mybp-card" v-for="item in lista" :key="item.id">
                     <div class="mybp-card-header-row">
                         <div class="mybp-card-left">
@@ -270,6 +274,46 @@
                     </div>
                 </div>
             </div>
+            <div class="table-responsive mybp-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+                <table class="tabela mybp-tabela">
+                    <thead>
+                    <tr>
+                        <th>Cód</th>
+                        <th>Nome</th>
+                        <th>Escopo</th>
+                        <th>Ramal</th>
+                        <th>Identificador</th>
+                        <th>Blade</th>
+                        <th>Texto principal</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in lista" :key="'tab-' + item.id">
+                        <td data-label="Cód">{{ item.id }}</td>
+                        <td class="mybp-col-texto" data-label="Nome">{{ item.nome || 'Não informado' }}</td>
+                        <td data-label="Escopo">{{ labelEscopoItem(item) }}</td>
+                        <td data-label="Ramal">{{ item.ramal_emergencia || 'Não informado' }}</td>
+                        <td data-label="Identificador">{{ labelIdentificador(item.identificador) }}</td>
+                        <td data-label="Blade">{{ item.blade || 'Padrão' }}</td>
+                        <td class="mybp-col-texto" data-label="Texto principal">{{ item.bloqueio_texto_nao_use || 'Não informado' }}</td>
+                        <td data-label="Status">{{ item.ativo ? 'Ativo' : 'Inativo' }}</td>
+                        <td data-label="Ações">
+                            <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(item.id) }">
+                                <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(item.id); posicionarMenuAcoes($event)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(item.id) }" @click="fecharDropdown">
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="abrirModalAlterar(item)"><i class="fa fa-edit mr-1"></i> Editar</a>
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="clonar(item)"><i class="fa fa-clone mr-1"></i> Clonar</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </template>
@@ -285,6 +329,8 @@ import {
     temFiltrosPreenchidos,
     limparFiltrosListagem
 } from '../../../utils/listagemQueryParams'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
+import { posicionarMenuAcoes } from '../../../utils/posicionarMenuAcoes'
 
 const CAMPOS_FILTRO_URL = ['campoBusca', 'campoStatus', 'campoEscopo', 'campoEmpresaId']
 
@@ -299,6 +345,7 @@ export default {
             lista: [],
             editando: false,
             form: this.formDefault(),
+            visualizacao: lerVisualizacaoListagem('cadastro-etiquetas-bloqueio', 'lista'),
             dropdownAbertoKey: null,
             syncUrlTimer: null,
             controle: {
@@ -404,6 +451,7 @@ export default {
         syncUrlFiltros() {
             sincronizarFiltrosNaUrl(this.controle.dados, CAMPOS_FILTRO_URL)
         },
+        posicionarMenuAcoes,
         onClickOutside(event) {
             if (event?.target?.closest?.('.dropdown')) return
             if (event?.target?.closest?.('.mybp-combobox-wrap')) return
