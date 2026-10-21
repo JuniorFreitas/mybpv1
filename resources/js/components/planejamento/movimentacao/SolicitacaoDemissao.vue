@@ -539,6 +539,10 @@
             </template>
         </FiltroListagem>
 
+        <div class="d-flex justify-content-end my-2">
+            <mybp-visualizacao-listagem v-model="visualizacao" :tela="tela"></mybp-visualizacao-listagem>
+        </div>
+
         <preload class="text-center" v-if="controle.carregando"></preload>
 
         <div id="conteudo">
@@ -562,7 +566,7 @@
             </div> -->
 
             <!-- Cards -->
-            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
                 <div class="mybp-card" v-for="item in lista" :key="item.id">
                     <div class="mybp-card-header-row">
                         <div class="mybp-card-left">
@@ -729,6 +733,56 @@
                     </div>
                 </div>
             </div>
+
+            <div class="table-responsive mov-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+                <table class="tabela mov-tabela">
+                    <thead>
+                    <tr>
+                        <th>Cód</th>
+                        <th>Nome</th>
+                        <th>Data da demissão</th>
+                        <th>Tipo de aviso</th>
+                        <th>Cargo</th>
+                        <th>Lotação</th>
+                        <th>Centro de custo</th>
+                        <th>Gestor</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in lista" :key="'tab-' + item.id">
+                        <td data-label="Cód">{{ item.id }}</td>
+                        <td class="mov-col-texto" data-label="Nome">{{ item.colaborador_nome || 'Não informado' }}</td>
+                        <td data-label="Data da demissão">{{ item.data_demissao || 'Não informado' }}</td>
+                        <td data-label="Tipo de aviso">{{ item.tipo_aviso || 'Não informado' }}</td>
+                        <td class="mov-col-texto" data-label="Cargo">{{ item.cargo || 'Não informado' }}</td>
+                        <td class="mov-col-texto" data-label="Lotação">{{ item.lotacao || 'Não informado' }}</td>
+                        <td class="mov-col-texto" data-label="Centro de custo">{{ item.centro_custo || 'Não informado' }}</td>
+                        <td class="mov-col-texto" data-label="Gestor">{{ item.gestor_nome || 'Não informado' }}</td>
+                        <td data-label="Status">
+                            <mybp-status-badge :variante="chaveStatusLista(item)" :texto="textoStatusLista(item)" />
+                        </td>
+                        <td data-label="Ações">
+                            <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(item.id) }">
+                                <a class="mybp-btn-acoes-compact" href="#" role="button" :id="`dropdownTabela_${item.id}`" @click.prevent.stop="toggleDropdown(item.id); posicionarMenuAcoes($event)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(item.id) }" @click="fecharDropdown">
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = true; aprovandoExtra = false; aprovandoRh = false; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()" v-if="!item.user_aprovacao_nome && !item.rh_aprovacao_nome && !item.aprovado_via_script && aprovaGestor"><i class="fa fa-user-check mr-1"></i> Aprovação Gestor</a>
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="formOpen(item.id); cadastrando = false; visualizar = false; aprovando = false; aprovandoExtra = true; aprovandoRh = false; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()" v-if="temAprovacaoExtra && podeAprovarExtra && item.status_aprovacao === 'aprovado' && !item.aprovacao_extra_nome && !item.aprovado_via_script && !item.rh_aprovacao_nome"><i class="fa fa-user-check mr-1"></i> {{ nomeAprovacaoExtra || 'Aprovação Extra' }}</a>
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = true; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()" v-if="((item.status_aprovacao === 'aprovado' && !temAprovacaoExtra) || item.status_aprovacao_extra === 'aprovado') && !item.aprovado_via_script && item.rh_aprovacao_nome === null && aprovaRh"><i class="fa fa-users mr-1"></i> Aprovação Rh</a>
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="formOpen(item.id); cadastrando = false; visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = false; podeanexar = false; $refs[`${hash}`] && $refs[`${hash}`].abrirModal()"><i class="fa fa-search mr-1"></i> Visualizar</a>
+                                    <a class="dropdown-item" :href="`${URL_ADMIN}/planejamento/movimentacao/demissao-prevista/${item.public_id}/pdf`" target="_blank"><i class="fas fa-file-pdf mr-1"></i> Aviso Prévio (PDF)</a>
+                                    <a class="dropdown-item" href="javascript://" v-if="assinaturaDigitalHabilitada && temDocumentoAssinaturaDemissao(item)" @click.prevent="abrirGerenciamentoAssinaturaDemissao(item)"><i class="fas fa-cog mr-1"></i> Gerenciar assinatura</a>
+                                    <a class="dropdown-item" href="javascript://" v-else-if="assinaturaDigitalHabilitada" @click.prevent="abrirEnvioAssinaturaDemissao(item)"><i class="fas fa-pen-fancy mr-1"></i> Enviar para assinatura</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <controle-paginacao
@@ -759,6 +813,7 @@ import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import AcaoAssinaturaDocumento from '../../administracao/documentoassinatura/AcaoAssinaturaDocumento.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
+import MovimentacaoListagem from '../../../mixins/MovimentacaoListagem'
 import {
     normalizarCcFilialDaAdmissao,
     resolverLabelLotacaoAtual,
@@ -773,7 +828,7 @@ import {
 } from '../../../utils/opcoesStatusFluxoAprovacao'
 
 export default {
-    mixins: [ExportacaoMixin, Utils, configuracoes, ComboboxValidation],
+    mixins: [ExportacaoMixin, Utils, configuracoes, ComboboxValidation, MovimentacaoListagem],
     inject: {
         atualizarUrlMovimentacao: { default: () => () => {} }
     },

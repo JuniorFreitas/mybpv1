@@ -782,12 +782,15 @@
                 </button>
             </template>
         </FiltroListagem>
+        <div class="d-flex justify-content-end my-2">
+            <mybp-visualizacao-listagem v-model="visualizacao" tela="requisicao-vaga"></mybp-visualizacao-listagem>
+        </div>
         <preload class="text-center" v-if="controle.carregando"></preload>
         <div id="conteudo">
             <div class="alert alert-warning" v-show="!controle.carregando && lista.length === 0">
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
-            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
                 <div class="mybp-card" v-for="item in lista" :key="item.id">
                     <div class="mybp-card-header-row">
                         <div class="mybp-card-left">
@@ -919,6 +922,60 @@
                     </div>
                 </div>
             </div>
+            <div class="table-responsive mybp-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+                <table class="tabela mybp-tabela">
+                    <thead>
+                    <tr>
+                        <th>Cód</th>
+                        <th>Cargo</th>
+                        <th>Quantidade</th>
+                        <th>Solicitante</th>
+                        <th>Gestor</th>
+                        <th>Lotação</th>
+                        <th>Centro de custo</th>
+                        <th>Área</th>
+                        <th>Solicitação</th>
+                        <th>Contratação</th>
+                        <th>Prioridade</th>
+                        <th>Início</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in lista" :key="'tab-' + item.id">
+                        <td data-label="Cód">{{ item.id }}</td>
+                        <td class="mybp-col-texto" data-label="Cargo">{{ (item.cargo && item.cargo.nome) || 'Não informado' }}</td>
+                        <td data-label="Quantidade">{{ item.quantidade != null && item.quantidade !== '' ? item.quantidade : 'Não informado' }}</td>
+                        <td class="mybp-col-texto" data-label="Solicitante">{{ item.solicitante || 'Não informado' }}</td>
+                        <td class="mybp-col-texto" data-label="Gestor">{{ item.gestor_nome || '—' }}</td>
+                        <td class="mybp-col-texto" data-label="Lotação">{{ item.lotacao || 'Não informado' }}</td>
+                        <td class="mybp-col-texto" data-label="Centro de custo">{{ (item.centro_custo && item.centro_custo.label) || '—' }}</td>
+                        <td class="mybp-col-texto" data-label="Área">{{ (item.area && item.area.label) || '—' }}</td>
+                        <td data-label="Solicitação">{{ item.data_solicitacao || 'Não informado' }}</td>
+                        <td data-label="Contratação">{{ item.tipo_contratacao || 'Não informado' }}</td>
+                        <td data-label="Prioridade">{{ item.prioridade || 'Não informado' }}</td>
+                        <td data-label="Início">{{ item.imediata ? 'Imediata' : (item.previsao_inicio || 'Não informado') }}</td>
+                        <td data-label="Status">
+                            <mybp-status-badge :variante="chaveStatusLista(item)" :texto="textoStatusLista(item)" />
+                        </td>
+                        <td data-label="Ações">
+                            <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(item.id) }">
+                                <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(item.id); posicionarMenuAcoes($event)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(item.id) }" @click="fecharDropdown">
+                                    <a class="dropdown-item" href="javascript://" v-if="!item.data_aprovacao && aprovaGestor" @click.prevent="formOpen(item.id); visualizar = true; aprovando = true; aprovandoExtra = false; aprovandoRh = false; editando = false; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"><i class="fa fa-user-check mr-1"></i> Aprovação Gestor</a>
+                                    <a class="dropdown-item" href="javascript://" v-if="temAprovacaoExtra && item.status_aprovacao === 'aprovado' && !item.status_aprovacao_extra && aprovaExtra" @click.prevent="formOpen(item.id); visualizar = false; aprovando = false; aprovandoExtra = true; aprovandoRh = false; editando = false; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"><i class="fa fa-user-check mr-1"></i> {{ nomeAprovacaoExtra }}</a>
+                                    <a class="dropdown-item" href="javascript://" v-if="((item.status_aprovacao === 'aprovado' && !temAprovacaoExtra) || item.status_aprovacao_extra === 'aprovado') && !item.rh_aprovacao_id && aprovaRh" @click.prevent="formOpen(item.id); visualizar = true; aprovando = false; aprovandoExtra = false; aprovandoRh = true; editando = false; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"><i class="fa fa-users mr-1"></i> Aprovação RH</a>
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="formOpen(item.id); visualizar = true; editando = false; aprovando = false; aprovandoExtra = false; aprovandoRh = false; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"><i class="fa fa-eye mr-1"></i> Visualizar</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
             <controle-paginacao
                 class="d-flex justify-content-center"
                 id="controle"
@@ -946,6 +1003,8 @@ import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
 import configuracoes from '../../../mixins/Configuracoes'
 import { buildOpcoesStatusFluxoAprovacao } from '../../../utils/opcoesStatusFluxoAprovacao'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
+import { posicionarMenuAcoes } from '../../../utils/posicionarMenuAcoes'
 
 const _ = window._ || { cloneDeep: (x) => JSON.parse(JSON.stringify(x)) }
 
@@ -967,6 +1026,7 @@ export default {
     data() {
         return {
             tituloJanela: 'Planejamento - Requisição de Vaga',
+            visualizacao: lerVisualizacaoListagem('requisicao-vaga', 'lista'),
             preload: false,
             editando: false,
             apagado: false,
@@ -1262,6 +1322,7 @@ export default {
         document.removeEventListener('click', this.onClickOutside)
     },
     methods: {
+        posicionarMenuAcoes,
         toggleDropdown(itemId) {
             if (!itemId) {
                 return

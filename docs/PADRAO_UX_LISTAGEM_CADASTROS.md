@@ -173,7 +173,7 @@ Estilos carregados via `resources/sass/app.scss` → `@import "mybp-listagem-ui"
 
 ## Visualização lista e tabela
 
-Telas que oferecem as duas formas de ver os mesmos registros usam um controle único do sistema. A **tabela é o padrão**. A escolha do usuário vale para todas as telas e fica em `localStorage` na chave `mybp_visualizacao_listagem`.
+Telas que oferecem as duas formas de ver os mesmos registros têm a própria configuração de lista ou tabela. A **tabela é o padrão**. Planejamento (cada aba da movimentação e a requisição de vaga), as telas de admissão CIH, Processo, Histórico e Pré-admissão, os cadastros (exceto Projetos, Avaliações e Performance) e as Entrevistas (Parecer RH, Rota, Técnica, Teste prático, Entrevista RH, Entrevista Gestor e Resultado Integrado) iniciam em **lista** quando ainda não há escolha salva naquela tela. Pós-admissão inicia em **tabela**. A escolha fica em `localStorage` na chave `mybp_visualizacao_listagem`, separada por tela.
 
 | Recurso | Caminho |
 |---|---|
@@ -189,12 +189,12 @@ Na tela:
 import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
 
 data() {
-    return { visualizacao: lerVisualizacaoListagem() }
+    return { visualizacao: lerVisualizacaoListagem('id-da-tela') }
 }
 ```
 
 ```html
-<mybp-visualizacao-listagem v-model="visualizacao"></mybp-visualizacao-listagem>
+<mybp-visualizacao-listagem v-model="visualizacao" tela="id-da-tela"></mybp-visualizacao-listagem>
 
 <div class="mybp-cards-lista" v-show="visualizacao === 'lista'"><!-- cards --></div>
 <div class="table-responsive" v-show="visualizacao === 'tabela'"><!-- tabela --></div>

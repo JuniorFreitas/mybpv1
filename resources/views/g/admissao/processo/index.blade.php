@@ -1688,6 +1688,10 @@
         </template>
     </filtro-listagem>
 
+    <div class="d-flex justify-content-end my-2">
+        <mybp-visualizacao-listagem v-model="visualizacao" tela="admissao-processo"></mybp-visualizacao-listagem>
+    </div>
+
     <preload v-if="controle.carregando" class="text-center"></preload>
 
     <div id="conteudo">
@@ -1712,7 +1716,7 @@
             </button>
         </div>
 
-        <div class="cards-lista" v-show="!controle.carregando && lista.length > 0">
+        <div class="cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
             <div class="solicitacao-card" v-for="item in lista" :key="item.id"
                  :class="{ 'card-status-em-processo': !item.admissao, 'card-status-admitido': item.admissao && (item.admissao.status === 'ADMITIDO' || item.admissao.status === 'Admitido'), 'card-status-demitido': item.admissao && (item.admissao.status === 'DEMITIDO' || item.admissao.status === 'Demitido') }">
                 <div class="card-header-row">
@@ -1890,6 +1894,80 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="table-responsive mybp-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+            <table class="tabela mybp-tabela">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>Centro</th>
+                    <th>Cargo</th>
+                    <th v-if="colunaVisivel('tbl_contato')">Contato</th>
+                    <th v-if="AUTENTICADO.temFilial">Lotação</th>
+                    <th v-if="colunaVisivel('pcd')">PCD</th>
+                    <th v-if="colunaVisivel('enc_documento')">Enc. Doc</th>
+                    <th v-if="colunaVisivel('enc_exame')">Enc. Exame</th>
+                    <th v-if="colunaVisivel('enc_treinamento')">Enc. Trein.</th>
+                    <th v-if="colunaVisivel('resp_encaminhamento')">Resp. Enc.</th>
+                    <th v-if="colunaVisivel('cracha')">Crachá</th>
+                    <th v-if="colunaVisivel('foto_3x4')">Foto 3x4</th>
+                    <th>Data ASO</th>
+                    <th>Data Admissão</th>
+                    <th>Data Demissão</th>
+                    <th>Tipo Admissão</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="item in lista" :key="'tab-' + item.id">
+                    <td data-label="Seleção">
+                        <input v-if="item.admissao" type="checkbox" class="custom-checkbox" v-model="selecionados" :value="item.id">
+                        <input v-else type="checkbox" class="custom-checkbox" disabled title="Sem cadastro em Admissão">
+                    </td>
+                    <td class="mybp-col-texto" data-label="Nome">@{{ item.curriculo.nome }}</td>
+                    <td data-label="CPF">@{{ item.curriculo && item.curriculo.cpf ? item.curriculo.cpf : 'Não informado' }}</td>
+                    <td class="mybp-col-texto" data-label="Centro">@{{ (item.admissao && item.admissao.emp_centro_custo) ? item.admissao.emp_centro_custo : 'Não informado' }}</td>
+                    <td class="mybp-col-texto" data-label="Cargo">@{{ item.vaga_aberta_municipio || 'Não informado' }}</td>
+                    <td v-if="colunaVisivel('tbl_contato')" data-label="Contato">@{{ item.curriculo.tel_principal && item.curriculo.tel_principal.numero ? item.curriculo.tel_principal.numero : 'Não informado' }}</td>
+                    <td v-if="AUTENTICADO.temFilial" class="mybp-col-texto" data-label="Lotação">
+                        <template v-if="item.admissao && (item.admissao.emp_nome_fantasia || item.admissao.emp_cnpj)">
+                            @{{ item.admissao.emp_nome_fantasia || '—' }}<template v-if="item.admissao.emp_cnpj"> - @{{ item.admissao.emp_cnpj }}</template>
+                        </template>
+                        <template v-else>Não informado</template>
+                    </td>
+                    <td v-if="colunaVisivel('pcd')" data-label="PCD">@{{ item.curriculo.pcd ? 'Sim' : 'Não' }}</td>
+                    <td v-if="colunaVisivel('enc_documento')" data-label="Enc. Doc">@{{ (item.resultado_integrado && item.resultado_integrado.documentos_entregue) ? (item.resultado_integrado.documentos_entregue_data || 'Sim') : 'Não' }}</td>
+                    <td v-if="colunaVisivel('enc_exame')" data-label="Enc. Exame">@{{ (item.resultado_integrado && item.resultado_integrado.encaminhado_exame) ? (item.resultado_integrado.encaminhado_exame_data || 'Sim') : 'Não' }}</td>
+                    <td v-if="colunaVisivel('enc_treinamento')" data-label="Enc. Trein.">@{{ (item.resultado_integrado && item.resultado_integrado.encaminhado_treinamento) ? (item.resultado_integrado.encaminhado_treinamento_data || 'Sim') : 'Não' }}</td>
+                    <td v-if="colunaVisivel('resp_encaminhamento')" class="mybp-col-texto" data-label="Resp. Enc.">@{{ item.resultado_integrado && item.resultado_integrado.responsavel_envio ? item.resultado_integrado.responsavel_envio : '—' }}</td>
+                    <td v-if="colunaVisivel('cracha')" data-label="Crachá">@{{ item.admissao && item.admissao.numero_cracha ? item.admissao.numero_cracha : 'Não' }}</td>
+                    <td v-if="colunaVisivel('foto_3x4')" data-label="Foto 3x4">@{{ item.curriculo.foto_3x4_thumb ? 'Sim' : 'Não' }}</td>
+                    <td data-label="Data ASO">@{{ getDataAso(item) || 'Não informado' }}</td>
+                    <td data-label="Data Admissão">@{{ item.admissao && item.admissao.data_admissao ? item.admissao.data_admissao : 'Não informado' }}</td>
+                    <td data-label="Data Demissão">@{{ (item.admissao && (item.admissao.status === 'DEMITIDO' || item.admissao.status === 'Demitido')) ? (getDataDemissao(item) || 'Não informado') : '—' }}</td>
+                    <td data-label="Tipo Admissão">@{{ getTipoAdmissao(item) || 'Não informado' }}</td>
+                    <td data-label="Status">@{{ item.admissao ? item.admissao.status : 'Em processo' }}</td>
+                    <td data-label="Ações">
+                        <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(item.id) }">
+                            <a class="btn-actions-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(item.id); posicionarMenuAcoes($event)">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right" :class="{ show: isDropdownOpen(item.id) }" @click="fecharDropdown">
+                                <a class="dropdown-item" href="javascript://" @click.prevent="formEntrevistar(item.id); visualizar = false; $refs.janelaCadastrar?.abrirModal()" v-if="!filtrarDemitidos"><i class="fas fa-user-plus mr-2 text-success"></i> Admitir</a>
+                                <a class="dropdown-item" href="javascript://" @click.prevent="formDemitir(item); visualizar = false; $refs.janelaDemitir?.abrirModal()" v-if="permissoes.privilegio_processo_demitir && !filtrarDemitidos"><i class="fas fa-user-minus mr-2 text-danger"></i> Demitir</a>
+                                <a class="dropdown-item" href="javascript://" @click.prevent="formEntrevistar(item.id); visualizar = true; $refs.janelaCadastrar?.abrirModal()"><i class="fas fa-eye mr-2 text-info"></i> Visualizar</a>
+                                <div class="dropdown-divider" v-if="item.admissao"></div>
+                                <a class="dropdown-item" v-if="item.admissao" :href="`${item.fc_token}/pdf`" target="_blank"><i class="fas fa-file-pdf mr-2 text-danger"></i> Gerar PDF</a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
 
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"

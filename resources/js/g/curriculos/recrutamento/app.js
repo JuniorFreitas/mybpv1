@@ -61,7 +61,7 @@ const app = createApp({
             cadastrado: false,
             atualizado: false,
             dropdownAbertoId: null,
-            visualizacao: lerVisualizacaoListagem(),
+            visualizacao: lerVisualizacaoListagem('recrutamento'),
 
             // ===== CONFIGURAÇÕES =====
             permite_envio_whatsapp: null,

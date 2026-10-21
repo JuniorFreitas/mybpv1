@@ -688,155 +688,136 @@
         </template>
     </modal>
 
-    <fieldset>
-        <legend>Filtro</legend>
-        <form @submit.prevent="$refs.componente.buscar()">
-            <div class="row">
-                <div class="col-12 col-md-4">
-                    <div class="form-check" style="margin-bottom: -11px;">
-                        <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
-                               id="filtroIntervalo"
-                               v-model="controle.dados.filtroPeriodo">
-                        <label class="form-check-label cursor-pointer" for="filtroIntervalo">Por período</label>
-                    </div>
-                    <div class="form-group">
-                        <datepicker range formsm label=""
-                                    :disabled="controle.carregando || !controle.dados.filtroPeriodo"
-                                    v-model="controle.dados.periodo"></datepicker>
-                    </div>
-                </div>
+    <filtro-entrevista-compacto
+        :dados="controle.dados"
+        :carregando="controle.carregando"
+        :abertos="filtrosAvancadosAbertos"
+        :tem-filtros="temFiltrosEntrevista"
+        :total-avancados="totalFiltrosAvancadosEntrevista"
+        id-prefix="tecnica"
+        label-cargo="Cargo"
+        @update:abertos="filtrosAvancadosAbertos = $event"
+        @submit="atualizar"
+        @limpar="limparFiltrosEntrevista"
+        @periodo="onPeriodoEntrevista"
+        @select-vaga="selecionaVaga"
+        @blur-vaga="resetaCampo"
+    >
+        <template #avancados>
 
-                <div class="col-12 col-sm-6 col-md-6 col-lg-4">
-                    <div class="form-group">
-                        <label>Nome</label>
-                        <input type="text"
-                               placeholder="Buscar por nome"
-                               autocomplete="off"
-                               class="form-control form-control-sm" :disabled="controle.carregando"
-                               v-model="controle.dados.campoBusca">
-                    </div>
-                </div>
+                <combo-filtro-entrevista
+                    ref="comboFiltroUf"
+                    input-id="tecnica-uf"
+                    label="Estado"
+                    placeholder="Todos os estados"
+                    v-model="controle.dados.campoUf"
+                    :options="opcoesUfFiltro"
+                    :disabled="controle.carregando"
+                    @opening="fecharCombosEntrevista"
+                    @select="atualizar"
+                ></combo-filtro-entrevista>
 
-                <div class="col-12 col-sm-6 col-md-6 col-lg-4">
-                    <div class="form-group">
-                        <label>CPF</label>
-                        <input type="text"
-                               placeholder="Buscar por cpf"
-                               autocomplete="mastertag"
-                               onblur="valida_cpf(this)"
-                               v-mascara:cpf
-                               class="form-control form-control-sm" :disabled="controle.carregando"
-                               v-model="controle.dados.campoCPF">
-                    </div>
-                </div>
+                <combo-filtro-entrevista
+                    ref="comboFiltroRota"
+                    input-id="tecnica-rota"
+                    label="Rota"
+                    placeholder="Geral"
+                    v-model="controle.dados.campoRota"
+                    :options="opcoesRotaBooleana"
+                    :disabled="controle.carregando"
+                    @opening="fecharCombosEntrevista"
+                    @select="atualizar"
+                ></combo-filtro-entrevista>
 
-                <div class="col-12 col-sm-12 col-md-12 col-lg-12">
-                    <div class="form-group">
-                        <label>Cargo</label>
-                        <autocomplete :caminho="controle.dados.caminho_autocomplete"
-                                      :valido="controle.dados.campoVaga !== ''"
-                                      v-model="controle.dados.autocomplete_label"
-                                      :disabled="controle.carregando"
-                                      placeholder="Por cargo"
-                                      @onblur="resetaCampo"
-                                     @onselect="selecionaVaga"></autocomplete>
-                    </div>
-                </div>
+                <combo-filtro-entrevista
+                    ref="comboFiltroPages"
+                    input-id="tecnica-pages"
+                    label="Exibir"
+                    placeholder="20"
+                    v-model="controle.dados.pages"
+                    :options="opcoesPagesFiltro"
+                    :disabled="controle.carregando"
+                    @opening="fecharCombosEntrevista"
+                    @select="atualizar"
+                ></combo-filtro-entrevista>
+        </template>
+        <template #acoes>
 
-                <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                    <div class="form-group">
-                        <label>Estado</label>
-                        <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                                v-model="controle.dados.campoUf">
-                            <option value="">SEM FILTRO</option>
-                            <option value="MA">MA</option>
-                            <option value="AC">AC</option>
-                            <option value="AL">AL</option>
-                            <option value="AP">AP</option>
-                            <option value="AM">AM</option>
-                            <option value="BA">BA</option>
-                            <option value="CE">CE</option>
-                            <option value="DF">DF</option>
-                            <option value="ES">ES</option>
-                            <option value="GO">GO</option>
-                            <option value="MT">MT</option>
-                            <option value="MS">MS</option>
-                            <option value="MG">MG</option>
-                            <option value="PA">PA</option>
-                            <option value="PB">PB</option>
-                            <option value="PR">PR</option>
-                            <option value="PE">PE</option>
-                            <option value="PI">PI</option>
-                            <option value="RJ">RJ</option>
-                            <option value="RN">RN</option>
-                            <option value="RS">RS</option>
-                            <option value="RO">RO</option>
-                            <option value="RR">RR</option>
-                            <option value="SC">SC</option>
-                            <option value="SP">SP</option>
-                            <option value="SE">SE</option>
-                            <option value="TO">TO</option>
-                        </select>
-                    </div>
-                </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary mybp-btn-acao-compact"
+                    v-show="selecionados.length" @click.prevent="selecionados = []">
+                <i class="fa fa-times"></i> Limpar seleção
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-primary mybp-btn-acao-compact"
+                    @click.prevent="exportaExcel()"
+                    :disabled="controle.carregando || preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0)">
+                <i class="fas fa-file-excel"></i> Exportar Excel
+                <span class="badge badge-light" v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
+            </button>
 
-                <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                    <div class="form-group">
-                        <label for="">Rota</label>
-                        <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                                v-model="controle.dados.campoRota">
-                            <option value="">Geral</option>
-                            <option :value="true">Tem Rota</option>
-                            <option :value="false">Não tem Rota</option>
-                        </select>
-                    </div>
-                </div>
+        </template>
+    </filtro-entrevista-compacto>
+    @include('g.entrevistas.partials.barra_visualizacao', ['tela' => 'entrevista-tecnica', 'colunas' => true])
 
-                <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                    <div class="form-group">
-                        <label for="">Exibir</label>
-                        <select class="form-control form-control-sm" @change="atualizar"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.pages">
-                            <option value="20">20</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </form>
-
-        <div class="col-12">
-            <div class="row">
-                <button type="button" class="btn btn-sm mr-1 btn-success mb-1 mr-1" :disabled="controle.carregando"
-                        @click="atualizar"><i
-                        :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                    Atualizar
-                </button>
-                <button class="btn btn-sm mr-1 btn-danger mb-1 mr-1"
-                        :checked="tudoMarcado"
-                        :style="selecionados.length === 0 ? 'cursor: not-allowed' : 'cursor: pointer'"
-                        :disabled="selecionados.length === 0" @click="selecionados = []">
-                    <i class="fa fa-times"></i> Limpar seleção
-                </button>
-                <button type="button" class="btn btn-sm mr-1 btn-primary mb-1 mr-1"
-                        @click.prevent="exportaExcel()"
-                        :disabled="controle.carregando|| preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) ">
-                    <i class="fas fa-file-excel"></i> EXPORTAR EXCEL <span class="badge badge-light"
-                                                                           v-show="selecionados.length > 0">@{{ selecionados.length }}</span>
-                </button>
-            </div>
-        </div>
-
-    </fieldset>
     <preload class="text-center" v-if="controle.carregando"></preload>
     <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length===0">
         <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
     </div>
 
     <div id="conteudo">
-        <table class="tabela" v-show="!controle.carregando && lista.length > 0">
+        
+        <div class="mybp-cards-lista" v-if="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
+            <cartao-entrevista-lista
+                v-for="entrevista in lista"
+                :key="'lista-' + entrevista.id"
+                :entrevista="entrevista"
+                :aberto="isDropdownOpen('lista-' + entrevista.id)"
+                @toggle="toggleDropdown('lista-' + entrevista.id)"
+                @fechar="fecharDropdown"
+            >
+                <template #selecao>
+                    <label class="mb-0 mr-1" :for="'sel-lista-' + entrevista.id" v-if="entrevista.parecer_tecnica" style="cursor: pointer;">
+                        <input type="checkbox" :id="'sel-lista-' + entrevista.id" v-model="selecionados" :value="entrevista.id" />
+                    </label>
+                    <span class="mb-0 mr-1" v-else>
+                        <input type="checkbox" disabled />
+                    </span>
+                </template>
+                <template #acoes>
+                    <a class="dropdown-item" href="javascript://" v-show="!entrevista.parecer_tecnica"
+                       @click.prevent="formEntrevistar(entrevista.id); $refs.janelaParecerEntrevista?.abrirModal()">
+                        <i class="far fa-list-alt mr-1"></i> Entrevistar
+                    </a>
+                    @can('entrevista_parecer_entrevista_update')
+                    <a class="dropdown-item" href="javascript://" v-show="entrevista.parecer_tecnica"
+                       @click.prevent="formEntrevistar(entrevista.id); editando = true; $refs.janelaParecerEntrevista?.abrirModal()">
+                        <i class="fa fa-edit mr-1"></i> Editar
+                    </a>
+                    @endcan
+                    <a class="dropdown-item" href="javascript://" v-show="entrevista.parecer_tecnica"
+                       @click.prevent="formEntrevistar(entrevista.id); visualizar = true; $refs.janelaParecerEntrevista?.abrirModal()">
+                        <i class="fa fa-search-plus mr-1"></i> Visualizar
+                    </a>
+                    <form :action="`${URL_ADMIN}/entrevistas/parecer-entrevista-tecnica/ficha_pdf`" target="_blank" method="post" v-if="entrevista.parecer_tecnica">
+                        @csrf
+                        <input type="hidden" name="id" :value="entrevista.parecer_tecnica.id">
+                        <button type="submit" class="dropdown-item">
+                            <i class="fa fa-file-pdf mr-1"></i> Gerar PDF
+                        </button>
+                    </form>
+                </template>
+                <template #campos>
+                    <mybp-card-campo icon="fas fa-briefcase" label="Vaga" :valor="entrevista.vaga_aberta_municipio" forte></mybp-card-campo>
+                    <mybp-card-campo icon="fas fa-wheelchair" label="PCD" :valor="entrevista.curriculo && entrevista.curriculo.pcd ? 'Sim' : 'Não'" v-if="colunasTabela.pcd"></mybp-card-campo>
+                    <mybp-card-campo icon="fas fa-star" label="Parecer RH" :valor="entrevista.parecer_rh ? entrevista.parecer_rh.nota : 'aguardando'" v-if="colunasTabela.parecer_rh"></mybp-card-campo>
+                    <mybp-card-campo icon="fas fa-route" label="Rota" :valor="entrevista.parecer_rota ? (entrevista.parecer_rota.rota_atende != null ? (entrevista.parecer_rota.rota_atende === true ? 'Sim' : 'Não') : 'Não informado') : 'aguardando'" v-if="colunasTabela.parecer_rota"></mybp-card-campo>
+                    <mybp-card-campo icon="fas fa-user-tie" label="Ent. técnica" :valor="entrevista.parecer_tecnica ? entrevista.parecer_tecnica.nota : 'aguardando'" forte></mybp-card-campo>
+                    <mybp-card-campo icon="fas fa-tools" label="Teste prático" :valor="entrevista.parecer_teste ? entrevista.parecer_teste.NotaTesteFormat : 'aguardando'" v-if="colunasTabela.teste_pratico_nota"></mybp-card-campo>
+                </template>
+            </cartao-entrevista-lista>
+        </div>
+
+        <div class="table-responsive mybp-tabela-wrap" v-if="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+        <table class="tabela mybp-tabela">
             <thead>
             <tr class="bg-default">
                 <th style="width: 1em;">
@@ -850,19 +831,15 @@
                 </th>
                 <th class="text-center">ID</th>
                 <th>Nome</th>
+                <th>CPF</th>
 {{--                <th v-if="cliente_id === 0 && colunasTabela.cliente">Empresa</th>--}}
                 <th class="text-center">Vaga</th>
-                <th class="text-center" v-show="colunasTabela.pcd">PCD</th>
-                <th class="text-center" v-show="colunasTabela.parecer_rh">Parecer RH Nota</th>
-                <th class="text-center" v-show="colunasTabela.parecer_rota">Rota Transporte</th>
+                <th class="text-center" v-if="colunasTabela.pcd">PCD</th>
+                <th class="text-center" v-if="colunasTabela.parecer_rh">Parecer RH Nota</th>
+                <th class="text-center" v-if="colunasTabela.parecer_rota">Rota Transporte</th>
                 <th class="text-center">Entrevista Técnica Nota</th>
-                <th class="text-center" v-show="colunasTabela.teste_pratico_nota">Teste Prático Nota</th>
-                <th>
-                    <button class="btn btn-sm mr-1 btn-primary mb-2" content="Mostrar e Ocultar Colunas" v-tippy
-                            @click="$refs.filtroColunas?.abrirModal()">
-                        <i class="bx bxs-filter-alt" aria-hidden="true"></i>
-                    </button>
-                </th>
+                <th class="text-center" v-if="colunasTabela.teste_pratico_nota">Teste Prático Nota</th>
+                <th class="text-center">Ações</th>
             </tr>
             </thead>
             <tbody>
@@ -885,25 +862,22 @@
                 <td class="text-center">
                     @{{entrevista.id}}
                 </td>
-                <td>
-                    @{{entrevista.curriculo.nome}}
-                    <br>
-                    @{{entrevista.curriculo.cpf}}
-                </td>
+                <td class="mybp-col-texto">@{{ entrevista.curriculo.nome }}</td>
+                <td>@{{ entrevista.curriculo && entrevista.curriculo.cpf ? entrevista.curriculo.cpf : 'Não informado' }}</td>
 {{--                <td class="text-center" v-if="cliente_id === 0 && colunasTabela.cliente">--}}
 {{--                    @{{entrevista.cliente.razao_social}}--}}
 {{--                </td>--}}
                 <td class="text-center">
                     @{{entrevista.vaga_aberta_municipio}}
                 </td>
-                <td class="text-center" v-show="colunasTabela.pcd">
+                <td class="text-center" v-if="colunasTabela.pcd">
                     @{{entrevista.curriculo.pcd ? 'Sim' : 'Não'}}
                 </td>
-                <td class="text-center" v-show="colunasTabela.parecer_rh">
+                <td class="text-center" v-if="colunasTabela.parecer_rh">
                     @{{entrevista.parecer_rh ? entrevista.parecer_rh.nota : 'aguardando'}}
                 </td>
 
-                <td class="text-center" v-show="colunasTabela.parecer_rota">
+                <td class="text-center" v-if="colunasTabela.parecer_rota">
                     @{{ entrevista.parecer_rota ? entrevista.parecer_rota.rota_atende != null ?
                     entrevista.parecer_rota.rota_atende === true ? 'Sim': 'Não' : 'Não Informado' : 'aguardando' }}
                     {{--                        @{{entrevista.parecer_rota ? entrevista.parecer_rota.TemRotaFormat : 'aguardando'}}--}}
@@ -913,7 +887,7 @@
                     @{{entrevista.parecer_tecnica ? entrevista.parecer_tecnica.nota : 'aguardando'}}
                 </td>
 
-                <td class="text-center" v-show="colunasTabela.teste_pratico_nota">
+                <td class="text-center" v-if="colunasTabela.teste_pratico_nota">
                     @{{entrevista.parecer_teste ? entrevista.parecer_teste.NotaTesteFormat : 'aguardando'}}
 
                 </td>
@@ -952,6 +926,7 @@
                 </td>
             </tr>
         </table>
+        </div>
     </div>
 
     <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"

@@ -734,6 +734,10 @@
             </template>
         </FiltroListagem>
 
+        <div class="d-flex justify-content-end my-2">
+            <mybp-visualizacao-listagem v-model="visualizacao" :tela="tela"></mybp-visualizacao-listagem>
+        </div>
+
         <preload class="text-center" v-if="controle.carregando"></preload>
 
         <div id="conteudo">
@@ -741,7 +745,7 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
                 <div class="mybp-card" v-for="item in lista" :key="item.id">
                     <div class="mybp-card-header-row">
                         <div class="mybp-card-left">
@@ -887,6 +891,47 @@
                     </div>
                 </div>
             </div>
+
+            <div class="table-responsive mov-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+                <table class="tabela mov-tabela">
+                    <thead>
+                    <tr>
+                        <th>Cód</th>
+                        <th>Nome</th>
+                        <th>CC origem</th>
+                        <th>CC destino</th>
+                        <th>Data</th>
+                        <th>Solicitante</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in lista" :key="'tab-' + item.id">
+                        <td data-label="Cód">{{ item.id }}</td>
+                        <td class="mov-col-texto" data-label="Nome">{{ tituloCardLista(item) }}</td>
+                        <td class="mov-col-texto" data-label="CC origem">{{ ccOrigemLista(item) || 'Não informado' }}</td>
+                        <td class="mov-col-texto" data-label="CC destino">{{ ccDestinoLista(item) || 'Não informado' }}</td>
+                        <td data-label="Data">{{ formatarDataBr(item.data_transferencia) || 'Não informado' }}</td>
+                        <td class="mov-col-texto" data-label="Solicitante">{{ solicitanteLista(item) || 'Não informado' }}</td>
+                        <td data-label="Status"><mybp-status-badge :variante="chaveStatusLista(item)" :texto="textoStatusLista(item)" /></td>
+                        <td data-label="Ações">
+                            <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(item.id) }">
+                                <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(item.id); posicionarMenuAcoes($event)"><i class="fas fa-ellipsis-v"></i></a>
+                                <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(item.id) }" @click="fecharDropdown">
+                                    <a class="dropdown-item" href="javascript://" v-if="exibeEtapaGestorOrigem(item) && !item.status_aprovacao && podeAprovarGestorOrigemItem(item)" @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: false, aprovando: true, aprovandoGestorDestino: false, aprovandoExtra: false, aprovandoRh: false, podeanexar: true })">Aprovação Gestor Origem</a>
+                                    <a class="dropdown-item" href="javascript://" v-if="item.exige_aprovacao_gestor_destino && origemEtapaConcluida(item) && !item.status_aprovacao_gestor_destino && podeAprovarGestorDestinoItem(item)" @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: false, aprovando: false, aprovandoGestorDestino: true, aprovandoExtra: false, aprovandoRh: false, podeanexar: true })">Aprovação Gestor Destino</a>
+                                    <a class="dropdown-item" href="javascript://" v-if="item.modo_aprovacao === 'gestor_unico' && !item.status_aprovacao_gestor_unico && podeAprovarGestorUnicoItem(item)" @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: false, aprovando: false, aprovandoGestorDestino: false, aprovandoGestorUnico: true, aprovandoExtra: false, aprovandoRh: false, podeanexar: true })">Aprovação Gestor Aprovação</a>
+                                    <a class="dropdown-item" href="javascript://" v-if="temAprovacaoExtra && gestoresConcluidosItem(item) && !item.status_aprovacao_extra && podeAprovarExtra" @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: false, aprovando: false, aprovandoGestorDestino: false, aprovandoExtra: true, aprovandoRh: false, podeanexar: false })">{{ nomeAprovacaoExtra }}</a>
+                                    <a class="dropdown-item" href="javascript://" v-if="((temAprovacaoExtra && item.status_aprovacao_extra === 'aprovado') || (!temAprovacaoExtra && gestoresConcluidosItem(item))) && !item.user_rh_id && aprovar_por_rh" @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: true, aprovando: false, aprovandoGestorDestino: false, aprovandoExtra: false, aprovandoRh: true, podeanexar: false })">Aprovação RH</a>
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="abrirModalAposFormOpen(item.id, { visualizar: true, aprovando: false, aprovandoGestorDestino: false, aprovandoExtra: false, aprovandoRh: false, podeanexar: false })">Visualizar</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <controle-paginacao
@@ -917,6 +962,7 @@ import MybpFluxoAprovacao from '../../ui/MybpFluxoAprovacao.vue'
 import MybpStatusBadge from '../../ui/MybpStatusBadge.vue'
 import Validacoes from '../../../mixins/Validacoes'
 import configuracoes from '../../../mixins/Configuracoes'
+import MovimentacaoListagem from '../../../mixins/MovimentacaoListagem'
 import { exigirCombobox, limparComboboxInvalido, exigirCampoData, limparCampoDataInvalido, validarInputsAtivosVisiveis } from '../../../utils/comboboxValidation'
 
 const BASE_URL = `${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista`
@@ -990,7 +1036,7 @@ export default defineComponent({
         MybpStatusBadge,
         datepicker
     },
-    mixins: [Validacoes, configuracoes],
+    mixins: [Validacoes, configuracoes, MovimentacaoListagem],
     inject: {
         atualizarUrlMovimentacao: { default: () => () => {} }
     },

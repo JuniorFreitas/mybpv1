@@ -17,6 +17,8 @@ import {
     limparFiltrosListagem,
     montarExtrasPaginacao
 } from '../../../utils/listagemQueryParams'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
+import { posicionarMenuAcoes } from '../../../utils/posicionarMenuAcoes'
 
 const CAMPOS_FILTRO_URL = ['campoBusca', 'campoVaga', 'campoCliente', 'campoUf', 'status', 'statusDocumento']
 const PAGES_DEFAULT = 20
@@ -38,6 +40,7 @@ const app = createApp({
     data() {
         return {
             tituloJanela: 'Pré-admissão',
+            visualizacao: lerVisualizacaoListagem('admissao-preadmissao', 'lista'),
             tituloJanelaFinalizar: '',
             preload: false,
             preloadFinalizar: false,
@@ -328,6 +331,7 @@ const app = createApp({
                 montarExtrasPaginacao(this, { pagesDefault: PAGES_DEFAULT })
             )
         },
+        posicionarMenuAcoes,
         toggleDropdown(itemId) {
             if (!itemId) return
             const key = `preadm:${itemId}`

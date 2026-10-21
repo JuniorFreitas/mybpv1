@@ -275,6 +275,8 @@
         </template>
     </filtro-listagem>
 
+    @include('g.entrevistas.partials.barra_visualizacao', ['tela' => 'entrevista-resultado-integrado'])
+
     <preload class="text-center" v-if="controle.carregando"></preload>
     <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length===0">
         <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
@@ -298,7 +300,7 @@
             </span>
         </div>
 
-        <div class="mybp-cards-lista">
+        <div class="mybp-cards-lista" v-if="visualizacao === 'lista'">
             <div class="mybp-card" v-for="entrevista in lista" :key="entrevista.id">
                 <div class="mybp-card-header-row">
                     <div class="mybp-card-left">
@@ -324,8 +326,11 @@
                             <input type="checkbox" disabled />
                         </span>
                         <span class="mybp-badge-id">#@{{ entrevista.id }}</span>
-                        <div class="mybp-card-titulo">
+                        <div class="mybp-card-titulo mybp-card-titulo--stacked">
                             <strong>@{{ entrevista.curriculo ? entrevista.curriculo.nome : 'Não informado' }}</strong>
+                            <div class="text-muted small mybp-card-subtitulo" v-if="entrevista.curriculo && entrevista.curriculo.cpf">
+                                CPF @{{ entrevista.curriculo.cpf }}
+                            </div>
                         </div>
                     </div>
                     <div class="mybp-card-right">
@@ -436,6 +441,85 @@
                     </section>
                 </div>
             </div>
+        </div>
+
+        <div class="table-responsive mybp-tabela-wrap" v-if="visualizacao === 'tabela'">
+            <table class="tabela mybp-tabela">
+                <thead>
+                <tr>
+                    <th style="width: 1em;"></th>
+                    <th>Cód</th>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>Cargo</th>
+                    <th>PCD</th>
+                    <th>Resp. encaminhamento</th>
+                    <th>Enc. documentos</th>
+                    <th>Enc. exame</th>
+                    <th>Enc. treinamento</th>
+                    <th>Status</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="entrevista in lista" :key="'tab-' + entrevista.id">
+                    <td class="text-center">
+                        <input
+                            v-if="entrevista.resultado_integrado"
+                            type="checkbox"
+                            v-model="selecionados"
+                            :value="entrevista.id"
+                        />
+                        <input v-else type="checkbox" disabled />
+                    </td>
+                    <td class="text-center">@{{ entrevista.id }}</td>
+                    <td class="mybp-col-texto">@{{ entrevista.curriculo ? entrevista.curriculo.nome : 'Não informado' }}</td>
+                    <td>@{{ entrevista.curriculo && entrevista.curriculo.cpf ? entrevista.curriculo.cpf : 'Não informado' }}</td>
+                    <td class="mybp-col-texto">@{{ entrevista.vaga_aberta_municipio || 'Não informado' }}</td>
+                    <td class="text-center">@{{ entrevista.curriculo && entrevista.curriculo.pcd ? 'Sim' : 'Não' }}</td>
+                    <td>@{{ textoRespRi(entrevista) || 'Não informado' }}</td>
+                    <td>@{{ textoEncRi(entrevista, 'documentos_entregue', 'documentos_entregue_data') }}</td>
+                    <td>@{{ textoEncRi(entrevista, 'encaminhado_exame', 'encaminhado_exame_data') }}</td>
+                    <td>@{{ textoEncRi(entrevista, 'encaminhado_treinamento', 'encaminhado_treinamento_data') }}</td>
+                    <td class="text-center">
+                        <mybp-status-badge
+                            :variante="chaveStatusRi(entrevista)"
+                            :texto="textoStatusRi(entrevista)"
+                        ></mybp-status-badge>
+                    </td>
+                    <td class="text-center">
+                        <div class="dropdown" :class="{ show: isDropdownOpen(entrevista.id) }">
+                            <a class="mybp-btn-acoes-compact" href="#" role="button"
+                               @click.prevent.stop="toggleDropdown(entrevista.id); posicionarMenuAcoes($event)">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </a>
+                            <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right"
+                                 :class="{ show: isDropdownOpen(entrevista.id) }"
+                                 @click="fecharDropdown">
+                                <a class="dropdown-item" href="javascript://" v-show="!entrevista.resultado_integrado"
+                                   @click.prevent="formEntrevistar(entrevista.id); $refs.janelaParecerEntrevista?.abrirModal()">
+                                    <i class="far fa-share-square mr-1"></i> Encaminhar
+                                </a>
+                                @can('entrevista_resultado_integrado_update')
+                                    <a class="dropdown-item" href="javascript://" v-show="entrevista.resultado_integrado"
+                                       @click.prevent="formEntrevistar(entrevista.id); editando = true; $refs.janelaParecerEntrevista?.abrirModal()">
+                                        <i class="fa fa-edit mr-1"></i> Editar
+                                    </a>
+                                @endcan
+                                <a class="dropdown-item" href="javascript://" v-show="entrevista.resultado_integrado"
+                                   @click.prevent="formEntrevistar(entrevista.id); visualizar = true; $refs.janelaParecerEntrevista?.abrirModal()">
+                                    <i class="fa fa-search-plus mr-1"></i> Visualizar
+                                </a>
+                                <a class="dropdown-item" v-if="entrevista.resultado_integrado"
+                                   :href="`${URL_ADMIN}/entrevistas/resultado-integrado/ficha/${entrevista.id}`" target="_blank">
+                                    <i class="fa fa-file-pdf mr-1"></i> Imprimir
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
 
         <controle-paginacao class="d-flex justify-content-center" id="controle" ref="componente"

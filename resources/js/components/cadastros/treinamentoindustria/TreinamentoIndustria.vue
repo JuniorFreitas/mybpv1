@@ -257,14 +257,15 @@
         </modal>
 
         <FiltroListagem
+            class="mt-2 mybp-filtros-compactos"
             @submit="onSubmitFiltro"
             :mostrar-limpar-filtros="temFiltrosAtivos"
             :desabilitado="controle.carregando"
             @limpar="limparFiltros"
         >
             <template #filtros>
-                <div class="col-12 col-lg-4">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="treinamento-industria-filtro-busca">Buscar</label>
                         <input
                             id="treinamento-industria-filtro-busca"
@@ -278,8 +279,8 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-3">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="treinamento-industria-filtro-status">Status</label>
                         <div class="mybp-combobox-wrap">
                             <combobox-auto-complete
@@ -299,8 +300,8 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-5">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="treinamento-industria-filtro-padrao">Padrão</label>
                         <div class="mybp-combobox-wrap">
                             <combobox-auto-complete
@@ -333,6 +334,9 @@
                 </button>
             </template>
         </FiltroListagem>
+        <div class="d-flex justify-content-end my-2">
+            <mybp-visualizacao-listagem v-model="visualizacao" tela="cadastro-treinamentos"></mybp-visualizacao-listagem>
+        </div>
 
         <div id="conteudo">
             <p class="mt-2 text-center" v-if="controle.carregando">
@@ -343,7 +347,7 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
                 <div class="mybp-card" v-for="item in lista" :key="item.id">
                     <div class="mybp-card-header-row">
                         <div class="mybp-card-left">
@@ -425,6 +429,49 @@
                     </div>
                 </div>
             </div>
+            <div class="table-responsive mybp-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+                <table class="tabela mybp-tabela">
+                    <thead>
+                    <tr>
+                        <th>Cód</th>
+                        <th>Nome</th>
+                        <th>Cargos</th>
+                        <th>Prazo fixo</th>
+                        <th>Ordem</th>
+                        <th>A quem se destina</th>
+                        <th>Padrões</th>
+                        <th>Carteira</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in lista" :key="'tab-' + item.id">
+                        <td data-label="Cód">{{ item.id }}</td>
+                        <td class="mybp-col-texto" data-label="Nome">{{ item.label || 'Não informado' }}</td>
+                        <td class="mybp-col-texto" data-label="Cargos">{{ resumoCargos(item) }}</td>
+                        <td data-label="Prazo fixo">{{ prazoFixoTreinamento(item) }}</td>
+                        <td data-label="Ordem">{{ valorOuNaoInformado(item.ordem) }}</td>
+                        <td class="mybp-col-texto" data-label="A quem se destina">{{ valorOuNaoInformado(item.descricao) }}</td>
+                        <td class="mybp-col-texto" data-label="Padrões">{{ padroesDoItem(item).map(p => p.nome).join(', ') || 'Nenhum padrão' }}</td>
+                        <td data-label="Carteira">{{ labelCarteira(item) }}</td>
+                        <td data-label="Status">
+                            <bt-ativo :rota="`cadastro/treinamentoindustria/${item.id}/ativa-desativa`" :model="item" @atualizou="atualizar()"></bt-ativo>
+                        </td>
+                        <td data-label="Ações">
+                            <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(item.id) }">
+                                <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(item.id); posicionarMenuAcoes($event)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(item.id) }" @click="fecharDropdown">
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="abrirModalAlterar(item.id)"><i class="fa fa-edit mr-1"></i> Editar</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <controle-paginacao
                 class="d-flex justify-content-center"
@@ -455,6 +502,8 @@ import {
     temFiltrosPreenchidos,
     limparFiltrosListagem
 } from '../../../utils/listagemQueryParams'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
+import { posicionarMenuAcoes } from '../../../utils/posicionarMenuAcoes'
 
 const CAMPOS_FILTRO_URL = ['campoBusca', 'campoStatus', 'padrao_treinamento_id']
 
@@ -580,6 +629,7 @@ export default {
             padraoSelecionado: '',
 
             lista: [],
+            visualizacao: lerVisualizacaoListagem('cadastro-treinamentos', 'lista'),
             dropdownAbertoKey: null,
             syncUrlTimer: null,
 
@@ -596,6 +646,7 @@ export default {
         }
     },
     methods: {
+        posicionarMenuAcoes,
         onSubmitFiltro() {
             this.atualizar()
         },

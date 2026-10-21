@@ -1005,6 +1005,39 @@
     }
 }
 
+.mybp-tabela-wrap {
+    overflow: auto;
+    max-height: calc(100vh - 16rem);
+}
+
+table.tabela.mybp-tabela {
+    table-layout: auto;
+    width: max-content;
+    min-width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+table.tabela.mybp-tabela th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #f4f6f8;
+    white-space: nowrap;
+}
+
+table.tabela.mybp-tabela td {
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+table.tabela.mybp-tabela td.mybp-col-texto {
+    white-space: normal;
+    min-width: 140px;
+    max-width: 220px;
+    overflow-wrap: break-word;
+}
+
 @media (min-width: 768px) and (max-width: 991.98px) {
     .mybp-kpi-row {
         grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -611,6 +611,10 @@
             </template>
         </FiltroListagem>
 
+        <div class="d-flex justify-content-end my-2">
+            <mybp-visualizacao-listagem v-model="visualizacao" tela="admissao-cih"></mybp-visualizacao-listagem>
+        </div>
+
         <preload v-if="controle.carregando"></preload>
 
         <div id="conteudo">
@@ -618,7 +622,7 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length">
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length && visualizacao === 'lista'">
                 <div class="mybp-card" v-for="item in lista" :key="item.id">
                     <div class="mybp-card-header-row">
                         <div class="mybp-card-left">
@@ -752,6 +756,56 @@
                 </div>
             </div>
 
+            <div class="table-responsive mybp-tabela-wrap" v-show="!controle.carregando && lista.length && visualizacao === 'tabela'">
+                <table class="tabela mybp-tabela">
+                    <thead>
+                    <tr>
+                        <th>Cód</th>
+                        <th>Nome</th>
+                        <th>Tipo</th>
+                        <th>Data da ocorrência</th>
+                        <th>Lançamento</th>
+                        <th v-if="AUTENTICADO.temFilial">Lotação</th>
+                        <th v-if="config_modelo_cih === 'centro_de_custo'">Centro de custo</th>
+                        <th v-if="config_modelo_cih === 'area'">Área</th>
+                        <th>Gestor</th>
+                        <th>Ação</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in lista" :key="'tab-' + item.id">
+                        <td data-label="Cód">{{ item.id }}</td>
+                        <td class="mybp-col-texto" data-label="Nome">{{ nomeColaboradorLista(item) }}</td>
+                        <td data-label="Tipo">{{ labelTipoLista(item) || 'Não informado' }}</td>
+                        <td data-label="Data da ocorrência">{{ item.data_lancamento || 'Não informado' }}</td>
+                        <td class="mybp-col-texto" data-label="Lançamento">{{ item.responsavel_lancamento?.nome || 'Não informado' }}</td>
+                        <td v-if="AUTENTICADO.temFilial" class="mybp-col-texto" data-label="Lotação">{{ labelLotacaoLista(item) || 'Não informado' }}</td>
+                        <td v-if="config_modelo_cih === 'centro_de_custo'" class="mybp-col-texto" data-label="Centro de custo">{{ labelCentroCustoLista(item) || 'Não informado' }}</td>
+                        <td v-if="config_modelo_cih === 'area'" class="mybp-col-texto" data-label="Área">{{ labelAreaLista(item) || 'Não informado' }}</td>
+                        <td class="mybp-col-texto" data-label="Gestor">{{ item.gestor_aprovacao?.nome || 'Não informado' }}</td>
+                        <td class="mybp-col-texto" data-label="Ação">{{ resumoAcaoLista(item) || 'Não informado' }}</td>
+                        <td data-label="Status">
+                            <mybp-status-badge :variante="chaveStatusLista(item)" :texto="textoStatusLista(item)" />
+                        </td>
+                        <td data-label="Ações">
+                            <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(item.id) }">
+                                <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(item.id); posicionarMenuAcoes($event)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(item.id) }" @click="fecharDropdown">
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="formAprovar(item.id); visualizar = false; aprovando = true; aprovandoRh = false; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()" v-if="podeAprovarComoGestor(item)"><i class="fa fa-user-check mr-1"></i> Aprovação Gestor</a>
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="formAprovar(item.id); visualizar = false; aprovando = false; aprovandoRh = true; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()" v-if="item.status === 'aprovado' && item.user_rh_id === null && aprovaRh"><i class="fa fa-users mr-1"></i> Aprovação RH</a>
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="formAprovar(item.id); visualizar = true; aprovando = false; aprovandoRh = false; cadastrando = false; $refs.modal_janelaCadastrar && $refs.modal_janelaCadastrar.abrirModal()"><i class="fa fa-search mr-1"></i> Visualizar</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
             <controle-paginacao
                 class="d-flex justify-content-center mt-3"
                 id="controle"
@@ -787,6 +841,8 @@ import {
     textoStatusFluxo,
     varianteStatusFluxo
 } from '../../../utils/opcoesStatusFluxoAprovacao'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
+import { posicionarMenuAcoes } from '../../../utils/posicionarMenuAcoes'
 
 export default {
     name: 'CIH',
@@ -807,6 +863,7 @@ export default {
     data() {
         return {
             tituloJanela: 'Cadastrando CIH',
+            visualizacao: lerVisualizacaoListagem('admissao-cih', 'lista'),
             preloadAjax: false,
             editando: false,
             leitura: false,
@@ -1318,6 +1375,7 @@ export default {
                 }
             })
         },
+        posicionarMenuAcoes,
         toggleDropdown(itemId) {
             if (!itemId) {
                 return

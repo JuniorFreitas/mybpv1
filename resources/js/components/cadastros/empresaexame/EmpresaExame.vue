@@ -110,14 +110,15 @@
         </modal>
 
         <FiltroListagem
+            class="mt-2 mybp-filtros-compactos"
             @submit="onSubmitFiltro"
             :mostrar-limpar-filtros="temFiltrosAtivos"
             :desabilitado="controle.carregando"
             @limpar="limparFiltros"
         >
             <template #filtros>
-                <div class="col-12 col-lg-6">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div class="col-12 col-md-6">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="empresa-exame-filtro-busca">Buscar</label>
                         <input
                             id="empresa-exame-filtro-busca"
@@ -131,8 +132,8 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-6">
-                    <div class="form-group mb-2 mb-lg-0">
+                <div class="col-12 col-md-6">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="empresa-exame-filtro-status">Status</label>
                         <div class="mybp-combobox-wrap">
                             <combobox-auto-complete
@@ -165,6 +166,9 @@
                 </button>
             </template>
         </FiltroListagem>
+        <div class="d-flex justify-content-end my-2">
+            <mybp-visualizacao-listagem v-model="visualizacao" tela="cadastro-exames"></mybp-visualizacao-listagem>
+        </div>
 
         <div id="conteudo">
             <p class="mt-2 text-center" v-if="controle.carregando">
@@ -175,7 +179,7 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
                 <div class="mybp-card" v-for="item in lista" :key="item.id">
                     <div class="mybp-card-header-row">
                         <div class="mybp-card-left">
@@ -243,6 +247,47 @@
                     </div>
                 </div>
             </div>
+            <div class="table-responsive mybp-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+                <table class="tabela mybp-tabela">
+                    <thead>
+                    <tr>
+                        <th>Cód</th>
+                        <th>Nome</th>
+                        <th>CNPJ</th>
+                        <th>Fantasia</th>
+                        <th>E-mail</th>
+                        <th>Telefone</th>
+                        <th>Endereço</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in lista" :key="'tab-' + item.id">
+                        <td data-label="Cód">{{ item.id }}</td>
+                        <td class="mybp-col-texto" data-label="Nome">{{ item.nome || 'Não informado' }}</td>
+                        <td data-label="CNPJ">{{ cnpjEmpresa(item) }}</td>
+                        <td class="mybp-col-texto" data-label="Fantasia">{{ nomeFantasiaEmpresa(item) }}</td>
+                        <td data-label="E-mail">{{ emailEmpresa(item) }}</td>
+                        <td data-label="Telefone">{{ telefoneEmpresa(item) }}</td>
+                        <td class="mybp-col-texto" data-label="Endereço">{{ enderecoEmpresa(item) }}</td>
+                        <td data-label="Status">
+                            <bt-ativo :rota="`cadastro/empresa-exame/${item.id}/ativa-desativa`" :model="item" @atualizou="atualizar()"></bt-ativo>
+                        </td>
+                        <td data-label="Ações">
+                            <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(item.id) }">
+                                <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(item.id); posicionarMenuAcoes($event)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(item.id) }" @click="fecharDropdown">
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="abrirModalAlterar(item.id)"><i class="fa fa-edit mr-1"></i> Editar</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <controle-paginacao
                 class="d-flex justify-content-center"
@@ -274,6 +319,8 @@ import {
     temFiltrosPreenchidos,
     limparFiltrosListagem
 } from '../../../utils/listagemQueryParams'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
+import { posicionarMenuAcoes } from '../../../utils/posicionarMenuAcoes'
 
 const CAMPOS_FILTRO_URL = ['campoBusca', 'campoStatus']
 
@@ -381,6 +428,7 @@ export default {
             formDefault: null,
 
             lista: [],
+            visualizacao: lerVisualizacaoListagem('cadastro-exames', 'lista'),
             dropdownAbertoKey: null,
             syncUrlTimer: null,
 
@@ -396,6 +444,7 @@ export default {
         }
     },
     methods: {
+        posicionarMenuAcoes,
         onSubmitFiltro() {
             this.atualizar()
         },

@@ -491,6 +491,10 @@
             </template>
         </FiltroListagem>
 
+        <div class="d-flex justify-content-end my-2">
+            <mybp-visualizacao-listagem v-model="visualizacao" tela="admissao-historico"></mybp-visualizacao-listagem>
+        </div>
+
         <preload class="text-center" v-if="controle.carregando"></preload>
 
         <div id="conteudo">
@@ -500,7 +504,7 @@
                 <p class="empty-state-text">Ajuste os filtros ou aguarde registros no histórico de admissão.</p>
             </div>
 
-            <div class="cards-lista" v-show="!controle.carregando && lista.length > 0">
+            <div class="cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
                 <div
                     class="solicitacao-card"
                     v-for="item in lista"
@@ -666,6 +670,61 @@
                 </div>
             </div>
 
+            <div class="table-responsive mybp-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+                <table class="tabela mybp-tabela">
+                    <thead>
+                    <tr>
+                        <th>Cód</th>
+                        <th>Nome</th>
+                        <th>CPF</th>
+                        <th>Cargo</th>
+                        <th>Função</th>
+                        <th>Matrícula</th>
+                        <th>Centro de custo</th>
+                        <th>Lotação</th>
+                        <th>Tipo admissão</th>
+                        <th>Data admissão</th>
+                        <th>Data desligamento</th>
+                        <th>Última atualização</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in lista" :key="'tab-' + item.id">
+                        <td data-label="Cód">{{ item.id }}</td>
+                        <td class="mybp-col-texto" data-label="Nome">{{ (item.curriculo && item.curriculo.nome) || 'Não informado' }}</td>
+                        <td data-label="CPF">{{ (item.curriculo && item.curriculo.cpf) || 'Não informado' }}</td>
+                        <td class="mybp-col-texto" data-label="Cargo">{{ (item.admissao && item.admissao.cargo) || 'Não informado' }}</td>
+                        <td class="mybp-col-texto" data-label="Função">{{ (item.admissao && item.admissao.funcao) || '—' }}</td>
+                        <td data-label="Matrícula">{{ (item.admissao && item.admissao.matricula) || '—' }}</td>
+                        <td class="mybp-col-texto" data-label="Centro de custo">{{ (item.admissao && item.admissao.emp_centro_custo) || 'Não informado' }}</td>
+                        <td class="mybp-col-texto" data-label="Lotação">
+                            <template v-if="item.admissao && (item.admissao.emp_nome_fantasia || item.admissao.emp_cnpj)">
+                                {{ item.admissao.emp_nome_fantasia || '—' }}<template v-if="item.admissao.emp_cnpj"> - {{ item.admissao.emp_cnpj }}</template>
+                            </template>
+                            <template v-else>Não informado</template>
+                        </td>
+                        <td data-label="Tipo admissão">{{ (item.admissao && item.admissao.tipo_admissao) || '—' }}</td>
+                        <td data-label="Data admissão">{{ (item.admissao && item.admissao.data_admissao) || 'Não informado' }}</td>
+                        <td data-label="Data desligamento">{{ (item.admissao && (item.admissao.status === 'DEMITIDO' || item.admissao.status === 'Demitido') && item.admissao.data_encerramento) || '—' }}</td>
+                        <td data-label="Última atualização">{{ item.ultima_atualizacao || '—' }}</td>
+                        <td data-label="Status">{{ textoStatusHistorico(item) }}</td>
+                        <td data-label="Ações">
+                            <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(item.id) }">
+                                <a class="btn-actions-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(item.id); posicionarMenuAcoes($event)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-custom dropdown-menu-right" :class="{ show: isDropdownOpen(item.id) }" @click="fecharDropdown">
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="abrirHistorico(item); $refs.modal_janelaHistorico && $refs.modal_janelaHistorico.abrirModal()"><i class="fas fa-edit mr-2 text-primary"></i> Abrir histórico</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
             <controle-paginacao
                 class="d-flex justify-content-center"
                 id="controle"
@@ -695,6 +754,8 @@ import FeedbackHistorico from './FeedbackHistorico'
 import LogsHistorico from './LogsHistorico'
 import FiltroListagem from '../../ui/FiltroListagem.vue'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
+import { posicionarMenuAcoes } from '../../../utils/posicionarMenuAcoes'
 
 export default {
     name: 'Historico',
@@ -744,6 +805,7 @@ export default {
         }
         return {
             tituloJanela: 'Histórico',
+            visualizacao: lerVisualizacaoListagem('admissao-historico', 'lista'),
             openHistorico: true,
             abas: { ...abasDefault, abrirDossie: true },
             abasDefault,
@@ -1001,6 +1063,7 @@ export default {
     },
 
     methods: {
+        posicionarMenuAcoes,
         toggleDropdown(itemId) {
             if (!itemId) {
                 return

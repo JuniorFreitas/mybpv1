@@ -435,14 +435,15 @@
 
     <div>
         <filtro-listagem
+            class="mt-2 mybp-filtros-compactos"
             @submit="onSubmitFiltro"
             :mostrar-limpar-filtros="temFiltrosAtivos"
             :desabilitado="controle.carregando"
             @limpar="limparFiltros"
         >
             <template #filtros>
-                <div class="col-12 col-lg-4">
-                    <div class="form-group mb-0">
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="vaga-aberta-filtro-busca">Buscar</label>
                         <input
                             id="vaga-aberta-filtro-busca"
@@ -456,8 +457,8 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-4">
-                    <div class="form-group mb-0">
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="vaga-aberta-filtro-ativo-site">Ativo no site</label>
                         <div class="mybp-combobox-wrap">
                             <combobox-auto-complete
@@ -477,8 +478,8 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-4">
-                    <div class="form-group mb-0">
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="vaga-aberta-filtro-ativo-sistema">Ativo no sistema</label>
                         <div class="mybp-combobox-wrap">
                             <combobox-auto-complete
@@ -498,8 +499,8 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-4 mybp-combobox-wrap">
-                    <div class="form-group mb-0">
+                <div class="col-12 col-md-4 mybp-combobox-wrap">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="vaga-aberta-filtro-cargo">Cargo</label>
                         <combobox-auto-complete
                             ref="comboFiltroCargo"
@@ -517,8 +518,8 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-4 mybp-combobox-wrap">
-                    <div class="form-group mb-0">
+                <div class="col-12 col-md-4 mybp-combobox-wrap">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="vaga-aberta-filtro-municipio">Cidade</label>
                         <combobox-auto-complete
                             ref="comboFiltroMunicipio"
@@ -536,8 +537,8 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-4">
-                    <div class="form-group mb-0">
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="vaga-aberta-filtro-provas">Provas vinculadas</label>
                         <div class="mybp-combobox-wrap">
                             <combobox-auto-complete
@@ -557,8 +558,8 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-4 mybp-combobox-wrap">
-                    <div class="form-group mb-0">
+                <div class="col-12 col-md-4 mybp-combobox-wrap">
+                    <div class="form-group mybp-filtro-campo">
                         <label class="mybp-label" for="vaga-aberta-filtro-projeto">Projeto</label>
                         <combobox-auto-complete
                             ref="comboFiltroProjeto"
@@ -591,6 +592,9 @@
                 </button>
             </template>
         </filtro-listagem>
+        <div class="d-flex justify-content-end my-2">
+            <mybp-visualizacao-listagem v-model="visualizacao" tela="cadastro-vagas-abertas"></mybp-visualizacao-listagem>
+        </div>
 
         <div id="conteudo">
             <preload class="text-center" v-if="controle.carregando"></preload>
@@ -599,7 +603,7 @@
                 <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
             </div>
 
-            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+            <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
                 <div class="mybp-card" v-for="vaga in lista" :key="vaga.id">
                     <div class="mybp-card-header-row">
                         <div class="mybp-card-left">
@@ -831,6 +835,55 @@
                     </div>
                     </div>
                 </div>
+            </div>
+            <div class="table-responsive mybp-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+                <table class="tabela mybp-tabela">
+                    <thead>
+                    <tr>
+                        <th>Cód</th>
+                        <th>Título</th>
+                        <th>Cargo</th>
+                        <th>Local</th>
+                        <th>Atualizado</th>
+                        <th>CBO</th>
+                        <th>Treinamentos</th>
+                        <th>Provas</th>
+                        <th>Projetos</th>
+                        <th>Site</th>
+                        <th>Sistema</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="vaga in lista" :key="'tab-' + vaga.id">
+                        <td data-label="Cód">@{{ vaga.id }}</td>
+                        <td class="mybp-col-texto" data-label="Título">@{{ vaga.titulo || 'Não informado' }}</td>
+                        <td class="mybp-col-texto" data-label="Cargo">@{{ vaga.cargo_nome || '—' }}</td>
+                        <td data-label="Local">@{{ vaga.municipio_label || '—' }}</td>
+                        <td data-label="Atualizado">@{{ vaga.updated_at_br || 'Não informado' }}</td>
+                        <td class="mybp-col-texto" data-label="CBO">@{{ temCbo(vaga) ? ((vaga.cbo_codigo || '—') + ' ' + (vaga.cbo_titulo || '')) : 'Não vinculado' }}</td>
+                        <td data-label="Treinamentos">@{{ resumoTreinamentos(vaga) }}</td>
+                        <td data-label="Provas">@{{ resumoSimulados(vaga) }}</td>
+                        <td class="mybp-col-texto" data-label="Projetos">@{{ resumoProjetos(vaga) }}</td>
+                        <td data-label="Site">
+                            <bt-ativo campo="ativo" ativo-label="Ativo site" inativo-label="Inativo site" :rota="`cadastro/vagas-abertas/${vaga.id}/ativa-desativa`" :model="vaga" @atualizou="atualizar()"></bt-ativo>
+                        </td>
+                        <td data-label="Sistema">
+                            <bt-ativo campo="ativo_sistema" ativo-label="Ativo sistema" inativo-label="Inativo sistema" :rota="`cadastro/vagas-abertas/${vaga.id}/ativa-desativa-sistema`" :model="vaga" @atualizou="atualizar()"></bt-ativo>
+                        </td>
+                        <td data-label="Ações">
+                            <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(vaga.id) }">
+                                <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(vaga.id); posicionarMenuAcoes($event)">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </a>
+                                <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(vaga.id) }" @click="fecharDropdown">
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="abrirEdicaoVagaAberta(vaga.id)"><i class="fa fa-edit mr-1"></i> Editar</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
 
             <controle-paginacao

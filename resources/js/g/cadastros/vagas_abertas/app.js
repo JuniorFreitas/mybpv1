@@ -5,6 +5,8 @@ import MixinConfig from '../../../mixins/Configuracoes'
 import ComboboxAutoComplete from '../../../components/ComboboxAutoComplete'
 import FiltroListagem from '../../../components/ui/FiltroListagem'
 import { lerFiltrosDaUrl, lerPaginacaoDaUrl, sincronizarFiltrosNaUrl, criarWatchQueryParams, montarExtrasPaginacao, aplicarPaginaInicialListagem, buscarListagem, temFiltrosPreenchidos, limparFiltrosListagem } from '../../../utils/listagemQueryParams'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
+import { posicionarMenuAcoes } from '../../../utils/posicionarMenuAcoes'
 
 const CAMPOS_FILTRO_URL = [
     'campoBusca',
@@ -105,6 +107,7 @@ const app = createApp({
                 }
             },
 
+            visualizacao: lerVisualizacaoListagem('cadastro-vagas-abertas', 'lista'),
             dropdownAbertoKey: null
         }
     },
@@ -255,6 +258,7 @@ const app = createApp({
 
             return refs.some((refName) => this.$refs[refName]?.containsTarget?.(event.target))
         },
+        posicionarMenuAcoes,
         onClickOutside(event) {
             if (event?.target?.closest?.('.dropdown')) return
             if (this.comboboxContemAlvo(event)) return

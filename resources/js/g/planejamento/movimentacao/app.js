@@ -7,7 +7,6 @@ import SolicitacaoValorExtra from '../../../components/planejamento/movimentacao
 import SolicitacaoMudaCargo from '../../../components/planejamento/movimentacao/SolicitacaoMudaCargo'
 import SolicitacaoIntermitenteFixo from '../../../components/planejamento/movimentacao/SolicitacaoIntermitenteFixo'
 import SolicitacaoTransferencia from '../../../components/planejamento/movimentacao/SolicitacaoTransferencia'
-
 const ABAS_META = [
     {
         key: 'demissao',

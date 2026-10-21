@@ -4,17 +4,27 @@ import datepicker from '../../components/DatePicker'
 import ExportacaoMixin from '../../mixins/Exportacoes'
 import Utils from '../../mixins/Utils'
 import gestoraprovacao from '../../components/GestorAprovacao.vue'
+import FiltroListagem from '../../components/ui/FiltroListagem.vue'
+import ComboboxAutoComplete from '../../components/ComboboxAutoComplete.vue'
+import MybpCardCampo from '../../components/ui/MybpCardCampo.vue'
+import { lerVisualizacaoListagem } from '../../utils/visualizacaoListagem'
+import { posicionarMenuAcoes } from '../../utils/posicionarMenuAcoes'
 
 const app = createApp({
     mixins: [ExportacaoMixin, Utils],
     components: {
         datepicker,
-        gestoraprovacao
+        gestoraprovacao,
+        FiltroListagem,
+        ComboboxAutoComplete,
+        MybpCardCampo
     },
     data() {
         return {
             AUTENTICADO,
             tituloJanela: 'Carregando ...',
+            visualizacao: lerVisualizacaoListagem('pos-admissao'),
+            filtrosAvancadosAbertos: false,
             tituloJanelaEntrevista: 'Carregando ...',
             preload: false,
             editando: false,
@@ -253,6 +263,69 @@ const app = createApp({
             this.selecionaTudo = resultado
             return resultado
         },
+        opcoesStatusPos() {
+            return [
+                { value: '', label: 'Sem filtro' },
+                { value: 'demitidos', label: 'Sim' },
+                { value: 'admitidos', label: 'Não' }
+            ]
+        },
+        opcoesFeedbackPos() {
+            return [
+                { value: '', label: 'Sem filtro' },
+                { value: 'sim', label: 'Sim' },
+                { value: 'nao', label: 'Não' }
+            ]
+        },
+        opcoesPagesPos() {
+            return [
+                { value: 20, label: '20' },
+                { value: 50, label: '50' },
+                { value: 100, label: '100' }
+            ]
+        },
+        opcoesCnpjPos() {
+            const cnpjs = this.lista_ccs && this.lista_ccs.cnpjs ? this.lista_ccs.cnpjs : {}
+            return [
+                { value: '', label: 'Todos' },
+                ...Object.keys(cnpjs).map((key) => ({
+                    value: key,
+                    label: `${cnpjs[key].nome_fantasia} - ${cnpjs[key].cnpj}`
+                }))
+            ]
+        },
+        opcoesCentroCustoPos() {
+            const bruto = this.lista_ccs ? this.filtroListaCentroCustoCnpj : []
+            const lista = Array.isArray(bruto) ? bruto : []
+            return [
+                { value: '', label: 'Todos' },
+                ...lista.map((item) => ({
+                    value: item.matriz ? item.id : item.filial_id,
+                    label: item.label
+                })),
+                { value: '--naoinformado--', label: 'Não informado' }
+            ]
+        },
+        temFiltrosPos() {
+            const dados = this.controle.dados
+            if (dados.campoBusca || dados.campoCPF || dados.campoCargo || dados.status || dados.campoFeedback || dados.campoCentroCusto) {
+                return true
+            }
+            if (this.AUTENTICADO.temFilial && dados.campoCnpj) {
+                return true
+            }
+            return Number(dados.pages) !== 20
+        },
+        totalFiltrosAvancadosPos() {
+            const dados = this.controle.dados
+            let total = 0
+            if (dados.status) total += 1
+            if (dados.campoFeedback) total += 1
+            if (dados.campoCentroCusto) total += 1
+            if (this.AUTENTICADO.temFilial && dados.campoCnpj) total += 1
+            if (Number(dados.pages) !== 20) total += 1
+            return total
+        },
         filtroListaCentroCustoCnpj() {
             if (this.controle.dados.campoCnpj !== '' && this.AUTENTICADO.temFilial) {
                 return this.lista_ccs.centros_custos[this.controle.dados.campoCnpj]
@@ -287,6 +360,40 @@ const app = createApp({
         document.removeEventListener('click', this.onClickOutside)
     },
     methods: {
+        posicionarMenuAcoes,
+        limparFiltrosPos() {
+            const dados = this.controle.dados
+            dados.campoBusca = ''
+            dados.campoCPF = ''
+            dados.campoCargo = ''
+            dados.status = ''
+            dados.campoFeedback = ''
+            dados.campoCentroCusto = ''
+            dados.pages = 20
+            if (this.AUTENTICADO.temFilial) {
+                dados.campoCnpj = ''
+            }
+            this.filtrosAvancadosAbertos = false
+            this.atualizar()
+        },
+        fecharCombosPos(excetoId) {
+            const mapa = {
+                'pos-status': 'comboFiltroStatus',
+                'pos-cnpj': 'comboFiltroCnpj',
+                'pos-cc': 'comboFiltroCc',
+                'pos-feedback': 'comboFiltroFeedback',
+                'pos-pages': 'comboFiltroPages'
+            }
+            Object.keys(mapa).forEach((id) => {
+                if (id === excetoId) {
+                    return
+                }
+                const ref = this.$refs[mapa[id]]
+                if (ref && typeof ref.close === 'function') {
+                    ref.close()
+                }
+            })
+        },
         toggleDropdown(itemId) {
             if (!itemId) {
                 return

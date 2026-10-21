@@ -1,11 +1,11 @@
 ---
 name: mybp-visualizacao-listagem
-description: Aplica o padrão MyBP de visualização lista (cards) e tabela na mesma tela, com tabela como padrão e uma preferência só no localStorage para todo o sistema. Use quando o usuário pedir lista e tabela, alternar visualização, card ou tabela, mybp-visualizacao-listagem, MybpVisualizacaoListagem, ou guardar a escolha de listagem no navegador.
+description: Aplica o padrão MyBP de visualização lista (cards) e tabela na mesma tela. A tabela é o padrão do sistema; cada tela guarda a própria escolha. Use quando o usuário pedir lista e tabela, alternar visualização, card ou tabela, mybp-visualizacao-listagem, MybpVisualizacaoListagem, ou guardar a escolha de listagem no navegador.
 ---
 
 # MyBP — Visualização lista e tabela
 
-Duas formas de ver os mesmos registros. A **tabela é o padrão**. A escolha do usuário é **uma só para o sistema**, não por tela.
+Duas formas de ver os mesmos registros. A **tabela é o padrão** do sistema. Em Planejamento (cada aba da movimentação e a requisição de vaga), nas telas de admissão CIH, Processo, Histórico e Pré-admissão, nos cadastros (exceto Projetos, Avaliações e Performance) e nas Entrevistas (Parecer RH, Rota, Técnica, Teste prático, Entrevista RH, Entrevista Gestor e Resultado Integrado), sem escolha salva naquela tela, o padrão é **lista**. A escolha é **por tela**, não do sistema inteiro. Pós-admissão segue o padrão do sistema e inicia em **tabela**.
 
 ## Antes de editar
 
@@ -27,23 +27,23 @@ O componente já está no `registerGlobals`. Não registrar de novo na tela.
 
 ## Ligar na tela
 
-Estado inicial vem do util. Sem valor salvo, retorna `tabela`.
+Estado inicial vem do util, com um identificador da tela. Sem valor salvo nessa tela, retorna `tabela`. Em Planejamento, nas telas de admissão CIH, Processo, Histórico e Pré-admissão, nos cadastros (exceto Projetos, Avaliações e Performance) e nas Entrevistas (Parecer RH, Rota, Técnica, Teste prático, Entrevista RH, Entrevista Gestor e Resultado Integrado), chamar `lerVisualizacaoListagem('id-da-tela', 'lista')`. Pós-admissão usa `lerVisualizacaoListagem('pos-admissao')`, sem o segundo argumento, para iniciar em tabela.
 
 ```javascript
 import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
 
 data() {
     return {
-        visualizacao: lerVisualizacaoListagem()
+        visualizacao: lerVisualizacaoListagem('recrutamento')
     }
 }
 ```
 
-Ajuste o caminho do import conforme a pasta do `app.js` ou do `.vue`.
+Ajuste o caminho do import conforme a pasta do `app.js` ou do `.vue`. O identificador é estável e único daquela listagem (`recrutamento`, `admissao-cih`, `movimentacao-demissao`).
 
 ```html
 <div class="d-flex justify-content-end mb-2" v-show="!controle.carregando">
-    <mybp-visualizacao-listagem v-model="visualizacao"></mybp-visualizacao-listagem>
+    <mybp-visualizacao-listagem v-model="visualizacao" tela="recrutamento"></mybp-visualizacao-listagem>
 </div>
 
 <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
@@ -65,8 +65,9 @@ Ajuste o caminho do import conforme a pasta do `app.js` ou do `.vue`.
 
 ## Regras
 
-- Padrão do sistema: **tabela**.
-- Chave única: `mybp_visualizacao_listagem`. Valores: `tabela` ou `lista`.
+- Padrão do sistema: **tabela**. Planejamento (cada aba da movimentação e a requisição de vaga), admissão (CIH, Processo, Histórico, Pré-admissão), cadastros (exceto Projetos, Avaliações e Performance) e Entrevistas, sem escolha salva naquela tela: **lista**. Pós-admissão, sem escolha salva, inicia em **tabela**.
+- A escolha fica em `mybp_visualizacao_listagem`, um mapa por tela. Trocar em uma tela não altera as outras.
+- O atributo `tela` do controle é o identificador dessa listagem. Não reutilizar o mesmo id em telas diferentes.
 - Não duplicar os botões Lista/Tabela na tela.
 - Não mudar regra de negócio, rota, permissão ou payload da API só para trocar a visualização.
 - Se a tela já tem só cards ou só tabela, acrescentar a outra forma com os mesmos campos. Não apagar a que já existe.
@@ -74,8 +75,8 @@ Ajuste o caminho do import conforme a pasta do `app.js` ou do `.vue`.
 
 ## Checklist
 
-- [ ] `visualizacao` inicia com `lerVisualizacaoListagem()`
-- [ ] Controle é `<mybp-visualizacao-listagem v-model="visualizacao">`
+- [ ] `visualizacao` inicia com `lerVisualizacaoListagem('id-da-tela')` ou `lerVisualizacaoListagem('id-da-tela', 'lista')`
+- [ ] Controle é `<mybp-visualizacao-listagem v-model="visualizacao" tela="id-da-tela">`
 - [ ] Lista em `mybp-cards-lista`; tabela em `table.tabela`
 - [ ] `v-show` usa `visualizacao === 'lista'` e `visualizacao === 'tabela'`
 - [ ] Nenhuma chave nova de `localStorage`

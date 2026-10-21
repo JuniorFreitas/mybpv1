@@ -491,6 +491,10 @@
         </template>
     </filtro-listagem>
 
+    <div class="d-flex justify-content-end my-2">
+        <mybp-visualizacao-listagem v-model="visualizacao" tela="admissao-preadmissao"></mybp-visualizacao-listagem>
+    </div>
+
     <preload v-if="controle.carregando"></preload>
 
     <div id="conteudo" class="mt-3" @click="onClickOutside">
@@ -498,7 +502,7 @@
             <i class="fa fa-exclamation-triangle"></i> Nenhum registro encontrado
         </div>
 
-        <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0">
+        <div class="mybp-cards-lista" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'lista'">
             <div
                 class="mybp-card"
                 v-for="item in lista"
@@ -636,6 +640,72 @@
                     </section>
                 </div>
             </div>
+        </div>
+
+        <div class="table-responsive mybp-tabela-wrap" v-show="!controle.carregando && lista.length > 0 && visualizacao === 'tabela'">
+            <table class="tabela mybp-tabela">
+                <thead>
+                <tr>
+                    <th>Cód</th>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>Cargo / Vaga</th>
+                    <th>Local da vaga</th>
+                    <th>Anexos</th>
+                    <th>E-mail</th>
+                    <th>Telefone</th>
+                    <th>UF</th>
+                    <th v-if="cliente_id === 1">Cliente</th>
+                    <th>Finalizado por</th>
+                    <th>Data finalização</th>
+                    <th>Colaborador</th>
+                    <th>Documentos</th>
+                    <th>Ações</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="item in lista" :key="'tab-' + item.id">
+                    <td data-label="Cód">@{{ item.id }}</td>
+                    <td class="mybp-col-texto" data-label="Nome">@{{ nomeCandidato(item) }}</td>
+                    <td data-label="CPF">@{{ cpfExibicao(item) || 'Não informado' }}</td>
+                    <td class="mybp-col-texto" data-label="Cargo / Vaga">@{{ textoCampo(item.cargo_nome) }}</td>
+                    <td class="mybp-col-texto" data-label="Local da vaga">@{{ textoCampo(item.vaga_local) }}</td>
+                    <td data-label="Anexos">@{{ anexosExibicao(item) }}</td>
+                    <td class="mybp-col-texto" data-label="E-mail">@{{ textoCampo(item.candidato_email) }}</td>
+                    <td data-label="Telefone">@{{ textoCampo(item.contato_telefone) }}</td>
+                    <td data-label="UF">@{{ textoCampo(item.candidato_uf) }}</td>
+                    <td v-if="cliente_id === 1" class="mybp-col-texto" data-label="Cliente">@{{ clienteExibicao(item) }}</td>
+                    <td class="mybp-col-texto" data-label="Finalizado por">@{{ item.finalizado ? textoCampo(item.quem_finalizou) : '—' }}</td>
+                    <td data-label="Data finalização">@{{ item.finalizado ? textoCampo(item.data_finalizacao) : '—' }}</td>
+                    <td data-label="Colaborador">
+                        <mybp-status-badge :variante="chaveSituacaoColaborador(item)" :texto="textoSituacaoColaborador(item)"></mybp-status-badge>
+                    </td>
+                    <td data-label="Documentos">
+                        <mybp-status-badge :variante="chaveStatusDocumento(item)" :texto="textoStatusDocumento(item)"></mybp-status-badge>
+                    </td>
+                    <td data-label="Ações">
+                        <div class="dropdown d-inline-block" :class="{ show: isDropdownOpen(item.id) }">
+                            <a class="mybp-btn-acoes-compact" href="#" role="button" @click.prevent.stop="toggleDropdown(item.id); posicionarMenuAcoes($event)">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </a>
+                            <div class="dropdown-menu mybp-dropdown-menu dropdown-menu-right" :class="{ show: isDropdownOpen(item.id) }" @click="fecharDropdown">
+                                <a class="dropdown-item" href="javascript://" @click.prevent="formVisualizar(item.id); $refs.janelaVisualizar?.abrirModal()">
+                                    <i class="fa fa-search-plus mr-1"></i> Visualizar documentos
+                                </a>
+                                @can('privilegio_admissao_pre_admissao_reencaminhar_email')
+                                    <a class="dropdown-item" href="javascript://" @click.prevent="formEnviarEmail(item.id); $refs.janelaEnviarEmail?.abrirModal()">
+                                        <i class="fa fa-share-square mr-1"></i> Reenviar e-mail
+                                    </a>
+                                @endcan
+                                <a v-if="!item.finalizado" class="dropdown-item text-success" href="javascript://" @click.prevent="abrirFormFinalizar(item.id); $refs.janelaFinalizar?.abrirModal()">
+                                    <i class="fa fa-check-circle mr-1"></i> Finalizar
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
 
         <controle-paginacao

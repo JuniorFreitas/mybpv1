@@ -5,17 +5,28 @@ import datepicker from '../../../components/DatePicker'
 import DadosPessoais from '../../../components/entrevistas/DadosPessoaisTexto'
 import configTinyMCE from '../../../components/configEntrevistaTinyMCE'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
+import EntrevistaListagem from '../../../mixins/EntrevistaListagem'
+import FiltroEntrevistaCompacto from '../../../components/entrevistas/FiltroEntrevistaCompacto.vue'
+import ComboFiltroEntrevista from '../../../components/entrevistas/ComboFiltroEntrevista.vue'
+import CartaoEntrevistaLista from '../../../components/entrevistas/CartaoEntrevistaLista.vue'
+import MybpCardCampo from '../../../components/ui/MybpCardCampo.vue'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
 const app = createApp({
-    mixins: [ExportacaoMixin],
+    mixins: [ExportacaoMixin, EntrevistaListagem],
     components: {
         endereco,
         datepicker,
-        DadosPessoais
+        DadosPessoais,
+        FiltroEntrevistaCompacto,
+        ComboFiltroEntrevista,
+        CartaoEntrevistaLista,
+        MybpCardCampo
     },
     data() {
         return {
             config: configTinyMCE,
             tituloJanela: 'Parecer Entrevista Técnica',
+            visualizacao: lerVisualizacaoListagem('entrevista-tecnica', 'lista'),
             preload: false,
             editando: false,
             apagado: false,
@@ -137,6 +148,8 @@ const app = createApp({
                     campoUf: '',
 
                     filtroPeriodo: false,
+                    dataInicio: '',
+                    dataFim: '',
                     periodo: ''
                 }
             }
