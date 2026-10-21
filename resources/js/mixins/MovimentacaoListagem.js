@@ -1,8 +1,14 @@
+import { lerVisualizacaoListagem } from '../utils/visualizacaoListagem'
+
 export default {
     props: {
-        visualizacao: { type: String, default: 'lista' }
+        tela: { type: String, required: true }
     },
-    emits: ['update:visualizacao'],
+    data() {
+        return {
+            visualizacao: lerVisualizacaoListagem(this.tela, 'lista')
+        }
+    },
     methods: {
         posicionarMenuAcoes(event) {
             const botao = event && event.currentTarget

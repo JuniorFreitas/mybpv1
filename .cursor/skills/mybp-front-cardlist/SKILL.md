@@ -28,7 +28,7 @@ Skill para migrar telas de **cadastro** Laravel + Vue 3 para o padrão visual un
 
 **Não alterar** regras de negócio, rotas, permissões ou validação backend — apenas espelhar o que o backend já exige.
 
-Telas que mantêm **lista (cards) e tabela** juntas seguem a skill `.cursor/skills/mybp-visualizacao-listagem/SKILL.md`. A tabela é a visualização inicial e a preferência é única no sistema.
+Telas que mantêm **lista (cards) e tabela** juntas seguem a skill `.cursor/skills/mybp-visualizacao-listagem/SKILL.md`. A tabela é a visualização inicial e cada tela guarda a própria escolha.
 
 ## Workflow (seguir nesta ordem)
 

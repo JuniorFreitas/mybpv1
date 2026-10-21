@@ -19,6 +19,8 @@ import ComboboxValidation from '../../../mixins/ComboboxValidation'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
 import dependentes from '../../../components/admissao/processo/Dependentes'
 import FeriasAdquiridas from '../../../components/admissao/processo/FeriasAdquiridas'
+import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
+import { posicionarMenuAcoes } from '../../../utils/posicionarMenuAcoes'
 const app = createApp({
     mixins: [configselect2, Utils, Validacoes, ExportacaoMixin, ComboboxValidation],
     components: {
@@ -40,6 +42,7 @@ const app = createApp({
     data() {
         return {
             tituloJanela: 'Admissão',
+            visualizacao: lerVisualizacaoListagem('admissao-processo', 'lista'),
             preload: false,
             preloadExportacao: false,
             editando: false,
@@ -998,6 +1001,11 @@ const app = createApp({
         document.removeEventListener('click', this.onClickOutside)
     },
     methods: {
+        posicionarMenuAcoes,
+        colunaVisivel(id) {
+            const coluna = (this.colunasTabela || []).find((item) => item.id === id)
+            return !!(coluna && coluna.checked)
+        },
         toggleDropdown(itemId) {
             if (!itemId) {
                 return

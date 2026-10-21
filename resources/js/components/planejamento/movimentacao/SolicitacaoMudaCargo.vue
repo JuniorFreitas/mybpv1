@@ -831,7 +831,7 @@
         </FiltroListagem>
 
         <div class="d-flex justify-content-end my-2">
-            <mybp-visualizacao-listagem :model-value="visualizacao" @update:model-value="$emit('update:visualizacao', $event)"></mybp-visualizacao-listagem>
+            <mybp-visualizacao-listagem v-model="visualizacao" :tela="tela"></mybp-visualizacao-listagem>
         </div>
 
         <preload class="text-center" v-if="controle.carregando"></preload>

@@ -58,7 +58,7 @@
             role="tabpanel"
             aria-labelledby="nav-solicitacao-demissao-tab"
         >
-            <solicitacao-demissao :cliente_id="cliente_id" v-model:visualizacao="visualizacao"></solicitacao-demissao>
+            <solicitacao-demissao :cliente_id="cliente_id" tela="movimentacao-demissao"></solicitacao-demissao>
         </div>
         <div
             v-if="abas.ferias"
@@ -66,7 +66,7 @@
             role="tabpanel"
             aria-labelledby="nav-ferias-tab"
         >
-            <solicitacao-ferias :cliente_id="cliente_id" v-model:visualizacao="visualizacao"></solicitacao-ferias>
+            <solicitacao-ferias :cliente_id="cliente_id" tela="movimentacao-ferias"></solicitacao-ferias>
         </div>
         <div
             v-if="abas.admissao"
@@ -74,7 +74,7 @@
             role="tabpanel"
             aria-labelledby="nav-admissao-tab"
         >
-            <solicitacao-admissao :cliente_id="cliente_id" v-model:visualizacao="visualizacao"></solicitacao-admissao>
+            <solicitacao-admissao :cliente_id="cliente_id" tela="movimentacao-admissao"></solicitacao-admissao>
         </div>
         <div
             v-if="abas.valorextra"
@@ -82,7 +82,7 @@
             role="tabpanel"
             aria-labelledby="nav-valorextra-tab"
         >
-            <solicitacao-valor-extra :cliente_id="cliente_id" v-model:visualizacao="visualizacao"></solicitacao-valor-extra>
+            <solicitacao-valor-extra :cliente_id="cliente_id" tela="movimentacao-valor-extra"></solicitacao-valor-extra>
         </div>
         <div
             v-if="abas.mudacargo"
@@ -90,7 +90,7 @@
             role="tabpanel"
             aria-labelledby="nav-mudacargo-tab"
         >
-            <solicitacao-muda-cargo :cliente_id="cliente_id" v-model:visualizacao="visualizacao"></solicitacao-muda-cargo>
+            <solicitacao-muda-cargo :cliente_id="cliente_id" tela="movimentacao-muda-cargo"></solicitacao-muda-cargo>
         </div>
         <div
             v-if="abas.intermitente"
@@ -98,7 +98,7 @@
             role="tabpanel"
             aria-labelledby="nav-intermitente-tab"
         >
-            <solicitacao-intermitente-fixo :cliente_id="cliente_id" v-model:visualizacao="visualizacao"></solicitacao-intermitente-fixo>
+            <solicitacao-intermitente-fixo :cliente_id="cliente_id" tela="movimentacao-intermitente"></solicitacao-intermitente-fixo>
         </div>
         <div
             v-if="abas.transferencia"
@@ -106,7 +106,7 @@
             role="tabpanel"
             aria-labelledby="nav-transferencia-tab"
         >
-            <solicitacao-transferencia :cliente_id="cliente_id" v-model:visualizacao="visualizacao"></solicitacao-transferencia>
+            <solicitacao-transferencia :cliente_id="cliente_id" tela="movimentacao-transferencia"></solicitacao-transferencia>
         </div>
     </div>
 

@@ -27,12 +27,13 @@ import { gravarVisualizacaoListagem } from '../../utils/visualizacaoListagem'
 export default {
     name: 'MybpVisualizacaoListagem',
     props: {
-        modelValue: { type: String, default: 'tabela' }
+        modelValue: { type: String, default: 'tabela' },
+        tela: { type: String, required: true }
     },
     emits: ['update:modelValue'],
     methods: {
         escolher(modo) {
-            this.$emit('update:modelValue', gravarVisualizacaoListagem(modo))
+            this.$emit('update:modelValue', gravarVisualizacaoListagem(this.tela, modo))
         }
     }
 }

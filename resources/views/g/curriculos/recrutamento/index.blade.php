@@ -693,6 +693,7 @@
     <div class="d-flex justify-content-end mb-2" v-show="!controle.carregando">
         <mybp-visualizacao-listagem
             v-model="visualizacao"
+            tela="recrutamento"
             @update:model-value="fecharDropdown"
         ></mybp-visualizacao-listagem>
     </div>
