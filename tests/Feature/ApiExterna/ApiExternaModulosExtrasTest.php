@@ -61,6 +61,8 @@ class ApiExternaModulosExtrasTest extends TestCase
             ->assertOk()
             ->json('data');
         $this->assertCount(1, $detalheCc['filiais']);
+        $this->assertSame('Filial SLZ', $detalheCc['filiais'][0]['nome']);
+        $this->assertSame('22.222.222/0001-22', $detalheCc['filiais'][0]['cnpj']);
         $this->assertCount(1, $detalheCc['gestores']);
         $this->assertSame('GESTOR_PRINCIPAL', $detalheCc['gestores'][0]['tipo']);
     }
@@ -221,8 +223,15 @@ class ApiExternaModulosExtrasTest extends TestCase
             'gestor_id' => $gestorId,
         ]);
         $filialId = DB::table('cliente_filials')->insertGetId([
-            'nome' => 'Filial SLZ',
-            'cnpj' => '22222222000122',
+            'empresa_id' => $empresaId,
+            'dados' => json_encode([
+                'nome_fantasia' => 'Filial SLZ',
+                'razao_social' => 'Filial São Luís LTDA',
+                'cnpj' => '22.222.222/0001-22',
+            ], JSON_UNESCAPED_UNICODE),
+            'ativo' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
         DB::table('centro_custo_filials')->insert([
             'empresa_id' => $empresaId,

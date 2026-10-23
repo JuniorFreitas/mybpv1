@@ -18,12 +18,12 @@
                 <br><br>
                 <strong>Arquivos recebidos</strong>
                 <table border="0" cellpadding="6" cellspacing="0" width="100%" style="font-size: 12px; border-collapse: collapse; margin-top: 8px;">
-                    @forelse($dados['arquivos'] as $arquivo)
+                    @forelse($dados['arquivos'] as $anexo)
                         <tr>
                             <td style="border-top: 1px solid #dddddd;">
-                                <strong>{{ $arquivo['documento'] ?? 'Não informado' }}</strong> — {{ $arquivo['nome'] ?? 'Não informado' }}<br>
+                                <strong>{{ $anexo['documento'] ?? 'Não informado' }}</strong> — {{ $anexo['nome'] ?? 'Não informado' }}<br>
                                 <span style="font-family: monospace; font-size: 11px; color: #555555; word-break: break-all;">
-                                    SHA-256: {{ $arquivo['sha256'] ?? 'Não informado' }}
+                                    SHA-256: {{ $anexo['sha256'] ?? 'Não informado' }}
                                 </span>
                             </td>
                         </tr>

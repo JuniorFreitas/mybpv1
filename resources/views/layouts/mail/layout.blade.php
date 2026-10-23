@@ -146,7 +146,7 @@
            style="mso-table-lspace:0;mso-table-rspace:0;background-color:#fff;color:#000;width:615px">
         <tr style="background-color: #072433; padding-top: 15px; padding-bottom: 15px">
             <td align="middle" style="padding: 7px">
-                @include('layouts.mail.logo-mybpin', ['altura' => '40px']) <br>
+                @include('layouts.mail.logo-mybpin', ['logoAltura' => '40px']) <br>
             </td>
         </tr>
     </table>
