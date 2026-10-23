@@ -768,29 +768,35 @@ class FeedbackCurriculo extends Model
     {
         $cliente = new Cliente();
         $centroCusto = new CentroCusto();
-        $semfilial = isset($cliente->findFiliarOuMatriz(auth()->user()->empresa_id)['matriz']);
+        $lotacao = $cliente->findFiliarOuMatriz(auth()->user()->empresa_id);
+        $semfilial = is_array($lotacao) && array_key_exists('matriz', $lotacao);
 
-        $campoCnpj = $semfilial ? $cliente->findFiliarOuMatriz(auth()->user()->empresa_id)['cnpjkey'] : $request->campoCnpj;
+        $campoCnpj = $semfilial ? ($lotacao['cnpjkey'] ?? null) : $request->campoCnpj;
+        if ($campoCnpj === null || $campoCnpj === '') {
+            return $query;
+        }
+
+        $centros_custos = $centroCusto->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+        $cc = $centroCusto->centrosDoCnpj($centros_custos, (string) $campoCnpj);
+        if ($cc === null) {
+            return $query;
+        }
+
         $request->merge(['campoCnpj' => $campoCnpj]);
 
-        return $query->when($request->filled('campoCnpj'), function ($query) use ($request, $centroCusto) {
-            $centros_custos = $centroCusto->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
-            if (!$request->filled('campoCentroCusto')) {
-                return $query->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
-                    $cc = $centros_custos['centros_custos'][$request->campoCnpj];
-                    return $cc[0]['matriz']
-                        ? $this->filtrarPorMatriz($query, $cc)
-                        : $this->filtrarPorFilial($query, $cc);
-                });
-            }
-            return $query->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
-                $cc = $centros_custos['centros_custos'][$request->campoCnpj];
+        if (!$request->filled('campoCentroCusto')) {
+            return $query->whereHas('Admissao', function ($query) use ($cc) {
                 return $cc[0]['matriz']
-                    ? $this->filtrarPorMatrizComCentroCusto($query, $request, $cc)
-                    : $this->filtrarPorFilialComCentroCusto($query, $request, $cc);
+                    ? $this->filtrarPorMatriz($query, $cc)
+                    : $this->filtrarPorFilial($query, $cc);
             });
-        });
+        }
 
+        return $query->whereHas('Admissao', function ($query) use ($request, $cc) {
+            return $cc[0]['matriz']
+                ? $this->filtrarPorMatrizComCentroCusto($query, $request, $cc)
+                : $this->filtrarPorFilialComCentroCusto($query, $request, $cc);
+        });
     }
 
     public function scopeFiltrarPorUltimoAso($query, $dados)

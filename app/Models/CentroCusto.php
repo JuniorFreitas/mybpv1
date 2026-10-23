@@ -172,6 +172,38 @@ class CentroCusto extends Model
     }
 
     /**
+     * Centros de custo da lotação (CNPJ) escolhida no filtro.
+     * Retorna null quando a lotação aparece no combo e ainda não tem centro de custo.
+     */
+    public function centrosDoCnpj(mixed $lista, string $campoCnpj): ?Collection
+    {
+        if (!$lista instanceof Collection) {
+            return null;
+        }
+
+        $mapa = $lista->get('centros_custos');
+        if (!$mapa instanceof Collection) {
+            $mapa = collect($mapa ?? []);
+        }
+
+        $cnpjInformado = trim($campoCnpj);
+        $cnpjKey = preg_replace('/[^0-9]/', '', $cnpjInformado) ?? '';
+
+        $cc = $mapa->get($cnpjInformado);
+        if ($cc === null && $cnpjKey !== '' && $cnpjKey !== $cnpjInformado) {
+            $cc = $mapa->get($cnpjKey);
+        }
+
+        if ($cc === null) {
+            return null;
+        }
+
+        $cc = $cc instanceof Collection ? $cc : collect($cc);
+
+        return isset($cc[0]) ? $cc : null;
+    }
+
+    /**
      * Inclui matriz e filiais ativas que ainda não têm centro de custo vinculado.
      */
     private function mesclarFiliaisSemCentroCusto(Collection $cnpjs, int $empresaId, $informacaoMatrizGeral): void
