@@ -82,17 +82,24 @@ class CentroCustoApiService
                 ->orderBy('ccf.id');
 
             if (Schema::hasTable('cliente_filials')) {
-                $query->leftJoin('cliente_filials as cf', 'cf.id', '=', 'ccf.cliente_filial_id')
-                    ->addSelect(['cf.nome as filial_nome', 'cf.cnpj as filial_cnpj']);
+                $query->leftJoin('cliente_filials as cf', function ($join) use ($empresaId) {
+                    $join->on('cf.id', '=', 'ccf.cliente_filial_id')
+                        ->where('cf.empresa_id', $empresaId)
+                        ->whereNull('cf.deleted_at');
+                })->addSelect(['cf.dados as filial_dados']);
             }
 
-            $itens = $query->get()->map(fn ($f) => [
-                'public_id' => ApiExternaId::encode((int) $f->id),
-                'ativo' => isset($f->ativo) ? (bool) $f->ativo : null,
-                'cliente_filial_public_id' => ApiExternaId::encode($f->cliente_filial_id ?? null),
-                'nome' => $f->filial_nome ?? null,
-                'cnpj' => $f->filial_cnpj ?? null,
-            ])->all();
+            $itens = $query->get()->map(function ($f) {
+                $dados = $this->dadosFilial($f->filial_dados ?? null);
+
+                return [
+                    'public_id' => ApiExternaId::encode((int) $f->id),
+                    'ativo' => isset($f->ativo) ? (bool) $f->ativo : null,
+                    'cliente_filial_public_id' => ApiExternaId::encode($f->cliente_filial_id ?? null),
+                    'nome' => $dados['nome_fantasia'] ?? $dados['razao_social'] ?? null,
+                    'cnpj' => $dados['cnpj'] ?? null,
+                ];
+            })->all();
         }
 
         return [
@@ -143,6 +150,20 @@ class CentroCustoApiService
                 'centro_custo' => url('/api/v3/centros-custo/' . $pid),
             ],
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function dadosFilial(mixed $dados): array
+    {
+        if (is_string($dados) && $dados !== '') {
+            $dados = json_decode($dados, true);
+        } elseif (is_object($dados)) {
+            $dados = (array) $dados;
+        }
+
+        return is_array($dados) ? $dados : [];
     }
 
     private function existe(int $empresaId, int $id): bool

@@ -1596,10 +1596,14 @@ class AdmissaoController extends Controller
 //            }
 //        }
         if ($request->filled('campoCnpj')) {
-            $centros_custos = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
-            if (!$request->filled('campoCentroCusto')) {
-                $resultado->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
-                    $cc = $centros_custos['centros_custos'][$request->campoCnpj];
+            $centroCusto = new CentroCusto();
+            $centros_custos = $centroCusto->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
+            $cc = $centroCusto->centrosDoCnpj($centros_custos, (string) $request->campoCnpj);
+
+            if ($cc === null) {
+                $resultado->whereRaw('1 = 0');
+            } elseif (!$request->filled('campoCentroCusto')) {
+                $resultado->whereHas('Admissao', function ($query) use ($cc) {
                     if ($cc[0]['matriz']) {
                         $query->where(function ($query) use ($cc) {
                             $query->whereIn('centro_custo_id', $cc->pluck('id')
@@ -1613,8 +1617,7 @@ class AdmissaoController extends Controller
                     }
                 });
             } else {
-                $resultado->whereHas('Admissao', function ($query) use ($request, $centros_custos) {
-                    $cc = $centros_custos['centros_custos'][$request->campoCnpj];
+                $resultado->whereHas('Admissao', function ($query) use ($request, $cc) {
                     if ($cc[0]['matriz']) {
                         $campoCentroCusto = $request->campoCentroCusto != '--naoinformado--' ? $request->campoCentroCusto : null;
                         $query->where('centro_custo_id', $campoCentroCusto)

@@ -663,8 +663,11 @@ trait ApiExternaSchema
         if (! Schema::hasTable('cliente_filials')) {
             Schema::create('cliente_filials', function (Blueprint $table) {
                 $table->id();
-                $table->string('nome')->nullable();
-                $table->string('cnpj')->nullable();
+                $table->unsignedBigInteger('empresa_id');
+                $table->json('dados');
+                $table->boolean('ativo')->default(true);
+                $table->timestamps();
+                $table->softDeletes();
             });
         }
 
