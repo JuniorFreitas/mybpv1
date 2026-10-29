@@ -806,6 +806,10 @@ class AdmissaoController extends Controller
         $feedback->Curriculo->telefonesDelete = [];
 
         if (!is_null($feedback->Admissao)) {
+            $centroResultado = (int) ($feedback->ResultadoIntegrado?->centro_custo_id ?? 0);
+            if (empty($feedback->Admissao->centro_custo_id) && $centroResultado > 0) {
+                $feedback->Admissao->centro_custo_id = $centroResultado;
+            }
             $feedback->Admissao->ferias_adquiridasDelete = [];
             $feedback->Admissao->documento = $feedback->Admissao->documento ?: '';
             $feedback->Admissao->documento_portaria = $feedback->Admissao->documento_portaria ?: '';
@@ -870,6 +874,13 @@ class AdmissaoController extends Controller
         $dados['admissao']['cargo'] = $dadosVagaAberta->Vaga->nome;
         $admissaoDados = $dados['admissao'];
         $admissaoDados['feedback_id'] = $feedback->id;
+        $admissaoDados = array_merge(
+            $admissaoDados,
+            app(\App\Services\Lotacao\LotacaoDoCentroCusto::class)->aPartirDoCentro(
+                (int) ($admissaoDados['centro_custo_id'] ?? 0),
+                (int) $feedback->empresa_id
+            )
+        );
 
         $dados['curriculo']['email'] = $dados['curriculo']['email'] == "" ? Sistema::EMAILPADRAO : $dados['curriculo']['email'];
 
@@ -1040,6 +1051,13 @@ class AdmissaoController extends Controller
 
                 $dados['resultado_integrado']['encaminhado_exame_data'] = $dados['resultado_integrado']['encaminhado_exame'] ? $dados['resultado_integrado']['encaminhado_exame_data'] : null;
                 $dados['resultado_integrado']['encaminhado_treinamento_data'] = $dados['resultado_integrado']['encaminhado_treinamento'] ? $dados['resultado_integrado']['encaminhado_treinamento_data'] : null;
+                $dados['resultado_integrado'] = array_merge(
+                    $dados['resultado_integrado'],
+                    app(\App\Services\Lotacao\LotacaoDoCentroCusto::class)->aPartirDoCentro(
+                        (int) ($dados['resultado_integrado']['centro_custo_id'] ?? 0),
+                        (int) $feedback->empresa_id
+                    )
+                );
 
                 $dadosResultadoIntegrado = $dados['resultado_integrado'];
 

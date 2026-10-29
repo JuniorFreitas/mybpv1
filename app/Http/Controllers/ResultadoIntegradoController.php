@@ -10,6 +10,7 @@ use App\Models\FeedbackCurriculo;
 use App\Models\Formulario;
 use App\Models\Pcmso;
 use App\Models\ResultadoIntegrado;
+use App\Services\Lotacao\LotacaoDoCentroCusto;
 use App\Models\SimuladoVaga;
 use App\Models\Sistema;
 use DB;
@@ -53,6 +54,7 @@ class ResultadoIntegradoController extends Controller
         $dados['documentos_entregue_data'] = $dados['documentos_entregue'] ? $dados['documentos_entregue_data'] : null;
         $dados['encaminhado_exame_data'] = $dados['encaminhado_exame'] ? $dados['encaminhado_exame_data'] : null;
         $dados['encaminhado_treinamento_data'] = $dados['encaminhado_treinamento'] ? $dados['encaminhado_treinamento_data'] : null;
+        $dados = array_merge($dados, $this->lotacaoInformada($dados));
 
         $dadosValidados = \Validator::make($dados, [
             'documentos_entregue' => 'required',
@@ -65,6 +67,9 @@ class ResultadoIntegradoController extends Controller
                 'msg' => 'Erro ao alterar o resultado integrado',
                 'erros' => $dadosValidados->errors()
             ], 400);
+        }
+        if ($resposta = $this->recusarExameSemCentroCusto($dados)) {
+            return $resposta;
         } else {
             try {
                 \DB::beginTransaction();
@@ -100,13 +105,13 @@ class ResultadoIntegradoController extends Controller
                         ]);
                     }
                 }
+                $this->criaProcessoAdmissaoEncaminhadoExame($dados['feedback_id'], $dados);
                 \DB::commit();
 
                 is_null($dados['empresa_exame_id']) ? $empresaExame = null : $empresaExame = EmpresaExame::find($dados['empresa_exame_id']);
                 is_null($dados['pcmso_id']) ? $tipo_pcmso = null : $tipo_pcmso = Pcmso::find($dados['pcmso_id'])->label;
 
                 ResultadoIntegrado::Notificacao($feedback, auth()->user(), $dados, $empresaExame, $tipo_pcmso);
-                $this->criaProcessoAdmissaoEncaminhadoExame($dados['feedback_id']);
                 return response()->json([], 201);
             } catch (\Exception $e) {
                 \DB::rollBack();
@@ -118,20 +123,67 @@ class ResultadoIntegradoController extends Controller
         }
     }
 
-    private function criaProcessoAdmissaoEncaminhadoExame($feedbackId)
+    private function criaProcessoAdmissaoEncaminhadoExame($feedbackId, array $dados = [])
     {
+        $lotacao = $this->lotacaoInformada($dados);
         $admissao = DB::table('admissoes')
             ->where('feedback_id', $feedbackId)
+            ->whereNull('deleted_at')
             ->first();
 
         if (!$admissao) {
             DB::table('admissoes')
                 ->insert([
                     'feedback_id' => $feedbackId,
-                    'filial' => false,
-                    'status' => \App\Models\Admissao::STATUS_ADMISSAO_ENCAMINHADOEXAME
+                    'filial' => $lotacao['filial'],
+                    'centro_custo_id' => $lotacao['centro_custo_id'],
+                    'centro_custo_filial_id' => $lotacao['centro_custo_filial_id'],
+                    'status' => \App\Models\Admissao::STATUS_ADMISSAO_ENCAMINHADOEXAME,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            return;
+        }
+
+        if (empty($admissao->centro_custo_id) && !empty($lotacao['centro_custo_id'])) {
+            DB::table('admissoes')
+                ->where('id', $admissao->id)
+                ->update([
+                    'filial' => $lotacao['filial'],
+                    'centro_custo_id' => $lotacao['centro_custo_id'],
+                    'centro_custo_filial_id' => $lotacao['centro_custo_filial_id'],
+                    'updated_at' => now(),
                 ]);
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $dados
+     * @return array{centro_custo_id: ?int, filial: bool, centro_custo_filial_id: ?int}
+     */
+    private function lotacaoInformada(array $dados): array
+    {
+        $empresaId = (int) (auth()->user()?->empresa_id ?? 0);
+
+        return app(LotacaoDoCentroCusto::class)->aPartirDoCentro(
+            (int) ($dados['centro_custo_id'] ?? 0),
+            $empresaId
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $dados
+     */
+    private function recusarExameSemCentroCusto(array $dados)
+    {
+        $encaminhouExame = filter_var($dados['encaminhado_exame'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        if ($encaminhouExame && empty($dados['centro_custo_id'])) {
+            return response()->json([
+                'msg' => 'Informe o centro de custo para encaminhar ao exame admissional.',
+            ], 422);
+        }
+
+        return null;
     }
 
     /**
@@ -201,6 +253,7 @@ class ResultadoIntegradoController extends Controller
         $dados['documentos_entregue_data'] = $dados['documentos_entregue'] ? $dados['documentos_entregue_data'] : null;
         $dados['encaminhado_exame_data'] = $dados['encaminhado_exame'] ? $dados['encaminhado_exame_data'] : null;
         $dados['encaminhado_treinamento_data'] = $dados['encaminhado_treinamento'] ? $dados['encaminhado_treinamento_data'] : null;
+        $dados = array_merge($dados, $this->lotacaoInformada($dados));
 
         $dadosValidados = \Validator::make($dados, [
             'documentos_entregue' => 'required',
@@ -213,6 +266,9 @@ class ResultadoIntegradoController extends Controller
                 'msg' => 'Erro ao alterar o resultado integrado',
                 'erros' => $dadosValidados->errors()
             ], 400);
+        }
+        if ($resposta = $this->recusarExameSemCentroCusto($dados)) {
+            return $resposta;
         } else {
             try {
                 \DB::beginTransaction();
@@ -256,7 +312,7 @@ class ResultadoIntegradoController extends Controller
                         ]);
                     }
                 }
-                $this->criaProcessoAdmissaoEncaminhadoExame($dados['feedback_id']);
+                $this->criaProcessoAdmissaoEncaminhadoExame($dados['feedback_id'], $dados);
                 \DB::commit();
                 return response()->json([], 201);
             } catch (\Exception $e) {

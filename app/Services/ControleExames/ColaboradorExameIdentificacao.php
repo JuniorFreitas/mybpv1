@@ -30,13 +30,21 @@ class ColaboradorExameIdentificacao
             return $this->apresentar(null, null, null);
         }
 
-        $feedback->loadMissing('Admissao');
+        $feedback->loadMissing(['Admissao', 'ResultadoIntegrado']);
         $admissao = $feedback->Admissao;
+        $resultado = $feedback->ResultadoIntegrado;
         $empresaId = (int) ($feedback->empresa_id ?? 0);
         $centroCustoId = (int) ($admissao->centro_custo_id ?? 0);
+        $filial = (bool) ($admissao->filial ?? false);
+        $filialId = (int) ($admissao->centro_custo_filial_id ?? 0);
+        if ($centroCustoId <= 0 && (int) ($resultado?->centro_custo_id ?? 0) > 0) {
+            $centroCustoId = (int) $resultado->centro_custo_id;
+            $filial = false;
+            $filialId = 0;
+        }
 
         return $this->apresentar(
-            $this->lotacao($empresaId, $centroCustoId, (bool) ($admissao->filial ?? false), (int) ($admissao->centro_custo_filial_id ?? 0)),
+            $this->lotacao($empresaId, $centroCustoId, $filial, $filialId),
             $this->centroCusto($empresaId, $centroCustoId),
             $this->cargo($feedback, $admissao?->cargo, $empresaId)
         );
