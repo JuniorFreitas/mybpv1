@@ -6,14 +6,18 @@
 export const REFS_MODAL = {
     JANELA_PARCER_ENTREVISTA: 'janelaParecerEntrevista',
     MODAL_VALIDA_SESMT: 'modalValidaSesmt',
-    MODAL_FILTRO_COLUNAS: 'modalFiltroColunas'
+    MODAL_FILTRO_COLUNAS: 'modalFiltroColunas',
+    CONFIRMAR_ENCAMINHAMENTO: 'modalConfirmarEncaminhamento'
 }
 
 export const MODAL_IDS = {
     JANELA_PARCER_ENTREVISTA: 'janelaParecerEntrevista',
     VALIDA_SESMT: 'validaSesmt',
-    FILTRO_COLUNAS: 'filtroColunas'
+    FILTRO_COLUNAS: 'filtroColunas',
+    CONFIRMAR_ENCAMINHAMENTO: 'confirmarEncaminhamentoSemCcCargo'
 }
+
+export const TIPO_ORDEM_DEMISSIONAL = 'Demissional'
 
 /** Paths relativos à URL_ADMIN para as APIs de controle de exames */
 export const API_PATHS = {

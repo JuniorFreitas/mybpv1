@@ -168,6 +168,18 @@
         {{ $curriculo->idade ?? '—' }} ANOS.
     </p>
 
+    @php
+        $identificacaoPdf = is_array($identificacao ?? null) ? $identificacao : [];
+        $lotacaoPdf = trim((string) ($identificacaoPdf['lotacao'] ?? ''));
+        $centroCustoPdf = trim((string) ($identificacaoPdf['centro_custo'] ?? ''));
+        $cargoPdf = trim((string) ($identificacaoPdf['cargo'] ?? ''));
+    @endphp
+    <p class="paragrafo paragrafo--sem-recuo">
+        Lotação: {{ $lotacaoPdf !== '' ? $lotacaoPdf : 'Não informado' }}<br>
+        Centro de custo: {{ $centroCustoPdf !== '' ? $centroCustoPdf : 'Não informado' }}<br>
+        Cargo: {{ $cargoPdf !== '' ? $cargoPdf : 'Não informado' }}
+    </p>
+
     <p class="paragrafo paragrafo--sem-recuo">
         @if($ExameFuncionario->pcmso)
             Para fazer exame de ordem {{ $ExameFuncionario->ExameTipo->label ?? '' }}, conforme

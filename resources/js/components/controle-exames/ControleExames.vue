@@ -15,7 +15,9 @@
                         <div class="col-12">
                             <p>
                                 Nome: <strong>{{ dados.nome }}</strong> - {{ dados.idade }} anos <br>
-                                Cargo: <strong>{{ dados.cargo }}</strong> <br>
+                                Lotação: <strong>{{ textoOuNaoInformado(dados.lotacao) }}</strong><br>
+                                Centro de custo: <strong>{{ textoOuNaoInformado(dados.centro_custo) }}</strong><br>
+                                Cargo: <strong>{{ textoOuNaoInformado(dados.cargo) }}</strong><br>
                                 Endereço: <strong>{{ dados.endereco_completo }}</strong><br>
                                 Contato: <strong><i class="fab fa-whatsapp text-success"
                                                     v-show="dados.tel_principal.tipo === 'whatsapp'"></i> {{
@@ -61,14 +63,18 @@
                                     <div class="form-group">
                                         <label for="">TIPO DE ORDEM</label>
                                         <select class='form-control' v-model='form.exame_tipo_id'
+                                                :disabled="encaminhamentoSomenteDemissional"
                                                 onblur='valida_campo_vazio(this,1)'
                                                 onchange='valida_campo_vazio(this,1)'
                                         >
-                                            <option value=''>Selecione</option>
-                                            <option v-for='exame_tipo in listaExameTipos' :value='exame_tipo.id'>
+                                            <option v-if="!encaminhamentoSomenteDemissional" value=''>Selecione</option>
+                                            <option v-for='exame_tipo in tiposOrdemEncaminhamento' :value='exame_tipo.id'>
                                                 {{ exame_tipo.label }}
                                             </option>
                                         </select>
+                                        <small v-if="encaminhamentoSomenteDemissional" class="form-text text-muted">
+                                            Para colaborador demitido, o tipo de ordem é Demissional.
+                                        </small>
                                     </div>
                                 </div>
 
@@ -547,7 +553,9 @@
                     <div class="col-12">
                         <p>
                             Nome: <strong>{{ dados.nome }}</strong> - {{ dados.idade }} anos <br>
-                            Cargo: <strong>{{ dados.cargo }}</strong> <br>
+                            Lotação: <strong>{{ textoOuNaoInformado(dados.lotacao) }}</strong><br>
+                            Centro de custo: <strong>{{ textoOuNaoInformado(dados.centro_custo) }}</strong><br>
+                            Cargo: <strong>{{ textoOuNaoInformado(dados.cargo) }}</strong><br>
                             Endereço: <strong>{{ dados.endereco_completo }}</strong><br>
                             Contato: <strong><i class="fab fa-whatsapp text-success"
                                                 v-show="dados.tel_principal.tipo === 'whatsapp'"></i> {{
@@ -847,7 +855,7 @@
                 <th v-if="AUTENTICADO.temFilial && filtroStatusDemitidoOuAdmitido">CNPJ</th>
                 <th v-if="filtroStatusDemitidoOuAdmitido">Centro de Custos</th>
                 <th>Cargo</th>
-                <th>Ultimo Encaminhamento</th>
+                <th>{{ filtroStatusDemitido ? 'Último encaminhamento demissional' : 'Ultimo Encaminhamento' }}</th>
                 <th>
 
                 </th>
@@ -897,6 +905,18 @@
                         @carregando="carregando">
     </controle-paginacao>
 
+    <modal ref="modalConfirmarEncaminhamento" id="confirmarEncaminhamentoSemCcCargo" titulo="Encaminhar exame"
+           label-fechar="Cancelar">
+        <template #conteudo>
+            <p class="mb-0">{{ mensagemFaltaIdentificacao }}</p>
+        </template>
+        <template #rodape>
+            <button type="button" class="btn btn-sm btn-primary" @click.prevent="confirmarEncaminhamentoSemIdentificacao">
+                Encaminhar mesmo assim
+            </button>
+        </template>
+    </modal>
+
     <whatsapp-preview-modal
         v-model="previewWhatsappAberto"
         :tipo-mensagem="previewWhatsappTipo"
@@ -907,7 +927,7 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { REFS_MODAL, API_PATHS } from './constants'
+import { REFS_MODAL, API_PATHS, TIPO_ORDEM_DEMISSIONAL } from './constants'
 import Formulario from '../FormularioDefault'
 import Upload from '../Upload'
 import DatePicker from '../DatePicker.vue'
@@ -935,11 +955,16 @@ export default defineComponent({
             dados: {
                 nome: '',
                 cargo: '',
+                lotacao: '',
+                centro_custo: '',
+                possui_centro_custo: false,
+                possui_cargo: false,
                 email: '',
                 nascimento: '',
                 idade: '',
                 tel_principal: { numero: '', tipo: '' }
             },
+            encaminharSemIdentificacaoConfirmado: false,
             concordo: false,
             abasesmt: {
                 tituloJanela: 'Resultado',
@@ -995,6 +1020,7 @@ export default defineComponent({
             historico: [],
             listaPcmsos: [],
             listaExameTipos: [],
+            somenteOrdemDemissional: false,
             previewWhatsappAberto: false,
             previewWhatsappTipo: 'exame_encaminhamento',
             previewWhatsappContexto: {},
@@ -1056,6 +1082,40 @@ export default defineComponent({
         },
         filtroStatusDemitidoOuAdmitido() {
             return ['admitidos', 'demitidos'].includes(this.controle.dados.status)
+        },
+        filtroStatusDemitido() {
+            return this.controle.dados.status === 'demitidos'
+        },
+        encaminhamentoSomenteDemissional() {
+            return this.somenteOrdemDemissional || this.controle.dados.status === 'demitidos'
+        },
+        tiposOrdemEncaminhamento() {
+            if (!this.encaminhamentoSomenteDemissional) {
+                return this.listaExameTipos
+            }
+
+            return this.listaExameTipos.filter((item) => this.ehTipoDemissional(item.label))
+        },
+        faltasIdentificacao() {
+            const faltas = []
+            if (!this.dados.possui_centro_custo) {
+                faltas.push('centro de custo')
+            }
+            if (!this.dados.possui_cargo) {
+                faltas.push('cargo')
+            }
+            return faltas
+        },
+        mensagemFaltaIdentificacao() {
+            const nome = this.dados.nome || 'O colaborador'
+            const faltas = this.faltasIdentificacao
+            if (faltas.length === 2) {
+                return `${nome} não possui centro de custo nem cargo preenchidos. Deseja encaminhar mesmo assim?`
+            }
+            if (faltas.length === 1) {
+                return `${nome} não possui ${faltas[0]} preenchido. Deseja encaminhar mesmo assim?`
+            }
+            return ''
         }
     },
     methods: {
@@ -1090,10 +1150,15 @@ export default defineComponent({
             this.form.respostas = _.cloneDeep(this.form.respostas)
         },
         async formEncaminhar(obj) {
-            const vagaNome = obj.vaga_aberta && obj.vaga_aberta.vaga ? obj.vaga_aberta.vaga.nome : ''
+            const identificacao = this.identificacaoDoColaborador(obj)
+            this.encaminharSemIdentificacaoConfirmado = false
             this.dados = {
                 nome: obj.curriculo.nome,
-                cargo: vagaNome,
+                cargo: identificacao.cargo,
+                lotacao: identificacao.lotacao,
+                centro_custo: identificacao.centro_custo,
+                possui_centro_custo: identificacao.possui_centro_custo,
+                possui_cargo: identificacao.possui_cargo,
                 email: obj.curriculo.email,
                 nascimento: obj.curriculo.nascimento,
                 idade: obj.curriculo.idade,
@@ -1104,6 +1169,7 @@ export default defineComponent({
                 }
             }
             this.nav = 'encaminhar'
+            this.somenteOrdemDemissional = false
             this.concordo = false
             this.form = _.cloneDeep(this.formDefault)
             this.form.feedback_id = obj.id
@@ -1136,6 +1202,9 @@ export default defineComponent({
                 this.historico = Array.isArray(data.historico) ? data.historico : []
                 this.listaPcmsos = Array.isArray(data.pcmsos) ? data.pcmsos : []
                 this.listaExameTipos = Array.isArray(data.exame_tipos) ? data.exame_tipos : []
+                this.somenteOrdemDemissional = Boolean(data.somente_ordem_demissional)
+                this.aplicarIdentificacao(data.identificacao)
+                this.aplicarTipoOrdemDemitido()
                 this.preload = false
             } catch (error) {
                 this.preload = false
@@ -1148,6 +1217,11 @@ export default defineComponent({
                 mostraErro('', 'Verifique os campos marcados')
                 return false
             }
+            if (this.cadastrando && !this.encaminharSemIdentificacaoConfirmado && this.faltasIdentificacao.length) {
+                this.abrirModal(REFS_MODAL.CONFIRMAR_ENCAMINHAMENTO)
+                return false
+            }
+            this.encaminharSemIdentificacaoConfirmado = false
             this.preload = true
             const URL = `${URL_ADMIN}/${API_PATHS.salvaUpdate}`
             try {
@@ -1178,8 +1252,60 @@ export default defineComponent({
                     this.fecharModal(REFS_MODAL.JANELA_PARCER_ENTREVISTA)
                     this.$refs?.componente?.buscar?.()
                 }
-            } catch (e) {}
+            } catch (e) {
+                const msg = e?.response?.data?.msg
+                if (msg) {
+                    mostraErro('', msg)
+                }
+            }
             finally { this.preload = false }
+        },
+        confirmarEncaminhamentoSemIdentificacao() {
+            this.encaminharSemIdentificacaoConfirmado = true
+            this.fecharModal(REFS_MODAL.CONFIRMAR_ENCAMINHAMENTO)
+            this.salvarUpdate()
+        },
+        identificacaoDoColaborador(obj) {
+            const admissao = obj && obj.admissao ? obj.admissao : {}
+            const vagaNome = obj && obj.vaga_aberta && obj.vaga_aberta.vaga ? obj.vaga_aberta.vaga.nome : ''
+            const cargo = String(admissao.cargo || vagaNome || '').trim()
+            const centroCusto = String(admissao.emp_centro_custo || '').trim()
+            const nomeLotacao = String(admissao.emp_nome_fantasia || '').trim()
+            const tipoLotacao = String(admissao.emp_tipo || '').trim()
+            const lotacao = nomeLotacao ? `${nomeLotacao}${tipoLotacao ? ` (${tipoLotacao})` : ''}` : ''
+
+            return {
+                lotacao,
+                centro_custo: centroCusto,
+                cargo,
+                possui_centro_custo: centroCusto !== '',
+                possui_cargo: cargo !== ''
+            }
+        },
+        aplicarIdentificacao(identificacao) {
+            if (!identificacao || typeof identificacao !== 'object') {
+                return
+            }
+            this.dados.lotacao = identificacao.lotacao || ''
+            this.dados.centro_custo = identificacao.centro_custo || ''
+            this.dados.cargo = identificacao.cargo || ''
+            this.dados.possui_centro_custo = Boolean(identificacao.possui_centro_custo)
+            this.dados.possui_cargo = Boolean(identificacao.possui_cargo)
+        },
+        textoOuNaoInformado(valor) {
+            const texto = String(valor || '').trim()
+            return texto || 'Não informado'
+        },
+        ehTipoDemissional(label) {
+            return String(label || '').trim().toLowerCase() === TIPO_ORDEM_DEMISSIONAL.toLowerCase()
+        },
+        aplicarTipoOrdemDemitido() {
+            if (!this.encaminhamentoSomenteDemissional) {
+                return
+            }
+
+            const demissional = this.tiposOrdemEncaminhamento[0]
+            this.form.exame_tipo_id = demissional ? demissional.id : ''
         },
         async formResultado(id) {
             this.abasesmt.form = _.cloneDeep(this.abasesmt.formDefault)
