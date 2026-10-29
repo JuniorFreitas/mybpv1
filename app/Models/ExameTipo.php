@@ -32,6 +32,10 @@ class ExameTipo extends Model
 {
     use LogsActivity, HasActivitylogOptions, HasFactory;
 
+    public const LABEL_DEMISSIONAL = 'Demissional';
+
+    protected $table = 'exame_tipos';
+
     protected static $logName = 'ExameTipo';
 
     public function getDescriptionForEvent(string $eventName): string

@@ -17,7 +17,9 @@ use App\Models\Sistema;
 use App\Models\Cliente;
 use App\Models\User;
 use App\Services\AssinaturaDigital\AssinaturaDigitalService;
+use App\Services\ControleExames\ColaboradorExameIdentificacao;
 use App\Services\ControleExames\ExameEncaminhamentoNotificacaoService;
+use App\Services\ControleExames\RestricaoOrdemExameDemitido;
 use App\Services\Demissao\ComunicadoDispensaSemJustaCausaPdfService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -54,13 +56,17 @@ class ControleExameController extends Controller
             });
 
             $pcmos = Pcmso::whereAtivo(true)->get();
-            $exame_tipos = ExameTipo::whereAtivo(true)->get();
+            $restricao = app(RestricaoOrdemExameDemitido::class);
+            $somenteOrdemDemissional = $restricao->colaboradorDemitido((int) $request->feedback_id);
+            $feedback = FeedbackCurriculo::query()->find($request->feedback_id);
 
             return [
                 'tipo' => 'cadastrar',
                 'historico' => $resposta,
                 'pcmsos' => $pcmos,
-                'exame_tipos' => $exame_tipos,
+                'exame_tipos' => $restricao->filtrarTipos(ExameTipo::whereAtivo(true)->get(), $somenteOrdemDemissional),
+                'somente_ordem_demissional' => $somenteOrdemDemissional,
+                'identificacao' => app(ColaboradorExameIdentificacao::class)->paraFeedback($feedback),
             ];
         } else {
             return response()->json(['msg' => "Erro -> Faltando parametros"], 400);
@@ -69,6 +75,13 @@ class ControleExameController extends Controller
 
     public function salvaUpdate(Request $request)
     {
+        if ($request->input('tipo') === 'store') {
+            $restricao = app(RestricaoOrdemExameDemitido::class);
+            if (!$restricao->encaminhamentoPermitido((int) $request->feedback_id, $request)) {
+                return response()->json(['msg' => RestricaoOrdemExameDemitido::MENSAGEM], 422);
+            }
+        }
+
         try {
             \DB::beginTransaction();
             $token = Sistema::uuid();
@@ -427,7 +440,12 @@ class ControleExameController extends Controller
 
         $resultado = $resultado->paginate($request->pages);
         $cc = (new CentroCusto())->listaCentroCustoPorCnpj(auth()->user()->empresa_id);
-        $items = collect($resultado->items())->transform(function ($item) use ($cc) {
+        $somenteDemissional = $request->status === 'demitidos';
+        $ultimosEncaminhamentos = $this->ultimosEncaminhamentosPorFeedback(
+            collect($resultado->items())->pluck('id')->all(),
+            $somenteDemissional
+        );
+        $items = collect($resultado->items())->transform(function ($item) use ($cc, $somenteDemissional, $ultimosEncaminhamentos) {
             if ($item->admissao) {
                 $cc_colaborador = collect($cc['centros_custos'])->collapse()->where('id', $item->admissao->centro_custo_id)->first();
                 $item->admissao->emp_cnpj = null;
@@ -442,11 +460,10 @@ class ControleExameController extends Controller
                     $item->admissao->emp_tipo = $cc_colaborador['matriz'] ? 'Matriz' : 'Filial';
                 }
             }
-            $exameFuncionario = ExameFuncionario::whereFeedbackId($item->id)->orderByDesc('id')->first();
-            $item->ultimo_encaminhamento = 'Sem encaminhamento';
-            if (!is_null($exameFuncionario)) {
-                $item->ultimo_encaminhamento = is_null($exameFuncionario->encaminhamento_data) ? (new DataHora($exameFuncionario->created_at))->dataCompleta() : $exameFuncionario->encaminhamento_data;
-                return $item;
+            $exameFuncionario = $ultimosEncaminhamentos->get($item->id);
+            $item->ultimo_encaminhamento = $this->textoUltimoEncaminhamento($exameFuncionario, !$somenteDemissional);
+            if ($somenteDemissional) {
+                $item->encaminhado_demissional = $exameFuncionario ? 'Sim' : 'Não';
             }
             return $item;
         });
@@ -463,6 +480,117 @@ class ControleExameController extends Controller
                 'cc' => $cc
             ]
         ]);
+    }
+
+    /**
+     * @param  list<int>  $feedbackIds
+     * @return \Illuminate\Support\Collection<int, ExameFuncionario>
+     */
+    private function ultimosEncaminhamentosPorFeedback(array $feedbackIds, bool $somenteDemissional)
+    {
+        $feedbackIds = array_values(array_filter(array_map('intval', $feedbackIds)));
+        if ($feedbackIds === []) {
+            return collect();
+        }
+
+        $consulta = ExameFuncionario::query()
+            ->selectRaw('MAX(id) as id')
+            ->whereIn('feedback_id', $feedbackIds)
+            ->groupBy('feedback_id');
+
+        if ($somenteDemissional) {
+            $tiposDemissionais = ExameTipo::query()
+                ->where('label', ExameTipo::LABEL_DEMISSIONAL)
+                ->pluck('id');
+            if ($tiposDemissionais->isEmpty()) {
+                return collect();
+            }
+            $consulta->whereIn('exame_tipo_id', $tiposDemissionais);
+        }
+
+        $ids = $consulta->pluck('id');
+        if ($ids->isEmpty()) {
+            return collect();
+        }
+
+        $exames = ExameFuncionario::query()
+            ->with('ExameTipo:id,label')
+            ->whereIn('id', $ids)
+            ->get();
+
+        if (!$somenteDemissional) {
+            $this->preencherTipoOrdemLegado($exames);
+        }
+
+        return $exames->keyBy('feedback_id');
+    }
+
+    private function textoUltimoEncaminhamento(?ExameFuncionario $exame, bool $comTipo = false): string
+    {
+        if (!$exame) {
+            return 'Sem encaminhamento';
+        }
+
+        $data = $exame->getRawOriginal('encaminhamento_data');
+        if (!$data) {
+            $data = $exame->getRawOriginal('created_at');
+        }
+
+        $texto = $data ? (new DataHora($data))->dataCompleta() : 'Sem encaminhamento';
+        if (!$comTipo) {
+            return $texto;
+        }
+
+        $tipo = trim((string) ($exame->ExameTipo?->label ?? $exame->getAttribute('tipo_exame_label') ?? ''));
+
+        return $tipo !== '' ? $texto . ' - ' . $tipo : $texto;
+    }
+
+    /**
+     * Encaminhamentos antigos guardam o tipo de ordem nas respostas do formulário.
+     *
+     * @param  \Illuminate\Support\Collection<int, ExameFuncionario>  $exames
+     */
+    private function preencherTipoOrdemLegado($exames): void
+    {
+        $semTipo = $exames->filter(fn (ExameFuncionario $exame) => !$exame->exame_tipo_id);
+        $empresaId = auth()->user()?->empresa_id;
+        if ($semTipo->isEmpty() || !$empresaId) {
+            return;
+        }
+
+        $tipoOrdem = AlternativaFormulario::query()
+            ->where('nome', 'Tipo de ordem')
+            ->where('empresa_id', $empresaId)
+            ->first();
+        if (!$tipoOrdem) {
+            return;
+        }
+
+        $chave = 'alternativa_id_' . $tipoOrdem->id;
+        $valores = [];
+        foreach ($semTipo as $exame) {
+            $valor = $exame->respostas[$chave]['valor'] ?? null;
+            if ($valor !== null && $valor !== '') {
+                $valores[] = $valor;
+            }
+        }
+        if ($valores === []) {
+            return;
+        }
+
+        $labels = RespostaAlternativas::query()
+            ->where('alternativa_id', $tipoOrdem->id)
+            ->whereIn('value', array_values(array_unique($valores)))
+            ->pluck('label', 'value');
+
+        foreach ($semTipo as $exame) {
+            $valor = $exame->respostas[$chave]['valor'] ?? null;
+            $label = $labels[$valor] ?? $labels[(string) $valor] ?? '';
+            if ($label !== '') {
+                $exame->setAttribute('tipo_exame_label', $label);
+            }
+        }
     }
 
     public function getFichaPdf(Request $request, $exame, $token = null)
@@ -504,10 +632,11 @@ class ControleExameController extends Controller
             ?? 'Exame';
 
         $solicitante = auth()->guest() ? '' : (string) (auth()->user()?->nome ?? '');
+        $identificacao = app(ColaboradorExameIdentificacao::class)->paraFeedback($ExameFuncionario->Feedback);
 
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = app('dompdf.wrapper');
-        $pdf->loadView('pdf.controle-exames.ficha', compact('ExameFuncionario'));
+        $pdf->loadView('pdf.controle-exames.ficha', compact('ExameFuncionario', 'identificacao'));
         app(ComunicadoDispensaSemJustaCausaPdfService::class)
             ->aplicarPadraoDocumento($pdf, $solicitante);
 
@@ -549,10 +678,11 @@ class ControleExameController extends Controller
         if ($ExameFuncionario->exame_tipo_id) {
             $tipoexame = ExameTipo::find($ExameFuncionario->exame_tipo_id)->label ?? $tipoexame;
         }
+        $identificacao = app(ColaboradorExameIdentificacao::class)->paraFeedback($ExameFuncionario->Feedback);
 
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = app('dompdf.wrapper');
-        $pdf->loadView('pdf.controle-exames.ficha', compact('ExameFuncionario'));
+        $pdf->loadView('pdf.controle-exames.ficha', compact('ExameFuncionario', 'identificacao'));
         app(ComunicadoDispensaSemJustaCausaPdfService::class)
             ->aplicarPadraoDocumento($pdf, (string) (auth()->user()?->nome ?? ''));
         $pdfContent = $pdf->output();
