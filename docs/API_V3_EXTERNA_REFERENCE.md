@@ -25,9 +25,10 @@ Para Try it out interativo: [Swagger UI](/api/v3/docs) · spec [OpenAPI](openapi
 14. [Medidas administrativas](#14-medidas-administrativas--medidasread)
 15. [Histórico](#15-histórico--historicoread)
 16. [Pós-admissão](#16-pós-admissão--pos-admissaoread)
-17. [Relatórios](#17-relatórios--relatoriosread)
-18. [Erros](#18-erros)
-19. [Índice rápido](#19-índice-rápido)
+17. [Weekly Report](#17-weekly-report--weeklyread)
+18. [Relatórios](#18-relatórios--relatoriosread)
+19. [Erros](#19-erros)
+20. [Índice rápido](#20-índice-rápido)
 
 ---
 
@@ -74,6 +75,7 @@ Scopes são **habilidades** da credencial. Sem o scope do módulo → **403**.
 | `medidas:read` | Medidas administrativas |
 | `historico:read` | Histórico |
 | `pos-admissao:read` | Pós-admissão |
+| `weekly:read` | Weekly Report |
 | `relatorios:read` | Relatórios |
 
 ---
@@ -333,7 +335,21 @@ Mesmo `publicId` de processo. Requer scope próprio além de `processos:read`.
 
 ---
 
-## 17. Relatórios — `relatorios:read`
+## 17. Weekly Report — `weekly:read`
+
+Quadros da empresa. O detalhe traz listas com tarefas completas: descrição, lembrete, membros, checklists (itens e responsáveis), comentários, anexos (nome e extensão) e histórico. Textos em texto puro. Sem login.
+
+| Método | Path | Query / notas |
+|--------|------|----------------|
+| GET | `/weekly` | `q` (título do quadro) |
+| GET | `/weekly/{publicId}` | Quadro completo, inclusive `comentarios` em cada tarefa |
+| GET | `/weekly/{publicId}/listas` | Listas com tarefas completas |
+| GET | `/weekly/{publicId}/listas/{listaPublicId}/tarefas` | `q`, `concluido` — cada item traz comentários |
+| GET | `/weekly/{publicId}/tarefas/{tarefaPublicId}` | Mesmo payload da tarefa no quadro |
+
+---
+
+## 18. Relatórios — `relatorios:read`
 
 JSON paginado. Sem PDF/Excel nesta API.
 
@@ -382,7 +398,7 @@ Authorization: Bearer {access_token}
 
 ---
 
-## 18. Erros
+## 19. Erros
 
 Sempre JSON (nunca HTML/redirect).
 
@@ -404,7 +420,7 @@ Validação (422) pode incluir `errors` por campo.
 
 ---
 
-## 19. Índice rápido
+## 20. Índice rápido
 
 | Método | Path | Scope |
 |--------|------|-------|
@@ -421,6 +437,7 @@ Validação (422) pode incluir `errors` por campo.
 | GET | `/medidas-administrativas` … | `medidas:read` |
 | GET | `/historico` … afastamentos | `historico:read` |
 | GET | `/pos-admissao` … entrevista | `pos-admissao:read` |
+| GET | `/weekly` … tarefas | `weekly:read` |
 | GET | `/relatorios` · `/relatorios/{slug}` | `relatorios:read` |
 | GET | `/docs` · `/openapi.yaml` | público (docs) |
 

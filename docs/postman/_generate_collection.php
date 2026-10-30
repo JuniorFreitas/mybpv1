@@ -433,6 +433,14 @@ foreach ($slugs as $slug => $desc) {
     $relItems[] = item(ucfirst(str_replace('-', ' ', $slug)), req('GET', $url), $desc, null, $examples);
 }
 
+$folders[] = folder('Weekly', "Scope `weekly:read`. Quadros, listas e tarefas. Sem login e sem arquivo binário.", [
+    item('Listar quadros', req('GET', $base . '/weekly?page={{page}}&per_page={{per_page}}&q='), null, captureScript('weekly_public_id')),
+    item('Detalhe do quadro', req('GET', $base . '/weekly/{{weekly_public_id}}'), null, captureScript('lista_public_id', 'data.listas.0.public_id')),
+    item('Listas', req('GET', $base . '/weekly/{{weekly_public_id}}/listas')),
+    item('Tarefas da lista', req('GET', $base . '/weekly/{{weekly_public_id}}/listas/{{lista_public_id}}/tarefas?page={{page}}&per_page={{per_page}}'), null, captureScript('tarefa_public_id')),
+    item('Detalhe da tarefa', req('GET', $base . '/weekly/{{weekly_public_id}}/tarefas/{{tarefa_public_id}}')),
+]);
+
 $folders[] = folder(
     'Relatorios',
     "Scope `relatorios:read`.\n\n1) Catalogo\n2) Execute o slug\n\nResposta: `data` + `meta` + opcional `context`.",
@@ -465,6 +473,9 @@ $vars = [
     'centro_custo_public_id' => '',
     'cih_public_id' => '',
     'medida_public_id' => '',
+    'weekly_public_id' => '',
+    'lista_public_id' => '',
+    'tarefa_public_id' => '',
 ];
 
 $collection = [

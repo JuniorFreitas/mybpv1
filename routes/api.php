@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\Externa\PosAdmissaoController as ApiExternaPosAdmis
 use App\Http\Controllers\Api\Externa\ProcessoController as ApiExternaProcessoController;
 use App\Http\Controllers\Api\Externa\RelatorioController as ApiExternaRelatorioController;
 use App\Http\Controllers\Api\Externa\VagaAbertaController as ApiExternaVagaAbertaController;
+use App\Http\Controllers\Api\Externa\WeeklyController as ApiExternaWeeklyController;
 use App\Models\CartaOferta;
 use App\Models\Sistema;
 use App\Support\ApiExterna\ApiExternaScopes;
@@ -287,6 +288,16 @@ Route::prefix('v3')->group(function () {
             Route::get('pos-admissao/{publicId}', [ApiExternaPosAdmissaoController::class, 'show'])->where('publicId', $publicId);
             Route::get('pos-admissao/{publicId}/entrevista-desligamento', [ApiExternaPosAdmissaoController::class, 'entrevistaDesligamento'])
                 ->where('publicId', $publicId);
+        });
+
+        Route::middleware('api.externa.scope:' . ApiExternaScopes::WEEKLY_READ)->group(function () use ($publicId) {
+            Route::get('weekly', [ApiExternaWeeklyController::class, 'index']);
+            Route::get('weekly/{publicId}', [ApiExternaWeeklyController::class, 'show'])->where('publicId', $publicId);
+            Route::get('weekly/{publicId}/listas', [ApiExternaWeeklyController::class, 'listas'])->where('publicId', $publicId);
+            Route::get('weekly/{publicId}/listas/{listaPublicId}/tarefas', [ApiExternaWeeklyController::class, 'tarefas'])
+                ->where(['publicId' => $publicId, 'listaPublicId' => $publicId]);
+            Route::get('weekly/{publicId}/tarefas/{tarefaPublicId}', [ApiExternaWeeklyController::class, 'showTarefa'])
+                ->where(['publicId' => $publicId, 'tarefaPublicId' => $publicId]);
         });
 
         Route::middleware('api.externa.scope:' . ApiExternaScopes::RELATORIOS_READ)->group(function () {

@@ -773,6 +773,123 @@ trait ApiExternaSchema
         }
     }
 
+    protected function garantirSchemaWeeklyApiExterna(): void
+    {
+        $this->garantirSchemaApiExterna();
+
+        if (! Schema::hasTable('arquivos')) {
+            Schema::create('arquivos', function (Blueprint $table) {
+                $table->id();
+                $table->string('nome')->nullable();
+                $table->string('extensao')->nullable();
+                $table->unsignedBigInteger('bytes')->nullable();
+                $table->string('file')->nullable();
+                $table->string('disco')->nullable();
+                $table->timestamps();
+            });
+        }
+
+        if (Schema::hasTable('quadros')) {
+            return;
+        }
+
+        Schema::create('quadros', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id');
+            $table->text('titulo');
+            $table->unsignedBigInteger('empresa_id');
+            $table->unsignedBigInteger('quem_deletou_id')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('quadros_membros', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('quadro_id');
+            $table->unsignedBigInteger('user_id');
+            $table->string('papel', 20)->default('membro');
+            $table->timestamps();
+        });
+
+        Schema::create('lista_tarefas', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('quadro_id');
+            $table->unsignedBigInteger('user_id');
+            $table->text('titulo');
+            $table->unsignedBigInteger('ordem');
+            $table->timestamps();
+        });
+
+        Schema::create('tarefas', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('lista_id');
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('quem_deletou_id')->nullable();
+            $table->text('titulo');
+            $table->text('descricao')->nullable();
+            $table->unsignedBigInteger('ordem');
+            $table->dateTime('datahora_inicio')->nullable();
+            $table->dateTime('datahora_entrega')->nullable();
+            $table->dateTime('lembrete')->nullable();
+            $table->boolean('concluido')->default(false);
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('membros_tarefa', function (Blueprint $table) {
+            $table->unsignedBigInteger('tarefa_id');
+            $table->unsignedBigInteger('user_id');
+        });
+
+        Schema::create('checklists_tarefas', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('tarefa_id');
+            $table->text('titulo');
+            $table->unsignedBigInteger('ordem');
+            $table->dateTime('datahora_entrega')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('checklists_tarefa_items', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('checklist_id');
+            $table->text('titulo');
+            $table->boolean('concluido')->default(false);
+            $table->unsignedBigInteger('ordem');
+            $table->dateTime('datahora_entrega')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('tarefas_comentarios', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('tarefa_id');
+            $table->unsignedBigInteger('user_id');
+            $table->text('comentario');
+            $table->string('tipo', 20)->default('comentario');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('tarefa_anexos', function (Blueprint $table) {
+            $table->unsignedBigInteger('tarefa_id');
+            $table->unsignedBigInteger('arquivo_id');
+        });
+
+        Schema::create('checklists_tarefa_items_membros', function (Blueprint $table) {
+            $table->unsignedBigInteger('checklists_tarefa_item_id');
+            $table->unsignedBigInteger('user_id');
+        });
+
+        Schema::create('log_weekly', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('quadro_id');
+            $table->unsignedBigInteger('tarefa_id')->nullable();
+            $table->unsignedBigInteger('user_id');
+            $table->text('descricao');
+            $table->timestamps();
+        });
+    }
+
     /**
      * @return array{client_id: string, client_secret: string, empresa_id: int, user_id: int, scopes: array}
      */

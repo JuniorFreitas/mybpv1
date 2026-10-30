@@ -105,6 +105,18 @@
         {
             "key": "medida_public_id",
             "value": ""
+        },
+        {
+            "key": "weekly_public_id",
+            "value": ""
+        },
+        {
+            "key": "lista_public_id",
+            "value": ""
+        },
+        {
+            "key": "tarefa_public_id",
+            "value": ""
         }
     ],
     "auth": {
@@ -1585,6 +1597,143 @@
                             }
                         ],
                         "url": "{{base_url}}/api/v3/pos-admissao/{{processo_public_id}}/entrevista-desligamento"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Weekly",
+            "description": "Scope `weekly:read`. Quadros, listas e tarefas. Sem login e sem arquivo binário.",
+            "item": [
+                {
+                    "name": "Listar quadros",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/weekly?page={{page}}&per_page={{per_page}}&q="
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status esperado\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                                    "});",
+                                    "if (pm.response.code === 200) {",
+                                    "  try {",
+                                    "    const j = pm.response.json();",
+                                    "    const parts = \"data.0.public_id\".split(\".\");",
+                                    "    let cur = j;",
+                                    "    for (const p of parts) { if (cur == null) break; cur = cur[p]; }",
+                                    "    if (cur) { pm.collectionVariables.set(\"weekly_public_id\", cur); console.log(\"saved weekly_public_id=\", cur); }",
+                                    "  } catch (e) { console.warn(e); }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Detalhe do quadro",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/weekly/{{weekly_public_id}}"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status esperado\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                                    "});",
+                                    "if (pm.response.code === 200) {",
+                                    "  try {",
+                                    "    const j = pm.response.json();",
+                                    "    const parts = \"data.listas.0.public_id\".split(\".\");",
+                                    "    let cur = j;",
+                                    "    for (const p of parts) { if (cur == null) break; cur = cur[p]; }",
+                                    "    if (cur) { pm.collectionVariables.set(\"lista_public_id\", cur); console.log(\"saved lista_public_id=\", cur); }",
+                                    "  } catch (e) { console.warn(e); }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Listas",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/weekly/{{weekly_public_id}}/listas"
+                    }
+                },
+                {
+                    "name": "Tarefas da lista",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/weekly/{{weekly_public_id}}/listas/{{lista_public_id}}/tarefas?page={{page}}&per_page={{per_page}}"
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status esperado\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 401, 403, 404]);",
+                                    "});",
+                                    "if (pm.response.code === 200) {",
+                                    "  try {",
+                                    "    const j = pm.response.json();",
+                                    "    const parts = \"data.0.public_id\".split(\".\");",
+                                    "    let cur = j;",
+                                    "    for (const p of parts) { if (cur == null) break; cur = cur[p]; }",
+                                    "    if (cur) { pm.collectionVariables.set(\"tarefa_public_id\", cur); console.log(\"saved tarefa_public_id=\", cur); }",
+                                    "  } catch (e) { console.warn(e); }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Detalhe da tarefa",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v3/weekly/{{weekly_public_id}}/tarefas/{{tarefa_public_id}}"
                     }
                 }
             ]

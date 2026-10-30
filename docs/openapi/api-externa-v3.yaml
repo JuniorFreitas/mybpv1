@@ -97,6 +97,7 @@ info:
     | `medidas:read` | Medidas administrativas |
     | `historico:read` | Histórico |
     | `pos-admissao:read` | Pós-admissão |
+    | `weekly:read` | Weekly Report (quadros, listas e tarefas) |
     | `relatorios:read` | Relatórios do menu RH |
 
     ## Códigos HTTP
@@ -158,6 +159,10 @@ tags:
     description: Histórico de admitidos + nested medidas/afastamentos.
   - name: PosAdmissao
     description: Pós-admissão e entrevista de desligamento sanitizada.
+  - name: Weekly
+    description: |
+      Weekly Report da empresa (quadros, listas, tarefas, checklists e comentários).
+      Somente leitura. Sem login de usuário e sem download de anexo.
   - name: Relatorios
     description: |
       Relatórios do menu RH em JSON paginado.
@@ -1612,6 +1617,102 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /weekly:
+    get:
+      tags: [Weekly]
+      summary: Listar quadros do Weekly Report
+      security:
+        - bearerAuth: []
+        - oauth2: [weekly:read]
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: q
+          in: query
+          schema: { type: string }
+          description: Título do quadro
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+
+  /weekly/{publicId}:
+    get:
+      tags: [Weekly]
+      summary: Detalhe do quadro com tarefas, comentários, checklists e histórico
+      security:
+        - bearerAuth: []
+        - oauth2: [weekly:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /weekly/{publicId}/listas:
+    get:
+      tags: [Weekly]
+      summary: Listas do quadro
+      security:
+        - bearerAuth: []
+        - oauth2: [weekly:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /weekly/{publicId}/listas/{listaPublicId}/tarefas:
+    get:
+      tags: [Weekly]
+      summary: Tarefas da lista, com comentários e demais dados
+      security:
+        - bearerAuth: []
+        - oauth2: [weekly:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - name: listaPublicId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/per_page'
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: concluido
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          $ref: '#/components/responses/Paginated'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /weekly/{publicId}/tarefas/{tarefaPublicId}:
+    get:
+      tags: [Weekly]
+      summary: Detalhe da tarefa (descrição, lembrete, checklists, comentários, anexos e histórico)
+      description: |
+        Descrição e comentários em texto puro. Anexos trazem só nome e extensão.
+      security:
+        - bearerAuth: []
+        - oauth2: [weekly:read]
+      parameters:
+        - $ref: '#/components/parameters/publicId'
+        - name: tarefaPublicId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /relatorios:
     get:
       tags: [Relatorios]
@@ -1777,6 +1878,7 @@ components:
             medidas:read: Medidas administrativas
             historico:read: Histórico de admissão
             pos-admissao:read: Pós-admissão e entrevista de desligamento
+            weekly:read: Weekly Report (quadros, listas e tarefas)
             relatorios:read: Relatórios do menu RH (somente leitura)
 
   schemas:

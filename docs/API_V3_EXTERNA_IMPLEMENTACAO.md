@@ -4,7 +4,7 @@ Registro do que foi entregue na API Externa v3 para agents/integrações.
 
 ## Objetivo
 
-Expor leitura segura, por empresa, de Cloud, Fornecedores, Avaliações de desempenho, Processos (ativos + em andamento), Currículos, fluxo até pós-admissão e relatórios do menu RH.
+Expor leitura segura, por empresa, de Cloud, Fornecedores, Avaliações de desempenho, Processos (ativos + em andamento), Currículos, fluxo até pós-admissão, Weekly Report e relatórios do menu RH.
 
 ## Autenticação
 
@@ -19,6 +19,8 @@ Comando:
 php artisan api-externa:credencial {empresa_id}
 php artisan api-externa:credencial {empresa_id} --rotate
 ```
+
+Credencial já existente não ganha `weekly:read` sozinha. Rode `--rotate` (ou `--scopes` com a lista completa) e peça um token novo.
 
 ## Arquivos principais
 
@@ -44,6 +46,8 @@ php artisan api-externa:credencial {empresa_id} --rotate
 | Docs UI | `DocsController` → `/api/v3/docs` |
 | Config | `config/services.php` → `api_externa` |
 | Relatórios | `RelatorioApiService` + `RelatorioController` (`relatorios:read`) |
+| Weekly | `WeeklyApiService` + `WeeklyController` (`weekly:read`) |
+| Testes weekly | `tests/Feature/ApiExterna/ApiExternaWeeklyTest.php` |
 | Testes | `tests/Feature/ApiExterna/ApiExternaAuthTest.php`, `ApiExternaRelatorioTest.php` |
 
 ## Identificadores públicos
@@ -66,7 +70,7 @@ php artisan api-externa:credencial {empresa_id} --rotate
 
 ```bash
 php artisan migrate
-php artisan api-externa:credencial {empresa_id}
+php artisan api-externa:credencial {empresa_id} --rotate
 ```
 
 Enviar ao cliente: `docs/API_V3_EXTERNA.md` + OpenAPI + Postman.

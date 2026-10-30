@@ -126,6 +126,7 @@ Renove o token antes de `expires_in`. Não envie `client_secret` nas rotas de da
 | `medidas:read` | Medidas administrativas |
 | `historico:read` | Histórico: listagem, medidas, afastamentos |
 | `pos-admissao:read` | Pós-admissão + entrevista de desligamento (sanitizada) |
+| `weekly:read` | Weekly Report: quadros, listas, tarefas, checklists e comentários |
 | `relatorios:read` | Relatórios do menu RH (efetivo, ASO, férias, NPS, etc.) |
 
 ## Paginação
@@ -307,6 +308,18 @@ Listagem alinhada à tela Histórico (admitidos). Detalhe reutiliza o payload de
 | `GET /pos-admissao` | Admitidos (`q`, `demitido`, `com_entrevista`, `vaga_public_id`) |
 | `GET /pos-admissao/{id}` | Detalhe + resumo da entrevista |
 | `GET /pos-admissao/{id}/entrevista-desligamento` | Entrevista sanitizada (sem textos livres sensíveis / salário) |
+
+## Weekly Report
+
+Somente leitura dos quadros da empresa. Sem login de usuário, sem caminho de arquivo e sem HTML cru (menções viram `@nome`).
+
+| Endpoint | Uso |
+|----------|-----|
+| `GET /weekly` | Quadros (`q`) |
+| `GET /weekly/{id}` | Quadro completo: membros, listas, tarefas, comentários, checklists, anexos e histórico |
+| `GET /weekly/{id}/listas` | Listas com as tarefas completas |
+| `GET /weekly/{id}/listas/{listaId}/tarefas` | Tarefas completas (`q`, `concluido`) |
+| `GET /weekly/{id}/tarefas/{tarefaId}` | Descrição, lembrete, checklists, comentários, anexos e histórico |
 
 ## Relatórios
 

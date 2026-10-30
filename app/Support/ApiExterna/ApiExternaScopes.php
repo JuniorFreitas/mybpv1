@@ -16,6 +16,7 @@ final class ApiExternaScopes
     public const MEDIDAS_READ = 'medidas:read';
     public const HISTORICO_READ = 'historico:read';
     public const POS_ADMISSAO_READ = 'pos-admissao:read';
+    public const WEEKLY_READ = 'weekly:read';
     public const RELATORIOS_READ = 'relatorios:read';
 
     public static function all(): array
@@ -33,6 +34,7 @@ final class ApiExternaScopes
             self::MEDIDAS_READ,
             self::HISTORICO_READ,
             self::POS_ADMISSAO_READ,
+            self::WEEKLY_READ,
             self::RELATORIOS_READ,
         ];
     }
