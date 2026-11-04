@@ -14,10 +14,24 @@
                     <div class="row">
                         <div class="col-12">
                             <p>
-                                Nome: <strong>{{ dados.nome }}</strong> - {{ dados.idade }} anos <br>
-                                Lotação: <strong>{{ textoOuNaoInformado(dados.lotacao) }}</strong><br>
+                                Nome:
+                                <strong v-if="dados.nome">
+                                    <span class="d-block">{{ dados.nome }}</span>
+                                    <span class="d-block" v-if="dados.idade">{{ dados.idade }} anos</span>
+                                </strong>
+                                <strong v-else>Não informado</strong><br>
+                                Lotação:
+                                <strong v-if="temLotacao">
+                                    <span class="d-block">{{ dados.lotacao_nome }}</span>
+                                    <span class="d-block" v-if="dados.lotacao_cnpj">{{ dados.lotacao_cnpj }}</span>
+                                </strong>
+                                <strong v-else>Não informado</strong><br>
                                 Centro de custo: <strong>{{ textoOuNaoInformado(dados.centro_custo) }}</strong><br>
-                                Cargo: <strong>{{ textoOuNaoInformado(dados.cargo) }}</strong><br>
+                                Cargo:
+                                <strong v-if="dados.cargo">
+                                    <span class="d-block">{{ dados.cargo }}</span>
+                                </strong>
+                                <strong v-else>Não informado</strong><br>
                                 Endereço: <strong>{{ dados.endereco_completo }}</strong><br>
                                 Contato: <strong><i class="fab fa-whatsapp text-success"
                                                     v-show="dados.tel_principal.tipo === 'whatsapp'"></i> {{
@@ -552,10 +566,24 @@
                 <div class="row">
                     <div class="col-12">
                         <p>
-                            Nome: <strong>{{ dados.nome }}</strong> - {{ dados.idade }} anos <br>
-                            Lotação: <strong>{{ textoOuNaoInformado(dados.lotacao) }}</strong><br>
+                            Nome:
+                            <strong v-if="dados.nome">
+                                <span class="d-block">{{ dados.nome }}</span>
+                                <span class="d-block" v-if="dados.idade">{{ dados.idade }} anos</span>
+                            </strong>
+                            <strong v-else>Não informado</strong><br>
+                            Lotação:
+                            <strong v-if="temLotacao">
+                                <span class="d-block">{{ dados.lotacao_nome }}</span>
+                                <span class="d-block" v-if="dados.lotacao_cnpj">{{ dados.lotacao_cnpj }}</span>
+                            </strong>
+                            <strong v-else>Não informado</strong><br>
                             Centro de custo: <strong>{{ textoOuNaoInformado(dados.centro_custo) }}</strong><br>
-                            Cargo: <strong>{{ textoOuNaoInformado(dados.cargo) }}</strong><br>
+                            Cargo:
+                            <strong v-if="dados.cargo">
+                                <span class="d-block">{{ dados.cargo }}</span>
+                            </strong>
+                            <strong v-else>Não informado</strong><br>
                             Endereço: <strong>{{ dados.endereco_completo }}</strong><br>
                             Contato: <strong><i class="fab fa-whatsapp text-success"
                                                 v-show="dados.tel_principal.tipo === 'whatsapp'"></i> {{
@@ -734,165 +762,243 @@
         </template>
     </modal>
 
-    <preload class="text-center" v-if="controle.carregando"></preload>
+    <FiltroListagem
+        class="mt-2 mybp-filtros-compactos"
+        :mostrar-limpar-filtros="totalFiltrosAtivos > 0"
+        :desabilitado="controle.carregando"
+        @submit="atualizar"
+        @limpar="limparFiltros"
+    >
+        <template #filtros>
+            <date-range-filter
+                v-model:enabled="controle.dados.filtroPeriodo"
+                v-model:start-date="controle.dados.dataInicio"
+                v-model:end-date="controle.dados.dataFim"
+                :disabled="controle.carregando"
+                :id-suffix="'periodo-' + hash"
+                label="Por período"
+                wrapper-class="col-12 col-md-4 mybp-filtro-periodo"
+                @change="onPeriodoChange"
+            />
 
-    <fieldset>
-        <legend>Filtro</legend>
-        <form @submit.prevent="$refs.componente.buscar()">
-            <div class="row">
-                <div class="col-12 col-md-3">
-                    <div class="form-check" style="margin-bottom: -11px;">
-                        <input type="checkbox" class="form-check-input" :disabled="controle.carregando"
-                               id="filtroIntervalo"
-                               v-model="controle.dados.filtroPeriodo">
-                        <label class="form-check-label cursor-pointer" for="filtroIntervalo">Por período</label>
-                    </div>
-                    <div class="form-group">
-                        <datepicker range formsm label=""
-                                    :disabled="controle.carregando || !controle.dados.filtroPeriodo"
-                                    v-model="controle.dados.periodo"></datepicker>
-                    </div>
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="ce-busca">
+                        Colaborador / CPF
+                        <span v-if="buscaUnificadaEhCpf" class="text-muted small">CPF</span>
+                    </label>
+                    <input
+                        id="ce-busca"
+                        type="text"
+                        placeholder="Nome ou CPF"
+                        autocomplete="off"
+                        inputmode="search"
+                        class="form-control form-control-sm"
+                        :disabled="controle.carregando"
+                        :value="campoBuscaUnificada"
+                        @input="onInputBuscaUnificada"
+                    />
                 </div>
+            </div>
 
-                <div class="col-12 col-sm-6 col-md-6 col-lg-3">
-                    <div class="form-group">
-                        <label>Nome</label>
-                        <input type="text" placeholder="Buscar por nome" autocomplete="off"
-                               class="form-control form-control-sm" :disabled="controle.carregando"
-                               v-model="controle.dados.campoBusca">
-                    </div>
-                </div>
-
-                <div class="col-12 col-sm-6 col-md-6 col-lg-3">
-                    <div class="form-group">
-                        <label>CPF</label>
-                        <input type="text" placeholder="Buscar por cpf" autocomplete="mastertag"
-                               onblur="valida_cpf(this)"
-                               v-mascara:cpf class="form-control form-control-sm" :disabled="controle.carregando"
-                               v-model="controle.dados.campoCPF">
-                    </div>
-                </div>
-
-                <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                    <div class="form-group">
-                        <label for="">Status</label>
-                        <select class="form-control form-control-sm"
-                                @change="changeStatus()"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.status">
-                            <option value="em_processo">Em processo</option>
-                            <option value="admitidos">Admitidos</option>
-                            <option value="demitidos">Demitidos</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="col-12 col-sm-4 col-md-3"
-                     v-if="lista_ccs && AUTENTICADO.temFilial && filtroStatusDemitidoOuAdmitido">
-                    <div class="form-group">
-                        <label for="">Por Cnpj</label>
-                        <select class="form-control form-control-sm" @change="changeCnpj()"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.campoCnpj">
-                            <option value="">Todos</option>
-                            <option v-for="(item, key) in lista_ccs.cnpjs" :value="key" :keys="key">
-                                {{item.nome_fantasia}} - {{item.cnpj}}
-                            </option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-12 col-sm-4 col-md-3"
-                     v-if="lista_ccs && filtroStatusDemitidoOuAdmitido">
-                    <div class="form-group">
-                        <label for="">Centro de Custo</label>
-                        <select class="form-control form-control-sm" @change="atualizar"
-                                :disabled="controle.carregando"
-                                v-model="controle.dados.campoCentroCusto">
-                            <option value="">Todos</option>
-                            <option :title="item.label" v-for="(item, key) in filtroListaCentroCustoCnpj"
-                                    :value="item.matriz ? item.id : item.filial_id"
-                                    :keys="key">
-                                {{item.label}}
-                            </option>
-                            <option value="--naoinformado--">--- Não Informado ---</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="col-12 col-sm-4 col-md-3 col-lg-2">
-                    <div class="form-group">
-                        <label for="">Exibir</label>
-                        <select class="form-control form-control-sm" @change="atualizar" :disabled="controle.carregando"
-                                v-model="controle.dados.pages">
-                            <option v-for='exib in exibicao' :value="exib">{{exib}}</option>
-                        </select>
+            <div class="col-12 col-md-4">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="ce-status">Status</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroStatus"
+                            instance-id="ce-status"
+                            input-id="ce-status"
+                            v-model="controle.dados.status"
+                            :options="opcoesStatus"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Selecione..."
+                            empty-message="Nenhuma opção."
+                            :max-results="10"
+                            @opening="fecharOutrosComboboxes('ce-status')"
+                            @select="changeStatus"
+                        ></combobox-auto-complete>
                     </div>
                 </div>
             </div>
-        </form>
-        <div class="col-12">
-            <div class="row">
-                <button type="button" class="btn btn-sm mr-1 btn-success mr-1 mb-1" :disabled="controle.carregando"
-                        @click.prevent="atualizar">
-                    <i :class="controle.carregando ? 'fa fa-sync fa-spin' : 'fa fa-sync'"></i>
-                    Atualizar
-                </button>
-            </div>
-        </div>
 
-    </fieldset>
+            <div
+                class="col-12 col-md-4"
+                v-if="lista_ccs && AUTENTICADO.temFilial && filtroStatusDemitidoOuAdmitido"
+            >
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="ce-cnpj">CNPJ Lotação</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroCnpj"
+                            instance-id="ce-cnpj"
+                            input-id="ce-cnpj"
+                            v-model="controle.dados.campoCnpj"
+                            :options="opcoesCnpj"
+                            :disabled="controle.carregando"
+                            placeholder-blur="Todos"
+                            empty-message="Nenhuma lotação encontrada."
+                            :max-results="50"
+                            @opening="fecharOutrosComboboxes('ce-cnpj')"
+                            @select="changeCnpj"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4" v-if="lista_ccs && filtroStatusDemitidoOuAdmitido">
+                <div class="form-group mybp-filtro-campo">
+                    <label class="mybp-label" for="ce-cc">Centro de custo</label>
+                    <div class="mybp-combobox-wrap">
+                        <combobox-auto-complete
+                            ref="comboFiltroCc"
+                            instance-id="ce-cc"
+                            input-id="ce-cc"
+                            v-model="controle.dados.campoCentroCusto"
+                            :options="opcoesCentroCusto"
+                            :disabled="controle.carregando || (AUTENTICADO.temFilial && !controle.dados.campoCnpj)"
+                            placeholder-blur="Todos"
+                            empty-message="Nenhum centro de custo."
+                            :max-results="80"
+                            @opening="fecharOutrosComboboxes('ce-cc')"
+                            @select="atualizar"
+                        ></combobox-auto-complete>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="col-12 mybp-filtros-avancados-shell"
+                :class="{ 'is-open': filtrosAvancadosAbertos }"
+                :aria-hidden="filtrosAvancadosAbertos ? 'false' : 'true'"
+            >
+                <div class="mybp-filtros-avancados-shell__inner">
+                    <div class="mybp-filtros-avancados">
+                        <div class="mybp-filtros-avancados__block">
+                            <p class="mybp-filtros-avancados__title">Outros filtros</p>
+                            <div class="row">
+                                <div class="col-12 col-md-4">
+                                    <div class="form-group mybp-filtro-campo">
+                                        <label class="mybp-label" for="ce-pages">Exibir</label>
+                                        <div class="mybp-combobox-wrap">
+                                            <combobox-auto-complete
+                                                ref="comboFiltroPages"
+                                                instance-id="ce-pages"
+                                                input-id="ce-pages"
+                                                v-model="controle.dados.pages"
+                                                :options="opcoesExibir"
+                                                :disabled="controle.carregando"
+                                                placeholder-blur="Selecione..."
+                                                empty-message="Nenhuma opção."
+                                                :max-results="10"
+                                                @opening="fecharOutrosComboboxes('ce-pages')"
+                                                @select="atualizar"
+                                            ></combobox-auto-complete>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template #acoes>
+            <button class="btn btn-sm btn-success" type="submit" :disabled="controle.carregando">
+                <i :class="controle.carregando ? 'fa fa-spinner fa-spin' : 'fa fa-search'"></i>
+                Buscar
+            </button>
+            <button
+                type="button"
+                class="btn btn-sm mybp-btn-mais-filtros"
+                :class="filtrosAvancadosAbertos ? 'btn-primary is-open' : 'btn-outline-primary'"
+                :aria-expanded="filtrosAvancadosAbertos ? 'true' : 'false'"
+                :disabled="controle.carregando"
+                @click="filtrosAvancadosAbertos = !filtrosAvancadosAbertos"
+            >
+                <i class="fa" :class="filtrosAvancadosAbertos ? 'fa-chevron-up' : 'fa-sliders-h'"></i>
+                {{ filtrosAvancadosAbertos ? 'Menos filtros' : 'Mais filtros' }}
+                <span class="badge badge-light ml-1" v-if="totalFiltrosAtivosAvancados">
+                    {{ totalFiltrosAtivosAvancados }}
+                </span>
+            </button>
+        </template>
+    </FiltroListagem>
+
     <preload class="text-center" v-if="controle.carregando"></preload>
     <div class="alert alert-warning text-center" v-show="!controle.carregando && lista.length===0">
         <i class="fa fa-exclamation-triangle"></i> Nenhum Registro Encontrado
     </div>
 
-    <div id="conteudo">
-        <table class="tabela table-striped" v-if="!controle.carregando && lista.length > 0">
+    <div id="conteudo" class="mybp-tabela-wrap ce-tabela-wrap" v-if="!controle.carregando && lista.length > 0">
+        <table class="tabela table-striped mybp-tabela ce-tabela">
             <thead>
             <tr class="bg-default">
                 <th>ID</th>
                 <th>Nome</th>
-                <th v-if="AUTENTICADO.temFilial && filtroStatusDemitidoOuAdmitido">CNPJ</th>
-                <th v-if="filtroStatusDemitidoOuAdmitido">Centro de Custos</th>
+                <th v-if="AUTENTICADO.temFilial && filtroStatusDemitidoOuAdmitido">Lotação</th>
+                <th v-if="filtroStatusDemitidoOuAdmitido">Centro de custos</th>
                 <th>Cargo</th>
-                <th>{{ filtroStatusDemitido ? 'Último encaminhamento demissional' : 'Ultimo Encaminhamento' }}</th>
-                <th>
-
-                </th>
+                <th v-if="filtroStatusDemitido">Enc. demissional</th>
+                <th>{{ filtroStatusDemitido ? 'Último enc. demissional' : 'Último encaminhamento' }}</th>
             </tr>
             </thead>
-            <tbody v-for="colaborador in lista">
-            <tr style="background: white !important; border-bottom: none">
-                <td>{{ colaborador.id }}</td>
-                <td>{{ colaborador.curriculo.nome }}</td>
-                <td v-if="AUTENTICADO.temFilial && filtroStatusDemitidoOuAdmitido">
-                    <span v-if="colaborador.admissao && colaborador.admissao.emp_cnpj">
-                            {{ colaborador.admissao.emp_nome_fantasia }}<br>
-                            ({{colaborador.admissao.emp_tipo}})
-                    </span>
-                    <span v-else>---</span>
+            <tbody>
+            <tr
+                v-for="colaborador in lista"
+                :key="colaborador.id"
+                class="ce-linha"
+                :class="{ 'ce-linha--clicavel': podeAbrirColaborador(colaborador) }"
+                :title="podeAbrirColaborador(colaborador) ? 'Abrir encaminhamento/histórico' : null"
+                :tabindex="podeAbrirColaborador(colaborador) ? 0 : -1"
+                :role="podeAbrirColaborador(colaborador) ? 'button' : null"
+                @click="abrirLinhaColaborador(colaborador)"
+                @keydown.enter.prevent="abrirLinhaColaborador(colaborador)"
+                @keydown.space.prevent="abrirLinhaColaborador(colaborador)"
+            >
+                <td data-label="ID">{{ colaborador.id }}</td>
+                <td class="mybp-col-texto ce-col-nome" data-label="Nome">
+                    <span class="d-block">{{ colaborador.curriculo?.nome || '---' }}</span>
                 </td>
-                <td v-if="filtroStatusDemitidoOuAdmitido">
-                    <span v-if="colaborador.admissao && colaborador.admissao.emp_centro_custo">
-                             {{colaborador.admissao.emp_centro_custo}}
-                        </span>
-                    <span v-else>---</span>
+                <td
+                    v-if="AUTENTICADO.temFilial && filtroStatusDemitidoOuAdmitido"
+                    class="mybp-col-texto"
+                    data-label="Lotação"
+                >
+                    <template v-for="partes in [partesLotacaoDaAdmissao(colaborador.admissao)]" :key="'lot-' + colaborador.id">
+                        <template v-if="partes.nome || partes.cnpj">
+                            <span class="d-block">{{ partes.nome }}</span>
+                            <span class="d-block text-muted" v-if="partes.cnpj">{{ partes.cnpj }}</span>
+                        </template>
+                        <template v-else>---</template>
+                    </template>
                 </td>
-                <td>
-                    <span v-if="filtroStatusDemitidoOuAdmitido">
-                        {{ colaborador.admissao && colaborador.admissao.cargo ? colaborador.admissao.cargo : '---' }}
-                    </span>
-                    <span v-else>
-                        {{ colaborador.vaga_aberta && colaborador.vaga_aberta.vaga ? colaborador.vaga_aberta.vaga.nome : '---' }}
+                <td
+                    v-if="filtroStatusDemitidoOuAdmitido"
+                    class="mybp-col-texto ce-col-cc"
+                    data-label="Centro de custos"
+                    :title="colaborador.admissao?.emp_centro_custo || ''"
+                >
+                    {{ colaborador.admissao?.emp_centro_custo || '---' }}
+                </td>
+                <td class="mybp-col-texto ce-col-cargo" data-label="Cargo">
+                    <span class="d-block">
+                        <template v-if="filtroStatusDemitidoOuAdmitido">
+                            {{ colaborador.admissao?.cargo || '---' }}
+                        </template>
+                        <template v-else>
+                            {{ colaborador.vaga_aberta?.vaga?.nome || '---' }}
+                        </template>
                     </span>
                 </td>
-                <td>{{ colaborador.ultimo_encaminhamento }}</td>
-                <td class="text-center">
-                    <button class="btn btn-sm mr-1 btn-primary mb-2" content="Encaminhar/historico" v-tippy
-                            v-show="!colaborador.resultado_integrado"
-                            @click.prevent="formEncaminhar(colaborador)">
-                        <i class="fa fa-search-plus"></i> Abrir
-                    </button>
+                <td v-if="filtroStatusDemitido" data-label="Enc. demissional">
+                    {{ colaborador.encaminhado_demissional || 'Não' }}
+                </td>
+                <td class="mybp-col-texto ce-col-encaminhamento" data-label="Último encaminhamento">
+                    <template v-for="partes in [partesUltimoEncaminhamento(colaborador.ultimo_encaminhamento)]" :key="'enc-' + colaborador.id">
+                        <span class="d-block">{{ partes.data || '---' }}</span>
+                        <span class="d-block text-muted" v-if="partes.tipo">{{ partes.tipo }}</span>
+                    </template>
                 </td>
             </tr>
             </tbody>
@@ -931,16 +1037,28 @@ import { REFS_MODAL, API_PATHS, TIPO_ORDEM_DEMISSIONAL } from './constants'
 import Formulario from '../FormularioDefault'
 import Upload from '../Upload'
 import DatePicker from '../DatePicker.vue'
+import DateRangeFilter from '../DateRangeFilter.vue'
+import ComboboxAutoComplete from '../ComboboxAutoComplete.vue'
+import FiltroListagem from '../ui/FiltroListagem.vue'
 import validacoes from '../../mixins/Validacoes'
 import MixinConfig from '../../mixins/Configuracoes'
+import { formatLotacao } from '../../utils/lotacaoLabel'
 
 export default defineComponent({
     name: 'ControleExames',
-    components: { Formulario, Upload, DatePicker },
+    components: {
+        Formulario,
+        Upload,
+        DatePicker,
+        DateRangeFilter,
+        ComboboxAutoComplete,
+        FiltroListagem
+    },
     mixins: [validacoes, MixinConfig],
     data() {
         return {
             tituloJanela: 'Controle de Exames',
+            filtrosAvancadosAbertos: false,
             preload: false,
             editando: false,
             apagado: false,
@@ -956,6 +1074,8 @@ export default defineComponent({
                 nome: '',
                 cargo: '',
                 lotacao: '',
+                lotacao_nome: '',
+                lotacao_cnpj: '',
                 centro_custo: '',
                 possui_centro_custo: false,
                 possui_cargo: false,
@@ -1031,11 +1151,13 @@ export default defineComponent({
                 dados: {
                     filtroPeriodo: false,
                     periodo: '',
+                    dataInicio: '',
+                    dataFim: '',
                     campoBusca: '',
                     campoCPF: '',
                     campoUf: '',
                     status: 'em_processo',
-                    pages: EXIBICAO[0],
+                    pages: String(EXIBICAO[0]),
                     campoCnpj: '',
                     campoCentroCusto: ''
                 }
@@ -1052,6 +1174,9 @@ export default defineComponent({
     computed: {
         semtelefone() {
             return this.dados.tel_principal.numero === '' || this.dados.tel_principal.numero === null
+        },
+        temLotacao() {
+            return Boolean(String(this.dados.lotacao_nome || '').trim() || String(this.dados.lotacao_cnpj || '').trim())
         },
         comResultado() {
             return this.lista.filter((item) => item.resultado_integrado)
@@ -1116,6 +1241,72 @@ export default defineComponent({
                 return `${nome} não possui ${faltas[0]} preenchido. Deseja encaminhar mesmo assim?`
             }
             return ''
+        },
+        opcoesStatus() {
+            return [
+                { value: 'em_processo', label: 'Em processo' },
+                { value: 'admitidos', label: 'Admitidos' },
+                { value: 'demitidos', label: 'Demitidos' }
+            ]
+        },
+        opcoesCnpj() {
+            const opts = [{ value: '', label: 'Todos' }]
+            if (!this.lista_ccs || !this.lista_ccs.cnpjs) return opts
+            Object.keys(this.lista_ccs.cnpjs).forEach((key) => {
+                const item = this.lista_ccs.cnpjs[key]
+                opts.push({
+                    value: key,
+                    label: `${item.nome_fantasia} - ${item.cnpj}`,
+                    meta: item.cnpj
+                })
+            })
+            return opts
+        },
+        opcoesCentroCusto() {
+            const opts = [
+                { value: '', label: 'Todos' },
+                { value: '--naoinformado--', label: 'Não informado' }
+            ]
+            ;(this.filtroListaCentroCustoCnpj || []).forEach((item) => {
+                const value = item.matriz ? item.id : item.filial_id
+                opts.push({
+                    value: String(value),
+                    label: item.label,
+                    meta: item.matriz ? 'Matriz' : 'Filial'
+                })
+            })
+            return opts
+        },
+        opcoesExibir() {
+            return (this.exibicao || []).map((exib) => ({
+                value: String(exib),
+                label: String(exib)
+            }))
+        },
+        campoBuscaUnificada() {
+            const d = this.controle.dados
+            if (d.campoCPF) return d.campoCPF
+            return d.campoBusca || ''
+        },
+        buscaUnificadaEhCpf() {
+            return !!this.controle.dados.campoCPF
+        },
+        totalFiltrosAtivos() {
+            const d = this.controle.dados
+            let total = 0
+            if (d.campoBusca || d.campoCPF) total++
+            if (d.status && d.status !== 'em_processo') total++
+            if (d.campoCnpj) total++
+            if (d.campoCentroCusto) total++
+            if (d.filtroPeriodo && d.dataInicio && d.dataFim) total++
+            if (String(d.pages) !== String(EXIBICAO[0])) total++
+            return total
+        },
+        totalFiltrosAtivosAvancados() {
+            const d = this.controle.dados
+            let total = 0
+            if (String(d.pages) !== String(EXIBICAO[0])) total++
+            return total
         }
     },
     methods: {
@@ -1126,6 +1317,87 @@ export default defineComponent({
         fecharModal(refName) {
             const modal = this.$refs[refName]
             if (modal && typeof modal.fecharModal === 'function') modal.fecharModal()
+        },
+        fecharOutrosComboboxes(excetoId) {
+            const mapa = {
+                'ce-status': 'comboFiltroStatus',
+                'ce-cnpj': 'comboFiltroCnpj',
+                'ce-cc': 'comboFiltroCc',
+                'ce-pages': 'comboFiltroPages'
+            }
+            Object.keys(mapa).forEach((id) => {
+                if (id === excetoId) return
+                const ref = this.$refs[mapa[id]]
+                if (ref && typeof ref.close === 'function') ref.close()
+            })
+        },
+        formatarDataFiltro(valor) {
+            const raw = (valor || '').trim()
+            if (!raw) return ''
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw)) return raw
+            if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+                const [y, m, d] = raw.split('-')
+                return `${d}/${m}/${y}`
+            }
+            return raw
+        },
+        onPeriodoChange() {
+            const d = this.controle.dados
+            if (d.filtroPeriodo && d.dataInicio && d.dataFim) {
+                d.periodo = `${this.formatarDataFiltro(d.dataInicio)} até ${this.formatarDataFiltro(d.dataFim)}`
+            } else {
+                d.periodo = ''
+            }
+            this.atualizar()
+        },
+        formatarCpfDigitos(digitos) {
+            const d = String(digitos || '').replace(/\D/g, '').slice(0, 11)
+            if (d.length <= 3) return d
+            if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`
+            if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`
+            return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`
+        },
+        parecePadraoCpf(valor) {
+            const raw = String(valor || '').trim()
+            if (!raw) return false
+            if (!/^[\d.\-\s]+$/.test(raw)) return false
+            const digitos = raw.replace(/\D/g, '')
+            return digitos.length > 0 && digitos.length <= 11
+        },
+        onInputBuscaUnificada(event) {
+            const valor = event && event.target ? event.target.value : ''
+            const d = this.controle.dados
+            if (!valor) {
+                d.campoBusca = ''
+                d.campoCPF = ''
+                return
+            }
+            if (this.parecePadraoCpf(valor)) {
+                const mascarado = this.formatarCpfDigitos(valor)
+                d.campoCPF = mascarado
+                d.campoBusca = ''
+                if (event.target && event.target.value !== mascarado) {
+                    event.target.value = mascarado
+                }
+                return
+            }
+            d.campoBusca = valor
+            d.campoCPF = ''
+        },
+        limparFiltros() {
+            const d = this.controle.dados
+            d.filtroPeriodo = false
+            d.periodo = ''
+            d.dataInicio = ''
+            d.dataFim = ''
+            d.campoBusca = ''
+            d.campoCPF = ''
+            d.status = 'em_processo'
+            d.campoCnpj = ''
+            d.campoCentroCusto = ''
+            d.pages = String(EXIBICAO[0])
+            this.filtrosAvancadosAbertos = false
+            this.atualizar()
         },
         changeCnpj() {
             this.controle.dados.campoCentroCusto = ''
@@ -1149,6 +1421,15 @@ export default defineComponent({
             await this.carregaFormulario()
             this.form.respostas = _.cloneDeep(this.form.respostas)
         },
+        podeAbrirColaborador(colaborador) {
+            return !!(colaborador && !colaborador.resultado_integrado)
+        },
+        abrirLinhaColaborador(colaborador) {
+            if (!this.podeAbrirColaborador(colaborador)) {
+                return
+            }
+            this.formEncaminhar(colaborador)
+        },
         async formEncaminhar(obj) {
             const identificacao = this.identificacaoDoColaborador(obj)
             this.encaminharSemIdentificacaoConfirmado = false
@@ -1156,6 +1437,8 @@ export default defineComponent({
                 nome: obj.curriculo.nome,
                 cargo: identificacao.cargo,
                 lotacao: identificacao.lotacao,
+                lotacao_nome: identificacao.lotacao_nome,
+                lotacao_cnpj: identificacao.lotacao_cnpj,
                 centro_custo: identificacao.centro_custo,
                 possui_centro_custo: identificacao.possui_centro_custo,
                 possui_cargo: identificacao.possui_cargo,
@@ -1265,17 +1548,55 @@ export default defineComponent({
             this.fecharModal(REFS_MODAL.CONFIRMAR_ENCAMINHAMENTO)
             this.salvarUpdate()
         },
+        partesLotacaoDaAdmissao(admissao) {
+            if (!admissao) {
+                return { nome: '', cnpj: '' }
+            }
+            return {
+                nome: String(admissao.emp_nome_fantasia || '').trim(),
+                cnpj: String(admissao.emp_cnpj || '').trim()
+            }
+        },
+        partesUltimoEncaminhamento(valor) {
+            const texto = String(valor || '').trim()
+            if (!texto) {
+                return { data: '', tipo: '' }
+            }
+            const idx = texto.lastIndexOf(' - ')
+            if (idx <= 0) {
+                return { data: texto, tipo: '' }
+            }
+            return {
+                data: texto.slice(0, idx).trim(),
+                tipo: texto.slice(idx + 3).trim()
+            }
+        },
+        partesLotacaoDeTexto(lotacao) {
+            const texto = String(lotacao || '').trim()
+            if (!texto) {
+                return { nome: '', cnpj: '' }
+            }
+            const idx = texto.lastIndexOf(' - ')
+            if (idx <= 0) {
+                return { nome: texto, cnpj: '' }
+            }
+            return {
+                nome: texto.slice(0, idx).trim(),
+                cnpj: texto.slice(idx + 3).trim()
+            }
+        },
         identificacaoDoColaborador(obj) {
             const admissao = obj && obj.admissao ? obj.admissao : {}
             const vagaNome = obj && obj.vaga_aberta && obj.vaga_aberta.vaga ? obj.vaga_aberta.vaga.nome : ''
             const cargo = String(admissao.cargo || vagaNome || '').trim()
             const centroCusto = String(admissao.emp_centro_custo || '').trim()
-            const nomeLotacao = String(admissao.emp_nome_fantasia || '').trim()
-            const tipoLotacao = String(admissao.emp_tipo || '').trim()
-            const lotacao = nomeLotacao ? `${nomeLotacao}${tipoLotacao ? ` (${tipoLotacao})` : ''}` : ''
+            const partes = this.partesLotacaoDaAdmissao(admissao)
+            const lotacao = formatLotacao(partes.nome, null, partes.cnpj)
 
             return {
                 lotacao,
+                lotacao_nome: partes.nome,
+                lotacao_cnpj: partes.cnpj,
                 centro_custo: centroCusto,
                 cargo,
                 possui_centro_custo: centroCusto !== '',
@@ -1286,7 +1607,16 @@ export default defineComponent({
             if (!identificacao || typeof identificacao !== 'object') {
                 return
             }
-            this.dados.lotacao = identificacao.lotacao || ''
+            const partes = {
+                nome: String(identificacao.lotacao_nome || '').trim(),
+                cnpj: String(identificacao.lotacao_cnpj || '').trim()
+            }
+            if (!partes.nome && !partes.cnpj) {
+                Object.assign(partes, this.partesLotacaoDeTexto(identificacao.lotacao))
+            }
+            this.dados.lotacao_nome = partes.nome
+            this.dados.lotacao_cnpj = partes.cnpj
+            this.dados.lotacao = formatLotacao(partes.nome, null, partes.cnpj) || String(identificacao.lotacao || '').trim()
             this.dados.centro_custo = identificacao.centro_custo || ''
             this.dados.cargo = identificacao.cargo || ''
             this.dados.possui_centro_custo = Boolean(identificacao.possui_centro_custo)
@@ -1493,3 +1823,52 @@ export default defineComponent({
     }
 })
 </script>
+
+<style scoped>
+table.tabela.mybp-tabela.ce-tabela :deep(th),
+table.tabela.mybp-tabela.ce-tabela :deep(td) {
+    text-align: left;
+    vertical-align: top;
+}
+
+table.tabela.mybp-tabela.ce-tabela :deep(th) {
+    white-space: normal;
+    line-height: 1.25;
+    letter-spacing: 0.04em;
+}
+
+table.tabela.mybp-tabela.ce-tabela :deep(td.mybp-col-texto) {
+    white-space: normal;
+    min-width: 160px;
+    max-width: 280px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+table.tabela.mybp-tabela.ce-tabela :deep(td.ce-col-cc) {
+    max-width: 320px;
+}
+
+table.tabela.mybp-tabela.ce-tabela :deep(td.ce-col-nome),
+table.tabela.mybp-tabela.ce-tabela :deep(td.ce-col-cargo),
+table.tabela.mybp-tabela.ce-tabela :deep(td.ce-col-encaminhamento) {
+    max-width: 260px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+table.tabela.mybp-tabela.ce-tabela :deep(tr.ce-linha--clicavel) {
+    cursor: pointer;
+}
+
+table.tabela.mybp-tabela.ce-tabela :deep(tr.ce-linha--clicavel:hover) {
+    background-color: #d2d2d2 !important;
+}
+
+table.tabela.mybp-tabela.ce-tabela :deep(tr.ce-linha--clicavel:focus) {
+    outline: 2px solid rgba(23, 66, 87, 0.35);
+    outline-offset: -2px;
+}
+</style>

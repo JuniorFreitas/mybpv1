@@ -18,6 +18,7 @@ use App\Models\Tarefa;
 use App\Models\User;
 use App\Services\WeeklyReport\AttachMentionedMembers;
 use App\Services\WeeklyReport\GrantWeeklyReportAccess;
+use App\Support\WeeklyReport\WeeklyReportAnexoUrls;
 use App\Support\WeeklyReport\WeeklyReportEagerLoads;
 use App\Support\WeeklyReportHtml;
 use Illuminate\Http\Request;
@@ -79,7 +80,7 @@ class TarefasController extends Controller
     {
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa);
 
-        WeeklyReportEagerLoads::loadShow($tarefa);
+        WeeklyReportEagerLoads::loadShow($tarefa, $empresa, (int) $quadro->id, (int) $lista->id);
         $logsPage = $tarefa->Logs()->paginate(WeeklyReportEagerLoads::PAGE_SIZE);
         $tarefa->setRelation('Logs', collect($logsPage->items()));
         $tarefa->setAttribute('logs_meta', WeeklyReportEagerLoads::pageMeta($logsPage));
@@ -540,7 +541,16 @@ class TarefasController extends Controller
                     'descricao' => "anexo {$arquivo->nome}{$arquivo->extensao} a esta tarefa",
                 ]);
 
-                return response()->json($arquivo, 201);
+                return response()->json(
+                    WeeklyReportAnexoUrls::forArquivo(
+                        $arquivo->fresh(),
+                        $empresa,
+                        (int) $quadro->id,
+                        (int) $lista->id,
+                        (int) $tarefa->id
+                    ),
+                    201
+                );
             }
 
             return response()->json([
@@ -595,7 +605,13 @@ class TarefasController extends Controller
 
             return response()->json([
                 'location' => $location,
-                'arquivo' => $arquivo->fresh(),
+                'arquivo' => WeeklyReportAnexoUrls::forArquivo(
+                    $arquivo->fresh(),
+                    $empresa,
+                    (int) $quadro->id,
+                    (int) $lista->id,
+                    (int) $tarefa->id
+                ),
             ], 201);
         } catch (\Throwable $e) {
             \Log::error('weekly-report uploadEditorImage: ' . $e->getMessage(), [
@@ -613,17 +629,21 @@ class TarefasController extends Controller
     public function anexoShow(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, $arquivo)
     {
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa);
+        $model = $this->assertAnexoDaTarefa($tarefa, (string) $arquivo);
 
-        if (Storage::disk(Arquivo::DISCO_WEEKLY_REPORT)->exists($arquivo)) {
-            return Storage::disk(Arquivo::DISCO_WEEKLY_REPORT)->response($arquivo);
+        // Serve o path pedido (file ou thumb), desde que pertença ao anexo da tarefa.
+        $path = Arquivo::sanitizarPathStorage((string) $arquivo);
+        if ($path !== $model->file && $path !== $model->thumb) {
+            abort(404);
         }
 
-        abort(404);
+        return Arquivo::anexoShow(Arquivo::DISCO_WEEKLY_REPORT, $path);
     }
 
     public function anexoUpdate(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, Arquivo $arquivo)
     {
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa);
+        $this->assertAnexoModelDaTarefa($tarefa, $arquivo);
 
         $dadosValidados = \Validator::make($request->all(), [
             'nome' => 'min:1',
@@ -654,55 +674,81 @@ class TarefasController extends Controller
     {
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa);
 
-        $model = Arquivo::whereDisco(Arquivo::DISCO_WEEKLY_REPORT)
-            ->where(function ($q) use ($arquivo) {
-                $q->where('file', $arquivo)->orWhere('thumb', $arquivo);
-            })
-            ->first(['id', 'nome', 'file', 'imagem', 'thumb', 'extensao', 'temporario']);
+        $model = $this->assertAnexoDaTarefa($tarefa, (string) $arquivo);
+        $discoStorage = Storage::disk(Arquivo::DISCO_WEEKLY_REPORT);
+        $filePath = Arquivo::sanitizarPathStorage($model->file);
 
-        if ($model) {
-            $discoStorage = Storage::disk(Arquivo::DISCO_WEEKLY_REPORT);
-            if ($discoStorage->exists($arquivo)) {
-                if ($model->imagem) {
-                    $discoStorage->delete($model->thumb);
-                }
-                $discoStorage->delete($model->file);
-                $tarefa->Anexos()->detach($model->id);
-                $model->delete();
-                Event::dispatch(new AnexoEvent($tarefa, AnexoEvent::DELETE));
-                LogWeekly::create([
-                    'quadro_id' => $quadro->id,
-                    'tarefa_id' => $tarefa->id,
-                    'descricao' => "excluiu o anexo {$model->nome}{$model->extensao} desta tarefa",
-                ]);
-
-                return response()->json([], 200);
-            }
-
+        if (!$discoStorage->fileExists($filePath)) {
             return response('Não foi possível apagar o anexo', 400);
         }
 
-        abort(404);
+        if ($model->imagem && $model->thumb) {
+            $thumbPath = Arquivo::sanitizarPathStorage($model->thumb);
+            if ($discoStorage->fileExists($thumbPath)) {
+                $discoStorage->delete($thumbPath);
+            }
+        }
+        $discoStorage->delete($filePath);
+        $tarefa->Anexos()->detach($model->id);
+        $model->delete();
+        Event::dispatch(new AnexoEvent($tarefa, AnexoEvent::DELETE));
+        LogWeekly::create([
+            'quadro_id' => $quadro->id,
+            'tarefa_id' => $tarefa->id,
+            'descricao' => "excluiu o anexo {$model->nome}{$model->extensao} desta tarefa",
+        ]);
+
+        return response()->json([], 200);
     }
 
     public function download(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, $arquivo)
     {
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa);
-
-        if (Storage::disk(Arquivo::DISCO_WEEKLY_REPORT)->exists($arquivo)) {
-            $item = Arquivo::whereDisco(Arquivo::DISCO_WEEKLY_REPORT)
-                ->where(function ($q) use ($arquivo) {
-                    $q->where('file', $arquivo)->orWhere('thumb', $arquivo);
-                })
-                ->first(['nome', 'extensao']);
-
-            if (!$item) {
-                abort(404);
-            }
-
-            return Storage::disk(Arquivo::DISCO_WEEKLY_REPORT)->download($arquivo, $item->nome . $item->extensao);
+        $model = $this->assertAnexoDaTarefa($tarefa, (string) $arquivo);
+        $path = Arquivo::sanitizarPathStorage((string) $arquivo);
+        if ($path !== $model->file && $path !== $model->thumb) {
+            abort(404);
         }
 
-        abort(404);
+        return Arquivo::anexoDownload(Arquivo::DISCO_WEEKLY_REPORT, $path);
+    }
+
+    /**
+     * Garante que o path (file/thumb) é de um Arquivo do disco WR ligado à tarefa.
+     */
+    private function assertAnexoDaTarefa(Tarefa $tarefa, string $arquivo): Arquivo
+    {
+        $path = Arquivo::sanitizarPathStorage($arquivo);
+
+        $model = Arquivo::query()
+            ->where('disco', Arquivo::DISCO_WEEKLY_REPORT)
+            ->where(function ($q) use ($path) {
+                $q->where('file', $path)->orWhere('thumb', $path);
+            })
+            ->whereExists(function ($q) use ($tarefa) {
+                $q->select(\DB::raw(1))
+                    ->from('tarefa_anexos')
+                    ->whereColumn('tarefa_anexos.arquivo_id', 'arquivos.id')
+                    ->where('tarefa_anexos.tarefa_id', $tarefa->id);
+            })
+            ->first(['id', 'nome', 'file', 'imagem', 'thumb', 'extensao', 'temporario', 'disco']);
+
+        if (!$model) {
+            abort(404);
+        }
+
+        return $model;
+    }
+
+    private function assertAnexoModelDaTarefa(Tarefa $tarefa, Arquivo $arquivo): void
+    {
+        if ($arquivo->disco !== Arquivo::DISCO_WEEKLY_REPORT) {
+            abort(404);
+        }
+
+        $ligado = $tarefa->Anexos()->where('arquivos.id', $arquivo->id)->exists();
+        if (!$ligado) {
+            abort(404);
+        }
     }
 }

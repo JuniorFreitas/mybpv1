@@ -391,7 +391,7 @@ class Arquivo extends Model
         self::DISCO_PUBLICO,
         self::DISCO_PONTO_ELETRONICO,
         self::DISCO_PERFIL_USUARIO,
-        self::DISCO_WEEKLY_REPORT,
+        // DISCO_WEEKLY_REPORT: URLs nested via WeeklyReportAnexoUrls (rota flat /anexo removida)
         self::DISCO_EXCEL,
         self::DISCO_EXAMES,
         self::DISCO_AFASTAMENTO,

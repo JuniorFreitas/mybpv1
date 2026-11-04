@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Arquivo;
 use App\Models\Habilidade;
 use App\Models\ListaTarefa;
 use App\Models\Papel;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class WeeklyReportMultitenantTest extends TestCase
@@ -192,7 +194,13 @@ class WeeklyReportMultitenantTest extends TestCase
         Schema::create('arquivos', function (Blueprint $table) {
             $table->id();
             $table->string('nome')->nullable();
+            $table->boolean('imagem')->default(false);
+            $table->string('extensao')->nullable();
             $table->string('file')->nullable();
+            $table->string('thumb')->nullable();
+            $table->unsignedInteger('bytes')->nullable();
+            $table->boolean('temporario')->default(false);
+            $table->string('chave')->nullable();
             $table->string('disco')->nullable();
             $table->timestamps();
         });
@@ -866,5 +874,63 @@ class WeeklyReportMultitenantTest extends TestCase
             "/g/weekly-report/10/quadros/{$quadro->id}/membros/buscar?busca=Usuario%20Sem"
         )->assertOk();
         $this->assertFalse(collect($busca->json())->pluck('id')->contains($semGrupo->id));
+    }
+
+    public function test_anexo_so_acessa_arquivo_ligado_a_tarefa(): void
+    {
+        config(['activitylog.enabled' => false]);
+        Storage::fake(Arquivo::DISCO_WEEKLY_REPORT);
+
+        $user = $this->user(10);
+        $this->actingAs($user);
+
+        $quadro = Quadro::query()->create(['titulo' => 'Board Anexo', 'empresa_id' => 10, 'user_id' => $user->id]);
+        $lista = ListaTarefa::query()->create([
+            'titulo' => 'L1',
+            'quadro_id' => $quadro->id,
+            'user_id' => $user->id,
+            'ordem' => 1,
+        ]);
+        $tarefaA = Tarefa::query()->create([
+            'titulo' => 'Card A',
+            'lista_id' => $lista->id,
+            'user_id' => $user->id,
+            'ordem' => 1,
+        ]);
+        $tarefaB = Tarefa::query()->create([
+            'titulo' => 'Card B',
+            'lista_id' => $lista->id,
+            'user_id' => $user->id,
+            'ordem' => 2,
+        ]);
+
+        $anexoA = Arquivo::withoutEvents(fn () => Arquivo::query()->create([
+            'nome' => 'a',
+            'imagem' => false,
+            'extensao' => '.txt',
+            'file' => 'arquivo-a.txt',
+            'disco' => Arquivo::DISCO_WEEKLY_REPORT,
+            'temporario' => false,
+        ]));
+        $anexoB = Arquivo::withoutEvents(fn () => Arquivo::query()->create([
+            'nome' => 'b',
+            'imagem' => false,
+            'extensao' => '.txt',
+            'file' => 'arquivo-b.txt',
+            'disco' => Arquivo::DISCO_WEEKLY_REPORT,
+            'temporario' => false,
+        ]));
+
+        Storage::disk(Arquivo::DISCO_WEEKLY_REPORT)->put('arquivo-a.txt', 'conteudo-a');
+        Storage::disk(Arquivo::DISCO_WEEKLY_REPORT)->put('arquivo-b.txt', 'conteudo-b');
+
+        $tarefaA->Anexos()->attach($anexoA->id);
+        $tarefaB->Anexos()->attach($anexoB->id);
+
+        $base = "/g/weekly-report/10/quadros/{$quadro->id}/listas/{$lista->id}/tarefas";
+
+        $this->get("{$base}/{$tarefaA->id}/anexo/arquivo-a.txt")->assertOk();
+        $this->get("{$base}/{$tarefaA->id}/anexo/arquivo-b.txt")->assertNotFound();
+        $this->get("{$base}/{$tarefaA->id}/anexoDownload/arquivo-b.txt")->assertNotFound();
     }
 }

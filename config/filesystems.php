@@ -208,13 +208,15 @@ return [
             ]
         ),
 
+        // URLs de anexo são nested: weekly-report/{empresa}/quadros/.../tarefas/{tarefa}/anexo/{file}
+        // Geradas em App\Support\WeeklyReport\WeeklyReportAnexoUrls (não usar prefixo flat /anexo).
         'disco-weekly-report' => array_merge($default,
             [
                 'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-weekly_report') : 'arquivos/disco-weekly_report',
-                'urlShow' => env('APP_URL') . '/g/weekly-report/anexo',
-                'urlDownload' => env('APP_URL') . '/g/weekly-report/anexo',
-                'urlThumb' => env('APP_URL') . '/g/weekly-report/anexo',
-                'urlDelete' => env('APP_URL') . '/g/weekly-report/anexo',
+                'urlShow' => '',
+                'urlDownload' => '',
+                'urlThumb' => '',
+                'urlDelete' => '',
                 'visibility' => 'public'
             ]
         ),

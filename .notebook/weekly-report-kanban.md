@@ -28,6 +28,9 @@
 - Ao convidar membro: usuário **precisa ter grupo (`grupo_id`) ativo**; busca só lista quem tem grupo. `GrantWeeklyReportAccess` faz `syncWithoutDetaching` de `weekly_report` no papel — permissões vêm de `papeis_habilidades`.
 - TaskModal `buscarMembros`: mesma base do Share (empresa + grupo ativo). Ao adicionar no card, se ainda não for do quadro → convida no board + `GrantWeeklyReportAccess`.
 - Anexos só em rotas nested (rotas soltas sem tenant removidas). MIME: `Arquivo::MIMEWEEKLYREPORT` (imagens, PDF, Word, Excel, PPT, ZIP, RAR) em `TarefasController::uploadAnexos` — editor TinyMCE continua só imagens.
+- URLs de anexo NÃO vêm do accessor genérico de `Arquivo` (`/g/weekly-report/anexo/...` flat foi removida). Hidratar com `WeeklyReportAnexoUrls` no `show`, upload e `AnexoEvent`. `DISCO_WEEKLY_REPORT` fora de `LISTAGEM_DISCOS`.
+- Servir/apagar via `Arquivo::anexoShow` / `anexoDownload` + `fileExists` (evitar `exists()` no S3 — pode lançar `UnableToCheckDirectoryExistence`).
+- Segurança anexo: `assertWeeklyHierarchy` (tenant + membro do quadro + hierarquia) **e** `assertAnexoDaTarefa` (arquivo/thumb tem de estar em `tarefa_anexos` daquela tarefa; bloqueia IDOR entre cards do mesmo quadro).
 - TaskModal: NÃO emitir `updated` de forma que o pai reatribua `tarefaAtiva` (loop de `loadShow`). Usar `loadedId` + `Object.assign` só nas listas.
 - Checklist: formulário inline (sem `window.prompt` — bloqueado em browsers embutidos).
 - Excluir checklist: `@mousedown.prevent` + remoção otimista; Echo NÃO faz `reloadBoardSoft` (isso “revivia” a checklist no modal). Sync via `applyChecklistRealtime` / `patchTarefaChecklists`.
