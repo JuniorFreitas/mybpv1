@@ -64,8 +64,12 @@ final class WeeklyReportEagerLoads
         return $listas;
     }
 
-    public static function loadShow(Tarefa $tarefa): Tarefa
-    {
+    public static function loadShow(
+        Tarefa $tarefa,
+        int $empresa = 0,
+        int $quadroId = 0,
+        int $listaId = 0
+    ): Tarefa {
         $tarefa->load([
             'Membros' => function ($q) {
                 $q->select(['users.id', 'users.nome']);
@@ -83,6 +87,10 @@ final class WeeklyReportEagerLoads
                 ]);
             },
         ]);
+
+        if ($empresa > 0 && $quadroId > 0 && $listaId > 0) {
+            WeeklyReportAnexoUrls::hydrateTarefaAnexos($tarefa, $empresa, $quadroId, $listaId);
+        }
 
         return $tarefa;
     }

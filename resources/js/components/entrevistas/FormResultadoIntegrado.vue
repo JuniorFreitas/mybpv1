@@ -145,6 +145,48 @@
                 </div>
             </div>
             <div class="row" v-show="form.encaminhado_exame">
+                <div class="col-12 col-md-4" v-if="temFilial">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" :for="`ri-lotacao-${hash}`">
+                            CNPJ Lotação <span class="text-danger">*</span>
+                        </label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                :instance-id="`ri-lotacao-${hash}`"
+                                :input-id="`ri-lotacao-${hash}`"
+                                v-model="lotacaoCnpj"
+                                :options="opcoesLotacao"
+                                :disabled="visualizar || disabled || encaminhado.exame"
+                                placeholder-blur="Selecione a lotação..."
+                                empty-message="Nenhuma lotação encontrada."
+                                :max-results="50"
+                                @opening="fecharOutrosComboboxes(`ri-lotacao-${hash}`)"
+                                @select="onSelectLotacao"
+                            ></combobox-auto-complete>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="form-group mybp-filtro-campo">
+                        <label class="mybp-label" :for="`ri-cc-${hash}`">
+                            Centro de custo <span class="text-danger">*</span>
+                        </label>
+                        <div class="mybp-combobox-wrap">
+                            <combobox-auto-complete
+                                :instance-id="`ri-cc-${hash}`"
+                                :input-id="`ri-cc-${hash}`"
+                                v-model="form.centro_custo_id"
+                                :options="opcoesCentroCusto"
+                                :disabled="visualizar || disabled || encaminhado.exame || (temFilial && !lotacaoCnpj)"
+                                placeholder-blur="Selecione..."
+                                empty-message="Nenhum centro de custo para esta lotação."
+                                :max-results="50"
+                                @opening="fecharOutrosComboboxes(`ri-cc-${hash}`)"
+                                @select="onSelectCentroCusto"
+                            ></combobox-auto-complete>
+                        </div>
+                    </div>
+                </div>
                 <div class="col-12 col-md-4">
                     <div class="form-group mybp-filtro-campo mybp-modal-campo-data">
                         <label class="mybp-label">Data da realização</label>
@@ -325,6 +367,7 @@
 import MixinConfig from '../../mixins/Configuracoes'
 import ComboboxAutoComplete from '../ComboboxAutoComplete.vue'
 import ComboboxValidation from '../../mixins/ComboboxValidation'
+import { resolverCnpjKeyViaListaCcs } from '../../utils/lotacaoLabel'
 
 export default {
     name: 'FormResultadoIntegrado',
@@ -346,6 +389,9 @@ export default {
                 exame_whatsapp: false,
                 pcmso_id: '',
                 empresa_exame_id: '',
+                centro_custo_id: '',
+                filial: false,
+                centro_custo_filial_id: '',
                 encaminhado_treinamento: '',
                 encaminhado_treinamento_data: '',
                 excessao: '',
@@ -380,6 +426,8 @@ export default {
             hash: parseInt(Math.random() * 999999, 10),
             listaPcmso: [],
             listaEmpresaExame: [],
+            listaCcs: null,
+            lotacaoCnpj: '',
             encaminhado: {
                 documentos: false,
                 exame: false,
@@ -410,6 +458,30 @@ export default {
                 value: item.id,
                 label: item.nome
             }))
+        },
+        centrosDaLotacao() {
+            if (!this.listaCcs || !this.listaCcs.centros_custos) return []
+            if (!this.temFilial) {
+                const keys = Object.keys(this.listaCcs.centros_custos)
+                return keys.length ? this.listaCcs.centros_custos[keys[0]] || [] : []
+            }
+            if (!this.lotacaoCnpj) return []
+            return this.listaCcs.centros_custos[this.lotacaoCnpj] || []
+        },
+        opcoesLotacao() {
+            const opcoes = []
+            if (!this.listaCcs || !this.listaCcs.cnpjs) return opcoes
+            Object.keys(this.listaCcs.cnpjs).forEach((key) => {
+                const item = this.listaCcs.cnpjs[key]
+                opcoes.push({
+                    value: key,
+                    label: `${item.nome_fantasia} - ${item.cnpj}`
+                })
+            })
+            return opcoes
+        },
+        opcoesCentroCusto() {
+            return this.centrosDaLotacao.map((item) => ({ value: item.id, label: item.label }))
         },
         exigePcmsoEmpresa() {
             return !this.empresasSemValidacao.includes(this.AUTENTICADO.cliente_id)
@@ -472,8 +544,16 @@ export default {
         } catch (err) {
             this.listaEmpresaExame = []
         }
+        try {
+            const resCc = await axios.get(`${URL_PUBLICO}/centro-custos-cnpj`)
+            this.listaCcs = resCc.data || null
+        } catch (err) {
+            this.listaCcs = null
+        }
         this.form.pcmso_id = !this.form.pcmso_id ? '' : this.form.pcmso_id
         this.form.empresa_exame_id = !this.form.empresa_exame_id ? '' : this.form.empresa_exame_id
+        this.form.centro_custo_id = this.form.centro_custo_id ?? ''
+        this.sincronizarLotacao()
         this.form.envia_email_documentos = false
         this.form.envia_whatsapp_documentos = false
         this.form.envia_email_exame = false
@@ -487,6 +567,25 @@ export default {
     },
     methods: {
         fecharOutrosComboboxes() {},
+        sincronizarLotacao() {
+            if (!this.listaCcs || !this.listaCcs.centros_custos) {
+                this.lotacaoCnpj = ''
+                return
+            }
+            if (!this.temFilial) {
+                const keys = Object.keys(this.listaCcs.centros_custos)
+                this.lotacaoCnpj = keys[0] || ''
+                return
+            }
+            this.lotacaoCnpj = resolverCnpjKeyViaListaCcs(this.listaCcs, this.form.centro_custo_id, null)
+        },
+        onSelectLotacao() {
+            this.form.centro_custo_id = ''
+            this.limparComboboxInvalido(`ri-lotacao-${this.hash}`)
+        },
+        onSelectCentroCusto() {
+            this.limparComboboxInvalido(`ri-cc-${this.hash}`)
+        },
         boolToCombo(val) {
             if (val === true || val === 'true' || val === 1 || val === '1') return 'sim'
             if (val === false || val === 'false' || val === 0 || val === '0') return 'nao'
@@ -553,6 +652,25 @@ export default {
                 this.exigePcmsoEmpresa &&
                 !this.exigirCombobox(this.form.empresa_exame_id, `ri-empresa-exame-${this.hash}`, {
                     toastMsg: 'Selecione a empresa de exame'
+                })
+            ) {
+                return false
+            }
+
+            if (
+                this.form.encaminhado_exame === true &&
+                this.temFilial &&
+                !this.exigirCombobox(this.lotacaoCnpj, `ri-lotacao-${this.hash}`, {
+                    toastMsg: 'Selecione a lotação'
+                })
+            ) {
+                return false
+            }
+
+            if (
+                this.form.encaminhado_exame === true &&
+                !this.exigirCombobox(this.form.centro_custo_id, `ri-cc-${this.hash}`, {
+                    toastMsg: 'Selecione o centro de custo'
                 })
             ) {
                 return false

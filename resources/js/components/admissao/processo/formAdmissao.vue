@@ -40,6 +40,25 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-12 col-md-4" v-if="temFilial">
+                        <div class="form-group mybp-filtro-campo">
+                            <label class="mybp-label" for="fa-lotacao">CNPJ Lotação</label>
+                            <div class="mybp-combobox-wrap">
+                                <combobox-auto-complete
+                                    instance-id="fa-lotacao"
+                                    input-id="fa-lotacao"
+                                    v-model="lotacaoCnpj"
+                                    :options="opcoesLotacao"
+                                    :disabled="visualizar || disabled || form.status === 'ADMITIDO'"
+                                    placeholder-blur="Selecione a lotação..."
+                                    empty-message="Nenhuma lotação encontrada."
+                                    :max-results="50"
+                                    @opening="fecharOutrosComboboxes('fa-lotacao')"
+                                    @select="onSelectLotacao"
+                                ></combobox-auto-complete>
+                            </div>
+                        </div>
+                    </div>
                     <div class="col-12 col-md-4">
                         <div class="form-group mybp-filtro-campo">
                             <label class="mybp-label" for="fa-cc">Centro de Custo</label>
@@ -49,50 +68,12 @@
                                     input-id="fa-cc"
                                     v-model="form.centro_custo_id"
                                     :options="opcoesCentroCusto"
-                                    :disabled="visualizar || disabled || form.status === 'ADMITIDO'"
+                                    :disabled="visualizar || disabled || form.status === 'ADMITIDO' || (temFilial && !lotacaoCnpj)"
                                     placeholder-blur="Selecione..."
-                                    empty-message="Nenhum centro de custo."
+                                    empty-message="Nenhum centro de custo para esta lotação."
                                     :max-results="50"
                                     @opening="fecharOutrosComboboxes('fa-cc')"
                                     @select="onSelectCentroCusto"
-                                ></combobox-auto-complete>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-4" v-if="centroCustoTemFilial">
-                        <div class="form-group mybp-filtro-campo">
-                            <label class="mybp-label" for="fa-tipo-cnpj">CNPJ</label>
-                            <div class="mybp-combobox-wrap">
-                                <combobox-auto-complete
-                                    instance-id="fa-tipo-cnpj"
-                                    input-id="fa-tipo-cnpj"
-                                    v-model="filialCombo"
-                                    :options="opcoesTipoCnpj"
-                                    :disabled="visualizar || disabled || form.status === 'ADMITIDO'"
-                                    placeholder-blur="Selecione..."
-                                    empty-message="Nenhuma opção."
-                                    :max-results="5"
-                                    @opening="fecharOutrosComboboxes('fa-tipo-cnpj')"
-                                    @select="onSelectTipoCnpj"
-                                ></combobox-auto-complete>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-4" v-if="temFilial && form.filial">
-                        <div class="form-group mybp-filtro-campo">
-                            <label class="mybp-label" for="fa-filial">Filial</label>
-                            <div class="mybp-combobox-wrap">
-                                <combobox-auto-complete
-                                    instance-id="fa-filial"
-                                    input-id="fa-filial"
-                                    v-model="form.centro_custo_filial_id"
-                                    :options="opcoesFilial"
-                                    :disabled="visualizar || disabled || form.status === 'ADMITIDO'"
-                                    placeholder-blur="Selecione..."
-                                    empty-message="Nenhuma filial."
-                                    :max-results="50"
-                                    @opening="fecharOutrosComboboxes('fa-filial')"
-                                    @select="limparComboboxInvalido('fa-filial')"
                                 ></combobox-auto-complete>
                             </div>
                         </div>
@@ -622,6 +603,7 @@ import ComboboxValidation from '../../../mixins/ComboboxValidation'
 import FeriasAdquiridas from './FeriasAdquiridas'
 import ComboboxAutoComplete from '../../ComboboxAutoComplete.vue'
 import configuracoes from '../../../mixins/Configuracoes'
+import { resolverCnpjKeyViaListaCcs } from '../../../utils/lotacaoLabel'
 
 function mapStr(lista) {
     return (lista || []).map((item) => ({ value: item, label: String(item) }))
@@ -640,38 +622,40 @@ export default {
             preload: true,
             areasetiquetas: [],
             listSelects: {},
-            centro_custos: []
+            listaCcs: null,
+            lotacaoCnpj: ''
         }
     },
     computed: {
         verificaStatusAdmitidoProntoAdmissao() {
             return ['ADMITIDO', 'PRONTO PARA ADMISSÃO'].includes(this.form.status)
         },
-        centroCustoSelecionado() {
-            if (!this.form.centro_custo_id) return []
-            const centro = _.find(this.centro_custos, { id: this.form.centro_custo_id })
-            return centro && centro.filiais && centro.filiais.length ? centro.filiais : []
+        centrosDaLotacao() {
+            if (!this.listaCcs || !this.listaCcs.centros_custos) return []
+            if (!this.temFilial) {
+                const keys = Object.keys(this.listaCcs.centros_custos)
+                return keys.length ? this.listaCcs.centros_custos[keys[0]] || [] : []
+            }
+            if (!this.lotacaoCnpj) return []
+            return this.listaCcs.centros_custos[this.lotacaoCnpj] || []
         },
-        centroCustoTemFilial() {
-            return this.temFilial && this.centroCustoSelecionado.length > 0
+        opcoesLotacao() {
+            const opcoes = []
+            if (!this.listaCcs || !this.listaCcs.cnpjs) return opcoes
+            Object.keys(this.listaCcs.cnpjs).forEach((key) => {
+                const item = this.listaCcs.cnpjs[key]
+                opcoes.push({
+                    value: key,
+                    label: `${item.nome_fantasia} - ${item.cnpj}`
+                })
+            })
+            return opcoes
         },
         opcoesArea() {
             return (this.areasetiquetas || []).map((i) => ({ value: i.id, label: i.label }))
         },
         opcoesCentroCusto() {
-            return (this.centro_custos || []).map((i) => ({ value: i.id, label: i.label }))
-        },
-        opcoesFilial() {
-            return (this.centroCustoSelecionado || []).map((i) => ({
-                value: i.id,
-                label: (i.filial && i.filial.razao_social) || String(i.id)
-            }))
-        },
-        opcoesTipoCnpj() {
-            return [
-                { value: 'matriz', label: 'Matriz' },
-                { value: 'filial', label: 'Filial' }
-            ]
+            return this.centrosDaLotacao.map((item) => ({ value: item.id, label: item.label }))
         },
         opcoesSimNao() {
             return [
@@ -706,14 +690,6 @@ export default {
         opcoesStatus() {
             return mapStr(this.listSelects.status_admissao)
         },
-        filialCombo: {
-            get() {
-                return this.form.filial ? 'filial' : 'matriz'
-            },
-            set(v) {
-                this.form.filial = v === 'filial'
-            }
-        },
         biometriaCombo: {
             get() {
                 if (this.form.biometria === true || this.form.biometria === 1 || this.form.biometria === 'true') return 'sim'
@@ -733,11 +709,12 @@ export default {
             const [areasRes, selectsRes, ccRes] = await Promise.all([
                 axios.get(`${URL_PUBLICO}/lista-areas`),
                 axios.get(`${URL_ADMIN}/admissao/listSelects`),
-                axios.post(`${URL_PUBLICO}/centro-custos/`, { empresa_id: this.form.empresa_id })
+                axios.get(`${URL_PUBLICO}/centro-custos-cnpj`)
             ])
             this.areasetiquetas = (areasRes.data && areasRes.data.areas) || []
             this.listSelects = selectsRes.data || {}
-            this.centro_custos = (ccRes.data && ccRes.data.centro_custos) || []
+            this.listaCcs = ccRes.data || null
+            this.sincronizarLotacao()
         } catch (e) {
             console.log(e)
         }
@@ -760,14 +737,24 @@ export default {
     },
     methods: {
         fecharOutrosComboboxes() {},
+        sincronizarLotacao() {
+            if (!this.listaCcs || !this.listaCcs.centros_custos) {
+                this.lotacaoCnpj = ''
+                return
+            }
+            if (!this.temFilial) {
+                const keys = Object.keys(this.listaCcs.centros_custos)
+                this.lotacaoCnpj = keys[0] || ''
+                return
+            }
+            this.lotacaoCnpj = resolverCnpjKeyViaListaCcs(this.listaCcs, this.form.centro_custo_id, null)
+        },
+        onSelectLotacao() {
+            this.form.centro_custo_id = ''
+            this.limparComboboxInvalido('fa-lotacao')
+        },
         onSelectCentroCusto() {
             this.limparComboboxInvalido('fa-cc')
-            this.form.filial = false
-            this.form.centro_custo_filial_id = ''
-        },
-        onSelectTipoCnpj() {
-            this.limparComboboxInvalido('fa-tipo-cnpj')
-            this.form.centro_custo_filial_id = ''
         },
         validarCampos() {
             if (this.visualizar || this.disabled) return true

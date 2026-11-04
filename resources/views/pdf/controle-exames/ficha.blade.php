@@ -170,14 +170,32 @@
 
     @php
         $identificacaoPdf = is_array($identificacao ?? null) ? $identificacao : [];
+        $lotacaoNomePdf = trim((string) ($identificacaoPdf['lotacao_nome'] ?? ''));
+        $lotacaoCnpjPdf = trim((string) ($identificacaoPdf['lotacao_cnpj'] ?? ''));
         $lotacaoPdf = trim((string) ($identificacaoPdf['lotacao'] ?? ''));
+        if ($lotacaoNomePdf === '' && $lotacaoCnpjPdf === '' && $lotacaoPdf !== '') {
+            $pos = strrpos($lotacaoPdf, ' - ');
+            if ($pos !== false) {
+                $lotacaoNomePdf = trim(substr($lotacaoPdf, 0, $pos));
+                $lotacaoCnpjPdf = trim(substr($lotacaoPdf, $pos + 3));
+            } else {
+                $lotacaoNomePdf = $lotacaoPdf;
+            }
+        }
         $centroCustoPdf = trim((string) ($identificacaoPdf['centro_custo'] ?? ''));
         $cargoPdf = trim((string) ($identificacaoPdf['cargo'] ?? ''));
     @endphp
     <p class="paragrafo paragrafo--sem-recuo">
-        Lotação: {{ $lotacaoPdf !== '' ? $lotacaoPdf : 'Não informado' }}<br>
+        Lotação:
+        @if($lotacaoNomePdf !== '' || $lotacaoCnpjPdf !== '')
+            {{ $lotacaoNomePdf !== '' ? $lotacaoNomePdf : 'Não informado' }}@if($lotacaoCnpjPdf !== '')<br>{{ $lotacaoCnpjPdf }}@endif
+        @else
+            Não informado
+        @endif
+        <br>
         Centro de custo: {{ $centroCustoPdf !== '' ? $centroCustoPdf : 'Não informado' }}<br>
-        Cargo: {{ $cargoPdf !== '' ? $cargoPdf : 'Não informado' }}
+        Cargo:<br>
+        {{ $cargoPdf !== '' ? $cargoPdf : 'Não informado' }}
     </p>
 
     <p class="paragrafo paragrafo--sem-recuo">

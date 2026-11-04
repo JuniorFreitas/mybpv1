@@ -3,13 +3,12 @@
 namespace App\Services\ControleExames;
 
 use App\Models\CentroCusto;
-use App\Models\CentroCustoFilial;
 use App\Models\Cliente;
-use App\Models\ClienteFilial;
 use App\Models\FeedbackCurriculo;
 use App\Models\Vaga;
 use App\Models\VagasAbertas;
 use App\Services\Planejamento\Movimentacao\LotacaoLabelResolver;
+use Illuminate\Http\JsonResponse;
 
 class ColaboradorExameIdentificacao
 {
@@ -18,6 +17,8 @@ class ColaboradorExameIdentificacao
     /**
      * @return array{
      *     lotacao: string,
+     *     lotacao_nome: string,
+     *     lotacao_cnpj: string,
      *     centro_custo: string,
      *     cargo: string,
      *     possui_centro_custo: bool,
@@ -26,17 +27,24 @@ class ColaboradorExameIdentificacao
      */
     public function paraFeedback(?FeedbackCurriculo $feedback): array
     {
-        if (!$feedback) {
-            return $this->apresentar(null, null, null);
+        if (! $feedback) {
+            return $this->apresentar(null, null, null, null);
         }
 
-        $feedback->loadMissing('Admissao');
+        $feedback->loadMissing(['Admissao', 'ResultadoIntegrado']);
         $admissao = $feedback->Admissao;
+        $resultado = $feedback->ResultadoIntegrado;
         $empresaId = (int) ($feedback->empresa_id ?? 0);
         $centroCustoId = (int) ($admissao->centro_custo_id ?? 0);
+        if ($centroCustoId <= 0 && (int) ($resultado?->centro_custo_id ?? 0) > 0) {
+            $centroCustoId = (int) $resultado->centro_custo_id;
+        }
+
+        $partes = $this->partesLotacao($empresaId, $centroCustoId);
 
         return $this->apresentar(
-            $this->lotacao($empresaId, $centroCustoId, (bool) ($admissao->filial ?? false), (int) ($admissao->centro_custo_filial_id ?? 0)),
+            $partes['nome'],
+            $partes['cnpj'],
             $this->centroCusto($empresaId, $centroCustoId),
             $this->cargo($feedback, $admissao?->cargo, $empresaId)
         );
@@ -45,24 +53,36 @@ class ColaboradorExameIdentificacao
     /**
      * @return array{
      *     lotacao: string,
+     *     lotacao_nome: string,
+     *     lotacao_cnpj: string,
      *     centro_custo: string,
      *     cargo: string,
      *     possui_centro_custo: bool,
      *     possui_cargo: bool
      * }
      */
-    public function apresentar(?string $lotacao, ?string $centroCusto, ?string $cargo): array
+    public function apresentar(?string $lotacaoNome, ?string $lotacaoCnpj, ?string $centroCusto, ?string $cargo): array
     {
-        $lotacao = $this->limpo($lotacao);
-        if ($lotacao === self::NAO_INFORMADO) {
-            $lotacao = '';
+        $lotacaoNome = $this->limpo($lotacaoNome);
+        $lotacaoCnpj = $this->limpo($lotacaoCnpj);
+        if ($lotacaoNome === self::NAO_INFORMADO) {
+            $lotacaoNome = '';
+        }
+        if ($lotacaoCnpj === self::NAO_INFORMADO) {
+            $lotacaoCnpj = '';
         }
 
         $centroCusto = $this->limpo($centroCusto);
         $cargo = $this->limpo($cargo);
+        $lotacao = LotacaoLabelResolver::format($lotacaoNome ?: null, null, $lotacaoCnpj ?: null);
+        if ($lotacao === self::NAO_INFORMADO) {
+            $lotacao = '';
+        }
 
         return [
             'lotacao' => $lotacao,
+            'lotacao_nome' => $lotacaoNome,
+            'lotacao_cnpj' => $lotacaoCnpj,
             'centro_custo' => $centroCusto,
             'cargo' => $cargo,
             'possui_centro_custo' => $centroCusto !== '',
@@ -111,55 +131,59 @@ class ColaboradorExameIdentificacao
             ->value('label');
     }
 
-    private function lotacao(int $empresaId, int $centroCustoId, bool $filial, int $centroCustoFilialId): string
+    /**
+     * @return array{nome: string, cnpj: string}
+     */
+    private function partesLotacao(int $empresaId, int $centroCustoId): array
     {
-        if ($empresaId <= 0) {
-            return '';
+        if ($empresaId <= 0 || $centroCustoId <= 0) {
+            return ['nome' => '', 'cnpj' => ''];
         }
 
-        if ($centroCustoId > 0) {
-            $vinculo = CentroCustoFilial::withoutGlobalScopes()
-                ->where('empresa_id', $empresaId)
-                ->where('centro_custo_id', $centroCustoId)
-                ->whereNull('deleted_at')
-                ->orderByDesc('ativo')
-                ->orderBy('id')
-                ->first();
+        $lista = (new CentroCusto())->listaCentroCustoPorCnpj($empresaId);
+        if ($lista instanceof JsonResponse) {
+            $lista = [];
+        }
 
-            if ($vinculo) {
-                $filialModel = ClienteFilial::query()
-                    ->where('empresa_id', $empresaId)
-                    ->whereKey($vinculo->cliente_filial_id)
-                    ->first();
-
-                return $this->comTipo(LotacaoLabelResolver::fromFilial($filialModel), 'Filial');
+        $cnpjs = collect($lista['cnpjs'] ?? []);
+        foreach (collect($lista['centros_custos'] ?? []) as $cnpjKey => $centros) {
+            $info = $cnpjs[$cnpjKey] ?? [];
+            if (! is_array($info)) {
+                $info = (array) $info;
             }
 
-            return $this->comTipo(
-                LotacaoLabelResolver::fromEmpresa(
-                    Cliente::withoutGlobalScopes()->select(['id', 'nome_fantasia', 'razao_social', 'cnpj'])->find($empresaId)
-                ),
-                'Matriz'
-            );
+            foreach (collect($centros) as $centro) {
+                $centro = (object) $centro;
+                if ((int) ($centro->id ?? 0) !== $centroCustoId) {
+                    continue;
+                }
+
+                $nome = $this->limpo($info['nome_fantasia'] ?? $info['razao_social'] ?? null);
+                $cnpj = $this->limpo($info['cnpj'] ?? $centro->cnpj_format ?? null);
+
+                return ['nome' => $nome, 'cnpj' => $cnpj];
+            }
         }
 
-        if ($filial && $centroCustoFilialId > 0) {
-            $mapa = LotacaoLabelResolver::filiaisByCentroCustoFilialIds([$centroCustoFilialId]);
+        $empresa = Cliente::withoutGlobalScopes()
+            ->select(['id', 'nome_fantasia', 'razao_social', 'cnpj'])
+            ->find($empresaId);
 
-            return $this->comTipo(LotacaoLabelResolver::fromFilial($mapa[$centroCustoFilialId] ?? null), 'Filial');
-        }
-
-        return '';
-    }
-
-    private function comTipo(string $label, string $tipo): string
-    {
+        $label = LotacaoLabelResolver::fromCentroCustoId($empresaId, $centroCustoId, $empresa);
         $label = $this->limpo($label);
         if ($label === '' || $label === self::NAO_INFORMADO) {
-            return '';
+            return ['nome' => '', 'cnpj' => ''];
         }
 
-        return $label . ' (' . $tipo . ')';
+        $idx = strrpos($label, ' - ');
+        if ($idx === false) {
+            return ['nome' => $label, 'cnpj' => ''];
+        }
+
+        return [
+            'nome' => trim(substr($label, 0, $idx)),
+            'cnpj' => trim(substr($label, $idx + 3)),
+        ];
     }
 
     private function limpo(?string $valor): string
