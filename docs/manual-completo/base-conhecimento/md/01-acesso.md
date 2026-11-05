@@ -30,7 +30,7 @@ Após o login o sistema abre o painel inicial, com a Missão, a Visão, os Valor
 
 ## 1.3 Menu lateral
 - **Administração:** Fornecedores, documentos legais, assinatura digital, template da carta oferta, atas de reunião, planejamento diário e aniversariantes.
-- **Cadastro:** Áreas, departamentos, centros de custo, benefícios, cargos, vagas, projetos, exames, treinamentos, provas, avaliações e customizações.
+- **Cadastro:** Áreas, departamentos, centros de custo, benefícios, cargos, vagas, projetos, exames, periodicidade ASO, treinamentos, provas, avaliações e customizações.
 - **Planejamento:** Requisição de vaga, movimentações (férias, demissão, mudança de cargo, transferência, valor extra) e mobilização.
 - **Currículos:** Recrutamento e candidatos selecionados.
 - **Entrevistas:** Pareceres, entrevistas e resultado integrado.

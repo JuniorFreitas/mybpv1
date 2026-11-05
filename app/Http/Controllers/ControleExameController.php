@@ -17,6 +17,7 @@ use App\Models\Sistema;
 use App\Models\Cliente;
 use App\Models\User;
 use App\Services\AssinaturaDigital\AssinaturaDigitalService;
+use App\Services\ControleExames\AsoPeriodicidadeService;
 use App\Services\ControleExames\ColaboradorExameIdentificacao;
 use App\Services\ControleExames\ExameEncaminhamentoNotificacaoService;
 use App\Services\ControleExames\RestricaoOrdemExameDemitido;
@@ -231,10 +232,15 @@ class ControleExameController extends Controller
 
         unset($dados['id']);
 
-        $dados['data_vencimento'] = (new DataHora($dados['data_realizacao']))->addAno(1);
+        $exameFuncionario = ExameFuncionario::find($dados['exame_funcionario_id']);
+        $dados['data_vencimento'] = app(AsoPeriodicidadeService::class)->calcularDataVencimento(
+            $dados['data_realizacao'] ?? null,
+            (int) ($exameFuncionario->empresa_id ?? auth()->user()->empresa_id),
+            $exameFuncionario->exame_tipo_id ? (int) $exameFuncionario->exame_tipo_id : null
+        );
         $dados['vencido'] = false;
 
-        $feedback_id = ExameFuncionario::find($dados['exame_funcionario_id'])->feedback_id;
+        $feedback_id = $exameFuncionario->feedback_id;
         $dados['feedback_id'] = $feedback_id;
 
         $dadosValidados = \Validator::make($dados, []);
@@ -338,6 +344,16 @@ class ControleExameController extends Controller
                             $resultado->Anexos()->attach($arquivo->id);
                         }
                     }
+                }
+
+                if (!empty($dados['data_realizacao'])) {
+                    $exameFuncionario = ExameFuncionario::find($resultado->exame_funcionario_id);
+                    $dados['data_vencimento'] = app(AsoPeriodicidadeService::class)->calcularDataVencimento(
+                        $dados['data_realizacao'],
+                        (int) ($resultado->empresa_id ?? $exameFuncionario->empresa_id ?? auth()->user()->empresa_id),
+                        $exameFuncionario?->exame_tipo_id ? (int) $exameFuncionario->exame_tipo_id : null
+                    );
+                    // Demissional: sem vencimento (null); demais tipos recalculam pela periodicidade.
                 }
             } else {
                 foreach ($resultado->Anexos()->pluck('id') as $id_anexo) {

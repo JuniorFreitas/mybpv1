@@ -1,6 +1,6 @@
 # 4. Cadastros
 Os cadastros são a base do sistema: cargos, áreas, centros de custo, benefícios, treinamentos e avaliações definidos aqui aparecem como opções em todos os outros módulos. Uma requisição de vaga, por exemplo, só pode ser aberta para um cargo, uma área e um centro de custo já cadastrados. Comece a implantação por este menu.
-**Ordem sugerida de implantação:** Centro de Custos → Áreas → Cargos → Benefícios → Exames (clínicas e PCMSO) → Lista de Treinamentos → Vagas Abertas → Avaliações.
+**Ordem sugerida de implantação:** Centro de Custos → Áreas → Cargos → Benefícios → Exames (clínicas e PCMSO) → Periodicidade ASO → Lista de Treinamentos → Vagas Abertas → Avaliações.
 
 ## 4.1 Áreas
 Caminho no menu: Cadastro › Áreas
@@ -120,11 +120,34 @@ Em **+ Cadastrar** ou ⋮ › **Editar**, informe CNPJ, Razão Social e Nome Fan
 ### PCMSO
 O botão **+ PCMSO** abre a lista de programas de controle médico (PCMSO) usados no encaminhamento de exames. A janela tem busca por nome, filtro de Status, o botão **+ Cadastrar** e o ícone de lápis para editar cada programa.
 
-## 4.9 Instrutor
+## 4.9 Periodicidade ASO
+Caminho no menu: Cadastro › Periodicidade ASO
+Define a **validade do ASO** por tipo de exame (Admissional, Periódico, Pericial, Mudança de Função, Retorno Trabalho, Monitoramento/Avaliação). Essa configuração é usada quando o resultado do exame é lançado, para calcular a data de vencimento.
+**Não confundir** com o alerta de vencimento (30/60/90 dias) em configurações da empresa / relatório de ASOs. Aqui você define **quanto tempo o ASO vale**; o alerta só avisa com antecedência que a validade está acabando.
+
+### Como o vencimento é calculado
+- **Anos (presets 1, 2 ou 3 anos):** Data de realização + N anos − 1 dia. Ex.: realização em 15/03/2024 com 1 ano → vencimento em 14/03/2025.
+- **Dias (Personalizado):** Data de realização + N dias, sem desconto.
+O tipo **Demissional** aparece como **Sem vencimento** e não pode ser alterado — exame demissional não gera data de vencimento.
+
+### Configurar e salvar
+1. Para cada tipo editável, escolha o **Preset**: *1 ano*, *2 anos*, *3 anos* ou *Personalizado (dias)*.
+2. Se escolher Personalizado, informe o número de dias na coluna **Valor** (de 1 a 3.650).
+3. Clique em **Salvar**. Abre a janela **Como aplicar a alteração?**.
+4. Escolha o modo de aplicação e clique em **Confirmar**. Use **Cancelar** (ou o ✕ do cabeçalho) para desistir — o rodapé tem só Cancelar e Confirmar.
+- **Somente futuros:** Salva a configuração para novos resultados e edições. Não recalcula ASOs já cadastrados.
+- **Retroativo:** Salva e recalcula os vencimentos de todos os ASOs atuais dos tipos alterados.
+- **A partir de uma data:** Salva e recalcula só os ASOs atuais com data de realização a partir da data informada.
+**Dica:** no primeiro ajuste da empresa (ou quando muitos vencimentos estão errados), use **Retroativo** ou **A partir de uma data**. No dia a dia, **Somente futuros** costuma bastar.
+
+### Histórico
+Na mesma tela, a seção **Histórico** lista quando a alteração foi feita, quem salvou, o modo escolhido e o que mudou. O selo azul **job** indica que o recálculo foi enfileirado (modos Retroativo e A partir de uma data).
+
+## 4.10 Instrutor
 Caminho no menu: Cadastro › Instrutor
 Instrutores que ministram treinamentos e assinam os certificados. A listagem tem busca por nome. No cadastro (**+ Instrutor**) informe o **Nome**, o **Cargo**, o **Registro** profissional, a situação (**Ativo**: Sim/Não) e envie o arquivo da **Assinatura**, que será impressa nos certificados.
 
-## 4.10 Lista de Treinamentos
+## 4.11 Lista de Treinamentos
 Caminho no menu: Cadastro › Lista de Treinamentos
 Catálogo de treinamentos da empresa. É aqui que se define a validade de cada treinamento e para quais cargos ele é exigido.
 - **Buscar:** Localiza pelo nome, descrição ou ID do treinamento.
@@ -145,20 +168,20 @@ Cada card mostra o **Padrão** (segmento), os **Cargos vinculados**, o **Prazo f
 ### Assinatura da carteira
 O botão **+ Assinatura Carteira** lista as assinaturas impressas na carteira de treinamento, com Nome, Tipo (*Gerente/RH* ou *Técnico de Segurança*), Segmento e situação. Use **+ Cadastrar** para incluir e o lápis para editar.
 
-## 4.11 Certificados
+## 4.12 Certificados
 Caminho no menu: Cadastro › Certificados
 Modelos de certificado emitidos pelo sistema (por exemplo NR-33 e NR-35). A listagem mostra Nome, Título do certificado, Carga horária e Validade, com busca por nome.
 No cadastro (**+ Treinamento**) informe o **Nome**, o **Título Certificado**, o **Conteúdo Abordado**, o **Conteúdo Programático**, a **Carga Horária** (em horas) e a **Validade** (em dias). Esses textos são impressos no certificado.
 
-## 4.12 Empresa Treinamento
+## 4.13 Empresa Treinamento
 Caminho no menu: Cadastro › Empresa Treinamento
 Empresas que ministram treinamentos. Listagem com busca por nome; no cadastro (**+ Empresa Treinamento**) informe **Nome**, **Endereço** e a situação (**Ativo**: Sim/Não).
 
-## 4.13 Provas
+## 4.14 Provas
 Caminho no menu: Cadastro › Provas
 Provas aplicadas aos candidatos e vinculadas às vagas abertas. Listagem com busca por título. Em **+ Cadastrar** (janela “Montagem da Prova”), informe o **Título**, o **Tipo da prova** (*Objetiva* ou *Subjetiva*) e a situação. Depois de escolher o tipo, monte as questões.
 
-## 4.14 Avaliações
+## 4.15 Avaliações
 Caminho no menu: Cadastro › Avaliações
 Caminho no menu: Cadastro › Peformance
 Os grupos **Avaliações** e **Peformance** têm exatamente as mesmas quatro telas e são usados para ciclos diferentes de avaliação. Em ambos, a montagem segue esta ordem:
@@ -195,7 +218,7 @@ Cada linha é um ciclo de avaliação, com Ano, Título, Tipo, Data início, Dat
 3. Marque os colaboradores e clique em **Associar Avaliadores** para indicar quem avalia cada um em cada etapa do fluxo.
 **Atenção:** só é permitido associar avaliadores enquanto o ciclo está com status **Aguardando Início**.
 
-## 4.15 Customizações
+## 4.16 Customizações
 
 ### Campos personalizados da Requisição de Vaga
 Caminho no menu: Cadastro › Customizações › Requisição de Vaga

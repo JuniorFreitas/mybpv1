@@ -1,6 +1,6 @@
 <h1 id="cadastros">4. Cadastros</h1>
 <p class="intro">Os cadastros são a base do sistema: cargos, áreas, centros de custo, benefícios, treinamentos e avaliações definidos aqui aparecem como opções em todos os outros módulos. Uma requisição de vaga, por exemplo, só pode ser aberta para um cargo, uma área e um centro de custo já cadastrados. Comece a implantação por este menu.</p>
-<div class="dica"><b>Ordem sugerida de implantação:</b> Centro de Custos → Áreas → Cargos → Benefícios → Exames (clínicas e PCMSO) → Lista de Treinamentos → Vagas Abertas → Avaliações.</div>
+<div class="dica"><b>Ordem sugerida de implantação:</b> Centro de Custos → Áreas → Cargos → Benefícios → Exames (clínicas e PCMSO) → Periodicidade ASO → Lista de Treinamentos → Vagas Abertas → Avaliações.</div>
 
 <h2>4.1 Áreas</h2>
 <span class="caminho">Cadastro › Áreas</span>
@@ -170,12 +170,42 @@
 <p>O botão <b class="btn">+ PCMSO</b> abre a lista de programas de controle médico (PCMSO) usados no encaminhamento de exames. A janela tem busca por nome, filtro de Status, o botão <b class="btn">+ Cadastrar</b> e o ícone de lápis para editar cada programa.</p>
 <figure><img src="img/cad-pcmso.jpg" alt="PCMSO"><figcaption>Lista de PCMSO</figcaption></figure>
 
-<h2>4.9 Instrutor</h2>
+<h2>4.9 Periodicidade ASO</h2>
+<span class="caminho">Cadastro › Periodicidade ASO</span>
+<p>Define a <b>validade do ASO</b> por tipo de exame (Admissional, Periódico, Pericial, Mudança de Função, Retorno Trabalho, Monitoramento/Avaliação). Essa configuração é usada quando o resultado do exame é lançado, para calcular a data de vencimento.</p>
+<div class="nota"><b>Não confundir</b> com o alerta de vencimento (30/60/90 dias) em configurações da empresa / relatório de ASOs. Aqui você define <b>quanto tempo o ASO vale</b>; o alerta só avisa com antecedência que a validade está acabando.</div>
+<figure><img src="img/cad-aso-periodicidade.jpg" alt="Periodicidade ASO"><figcaption>Periodicidade por tipo de exame e histórico de alterações</figcaption></figure>
+<h3>Como o vencimento é calculado</h3>
+<table class="filtros">
+  <tr><th>Unidade</th><th>Regra</th></tr>
+  <tr><td>Anos (presets 1, 2 ou 3 anos)</td><td>Data de realização + N anos − 1 dia. Ex.: realização em 15/03/2024 com 1 ano → vencimento em 14/03/2025.</td></tr>
+  <tr><td>Dias (Personalizado)</td><td>Data de realização + N dias, sem desconto.</td></tr>
+</table>
+<p>O tipo <b>Demissional</b> aparece como <b>Sem vencimento</b> e não pode ser alterado — exame demissional não gera data de vencimento.</p>
+<h3>Configurar e salvar</h3>
+<ol>
+  <li>Para cada tipo editável, escolha o <b>Preset</b>: <i>1 ano</i>, <i>2 anos</i>, <i>3 anos</i> ou <i>Personalizado (dias)</i>.</li>
+  <li>Se escolher Personalizado, informe o número de dias na coluna <b>Valor</b> (de 1 a 3.650).</li>
+  <li>Clique em <b class="btn">Salvar</b>. Abre a janela <b>Como aplicar a alteração?</b>.</li>
+  <li>Escolha o modo de aplicação e clique em <b class="btn">Confirmar</b>. Use <b class="btn">Cancelar</b> (ou o ✕ do cabeçalho) para desistir — o rodapé tem só Cancelar e Confirmar.</li>
+</ol>
+<figure class="media"><img src="img/cad-aso-periodicidade-modal.jpg" alt="Como aplicar a alteração"><figcaption>Modal de aplicação — Cancelar e Confirmar no rodapé</figcaption></figure>
+<table class="filtros">
+  <tr><th>Modo</th><th>O que faz</th></tr>
+  <tr><td>Somente futuros</td><td>Salva a configuração para novos resultados e edições. Não recalcula ASOs já cadastrados.</td></tr>
+  <tr><td>Retroativo</td><td>Salva e recalcula os vencimentos de todos os ASOs atuais dos tipos alterados.</td></tr>
+  <tr><td>A partir de uma data</td><td>Salva e recalcula só os ASOs atuais com data de realização a partir da data informada.</td></tr>
+</table>
+<div class="dica"><b>Dica:</b> no primeiro ajuste da empresa (ou quando muitos vencimentos estão errados), use <b>Retroativo</b> ou <b>A partir de uma data</b>. No dia a dia, <b>Somente futuros</b> costuma bastar.</div>
+<h3>Histórico</h3>
+<p>Na mesma tela, a seção <b>Histórico</b> lista quando a alteração foi feita, quem salvou, o modo escolhido e o que mudou. O selo azul <b>job</b> indica que o recálculo foi enfileirado (modos Retroativo e A partir de uma data).</p>
+
+<h2>4.10 Instrutor</h2>
 <span class="caminho">Cadastro › Instrutor</span>
 <p>Instrutores que ministram treinamentos e assinam os certificados. A listagem tem busca por nome. No cadastro (<b class="btn">+ Instrutor</b>) informe o <b>Nome</b>, o <b>Cargo</b>, o <b>Registro</b> profissional, a situação (<b>Ativo</b>: Sim/Não) e envie o arquivo da <b>Assinatura</b>, que será impressa nos certificados.</p>
 <figure><img src="img/cad-instrutor-form.jpg" alt="Instrutor"><figcaption>Cadastro de instrutor</figcaption></figure>
 
-<h2>4.10 Lista de Treinamentos</h2>
+<h2>4.11 Lista de Treinamentos</h2>
 <span class="caminho">Cadastro › Lista de Treinamentos</span>
 <p>Catálogo de treinamentos da empresa. É aqui que se define a validade de cada treinamento e para quais cargos ele é exigido.</p>
 <figure><img src="img/cad-treinamentos.jpg" alt="Lista de treinamentos"><figcaption>Catálogo de treinamentos</figcaption></figure>
@@ -202,24 +232,24 @@
 <p>O botão <b class="btn">+ Assinatura Carteira</b> lista as assinaturas impressas na carteira de treinamento, com Nome, Tipo (<i>Gerente/RH</i> ou <i>Técnico de Segurança</i>), Segmento e situação. Use <b class="btn">+ Cadastrar</b> para incluir e o lápis para editar.</p>
 <figure><img src="img/cad-assinatura-carteira.jpg" alt="Assinatura da carteira"><figcaption>Assinaturas da carteira de treinamento</figcaption></figure>
 
-<h2>4.11 Certificados</h2>
+<h2>4.12 Certificados</h2>
 <span class="caminho">Cadastro › Certificados</span>
 <p>Modelos de certificado emitidos pelo sistema (por exemplo NR-33 e NR-35). A listagem mostra Nome, Título do certificado, Carga horária e Validade, com busca por nome.</p>
 <figure><img src="img/cad-certificados.jpg" alt="Certificados"><figcaption>Modelos de certificado</figcaption></figure>
 <p>No cadastro (<b class="btn">+ Treinamento</b>) informe o <b>Nome</b>, o <b>Título Certificado</b>, o <b>Conteúdo Abordado</b>, o <b>Conteúdo Programático</b>, a <b>Carga Horária</b> (em horas) e a <b>Validade</b> (em dias). Esses textos são impressos no certificado.</p>
 <figure><img src="img/cad-certificado-form.jpg" alt="Certificado"><figcaption>Cadastro de modelo de certificado</figcaption></figure>
 
-<h2>4.12 Empresa Treinamento</h2>
+<h2>4.13 Empresa Treinamento</h2>
 <span class="caminho">Cadastro › Empresa Treinamento</span>
 <p>Empresas que ministram treinamentos. Listagem com busca por nome; no cadastro (<b class="btn">+ Empresa Treinamento</b>) informe <b>Nome</b>, <b>Endereço</b> e a situação (<b>Ativo</b>: Sim/Não).</p>
 <figure class="media"><img src="img/cad-empresa-treinamento-form.jpg" alt="Empresa de treinamento"><figcaption>Cadastro de empresa de treinamento</figcaption></figure>
 
-<h2>4.13 Provas</h2>
+<h2>4.14 Provas</h2>
 <span class="caminho">Cadastro › Provas</span>
 <p>Provas aplicadas aos candidatos e vinculadas às vagas abertas. Listagem com busca por título. Em <b class="btn">+ Cadastrar</b> (janela “Montagem da Prova”), informe o <b>Título</b>, o <b>Tipo da prova</b> (<i>Objetiva</i> ou <i>Subjetiva</i>) e a situação. Depois de escolher o tipo, monte as questões.</p>
 <figure class="media"><img src="img/cad-prova-form.jpg" alt="Prova"><figcaption>Montagem da prova</figcaption></figure>
 
-<h2>4.14 Avaliações</h2>
+<h2>4.15 Avaliações</h2>
 <span class="caminho">Cadastro › Avaliações</span> <span class="caminho">Cadastro › Peformance</span>
 <p>Os grupos <b>Avaliações</b> e <b>Peformance</b> têm exatamente as mesmas quatro telas e são usados para ciclos diferentes de avaliação. Em ambos, a montagem segue esta ordem:</p>
 <div class="fluxo"><span>1. Tipos de Avaliadores</span><i>→</i><span>2. Tipos de Avaliações</span><i>→</i><span>3. Competências</span><i>→</i><span>4. Avaliações</span></div>
@@ -272,7 +302,7 @@
 <div class="nota"><b>Atenção:</b> só é permitido associar avaliadores enquanto o ciclo está com status <b>Aguardando Início</b>.</div>
 <figure><img src="img/cad-associar-avaliadores.jpg" alt="Associar avaliadores"><figcaption>Associação de avaliadores a um ciclo</figcaption></figure>
 
-<h2>4.15 Customizações</h2>
+<h2>4.16 Customizações</h2>
 <h3>Campos personalizados da Requisição de Vaga</h3>
 <span class="caminho">Cadastro › Customizações › Requisição de Vaga</span>
 <p>Permite criar campos extras no formulário de requisição de vaga, de acordo com a necessidade da sua empresa — por exemplo, “E-mail institucional”, “Notebook” ou “Acesso a sistemas”.</p>
