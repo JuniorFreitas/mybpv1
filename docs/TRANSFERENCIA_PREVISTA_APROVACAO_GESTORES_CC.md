@@ -50,8 +50,8 @@ Solicitação criada
 | **RN05** | Reprovação em qualquer etapa de gestor encerra o processo | `status_aprovacao` ou `status_aprovacao_gestor_destino = reprovado` |
 | **RN07** | Solicitante = gestor: cadeia substituto → superior → bloqueio | `CentroCustoGestorResolverService::resolverAprovador()` |
 | **RN09** | Alterar CC antes das aprovações recalcula gestores | `update()` detecta mudança de CC e reaplica fluxo se ainda pendente |
-| **RN10** | CC origem sem gestor: avisa e segue o fluxo | `resolverGestorOrigem()` retorna `null`; etapa origem dispensada |
-| **RN11** | CC destino sem gestor cadastrado: bloqueia salvar e pede contato com o Administrador | `MSG_GESTOR_DESTINO_AUSENTE` em `validarCentrosCusto()` / `resolverGestorDestino()` |
+| **RN10** | CC origem sem gestor ativo (ausente ou inativo): avisa e segue o fluxo | `resolverGestorOrigem()` retorna `null`; etapa origem dispensada |
+| **RN11** | CC destino sem gestor ativo (ausente ou inativo): bloqueia salvar; Administrador deve cadastrar ou reativar | `MSG_GESTOR_DESTINO_AUSENTE` em `validarCentrosCusto()` / `resolverGestorDestino()` |
 | **RN12** | RH aprovado efetiva a transferência na admissão (`centro_custo_id` + filial) | `aprovarRH()` lê `resposta_rh` (campo da tela); `status_aprovacao_rh` só como fallback legado. Histórico: de CC origem para CC destino |
 
 ---

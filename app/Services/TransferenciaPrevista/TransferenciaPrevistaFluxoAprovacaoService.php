@@ -22,7 +22,7 @@ class TransferenciaPrevistaFluxoAprovacaoService
     public const ETAPA_CONCLUIDO = 'concluido';
     public const ETAPA_REPROVADO = 'reprovado';
 
-    public const MSG_GESTOR_DESTINO_AUSENTE = 'O centro de custo de destino não possui gestor responsável cadastrado. Não é possível salvar a solicitação. Entre em contato com o Administrador para cadastrar o gestor de destino.';
+    public const MSG_GESTOR_DESTINO_AUSENTE = 'O centro de custo de destino não possui gestor responsável ativo (ausente ou inativo). Não é possível salvar a solicitação. Peça ao Administrador para cadastrar ou reativar o gestor de destino.';
 
     public function __construct(
         private readonly CentroCustoGestorResolverService $gestorResolver
@@ -44,7 +44,7 @@ class TransferenciaPrevistaFluxoAprovacaoService
             return;
         }
 
-        if (!$this->gestorResolver->getGestorPrincipal($destino->id)) {
+        if (!$this->gestorResolver->getGestorResponsavel($destino->id)) {
             throw new DomainException(self::MSG_GESTOR_DESTINO_AUSENTE);
         }
     }
@@ -84,15 +84,15 @@ class TransferenciaPrevistaFluxoAprovacaoService
             return null;
         }
 
-        $principal = $this->gestorResolver->getGestorPrincipal($origemId);
-        if (!$principal) {
+        $responsavel = $this->gestorResolver->getGestorResponsavel($origemId);
+        if (!$responsavel) {
             return null;
         }
 
         try {
             return $this->gestorResolver->resolverAprovador($origemId, $solicitanteId);
         } catch (DomainException) {
-            return $principal;
+            return $responsavel;
         }
     }
 
@@ -102,19 +102,21 @@ class TransferenciaPrevistaFluxoAprovacaoService
      * (sem substituto/superior), não bloqueia: mantém o gestor (o próprio
      * solicitante) registrado, mas só o RH pode aprovar essa etapa.
      *
+     * Responsável = principal ativo ou, se ausente/inativo, o substituto ativo.
+     *
      * @throws DomainException quando o centro de custo destino não tem gestor algum
      */
     public function resolverGestorDestino(int $destinoId, int $solicitanteId): User
     {
-        $principal = $this->gestorResolver->getGestorPrincipal($destinoId);
-        if (!$principal) {
+        $responsavel = $this->gestorResolver->getGestorResponsavel($destinoId);
+        if (!$responsavel) {
             throw new DomainException(self::MSG_GESTOR_DESTINO_AUSENTE);
         }
 
         try {
             return $this->gestorResolver->resolverAprovador($destinoId, $solicitanteId);
         } catch (DomainException) {
-            return $principal;
+            return $responsavel;
         }
     }
 

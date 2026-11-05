@@ -534,12 +534,21 @@ function validarCnpjFormulario() {
     return true
 }
 
+function labelGestorComStatus(usuario) {
+    if (!usuario?.nome) return 'Não informado'
+    return usuario.ativo === false || usuario.ativo === 0
+        ? `${usuario.nome} - (-- Inativo --)`
+        : usuario.nome
+}
+
 function nomeGestorPrincipal(item) {
-    return item.gestor?.nome ?? item.Gestor?.nome ?? 'Não informado'
+    return labelGestorComStatus(item.gestor ?? item.Gestor)
 }
 
 function nomeGestorSubstituto(item) {
-    return item.gestor_substituto?.usuario?.nome ?? item.GestorSubstituto?.Usuario?.nome ?? 'Não informado'
+    return labelGestorComStatus(
+        item.gestor_substituto?.usuario ?? item.GestorSubstituto?.Usuario
+    )
 }
 
 function lotacaoCentroCusto(item) {

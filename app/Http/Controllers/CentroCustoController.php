@@ -115,14 +115,34 @@ class CentroCustoController extends Controller
             'Filiais:id,centro_custo_id,cliente_filial_id,empresa_id,ativo',
         ]);
 
-        $centro->autocomplete_label_gestor_modal = $centro->Gestor ? $centro->Gestor->nome : '';
-        $centro->autocomplete_label_gestor_modal_anterior = $centro->Gestor ? $centro->Gestor->nome : '';
+        $labelGestor = $this->labelGestorComStatus($centro->Gestor);
+        $labelSubstituto = $this->labelGestorComStatus($centro->GestorSubstituto?->Usuario);
+
+        $centro->autocomplete_label_gestor_modal = $labelGestor;
+        $centro->autocomplete_label_gestor_modal_anterior = $labelGestor;
         $centro->gestor_substituto_id = $centro->GestorSubstituto?->usuario_id ?? '';
-        $centro->autocomplete_label_gestor_substituto_modal = $centro->GestorSubstituto?->Usuario?->nome ?? '';
-        $centro->autocomplete_label_gestor_substituto_modal_anterior = $centro->autocomplete_label_gestor_substituto_modal;
+        $centro->autocomplete_label_gestor_substituto_modal = $labelSubstituto;
+        $centro->autocomplete_label_gestor_substituto_modal_anterior = $labelSubstituto;
         $centro->campo_cnpj = $this->cnpjSyncService->resolverCampoCnpj($centro);
 
         return $centro;
+    }
+
+    /**
+     * Nome do gestor no formulário; usuários inativos recebem sufixo padronizado.
+     */
+    private function labelGestorComStatus(?\App\Models\User $usuario): string
+    {
+        if (!$usuario) {
+            return '';
+        }
+
+        $nome = (string) $usuario->nome;
+        if ($usuario->ativo) {
+            return $nome;
+        }
+
+        return $nome . ' - (-- Inativo --)';
     }
 
     /**

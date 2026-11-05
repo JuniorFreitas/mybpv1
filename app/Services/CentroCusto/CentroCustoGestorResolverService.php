@@ -56,22 +56,33 @@ class CentroCustoGestorResolverService
     }
 
     /**
+     * Responsável efetivo do CC: principal ativo ou, se ausente/inativo, o substituto ativo.
+     */
+    public function getGestorResponsavel(int $centroCustoId): ?User
+    {
+        return $this->getGestorPrincipal($centroCustoId) ?? $this->getGestorSubstituto($centroCustoId);
+    }
+
+    /**
      * @throws DomainException
      */
     public function resolverAprovador(int $centroCustoId, int $solicitanteId): User
     {
         $principal = $this->getGestorPrincipal($centroCustoId);
+        $substituto = $this->getGestorSubstituto($centroCustoId);
 
-        if (!$principal) {
+        if (!$principal && !$substituto) {
             throw new DomainException(
                 'Não foi possível iniciar a transferência. O centro de custo não possui um gestor responsável configurado. Entre em contato com o administrador do sistema.'
             );
         }
 
+        // Cadeia RN07: principal → substituto → superior do principal (ou do substituto se não houver principal ativo).
         $candidatos = array_filter([
             $principal,
-            $this->getGestorSubstituto($centroCustoId),
-            $principal->GestorSuperior,
+            $substituto,
+            $principal?->GestorSuperior,
+            $principal ? null : $substituto?->GestorSuperior,
         ]);
 
         foreach ($candidatos as $candidato) {

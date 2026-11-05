@@ -197,7 +197,7 @@ class TransferenciaPrevistaFluxoAprovacaoServiceTest extends TestCase
     public function test_resolver_gestor_origem_retorna_null_quando_centro_nao_tem_gestor(): void
     {
         $resolver = $this->createMock(CentroCustoGestorResolverService::class);
-        $resolver->method('getGestorPrincipal')->willReturn(null);
+        $resolver->method('getGestorResponsavel')->willReturn(null);
 
         $service = new TransferenciaPrevistaFluxoAprovacaoService($resolver);
 
@@ -210,7 +210,7 @@ class TransferenciaPrevistaFluxoAprovacaoServiceTest extends TestCase
         $this->expectExceptionMessage(TransferenciaPrevistaFluxoAprovacaoService::MSG_GESTOR_DESTINO_AUSENTE);
 
         $resolver = $this->createMock(CentroCustoGestorResolverService::class);
-        $resolver->method('getGestorPrincipal')->willReturn(null);
+        $resolver->method('getGestorResponsavel')->willReturn(null);
 
         $service = new TransferenciaPrevistaFluxoAprovacaoService($resolver);
         $service->resolverGestorDestino(15, 99);
@@ -222,7 +222,7 @@ class TransferenciaPrevistaFluxoAprovacaoServiceTest extends TestCase
         $principal->id = 30;
 
         $resolver = $this->createMock(CentroCustoGestorResolverService::class);
-        $resolver->method('getGestorPrincipal')->willReturn($principal);
+        $resolver->method('getGestorResponsavel')->willReturn($principal);
         $resolver->method('resolverAprovador')->willThrowException(new DomainException('autoaprovação'));
 
         $service = new TransferenciaPrevistaFluxoAprovacaoService($resolver);
@@ -239,7 +239,7 @@ class TransferenciaPrevistaFluxoAprovacaoServiceTest extends TestCase
         $principal->id = 30;
 
         $resolver = $this->createMock(CentroCustoGestorResolverService::class);
-        $resolver->method('getGestorPrincipal')->willReturn($principal);
+        $resolver->method('getGestorResponsavel')->willReturn($principal);
         $resolver->method('resolverAprovador')->willThrowException(new DomainException('autoaprovação'));
 
         $service = new TransferenciaPrevistaFluxoAprovacaoService($resolver);
@@ -247,6 +247,22 @@ class TransferenciaPrevistaFluxoAprovacaoServiceTest extends TestCase
         $gestor = $service->resolverGestorDestino(15, 30);
 
         $this->assertSame(30, $gestor->id);
+    }
+
+    public function test_resolver_gestor_destino_usa_substituto_quando_principal_ausente(): void
+    {
+        $substituto = new User();
+        $substituto->id = 77;
+
+        $resolver = $this->createMock(CentroCustoGestorResolverService::class);
+        $resolver->method('getGestorResponsavel')->willReturn($substituto);
+        $resolver->method('resolverAprovador')->willReturn($substituto);
+
+        $service = new TransferenciaPrevistaFluxoAprovacaoService($resolver);
+
+        $gestor = $service->resolverGestorDestino(15, 99);
+
+        $this->assertSame(77, $gestor->id);
     }
 
     public function test_pode_aprovar_gestor_origem_falso_quando_gestor_e_o_proprio_solicitante(): void

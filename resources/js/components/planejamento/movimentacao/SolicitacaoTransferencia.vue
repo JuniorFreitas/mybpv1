@@ -160,7 +160,7 @@
                                         disabled
                                     />
                                     <div class="alert alert-warning mb-0 mt-2 py-2" v-if="gestorOrigemAusente && !emFluxoAprovacao" role="alert">
-                                        O centro de custo de origem não possui gestor responsável. A solicitação pode ser registrada e seguirá o fluxo sem a etapa de aprovação do gestor de origem.
+                                        O centro de custo de origem não possui gestor responsável ativo (ausente ou inativo). A solicitação pode ser registrada e seguirá o fluxo sem a etapa de aprovação do gestor de origem. Peça ao Administrador para cadastrar ou reativar o gestor, se necessário.
                                     </div>
                                 </div>
                             </div>
@@ -968,7 +968,7 @@ import { exigirCombobox, limparComboboxInvalido, exigirCampoData, limparCampoDat
 const BASE_URL = `${URL_ADMIN}/planejamento/movimentacao/transferencia-prevista`
 const POR_PAGINA_OPCOES = [20, 50, 100, 150]
 const MSG_GESTOR_DESTINO_AUSENTE =
-    'O centro de custo de destino não possui gestor responsável cadastrado. Não é possível salvar a solicitação. Entre em contato com o Administrador para cadastrar o gestor de destino.'
+    'O centro de custo de destino não possui gestor responsável ativo (ausente ou inativo). Não é possível salvar a solicitação. Peça ao Administrador para cadastrar ou reativar o gestor de destino.'
 
 function createFormDefault() {
     return {
@@ -1615,8 +1615,11 @@ export default defineComponent({
             if (tipo === 'destino') gestorDestinoCarregando.value = true
             try {
                 const { data } = await axios.get(`${urlGestorResponsavel}/${centroCustoId}/gestor-responsavel`)
-                const semGestor = !(data.gestor_resolvido?.id || data.gestor_principal?.id)
-                const nome = data.gestor_resolvido?.nome ?? data.gestor_principal?.nome ?? 'Centro de custo sem gestor'
+                const semGestor = !(data.gestor_resolvido?.id || data.gestor_principal?.id || data.gestor_substituto?.id)
+                const nome = data.gestor_resolvido?.nome
+                    ?? data.gestor_principal?.nome
+                    ?? data.gestor_substituto?.nome
+                    ?? 'Centro de custo sem gestor ativo'
                 if (tipo === 'origem') {
                     form.label_gestor_origem = nome
                     gestorOrigemAusente.value = semGestor
@@ -1631,7 +1634,7 @@ export default defineComponent({
                     gestorOrigemAusente.value = false
                 }
                 if (tipo === 'destino') {
-                    form.label_gestor_destino = 'Centro de custo sem gestor'
+                    form.label_gestor_destino = 'Centro de custo sem gestor ativo'
                     gestorDestinoAusente.value = true
                 }
             } finally {

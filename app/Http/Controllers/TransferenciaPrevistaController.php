@@ -505,12 +505,13 @@ class TransferenciaPrevistaController extends Controller
 
         $principal = $this->gestorResolverService->getGestorPrincipal($centrocusto->id);
         $substituto = $this->gestorResolverService->getGestorSubstituto($centrocusto->id);
+        $responsavel = $this->gestorResolverService->getGestorResponsavel($centrocusto->id);
 
         $resolvido = null;
         try {
             $resolvido = $this->gestorResolverService->resolverAprovador($centrocusto->id, (int) auth()->id());
         } catch (DomainException) {
-            $resolvido = $principal;
+            $resolvido = $responsavel;
         }
 
         return response()->json([

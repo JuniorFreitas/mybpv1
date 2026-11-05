@@ -6,10 +6,11 @@ Entry: `TransferenciaPrevistaFluxoAprovacaoService::validarCentrosCusto()` / `re
 UI: `SolicitacaoTransferencia.vue` — alertas ao selecionar CC
 
 ## Regras
-- Origem sem gestor → `gestor_id = null`, etapa origem dispensada, fluxo segue p/ destino
+- Origem sem gestor ativo (ausente/inativo) → `gestor_id = null`, etapa origem dispensada, fluxo segue p/ destino; aviso pede cadastrar/reativar se necessário
 - Origem inativa → permitida; label ` - (-- Inativo --)`; não gera 422
 - Destino inativo → fora da lista e bloqueia salvar
-- Destino sem gestor → bloqueia salvar (front + HTTP 422). Mensagem: cadastrar o gestor e falar com o Administrador.
+- Destino sem gestor ativo (ausente/inativo) → bloqueia salvar (front + HTTP 422). Mensagem: cadastrar ou reativar o gestor com o Administrador.
+- Responsável efetivo = `getGestorResponsavel()` = principal ativo **ou** substituto ativo (principal inativo não bloqueia se houver substituto).
 - RH (`privilegio_gestao_rh` / `privilegio_aprovar_por_rh` / `privilegio_aprovar_rh`) pode aprovar etapa origem e destino
 - Se o RH não for o gestor/substituto do CC, grava `user_aprovacao_id` (ou destino) + obs `Registrado por RH: {nome}`
 - Mesmo gestor origem/destino → etapa destino **continua obrigatória** (aprovação independente)
@@ -27,7 +28,8 @@ Gotcha: filtro Status “Em aberto” em `TransferenciaPrevistaFilterApplier::ap
 Gotcha: filtro granular de fluxo (`pendente|aprovado|reprovado` por etapa: gestor_origem/destino/unico, extra, rh) em `TransferenciaPrevistaFilterApplier::applyCampoStatus()` — UI em `SolicitacaoTransferencia.vue` `opcoesStatus`. `reprovado` = qualquer etapa.
 Gotcha: tela envia `resposta_rh`; `status_aprovacao_rh` é legado de outros módulos. Efetivação deve ler `resposta_rh`.
 Gotcha: `validarFormularioVisivel()` deve ignorar `:disabled`/`[readonly]` — blur em status origem vazio bloqueava RH.
+Gotcha: cadastro de CC mostra gestor inativo com sufixo ` - (-- Inativo --)` (modal + listagem). Transferência só aceita ativo; se principal inativo e há substituto ativo → usar substituto (`getGestorResponsavel`). Ex.: CC 696 REGIONAL 057 (JOAO inativo → IGOR).
 
 Docs: `docs/TRANSFERENCIA_PREVISTA_APROVACAO_GESTORES_CC.md` (RN10–RN12)
 
-Updated: 2026-09-30
+Updated: 2026-11-05

@@ -1,7 +1,7 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-11-04
+Last updated: 2026-11-05
 
 - [portal-vagas-vitrine-exclusoes](portal-vagas-vitrine-exclusoes.md) — Vitrine BFF omite apelidos `_bpservice` e `mybp` | flow | portal, vagas, bff
 - [email-candidatura-recrutamento](email-candidatura-recrutamento.md) — Confirmação de candidatura: JobRecrutamento → RecrutamentoMail + layout padrão | flow | email, recrutamento, candidatura
@@ -61,7 +61,7 @@ Last updated: 2026-11-04
 - [bp-chamados-widget](bp-chamados-widget.md) — Página CHAMADOS no menu + JWT widget | flow | chamados, widget
 - [documentos-preadmissao-catalogo](documentos-preadmissao-catalogo.md) — Catálogo pré-admissão por empresa | flow | preadmissao, documentos
 - [cadastro-dossie-tipos](cadastro-dossie-tipos.md) — Catálogo dossiê com override por empresa | flow | dossie, cadastro
-- [transferencia-gestor-origem-opcional](transferencia-gestor-origem-opcional.md) — Origem opcional; RH efetiva via `resposta_rh` | flow | transferencia, gestor, rh
+- [transferencia-gestor-origem-opcional](transferencia-gestor-origem-opcional.md) — Origem opcional; destino aceita substituto se principal inativo | flow | transferencia, gestor, rh
 - [transferencia-notificacao-gestor-origem](transferencia-notificacao-gestor-origem.md) — Flags notificar/exigir aprovação gestor origem por empresa | flow | transferencia, notificacao, cliente_config
 - [transferencia-destino-mesmo-gestor-autoaprovacao](transferencia-destino-mesmo-gestor-autoaprovacao.md) — Destino sempre independente (fix RN02/RN03) | flow | transferencia, gestor-destino
 - [tinymce-selfhost](tinymce-selfhost.md) — Editor rico via public/tinymce, sem Cloud | gotcha | tinymce, frontend

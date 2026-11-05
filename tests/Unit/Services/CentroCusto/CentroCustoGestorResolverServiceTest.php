@@ -77,4 +77,47 @@ class CentroCustoGestorResolverServiceTest extends TestCase
         $this->assertNotNull($aprovador);
         $this->assertSame(111, $aprovador->id);
     }
+
+    public function test_resolver_aprovador_retorna_substituto_quando_principal_ausente(): void
+    {
+        $substituto = new User(['ativo' => true]);
+        $substituto->id = 111;
+        $substituto->setRelation('GestorSuperior', null);
+
+        $service = $this->getMockBuilder(CentroCustoGestorResolverService::class)
+            ->onlyMethods(['getGestorPrincipal', 'getGestorSubstituto'])
+            ->getMock();
+
+        $service->method('getGestorPrincipal')->willReturn(null);
+        $service->method('getGestorSubstituto')->willReturn($substituto);
+
+        $aprovador = $service->resolverAprovador(1, 999);
+
+        $this->assertSame(111, $aprovador->id);
+    }
+
+    public function test_get_gestor_responsavel_prioriza_principal_e_cai_no_substituto(): void
+    {
+        $principal = new User(['ativo' => true]);
+        $principal->id = 10;
+
+        $substituto = new User(['ativo' => true]);
+        $substituto->id = 20;
+
+        $comPrincipal = $this->getMockBuilder(CentroCustoGestorResolverService::class)
+            ->onlyMethods(['getGestorPrincipal', 'getGestorSubstituto'])
+            ->getMock();
+        $comPrincipal->method('getGestorPrincipal')->willReturn($principal);
+        $comPrincipal->method('getGestorSubstituto')->willReturn($substituto);
+
+        $this->assertSame(10, $comPrincipal->getGestorResponsavel(1)->id);
+
+        $soSubstituto = $this->getMockBuilder(CentroCustoGestorResolverService::class)
+            ->onlyMethods(['getGestorPrincipal', 'getGestorSubstituto'])
+            ->getMock();
+        $soSubstituto->method('getGestorPrincipal')->willReturn(null);
+        $soSubstituto->method('getGestorSubstituto')->willReturn($substituto);
+
+        $this->assertSame(20, $soSubstituto->getGestorResponsavel(1)->id);
+    }
 }
