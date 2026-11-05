@@ -110,7 +110,7 @@ cliente já existe.
 | Campo | Valores | Efeito |
 |---|---|---|
 | Vencimento de férias | 30, 60, 90 ou 120 dias | Antecedência do alerta de férias (`verifica_mes_vencimento`: 1, 2, 3 ou 4). |
-| Vencimento de ASO | 30, 60 ou 90 dias | Antecedência do alerta de ASO (`vencimento_aso`: 1, 2 ou 3). |
+| Vencimento de ASO | 30, 60 ou 90 dias | Antecedência do **alerta** de ASO (`vencimento_aso`: 1, 2 ou 3). Não define a validade do exame; a periodicidade fica em Cadastro › Periodicidade ASO (`docs/ASO_PERIODICIDADE_EMPRESA.md`). |
 | Modelo CIH | Centro de Custo ou Área | Só na edição. Define o agrupamento do CIH. Sem isso o apontamento não tem modelo. |
 | Etiqueta bloqueio (número do supervisor) | Sim ou Não | Padrão **Sim**. Imprime o telefone do supervisor na etiqueta. |
 
@@ -176,7 +176,7 @@ Grupos usuais, conforme o contrato:
 | Menu na tela | O que libera |
 |---|---|
 | administracao | Fornecedores, documentos legais, carta oferta, ata, pesquisa de clima, planejamento diário, aniversariantes. |
-| cadastro | Áreas, dossiê, documentos de pré-admissão, departamentos, centros de custo, benefícios, cargos, vagas abertas, projetos, exames, instrutor, treinamentos, padrões, empresa de treinamento, empresa temporária, provas, avaliações, customizações, WhatsApp. |
+| cadastro | Áreas, dossiê, documentos de pré-admissão, departamentos, centros de custo, benefícios, cargos, vagas abertas, projetos, exames, periodicidade ASO, instrutor, treinamentos, padrões, empresa de treinamento, empresa temporária, provas, avaliações, customizações, WhatsApp. |
 | planejamento | Requisição de vaga e mobilização. Movimentação entra junto com esse menu. |
 | curriculos | Recrutamento e selecionados. |
 | entrevista | Pareceres, entrevista RH, entrevista gestor e resultado integrado. |
@@ -259,6 +259,7 @@ Faça nesta ordem. Um item de baixo usa os de cima.
 | 4 | Cadastro › Cargos | Título. CBO é opcional. Treinamentos do cargo são vinculados na lista de treinamentos, não aqui. |
 | 5 | Cadastro › Benefícios | Cadastre o tipo de benefício antes do benefício. |
 | 6 | Cadastro › Exames | Clínica (CNPJ, endereço, telefone e e-mail de encaminhamento) e os PCMSO. |
+| 6b | Cadastro › Periodicidade ASO | Validade do ASO por tipo (anos − 1 dia ou dias). Demissional sem vencimento. Alerta (`vencimento_aso`) é outro campo — ver `docs/ASO_PERIODICIDADE_EMPRESA.md`. |
 | 7 | Cadastro › Padrões de Treinamento | Filiais e, se for emitir documento, o modelo de carteira e/ou etiqueta (seção 7). |
 | 8 | Cadastro › Lista de Treinamentos | Cargos e padrão. Defina validade, nome na carteira e cargos. |
 | 9 | Cadastro › Instrutor | Nome, cargo, registro e arquivo da assinatura dos certificados. |

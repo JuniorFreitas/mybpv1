@@ -169,6 +169,7 @@ n- fornecedores
 
 - encaminhamento de exames ocupacionais
 - armazenamento de resultados ASO/SESMT
+- vencimento do ASO calculado por periodicidade configurável (empresa + tipo)
 - agendamento/comunicação com clínica e colaborador
 - gestão de treinamentos e vencimentos
 - carteira/certificados e exportações
@@ -176,11 +177,15 @@ n- fornecedores
 **Arquivos-base**
 
 - `app/Http/Controllers/ControleExameController.php`
+- `app/Http/Controllers/EmpresaExameTipoPeriodicidadeController.php`
+- `app/Services/ControleExames/AsoPeriodicidadeService.php`
 - `app/Http/Controllers/TreinamentoController.php`
 - `app/Models/ExameFuncionario.php`
 - `app/Models/Examesesmt.php`
 - `app/Models/Treinamento.php`
 - `app/Services/Treinamento/FeedbackCurriculoFilter.php`
+
+**Documentação detalhada — periodicidade ASO:** [`ASO_PERIODICIDADE_EMPRESA.md`](ASO_PERIODICIDADE_EMPRESA.md)
 
 ### 9. Controle de ponto
 

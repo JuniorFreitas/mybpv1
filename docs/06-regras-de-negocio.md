@@ -142,13 +142,20 @@
 - Ao encaminhar, o sistema pode notificar clínica e colaborador por e-mail e/ou WhatsApp.
 - Resultado realizado exige campos como data, resultado, pendências e aprovação.
 - Quando aprovado, apenas um resultado SESMT fica marcado como atual.
+- Vencimento do ASO é por empresa/tipo: anos → realização + N anos − 1 dia; dias → soma exata; default 1 ano − 1 dia.
+- Demissional não tem vencimento (`data_vencimento` nulo).
+- Alteração de periodicidade pode ser só futuros, retroativa (job em cursor) ou a partir de uma data; gera histórico + activity_log.
+- `ClienteConfig.vencimento_aso` é janela de alerta do relatório/e-mail, não a validade do exame. Detalhe: [`ASO_PERIODICIDADE_EMPRESA.md`](ASO_PERIODICIDADE_EMPRESA.md).
 
 **Onde está implementado**
 
 - `app/Http/Controllers/ControleExameController.php`
+- `app/Http/Controllers/EmpresaExameTipoPeriodicidadeController.php`
+- `app/Services/ControleExames/AsoPeriodicidadeService.php`
 - `app/Http/Controllers/PreAdmissaoController.php`
 - `app/Models/ExameFuncionario.php`
 - `app/Models/Examesesmt.php`
+- `app/Models/EmpresaExameTipoPeriodicidade.php`
 
 ## 9. Treinamentos
 

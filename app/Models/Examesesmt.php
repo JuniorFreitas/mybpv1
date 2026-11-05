@@ -113,6 +113,12 @@ class Examesesmt extends Model
     //Modificador ->data_vencimento
     public function setDataVencimentoAttribute($value)
     {
+        if ($value === null || $value === '') {
+            $this->attributes['data_vencimento'] = null;
+
+            return;
+        }
+
         $data = new DataHora($value);
         $this->attributes['data_vencimento'] = $data->dataInsert();
     }

@@ -1,7 +1,7 @@
 # .notebook
 > Project intelligence — read before every mission
 
-Last updated: 2026-10-17
+Last updated: 2026-11-04
 
 - [portal-vagas-vitrine-exclusoes](portal-vagas-vitrine-exclusoes.md) — Vitrine BFF omite apelidos `_bpservice` e `mybp` | flow | portal, vagas, bff
 - [email-candidatura-recrutamento](email-candidatura-recrutamento.md) — Confirmação de candidatura: JobRecrutamento → RecrutamentoMail + layout padrão | flow | email, recrutamento, candidatura
@@ -50,6 +50,7 @@ Last updated: 2026-10-17
 - [notificacao-email-optin](notificacao-email-optin.md) — E-mail só com check + ativo; sistema@ não recebe nem envia | flow | email, notificacao, optin
 - [relatorio-ferias](relatorio-ferias.md) — Férias: CNPJ/CC + abas Lista/Gráficos via FeriasController::show | flow | ferias, cnpj, graficos
 - [relatorio-vencimento-aso](relatorio-vencimento-aso.md) — Regra única tela/Excel/e-mail via AsoVencimentoRelatorioService | flow | aso, vencimento
+- [aso-periodicidade-empresa](aso-periodicidade-empresa.md) — Periodicidade ASO por empresa/tipo (anos−1dia), modos e job em cursor | flow | aso, periodicidade
 - [relatorio-treinamento-vencimento](relatorio-treinamento-vencimento.md) — Tela/export vs e-mail: Admitidos≠ADMITIDO, períodos e DIAS_ALERTA=45 | gotcha | treinamento, vencimento
 - [weekly-report-kanban](weekly-report-kanban.md) — Kanban Trello + tenant empresa_id + Echo | flow | weekly-report, kanban, multitenant
 - [contrato-customizado-apelido](contrato-customizado-apelido.md) — Blade dossiê por apelido (contrato + checklist Coimbra) | flow | dossie, contrato, checklist

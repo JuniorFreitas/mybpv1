@@ -522,6 +522,21 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
             Route::resource('empresa-exame', \App\Http\Controllers\EmpresaExameController::class)->middleware('can:cadastro_empresa_exame');
         });
 
+        Route::group(['as' => 'aso_periodicidade.'], function () {
+            Route::get('aso-periodicidade', [\App\Http\Controllers\EmpresaExameTipoPeriodicidadeController::class, 'index'])
+                ->name('index')
+                ->middleware('can:cadastro_empresa_exame');
+            Route::get('aso-periodicidade/listar', [\App\Http\Controllers\EmpresaExameTipoPeriodicidadeController::class, 'listar'])
+                ->name('listar')
+                ->middleware('can:cadastro_empresa_exame');
+            Route::get('aso-periodicidade/historico', [\App\Http\Controllers\EmpresaExameTipoPeriodicidadeController::class, 'historico'])
+                ->name('historico')
+                ->middleware('can:cadastro_empresa_exame');
+            Route::post('aso-periodicidade', [\App\Http\Controllers\EmpresaExameTipoPeriodicidadeController::class, 'salvar'])
+                ->name('salvar')
+                ->middleware('can:cadastro_empresa_exame');
+        });
+
         //PCMSO
         Route::group(['as' => 'pcmsos.'], function () {
             Route::put('pcmso/{pcmso}/ativa-desativa', [\App\Http\Controllers\PcmsoController::class, 'ativaDesativa'])->name('ativaDesativa')->middleware('can:cadastro_empresa_pcmso_update');

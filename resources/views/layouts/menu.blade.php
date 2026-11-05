@@ -230,6 +230,11 @@
                             Exames
                         </a>
                     </li>
+                    <li>
+                        <a href="{{route('g.aso_periodicidade.index')}}" parent="cadastro" key="aso_periodicidade">
+                            Periodicidade ASO
+                        </a>
+                    </li>
                 @endcan
                 @can('cadastro_instrutor')
                     <li>

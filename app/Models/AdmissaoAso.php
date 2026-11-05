@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasActivitylogOptions;
+use App\Services\ControleExames\AsoPeriodicidadeService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use MasterTag\DataHora;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
-use App\Models\Concerns\HasActivitylogOptions;
 
 
 /**
@@ -120,12 +121,15 @@ class AdmissaoAso extends Model
     public static function criarAtualizar($admissao_id, $empresa_id, $data_aso)
     {
         $ultimoAso = AdmissaoAso::withoutGlobalScopes()->whereAdmissaoId($admissao_id);
+        $vencimento = app(AsoPeriodicidadeService::class)
+            ->calcularDataVencimentoAdmissional($data_aso, (int) $empresa_id);
+
         $dados = [
             'admissao_id' => $admissao_id,
-            'data_aso' => (new DataHora($data_aso))->addAno(1),
-            'data_vencimento' => (new DataHora($data_aso))->dataInsert(),
+            'data_aso' => $data_aso,
+            'data_vencimento' => (new DataHora($vencimento))->dataInsert(),
             'empresa_id' => $empresa_id,
-            'ativo' => true
+            'ativo' => true,
         ];
 
         if ($ultimoAso->count() == 0) {
@@ -143,19 +147,28 @@ class AdmissaoAso extends Model
     protected static function booted()
     {
         static::creating(function ($model) {
-            $dataExpiracao = (new DataHora($model->data_aso))->addAno(1);
-
             $model->empresa_id = auth()->check() ? auth()->user()->empresa_id : $model->empresa_id;
-            $model->data_vencimento = (new DataHora($dataExpiracao))->dataInsert();
+            $model->data_vencimento = self::resolverDataVencimento($model);
         });
 
         static::updating(function ($model) {
-            $dataExpiracao = (new DataHora($model->data_aso))->addAno(1);
-
             $model->empresa_id = auth()->check() ? auth()->user()->empresa_id : $model->empresa_id;
-            $model->data_vencimento = (new DataHora($dataExpiracao))->dataInsert();
-
+            $model->data_vencimento = self::resolverDataVencimento($model);
         });
+    }
+
+    private static function resolverDataVencimento(self $model): string
+    {
+        $dataBase = $model->attributes['data_aso'] ?? null;
+        $empresaId = (int) ($model->empresa_id ?: 0);
+        if (!$dataBase || !$empresaId) {
+            return (new DataHora())->dataInsert();
+        }
+
+        $vencimento = app(AsoPeriodicidadeService::class)
+            ->calcularDataVencimentoAdmissional($dataBase, $empresaId);
+
+        return (new DataHora($vencimento))->dataInsert();
     }
 
 

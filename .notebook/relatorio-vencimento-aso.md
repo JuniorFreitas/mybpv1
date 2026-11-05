@@ -8,8 +8,9 @@ Fonte: `AsoVencimentoRelatorioService`
 
 1. Sem demissão + `Admissao.status` in `ADMITIDO` | `PRONTO PARA ADMISSÃO`
 2. `UltimoAso` em `examesesmts` (atual, realizado, aprovado)
-3. Config `ClienteConfig.vencimento_aso` define destaque/alerta (`dias_vencer <= N`)
-4. E-mail: mesma população; janela `2000-01-01` → hoje+N; só quem `dias_vencer <= N`
+3. Config `ClienteConfig.vencimento_aso` define destaque/alerta (`dias_vencer <= N`) — **não** é a periodicidade do ASO
+4. Periodicidade (validade) é configurável por empresa/tipo: ver [aso-periodicidade-empresa](aso-periodicidade-empresa.md)
+5. E-mail: mesma população; janela `2000-01-01` → hoje+N; só quem `dias_vencer <= N`
 
 ## Canais
 
