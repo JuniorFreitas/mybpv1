@@ -52,6 +52,7 @@ class Exame extends Model
         'empresa_id',
         'exame_tipo_id',
         'label',
+        'codigo_esocial',
         'ativo'
     ];
     protected $casts = [
@@ -59,6 +60,7 @@ class Exame extends Model
         'empresa_id' => 'int',
         'exame_tipo_id' => 'int',
         'label' => 'string',
+        'codigo_esocial' => 'string',
         'ativo' => 'boolean'
     ];
 

@@ -14,7 +14,8 @@ Permitir que cada empresa configure a **validade do ASO por tipo de exame** (Adm
 | `dias` | `data_realizacao + N dias` (exato) |
 
 - Default sem configuração: **1 ano − 1 dia**
-- Presets na UI: 1 ano, 2 anos, 3 anos + personalizado em dias (1–3650)
+- Presets na UI: 1 ano, 2 anos + personalizado em dias (1–730). Trava NR-7: máximo 2 anos / 730 dias (config antiga acima disso mostra aviso)
+- Com o módulo Saúde Ocupacional ligado, as **Regras da empresa** (idade, cargo) podem encurtar este padrão por colaborador — ver `docs/SAUDE_OCUPACIONAL.md`
 - Exemplo: realização `15/03/2024` + 1 ano → vencimento `14/03/2025`
 - **Demissional** não possui vencimento (`data_vencimento = null`); não entra na config nem no job de recálculo
 

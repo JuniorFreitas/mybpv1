@@ -827,6 +827,22 @@
                         </fieldset>
 
                         <fieldset>
+                            <legend class="text-uppercase">Saúde Ocupacional</legend>
+                            <div class="row">
+                                <div class="col-12 col-sm-6 col-lg-4">
+                                    <div class="form-group">
+                                        <label>Módulo Saúde Ocupacional</label>
+                                        <select v-model="form.cliente_config.modulo_saude_ocupacional" class="form-control">
+                                            <option :value="true">Habilitado</option>
+                                            <option :value="false">Desabilitado</option>
+                                        </select>
+                                        <small class="text-muted">Mostra o menu SAÚDE OCUPACIONAL (Painel, ASO, Configurações) para quem tiver permissão.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset>
                             <legend class="text-uppercase">Assinatura Digital</legend>
                             <div class="row">
                                 <div class="col-12 col-sm-6 col-lg-4">

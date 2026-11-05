@@ -15,7 +15,8 @@
             <div class="card-body">
                 <p class="text-muted mb-3">
                     Configure a validade do ASO por tipo. Em <strong>anos</strong>, o vencimento é realização + N anos − 1 dia.
-                    Em <strong>dias</strong>, a soma é exata.
+                    Em <strong>dias</strong>, a soma é exata. Limite da NR-7: 2 anos (730 dias).
+                    Regras por idade ou cargo ficam em <strong>Saúde Ocupacional → Regras da empresa</strong>.
                 </p>
 
                 <p class="text-center" v-if="carregando"><i class="fa fa-spinner fa-pulse"></i> Carregando...</p>
@@ -40,7 +41,7 @@
                                         <select class="form-control form-control-sm" v-model="item.preset" @change="onPresetChange(item)">
                                             <option value="1">1 ano</option>
                                             <option value="2">2 anos</option>
-                                            <option value="3">3 anos</option>
+                                            <option v-if="item.preset === '3'" value="3" disabled>3 anos (acima do limite)</option>
                                             <option value="custom">Personalizado (dias)</option>
                                         </select>
                                     </td>
@@ -49,12 +50,15 @@
                                             <input
                                                 type="number"
                                                 min="1"
-                                                max="3650"
+                                                max="730"
                                                 class="form-control form-control-sm"
                                                 v-model.number="item.valor"
                                             />
                                         </template>
                                         <span v-else class="text-muted">{{ item.valor }} ano(s)</span>
+                                        <div v-if="item.acima_limite_legal" class="small text-danger mt-1">
+                                            Acima do limite da NR-7 (2 anos). Ajuste antes de salvar.
+                                        </div>
                                     </td>
                                 </template>
                             </tr>

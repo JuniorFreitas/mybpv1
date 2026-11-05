@@ -2,7 +2,13 @@
 
 namespace App\Jobs\ControleExames;
 
+use App\Domain\SaudeOcupacional\Regras\MotorPeriodicidadeAso;
+use App\Domain\SaudeOcupacional\Regras\PerfisColaboradoresRepositorio;
+use App\Domain\SaudeOcupacional\Regras\Periodicidade;
+use App\Domain\SaudeOcupacional\Regras\RegraPeriodicidade;
+use App\Domain\SaudeOcupacional\Regras\RegrasAtivasRepositorio;
 use App\Services\ControleExames\AsoPeriodicidadeService;
+use Carbon\CarbonImmutable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -119,6 +125,12 @@ class JobRecalcularVencimentoAsoLote implements ShouldQueue
             return 0;
         }
 
+        // Regras da empresa (idade, cargo…) dependem do colaborador: cálculo por linha.
+        $regras = app(RegrasAtivasRepositorio::class)->doTipo($this->empresaId, $this->exameTipoId);
+        if ($regras !== []) {
+            return $this->atualizarLoteComRegras($ids, $regras);
+        }
+
         $driver = DB::connection()->getDriverName();
         if ($driver === 'sqlite') {
             return $this->atualizarLoteSqlite($ids);
@@ -192,8 +204,70 @@ class JobRecalcularVencimentoAsoLote implements ShouldQueue
         return $afetados;
     }
 
+    /**
+     * Calcula o vencimento de cada ASO com as regras e grava o lote em um único UPDATE (CASE por id).
+     *
+     * @param  list<int>  $ids
+     * @param  list<RegraPeriodicidade>  $regras
+     */
+    private function atualizarLoteComRegras(array $ids, array $regras): int
+    {
+        $rows = DB::table('examesesmts')
+            ->whereIn('id', $ids)
+            ->where('empresa_id', $this->empresaId)
+            ->where('atual', 1)
+            ->whereNotNull('data_realizacao')
+            ->get(['id', 'data_realizacao', 'feedback_id']);
+
+        if ($rows->isEmpty()) {
+            return 0;
+        }
+
+        $perfis = app(PerfisColaboradoresRepositorio::class)->carregarVarios(
+            $rows->pluck('feedback_id')->filter()->map(fn ($id) => (int) $id)->all()
+        );
+        $motor = app(MotorPeriodicidadeAso::class);
+        $padrao = new Periodicidade($this->unidade, max(1, $this->valor));
+        $hoje = CarbonImmutable::today();
+
+        $casosVencimento = [];
+        $casosVencido = [];
+        $bindVencimento = [];
+        $bindVencido = [];
+        $idsAtualizar = [];
+
+        foreach ($rows as $row) {
+            $perfil = $row->feedback_id ? ($perfis[(int) $row->feedback_id] ?? null) : null;
+            $vencimento = $motor->calcular(CarbonImmutable::parse($row->data_realizacao), $padrao, $perfil, $regras)->vencimento;
+
+            $casosVencimento[] = 'WHEN ? THEN ?';
+            array_push($bindVencimento, (int) $row->id, $vencimento->toDateString());
+            $casosVencido[] = 'WHEN ? THEN ?';
+            array_push($bindVencido, (int) $row->id, $vencimento->lessThan($hoje) ? 1 : 0);
+            $idsAtualizar[] = (int) $row->id;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($idsAtualizar), '?'));
+        $sql = 'UPDATE examesesmts SET '
+            . 'data_vencimento = CASE id ' . implode(' ', $casosVencimento) . ' END, '
+            . 'vencido = CASE id ' . implode(' ', $casosVencido) . ' END, '
+            . 'updated_at = ? '
+            . "WHERE id IN ({$placeholders}) AND empresa_id = ? AND atual = 1";
+
+        return DB::update($sql, array_merge(
+            $bindVencimento,
+            $bindVencido,
+            [now()->toDateTimeString()],
+            $idsAtualizar,
+            [$this->empresaId]
+        ));
+    }
+
     private function marcarTipoConcluido(): void
     {
+        // UPDATE em SQL não dispara eventos do model: atualiza o Painel aqui.
+        \App\Domain\SaudeOcupacional\Painel\PainelCache::invalidar($this->empresaId);
+
         $key = JobRecalcularVencimentoAso::cacheTiposRestantesKey($this->empresaId);
         $restantes = Cache::decrement($key);
 

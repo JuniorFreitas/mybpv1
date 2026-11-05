@@ -113,6 +113,14 @@ class Afastamento extends Model
             $model->data_fim = (new DataHora($periodo[1]))->dataInsert();
         });
 
+        // Afastamento não tem empresa_id: invalida o Painel da empresa do usuário logado.
+        $invalidarPainel = function () {
+            \App\Domain\SaudeOcupacional\Painel\PainelCache::invalidar(
+                auth()->check() ? (int) auth()->user()->empresa_id : null
+            );
+        };
+        static::saved($invalidarPainel);
+        static::deleted($invalidarPainel);
     }
 
 }

@@ -207,6 +207,17 @@
         @endif
     </p>
 
+    @if(!empty($examesPcmso) && !empty($examesPcmso['exames']))
+        <div class="setor-titulo">EXAMES PREVISTOS NO PCMSO (versão {{ $examesPcmso['versao'] }})</div>
+        <div class="setor-caixa">
+            @foreach($examesPcmso['exames'] as $exameP)
+                <div class="item">
+                    (&nbsp;&nbsp;) {{ $exameP['label'] }}@if(!$exameP['obrigatorio']) — opcional@endif@if($exameP['periodicidade']) — periodicidade {{ $exameP['periodicidade'] }}@endif
+                </div>
+            @endforeach
+        </div>
+    @endif
+
     @if(!$ExameFuncionario->pcmso && $ExameFuncionario->Formulario)
         @foreach($ExameFuncionario->Formulario->Setores as $setor)
             <div class="setor-titulo">

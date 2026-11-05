@@ -110,6 +110,7 @@ const app = createApp({
                         transferencia_exigir_aprovacao_gestor_origem: true,
                     },
                     assinatura_digital_habilitada: false,
+                    modulo_saude_ocupacional: false,
                     descricao_vaga_ia_habilitada: false,
                     limite_assinaturas_mensal: '',
                     assinatura_alerta_user_ids: [],
@@ -312,6 +313,7 @@ const app = createApp({
                                 transferencia_exigir_aprovacao_gestor_origem: true,
                             },
                             assinatura_digital_habilitada: false,
+                            modulo_saude_ocupacional: false,
                             descricao_vaga_ia_habilitada: false,
                             limite_assinaturas_mensal: '',
                             assinatura_alerta_user_ids: [],
@@ -327,6 +329,7 @@ const app = createApp({
                             this.form.cliente_config.mfa_login_periodo_dias ?? 30
                         )
                         this.form.cliente_config.assinatura_digital_habilitada = !!this.form.cliente_config.assinatura_digital_habilitada
+                        this.form.cliente_config.modulo_saude_ocupacional = !!this.form.cliente_config.modulo_saude_ocupacional
                         this.form.cliente_config.descricao_vaga_ia_habilitada = !!this.form.cliente_config.descricao_vaga_ia_habilitada
                         this.form.cliente_config.limite_assinaturas_mensal = this.form.cliente_config.limite_assinaturas_mensal ?? ''
                         this.form.cliente_config.assinatura_alerta_user_ids = (this.form.cliente_config.assinatura_alerta_user_ids || []).map((id) =>

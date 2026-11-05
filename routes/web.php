@@ -1361,6 +1361,136 @@ Route::group(['middleware' => ['auth', 'habilidades', 'check.password.reset'], '
     });
 
     // Relatorios
+    //Saúde Ocupacional (módulo ligado por cliente + perfil RH)
+    Route::group([
+        'as' => 'saude_ocupacional.',
+        'prefix' => 'saude-ocupacional',
+        'middleware' => ['saude.ocupacional.habilitado', 'can:saude_ocupacional'],
+    ], function () {
+        Route::get('painel', [\App\Http\Controllers\SaudeOcupacional\PainelController::class, 'index'])->name('painel');
+        Route::get('painel/dados', [\App\Http\Controllers\SaudeOcupacional\PainelController::class, 'dados'])
+            ->name('painel.dados')
+            ->middleware('throttle:60,1');
+
+        // ASO e Exames → Conformidade (RH)
+        Route::group(['as' => 'conformidade.', 'prefix' => 'conformidade'], function () {
+            $c = \App\Http\Controllers\SaudeOcupacional\ConformidadeController::class;
+            Route::get('/', [$c, 'index'])->name('index');
+            Route::get('dados', [$c, 'dados'])->name('dados')->middleware('throttle:120,1');
+            Route::get('opcoes', [$c, 'opcoes'])->name('opcoes');
+            Route::post('encaminhar', [$c, 'encaminhar'])->name('encaminhar')->middleware(['can:admissao_controle_exames', 'throttle:10,1']);
+            Route::post('exportar', [$c, 'exportar'])->name('exportar')->middleware('throttle:10,1');
+            Route::put('alertas', [$c, 'salvarAlertas'])->name('alertas')->middleware('can:saude_ocupacional_configuracao');
+        });
+
+        // ASO e Exames → Histórico de ASO (RH vê; emitir/assinar exige controle de exames)
+        Route::group(['as' => 'historico.', 'prefix' => 'historico-aso'], function () {
+            $c = \App\Http\Controllers\SaudeOcupacional\HistoricoAsoController::class;
+            Route::get('/', [$c, 'index'])->name('index');
+            Route::get('colaboradores', [$c, 'colaboradores'])->name('colaboradores')->middleware('throttle:60,1');
+            Route::get('colaboradores/{feedbackId}', [$c, 'show'])->whereNumber('feedbackId')->name('show')->middleware('throttle:60,1');
+            Route::get('resultados/{resultadoId}/preparar', [$c, 'preparar'])->whereNumber('resultadoId')->name('preparar')->middleware('can:admissao_controle_exames');
+            Route::post('resultados/{resultadoId}/emitir', [$c, 'emitir'])->whereNumber('resultadoId')->name('emitir')->middleware('can:admissao_controle_exames');
+            Route::get('resultados/{resultadoId}/pdf', [$c, 'pdf'])->whereNumber('resultadoId')->name('pdf')->middleware('throttle:30,1');
+            Route::post('resultados/{resultadoId}/assinar', [$c, 'assinar'])->whereNumber('resultadoId')->name('assinar')->middleware(['can:admissao_controle_exames', 'assinatura.digital.habilitada', 'throttle:10,1']);
+        });
+
+        // Configurações → Regras da empresa
+        Route::group([
+            'as' => 'regras.',
+            'prefix' => 'regras',
+            'middleware' => ['can:saude_ocupacional_configuracao'],
+        ], function () {
+            $c = \App\Http\Controllers\SaudeOcupacional\RegrasEmpresaController::class;
+            Route::get('/', [$c, 'index'])->name('index');
+            Route::get('dados', [$c, 'dados'])->name('dados');
+            Route::get('historico', [$c, 'historico'])->name('historico');
+            Route::get('colaboradores', [$c, 'colaboradores'])->name('colaboradores')->middleware('throttle:60,1');
+            Route::get('simular/{feedbackId}', [$c, 'simular'])->whereNumber('feedbackId')->name('simular')->middleware('throttle:60,1');
+            Route::post('previa', [$c, 'previa'])->name('previa')->middleware('throttle:30,1');
+            Route::get('{id}/previa-remocao', [$c, 'previaRemocao'])->whereNumber('id')->name('previa-remocao')->middleware('throttle:30,1');
+            Route::post('/', [$c, 'store'])->name('store');
+            Route::put('{id}', [$c, 'update'])->whereNumber('id')->name('update');
+            Route::patch('{id}/ativo', [$c, 'ativo'])->whereNumber('id')->name('ativo');
+            Route::delete('{id}', [$c, 'destroy'])->whereNumber('id')->name('destroy');
+        });
+
+        // Configurações → Médicos responsáveis
+        Route::group([
+            'as' => 'medicos.',
+            'prefix' => 'medicos',
+            'middleware' => ['can:saude_ocupacional_configuracao'],
+        ], function () {
+            $c = \App\Http\Controllers\SaudeOcupacional\MedicosResponsaveisController::class;
+            Route::get('/', [$c, 'index'])->name('index');
+            Route::get('dados', [$c, 'dados'])->name('dados');
+            Route::post('/', [$c, 'store'])->name('store');
+            Route::put('{id}', [$c, 'update'])->whereNumber('id')->name('update');
+            Route::patch('{id}/ativo', [$c, 'ativo'])->whereNumber('id')->name('ativo');
+            Route::delete('{id}', [$c, 'destroy'])->whereNumber('id')->name('destroy');
+        });
+
+        // Programas → PGR (riscos por cargo, versões, catálogo de riscos)
+        Route::group([
+            'as' => 'pgr.',
+            'prefix' => 'pgr',
+            'middleware' => ['can:saude_ocupacional_configuracao'],
+        ], function () {
+            $c = \App\Http\Controllers\SaudeOcupacional\PgrController::class;
+            Route::get('/', [$c, 'index'])->name('index');
+            Route::get('dados', [$c, 'dados'])->name('dados');
+            Route::post('riscos', [$c, 'salvarRisco'])->name('riscos.store');
+            Route::put('riscos/{riscoId}', [$c, 'salvarRisco'])->whereNumber('riscoId')->name('riscos.update');
+            Route::post('versoes', [$c, 'criarRascunho'])->name('versoes.store');
+            Route::get('versoes/{id}', [$c, 'detalhe'])->whereNumber('id')->name('versoes.show');
+            Route::put('versoes/{id}', [$c, 'cabecalho'])->whereNumber('id')->name('versoes.update');
+            Route::put('versoes/{id}/cargos/{vagaId}', [$c, 'salvarCargo'])->whereNumber(['id', 'vagaId'])->name('versoes.cargos');
+            Route::get('versoes/{id}/previa', [$c, 'previa'])->whereNumber('id')->name('versoes.previa')->middleware('throttle:30,1');
+            Route::post('versoes/{id}/publicar', [$c, 'publicar'])->whereNumber('id')->name('versoes.publicar');
+            Route::delete('versoes/{id}', [$c, 'destroy'])->whereNumber('id')->name('versoes.destroy');
+        });
+
+        // Programas → Documentos SST (repositório versionado; download só por rota, com trilha)
+        Route::group(['as' => 'documentos.', 'prefix' => 'documentos'], function () {
+            $c = \App\Http\Controllers\SaudeOcupacional\DocumentosSstController::class;
+            Route::get('/', [$c, 'index'])->name('index');
+            Route::get('dados', [$c, 'dados'])->name('dados')->middleware('throttle:120,1');
+            Route::get('opcoes', [$c, 'opcoes'])->name('opcoes');
+            Route::get('{id}', [$c, 'show'])->whereNumber('id')->name('show')->middleware('throttle:120,1');
+            Route::get('versoes/{versaoId}/arquivo', [$c, 'arquivo'])->whereNumber('versaoId')->name('arquivo')->middleware('throttle:60,1');
+            Route::group(['middleware' => ['can:saude_ocupacional_configuracao']], function () use ($c) {
+                Route::post('/', [$c, 'store'])->name('store')->middleware('throttle:30,1');
+                Route::post('{id}/versoes', [$c, 'novaVersao'])->whereNumber('id')->name('versoes.store')->middleware('throttle:30,1');
+                Route::put('{id}', [$c, 'update'])->whereNumber('id')->name('update');
+                Route::delete('{id}', [$c, 'destroy'])->whereNumber('id')->name('destroy');
+            });
+        });
+
+        // Programas → PCMSO (versões, exames por cargo, catálogo de exames, exames por risco)
+        Route::group([
+            'as' => 'pcmso.',
+            'prefix' => 'pcmso',
+            'middleware' => ['can:saude_ocupacional_configuracao'],
+        ], function () {
+            $c = \App\Http\Controllers\SaudeOcupacional\PcmsoVersoesController::class;
+            Route::get('/', [$c, 'index'])->name('index');
+            Route::get('dados', [$c, 'dados'])->name('dados');
+            Route::post('programas', [$c, 'criarPrograma'])->name('programas.store');
+            Route::get('programas/{pcmsoId}/versoes', [$c, 'versoes'])->whereNumber('pcmsoId')->name('programas.versoes');
+            Route::post('programas/{pcmsoId}/versoes', [$c, 'criarRascunho'])->whereNumber('pcmsoId')->name('programas.versoes.store');
+            Route::get('versoes/{id}', [$c, 'detalhe'])->whereNumber('id')->name('versoes.show');
+            Route::put('versoes/{id}', [$c, 'cabecalho'])->whereNumber('id')->name('versoes.update');
+            Route::put('versoes/{id}/cargos/{vagaId}', [$c, 'salvarCargo'])->whereNumber(['id', 'vagaId'])->name('versoes.cargos');
+            Route::post('versoes/{id}/sugerir', [$c, 'sugerir'])->whereNumber('id')->name('versoes.sugerir');
+            Route::post('versoes/{id}/publicar', [$c, 'publicar'])->whereNumber('id')->name('versoes.publicar');
+            Route::get('versoes/{id}/pdf', [$c, 'pdf'])->whereNumber('id')->name('versoes.pdf')->middleware('throttle:20,1');
+            Route::delete('versoes/{id}', [$c, 'destroy'])->whereNumber('id')->name('versoes.destroy');
+            Route::post('exames', [$c, 'salvarExame'])->name('exames.store');
+            Route::put('exames/{exameId}', [$c, 'salvarExame'])->whereNumber('exameId')->name('exames.update');
+            Route::put('riscos/{riscoId}/exames', [$c, 'examesDoRisco'])->whereNumber('riscoId')->name('riscos.exames');
+        });
+    });
+
     Route::group(['as' => 'relatorios.', 'prefix' => 'relatorios'], function () {
         Route::group(['as' => 'controleusuarios.'], function () {
             Route::get('controleusuarios', [\App\Http\Controllers\ControleUsuariosController::class, 'index'])->name('index')->middleware('can:relatorio_relatorios');

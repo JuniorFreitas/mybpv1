@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $schedule_avaliacao_experiencia Habilitar (true) ou desabilitar (false) o schedule de Avaliação de Experiência para esta empresa
  * @property bool $schedule_treinamento_vencimento Habilitar (true) ou desabilitar (false) o schedule de Treinamento Vencimento para esta empresa
  * @property bool $assinatura_digital_habilitada Habilita a funcionalidade de assinatura digital para a empresa
+ * @property bool $modulo_saude_ocupacional Habilita o menu/módulo Saúde Ocupacional para a empresa
  * @property bool $descricao_vaga_ia_habilitada Habilita a geração de descrição de vaga aberta por IA para a empresa
  * @property int|null $limite_assinaturas_mensal Limite de documentos de assinatura digital por mês (null = sem limite)
  * @property array|null $assinatura_alerta_user_ids IDs de usuários que recebem alerta de cota
@@ -91,6 +92,9 @@ class ClienteConfig extends Model
         'schedule_treinamento_vencimento',
         'treinamento_permitir_desmarcar_realizado',
         'assinatura_digital_habilitada',
+        'modulo_saude_ocupacional',
+        'saude_alerta_janelas',
+        'saude_resumo_semanal',
         'descricao_vaga_ia_habilitada',
         'limite_assinaturas_mensal',
         'assinatura_alerta_user_ids',
@@ -116,6 +120,9 @@ class ClienteConfig extends Model
         'schedule_treinamento_vencimento' => 'boolean',
         'treinamento_permitir_desmarcar_realizado' => 'boolean',
         'assinatura_digital_habilitada' => 'boolean',
+        'modulo_saude_ocupacional' => 'boolean',
+        'saude_alerta_janelas' => 'array',
+        'saude_resumo_semanal' => 'boolean',
         'descricao_vaga_ia_habilitada' => 'boolean',
         'limite_assinaturas_mensal' => 'int',
         'assinatura_alerta_user_ids' => 'array',

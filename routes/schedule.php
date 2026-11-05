@@ -37,6 +37,8 @@ $schedule->job(new LembreteTarefaJob)
 // Comandos Artisan com execução em apenas um servidor
 $schedule->command('horizon:snapshot')->everyFiveMinutes()->name('horizon_snapshot')->onOneServer();
 $schedule->command('mybp:vencimentoAso')->daily()->name('mybp_vencimentoAso')->onOneServer();
+// Saúde Ocupacional: alertas por marcos de vencimento (e resumo às segundas) — empresas com o módulo ligado.
+$schedule->command('mybp:saude-alertas')->dailyAt('07:00')->name('mybp_saude_alertas')->onOneServer();
 $schedule->command('mybp:ferias')->daily()->name('mybp_ferias')->onOneServer();
 $schedule->command('mybp:treinamento-vencimento --chunk-size=2000 --lote-size=100')
     ->fridays()

@@ -733,6 +733,11 @@ class ClientesController extends Controller
             $dados['assinatura_digital_habilitada'] = filter_var(($dadosConfig['assinatura_digital_habilitada'] ?? false), FILTER_VALIDATE_BOOLEAN);
         }
 
+        if (Schema::hasColumn('cliente_configs', 'modulo_saude_ocupacional')) {
+            $dados['modulo_saude_ocupacional'] = filter_var(($dadosConfig['modulo_saude_ocupacional'] ?? false), FILTER_VALIDATE_BOOLEAN);
+            \App\Domain\SaudeOcupacional\ModuloSaudeOcupacional::limparCache();
+        }
+
         if (Schema::hasColumn('cliente_configs', 'descricao_vaga_ia_habilitada')) {
             $dados['descricao_vaga_ia_habilitada'] = filter_var(($dadosConfig['descricao_vaga_ia_habilitada'] ?? false), FILTER_VALIDATE_BOOLEAN);
         }

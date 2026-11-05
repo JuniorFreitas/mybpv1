@@ -230,11 +230,16 @@
                             Exames
                         </a>
                     </li>
-                    <li>
-                        <a href="{{route('g.aso_periodicidade.index')}}" parent="cadastro" key="aso_periodicidade">
-                            Periodicidade ASO
-                        </a>
-                    </li>
+                    {{-- Com o módulo ligado, Periodicidade ASO fica em Saúde Ocupacional → Configurações --}}
+                    @unless(\App\Domain\SaudeOcupacional\ModuloSaudeOcupacional::habilitado()
+                        && \App\Models\Sistema::permitirLinks('saude_ocupacional')
+                        && \App\Models\Sistema::permitirLinks('saude_ocupacional_configuracao'))
+                        <li>
+                            <a href="{{route('g.aso_periodicidade.index')}}" parent="cadastro" key="aso_periodicidade">
+                                Periodicidade ASO
+                            </a>
+                        </li>
+                    @endunless
                 @endcan
                 @can('cadastro_instrutor')
                     <li>
@@ -913,6 +918,113 @@
                         <a href="{{route('g.site.testemunhal.testemunhal.index')}}" parent="site" key="depoimento_site">
                             Depoimento
                         </a>
+                    </li>
+                @endcan
+            </ul>
+        </li>
+    @endif
+
+    @if(\App\Domain\SaudeOcupacional\ModuloSaudeOcupacional::habilitado() && \App\Models\Sistema::permitirLinks('saude_ocupacional'))
+        <li id="saude_ocupacional">
+            <a href="javascript://" class="has-arrow waves-effect" parent="saude_ocupacional">
+                <i class="bx bx-plus-medical"></i>
+                <span>SAÚDE OCUPACIONAL</span>
+            </a>
+            <ul aria-expanded="false">
+                <li>
+                    <a href="{{route('g.saude_ocupacional.painel')}}" parent="saude_ocupacional" key="so_painel">
+                        Painel
+                    </a>
+                </li>
+                <li>
+                    <a href="{{route('g.saude_ocupacional.documentos.index')}}" parent="saude_ocupacional" key="so_documentos">
+                        Documentos SST
+                    </a>
+                </li>
+                <li id="so_aso_exames">
+                    <a href="javascript://" class="has-arrow waves-effect" parent="saude_ocupacional">
+                        ASO e Exames</a>
+                    <ul aria-expanded="false">
+                            <li>
+                                <a href="{{route('g.saude_ocupacional.conformidade.index')}}"
+                                   subparent="so_aso_exames" parent="saude_ocupacional" key="so_conformidade">
+                                    Conformidade
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{route('g.saude_ocupacional.historico.index')}}"
+                                   subparent="so_aso_exames" parent="saude_ocupacional" key="so_historico_aso">
+                                    Histórico de ASO
+                                </a>
+                            </li>
+                            @can('admissao_controle_exames')
+                                <li>
+                                    <a href="{{route('g.controle_exames.index')}}"
+                                       subparent="so_aso_exames" parent="saude_ocupacional" key="so_controle_exames">
+                                        Controle de exames
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('relatorio_asos')
+                                <li>
+                                    <a href="{{route('g.relatorios.vencimentoasos.index')}}"
+                                       subparent="so_aso_exames" parent="saude_ocupacional" key="so_vencimento_asos">
+                                        Vencimento de ASOs
+                                    </a>
+                                </li>
+                            @endcan
+                    </ul>
+                </li>
+                @can('saude_ocupacional_configuracao')
+                    <li id="so_programas">
+                        <a href="javascript://" class="has-arrow waves-effect" parent="saude_ocupacional">
+                            Programas</a>
+                        <ul aria-expanded="false">
+                            <li>
+                                <a href="{{route('g.saude_ocupacional.pcmso.index')}}"
+                                   subparent="so_programas" parent="saude_ocupacional" key="so_pcmso">
+                                    PCMSO
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{route('g.saude_ocupacional.pgr.index')}}"
+                                   subparent="so_programas" parent="saude_ocupacional" key="so_pgr">
+                                    PGR — Riscos por cargo
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li id="so_configuracoes">
+                        <a href="javascript://" class="has-arrow waves-effect" parent="saude_ocupacional">
+                            Configurações</a>
+                        <ul aria-expanded="false">
+                            <li>
+                                <a href="{{route('g.saude_ocupacional.medicos.index')}}"
+                                   subparent="so_configuracoes" parent="saude_ocupacional" key="so_medicos">
+                                    Médicos responsáveis
+                                </a>
+                            </li>
+                            @can('cadastro_empresa_exame')
+                                <li>
+                                    <a href="{{route('g.empresaexame.empresa-exame.index')}}"
+                                       subparent="so_configuracoes" parent="saude_ocupacional" key="so_exames">
+                                        Exames
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{route('g.aso_periodicidade.index')}}"
+                                       subparent="so_configuracoes" parent="saude_ocupacional" key="so_aso_periodicidade">
+                                        Periodicidade ASO
+                                    </a>
+                                </li>
+                            @endcan
+                            <li>
+                                <a href="{{route('g.saude_ocupacional.regras.index')}}"
+                                   subparent="so_configuracoes" parent="saude_ocupacional" key="so_regras">
+                                    Regras da empresa
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 @endcan
             </ul>

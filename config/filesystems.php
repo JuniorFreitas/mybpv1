@@ -48,6 +48,14 @@ return [
             ]
         ),
 
+        // Documentos SST (Saúde Ocupacional): privado; download só pela rota com permissão e trilha de acesso.
+        'disco-saude-documentos' => array_merge($default,
+            [
+                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-saude-documentos') : 'arquivos/disco-saude-documentos',
+                'visibility' => 'private',
+            ]
+        ),
+
         'disco-cliente' => array_merge($default,
             [
 //                'root' => env('FILESYSTEM_DRIVER') == 'local' ? storage_path('app/g/arquivos/disco-cliente') : 'arquivos/disco-cliente',

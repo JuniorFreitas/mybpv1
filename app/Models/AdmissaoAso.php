@@ -122,7 +122,7 @@ class AdmissaoAso extends Model
     {
         $ultimoAso = AdmissaoAso::withoutGlobalScopes()->whereAdmissaoId($admissao_id);
         $vencimento = app(AsoPeriodicidadeService::class)
-            ->calcularDataVencimentoAdmissional($data_aso, (int) $empresa_id);
+            ->calcularDataVencimentoAdmissional($data_aso, (int) $empresa_id, self::feedbackDaAdmissao($admissao_id));
 
         $dados = [
             'admissao_id' => $admissao_id,
@@ -166,9 +166,25 @@ class AdmissaoAso extends Model
         }
 
         $vencimento = app(AsoPeriodicidadeService::class)
-            ->calcularDataVencimentoAdmissional($dataBase, $empresaId);
+            ->calcularDataVencimentoAdmissional(
+                $dataBase,
+                $empresaId,
+                self::feedbackDaAdmissao($model->attributes['admissao_id'] ?? null)
+            );
 
         return (new DataHora($vencimento))->dataInsert();
+    }
+
+    /** Colaborador da admissão, para as Regras da empresa (idade, cargo). */
+    private static function feedbackDaAdmissao($admissaoId): ?int
+    {
+        if (!$admissaoId) {
+            return null;
+        }
+
+        $feedbackId = Admissao::withoutGlobalScopes()->whereKey($admissaoId)->value('feedback_id');
+
+        return $feedbackId ? (int) $feedbackId : null;
     }
 
 

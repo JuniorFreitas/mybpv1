@@ -456,6 +456,11 @@ class HabilidadesTableSeeder extends Seeder
         $lista[] = ['nome' => 'cadastro_empresa_exame_update', 'descricao' => 'Pode alterar empresa_exame'];
         $lista[] = ['nome' => 'cadastro_empresa_exame_delete', 'descricao' => 'Pode apagar feriados'];
 
+        //SAÚDE OCUPACIONAL------------------------------
+        $lista[] = ['nome' => 'saude_ocupacional', 'descricao' => 'Acessar menu Saúde Ocupacional e Painel'];
+        $lista[] = ['nome' => 'saude_ocupacional_configuracao', 'descricao' => 'Acessar Configurações da Saúde Ocupacional'];
+        $lista[] = ['nome' => 'saude_ocupacional_dados_sensiveis', 'descricao' => 'Ver dados sensíveis de saúde (CID, laudos, atestados)'];
+
         //EXAMES PCMSO------------------------------
         $lista[] = ['nome' => 'cadastro_empresa_pcmso', 'descricao' => 'Acessar PCMSO'];
         $lista[] = ['nome' => 'cadastro_empresa_pcmso_insert', 'descricao' => 'Pode cadastrar um PCMSO'];

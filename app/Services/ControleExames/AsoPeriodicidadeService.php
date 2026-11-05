@@ -2,7 +2,13 @@
 
 namespace App\Services\ControleExames;
 
+use App\Domain\SaudeOcupacional\Regras\MotorPeriodicidadeAso;
+use App\Domain\SaudeOcupacional\Regras\PerfisColaboradoresRepositorio;
+use App\Domain\SaudeOcupacional\Regras\Periodicidade;
+use App\Domain\SaudeOcupacional\Regras\RegrasAtivasRepositorio;
+use App\Domain\SaudeOcupacional\Regras\TravaLegalNr7;
 use App\Jobs\ControleExames\JobRecalcularVencimentoAso;
+use Carbon\CarbonImmutable;
 use App\Models\EmpresaExameTipoPeriodicidade;
 use App\Models\EmpresaExameTipoPeriodicidadeHistorico;
 use App\Models\ExameTipo;
@@ -86,13 +92,15 @@ class AsoPeriodicidadeService
 
     /**
      * @param  array{unidade: string, valor: int}|null  $config
+     * @param  int|null  $feedbackId  colaborador: com ele, aplica as Regras da empresa (idade, cargo…)
      * @return string|null null quando o tipo não possui vencimento (Demissional)
      */
     public function calcularDataVencimento(
         $dataRealizacao,
         int $empresaId,
         ?int $exameTipoId,
-        ?array $config = null
+        ?array $config = null,
+        ?int $feedbackId = null
     ): ?string {
         if ($this->ehSemVencimento($exameTipoId)) {
             return null;
@@ -101,6 +109,11 @@ class AsoPeriodicidadeService
         $config ??= $this->resolverConfig($empresaId, $exameTipoId);
         if ($config === null) {
             return null;
+        }
+
+        $comRegras = $this->calcularComRegras($dataRealizacao, $empresaId, $exameTipoId, $config, $feedbackId);
+        if ($comRegras !== null) {
+            return $comRegras;
         }
 
         $data = new DataHora($dataRealizacao);
@@ -117,13 +130,40 @@ class AsoPeriodicidadeService
         return $data->dataCompleta();
     }
 
-    public function calcularDataVencimentoAdmissional($dataRealizacao, int $empresaId): string
+    public function calcularDataVencimentoAdmissional($dataRealizacao, int $empresaId, ?int $feedbackId = null): string
     {
         $tipoId = ExameTipo::query()
             ->where('label', self::LABEL_ADMISSIONAL)
             ->value('id');
 
-        return $this->calcularDataVencimento($dataRealizacao, $empresaId, $tipoId ? (int) $tipoId : null);
+        return $this->calcularDataVencimento($dataRealizacao, $empresaId, $tipoId ? (int) $tipoId : null, null, $feedbackId);
+    }
+
+    /**
+     * Vencimento pelas Regras da empresa. null = sem colaborador, sem regra para o tipo
+     * ou módulo desligado (segue o cálculo padrão).
+     *
+     * @param  array{unidade: string, valor: int}  $config
+     */
+    private function calcularComRegras($dataRealizacao, int $empresaId, ?int $exameTipoId, array $config, ?int $feedbackId): ?string
+    {
+        if (!$feedbackId || !$exameTipoId || !$dataRealizacao || (int) ($config['valor'] ?? 0) < 1) {
+            return null;
+        }
+
+        $regras = app(RegrasAtivasRepositorio::class)->doTipo($empresaId, $exameTipoId);
+        if ($regras === []) {
+            return null;
+        }
+
+        $resultado = app(MotorPeriodicidadeAso::class)->calcular(
+            CarbonImmutable::parse((new DataHora($dataRealizacao))->dataInsert()),
+            Periodicidade::deArray($config),
+            app(PerfisColaboradoresRepositorio::class)->carregar($feedbackId),
+            $regras
+        );
+
+        return $resultado->vencimento->format('d/m/Y');
     }
 
     /**
@@ -144,13 +184,19 @@ class AsoPeriodicidadeService
                 $semVencimento = $tipo->label === self::LABEL_DEMISSIONAL;
                 $cfg = $configs->get($tipo->id);
 
+                $unidade = $semVencimento ? null : ($cfg->unidade ?? self::DEFAULT_UNIDADE);
+                $valor = $semVencimento ? null : ($cfg ? (int) $cfg->valor : self::DEFAULT_VALOR);
+
                 return [
                     'exame_tipo_id' => $tipo->id,
                     'label' => $tipo->label,
                     'sem_vencimento' => $semVencimento,
-                    'unidade' => $semVencimento ? null : ($cfg->unidade ?? self::DEFAULT_UNIDADE),
-                    'valor' => $semVencimento ? null : ($cfg ? (int) $cfg->valor : self::DEFAULT_VALOR),
+                    'unidade' => $unidade,
+                    'valor' => $valor,
                     'configurado' => $semVencimento ? false : (bool) $cfg,
+                    // Config antiga acima do limite da NR-7: avisa na tela (bloqueado ao salvar).
+                    'acima_limite_legal' => !$semVencimento && $valor >= 1
+                        && (new TravaLegalNr7())->excedeLimite(new Periodicidade($unidade, $valor)),
                 ];
             })
             ->values()
@@ -369,17 +415,8 @@ class AsoPeriodicidadeService
                 ]);
             }
 
-            if ($unidade === self::UNIDADE_ANOS && $valor > 10) {
-                throw ValidationException::withMessages([
-                    'itens' => 'Periodicidade em anos deve ser no máximo 10.',
-                ]);
-            }
-
-            if ($unidade === self::UNIDADE_DIAS && $valor > 3650) {
-                throw ValidationException::withMessages([
-                    'itens' => 'Periodicidade em dias deve ser no máximo 3650.',
-                ]);
-            }
+            // Trava legal (Padrão NR-7): no máximo 2 anos / 730 dias.
+            (new TravaLegalNr7())->validar(new Periodicidade($unidade, $valor), 'itens');
 
             $normalizados[] = [
                 'exame_tipo_id' => $tipoId,

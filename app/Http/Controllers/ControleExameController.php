@@ -236,7 +236,9 @@ class ControleExameController extends Controller
         $dados['data_vencimento'] = app(AsoPeriodicidadeService::class)->calcularDataVencimento(
             $dados['data_realizacao'] ?? null,
             (int) ($exameFuncionario->empresa_id ?? auth()->user()->empresa_id),
-            $exameFuncionario->exame_tipo_id ? (int) $exameFuncionario->exame_tipo_id : null
+            $exameFuncionario->exame_tipo_id ? (int) $exameFuncionario->exame_tipo_id : null,
+            null,
+            $exameFuncionario->feedback_id ? (int) $exameFuncionario->feedback_id : null
         );
         $dados['vencido'] = false;
 
@@ -351,7 +353,9 @@ class ControleExameController extends Controller
                     $dados['data_vencimento'] = app(AsoPeriodicidadeService::class)->calcularDataVencimento(
                         $dados['data_realizacao'],
                         (int) ($resultado->empresa_id ?? $exameFuncionario->empresa_id ?? auth()->user()->empresa_id),
-                        $exameFuncionario?->exame_tipo_id ? (int) $exameFuncionario->exame_tipo_id : null
+                        $exameFuncionario?->exame_tipo_id ? (int) $exameFuncionario->exame_tipo_id : null,
+                        null,
+                        ($resultado->feedback_id ?? $exameFuncionario?->feedback_id) ? (int) ($resultado->feedback_id ?? $exameFuncionario->feedback_id) : null
                     );
                     // Demissional: sem vencimento (null); demais tipos recalculam pela periodicidade.
                 }
@@ -650,9 +654,11 @@ class ControleExameController extends Controller
         $solicitante = auth()->guest() ? '' : (string) (auth()->user()?->nome ?? '');
         $identificacao = app(ColaboradorExameIdentificacao::class)->paraFeedback($ExameFuncionario->Feedback);
 
+        $examesPcmso = $this->examesPcmsoParaFicha($ExameFuncionario);
+
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = app('dompdf.wrapper');
-        $pdf->loadView('pdf.controle-exames.ficha', compact('ExameFuncionario', 'identificacao'));
+        $pdf->loadView('pdf.controle-exames.ficha', compact('ExameFuncionario', 'identificacao', 'examesPcmso'));
         app(ComunicadoDispensaSemJustaCausaPdfService::class)
             ->aplicarPadraoDocumento($pdf, $solicitante);
 
@@ -696,9 +702,11 @@ class ControleExameController extends Controller
         }
         $identificacao = app(ColaboradorExameIdentificacao::class)->paraFeedback($ExameFuncionario->Feedback);
 
+        $examesPcmso = $this->examesPcmsoParaFicha($ExameFuncionario);
+
         /** @var \Barryvdh\DomPDF\PDF $pdf */
         $pdf = app('dompdf.wrapper');
-        $pdf->loadView('pdf.controle-exames.ficha', compact('ExameFuncionario', 'identificacao'));
+        $pdf->loadView('pdf.controle-exames.ficha', compact('ExameFuncionario', 'identificacao', 'examesPcmso'));
         app(ComunicadoDispensaSemJustaCausaPdfService::class)
             ->aplicarPadraoDocumento($pdf, (string) (auth()->user()?->nome ?? ''));
         $pdfContent = $pdf->output();
@@ -757,5 +765,33 @@ class ControleExameController extends Controller
     public function download(Request $request, $arquivo)
     {
         return Arquivo::anexoDownload(Arquivo::DISCO_CONTROLE_EXAMES_RESULTADO, $arquivo);
+    }
+
+    /**
+     * Saúde Ocupacional: exames do PCMSO vigente (na data do encaminhamento) para o cargo e o tipo de ASO.
+     * null = não mostra a seção na ficha (sem PCMSO, módulo desligado ou sem versão vigente).
+     */
+    private function examesPcmsoParaFicha(ExameFuncionario $exame): ?array
+    {
+        if (!$exame->pcmso || !$exame->pcmso_id || !$exame->feedback_id) {
+            return null;
+        }
+
+        try {
+            $data = $exame->getRawOriginal('encaminhamento_data');
+
+            return app(\App\Domain\SaudeOcupacional\Pcmso\ExamesPrevistosPcmso::class)->para(
+                (int) ($exame->Feedback->empresa_id ?? $exame->empresa_id),
+                (int) $exame->pcmso_id,
+                (int) $exame->feedback_id,
+                $exame->exame_tipo_id ? (int) $exame->exame_tipo_id : null,
+                $data ? \Carbon\CarbonImmutable::parse($data) : null
+            );
+        } catch (\Throwable $e) {
+            // A ficha nunca deixa de sair por causa desta seção.
+            \Log::warning('Ficha de exame: falha ao montar exames do PCMSO', ['exame_funcionario_id' => $exame->id, 'erro' => $e->getMessage()]);
+
+            return null;
+        }
     }
 }

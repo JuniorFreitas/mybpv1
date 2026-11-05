@@ -59,6 +59,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'usuario.ativo' => \App\Http\Middleware\UsuarioAtivo::class,
             'apitoken' => \App\Http\Middleware\ApiToken::class,
             'assinatura.digital.habilitada' => \App\Http\Middleware\VerificaAssinaturaDigitalHabilitada::class,
+            'saude.ocupacional.habilitado' => \App\Http\Middleware\VerificaModuloSaudeOcupacional::class,
             'api.externa.user' => \App\Http\Middleware\EnsureApiExternaUser::class,
             'api.externa.scope' => \App\Http\Middleware\EnsureApiExternaScope::class,
             'force.json' => \App\Http\Middleware\ForceJsonResponse::class,

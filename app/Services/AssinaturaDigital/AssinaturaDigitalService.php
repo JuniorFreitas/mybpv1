@@ -668,6 +668,7 @@ class AssinaturaDigitalService
         }
         $this->gerarPdfComMarcaAgua($doc);
         $this->aplicarConclusaoCartaOferta($doc);
+        $this->aplicarConclusaoAso($doc);
         JobEnvioDocumentoAssinado::dispatch($doc->id);
     }
 
@@ -990,6 +991,19 @@ class AssinaturaDigitalService
     /**
      * Ao concluir assinatura de uma Carta Oferta, atualiza o registro para dispensar anexo manual.
      */
+    /**
+     * ASO assinado (Saúde Ocupacional) → Documentos SST do colaborador. Não lança.
+     */
+    protected function aplicarConclusaoAso(DocumentoParaAssinatura $doc): void
+    {
+        if ($doc->tipo_documento !== \App\Domain\SaudeOcupacional\Aso\AsoDocumentoService::TIPO_DOCUMENTO_ASSINATURA) {
+            return;
+        }
+        app(\App\Domain\SaudeOcupacional\Documentos\ArquivamentoAutomaticoSst::class)->arquivarAsoAssinado(
+            DocumentoParaAssinatura::withoutGlobalScopes()->with(['arquivo', 'arquivoAssinado'])->find($doc->id) ?? $doc
+        );
+    }
+
     protected function aplicarConclusaoCartaOferta(DocumentoParaAssinatura $doc): void
     {
         if ($doc->tipo_documento !== 'carta_oferta' || $doc->documentable_type !== CartaOferta::class) {

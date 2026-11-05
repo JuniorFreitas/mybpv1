@@ -372,6 +372,7 @@ class Arquivo extends Model
     const DISCO_ASSINATURA = 'disco-assinatura';
     const DISCO_EXPORTACAO = 'disco-exportacao';
     const DISCO_DOCUMENTO_ASSINATURA = 'disco-documento-assinatura';
+    const DISCO_SAUDE_DOCUMENTOS = 'disco-saude-documentos';
 
     const LISTAGEM_DISCOS = [
         self::DISCO_CLOUD,

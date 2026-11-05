@@ -66,4 +66,10 @@ class Pcmso extends Model
     {
         return $this->belongsTo(Cliente::class, 'empresa_id');
     }
+
+    /** Versões do PCMSO deste programa (Saúde Ocupacional). */
+    public function Versoes()
+    {
+        return $this->hasMany(PcmsoVersao::class, 'pcmso_id', 'id');
+    }
 }

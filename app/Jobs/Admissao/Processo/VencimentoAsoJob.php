@@ -59,6 +59,11 @@ class VencimentoAsoJob implements ShouldQueue
 
     private function processarEmpresa(AsoVencimentoRelatorioService $service, int $empresaId): void
     {
+        // Com o módulo Saúde Ocupacional ligado, o aviso por marcos (mybp:saude-alertas) substitui esta lista diária.
+        if (\App\Domain\SaudeOcupacional\ModuloSaudeOcupacional::habilitado($empresaId)) {
+            return;
+        }
+
         $usuarioTemp = User::usuarioContextoEmpresa($empresaId);
 
         if (!$usuarioTemp) {

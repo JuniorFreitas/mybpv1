@@ -144,6 +144,14 @@ cliente já existe.
 Com o MFA ligado, escolha ao menos um canal. WhatsApp de MFA sem a notificação
 de WhatsApp da empresa faz o salvamento falhar.
 
+### Saúde Ocupacional
+
+| Campo | Padrão | Efeito |
+|---|---|---|
+| Módulo Saúde Ocupacional | Desabilitado | Ligado, mostra o menu **SAÚDE OCUPACIONAL** (Painel, Documentos SST, ASO e Exames, Programas, Configurações) para quem tiver a permissão `saude_ocupacional`. |
+
+Detalhes, permissões e perfil de dados sensíveis: [SAUDE_OCUPACIONAL.md](SAUDE_OCUPACIONAL.md).
+
 ### Assinatura digital
 
 | Campo | Padrão | Efeito |
@@ -349,6 +357,18 @@ Faça só os que foram marcados na parametrização.
 
 - Modelo CIH definido e, se usar apontamento, **Admissão › Apontamento › Tipos CIH**.
 - Clínicas e PCMSO ativos. O grupo de clínica nasce no cadastro do cliente.
+- Se o contrato tiver **Saúde Ocupacional**: ligar o módulo na aba Configurações e dar
+  `saude_ocupacional_dados_sensiveis` **só** ao grupo do SESMT/medicina (nunca vem ligado). Depois:
+  1. Rodar `php artisan mybp:saude-sanear-cargos {cliente_id}` (simula) e, se fizer sentido, com `--aplicar`.
+  2. **Configurações → Médicos responsáveis**: cadastrar o coordenador do PCMSO (com vigência).
+  3. **Programas → PGR**: catálogo de riscos, riscos por cargo e publicar a versão (expostos passam a ter periódico anual).
+  4. **Programas → PCMSO**: catálogo de exames, exames por risco, e em cada programa uma versão com coordenador e
+     exames por cargo ("Sugerir pelo PGR" ajuda). Publicada, a ficha da clínica passa a listar os exames.
+  5. **Configurações → Regras da empresa**: regras próprias (idade, cargo, risco), se o PCMSO pedir.
+  6. **ASO e Exames → Conformidade → Alertas**: dias dos avisos (padrão 60/30/7) e resumo semanal. Quem recebe = usuários
+     com "Vencimento ASO" marcado. Com o módulo ligado, o e-mail diário antigo de vencimento deixa de ir para o cliente.
+  7. **Documentos SST**: enviar PGR, LTCAT, laudos e ordens de serviço com a vigência. PCMSO publicado e ASO assinado
+     entram sozinhos. Laudo/exame médico é sempre sigiloso (só o grupo com dados sensíveis).
 - Carta oferta com template, se o fluxo enviar carta.
 - Documentos da pré-admissão, se o candidato enviar arquivo antes da admissão.
 - Importação de admissões: [importacao/IMPORTACAO_ADMISSOES.md](importacao/IMPORTACAO_ADMISSOES.md).

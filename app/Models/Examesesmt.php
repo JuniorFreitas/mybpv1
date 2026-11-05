@@ -164,6 +164,10 @@ class Examesesmt extends Model
             $model->user_id = auth()->user()->id;
         });
 
+        $invalidarPainel = fn ($model) => \App\Domain\SaudeOcupacional\Painel\PainelCache::invalidar((int) $model->empresa_id);
+        static::saved($invalidarPainel);
+        static::deleted($invalidarPainel);
+
         static::addGlobalScope(new ScopeEmpresa());
     }
 
