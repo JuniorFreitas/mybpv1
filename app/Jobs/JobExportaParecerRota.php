@@ -346,14 +346,16 @@ class JobExportaParecerRota implements ShouldQueue
 
         $cacheData = Cache::get($this->cacheKey);
         $cacheData['status'] = $status;
-        $cacheData['updated_at'] = now();
+        $cacheData['updated_at'] = now()->toIso8601String();
 
         // Merge dados adicionais
         foreach ($additionalData as $key => $value) {
             $cacheData[$key] = $value;
         }
 
-        $expiresAt = $cacheData['expires_at'] ?? now()->addMinutes(15);
+        $expiresAt = isset($cacheData['expires_at'])
+            ? \Carbon\Carbon::parse($cacheData['expires_at'])
+            : now()->addMinutes(15);
         Cache::put($this->cacheKey, $cacheData, $expiresAt);
 
         if ($status === 'retrying') {

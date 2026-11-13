@@ -1,0 +1,12 @@
+[program:reverb]
+process_name=%(program_name)s
+directory=/var/www/html
+command=/usr/local/bin/php artisan reverb:start --host=0.0.0.0 --port=6001
+user=www-data
+autostart=true
+autorestart=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+stopwaitsecs=60

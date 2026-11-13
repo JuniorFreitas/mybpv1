@@ -219,7 +219,7 @@ class WeeklyReportMultitenantTest extends TestCase
         ]);
     }
 
-    private function user(int $empresaId = 10, string $nome = null): User
+    private function user(int $empresaId = 10, ?string $nome = null): User
     {
         static $seq = 0;
         $seq++;
@@ -519,6 +519,11 @@ class WeeklyReportMultitenantTest extends TestCase
 
     public function test_dono_compartilha_e_remove_membro(): void
     {
+        Habilidade::query()->create([
+            'nome' => GrantWeeklyReportAccess::HABILIDADE,
+            'descricao' => 'Acessar Weekly Report',
+        ]);
+
         $dono = $this->user(10, 'Dono Share');
         $convidado = $this->user(10, 'Convidado Share');
         $this->actingAs($dono);

@@ -33,7 +33,9 @@ class WhatsappNotificationGateServiceTest extends TestCase
     #[DataProvider('tiposWhatsappProvider')]
     public function testBloqueiaQualquerTipoQuandoEmpresaSemWhatsappLiberado(
         TipoMensagemWhatsapp $tipo,
+        string $modulo,
     ): void {
+        unset($modulo);
         $configService = Mockery::mock(WhatsappConfigService::class);
 
         $gate = Mockery::mock(WhatsappNotificationGateService::class, [$configService])

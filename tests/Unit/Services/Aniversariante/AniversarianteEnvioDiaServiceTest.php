@@ -73,7 +73,7 @@ class AniversarianteEnvioDiaServiceTest extends TestCase
         $resultado = $service->processarAniversariante((object) [
             'id' => 11,
             'nome' => 'Sistema',
-            'email' => 'Sistema@MyBPIN.com. br',
+            'email' => 'Sistema@MyBP.com. br',
             'empresa_id' => 99,
         ], 2026);
 

@@ -149,7 +149,7 @@ class JobExportaAdmissoes implements ShouldQueue
 
         $cacheData = Cache::get($this->cacheKey);
         $cacheData['status'] = $status;
-        $cacheData['updated_at'] = now();
+        $cacheData['updated_at'] = now()->toIso8601String();
 
         // Merge dados adicionais
         foreach ($additionalData as $key => $value) {
@@ -157,7 +157,9 @@ class JobExportaAdmissoes implements ShouldQueue
         }
 
         // ✅ BACKGROUND: TTL menor (só para duração do job)
-        $expiresAt = $cacheData['expires_at'] ?? now()->addMinutes(15);
+        $expiresAt = isset($cacheData['expires_at'])
+            ? \Carbon\Carbon::parse($cacheData['expires_at'])
+            : now()->addMinutes(15);
         Cache::put($this->cacheKey, $cacheData, $expiresAt);
 
         // ✅ Log para monitoramento
@@ -184,7 +186,9 @@ class JobExportaAdmissoes implements ShouldQueue
             'user_id' => $this->userId,
             'filename' => $this->fileName,
             'attempts' => $this->attempts(),
-            'duration' => now()->diffInSeconds(Cache::get($this->cacheKey)['initiated_at'] ?? now()),
+            'duration' => now()->diffInSeconds(
+                \Carbon\Carbon::parse(Cache::get($this->cacheKey)['initiated_at'] ?? now())
+            ),
             'cache_key' => $this->cacheKey
         ]);
     }

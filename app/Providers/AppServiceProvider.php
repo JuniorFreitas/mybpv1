@@ -27,7 +27,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(\App\Domain\Ai\LlmProxy::class, \App\Infrastructure\Ai\FallbackLlmProxy::class);
         $this->app->singleton(\App\Domain\Ajuda\BaseConhecimentoManual::class, \App\Infrastructure\Ajuda\BaseConhecimentoManualJsonl::class);
 
-        if ($this->app->isLocal()) {
+        if ($this->app->isLocal()
+            && class_exists(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class)
+        ) {
             $this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
         }
     }

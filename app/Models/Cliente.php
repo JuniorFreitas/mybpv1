@@ -464,14 +464,15 @@ class Cliente extends Model
      */
     public function Cnpjs(int $idDaEmpresa): \Illuminate\Support\Collection
     {
-        $cache_key = "cnpjs_{$idDaEmpresa}";
+        $cache_key = "cnpjs_v2_{$idDaEmpresa}";
 
-        if (is_null(cache()->get($cache_key))) {
+        $cached = cache()->get($cache_key);
+        if (!is_array($cached)) {
             $empresa = $this::where('id', $idDaEmpresa)
                 ->with('Filiais')
                 ->first();
 
-            $cnpjs = [
+            $cached = [
                 'matriz' => [
                     'id' => $empresa->id,
                     'cnpj' => $empresa->cnpj,
@@ -482,17 +483,16 @@ class Cliente extends Model
                 ],
                 'filiais' => $empresa->Filiais->map(function ($filial) {
                     return $this->prepararDadosDaFilial($filial);
-                })
+                })->all(),
             ];
 
-            $result = collect($cnpjs);
-
-            cache()->put($cache_key, $result, now()->addDays(7));
-
-            return $result;
+            cache()->put($cache_key, $cached, now()->addDays(7));
         }
 
-        return cache()->get($cache_key);
+        return collect([
+            'matriz' => $cached['matriz'] ?? [],
+            'filiais' => collect($cached['filiais'] ?? []),
+        ]);
     }
 
     /**

@@ -94,7 +94,7 @@ class Vencimento extends Model
     public static function cacheKey($empresaId): string
     {
         $empresaId = $empresaId ?: 'global';
-        return "vencimentos_ativos_empresa_{$empresaId}";
+        return "vencimentos_ativos_empresa_v2_{$empresaId}";
     }
 
     protected static function booted()

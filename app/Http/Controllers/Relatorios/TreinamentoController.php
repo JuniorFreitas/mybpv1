@@ -90,8 +90,8 @@ class TreinamentoController extends Controller
 
             Cache::put($cacheKey, [
                 'filename' => $nameArquivo,
-                'initiated_at' => now(),
-                'expires_at' => $expiresAt,
+                'initiated_at' => now()->toIso8601String(),
+                'expires_at' => $expiresAt->toIso8601String(),
                 'user_id' => $userId,
                 'status' => 'queued',
                 'attempt' => 0,

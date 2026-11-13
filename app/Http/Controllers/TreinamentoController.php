@@ -1680,12 +1680,16 @@ class TreinamentoController extends Controller
         $empresaId = auth()->user()->empresa_id ?? 'global';
         $cacheKey = \App\Models\Vencimento::cacheKey($empresaId);
 
-        return Cache::remember($cacheKey, now()->addDays(30), function () {
+        $rows = Cache::remember($cacheKey, now()->addDays(30), function () {
             return Vencimento::whereAtivo(true)
                 ->select('id', 'label', 'label_reduzida', 'exibir_na_carteira', 'ordem')
                 ->orderBy('ordem')
-                ->get();
+                ->get()
+                ->map(fn ($item) => $item->getRawOriginal())
+                ->all();
         });
+
+        return Vencimento::hydrate(is_array($rows) ? $rows : []);
     }
 
     private function StatusTreinamento($dataVencimento)
@@ -1779,8 +1783,8 @@ class TreinamentoController extends Controller
             // Armazenar no cache com tempo de expiração definido
             Cache::put($cacheKey, [
                 'filename' => $nameArquivo, // Corrigido: era fileName
-                'initiated_at' => now(),
-                'expires_at' => $expiresAt, // Para controle de TTL
+                'initiated_at' => now()->toIso8601String(),
+                'expires_at' => $expiresAt->toIso8601String(),
                 'user_id' => $userId,
                 'status' => 'queued', // Status inicial
                 'attempt' => 0,

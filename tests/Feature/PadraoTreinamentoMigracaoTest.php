@@ -313,6 +313,7 @@ class PadraoTreinamentoMigracaoTest extends TestCase
         Schema::create('feedback_curriculos', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('empresa_id')->nullable();
+            $table->softDeletes();
         });
 
         Schema::create('admissoes', function (Blueprint $table) {
@@ -320,6 +321,7 @@ class PadraoTreinamentoMigracaoTest extends TestCase
             $table->unsignedBigInteger('feedback_id')->nullable();
             $table->unsignedBigInteger('segmento_treinamento_id')->nullable();
             $table->unsignedBigInteger('padrao_treinamento_id')->nullable();
+            $table->softDeletes();
         });
 
         Schema::create('carteira_assinaturas', function (Blueprint $table) {

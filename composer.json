@@ -13,42 +13,39 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
-        "barryvdh/laravel-dompdf": "^3.0",
-        "laravel/reverb": "^1.0",
+        "php": "^8.3",
+        "barryvdh/laravel-dompdf": "^3.1.2",
+        "endroid/qr-code": "^5.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "intervention/image": "^2.5",
         "juniorfreitas/phpquery-laravel": "dev-master",
-        "laravel/framework": "^12.0",
+        "laravel/framework": "^13.0",
         "laravel/horizon": "^5.47.2",
+        "laravel/reverb": "^1.0",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.9",
-        "laravel/ui": "^4.0",
+        "laravel/tinker": "^3.0",
+        "laravel/ui": "4.x-dev",
         "league/csv": "^9.25",
         "league/flysystem-aws-s3-v3": "^3.0",
-        "maatwebsite/excel": "^3.1",
+        "maatwebsite/excel": "^4.0",
         "predis/predis": "^1.1",
         "pusher/pusher-php-server": "^7.2",
-        "endroid/qr-code": "^5.0",
         "setasign/fpdf": "^1.8",
         "setasign/fpdi": "^2.6",
         "spatie/laravel-activitylog": "^4.0"
     },
     "require-dev": {
-        "barryvdh/laravel-debugbar": "^3.10",
-        "barryvdh/laravel-ide-helper": "^3.0",
         "fakerphp/faker": "^1.9.1",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.1",
-        "phpunit/phpunit": "^11.0",
-        "spatie/laravel-ignition": "^3.0"
+        "phpunit/phpunit": "^12.0"
     },
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true,
         "platform": {
-            "php": "8.2.8"
+            "php": "8.5.12"
         }
     },
     "extra": {
@@ -84,9 +81,7 @@
             "@php artisan key:generate --ansi"
         ],
         "post-update-cmd": [
-            "Illuminate\\Foundation\\ComposerScripts::postUpdate",
-            "@php artisan ide-helper:generate",
-            "@php artisan ide-helper:meta"
+            "Illuminate\\Foundation\\ComposerScripts::postUpdate"
         ]
     }
 }

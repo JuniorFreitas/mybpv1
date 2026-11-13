@@ -13,8 +13,8 @@ services:
       - ENABLE_WORKER=true
       - ENABLE_HORIZON=true
       - ENABLE_WEBSOCKETS=false
-      - ENABLE_SUPERVISOR_GUI=true
       - ENABLE_CACHE_APP=false
+      - ENABLE_MIGRATE=true
       - SUPERVISORD_USER=admin
       - SUPERVISORD_PASS=secret
 
@@ -22,10 +22,10 @@ services:
       - .env
 
     volumes:
-      - .:/usr/share/nginx/html
-      - ./.deploy/storage/app:/usr/share/nginx/html/storage/app
+      - .:/var/www/html
+      - ./.deploy/storage/app:/var/www/html/storage/app
       - ./.deploy/storage/uploads:/var/www/html/public/media
-      - ./.deploy/storage/logs:/usr/share/nginx/html/storage/logs
+      - ./.deploy/storage/logs:/var/www/html/storage/logs
 
     ports:
       - '8000:80'

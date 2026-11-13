@@ -1,134 +1,106 @@
 #!/bin/bash
-
+# Entrypoint MyBPIN — runtime PHP 8.5 (imagem mybp/php-base)
 set -e
 
-APP_DEMO="${APP_DEMO:-false}"
-APP_AUTO_INSTALL="${APP_AUTO_INSTALL:-false}"
-APP_HARD_RESET_IN_DEMO="${APP_HARD_RESET_IN_DEMO:-false}"
+COL_GREEN="${COL_GREEN:-\033[0;32m}"
+COL_MAGENTA="${COL_MAGENTA:-\033[0;35m}"
+COL_RESET="${COL_RESET:-\033[0m}"
 
-printf "${COL_GREEN} -----> Info:${COL_RESET} Override php's default config...\n"
-if [ "$APP_ENV" = "production" ]; then
-#    cp /usr/deploy/php/php.ini-production /etc/php/8.2/fpm/php.ini
-    cp /usr/share/nginx/html/.deploy/php/php.ini-production /etc/php/8.2/fpm/php.ini
-else
-#    cp /usr/deploy/php/php.ini-development /etc/php/8.2/fpm/php.ini
-    cp /usr/share/nginx/html/.deploy/php/php.ini-development /etc/php/8.2/fpm/php.ini
+APP_PATH="${APP_PATH:-/var/www/html}"
+APP_ENV="${APP_ENV:-local}"
+PHP_INI_DIR="${PHP_INI_DIR:-/usr/local/etc/php}"
+PHP_FPM_POOL_DIR="${PHP_FPM_POOL_DIR:-/usr/local/etc/php-fpm.d}"
+SUPERVISOR_DIR="${SUPERVISOR_DIR:-/etc/supervisor/conf.d}"
+
+ENABLE_SCHEDULE="${ENABLE_SCHEDULE:-false}"
+ENABLE_WORKER="${ENABLE_WORKER:-false}"
+ENABLE_HORIZON="${ENABLE_HORIZON:-false}"
+ENABLE_WEBSOCKETS="${ENABLE_WEBSOCKETS:-false}"
+ENABLE_CACHE_APP="${ENABLE_CACHE_APP:-false}"
+ENABLE_MIGRATE="${ENABLE_MIGRATE:-true}"
+
+cd "$APP_PATH"
+
+printf "${COL_GREEN} -----> Info:${COL_RESET} Runtime PHP $(php -r 'echo PHP_VERSION;') / APP_ENV=${APP_ENV}\n"
+
+# Overlay de conf.d do deploy (não substituir php.ini completo estilo Debian 8.2)
+if [ -d "$APP_PATH/.deploy/php/conf.d" ]; then
+    printf "${COL_GREEN} -----> Info:${COL_RESET} Applying .deploy/php/conf.d overlays...\n"
+    cp -f "$APP_PATH/.deploy/php/conf.d/"*.ini "$PHP_INI_DIR/conf.d/" 2>/dev/null || true
 fi
 
-# Mitigação CVE-2026-115560 / CVE-2026-109619: flag administrativa no pool FPM
-# (não sobrescrevível via ini_set). Ver .deploy/php/fpm-pool.d/zz-cve-2026-115560.conf
-# Fail-fast: ausência do artefato não pode passar em silêncio enquanto a paliativa for necessária.
-CVE_SESSION_UPLOAD_CONF="/usr/share/nginx/html/.deploy/php/fpm-pool.d/zz-cve-2026-115560.conf"
+# Mitigação CVE-2026-115560 / CVE-2026-109619
+CVE_SESSION_UPLOAD_CONF="$APP_PATH/.deploy/php/fpm-pool.d/zz-cve-2026-115560.conf"
 if [ ! -f "$CVE_SESSION_UPLOAD_CONF" ]; then
-    printf "${COL_MAGENTA} -----> Error:${COL_RESET} Missing CVE-2026-115560 mitigation conf: ${CVE_SESSION_UPLOAD_CONF}\n"
-    exit 1
+    # Fallback: conf já bakeada na base
+    if [ ! -f "$PHP_FPM_POOL_DIR/zz-cve-2026-115560.conf" ]; then
+        printf "${COL_MAGENTA} -----> Error:${COL_RESET} Missing CVE-2026-115560 mitigation conf\n"
+        exit 1
+    fi
+    printf "${COL_GREEN} -----> Info:${COL_RESET} Using base image CVE mitigation conf...\n"
+else
+    printf "${COL_GREEN} -----> Info:${COL_RESET} Applying PHP session.upload_progress mitigation (CVE-2026-115560)...\n"
+    cp "$CVE_SESSION_UPLOAD_CONF" "$PHP_FPM_POOL_DIR/zz-cve-2026-115560.conf"
 fi
-printf "${COL_GREEN} -----> Info:${COL_RESET} Applying PHP session.upload_progress mitigation (CVE-2026-115560)...\n"
-cp "$CVE_SESSION_UPLOAD_CONF" /etc/php/8.2/fpm/pool.d/zz-cve-2026-115560.conf
 
-if [ -d "$APP_PATH/vendor" ] ; then
+toggle_supervisor_program() {
+    local name="$1"
+    local enabled="$2"
+    local src="$SUPERVISOR_DIR/${name}.conf.default"
+    local dst="$SUPERVISOR_DIR/${name}.conf"
+    if [ "$enabled" = "true" ]; then
+        if [ ! -f "$src" ]; then
+            printf "${COL_MAGENTA} -----> Warning:${COL_RESET} Missing supervisor template ${src}\n"
+            return 0
+        fi
+        printf "${COL_GREEN} -----> Info:${COL_RESET} Enabling supervisor program: ${name}\n"
+        cp -f "$src" "$dst"
+    else
+        rm -f "$dst"
+    fi
+}
 
-  printf "${COL_GREEN} -----> Info:${COL_RESET} Running migrations...\n"
-  php ${APP_PATH}/artisan migrate --force
+if [ -d "$APP_PATH/vendor" ]; then
+    if [ "$ENABLE_MIGRATE" = "true" ] && [ -f "$APP_PATH/artisan" ]; then
+        printf "${COL_GREEN} -----> Info:${COL_RESET} Running migrations...\n"
+        php "$APP_PATH/artisan" migrate --force
 
-  printf "${COL_GREEN} -----> Info:${COL_RESET} Running HabilidadesTableSeeder...\n"
-  php ${APP_PATH}/artisan db:seed --class=HabilidadesTableSeeder --force
+        printf "${COL_GREEN} -----> Info:${COL_RESET} Running HabilidadesTableSeeder...\n"
+        php "$APP_PATH/artisan" db:seed --class=HabilidadesTableSeeder --force
 
-  printf "${COL_GREEN} -----> Info:${COL_RESET} Running WhatsappTemplatePadraoSeeder...\n"
-  php ${APP_PATH}/artisan db:seed --class=WhatsappTemplatePadraoSeeder --force
+        printf "${COL_GREEN} -----> Info:${COL_RESET} Running WhatsappTemplatePadraoSeeder...\n"
+        php "$APP_PATH/artisan" db:seed --class=WhatsappTemplatePadraoSeeder --force
+    fi
 
- # Enable Laravel Schedule
-  if [ "$ENABLE_CACHE_APP" = "true" ] ; then
-    printf "${COL_GREEN} -----> Info:${COL_RESET} Rebuilding the cached package manifest...\n"
-    php $APP_PATH/artisan package:discover --ansi
+    if [ "$ENABLE_CACHE_APP" = "true" ]; then
+        printf "${COL_GREEN} -----> Info:${COL_RESET} Caching package discovery and config...\n"
+        php "$APP_PATH/artisan" package:discover --ansi
+        php "$APP_PATH/artisan" config:cache
+    fi
 
-    printf "${COL_GREEN} -----> Info:${COL_RESET} Caching configuration...\n"
-    php $APP_PATH/artisan config:cache
-  else
-    rm -f $ENABLE_CACHE_APP
-  fi
-
-  # Enable Laravel Schedule
-  if [ "$ENABLE_SCHEDULE" = "true" ] ; then
-
-    printf "${COL_GREEN} -----> Info:${COL_RESET} Starting Schedule service...\n"
-    cp -f $SCHEDULE_CONF.default $SCHEDULE_CONF
-  else
-    rm -f $SCHEDULE_CONF
-  fi
-
-  # Enable Laravel Workers
-  if [ "$ENABLE_WORKER" = "true" ] ; then
-    printf "${COL_GREEN} -----> Info:${COL_RESET} Starting Worker service...\n"
-    cp -f $WORKER_CONF.default $WORKER_CONF
-  else
-    rm -f $WORKER_CONF
-  fi
-
-  # Enable Laravel Horizon
-  if [ "$ENABLE_HORIZON" = "true" ] ; then
-    printf "${COL_GREEN} -----> Info:${COL_RESET} Starting Horizon service...\n"
-    cp -f $HORIZON_CONF.default $HORIZON_CONF
-  else
-    rm -f $HORIZON_CONF
-  fi
-
-  # Enable Laravel WebSockets
-  if [ "$ENABLE_WEBSOCKETS" = "true" ] ; then
-    printf "${COL_GREEN} -----> Info:${COL_RESET} Starting WebSockets service...\n"
-    cp -f $WEBSOCKETS_CONF.default $WEBSOCKETS_CONF
-  else
-    rm -f $WEBSOCKETS_CONF
-  fi
-
+    toggle_supervisor_program "schedule" "$ENABLE_SCHEDULE"
+    toggle_supervisor_program "worker" "$ENABLE_WORKER"
+    toggle_supervisor_program "horizon" "$ENABLE_HORIZON"
+    toggle_supervisor_program "websockets" "$ENABLE_WEBSOCKETS"
 else
     printf "${COL_MAGENTA} -----> Warning:${COL_RESET} Directory ${APP_PATH}/vendor does not yet exist.\n"
+    toggle_supervisor_program "schedule" "false"
+    toggle_supervisor_program "worker" "false"
+    toggle_supervisor_program "horizon" "false"
+    toggle_supervisor_program "websockets" "false"
 fi
 
-# Enable Supervisor GUI
-if [ "$ENABLE_SUPERVISOR_GUI" = "true" ] ; then
-    printf "${COL_GREEN} -----> Info:${COL_RESET} Starting Supervisor GUI service...\n"
-    cp -f $SUPERVISOR_GUI_CONF.default $SUPERVISOR_GUI_CONF
-else
-    rm -f $SUPERVISOR_GUI_CONF
+# Nginx + PHP-FPM permanecem sempre ativos (programas da imagem base)
+if [ -d "$APP_PATH/storage" ]; then
+    printf "${COL_GREEN} -----> Info:${COL_RESET} Fixing permissions on storage...\n"
+    chown -R www-data:www-data "$APP_PATH/storage" || true
+    chmod -R ug+rwx "$APP_PATH/storage" || true
 fi
-
-# Enable PHP FPM
-if [ "$ENABLE_PHPFPM" = "true" ] ; then
-    printf "${COL_GREEN} -----> Info:${COL_RESET} Starting PHP FPM service...\n"
-    cp -f $PHPFPM_CONF.default $PHPFPM_CONF
-else
-    rm -f $PHPFPM_CONF
+if [ -d "$APP_PATH/bootstrap/cache" ]; then
+    printf "${COL_GREEN} -----> Info:${COL_RESET} Fixing permissions on bootstrap/cache...\n"
+    chown -R www-data:www-data "$APP_PATH/bootstrap/cache" || true
+    chmod -R ug+rwx "$APP_PATH/bootstrap/cache" || true
 fi
-
-# Enable NGINX
-if [ "$ENABLE_NGINX" = "true" ] ; then
-    printf "${COL_GREEN} -----> Info:${COL_RESET} Starting NGINX service...\n"
-    cp -f $NGINX_CONF.default $NGINX_CONF
-
-    printf "${COL_GREEN} -----> Info:${COL_RESET} Updating nginx to match worker_processes to no. of cpu's...\n"
-    procs=$(cat /proc/cpuinfo | grep processor | wc -l)
-    sed -i -e "s/worker_processes  1/worker_processes $procs/" /etc/nginx/nginx.conf
-
-    if [ -d "$APP_PATH/storage" ] ; then
-        printf "${COL_GREEN} -----> Info:${COL_RESET} Fixing permissions on the storage directory...\n"
-        chown -Rf nginx.nginx storage
-    fi
-
-    if [ -d "$APP_PATH/bootstrap/cache" ] ; then
-        printf "${COL_GREEN} -----> Info:${COL_RESET} Fixing permissions on the bootstrap/cache directory...\n"
-        chown -Rf nginx.nginx bootstrap/cache
-    fi
-
-else
-    rm -f $NGINX_CONF
-fi
-# NVM and NodeJS setup
-# printf "${COL_GREEN} -----> Info:${COL_RESET} Instalando NodeJS\n"
-# wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-# export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
-# nvm install 14
 
 printf "${COL_GREEN} -----> Info:${COL_RESET} Launching supervisord...\n"
-/usr/local/bin/supervisord -n -c /etc/supervisord.conf
+exec /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf

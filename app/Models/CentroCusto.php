@@ -116,13 +116,14 @@ class CentroCusto extends Model
     {
         $empresaId = $this->getEmpresaId($empresaId);
 
-        $cache_key = "lista_cc_{$empresaId}";
+        $cache_key = "lista_cc_v2_{$empresaId}";
 
         if (!$empresaId) {
             return response()->json(['msg' => 'Empresa não informada'], 400);
         }
 
-        if (is_null(cache()->get($cache_key))) {
+        $cached = cache()->get($cache_key);
+        if (!is_array($cached)) {
             $centrosDeCusto = $this->buscarCentrosDeCusto();
             $relatoriosCentroCustos = [];
             $informacaoMatrizGeral = Cliente::select(['id', 'razao_social', 'nome_fantasia', 'cnpj'])->find($empresaId);
@@ -159,16 +160,21 @@ class CentroCusto extends Model
             // Filiais cadastradas ainda sem centro de custo precisam aparecer no combo de CNPJ.
             $this->mesclarFiliaisSemCentroCusto($cnpjs, $empresaId, $informacaoMatrizGeral);
 
-            cache()->put($cache_key, collect([
-                'cnpjs' => $cnpjs,
-                'centros_custos' => $results,
+            $cached = [
+                'cnpjs' => $cnpjs->all(),
+                'centros_custos' => $results->map(fn ($grupo) => $grupo->values()->all())->all(),
                 'ultima_atualizacao' => now()->format('d/m/Y H:i:s'),
-            ]), now()->addDays(7));
-
-            return cache()->get($cache_key);
+            ];
+            cache()->put($cache_key, $cached, now()->addDays(7));
         }
 
-        return cache()->get($cache_key);
+        return collect([
+            'cnpjs' => collect($cached['cnpjs'] ?? []),
+            'centros_custos' => collect($cached['centros_custos'] ?? [])->map(
+                fn ($grupo) => collect($grupo)
+            ),
+            'ultima_atualizacao' => $cached['ultima_atualizacao'] ?? null,
+        ]);
     }
 
     /**
@@ -279,8 +285,8 @@ class CentroCusto extends Model
      */
     public function forgetsCache($empresaId): void
     {
-        $cache_key = "lista_cc_{$empresaId}";
-        cache()->forget($cache_key);
+        cache()->forget("lista_cc_v2_{$empresaId}");
+        cache()->forget("lista_cc_{$empresaId}");
         $this->listaCentroCustoPorCnpj($empresaId);
     }
 

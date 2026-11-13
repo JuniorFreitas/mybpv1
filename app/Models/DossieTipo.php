@@ -78,7 +78,7 @@ class DossieTipo extends Model
      */
     public static function ativosOrdenados(?int $empresaId = null): Collection
     {
-        return Cache::remember(self::cacheKeyAtivos($empresaId), self::CACHE_TTL_SEGUNDOS, function () use ($empresaId) {
+        $payload = Cache::remember(self::cacheKeyAtivos($empresaId), self::CACHE_TTL_SEGUNDOS, function () use ($empresaId) {
             $rows = self::query()
                 ->where(function ($query) use ($empresaId) {
                     $query->whereNull('empresa_id');
@@ -107,8 +107,12 @@ class DossieTipo extends Model
                     ['ordem', 'asc'],
                     ['id', 'asc'],
                 ])
-                ->values();
+                ->values()
+                ->map(fn (self $item) => $item->getRawOriginal())
+                ->all();
         });
+
+        return self::hydrate(is_array($payload) ? $payload : []);
     }
 
     /**

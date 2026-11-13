@@ -1,0 +1,2 @@
+ALL {'HIGH': 131, 'CRITICAL': 3} 134
+top [('libgssapi-krb5-2', 14), ('libk5crypto3', 14), ('libkrb5-3', 14), ('libkrb5support0', 14), ('libxml2', 7), ('libsqlite3-0', 6), ('curl', 5), ('libcurl4', 5)]
