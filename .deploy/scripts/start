@@ -15,6 +15,17 @@ else
     cp /usr/share/nginx/html/.deploy/php/php.ini-development /etc/php/8.2/fpm/php.ini
 fi
 
+# Mitigação CVE-2026-115560 / CVE-2026-109619: flag administrativa no pool FPM
+# (não sobrescrevível via ini_set). Ver .deploy/php/fpm-pool.d/zz-cve-2026-115560.conf
+# Fail-fast: ausência do artefato não pode passar em silêncio enquanto a paliativa for necessária.
+CVE_SESSION_UPLOAD_CONF="/usr/share/nginx/html/.deploy/php/fpm-pool.d/zz-cve-2026-115560.conf"
+if [ ! -f "$CVE_SESSION_UPLOAD_CONF" ]; then
+    printf "${COL_MAGENTA} -----> Error:${COL_RESET} Missing CVE-2026-115560 mitigation conf: ${CVE_SESSION_UPLOAD_CONF}\n"
+    exit 1
+fi
+printf "${COL_GREEN} -----> Info:${COL_RESET} Applying PHP session.upload_progress mitigation (CVE-2026-115560)...\n"
+cp "$CVE_SESSION_UPLOAD_CONF" /etc/php/8.2/fpm/pool.d/zz-cve-2026-115560.conf
+
 if [ -d "$APP_PATH/vendor" ] ; then
 
   printf "${COL_GREEN} -----> Info:${COL_RESET} Running migrations...\n"

@@ -1,0 +1,63 @@
+# Perfil de engenharia do projeto MyBPIN (inspecionado em 2026-11-13).
+project:
+  name: "MyBPIN"
+  language: "pt-BR"
+
+  product:
+    vision: "Sistema de Gestão de RH (recrutamento, admissões, treinamentos, avaliações, assinatura digital)"
+    target_users:
+      - "Equipes de RH"
+      - "Gestores"
+      - "Candidatos (fluxos públicos/admissão)"
+    business_goals:
+      - "Operar fluxos críticos de RH com segurança e confiabilidade"
+      - "Multi-tenant por empresa_id"
+
+  methodology:
+    workflow: "kanban"
+    sprint_enabled: false
+    wip_limit: 3
+    task_tracker: ".harness/backlog"
+
+  technologies:
+    backend:
+      - "PHP 8.2"
+      - "Laravel 12"
+      - "Horizon"
+      - "Reverb/Pusher"
+    frontend:
+      - "Vue 3"
+      - "Laravel Mix"
+    database:
+      - "MySQL (produção/dev)"
+      - "SQLite :memory: (testes)"
+    infrastructure:
+      - "Docker Compose"
+      - "Nginx + PHP-FPM 8.2"
+      - "AWS ECS (deploy)"
+
+  architecture:
+    style: "Laravel modular + Vue SPA parcial; serviços de domínio em app/; jobs/filas para exportações e e-mails"
+
+  commands:
+    install: "docker compose up -d && docker compose exec mybpdp composer install && npm install"
+    run: "docker compose up -d"
+    test: "docker compose exec mybpdp php artisan test"
+    lint: "to_be_discovered"
+    build: "npm run dev | npm run prod"
+
+  quality:
+    unit_tests: true
+    integration_tests: true
+    code_review: true
+    acceptance_tests: true
+
+  development:
+    commit_convention: "mensagens descritivas em português/inglês misturado (inspecionar git log por demanda)"
+
+  autonomy:
+    local_development: "allowed"
+    local_tests: "allowed"
+    architectural_changes: "human_approval"
+    destructive_operations: "explicit_approval"
+    deployment: "explicit_approval"
