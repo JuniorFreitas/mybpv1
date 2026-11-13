@@ -34,6 +34,7 @@ class EncerrarAvaliacoesVencidasCommand extends Command
             );
 
             if ($atualizados > 0) {
+                Cache::forget("lista_av_grp_ano_v2_{$empresaId}");
                 Cache::forget("lista_av_grp_ano_{$empresaId}");
                 $this->info("Empresa {$empresaId}: {$atualizados} avaliação(ões) encerrada(s).");
                 $totalAtualizado += $atualizados;

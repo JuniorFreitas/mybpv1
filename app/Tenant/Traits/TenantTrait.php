@@ -12,6 +12,8 @@ trait TenantTrait
         parent::boot();
 
         static::addGlobalScope(new ScopeEmpresa());
-        static::observe(new EmpresaObserver());
+
+        // Laravel 13: observe() instancia o model — não pode rodar durante o boot.
+        static::whenBooted(static fn () => static::observe(EmpresaObserver::class));
     }
 }

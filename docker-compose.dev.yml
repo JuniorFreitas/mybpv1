@@ -24,10 +24,10 @@ services:
       - .env
 
     volumes:
-      - .:/usr/share/nginx/html
-      - ./.deploy/storage/app:/usr/share/nginx/html/storage/app
+      - .:/var/www/html
+      - ./.deploy/storage/app:/var/www/html/storage/app
       - ./.deploy/storage/uploads:/var/www/html/public/media
-      - ./.deploy/storage/logs:/usr/share/nginx/html/storage/logs
+      - ./.deploy/storage/logs:/var/www/html/storage/logs
 
     ports:
       - "8080:80"

@@ -24,6 +24,13 @@ class ValidadorLinhaPlanilhaAdmissao
     private const LISTA_PCD = ['SIM', 'NAO'];
     private const LISTA_PIX_TIPO_CHAVE = ['CPF', 'CNPJ', 'EMAIL', 'ALEATORIA'];
 
+    private ResolvedorVagaAreaCentroCusto $resolvedor;
+
+    public function __construct(?ResolvedorVagaAreaCentroCusto $resolvedor = null)
+    {
+        $this->resolvedor = $resolvedor ?? new ResolvedorVagaAreaCentroCusto();
+    }
+
     /**
      * Valida uma linha e retorna erros por campo.
      * Chave = nome do campo; valor = array com 'mensagem' e opcionalmente 'como_corrigir'.
@@ -246,8 +253,7 @@ class ValidadorLinhaPlanilhaAdmissao
             return;
         }
 
-        $resolvedor = new ResolvedorVagaAreaCentroCusto();
-        $resultado = $resolvedor->resolverCentroCusto($empresaId, $valor);
+        $resultado = $this->resolvedor->resolverCentroCusto($empresaId, $valor);
 
         if ($resultado['erro'] !== null) {
             $erros['centro_custo'] = [

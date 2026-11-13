@@ -3,6 +3,7 @@
 namespace Tests\Unit\Services\Admissao\Importacao;
 
 use App\Models\Admissao;
+use App\Services\Admissao\Importacao\ResolvedorVagaAreaCentroCusto;
 use App\Services\Admissao\Importacao\ValidadorLinhaPlanilhaAdmissao;
 use Tests\TestCase;
 
@@ -13,7 +14,12 @@ class ValidadorLinhaPlanilhaAdmissaoTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->validador = new ValidadorLinhaPlanilhaAdmissao();
+        $resolvedor = new ResolvedorVagaAreaCentroCusto(
+            null,
+            null,
+            static fn (int $empresaId, string $valor): array => ['id' => 1, 'erro' => null]
+        );
+        $this->validador = new ValidadorLinhaPlanilhaAdmissao($resolvedor);
     }
 
     public function testLinhaValidaRetornaSemErros(): void

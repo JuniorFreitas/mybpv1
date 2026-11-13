@@ -59,7 +59,7 @@ class DocumentosCurriculosAdmissaoEmpresa extends Model
         $activity->descricao = '';
     }
 
-    public const CACHE_KEY_PREFIX = 'docAdmEmpresa_';
+    public const CACHE_KEY_PREFIX = 'docAdmEmpresa_v2_';
     public const CACHE_TTL_HORAS = 168;
 
     protected $table = 'documentos_curriculos_adm_empresa';
@@ -95,7 +95,11 @@ class DocumentosCurriculosAdmissaoEmpresa extends Model
 
     public function getConfiguracoesAttribute($value)
     {
-        $configuracoes = json_decode($value, true);
+        if (is_array($value)) {
+            $configuracoes = $value;
+        } else {
+            $configuracoes = json_decode((string) $value, true);
+        }
 
         return array_merge([
             'obrigatorio' => false,
@@ -135,25 +139,26 @@ class DocumentosCurriculosAdmissaoEmpresa extends Model
             ->garantirPadraoSistema((int) $empresa_id);
 
         $key = self::cacheKey((int) $empresa_id);
-        $docAdmEmpresa = Cache::get($key);
+        $rows = Cache::get($key);
 
-        if (!$docAdmEmpresa) {
-            $docAdmEmpresa = self::query()
+        if (!is_array($rows)) {
+            $rows = self::query()
                 ->where('documentos_curriculos_adm_empresa.empresa_id', $empresa_id)
                 ->whereAtivo(true)
                 ->with('categoria')
                 ->orderBy('documentos_curriculos_adm_empresa.categoria_id')
                 ->orderBy('documentos_curriculos_adm_empresa.ordem')
                 ->get()
-                ->transform(function ($doc) {
-                    $labelCategoria = $doc->getRelation('categoria')?->label;
-                    $doc->unsetRelation('categoria');
-                    $doc->setAttribute('categoria', $labelCategoria);
-                    return $doc;
-                });
-            Cache::put($key, $docAdmEmpresa, now()->addHours(self::CACHE_TTL_HORAS));
+                ->map(function ($doc) {
+                    $attrs = $doc->getRawOriginal();
+                    $attrs['categoria'] = $doc->getRelation('categoria')?->label;
+
+                    return $attrs;
+                })
+                ->all();
+            Cache::put($key, $rows, now()->addHours(self::CACHE_TTL_HORAS));
         }
 
-        return $docAdmEmpresa;
+        return self::hydrate($rows);
     }
 }

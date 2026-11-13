@@ -168,16 +168,15 @@ class Avaliacao extends Model
     public function listaTodasAvaliacoesAgrupadaAno($empresaId)
     {
         $empresaId = $this->getEmpresaId($empresaId);
-        $cache_key = "lista_av_grp_ano_{$empresaId}";
-
-//        cache()->forget($cache_key);
+        $cache_key = "lista_av_grp_ano_v2_{$empresaId}";
 
         if (!$empresaId) {
             return response()->json(['msg' => 'Empresa não informada'], 400);
         }
 
-        if (is_null(cache()->get($cache_key))) {
-            $todasAvaliacoesAgrupadaAno = Avaliacao::select([
+        $cached = cache()->get($cache_key);
+        if (!is_array($cached)) {
+            $cached = Avaliacao::select([
                 'id',
                 'avaliacao_tipo_id',
                 'empresa_id',
@@ -191,15 +190,16 @@ class Avaliacao extends Model
                 'tipo_pj'
             ])->with('AvaliacaoTipo')
                 ->get()
-                ->groupBy('ano_avaliacao');
+                ->groupBy('ano_avaliacao')
+                ->map(fn ($avaliacoes) => $avaliacoes->map(fn ($avaliacao) => $avaliacao->getRawOriginal())->values()->all())
+                ->all();
 
-            cache()->put($cache_key,
-                collect($todasAvaliacoesAgrupadaAno
-                ), now()->addDays(7));
+            cache()->put($cache_key, $cached, now()->addDays(7));
         }
 
-        return cache()->get($cache_key);
-
+        return collect($cached)->map(
+            fn (array $avaliacoes) => self::hydrate($avaliacoes)
+        );
     }
 
 
@@ -236,8 +236,8 @@ class Avaliacao extends Model
      */
     public function forgetsCache($empresaId): void
     {
-        $cache_key = "lista_av_grp_ano_{$empresaId}";
-        cache()->forget($cache_key);
+        cache()->forget("lista_av_grp_ano_v2_{$empresaId}");
+        cache()->forget("lista_av_grp_ano_{$empresaId}");
         $this->listaTodasAvaliacoesAgrupadaAno($empresaId);
     }
 

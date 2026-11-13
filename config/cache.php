@@ -103,6 +103,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Serializable Classes
+    |--------------------------------------------------------------------------
+    |
+    | Classes allowed to be unserialized from cache. false = none (Laravel 13
+    | default — hardening contra gadget chains se APP_KEY vazar).
+    | Payloads MyBP devem ser arrays/escalares/strings (não Model/Collection/Carbon).
+    |
+    */
+
+    'serializable_classes' => false,
+
+    /*
+    |--------------------------------------------------------------------------
     | TTL for specific cache keys (in seconds)
     |--------------------------------------------------------------------------
     */

@@ -23,7 +23,7 @@ use RuntimeException;
  */
 final class FallbackLlmProxy implements LlmProxy
 {
-    private const COOLDOWN_CACHE_KEY = 'ai:health:gemini:cooldown_until';
+    private const COOLDOWN_CACHE_KEY = 'ai:health:gemini:cooldown_until_unix';
 
     private const COOLDOWN_SECONDS = 60;
 
@@ -75,14 +75,15 @@ final class FallbackLlmProxy implements LlmProxy
 
     private function emCooldown(): bool
     {
-        $until = Cache::get(self::COOLDOWN_CACHE_KEY);
+        $untilUnix = Cache::get(self::COOLDOWN_CACHE_KEY);
 
-        return $until !== null && now()->lt($until);
+        return is_numeric($untilUnix) && now()->getTimestamp() < (int) $untilUnix;
     }
 
     private function iniciarCooldown(): void
     {
-        Cache::put(self::COOLDOWN_CACHE_KEY, now()->addSeconds(self::COOLDOWN_SECONDS), self::COOLDOWN_SECONDS);
+        $untilUnix = now()->addSeconds(self::COOLDOWN_SECONDS)->getTimestamp();
+        Cache::put(self::COOLDOWN_CACHE_KEY, $untilUnix, self::COOLDOWN_SECONDS);
     }
 
     /**

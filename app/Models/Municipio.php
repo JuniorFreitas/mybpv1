@@ -68,21 +68,28 @@ class Municipio extends Model
 
     public static function todosEstados()
     {
-        if (!\Cache::get("todosEstados")) {
-            \Cache::rememberForever("todosEstados", function () {
-                return Municipio::select('uf')->distinct('uf')->get();
-            });
-        }
-        return Municipio::select('uf')->distinct('uf')->get();
+        $ufs = \Cache::rememberForever('todosEstados_v2', function () {
+            return self::query()
+                ->select('uf')
+                ->distinct()
+                ->orderBy('uf')
+                ->pluck('uf')
+                ->map(fn ($uf) => ['uf' => $uf])
+                ->all();
+        });
+
+        return collect(is_array($ufs) ? $ufs : []);
     }
 
     protected static function booted()
     {
         static::created(function ($model) {
-            \Cache::forget("todosEstados");
+            \Cache::forget('todosEstados_v2');
+            \Cache::forget('todosEstados');
         });
         static::updated(function ($model) {
-            \Cache::forget("todosEstados");
+            \Cache::forget('todosEstados_v2');
+            \Cache::forget('todosEstados');
         });
     }
 }

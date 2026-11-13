@@ -1,36 +1,45 @@
-#troque para latest se a estrutura for arm64 (mac m1 posterior ou dessa estrutura) se for amd64 (linux comum que usa essa estrutura) troque para main
-FROM juniorfreitas/laravel:latest
-# FROM juniorfreitas/laravel:main
-# Limpar e reconfigurar repositórios APT
-RUN rm -rf /etc/apt/sources.list.d/* && \
-    echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list && \
-    echo "deb http://archive.debian.org/debian-security buster/updates main" >> /etc/apt/sources.list && \
-    echo "deb http://archive.debian.org/debian buster-updates main" >> /etc/apt/sources.list && \
-    apt-get -o Acquire::Check-Valid-Until=false update && \
-    apt-get install -y --no-install-recommends \
-        python3 python3-pip python3-setuptools python3-wheel && \
-    pip3 install --no-cache-dir xlwt redis boto3 && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+# syntax=docker/dockerfile:1
+# MyBPIN app image — FROM base PHP 8.5.12 (IMG-001)
+ARG BASE_IMAGE=mybp/php-base:8.5.12-bookworm
+FROM ${BASE_IMAGE}
 
+ENV APP_PATH=/var/www/html \
+    PHP_INI_DIR=/usr/local/etc/php \
+    PHP_FPM_POOL_DIR=/usr/local/etc/php-fpm.d \
+    SUPERVISOR_DIR=/etc/supervisor/conf.d \
+    ENABLE_MIGRATE=true \
+    ENABLE_SCHEDULE=false \
+    ENABLE_WORKER=false \
+    ENABLE_HORIZON=false \
+    ENABLE_WEBSOCKETS=false \
+    ENABLE_CACHE_APP=false
+
+WORKDIR /var/www/html
+
+# Nginx do app (root /var/www/html/public + FPM TCP 9000)
 COPY .deploy/nginx/default.conf /etc/nginx/conf.d/default.conf
 
-COPY . /usr/share/nginx/html/
+# Supervisor com supervisorctl + templates opcionais
+COPY docker/base/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+COPY docker/app/supervisor/conf.d/ /etc/supervisor/conf.d/
 
-COPY .deploy/scripts/start $APP_SCRIPTS/start
+# Código da aplicação
+COPY . /var/www/html/
 
-# Normalizar line endings (evita "bad interpreter: Permission denied" por CRLF)
-RUN sed -i 's/\r$//' $APP_SCRIPTS/start /usr/share/nginx/html/.deploy/scripts/start
+# Entrypoint bakeado (não depende do volume/host)
+COPY .deploy/scripts/start /usr/local/bin/docker-entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
+        /var/www/html/.deploy/scripts/start \
+    && chmod +x /usr/local/bin/docker-entrypoint.sh \
+        /var/www/html/.deploy/scripts/start \
+    && mkdir -p storage/framework/{sessions,views,cache} storage/logs bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && APP_ENV=production composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader \
+    && APP_ENV=production php artisan horizon:publish --ansi \
 
-# Definir permissões corretas para os scripts
-RUN chmod +x $APP_SCRIPTS/start && \
-    chmod +x /usr/share/nginx/html/.deploy/scripts/start && \
-    # Garantir que o diretório de scripts tenha permissões corretas
-    chmod -R 755 /usr/share/nginx/html/.deploy/scripts/ && \
-    composer install --ignore-platform-reqs --no-dev --prefer-dist && \
-    php artisan horizon:publish && \
-    chmod -R 775 bootstrap/cache
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R ug+rwx storage bootstrap/cache
 
-EXPOSE 80 9001
+EXPOSE 80 6001 9001
 
-# Usar script dentro da imagem (não o do volume) para evitar CRLF/permissão do host
-CMD ["/usr/deploy/scripts/start"]
+CMD ["/usr/local/bin/docker-entrypoint.sh"]

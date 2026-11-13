@@ -28,8 +28,8 @@ services:
       - .env
 
     volumes:
-      - .:/usr/share/nginx/html
-      - ./.deploy/storage/logs:/usr/share/nginx/html/storage/logs
+      - .:/var/www/html
+      - ./.deploy/storage/logs:/var/www/html/storage/logs
 
     ports:
       - "8080:80"

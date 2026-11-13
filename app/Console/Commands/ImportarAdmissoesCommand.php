@@ -27,7 +27,6 @@ class ImportarAdmissoesCommand extends Command
     {
         $arquivo = $this->argument('arquivo');
         $empresaId = (int) $this->argument('empresa_id');
-        $userId = $this->option('user_id') ? (int) $this->option('user_id') : $this->resolverUsuarioEmpresa($empresaId);
         $chunkSize = (int) $this->option('chunk');
         $relatorioPath = $this->option('relatorio');
 
@@ -37,6 +36,11 @@ class ImportarAdmissoesCommand extends Command
             $this->error("Arquivo não encontrado ou não legível: {$arquivo}");
             return self::FAILURE;
         }
+
+        $userId = $this->option('user_id')
+            ? (int) $this->option('user_id')
+            : $this->resolverUsuarioEmpresa($empresaId);
+
         $this->line("  Arquivo: {$path}");
         $this->line("  Empresa ID: {$empresaId}");
         $this->line('  Chunk: ' . $chunkSize . ' linhas');

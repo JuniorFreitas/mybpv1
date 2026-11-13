@@ -196,7 +196,6 @@ class AssistenteManualTest extends TestCase
             'pergunta' => 'E depois?',
             'historico' => [
                 ['papel' => 'usuario', 'texto' => 'Como abrir um chamado?'],
-                ['papel' => 'assistente', 'texto' => 'Clique em **Novo chamado**.'],
             ],
         ]);
 

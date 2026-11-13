@@ -348,7 +348,7 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
 
         $cacheData = Cache::get($this->cacheKey);
         $cacheData['status'] = $status;
-        $cacheData['updated_at'] = now();
+        $cacheData['updated_at'] = now()->toIso8601String();
         
         foreach ($additionalData as $key => $value) {
             $cacheData[$key] = $value;
@@ -365,7 +365,7 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
         if ($this->cacheKey && Cache::has($this->cacheKey)) {
             $cacheData = Cache::get($this->cacheKey);
             $cacheData['status'] = 'completed';
-            $cacheData['completed_at'] = now();
+            $cacheData['completed_at'] = now()->toIso8601String();
             $cacheData['progress'] = 100;
             
             // Manter no cache por mais 5 minutos para status
@@ -384,7 +384,7 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
         if ($this->cacheKey && Cache::has($this->cacheKey)) {
             $cacheData = Cache::get($this->cacheKey);
             $cacheData['status'] = 'failed';
-            $cacheData['failed_at'] = now();
+            $cacheData['failed_at'] = now()->toIso8601String();
             $cacheData['last_error'] = $exception->getMessage();
             
             Cache::put($this->cacheKey, $cacheData, now()->addMinutes(30));

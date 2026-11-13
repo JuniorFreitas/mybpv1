@@ -287,7 +287,11 @@ class DocumentoPreadmissaoCadastroServiceTest extends TestCase
             'ativo' => true,
         ], 10);
 
-        $this->assertStringContainsString('<a href="https://exemplo.test">CLIQUE</a>', $doc->descricao);
+        $this->assertStringContainsString(
+            '<a href="https://exemplo.test" target="_blank" rel="noopener noreferrer">CLIQUE</a>',
+            $doc->descricao
+        );
+        $this->assertStringContainsString('PERIGO', $doc->descricao);
         $this->assertStringNotContainsString('<script>', $doc->descricao);
         $this->assertStringNotContainsString('alert(3)', $doc->descricao);
         $this->assertStringNotContainsString('onclick', $doc->descricao);

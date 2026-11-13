@@ -169,7 +169,9 @@ class ClienteFilial extends Model
      */
     public function invalidarCachesRelacionados(): void
     {
+        cache()->forget("cnpjs_v2_{$this->empresa_id}");
         cache()->forget("cnpjs_{$this->empresa_id}");
+        cache()->forget("lista_cc_v2_{$this->empresa_id}");
         cache()->forget("lista_cc_{$this->empresa_id}");
         (new CentroCusto())->listaCentroCustoPorCnpj($this->empresa_id);
     }
