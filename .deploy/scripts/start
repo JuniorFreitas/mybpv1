@@ -102,5 +102,12 @@ if [ -d "$APP_PATH/bootstrap/cache" ]; then
     chmod -R ug+rwx "$APP_PATH/bootstrap/cache" || true
 fi
 
+# Sincroniza supervisord.conf do repo (unix_http_server/supervisorctl) quando o volume local/imagem estiver desatualizado
+SUPERVISORD_CONF_SRC="$APP_PATH/docker/base/supervisor/supervisord.conf"
+if [ -f "$SUPERVISORD_CONF_SRC" ]; then
+    printf "${COL_GREEN} -----> Info:${COL_RESET} Syncing supervisord.conf from app tree...\n"
+    cp -f "$SUPERVISORD_CONF_SRC" /etc/supervisor/supervisord.conf
+fi
+
 printf "${COL_GREEN} -----> Info:${COL_RESET} Launching supervisord...\n"
 exec /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
