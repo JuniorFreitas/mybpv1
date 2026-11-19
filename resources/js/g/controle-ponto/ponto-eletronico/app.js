@@ -2,8 +2,6 @@ import { createApp, nextTick } from 'vue'
 import { registerGlobals } from '../../../registerGlobals'
 import preload from '../../../components/preload'
 import datepicker from '../../../components/DatePicker'
-import { now } from 'moment'
-
 const app = createApp({
     components: {
         preload,

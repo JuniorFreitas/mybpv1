@@ -5,5 +5,5 @@
     <aso-periodicidade></aso-periodicidade>
 @stop
 @push('js')
-    <script src="{{mix('js/g/aso-periodicidade/app.js')}}"></script>
+    @vite(['resources/js/g/cadastros/aso-periodicidade/app.js'])
 @endpush

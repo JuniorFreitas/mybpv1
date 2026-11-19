@@ -5,5 +5,5 @@
     <controle-usuarios></controle-usuarios>
 @stop
 @push('js')
-    <script src="{{mix('js/g/relatorios/controleusuarios/app.js')}}"></script>
+    @vite(['resources/js/g/relatorios/controleusuarios/app.js'])
 @endpush

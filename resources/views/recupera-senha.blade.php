@@ -9,7 +9,7 @@
     @if(\App\Models\Sistema::verificaHdev())
         <meta name="robots" content="noindex">
     @endif
-    <link rel="stylesheet" href="{{ mix('css/app.css') }}">
+    @vite(['resources/sass/app.scss'])
     <link rel="stylesheet" href="{{ asset('css/icons.min.css') }}">
     @include('layouts.favicon')
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -243,7 +243,7 @@
 <div id="app" class="login-shell" v-cloak>
     <recupera-senha token="{{ $recuperacao->token }}"></recupera-senha>
 </div>
-<script src="{{ mix('js/funcoes.js') }}"></script>
-<script src="{{ mix('js/recuperasenha/app.js') }}"></script>
+@include('layouts.partials.legacy-scripts')
+@vite(['resources/js/recuperasenha/app.js'])
 </body>
 </html>

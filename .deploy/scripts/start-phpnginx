@@ -1,14 +1,21 @@
 #!/bin/bash
 set -euo pipefail
 
+# Logs sempre em stderr (line-buffered) — stdout fully-buffered sem TTY sumia no CloudWatch
+export PYTHONUNBUFFERED=1
+log() { printf '%s\n' "$*" >&2; }
+
 APP_PATH="${APP_PATH:-/usr/share/nginx/html}"
 PHP_INI="${php_conf:-/etc/php.ini}"
 FPM_POOL_DIR="/etc/php-fpm.d"
+FPM_PID_FILE="/run/php-fpm/php-fpm.pid"
+FPM_SOCK="/run/php-fpm/www.sock"
 CVE_SESSION_UPLOAD_CONF="${APP_PATH}/.deploy/php/fpm-pool.d/zz-cve-2026-115560.conf"
+HARDEN_CONF="${APP_PATH}/.deploy/php/fpm-pool.d/zz-mybp-fpm-harden.conf"
 
 cd "$APP_PATH"
 
-printf " -----> Info: Override php's default config...\n"
+log " -----> Info: Override php's default config..."
 if [ "${APP_ENV:-local}" = "production" ]; then
     cp "${APP_PATH}/.deploy/php/php.ini-production" "$PHP_INI"
 else
@@ -16,117 +23,191 @@ else
 fi
 
 if [ ! -f "$CVE_SESSION_UPLOAD_CONF" ]; then
-    printf " -----> Error: Missing CVE mitigation conf: %s\n" "$CVE_SESSION_UPLOAD_CONF"
+    log " -----> Error: Missing CVE mitigation conf: ${CVE_SESSION_UPLOAD_CONF}"
     exit 1
 fi
-printf " -----> Info: Applying PHP session.upload_progress mitigation...\n"
+log " -----> Info: Applying PHP session.upload_progress mitigation..."
 cp "$CVE_SESSION_UPLOAD_CONF" "${FPM_POOL_DIR}/zz-cve-2026-115560.conf"
 
 if [ -d "${APP_PATH}/vendor" ]; then
-    printf " -----> Info: Running migrations...\n"
+    log " -----> Info: Running migrations..."
     if ! php artisan migrate --force; then
-        printf " -----> Warning: migrate falhou; mantendo container no ar para debug.\n"
+        log " -----> Warning: migrate falhou; mantendo container no ar para debug."
     fi
 
-    printf " -----> Info: Running HabilidadesTableSeeder...\n"
+    log " -----> Info: Running HabilidadesTableSeeder..."
     php artisan db:seed --class=HabilidadesTableSeeder --force || \
-        printf " -----> Warning: HabilidadesTableSeeder falhou.\n"
+        log " -----> Warning: HabilidadesTableSeeder falhou."
 
-    printf " -----> Info: Running WhatsappTemplatePadraoSeeder...\n"
+    log " -----> Info: Running WhatsappTemplatePadraoSeeder..."
     php artisan db:seed --class=WhatsappTemplatePadraoSeeder --force || \
-        printf " -----> Warning: WhatsappTemplatePadraoSeeder falhou.\n"
+        log " -----> Warning: WhatsappTemplatePadraoSeeder falhou."
 
     if [ "${ENABLE_CACHE_APP:-false}" = "true" ]; then
-        printf " -----> Info: Caching configuration...\n"
+        log " -----> Info: Caching configuration..."
         php artisan package:discover --ansi || true
         php artisan config:cache || true
     fi
 else
-    printf " -----> Warning: Directory %s/vendor does not yet exist.\n" "$APP_PATH"
+    log " -----> Warning: Directory ${APP_PATH}/vendor does not yet exist."
 fi
 
-# Alinha o pool FPM ao user nginx (base UBI vem com apache)
-sed -i 's/^user = apache/user = nginx/' /etc/php-fpm.d/www.conf || true
-sed -i 's/^;group = apache/group = nginx/' /etc/php-fpm.d/www.conf || true
-sed -i 's/^group = apache/group = nginx/' /etc/php-fpm.d/www.conf || true
+log " -----> Info: Hardening PHP-FPM pool (nginx + logs + timeouts)..."
+WWW_CONF="/etc/php-fpm.d/www.conf"
+FPM_CONF="/etc/php-fpm.conf"
+
+sed -i 's/^user = apache/user = nginx/' "$WWW_CONF" || true
+sed -i 's/^;group = apache/group = nginx/' "$WWW_CONF" || true
+sed -i 's/^group = apache/group = nginx/' "$WWW_CONF" || true
+
+# Base Remi define soap.wsdl_cache_dir, mas a imagem 8.5 não carrega ext-soap
+sed -i 's/^php_value\[soap\.wsdl_cache_dir\].*/; php_value[soap.wsdl_cache_dir] disabled (ext-soap ausente)/' "$WWW_CONF" || true
+
+# Erros do master FPM no CloudWatch
+if [ -f "$FPM_CONF" ] && grep -qE '^error_log\s*=' "$FPM_CONF"; then
+    sed -i 's#^error_log\s*=.*#error_log = /proc/self/fd/2#' "$FPM_CONF" || true
+fi
+
+if [ ! -f "$HARDEN_CONF" ]; then
+    log " -----> Error: Missing FPM harden conf: ${HARDEN_CONF}"
+    exit 1
+fi
+cp "$HARDEN_CONF" "${FPM_POOL_DIR}/zz-mybp-fpm-harden.conf"
+
+mkdir -p /var/lib/php/session /var/lib/php/wsdlcache /var/lib/php/opcache
+chown -R nginx:nginx /var/lib/php/session /var/lib/php/wsdlcache /var/lib/php/opcache || true
+chmod -R ug+rwX /var/lib/php/session /var/lib/php/wsdlcache /var/lib/php/opcache || true
 
 if [ -d "${APP_PATH}/storage" ]; then
-    printf " -----> Info: Fixing permissions on storage...\n"
+    log " -----> Info: Fixing permissions on storage..."
     chown -R nginx:nginx storage || true
     chmod -R ug+rwX storage || true
 fi
 
 if [ -d "${APP_PATH}/bootstrap/cache" ]; then
-    printf " -----> Info: Fixing permissions on bootstrap/cache...\n"
+    log " -----> Info: Fixing permissions on bootstrap/cache..."
     chown -R nginx:nginx bootstrap/cache || true
     chmod -R ug+rwX bootstrap/cache || true
 fi
 
-pids=()
+child_pids=()
+nginx_pid=""
+stopping=0
 
 cleanup() {
-    for pid in "${pids[@]:-}"; do
+    if [ "$stopping" -eq 1 ]; then
+        return 0
+    fi
+    stopping=1
+    log " -----> Info: Shutting down..."
+    for pid in "${child_pids[@]:-}"; do
         if kill -0 "$pid" 2>/dev/null; then
             kill -TERM "$pid" 2>/dev/null || true
         fi
     done
-    wait || true
+    if [ -f "$FPM_PID_FILE" ]; then
+        fpm_pid="$(cat "$FPM_PID_FILE" 2>/dev/null || true)"
+        if [ -n "${fpm_pid:-}" ] && kill -0 "$fpm_pid" 2>/dev/null; then
+            kill -TERM "$fpm_pid" 2>/dev/null || true
+        fi
+    fi
+    sleep 1
+    for pid in "${child_pids[@]:-}"; do
+        if kill -0 "$pid" 2>/dev/null; then
+            kill -KILL "$pid" 2>/dev/null || true
+        fi
+    done
 }
-trap cleanup EXIT INT TERM
+trap 'cleanup; exit 143' INT TERM
+trap 'cleanup' EXIT
 
 start_bg() {
     local name="$1"
     shift
-    printf " -----> Info: Starting %s...\n" "$name"
+    log " -----> Info: Starting ${name}..."
     "$@" &
-    pids+=($!)
+    child_pids+=($!)
 }
 
-# Processos críticos: se morrerem, o container sai (Docker reinicia).
-# Horizon/Schedule/Worker: rodam em loop para não derrubar o container em exit esperado.
-critical_pids=()
+wait_for_fpm_socket() {
+    local sock="${1:-$FPM_SOCK}"
+    local tries="${2:-50}"
+    local i=0
+    log " -----> Info: Waiting for PHP-FPM socket ${sock}..."
+    while [ "$i" -lt "$tries" ]; do
+        if [ -S "$sock" ]; then
+            log " -----> Info: PHP-FPM socket ready."
+            return 0
+        fi
+        i=$((i + 1))
+        sleep 0.2
+    done
+    log " -----> Error: PHP-FPM socket não apareceu: ${sock}"
+    return 1
+}
+
+fpm_is_alive() {
+    if [ -f "$FPM_PID_FILE" ]; then
+        local pid
+        pid="$(cat "$FPM_PID_FILE" 2>/dev/null || true)"
+        if [ -n "${pid:-}" ] && kill -0 "$pid" 2>/dev/null; then
+            return 0
+        fi
+    fi
+    [ -S "$FPM_SOCK" ]
+}
+
+# FPM antes do nginx — evita 502/499 no LB enquanto o socket ainda não existe
+if [ "${ENABLE_PHPFPM:-true}" = "true" ]; then
+    log " -----> Info: Starting PHP-FPM..."
+    mkdir -p /run/php-fpm
+    rm -f "$FPM_PID_FILE" "$FPM_SOCK"
+    # -F foreground; -O força stderr mesmo sem TTY (CloudWatch)
+    /usr/sbin/php-fpm -F -O --fpm-config=/etc/php-fpm.conf &
+    child_pids+=($!)
+    wait_for_fpm_socket "$FPM_SOCK" 50
+    if ! fpm_is_alive; then
+        log " -----> Error: PHP-FPM não ficou vivo após criar o socket."
+        exit 1
+    fi
+fi
+
+if [ "${ENABLE_NGINX:-true}" = "true" ]; then
+    log " -----> Info: Starting NGINX..."
+    nginx -t
+    /usr/sbin/nginx -g 'daemon off;' &
+    nginx_pid=$!
+    child_pids+=("$nginx_pid")
+fi
 
 if [ "${ENABLE_HORIZON:-false}" = "true" ] && [ -d "${APP_PATH}/vendor" ]; then
-    start_bg "Horizon" bash -c 'while true; do php artisan horizon; echo " -----> Warning: Horizon saiu; reiniciando em 3s..."; sleep 3; done'
+    start_bg "Horizon" bash -c 'while true; do php artisan horizon; echo " -----> Warning: Horizon saiu; reiniciando em 3s..." >&2; sleep 3; done'
 fi
 
 if [ "${ENABLE_SCHEDULE:-false}" = "true" ] && [ -d "${APP_PATH}/vendor" ]; then
     start_bg "Schedule" bash -c 'while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done'
 fi
 
-# Com Horizon ativo, o worker dedicado é redundante (e --max-time derrubava o container).
 if [ "${ENABLE_WORKER:-false}" = "true" ] && [ "${ENABLE_HORIZON:-false}" != "true" ] && [ -d "${APP_PATH}/vendor" ]; then
-    start_bg "Queue worker" bash -c 'while true; do php artisan queue:work --sleep=3 --tries=3 --max-time=3600; echo " -----> Warning: queue:work saiu; reiniciando..."; sleep 1; done'
+    start_bg "Queue worker" bash -c 'while true; do php artisan queue:work --sleep=3 --tries=3 --max-time=3600; echo " -----> Warning: queue:work saiu; reiniciando..." >&2; sleep 1; done'
 fi
 
-if [ "${ENABLE_PHPFPM:-true}" = "true" ]; then
-    printf " -----> Info: Starting PHP-FPM...\n"
-    mkdir -p /run/php-fpm
-    /usr/sbin/php-fpm --nodaemonize --fpm-config=/etc/php-fpm.conf &
-    critical_pids+=($!)
-    pids+=($!)
-fi
-
-if [ "${ENABLE_NGINX:-true}" = "true" ]; then
-    printf " -----> Info: Starting NGINX...\n"
-    nginx -t
-    /usr/sbin/nginx -g 'daemon off;' &
-    critical_pids+=($!)
-    pids+=($!)
-fi
-
-if [ "${#pids[@]}" -eq 0 ]; then
-    printf " -----> Error: no services enabled\n"
+if [ "${#child_pids[@]}" -eq 0 ]; then
+    log " -----> Error: no services enabled"
     exit 1
 fi
 
+log " -----> Info: All services started. Supervising..."
+
+# Supervisão via pidfile/socket (FPM) e PID do nginx — sem `wait` em PID reparentado.
 while true; do
-    for pid in "${critical_pids[@]}"; do
-        if ! kill -0 "$pid" 2>/dev/null; then
-            wait "$pid" || true
-            printf " -----> Error: processo crítico %s saiu\n" "$pid"
-            exit 1
-        fi
-    done
-    sleep 1
+    if [ "${ENABLE_PHPFPM:-true}" = "true" ] && ! fpm_is_alive; then
+        log " -----> Error: PHP-FPM saiu (pidfile/socket)."
+        exit 1
+    fi
+    if [ -n "$nginx_pid" ] && ! kill -0 "$nginx_pid" 2>/dev/null; then
+        log " -----> Error: NGINX saiu."
+        exit 1
+    fi
+    sleep 2
 done

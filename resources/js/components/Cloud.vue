@@ -2639,8 +2639,7 @@ export default {
     align-items: center;
 }
 
-.cloud-toolbar-upload :deep(.btn),
-.cloud-toolbar-upload ::v-deep .btn {
+.cloud-toolbar-upload :deep(.btn) {
     height: 31px;
     min-height: 31px;
     margin: 0;

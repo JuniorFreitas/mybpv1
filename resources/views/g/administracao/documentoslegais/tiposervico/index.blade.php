@@ -5,5 +5,5 @@
     <tiposervico></tiposervico>
 @stop
 @push('js')
-    <script src="{{mix('js/g/documentoslegais/tiposervico/app.js')}}"></script>
+    @vite(['resources/js/g/administracao/documentoslegais/tiposervico/app.js'])
 @endpush

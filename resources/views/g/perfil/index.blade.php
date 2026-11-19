@@ -5,5 +5,5 @@
     <perfil></perfil>
 @stop
 @push('js')
-    <script src="{{mix('js/g/perfil/app.js')}}"></script>
+    @vite(['resources/js/g/perfil/app.js'])
 @endpush

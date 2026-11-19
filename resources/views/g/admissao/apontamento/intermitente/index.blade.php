@@ -5,5 +5,5 @@
     <intermitente></intermitente>
 @stop
 @push('js')
-    <script src="{{mix('js/g/admissao/apontamento/intermitente/app.js')}}"></script>
+    @vite(['resources/js/g/admissao/apontamento/intermitente/app.js'])
 @endpush

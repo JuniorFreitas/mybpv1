@@ -5,5 +5,5 @@
     <empresa-temporaria></empresa-temporaria>
 @stop
 @push('js')
-    <script src="{{mix('js/g/empresatemporaria/app.js')}}"></script>
+    @vite(['resources/js/g/cadastros/empresa-temporaria/app.js'])
 @endpush

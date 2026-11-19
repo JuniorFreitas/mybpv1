@@ -8,5 +8,5 @@
     <carta-oferta-template></carta-oferta-template>
 @stop
 @push('js')
-    <script src="{{ mix('js/g/administracao/carta-oferta-template/app.js') }}"></script>
+    @vite(['resources/js/g/administracao/carta-oferta-template/app.js'])
 @endpush

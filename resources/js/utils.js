@@ -1,3 +1,5 @@
+import tinymceSelfhost from './utils/tinymceSelfhost'
+
 const GETAUTH = {}
 
 function isGuestAuthRoute() {
@@ -22,16 +24,16 @@ function isGuestAuthRoute() {
     ].some((route) => path === route || path.startsWith(`${route}/`))
 }
 
-if (!isGuestAuthRoute()) {
-    axios
-        .get(`${URL_ADMIN}/usuario/autenticado/`, { errorHandle: false })
+if (!isGuestAuthRoute() && typeof window !== 'undefined' && window.URL_ADMIN && window.axios) {
+    window.axios
+        .get(`${window.URL_ADMIN}/usuario/autenticado/`, { errorHandle: false })
         .then((response) => {
             Object.assign(GETAUTH, response.data)
         })
         .catch(() => {})
 }
 
-exports.ESTADOS = [
+export const ESTADOS = [
     'MA',
     'AC',
     'AL',
@@ -61,13 +63,13 @@ exports.ESTADOS = [
     'TO'
 ]
 
-exports.EXIBICAO = [
+export const EXIBICAO = [
     20,
     50,
     100
 ]
 
-exports.CORES = [
+export const CORES = [
     '#63b598', '#ce7d78', '#ea9e70', '#a48a9e', '#c6e1e8', '#648177', '#0d5ac1',
     '#f205e6', '#1c0365', '#14a9ad', '#4ca2f9', '#a4e43f', '#d298e2', '#6119d0',
     '#d2737d', '#c0a43c', '#f2510e', '#651be6', '#79806e', '#61da5e', '#cd2f00',
@@ -110,7 +112,7 @@ exports.CORES = [
     '#dba2e6', '#76fc1b', '#608fa4', '#20f6ba', '#07d7f6', '#dce77a', '#77ecca'
 ]
 
-exports.optionDriver = {
+export const optionDriver = {
     animate: true,  // Animate while changing highlighted element
     opacity: 0.75,  // Background opacity (0 means only popovers and without overlay)
     padding: 10,    // Distance of element from around the edges
@@ -123,10 +125,9 @@ exports.optionDriver = {
     keyboardControl: true // Allow controlling through keyboard (escape to close, arrow keys to move)
 }
 
-const tinymceSelfhost = require('./utils/tinymceSelfhost')
-exports.tinyPadrao = tinymceSelfhost.getTinyMceInit('padrao')
-exports.tinyProva = tinymceSelfhost.getTinyMceInit('prova')
-exports.tinyEntrevista = tinymceSelfhost.getTinyMceInit('entrevista')
-exports.tinySimples = tinymceSelfhost.getTinyMceInit('simples')
+export const tinyPadrao = tinymceSelfhost.getTinyMceInit('padrao')
+export const tinyProva = tinymceSelfhost.getTinyMceInit('prova')
+export const tinyEntrevista = tinymceSelfhost.getTinyMceInit('entrevista')
+export const tinySimples = tinymceSelfhost.getTinyMceInit('simples')
 
-exports.AUTENTICADO = GETAUTH
+export const AUTENTICADO = GETAUTH

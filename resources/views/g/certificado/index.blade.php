@@ -485,5 +485,5 @@
 
 @stop
 @push('js')
-    <script src="{{mix('js/g/certificado/app.js')}}"></script>
+    @vite(['resources/js/g/certificado/app.js'])
 @endpush

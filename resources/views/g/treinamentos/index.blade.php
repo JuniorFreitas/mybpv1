@@ -94,5 +94,5 @@
 </style>
 @endpush
 @push('js')
-<script src="{{mix('js/g/treinamentos/app.js')}}"></script>
+@vite(['resources/js/g/treinamentos/app.js'])
 @endpush

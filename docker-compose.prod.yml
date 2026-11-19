@@ -17,8 +17,8 @@ services:
       - ENABLE_HORIZON=true
       - ENABLE_WEBSOCKETS=false
       - ENABLE_SUPERVISOR_GUI=true
-      - SUPERVISORD_USER=mastertag
-      - SUPERVISORD_PASS=Savf7w{00
+      - SUPERVISORD_USER=
+      - SUPERVISORD_PASS=
       - VIRTUAL_HOST=sistema.mybp.com.br
       - VIRTUAL_PORT=80
       - LETSENCRYPT_HOST=sistema.mybp.com.br

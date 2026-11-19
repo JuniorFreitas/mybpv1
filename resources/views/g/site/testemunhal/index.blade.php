@@ -203,5 +203,5 @@
 
 @stop
 @push('js')
-    <script src="{{mix('js/g/site/testemunhal/app.js')}}"></script>
+    @vite(['resources/js/g/site/testemunhal/app.js'])
 @endpush

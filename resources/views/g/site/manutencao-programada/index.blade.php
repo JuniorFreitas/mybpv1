@@ -46,5 +46,5 @@
 @stop
 
 @push('js')
-    <script src="{{mix('js/g/manutencao-programada/app.js')}}"></script>
+    @vite(['resources/js/g/site/manutencao-programada/app.js'])
 @endpush

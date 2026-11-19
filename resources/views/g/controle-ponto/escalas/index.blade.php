@@ -216,7 +216,7 @@
 @stop
 @push('js')
 
-    <script src="{{mix('js/g/controle-ponto/escalas/app.js')}}"></script>
+    @vite(['resources/js/g/controle-ponto/escalas/app.js'])
 @endpush
 
 @push('css')

@@ -12,5 +12,5 @@
 
 @stop
 @push('js')
-    <script src="{{mix('js/g/cloud/app.js')}}"></script>
+    @vite(['resources/js/g/cloud/app.js'])
 @endpush

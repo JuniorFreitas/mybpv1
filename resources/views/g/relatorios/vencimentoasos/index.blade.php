@@ -5,5 +5,5 @@
     <vencimento-asos></vencimento-asos>
 @stop
 @push('js')
-    <script src="{{mix('js/g/relatorios/vencimentoasos/app.js')}}"></script>
+    @vite(['resources/js/g/relatorios/vencimentoasos/app.js'])
 @endpush

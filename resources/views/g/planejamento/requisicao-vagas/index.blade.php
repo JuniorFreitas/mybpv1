@@ -5,5 +5,5 @@
 <requisicao-vaga url-atualizar="{{ route('g.requisicao_vagas.atualizar') }}"></requisicao-vaga>
 @stop
 @push('js')
-<script src="{{ mix('js/g/planejamento/requisicao-vagas/requisicao-vaga-app.js') }}"></script>
+@vite(['resources/js/g/planejamento/requisicao-vagas/requisicao-vaga-app.js'])
 @endpush

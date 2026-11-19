@@ -541,7 +541,7 @@
         });
     </script>
 
-    <script src="{{mix('js/g/controle-ponto/configuracoes/app.js')}}"></script>
+    @vite(['resources/js/g/controle-ponto/configuracoes/app.js'])
 @endpush
 
 @push('css')

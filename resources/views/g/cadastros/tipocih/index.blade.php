@@ -5,5 +5,5 @@
     <tipo-cih></tipo-cih>
 @stop
 @push('js')
-    <script src="{{mix('js/g/cadastros/tipocih/app.js')}}"></script>
+    @vite(['resources/js/g/cadastros/tipocih/app.js'])
 @endpush

@@ -172,5 +172,5 @@
     </div>
 @stop
 @push('js')
-    <script src="{{mix('js/g/site/galeria/app.js')}}"></script>
+    @vite(['resources/js/g/site/galeria/app.js'])
 @endpush

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Gera .env.prod ou .env.homol para o build webpack (MIX_*), a partir do SSM.
+# Gera .env.prod ou .env.homol SOMENTE com variáveis públicas de frontend (VITE_*).
+# Nunca grava secrets de servidor (PUSHER_APP_SECRET, DB_*, APP_KEY, AWS_*, etc.).
 # Os arquivos gerados são gitignored — não commitar.
 #
 # Uso:
@@ -28,17 +29,15 @@ case "$ENV_NAME" in
   prod)
     OUT_FILE=".env.prod"
     EXAMPLE_FILE=".env.prod.example"
-    APP_NAME='MyBP - Seu negócio na sua mão'
     APP_URL="https://sistema.mybp.com.br"
-    MIX_AMBIENTE="prod"
+    VITE_AMBIENTE="prod"
     SSM_PREFIX="${SSM_PREFIX:-/mybp/prod}"
     ;;
   homol)
     OUT_FILE=".env.homol"
     EXAMPLE_FILE=".env.homol.example"
-    APP_NAME='MyBP - Homologação'
     APP_URL="https://qa.mybp.com.br"
-    MIX_AMBIENTE="homol"
+    VITE_AMBIENTE="homol"
     # Keys de frontend compartilhadas com prod (mesmo Pusher/Maps), salvo override
     SSM_PREFIX="${SSM_PREFIX:-/mybp/prod}"
     ;;
@@ -56,7 +55,7 @@ if [[ ! -f "$EXAMPLE_FILE" ]]; then
   exit 1
 fi
 
-echo "Gerando ${OUT_FILE} a partir de SSM ${SSM_PREFIX}..."
+echo "Gerando ${OUT_FILE} a partir de SSM ${SSM_PREFIX} (somente VITE_*)..."
 
 fetch_param() {
   local name="$1"
@@ -68,17 +67,26 @@ fetch_param() {
     --output text 2>/dev/null || true
 }
 
-PUSHER_APP_ID="$(fetch_param PUSHER_APP_ID)"
+# Apenas chaves públicas de client (nunca APP_SECRET)
 PUSHER_APP_KEY="$(fetch_param PUSHER_APP_KEY)"
-PUSHER_APP_SECRET="$(fetch_param PUSHER_APP_SECRET)"
-MIX_GOOGLE_MAPS_KEY="$(fetch_param MIX_GOOGLE_MAPS_KEY)"
-MIX_TYNEKEY="$(fetch_param MIX_TYNEKEY)"
+PUSHER_APP_CLUSTER="$(fetch_param PUSHER_APP_CLUSTER)"
+if [[ -z "${PUSHER_APP_CLUSTER}" || "${PUSHER_APP_CLUSTER}" == "None" ]]; then
+  PUSHER_APP_CLUSTER="mt1"
+fi
+
+VITE_GOOGLE_MAPS_KEY="$(fetch_param VITE_GOOGLE_MAPS_KEY)"
+if [[ -z "${VITE_GOOGLE_MAPS_KEY}" || "${VITE_GOOGLE_MAPS_KEY}" == "None" ]]; then
+  VITE_GOOGLE_MAPS_KEY="$(fetch_param MIX_GOOGLE_MAPS_KEY)"
+fi
+VITE_TYNEKEY="$(fetch_param VITE_TYNEKEY)"
+if [[ -z "${VITE_TYNEKEY}" || "${VITE_TYNEKEY}" == "None" ]]; then
+  VITE_TYNEKEY="$(fetch_param MIX_TYNEKEY)"
+fi
 
 missing=()
 for pair in \
-  "PUSHER_APP_ID=${PUSHER_APP_ID}" \
   "PUSHER_APP_KEY=${PUSHER_APP_KEY}" \
-  "MIX_GOOGLE_MAPS_KEY=${MIX_GOOGLE_MAPS_KEY}"; do
+  "VITE_GOOGLE_MAPS_KEY=${VITE_GOOGLE_MAPS_KEY}"; do
   k="${pair%%=*}"
   v="${pair#*=}"
   if [[ -z "$v" || "$v" == "None" ]]; then
@@ -92,33 +100,21 @@ if [[ ${#missing[@]} -gt 0 ]]; then
   exit 1
 fi
 
-# Escrita sem ecoar secrets
+# Escrita sem ecoar valores; umask restritivo; valores já expandidos (sem ${SECRET})
 umask 077
 cat > "${OUT_FILE}" <<EOF
 # Gerado por .deploy/generate-env-build.sh — NÃO COMMITTAR
-APP_NAME="${APP_NAME}"
-APP_URL=${APP_URL}
-PUSHER_APP_ID=${PUSHER_APP_ID}
-PUSHER_APP_KEY=${PUSHER_APP_KEY}
-PUSHER_APP_SECRET=${PUSHER_APP_SECRET}
-PUSHER_APP_CLUSTER=mt1
-PUSHER_APP_TLS=true
-PUSHER_APP_ENCRYPTED=true
-PUSHER_APP_HOST=
-MIX_PUSHER_APP_KEY=\${PUSHER_APP_KEY}
-MIX_PUSHER_APP_CLUSTER=\${PUSHER_APP_CLUSTER}
-MIX_PUSHER_APP_TLS=true
-MIX_AMBIENTE=${MIX_AMBIENTE}
-MIX_URL_SITE=\${APP_URL}
-MIX_URL_ADMIN=\${APP_URL}/g
-MIX_URL_PUBLICO=\${APP_URL}/publico
-MIX_GOOGLE_MAPS_KEY=${MIX_GOOGLE_MAPS_KEY}
-MIX_TYNEKEY=${MIX_TYNEKEY}
-NPS_HABILITADO=false
-NPS_EMPRESAS_EXCLUIDAS=100
-NPS_EMPRESA_GERENCIAMENTO=100
-NPS_MIN_ACESSOS_90_DIAS=3
-WHATSAPP_MOVIMENTACAO_NOTIFICACOES_HABILITADAS=false
+# Somente variáveis públicas de frontend (VITE_*). Sem secrets de servidor.
+
+VITE_AMBIENTE=${VITE_AMBIENTE}
+VITE_URL_SITE=${APP_URL}
+VITE_URL_ADMIN=${APP_URL}/g
+VITE_URL_PUBLICO=${APP_URL}/publico
+VITE_PUSHER_APP_KEY=${PUSHER_APP_KEY}
+VITE_PUSHER_APP_CLUSTER=${PUSHER_APP_CLUSTER}
+VITE_PUSHER_APP_TLS=true
+VITE_GOOGLE_MAPS_KEY=${VITE_GOOGLE_MAPS_KEY}
+VITE_TYNEKEY=${VITE_TYNEKEY}
 EOF
 
-echo "OK: ${OUT_FILE} gerado (gitignored)."
+echo "OK: ${OUT_FILE} gerado (gitignored, só VITE_*)."

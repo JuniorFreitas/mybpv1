@@ -138,7 +138,7 @@
     </div>
 @stop
 @push('js')
-    <script src="{{mix('js/g/avaliacoes/avaliador/app.js')}}"></script>
+    @vite(['resources/js/g/cadastros/avaliacoes/avaliador/app.js'])
 @endpush
 
 @push('css')

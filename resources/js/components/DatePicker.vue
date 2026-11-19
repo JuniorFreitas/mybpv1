@@ -76,6 +76,8 @@
 </template>
 
 <script>
+import '../ensure-daterangepicker'
+
 export default {
     emits: ['update:modelValue', 'input', 'onblur', 'onselect'],
     props: {

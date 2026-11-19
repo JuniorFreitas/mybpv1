@@ -11,5 +11,5 @@
 ></importacao-admissoes>
 @stop
 @push('js')
-    <script src="{{ mix('js/g/admissao/import/app.js') }}"></script>
+    @vite(['resources/js/g/admissao/import/app.js'])
 @endpush

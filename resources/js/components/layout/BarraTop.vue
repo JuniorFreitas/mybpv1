@@ -215,9 +215,9 @@
 </template>
 
 <script>
-import chat from '../Chat'
-import notificacoes from '../layout/Notificacoes'
-import upload from '../Upload'
+import chat from '../Chat.vue'
+import notificacoes from '../layout/Notificacoes.vue'
+import upload from '../Upload.vue'
 
 export default {
     components: {

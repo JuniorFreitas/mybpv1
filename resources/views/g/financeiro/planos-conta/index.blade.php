@@ -165,5 +165,5 @@
 
 @stop
 @push('js')
-    <script src="{{mix('js/g/planos-conta/app.js')}}"></script>
+    @vite(['resources/js/g/financeiro/planos-conta/app.js'])
 @endpush

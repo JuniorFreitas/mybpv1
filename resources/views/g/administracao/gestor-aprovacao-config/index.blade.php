@@ -5,5 +5,5 @@
 <gestor-aprovacao-config></gestor-aprovacao-config>
 @stop
 @push('js')
-<script src="{{mix('js/g/gestor-aprovacao-config/app.js')}}"></script>
+@vite(['resources/js/g/administracao/gestor-aprovacao-config/app.js'])
 @endpush

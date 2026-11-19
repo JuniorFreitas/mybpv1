@@ -404,5 +404,5 @@
     </div>
 @stop
 @push('js')
-    <script src="{{mix('js/g/portaria/app.js')}}"></script>
+    @vite(['resources/js/g/portaria/app.js'])
 @endpush

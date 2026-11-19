@@ -4,17 +4,19 @@
  * building robust, powerful web applications using Vue and Laravel.
  */
 
-require('./bootstrap')
-require('./Globals')
-require('./registerGlobals')
+import './bootstrap'
+import './Globals'
+import { registerGlobals } from './registerGlobals'
+import * as Vue from 'vue'
+import toastr from 'toastr'
+import moment from 'moment'
+import './ensure-daterangepicker'
 
 // Vue 3 exposto globalmente para blades que usam Vue.createApp() em script inline (ex.: dashboard, login)
-import * as Vue from 'vue'
 window.Vue = Vue
+window.registerGlobals = registerGlobals
 
-window.toastr = require('toastr')
+window.toastr = toastr
 toastr.options.closeButton = true
-window.moment = require('moment')
+window.moment = moment
 moment.locale('pt-BR')
-
-require('bootstrap-daterangepicker')

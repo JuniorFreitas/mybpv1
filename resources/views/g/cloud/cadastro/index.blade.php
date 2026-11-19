@@ -126,5 +126,5 @@
                         v-on:carregou="carregou" v-on:carregando="carregando"></controle-paginacao>--}}
 @stop
 @push('js')
-    <script src="{{mix('js/g/cloud/cadastro/app.js')}}"></script>
+    @vite(['resources/js/g/cloud/cadastro/app.js'])
 @endpush

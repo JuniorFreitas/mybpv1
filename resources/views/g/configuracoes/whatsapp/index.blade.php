@@ -5,5 +5,5 @@
 <whatsapp-config></whatsapp-config>
 @stop
 @push('js')
-<script src="{{mix('js/g/configuracoes/whatsapp/app.js')}}"></script>
+@vite(['resources/js/g/configuracoes/whatsapp/app.js'])
 @endpush

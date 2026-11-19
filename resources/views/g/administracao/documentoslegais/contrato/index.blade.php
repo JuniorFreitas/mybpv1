@@ -22,6 +22,6 @@
 @stop
 
 @push('js')
-    <script src="{{mix('js/g/documentoslegais/contrato/app.js')}}"></script>
+    @vite(['resources/js/g/administracao/documentoslegais/contrato/app.js'])
 @endpush
 

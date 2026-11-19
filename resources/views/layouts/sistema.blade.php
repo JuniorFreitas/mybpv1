@@ -11,7 +11,7 @@
     @if(\App\Models\Sistema::verificaHdev())
         <meta name="robots" content="noindex">
     @endif
-    <link rel="stylesheet" href="{{ mix('css/app.css') }}">
+    @vite(['resources/sass/app.scss'])
     <link rel="stylesheet" href="{{ asset('css/icons.min.css') }}">
     @include('layouts.favicon')
     @if(env('APP_ENV') !== 'local')
@@ -220,8 +220,7 @@
     </script>
 @endif
 
-<script src="{{ mix('js/app.js') }}"></script>
-<script src="{{ asset('js/funcoes.js') }}"></script>
+@include('layouts.partials.legacy-scripts')
 <script>
     window.MYBP_ASSINATURA_DIGITAL_HABILITADA = {{ \App\Models\Sistema::assinaturaDigitalHabilitada() ? 'true' : 'false' }};
 </script>
@@ -289,7 +288,29 @@
 </script>
 @stack('js')
 <script>
-    $("#side-menu").metisMenu();
+    // Entries ESM (deferred) montam o Vue depois dos scripts classicos e
+    // recriam o DOM do #app — reinicia o metisMenu apos parse/modulos.
+    (function initSideMenu() {
+        function run() {
+            if (!window.jQuery || !window.jQuery.fn || !window.jQuery.fn.metisMenu) {
+                return;
+            }
+            var $menu = window.jQuery('#side-menu');
+            if (!$menu.length) {
+                return;
+            }
+            if ($menu.data('metisMenu')) {
+                try { $menu.metisMenu('dispose'); } catch (e) {}
+            }
+            $menu.metisMenu();
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', run);
+        } else {
+            run();
+        }
+        window.addEventListener('load', run);
+    })();
 </script>
 </body>
 </html>

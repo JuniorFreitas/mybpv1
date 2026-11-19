@@ -5,5 +5,5 @@
 <areas></areas>
 @stop
 @push('js')
-<script src="{{mix('js/g/areas/app.js')}}"></script>
+@vite(['resources/js/g/cadastros/areas/app.js'])
 @endpush

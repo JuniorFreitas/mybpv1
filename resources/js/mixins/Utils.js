@@ -6,7 +6,11 @@ const { getTinyMceInit } = selfhost
 const Utils = {
     computed: {
         urlSite() {
-            return process.env.MIX_URL_SITE;
+            return (
+                (typeof window !== 'undefined' && window.URL_SITE) ||
+                import.meta.env.VITE_URL_SITE ||
+                ''
+            )
         },
         ufs() {
             return ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"];

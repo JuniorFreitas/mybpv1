@@ -5,5 +5,5 @@
     <medidas-administrativas></medidas-administrativas>
 @stop
 @push('js')
-    <script src="{{mix('js/g/relatorios/medidasadministrativas/app.js')}}"></script>
+    @vite(['resources/js/g/relatorios/medidasadministrativas/app.js'])
 @endpush

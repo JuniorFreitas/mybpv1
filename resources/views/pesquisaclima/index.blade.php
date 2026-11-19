@@ -7,10 +7,8 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title')</title>
-    <link rel="preload" href="{{mix('js/app.js')}}" as="script">
-    <link rel="preload" href="{{mix('js/funcoes.js')}}" as="script">
     @include('layouts.favicon')
-    <link href="{{ mix('css/app.css') }}" rel="stylesheet">
+    @vite(['resources/sass/app.scss'])
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css"
           integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
     @stack('css')
@@ -134,8 +132,7 @@
     </div>
 
 </div>
-<script src="{{mix('js/app.js')}}"></script>
-<script src="{{mix('js/funcoes.js')}}"></script>
-<script src="{{mix('js/pesquisaclima/app.js')}}"></script>
+@include('layouts.partials.legacy-scripts')
+@vite(['resources/js/pesquisaclima/app.js'])
 </body>
 </html>

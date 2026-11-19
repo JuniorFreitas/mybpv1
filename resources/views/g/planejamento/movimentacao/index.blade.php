@@ -112,7 +112,7 @@
 
 @stop
 @push('js')
-    <script src="{{mix('js/g/planejamento/movimentacao/app.js')}}"></script>
+    @vite(['resources/js/g/planejamento/movimentacao/app.js'])
 @endpush
 @push('css')
     <style>

@@ -5,5 +5,5 @@
     <nps-relatorio></nps-relatorio>
 @stop
 @push('js')
-    <script src="{{ mix('js/g/relatorios/nps/app.js') }}"></script>
+    @vite(['resources/js/g/relatorios/nps/app.js'])
 @endpush

@@ -5,5 +5,5 @@
     <treinamento-sgi></treinamento-sgi>
 @stop
 @push('js')
-    <script src="{{mix('js/g/treinamentosgi/app.js')}}"></script>
+    @vite(['resources/js/g/cadastros/treinamentosgi/app.js'])
 @endpush

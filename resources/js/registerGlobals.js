@@ -7,9 +7,24 @@ import { plugin as TippyPlugin } from 'vue-tippy'
 import 'tippy.js/dist/tippy.css'
 import toastr from 'toastr'
 import moment from 'moment'
-import 'bootstrap-daterangepicker'
+import './ensure-daterangepicker'
 import { popoverDirective } from './diretivas/popover'
 import { mascaraDirective } from './diretivas/mascaras'
+import Preload from './components/preload.vue'
+import BtnAtualiza from './components/btnAtualiza.vue'
+import ControlePaginacao from './components/ControlePaginacao.vue'
+import DatePicker from './components/DatePicker.vue'
+import Modal from './components/Modal.vue'
+import AutoComplete from './components/AutoComplete.vue'
+import AtivoInativo from './components/AtivoInativo.vue'
+import BarraTop from './components/layout/BarraTop.vue'
+import NpsModal from './components/NpsModal.vue'
+import AssistenteManual from './components/ajuda/AssistenteManual.vue'
+import TelefoneUsuarioModal from './components/TelefoneUsuarioModal.vue'
+import WhatsappPreferenciasUsuario from './components/WhatsappPreferenciasUsuario.vue'
+import WhatsappPreviewModal from './components/configuracoes/whatsapp/WhatsappPreviewModal.vue'
+import MybpVisualizacaoListagem from './components/ui/MybpVisualizacaoListagem.vue'
+import TinyMceEditor from './components/TinyMceEditor.vue'
 
 window.toastr = toastr
 toastr.options.closeButton = true
@@ -32,21 +47,44 @@ const tippyOptions = {
 }
 
 const components = {
-    preload: require('./components/preload').default,
-    'btn-atualiza': require('./components/btnAtualiza').default,
-    'controle-paginacao': require('./components/ControlePaginacao').default,
-    datepicker: require('./components/DatePicker').default,
-    modal: require('./components/Modal').default,
-    autocomplete: require('./components/AutoComplete').default,
-    'bt-ativo': require('./components/AtivoInativo').default,
-    'barra-top': require('./components/layout/BarraTop').default,
-    'nps-modal': require('./components/NpsModal').default,
-    'assistente-manual': require('./components/ajuda/AssistenteManual.vue').default,
-    'telefone-usuario-modal': require('./components/TelefoneUsuarioModal.vue').default,
-    'whatsapp-preferencias-usuario': require('./components/WhatsappPreferenciasUsuario.vue').default,
-    'whatsapp-preview-modal': require('./components/configuracoes/whatsapp/WhatsappPreviewModal.vue').default,
-    'mybp-visualizacao-listagem': require('./components/ui/MybpVisualizacaoListagem.vue').default,
-    'tiny-mce-editor': require('./components/TinyMceEditor.vue').default,
+    preload: Preload,
+    'btn-atualiza': BtnAtualiza,
+    'controle-paginacao': ControlePaginacao,
+    datepicker: DatePicker,
+    modal: Modal,
+    autocomplete: AutoComplete,
+    'bt-ativo': AtivoInativo,
+    'barra-top': BarraTop,
+    'nps-modal': NpsModal,
+    'assistente-manual': AssistenteManual,
+    'telefone-usuario-modal': TelefoneUsuarioModal,
+    'whatsapp-preferencias-usuario': WhatsappPreferenciasUsuario,
+    'whatsapp-preview-modal': WhatsappPreviewModal,
+    'mybp-visualizacao-listagem': MybpVisualizacaoListagem,
+    'tiny-mce-editor': TinyMceEditor,
+}
+
+function initSideMenuMetis() {
+    const $ = window.jQuery || window.$
+    if (!$?.fn?.metisMenu) {
+        return
+    }
+
+    const $menu = $('#side-menu')
+    if (!$menu.length) {
+        return
+    }
+
+    // Vue mount recria o DOM do #app e remove handlers jQuery do metisMenu.
+    if ($menu.data('metisMenu')) {
+        try {
+            $menu.metisMenu('dispose')
+        } catch (e) {
+            // ignore dispose em instancia parcial
+        }
+    }
+
+    $menu.metisMenu()
 }
 
 export function registerGlobals(app) {
@@ -82,6 +120,18 @@ export function registerGlobals(app) {
     }
     if (!app.directive('popover')) {
         app.directive('popover', popoverDirective)
+    }
+
+    // @vite carrega entries como type=module (deferred). O init classico do
+    // metisMenu em sistema.blade roda ANTES do mount e perde os handlers.
+    if (!app.__mybpMetisMountPatched) {
+        app.__mybpMetisMountPatched = true
+        const mount = app.mount.bind(app)
+        app.mount = (container, ...args) => {
+            const instance = mount(container, ...args)
+            queueMicrotask(initSideMenuMetis)
+            return instance
+        }
     }
 }
 

@@ -1988,7 +1988,7 @@
     <script>
         window.__MYBP_ESCOLARIDADES = @json($escolaridadesModal);
     </script>
-    <script src="{{mix('js/g/admissao/processo/app.js')}}"></script>
+    @vite(['resources/js/g/admissao/processo/app.js'])
 @endpush
 @push('css')
     <style>

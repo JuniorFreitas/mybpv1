@@ -22,9 +22,9 @@
 @stop
 @push('js')
 <!--    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>-->
-    <script src="{{mix('js/g/controle-ponto/camera/adapter-latest.js')}}"></script>
-    <script src="{{mix('js/g/controle-ponto/camera/face-api.min.js')}}"></script>
-    <script src="{{mix('js/g/controle-ponto/camera/app.js')}}"></script>
+    <script src="{{ asset('js/g/controle-ponto/camera/adapter-latest.js') }}"></script>
+    <script src="{{ asset('js/g/controle-ponto/camera/face-api.min.js') }}"></script>
+    @vite(['resources/js/g/controle-ponto/camera/app.js'])
 
 @endpush
 

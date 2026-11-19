@@ -10,5 +10,5 @@
 
 @stop
 @push('js')
-    <script src="{{mix('js/g/fluxo-caixa/app.js')}}"></script>
+    @vite(['resources/js/g/financeiro/fluxo-caixa/app.js'])
 @endpush

@@ -5,5 +5,5 @@
     <avaliacaotipo :tipo-pj="true"></avaliacaotipo>
 @stop
 @push('js')
-    <script src="{{mix('js/g/avaliacoes/avaliacaotipo/app.js')}}"></script>
+    @vite(['resources/js/g/cadastros/avaliacoes/avaliacaotipo/app.js'])
 @endpush

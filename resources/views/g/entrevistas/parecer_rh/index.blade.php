@@ -442,5 +442,5 @@
     </div>
 @stop
 @push('js')
-    <script src="{{mix('js/g/entrevistas/parecer_rh/app.js')}}"></script>
+    @vite(['resources/js/g/entrevistas/parecer_rh/app.js'])
 @endpush

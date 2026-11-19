@@ -128,5 +128,5 @@
 @stop
 
 @push('js')
-    <script src="{{mix('js/g/habilidades/app.js')}}"></script>
+    @vite(['resources/js/g/configuracoes/habilidades/app.js'])
 @endpush

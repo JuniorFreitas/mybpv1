@@ -768,6 +768,6 @@
 <script>
     window.dados = <?php echo json_encode($dados); ?>
 </script>
-<script src="{{ mix('js/app.js') }}"></script>
-<script src="{{mix('js/g/impressao/avaliacao/app.js')}}"></script>
+@include('layouts.partials.legacy-scripts')
+@vite(['resources/js/g/impressao/avaliacao/app.js'])
 @endpush

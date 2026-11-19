@@ -880,7 +880,7 @@
     </div>
 @stop
 @push('js')
-    <script src="{{mix('js/g/posadmissao/app.js')}}"></script>
+    @vite(['resources/js/g/posadmissao/app.js'])
 @endpush
 @push('css')
     <style>

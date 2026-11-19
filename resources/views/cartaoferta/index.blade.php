@@ -152,5 +152,5 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ mix('js/cartaoferta/app.js') }}"></script>
+    @vite(['resources/js/cartaoferta/app.js'])
 @endpush

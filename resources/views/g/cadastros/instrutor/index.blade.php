@@ -5,5 +5,5 @@
     <instrutor></instrutor>
 @stop
 @push('js')
-    <script src="{{mix('js/g/instrutor/app.js')}}"></script>
+    @vite(['resources/js/g/cadastros/instrutor/app.js'])
 @endpush

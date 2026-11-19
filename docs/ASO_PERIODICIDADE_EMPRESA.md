@@ -95,7 +95,7 @@ Pontos que usam o service para calcular vencimento:
 | `resources/js/components/cadastros/aso-periodicidade/AsoPeriodicidade.vue` | Tela |
 | `resources/js/g/cadastros/aso-periodicidade/app.js` | Entry Mix |
 | `resources/views/g/cadastros/aso-periodicidade/index.blade.php` | Blade |
-| `webpack.mix.js` | Bundle `js/g/cadastros/aso-periodicidade.js` |
+| `vite.config.js` / `scripts/vite-entries.json` | Bundle `resources/js/g/cadastros/aso-periodicidade/app.js` |
 
 ## Performance do recálculo
 

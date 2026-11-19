@@ -5,5 +5,5 @@
     <formacontrato></formacontrato>
 @stop
 @push('js')
-    <script src="{{mix('js/g/documentoslegais/formacontrato/app.js')}}"></script>
+    @vite(['resources/js/g/administracao/documentoslegais/formacontrato/app.js'])
 @endpush

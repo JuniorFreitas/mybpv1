@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import { registerGlobals } from '../../../registerGlobals'
+import '../../../ensure-select2'
 
 const app = createApp({
     data() {

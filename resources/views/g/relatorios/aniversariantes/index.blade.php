@@ -5,5 +5,5 @@
     <aniversariantes></aniversariantes>
 @stop
 @push('js')
-    <script src="{{mix('js/g/relatorios/aniversariantes/app.js')}}"></script>
+    @vite(['resources/js/g/relatorios/aniversariantes/app.js'])
 @endpush

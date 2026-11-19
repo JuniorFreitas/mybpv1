@@ -5,5 +5,5 @@
     <vencimento-ferias></vencimento-ferias>
 @stop
 @push('js')
-    <script src="{{mix('js/g/relatorios/vencimentoferias/app.js')}}"></script>
+    @vite(['resources/js/g/relatorios/vencimentoferias/app.js'])
 @endpush

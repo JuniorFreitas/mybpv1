@@ -9,14 +9,11 @@
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
-    <!-- Scripts -->
-    <script src="{{ asset('js/app.js') }}" defer></script>
+    <!-- Styles -->
+    @vite(['resources/sass/app.scss'])
 
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
-
-    <!-- Styles -->
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 </head>
 <body>
 <div id="app">
@@ -82,5 +79,6 @@
         @yield('content')
     </main>
 </div>
+@include('layouts.partials.legacy-scripts')
 </body>
 </html>

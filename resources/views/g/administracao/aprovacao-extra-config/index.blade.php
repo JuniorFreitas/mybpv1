@@ -5,5 +5,5 @@
 <aprovacao-extra-config></aprovacao-extra-config>
 @stop
 @push('js')
-<script src="{{mix('js/g/aprovacao-extra-config/app.js')}}"></script>
+@vite(['resources/js/g/administracao/aprovacao-extra-config/app.js'])
 @endpush

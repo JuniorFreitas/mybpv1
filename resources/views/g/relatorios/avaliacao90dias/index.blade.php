@@ -8,5 +8,5 @@
     ></avaliacao-experiencia>
 @stop
 @push('js')
-    <script src="{{ mix('js/g/relatorios/avaliacao-experiencia/app.js') }}"></script>
+    @vite(['resources/js/g/relatorios/avaliacao-experiencia/app.js'])
 @endpush

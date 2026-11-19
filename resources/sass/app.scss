@@ -6,16 +6,16 @@
 //@import '~bootstrap/scss/bootstrap';
 
 //Core files
-@import "~bootstrap/scss/mixins.scss";
-@import "~bootstrap/scss/functions";
-@import "~bootstrap/scss/variables";
+@import "bootstrap/scss/mixins.scss";
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
 @import "../template/scss/variables";
 @import "../template/scss/bootstrap";
 
 //Toastr
-@import "~toastr/toastr";
+@import "toastr/toastr";
 //bootstrap daterangerpicker
-@import "~bootstrap-daterangepicker/daterangepicker.css";
+@import "../../node_modules/bootstrap-daterangepicker/daterangepicker.css";
 // Structure
 @import "../template/scss/custom/fonts/fonts";
 
@@ -81,7 +81,7 @@
 //@import "../template/scss/custom/pages/extras-pages";
 
 //Driver Js
-@import "~driver.js/src/driver";
+@import "../../node_modules/driver.js/dist/driver.min.css";
 
 #conteudo {
     margin-top: .75em;

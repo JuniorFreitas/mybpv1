@@ -33,20 +33,17 @@ export default {
         model: {
             type: Object,
             required: true,
-            default: () => {
-                return {
-                    gestor_id: '',
-                    autocomplete_label_gestor_modal: '',
-                    autocomplete_label_gestor_modal_anterior: '',
-
-                    hash: `gestor_${this.hash}`,
-                }
-            }
+            default: () => ({
+                gestor_id: '',
+                autocomplete_label_gestor_modal: '',
+                autocomplete_label_gestor_modal_anterior: '',
+                hash: `gestor_${Math.floor(Math.random() * 999999)}`
+            })
         },
         hash: {
             type: String,
             required: false,
-            default: `${parseInt((Math.random() * 999999))}`,
+            default: () => `${Math.floor(Math.random() * 999999)}`
         },
         formsm: {
             type: Boolean,
@@ -89,7 +86,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-
-</style>

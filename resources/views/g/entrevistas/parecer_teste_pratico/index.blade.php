@@ -421,5 +421,5 @@
 
 @endsection
 @push('js')
-    <script src="{{mix('js/g/entrevistas/parecer_teste_pratico/app.js')}}"></script>
+    @vite(['resources/js/g/entrevistas/parecer_teste_pratico/app.js'])
 @endpush

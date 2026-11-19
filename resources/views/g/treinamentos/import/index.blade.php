@@ -14,5 +14,5 @@
 ></importacao-treinamentos>
 @stop
 @push('js')
-    <script src="{{ mix('js/g/treinamentos/import/app.js') }}"></script>
+    @vite(['resources/js/g/treinamentos/import/app.js'])
 @endpush

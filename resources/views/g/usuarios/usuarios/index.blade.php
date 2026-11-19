@@ -19,5 +19,5 @@
 @stop
 
 @push('js')
-    <script src="{{ mix('js/g/usuarios/app.js') }}"></script>
+    @vite(['resources/js/g/usuarios/usuarios/app.js'])
 @endpush
