@@ -11,8 +11,8 @@ class Admissaoimport implements ToCollection, WithHeadingRow
 
     public $dados = [];
 
-    public function collection(Collection $collection)
+    public function collection(Collection $collection): void
     {
-        return $this->dados = $collection;
+        $this->dados = $collection;
     }
 }

@@ -2,15 +2,17 @@
 
 namespace App\Jobs\Admissao\Processo;
 
-use App\Http\Controllers\AdmissaoController;
+use App\Events\Notificacoes\NotificacaoEvent;
+use App\Exports\ModeloRowsExport;
 use App\Models\ClienteFilial;
+use App\Models\Exportacao;
 use App\Models\FeedbackCurriculo;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Event;
 
 class JobExportarExcel implements ShouldQueue
 {
@@ -88,7 +90,7 @@ class JobExportarExcel implements ShouldQueue
 //        $clienteFilial = new ClienteFilial();
 //        $clienteTemFilial = $clienteFilial->temFilial($Usuario->empresa_id);
 
-        $head = [[
+        $head = [
             "Nome",
             "Naturalidade",
             "Estado Civil",
@@ -172,7 +174,7 @@ class JobExportarExcel implements ShouldQueue
             "Foto",
             "Quem Admitiu",
             "Quem Alterou",
-        ]];
+        ];
 
         $rows = [];
 
@@ -279,14 +281,21 @@ class JobExportarExcel implements ShouldQueue
             );
         }
 
-        $array = [
-            'usuario' => $Usuario,
-            'local' => $this->local,
-            'dados' => array_merge($head, $rows),
-            'arquivo' => $this->nome_arquivo
-        ];
+        $userId = is_object($Usuario) ? (int) $Usuario->id : (int) $this->usuario_id;
 
-        \Artisan::call("mybp:exportarExcel", $array);
+        Exportacao::create([
+            'user_id' => $userId,
+            'arquivo' => $this->nome_arquivo,
+            'local' => $this->local,
+            'removido' => false,
+        ]);
+
+        \Excel::store(new ModeloRowsExport($head, $rows), $this->nome_arquivo, 'disco-exportacao');
+
+        Event::dispatch(new NotificacaoEvent([
+            'user_id' => $userId,
+            'local' => $this->local,
+        ], NotificacaoEvent::EXPORTACAO_EXCEL, NotificacaoEvent::TIPO_PADRAO));
     }
 
     public function getEscolaridade($row)

@@ -40,7 +40,7 @@ class GerarPlanilhaExemploAdmissoesCommand extends Command
         $col = 'A';
         foreach (self::COLUNAS as $nome) {
             $sheet->setCellValue($col . '1', $nome);
-            $col++;
+            $col = str_increment($col);
         }
 
         $linhasExemplo = $this->option('com-erros') ? $this->linhasComErros() : $this->linhasExemplo();
@@ -49,7 +49,7 @@ class GerarPlanilhaExemploAdmissoesCommand extends Command
             $col = 'A';
             foreach (self::COLUNAS as $nome) {
                 $sheet->setCellValue($col . $row, $linha[$nome] ?? '');
-                $col++;
+                $col = str_increment($col);
             }
             $row++;
         }

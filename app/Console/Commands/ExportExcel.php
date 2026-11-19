@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Sistema;
 use Illuminate\Console\Command;
 
 class ExportExcel extends Command
@@ -18,25 +19,28 @@ class ExportExcel extends Command
      *
      * @var string
      */
-    protected $description = 'Exporta dados para excel a partir de um array recebe como argumento o array e o nome do arquivo';
-
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    protected $description = 'Exporta dados para excel (padrão CIH / Maatwebsite) a partir de um array';
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
-    public function handle()
+    public function handle(): int
     {
-        \App\Models\Sistema::exportaExcelPython($this->argument('usuario'), $this->argument('local'), $this->argument('dados'), $this->argument('arquivo'));
+        $dados = $this->argument('dados');
+        if (is_string($dados)) {
+            $decoded = json_decode($dados, true);
+            $dados = is_array($decoded) ? $decoded : [];
+        }
+
+        Sistema::exportaExcel(
+            $this->argument('usuario'),
+            (string) $this->argument('local'),
+            is_array($dados) ? $dados : [],
+            (string) $this->argument('arquivo')
+        );
+
+        $this->info('Exportação Excel gerada com sucesso.');
+
+        return self::SUCCESS;
     }
 }

@@ -2,6 +2,9 @@
 
 namespace App\Jobs\Relatorios\VencimentoAso;
 
+use App\Events\Notificacoes\NotificacaoEvent;
+use App\Exports\ModeloRowsExport;
+use App\Models\Exportacao;
 use App\Models\User;
 use App\Services\Relatorios\AsoVencimentoRelatorioService;
 use Illuminate\Bus\Queueable;
@@ -11,11 +14,12 @@ use Illuminate\Http\Request;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use MasterTag\DataHora;
 
 /**
  * @deprecated Preferir VencimentoAsosController::exportExcel + JobExportaExcel.
- * Mantido para chamadas legadas; usa a regra única do service.
+ * Mantido para chamadas legadas; usa a regra única do service (padrão CIH / Maatwebsite).
  */
 class JobExportarExcel implements ShouldQueue
 {
@@ -49,7 +53,7 @@ class JobExportarExcel implements ShouldQueue
         $request = Request::create('/', 'POST', $this->dados);
         $resultado = $service->listarParaTela($user, $request);
 
-        $head = [[
+        $head = [
             'Nome',
             'Cargo',
             'CNPJ da Empresa',
@@ -61,32 +65,39 @@ class JobExportarExcel implements ShouldQueue
             'Vencimento ASO',
             'Dias',
             'Status',
-        ]];
+        ];
 
         $rows = [];
         foreach ($resultado['dados'] as $row) {
             $dias = (int) ($row['dias_vencer'] ?? 0);
             $rows[] = [
-                $row['colaborador'] ?? '',
-                $row['cargo'] ?? '',
-                $row['emp_cnpj'] ?? '',
-                $row['emp_nome_fantasia'] ?? '',
-                $row['emp_centro_custo'] ?? '',
-                $row['data_admissao'] ?? '',
-                $row['exame_tipo'] ?? '',
-                $this->formatarData($row['data_aso'] ?? null),
-                $this->formatarData($row['data_vencimento'] ?? null),
+                $row['colaborador'] ?? 'Não informado',
+                $row['cargo'] ?? 'Não informado',
+                $row['emp_cnpj'] ?? 'Não informado',
+                $row['emp_nome_fantasia'] ?? 'Não informado',
+                $row['emp_centro_custo'] ?? 'Não informado',
+                $row['data_admissao'] ?? 'Não informado',
+                $row['exame_tipo'] ?? 'Não informado',
+                $this->formatarData($row['data_aso'] ?? null) ?: 'Não informado',
+                $this->formatarData($row['data_vencimento'] ?? null) ?: 'Não informado',
                 $dias,
                 $dias < 0 ? 'VENCIDO' : 'A VENCER',
             ];
         }
 
-        \Artisan::call('mybp:exportarExcel', [
-            'usuario' => $user,
-            'local' => $this->local,
-            'dados' => array_merge($head, $rows),
+        Exportacao::create([
+            'user_id' => $user->id,
             'arquivo' => $this->nome_arquivo,
+            'local' => $this->local,
+            'removido' => false,
         ]);
+
+        \Excel::store(new ModeloRowsExport($head, $rows), $this->nome_arquivo, 'disco-exportacao');
+
+        Event::dispatch(new NotificacaoEvent([
+            'user_id' => $user->id,
+            'local' => $this->local,
+        ], NotificacaoEvent::EXPORTACAO_EXCEL, NotificacaoEvent::TIPO_PADRAO));
     }
 
     private function formatarData($data): string

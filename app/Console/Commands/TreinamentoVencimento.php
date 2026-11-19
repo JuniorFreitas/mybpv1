@@ -824,14 +824,7 @@ class TreinamentoVencimento extends Command
      */
     private function criarSpreadsheetOtimizado($empresa, array $treinamentosAgrupados): Spreadsheet
     {
-        // Configurações de otimização de memória para PhpSpreadsheet
-        try {
-            if (class_exists('\PhpOffice\PhpSpreadsheet\Settings')) {
-                \PhpOffice\PhpSpreadsheet\Settings::setLibXmlLoaderOptions(LIBXML_COMPACT);
-            }
-        } catch (\Exception $e) {
-            $this->info("Aviso: Não foi possível configurar LibXML: {$e->getMessage()}");
-        }
+        // PhpSpreadsheet 5+ removeu Settings::setLibXmlLoaderOptions().
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();

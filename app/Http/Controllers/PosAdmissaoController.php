@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\Excel\JobExportaPosAdmissao;
 use App\Jobs\JobExportaExcel;
 use App\Models\Admissao;
+use App\Models\Sistema;
 use App\Models\Arquivo;
 use App\Models\AuditoriaInterna;
 use App\Models\CentroCusto;
@@ -677,18 +677,14 @@ class PosAdmissaoController extends Controller
                 }
 
                 $rows[] = [
-//                $row['admissao']['id'],
                     $row['admissao']['emp_nome_fantasia'],
                     $row['curriculo']['nome'],
-                    $row['curriculo']['cpf'],
-//                $row['admissao']['area_etiqueta_id'] ? $row['admissao']['area_etiqueta']['label'] : '',
+                    Sistema::maskCpf($row['curriculo']['cpf'] ?? ''),
                     $row['admissao']['cargo'],
                     $row['admissao']['salario'],
                     $data_admissao,
                     $data_desmobilizacao,
-                    $row['admissao']['emp_centro_custo'] ?? "NÃO ENCONTRADO",
-
-//                isset($row['entrevista_desligamento']) ? ((new DataHora($row['entrevista_desligamento']['data_entrevista']))->dataHoraCompleta()) : "",
+                    $row['admissao']['emp_centro_custo'] ?? 'Não informado',
                     $entrevista['superior_imediato'],
                     $entrevista['motivo'],
                     $entrevista['trabalharia_novamente'],
@@ -715,10 +711,13 @@ class PosAdmissaoController extends Controller
             }
         }
 
-        return response()->json(['head' => $head, 'rows' => $rows]);
+        $nameArquivo = 'pos_admissao_' . \Str::slug('Pos Admissao') . rand(1000, 9999) . '_' . date('YmdHis') . '.xlsx';
+        JobExportaExcel::dispatch(auth()->id(), 'Pós-admissão', $head, $rows, $nameArquivo);
 
-//        JobExportaPosAdmissao::dispatch(auth()->id(), auth()->user()->empresa_id, $filtros);
-//        return response()->json(['msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.']);
+        return response()->json([
+            'msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.',
+            'regra_unica' => true,
+        ]);
     }
 
     public function entrevistar(Request $request)

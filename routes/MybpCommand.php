@@ -192,6 +192,4 @@ Artisan::command('mybp:calculoAvos', function () {
 
 })->describe("calculoAvos");
 
-//Artisan::command('mybp:exportExcel {dados} {arquivo}', function () {
-//    \App\Models\Sistema::exportaExcelPython($this->argument('dados'),$this->argument('arquivo'));
-//});
+// Exportação Excel: usar JobExportaExcel / Sistema::exportaExcel (padrão CIH).
