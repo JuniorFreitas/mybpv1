@@ -35,10 +35,14 @@ function legacyAssetsPlugin() {
 }
 
 export default defineConfig(({ mode }) => {
-    loadEnv(mode, process.cwd(), '')
+    // Apenas VITE_* (prefixo padrão). Não usar prefixo vazio — evita vazar .env inteiro.
+    loadEnv(mode, process.cwd(), 'VITE_')
     loadFrontendEnv(process.cwd())
 
+    const isProd = mode === 'production'
+
     return {
+        envPrefix: ['VITE_'],
         plugins: [
             laravel({
                 input: ['resources/sass/app.scss', ...entries],
@@ -96,6 +100,7 @@ export default defineConfig(({ mode }) => {
         ],
         resolve: {
             alias: {
+                // Full build: blades ainda montam templates in-DOM via Vue.createApp
                 vue: 'vue/dist/vue.esm-bundler.js',
                 '@': path.resolve(__dirname, 'resources/js'),
                 '~': path.resolve(__dirname, 'node_modules')
@@ -107,6 +112,9 @@ export default defineConfig(({ mode }) => {
             __VUE_OPTIONS_API__: true,
             __VUE_PROD_DEVTOOLS__: false,
             __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false
+        },
+        esbuild: {
+            drop: isProd ? ['console', 'debugger'] : []
         },
         css: {
             preprocessorOptions: {
@@ -155,7 +163,8 @@ export default defineConfig(({ mode }) => {
             ]
         },
         build: {
-            sourcemap: mode !== 'production',
+            sourcemap: false,
+            minify: isProd ? 'esbuild' : false,
             chunkSizeWarningLimit: 2000,
             commonjsOptions: {
                 transformMixedEsModules: true,

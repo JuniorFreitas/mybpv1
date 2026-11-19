@@ -53,8 +53,8 @@ prepare_assets() {
         nvm use || true
     fi
 
-    # node_modules pode existir e ainda assim estar incompleto (ex.: sem cross-env)
-    if [[ ! -d node_modules ]] || [[ ! -x node_modules/.bin/cross-env ]]; then
+    # node_modules pode existir e ainda assim estar incompleto (ex.: sem vite)
+    if [[ ! -d node_modules ]] || [[ ! -x node_modules/.bin/vite ]]; then
         npm install
     fi
 

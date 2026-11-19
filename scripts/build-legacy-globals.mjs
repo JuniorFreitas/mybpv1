@@ -21,7 +21,7 @@ export async function buildLegacyGlobals() {
         configFile: false,
         root,
         logLevel: 'error',
-        envPrefix: ['VITE_', 'MIX_'],
+        envPrefix: ['VITE_'],
         plugins: [
             vue({
                 template: {
@@ -53,6 +53,9 @@ export async function buildLegacyGlobals() {
             'import.meta.env.VITE_PUSHER_APP_CLUSTER': envDefine('VITE_PUSHER_APP_CLUSTER'),
             'import.meta.env.VITE_PUSHER_APP_TLS': envDefine('VITE_PUSHER_APP_TLS')
         },
+        esbuild: {
+            drop: ['console', 'debugger']
+        },
         resolve: {
             alias: {
                 vue: 'vue/dist/vue.esm-bundler.js',
@@ -64,6 +67,8 @@ export async function buildLegacyGlobals() {
         build: {
             outDir,
             emptyOutDir: false,
+            sourcemap: false,
+            minify: 'esbuild',
             cssCodeSplit: false,
             lib: {
                 entry: path.join(root, 'resources/js/legacy-globals-entry.js'),

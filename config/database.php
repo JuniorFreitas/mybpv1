@@ -152,6 +152,9 @@ return [
             'password' => env('REDIS_PASSWORD', null),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_DB', '0'),
+            // Evita hang infinito no FPM/LB (499/503) quando Redis não responde
+            'timeout' => (float) env('REDIS_TIMEOUT', 2),
+            'read_timeout' => (float) env('REDIS_READ_TIMEOUT', 2),
         ],
 
         'cache' => [
@@ -160,6 +163,8 @@ return [
             'password' => env('REDIS_PASSWORD', null),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_CACHE_DB', '1'),
+            'timeout' => (float) env('REDIS_TIMEOUT', 2),
+            'read_timeout' => (float) env('REDIS_READ_TIMEOUT', 2),
         ],
 
     ],

@@ -120,10 +120,13 @@ fi
 
 echo "Nova task definition: ${NEW_TASK_DEF}"
 
+# EC2 cluster costuma não ter memória para +1 task com minHealthy=100%.
+# 50% permite derrubar 1 task e subir a nova (rolling com 2 desired).
 aws ecs update-service \
     --cluster "${CLUSTER_NAME}" \
     --service "${SERVICE_NAME}" \
     --task-definition "${NEW_TASK_DEF}" \
+    --deployment-configuration "maximumPercent=200,minimumHealthyPercent=50" \
     --region "${AWS_REGION}" \
     --query 'service.{serviceName:serviceName,status:status,taskDefinition:taskDefinition}' \
     --output table
@@ -133,6 +136,19 @@ aws ecs wait services-stable \
     --cluster "${CLUSTER_NAME}" \
     --services "${SERVICE_NAME}" \
     --region "${AWS_REGION}"
+
+# Confirma que o serviço ficou na task definition pedida (evita falso sucesso com rollback silencioso)
+ACTIVE_TD=$(aws ecs describe-services \
+    --cluster "${CLUSTER_NAME}" \
+    --services "${SERVICE_NAME}" \
+    --region "${AWS_REGION}" \
+    --query 'services[0].taskDefinition' \
+    --output text)
+if [[ "$ACTIVE_TD" != "$NEW_TASK_DEF" ]]; then
+    echo "Erro: serviço ficou em ${ACTIVE_TD}, esperado ${NEW_TASK_DEF} (possível falta de memória/circuit breaker)." >&2
+    exit 1
+fi
+echo "Confirmado: serviço na task definition ${ACTIVE_TD}"
 
 FAMILY_NAME=$(echo "$NEW_TASK_DEF" | sed 's/.*task-definition\/\([^:]*\).*/\1/')
 
