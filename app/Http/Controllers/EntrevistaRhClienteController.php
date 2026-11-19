@@ -14,7 +14,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Maatwebsite\Excel\Facades\Excel;
 use MasterTag\DataHora;
 use PDF;
 
@@ -372,7 +371,7 @@ class EntrevistaRhClienteController extends Controller
             $rows[] = [
                 $row->Curriculo->nome,
                 $row->vaga_aberta_municipio,
-                $row->Curriculo->cpf,
+                \App\Models\Sistema::maskCpf($row->Curriculo->cpf ?? ''),
                 $row->parecerRh ? $row->parecerRh->nota : "sem nota",
                 $row->parecerTeste ? $row->parecerTeste->nota_teste : "sem nota",
             ];

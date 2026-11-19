@@ -24,7 +24,6 @@ use App\Rules\VerificaCpfEmpresaRules;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Maatwebsite\Excel\Facades\Excel;
 use Mail;
 use MasterTag\DataHora;
 use PDF;
@@ -322,7 +321,18 @@ class DocumentosLegaisEmpresaController extends Controller
     public function export()
     {
         $dataUnica = new DataHora(null);
-        return Excel::download(new ClientesExport, "cliente_{$dataUnica->nomeUnico()}.xlsx");
+        $nomeArquivo = 'cliente_' . $dataUnica->nomeUnico() . '.xlsx';
+        \App\Jobs\JobStoreMaatwebsiteExport::dispatch(
+            auth()->id(),
+            'Administração - Documentos Empresa',
+            $nomeArquivo,
+            ClientesExport::class
+        );
+
+        return response()->json([
+            'msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.',
+            'regra_unica' => true,
+        ]);
     }
 
     //Verifica Servicos Clientes Vencidos

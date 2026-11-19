@@ -2,12 +2,15 @@
 
 namespace App\Jobs\Relatorios\Ferias\Vencimento;
 
+use App\Events\Notificacoes\NotificacaoEvent;
+use App\Exports\ModeloRowsExport;
+use App\Models\Exportacao;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Event;
 
 class JobExportarExcel implements ShouldQueue
 {
@@ -51,11 +54,10 @@ class JobExportarExcel implements ShouldQueue
     {
         $Usuario = auth()->loginUsingId($this->usuario_id);
 
-        $head = [[
+        $head = [
             "Nome do colaborador",
             "Data de admissão",
             "Cargo",
-//            "Função",
             "Centro de Custo",
             "Período aquisitivo",
             "Quantidade de dias de atraso",
@@ -65,39 +67,46 @@ class JobExportarExcel implements ShouldQueue
             "Data retorno",
             "Saldo",
             "Última atualização",
-        ]];
+        ];
 
         $rows = [];
-//        $filtrados = json_decode($this->dados, true);
-
         foreach ($this->dados as $row) {
-            $todos_periodos = $row['todos_periodos']->toArray();
+            $todos_periodos = is_object($row['todos_periodos'] ?? null) && method_exists($row['todos_periodos'], 'toArray')
+                ? $row['todos_periodos']->toArray()
+                : (array) ($row['todos_periodos'] ?? []);
+
             foreach ($todos_periodos as $p) {
                 $rows[] = [
-                    $row['nome'],
-                    $row['data_admissao'],
-                    $row['cargo'],
-//                    $row['funcao'],
-                    $row['centro_custo'],
-                    $p['periodo_aquisitivo'],
-                    $row['dias_atraso'],
-                    $row['dias_atraso'] > 0 ? $row['tempo_atrasado'] : '',
-                    $p['status_ferias'],
-                    is_null($p['data_saida']) ? '---' : $p['data_saida'],
-                    is_null($p['data_retorno']) ? '---' : $p['data_retorno'],
-                    $p['total_avos'],
-                    $p['ultima_atualizacao'],
+                    $row['nome'] ?? 'Não informado',
+                    $row['data_admissao'] ?? 'Não informado',
+                    $row['cargo'] ?? 'Não informado',
+                    $row['centro_custo'] ?? 'Não informado',
+                    $p['periodo_aquisitivo'] ?? 'Não informado',
+                    $row['dias_atraso'] ?? 0,
+                    ($row['dias_atraso'] ?? 0) > 0 ? ($row['tempo_atrasado'] ?? '') : '',
+                    $p['status_ferias'] ?? 'Não informado',
+                    is_null($p['data_saida'] ?? null) ? '---' : $p['data_saida'],
+                    is_null($p['data_retorno'] ?? null) ? '---' : $p['data_retorno'],
+                    $p['total_avos'] ?? 'Não informado',
+                    $p['ultima_atualizacao'] ?? 'Não informado',
                 ];
             }
         }
 
-        $array = [
-            'usuario' => $Usuario,
-            'local' => $this->local,
-            'dados' => array_merge($head, $rows),
-            'arquivo' => $this->nome_arquivo
-        ];
+        $userId = is_object($Usuario) ? (int) $Usuario->id : (int) $this->usuario_id;
 
-        \Artisan::call("mybp:exportarExcel", $array);
+        Exportacao::create([
+            'user_id' => $userId,
+            'arquivo' => $this->nome_arquivo,
+            'local' => $this->local,
+            'removido' => false,
+        ]);
+
+        \Excel::store(new ModeloRowsExport($head, $rows), $this->nome_arquivo, 'disco-exportacao');
+
+        Event::dispatch(new NotificacaoEvent([
+            'user_id' => $userId,
+            'local' => $this->local,
+        ], NotificacaoEvent::EXPORTACAO_EXCEL, NotificacaoEvent::TIPO_PADRAO));
     }
 }

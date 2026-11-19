@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\Entrevistas\entrevistaRhExport;
-use App\Exports\Entrevistas\parecerRhExport;
+use App\Jobs\JobExportaParecerRhView;
 use App\Models\Curriculo;
 use App\Models\FeedbackCurriculo;
 use App\Models\GestorRh;
 use App\Models\ParecerRh;
 use App\Models\SimuladoVaga;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Collection;
 use MasterTag\DataHora;
 use PDF;
 
@@ -356,11 +356,9 @@ class EntrevistaGestorController extends Controller
         if ($request->selecionados) {
             $resultado->whereIn('id', $request->selecionados);
             $resultado = $resultado->get();
-            //Criar um que pega tudo
-            if ($request->campoCliente == 35 || auth()->user()->cliente_id === 35) {
-                return Excel::download(new entrevistaRhExport($resultado), 'parecer_rh' . (new DataHora())->nomeUnico() . '.xlsx');
-            }
-            return Excel::download(new parecerRhExport($resultado), 'parecer_rh' . (new DataHora())->nomeUnico() . '.xlsx');
+            $usarEntrevista = $request->campoCliente == 35 || auth()->user()->cliente_id === 35;
+
+            return $this->enfileirarExportacaoParecer($resultado, $usarEntrevista);
         } else {
             $filtroPeriodo = $request->filtroPeriodo == 'true';
             if ($filtroPeriodo) {
@@ -448,7 +446,8 @@ class EntrevistaGestorController extends Controller
                 }
 
                 $resultado = $resultado->get();
-                return Excel::download(new entrevistaRhExport($resultado), 'parecer_rh' . (new DataHora())->nomeUnico() . '.xlsx');
+
+                return $this->enfileirarExportacaoParecer($resultado, true);
             } else {
                 $resultado->with(
                     'parecerTecnica:feedback_id,nota',
@@ -504,10 +503,28 @@ class EntrevistaGestorController extends Controller
                 }
 
                 $resultado = $resultado->get();
-                return Excel::download(new parecerRhExport($resultado), 'parecer_rh' . (new DataHora())->nomeUnico() . '.xlsx');
+
+                return $this->enfileirarExportacaoParecer($resultado, false);
             }
         }
 
+    }
+
+    private function enfileirarExportacaoParecer(Collection $resultado, bool $usarEntrevistaRhExport): JsonResponse
+    {
+        $nomeArquivo = 'parecer_rh' . (new DataHora())->nomeUnico() . '.xlsx';
+        JobExportaParecerRhView::dispatch(
+            auth()->id(),
+            'Entrevista - Gestor',
+            $nomeArquivo,
+            $resultado->pluck('id')->all(),
+            $usarEntrevistaRhExport
+        );
+
+        return response()->json([
+            'msg' => 'Estamos gerando seu arquivo excel, assim que finalizado você será notificado.',
+            'regra_unica' => true,
+        ]);
     }
 
     public function curriculoPdf(Curriculo $recrutamento)

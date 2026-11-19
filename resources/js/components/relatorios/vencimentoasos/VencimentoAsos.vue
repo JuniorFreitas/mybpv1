@@ -128,8 +128,8 @@
                 <button
                     type="button"
                     class="btn btn-sm btn-success"
-                    :disabled="preload || !dados.length"
-                    @click.prevent="gerarArquivoXls()"
+                    :disabled="preload || preloadExportacao || !dados.length"
+                    @click.prevent="exportaExcel()"
                 >
                     <i class="fas fa-file-excel"></i> Exportar Excel
                 </button>
@@ -790,66 +790,6 @@ export default {
             if (cat === 'vencidos') return 'aso-row--vencido'
             if (cat === 'avencer') return 'aso-row--alerta'
             return ''
-        },
-        async gerarArquivoXls() {
-            const XLSX = require('@e965/xlsx')
-            const dataHoraAtual = new Date()
-                .toLocaleString('en-US', {
-                    timeZone: 'America/Sao_Paulo',
-                    hour12: false
-                })
-                .replace(/\/|,|\s|:/g, '_')
-                .replace(/\//g, '-')
-
-            const filename = `relatorio_asos_${AUTENTICADO.empresa_id}_${AUTENTICADO.user_id}_${dataHoraAtual}.xlsx`
-            const wb = XLSX.utils.book_new()
-            const ws = XLSX.utils.json_to_sheet([])
-
-            XLSX.utils.sheet_add_aoa(
-                ws,
-                [
-                    [
-                        'Nome',
-                        'Cargo',
-                        'CNPJ da Empresa',
-                        'Empresa',
-                        'Centro de Custo',
-                        'Data da Admissão',
-                        'Tipo do Exame',
-                        'Data do Aso',
-                        'Vencimento ASO',
-                        'Dias',
-                        'Status'
-                    ]
-                ],
-                { origin: 0 }
-            )
-
-            this.dados.forEach((jsonData) => {
-                const dias = Number(jsonData.dias_vencer)
-                XLSX.utils.sheet_add_aoa(
-                    ws,
-                    [
-                        [
-                            jsonData.colaborador,
-                            jsonData.cargo,
-                            jsonData.emp_cnpj,
-                            jsonData.emp_nome_fantasia,
-                            jsonData.emp_centro_custo,
-                            this.formatarDataBr(jsonData.data_admissao),
-                            jsonData.exame_tipo,
-                            this.formatarDataBr(jsonData.data_aso),
-                            this.formatarDataBr(jsonData.data_vencimento),
-                            dias,
-                            dias < 0 ? 'VENCIDO' : 'A VENCER'
-                        ]
-                    ],
-                    { origin: -1 }
-                )
-            })
-
-            XLSX.utils.book_append_sheet(wb, ws, 'planilha')
-            XLSX.writeFile(wb, filename)
         },
         async buscarDados() {
             this.syncCampoVencimento()

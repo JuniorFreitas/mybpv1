@@ -1,0 +1,132 @@
+#!/bin/bash
+set -euo pipefail
+
+APP_PATH="${APP_PATH:-/usr/share/nginx/html}"
+PHP_INI="${php_conf:-/etc/php.ini}"
+FPM_POOL_DIR="/etc/php-fpm.d"
+CVE_SESSION_UPLOAD_CONF="${APP_PATH}/.deploy/php/fpm-pool.d/zz-cve-2026-115560.conf"
+
+cd "$APP_PATH"
+
+printf " -----> Info: Override php's default config...\n"
+if [ "${APP_ENV:-local}" = "production" ]; then
+    cp "${APP_PATH}/.deploy/php/php.ini-production" "$PHP_INI"
+else
+    cp "${APP_PATH}/.deploy/php/php.ini-development" "$PHP_INI"
+fi
+
+if [ ! -f "$CVE_SESSION_UPLOAD_CONF" ]; then
+    printf " -----> Error: Missing CVE mitigation conf: %s\n" "$CVE_SESSION_UPLOAD_CONF"
+    exit 1
+fi
+printf " -----> Info: Applying PHP session.upload_progress mitigation...\n"
+cp "$CVE_SESSION_UPLOAD_CONF" "${FPM_POOL_DIR}/zz-cve-2026-115560.conf"
+
+if [ -d "${APP_PATH}/vendor" ]; then
+    printf " -----> Info: Running migrations...\n"
+    if ! php artisan migrate --force; then
+        printf " -----> Warning: migrate falhou; mantendo container no ar para debug.\n"
+    fi
+
+    printf " -----> Info: Running HabilidadesTableSeeder...\n"
+    php artisan db:seed --class=HabilidadesTableSeeder --force || \
+        printf " -----> Warning: HabilidadesTableSeeder falhou.\n"
+
+    printf " -----> Info: Running WhatsappTemplatePadraoSeeder...\n"
+    php artisan db:seed --class=WhatsappTemplatePadraoSeeder --force || \
+        printf " -----> Warning: WhatsappTemplatePadraoSeeder falhou.\n"
+
+    if [ "${ENABLE_CACHE_APP:-false}" = "true" ]; then
+        printf " -----> Info: Caching configuration...\n"
+        php artisan package:discover --ansi || true
+        php artisan config:cache || true
+    fi
+else
+    printf " -----> Warning: Directory %s/vendor does not yet exist.\n" "$APP_PATH"
+fi
+
+# Alinha o pool FPM ao user nginx (base UBI vem com apache)
+sed -i 's/^user = apache/user = nginx/' /etc/php-fpm.d/www.conf || true
+sed -i 's/^;group = apache/group = nginx/' /etc/php-fpm.d/www.conf || true
+sed -i 's/^group = apache/group = nginx/' /etc/php-fpm.d/www.conf || true
+
+if [ -d "${APP_PATH}/storage" ]; then
+    printf " -----> Info: Fixing permissions on storage...\n"
+    chown -R nginx:nginx storage || true
+    chmod -R ug+rwX storage || true
+fi
+
+if [ -d "${APP_PATH}/bootstrap/cache" ]; then
+    printf " -----> Info: Fixing permissions on bootstrap/cache...\n"
+    chown -R nginx:nginx bootstrap/cache || true
+    chmod -R ug+rwX bootstrap/cache || true
+fi
+
+pids=()
+
+cleanup() {
+    for pid in "${pids[@]:-}"; do
+        if kill -0 "$pid" 2>/dev/null; then
+            kill -TERM "$pid" 2>/dev/null || true
+        fi
+    done
+    wait || true
+}
+trap cleanup EXIT INT TERM
+
+start_bg() {
+    local name="$1"
+    shift
+    printf " -----> Info: Starting %s...\n" "$name"
+    "$@" &
+    pids+=($!)
+}
+
+# Processos críticos: se morrerem, o container sai (Docker reinicia).
+# Horizon/Schedule/Worker: rodam em loop para não derrubar o container em exit esperado.
+critical_pids=()
+
+if [ "${ENABLE_HORIZON:-false}" = "true" ] && [ -d "${APP_PATH}/vendor" ]; then
+    start_bg "Horizon" bash -c 'while true; do php artisan horizon; echo " -----> Warning: Horizon saiu; reiniciando em 3s..."; sleep 3; done'
+fi
+
+if [ "${ENABLE_SCHEDULE:-false}" = "true" ] && [ -d "${APP_PATH}/vendor" ]; then
+    start_bg "Schedule" bash -c 'while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done'
+fi
+
+# Com Horizon ativo, o worker dedicado é redundante (e --max-time derrubava o container).
+if [ "${ENABLE_WORKER:-false}" = "true" ] && [ "${ENABLE_HORIZON:-false}" != "true" ] && [ -d "${APP_PATH}/vendor" ]; then
+    start_bg "Queue worker" bash -c 'while true; do php artisan queue:work --sleep=3 --tries=3 --max-time=3600; echo " -----> Warning: queue:work saiu; reiniciando..."; sleep 1; done'
+fi
+
+if [ "${ENABLE_PHPFPM:-true}" = "true" ]; then
+    printf " -----> Info: Starting PHP-FPM...\n"
+    mkdir -p /run/php-fpm
+    /usr/sbin/php-fpm --nodaemonize --fpm-config=/etc/php-fpm.conf &
+    critical_pids+=($!)
+    pids+=($!)
+fi
+
+if [ "${ENABLE_NGINX:-true}" = "true" ]; then
+    printf " -----> Info: Starting NGINX...\n"
+    nginx -t
+    /usr/sbin/nginx -g 'daemon off;' &
+    critical_pids+=($!)
+    pids+=($!)
+fi
+
+if [ "${#pids[@]}" -eq 0 ]; then
+    printf " -----> Error: no services enabled\n"
+    exit 1
+fi
+
+while true; do
+    for pid in "${critical_pids[@]}"; do
+        if ! kill -0 "$pid" 2>/dev/null; then
+            wait "$pid" || true
+            printf " -----> Error: processo crítico %s saiu\n" "$pid"
+            exit 1
+        fi
+    done
+    sleep 1
+done

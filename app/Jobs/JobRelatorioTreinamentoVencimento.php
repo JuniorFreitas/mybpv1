@@ -234,7 +234,7 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
                     $col = 'A';
                     foreach ($rowData as $value) {
                         $sheet->setCellValue($col . $currentRow, $value);
-                        $col++;
+                        $col = str_increment($col);
                     }
                     
                     // Aplicar cor baseada na categoria

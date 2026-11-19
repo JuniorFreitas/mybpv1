@@ -6,7 +6,7 @@
                 role="alert"
                 aria-live="assertive"
                 aria-atomic="true"
-                v-for="(notificacao, index) in notificacoesNaoVistas"
+                v-for="(notificacao, index) in notificacoesToast"
                 :id="`notificacaoID${notificacao.id}`"
                 :key="notificacao.id || index"
             >
@@ -98,6 +98,7 @@ export default {
         return {
             quantidadeMensagensNovas: 0,
             lista: [],
+            toastsAtivos: [],
             URL_SITE,
             URL_ADMIN,
             Z_INDEX: 0
@@ -110,8 +111,8 @@ export default {
         notificacoesNovas() {
             return this.lista.filter((not) => !not.visto)
         },
-        notificacoesNaoVistas() {
-            return this.lista.filter((notificacao) => notificacao && !notificacao.visto)
+        notificacoesToast() {
+            return this.lista.filter((notificacao) => notificacao && this.toastsAtivos.includes(notificacao.id))
         }
     },
     mounted() {
@@ -121,7 +122,6 @@ export default {
                 res.data.forEach((not) => {
                     this.lista.push(not)
                 })
-                // this.mostrarToast();
             })
             .catch((error) => {
                 mostraErro('', 'Erro ao carregar novas notificações')
@@ -131,62 +131,76 @@ export default {
             Echo.join(`notificacoes.${this.usuario.id}`)
                 .listen('.membro_tarefa_add', (e) => {
                     this.lista.push(e)
-                    this.mostrarToast()
+                    this.mostrarToast(e)
                 })
                 .listen('.membro_tarefa_remove', (e) => {
                     this.lista.push(e)
-                    this.mostrarToast()
+                    this.mostrarToast(e)
                 })
                 .listen('.exportacao_excel', (e) => {
                     this.lista.push(e)
-                    this.mostrarToast()
+                    this.mostrarToast(e)
                 })
                 .listen('.exportacao_pdf', (e) => {
-                    // console.log(e);
-                    // console.log(this.lista);
                     this.lista.push(e)
-                    this.mostrarToast()
+                    this.mostrarToast(e)
                 })
                 .listen('.importacao_admissoes_concluida', (e) => {
                     this.lista.push(e)
-                    this.mostrarToast()
+                    this.mostrarToast(e)
                 })
                 .listen('.importacao_treinamentos_concluida', (e) => {
                     this.lista.push(e)
-                    this.mostrarToast()
+                    this.mostrarToast(e)
                 })
         }
     },
     methods: {
-        mostrarToast() {
+        mostrarToast(notificacao) {
+            if (!notificacao || !notificacao.id) {
+                return
+            }
+            if (!this.toastsAtivos.includes(notificacao.id)) {
+                this.toastsAtivos.push(notificacao.id)
+            }
             this.Z_INDEX = 2000
-            setTimeout(() => {
-                this.lista.forEach((not) => {
-                    $(`#notificacaoID${not.id}`).toast({
-                        delay: 10000
-                    })
-                    $(`#notificacaoID${not.id}`).on('hidden.bs.toast', () => {
-                        /*let notificacao = _.find(this.lista, {id: not.id});
-                        if (notificacao) {
-                            notificacao.visto = true;
-                        }*/
-                    })
-                    $(`#notificacaoID${not.id}`).toast('show')
+            this.$nextTick(() => {
+                const $toast = $(`#notificacaoID${notificacao.id}`)
+                if (!$toast.length) {
+                    return
+                }
+                $toast.toast({
+                    delay: 10000,
+                    autohide: true
                 })
-            }, 100)
-        },
-        lerNotificacoes() {
-            this.Z_INDEX = 2000
-            let lista = this.notificacoesNovas.map((not) => not.id)
-            if (lista.length) {
-                lista.forEach((id) => {
-                    let notificacao = _.find(this.lista, { id: id })
-                    if (notificacao) {
-                        notificacao.visto = true
+                $toast.off('hidden.bs.toast').on('hidden.bs.toast', () => {
+                    this.marcarComoVisto([notificacao.id])
+                    this.toastsAtivos = this.toastsAtivos.filter((id) => id !== notificacao.id)
+                    if (!this.toastsAtivos.length) {
+                        this.Z_INDEX = 0
                     }
                 })
-                axios.post(`${URL_ADMIN}/notificacoes/${this.usuario.id}`, { lista: lista })
+                $toast.toast('show')
+            })
+        },
+        marcarComoVisto(ids) {
+            const lista = (ids || []).filter(Boolean)
+            if (!lista.length) {
+                return
             }
+            lista.forEach((id) => {
+                const notificacao = _.find(this.lista, { id })
+                if (notificacao) {
+                    notificacao.visto = true
+                }
+            })
+            axios.post(`${URL_ADMIN}/notificacoes/${this.usuario.id}`, { lista }).catch(() => {})
+        },
+        lerNotificacoes() {
+            const lista = this.notificacoesNovas.map((not) => not.id)
+            this.marcarComoVisto(lista)
+            this.toastsAtivos = []
+            this.Z_INDEX = 0
         }
     }
 }

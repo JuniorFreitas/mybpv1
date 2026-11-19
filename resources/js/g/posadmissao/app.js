@@ -424,35 +424,6 @@ const app = createApp({
             const params = new URLSearchParams(queryString)
             this.controle.dados.campoCPF = params.has('checkcpf') ? params.get('checkcpf') : ''
         },
-        async gerarArquivoXls() {
-            mostraSucesso('', 'Aguarde estamos gerando o seu excel')
-            const XLSX = require('@e965/xlsx')
-
-            const dataHoraAtual = new Date()
-                .toLocaleString('en-US', {
-                    timeZone: 'America/Sao_Paulo',
-                    hour12: false
-                })
-                .replace(/\/|,|\s|:/g, '_')
-                .replace(/\//g, '-')
-
-            const filename = `pos_admissao_${AUTENTICADO.empresa_id}_${AUTENTICADO.user_id}_${dataHoraAtual}.xlsx`
-
-            const wb = XLSX.utils.book_new()
-            const ws = XLSX.utils.json_to_sheet([])
-
-            const { data } = await axios.post(this.urlExportacao, this.paramsExport)
-            const cabecalho = data.head
-            const jsonDataArray = data.rows
-
-            XLSX.utils.sheet_add_aoa(ws, [cabecalho], { origin: 0 })
-
-            jsonDataArray.forEach(function (jsonData) {
-                XLSX.utils.sheet_add_aoa(ws, [jsonData], { origin: -1 })
-            })
-            XLSX.utils.book_append_sheet(wb, ws, 'planilha')
-            XLSX.writeFile(wb, filename)
-        },
         changeCnpj() {
             this.controle.dados.campoCentroCusto = ''
             this.atualizar()

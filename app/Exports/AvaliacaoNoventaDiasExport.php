@@ -43,7 +43,7 @@ class AvaliacaoNoventaDiasExport implements FromArray, WithHeadings, WithStyles,
         }, $this->vencimentos);
     }
 
-    public function styles(Worksheet $sheet)
+    public function styles(Worksheet $sheet): array
     {
         return [
             // Estilo do cabeçalho

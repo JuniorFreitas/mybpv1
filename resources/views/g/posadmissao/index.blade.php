@@ -639,7 +639,7 @@
                 <span class="badge badge-light ml-1" v-if="totalFiltrosAvancadosPos">@{{ totalFiltrosAvancadosPos }}</span>
             </button>
             <button type="button" class="btn btn-sm btn-outline-primary mybp-btn-acao-compact"
-                    @click.prevent="gerarArquivoXls()"
+                    @click.prevent="exportaExcel()"
                     :disabled="controle.carregando || preloadExportacao || (!controle.carregando && lista.length===0 && selecionados.length === 0) || (selecionados.length === 0 && controle.dados.status !== 'demitidos')">
                 <i class="fas fa-file-excel"></i> Exportar Excel
                 <span class="badge badge-light" v-show="selecionados.length > 0">@{{ selecionados.length }}</span>

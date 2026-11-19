@@ -14,7 +14,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-use PhpOffice\PhpSpreadsheet\Settings;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -557,9 +556,7 @@ class AvaliacaoNoventaService
         $memoryInicial = memory_get_usage(true);
 
         try {
-            if (class_exists('\\PhpOffice\\PhpSpreadsheet\\Settings')) {
-                Settings::setLibXmlLoaderOptions(LIBXML_COMPACT);
-            }
+            // PhpSpreadsheet 5+ removeu Settings::setLibXmlLoaderOptions(); LIBXML_COMPACT não é mais configurável por essa API.
 
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
@@ -576,7 +573,7 @@ class AvaliacaoNoventaService
             $coluna = 'A';
             foreach ($cabecalhos as $cabecalho) {
                 $sheet->setCellValue($coluna . '1', $cabecalho);
-                $coluna++;
+                $coluna = str_increment($coluna);
             }
 
             $sheet->getStyle('A1:L1')->applyFromArray([

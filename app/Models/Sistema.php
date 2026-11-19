@@ -11,7 +11,6 @@ use DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -19,6 +18,7 @@ use InvalidArgumentException;
 use MasterTag\DataHora;
 use MasterTag\GExtenso;
 use RuntimeException;
+use App\Exports\ModeloRowsExport;
 
 class Sistema
 {
@@ -1112,35 +1112,72 @@ class Sistema
         ];
     }
 
+    /**
+     * Exportação Excel no padrão CIH (Maatwebsite + disco-exportacao + notificação).
+     *
+     * Aceita $dados no formato legado: primeira linha = cabeçalho, demais = linhas.
+     *
+     * @param  \App\Models\User|int|string  $usuario
+     * @param  array<int, array<int, mixed>>  $dados
+     */
+    public static function exportaExcel($usuario, string $local, array $dados, string $nomeArquivo): void
+    {
+        $userId = is_object($usuario) ? (int) $usuario->id : (int) $usuario;
+
+        if ($dados === [] || !isset($dados[0]) || !is_array($dados[0])) {
+            throw new InvalidArgumentException('Dados da exportação inválidos ou vazios.');
+        }
+
+        $sanitizar = static function ($valor) {
+            if ($valor === null || $valor === '') {
+                return 'Não informado';
+            }
+            if (is_bool($valor)) {
+                return $valor ? 'SIM' : 'NÃO';
+            }
+            if (is_scalar($valor)) {
+                return $valor;
+            }
+
+            return json_encode($valor, JSON_UNESCAPED_UNICODE) ?: 'Não informado';
+        };
+
+        $cabecalho = array_map($sanitizar, array_values($dados[0]));
+        $linhas = array_map(
+            static fn (array $linha) => array_map($sanitizar, array_values($linha)),
+            array_slice($dados, 1)
+        );
+
+        $nomeArquivo = preg_replace('/\.xls$/i', '.xlsx', $nomeArquivo) ?: $nomeArquivo;
+        if (!str_ends_with(strtolower($nomeArquivo), '.xlsx')) {
+            $nomeArquivo .= '.xlsx';
+        }
+
+        Exportacao::create([
+            'user_id' => $userId,
+            'arquivo' => $nomeArquivo,
+            'local' => $local,
+            'removido' => false,
+        ]);
+
+        \Excel::store(new ModeloRowsExport($cabecalho, $linhas), $nomeArquivo, 'disco-exportacao');
+
+        Event::dispatch(new NotificacaoEvent([
+            'user_id' => $userId,
+            'local' => $local,
+        ], NotificacaoEvent::EXPORTACAO_EXCEL, NotificacaoEvent::TIPO_PADRAO));
+    }
+
+    /**
+     * @deprecated Use exportaExcel() — padrão CIH com Maatwebsite (sem Python/Redis).
+     */
     public static function exportaExcelPython($usuario, $local, $dados, $nome_arquivo)
     {
         try {
-            $caminho_script = base_path("scripts/python/export.py");
-            $autenticado = $usuario;
-            $jsonData = json_encode($dados);
-            Redis::set($nome_arquivo, $jsonData);
-            $redisNome = env('REDIS_PREFIX') . $nome_arquivo;
-            $resultado = exec("python3 $caminho_script $nome_arquivo $redisNome");
-            if ($resultado != "") {
-                $nomedoarquivo = "$nome_arquivo.xls";
-                Exportacao::create([
-                    'user_id' => $autenticado->id,
-                    'arquivo' => $nomedoarquivo,
-                    'local' => $local,
-                    'removido' => false,
-                ]);
-                Event::dispatch(new NotificacaoEvent([
-                    'user_id' => $autenticado->id,
-                    'local' => $local,
-                ], NotificacaoEvent::EXPORTACAO_EXCEL, NotificacaoEvent::TIPO_PADRAO));
-            } else {
-                throw new \Exception("Erro ao gerar o arquivo");
-            }
-
+            self::exportaExcel($usuario, (string) $local, is_array($dados) ? $dados : [], (string) $nome_arquivo);
         } catch (\Exception $e) {
             return $e->getMessage();
         }
-
     }
 
     /**
