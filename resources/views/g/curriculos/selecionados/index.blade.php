@@ -454,5 +454,5 @@
     </style>
 @endpush
 @push('js')
-    <script src="{{mix('js/g/selecionados/app.js')}}"></script>
+    @vite(['resources/js/g/curriculos/selecionados/app.js'])
 @endpush

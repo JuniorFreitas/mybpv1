@@ -5,5 +5,5 @@
     <centro-custo></centro-custo>
 @stop
 @push('js')
-    <script src="{{mix('js/g/centrocusto/app.js')}}"></script>
+    @vite(['resources/js/g/cadastros/centrocusto/app.js'])
 @endpush

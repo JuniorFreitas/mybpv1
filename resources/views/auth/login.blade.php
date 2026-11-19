@@ -6,8 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'MyBPIN') }}</title>
     @include('layouts.favicon')
-    <script src="{{ asset('js/app.js') }}" defer></script>
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    @vite(['resources/sass/app.scss'])
 
     @if(env('APP_ENV') !== 'local')
         <script type="text/javascript">
@@ -532,8 +531,7 @@
     </div>
 </div>
 
-<script src="{{ mix('js/app.js') }}"></script>
-<script src="{{ mix('js/funcoes.js') }}"></script>
+@include('layouts.partials.legacy-scripts')
 <script>
     const app = Vue.createApp({
         data() {

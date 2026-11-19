@@ -356,5 +356,5 @@
     </div>
 @stop
 @push('js')
-    <script src="{{mix('js/g/treinamentos/sgi/app.js')}}"></script>
+    @vite(['resources/js/g/treinamentos/sgi/app.js'])
 @endpush

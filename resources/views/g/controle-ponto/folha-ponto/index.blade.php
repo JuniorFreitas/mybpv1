@@ -465,7 +465,7 @@
     </div>
 @stop
 @push('js')
-    <script src="{{mix('js/g/controle-ponto/folha-ponto/app.js')}}"></script>
+    @vite(['resources/js/g/controle-ponto/folha-ponto/app.js'])
 @endpush
 
 @push('css')

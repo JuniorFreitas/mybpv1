@@ -5,5 +5,5 @@
     <treinamento></treinamento>
 @stop
 @push('js')
-    <script src="{{mix('js/g/relatorios/treinamento/app.js')}}"></script>
+    @vite(['resources/js/g/relatorios/treinamento/app.js'])
 @endpush

@@ -344,5 +344,5 @@
     </div>
 @stop
 @push('js')
-    <script src="{{mix('js/g/vagas/app.js')}}"></script>
+    @vite(['resources/js/g/cadastros/vagas/app.js'])
 @endpush

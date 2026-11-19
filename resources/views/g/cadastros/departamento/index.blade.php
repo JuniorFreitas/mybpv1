@@ -5,5 +5,5 @@
     <departamento></departamento>
 @stop
 @push('js')
-    <script src="{{mix('js/g/departamento/app.js')}}"></script>
+    @vite(['resources/js/g/cadastros/departamento/app.js'])
 @endpush

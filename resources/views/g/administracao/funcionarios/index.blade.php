@@ -2007,5 +2007,5 @@
     </div>
 @stop
 @push('js')
-    <script src="{{mix('js/g/funcionarios/app.js')}}"></script>
+    {{-- Entry legado fora do Mix/Vite (deps ContaCorrente ausentes). Reativar ao restaurar o app.js. --}}
 @endpush

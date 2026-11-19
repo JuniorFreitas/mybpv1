@@ -544,5 +544,5 @@
     </div>
 @stop
 @push('js')
-    <script src="{{mix('js/g/fornecedores/app.js')}}"></script>
+    @vite(['resources/js/g/administracao/fornecedores/app.js'])
 @endpush

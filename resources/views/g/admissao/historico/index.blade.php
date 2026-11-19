@@ -9,5 +9,5 @@
            :url-gerar-link-avaliacao-experiencia="'{{ url('g/historico/avaliacao-experiencia') }}'"></historico>
 @stop
 @push('js')
-    <script src="{{ mix('js/g/admissao/historico/app.js') }}"></script>
+    @vite(['resources/js/g/admissao/historico/app.js'])
 @endpush

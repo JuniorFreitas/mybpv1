@@ -5,5 +5,5 @@
     <treinamento-industria></treinamento-industria>
 @stop
 @push('js')
-    <script src="{{mix('js/g/treinamentoindustria/app.js')}}"></script>
+    @vite(['resources/js/g/cadastros/treinamentoindustria/app.js'])
 @endpush

@@ -8,5 +8,5 @@
     <documento-assinatura :documento-id-inicial="{{ json_encode(request('id')) }}"></documento-assinatura>
 @stop
 @push('js')
-    <script src="{{ mix('js/g/administracao/documento-assinatura/app.js') }}"></script>
+    @vite(['resources/js/g/administracao/documento-assinatura/app.js'])
 @endpush

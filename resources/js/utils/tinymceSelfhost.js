@@ -192,5 +192,11 @@ const api = {
     loadTinyMce
 }
 
-module.exports = api
-module.exports.default = api
+export default api
+export {
+    tinymcePublicBase,
+    applySelfHost,
+    TINYMCE_PRESETS,
+    getTinyMceInit,
+    loadTinyMce
+}

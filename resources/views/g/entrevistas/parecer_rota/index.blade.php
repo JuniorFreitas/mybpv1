@@ -846,7 +846,7 @@
 
 @stop
 @push('js')
-    <script src="{{mix('js/g/entrevistas/parecer_rota/app.js')}}"></script>
+    @vite(['resources/js/g/entrevistas/parecer_rota/app.js'])
 @endpush
 @push('css')
     <style>

@@ -5,5 +5,5 @@
     <prova></prova>
 @stop
 @push('js')
-    <script src="{{mix('js/g/cadastro/provas/app.js')}}"></script>
+    @vite(['resources/js/g/cadastros/provas/app.js'])
 @endpush

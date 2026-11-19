@@ -5,5 +5,5 @@
     <ata-reuniao></ata-reuniao>
 @stop
 @push('js')
-    <script src="{{mix('js/g/atareuniao/app.js')}}"></script>
+    @vite(['resources/js/g/administracao/atareuniao/app.js'])
 @endpush

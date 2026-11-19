@@ -10,5 +10,5 @@
 
 @stop
 @push('js')
-    <script src="{{mix('js/g/chat/app.js')}}"></script>
+    @vite(['resources/js/g/chat/app.js'])
 @endpush

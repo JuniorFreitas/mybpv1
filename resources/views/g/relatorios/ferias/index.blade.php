@@ -5,5 +5,5 @@
     <ferias></ferias>
 @stop
 @push('js')
-    <script src="{{mix('js/g/relatorios/ferias/app.js')}}"></script>
+    @vite(['resources/js/g/relatorios/ferias/app.js'])
 @endpush

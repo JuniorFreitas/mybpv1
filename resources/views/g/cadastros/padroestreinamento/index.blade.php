@@ -9,5 +9,5 @@
     <padroes-treinamento-cadastro></padroes-treinamento-cadastro>
 @stop
 @push('js')
-    <script src="{{ mix('js/g/padroestreinamento/app.js') }}"></script>
+    @vite(['resources/js/g/cadastros/padroestreinamento/app.js'])
 @endpush

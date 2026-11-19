@@ -119,7 +119,7 @@ prepare_assets() {
         npm install
     fi
 
-    # .env.prod / .env.homol são gitignored — gera a partir do SSM antes do webpack
+    # .env.prod / .env.homol são gitignored — gera a partir do SSM antes do Vite
     case $environment in
         "homol"|"prod")
             echo "Gerando .env.${environment} a partir do SSM..."

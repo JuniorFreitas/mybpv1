@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Gera .env.prod ou .env.homol para o build webpack (MIX_*), a partir do SSM.
+# Gera .env.prod ou .env.homol para o build Vite (VITE_*), a partir do SSM.
 # Os arquivos gerados são gitignored — não commitar.
 #
 # Uso:
@@ -30,7 +30,7 @@ case "$ENV_NAME" in
     EXAMPLE_FILE=".env.prod.example"
     APP_NAME='MyBP - Seu negócio na sua mão'
     APP_URL="https://sistema.mybp.com.br"
-    MIX_AMBIENTE="prod"
+    VITE_AMBIENTE="prod"
     SSM_PREFIX="${SSM_PREFIX:-/mybp/prod}"
     ;;
   homol)
@@ -38,7 +38,7 @@ case "$ENV_NAME" in
     EXAMPLE_FILE=".env.homol.example"
     APP_NAME='MyBP - Homologação'
     APP_URL="https://qa.mybp.com.br"
-    MIX_AMBIENTE="homol"
+    VITE_AMBIENTE="homol"
     # Keys de frontend compartilhadas com prod (mesmo Pusher/Maps), salvo override
     SSM_PREFIX="${SSM_PREFIX:-/mybp/prod}"
     ;;
@@ -71,14 +71,21 @@ fetch_param() {
 PUSHER_APP_ID="$(fetch_param PUSHER_APP_ID)"
 PUSHER_APP_KEY="$(fetch_param PUSHER_APP_KEY)"
 PUSHER_APP_SECRET="$(fetch_param PUSHER_APP_SECRET)"
-MIX_GOOGLE_MAPS_KEY="$(fetch_param MIX_GOOGLE_MAPS_KEY)"
-MIX_TYNEKEY="$(fetch_param MIX_TYNEKEY)"
+# Aceita chave nova (VITE_*) ou legado (MIX_*) no SSM
+VITE_GOOGLE_MAPS_KEY="$(fetch_param VITE_GOOGLE_MAPS_KEY)"
+if [[ -z "${VITE_GOOGLE_MAPS_KEY}" || "${VITE_GOOGLE_MAPS_KEY}" == "None" ]]; then
+  VITE_GOOGLE_MAPS_KEY="$(fetch_param MIX_GOOGLE_MAPS_KEY)"
+fi
+VITE_TYNEKEY="$(fetch_param VITE_TYNEKEY)"
+if [[ -z "${VITE_TYNEKEY}" || "${VITE_TYNEKEY}" == "None" ]]; then
+  VITE_TYNEKEY="$(fetch_param MIX_TYNEKEY)"
+fi
 
 missing=()
 for pair in \
   "PUSHER_APP_ID=${PUSHER_APP_ID}" \
   "PUSHER_APP_KEY=${PUSHER_APP_KEY}" \
-  "MIX_GOOGLE_MAPS_KEY=${MIX_GOOGLE_MAPS_KEY}"; do
+  "VITE_GOOGLE_MAPS_KEY=${VITE_GOOGLE_MAPS_KEY}"; do
   k="${pair%%=*}"
   v="${pair#*=}"
   if [[ -z "$v" || "$v" == "None" ]]; then
@@ -105,15 +112,18 @@ PUSHER_APP_CLUSTER=mt1
 PUSHER_APP_TLS=true
 PUSHER_APP_ENCRYPTED=true
 PUSHER_APP_HOST=
-MIX_PUSHER_APP_KEY=\${PUSHER_APP_KEY}
-MIX_PUSHER_APP_CLUSTER=\${PUSHER_APP_CLUSTER}
-MIX_PUSHER_APP_TLS=true
-MIX_AMBIENTE=${MIX_AMBIENTE}
-MIX_URL_SITE=\${APP_URL}
-MIX_URL_ADMIN=\${APP_URL}/g
-MIX_URL_PUBLICO=\${APP_URL}/publico
-MIX_GOOGLE_MAPS_KEY=${MIX_GOOGLE_MAPS_KEY}
-MIX_TYNEKEY=${MIX_TYNEKEY}
+VITE_PUSHER_APP_KEY=\${PUSHER_APP_KEY}
+VITE_PUSHER_APP_CLUSTER=\${PUSHER_APP_CLUSTER}
+VITE_PUSHER_APP_TLS=true
+VITE_AMBIENTE=${VITE_AMBIENTE}
+VITE_URL_SITE=\${APP_URL}
+VITE_URL_ADMIN=\${APP_URL}/g
+VITE_URL_PUBLICO=\${APP_URL}/publico
+VITE_GOOGLE_MAPS_KEY=${VITE_GOOGLE_MAPS_KEY}
+VITE_TYNEKEY=${VITE_TYNEKEY}
+MIX_AMBIENTE=${VITE_AMBIENTE}
+MIX_GOOGLE_MAPS_KEY=${VITE_GOOGLE_MAPS_KEY}
+MIX_TYNEKEY=${VITE_TYNEKEY}
 NPS_HABILITADO=false
 NPS_EMPRESAS_EXCLUIDAS=100
 NPS_EMPRESA_GERENCIAMENTO=100

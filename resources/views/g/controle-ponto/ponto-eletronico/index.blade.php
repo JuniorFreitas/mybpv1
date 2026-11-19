@@ -230,8 +230,8 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="{{mix('js/g/controle-ponto/ponto-eletronico/app.js')}}"></script>
-    <script src="{{mix('js/g/controle-ponto/ponto-eletronico/webcam.min.js')}}"></script>
+    @vite(['resources/js/g/controle-ponto/ponto-eletronico/app.js'])
+    <script src="{{ asset('js/g/controle-ponto/ponto-eletronico/webcam.min.js') }}"></script>
     <script>
         $(document).ready(function () {
             // Atualizar o mapa quando o modal é aberto

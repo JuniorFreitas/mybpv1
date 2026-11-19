@@ -531,5 +531,5 @@
 
 @stop
 @push('js')
-    <script src="{{ mix('js/g/entrevistas/resultado_integrado/app.js') }}"></script>
+    @vite(['resources/js/g/entrevistas/resultado_integrado/app.js'])
 @endpush

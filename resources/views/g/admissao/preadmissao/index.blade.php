@@ -727,5 +727,5 @@
     />
 @stop
 @push('js')
-    <script src="{{mix('js/g/admissao/preadmissao/app.js')}}"></script>
+    @vite(['resources/js/g/admissao/preadmissao/app.js'])
 @endpush

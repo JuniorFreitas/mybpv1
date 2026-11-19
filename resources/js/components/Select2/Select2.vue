@@ -5,9 +5,7 @@
 </template>
 
 <script>
-import $ from 'jquery'
-import './depends/select2.full'
-import './depends/select2.min.css'
+import $ from '../../ensure-select2'
 import './depends/custom.css'
 
 export default {

@@ -5,5 +5,5 @@
     <tipodocumento></tipodocumento>
 @stop
 @push('js')
-    <script src="{{mix('js/g/documentoslegais/tipodocumento/app.js')}}"></script>
+    @vite(['resources/js/g/administracao/documentoslegais/tipodocumento/app.js'])
 @endpush

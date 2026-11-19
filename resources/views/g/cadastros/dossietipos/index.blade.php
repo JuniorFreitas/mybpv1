@@ -5,5 +5,5 @@
     <dossie-tipos></dossie-tipos>
 @stop
 @push('js')
-    <script src="{{mix('js/g/dossietipos/app.js')}}"></script>
+    @vite(['resources/js/g/cadastros/dossietipos/app.js'])
 @endpush

@@ -5,5 +5,5 @@
     <ocorrencia></ocorrencia>
 @stop
 @push('js')
-    <script src="{{mix('js/g/ocorrencia/app.js')}}"></script>
+    @vite(['resources/js/g/ocorrencia/app.js'])
 @endpush

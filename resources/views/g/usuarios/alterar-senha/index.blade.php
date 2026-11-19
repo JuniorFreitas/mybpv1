@@ -205,7 +205,7 @@
 @stop
 
 @push('js')
-    <script src="{{mix('js/g/alterar-senha/app.js')}}"></script>
+    @vite(['resources/js/g/usuarios/alterar-senha/app.js'])
     
     <!-- Script para abrir modal automaticamente se senha expirou -->
     @if(auth()->user()->needsPasswordReset())

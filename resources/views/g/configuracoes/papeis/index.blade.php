@@ -482,5 +482,5 @@
 @stop
 
 @push('js')
-    <script src="{{mix('js/g/papeis/app.js')}}"></script>
+    @vite(['resources/js/g/configuracoes/papeis/app.js'])
 @endpush

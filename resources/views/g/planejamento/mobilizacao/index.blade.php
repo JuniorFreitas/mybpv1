@@ -5,5 +5,5 @@
     <mobilizacao></mobilizacao>
 @stop
 @push('js')
-    <script src="{{mix('js/g/planejamento/mobilizacao/app.js')}}"></script>
+    @vite(['resources/js/g/planejamento/mobilizacao/app.js'])
 @endpush

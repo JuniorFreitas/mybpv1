@@ -391,5 +391,5 @@
     </div>
 @stop
 @push('js')
-    <script src="{{mix('js/g/entrevistas/gestor_rh/app.js')}}"></script>
+    @vite(['resources/js/g/entrevistas/gestor_rh/app.js'])
 @endpush

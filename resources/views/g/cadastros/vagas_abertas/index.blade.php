@@ -903,5 +903,5 @@
     <script>
         window.DESCRICAO_VAGA_IA_HABILITADA = @json($descricaoVagaIaHabilitada);
     </script>
-    <script src="{{mix('js/g/vagas_abertas/app.js')}}"></script>
+    @vite(['resources/js/g/cadastros/vagas_abertas/app.js'])
 @endpush

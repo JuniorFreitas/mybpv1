@@ -11,5 +11,5 @@
     </div>
 @stop
 @push('js')
-    <script src="{{mix('js/g/pesquisaclima/app.js')}}"></script>
+    @vite(['resources/js/g/administracao/pesquisaclima/app.js'])
 @endpush

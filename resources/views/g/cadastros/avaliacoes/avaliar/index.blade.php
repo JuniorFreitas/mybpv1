@@ -5,5 +5,5 @@
     <avaliar :current-user-id='@json(auth()->id())' :current-user-name='@json(auth()->user()->nome ?? "")'></avaliar>
 @stop
 @push('js')
-    <script src="{{mix('js/g/avaliacoes/avaliar/app.js')}}"></script>
+    @vite(['resources/js/g/cadastros/avaliacoes/avaliar/app.js'])
 @endpush

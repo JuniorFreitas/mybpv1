@@ -5,5 +5,5 @@
     <planejamento-diario></planejamento-diario>
 @stop
 @push('js')
-    <script src="{{mix('js/g/planejamentodiario/app.js')}}"></script>
+    @vite(['resources/js/g/administracao/planejamentodiario/app.js'])
 @endpush

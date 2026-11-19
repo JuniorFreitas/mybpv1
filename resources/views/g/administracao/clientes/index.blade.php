@@ -1224,5 +1224,5 @@
 @stop
 
 @push('js')
-<script src="{{mix('js/g/clientes/app.js')}}"></script>
+@vite(['resources/js/g/administracao/clientes/app.js'])
 @endpush

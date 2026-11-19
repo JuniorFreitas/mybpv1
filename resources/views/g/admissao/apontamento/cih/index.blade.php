@@ -8,5 +8,5 @@
 <cih></cih>
 @stop
 @push('js')
-    <script src="{{mix('js/g/admissao/apontamento/cih/app.js')}}"></script>
+    @vite(['resources/js/g/admissao/apontamento/cih/app.js'])
 @endpush

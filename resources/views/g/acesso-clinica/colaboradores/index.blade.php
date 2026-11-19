@@ -338,5 +338,5 @@
     </controle-paginacao>
 @stop
 @push('js')
-    <script src="{{ mix('js/g/clinica/controle-exames/app.js') }}"></script>
+    @vite(['resources/js/g/controle-exames/clinica/app.js'])
 @endpush

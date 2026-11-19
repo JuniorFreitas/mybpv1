@@ -5,5 +5,5 @@
 <controle-exames></controle-exames>
 @stop
 @push('js')
-    <script src="{{ mix('js/g/controle-exames/app.js') }}"></script>
+    @vite(['resources/js/g/controle-exames/app.js'])
 @endpush

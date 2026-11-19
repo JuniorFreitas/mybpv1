@@ -128,5 +128,5 @@
     </div>
 @stop
 @push('js')
-    <script src="{{mix('js/g/controle-ponto/feriados/app.js')}}"></script>
+    @vite(['resources/js/g/controle-ponto/feriados/app.js'])
 @endpush

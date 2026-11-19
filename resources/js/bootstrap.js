@@ -1,4 +1,12 @@
-window._ = require('lodash')
+import _ from 'lodash'
+import Popper from 'popper.js'
+import './jquery-global'
+import 'bootstrap'
+import axios from 'axios'
+import Echo from 'laravel-echo'
+import Pusher from 'pusher-js'
+
+window._ = _
 
 /**
  * We'll load jQuery and the Bootstrap jQuery plugin which provides support
@@ -7,10 +15,7 @@ window._ = require('lodash')
  */
 
 try {
-    window.Popper = require('popper.js').default
-    window.$ = window.jQuery = require('jquery')
-
-    require('bootstrap')
+    window.Popper = Popper.default || Popper
 
     // A modal devolve o foco para si e impede digitar na janela de link do TinyMCE.
     const ModalBootstrap = $.fn.modal && $.fn.modal.Constructor
@@ -69,10 +74,10 @@ try {
 /**
  * We'll load the axios HTTP library which allows us to easily issue requests
  * to our Laravel back-end. This library automatically handles sending the
- * CSRF token as a header based on the value of the "XSRF" token cookie.
+ * CSRF token as a header based on the "XSRF" token cookie.
  */
 
-window.axios = require('axios')
+window.axios = axios
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
 
@@ -163,34 +168,44 @@ window.axios.interceptors.response.use(
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
- * for events that are broadcast by Laravel. Echo and event broadcasting
- * allows your team to easily build robust real-time web applications.
+ * for events that are broadcast by Laravel.
  */
 
-import Echo from 'laravel-echo'
+window.Pusher = Pusher
 
-window.Pusher = require('pusher-js')
+const broadcastDriver = String(import.meta.env.VITE_BROADCAST_DRIVER || '').toLowerCase()
+const reverbKey = import.meta.env.VITE_REVERB_APP_KEY
+const pusherKey = import.meta.env.VITE_PUSHER_APP_KEY
+const preferReverb = broadcastDriver === 'reverb' || (!broadcastDriver && !!reverbKey && !pusherKey)
+const preferPusher = broadcastDriver === 'pusher' || (!preferReverb && !!pusherKey)
 
-const reverbKey = process.env.MIX_REVERB_APP_KEY
-const pusherKey = process.env.MIX_PUSHER_APP_KEY
-
-if (reverbKey) {
+if (preferReverb && reverbKey) {
     window.Echo = new Echo({
         broadcaster: 'reverb',
         key: reverbKey,
-        wsHost: process.env.MIX_REVERB_HOST || window.location.hostname,
-        wsPort: process.env.MIX_REVERB_PORT || 80,
-        wssPort: process.env.MIX_REVERB_PORT || 443,
-        forceTLS: (process.env.MIX_REVERB_SCHEME || 'https') === 'https',
+        wsHost: import.meta.env.VITE_REVERB_HOST || window.location.hostname,
+        wsPort: import.meta.env.VITE_REVERB_PORT || 80,
+        wssPort: import.meta.env.VITE_REVERB_PORT || 443,
+        forceTLS: (import.meta.env.VITE_REVERB_SCHEME || 'https') === 'https',
         enabledTransports: ['ws', 'wss']
     })
-} else if (pusherKey) {
+} else if (preferPusher && pusherKey) {
     window.Echo = new Echo({
         broadcaster: 'pusher',
         key: pusherKey,
-        cluster: process.env.MIX_PUSHER_APP_CLUSTER,
-        forceTLS: process.env.MIX_PUSHER_APP_TLS !== 'false'
+        cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+        forceTLS: import.meta.env.VITE_PUSHER_APP_TLS !== 'false'
+    })
+} else if (reverbKey) {
+    window.Echo = new Echo({
+        broadcaster: 'reverb',
+        key: reverbKey,
+        wsHost: import.meta.env.VITE_REVERB_HOST || window.location.hostname,
+        wsPort: import.meta.env.VITE_REVERB_PORT || 80,
+        wssPort: import.meta.env.VITE_REVERB_PORT || 443,
+        forceTLS: (import.meta.env.VITE_REVERB_SCHEME || 'https') === 'https',
+        enabledTransports: ['ws', 'wss']
     })
 } else {
-    console.warn('Broadcasting disabled: missing MIX_REVERB_APP_KEY / MIX_PUSHER_APP_KEY')
+    console.warn('Broadcasting disabled: missing VITE_REVERB_APP_KEY / VITE_PUSHER_APP_KEY')
 }

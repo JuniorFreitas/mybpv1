@@ -8,7 +8,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title')</title>
     @include('layouts.favicon')
-    <link href="{{ mix('css/app.css') }}" rel="stylesheet">
+    @vite(['resources/sass/app.scss'])
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css"
           integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
     @stack('css')
@@ -51,8 +51,7 @@
     <vagas-abertas :empresa_id="{{$empresa_id}}" :vaga_aberta_id="{{$vaga_aberta_id}}"></vagas-abertas>
 
 </div>
-<script src="{{mix('js/app.js')}}"></script>
-<script src="{{mix('js/funcoes.js')}}"></script>
-<script src="{{mix('js/vagas-abertas/app.js')}}"></script>
+@include('layouts.partials.legacy-scripts')
+@vite(['resources/js/vagas-abertas/app.js'])
 </body>
 </html>

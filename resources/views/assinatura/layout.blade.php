@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Assinatura Digital')</title>
-    <link href="{{ mix('css/app.css') }}" rel="stylesheet">
+    @vite(['resources/sass/app.scss'])
     <style>
         :root {
             --assin-primary: #0f4c60;
@@ -206,8 +206,7 @@
         @yield('content')
         @include('layouts.publico.avisos', ['marca' => $marca])
     </div>
-    <script src="{{ mix('js/app.js') }}"></script>
-    <script src="{{ asset('js/funcoes.js') }}"></script>
+    @include('layouts.partials.legacy-scripts')
     @stack('scripts')
 </body>
 

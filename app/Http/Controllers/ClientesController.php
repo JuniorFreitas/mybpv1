@@ -105,7 +105,7 @@ class ClientesController extends Controller
                 DB::beginTransaction();
                 $user = User::create([
                     'nome' => $dados['tipo'] == Cliente::TIPO_PESSOA_JURIDICA ? $dados['razao_social'] : $dados['nome'],
-                    'password' => bcrypt('mybp2021'),
+                    'password' => bcrypt(sha1(Str::random(100))),
                     'login' => $dados['email'],
                     'tipo' => 'Empresa',
                     'temp' => false,
