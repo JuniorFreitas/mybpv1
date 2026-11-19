@@ -159,7 +159,11 @@ export default defineConfig(({ mode }) => {
             chunkSizeWarningLimit: 2000,
             commonjsOptions: {
                 transformMixedEsModules: true,
-                include: [/bootstrap-daterangepicker/, /node_modules/]
+                include: [
+                    /bootstrap-daterangepicker/,
+                    /resources\/js\/components\/Select2\/depends\/select2\.full/,
+                    /node_modules/
+                ]
             },
             rollupOptions: {
                 treeshake: {
