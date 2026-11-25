@@ -33,32 +33,13 @@ class HabilidadesController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Admin\StoreHabilidadeRequest $request)
     {
         $this->authorize('configuracao_habilidades_insert');
-        // Validacao para PHP
-        /*$dadosValidados = $request->validate([
-            'nome' => 'required|min:3',
-        ]);*/
-
-        // Validacao para ajax sem dar erro de HTTP (402)
-        $dadosValidados = \Validator::make($request->all(), [
-            'nome' => 'required|min:3',
-            'descricao' => 'required|min:3'
+        Habilidade::create($request->validated());
+        return response()->json([
+            'erro' => 'n'
         ]);
-        if($dadosValidados->fails()){ // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'erro' => 's',
-                'msg' => 'Erro ao cadastrar habilidade',
-                'erros' => $dadosValidados->errors()
-            ]);
-        }else{
-            Habilidade::create($request->all());
-            return response()->json([
-                'erro' => 'n'
-            ]);
-        }
-
     }
 
     /**
@@ -91,27 +72,13 @@ class HabilidadesController extends Controller
      * @param  \App\Models\Habilidade  $habilidade
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Habilidade $habilidade)
+    public function update(\App\Http\Requests\Admin\UpdateHabilidadeRequest $request, Habilidade $habilidade)
     {
         $this->authorize('configuracao_habilidades_update');
-
-        // Validacao para ajax sem dar erro de HTTP (402)
-        $dadosValidados = \Validator::make($request->all(), [
-            'nome' => 'required|min:3',
-            'descricao' => 'required|min:3'
+        $habilidade->update($request->validated());
+        return response()->json([
+            'erro' => 'n'
         ]);
-        if($dadosValidados->fails()){ // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'erro' => '',
-                'msg' => 'Erro ao atualizar a habilidade',
-                'erros' => $dadosValidados->errors()
-            ]);
-        }else{
-            $habilidade->update($request->all());
-            return response()->json([
-                'erro' => 'n'
-            ]);
-        }
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Operacional\StoreSimuladoRequest;
+use App\Http\Requests\Operacional\UpdateSimuladoRequest;
 use App\Models\Simulado;
 use App\Models\SimuladoPergunta;
 use App\Models\SimuladoResposta;
@@ -38,30 +40,11 @@ class SimuladoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(StoreSimuladoRequest $request)
     {
         $dados = $request->input();
 
-        if (!isset($dados['perguntas'])) {
-            return response()->json([
-                'msg' => 'ERRO: É necessário inserir Questões',
-            ], 400);
-        }
-
-        $dadosValidados = \Validator::make($dados, [
-            'titulo' => 'required',
-//            'perguntas.*.enunciado' => 'required|unique:simulado_perguntas,enunciado,' . $prova->id,
-            'ativo' => 'required',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Simulado',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        } else {
-            try {
+        try {
                 DB::beginTransaction();
                 $perguntas = collect($dados['perguntas']);
 
@@ -143,7 +126,6 @@ class SimuladoController extends Controller
                     'msg' => $e->getMessage(),
                 ], 400);
             }
-        }
     }
 
     /**
@@ -175,30 +157,11 @@ class SimuladoController extends Controller
      * @param \App\Models\Simulado $prova
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, Simulado $prova)
+    public function update(UpdateSimuladoRequest $request, Simulado $prova)
     {
         $dados = $request->input();
 
-        if (!isset($dados['perguntas'])) {
-            return response()->json([
-                'msg' => 'ERRO: É necessário inserir Questões',
-            ], 400);
-        }
-
-        $dadosValidados = \Validator::make($dados, [
-            'titulo' => 'required',
-//            'perguntas.*.enunciado' => 'required|unique:simulado_perguntas,enunciado,' . $prova->id,
-            'ativo' => 'required',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Simulado',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        } else {
-            try {
+        try {
                 DB::beginTransaction();
                 $perguntas = collect($dados['perguntas']);
 
@@ -300,7 +263,6 @@ class SimuladoController extends Controller
                     'msg' => $e->getMessage(),
                 ], 400);
             }
-        }
     }
 
     /**

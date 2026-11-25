@@ -50,8 +50,9 @@ class TreinamentoVencimento extends Command
         $this->info('Iniciando verificação de treinamentos...');
         $this->info("Ambiente: Docker PHP 8.2 | Memória inicial: " . $this->formatBytes(memory_get_usage(true)));
 
-        // Configurar limites de memória
-        ini_set('memory_limit', '1024M');
+        // PERF-MEM-001: teto alinhado ao ECS ~700MB (nunca 1024M/-1 no mesmo container)
+        ini_set('memory_limit', '256M');
+        ini_set('max_execution_time', '0');
         gc_enable();
 
         $empresas = $this->buscarEmpresas();

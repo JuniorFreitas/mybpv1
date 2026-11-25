@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Operacional\StoreGaleriaRequest;
+use App\Http\Requests\Operacional\UpdateGaleriaRequest;
 use App\Models\Arquivo;
 use App\Models\Galeria;
 use Illuminate\Http\Request;
@@ -35,26 +37,11 @@ class GaleriaController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreGaleriaRequest $request)
     {
         $this->authorize('site_galeria_site_insert');
 
         $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-        $dados['descricao'] = '';
-        // Fotos
-
-        $dadosValidados = \Validator::make($dados, [
-            'titulo' => 'required|min:1|unique:galerias,titulo',
-            'ativo' => 'required',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Galeria',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
 
             DB::beginTransaction();
@@ -113,25 +100,11 @@ class GaleriaController extends Controller
      * @param \App\Models\Galeria $galeria
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Galeria $galeria)
+    public function update(UpdateGaleriaRequest $request, Galeria $galeria)
     {
         $this->authorize('site_galeria_site_update');
 
         $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-        // Fotos
-
-        $dadosValidados = \Validator::make($dados, [
-            'titulo' => 'required|min:1|unique:galerias,titulo,' . $galeria->id,
-            'ativo' => 'required',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar Galeria',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
 
             DB::beginTransaction();

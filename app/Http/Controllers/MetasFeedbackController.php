@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Feedback\StoreMetasFeedbackRequest;
 use App\Models\MetasFeedback;
 use DB;
 use Illuminate\Http\Request;
@@ -34,38 +35,23 @@ class MetasFeedbackController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreMetasFeedbackRequest $request)
     {
         $this->authorize('admissao_historico');
-        $dados = $request->input();
+        $dados = $request->all();
 
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required',
-            'descricao' => 'required',
-            'data_fim' => 'required',
-            'data_inicio' => 'required'
-        ]);
+        try {
+            DB::beginTransaction();
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar a Meta',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+            MetasFeedback::create($dados);
 
-                MetasFeedback::create($dados);
-
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE META FEEDBACK:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-                return response()->json(['msg' => $msg], 400);
-            }
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE META FEEDBACK:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
         }
     }
 

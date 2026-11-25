@@ -100,8 +100,8 @@ Route::group(['prefix' => 'g'], function () {
     Route::post('login/mfa/reenviar', [\App\Http\Controllers\Auth\LoginController::class, 'reenviarMfa'])->name('login.mfa.resend');
     Route::get('sair', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
     // Registration Routes...
-    Route::get('register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register')->middleware('auth', 'configuracao_habilidades');
-    Route::post('register', [\App\Http\Controllers\Auth\RegisterController::class, 'register'])->middleware('auth', 'configuracao_habilidades');
+    Route::get('register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register')->middleware(['auth', 'can:configuracao_habilidades']);
+    Route::post('register', [\App\Http\Controllers\Auth\RegisterController::class, 'register'])->middleware(['auth', 'can:configuracao_habilidades']);
     // Password Reset Routes...
     Route::get('password/reset', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
     Route::post('password/email', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
@@ -1742,14 +1742,14 @@ Route::group(['as' => 'documentospreadmissao.'], function () {
         Route::post('carta-oferta/{publicId}/validar-codigo', [\App\Http\Controllers\CartaOfertaController::class, 'validarCodigo'])->name('carta-oferta.validarCodigo')->middleware('throttle:20,1');
         Route::post('carta-oferta/{publicId}/salvar', [\App\Http\Controllers\CartaOfertaController::class, 'salvarCartaOferta'])->name('carta-oferta.salvarCartaOferta');
 
-        Route::get('assinatura/{token}', [\App\Http\Controllers\AssinaturaPublicaController::class, 'index'])->name('assinatura.publica.index');
-        Route::get('assinatura/verificacao', [\App\Http\Controllers\VerificacaoAssinaturaController::class, 'index'])->name('assinatura.verificacao');
-        Route::post('assinatura/{token}/validar-cpf', [\App\Http\Controllers\AssinaturaPublicaController::class, 'validarCpf'])->name('assinatura.publica.validar-cpf');
-        Route::get('assinatura/{token}/codigo', [\App\Http\Controllers\AssinaturaPublicaController::class, 'codigo'])->name('assinatura.publica.codigo');
-        Route::post('assinatura/{token}/validar-codigo', [\App\Http\Controllers\AssinaturaPublicaController::class, 'validarCodigo'])->name('assinatura.publica.validar-codigo');
-        Route::get('assinatura/{token}/pdf', [\App\Http\Controllers\AssinaturaPublicaController::class, 'pdf'])->name('assinatura.publica.pdf');
-        Route::post('assinatura/{token}/assinar', [\App\Http\Controllers\AssinaturaPublicaController::class, 'assinar'])->name('assinatura.publica.assinar');
-        Route::post('assinatura/{token}/recusar', [\App\Http\Controllers\AssinaturaPublicaController::class, 'recusar'])->name('assinatura.publica.recusar');
+        Route::get('assinatura/{token}', [\App\Http\Controllers\AssinaturaPublicaController::class, 'index'])->name('assinatura.publica.index')->middleware('throttle:60,1');
+        Route::get('assinatura/verificacao', [\App\Http\Controllers\VerificacaoAssinaturaController::class, 'index'])->name('assinatura.verificacao')->middleware('throttle:60,1');
+        Route::post('assinatura/{token}/validar-cpf', [\App\Http\Controllers\AssinaturaPublicaController::class, 'validarCpf'])->name('assinatura.publica.validar-cpf')->middleware('throttle:20,1');
+        Route::get('assinatura/{token}/codigo', [\App\Http\Controllers\AssinaturaPublicaController::class, 'codigo'])->name('assinatura.publica.codigo')->middleware('throttle:20,1');
+        Route::post('assinatura/{token}/validar-codigo', [\App\Http\Controllers\AssinaturaPublicaController::class, 'validarCodigo'])->name('assinatura.publica.validar-codigo')->middleware('throttle:20,1');
+        Route::get('assinatura/{token}/pdf', [\App\Http\Controllers\AssinaturaPublicaController::class, 'pdf'])->name('assinatura.publica.pdf')->middleware('throttle:30,1');
+        Route::post('assinatura/{token}/assinar', [\App\Http\Controllers\AssinaturaPublicaController::class, 'assinar'])->name('assinatura.publica.assinar')->middleware('throttle:20,1');
+        Route::post('assinatura/{token}/recusar', [\App\Http\Controllers\AssinaturaPublicaController::class, 'recusar'])->name('assinatura.publica.recusar')->middleware('throttle:20,1');
     });
 
     Route::post('documentos/uploadAnexos', [\App\Http\Controllers\DocumentosPreAdmissaoController::class, 'uploadAnexos'])->name('documentos.upload-anexos');

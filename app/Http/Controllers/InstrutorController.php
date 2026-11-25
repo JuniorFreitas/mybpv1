@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Treinamentos\StoreInstrutorRequest;
+use App\Http\Requests\Treinamentos\UpdateInstrutorRequest;
 use App\Models\Arquivo;
 use App\Models\Instrutor;
 use App\Models\User;
@@ -36,50 +38,37 @@ class InstrutorController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreInstrutorRequest $request)
     {
         $this->authorize('cadastro_instrutor_insert');
-        $dados = $request->input();
-        $dadosValidados = \Validator::make($dados,
-            [
-                'nome' => 'required',
-                'cargo' => 'required',
-                'registro' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Cadastrar Instrutor',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+        $dados = $request->validated() + $request->input();
 
-                $resposta = Instrutor::create($dados);
+        try {
+            DB::beginTransaction();
 
-                foreach ($dados['anexos'] as $item) {
-                    $resposta->Anexos()->attach($item['id']);
-                    $resposta->Anexos()->where('id', $item['id'])
-                        ->where('temporario', true)
-                        ->where('chave', $item['chave'])
-                        ->update([
-                            'temporario' => false,
-                            'chave' => '',
-                            'nome' => $item['nome']
-                        ]); // tira dos temporarioorarios
-                }
+            $resposta = Instrutor::create($dados);
 
-
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE INSTRUTOR:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
-//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+            foreach ($dados['anexos'] as $item) {
+                $resposta->Anexos()->attach($item['id']);
+                $resposta->Anexos()->where('id', $item['id'])
+                    ->where('temporario', true)
+                    ->where('chave', $item['chave'])
+                    ->update([
+                        'temporario' => false,
+                        'chave' => '',
+                        'nome' => $item['nome']
+                    ]); // tira dos temporarioorarios
             }
+
+
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE INSTRUTOR:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
+//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -112,29 +101,17 @@ class InstrutorController extends Controller
      * @param int $id
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdateInstrutorRequest $request, $id)
     {
         $this->authorize('cadastro_instrutor_update');
-        $dados = $request->input();
-        $dadosValidados = \Validator::make($dados,
-            [
-                'nome' => 'required',
-                'cargo' => 'required',
-                'registro' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Atualizar Instrutor',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+        $dados = $request->validated() + $request->input();
 
-                $instrutor = Instrutor::where('id', $id)->first();
+        try {
+            DB::beginTransaction();
 
-                $instrutor->update($dados);
+            $instrutor = Instrutor::where('id', $id)->first();
+
+            $instrutor->update($dados);
 
 //                // Excluir um Arquivo, falta a parte de deletar da tabela pivot
 //                if (isset($dados['anexosDel'])) {
@@ -144,37 +121,36 @@ class InstrutorController extends Controller
 //                    }
 //                }
 
-                if (isset($dados['anexos'])) {
-                    foreach ($dados['anexos'] as $index => $anexo) {
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
 //                    dd($anexo);
-                        //Se nao tem chave, entao é uma foto que já estava cadastrada no banco
-                        if ($anexo['chave'] == null) {
-                            Arquivo::whereId($anexo['id'])->update([
-                                'nome' => $anexo['nome'],
-                            ]);
-                            $instrutor->Anexos()->updateExistingPivot($anexo['id'], ['ordem' => $index]);
-                        } else {
-                            $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                            if ($arquivo) {
-                                $arquivo->temporario = false;
-                                $arquivo->chave = '';
-                                $arquivo->save();
-                                $instrutor->Anexos()->attach($arquivo->id);
-                            }
+                    //Se nao tem chave, entao é uma foto que já estava cadastrada no banco
+                    if ($anexo['chave'] == null) {
+                        Arquivo::whereId($anexo['id'])->update([
+                            'nome' => $anexo['nome'],
+                        ]);
+                        $instrutor->Anexos()->updateExistingPivot($anexo['id'], ['ordem' => $index]);
+                    } else {
+                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                        if ($arquivo) {
+                            $arquivo->temporario = false;
+                            $arquivo->chave = '';
+                            $arquivo->save();
+                            $instrutor->Anexos()->attach($arquivo->id);
                         }
                     }
                 }
-
-
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error UPDATE INSTRUTOR:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
-//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
+
+
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error UPDATE INSTRUTOR:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
+//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 

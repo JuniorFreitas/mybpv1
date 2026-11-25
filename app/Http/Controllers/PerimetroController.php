@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cadastros\AssociarPerimetroRequest;
+use App\Http\Requests\Cadastros\StorePerimetroRequest;
+use App\Http\Requests\Cadastros\UpdatePerimetroRequest;
 use App\Models\EmpresaPerimetro;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class PerimetroController extends Controller {
     /**
@@ -32,30 +34,14 @@ class PerimetroController extends Controller {
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request) {
-        $this->authorize('controle_ponto_perimetros_insert');
+    public function store(StorePerimetroRequest $request) {
         $dados = $request->only([
             'descricao','lat','long','perimetro','obrigatorio'
         ]);
 
-        $dadosValidados = \Validator::make($dados, [
-            'descricao' => 'required|min:3',
-            'lat' => 'numeric',
-            'long' => 'numeric',
-            'perimetro' => 'numeric',
-            'obrigatorio' => 'required|boolean',
-        ]);
+        $perimetro = EmpresaPerimetro::create($dados);
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao salvar o perímetro',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            $perimetro = EmpresaPerimetro::create($dados);
-
-            return response()->json($perimetro, 201);
-        }
+        return response()->json($perimetro, 201);
     }
 
     /**
@@ -85,31 +71,14 @@ class PerimetroController extends Controller {
      * @param \App\Models\EmpresaPerimetro $perimetro
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, EmpresaPerimetro $perimetro) {
-
-        $this->authorize('controle_ponto_perimetros_update');
+    public function update(UpdatePerimetroRequest $request, EmpresaPerimetro $perimetro) {
         $dados = $request->only([
             'descricao','lat','long','perimetro','obrigatorio'
         ]);
 
-        $dadosValidados = \Validator::make($dados, [
-            'descricao' => 'required|min:3|unique:empresa_perimetros,descricao,'.$perimetro->id,
-            'lat' => 'numeric',
-            'long' => 'numeric',
-            'obrigatorio' => 'required|boolean',
-        ]);
+        $perimetro->update($dados);
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao salvar o perímetro',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            $perimetro->update($dados);
-
-
-            return response()->json($perimetro, 200);
-        }
+        return response()->json($perimetro, 200);
     }
 
     /**
@@ -124,33 +93,17 @@ class PerimetroController extends Controller {
         return response()->json([],200);
     }
 
-    public function assosicarPerimetro(Request $request) {
-        $dados = $request->input();
-        $dadosValidados = \Validator::make($dados, [
-            'perimetro_id' => Rule::requiredIf(empty($request->perimetrosSelecionados)),
-            'perimetrosSelecionados' => Rule::requiredIf(is_null($request->perimetro_id)),
-            'funcionariosSelecionados' => 'required|array|min:1',
-        ]);
-
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao associar perímetros',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            foreach ($request->funcionariosSelecionados as $funcnionario_id) {
-                $user = User::find($funcnionario_id);
-                if (is_null($request->perimetro_id) && count($request->perimetrosSelecionados)>0) {
-                    $user->PerimetrosFuncionario()->sync($request->perimetrosSelecionados);
-                } else {
-                    $user->PerimetrosFuncionario()->detach();
-                }
+    public function assosicarPerimetro(AssociarPerimetroRequest $request) {
+        foreach ($request->funcionariosSelecionados as $funcnionario_id) {
+            $user = User::find($funcnionario_id);
+            if (is_null($request->perimetro_id) && count($request->perimetrosSelecionados)>0) {
+                $user->PerimetrosFuncionario()->sync($request->perimetrosSelecionados);
+            } else {
+                $user->PerimetrosFuncionario()->detach();
             }
-
-
-            return response()->json([], 200);
         }
+
+        return response()->json([], 200);
     }
 
     public function atualizarPerimetros(Request $request) {

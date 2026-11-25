@@ -571,7 +571,29 @@ class Cliente extends Model
         });
 
         static::addGlobalScope('scopeCliente', function (Builder $builder) {
-            $builder->whereIn('id', auth()->user()->ClientesEmpresa->pluck('id'));
+            $user = auth()->user();
+
+            // Fail-closed em HTTP sem auth (igual ScopeEmpresa). Console/fila
+            // não filtra aqui — jobs devem usar withoutGlobalScopes + empresa_id.
+            if (!$user) {
+                if (app()->runningInConsole()) {
+                    return;
+                }
+
+                $builder->whereRaw('0 = 1');
+
+                return;
+            }
+
+            $ids = $user->ClientesEmpresa->pluck('id');
+
+            if ($ids->isEmpty()) {
+                $builder->whereRaw('0 = 1');
+
+                return;
+            }
+
+            $builder->whereIn('id', $ids);
         });
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PosAdmissao\StorePosAdmissaoRequest;
 use App\Jobs\JobExportaExcel;
 use App\Models\Admissao;
 use App\Models\Sistema;
@@ -55,21 +56,9 @@ class PosAdmissaoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StorePosAdmissaoRequest $request)
     {
-        $dados = $request->input();
-
-        $dadosValidados = \Validator::make($dados, [
-            'cipa' => 'required',
-            'municipio_id' => 'required'
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Vaga',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        }
+        $dados = $request->validated();
     }
 
     /**
@@ -78,23 +67,11 @@ class PosAdmissaoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function demitir(Request $request)
+    public function demitir(\App\Http\Requests\PosAdmissao\DemitirPosAdmissaoRequest $request)
     {
         $dados = $request->input();
         $dadosDemissao = $dados['demissao'];
 
-        $dadosValidados = \Validator::make($dadosDemissao, [
-            'cipa' => 'required',
-            'motivo_rescisao_id' => 'required',
-            'tipo_aviso_id' => 'required',
-            'solicitado_por' => 'required',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao demitir',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             DB::beginTransaction();
             $feedback = FeedbackCurriculo::find($dados['feedback_id']);

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AprovacaoExtra\StoreAprovacaoExtraConfigRequest;
+use App\Http\Requests\AprovacaoExtra\TipoProcessoAprovacaoExtraRequest;
+use App\Http\Requests\AprovacaoExtra\UpdateAprovacaoExtraConfigRequest;
 use App\Models\AprovacaoExtraConfig;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -35,12 +38,8 @@ class AprovacaoExtraConfigController extends Controller
     /**
      * Busca configuração ativa para um tipo específico de processo
      */
-    public function buscarPorTipo(Request $request)
+    public function buscarPorTipo(TipoProcessoAprovacaoExtraRequest $request)
     {
-        $request->validate([
-            'tipo_processo' => 'required|string'
-        ]);
-
         $empresaId = auth()->user()->empresa_id;
         $config = AprovacaoExtraConfig::getConfigAtiva($empresaId, $request->tipo_processo);
 
@@ -53,16 +52,8 @@ class AprovacaoExtraConfigController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreAprovacaoExtraConfigRequest $request)
     {
-        $request->validate([
-            'tipo_processo' => 'required|in:demissao,ferias,mudanca_cargo,transferencia,intermitente_fixo,valor_extra,requisicao_vaga,admissao',
-            'nome_aprovacao' => 'required|string|max:255',
-            'usuarios_autorizados' => 'nullable|array',
-            'usuarios_autorizados.*' => 'exists:users,id',
-            'ativo' => 'required|boolean'
-        ]);
-
         try {
             DB::beginTransaction();
 
@@ -114,15 +105,8 @@ class AprovacaoExtraConfigController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(UpdateAprovacaoExtraConfigRequest $request, $id)
     {
-        $request->validate([
-            'nome_aprovacao' => 'required|string|max:255',
-            'usuarios_autorizados' => 'nullable|array',
-            'usuarios_autorizados.*' => 'exists:users,id',
-            'ativo' => 'required|boolean'
-        ]);
-
         try {
             DB::beginTransaction();
 
@@ -233,12 +217,8 @@ class AprovacaoExtraConfigController extends Controller
     /**
      * Verifica se o usuário atual pode aprovar uma solicitação
      */
-    public function podeAprovar(Request $request)
+    public function podeAprovar(TipoProcessoAprovacaoExtraRequest $request)
     {
-        $request->validate([
-            'tipo_processo' => 'required|string'
-        ]);
-
         $empresaId = auth()->user()->empresa_id;
         $userId = auth()->user()->id;
 

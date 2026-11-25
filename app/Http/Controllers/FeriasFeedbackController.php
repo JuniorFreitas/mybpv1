@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FeriasFeedback\StoreFeriasFeedbackRequest;
 use App\Models\AfastamentoFeedback;
 use App\Models\FeriasFeedback;
 use App\Models\FeriasPrevista;
@@ -21,37 +22,25 @@ class FeriasFeedbackController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreFeriasFeedbackRequest $request)
     {
-        $dados = $request->input();
+        $dados = $request->validated();
 
-        $dadosValidados = \Validator::make($dados, [
-            'ano' => 'required',
-            'valor' => 'required'
-        ]);
+        try {
+            DB::beginTransaction();
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar as Férias',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+            $dados['quem_cadastrou'] = auth()->id();
 
-                $dados['quem_cadastrou'] = auth()->id();
+            FeriasFeedback::create($dados);
 
-                FeriasFeedback::create($dados);
-
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE FERIAS FEEDBACK:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE FERIAS FEEDBACK:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
 //                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-                return response()->json(['msg' => $msg], 400);
-            }
+            return response()->json(['msg' => $msg], 400);
         }
     }
 

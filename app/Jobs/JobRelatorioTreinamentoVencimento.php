@@ -61,9 +61,9 @@ class JobRelatorioTreinamentoVencimento implements ShouldQueue
     public function handle(): void
     {
         try {
-            // Configurações de performance
-            ini_set('memory_limit', '1024M');
-            ini_set('max_execution_time', 0);
+            // PERF-MEM-001: teto alinhado ao ECS ~700MB (nunca 1024M/-1 no mesmo container)
+            ini_set('memory_limit', '256M');
+            ini_set('max_execution_time', '0');
 
             if (function_exists('gc_enable')) {
                 gc_enable();

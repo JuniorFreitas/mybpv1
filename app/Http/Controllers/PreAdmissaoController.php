@@ -7,6 +7,7 @@ use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
 use App\Domain\Whatsapp\Services\WhatsappCurriculoTelefoneResolver;
 use App\Domain\Whatsapp\Services\WhatsappMessageFactory;
 use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
+use App\Http\Requests\PreAdmissao\EnviarEmailPreAdmissaoRequest;
 use App\Jobs\ControleExames\JobExame;
 use App\Jobs\Entrevista\JobEnvioDocumento;
 use App\Jobs\Entrevista\JobEnvioFeedbackDocumento;
@@ -336,7 +337,7 @@ class PreAdmissaoController extends Controller
         }
     }
 
-    public function enviarEmail(Request $request)
+    public function enviarEmail(EnviarEmailPreAdmissaoRequest $request)
     {
         $dados = $request->input();
 
@@ -346,15 +347,6 @@ class PreAdmissaoController extends Controller
             ], 400);
         }
 
-        $dadosValidados = \Validator::make($dados, [
-            'email' => 'required|email:rfc,dns',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Atualizar Email',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             DB::beginTransaction();
             $feedback = FeedbackCurriculo::whereId($dados['id'])->first();

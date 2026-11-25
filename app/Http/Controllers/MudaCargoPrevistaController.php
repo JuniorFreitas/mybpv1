@@ -27,29 +27,12 @@ class MudaCargoPrevistaController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Movimentacao\StoreMudaCargoPrevistaRequest $request)
     {
-        $dados = $request->input();
+        $dados = $request->all();
         $dados['salario_anterior'] = $dados['salario_anterior_format'];
         $dados['novo_salario'] = $dados['novo_salario_format'];
         $dados['user_id'] = auth()->user()->id;
-
-        $dadosValidados = \Validator::make($dados,
-            [
-                'centro_custo_id' => 'required',
-                'colaborador_id' => 'required',
-                'cargo_anterior_id' => 'required',
-                'salario_anterior_format' => 'required',
-                'novo_cargo_id' => 'required',
-                'novo_salario_format' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Solicitar Demissão',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
             try {
                 DB::beginTransaction();
@@ -118,29 +101,13 @@ class MudaCargoPrevistaController extends Controller
      * @param \App\Models\MudaCargoPrevista $mudaCargoPrevista
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, MudaCargoPrevista $mudaCargoPrevista)
+    public function update(\App\Http\Requests\Movimentacao\UpdateMudaCargoPrevistaRequest $request, MudaCargoPrevista $mudaCargoPrevista)
     {
-        $dados = $request->input();
+        $dados = $request->all();
         $dados['salario_anterior'] = $dados['salario_anterior_format'];
         $dados['novo_salario'] = $dados['novo_salario_format'];
         $dados['user_id'] = auth()->user()->id;
 
-        $dadosValidados = \Validator::make($dados,
-            [
-                'centro_custo_id' => 'required',
-                'colaborador_id' => 'required',
-                'cargo_anterior_id' => 'required',
-                'salario_anterior_format' => 'required',
-                'novo_cargo_id' => 'required',
-                'novo_salario_format' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Solicitar Demissão',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
             try {
                 DB::beginTransaction();
                 $mudaCargoPrevista->update($dados);
@@ -170,7 +137,6 @@ class MudaCargoPrevistaController extends Controller
                 \Log::debug($msg);
                 return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
-        }
     }
 
     /**

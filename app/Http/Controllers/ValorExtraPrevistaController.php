@@ -17,34 +17,24 @@ use MasterTag\DataHora;
 
 class ValorExtraPrevistaController extends Controller
 {
+    /** Listagem vive no hub de Movimentação (SPA). */
+    public function index()
+    {
+        return redirect()->route('g.movimentacao.index');
+    }
+
     /**
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Movimentacao\StoreValorExtraPrevistaRequest $request)
     {
-        $dados = $request->input();
+        $dados = $request->all();
 
         $dados['user_id'] = auth()->user()->id;
         $dados = app(LotacaoCentroCustoNormalizer::class)->aplicar($dados);
-        $dadosValidados = \Validator::make(
-            $dados,
-            [
-                'centro_custo_id' => 'required',
-                'colaborador_id' => 'required',
-                'centro_custo_filial_id' => 'nullable|integer',
-                'tipo' => 'required',
-                'periodo_dias' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Solicitar Valor Extra',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             DB::beginTransaction();
             $valorExtraPrevista = ValorExtraPrevista::create($dados);
@@ -113,26 +103,11 @@ class ValorExtraPrevistaController extends Controller
      * @param \App\Models\ValorExtraPrevista $valorExtraPrevista
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, ValorExtraPrevista $valorExtraPrevista)
+    public function update(\App\Http\Requests\Movimentacao\UpdateValorExtraPrevistaRequest $request, ValorExtraPrevista $valorExtraPrevista)
     {
-        $dados = $request->input();
+        $dados = $request->all();
         $dados = app(LotacaoCentroCustoNormalizer::class)->aplicar($dados);
 
-        $dadosValidados = \Validator::make(
-            $dados,
-            [
-                'centro_custo_id' => 'required',
-                'colaborador_id' => 'required',
-                'tipo' => 'required',
-                'periodo_dias' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Solicitar Valor Extra',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             DB::beginTransaction();
             $valorExtraPrevista->update($dados);

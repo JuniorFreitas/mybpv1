@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Avaliacao\SalvarAvaliacaoPublicaRequest;
 use App\Models\AvaliacaoNoventaDias;
 use App\Models\AvaliacaoNoventaFeedback;
 use App\Models\AvaliacaoNoventaFeedbackQuantidade;
@@ -11,7 +12,6 @@ use App\Services\AvaliacaoNoventaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Gate;
 
 class AvaliacaoPublicaController extends Controller
@@ -106,7 +106,7 @@ class AvaliacaoPublicaController extends Controller
      * @param string $token
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function salvarAvaliacao(Request $request, string $token)
+    public function salvarAvaliacao(SalvarAvaliacaoPublicaRequest $request, string $token)
     {
     // Valida token novamente (sem filtrar por empresa para evitar falso negativo; autorização é conferida abaixo)
     $validacao = $this->avaliacaoService->validarTokenAvaliacao($token);
@@ -159,31 +159,7 @@ class AvaliacaoPublicaController extends Controller
             return redirect()->route('avaliacao.publica.erro', ['token' => $token])
                 ->with('error', $mensagemErro);
         }
-        $request['gestor_imediato'] = $ehGestorCentroCusto ? $user->nome : $request['gestor_imediato'];
-
-        // Validação dos dados do formulário
-        $validator = Validator::make($request->all(), [
-            'gestor_imediato' => 'required|string|max:255',
-            'observacao' => 'nullable|string|max:5000',
-            'definicao_contrato' => 'required|in:prorroga,finaliza',
-            'perguntas' => 'required|array',
-            'perguntas.*.id' => 'required|integer',
-            'perguntas.*.nota' => 'required|integer|min:1|max:5'
-        ], [
-            'gestor_imediato.required' => 'O campo Gestor Imediato é obrigatório',
-            'definicao_contrato.required' => 'Selecione a definição sobre o colaborador (Prorroga ou Finaliza o contrato).',
-            'definicao_contrato.in' => 'Definição inválida.',
-            'perguntas.required' => 'Todas as perguntas devem ser respondidas',
-            'perguntas.*.nota.required' => 'Todas as perguntas devem ter uma nota',
-            'perguntas.*.nota.min' => 'A nota mínima é 1',
-            'perguntas.*.nota.max' => 'A nota máxima é 5'
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+        // gestor_imediato do gestor do CC já é preenchido em SalvarAvaliacaoPublicaRequest::prepareForValidation
 
         try {
             $vencimento = $validacao['vencimento'];

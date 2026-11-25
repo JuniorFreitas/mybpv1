@@ -17,9 +17,7 @@ use App\Models\Sistema;
 use App\Models\TelefoneCurriculo;
 use App\Models\User;
 use App\Models\VagasAbertas;
-use App\Rules\CpfValidoEmpresaRules;
-use App\Rules\VagaAbertaEmpresaRules;
-use App\Rules\VerificaCpfEmpresaRules;
+use App\Http\Requests\Api\StoreCurriculoVagaAbertaRequest;
 use DB;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -266,103 +264,18 @@ class VagaAbertaController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param StoreCurriculoVagaAbertaRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(StoreCurriculoVagaAbertaRequest $request)
     {
-        $dados = $request->input();
-
-        $cpf = Sistema::transformCpfCnpj($request->cpf_padrao);
-        $dados['cpf'] = $cpf;
+        $dados = $request->all();
+        $cpf = $dados['cpf'];
+        $editando = $request->isEditando();
 
         $user = User::whereHas('Curriculo', function ($q) use ($cpf) {
             $q->withoutGlobalScopes()->whereCpf($cpf);
         })->whereEmpresaId($dados['empresa_id']);
-
-        $editando = $user->count() > 0;
-
-        $dados['lido'] = false;
-//        $dados['pcd'] = $dados['pcd'];
-//        $dados['viajar'] = $dados['viajar'] == 'true';
-//        $dados['disponibilidade_sabado'] = $dados['disponibilidade_sabado'] == 'true';
-//        $dados['disponibilidade_domingo'] = $dados['disponibilidade_domingo'] == 'true';
-//        $dados['disponibilidade_domingo'] = $dados['disponibilidade_domingo'] == 'true';
-        $dados['email'] = mb_strtolower($dados['email']);
-        // Guest: sem withoutGlobalScopes o ScopeEmpresa devolve vazio; restringe à empresa da própria requisição.
-        $vaga_aberta = VagasAbertas::withoutGlobalScopes()
-            ->where('empresa_id', $dados['empresa_id'])
-            ->whereId($dados['vaga_aberta_id'])
-            ->with('Municipio')
-            ->first();
-
-        $dados['uf_vaga'] = mb_strtoupper($vaga_aberta->Municipio->uf);
-        $dados['municipio_id'] = $vaga_aberta->municipio_id;
-        $dados['vaga_pretendida'] = $vaga_aberta->id;
-
-        $arrayValidacao = [
-            'nome' => 'required|min:3',
-            'cpf' => ['required', 'min:14',
-                new CpfValidoEmpresaRules($dados['empresa_id']),
-                new VerificaCpfEmpresaRules($dados['empresa_id'], $editando)
-            ],
-
-            'vaga_aberta_id' => ['required', new VagaAbertaEmpresaRules($dados['empresa_id'])],
-
-            'nascimento' => 'required|min:10',
-            // DNS só é checado fora de APP_ENV=local (permite e-mails de teste como example.com em dev).
-            'email' => app()->environment('local') ? 'required|email:rfc' : 'required|email:rfc,dns',
-            'cep' => 'required|min:9',
-            'logradouro' => 'required',
-            'bairro' => 'required',
-            'municipio' => 'required',
-            'uf' => 'required|min:2',
-            'formacao' => 'required',
-            'formacao_instituicao' => 'required',
-            'formacao_status' => 'required',
-            'vaga_pretendida' => 'required',
-            'municipio_id' => 'required',
-            'pcd' => 'required',
-            'disponibilidade_sabado' => 'required',
-            'disponibilidade_domingo' => 'required',
-
-            'telefones' => ["required", "array", "min:1"],
-            'telefones.*.numero' => 'required|min:14',
-
-        ];
-
-        $arrayQualificacao = [];
-        if ($dados['temqualificacao'] && isset($dados['qualificacoes'])) {
-            $arrayQualificacao = [
-                'qualificacoes.*.nome' => 'required',
-                'qualificacoes.*.instituicao' => 'required',
-                'qualificacoes.*.mes_conclusao' => 'required',
-                'qualificacoes.*.ano_conclusao' => 'required',
-            ];
-        }
-
-        $arrayExperiencia = [];
-        if ($dados['temexperiencia'] && isset($dados['experiencias'])) {
-            $arrayExperiencia = [
-                'experiencias.*.empresa' => 'required',
-                'experiencias.*.cargo' => 'required',
-                'experiencias.*.principais_atv' => 'required',
-                'experiencias.*.data_inicio' => 'required',
-            ];
-        }
-
-        $arrayNovo = array_merge($arrayValidacao, $arrayQualificacao, $arrayExperiencia);
-
-        $dadosValidados = \Validator::make($dados, $arrayNovo);
-
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar curriculo',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        }
 
         try {
             DB::beginTransaction();
@@ -381,13 +294,6 @@ class VagaAbertaController extends Controller
 
                 $usuario = $user->create($userObj);
                 $usuario->Curriculo()->create($dados);
-
-                if (!isset($dados['telefones'])) {
-                    return response()->json([
-                        'msg' => 'É Necessário Informar pelo menos Um número de telefone',
-                        'erros' => $dadosValidados->errors()
-                    ], 400);
-                }
 
                 foreach ($dados['telefones'] as $linha) {
                     if (isset($linha['id']) && $linha['id'] == 0) {

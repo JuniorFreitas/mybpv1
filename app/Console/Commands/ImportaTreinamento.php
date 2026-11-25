@@ -386,8 +386,9 @@ class ImportaTreinamento extends Command
             throw new \Exception('Nenhum ID de empresa informado');
         }
 
-        // Configurar otimizações de memória
-        ini_set('memory_limit', '512M'); // Ajustar conforme necessário
+        // PERF-MEM-001: teto alinhado ao ECS ~700MB (nunca 1024M/-1 no mesmo container)
+        ini_set('memory_limit', '256M');
+        ini_set('max_execution_time', '0');
 
         $chunkSize = (int)$this->option('chunk-size') ?: 1000;
         $this->info("Configurado para processar em chunks de {$chunkSize} registros");

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Events\WeeklyReport\CheckListTarefaEvent;
 use App\Http\Controllers\Concerns\GuardsWeeklyReportTenant;
+use App\Http\Requests\Operacional\StoreChecklistsTarefaRequest;
+use App\Http\Requests\Operacional\UpdateChecklistsTarefaRequest;
 use App\Models\ChecklistsTarefa;
 use App\Models\ChecklistsTarefaItem;
 use App\Models\ListaTarefa;
@@ -18,20 +20,9 @@ class ChecklistsTarefaController extends Controller
 {
     use GuardsWeeklyReportTenant;
 
-    public function store(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
+    public function store(StoreChecklistsTarefaRequest $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa)
     {
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa);
-
-        $dadosValidados = \Validator::make($request->all(), [
-            'titulo' => 'required|min:1',
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao criar a checklist',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
 
         try {
             \DB::beginTransaction();
@@ -63,22 +54,9 @@ class ChecklistsTarefaController extends Controller
         }
     }
 
-    public function update(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, ChecklistsTarefa $checklist)
+    public function update(UpdateChecklistsTarefaRequest $request, int $empresa, Quadro $quadro, ListaTarefa $lista, Tarefa $tarefa, ChecklistsTarefa $checklist)
     {
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista, $tarefa, $checklist);
-
-        $dadosValidados = \Validator::make($request->all(), [
-            'titulo' => 'nullable|min:1',
-            'datahora_entrega' => 'nullable|string',
-            'acao' => 'nullable|in:add,remove',
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao atualizar a checklist',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
 
         try {
             \DB::beginTransaction();

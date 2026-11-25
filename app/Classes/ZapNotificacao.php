@@ -3,6 +3,7 @@
 namespace App\Classes;
 
 use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
+use App\Domain\Whatsapp\Services\WhatsappBloqueioMetrics;
 use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
 use App\Jobs\JobSendNotificacaoWhatsApp;
 use App\Services\Dynamus\ZapDynamusService;
@@ -75,9 +76,10 @@ class ZapNotificacao
     public function deveEnviarWhatsapp(array $dados): bool
     {
         $meta = $dados['_whatsapp_meta'] ?? null;
+        $metrics = app(WhatsappBloqueioMetrics::class);
 
         if (!is_array($meta)) {
-            Log::info('WhatsApp bloqueado: metadados de envio ausentes');
+            $metrics->registrar(WhatsappBloqueioMetrics::MOTIVO_META_AUSENTE);
 
             return false;
         }
@@ -85,26 +87,40 @@ class ZapNotificacao
         $empresaId = (int) ($meta['empresa_id'] ?? 0);
 
         if (($meta['tipo'] ?? null) === 'aniversario') {
-            return $empresaId > 0
+            $ok = $empresaId > 0
                 && app(WhatsappNotificationGateService::class)->podeEnviarAniversario($empresaId);
+            if (!$ok) {
+                $metrics->registrar(WhatsappBloqueioMetrics::MOTIVO_GATE, $empresaId ?: null, [
+                    'tipo' => 'aniversario',
+                ]);
+            }
+
+            return $ok;
         }
 
         if (($meta['tipo'] ?? null) === 'mfa_login') {
-            return $empresaId > 0
+            $ok = $empresaId > 0
                 && app(WhatsappNotificationGateService::class)->podeEnviarMfaLogin($empresaId);
+            if (!$ok) {
+                $metrics->registrar(WhatsappBloqueioMetrics::MOTIVO_GATE, $empresaId ?: null, [
+                    'tipo' => 'mfa_login',
+                ]);
+            }
+
+            return $ok;
         }
 
         $tipo = TipoMensagemWhatsapp::tryFromString($meta['tipo'] ?? null);
 
         if (!$tipo || $empresaId <= 0) {
-            Log::info('WhatsApp bloqueado: metadados inválidos', [
+            $metrics->registrar(WhatsappBloqueioMetrics::MOTIVO_META_INVALIDA, $empresaId ?: null, [
                 'tipo' => $meta['tipo'] ?? null,
-                'empresa_id' => $meta['empresa_id'] ?? null,
             ]);
 
             return false;
         }
 
+        // Motivos detalhados (empresa/módulo/preferência) são registrados no gate.
         return app(WhatsappNotificationGateService::class)->podeEnviar(
             $tipo,
             $empresaId,

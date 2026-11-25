@@ -234,30 +234,30 @@ docs/08-integracoes.md
 
 | Item | Descrição | Impacto |
 |------|-----------|---------|
-| ⬜ Auto-save ou confirmação na aba Módulos | Usuário pode sair sem salvar toggles | Configuração não aplicada sem perceber |
-| ⬜ Activity log de alteração de módulos | Auditoria de quem desativou o quê | Compliance / suporte |
-| ⬜ Seeder ao criar `empresa_whatsapp_configs` | Hoje default implícito = todos on | Primeiro save poderia materializar JSON |
-| ⬜ Métricas Horizon — envios bloqueados pelo gate | Contador em log ou dashboard | Observabilidade |
-| ⬜ Menu RH condicional | Link WhatsApp só se `envia_whatsapp` | Hoje link aparece com permissão `configuracao_whatsapp` mesmo sem empresa liberada (tela mostra alerta) |
+| ✅ Auto-save na aba Módulos | Debounce ~450ms + feedback “Salvo automaticamente” | Evita sair sem persistir toggles |
+| ✅ Activity log de alteração de módulos | `EmpresaWhatsappConfig` logFillable + descrição específica | Compliance / suporte |
+| ✅ Materializar `empresa_whatsapp_configs` | `ensureConfigMaterializada` no load da config API | Default implícito → JSON explícito |
+| ✅ Métricas de bloqueio pelo gate | `WhatsappBloqueioMetrics` (cache TTL 7d + log estruturado por motivo/empresa) | Observabilidade Horizon/suporte |
+| ✅ Menu RH condicional | Link WhatsApp só com `envia_whatsapp` + habilidade | Esconde menu se empresa não liberada |
 
 ### 5.2 Prioridade baixa / débito técnico
 
 | Item | Descrição |
 |------|-----------|
-| ⬜ Scripts legados `scripts/0_*.php` | Enviam via `ZapNotificacao::enviar()` **sem** `_whatsapp_meta` → bloqueados pelo gate ou precisam migração |
-| ⬜ Unificar `User::enviaWhatsApp()` com o gate | Ainda usado em `ParecerRotaWhatsappService` (redundante com gate logo abaixo) |
-| ⬜ Feature tests HTTP das APIs WhatsApp | Só testes unitários hoje; falta cobertura de rotas com SQLite `:memory:` |
-| ⬜ Composition API no frontend | Migrar componentes WhatsApp conforme `docs/PLANO_MIGRACAO_COMPOSITION_API_SERVICES.md` |
-| ⬜ `apikey` hardcoded no `ZapDynamusService` | Risco de segurança documentado em `08-integracoes.md` |
+| ✅ Scripts legados `scripts/0_*.php` | Já incluem `_whatsapp_meta` (BUG-003); ver §6 |
+| ✅ Unificar `User::enviaWhatsApp()` com o gate | Delega a `empresaPermiteWhatsapp()`; envio por tipo usa `podeEnviar()` |
+| ✅ Feature tests HTTP das APIs WhatsApp | `tests/Feature/WhatsappConfigHttpTest.php` — 29 testes/111 assertions, SQLite `:memory:` |
+| ✅ Composition API (lote WhatsApp) | Config/Preferencias/NotificacoesUsuarios + `useConfig.whatsappTipoHabilitado` |
+| ⬜ Rotação apikey Dynamus | Código já usa `config/services.zapdynamus`; falta rotacionar (SEC-002) |
 
 ### 5.3 UI operacional — gaps menores
 
 | Fluxo | Situação |
 |-------|----------|
-| Intermitente | Backend usa gate; não há checkbox condicional na UI (convocação é fluxo automático) |
-| Carta oferta gerencial / SGI | Envio via integração/controller; sem toggle visual por módulo na tela de origem |
-| Recrutamento | Usa `permite_envio_whatsapp` da API (gate) — OK, mas não usa mixin `whatsappTipoHabilitado` diretamente |
-| Documentos legais (empresa/SSMA) | Controllers expõem flag `whatsapp` só com `envia_whatsapp`, sem verificar módulo |
+| Intermitente | By design: convocação automática no backend (gate); sem checkbox na UI |
+| Carta oferta gerencial / SGI | Envio via integração/controller (gate); toggle visual na origem = residual UX |
+| Recrutamento | `podeMostrarWhatsappRecrutamento` = `whatsappTipoHabilitado` (seleção/provas) + fallback API |
+| Documentos legais (empresa/SSMA) | Flag `whatsapp` via `empresaPermiteWhatsapp()` (sem módulo dedicado no catálogo) |
 
 ### 5.4 Test plan manual — não executado em QA formal
 
@@ -286,9 +286,9 @@ Checklist em [WHATSAPP_CONFIGURACAO_EMPRESA.md §12](./WHATSAPP_CONFIGURACAO_EMP
 
 ---
 
-## 6. Scripts legados (atenção)
+## 6. Scripts legados (status)
 
-Os scripts abaixo ainda chamam `ZapNotificacao::enviar()` **sem** `_whatsapp_meta`. Com o gate atual, esses envios são **bloqueados** (log: `metadados de envio ausentes`):
+Os scripts abaixo **já enviam com** `_whatsapp_meta` via `ZapNotificacao::meta()` (BUG-003 DONE):
 
 ```
 scripts/0_ATUALIZACAO_MONTISOL.php
@@ -297,7 +297,7 @@ scripts/0_VENCIMENTO_TREINAMENTOS.php
 scripts/0_DOCUMENTO_CURRICULOS.php
 ```
 
-**Ação recomendada:** migrar para incluir `ZapNotificacao::meta()` + tipo adequado, ou documentar/isolar como legado fora do gate.
+Nota: usam tipos do catálogo existente (ex.: `admissao_documentos`) para notificações operacionais de importação — respeitam gate empresa/módulo.
 
 ---
 
@@ -375,7 +375,7 @@ JobSendNotificacaoWhatsApp → gate novamente → Dynamus
 3. **Menu condicional** — esconder link WhatsApp se empresa não liberada  
 4. **Activity log** — módulos alterados  
 5. **Scripts legados** — meta ou isolamento  
-6. **Feature tests HTTP** — APIs de config  
+6. ✅ **Feature tests HTTP** — APIs de config (status, config, módulos, templates, usuários-notificações)  
 
 ---
 

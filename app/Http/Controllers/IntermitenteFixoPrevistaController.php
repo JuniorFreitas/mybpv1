@@ -22,68 +22,50 @@ use MasterTag\DataHora;
 
 class IntermitenteFixoPrevistaController extends Controller
 {
+    /** Listagem vive no hub de Movimentação (SPA). */
+    public function index()
+    {
+        return redirect()->route('g.movimentacao.index');
+    }
+
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Movimentacao\StoreIntermitenteFixoPrevistaRequest $request)
     {
-        $dados = $request->input();
+        $dados = $request->all();
         $dados['salario_anterior'] = $dados['salario_anterior_format'];
         $dados['novo_salario'] = $dados['novo_salario_format'];
         $dados['user_id'] = auth()->user()->id;
         $dados = app(LotacaoCentroCustoNormalizer::class)->aplicar($dados);
 
-        $dadosValidados = \Validator::make(
-            $dados,
-            [
-                'centro_custo_id' => 'required',
-                'centro_custo_filial_id' => 'nullable|integer',
-                'colaborador_id' => 'required',
-                'cargo_anterior_id' => 'required',
-                'salario_anterior_format' => 'required',
-                'novo_cargo_id' => 'required',
-                'novo_salario_format' => 'required',
-                'anterior_vaga_aberta_id' => 'required',
-                'nova_vaga_aberta_id' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Solicitar Mudança Intermitente Fixo',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+        try {
+            DB::beginTransaction();
 
-                $intermitenteFixoPrevista = IntermitenteFixoPrevista::create($dados);
-                if (isset($dados['anexos'])) {
-                    foreach ($dados['anexos'] as $index => $anexo) {
-                        $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
-                        if ($arquivo) {
-                            $arquivo->temporario = false;
-                            $arquivo->chave = '';
-                            $arquivo->save();
-                            $intermitenteFixoPrevista->Anexos()->attach($arquivo->id);
-                        }
+            $intermitenteFixoPrevista = IntermitenteFixoPrevista::create($dados);
+            if (isset($dados['anexos'])) {
+                foreach ($dados['anexos'] as $index => $anexo) {
+                    $arquivo = Arquivo::whereChave($anexo['chave'])->whereId($anexo['id'])->first();
+                    if ($arquivo) {
+                        $arquivo->temporario = false;
+                        $arquivo->chave = '';
+                        $arquivo->save();
+                        $intermitenteFixoPrevista->Anexos()->attach($arquivo->id);
                     }
                 }
-                DB::commit();
-
-                // Envia notificação para a próxima etapa (gestor)
-                JobNotificacaoRecursiva::dispatch($intermitenteFixoPrevista->id, $intermitenteFixoPrevista->empresa_id);
-
-                return response()->json('', 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "erro ao salvar  Mudança Intermitente Fixo:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
-                //                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
             }
+            DB::commit();
+
+            JobNotificacaoRecursiva::dispatch($intermitenteFixoPrevista->id, $intermitenteFixoPrevista->empresa_id);
+
+            return response()->json('', 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "erro ao salvar  Mudança Intermitente Fixo:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . auth()->user()->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
         }
     }
 
@@ -122,35 +104,16 @@ class IntermitenteFixoPrevistaController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
      * @param \App\Models\IntermitenteFixoPrevista $intermitenteFixoPrevista
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, IntermitenteFixoPrevista $intermitenteFixoPrevista)
+    public function update(\App\Http\Requests\Movimentacao\UpdateIntermitenteFixoPrevistaRequest $request, IntermitenteFixoPrevista $intermitenteFixoPrevista)
     {
-        $dados = $request->input();
+        $dados = $request->all();
         $dados['salario_anterior'] = $dados['salario_anterior_format'];
         $dados['novo_salario'] = $dados['novo_salario_format'];
         $dados['user_id'] = auth()->user()->id;
         $dados = app(LotacaoCentroCustoNormalizer::class)->aplicar($dados);
-
-        $dadosValidados = \Validator::make(
-            $dados,
-            [
-                'centro_custo_id' => 'required',
-                'colaborador_id' => 'required',
-                'cargo_anterior_id' => 'required',
-                'salario_anterior_format' => 'required',
-                'novo_cargo_id' => 'required',
-                'novo_salario_format' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Solicitar  Mudança Intermitente Fixo',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
         try {
             DB::beginTransaction();

@@ -17,6 +17,8 @@ use App\Models\Sistema;
 use App\Models\User;
 use App\Services\AssinaturaDigital\AssinaturaCotaService;
 use DB;
+use App\Http\Requests\Cadastros\StoreClienteRequest;
+use App\Http\Requests\Cadastros\UpdateClienteRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -50,58 +52,15 @@ class ClientesController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param StoreClienteRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(StoreClienteRequest $request)
     {
         $this->authorize('administracao_clientes_insert');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados = $request->all();
 
-        if ($dados['tipo'] == Cliente::TIPO_PESSOA_JURIDICA) {
-            $validar = [
-                'cnpj' => 'required|min:18|unique:clientes,cnpj',
-                'razao_social' => 'required|min:2',
-            ];
-        } else {
-            $validar = [
-                'cpf' => 'required|min:14|unique:clientes,cpf',
-                'nome' => 'required|min:2',
-            ];
-        }
-
-        $validaComum = [
-            'area_id' => 'required',
-            'contato' => 'required',
-            'aniversario' => 'required',
-            'uf' => 'required|min:2',
-            'logradouro' => 'required|min:3',
-            'bairro' => 'required|min:3',
-            'municipio' => 'required|min:3',
-            'email' => 'required|email',
-            'ativo' => 'required',
-        ];
-
-
-        array_merge($validar, $validaComum);
-
-        if (!isset($dados['telefones'])) {
-            return response()->json([
-                'msg' => 'É Necessário Informar pelo menos Um número de telefone'
-            ], 400);
-        }
-
-        $dadosValidados = \Validator::make($dados, $validar);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Cliente',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        } else {
-            try {
+        try {
                 DB::beginTransaction();
                 $user = User::create([
                     'nome' => $dados['tipo'] == Cliente::TIPO_PESSOA_JURIDICA ? $dados['razao_social'] : $dados['nome'],
@@ -268,16 +227,14 @@ class ClientesController extends Controller
                 DB::commit();
                 return response()->json([], 201);
 
-            } catch (\Exception $e) {
-                DB::rollBack();
-                $msg = "error STORE CLIENTES:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json([
-                    'msg' => $msg,
-                ], 400);
-            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $msg = "error STORE CLIENTES:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json([
+                'msg' => $msg,
+            ], 400);
         }
-
     }
 
     /**
@@ -342,51 +299,14 @@ class ClientesController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param UpdateClienteRequest $request
      * @param \App\Models\Cliente $cliente
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, Cliente $cliente)
+    public function update(UpdateClienteRequest $request, Cliente $cliente)
     {
         $this->authorize('administracao_clientes_insert');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-
-        if ($dados['tipo'] == Cliente::TIPO_PESSOA_JURIDICA) {
-            $validar = [
-                'cnpj' => 'required|min:18|unique:clientes,cnpj,' . $cliente->id,
-                'razao_social' => 'required|min:2',
-            ];
-        } else {
-            $validar = [
-                'cpf' => 'required|min:14|unique:clientes,cpf,' . $cliente->id,
-                'nome' => 'required|min:2',
-            ];
-        }
-
-        $validaComum = [
-            'area_id' => 'required',
-            'contato' => 'required',
-            'aniversario' => 'required',
-            'uf' => 'required|min:2',
-            'logradouro' => 'required|min:3',
-            'bairro' => 'required|min:3',
-            'municipio' => 'required|min:3',
-            'email' => 'required|email',
-            'ativo' => 'required',
-        ];
-
-        array_merge($validar, $validaComum);
-
-        $dadosValidados = \Validator::make($dados, $validar);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar Cliente',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-
-        }
+        $dados = $request->all();
 
         try {
             DB::beginTransaction();

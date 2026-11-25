@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Avaliacao\StoreAvaliacaoTipoRequest;
+use App\Http\Requests\Avaliacao\UpdateAvaliacaoTipoRequest;
 use App\Models\AvaliacaoTipo;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class AvaliacaoTipoController extends Controller
 {
@@ -20,31 +21,10 @@ class AvaliacaoTipoController extends Controller
         return view('g.cadastros.avaliacoes-pj.avaliacaotipo.index');
     }
 
-    public function store(Request $request)
+    public function store(StoreAvaliacaoTipoRequest $request)
     {
         $this->authorize('cadastro_avaliacao_tipo_insert');
         $dados = $request->input();
-        $nome = $dados['nome'];
-        $descricao = $dados['descricao'];
-
-        $arrayValidacao = [
-            'nome' => [
-                'required',
-                'min:3',
-                Rule::unique('avaliacoes_tipos')->where(function ($query) use ($nome, $descricao) {
-                    return $query->where('nome', $nome)
-                        ->where('descricao', $descricao);
-                })
-            ]
-        ];
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar tipo de avaliação',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
         try {
             DB::beginTransaction();
@@ -73,33 +53,11 @@ class AvaliacaoTipoController extends Controller
         return $avaliacaotipo;
     }
 
-    public function update(Request $request, AvaliacaoTipo $avaliacaotipo)
+    public function update(UpdateAvaliacaoTipoRequest $request, AvaliacaoTipo $avaliacaotipo)
     {
         $this->authorize('cadastro_avaliacao_tipo_update');
 
         $dados = $request->input();
-        $nome = $dados['nome'];
-        $descricao = $dados['descricao'];
-        $id_tipo_avaliacao = $request->segment(5);
-        $arrayValidacao = [
-            'nome' => [
-                'required',
-                'min:3',
-                Rule::unique('avaliacoes_tipos')->where(function ($query) use ($nome, $descricao, $id_tipo_avaliacao) {
-                    return $query->where('nome', $nome)
-                        ->where('descricao', $descricao)
-                        ->where('id', '<>', $id_tipo_avaliacao);
-                })
-            ]
-        ];
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao editar tipo de avaliação',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
         try {
             DB::beginTransaction();

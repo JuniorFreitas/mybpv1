@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cadastros\UpdateEmpresaConfigRequest;
 use App\Models\Cliente;
 use App\Models\EmpresaConfig;
 use App\Models\FormaPagamento;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class EmpresaConfigController extends Controller
 {
@@ -70,39 +70,22 @@ class EmpresaConfigController extends Controller
      * @param \App\Models\EmpresaConfig $config
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, EmpresaConfig $config)
+    public function update(UpdateEmpresaConfigRequest $request, EmpresaConfig $config)
     {
+        $dados = $request->all();
 
-        $dados = $request->input();
-
-        $dadosValidados = \Validator::make($dados, [
-            'tipo_frequencia' => 'required|min:1',
-            'limite_tolerancia' => 'required|numeric|min:1',
-            'tempo_limite_falta' => 'required|numeric|min:1',
-            'tempo_limite_saida' => 'required|numeric|min:1',
-            'dia_nova_frequencia' => 'required|numeric|min:1',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+        try {
+            \DB::beginTransaction();
+            $config->update($dados);
+            \DB::commit();
+            return response()->json([], 200);
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            \Log::error($e->getMessage());
             return response()->json([
                 'msg' => 'Erro ao salvar as configuraçôes da empresa',
-                'erros' => $dadosValidados->errors()
+                'erros' => $e->getMessage()
             ], 400);
-        } else {
-            try {
-                \DB::beginTransaction();
-                $config->update($dados);
-                \DB::commit();
-                return response()->json([], 200);
-            }catch (\Exception $e) {
-                \DB::rollBack();
-                \Log::error($e->getMessage());
-                return response()->json([
-                    'msg' => 'Erro ao salvar as configuraçôes da empresa',
-                    'erros' => $e->getMessage()
-                ], 400);
-            }
-
         }
     }
 

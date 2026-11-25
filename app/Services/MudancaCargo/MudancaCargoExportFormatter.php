@@ -51,7 +51,12 @@ class MudancaCargoExportFormatter
 
     public function formatRow(MudancaCargo $row): array
     {
-        $dataSolicitacao = $row->data_solicitacao ? (is_object($row->data_solicitacao) ? $row->data_solicitacao->format('d/m/Y H:i') : (new DataHora($row->data_solicitacao))->dataCompleta()) : '';
+        // Data de solicitação: só dd/mm/aaaa (sem hora), alinhado às demais exportações de data de negócio
+        $dataSolicitacao = $row->data_solicitacao
+            ? (is_object($row->data_solicitacao)
+                ? $row->data_solicitacao->format('d/m/Y')
+                : (new DataHora($row->data_solicitacao))->dataCompleta())
+            : '';
         $dataAprovacaoGestor = $row->status_aprovacao_gestor && $row->data_aprovacao_gestor
             ? (new DataHora($row->data_aprovacao_gestor))->dataCompleta() . ' ' . substr((new DataHora($row->data_aprovacao_gestor))->horaCompleta(), 0, 5) : '';
         $dataAprovacaoRh = $row->status_aprovacao_rh && $row->data_aprovacao_rh

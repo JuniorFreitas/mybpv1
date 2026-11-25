@@ -47,7 +47,7 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        if ($this->app->isProduction() || env('VITE_AMBIENTE') == 'prod' || env('MIX_AMBIENTE') == 'prod') {
+        if ($this->app->isProduction() || config('app.vite_ambiente') === 'prod') {
             \URL::forceScheme('https');
         }
 

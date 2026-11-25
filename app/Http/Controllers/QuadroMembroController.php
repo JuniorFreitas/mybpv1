@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\GuardsWeeklyReportTenant;
+use App\Http\Requests\Operacional\StoreQuadroMembroRequest;
 use App\Models\Quadro;
 use App\Models\QuadroMembro;
 use App\Models\User;
@@ -80,23 +81,12 @@ class QuadroMembroController extends Controller
         return response()->json($usuarios, 200);
     }
 
-    public function store(Request $request, int $empresa, Quadro $quadro)
+    public function store(StoreQuadroMembroRequest $request, int $empresa, Quadro $quadro)
     {
         $this->assertWeeklyHierarchy($empresa, $quadro);
         $this->assertQuadroDono($quadro);
 
-        $dados = \Validator::make($request->all(), [
-            'user_id' => 'required|integer|exists:users,id',
-        ]);
-
-        if ($dados->fails()) {
-            return response()->json([
-                'msg' => 'Informe um usuário válido',
-                'erros' => $dados->errors(),
-            ], 400);
-        }
-
-        $userId = (int) $request->input('user_id');
+        $userId = (int) $request->validated('user_id');
         $user = User::query()
             ->where('id', $userId)
             ->where('empresa_id', $empresa)

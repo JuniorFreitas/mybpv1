@@ -326,7 +326,7 @@ mybp/
 │   ├── COMO_USAR_APROVACAO_EXTRA.md
 │   └── [outros arquivos de documentação]
 │
-├── webpack.mix.js
+├── vite.config.js
 ├── package.json
 └── CHECKLIST_FINAL_APROVACAO_EXTRA.md
 ```

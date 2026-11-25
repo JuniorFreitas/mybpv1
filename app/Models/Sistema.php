@@ -499,14 +499,20 @@ class Sistema
 
     public static function telegram($msg)
     {
+        $botId = (string) config('services.telegram.bot_id', '');
+        $chatId = (string) config('services.telegram.chat_id', '');
+        if ($botId === '' || $chatId === '') {
+            return;
+        }
+
         $ch = curl_init();
-        $url = "https://api.telegram.org/bot" . env('BOT_ID') . '/SendMessage';
+        $url = 'https://api.telegram.org/bot' . $botId . '/SendMessage';
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
             'text' => $msg,
-            'chat_id' => env('CHAT_ID'),
+            'chat_id' => $chatId,
             'parse_mode' => 'html'
         ]));
         curl_exec($ch);
@@ -531,11 +537,11 @@ class Sistema
     public static function configAws()
     {
         return [
-            'key' => env('AWS_ACCESS_KEY_ID'),
-            'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            'region' => env('AWS_DEFAULT_REGION'),
-            'bucket' => env('AWS_BUCKET'),
-            'endpoint' => env('AWS_ENDPOINT')
+            'key' => config('filesystems.disks.s3.key'),
+            'secret' => config('filesystems.disks.s3.secret'),
+            'region' => config('filesystems.disks.s3.region'),
+            'bucket' => config('filesystems.disks.s3.bucket'),
+            'endpoint' => config('filesystems.disks.s3.endpoint'),
         ];
     }
 

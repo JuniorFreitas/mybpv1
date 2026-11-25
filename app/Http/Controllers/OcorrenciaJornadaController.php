@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Operacional\StoreOcorrenciaJornadaRequest;
+use App\Http\Requests\Operacional\UpdateOcorrenciaJornadaRequest;
 use App\Models\OcorrenciaJornada;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class OcorrenciaJornadaController extends Controller
 {
@@ -34,31 +35,14 @@ class OcorrenciaJornadaController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreOcorrenciaJornadaRequest $request)
     {
         $this->authorize('controle_ponto_ocorrencias_jornadas_insert');
-        $dados = $request->input();
+        $dados = $request->validated();
 
-        $dadosValidados = \Validator::make($dados, [
-            //'descricao' => 'required|min:3|unique:ocorrencias_jornada,descricao',
-            'descricao' => ['required', 'min:3',
-                Rule::unique('ocorrencias_jornada')->where(function ($query) use ($dados) {
-                    return $query->whereDescricao($dados['descricao'])->whereEmpresaId(auth()->user()->empresa_id);
-                })],
-            'trabalhado' => 'required|boolean',
-            'conta_horas' => 'required|boolean',
-            'ativo' => 'required|boolean',
+        OcorrenciaJornada::create($dados);
 
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar uma ocorrência',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            $categoria = OcorrenciaJornada::create($dados);
-            return response()->json([], 201);
-        }
+        return response()->json([], 201);
     }
 
     /**
@@ -90,31 +74,14 @@ class OcorrenciaJornadaController extends Controller
      * @param  \App\Models\OcorrenciaJornada  $ocorrencia_jornada
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, OcorrenciaJornada $ocorrencia_jornada)
+    public function update(UpdateOcorrenciaJornadaRequest $request, OcorrenciaJornada $ocorrencia_jornada)
     {
         $this->authorize('controle_ponto_ocorrencias_jornadas_update');
-        $dados = $request->input();
+        $dados = $request->validated();
 
-        $dadosValidados = \Validator::make($dados, [
-            //'descricao' => 'required|min:3|unique:ocorrencias_jornada,descricao,' . $ocorrencia_jornada->id,
-            'descricao' => ['required', 'min:3',
-                Rule::unique('ocorrencias_jornada')->where(function ($query) use ($dados, $ocorrencia_jornada) {
-                    return $query->whereDescricao($dados['descricao'])->whereEmpresaId(auth()->user()->empresa_id)->whereNotIn('id', [$ocorrencia_jornada->id]);
-                })],
-            'trabalhado' => 'required|boolean',
-            'conta_horas' => 'required|boolean',
-            'ativo' => 'required|boolean'
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar a classificação de plano de conta',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            $ocorrencia_jornada->update($dados);
+        $ocorrencia_jornada->update($dados);
 
-            return response()->json([], 201);
-        }
+        return response()->json([], 201);
     }
 
     /**

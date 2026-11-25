@@ -74,9 +74,9 @@
 
 -   [x] **Assets Compilados**
 
-    -   [x] webpack.mix.js atualizado
-    -   [x] npm run dev executado
-    -   [x] Arquivo gerado: `public/js/g/administracao/aprovacao-extra-config/app.js`
+    -   [x] Entrada Vite do módulo registrada (`vite.config.js`)
+    -   [x] `npm run build` / `npm run hot` (Vite — Mix removido)
+    -   [x] Bundle gerado sob `public/build` (manifest Vite)
 
 -   [x] **Pacotes NPM**
     -   [x] sweetalert2 instalado
@@ -122,40 +122,27 @@
 -   [x] **Manual do Usuário**
     -   [x] COMO_USAR_APROVACAO_EXTRA.md
 
-## Testes Pendentes ⏳
+## Testes — cobertura automatizada ✅ (2026-11-23)
 
--   [ ] **Acesso à Tela**
+Arquivo: `tests/Feature/AprovacaoExtraConfigTest.php`
 
-    -   [ ] Acessar `/g/administracao/aprovacao-extra-config`
-    -   [ ] Verificar se a página carrega sem erros
-    -   [ ] Verificar se o menu está visível
+-   [x] **CRUD / listagem tenant**
 
--   [ ] **CRUD**
+    -   [x] Listar só da empresa
+    -   [x] Criar configuração
+    -   [x] Rejeitar duplicidade do mesmo tipo
+    -   [x] Update/destroy não alteram outra empresa
 
-    -   [ ] Criar nova configuração
-    -   [ ] Listar configurações
-    -   [ ] Editar configuração existente
-    -   [ ] Ativar/desativar configuração
-    -   [ ] Deletar configuração
+-   [x] **Tipos / autorização**
 
--   [ ] **Seleção de Usuários**
+    -   [x] Tipos de processo incluem `mudanca_cargo`
+    -   [x] `podeAprovar` com usuário autorizado
+    -   [x] `podeAprovar` com usuário não autorizado
 
-    -   [ ] Abrir multiselect
-    -   [ ] Selecionar múltiplos usuários
-    -   [ ] Salvar com usuários
-    -   [ ] Verificar se aparecem na listagem
+-   [ ] **UAT visual (opcional em homologação)**
+    -   [ ] Multiselect usuários na UI
+    -   [ ] Menu visível com habilidade
 
--   [ ] **Validações**
-
-    -   [ ] Tentar salvar sem preencher campos obrigatórios
-    -   [ ] Tentar ativar segunda configuração do mesmo tipo
-    -   [ ] Verificar mensagens de erro
-
--   [ ] **Permissões**
-    -   [ ] Verificar acesso com usuário sem permissão
-    -   [ ] Verificar acesso com usuário com permissão
-    -   [ ] Testar `podeAprovar()` com usuário autorizado
-    -   [ ] Testar `podeAprovar()` com usuário com privilegio_rh
 
 ## Integração com Processos ⏳
 

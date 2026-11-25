@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ClientesExport;
+use App\Http\Requests\Documentos\StoreDocumentoEmpresaRequest;
+use App\Http\Requests\Documentos\UpdateDocumentoEmpresaRequest;
 use App\Mail\Movimentacao\FeriasPrevista\SaidaMail;
 use App\Mail\Movimentacao\FeriasPrevista\VencimentoMail;
 use App\Models\Area;
@@ -48,44 +50,10 @@ class DocumentosLegaisEmpresaController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
 
-    public function store(Request $request)
+    public function store(StoreDocumentoEmpresaRequest $request)
     {
         $this->authorize('administracao_documentos_legais_insert');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-
-        $arrayValidacao = [
-            'documentos_empresa.*.observacao' => [function ($attribute, $value, $fail) use ($dados) {
-                if (strlen($value) <= 3) {
-                    $fail('Informe uma observação maior que 3 caracteres.');
-                }
-            }],
-            'documentos_empresa.tipo_id' => [function ($attribute, $value, $fail) use ($dados) {
-                $tipo_empresa = $dados['tipo_empresa'] ? 'empresa' : 'contrato';
-                $tipoDocumento = TipoDocumento::whereTipo($tipo_empresa)->first();
-                if(!$tipoDocumento){
-                    $fail('Verificar o tipo de documento');
-                }
-            }],
-            'documentos_empresa.data_inicio' => [function ($attribute, $value, $fail) use ($dados) {
-                $datainicio = $dados['documentos_empresa']['data_inicio'];
-                $dataencerramento = $dados['documentos_empresa']['data_encerramento'];
-
-                $diff_dias = DataHora::diferencaDias($datainicio, $dataencerramento);
-
-                if ($diff_dias <= 0) {
-                    $fail('Data Vencimento precisa ser maior que a Data início');
-                }
-            }],
-        ];
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Documento Empresa',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->all();
 
         try {
             DB::beginTransaction();
@@ -129,39 +97,11 @@ class DocumentosLegaisEmpresaController extends Controller
      * @throws \Illuminate\Auth\Access\AuthorizationException
      * @throws \Throwable
      */
-    public function update(Request $request, DocumentoEmpresa $empresa)
+    public function update(UpdateDocumentoEmpresaRequest $request, DocumentoEmpresa $empresa)
     {
         $this->authorize('administracao_documentos_legais_insert');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados = $request->all();
 
-        $arrayValidacao = [
-            'documentos_empresa.tipo_id' => [function ($attribute, $value, $fail) use ($dados) {
-                $tipo_empresa = $dados['tipo_empresa'] ? 'empresa' : 'contrato';
-                $tipoDocumento = TipoDocumento::whereTipo($tipo_empresa)->first();
-                if(!$tipoDocumento){
-                    $fail('Verificar o tipo de documento');
-                }
-            }],
-            'documentos_empresa.data_inicio' => [function ($attribute, $value, $fail) use ($dados) {
-                $datainicio = $dados['documentos_empresa']['data_inicio'];
-                $dataencerramento = $dados['documentos_empresa']['data_encerramento'];
-
-                $diff_dias = DataHora::diferencaDias($datainicio, $dataencerramento);
-
-                if ($diff_dias <= 0) {
-                    $fail('Data Vencimento precisa ser maior que a Data início');
-                }
-            }],
-        ];
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar Documento Empresa',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             DB::beginTransaction();
 
@@ -195,8 +135,8 @@ class DocumentosLegaisEmpresaController extends Controller
 
         $tiposDocumentos = TipoDocumento::orderBy('nome')->get();
 
-        $permite_envio_whatsapp = ClienteConfig::whereClienteId(auth()->user()->empresa_id)->first();
-        $permite_envio_whatsapp = !empty($permite_envio_whatsapp) && $permite_envio_whatsapp->envia_whatsapp;
+        $permite_envio_whatsapp = app(\App\Domain\Whatsapp\Services\WhatsappNotificationGateService::class)
+            ->empresaPermiteWhatsapp((int) auth()->user()->empresa_id);
 
         $permissoes = [
             'whatsapp' => $permite_envio_whatsapp,

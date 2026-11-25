@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cadastros\StoreFormaPagamentoRequest;
+use App\Http\Requests\Cadastros\UpdateFormaPagamentoRequest;
 use App\Models\FormaPagamento;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class FormaPagamentoController extends Controller {
     /**
@@ -31,28 +32,9 @@ class FormaPagamentoController extends Controller {
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request) {
-        $this->authorize('financeiro_formas-pagamento_insert');
-        $dados = $request->input();
-
-        $dadosValidados = \Validator::make($dados, [
-            //'descricao' => 'required|min:3|unique:formas_pagamento,descricao',
-            'descricao' => ['required','min:3',
-                Rule::unique('formas_pagamento')->where(function ($query) use ($dados) {
-                    return $query->whereDescricao($dados['descricao'])->whereEmpresaId(auth()->user()->empresa_id);
-                })],
-            'ativo' => 'required|boolean',
-
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar uma nova classificação',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            FormaPagamento::create($dados);
-            return response()->json([], 201);
-        }
+    public function store(StoreFormaPagamentoRequest $request) {
+        FormaPagamento::create($request->validated());
+        return response()->json([], 201);
     }
 
     /**
@@ -82,37 +64,10 @@ class FormaPagamentoController extends Controller {
      * @param \App\Models\FormaPagamento $formaPagamento
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, FormaPagamento $forma) {
-        $this->authorize('financeiro_formas-pagamento_update');
-        $dados = $request->input();
+    public function update(UpdateFormaPagamentoRequest $request, FormaPagamento $forma) {
+        $forma->update($request->validated());
 
-        $dadosValidados = \Validator::make($dados, [
-            //'descricao' => 'required|min:3|unique:formas_pagamento,descricao,' . $forma->id,
-            'descricao' => ['required','min:3',
-                Rule::unique('formas_pagamento')->where(function ($query) use ($dados,$forma) {
-                    return $query->whereDescricao($dados['descricao'])->whereEmpresaId(auth()->user()->empresa_id)->whereNotIn('id',[$forma->id]);
-                })],
-            'ativo' => 'required|boolean'
-        ]);
-
-        /*$dadosValidados = \Validator::make($dados, [
-            'tema' => ['required',
-                Rule::unique('aulas')->where(function ($query) use ($dados) {
-                    return $query->whereTema($dados['tema'])->whereTipodecursoId($dados['tipodecurso_id'])
-                        ->whereCategoriaId($dados['categoria_id']);
-                })],
-            'ativo' => 'required',
-        ]);*/
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar a classificação de plano de conta',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            $forma->update($dados);
-
-            return response()->json([], 201);
-        }
+        return response()->json([], 201);
     }
 
     /**

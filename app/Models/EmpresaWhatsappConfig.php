@@ -14,6 +14,12 @@ class EmpresaWhatsappConfig extends Model
 
     protected static $logName = 'EmpresaWhatsappConfig';
 
+    protected static $logFillable = true;
+
+    protected static $logOnlyDirty = true;
+
+    protected static $submitEmptyLogs = false;
+
     protected $table = 'empresa_whatsapp_configs';
 
     protected $fillable = [
@@ -37,6 +43,19 @@ class EmpresaWhatsappConfig extends Model
 
     public function tapActivity(Activity $activity, string $eventName): void
     {
+        $props = $activity->properties;
+        $attrs = is_object($props) && method_exists($props, 'get')
+            ? (array) ($props->get('attributes') ?? [])
+            : [];
+        $old = is_object($props) && method_exists($props, 'get')
+            ? (array) ($props->get('old') ?? [])
+            : [];
+
+        if (array_key_exists('modulos_habilitados', $attrs) || array_key_exists('modulos_habilitados', $old)) {
+            $activity->descricao = 'Alteração dos módulos WhatsApp habilitados';
+            return;
+        }
+
         $activity->descricao = 'Configuração WhatsApp da empresa';
     }
 

@@ -48,31 +48,15 @@ class PapeisController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\Admin\StorePapelRequest $request)
     {
         $this->authorize('configuracao_papel_insert');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-        $dados['master'] = false;
+        $dados = $request->validated();
+        $papel = Papel::create($dados);
+        $habilidades = $this->colecaoIdsHabilidadesMarcadasComObrigatorias($request);
+        $papel->habilidades()->attach($habilidades->all());
 
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required|min:3',
-            'descricao' => 'required|min:3',
-            'ativo' => 'required|boolean',
-            'empresa_id' => 'required',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar papel',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            $papel = Papel::create($dados);
-            $habilidades = $this->colecaoIdsHabilidadesMarcadasComObrigatorias($request);
-            $papel->habilidades()->attach($habilidades->all());
-
-            return response()->json([], 201);
-        }
+        return response()->json([], 201);
     }
 
     /**
@@ -125,32 +109,13 @@ class PapeisController extends Controller
      * @param \App\Models\Papel $papel
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, Papel $papel)
+    public function update(\App\Http\Requests\Admin\UpdatePapelRequest $request, Papel $papel)
     {
-
         $this->authorize('configuracao_papel_update');
-
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
-        $dados['master'] = false;
-
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => 'required|min:3',
-            'descricao' => 'required|min:3',
-            'ativo' => 'required|boolean',
-            'empresa_id' => 'required',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao alterar papel',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            $papel->update($dados);
-            $habilidades = $this->colecaoIdsHabilidadesMarcadasComObrigatorias($request);
-            $papel->habilidades()->sync($habilidades->all());
-            return response()->json([], 201);
-        }
+        $papel->update($request->validated());
+        $habilidades = $this->colecaoIdsHabilidadesMarcadasComObrigatorias($request);
+        $papel->habilidades()->sync($habilidades->all());
+        return response()->json([], 201);
     }
 
     /**

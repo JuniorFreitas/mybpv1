@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Documentos\StoreTipoDocumentoLegalRequest;
+use App\Http\Requests\Documentos\UpdateTipoDocumentoLegalRequest;
 use App\Models\TipoDocumento;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class TipoDocumentoLegalController extends Controller
 {
@@ -16,31 +17,10 @@ class TipoDocumentoLegalController extends Controller
 
     }
 
-    public function store(Request $request)
+    public function store(StoreTipoDocumentoLegalRequest $request)
     {
         $this->authorize('administracao_documentos_legais_insert');
-        $dados = $request->input();
-        $nome = $dados['nome'];
-        $tipo = $dados['tipo'];
-
-        $arrayValidacao = [
-            'nome' => [
-                'required',
-                'min:3',
-                Rule::unique('tipo_documentos')->where(function ($query) use($nome,$tipo) {
-                    return $query->where('nome', $nome)
-                        ->where('tipo', $tipo)->where('empresa_id', \Auth::user()->empresa_id);
-                })
-            ]
-        ];
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Tipo Documento',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->all();
 
         try {
             DB::beginTransaction();
@@ -68,33 +48,10 @@ class TipoDocumentoLegalController extends Controller
         return $tipodocumento;
     }
 
-    public function update(Request $request, TipoDocumento $tipodocumento)
+    public function update(UpdateTipoDocumentoLegalRequest $request, TipoDocumento $tipodocumento)
     {
         $this->authorize('administracao_documentos_legais_insert');
-        $dados = $request->input();
-        $nome = $dados['nome'];
-        $tipo = $dados['tipo'];
-        $id_tipo_documento = $request->segment(5);
-        $arrayValidacao = [
-            'nome' => [
-                'required',
-                'min:3',
-                Rule::unique('tipo_documentos')->where(function ($query) use($nome,$tipo,$id_tipo_documento) {
-                    return $query->where('nome', $nome)
-                                 ->where('tipo', $tipo)
-                                 ->where('empresa_id', \Auth::user()->empresa_id)
-                                 ->where('id','<>', $id_tipo_documento);
-                })
-            ]
-        ];
-        $dadosValidados = \Validator::make($dados, $arrayValidacao);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Tipo Documento',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
+        $dados = $request->all();
 
         try {
             DB::beginTransaction();

@@ -1,0 +1,5 @@
+---
+description: DevTeam project context and engineering workflow
+alwaysApply: true
+---
+Use DevTeam MCP tools to retrieve project context before substantial work. Follow Analisar → Agir → Aprender. Respect project isolation, existing architecture, security, tests and quality gates. Ask for human approval before production deployment, destructive migrations, protected merges, secret changes or paid external actions. Never expose secrets.

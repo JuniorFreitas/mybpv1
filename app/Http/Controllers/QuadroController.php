@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Events\WeeklyReport\QuadroEvent;
 use App\Http\Controllers\Concerns\GuardsWeeklyReportTenant;
+use App\Http\Requests\Operacional\StoreQuadroRequest;
+use App\Http\Requests\Operacional\UpdateQuadroRequest;
 use App\Models\Quadro;
 use App\Models\QuadroMembro;
 use Illuminate\Http\Request;
@@ -18,23 +20,11 @@ class QuadroController extends Controller
         return view('g.weekly-report.index');
     }
 
-    public function store(Request $request, int $empresa)
+    public function store(StoreQuadroRequest $request, int $empresa)
     {
         $this->assertWeeklyEmpresaId($empresa);
 
-        $titulo = trim((string) $request->input('titulo', ''));
-
-        $dadosValidados = \Validator::make(
-            ['titulo' => $titulo],
-            ['titulo' => 'required|min:1|max:120']
-        );
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao criar o quadro',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
+        $titulo = $request->validated('titulo');
 
         if ($this->tituloQuadroEmUso($titulo)) {
             return response()->json([
@@ -113,24 +103,12 @@ class QuadroController extends Controller
         ], 200);
     }
 
-    public function update(Request $request, int $empresa, Quadro $quadro)
+    public function update(UpdateQuadroRequest $request, int $empresa, Quadro $quadro)
     {
         $this->assertWeeklyHierarchy($empresa, $quadro);
         $this->assertQuadroDono($quadro);
 
-        $titulo = trim((string) $request->input('titulo', ''));
-
-        $dadosValidados = \Validator::make(
-            ['titulo' => $titulo],
-            ['titulo' => 'required|min:1|max:120']
-        );
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao atualizar o quadro',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
+        $titulo = $request->validated('titulo');
 
         if ($this->tituloQuadroEmUso($titulo, (int) $quadro->id)) {
             return response()->json([

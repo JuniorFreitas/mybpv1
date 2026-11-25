@@ -7,6 +7,9 @@ use App\Domain\Whatsapp\Enums\TipoMensagemWhatsapp;
 use App\Domain\Whatsapp\Services\WhatsappCurriculoTelefoneResolver;
 use App\Domain\Whatsapp\Services\WhatsappMessageFactory;
 use App\Domain\Whatsapp\Services\WhatsappNotificationGateService;
+use App\Http\Requests\Intermitente\StoreIntermitenteRequest;
+use App\Http\Requests\Intermitente\StoreProrrogacaoIntermitenteRequest;
+use App\Http\Requests\Intermitente\StoreTipoIntermitenteRequest;
 use App\Jobs\JobConvocacaoIntermitentes;
 use App\Jobs\JobExportaExcel;
 use App\Jobs\JobRespostaIntermitentes;
@@ -55,7 +58,7 @@ class IntermitenteController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreIntermitenteRequest $request)
     {
         $this->authorize('admissao_intermitente');
         $dados = $request->input();
@@ -67,19 +70,6 @@ class IntermitenteController extends Controller
         $dados['data_lancamento'] = (new DataHora($dados['range_convocacao'][0] . ' ' . date('H:m:s')))->dataHoraInsert(); // data concocação
         $dados['encerramento_previsto'] = (new DataHora($dados['range_convocacao'][1]))->dataInsert();; // data fim convocacao
         $dados['varios_colaboradores'] = count($dados['colaboradores']) > 1;
-
-
-        $dadosValidados = \Validator::make($dados, [
-            'tipo_id' => 'required',
-            'colaboradores' => 'required|array|min:1',
-        ]);
-
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Salvar Informações',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } 
 
             try {
                 DB::beginTransaction();
@@ -176,33 +166,24 @@ class IntermitenteController extends Controller
             }
     }
 
-    public function storeTipo(Request $request)
+    public function storeTipo(StoreTipoIntermitenteRequest $request)
     {
         $this->authorize('admissao_intermitente');
-        $dados = $request->input();
+        $dados = $request->validated();
         $dados['ativo'] = true;
-        $dadosValidados = \Validator::make($dados, [
-            'label' => 'required'
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Cadastrar',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
 
-                IntermitenteTipo::create($dados);
+        try {
+            DB::beginTransaction();
 
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error EM TIPO DE INTERMITENTE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}";
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+            IntermitenteTipo::create($dados);
+
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error EM TIPO DE INTERMITENTE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}";
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -211,44 +192,33 @@ class IntermitenteController extends Controller
         return $tipo;
     }
 
-    public function storeProrrogacao(Request $request)
+    public function storeProrrogacao(StoreProrrogacaoIntermitenteRequest $request)
     {
         $this->authorize('admissao_intermitente');
         $dados = $request->input();
-        $dadosValidados = \Validator::make($dados, [
-            'prorrogacao*data_inicio' => 'required',
-            'prorrogacao*data_fim' => 'required',
-            'prorrogacao*solicitante' => 'required',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Cadastrar Prorrogação',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
 
-                foreach ($dados['prorrogacao'] as $p) {
-                    $info = [
-                        'intermitente_id' => $dados['intermitente_id'],
-                        'data_inicio' => $p['data_inicio'],
-                        'data_fim' => $p['data_fim'],
-                        'solicitante' => $p['solicitante'],
-                    ];
-                    IntermitenteProrrogacao::create($info);
-                }
+        try {
+            DB::beginTransaction();
 
-
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error EM STORE PRORROGAÇÃO DE INTERMITENTE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}";
-                \Log::debug($msg);
-                return response()->json(['msg' => $msg], 400);
-//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
+            foreach ($dados['prorrogacao'] as $p) {
+                $info = [
+                    'intermitente_id' => $dados['intermitente_id'],
+                    'data_inicio' => $p['data_inicio'],
+                    'data_fim' => $p['data_fim'],
+                    'solicitante' => $p['solicitante'],
+                ];
+                IntermitenteProrrogacao::create($info);
             }
+
+
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error EM STORE PRORROGAÇÃO DE INTERMITENTE:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()}";
+            \Log::debug($msg);
+            return response()->json(['msg' => $msg], 400);
+//                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 

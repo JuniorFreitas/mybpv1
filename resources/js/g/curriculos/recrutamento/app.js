@@ -11,6 +11,7 @@ import MybpCardCampo from '../../../components/ui/MybpCardCampo.vue'
 import MybpStatusBadge from '../../../components/ui/MybpStatusBadge.vue'
 import ComboboxValidation from '../../../mixins/ComboboxValidation'
 import ExportacaoMixin from '../../../mixins/Exportacoes'
+import Configuracoes from '../../../mixins/Configuracoes'
 import { lerVisualizacaoListagem } from '../../../utils/visualizacaoListagem'
 
 // ===== CONSTANTES E CONFIGURAÇÕES =====
@@ -48,7 +49,7 @@ const app = createApp({
         MybpCardCampo,
         MybpStatusBadge
     },
-    mixins: [ExportacaoMixin, ComboboxValidation],
+    mixins: [ExportacaoMixin, ComboboxValidation, Configuracoes],
 
     data() {
         return {
@@ -124,6 +125,21 @@ const app = createApp({
         },
         telefonePrincipalNumero() {
             return this.telefonePrincipal ? this.telefonePrincipal.numero : ''
+        },
+        /**
+         * Gate client-side (status WhatsApp) + fallback da API de listagem.
+         * Tipos: seleção e provas do módulo Recrutamento.
+         */
+        podeMostrarWhatsappRecrutamento() {
+            if (typeof this.whatsappTipoHabilitado === 'function') {
+                if (
+                    this.whatsappTipoHabilitado('recrutamento_selecao')
+                    || this.whatsappTipoHabilitado('recrutamento_provas')
+                ) {
+                    return true
+                }
+            }
+            return !!this.permite_envio_whatsapp
         },
         totalFiltrosAtivos() {
             const d = this.controle.dados

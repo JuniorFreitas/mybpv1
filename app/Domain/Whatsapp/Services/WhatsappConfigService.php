@@ -143,6 +143,7 @@ class WhatsappConfigService
     /** @return array<string, mixed> */
     public function getConfigForApi(int $empresaId): array
     {
+        $this->ensureConfigMaterializada($empresaId);
         $config = $this->getConfig($empresaId);
         $resolved = $this->resolveContactData($empresaId);
 
@@ -163,6 +164,23 @@ class WhatsappConfigService
         $config->save();
 
         $this->invalidateCache($empresaId);
+
+        return $config;
+    }
+
+    /**
+     * Materializa empresa_whatsapp_configs com JSON de módulos padrão
+     * quando a empresa ainda não tem registro (default implícito → explícito).
+     */
+    public function ensureConfigMaterializada(int $empresaId): EmpresaWhatsappConfig
+    {
+        $config = EmpresaWhatsappConfig::query()->firstOrNew(['empresa_id' => $empresaId]);
+
+        if (!$config->exists || !is_array($config->modulos_habilitados) || $config->modulos_habilitados === []) {
+            $config->modulos_habilitados = $this->modulosPadraoHabilitados();
+            $config->save();
+            $this->invalidateCache($empresaId);
+        }
 
         return $config;
     }
@@ -210,7 +228,8 @@ class WhatsappConfigService
         $gate = app(WhatsappNotificationGateService::class);
         $tipos = [];
         foreach (TipoMensagemWhatsapp::cases() as $tipo) {
-            $tipos[$tipo->value] = $liberado && $gate->podeEnviar($tipo, $empresaId);
+            // Status é leitura frequente: não incrementa métricas de bloqueio.
+            $tipos[$tipo->value] = $liberado && $gate->podeEnviar($tipo, $empresaId, null, false);
         }
 
         return [

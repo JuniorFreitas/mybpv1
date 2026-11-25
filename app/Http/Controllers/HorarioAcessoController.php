@@ -27,23 +27,11 @@ class HorarioAcessoController extends Controller
         return response()->json($acesso,201);
     }
 
-    public function update(Request $request)
+    public function update(\App\Http\Requests\Admin\UpdateHorarioAcessoRequest $request)
     {
         $acesso = HorarioAcesso::first();
-
-        $dadosValidados = \Validator::make($request->input(), [
-            'abertura' => "required|date_format:H:i",
-            'fechamento' => 'required|date_format:H:i',
-        ]);
-        if($dadosValidados->fails()){ // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao atualizar',
-                'erros' => $dadosValidados->errors()
-            ],400);
-        }else{
-            $acesso->update($request->only(['abertura','fechamento']));
-            return response()->json($acesso,201);
-        }
+        $acesso->update($request->only(['abertura', 'fechamento']));
+        return response()->json($acesso, 201);
     }
 
 

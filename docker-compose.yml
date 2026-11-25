@@ -3,20 +3,19 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        BASE_IMAGE: ${BASE_IMAGE:-juniorfreitas/php-nginx:8.5}
+        COMPOSER_IMAGE: ${COMPOSER_IMAGE:-juniorfreitas/php-nginx:8.5-composer}
     container_name: mybpdp
     restart: unless-stopped
-    #    depends_on:
-    #      - mysql
-    #      - redis
     environment:
       - ENABLE_SCHEDULE=true
       - ENABLE_WORKER=true
       - ENABLE_HORIZON=true
       - ENABLE_WEBSOCKETS=false
-      - ENABLE_SUPERVISOR_GUI=true
       - ENABLE_CACHE_APP=false
-      - SUPERVISORD_USER=admin
-      - SUPERVISORD_PASS=secret
+      # Redes privadas por default; sobrescreva com CIDRs do LB em produção
+      - TRUSTED_PROXIES=${TRUSTED_PROXIES:-10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,127.0.0.1}
 
     env_file:
       - .env
@@ -28,40 +27,17 @@ services:
       - ./.deploy/storage/logs:/usr/share/nginx/html/storage/logs
 
     ports:
+      # Host local :8000 → container :80 (mesma porta da TD/Traefik em produção)
       - '8000:80'
       - '6001:6001'
-      - '9001:9001'
+    healthcheck:
+      test: ["CMD-SHELL", "php -r '$$s=@fsockopen(\"127.0.0.1\",80,$$e,$$t,2); exit($$s?0:1);'"]
+      interval: 30s
+      timeout: 5s
+      start_period: 45s
+      retries: 3
     networks:
       - dev
-
-#  mysql:
-#    image: mysql:5.7
-#    container_name: mysql
-#    restart: unless-stopped
-#    ports:
-#      - "3306:3306"
-#    environment:
-#      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
-#      - MYSQL_DATABASE=${DB_DATABASE}
-#      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-#    volumes:
-#      - ./.deploy/storage/mysql:/var/lib/mysql
-#    networks:
-#      - dev
-
-#  redis:
-#    image: redis:latest
-#    container_name: redis
-#    restart: unless-stopped
-#    command: --appendonly yes --requirepass ${REDIS_PASSWORD}
-#    volumes:
-#      - ./.deploy/storage/redis:/data
-#    ports:
-#      - "6379:6379"
-#    environment:
-#      REDIS_PORT: 6379
-#    networks:
-#      - dev
 
 networks:
   dev:

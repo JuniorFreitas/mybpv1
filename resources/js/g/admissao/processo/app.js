@@ -1630,7 +1630,7 @@ const app = createApp({
             this.form_massa.selecionados = this.selecionados
 
             axios
-                .post(`${URL_ADMIN}/admissao/admissao/cadastra-massa`, this.form_massa)
+                .post(`${URL_ADMIN}/admissao/cadastra-massa`, this.form_massa)
                 .then((response) => {
                     if (response.status === 201) {
                         this.form_massa.preload = false

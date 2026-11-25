@@ -7,7 +7,11 @@
 ## Handoff
 
 - Feature: cadastro-documentos-preadmissao
-- Phase: Execute done (Verifier em andamento); sem commit
-- Gate: 18 testes PHPUnit OK (13 unit + 5 feature)
-- Next: rodar `HabilidadesTableSeeder` para liberar o menu; UAT em Cadastro > Documentos da Pré-admissão
+- Phase: DONE (Verifier PASS + QA-003 housekeeping)
+- Gate: PHPUnit Feature/Unit Preadmissão; seeder habilidades no código
+- Next: em cada ambiente, executar `HabilidadesTableSeeder` se o menu ainda não aparecer; UAT visual opcional
 - Note: commits só se o usuário pedir
+
+## Housekeeping residual (2026-11-23)
+
+- Adiados por pedido humano: SEC-001 (deploy CVE), SEC-002 (rotação secret Dynamus)

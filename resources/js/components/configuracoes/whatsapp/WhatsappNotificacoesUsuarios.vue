@@ -143,175 +143,129 @@
     </div>
 </template>
 
-<script>
-import { defineComponent, ref, computed, onMounted, watch, toRef } from 'vue'
+<script setup>
+import { ref, computed, onMounted, watch, toRef } from 'vue'
 import axios from 'axios'
 
-const BASE = '/g/configuracoes/whatsapp'
-
-export default defineComponent({
-    name: 'WhatsappNotificacoesUsuarios',
-
-    props: {
-        readonly: { type: Boolean, default: false },
-        whatsappLiberadoProp: { type: Boolean, default: null },
-        empresaId: { type: [Number, String], default: null },
-    },
-
-    setup(props) {
-        const empresaId = toRef(props, 'empresaId')
-        const loading = ref(false)
-        const salvandoId = ref('')
-        const whatsappLiberado = ref(false)
-        const modulos = ref([])
-        const usuarios = ref([])
-        const filtros = ref({
-            busca: '',
-            apto_whatsapp: '',
-            recebe_movimentacao: '',
-            por_pagina: 25,
-            page: 1,
-        })
-        const meta = ref({
-            current_page: 1,
-            last_page: 1,
-            per_page: 25,
-            total: 0,
-        })
-
-        const modulosVisiveis = computed(() => modulos.value.filter((modulo) => modulo.habilitado !== false))
-
-        const empresaParams = () => (empresaId.value ? { empresa_id: Number(empresaId.value) } : {})
-
-        const carregar = async () => {
-            loading.value = true
-            try {
-                const { data } = await axios.get(`${BASE}/usuarios-notificacoes`, {
-                    params: { ...filtros.value, ...empresaParams() },
-                })
-                whatsappLiberado.value = props.whatsappLiberadoProp ?? !!data.whatsapp_liberado
-                modulos.value = data.modulos || []
-                usuarios.value = data.data || []
-                meta.value = data.meta || meta.value
-            } catch (e) {
-                usuarios.value = []
-            } finally {
-                loading.value = false
-            }
-        }
-
-        const buscar = () => {
-            filtros.value.page = 1
-            carregar()
-        }
-
-        const irParaPagina = (page) => {
-            filtros.value.page = page
-            carregar()
-        }
-
-        const slug = (texto) => String(texto).toLowerCase().replace(/[^a-z0-9]+/g, '-')
-
-        const preferenciaReceber = (usuario, modulo) => {
-            return !!(usuario.preferencias?.[modulo]?.receber ?? true)
-        }
-
-        const moduloHabilitado = (modulo) => {
-            const registro = modulos.value.find((item) => item.modulo === modulo)
-            return registro ? !!registro.habilitado : true
-        }
-
-        const podeEnviar = (usuario, modulo) => {
-            return !!(usuario.preferencias?.[modulo]?.apto_envio)
-        }
-
-        const motivoBloqueio = (usuario, modulo) => {
-            if (!whatsappLiberado.value) return 'Empresa sem WhatsApp'
-            if (!moduloHabilitado(modulo)) return 'Módulo desabilitado'
-            if (!usuario.telefone?.tem_whatsapp) return 'Sem telefone WhatsApp'
-            if (!preferenciaReceber(usuario, modulo)) return 'Usuário desativou'
-            return ''
-        }
-
-        const badgeTelefone = (usuario) => {
-            if (!whatsappLiberado.value) {
-                return { classe: 'badge-secondary', texto: 'Empresa off', titulo: 'WhatsApp desabilitado na empresa' }
-            }
-            if (!usuario.telefone?.tem_telefone) {
-                return { classe: 'badge-warning', texto: 'Sem telefone', titulo: 'Usuário sem telefone cadastrado' }
-            }
-            if (!usuario.telefone?.tem_whatsapp) {
-                return { classe: 'badge-danger', texto: 'Não WhatsApp', titulo: 'Telefone não é do tipo WhatsApp' }
-            }
-            return {
-                classe: 'badge-success',
-                texto: usuario.telefone.whatsapp_principal ? 'WhatsApp principal' : 'WhatsApp',
-                titulo: 'Telefone apto para envio',
-            }
-        }
-
-        const chaveSalvando = (userId, modulo) => `${userId}:${modulo}`
-
-        const alterarPreferencia = async (usuario, modulo, event) => {
-            if (props.readonly) return
-
-            const receber = event.target.checked
-            const chave = chaveSalvando(usuario.id, modulo)
-            salvandoId.value = chave
-
-            try {
-                const { data } = await axios.put(`${BASE}/usuarios-notificacoes/${usuario.id}`, {
-                    modulo,
-                    receber,
-                }, { params: empresaParams() })
-                const idx = usuarios.value.findIndex((item) => item.id === usuario.id)
-                if (idx >= 0 && data.usuario) {
-                    usuarios.value[idx] = data.usuario
-                }
-            } catch (e) {
-                event.target.checked = !receber
-                alert(e.response?.data?.message || 'Erro ao salvar preferência.')
-            } finally {
-                salvandoId.value = ''
-            }
-        }
-
-        watch(
-            () => props.whatsappLiberadoProp,
-            (valor) => {
-                if (valor !== null) {
-                    whatsappLiberado.value = !!valor
-                }
-            },
-        )
-
-        watch(empresaId, () => {
-            filtros.value.page = 1
-            carregar()
-        })
-
-        onMounted(carregar)
-
-        return {
-            loading,
-            salvandoId,
-            whatsappLiberado,
-            modulos,
-            modulosVisiveis,
-            usuarios,
-            filtros,
-            meta,
-            buscar,
-            irParaPagina,
-            slug,
-            preferenciaReceber,
-            moduloHabilitado,
-            podeEnviar,
-            motivoBloqueio,
-            badgeTelefone,
-            chaveSalvando,
-            alterarPreferencia,
-        }
-    },
+const props = defineProps({
+    readonly: { type: Boolean, default: false },
+    whatsappLiberadoProp: { type: Boolean, default: null },
+    empresaId: { type: [Number, String], default: null },
 })
+
+const BASE = '/g/configuracoes/whatsapp'
+const empresaId = toRef(props, 'empresaId')
+const loading = ref(false)
+const salvandoId = ref('')
+const whatsappLiberado = ref(false)
+const modulos = ref([])
+const usuarios = ref([])
+const filtros = ref({
+    busca: '',
+    apto_whatsapp: '',
+    recebe_movimentacao: '',
+    por_pagina: 25,
+    page: 1,
+})
+const meta = ref({
+    current_page: 1,
+    last_page: 1,
+    per_page: 25,
+    total: 0,
+})
+
+const modulosVisiveis = computed(() => modulos.value.filter((modulo) => modulo.habilitado !== false))
+const empresaParams = () => (empresaId.value ? { empresa_id: Number(empresaId.value) } : {})
+
+const carregar = async () => {
+    loading.value = true
+    try {
+        const { data } = await axios.get(`${BASE}/usuarios-notificacoes`, {
+            params: { ...filtros.value, ...empresaParams() },
+        })
+        whatsappLiberado.value = props.whatsappLiberadoProp ?? !!data.whatsapp_liberado
+        modulos.value = data.modulos || []
+        usuarios.value = data.data || []
+        meta.value = data.meta || meta.value
+    } catch (_e) {
+        usuarios.value = []
+    } finally {
+        loading.value = false
+    }
+}
+
+const buscar = () => {
+    filtros.value.page = 1
+    carregar()
+}
+
+const irParaPagina = (page) => {
+    filtros.value.page = page
+    carregar()
+}
+
+const slug = (texto) => String(texto).toLowerCase().replace(/[^a-z0-9]+/g, '-')
+const preferenciaReceber = (usuario, modulo) => !!(usuario.preferencias?.[modulo]?.receber ?? true)
+const moduloHabilitado = (modulo) => {
+    const registro = modulos.value.find((item) => item.modulo === modulo)
+    return registro ? !!registro.habilitado : true
+}
+const podeEnviar = (usuario, modulo) => !!(usuario.preferencias?.[modulo]?.apto_envio)
+const motivoBloqueio = (usuario, modulo) => {
+    if (!whatsappLiberado.value) return 'Empresa sem WhatsApp'
+    if (!moduloHabilitado(modulo)) return 'Módulo desabilitado'
+    if (!usuario.telefone?.tem_whatsapp) return 'Sem telefone WhatsApp'
+    if (!preferenciaReceber(usuario, modulo)) return 'Usuário desativou'
+    return ''
+}
+const badgeTelefone = (usuario) => {
+    if (!whatsappLiberado.value) {
+        return { classe: 'badge-secondary', texto: 'Empresa off', titulo: 'WhatsApp desabilitado na empresa' }
+    }
+    if (!usuario.telefone?.tem_telefone) {
+        return { classe: 'badge-warning', texto: 'Sem telefone', titulo: 'Usuário sem telefone cadastrado' }
+    }
+    if (!usuario.telefone?.tem_whatsapp) {
+        return { classe: 'badge-danger', texto: 'Não WhatsApp', titulo: 'Telefone não é do tipo WhatsApp' }
+    }
+    return {
+        classe: 'badge-success',
+        texto: usuario.telefone.whatsapp_principal ? 'WhatsApp principal' : 'WhatsApp',
+        titulo: 'Telefone apto para envio',
+    }
+}
+const chaveSalvando = (userId, modulo) => `${userId}:${modulo}`
+
+const alterarPreferencia = async (usuario, modulo, event) => {
+    if (props.readonly) return
+    const receber = event.target.checked
+    salvandoId.value = chaveSalvando(usuario.id, modulo)
+    try {
+        const { data } = await axios.put(`${BASE}/usuarios-notificacoes/${usuario.id}`, {
+            modulo,
+            receber,
+        }, { params: empresaParams() })
+        const idx = usuarios.value.findIndex((item) => item.id === usuario.id)
+        if (idx >= 0 && data.usuario) {
+            usuarios.value[idx] = data.usuario
+        }
+    } catch (e) {
+        event.target.checked = !receber
+        alert(e.response?.data?.message || 'Erro ao salvar preferência.')
+    } finally {
+        salvandoId.value = ''
+    }
+}
+
+watch(
+    () => props.whatsappLiberadoProp,
+    (valor) => {
+        if (valor !== null) whatsappLiberado.value = !!valor
+    },
+)
+watch(empresaId, () => {
+    filtros.value.page = 1
+    carregar()
+})
+onMounted(carregar)
 </script>

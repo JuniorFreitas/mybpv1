@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Operacional\StoreCloudConfiguracaoRequest;
+use App\Http\Requests\Operacional\UpdateCloudConfiguracaoRequest;
 use App\Models\Cloud;
 use App\Models\GrupoCloud;
 use App\Models\HabilidadeCloud;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class CloudConfiguracaoController extends Controller
 {
@@ -39,44 +40,26 @@ class CloudConfiguracaoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreCloudConfiguracaoRequest $request)
     {
         $this->authorize('cloud_configuracoes_insert');
 
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados = $request->validated();
 
-        $regra = Rule::unique('grupo_clouds')->where(function ($query) use ($dados) {
-            return $query->whereNome($dados['nome'])->whereEmpresaId(auth()->user()->empresa_id);
-        });
-
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => [$regra],
-            'descricao' => 'required|min:2',
-            'ativo' => 'required|boolean',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao alterar grupo',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                \DB::beginTransaction();
-                $grupocloud = GrupoCloud::create($dados);
-                $habilidades = collect($request->habilidades)->filter(function ($habilidade) {
-                    if ($habilidade['acesso'] == 'true') {
-                        return $habilidade;
-                    }
-                })->pluck('id');
-                $grupocloud->habilidades()->sync($habilidades);
-                \DB::commit();
-                return response()->json([], 201);
-            } catch (\ErrorException $e) {
-                DB::rollBack();
-                return response($e->getMessage(), 400);
-            }
-
+        try {
+            \DB::beginTransaction();
+            $grupocloud = GrupoCloud::create($dados);
+            $habilidades = collect($request->habilidades)->filter(function ($habilidade) {
+                if ($habilidade['acesso'] == 'true') {
+                    return $habilidade;
+                }
+            })->pluck('id');
+            $grupocloud->habilidades()->sync($habilidades);
+            \DB::commit();
+            return response()->json([], 201);
+        } catch (\ErrorException $e) {
+            DB::rollBack();
+            return response($e->getMessage(), 400);
         }
     }
 
@@ -111,75 +94,57 @@ class CloudConfiguracaoController extends Controller
      * @param GrupoCloud $grupocloud
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, GrupoCloud $grupocloud)
+    public function update(UpdateCloudConfiguracaoRequest $request, GrupoCloud $grupocloud)
     {
         $this->authorize('cloud_configuracoes_update');
 
-        $dados = $request->input();
+        $dados = $request->validated();
+        $dadosCompletos = $request->input();
 
-        $regra = Rule::unique('grupo_clouds')->where(function ($query) use ($dados) {
-            return $query->whereNome($dados['nome'])->whereEmpresaId(auth()->user()->empresa_id);
-        })->ignore($grupocloud->id);
+        try {
+            \DB::beginTransaction();
 
-        $dadosValidados = \Validator::make($dados, [
-            'nome' => ['required', $regra],
-            'descricao' => 'required|min:3',
-            'ativo' => 'required|boolean',
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao alterar grupo',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                \DB::beginTransaction();
+            $membrosAnteriores = $grupocloud->Usuarios()->pluck('id');
+            $ehAdministradores = $grupocloud->nome === GrupoCloud::NOME_ADMINISTRADORES;
 
-                $membrosAnteriores = $grupocloud->Usuarios()->pluck('id');
-                $ehAdministradores = $grupocloud->nome === GrupoCloud::NOME_ADMINISTRADORES;
-
-                $grupocloud->update($dados);
-                $habilidades = collect($request->habilidades)->filter(function ($habilidade) {
-                    if ($habilidade['acesso'] == 'true') {
-                        return $habilidade;
-                    }
-                })->pluck('id');
-                $grupocloud->habilidades()->sync($habilidades);
-
-                foreach ($dados['usuariosDelete'] ?? [] as $id) {
-                    User::find($id)?->update(['grupo_cloud_id' => null]);
+            $grupocloud->update($dados);
+            $habilidades = collect($request->habilidades)->filter(function ($habilidade) {
+                if ($habilidade['acesso'] == 'true') {
+                    return $habilidade;
                 }
+            })->pluck('id');
+            $grupocloud->habilidades()->sync($habilidades);
 
-                foreach ($dados['usuarios'] ?? [] as $linha) {
-                    User::find($linha['id'])?->update(['grupo_cloud_id' => $grupocloud->id]);
-                }
-
-                if ($ehAdministradores) {
-                    $membrosAtuais = collect($dados['usuarios'] ?? [])->pluck('id');
-                    $adicionados = $membrosAtuais->diff($membrosAnteriores)->values();
-                    $removidos = collect($dados['usuariosDelete'] ?? [])
-                        ->merge($membrosAnteriores->diff($membrosAtuais))
-                        ->unique()
-                        ->values();
-
-                    Cloud::sincronizarMembrosAdministradores(
-                        (int) ($grupocloud->empresa_id ?? auth()->user()->empresa_id),
-                        $adicionados,
-                        $removidos
-                    );
-                }
-
-                \DB::commit();
-                return response()->json([], 201);
-            } catch (\Throwable $e) {
-                DB::rollBack();
-                \Log::debug($e->getMessage());
-                return response()->json(['msg' => 'Erro ao alterar grupo'], 400);
+            foreach ($dadosCompletos['usuariosDelete'] ?? [] as $id) {
+                User::find($id)?->update(['grupo_cloud_id' => null]);
             }
 
+            foreach ($dadosCompletos['usuarios'] ?? [] as $linha) {
+                User::find($linha['id'])?->update(['grupo_cloud_id' => $grupocloud->id]);
+            }
+
+            if ($ehAdministradores) {
+                $membrosAtuais = collect($dadosCompletos['usuarios'] ?? [])->pluck('id');
+                $adicionados = $membrosAtuais->diff($membrosAnteriores)->values();
+                $removidos = collect($dadosCompletos['usuariosDelete'] ?? [])
+                    ->merge($membrosAnteriores->diff($membrosAtuais))
+                    ->unique()
+                    ->values();
+
+                Cloud::sincronizarMembrosAdministradores(
+                    (int) ($grupocloud->empresa_id ?? auth()->user()->empresa_id),
+                    $adicionados,
+                    $removidos
+                );
+            }
+
+            \DB::commit();
+            return response()->json([], 201);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            \Log::debug($e->getMessage());
+            return response()->json(['msg' => 'Erro ao alterar grupo'], 400);
         }
-
-
     }
 
     /**

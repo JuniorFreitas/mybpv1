@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Treinamentos\StoreEmpresaTreinamentoRequest;
+use App\Http\Requests\Treinamentos\UpdateEmpresaTreinamentoRequest;
 use App\Models\Departamento;
 use App\Models\EmpresaTreinamento;
 use App\Models\User;
@@ -36,36 +38,23 @@ class EmpresaTreinamentoController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreEmpresaTreinamentoRequest $request)
     {
         $this->authorize('cadastro_empresa_treinamento_insert');
-        $dados = $request->input();
-        $dadosValidados = \Validator::make($dados,
-            [
-                'nome' => 'required',
-                'endereco' => 'required',
-                'ativo' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Cadastrar Empresa Treinamento',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+        $dados = $request->validated() + $request->input();
 
-                EmpresaTreinamento::create($dados);
+        try {
+            DB::beginTransaction();
 
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error STORE Empresa Treinamento:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+            EmpresaTreinamento::create($dados);
+
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error STORE Empresa Treinamento:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 
@@ -98,38 +87,25 @@ class EmpresaTreinamentoController extends Controller
      * @param int $id
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdateEmpresaTreinamentoRequest $request, $id)
     {
         $this->authorize('cadastro_empresa_treinamento_update');
-        $dados = $request->input();
-        $dadosValidados = \Validator::make($dados,
-            [
-                'nome' => 'required',
-                'endereco' => 'required',
-                'ativo' => 'required',
-            ]
-        );
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
-            return response()->json([
-                'msg' => 'Erro ao Atualizar Empresa Treinamento',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        } else {
-            try {
-                DB::beginTransaction();
+        $dados = $request->validated() + $request->input();
 
-                $et = EmpresaTreinamento::whereId($id)->first();
+        try {
+            DB::beginTransaction();
 
-                $et->update($dados);
+            $et = EmpresaTreinamento::whereId($id)->first();
 
-                DB::commit();
-                return response()->json([], 201);
-            } catch (\Exception $e) {
-                DB::rollback();
-                $msg = "error UPDATE Empresa Treinamento:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
-                \Log::debug($msg);
-                return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
-            }
+            $et->update($dados);
+
+            DB::commit();
+            return response()->json([], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            $msg = "error UPDATE Empresa Treinamento:  {$e->getMessage()} , {$e->getCode()}, {$e->getLine()} | Usuario: " . User::find(auth()->id())->nome;
+            \Log::debug($msg);
+            return response()->json(['msg' => 'Houve um erro por favor tente novamente!'], 400);
         }
     }
 

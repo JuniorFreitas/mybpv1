@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\JobBoasVindas;
+use App\Http\Requests\Fornecedor\StoreFornecedorRequest;
+use App\Http\Requests\Fornecedor\UpdateFornecedorRequest;
 use App\Models\Arquivo;
 use App\Models\Fornecedor;
 use App\Models\Sistema;
@@ -36,25 +38,9 @@ class FornecedorController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreFornecedorRequest $request)
     {
-        $this->authorize('administracao_fornecedores_insert');
-
-        $dados = $request->input();
-        $dados['cadastrou'] = auth()->id();
-        $dados['empresa_id'] = auth()->user()->empresa_id;
-
-        if (!isset($dados['telefones'])) {
-            return response()->json(['msg' => 'É necessário informar pelo menos um número de telefone'], 400);
-        }
-
-        $validator = $this->validarDados($dados);
-        if ($validator->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao cadastrar Fornecedor',
-                'erros' => $validator->errors()
-            ], 400);
-        }
+        $dados = $request->all();
 
         try {
             DB::beginTransaction();
@@ -117,20 +103,9 @@ class FornecedorController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Fornecedor $fornecedor)
+    public function update(UpdateFornecedorRequest $request, Fornecedor $fornecedor)
     {
-        $this->authorize('administracao_fornecedores_update');
-
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true';
-
-        $validator = $this->validarDados($dados, $fornecedor->id);
-        if ($validator->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao atualizar o Fornecedor',
-                'erros' => $validator->errors()
-            ], 400);
-        }
+        $dados = $request->all();
 
         try {
             DB::beginTransaction();
@@ -157,32 +132,6 @@ class FornecedorController extends Controller
     }
 
 // Métodos auxiliares privados
-
-    private function validarDados(array $dados, $fornecedorId = null)
-    {
-        $regrasEspecificas = $dados['tipo_pessoa'] == Fornecedor::PESSOA_JURIDICA
-            ? [
-                'cnpj' => 'required|min:18|unique:fornecedores,cnpj' . ($fornecedorId ? ",$fornecedorId" : ''),
-                'razao_social' => 'required|min:2',
-            ]
-            : [
-                'cpf' => 'required|min:14|unique:fornecedores,cpf' . ($fornecedorId ? ",$fornecedorId" : ''),
-                'nome' => 'required|min:2',
-            ];
-
-        $regrasComuns = [
-            'tipo_pessoa' => 'required',
-            'contato' => 'required',
-            'uf' => 'required|min:2',
-            'logradouro' => 'required|min:3',
-            'bairro' => 'required|min:3',
-            'municipio' => 'required|min:3',
-            'email' => 'required|email' . ($fornecedorId ? '' : '|unique:users,login'),
-            'ativo' => 'required',
-        ];
-
-        return \Validator::make($dados, array_merge($regrasEspecificas, $regrasComuns));
-    }
 
     private function getNomeFornecedor(array $dados)
     {

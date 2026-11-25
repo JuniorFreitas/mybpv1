@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Events\WeeklyReport\ListaEvent;
 use App\Http\Controllers\Concerns\GuardsWeeklyReportTenant;
+use App\Http\Requests\Operacional\StoreListaTarefaRequest;
+use App\Http\Requests\Operacional\UpdateListaTarefaRequest;
 use App\Models\ListaTarefa;
 use App\Models\LogWeekly;
 use App\Models\Quadro;
@@ -34,20 +36,9 @@ class ListaTarefaController extends Controller
         ], 200);
     }
 
-    public function store(Request $request, int $empresa, Quadro $quadro)
+    public function store(StoreListaTarefaRequest $request, int $empresa, Quadro $quadro)
     {
         $this->assertWeeklyHierarchy($empresa, $quadro);
-
-        $dadosValidados = \Validator::make($request->all(), [
-            'titulo' => 'required|min:1',
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao criar a lista',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
 
         try {
             \DB::beginTransaction();
@@ -80,20 +71,9 @@ class ListaTarefaController extends Controller
         }
     }
 
-    public function update(Request $request, int $empresa, Quadro $quadro, ListaTarefa $lista)
+    public function update(UpdateListaTarefaRequest $request, int $empresa, Quadro $quadro, ListaTarefa $lista)
     {
         $this->assertWeeklyHierarchy($empresa, $quadro, $lista);
-
-        $dadosValidados = \Validator::make($request->all(), [
-            'titulo' => 'required|min:1',
-        ]);
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao atualizar a lista',
-                'erros' => $dadosValidados->errors(),
-            ], 400);
-        }
 
         try {
             \DB::beginTransaction();

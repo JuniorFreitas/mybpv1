@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Cadastros\StoreEmpresaTemporariaRequest;
+use App\Http\Requests\Cadastros\UpdateEmpresaTemporariaRequest;
 use App\Models\EmpresaTemporaria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,47 +36,31 @@ class EmpresaTemporariaController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreEmpresaTemporariaRequest $request)
     {
-        $this->authorize('cadastro_empresa_temporaria_insert');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados = $request->all();
 
-        $dadosValidados = \Validator::make($dados, [
-            'razao_social' => 'required',
-            'dados.cnpj' => 'required|min:18',
-            'dados.email' => 'required|email:rfc,dns',
-            'ativo' => 'required'
-        ]);
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+        try {
+            $bairro = $dados['dados']['endereco']['bairro'];
+            $cep = $dados['dados']['endereco']['cep'];
+            $complemento = $dados['dados']['endereco']['complemento'] ? $dados['dados']['endereco']['complemento'] . ',' : '';
+            $end_numero = $dados['dados']['endereco']['end_numero'] ? "Nº " . $dados['dados']['endereco']['end_numero'] : ' S/N';
+            $logradouro = $dados['dados']['endereco']['logradouro'];
+            $municipio = $dados['dados']['endereco']['municipio'];
+            $uf = $dados['dados']['endereco']['uf'];
+
+            $dados['dados']['endereco']['endereco_completo'] = "$logradouro, $end_numero , $complemento CEP: $cep, $bairro, $municipio/$uf";
+
+            DB::beginTransaction();
+            EmpresaTemporaria::create($dados);
+            DB::commit();
+            return response()->json([], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
-                'msg' => 'Erro ao cadastrar Empresa Temporaria',
-                'erros' => $dadosValidados->errors()
+                'msg' => $e->getMessage(),
             ], 400);
-
-        } else {
-            try {
-                $bairro = $dados['dados']['endereco']['bairro'];
-                $cep = $dados['dados']['endereco']['cep'];
-                $complemento = $dados['dados']['endereco']['complemento'] ? $dados['dados']['endereco']['complemento'] . ',' : '';
-                $end_numero = $dados['dados']['endereco']['end_numero'] ? "Nº " . $dados['dados']['endereco']['end_numero'] : ' S/N';
-                $logradouro = $dados['dados']['endereco']['logradouro'];
-                $municipio = $dados['dados']['endereco']['municipio'];
-                $uf = $dados['dados']['endereco']['uf'];
-
-                $dados['dados']['endereco']['endereco_completo'] = "$logradouro, $end_numero , $complemento CEP: $cep, $bairro, $municipio/$uf";
-
-                DB::beginTransaction();
-                EmpresaTemporaria::create($dados);
-                DB::commit();
-                return response()->json([], 201);
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                return response()->json([
-                    'msg' => $e->getMessage(),
-                ], 400);
-            }
         }
     }
 
@@ -107,48 +93,31 @@ class EmpresaTemporariaController extends Controller
      * @param \App\Models\EmpresaTemporaria $empresaTemporarium
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, EmpresaTemporaria $empresaTemporarium)
+    public function update(UpdateEmpresaTemporariaRequest $request, EmpresaTemporaria $empresaTemporarium)
     {
-        $this->authorize('cadastro_empresa_temporaria_update');
-        $dados = $request->input();
-        $dados['ativo'] = $dados['ativo'] == 'true' ? true : false;
+        $dados = $request->all();
 
-        $dadosValidados = \Validator::make($dados, [
-            'razao_social' => 'required',
-            'dados.cnpj' => 'required|min:18',
-            'dados.email' => 'required|email:rfc,dns',
-            'ativo' => 'required'
-        ]);
+        try {
+            $bairro = $dados['dados']['endereco']['bairro'];
+            $cep = $dados['dados']['endereco']['cep'];
+            $complemento = $dados['dados']['endereco']['complemento'] ? $dados['dados']['endereco']['complemento'] . ',' : '';
+            $end_numero = $dados['dados']['endereco']['end_numero'] ? "Nº " . $dados['dados']['endereco']['end_numero'] : ' S/N';
+            $logradouro = $dados['dados']['endereco']['logradouro'];
+            $municipio = $dados['dados']['endereco']['municipio'];
+            $uf = $dados['dados']['endereco']['uf'];
 
-        if ($dadosValidados->fails()) { // se o array de erros contem 1 ou mais erros..
+            $dados['dados']['endereco']['endereco_completo'] = "$logradouro, $end_numero , $complemento CEP: $cep, $bairro, $municipio/$uf";
+
+            DB::beginTransaction();
+            $empresaTemporarium->update($dados);
+            DB::commit();
+            return response()->json([], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
-                'msg' => 'Erro ao alterar a Empresa',
-                'erros' => $dadosValidados->errors()
+                'msg' => $e->getMessage(),
             ], 400);
-
-        } else {
-            try {
-                $bairro = $dados['dados']['endereco']['bairro'];
-                $cep = $dados['dados']['endereco']['cep'];
-                $complemento = $dados['dados']['endereco']['complemento'] ? $dados['dados']['endereco']['complemento'] . ',' : '';
-                $end_numero = $dados['dados']['endereco']['end_numero'] ? "Nº " . $dados['dados']['endereco']['end_numero'] : ' S/N';
-                $logradouro = $dados['dados']['endereco']['logradouro'];
-                $municipio = $dados['dados']['endereco']['municipio'];
-                $uf = $dados['dados']['endereco']['uf'];
-
-                $dados['dados']['endereco']['endereco_completo'] = "$logradouro, $end_numero , $complemento CEP: $cep, $bairro, $municipio/$uf";
-
-                DB::beginTransaction();
-                $empresaTemporarium->update($dados);
-                DB::commit();
-                return response()->json([], 201);
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                return response()->json([
-                    'msg' => $e->getMessage(),
-                ], 400);
-            }
         }
     }
 

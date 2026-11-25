@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Treinamentos\SalvaResultadoExameRequest;
+use App\Http\Requests\Treinamentos\UpdateResultadoExameRequest;
 use App\Models\Admissao;
 use App\Models\AlternativaFormulario;
 use App\Models\Arquivo;
@@ -226,9 +228,9 @@ class ControleExameController extends Controller
         return '';
     }
 
-    public function salvaResultado(Request $request)
+    public function salvaResultado(SalvaResultadoExameRequest $request)
     {
-        $dados = $request->input();
+        $dados = $request->all();
 
         unset($dados['id']);
 
@@ -242,27 +244,6 @@ class ControleExameController extends Controller
 
         $feedback_id = $exameFuncionario->feedback_id;
         $dados['feedback_id'] = $feedback_id;
-
-        $dadosValidados = \Validator::make($dados, []);
-
-        if ($dados['exame_realizado']) {
-            $dadosValidados = \Validator::make($dados, [
-                'data_realizacao' => 'required_if:exame_realizado,1|date_format:d/m/Y',
-                'resultado.result' => 'required_if:exame_realizado,1|in:Apto,Apto com Restrição,Inapto',
-                'resultado.pendencias' => 'required_if:exame_realizado,1|in:Sim,Não',
-                'resultado.pendencias_quais' => 'required_if:resultado.pendencias,Sim',
-                'resultado.aprovado' => 'required_if:exame_realizado,1',
-                'resultado.trabalho_altura' => 'required_if:exame_realizado,1|in:Sim,Não,Não se aplica',
-                'resultado.observacao' => 'max:500',
-            ]);
-        }
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao atualizar o resultado',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
 
         try {
             \DB::beginTransaction();
@@ -300,30 +281,10 @@ class ControleExameController extends Controller
         }
     }
 
-    public function updateResultado(Request $request, Examesesmt $resultado)
+    public function updateResultado(UpdateResultadoExameRequest $request, Examesesmt $resultado)
     {
-        $dados = $request->input();
+        $dados = $request->all();
 
-        $dadosValidados = \Validator::make($dados, []);
-
-        if ($dados['exame_realizado']) {
-            $dadosValidados = \Validator::make($dados, [
-                'data_realizacao' => 'required_if:exame_realizado,1|date_format:d/m/Y',
-                'resultado.result' => 'required_if:exame_realizado,1|in:Apto,Apto com Restrição,Inapto',
-                'resultado.pendencias' => 'required_if:exame_realizado,1|in:Sim,Não',
-                'resultado.pendencias_quais' => 'required_if:resultado.pendencias,Sim',
-                'resultado.aprovado' => 'required_if:exame_realizado,1',
-                'resultado.trabalho_altura' => 'required_if:exame_realizado,1|in:Sim,Não,Não se aplica',
-                'resultado.observacao' => 'max:500',
-            ]);
-        }
-
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao atualizar o resultado',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
         try {
             \DB::beginTransaction();
 

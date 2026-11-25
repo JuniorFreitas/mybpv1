@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Documentos\StoreCarteiraAssinaturaRequest;
+use App\Http\Requests\Documentos\UpdateCarteiraAssinaturaRequest;
 use App\Models\Arquivo;
 use App\Models\CarteiraAssinatura;
-use App\Models\PadraoTreinamento;
 use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
@@ -14,38 +15,17 @@ class CarteiraAssinaturaController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param StoreCarteiraAssinaturaRequest $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreCarteiraAssinaturaRequest $request)
     {
         $this->authorize('cadastro_carteira_assinatura');
-        $dados = $request->input();
-        $dadosValidados = \Validator::make($dados,
-            [
-                'nome' => 'required',
-                'tipo' => 'required',
-                'padrao_treinamento_id' => 'nullable|exists:padroes_treinamento,id',
-            ]
-        );
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao Cadastrar Assinatura Carteira',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
-
-        $padraoId = $this->resolverPadraoId($dados['padrao_treinamento_id'] ?? null);
-        if (($dados['padrao_treinamento_id'] ?? null) && !$padraoId) {
-            return response()->json([
-                'msg' => 'Padrão de treinamento inválido ou de outra empresa.',
-                'erros' => ['padrao_treinamento_id' => ['Padrão inválido.']],
-            ], 400);
-        }
+        $dados = $request->all();
+        $dados['padrao_treinamento_id'] = $dados['padrao_treinamento_id'] ?? null;
 
         try {
             DB::beginTransaction();
-            $dados['padrao_treinamento_id'] = $padraoId;
             $resposta = CarteiraAssinatura::create($dados);
 
             if (isset($dados['anexos'])) {
@@ -93,35 +73,14 @@ class CarteiraAssinaturaController extends Controller
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(UpdateCarteiraAssinaturaRequest $request, $id)
     {
         $this->authorize('cadastro_carteira_assinatura');
-        $dados = $request->input();
-        $dadosValidados = \Validator::make($dados,
-            [
-                'nome' => 'required',
-                'tipo' => 'required',
-                'padrao_treinamento_id' => 'nullable|exists:padroes_treinamento,id',
-            ]
-        );
-        if ($dadosValidados->fails()) {
-            return response()->json([
-                'msg' => 'Erro ao Cadastrar Assinatura Carteira',
-                'erros' => $dadosValidados->errors()
-            ], 400);
-        }
-
-        $padraoId = $this->resolverPadraoId($dados['padrao_treinamento_id'] ?? null);
-        if (($dados['padrao_treinamento_id'] ?? null) && !$padraoId) {
-            return response()->json([
-                'msg' => 'Padrão de treinamento inválido ou de outra empresa.',
-                'erros' => ['padrao_treinamento_id' => ['Padrão inválido.']],
-            ], 400);
-        }
+        $dados = $request->all();
+        $dados['padrao_treinamento_id'] = $dados['padrao_treinamento_id'] ?? null;
 
         try {
             DB::beginTransaction();
-            $dados['padrao_treinamento_id'] = $padraoId;
 
             $assinatura = CarteiraAssinatura::where('id', $id)->first();
             $assinatura->update($dados);
@@ -261,18 +220,4 @@ class CarteiraAssinaturaController extends Controller
         }
     }
 
-    private function resolverPadraoId($padraoId): ?int
-    {
-        if (empty($padraoId)) {
-            return null;
-        }
-
-        $empresaId = (int) auth()->user()->empresa_id;
-        $existe = PadraoTreinamento::query()
-            ->where('id', (int) $padraoId)
-            ->where('empresa_id', $empresaId)
-            ->exists();
-
-        return $existe ? (int) $padraoId : null;
-    }
 }

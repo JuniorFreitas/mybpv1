@@ -31,6 +31,7 @@ class JobExportaEfetivo implements ShouldQueue
 
     public $tries = 3;
     public $queue;
+    public int $timeout = 900;
 
     private $request;
     private $usuario_id;
@@ -54,8 +55,9 @@ class JobExportaEfetivo implements ShouldQueue
      */
     public function handle()
     {
-        ini_set('memory_limit', '-1');
-        ini_set('max_execution_time', '-1');
+        // PERF-MEM-001: teto alinhado ao ECS ~700MB (nunca 1024M/-1 no mesmo container)
+        ini_set('memory_limit', '256M');
+        ini_set('max_execution_time', '0');
 
         $nameArquivo = "relatorio_efetivo" . rand(1000, 9999) . "_" . date('YmdHis') . ".xlsx";
 
