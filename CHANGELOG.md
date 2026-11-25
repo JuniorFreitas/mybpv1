@@ -5,6 +5,39 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [Unreleased]
+
+## [2.1.0] - 2026-11-25
+
+### Adicionado
+
+- Middleware `SecureHeaders` nas respostas web. Referencias: `app/Http/Middleware/SecureHeaders.php`, `bootstrap/app.php`.
+- FormRequests multi-tenant em massa (admin, admissão, movimentação, documentos, treinamentos e demais módulos) com `ValidatesTenantOwned`. Referencias: `app/Http/Requests/`, `app/Http/Requests/Concerns/ValidatesTenantOwned.php`.
+- Helper `ExportDateBr` para exportações com data no padrão brasileiro sem horário. Referencias: `app/Support/ExportDateBr.php`, `app/Services/Cih/CihExportFormatter.php`.
+- Serviços de domínio de admissão (store/update, listagem, CPF, importação, export dispatcher). Referencias: `app/Services/Admissao/`.
+- Testes unitários/feature e E2E de regressão da plataforma. Referencias: `tests/Unit/`, `tests/Feature/`, `tests/e2e/regressao/`.
+
+### Modificado
+
+- Runtime Docker alinhado à produção: nginx escuta porta **80**, `EXPOSE 80`, `setcap` para bind rootless, compose `8000:80`. Referencias: `Dockerfile`, `.deploy/nginx/default.conf`, `docker-compose.yml`, `.deploy/task-definition.prod.example.json`.
+- Horizon em produção com menos processos e PHP/opcache mais enxuto. Referencias: `config/horizon.php`, `.deploy/php/php.ini-production`.
+- Exportação de admissões em CSV streaming (sem PhpSpreadsheet em memória alta). Referencias: `app/Jobs/JobExportaAdmissoes.php`, `app/Services/Admissao/AdmissaoExportDispatcher.php`.
+- Jobs/commands de exportação/importação com teto de memória 256M e timeout de job explícito. Referencias: `app/Jobs/`, `app/Console/Commands/ImportaTreinamento.php`.
+- Download de exportações força `Content-Disposition: attachment`. Referencias: `app/Http/Controllers/HomeController.php`, `resources/js/components/layout/BarraTop.vue`.
+- Nginx libera `PUT`/`PATCH`/`DELETE` (ex.: simular usuário). Referencias: `.deploy/nginx/default.conf`.
+
+### Corrigido
+
+- Broadcast com `BROADCAST_CONNECTION` vazio no FPM (`clear_env`) não derruba mais a aplicação. Referencias: `config/broadcasting.php`.
+- Isolamento multi-tenant em `ScopeClientesEmpresa` (fail-closed / contrato). Referencias: `app/Scopes/ScopeClientesEmpresa.php`, `app/Tenant/Scopes/ScopeClientesEmpresa.php`.
+- Datas de exportação CIH/mudança de cargo sem horário indesejado. Referencias: `app/Support/ExportDateBr.php`, `app/Services/MudancaCargo/MudancaCargoExportFormatter.php`.
+- `nginx.pid` root no build impedindo start rootless. Referencias: `Dockerfile`, `.deploy/scripts/start-phpnginx`.
+
+### Security
+
+- Hardening FPM (`clear_env` + whitelist) e headers de segurança. Referencias: `.deploy/php/fpm-pool.d/zz-mybp-fpm-harden.conf`, `app/Http/Middleware/SecureHeaders.php`.
+- Recaptcha fail-closed e reforço de regras de tenant. Referencias: `app/Rules/Recaptcha.php`, `tests/Unit/Rules/RecaptchaFailClosedTest.php`.
+
 ## [2.0.4] - 2026-04-01
 
 ### Adicionado
